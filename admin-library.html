@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>KIU - Admin Library</title>
+
+
+    <link rel="stylesheet" href="assets/vendor/fontawesome/css/all.min.css?v=1776604821637">
+    <link rel="stylesheet" href="assets/css/kiu-fonts.css?v=20260515-fonts1">
+    <link rel="stylesheet" href="assets/css/base.css?v=20260419-libsync1">
+    <link rel="stylesheet" href="assets/css/layout.css?v=1776604821637">
+    <link rel="stylesheet" href="assets/css/components.css?v=1776604821637">
+    <link rel="stylesheet" href="assets/css/index-luxury.css?v=20260419-libsync1">
+<link rel="stylesheet" href="assets/css/mobile-responsive.css?v=20260419-libsync1">
+    <link rel="stylesheet" href="assets/css/admin-library-route.css?v=20260515-inlinecss1">
+    <script src="assets/js/theme-primer.js?v=20260419-flat5"></script>
+</head>
+<body class="kiu-shell-loading lux-nonhome-page lux-route-library lux-route-admin-library lux-unified-shell role-admin" data-faculty="ECON">
+<!-- Navigation stubs (hidden, for JS compatibility) -->
+<nav id="prof-nav" aria-label="Professor navigation stub"></nav>
+<nav id="top-nav" aria-label="Top navigation stub"></nav>
+<nav id="admin-nav" aria-label="Admin navigation stub"></nav>
+
+
+<main id="app-content">
+    <div id="page-library" class="page-section active-page admin-library-page">
+        <div class="page-hero library-page-hero admin-library-hero">
+            <div class="page-hero-title">Research and Reference Library</div>
+            <div class="page-hero-copy">Manage the same shared catalog used by students, professors, and TAs. Add entries, tune catalog parameters, and keep the reference workspace aligned with the TA library view.</div>
+            <div class="page-hero-meta">
+                <span class="page-hero-badge"><i class="fas fa-book-open"></i> Shared catalog</span>
+                <span class="page-hero-badge"><i class="fas fa-sliders-h"></i> Parameter controls</span>
+                <span class="page-hero-badge"><i class="fas fa-user-shield"></i> Admin editing enabled</span>
+                <span class="page-hero-badge"><i class="fas fa-database"></i> <strong id="stat-books">0</strong> total books</span>
+            </div>
+            <div class="lux-hero-actions admin-library-hero-actions">
+                <button class="lux-primary-btn" type="button" data-admin-library-nav-home="true"><i class="fas fa-arrow-left"></i> Back to CMS</button>
+                <button class="lux-secondary-btn" type="button" data-admin-library-open-params="true"><i class="fas fa-sliders-h"></i> Parameters</button>
+            </div>
+        </div>
+
+        <div class="filter-shell library-filter-shell admin-library-entry-shell">
+            <div class="filter-shell-title">Add New Book</div>
+            <div class="admin-library-shell-copy">Create a shared catalog record with the same visual language, tags, and metadata conventions used in the TA library view.</div>
+            <div class="admin-library-metric-row">
+                <div class="admin-library-metric-card">
+                    <span class="admin-library-metric-label">Catalog Entries</span>
+                    <strong id="admin-library-total-metric">0</strong>
+                </div>
+                <div class="admin-library-metric-card">
+                    <span class="admin-library-metric-label">Visible In Current View</span>
+                    <strong id="admin-library-filtered-metric">0</strong>
+                </div>
+            </div>
+            <div class="lib-search-bar library-search-grid admin-library-form-grid">
+                <label class="lux-picker-field library-picker-field">
+                    <span class="lux-picker-label library-picker-label">Title</span>
+                    <input id="book-title" name="book_title" type="text" class="lib-input" placeholder="Book title">
+                </label>
+                <label class="lux-picker-field library-picker-field">
+                    <span class="lux-picker-label library-picker-label">Sub Title</span>
+                    <input id="book-subtitle" name="book_subtitle" type="text" class="lib-input" placeholder="Sub title">
+                </label>
+                <label class="lux-picker-field library-picker-field">
+                    <span class="lux-picker-label library-picker-label">Year</span>
+                    <input id="book-year" name="book_year" type="number" class="lib-input" placeholder="2026">
+                </label>
+                <label class="lux-picker-field library-picker-field">
+                    <span class="lux-picker-label library-picker-label">Author</span>
+                    <input id="book-author" name="book_author" type="text" class="lib-input" placeholder="Author name">
+                </label>
+                <label class="lux-picker-field library-picker-field">
+                    <span class="lux-picker-label library-picker-label">Subject (Topic)</span>
+                    <select id="book-thematic" name="book_thematic" class="lib-input"></select>
+                </label>
+                <label class="lux-picker-field library-picker-field">
+                    <span class="lux-picker-label library-picker-label">Language</span>
+                    <select id="book-language" name="book_language" class="lib-input"></select>
+                </label>
+                <label class="lux-picker-field library-picker-field">
+                    <span class="lux-picker-label library-picker-label">Status</span>
+                    <select id="book-status" name="book_status" class="lib-input"></select>
+                </label>
+                <label class="lux-picker-field library-picker-field library-field-wide">
+                    <span class="lux-picker-label library-picker-label">PDF Link (Optional)</span>
+                    <input id="book-pdf-link" name="book_pdf_link" type="url" class="lib-input" placeholder="https://example.com/book.pdf">
+                </label>
+            </div>
+            <div class="admin-library-actions">
+                <button class="lux-primary-btn" type="button" data-admin-library-add-book="true"><i class="fas fa-plus"></i> Add Book</button>
+            </div>
+        </div>
+
+        <div class="filter-shell library-filter-shell admin-library-filter-shell">
+            <div class="filter-shell-title">Browse Catalog</div>
+            <div class="lib-search-bar library-search-grid">
+                <label class="lux-picker-field library-picker-field">
+                    <span class="lux-picker-label library-picker-label">Search</span>
+                    <input id="library-filter-search" name="library_filter_search" type="text" class="lib-input" placeholder="Search by code, title, subtitle, author, year..." data-admin-library-search="query">
+                </label>
+                <div class="lux-picker-field library-picker-field">
+                    <span class="lux-picker-label library-picker-label">Topic</span>
+                    <button type="button" class="lux-picker-btn library-picker-btn" id="library-filter-topic-btn" aria-haspopup="listbox" aria-expanded="false" data-admin-library-picker-field="topic">
+                        <span class="library-picker-btn-copy">
+                            <strong id="library-filter-topic-value">All Topics</strong>
+                        </span>
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div class="lux-picker-panel library-picker-panel" id="library-filter-topic-panel"></div>
+                    <select id="library-filter-topic" name="library_filter_topic" class="library-hidden-select" data-admin-library-select-field="topic"></select>
+                </div>
+                <div class="lux-picker-field library-picker-field">
+                    <span class="lux-picker-label library-picker-label">Language</span>
+                    <button type="button" class="lux-picker-btn library-picker-btn" id="library-filter-language-btn" aria-haspopup="listbox" aria-expanded="false" data-admin-library-picker-field="language">
+                        <span class="library-picker-btn-copy">
+                            <strong id="library-filter-language-value">All Languages</strong>
+                        </span>
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div class="lux-picker-panel library-picker-panel" id="library-filter-language-panel"></div>
+                    <select id="library-filter-language" name="library_filter_language" class="library-hidden-select" data-admin-library-select-field="language"></select>
+                </div>
+                <div class="lux-picker-field library-picker-field">
+                    <span class="lux-picker-label library-picker-label">Status</span>
+                    <button type="button" class="lux-picker-btn library-picker-btn" id="library-filter-status-btn" aria-haspopup="listbox" aria-expanded="false" data-admin-library-picker-field="status">
+                        <span class="library-picker-btn-copy">
+                            <strong id="library-filter-status-value">All Statuses</strong>
+                        </span>
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div class="lux-picker-panel library-picker-panel" id="library-filter-status-panel"></div>
+                    <select id="library-filter-status" name="library_filter_status" class="library-hidden-select" data-admin-library-select-field="status"></select>
+                </div>
+            </div>
+        </div>
+
+        <div class="content-box surface-card library-catalog-card admin-library-catalog-card">
+            <div class="tabs-container library-tabs">
+                <div class="tab active library-tab-fill">Books</div>
+                <div class="tab library-tab-fill">Admin editing enabled for the shared library</div>
+            </div>
+            <div class="library-scroll-wrap">
+                <table class="kiu-table library-catalog-table admin-library-catalog-table library-table-min-1080">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Title</th>
+                            <th>Sub Title</th>
+                            <th>Author</th>
+                            <th>Year</th>
+                            <th>Subject (Topic)</th>
+                            <th>Language</th>
+                            <th>Status</th>
+                            <th>PDF</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="book-catalog-body"></tbody>
+                </table>
+            </div>
+            <div class="library-catalog-foot admin-library-catalog-foot">
+                <span id="shared-library-count">0 books</span>
+                <span id="admin-library-filtered-summary">0 visible in current view</span>
+            </div>
+        </div>
+    </div>
+</main>
+
+<div id="library-param-overlay" class="modal-overlay admin-library-modal-overlay" data-admin-library-modal-overlay="true">
+    <div class="modal-content admin-library-modal">
+        <div class="modal-header">
+            <h3><i class="fas fa-list-check"></i> Dropdown Parameters</h3>
+            <button class="lux-secondary-btn close-btn" type="button" data-admin-library-close-param-modal="true"><i class="fas fa-times"></i> Close</button>
+        </div>
+        <div class="modal-body">
+            <div class="admin-library-modal-copy">Create option lists first, then use them inside the shared Subject (Topic), Language, and Status controls across the admin and TA library views.</div>
+            <div class="admin-library-param-row">
+                <label class="lux-picker-field library-picker-field">
+                    <span class="lux-picker-label library-picker-label">Target Field</span>
+                    <select id="param-target" name="param_target" class="lib-input">
+                        <option value="thematic">Thematic Rubric</option>
+                        <option value="language">Language</option>
+                        <option value="status">Status</option>
+                    </select>
+                </label>
+                <label class="lux-picker-field library-picker-field">
+                    <span class="lux-picker-label library-picker-label">New Option</span>
+                    <input id="param-value" name="param_value" type="text" class="lib-input" placeholder="e.g. Mathematics">
+                </label>
+                <button class="lux-primary-btn" type="button" data-admin-library-add-param="true"><i class="fas fa-plus"></i> Add</button>
+            </div>
+            <div class="admin-library-param-groups">
+                <div class="admin-library-param-group">
+                    <div class="admin-library-param-title">Thematic Rubric Options</div>
+                    <div id="param-list-thematic" class="admin-library-chip-wrap"></div>
+                </div>
+                <div class="admin-library-param-group">
+                    <div class="admin-library-param-title">Language Options</div>
+                    <div id="param-list-language" class="admin-library-chip-wrap"></div>
+                </div>
+                <div class="admin-library-param-group">
+                    <div class="admin-library-param-title">Status Options</div>
+                    <div id="param-list-status" class="admin-library-chip-wrap"></div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <span class="admin-library-modal-copy">Changes are saved to the shared library state immediately.</span>
+            <button class="lux-secondary-btn close-btn" type="button" data-admin-library-close-param-modal="true">Close</button>
+        </div>
+    </div>
+</div>
+<!-- SCRIPTS (synced order & versions) -->
+<script defer src="assets/js/app/app.js?v=20260426-reset3"></script>
+<script defer src="assets/js/app/api.js?v=20260426-sessionfix3"></script>
+    <script defer src="assets/js/app/auth.js?v=20260429-authfix2"></script>
+<script defer src="assets/js/data/initial-state.js?v=1776604821637"></script>
+<script defer src="assets/js/app/state.js?v=20260429-statestackfix1"></script>
+    <script defer src="assets/js/shared/faculty.js?v=20260429-peopleisolation1"></script>
+<script defer src="assets/js/shared/utilities.js?v=20260504-transparency-refresh1"></script>
+    <script defer src="assets/js/features/navigation.js?v=20260429-shellinit1"></script>
+<script defer src="assets/js/features/ui.js?v=20260429-peopleisolation1"></script>
+<script defer src="assets/js/features/index-luxury.js?v=20260504-transparency-refresh1"></script>
+<script defer src="assets/js/features/luxury-shell-chrome.js?v=20260518-luxshell1"></script>
+<script defer src="assets/js/features/luxury-home-model.js?v=20260518-luxhome1"></script>
+<script>
+function ensureAdminLibraryState() {
+    if (!KIU_STATE.adminLibrary) KIU_STATE.adminLibrary = {};
+    if (!KIU_STATE.adminLibrary.params) KIU_STATE.adminLibrary.params = {};
+    const defaults = {
+        thematic: ['Mathematics', 'Computer Science', 'Economics'],
+        language: ['English', 'Georgian'],
+        status: ['Active', 'Archived']
+    };
+    Object.keys(defaults).forEach((key) => {
+        if (!Array.isArray(KIU_STATE.adminLibrary.params[key]) || !KIU_STATE.adminLibrary.params[key].length) {
+            KIU_STATE.adminLibrary.params[key] = [...defaults[key]];
+        }
+    });
+    if (!Array.isArray(KIU_STATE.adminLibrary.books)) KIU_STATE.adminLibrary.books = [];
+}
+
+function escapeAdminLibraryHtml(value) {
+    const text = value == null ? '' : String(value);
+    if (typeof escapeHtml === 'function') return escapeHtml(text);
+    return text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+function getAdminLibraryPickerMeta(field) {
+    return {
+        topic: { label: 'Topic', subtitle: 'Pick a subject area for the catalog' },
+        language: { label: 'Language', subtitle: 'Choose a catalog language' },
+        status: { label: 'Status', subtitle: 'Filter active or archived books' }
+    }[field] || { label: field, subtitle: 'Filter the library catalog' };
+}
+
+function syncAdminLibraryPickerValue(field) {
+    const select = document.getElementById(`library-filter-${field}`);
+    const value = document.getElementById(`library-filter-${field}-value`);
+    const button = document.getElementById(`library-filter-${field}-btn`);
+    if (!select || !value || !button) return;
+    const selected = select.selectedOptions?.[0];
+    const meta = getAdminLibraryPickerMeta(field);
+    value.textContent = selected ? selected.textContent : `All ${meta.label}s`;
+    button.setAttribute('aria-expanded', 'false');
+}
+
+function bindAdminLibraryInteractions() {
+    const search = document.getElementById('library-filter-search');
+    if (search) {
+        search.addEventListener('input', renderAdminBookCatalog);
+    }
+
+    ['topic', 'language', 'status'].forEach((field) => {
+        const button = document.getElementById(`library-filter-${field}-btn`);
+        if (button) {
+            button.addEventListener('click', () => {
+                if (typeof togglePickerPanel === 'function') {
+                    togglePickerPanel(`library-filter-${field}-panel`, `library-filter-${field}-btn`);
+                }
+            });
+        }
+
+        const select = document.getElementById(`library-filter-${field}`);
+        if (select) {
+            select.addEventListener('change', () => {
+                syncAdminLibraryPickerValue(field);
+                renderAdminBookCatalog();
+            });
+        }
+    });
+
+    document.addEventListener('click', (event) => {
+        const navHome = event.target.closest('[data-admin-library-nav-home]');
+        if (navHome) {
+            if (typeof window.navigate === 'function') window.navigate('home');
+            return;
+        }
+
+        const openParams = event.target.closest('[data-admin-library-open-params]');
+        if (openParams) {
+            openLibraryParamModal();
+            return;
+        }
+
+        const addBook = event.target.closest('[data-admin-library-add-book]');
+        if (addBook) {
+            addAdminLibraryBook();
+            return;
+        }
+
+        const addParam = event.target.closest('[data-admin-library-add-param]');
+        if (addParam) {
+            addLibraryParameterOption();
+            return;
+        }
+
+        if (event.target.closest('[data-admin-library-modal-overlay]') && event.target === event.target.closest('[data-admin-library-modal-overlay]')) {
+            closeLibraryParamModal(event);
+            return;
+        }
+
+        const closeParam = event.target.closest('[data-admin-library-close-param-modal]');
+        if (closeParam) {
+            closeLibraryParamModal(event);
+            return;
+        }
+
+        const removeParam = event.target.closest('[data-admin-library-remove-param]');
+        if (removeParam) {
+            removeLibraryParameterOption(
+                removeParam.dataset.key || '',
+                Number.parseInt(removeParam.dataset.index || '-1', 10)
+            );
+            return;
+        }
+
+        const removeBook = event.target.closest('[data-remove-book]');
+        if (removeBook) {
+            removeAdminLibraryBook(removeBook.dataset.bookId || '');
+            return;
+        }
+
+        if (event.target.closest('.library-picker-field, #lux-topbar, .lux-picker-panel, .lux-utility-panel, .lux-user-menu, #lux-studio-backdrop')) return;
+        if (typeof closePickerPanels === 'function') closePickerPanels();
+    });
+}
+
+function renderAdminLibraryPickerPanel(field, options, currentValue) {
+    const panel = document.getElementById(`library-filter-${field}-panel`);
+    if (!panel) return;
+    const meta = getAdminLibraryPickerMeta(field);
+    panel.innerHTML = options.map((option) => {
+        const active = String(option.value) === String(currentValue);
+        const subtitle = active ? 'Current filter' : meta.subtitle;
+        return `
+            <button class="lux-picker-option${active ? ' is-active' : ''}" type="button" data-admin-library-filter="${escapeAdminLibraryHtml(field)}" data-admin-library-value="${escapeAdminLibraryHtml(option.value)}">
+                <strong>${escapeAdminLibraryHtml(option.label)}</strong>
+                <span>${escapeAdminLibraryHtml(subtitle)}</span>
+            </button>
+        `;
+    }).join('');
+    panel.querySelectorAll('[data-admin-library-filter]').forEach((optionButton) => {
+        optionButton.addEventListener('click', () => {
+            const select = document.getElementById(`library-filter-${field}`);
+            if (!select) return;
+            select.value = optionButton.dataset.adminLibraryValue || 'all';
+            syncAdminLibraryPickerValue(field);
+            if (typeof closePickerPanels === 'function') closePickerPanels();
+            renderAdminBookCatalog();
+        });
+    });
+}
+
+function renderAdminLibraryPicker(field, items, defaultLabel) {
+    const select = document.getElementById(`library-filter-${field}`);
+    if (!select) return;
+    const options = [{ value: 'all', label: defaultLabel }, ...(Array.isArray(items) ? items : []).map((item) => ({ value: item, label: item }))];
+    const currentValue = select.value || 'all';
+    renderAdminLibraryPickerPanel(field, options, currentValue);
+    syncAdminLibraryPickerValue(field);
+}
+
+function renderAdminLibraryFilters() {
+    ensureAdminLibraryState();
+    const params = KIU_STATE.adminLibrary.params || {};
+    const renderFilterSelect = (id, label, items) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const current = el.value || 'all';
+        const options = Array.isArray(items) ? items : [];
+        el.innerHTML = `<option value="all">${label}</option>${options.map((item) => `<option value="${escapeAdminLibraryHtml(item)}">${escapeAdminLibraryHtml(item)}</option>`).join('')}`;
+        el.value = Array.from(el.options).some((option) => option.value === current) ? current : 'all';
+    };
+    renderFilterSelect('library-filter-topic', 'All Topics', params.thematic);
+    renderFilterSelect('library-filter-language', 'All Languages', params.language);
+    renderFilterSelect('library-filter-status', 'All Statuses', params.status);
+    renderAdminLibraryPicker('topic', params.thematic, 'All Topics');
+    renderAdminLibraryPicker('language', params.language, 'All Languages');
+    renderAdminLibraryPicker('status', params.status, 'All Statuses');
+}
+
+function renderAdminLibraryFormSelects() {
+    ensureAdminLibraryState();
+    const params = KIU_STATE.adminLibrary.params;
+    const renderSelect = (id, items) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const current = el.value;
+        el.innerHTML = items.map((item) => `<option value="${escapeAdminLibraryHtml(item)}">${escapeAdminLibraryHtml(item)}</option>`).join('');
+        if (current && Array.from(el.options).some((option) => option.value === current)) {
+            el.value = current;
+        }
+    };
+    renderSelect('book-thematic', params.thematic);
+    renderSelect('book-language', params.language);
+    renderSelect('book-status', params.status);
+}
+
+function createAdminLibraryParamChip(key, value, index) {
+    const chip = document.createElement('span');
+    chip.className = 'admin-library-chip';
+
+    const label = document.createElement('span');
+    label.textContent = value;
+    chip.appendChild(label);
+
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.dataset.adminLibraryRemoveParam = 'true';
+    button.dataset.adminLibraryParamKey = key;
+    button.dataset.adminLibraryParamIndex = String(index);
+    button.setAttribute('aria-label', `Remove ${value}`);
+
+    const icon = document.createElement('i');
+    icon.className = 'fas fa-times';
+    button.appendChild(icon);
+
+    chip.appendChild(button);
+    return chip;
+}
+
+function renderAdminLibraryChipGroup(target, key, items) {
+    const el = document.getElementById(target);
+    if (!el) return;
+    const fragment = document.createDocumentFragment();
+    (Array.isArray(items) ? items : []).forEach((item, index) => {
+        fragment.appendChild(createAdminLibraryParamChip(key, String(item || ''), index));
+    });
+    el.replaceChildren(fragment);
+}
+
+function renderAdminLibraryParameterGroups() {
+    ensureAdminLibraryState();
+    const params = KIU_STATE.adminLibrary.params;
+    renderAdminLibraryChipGroup('param-list-thematic', 'thematic', params.thematic);
+    renderAdminLibraryChipGroup('param-list-language', 'language', params.language);
+    renderAdminLibraryChipGroup('param-list-status', 'status', params.status);
+}
+
+function renderAdminLibraryParameters() {
+    renderAdminLibraryFormSelects();
+    renderAdminLibraryFilters();
+    renderAdminLibraryParameterGroups();
+}
+
+function openLibraryParamModal() {
+    renderAdminLibraryParameters();
+    const overlay = document.getElementById('library-param-overlay');
+    if (!overlay) return;
+    overlay.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+
+function closeLibraryParamModal(event) {
+    if (event && event.target.id !== 'library-param-overlay' && !event.target.closest('.close-btn')) return;
+    const overlay = document.getElementById('library-param-overlay');
+    if (!overlay) return;
+    overlay.style.display = 'none';
+    document.body.style.overflow = '';
+}
+
+function addLibraryParameterOption() {
+    ensureAdminLibraryState();
+    const key = document.getElementById('param-target')?.value;
+    const input = document.getElementById('param-value');
+    const value = (input?.value || '').trim();
+    if (!key || !value) return;
+    const list = KIU_STATE.adminLibrary.params[key];
+    if (!list.some((item) => item.toLowerCase() === value.toLowerCase())) {
+        list.push(value);
+        saveState();
+    }
+    if (input) input.value = '';
+    renderAdminLibraryParameters();
+    renderAdminBookCatalog();
+}
+
+function removeLibraryParameterOption(key, index) {
+    ensureAdminLibraryState();
+    const list = KIU_STATE.adminLibrary.params[key];
+    if (!list || index < 0 || index >= list.length) return;
+    list.splice(index, 1);
+    if (!list.length) {
+        const fallback = key === 'thematic' ? ['General'] : key === 'language' ? ['English'] : ['Active'];
+        KIU_STATE.adminLibrary.params[key] = fallback;
+    }
+    saveState();
+    renderAdminLibraryParameters();
+    renderAdminBookCatalog();
+}
+
+function addAdminLibraryBook() {
+    ensureAdminLibraryState();
+    const title = (document.getElementById('book-title')?.value || '').trim();
+    const subtitle = (document.getElementById('book-subtitle')?.value || '').trim();
+    const yearRaw = (document.getElementById('book-year')?.value || '').trim();
+    const yearDigits = yearRaw.replace(/[^\d]/g, '');
+    const year = Number.parseInt(yearDigits, 10);
+    const author = (document.getElementById('book-author')?.value || '').trim();
+    const thematic = (document.getElementById('book-thematic')?.value || '').trim();
+    const language = (document.getElementById('book-language')?.value || '').trim();
+    const status = (document.getElementById('book-status')?.value || '').trim();
+    const pdfLink = (document.getElementById('book-pdf-link')?.value || '').trim();
+
+    const missing = [];
+    if (!title) missing.push('Title');
+    if (!author) missing.push('Author');
+    if (!Number.isFinite(year)) missing.push('Year');
+    if (!thematic) missing.push('Subject (Topic)');
+    if (missing.length) {
+        alert(`Please fill required fields: ${missing.join(', ')}`);
+        return;
+    }
+
+    KIU_STATE.adminLibrary.books.unshift({
+        id: `LIB-${Date.now()}`,
+        title,
+        subtitle,
+        year,
+        author,
+        thematic,
+        language,
+        status,
+        pdfLink,
+        createdAt: new Date().toISOString()
+    });
+    saveState();
+
+    ['book-title', 'book-subtitle', 'book-year', 'book-author', 'book-pdf-link'].forEach((id) => {
+        const input = document.getElementById(id);
+        if (input) input.value = '';
+    });
+    renderAdminBookCatalog();
+}
+
+function removeAdminLibraryBook(bookId) {
+    ensureAdminLibraryState();
+    KIU_STATE.adminLibrary.books = KIU_STATE.adminLibrary.books.filter((book) => String(book.id) !== String(bookId));
+    saveState();
+    renderAdminBookCatalog();
+}
+
+function createAdminLibraryCell(text) {
+    const cell = document.createElement('td');
+    cell.textContent = text;
+    return cell;
+}
+
+function createAdminLibraryPdfCell(pdfLink) {
+    const cell = document.createElement('td');
+    if (!pdfLink) {
+        cell.textContent = '-';
+        return cell;
+    }
+    const link = document.createElement('a');
+    link.href = pdfLink;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    link.className = 'library-pdf-link';
+    const icon = document.createElement('i');
+    icon.className = 'fas fa-file-pdf';
+    link.appendChild(icon);
+    cell.appendChild(link);
+    return cell;
+}
+
+function createAdminLibraryActionCell(bookId) {
+    const cell = document.createElement('td');
+    const button = document.createElement('button');
+    button.className = 'admin-library-remove-btn';
+    button.type = 'button';
+    button.dataset.removeBook = '1';
+    button.dataset.bookId = bookId;
+
+    const icon = document.createElement('i');
+    icon.className = 'fas fa-trash';
+    button.appendChild(icon);
+
+    const label = document.createElement('span');
+    label.textContent = 'Remove';
+    button.appendChild(label);
+
+    cell.appendChild(button);
+    return cell;
+}
+
+function createAdminLibraryCatalogRow(book, index) {
+    const row = document.createElement('tr');
+    const code = book.id ? String(book.id) : `BK-${index + 1}`;
+    const title = book.title || '-';
+    const subtitle = book.subtitle || '-';
+    const author = book.author || '-';
+    const year = book.year || '-';
+    const thematic = book.thematic || '-';
+    const language = book.language || '-';
+    const status = book.status || '-';
+
+    [
+        code,
+        title,
+        subtitle,
+        author,
+        String(year),
+        thematic,
+        language,
+        status
+    ].forEach((value) => {
+        row.appendChild(createAdminLibraryCell(value));
+    });
+    row.appendChild(createAdminLibraryPdfCell(book.pdfLink || ''));
+    row.appendChild(createAdminLibraryActionCell(String(book.id || '')));
+    return row;
+}
+
+function renderAdminLibraryEmptyStateRow(tbody) {
+    const row = document.createElement('tr');
+    row.className = 'library-empty-row';
+    const cell = document.createElement('td');
+    cell.className = 'library-empty-cell';
+    cell.colSpan = 10;
+    cell.style.textAlign = 'center';
+    cell.style.color = 'var(--lux-text-muted)';
+    cell.style.padding = '28px';
+    cell.textContent = 'No books found for the current filters.';
+    row.appendChild(cell);
+    tbody.replaceChildren(row);
+}
+
+function renderAdminBookCatalog() {
+    ensureAdminLibraryState();
+    const tbody = document.getElementById('book-catalog-body');
+    if (!tbody) return;
+
+    const books = KIU_STATE.adminLibrary.books || [];
+    const q = (document.getElementById('library-filter-search')?.value || '').trim().toLowerCase();
+    const topicFilter = document.getElementById('library-filter-topic')?.value || 'all';
+    const languageFilter = document.getElementById('library-filter-language')?.value || 'all';
+    const statusFilter = document.getElementById('library-filter-status')?.value || 'all';
+
+    const filteredBooks = books.filter((book) => {
+        const queryMatch = !q
+            || String(book.id || '').toLowerCase().includes(q)
+            || String(book.title || '').toLowerCase().includes(q)
+            || String(book.subtitle || '').toLowerCase().includes(q)
+            || String(book.author || '').toLowerCase().includes(q)
+            || String(book.year || '').toLowerCase().includes(q)
+            || String(book.thematic || '').toLowerCase().includes(q);
+        const topicMatch = topicFilter === 'all' || String(book.thematic || '') === topicFilter;
+        const languageMatch = languageFilter === 'all' || String(book.language || '') === languageFilter;
+        const statusMatch = statusFilter === 'all' || String(book.status || '') === statusFilter;
+        return queryMatch && topicMatch && languageMatch && statusMatch;
+    });
+
+    const totalBooks = books.length;
+    const visibleBooks = filteredBooks.length;
+    const statBooks = document.getElementById('stat-books');
+    const totalMetric = document.getElementById('admin-library-total-metric');
+    const filteredMetric = document.getElementById('admin-library-filtered-metric');
+    const totalCount = document.getElementById('shared-library-count');
+    const filteredSummary = document.getElementById('admin-library-filtered-summary');
+    if (statBooks) statBooks.textContent = String(totalBooks);
+    if (totalMetric) totalMetric.textContent = String(totalBooks);
+    if (filteredMetric) filteredMetric.textContent = String(visibleBooks);
+    if (totalCount) totalCount.textContent = `${totalBooks} book${totalBooks === 1 ? '' : 's'}`;
+    if (filteredSummary) filteredSummary.textContent = `${visibleBooks} visible in current view`;
+
+    if (!filteredBooks.length) {
+        renderAdminLibraryEmptyStateRow(tbody);
+        return;
+    }
+
+    const fragment = document.createDocumentFragment();
+    filteredBooks.forEach((book, index) => {
+        fragment.appendChild(createAdminLibraryCatalogRow(book, index));
+    });
+    tbody.replaceChildren(fragment);
+
+}
+
+function renderAdminLibrary() {
+    if (!document.getElementById('book-catalog-body')) return;
+    renderAdminLibraryFormSelects();
+    renderAdminLibraryFilters();
+    renderAdminBookCatalog();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    bindAdminLibraryInteractions();
+    document.body.classList.remove('role-student');
+    document.body.classList.add('role-admin');
+
+    const fac = localStorage.getItem('currentFaculty') || 'ECON';
+    if (typeof switchFacultyTheme === 'function') {
+        switchFacultyTheme(fac);
+    }
+    if (typeof initPalette === 'function') {
+        initPalette();
+    }
+
+    ensureAdminLibraryState();
+    renderAdminLibrary();
+    if (typeof syncTopbar === 'function') {
+        syncTopbar();
+    }
+
+    setTimeout(() => {
+        if (typeof updateTransparency === 'function') {
+            const saved = localStorage.getItem('kiuLuxurySurfaceTransparency') || '70';
+            updateTransparency(Number.parseInt(saved, 10));
+        }
+    }, 300);
+});
+</script>
+<!-- MOBILE BOTTOM NAVIGATION (v2) -->
+<nav id="mobile-bottom-nav" aria-label="Mobile navigation" style="display:none;">
+    <div class="mobile-nav-row">
+        <button class="mobile-nav-btn is-active" data-nav-target="home" type="button" id="mob-nav-home"><i class="fas fa-th-large"></i><span>Home</span></button>
+        <button class="mobile-nav-btn" type="button" id="mob-nav-messages" data-action="messages"><i class="fas fa-comment-dots"></i><span>Chat</span><em class="mob-badge" id="mob-badge-msg" style="display:none;">0</em></button>
+        <button class="mobile-nav-btn" type="button" id="mob-nav-notif" data-action="notifications"><i class="fas fa-bell"></i><span>Alerts</span><em class="mob-badge" id="mob-badge-notif" style="display:none;">0</em></button>
+        <button class="mobile-nav-btn" type="button" id="mob-nav-theme" data-action="theme"><i class="fas fa-palette"></i><span>Theme</span></button>
+        <button class="mobile-nav-btn" type="button" id="mob-nav-more" data-action="more"><i class="fas fa-grip-horizontal"></i><span>More</span></button>
+    </div>
+</nav>
+<div id="mobile-action-sheet" class="mob-sheet" style="display:none;" role="dialog" aria-modal="true">
+    <div class="mob-sheet-backdrop" id="mob-sheet-backdrop"></div>
+    <div class="mob-sheet-panel">
+        <div class="mob-sheet-handle"><span></span></div>
+        <div class="mob-sheet-section"><div class="mob-sheet-label">Quick Actions</div><div class="mob-sheet-grid">
+            <button class="mob-sheet-btn" type="button" id="mob-act-admin"><span class="mob-sheet-icon"><i class="fas fa-user-shield"></i></span><span>Admin View</span></button>
+            <button class="mob-sheet-btn" type="button" id="mob-act-theme"><span class="mob-sheet-icon"><i class="fas fa-palette"></i></span><span>Theme</span></button>
+            <button class="mob-sheet-btn" type="button" id="mob-act-profile"><span class="mob-sheet-icon"><i class="fas fa-user-circle"></i></span><span>Profile</span></button>
+            <button class="mob-sheet-btn" type="button" id="mob-act-lightmode"><span class="mob-sheet-icon"><i class="fas fa-sun"></i></span><span>Light Mode</span></button>
+        </div></div>
+        <!-- Dynamic role-aware navigation will be injected here -->
+        <div id="mob-sheet-dynamic-nav"></div>
+        <div class="mob-sheet-footer"><button class="mob-sheet-close-btn" type="button" id="mob-sheet-close"><i class="fas fa-times"></i> Close</button></div>
+    </div>
+</div>
+<script>
+window.__KIU_STANDALONE_MOBILE_SHELL_CONFIG = {
+    activeTarget: 'library',
+    adminVisibleRoles: ['admin', 'student_service', 'professor', 'ta'],
+    navByRole: {
+        student: [
+            {
+                group: 'Core',
+                items: [['home', 'Dashboard', 'fas fa-th-large'], ['lms', 'LMS', 'fas fa-book-reader'], ['timetable', 'Timetable', 'fas fa-chalkboard'], ['registration', 'Registration', 'fas fa-check-square']]
+            },
+            {
+                group: 'Records',
+                items: [['programs', 'Programs', 'fas fa-file-signature'], ['study-card', 'Study Card', 'far fa-address-card'], ['personal-data', 'Personal Data', 'far fa-user'], ['gradebook', 'Gradebook', 'fas fa-chart-bar']]
+            },
+            {
+                group: 'Support',
+                items: [['chancellery', 'E-Chancellery', 'fas fa-desktop'], ['student-service', 'Student Service', 'fas fa-headset'], ['library', 'Library', 'fas fa-book'], ['social', 'Social', 'fas fa-comments']]
+            }
+        ],
+        professor: [
+            {
+                group: 'Faculty',
+                items: [['home', 'Dashboard', 'fas fa-th-large'], ['timetable', 'Schedule', 'fas fa-calendar-week'], ['lms', 'LMS', 'fas fa-book-reader'], ['faculty-gradebook', 'Gradebook', 'fas fa-chart-bar']]
+            },
+            {
+                group: 'Campus',
+                items: [['library', 'Library', 'fas fa-book'], ['orders', 'Orders', 'fas fa-book-open'], ['social', 'Social', 'fas fa-comments'], ['chancellery', 'Appeals', 'fas fa-inbox']]
+            }
+        ],
+        ta: [
+            {
+                group: 'Faculty',
+                items: [['home', 'Dashboard', 'fas fa-th-large'], ['timetable', 'Schedule', 'fas fa-calendar-week'], ['lms', 'LMS', 'fas fa-book-reader']]
+            },
+            {
+                group: 'Support',
+                items: [['library', 'Library', 'fas fa-book'], ['orders', 'Orders', 'fas fa-book-open'], ['social', 'Social', 'fas fa-comments'], ['chancellery', 'Appeals', 'fas fa-inbox']]
+            }
+        ],
+        admin: [
+            {
+                group: 'Control',
+                items: [['home', 'Dashboard', 'fas fa-hammer'], ['admin-tools', 'Admin Tools', 'fas fa-layer-group'], ['admin-scheduler', 'Scheduler', 'fas fa-calendar-plus'], ['staff', 'Staff', 'fas fa-users-cog'], ['students-admin', 'Students', 'fas fa-user-graduate']]
+            },
+            {
+                group: 'Systems',
+                items: [['library', 'Library', 'fas fa-book'], ['orders', 'Orders', 'fas fa-book-open'], ['social', 'Social', 'fas fa-comments']]
+            }
+        ],
+        student_service: [
+            {
+                group: 'Service',
+                items: [['home', 'Dashboard', 'fas fa-th-large'], ['student-service', 'Inbox', 'fas fa-inbox'], ['orders', 'Orders', 'fas fa-book-open'], ['library', 'Library', 'fas fa-book']]
+            },
+            {
+                group: 'Campus',
+                items: [['social', 'Social', 'fas fa-comments']]
+            }
+        ]
+    }
+};
+</script>
+<script defer src="assets/js/pages/standalone-mobile-shell.js?v=20260520-admin-library-mobile1"></script>
+</body>
+</html>
+
+
+
+
+
+
+

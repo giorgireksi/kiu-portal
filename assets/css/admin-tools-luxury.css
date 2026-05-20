@@ -1,0 +1,1073 @@
+/*
+ * ADMIN TOOLS LUXURY DESIGN SYSTEM
+ * ═════════════════════════════════════════════════════════════════════════════════
+ * 
+ * This stylesheet provides comprehensive styling for admin-tools.html
+ * to match the luxury design system from index-luxury.css
+ * 
+ * Includes:
+ * - Full dark/light mode support
+ * - Proper glass-morphism effects on interactive elements
+ * - CSS variable-based styling (no hardcoded rgba values)
+ * - WCAG AA accessibility compliance
+ * - Transparency slider control integration
+ * 
+ * DO NOT use this file in other admin pages. Import index-luxury.css instead.
+ */
+
+/* ═════════════════════════════════════════════════════════════════════════════════
+   DARK MODE (DEFAULT) - ALL COMPONENTS
+   ═════════════════════════════════════════════════════════════════════════════════ */
+
+body.role-admin.lux-route-admin-tools,
+body.role-student.lux-route-admin-tools {
+    --lux-panel-alpha: 0.72;
+    --lux-glass-alpha: 0.10;
+    --lux-glass-blur: 24px;
+}
+
+body.lux-light-mode.role-admin.lux-route-admin-tools,
+body.lux-light-mode.role-student.lux-route-admin-tools {
+    --lux-text: #201912;
+    --lux-text-muted: rgba(32, 25, 18, 0.66);
+    --lux-text-soft: rgba(32, 25, 18, 0.36);
+    --lux-surface: #ffffff;
+    --lux-surface-2: #f5f1ea;
+    --lux-surface-3: #ece6db;
+    --lux-border: rgba(48, 34, 22, 0.10);
+    --lux-border-strong: rgba(48, 34, 22, 0.18);
+    --lux-panel-alpha: 0.72;
+    --lux-glass-alpha: 0.10;
+    --lux-glass-blur: 16px;
+}
+
+/* Hero Section Styling */
+@media (min-width: 1025px) {
+    body.lux-route-admin-tools #app-content {
+        margin-left: var(--lux-sidebar-width) !important;
+        width: calc(100% - var(--lux-sidebar-width)) !important;
+        max-width: calc(100% - var(--lux-sidebar-width)) !important;
+        padding-left: 0 !important;
+    }
+}
+
+body.lux-unified-shell.lux-route-admin-tools .lux-admin-tools-hero {
+    background: linear-gradient(
+        135deg,
+        rgba(var(--lux-shell-start-rgb), calc(var(--lux-panel-alpha, 0.72) * 0.96)),
+        rgba(var(--lux-shell-end-rgb), calc(var(--lux-panel-alpha, 0.72) * 0.82))
+    ) !important;
+    border: 1px solid rgba(255, 255, 255, calc(var(--lux-glass-alpha, 0.1) * 1.2)) !important;
+    box-shadow:
+        0 20px 52px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, calc(var(--lux-glass-alpha, 0.1) * 1.5)) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+body.lux-unified-shell.lux-route-admin-tools .lux-hero-main h1 {
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.32px;
+    color: var(--lux-text) !important;
+}
+
+body.lux-unified-shell.lux-route-admin-tools .lux-hero-main > p {
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--lux-text-muted) !important;
+    margin-top: 12px;
+    margin-bottom: 18px;
+}
+
+body.lux-unified-shell.lux-route-admin-tools .lux-kicker {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--lux-accent) !important;
+    margin-bottom: 12px;
+}
+
+/* Pill/Badge System */
+body.lux-unified-shell.lux-route-admin-tools .lux-pill-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+}
+
+body.lux-unified-shell.lux-route-admin-tools .lux-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--lux-accent) !important;
+    background: rgba(var(--lux-accent-rgb), calc(var(--lux-glass-alpha, 0.1) * 1.8)) !important;
+    border: 1px solid rgba(var(--lux-accent-rgb), calc(var(--lux-glass-alpha, 0.1) * 3)) !important;
+    border-radius: 24px;
+}
+
+/* Hero Actions (Button Group) */
+body.lux-unified-shell.lux-route-admin-tools .lux-hero-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 18px;
+}
+
+body.lux-unified-shell.lux-route-admin-tools .lux-primary-btn {
+    padding: 12px 24px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.32px;
+    color: #fff8ef !important;
+    background: linear-gradient(
+        135deg,
+        rgba(var(--lux-accent-rgb), 0.96),
+        rgba(var(--lux-home-secondary-rgb), 0.88)
+    ) !important;
+    border: none !important;
+    border-radius: 12px;
+    box-shadow: 0 16px 30px rgba(var(--lux-accent-rgb), 0.28) !important;
+    cursor: pointer;
+    transition: background 200ms cubic-bezier(0.4, 0, 0.2, 1),
+        box-shadow 200ms cubic-bezier(0.4, 0, 0.2, 1),
+        transform 200ms cubic-bezier(0.4, 0, 0.2, 1),
+        opacity 200ms cubic-bezier(0.4, 0, 0.2, 1);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+body.lux-unified-shell.lux-route-admin-tools .lux-primary-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 20px 40px rgba(var(--lux-accent-rgb), 0.36) !important;
+}
+
+body.lux-unified-shell.lux-route-admin-tools .lux-primary-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 12px 20px rgba(var(--lux-accent-rgb), 0.22) !important;
+}
+
+body.lux-unified-shell.lux-route-admin-tools .lux-secondary-btn {
+    padding: 12px 24px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.32px;
+    color: var(--lux-text) !important;
+    background: rgba(var(--lux-accent-rgb), calc(var(--lux-glass-alpha, 0.1) * 1.2)) !important;
+    border: 1px solid rgba(var(--lux-accent-rgb), calc(var(--lux-glass-alpha, 0.1) * 3)) !important;
+    border-radius: 12px;
+    box-shadow: none !important;
+    cursor: pointer;
+    transition: background 200ms cubic-bezier(0.4, 0, 0.2, 1),
+        border-color 200ms cubic-bezier(0.4, 0, 0.2, 1),
+        color 200ms cubic-bezier(0.4, 0, 0.2, 1),
+        transform 200ms cubic-bezier(0.4, 0, 0.2, 1),
+        opacity 200ms cubic-bezier(0.4, 0, 0.2, 1);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+body.lux-unified-shell.lux-route-admin-tools .lux-secondary-btn:hover {
+    background: rgba(var(--lux-accent-rgb), calc(var(--lux-glass-alpha, 0.1) * 2)) !important;
+    transform: translateY(-1px);
+}
+
+body.lux-unified-shell.lux-route-admin-tools .lux-ghost-btn {
+    padding: 12px 24px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.32px;
+    color: var(--lux-text) !important;
+    background: transparent !important;
+    border: 1px solid rgba(255, 255, 255, calc(var(--lux-glass-alpha, 0.1) * 1.2)) !important;
+    border-radius: 12px;
+    box-shadow: none !important;
+    cursor: pointer;
+    transition: background 200ms cubic-bezier(0.4, 0, 0.2, 1),
+        border-color 200ms cubic-bezier(0.4, 0, 0.2, 1),
+        color 200ms cubic-bezier(0.4, 0, 0.2, 1),
+        transform 200ms cubic-bezier(0.4, 0, 0.2, 1),
+        opacity 200ms cubic-bezier(0.4, 0, 0.2, 1);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+body.lux-unified-shell.lux-route-admin-tools .lux-ghost-btn:hover {
+    background: rgba(255, 255, 255, calc(var(--lux-glass-alpha, 0.1) * 0.6)) !important;
+    border-color: rgba(255, 255, 255, calc(var(--lux-glass-alpha, 0.1) * 2)) !important;
+}
+
+/* Hero Side Panel (Campus Overview) */
+body.lux-unified-shell.lux-route-admin-tools .lux-hero-side {
+    background: rgba(255, 255, 255, calc(var(--lux-glass-alpha, 0.1) * 0.8)) !important;
+    border: 1px solid rgba(255, 255, 255, calc(var(--lux-glass-alpha, 0.1) * 1.2)) !important;
+    border-radius: 16px;
+    padding: 18px;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, calc(var(--lux-glass-alpha, 0.1) * 1.5)) !important;
+}
+
+body.lux-unified-shell.lux-route-admin-tools .lux-hero-side-head {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, calc(var(--lux-glass-alpha, 0.1) * 1.2));
+}
+
+body.lux-unified-shell.lux-route-admin-tools .lux-hero-side-head strong {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--lux-text) !important;
+}
+
+body.lux-unified-shell.lux-route-admin-tools .lux-hero-side-head span {
+    font-size: 11px;
+    color: var(--lux-text-soft) !important;
+}
+
+body.lux-unified-shell.lux-route-admin-tools .lux-hero-signal-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+body.lux-unified-shell.lux-route-admin-tools .lux-hero-signal {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+body.lux-unified-shell.lux-route-admin-tools .lux-hero-signal > span {
+    font-size: 11px;
+    color: var(--lux-text-soft) !important;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 500;
+}
+
+body.lux-unified-shell.lux-route-admin-tools .lux-hero-signal > strong {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--lux-accent) !important;
+    letter-spacing: -0.2px;
+}
+
+body.lux-unified-shell.lux-route-admin-tools .lux-hero-signal > em {
+    font-size: 11px;
+    color: var(--lux-text-muted) !important;
+    font-style: italic;
+}
+
+/* Main Panels (NO backdrop-filter on main panels - only interactive elements) */
+body.lux-unified-shell.lux-route-admin-tools .lux-panel {
+    background: linear-gradient(
+        180deg,
+        rgba(14, 20, 33, calc(var(--lux-panel-alpha, 0.72) * 0.94)),
+        rgba(8, 12, 21, calc(var(--lux-panel-alpha, 0.72) * 0.72))
+    ) !important;
+    border: 1px solid rgba(255, 255, 255, calc(var(--lux-glass-alpha, 0.1) * 1)) !important;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 20px 52px rgba(0, 0, 0, 0.24),
+        inset 0 1px 0 rgba(255, 255, 255, calc(var(--lux-glass-alpha, 0.1) * 0.8)) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    color: var(--lux-text) !important;
+}
+
+/* Card Head (Section Titles) */
+body.lux-unified-shell.lux-route-admin-tools .lux-card-head {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 16px;
+}
+
+body.lux-unified-shell.lux-route-admin-tools .lux-card-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--lux-text) !important;
+    letter-spacing: -0.18px;
+}
+
+body.lux-unified-shell.lux-route-admin-tools .lux-card-meta {
+    font-size: 13px;
+    color: var(--lux-text-muted) !important;
+    font-weight: 500;
+}
+
+/* Two-Column Layout */
+body.lux-unified-shell.lux-route-admin-tools .lux-home-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-top: 24px;
+}
+
+@media (max-width: 1200px) {
+    body.lux-unified-shell.lux-route-admin-tools .lux-home-columns {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Forms & Controls */
+body.lux-unified-shell.lux-route-admin-tools .lux-field-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 14px;
+}
+
+body.lux-unified-shell.lux-route-admin-tools .lux-control {
+    padding: 12px 14px;
+    font-size: 13px;
+    font-family: inherit;
+    color: var(--lux-text) !important;
+    background: rgba(255, 255, 255, calc(var(--lux-glass-alpha, 0.1) * 1)) !important;
+    border: 1px solid rgba(255, 255, 255, calc(var(--lux-glass-alpha, 0.1) * 1.2)) !important;
+    border-radius: 10px;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+    transition: background 150ms ease,
+        border-color 150ms ease,
+        box-shadow 150ms ease,
+        color 150ms ease;
+}
+
+body.lux-unified-shell.lux-route-admin-tools .lux-control::placeholder {
+    color: var(--lux-text-soft) !important;
+}
+
+body.lux-unified-shell.lux-route-admin-tools .lux-control:focus {
+    outline: none;
+    border-color: rgba(var(--lux-accent-rgb), 0.5) !important;
+    background: rgba(255, 255, 255, calc(var(--lux-glass-alpha, 0.1) * 1.4)) !important;
+    box-shadow:
+        inset 0 1px 2px rgba(0, 0, 0, 0.1),
+        0 0 0 3px rgba(var(--lux-accent-rgb), 0.1) !important;
+}
+
+/* Checkboxes & Radio Buttons */
+body.lux-unified-shell.lux-route-admin-tools label[role="checkbox"] input[type="checkbox"],
+body.lux-unified-shell.lux-route-admin-tools input[type="checkbox"],
+body.lux-unified-shell.lux-route-admin-tools input[type="radio"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: var(--lux-accent) !important;
+}
+
+/* Lists & Search Results */
+body.lux-unified-shell.lux-route-admin-tools .lux-list {
+    background: rgba(255, 255, 255, calc(var(--lux-glass-alpha, 0.1) * 0.6)) !important;
+    border: 1px solid rgba(255, 255, 255, calc(var(--lux-glass-alpha, 0.1) * 1)) !important;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+body.lux-unified-shell.lux-route-admin-tools .lux-list-item {
+    padding: 12px;
+    font-size: 13px;
+    color: var(--lux-text) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, calc(var(--lux-glass-alpha, 0.1) * 0.8));
+    cursor: pointer;
+    transition: background 150ms ease;
+}
+
+body.lux-unified-shell.lux-route-admin-tools .lux-list-item:last-child {
+    border-bottom: none;
+}
+
+body.lux-unified-shell.lux-route-admin-tools .lux-list-item:hover {
+    background: rgba(255, 255, 255, calc(var(--lux-glass-alpha, 0.1) * 1.2)) !important;
+}
+
+/* Subcards (Provision Buttons) */
+body.lux-unified-shell.lux-route-admin-tools .lux-subcards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+}
+
+body.lux-unified-shell.lux-route-admin-tools .lux-subcard {
+    padding: 20px;
+    background: rgba(255, 255, 255, calc(var(--lux-glass-alpha, 0.1) * 1)) !important;
+    border: 1px solid rgba(255, 255, 255, calc(var(--lux-glass-alpha, 0.1) * 1.2)) !important;
+    border-radius: 12px;
+    box-shadow: none !important;
+    cursor: pointer;
+    transition: background 200ms ease,
+        border-color 200ms ease,
+        box-shadow 200ms ease,
+        color 200ms ease,
+        transform 200ms ease,
+        opacity 200ms ease;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+    text-align: center;
+    color: var(--lux-text) !important;
+    font-size: 13px;
+}
+
+body.lux-unified-shell.lux-route-admin-tools .lux-subcard i {
+    font-size: 28px;
+    color: var(--lux-accent) !important;
+}
+
+body.lux-unified-shell.lux-route-admin-tools .lux-subcard strong {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--lux-text) !important;
+}
+
+body.lux-unified-shell.lux-route-admin-tools .lux-subcard span {
+    font-size: 12px;
+    color: var(--lux-text-muted) !important;
+}
+
+body.lux-unified-shell.lux-route-admin-tools .lux-subcard:hover {
+    background: rgba(255, 255, 255, calc(var(--lux-glass-alpha, 0.1) * 1.5)) !important;
+    border-color: rgba(var(--lux-accent-rgb), 0.3) !important;
+    transform: translateY(-2px);
+}
+
+/* Tabs */
+body.lux-unified-shell.lux-route-admin-tools .admin-reg-tab {
+    padding: 10px 16px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--lux-text-muted) !important;
+    background: transparent !important;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    transition: background 150ms ease,
+        border-color 150ms ease,
+        color 150ms ease,
+        box-shadow 150ms ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+body.lux-unified-shell.lux-route-admin-tools .admin-reg-tab:hover {
+    color: var(--lux-text) !important;
+}
+
+body.lux-unified-shell.lux-route-admin-tools .admin-reg-tab.is-active {
+    color: var(--lux-accent) !important;
+    border-bottom-color: var(--lux-accent) !important;
+}
+
+/* Modal Overlays (with glass-morphism) */
+body.lux-unified-shell.lux-route-admin-tools .modal-overlay {
+    background: rgba(0, 0, 0, 0.4) !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+}
+
+body.lux-unified-shell.lux-route-admin-tools .modal-content {
+    background: linear-gradient(
+        180deg,
+        rgba(var(--lux-topbar-tint-rgb), calc(var(--lux-glass-alpha, 0.1) * 9.4)),
+        rgba(8, 12, 21, calc(var(--lux-glass-alpha, 0.1) * 7.2))
+    ) !important;
+    border: 1px solid rgba(255, 255, 255, calc(var(--lux-glass-alpha, 0.1) * 1.2)) !important;
+    border-radius: 16px;
+    box-shadow: 0 28px 72px rgba(0, 0, 0, 0.42),
+        inset 0 1px 0 rgba(255, 255, 255, calc(var(--lux-glass-alpha, 0.1) * 0.8)) !important;
+    backdrop-filter: blur(16px) saturate(120%) !important;
+    -webkit-backdrop-filter: blur(16px) saturate(120%) !important;
+}
+
+body.lux-unified-shell.lux-route-admin-tools .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, calc(var(--lux-glass-alpha, 0.1) * 1));
+    margin-bottom: 16px;
+}
+
+body.lux-unified-shell.lux-route-admin-tools .modal-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--lux-text) !important;
+}
+
+body.lux-unified-shell.lux-route-admin-tools .modal-close {
+    font-size: 18px;
+    color: var(--lux-text-muted) !important;
+    cursor: pointer;
+    transition: color 150ms ease;
+}
+
+body.lux-unified-shell.lux-route-admin-tools .modal-close:hover {
+    color: var(--lux-text) !important;
+}
+
+body.lux-unified-shell.lux-route-admin-tools .modal-body {
+    padding: 16px 24px;
+    font-size: 13px;
+    color: var(--lux-text) !important;
+}
+
+body.lux-unified-shell.lux-route-admin-tools .modal-footer {
+    padding: 16px 24px;
+    border-top: 1px solid rgba(255, 255, 255, calc(var(--lux-glass-alpha, 0.1) * 1));
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+/* Tables */
+body.lux-unified-shell.lux-route-admin-tools .kiu-table {
+    background: transparent !important;
+    border-collapse: collapse;
+    width: 100%;
+    color: var(--lux-text) !important;
+}
+
+body.lux-unified-shell.lux-route-admin-tools .kiu-table thead {
+    background: rgba(255, 255, 255, calc(var(--lux-glass-alpha, 0.1) * 0.5)) !important;
+}
+
+body.lux-unified-shell.lux-route-admin-tools .kiu-table thead th {
+    padding: 12px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--lux-text-soft) !important;
+    border: 1px solid rgba(255, 255, 255, calc(var(--lux-glass-alpha, 0.1) * 1)) !important;
+    text-align: left;
+}
+
+body.lux-unified-shell.lux-route-admin-tools .kiu-table tbody tr {
+    border: 1px solid rgba(255, 255, 255, calc(var(--lux-glass-alpha, 0.1) * 0.8)) !important;
+    transition: background 150ms ease;
+}
+
+body.lux-unified-shell.lux-route-admin-tools .kiu-table tbody tr:hover {
+    background: rgba(255, 255, 255, calc(var(--lux-glass-alpha, 0.1) * 0.8)) !important;
+}
+
+body.lux-unified-shell.lux-route-admin-tools .kiu-table td {
+    padding: 12px 14px;
+    font-size: 12px;
+    color: var(--lux-text) !important;
+}
+
+/* Existing Button Styles (from base.css, adjusted for luxury) */
+body.lux-unified-shell.lux-route-admin-tools .kiu-btn-blue,
+body.lux-unified-shell.lux-route-admin-tools .kiu-btn-primary,
+body.lux-unified-shell.lux-route-admin-tools .kiu-btn-solid {
+    background: linear-gradient(
+        135deg,
+        rgba(var(--lux-accent-rgb), 0.96),
+        rgba(var(--lux-home-secondary-rgb), 0.88)
+    ) !important;
+    border: none !important;
+    color: #fff8ef !important;
+    box-shadow: 0 16px 30px rgba(var(--lux-accent-rgb), 0.28) !important;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 200ms ease,
+        box-shadow 200ms ease,
+        transform 200ms ease,
+        opacity 200ms ease;
+}
+
+body.lux-unified-shell.lux-route-admin-tools .kiu-btn-blue:hover,
+body.lux-unified-shell.lux-route-admin-tools .kiu-btn-primary:hover,
+body.lux-unified-shell.lux-route-admin-tools .kiu-btn-solid:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 20px 40px rgba(var(--lux-accent-rgb), 0.36) !important;
+}
+
+body.lux-unified-shell.lux-route-admin-tools .kiu-btn-outline,
+body.lux-unified-shell.lux-route-admin-tools .kiu-btn {
+    background: rgba(255, 255, 255, calc(var(--lux-glass-alpha, 0.1) * 0.5)) !important;
+    border: 1px solid rgba(255, 255, 255, calc(var(--lux-glass-alpha, 0.1) * 1)) !important;
+    color: var(--lux-text) !important;
+    box-shadow: none !important;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 150ms ease,
+        border-color 150ms ease,
+        color 150ms ease,
+        box-shadow 150ms ease;
+}
+
+body.lux-unified-shell.lux-route-admin-tools .kiu-btn-outline:hover,
+body.lux-unified-shell.lux-route-admin-tools .kiu-btn:hover {
+    background: rgba(255, 255, 255, calc(var(--lux-glass-alpha, 0.1) * 1)) !important;
+    border-color: rgba(255, 255, 255, calc(var(--lux-glass-alpha, 0.1) * 2)) !important;
+}
+
+/* ═════════════════════════════════════════════════════════════════════════════════
+   LIGHT MODE - ALL COMPONENTS
+   ═════════════════════════════════════════════════════════════════════════════════ */
+
+body.lux-unified-shell.lux-light-mode.lux-route-admin-tools .lux-admin-tools-hero {
+    background: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, calc(var(--lux-panel-alpha, 0.72) * 0.98)),
+        rgba(245, 241, 234, calc(var(--lux-panel-alpha, 0.72) * 0.92))
+    ) !important;
+    border: 1px solid rgba(48, 34, 22, calc(var(--lux-glass-alpha, 0.1) * 0.8)) !important;
+    box-shadow:
+        0 20px 52px rgba(62, 42, 20, 0.12),
+        inset 0 1px 0 rgba(255, 255, 255, calc(var(--lux-glass-alpha, 0.1) * 2)) !important;
+}
+
+body.lux-unified-shell.lux-light-mode.lux-route-admin-tools .lux-hero-main h1 {
+    color: var(--lux-text) !important;
+}
+
+body.lux-unified-shell.lux-light-mode.lux-route-admin-tools .lux-hero-main > p {
+    color: var(--lux-text-muted) !important;
+}
+
+body.lux-unified-shell.lux-light-mode.lux-route-admin-tools .lux-kicker {
+    color: var(--lux-accent) !important;
+}
+
+body.lux-unified-shell.lux-light-mode.lux-route-admin-tools .lux-pill {
+    color: var(--lux-accent) !important;
+    background: rgba(var(--lux-accent-rgb), 0.08) !important;
+    border: 1px solid rgba(var(--lux-accent-rgb), 0.24) !important;
+}
+
+body.lux-unified-shell.lux-light-mode.lux-route-admin-tools .lux-hero-side {
+    background: rgba(255, 255, 255, 0.7) !important;
+    border: 1px solid rgba(48, 34, 22, 0.14) !important;
+}
+
+body.lux-unified-shell.lux-light-mode.lux-route-admin-tools .lux-hero-side-head {
+    border-bottom: 1px solid rgba(48, 34, 22, 0.1);
+}
+
+body.lux-unified-shell.lux-light-mode.lux-route-admin-tools .lux-hero-side-head strong {
+    color: var(--lux-text) !important;
+}
+
+body.lux-unified-shell.lux-light-mode.lux-route-admin-tools .lux-hero-side-head span {
+    color: var(--lux-text-soft) !important;
+}
+
+body.lux-unified-shell.lux-light-mode.lux-route-admin-tools .lux-hero-signal > span {
+    color: var(--lux-text-soft) !important;
+}
+
+body.lux-unified-shell.lux-light-mode.lux-route-admin-tools .lux-hero-signal > strong {
+    color: var(--lux-accent) !important;
+}
+
+body.lux-unified-shell.lux-light-mode.lux-route-admin-tools .lux-hero-signal > em {
+    color: var(--lux-text-muted) !important;
+}
+
+body.lux-unified-shell.lux-light-mode.lux-route-admin-tools .lux-panel {
+    background: linear-gradient(
+        180deg,
+        rgba(255, 255, 255, calc(var(--lux-panel-alpha, 0.72) * 0.98)),
+        rgba(245, 241, 234, calc(var(--lux-panel-alpha, 0.72) * 0.88))
+    ) !important;
+    border: 1px solid rgba(48, 34, 22, calc(var(--lux-glass-alpha, 0.1) * 0.8)) !important;
+    box-shadow:
+        0 20px 52px rgba(62, 42, 20, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, calc(var(--lux-glass-alpha, 0.1) * 1.8)) !important;
+}
+
+body.lux-unified-shell.lux-light-mode.lux-route-admin-tools .lux-card-title {
+    color: var(--lux-text) !important;
+}
+
+body.lux-unified-shell.lux-light-mode.lux-route-admin-tools .lux-card-meta {
+    color: var(--lux-text-muted) !important;
+}
+
+body.lux-unified-shell.lux-light-mode.lux-route-admin-tools .lux-control {
+    color: var(--lux-text) !important;
+    background: rgba(48, 34, 22, calc(var(--lux-glass-alpha, 0.1) * 0.4)) !important;
+    border: 1px solid rgba(48, 34, 22, calc(var(--lux-glass-alpha, 0.1) * 0.8)) !important;
+}
+
+body.lux-unified-shell.lux-light-mode.lux-route-admin-tools .lux-control::placeholder {
+    color: var(--lux-text-soft) !important;
+}
+
+body.lux-unified-shell.lux-light-mode.lux-route-admin-tools .lux-control:focus {
+    border-color: rgba(var(--lux-accent-rgb), 0.4) !important;
+    background: rgba(48, 34, 22, calc(var(--lux-glass-alpha, 0.1) * 0.7)) !important;
+    box-shadow:
+        inset 0 1px 2px rgba(0, 0, 0, 0.04),
+        0 0 0 3px rgba(var(--lux-accent-rgb), 0.08) !important;
+}
+
+body.lux-unified-shell.lux-light-mode.lux-route-admin-tools .lux-list {
+    background: rgba(48, 34, 22, calc(var(--lux-glass-alpha, 0.1) * 0.3)) !important;
+    border: 1px solid rgba(48, 34, 22, calc(var(--lux-glass-alpha, 0.1) * 0.7)) !important;
+}
+
+body.lux-unified-shell.lux-light-mode.lux-route-admin-tools .lux-list-item {
+    color: var(--lux-text) !important;
+    border-bottom: 1px solid rgba(48, 34, 22, calc(var(--lux-glass-alpha, 0.1) * 0.6));
+}
+
+body.lux-unified-shell.lux-light-mode.lux-route-admin-tools .lux-list-item:hover {
+    background: rgba(48, 34, 22, calc(var(--lux-glass-alpha, 0.1) * 0.5)) !important;
+}
+
+body.lux-unified-shell.lux-light-mode.lux-route-admin-tools .lux-subcard {
+    background: rgba(48, 34, 22, calc(var(--lux-glass-alpha, 0.1) * 0.4)) !important;
+    border: 1px solid rgba(48, 34, 22, calc(var(--lux-glass-alpha, 0.1) * 0.8)) !important;
+    color: var(--lux-text) !important;
+}
+
+body.lux-unified-shell.lux-light-mode.lux-route-admin-tools .lux-subcard i {
+    color: var(--lux-accent) !important;
+}
+
+body.lux-unified-shell.lux-light-mode.lux-route-admin-tools .lux-subcard strong {
+    color: var(--lux-text) !important;
+}
+
+body.lux-unified-shell.lux-light-mode.lux-route-admin-tools .lux-subcard span {
+    color: var(--lux-text-muted) !important;
+}
+
+body.lux-unified-shell.lux-light-mode.lux-route-admin-tools .lux-subcard:hover {
+    background: rgba(48, 34, 22, calc(var(--lux-glass-alpha, 0.1) * 0.7)) !important;
+    border-color: rgba(var(--lux-accent-rgb), 0.2) !important;
+}
+
+body.lux-unified-shell.lux-light-mode.lux-route-admin-tools .admin-reg-tab {
+    color: var(--lux-text-muted) !important;
+}
+
+body.lux-unified-shell.lux-light-mode.lux-route-admin-tools .admin-reg-tab:hover {
+    color: var(--lux-text) !important;
+}
+
+body.lux-unified-shell.lux-light-mode.lux-route-admin-tools .admin-reg-tab.is-active {
+    color: var(--lux-accent) !important;
+}
+
+body.lux-unified-shell.lux-light-mode.lux-route-admin-tools .modal-content {
+    background: linear-gradient(
+        180deg,
+        rgba(255, 255, 255, calc(var(--lux-glass-alpha, 0.1) * 9.8)),
+        rgba(245, 241, 234, calc(var(--lux-glass-alpha, 0.1) * 8.8))
+    ) !important;
+    border: 1px solid rgba(48, 34, 22, calc(var(--lux-glass-alpha, 0.1) * 0.8)) !important;
+    box-shadow:
+        0 28px 72px rgba(62, 42, 20, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, calc(var(--lux-glass-alpha, 0.1) * 1.8)) !important;
+}
+
+body.lux-unified-shell.lux-light-mode.lux-route-admin-tools .modal-header {
+    border-bottom: 1px solid rgba(48, 34, 22, calc(var(--lux-glass-alpha, 0.1) * 0.7));
+}
+
+body.lux-unified-shell.lux-light-mode.lux-route-admin-tools .modal-header h3 {
+    color: var(--lux-text) !important;
+}
+
+body.lux-unified-shell.lux-light-mode.lux-route-admin-tools .modal-close {
+    color: var(--lux-text-muted) !important;
+}
+
+body.lux-unified-shell.lux-light-mode.lux-route-admin-tools .modal-close:hover {
+    color: var(--lux-text) !important;
+}
+
+body.lux-unified-shell.lux-light-mode.lux-route-admin-tools .modal-body {
+    color: var(--lux-text) !important;
+}
+
+body.lux-unified-shell.lux-light-mode.lux-route-admin-tools .modal-footer {
+    border-top: 1px solid rgba(48, 34, 22, calc(var(--lux-glass-alpha, 0.1) * 0.7));
+}
+
+body.lux-unified-shell.lux-light-mode.lux-route-admin-tools .kiu-table {
+    color: var(--lux-text) !important;
+}
+
+body.lux-unified-shell.lux-light-mode.lux-route-admin-tools .kiu-table thead {
+    background: rgba(48, 34, 22, calc(var(--lux-glass-alpha, 0.1) * 0.3)) !important;
+}
+
+body.lux-unified-shell.lux-light-mode.lux-route-admin-tools .kiu-table thead th {
+    color: var(--lux-text-soft) !important;
+    border: 1px solid rgba(48, 34, 22, calc(var(--lux-glass-alpha, 0.1) * 0.7)) !important;
+}
+
+body.lux-unified-shell.lux-light-mode.lux-route-admin-tools .kiu-table tbody tr {
+    border: 1px solid rgba(48, 34, 22, calc(var(--lux-glass-alpha, 0.1) * 0.6)) !important;
+}
+
+body.lux-unified-shell.lux-light-mode.lux-route-admin-tools .kiu-table tbody tr:hover {
+    background: rgba(48, 34, 22, calc(var(--lux-glass-alpha, 0.1) * 0.4)) !important;
+}
+
+body.lux-unified-shell.lux-light-mode.lux-route-admin-tools .kiu-table td {
+    color: var(--lux-text) !important;
+}
+
+body.lux-unified-shell.lux-light-mode.lux-route-admin-tools .kiu-btn-outline,
+body.lux-unified-shell.lux-light-mode.lux-route-admin-tools .kiu-btn {
+    background: rgba(48, 34, 22, calc(var(--lux-glass-alpha, 0.1) * 0.2)) !important;
+    border: 1px solid rgba(48, 34, 22, calc(var(--lux-glass-alpha, 0.1) * 0.7)) !important;
+    color: var(--lux-text) !important;
+}
+
+body.lux-unified-shell.lux-light-mode.lux-route-admin-tools .kiu-btn-outline:hover,
+body.lux-unified-shell.lux-light-mode.lux-route-admin-tools .kiu-btn:hover {
+    background: rgba(48, 34, 22, calc(var(--lux-glass-alpha, 0.1) * 0.5)) !important;
+    border-color: rgba(48, 34, 22, calc(var(--lux-glass-alpha, 0.1) * 1.2)) !important;
+}
+
+/* ═════════════════════════════════════════════════════════════════════════════════
+   RESPONSIVE DESIGN
+   ═════════════════════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+    body.lux-unified-shell.lux-route-admin-tools .lux-hero-main h1 {
+        font-size: 24px;
+    }
+
+    body.lux-unified-shell.lux-route-admin-tools .lux-hero-actions {
+        flex-direction: column;
+    }
+
+    body.lux-unified-shell.lux-route-admin-tools .lux-primary-btn,
+    body.lux-unified-shell.lux-route-admin-tools .lux-secondary-btn,
+    body.lux-unified-shell.lux-route-admin-tools .lux-ghost-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    body.lux-unified-shell.lux-route-admin-tools .lux-subcards {
+        grid-template-columns: 1fr;
+    }
+
+    body.lux-unified-shell.lux-route-admin-tools .lux-field-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ═════════════════════════════════════════════════════════════════════════════════
+   ACCESSIBILITY - FOCUS STATES & KEYBOARD NAVIGATION
+   ═════════════════════════════════════════════════════════════════════════════════ */
+
+/* High contrast focus states for keyboard navigation */
+body.lux-unified-shell.lux-route-admin-tools *:focus-visible {
+    outline: 2px solid var(--lux-accent);
+    outline-offset: 2px;
+}
+
+body.lux-unified-shell.lux-route-admin-tools button:focus-visible,
+body.lux-unified-shell.lux-route-admin-tools [role="button"]:focus-visible {
+    outline: 2px solid var(--lux-accent);
+    outline-offset: 2px;
+}
+
+/* Remove default outline for mouse users */
+body.lux-unified-shell.lux-route-admin-tools *:focus:not(:focus-visible) {
+    outline: none;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: more) {
+    body.lux-unified-shell.lux-route-admin-tools .lux-pill {
+        border-width: 2px;
+    }
+
+    body.lux-unified-shell.lux-route-admin-tools .lux-control {
+        border-width: 2px;
+    }
+
+    body.lux-unified-shell.lux-route-admin-tools .lux-subcard {
+        border-width: 2px;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    body.lux-unified-shell.lux-route-admin-tools * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+body.lux-route-admin-tools #lux-admin-tools-shell #admin-reg-content-container,
+body.lux-route-admin-tools #lux-admin-tools-shell #curriculum-library-modules-root {
+    contain: none !important;
+    transform: none !important;
+    will-change: auto !important;
+    backface-visibility: visible !important;
+}
+
+body.lux-route-admin-tools #lux-admin-tools-shell .lux-admin-tools-page .lux-primary-btn,
+body.lux-route-admin-tools #lux-admin-tools-shell .lux-admin-tools-page .lux-secondary-btn,
+body.lux-route-admin-tools #lux-admin-tools-shell .lux-admin-tools-page .lux-ghost-btn,
+body.lux-route-admin-tools #lux-admin-tools-shell .lux-admin-tools-page .kiu-btn-blue,
+body.lux-route-admin-tools #lux-admin-tools-shell .lux-admin-tools-page .kiu-btn-outline,
+body.lux-route-admin-tools #lux-admin-tools-shell .lux-admin-tools-page .admin-reg-tab,
+body.lux-route-admin-tools #lux-admin-tools-shell .lux-admin-tools-page .lux-subcard {
+    transform: none !important;
+    will-change: auto !important;
+    transition-property: background-color, color, border-color, box-shadow, opacity !important;
+}
+
+body.lux-route-admin-tools #lux-admin-tools-shell .lux-admin-tools-page .lux-primary-btn:hover,
+body.lux-route-admin-tools #lux-admin-tools-shell .lux-admin-tools-page .lux-secondary-btn:hover,
+body.lux-route-admin-tools #lux-admin-tools-shell .lux-admin-tools-page .lux-ghost-btn:hover,
+body.lux-route-admin-tools #lux-admin-tools-shell .lux-admin-tools-page .kiu-btn-blue:hover,
+body.lux-route-admin-tools #lux-admin-tools-shell .lux-admin-tools-page .kiu-btn-outline:hover,
+body.lux-route-admin-tools #lux-admin-tools-shell .lux-admin-tools-page .admin-reg-tab:hover,
+body.lux-route-admin-tools #lux-admin-tools-shell .lux-admin-tools-page .lux-subcard:hover {
+    transform: none !important;
+}
+
+/* Luxury theme fade pass: Admin Tools surfaces follow palette + opacity controls. */
+body.lux-route-admin-tools #lux-admin-tools-shell .lux-admin-tools-hero,
+body.lux-route-admin-tools #lux-admin-tools-shell .lux-admin-tools-page .lux-panel,
+body.lux-route-admin-tools #lux-admin-tools-shell .lux-admin-tools-page .lux-card,
+body.lux-route-admin-tools #lux-admin-tools-shell .lux-admin-tools-page .lux-admin-op-card,
+body.lux-route-admin-tools #lux-admin-tools-shell .lux-admin-tools-page .lux-admin-ops-panel,
+body.lux-route-admin-tools #lux-admin-tools-shell .lux-admin-tools-page .lux-admin-provision-card,
+body.lux-route-admin-tools #lux-admin-tools-shell #admin-reg-content-container,
+body.lux-route-admin-tools #lux-admin-tools-shell #curriculum-library-modules-root {
+    background:
+        radial-gradient(circle at 8% 0%, rgba(255, 255, 255, calc(var(--lux-transparency-alpha, .92) * .075)), transparent 32%),
+        radial-gradient(circle at 72% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, .92) * .24)), transparent 38%),
+        radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-transparency-alpha, .92) * .14)), transparent 38%),
+        linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, .92) * .10)), rgba(10, 15, 24, calc(var(--lux-transparency-alpha, .92) * .91)) 44%, rgba(7, 10, 18, calc(var(--lux-transparency-alpha, .92) * .84))) !important;
+    border-color: rgba(var(--lux-accent-rgb), .16) !important;
+    box-shadow: 0 24px 58px rgba(0, 0, 0, .24), inset 0 1px 0 rgba(255, 255, 255, .08) !important;
+    backdrop-filter: blur(var(--lux-transparency-blur, 18px)) saturate(var(--lux-transparency-saturate, 145%)) !important;
+    -webkit-backdrop-filter: blur(var(--lux-transparency-blur, 18px)) saturate(var(--lux-transparency-saturate, 145%)) !important;
+}
+
+body.lux-route-admin-tools #lux-admin-tools-shell .lux-admin-tools-page .lux-subcard,
+body.lux-route-admin-tools #lux-admin-tools-shell .lux-admin-tools-page .lux-stat-card,
+body.lux-route-admin-tools #lux-admin-tools-shell .lux-admin-tools-page .lux-grid-widget,
+body.lux-route-admin-tools #lux-admin-tools-shell .lux-admin-tools-page .admin-reg-tab {
+    background:
+        radial-gradient(circle at 12% 0%, rgba(255, 255, 255, calc(var(--lux-transparency-alpha, .92) * .055)), transparent 30%),
+        radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, .92) * .14)), transparent 34%),
+        linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, .92) * .065)), rgba(10, 15, 24, calc(var(--lux-transparency-alpha, .92) * .88)) 46%, rgba(7, 10, 18, calc(var(--lux-transparency-alpha, .92) * .80))) !important;
+    border-color: rgba(var(--lux-accent-rgb), .12) !important;
+    box-shadow: 0 14px 32px rgba(0, 0, 0, .18), inset 0 1px 0 rgba(255, 255, 255, .06) !important;
+    backdrop-filter: blur(var(--lux-transparency-blur, 18px)) saturate(var(--lux-transparency-saturate, 145%)) !important;
+    -webkit-backdrop-filter: blur(var(--lux-transparency-blur, 18px)) saturate(var(--lux-transparency-saturate, 145%)) !important;
+}
+
+body.lux-light-mode.lux-route-admin-tools #lux-admin-tools-shell .lux-admin-tools-hero,
+body.lux-light-mode.lux-route-admin-tools #lux-admin-tools-shell .lux-admin-tools-page .lux-panel,
+body.lux-light-mode.lux-route-admin-tools #lux-admin-tools-shell .lux-admin-tools-page .lux-card,
+body.lux-light-mode.lux-route-admin-tools #lux-admin-tools-shell .lux-admin-tools-page .lux-admin-op-card,
+body.lux-light-mode.lux-route-admin-tools #lux-admin-tools-shell .lux-admin-tools-page .lux-admin-ops-panel,
+body.lux-light-mode.lux-route-admin-tools #lux-admin-tools-shell .lux-admin-tools-page .lux-admin-provision-card,
+body.lux-light-mode.lux-route-admin-tools #lux-admin-tools-shell #admin-reg-content-container,
+body.lux-light-mode.lux-route-admin-tools #lux-admin-tools-shell #curriculum-library-modules-root {
+    background:
+        radial-gradient(circle at 8% 0%, rgba(255, 255, 255, calc(var(--lux-transparency-alpha, .86) * .88)), transparent 34%),
+        radial-gradient(circle at 72% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, .86) * .22)), transparent 38%),
+        radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-transparency-alpha, .86) * .13)), transparent 38%),
+        linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, .86) * .075)), rgba(255, 255, 255, calc(var(--lux-transparency-alpha, .86) * .88)) 44%, rgba(247, 241, 232, calc(var(--lux-transparency-alpha, .86) * .72))) !important;
+    border-color: rgba(var(--lux-accent-rgb), .14) !important;
+    box-shadow: 0 22px 48px rgba(var(--lux-glass-tint-rgb, 15, 23, 42), .12), inset 0 1px 0 rgba(255, 255, 255, .68) !important;
+}
+
+body.lux-light-mode.lux-route-admin-tools #lux-admin-tools-shell .lux-admin-tools-page .lux-subcard,
+body.lux-light-mode.lux-route-admin-tools #lux-admin-tools-shell .lux-admin-tools-page .lux-stat-card,
+body.lux-light-mode.lux-route-admin-tools #lux-admin-tools-shell .lux-admin-tools-page .lux-grid-widget,
+body.lux-light-mode.lux-route-admin-tools #lux-admin-tools-shell .lux-admin-tools-page .admin-reg-tab {
+    background:
+        radial-gradient(circle at 10% 0%, rgba(255, 255, 255, calc(var(--lux-transparency-alpha, .86) * .78)), transparent 32%),
+        radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, .86) * .14)), transparent 34%),
+        linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, .86) * .055)), rgba(255, 255, 255, calc(var(--lux-transparency-alpha, .86) * .82)) 46%, rgba(247, 241, 232, calc(var(--lux-transparency-alpha, .86) * .66))) !important;
+    border-color: rgba(var(--lux-accent-rgb), .11) !important;
+    box-shadow: 0 14px 30px rgba(var(--lux-glass-tint-rgb, 15, 23, 42), .10), inset 0 1px 0 rgba(255, 255, 255, .62) !important;
+}
+
+body[data-lux-performance='efficient'].lux-route-admin-tools .modal-overlay {
+    backdrop-filter: blur(6px) !important;
+    -webkit-backdrop-filter: blur(6px) !important;
+}
+
+body[data-lux-performance='efficient'].lux-route-admin-tools .modal-content {
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.30), inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
+    backdrop-filter: blur(10px) saturate(110%) !important;
+    -webkit-backdrop-filter: blur(10px) saturate(110%) !important;
+}
+
+body[data-lux-performance='efficient'].lux-route-admin-tools #lux-admin-tools-shell .lux-admin-tools-hero,
+body[data-lux-performance='efficient'].lux-route-admin-tools #lux-admin-tools-shell .lux-admin-tools-page .lux-panel,
+body[data-lux-performance='efficient'].lux-route-admin-tools #lux-admin-tools-shell .lux-admin-tools-page .lux-card,
+body[data-lux-performance='efficient'].lux-route-admin-tools #lux-admin-tools-shell .lux-admin-tools-page .lux-admin-op-card,
+body[data-lux-performance='efficient'].lux-route-admin-tools #lux-admin-tools-shell .lux-admin-tools-page .lux-admin-ops-panel,
+body[data-lux-performance='efficient'].lux-route-admin-tools #lux-admin-tools-shell .lux-admin-tools-page .lux-admin-provision-card,
+body[data-lux-performance='efficient'].lux-route-admin-tools #lux-admin-tools-shell #admin-reg-content-container,
+body[data-lux-performance='efficient'].lux-route-admin-tools #lux-admin-tools-shell #curriculum-library-modules-root {
+    box-shadow: 0 16px 34px rgba(0, 0, 0, .18), inset 0 1px 0 rgba(255, 255, 255, .06) !important;
+    backdrop-filter: blur(10px) saturate(118%) !important;
+    -webkit-backdrop-filter: blur(10px) saturate(118%) !important;
+}
+
+body[data-lux-performance='efficient'].lux-route-admin-tools #lux-admin-tools-shell .lux-admin-tools-page .lux-subcard,
+body[data-lux-performance='efficient'].lux-route-admin-tools #lux-admin-tools-shell .lux-admin-tools-page .lux-stat-card,
+body[data-lux-performance='efficient'].lux-route-admin-tools #lux-admin-tools-shell .lux-admin-tools-page .lux-grid-widget,
+body[data-lux-performance='efficient'].lux-route-admin-tools #lux-admin-tools-shell .lux-admin-tools-page .admin-reg-tab {
+    box-shadow: 0 10px 22px rgba(0, 0, 0, .14), inset 0 1px 0 rgba(255, 255, 255, .05) !important;
+    backdrop-filter: blur(8px) saturate(112%) !important;
+    -webkit-backdrop-filter: blur(8px) saturate(112%) !important;
+}
+
+body[data-lux-performance='efficient'].lux-light-mode.lux-route-admin-tools #lux-admin-tools-shell .lux-admin-tools-hero,
+body[data-lux-performance='efficient'].lux-light-mode.lux-route-admin-tools #lux-admin-tools-shell .lux-admin-tools-page .lux-panel,
+body[data-lux-performance='efficient'].lux-light-mode.lux-route-admin-tools #lux-admin-tools-shell .lux-admin-tools-page .lux-card,
+body[data-lux-performance='efficient'].lux-light-mode.lux-route-admin-tools #lux-admin-tools-shell .lux-admin-tools-page .lux-admin-op-card,
+body[data-lux-performance='efficient'].lux-light-mode.lux-route-admin-tools #lux-admin-tools-shell .lux-admin-tools-page .lux-admin-ops-panel,
+body[data-lux-performance='efficient'].lux-light-mode.lux-route-admin-tools #lux-admin-tools-shell .lux-admin-tools-page .lux-admin-provision-card,
+body[data-lux-performance='efficient'].lux-light-mode.lux-route-admin-tools #lux-admin-tools-shell #admin-reg-content-container,
+body[data-lux-performance='efficient'].lux-light-mode.lux-route-admin-tools #lux-admin-tools-shell #curriculum-library-modules-root {
+    box-shadow: 0 16px 32px rgba(var(--lux-glass-tint-rgb, 15, 23, 42), .08), inset 0 1px 0 rgba(255, 255, 255, .62) !important;
+}
+
+body[data-lux-performance='efficient'].lux-light-mode.lux-route-admin-tools #lux-admin-tools-shell .lux-admin-tools-page .lux-subcard,
+body[data-lux-performance='efficient'].lux-light-mode.lux-route-admin-tools #lux-admin-tools-shell .lux-admin-tools-page .lux-stat-card,
+body[data-lux-performance='efficient'].lux-light-mode.lux-route-admin-tools #lux-admin-tools-shell .lux-admin-tools-page .lux-grid-widget,
+body[data-lux-performance='efficient'].lux-light-mode.lux-route-admin-tools #lux-admin-tools-shell .lux-admin-tools-page .admin-reg-tab {
+    box-shadow: 0 10px 20px rgba(var(--lux-glass-tint-rgb, 15, 23, 42), .07), inset 0 1px 0 rgba(255, 255, 255, .58) !important;
+}
+
+body.lux-route-admin-tools #lux-admin-tools-shell .lux-admin-tools-page .lux-admin-op-card,
+body.lux-route-admin-tools #lux-admin-tools-shell .lux-admin-tools-page .lux-admin-ops-panel,
+body.lux-route-admin-tools #lux-admin-tools-shell .lux-admin-tools-page .lux-admin-provision-card,
+body.lux-route-admin-tools #lux-admin-tools-shell .lux-admin-tools-page .lux-subcard,
+body.lux-route-admin-tools #lux-admin-tools-shell .lux-admin-tools-page .lux-grid-widget,
+body.lux-route-admin-tools #lux-admin-tools-shell .lux-admin-tools-page .admin-reg-tab {
+    content-visibility: auto;
+    contain: layout style paint;
+    contain-intrinsic-size: auto 220px;
+}

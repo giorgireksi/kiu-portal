@@ -1,0 +1,14 @@
+node_modules
+.git
+.env
+.env.*
+!.env.example
+!.env.production.example
+backend/platform/.local-platform-state.json
+backend/platform/*.log
+kiu-realtime-bridge/uploads
+backups
+coverage
+*.tmp
+*.log
+admin-tools-standalone*.html

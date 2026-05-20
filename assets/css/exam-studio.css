@@ -1,0 +1,830 @@
+/* ═══════════════════════════════════════════════════
+   EXAM STUDIO — Premium UI System
+   ═══════════════════════════════════════════════════ */
+
+/* ── Status Colors ── */
+:root {
+    --ex-draft: #6366f1;
+    --ex-submitted: #3b82f6;
+    --ex-in-review: #8b5cf6;
+    --ex-returned: #f59e0b;
+    --ex-approved: #10b981;
+    --ex-live: #ef4444;
+    --ex-published: #06b6d4;
+    --ex-hard: #dc2626;
+    --ex-soft: #f59e0b;
+}
+
+/* ── Base ── */
+#admin-exams-root {
+    font-family: 'Inter', 'Noto Sans Georgian', system-ui, sans-serif;
+    color: var(--lux-text);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+/* ── Shell ── */
+.exams-shell-root {
+    margin-top: 24px;
+}
+
+#admin-exams-root .ex2-shell {
+    display: grid;
+    gap: 24px;
+    animation: exFadeIn .4s ease;
+}
+
+@keyframes exFadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes exSlideIn {
+    from { opacity: 0; transform: translateX(40px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes exPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,.4); }
+    50% { box-shadow: 0 0 0 8px rgba(239,68,68,0); }
+}
+
+@keyframes exStagger {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Compact Stats Row (replaces hero) ── */
+#admin-exams-root .ex2-stats-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+}
+
+#admin-exams-root .ex2-stat-card {
+    padding: 18px 20px;
+    border-radius: 18px;
+    border: 1px solid var(--lux-border);
+    background: var(--lux-surface);
+    backdrop-filter: blur(12px);
+    transition: transform .2s, box-shadow .2s;
+}
+
+#admin-exams-root .ex2-stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,.12);
+}
+
+#admin-exams-root .ex2-stat-card strong {
+    display: block;
+    font-size: 28px;
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -1px;
+}
+
+#admin-exams-root .ex2-stat-card span {
+    font-size: 12px;
+    color: var(--lux-text-muted);
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    font-weight: 600;
+}
+
+#admin-exams-root .ex2-stat-card.is-draft strong { color: var(--ex-draft); }
+#admin-exams-root .ex2-stat-card.is-pending strong { color: var(--ex-submitted); }
+#admin-exams-root .ex2-stat-card.is-returned strong { color: var(--ex-returned); }
+#admin-exams-root .ex2-stat-card.is-approved strong { color: var(--ex-approved); }
+#admin-exams-root .ex2-stat-card.is-live strong { color: var(--ex-live); }
+#admin-exams-root .ex2-stat-card.is-live { animation: exPulse 2s infinite; }
+
+/* ── Command Bar ── */
+#admin-exams-root .ex2-command-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+#admin-exams-root .ex2-command-bar h1 {
+    font-size: 22px;
+    font-weight: 800;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+#admin-exams-root .ex2-command-bar h1 i {
+    opacity: .5;
+    font-size: 18px;
+}
+
+/* ── Tab Bar (with icons + badges) ── */
+#admin-exams-root .ex2-toolbar {
+    padding: 0;
+    border: none;
+    background: none;
+    border-radius: 0;
+}
+
+#admin-exams-root .ex2-tab-row {
+    display: flex;
+    gap: 4px;
+    border-bottom: 2px solid var(--lux-border);
+    padding-bottom: 0;
+}
+
+#admin-exams-root .ex2-tab {
+    padding: 10px 18px;
+    border: none;
+    background: none;
+    color: var(--lux-text-muted);
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    transition: color .2s, border-color .2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+}
+
+#admin-exams-root .ex2-tab:hover {
+    color: var(--lux-text);
+}
+
+#admin-exams-root .ex2-tab.is-active {
+    color: rgba(var(--lux-accent-rgb), 1);
+    border-bottom-color: rgba(var(--lux-accent-rgb), 1);
+}
+
+#admin-exams-root .ex2-tab-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 800;
+    background: rgba(var(--lux-accent-rgb), .15);
+    color: rgba(var(--lux-accent-rgb), 1);
+}
+
+/* ── Sub-Tabs (My Drafts / Shared / Sent) ── */
+#admin-exams-root .ex2-sub-tab-row {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 16px;
+}
+
+#admin-exams-root .ex2-sub-tab {
+    padding: 8px 16px;
+    border-radius: 12px;
+    border: 1px solid var(--lux-border);
+    background: transparent;
+    color: var(--lux-text-muted);
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    transition: all .2s;
+}
+
+#admin-exams-root .ex2-sub-tab:hover {
+    background: rgba(var(--lux-accent-rgb), .06);
+    color: var(--lux-text);
+}
+
+#admin-exams-root .ex2-sub-tab.is-active {
+    background: rgba(var(--lux-accent-rgb), .12);
+    color: rgba(var(--lux-accent-rgb), 1);
+    border-color: rgba(var(--lux-accent-rgb), .3);
+}
+
+/* ── Panels ── */
+#admin-exams-root .ex2-panel {
+    padding: 24px;
+    border-radius: 22px;
+    border: 1px solid var(--lux-border);
+    background: var(--lux-surface);
+    backdrop-filter: blur(16px);
+}
+
+#admin-exams-root .ex2-panel-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+#admin-exams-root .ex2-panel-head h2 {
+    font-size: 18px;
+    font-weight: 800;
+    margin: 0 0 4px;
+}
+
+#admin-exams-root .ex2-panel-head p {
+    font-size: 13px;
+    color: var(--lux-text-muted);
+    margin: 0;
+}
+
+/* ── Quiz Cards Grid ── */
+#admin-exams-root .ex2-card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 14px;
+}
+
+#admin-exams-root .ex2-quiz-card {
+    padding: 20px;
+    border-radius: 18px;
+    border: 1px solid var(--lux-border);
+    background: var(--lux-surface);
+    cursor: pointer;
+    transition: transform .2s, box-shadow .2s, border-color .2s;
+    animation: exStagger .4s ease both;
+}
+
+#admin-exams-root .ex2-quiz-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 32px rgba(0,0,0,.1);
+    border-color: rgba(var(--lux-accent-rgb), .3);
+}
+
+/* ── Status Dots ── */
+#admin-exams-root .ex2-status-dot {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    padding: 4px 10px;
+    border-radius: 8px;
+}
+
+#admin-exams-root .ex2-status-dot.is-draft { color: var(--ex-draft); background: rgba(99,102,241,.1); }
+#admin-exams-root .ex2-status-dot.is-submitted { color: var(--ex-submitted); background: rgba(59,130,246,.1); }
+#admin-exams-root .ex2-status-dot.is-in_review { color: var(--ex-in-review); background: rgba(139,92,246,.1); }
+#admin-exams-root .ex2-status-dot.is-returned { color: var(--ex-returned); background: rgba(245,158,11,.1); }
+#admin-exams-root .ex2-status-dot.is-approved { color: var(--ex-approved); background: rgba(16,185,129,.1); }
+#admin-exams-root .ex2-status-dot.is-live { color: var(--ex-live); background: rgba(239,68,68,.1); animation: exPulse 2s infinite; }
+
+#admin-exams-root .ex2-status-dot::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+/* ── Progress Bar (builder steps) ── */
+#admin-exams-root .ex2-progress-bar {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    padding: 16px 0;
+}
+
+#admin-exams-root .ex2-progress-step {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border: none;
+    background: none;
+    color: var(--lux-text-muted);
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    position: relative;
+    transition: color .2s;
+}
+
+#admin-exams-root .ex2-progress-step:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    right: -12px;
+    top: 50%;
+    width: 24px;
+    height: 2px;
+    background: var(--lux-border);
+}
+
+#admin-exams-root .ex2-progress-step .step-num {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2px solid var(--lux-border);
+    font-size: 12px;
+    font-weight: 800;
+    transition: all .2s;
+}
+
+#admin-exams-root .ex2-progress-step.is-active {
+    color: rgba(var(--lux-accent-rgb), 1);
+}
+
+#admin-exams-root .ex2-progress-step.is-active .step-num {
+    background: rgba(var(--lux-accent-rgb), 1);
+    border-color: rgba(var(--lux-accent-rgb), 1);
+    color: #fff;
+}
+
+#admin-exams-root .ex2-progress-step.is-done .step-num {
+    background: var(--ex-approved);
+    border-color: var(--ex-approved);
+    color: #fff;
+}
+
+#admin-exams-root .ex2-progress-step.is-done::after {
+    background: var(--ex-approved);
+}
+
+/* ── Builder Full-Screen ── */
+#admin-exams-root .ex2-builder-fullscreen {
+    animation: exSlideIn .35s ease;
+}
+
+#admin-exams-root .ex2-builder-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 8px;
+}
+
+#admin-exams-root .ex2-builder-header h2 {
+    font-size: 20px;
+    font-weight: 800;
+    margin: 0;
+}
+
+#admin-exams-root .ex2-builder-layout {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 20px;
+    align-items: start;
+}
+
+/* ── Live Summary Sidebar ── */
+#admin-exams-root .ex2-live-sidebar {
+    position: sticky;
+    top: 20px;
+    padding: 20px;
+    border-radius: 18px;
+    border: 1px solid var(--lux-border);
+    background: var(--lux-surface);
+}
+
+#admin-exams-root .ex2-live-sidebar h3 {
+    font-size: 14px;
+    font-weight: 700;
+    margin: 0 0 14px;
+    color: var(--lux-text-muted);
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    font-size: 11px;
+}
+
+#admin-exams-root .ex2-sidebar-stat {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(var(--lux-border-rgb, 128,128,128), .3);
+    font-size: 13px;
+}
+
+#admin-exams-root .ex2-sidebar-stat:last-child { border-bottom: none; }
+#admin-exams-root .ex2-sidebar-stat strong { font-weight: 700; }
+
+/* ── Question Accordion Cards ── */
+#admin-exams-root .ex2-q-card {
+    border: 1px solid var(--lux-border);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: border-color .2s;
+    animation: exStagger .3s ease both;
+}
+
+#admin-exams-root .ex2-q-card:hover {
+    border-color: rgba(var(--lux-accent-rgb), .3);
+}
+
+#admin-exams-root .ex2-q-card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    cursor: pointer;
+    background: rgba(var(--lux-accent-rgb), .03);
+    gap: 12px;
+}
+
+#admin-exams-root .ex2-q-card-head:hover {
+    background: rgba(var(--lux-accent-rgb), .06);
+}
+
+#admin-exams-root .ex2-q-num {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: rgba(var(--lux-accent-rgb), .12);
+    color: rgba(var(--lux-accent-rgb), 1);
+    font-size: 12px;
+    font-weight: 800;
+    flex-shrink: 0;
+}
+
+#admin-exams-root .ex2-q-card-body {
+    padding: 18px;
+    border-top: 1px solid var(--lux-border);
+}
+
+/* ── Buttons ── */
+#admin-exams-root .ex2-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border-radius: 12px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    transition: all .2s;
+    white-space: nowrap;
+}
+
+#admin-exams-root .ex2-btn.is-primary {
+    background: linear-gradient(135deg, rgba(var(--lux-accent-rgb),.9), rgba(var(--lux-accent-rgb),.7));
+    color: #fff;
+    border-color: rgba(var(--lux-accent-rgb),.5);
+}
+
+#admin-exams-root .ex2-btn.is-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(var(--lux-accent-rgb),.3);
+}
+
+#admin-exams-root .ex2-btn.is-secondary {
+    background: rgba(var(--lux-accent-rgb),.08);
+    color: rgba(var(--lux-accent-rgb),1);
+    border-color: rgba(var(--lux-accent-rgb),.2);
+}
+
+#admin-exams-root .ex2-btn.is-ghost {
+    background: transparent;
+    color: var(--lux-text-muted);
+    border-color: var(--lux-border);
+}
+
+#admin-exams-root .ex2-btn.is-ghost:hover {
+    background: rgba(var(--lux-accent-rgb),.06);
+    color: var(--lux-text);
+}
+
+#admin-exams-root .ex2-btn.is-danger {
+    background: rgba(220,38,38,.08);
+    color: #dc2626;
+    border-color: rgba(220,38,38,.2);
+}
+
+/* ── Form Elements ── */
+#admin-exams-root .ex2-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+
+#admin-exams-root .ex2-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+#admin-exams-root .ex2-field > span {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--lux-text-muted);
+    text-transform: uppercase;
+    letter-spacing: .3px;
+}
+
+#admin-exams-root .ex2-field-span { grid-column: 1 / -1; }
+
+#admin-exams-root .ex2-input,
+#admin-exams-root .ex2-select,
+#admin-exams-root .ex2-textarea {
+    padding: 10px 14px;
+    border-radius: 12px;
+    border: 1px solid var(--lux-border);
+    background: rgba(var(--lux-accent-rgb),.02);
+    color: var(--lux-text);
+    font-size: 14px;
+    font-family: inherit;
+    transition: border-color .2s, box-shadow .2s;
+}
+
+#admin-exams-root .ex2-input:focus,
+#admin-exams-root .ex2-select:focus,
+#admin-exams-root .ex2-textarea:focus {
+    outline: none;
+    border-color: rgba(var(--lux-accent-rgb),.5);
+    box-shadow: 0 0 0 3px rgba(var(--lux-accent-rgb),.1);
+}
+
+/* ── Inline Actions ── */
+#admin-exams-root .ex2-inline-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+/* ── Empty State ── */
+#admin-exams-root .ex2-empty-state {
+    text-align: center;
+    padding: 48px 24px;
+    color: var(--lux-text-muted);
+}
+
+#admin-exams-root .ex2-empty-state i {
+    font-size: 48px;
+    opacity: .2;
+    margin-bottom: 16px;
+    display: block;
+}
+
+#admin-exams-root .ex2-empty-state p {
+    font-size: 15px;
+    margin: 8px 0 20px;
+}
+
+/* ── Collision Lists ── */
+#admin-exams-root .ex2-collision-list {
+    padding: 14px 18px;
+    border-radius: 14px;
+    margin-top: 12px;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+#admin-exams-root .ex2-collision-list.hard {
+    border: 1px solid rgba(220,38,38,.3);
+    background: rgba(220,38,38,.06);
+    color: var(--ex-hard);
+}
+
+#admin-exams-root .ex2-collision-list.soft {
+    border: 1px solid rgba(245,158,11,.3);
+    background: rgba(245,158,11,.06);
+    color: var(--ex-soft);
+}
+
+/* ── Revision Note ── */
+#admin-exams-root .ex2-revision-note {
+    padding: 14px 18px;
+    border-radius: 14px;
+    border: 1px solid rgba(245,158,11,.3);
+    background: rgba(245,158,11,.06);
+    color: #b45309;
+    font-size: 13px;
+    margin-top: 10px;
+}
+
+/* ── Modal ── */
+.ex2-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,.5);
+    backdrop-filter: blur(8px);
+    animation: exFadeIn .2s ease;
+}
+
+.ex2-modal {
+    width: 90%;
+    max-width: 520px;
+    border-radius: 22px;
+    overflow: hidden;
+    border: 1px solid var(--lux-border);
+    background: var(--lux-surface);
+    box-shadow: 0 24px 60px rgba(0,0,0,.25);
+    animation: exSlideIn .3s ease;
+}
+
+/* ── Split Box ── */
+#admin-exams-root .ex2-split-box {
+    margin-top: 12px;
+    padding: 18px;
+    border-radius: 16px;
+    border: 1px dashed rgba(var(--lux-accent-rgb),.35);
+    background: rgba(var(--lux-accent-rgb),.03);
+}
+
+/* ── Schedule Timeline ── */
+#admin-exams-root .ex2-timeline {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    padding: 8px 0;
+}
+
+#admin-exams-root .ex2-timeline-card {
+    min-width: 180px;
+    padding: 16px;
+    border-radius: 16px;
+    border: 1px solid var(--lux-border);
+    background: var(--lux-surface);
+    flex-shrink: 0;
+    transition: transform .2s;
+}
+
+#admin-exams-root .ex2-timeline-card:hover {
+    transform: translateY(-2px);
+}
+
+/* ── Mini Grid ── */
+#admin-exams-root .ex2-mini-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+    gap: 10px;
+    margin-top: 12px;
+}
+
+#admin-exams-root .ex2-mini-grid > div {
+    text-align: center;
+}
+
+#admin-exams-root .ex2-mini-grid strong {
+    display: block;
+    font-size: 18px;
+    font-weight: 800;
+}
+
+#admin-exams-root .ex2-mini-grid span {
+    font-size: 11px;
+    color: var(--lux-text-muted);
+    text-transform: uppercase;
+}
+
+/* ── Tags ── */
+#admin-exams-root .ex2-tag {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 600;
+    background: rgba(var(--lux-accent-rgb),.08);
+    color: rgba(var(--lux-accent-rgb),1);
+}
+
+/* ── Cohort Cards ── */
+#admin-exams-root .ex2-cohort-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 12px;
+}
+
+#admin-exams-root .ex2-cohort-card {
+    padding: 18px;
+    border-radius: 16px;
+    border: 1px solid var(--lux-border);
+    background: var(--lux-surface);
+    transition: border-color .2s, background .2s;
+}
+
+#admin-exams-root .ex2-cohort-card.is-selected {
+    border-color: rgba(var(--lux-accent-rgb),.4);
+    background: rgba(var(--lux-accent-rgb),.04);
+}
+
+/* ── Two-col layout ── */
+#admin-exams-root .ex2-two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    align-items: start;
+}
+
+/* ── Responsive ── */
+@media (max-width: 1100px) {
+    #admin-exams-root .ex2-builder-layout,
+    #admin-exams-root .ex2-two-col {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    #admin-exams-root .ex2-card-grid {
+        grid-template-columns: 1fr;
+    }
+    #admin-exams-root .ex2-form-grid {
+        grid-template-columns: 1fr;
+    }
+    #admin-exams-root .ex2-stats-row {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Luxury theme fade pass: Exams surfaces must follow palette + opacity controls. */
+body.lux-route-exams #admin-exams-root .ex2-hero,
+body.lux-route-exams #admin-exams-root .ex2-panel,
+body.lux-route-exams #admin-exams-root .ex2-toolbar,
+body.lux-route-exams #admin-exams-root .ex2-card,
+body.lux-route-exams #admin-exams-root .ex2-cohort-card,
+body.lux-route-exams #admin-exams-root .ex2-session-card,
+body.lux-route-exams #admin-exams-root .ex2-list-card,
+body.lux-route-exams #admin-exams-root .ex2-question-card,
+body.lux-route-exams #admin-exams-root .ex2-review-card,
+body.lux-route-exams #admin-exams-root .ex2-side-card,
+body.lux-route-exams #admin-exams-root .ex2-select-card,
+body.lux-route-exams #admin-exams-root .ex2-live-sidebar,
+body.lux-route-exams #admin-exams-root .ex2-auto-gen-box,
+body.lux-route-exams #admin-exams-root .ex2-qnav-bar {
+    background:
+        radial-gradient(circle at 8% 0%, rgba(255, 255, 255, calc(var(--lux-transparency-alpha, .92) * .075)), transparent 32%),
+        radial-gradient(circle at 74% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, .92) * .24)), transparent 38%),
+        radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-transparency-alpha, .92) * .14)), transparent 38%),
+        linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, .92) * .10)), rgba(10, 15, 24, calc(var(--lux-transparency-alpha, .92) * .91)) 44%, rgba(7, 10, 18, calc(var(--lux-transparency-alpha, .92) * .84))) !important;
+    border-color: rgba(var(--lux-accent-rgb), .16) !important;
+    box-shadow: 0 24px 58px rgba(0, 0, 0, .24), inset 0 1px 0 rgba(255, 255, 255, .08) !important;
+    backdrop-filter: blur(var(--lux-transparency-blur, 18px)) saturate(var(--lux-transparency-saturate, 145%)) !important;
+    -webkit-backdrop-filter: blur(var(--lux-transparency-blur, 18px)) saturate(var(--lux-transparency-saturate, 145%)) !important;
+}
+
+body.lux-route-exams #admin-exams-root .ex2-stat-card,
+body.lux-route-exams #admin-exams-root .ex2-quiz-card,
+body.lux-route-exams #admin-exams-root .ex2-q-card,
+body.lux-route-exams #admin-exams-root .ex2-q-card-head,
+body.lux-route-exams #admin-exams-root .ex2-timeline-card,
+body.lux-route-exams #admin-exams-root .ex2-split-box,
+body.lux-route-exams #admin-exams-root .ex2-progress-step,
+body.lux-route-exams #admin-exams-root .ex2-mini-grid > div {
+    background:
+        radial-gradient(circle at 12% 0%, rgba(255, 255, 255, calc(var(--lux-transparency-alpha, .92) * .055)), transparent 30%),
+        radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, .92) * .14)), transparent 34%),
+        linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, .92) * .065)), rgba(10, 15, 24, calc(var(--lux-transparency-alpha, .92) * .88)) 46%, rgba(7, 10, 18, calc(var(--lux-transparency-alpha, .92) * .80))) !important;
+    border-color: rgba(var(--lux-accent-rgb), .12) !important;
+    box-shadow: 0 14px 32px rgba(0, 0, 0, .18), inset 0 1px 0 rgba(255, 255, 255, .06) !important;
+    backdrop-filter: blur(var(--lux-transparency-blur, 18px)) saturate(var(--lux-transparency-saturate, 145%)) !important;
+    -webkit-backdrop-filter: blur(var(--lux-transparency-blur, 18px)) saturate(var(--lux-transparency-saturate, 145%)) !important;
+}
+
+body.lux-light-mode.lux-route-exams #admin-exams-root .ex2-hero,
+body.lux-light-mode.lux-route-exams #admin-exams-root .ex2-panel,
+body.lux-light-mode.lux-route-exams #admin-exams-root .ex2-toolbar,
+body.lux-light-mode.lux-route-exams #admin-exams-root .ex2-card,
+body.lux-light-mode.lux-route-exams #admin-exams-root .ex2-cohort-card,
+body.lux-light-mode.lux-route-exams #admin-exams-root .ex2-session-card,
+body.lux-light-mode.lux-route-exams #admin-exams-root .ex2-list-card,
+body.lux-light-mode.lux-route-exams #admin-exams-root .ex2-question-card,
+body.lux-light-mode.lux-route-exams #admin-exams-root .ex2-review-card,
+body.lux-light-mode.lux-route-exams #admin-exams-root .ex2-side-card,
+body.lux-light-mode.lux-route-exams #admin-exams-root .ex2-select-card,
+body.lux-light-mode.lux-route-exams #admin-exams-root .ex2-live-sidebar,
+body.lux-light-mode.lux-route-exams #admin-exams-root .ex2-auto-gen-box,
+body.lux-light-mode.lux-route-exams #admin-exams-root .ex2-qnav-bar {
+    background:
+        radial-gradient(circle at 8% 0%, rgba(255, 255, 255, calc(var(--lux-transparency-alpha, .86) * .88)), transparent 34%),
+        radial-gradient(circle at 74% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, .86) * .22)), transparent 38%),
+        radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-transparency-alpha, .86) * .13)), transparent 38%),
+        linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, .86) * .075)), rgba(255, 255, 255, calc(var(--lux-transparency-alpha, .86) * .88)) 44%, rgba(247, 241, 232, calc(var(--lux-transparency-alpha, .86) * .72))) !important;
+    border-color: rgba(var(--lux-accent-rgb), .14) !important;
+    box-shadow: 0 22px 48px rgba(var(--lux-glass-tint-rgb, 15, 23, 42), .12), inset 0 1px 0 rgba(255, 255, 255, .68) !important;
+}
+
+body.lux-light-mode.lux-route-exams #admin-exams-root .ex2-stat-card,
+body.lux-light-mode.lux-route-exams #admin-exams-root .ex2-quiz-card,
+body.lux-light-mode.lux-route-exams #admin-exams-root .ex2-q-card,
+body.lux-light-mode.lux-route-exams #admin-exams-root .ex2-q-card-head,
+body.lux-light-mode.lux-route-exams #admin-exams-root .ex2-timeline-card,
+body.lux-light-mode.lux-route-exams #admin-exams-root .ex2-split-box,
+body.lux-light-mode.lux-route-exams #admin-exams-root .ex2-progress-step,
+body.lux-light-mode.lux-route-exams #admin-exams-root .ex2-mini-grid > div {
+    background:
+        radial-gradient(circle at 10% 0%, rgba(255, 255, 255, calc(var(--lux-transparency-alpha, .86) * .78)), transparent 32%),
+        radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, .86) * .14)), transparent 34%),
+        linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, .86) * .055)), rgba(255, 255, 255, calc(var(--lux-transparency-alpha, .86) * .82)) 46%, rgba(247, 241, 232, calc(var(--lux-transparency-alpha, .86) * .66))) !important;
+    border-color: rgba(var(--lux-accent-rgb), .11) !important;
+    box-shadow: 0 14px 30px rgba(var(--lux-glass-tint-rgb, 15, 23, 42), .10), inset 0 1px 0 rgba(255, 255, 255, .62) !important;
+}

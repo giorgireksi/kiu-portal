@@ -1,0 +1,43 @@
+{
+  "name": "kiu-portal-platform",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Kutaisi International University portal hosting and backend foundation",
+  "scripts": {
+    "start:bridge": "node kiu-realtime-bridge/server.js",
+    "start:platform": "node backend/platform/server.js",
+    "start:web": "python tools/local_dev_server.py 8876",
+    "start": "start start-local-server.bat",
+    "generate:vapid": "node tools/generate-vapid-keys.js",
+    "check:architecture": "node tools/check-architecture-guardrails.js",
+    "check:bridge": "node --check kiu-realtime-bridge/server.js",
+    "check:platform": "node --check backend/platform/utils.js && node --check backend/platform/legacy-import.js && node --check backend/platform/domains/files-service.js && node --check backend/platform/domains/audit-service.js && node --check backend/platform/domains/student-service-service.js && node --check backend/platform/domains/accounts-service.js && node --check backend/platform/domains/auth-session-service.js && node --check backend/platform/domains/account-privileges-service.js && node --check backend/platform/domains/gradebook-service.js && node --check backend/platform/domains/protected-exam-service.js && node --check backend/platform/domains/lms-course-service.js && node --check backend/platform/domains/social-state-service.js && node --check backend/platform/domains/social-relationships-service.js && node --check backend/platform/domains/social-projects-service.js && node --check backend/platform/domains/social-content-service.js && node --check backend/platform/domains/notifications-service.js && node --check backend/platform/routes/files-routes.js && node --check backend/platform/routes/auth-routes.js && node --check backend/platform/routes/auth-maintenance-routes.js && node --check backend/platform/routes/platform-ops-routes.js && node --check backend/platform/routes/admin-integrations-routes.js && node --check backend/platform/routes/admin-support-routes.js && node --check backend/platform/routes/student-service-routes.js && node --check backend/platform/routes/gradebook-routes.js && node --check backend/platform/routes/protected-exam-routes.js && node --check backend/platform/routes/messenger-calls-routes.js && node --check backend/platform/routes/social-routes.js && node --check backend/platform/routes/lms-live-quiz-routes.js && node --check backend/platform/routes/academic-routes.js && node --check backend/platform/routes/news-routes.js && node --check backend/platform/routes/microsoft-auth-routes.js && node --check backend/platform/routes/mail-routes.js && node --check backend/platform/routes/portal-support-routes.js && node --check backend/platform/routes/system-routes.js && node --check backend/platform/store.js && node --check backend/platform/server.js",
+    "check:frontend": "node --check assets/js/app/api.js && node --check assets/js/app/app.js && node --check assets/js/app/auth.js && node --check assets/js/shared/faculty.js && node --check assets/js/shared/public-social-runtime.js && node --check assets/js/features/index-luxury.js && node --check assets/js/features/luxury-shell-chrome.js && node --check assets/js/features/luxury-home-model.js && node --check assets/js/features/luxury-home-dashboard-runtime.js && node --check assets/js/features/index-home-dashboard.js && node --check assets/js/features/index-admin-tools.js && node --check assets/js/pages/library.js && node --check assets/js/pages/lms-live-quiz-workspace-runtime.js && node --check assets/js/pages/lms-live-quiz-ui-runtime.js && node --check assets/js/pages/lms-grade-sync-runtime.js && node --check assets/js/pages/lms-file-storage-runtime.js && node --check assets/js/pages/lms-calls-runtime.js && node --check assets/js/pages/lms-materials-runtime.js && node --check assets/js/pages/lms-assignments-runtime.js && node --check assets/js/pages/lms-protected-quiz-runtime.js && node --check assets/js/pages/lms.js && node --check service-worker.js",
+    "check:tools": "node --check tools/check-production-readiness.js && node --check tools/load-test-smoke.js",
+    "check:production": "node tools/check-production-readiness.js",
+    "migrate:postgres": "node tools/migrate-postgres.js",
+    "load:smoke": "node tools/load-test-smoke.js",
+    "test:all-pages-console": "node tools/all_pages_console_scan.mjs",
+    "test:all-pages-load-scan": "node tools/all_pages_load_scan.mjs",
+    "test:scroll-heavy-pages": "node tools/scroll_heavy_pages_benchmark.mjs",
+    "test:runtime-shell": "node tools/runtime_shell_smoke.mjs",
+    "check": "npm run check:bridge && npm run check:platform && npm run check:frontend && npm run check:tools && npm run check:architecture",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "dotenv": "^17.2.1",
+    "express": "^5.1.0",
+    "pg": "^8.16.3",
+    "web-push": "^3.6.7"
+  },
+  "devDependencies": {
+    "fast-check": "^4.7.0",
+    "jsdom": "^29.1.0",
+    "playwright": "^1.55.1",
+    "vitest": "^4.1.5"
+  }
+}

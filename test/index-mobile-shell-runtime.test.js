@@ -1,0 +1,107 @@
+import { describe, expect, it, vi } from 'vitest';
+import { readFileSync } from 'fs';
+import { join } from 'path';
+import { JSDOM } from 'jsdom';
+
+function readSource(relativePath) {
+  return readFileSync(join(process.cwd(), relativePath), 'utf8');
+}
+
+function bootMobileShell(options = {}) {
+  const dom = new JSDOM(
+    `<!DOCTYPE html><html><head></head><body class="lux-route-home"><button id="lux-sidebar-toggle"></button></body></html>`,
+    {
+      url: 'http://localhost/index.html?view=professor#home',
+      runScripts: 'outside-only'
+    }
+  );
+
+  dom.window.innerWidth = 480;
+  if (options.withNavigate !== false) {
+    dom.window.navigate = vi.fn();
+  }
+  dom.window.resolvePortalRouteUrl = vi.fn((target, role) => `#${role}-${target}`);
+  dom.window.requestAnimationFrame = (cb) => {
+    cb(0);
+    return 1;
+  };
+  dom.window.setTimeout = (cb) => {
+    cb();
+    return 1;
+  };
+  dom.window.matchMedia = (query) => ({
+    matches: query.includes('max-width: 1024px'),
+    media: query,
+    addEventListener() {},
+    removeEventListener() {},
+    addListener() {},
+    removeListener() {}
+  });
+
+  dom.window.eval(readSource('assets/js/pages/index-mobile-shell.js'));
+  dom.window.document.dispatchEvent(new dom.window.Event('DOMContentLoaded', { bubbles: true }));
+  return dom;
+}
+
+describe('index mobile shell runtime', () => {
+  it('creates the mobile nav and action-sheet scaffold at runtime on mobile widths', () => {
+    const dom = bootMobileShell();
+    const doc = dom.window.document;
+
+    expect(doc.getElementById('mobile-bottom-nav')).not.toBeNull();
+    expect(doc.getElementById('mobile-action-sheet')).not.toBeNull();
+    expect(doc.getElementById('mob-sheet-dynamic-nav')).not.toBeNull();
+    expect(doc.body.classList.contains('lux-sidebar-collapsed')).toBe(true);
+  });
+
+  it('renders professor role navigation labels inside the mobile action sheet', () => {
+    const dom = bootMobileShell();
+    const doc = dom.window.document;
+
+    doc.body.classList.add('role-professor');
+    doc.body.dataset.shellRole = 'professor';
+    dom.window.getEffectiveRole = () => 'professor';
+
+    doc.getElementById('mob-nav-more')?.dispatchEvent(new dom.window.MouseEvent('click', { bubbles: true }));
+
+    const dynamicNav = doc.getElementById('mob-sheet-dynamic-nav');
+    expect(dynamicNav?.textContent || '').toContain('Schedule');
+    expect(dynamicNav?.textContent || '').toContain('Gradebook');
+    expect(dynamicNav?.textContent || '').toContain('Q&A Desk');
+  });
+
+  it('moves focus into the mobile action sheet and closes it with Escape', () => {
+    const dom = bootMobileShell();
+    const doc = dom.window.document;
+
+    doc.getElementById('mob-nav-more')?.dispatchEvent(new dom.window.MouseEvent('click', { bubbles: true }));
+
+    const sheet = doc.getElementById('mobile-action-sheet');
+    const closeButton = doc.getElementById('mob-sheet-close');
+    const moreButton = doc.getElementById('mob-nav-more');
+
+    expect(sheet?.classList.contains('is-open')).toBe(true);
+    expect(closeButton?.getAttribute('data-mob-sheet-focus')).toBe('1');
+    expect(doc.activeElement).toBe(closeButton);
+    expect(moreButton?.getAttribute('aria-expanded')).toBe('true');
+
+    doc.dispatchEvent(new dom.window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+
+    expect(sheet?.classList.contains('is-open')).toBe(false);
+    expect(moreButton?.getAttribute('aria-expanded')).toBe('false');
+    expect(doc.activeElement).toBe(moreButton);
+  });
+
+  it('falls back to route resolution when mobile navigation is tapped before window.navigate is ready', () => {
+    const dom = bootMobileShell({ withNavigate: false });
+    const doc = dom.window.document;
+
+    dom.window.getEffectiveRole = () => 'professor';
+    doc.getElementById('mob-nav-more')?.dispatchEvent(new dom.window.MouseEvent('click', { bubbles: true }));
+    doc.querySelector('#mob-sheet-dynamic-nav [data-nav-target="lms"]')
+      ?.dispatchEvent(new dom.window.MouseEvent('click', { bubbles: true }));
+
+    expect(dom.window.resolvePortalRouteUrl).toHaveBeenCalledWith('lms', 'professor');
+    expect(dom.window.location.hash).toBe('#professor-lms');
+  });
+});

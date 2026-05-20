@@ -1,0 +1,43 @@
+{$KIU_PUBLIC_HOSTNAME} {
+    encode zstd gzip
+    root * /srv
+
+    header {
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "SAMEORIGIN"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        Permissions-Policy "camera=(self), microphone=(self), geolocation=(), interest-cohort=()"
+        Strict-Transport-Security "max-age=31536000; includeSubDomains"
+    }
+
+    @api path /api/* /health /ready /download /download/*
+    reverse_proxy @api portal-backend:47833
+
+    @static path /assets/* /images/* /favicon.ico /manifest.webmanifest /service-worker.js
+    handle @static {
+        file_server
+    }
+
+    try_files {path} {path}/ /login.html
+    file_server {
+        hide /.env
+        hide /.env.*
+        hide /backend
+        hide /data
+        hide /docs
+        hide /infra
+        hide /installer
+        hide /kiu-realtime-bridge
+        hide /node_modules
+        hide /scripts
+        hide /test
+        hide /tools
+        hide /artifacts
+        hide /*.md
+        hide /Dockerfile
+        hide /docker-compose.production.yml
+        hide /docker-compose.yml
+        hide /package-lock.json
+        hide /package.json
+    }
+}

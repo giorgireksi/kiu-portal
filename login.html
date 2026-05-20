@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>KIU - Login</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23a4262c'/%3E%3Ctext x='32' y='41' text-anchor='middle' font-family='Arial, sans-serif' font-size='24' font-weight='700' fill='white'%3EK%3C/text%3E%3C/svg%3E">
+    <link rel="stylesheet" href="assets/vendor/fontawesome/css/all.min.css?v=1776604822063">
+    <link rel="stylesheet" href="assets/css/kiu-fonts.css?v=20260515-fonts1">
+    <link rel="stylesheet" href="assets/css/login-route.css?v=20260516-loginstandalone1">
+</head>
+<body class="login-page">
+
+<div class="login-wrapper">
+    <div class="login-left">
+        <div class="dot-grid"></div>
+        <div class="kiu-logo-l">K</div>
+        <div class="login-title">Welcome back</div>
+        <div class="login-subtitle">Sign in to access your KIU Portal</div>
+
+        <div class="login-tabs">
+            <div class="login-tab active" data-login-tab="login">Login</div>
+            <div class="login-tab" data-login-tab="activate">Activate Account</div>
+        </div>
+
+        <div id="protected-quiz-note" class="login-note login-note-hidden-top"></div>
+        <div id="error-msg" class="login-error"></div>
+        <div id="success-msg" class="login-success"></div>
+
+        <!-- Login Form -->
+        <div id="form-login" class="tab-content active">
+            <button class="login-btn microsoft-btn" id="microsoft-login-btn" type="button" data-login-action="microsoft-login"><i class="fab fa-microsoft"></i> Sign In With Microsoft</button>
+            <div id="microsoft-login-note" class="login-helper">Use your university Microsoft account to load your linked KIU portal profile and permissions.</div>
+            <div class="login-divider">or use portal password</div>
+            <div class="input-group">
+                <label>Email Address</label>
+                <div class="input-wrapper">
+                    <i class="far fa-envelope"></i>
+                    <input type="email" id="login-email" placeholder="name@kiu.edu.ge">
+                </div>
+            </div>
+            <div class="input-group">
+                <label>Password</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="login-password" autocomplete="current-password" placeholder="Enter your password">
+                    <button type="button" class="toggle-pwd" data-login-action="toggle-password" data-login-target="login-password" tabindex="-1" aria-label="Toggle password visibility"><i class="far fa-eye"></i></button>
+                </div>
+            </div>
+            <button class="login-btn" type="button" data-login-action="login-submit"><i class="fas fa-sign-in-alt"></i> Sign In</button>
+
+            <div class="login-note">
+                <strong>Account Access</strong>
+                Student, professor, TA, and student service accounts are created by the administrator. Use the credentials shared by administration to sign in.
+            </div>
+        </div>
+
+        <!-- Activate Form -->
+        <div id="form-activate" class="tab-content">
+            <div class="input-group">
+                <label>Registration ID (Student/Staff #)</label>
+                <div class="input-wrapper">
+                    <i class="far fa-id-card"></i>
+                    <input type="text" id="act-id" placeholder="e.g. 31962 or P-ECON-001">
+                </div>
+            </div>
+            <div class="input-group">
+                <label>Create Password</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-key"></i>
+                    <input type="password" id="act-password" autocomplete="new-password" placeholder="Minimum 8 characters">
+                    <button type="button" class="toggle-pwd" data-login-action="toggle-password" data-login-target="act-password" tabindex="-1" aria-label="Toggle password visibility"><i class="far fa-eye"></i></button>
+                </div>
+            </div>
+            <button class="login-btn is-success" type="button" data-login-action="activate-submit"><i class="fas fa-user-check"></i> Activate Account</button>
+        </div>
+    </div>
+
+    <div class="login-right">
+        <div class="login-hero">
+            <div class="login-kicker">Student &amp; Faculty Portal</div>
+            <h2>Kutaisi International<br>University</h2>
+            <p>Your unified academic workspace for learning, teaching, and campus life.</p>
+            <div class="login-stats">
+                <div class="login-stat-card">
+                    <strong class="login-stat-icon login-stat-icon-gold"><i class="fas fa-book-reader"></i></strong>
+                    <span>LMS &amp; Courses</span>
+                </div>
+                <div class="login-stat-card">
+                    <strong class="login-stat-icon login-stat-icon-green"><i class="fas fa-chart-bar"></i></strong>
+                    <span>Gradebook</span>
+                </div>
+                <div class="login-stat-card">
+                    <strong class="login-stat-icon login-stat-icon-blue"><i class="fas fa-calendar-week"></i></strong>
+                    <span>Schedule</span>
+                </div>
+                <div class="login-stat-card">
+                    <strong class="login-stat-icon login-stat-icon-purple"><i class="fas fa-check-square"></i></strong>
+                    <span>Registration</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="assets/js/pages/login-runtime.js?v=20260516-loginstandalone1"></script>
+</body>
+</html>
+
+
+

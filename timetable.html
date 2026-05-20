@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>KIU - Timetable</title>
+
+
+    <link rel="stylesheet" href="assets/vendor/fontawesome/css/all.min.css?v=1776604822096">
+    <link rel="stylesheet" href="assets/css/kiu-fonts.css?v=20260515-fonts1">
+    <link rel="stylesheet" href="assets/css/base.css?v=20260419-libsync1">
+    <link rel="stylesheet" href="assets/css/layout.css?v=1776604822096">
+    <link rel="stylesheet" href="assets/css/components.css?v=1776604822096">
+    <link rel="stylesheet" href="assets/css/index-luxury.css?v=20260503-timetable-alpha-fade1">
+<link rel="stylesheet" href="assets/css/mobile-responsive.css?v=20260419-libsync1">
+    <script src="assets/js/theme-primer.js?v=20260419-flat5"></script>
+
+    <link rel="stylesheet" href="assets/css/timetable-route.css?v=20260516-timetable-route1">
+</head>
+<body class="kiu-shell-loading lux-nonhome-page lux-route-timetable lux-unified-shell role-student" data-faculty="ECON">
+<!-- Navigation stubs (hidden, for JS compatibility) -->
+<nav id="prof-nav" aria-label="Professor navigation stub"></nav>
+<nav id="top-nav" aria-label="Top navigation stub"></nav>
+<nav id="admin-nav" aria-label="Admin navigation stub"></nav>
+
+    <!-- MAIN CONTENT -->
+    <main id="app-content">
+        <div id="page-timetable" class="page-section active-page">
+            <div class="lux-page-shell lux-timetable-page">
+                <section class="page-hero lux-timetable-hero">
+                    <div class="lux-timetable-hero-top">
+                    <div class="lux-timetable-hero-main">
+                        <div id="timetable-page-kicker" class="lux-page-kicker"><i class="fas fa-calendar-week"></i> Student timetable</div>
+                        <div id="timetable-page-title" class="page-hero-title lux-page-title">Weekly Schedule</div>
+                        <div id="timetable-page-copy" class="page-hero-copy lux-page-copy">See this week's classes, rooms, instructors, and academic rhythm in one clear view.</div>
+                        <div class="page-hero-meta">
+                            <span class="page-hero-badge"><i class="fas fa-calendar-week"></i> Current Week</span>
+                            <span class="page-hero-badge"><i class="fas fa-clock"></i> Live Next Class</span>
+                            <span class="page-hero-badge" id="timetable-hero-sem-badge"><i class="fas fa-graduation-cap"></i> Semester 3</span>
+                        </div>
+                    </div>
+                    <aside class="lux-timetable-hero-focus">
+                        <div class="lux-timetable-focus-kicker" id="timetable-hero-focus-label">Up next</div>
+                        <div class="lux-timetable-focus-title" id="timetable-hero-focus-title">Loading schedule...</div>
+                        <div class="lux-timetable-focus-copy" id="timetable-hero-focus-copy">Your next session details will appear here.</div>
+                        <div class="lux-timetable-focus-meta" id="timetable-hero-focus-meta">
+                            <span><i class="fas fa-compass"></i> Live schedule</span>
+                        </div>
+                    </aside>
+                    </div>
+
+                <div class="surface-card lux-timetable-command">
+                    <div class="lux-timetable-command-head">
+                        <div>
+                            <div class="lux-card-title">Schedule Tools</div>
+                        </div>
+                        <div class="lux-timetable-command-note" id="timetable-command-note">Current week, filters, and assigned sessions</div>
+                    </div>
+
+                    <div class="lux-timetable-command-grid">
+                        <div class="filter-shell lux-timetable-filters" id="timetable-filters">
+                            <div class="filter-shell-title"><i class="fas fa-filter"></i> Filters</div>
+                            <div class="lux-field-stack">
+                                <label for="tt-filter-sem">Semester</label>
+                                <select id="tt-filter-sem" data-timetable-filter="semester">
+                                    <option value="1">Semester 1</option><option value="2">Semester 2</option><option value="3" selected>Semester 3</option><option value="4">Semester 4</option>
+                                </select>
+                            </div>
+                            <div class="lux-field-stack only-admin">
+                                <label for="tt-filter-fac">Faculty</label>
+                                <select id="tt-filter-fac" data-timetable-filter="faculty">
+                                    <option value="ECON">Management &amp; Business</option>
+                                    <option value="CS">Computer Science</option>
+                                    <option value="LAW">Law</option>
+                                    <option value="MED">Medicine</option>
+                                    <option value="ARTS">Arts &amp; Humanities</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div id="timetable-schedule-controls" class="schedule-toolbar-host lux-timetable-controls">
+                            <div class="schedule-view-row">
+                                <div class="schedule-view-switcher" role="group" aria-label="Schedule View">
+                                    <button type="button" id="timetable-view-sessions" class="lux-secondary-btn schedule-view-switcher-btn">
+                                        <i class="fas fa-calendar-day" aria-hidden="true"></i> Sessions
+                                    </button>
+                                    <button type="button" id="timetable-view-timetable" class="lux-secondary-btn schedule-view-switcher-btn">
+                                        <i class="fas fa-table-cells-large" aria-hidden="true"></i> Timetable
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="schedule-toolbar">
+                                <div class="schedule-week-nav">
+                                    <button type="button" class="schedule-week-arrow" data-timetable-week-shift="-1" aria-label="Previous Week">
+                                        <i class="fas fa-chevron-left"></i>
+                                    </button>
+                                    <span id="timetable-month-label" class="schedule-week-label"></span>
+                                    <button type="button" class="schedule-week-arrow" data-timetable-week-shift="1" aria-label="Next Week">
+                                        <i class="fas fa-chevron-right"></i>
+                                    </button>
+                                    <button type="button" id="timetable-week-current" class="lux-primary-btn schedule-current-week-btn" data-timetable-action="current-week">Current Week</button>
+                                </div>
+                                <article class="lux-timetable-next-compact lux-timetable-insight">
+                                    <div class="lux-timetable-insight-label"><i class="fas fa-arrow-right"></i> Next Up</div>
+                                    <div class="lux-timetable-insight-value" id="timetable-insight-next">--</div>
+                                    <p id="timetable-insight-next-copy"></p>
+                                    <div class="lux-timetable-insight-list" id="timetable-insight-next-list">
+                                        <span>Room loading</span>
+                                        <span>Faculty loading</span>
+                                        <span>Type loading</span>
+                                    </div>
+                                </article>
+                                <div class="schedule-overview-row">
+                                    <span id="timetable-overview-sessions" class="schedule-chip"><i class="fas fa-layer-group"></i> 0 sessions</span>
+                                    <span id="timetable-overview-days" class="schedule-chip"><i class="fas fa-calendar-week"></i> 0 active days</span>
+                                    <span id="timetable-overview-hours" class="schedule-chip"><i class="far fa-clock"></i> 0.0 planned hours</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                </section>
+
+                <section class="lux-timetable-insight-grid" style="display:none !important;" aria-hidden="true">
+                    <article class="surface-card lux-timetable-insight">
+                        <div class="lux-timetable-insight-label"><i class="fas fa-crosshairs"></i> Scope</div>
+                        <div class="lux-timetable-insight-value" id="timetable-insight-scope">--</div>
+                        <p id="timetable-insight-scope-copy"></p>
+                        <div class="lux-timetable-insight-list" id="timetable-insight-scope-list">
+                            <span>Week range loading</span>
+                            <span>View mode loading</span>
+                            <span>Faculty loading</span>
+                        </div>
+                    </article>
+                    <article class="surface-card lux-timetable-insight">
+                        <div class="lux-timetable-insight-label"><i class="fas fa-chart-bar"></i> Week Load</div>
+                        <div class="lux-timetable-insight-value" id="timetable-insight-busiest">--</div>
+                        <p id="timetable-insight-busiest-copy"></p>
+                        <div class="lux-timetable-insight-list" id="timetable-insight-busiest-list">
+                            <span>Sessions loading</span>
+                            <span>Hours loading</span>
+                            <span>Peak day loading</span>
+                        </div>
+                    </article>
+                    <article class="surface-card lux-timetable-insight">
+                        <div class="lux-timetable-insight-label"><i class="fas fa-arrow-right"></i> Next Up</div>
+                        <div class="lux-timetable-insight-value">--</div>
+                        <p></p>
+                        <div class="lux-timetable-insight-list">
+                            <span>Room loading</span>
+                            <span>Faculty loading</span>
+                            <span>Type loading</span>
+                        </div>
+                    </article>
+                </section>
+
+                <section class="surface-card lux-timetable-stage">
+                    <div class="lux-timetable-stage-head">
+                        <div>
+                            <div class="lux-card-title">Weekly Timetable</div>
+                            <p id="timetable-stage-copy"></p>
+                        </div>
+                        <div class="lux-timetable-stage-status" id="timetable-stage-status"><i class="fas fa-circle timetable-stage-status-dot"></i> Live</div>
+                    </div>
+                    <div id="timetable-master-container" class="sch-grid-wrap lux-timetable-canvas">
+                        <!-- Javascript will inject the Grid here via renderTimetable() -->
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+<script defer src="assets/js/app/app.js?v=20260426-reset3"></script>
+<script defer src="assets/js/app/api.js?v=20260426-sessionfix3"></script>
+<script defer src="assets/js/app/auth.js?v=20260429-authfix2"></script>
+<script defer src="assets/js/data/initial-state.js?v=20260430-lmssessions1"></script>
+<script defer src="assets/js/app/state.js?v=20260429-statestackfix1"></script>
+<script defer src="assets/js/shared/faculty.js?v=20260505-authglobals1"></script>
+<script defer src="assets/js/shared/messenger.js?v=20260429-peopleisolation1"></script>
+<script defer src="assets/js/shared/utilities.js?v=20260504-transparency-refresh1"></script>
+<script defer src="assets/js/features/navigation.js?v=20260429-shellinit1"></script>
+<script defer src="assets/js/features/ui.js?v=20260429-peopleisolation1"></script>
+<script defer src="assets/js/features/index-luxury.js?v=20260504-transparency-refresh1"></script>
+<script defer src="assets/js/features/luxury-shell-chrome.js?v=20260518-luxshell1"></script>
+<script defer src="assets/js/features/luxury-home-model.js?v=20260518-luxhome1"></script>
+<script defer src="assets/js/pages/timetable-runtime.js?v=20260516-surface-split1"></script>
+
+<script defer>
+function flattenTimetableControlRows() {
+    document.querySelectorAll([
+        '#timetable-schedule-controls',
+        '.schedule-toolbar',
+        '.schedule-view-row',
+        '.schedule-week-nav'
+    ].join(',')).forEach((node) => {
+        node.removeAttribute('data-lux-transparency-signature');
+        node.style.setProperty('background', 'transparent', 'important');
+        node.style.setProperty('border', '0', 'important');
+        node.style.setProperty('box-shadow', 'none', 'important');
+        node.style.setProperty('backdrop-filter', 'none', 'important');
+        node.style.setProperty('-webkit-backdrop-filter', 'none', 'important');
+        if (node.classList.contains('schedule-view-row') || node.classList.contains('schedule-week-nav')) {
+            node.style.setProperty('width', 'fit-content', 'important');
+            node.style.setProperty('max-width', '100%', 'important');
+            node.style.setProperty('flex', '0 0 auto', 'important');
+        }
+    });
+}
+
+function bindTimetableStaticControls() {
+    document.querySelectorAll('[data-timetable-filter]').forEach((node) => {
+        node.addEventListener('change', () => {
+            if (typeof renderTimetable === 'function') {
+                renderTimetable();
+            }
+        });
+    });
+
+    document.querySelectorAll('[data-timetable-week-shift]').forEach((node) => {
+        node.addEventListener('click', () => {
+            if (typeof changeTimetableWeek === 'function') {
+                changeTimetableWeek(Number(node.dataset.timetableWeekShift || 0));
+            }
+        });
+    });
+
+    document.querySelector('[data-timetable-action="current-week"]')?.addEventListener('click', () => {
+        if (typeof jumpTimetableToCurrentWeek === 'function') {
+            jumpTimetableToCurrentWeek();
+        }
+    });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Initialize faculty theme
+    const fac = localStorage.getItem('currentFaculty') || 'ECON';
+    if (typeof switchFacultyTheme === 'function') {
+        switchFacultyTheme(fac);
+    }
+
+    bindTimetableStaticControls();
+
+    // Render timetable content
+    if (typeof renderTimetable === 'function') {
+        renderTimetable();
+    }
+    flattenTimetableControlRows();
+    
+    // Re-apply transparency after content renders (with delay for dynamic elements)
+    setTimeout(() => {
+        if (typeof updateTransparency === 'function') {
+            const saved = localStorage.getItem('kiuLuxurySurfaceTransparency') || '70';
+            updateTransparency(parseInt(saved));
+        }
+        flattenTimetableControlRows();
+    }, 300);
+    setTimeout(flattenTimetableControlRows, 700);
+});
+</script>
+<!-- MOBILE BOTTOM NAVIGATION (v2) -->
+<nav id="mobile-bottom-nav" aria-label="Mobile navigation" style="display:none;">
+    <div class="mobile-nav-row">
+        <button class="mobile-nav-btn is-active" data-nav-target="home" type="button" id="mob-nav-home"><i class="fas fa-th-large"></i><span>Home</span></button>
+        <button class="mobile-nav-btn" type="button" id="mob-nav-messages" data-action="messages"><i class="fas fa-comment-dots"></i><span>Chat</span><em class="mob-badge" id="mob-badge-msg" style="display:none;">0</em></button>
+        <button class="mobile-nav-btn" type="button" id="mob-nav-notif" data-action="notifications"><i class="fas fa-bell"></i><span>Alerts</span><em class="mob-badge" id="mob-badge-notif" style="display:none;">0</em></button>
+        <button class="mobile-nav-btn" type="button" id="mob-nav-theme" data-action="theme"><i class="fas fa-palette"></i><span>Theme</span></button>
+        <button class="mobile-nav-btn" type="button" id="mob-nav-more" data-action="more"><i class="fas fa-grip-horizontal"></i><span>More</span></button>
+    </div>
+</nav>
+<div id="mobile-action-sheet" class="mob-sheet" style="display:none;" role="dialog" aria-modal="true">
+    <div class="mob-sheet-backdrop" id="mob-sheet-backdrop"></div>
+    <div class="mob-sheet-panel">
+        <div class="mob-sheet-handle"><span></span></div>
+        <div class="mob-sheet-section"><div class="mob-sheet-label">Quick Actions</div><div class="mob-sheet-grid">
+            <button class="mob-sheet-btn" type="button" id="mob-act-admin"><span class="mob-sheet-icon"><i class="fas fa-user-shield"></i></span><span>Admin View</span></button>
+            <button class="mob-sheet-btn" type="button" id="mob-act-theme"><span class="mob-sheet-icon"><i class="fas fa-palette"></i></span><span>Theme</span></button>
+            <button class="mob-sheet-btn" type="button" id="mob-act-profile"><span class="mob-sheet-icon"><i class="fas fa-user-circle"></i></span><span>Profile</span></button>
+            <button class="mob-sheet-btn" type="button" id="mob-act-lightmode"><span class="mob-sheet-icon"><i class="fas fa-sun"></i></span><span>Light Mode</span></button>
+        </div></div>
+        <!-- Dynamic role-aware navigation will be injected here -->
+        <div id="mob-sheet-dynamic-nav"></div>
+        <div class="mob-sheet-footer"><button class="mob-sheet-close-btn" type="button" id="mob-sheet-close"><i class="fas fa-times"></i> Close</button></div>
+    </div>
+</div>
+<script>
+window.__KIU_STANDALONE_MOBILE_SHELL_CONFIG = {
+    activeTarget: 'timetable',
+    adminVisibleRoles: ['admin', 'student_service', 'professor', 'ta'],
+    navByRole: {
+        student: [
+            {
+                group: 'Core',
+                items: [['home', 'Dashboard', 'fas fa-th-large'], ['lms', 'LMS', 'fas fa-book-reader'], ['timetable', 'Timetable', 'fas fa-chalkboard'], ['registration', 'Registration', 'fas fa-check-square']]
+            },
+            {
+                group: 'Records',
+                items: [['programs', 'Programs', 'fas fa-file-signature'], ['study-card', 'Study Card', 'far fa-address-card'], ['personal-data', 'Personal Data', 'far fa-user'], ['gradebook', 'Gradebook', 'fas fa-chart-bar']]
+            },
+            {
+                group: 'Support',
+                items: [['chancellery', 'E-Chancellery', 'fas fa-desktop'], ['student-service', 'Student Service', 'fas fa-headset'], ['library', 'Library', 'fas fa-book'], ['social', 'Social', 'fas fa-comments']]
+            }
+        ],
+        professor: [
+            {
+                group: 'Faculty',
+                items: [['home', 'Dashboard', 'fas fa-th-large'], ['timetable', 'Schedule', 'fas fa-calendar-week'], ['lms', 'LMS', 'fas fa-book-reader'], ['faculty-gradebook', 'Gradebook', 'fas fa-chart-bar']]
+            },
+            {
+                group: 'Campus',
+                items: [['library', 'Library', 'fas fa-book'], ['orders', 'Orders', 'fas fa-book-open'], ['social', 'Social', 'fas fa-comments'], ['chancellery', 'Appeals', 'fas fa-inbox']]
+            }
+        ],
+        ta: [
+            {
+                group: 'Faculty',
+                items: [['home', 'Dashboard', 'fas fa-th-large'], ['timetable', 'Schedule', 'fas fa-calendar-week'], ['lms', 'LMS', 'fas fa-book-reader']]
+            },
+            {
+                group: 'Support',
+                items: [['library', 'Library', 'fas fa-book'], ['orders', 'Orders', 'fas fa-book-open'], ['social', 'Social', 'fas fa-comments'], ['chancellery', 'Appeals', 'fas fa-inbox']]
+            }
+        ],
+        admin: [
+            {
+                group: 'Control',
+                items: [['home', 'Dashboard', 'fas fa-hammer'], ['admin-tools', 'Admin Tools', 'fas fa-layer-group'], ['admin-scheduler', 'Scheduler', 'fas fa-calendar-plus'], ['staff', 'Staff', 'fas fa-users-cog'], ['students-admin', 'Students', 'fas fa-user-graduate']]
+            },
+            {
+                group: 'Systems',
+                items: [['library', 'Library', 'fas fa-book'], ['orders', 'Orders', 'fas fa-book-open'], ['social', 'Social', 'fas fa-comments']]
+            }
+        ],
+        student_service: [
+            {
+                group: 'Service',
+                items: [['home', 'Dashboard', 'fas fa-th-large'], ['student-service', 'Inbox', 'fas fa-inbox'], ['orders', 'Orders', 'fas fa-book-open'], ['library', 'Library', 'fas fa-book']]
+            },
+            {
+                group: 'Campus',
+                items: [['social', 'Social', 'fas fa-comments']]
+            }
+        ]
+    }
+};
+</script>
+<script defer src="assets/js/pages/standalone-mobile-shell.js?v=20260520-timetable-mobile1"></script>
+</body>
+</html>
+
+
+
+
+
+

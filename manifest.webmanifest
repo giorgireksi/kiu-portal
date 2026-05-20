@@ -1,0 +1,11 @@
+{
+  "name": "KIU Portal",
+  "short_name": "KIU",
+  "start_url": "/index.html",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#09111f",
+  "theme_color": "#c8822a",
+  "description": "KIU LMS, campus communication, scheduling, exams, and student services portal.",
+  "icons": []
+}

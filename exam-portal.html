@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KIU Exam Portal</title>
+    <link rel="stylesheet" href="assets/css/kiu-fonts.css?v=20260515-fonts1">
+    <link rel="stylesheet" href="assets/vendor/fontawesome/css/all.min.css?v=1776604822086">
+    <style>
+        :root {
+            color-scheme: light;
+            --exam-ink: #141f31;
+            --exam-muted: #63748f;
+            --exam-line: #d6e0ec;
+            --exam-panel: rgba(255, 255, 255, 0.92);
+            --exam-accent: #0f4eb8;
+            --exam-accent-soft: #edf4ff;
+            --exam-gold: #9c5c00;
+            --exam-gold-soft: #fff3de;
+            --exam-good: #116244;
+            --exam-good-soft: #e7f7ef;
+            --exam-danger: #a12f39;
+            --exam-danger-soft: #fcebee;
+            --exam-bg:
+                radial-gradient(circle at top left, rgba(15, 78, 184, 0.15), transparent 24%),
+                radial-gradient(circle at top right, rgba(156, 92, 0, 0.14), transparent 18%),
+                linear-gradient(180deg, #eef3f8 0%, #f6f7fa 55%, #eef2f6 100%);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            color: var(--exam-ink);
+            background: var(--exam-bg);
+            font-family: "Manrope", "Segoe UI", sans-serif;
+        }
+
+        .exam-page {
+            width: min(1240px, calc(100vw - 32px));
+            margin: 0 auto;
+            padding: 28px 0 44px;
+            display: grid;
+            gap: 24px;
+        }
+
+        .exam-hero {
+            border-radius: 32px;
+            background:
+                radial-gradient(circle at top right, rgba(255,255,255,0.18), transparent 34%),
+                linear-gradient(135deg, #111d34 0%, #0f4eb8 100%);
+            color: white;
+            box-shadow: 0 28px 64px rgba(17, 29, 52, 0.18);
+            padding: 30px;
+            display: grid;
+            gap: 22px;
+        }
+
+        .exam-kicker {
+            font-size: 11px;
+            font-weight: 900;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            opacity: 0.78;
+        }
+
+        .exam-hero-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            align-items: flex-start;
+            flex-wrap: wrap;
+        }
+
+        .exam-hero h1,
+        .exam-protected-title {
+            margin: 10px 0 0;
+            font-family: "Fraunces", Georgia, serif;
+            font-size: clamp(32px, 4.8vw, 46px);
+            line-height: 1.04;
+            letter-spacing: -0.02em;
+        }
+
+        .exam-hero p,
+        .exam-protected-copy {
+            margin: 10px 0 0;
+            max-width: 760px;
+            line-height: 1.75;
+            font-size: 14px;
+            opacity: 0.94;
+        }
+
+        .exam-banner-card {
+            min-width: 260px;
+            border-radius: 22px;
+            background: rgba(255, 255, 255, 0.14);
+            padding: 16px 18px;
+            display: grid;
+            gap: 8px;
+            backdrop-filter: blur(10px);
+        }
+
+        .exam-banner-card strong {
+            font-size: 16px;
+            font-weight: 900;
+        }
+
+        .exam-banner-card span {
+            font-size: 13px;
+            line-height: 1.6;
+            opacity: 0.9;
+        }
+
+        .exam-step-row {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .exam-step {
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.12);
+            padding: 14px 16px;
+            display: grid;
+            gap: 6px;
+        }
+
+        .exam-step strong {
+            font-size: 12px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .exam-step span {
+            font-size: 13px;
+            line-height: 1.6;
+            opacity: 0.92;
+        }
+
+        .exam-shell {
+            display: grid;
+            grid-template-columns: minmax(340px, 0.8fr) minmax(0, 1.2fr);
+            gap: 24px;
+            align-items: start;
+        }
+
+        .exam-panel {
+            background: var(--exam-panel);
+            border: 1px solid var(--exam-line);
+            border-radius: 28px;
+            padding: 22px;
+            box-shadow: 0 18px 40px rgba(17, 29, 52, 0.06);
+            backdrop-filter: blur(10px);
+        }
+
+        .exam-panel h2,
+        .exam-panel h3 {
+            margin: 0;
+        }
+
+        .exam-panel-copy {
+            margin: 8px 0 0;
+            color: var(--exam-muted);
+            font-size: 13px;
+            line-height: 1.7;
+        }
+
+        .exam-notice {
+            display: none;
+            border-radius: 18px;
+            padding: 14px 16px;
+            font-size: 13px;
+            line-height: 1.6;
+            margin-bottom: 16px;
+        }
+
+        .exam-notice.is-visible { display: block; }
+        .exam-notice.warn {
+            background: var(--exam-gold-soft);
+            border: 1px solid #f0d28f;
+            color: #7a4a04;
+        }
+        .exam-notice.danger {
+            background: var(--exam-danger-soft);
+            border: 1px solid #f1c0c6;
+            color: var(--exam-danger);
+        }
+
+        .exam-form {
+            margin-top: 18px;
+            display: grid;
+            gap: 14px;
+        }
+
+        .exam-label {
+            display: grid;
+            gap: 7px;
+            font-size: 11px;
+            font-weight: 900;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: #475970;
+        }
+
+        .exam-input,
+        .exam-textarea {
+            width: 100%;
+            min-height: 48px;
+            border-radius: 16px;
+            border: 1px solid var(--exam-line);
+            background: white;
+            color: var(--exam-ink);
+            padding: 0 14px;
+            font: inherit;
+        }
+
+        .exam-textarea {
+            min-height: 140px;
+            resize: vertical;
+            padding: 12px 14px;
+        }
+
+        .exam-primary-btn,
+        .exam-secondary-btn,
+        .exam-nav-btn {
+            appearance: none;
+            border: 0;
+            cursor: pointer;
+            min-height: 46px;
+            border-radius: 16px;
+            padding: 0 18px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font: inherit;
+            font-size: 13px;
+            font-weight: 800;
+            text-decoration: none;
+            transition: transform 0.18s ease, box-shadow 0.18s ease;
+        }
+
+        .exam-primary-btn:hover,
+        .exam-secondary-btn:hover,
+        .exam-nav-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .exam-primary-btn {
+            background: linear-gradient(135deg, #0f4eb8, #2f67cf);
+            color: white;
+            box-shadow: 0 16px 28px rgba(15, 78, 184, 0.18);
+        }
+
+        .exam-primary-btn.is-danger {
+            background: linear-gradient(135deg, #a12f39, #d24d63);
+            box-shadow: 0 16px 28px rgba(161, 47, 57, 0.18);
+        }
+
+        .exam-primary-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.55;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .exam-primary-btn.is-loading {
+            pointer-events: none;
+            opacity: 0.82;
+        }
+
+        .exam-spinner {
+            width: 16px;
+            height: 16px;
+            border-radius: 999px;
+            border: 2px solid rgba(255,255,255,0.42);
+            border-top-color: white;
+            animation: exam-spin 0.8s linear infinite;
+        }
+
+        @keyframes exam-spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .exam-secondary-btn {
+            background: white;
+            color: var(--exam-ink);
+            border: 1px solid var(--exam-line);
+        }
+
+        .exam-login-error {
+            min-height: 18px;
+            color: var(--exam-danger);
+            font-size: 12px;
+            line-height: 1.55;
+        }
+
+        .exam-security-strip {
+            margin-top: 16px;
+            border-radius: 18px;
+            border: 1px solid rgba(17, 98, 68, 0.18);
+            background: var(--exam-good-soft);
+            color: var(--exam-good);
+            padding: 12px 14px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        .exam-system-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 10px;
+            margin-top: 16px;
+        }
+
+        .exam-system-tile {
+            border-radius: 16px;
+            border: 1px solid var(--exam-line);
+            background: #fbfcff;
+            padding: 12px 14px;
+            display: grid;
+            gap: 4px;
+        }
+
+        .exam-system-tile strong {
+            font-size: 11px;
+            color: var(--exam-muted);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .exam-system-tile span {
+            font-weight: 900;
+            color: var(--exam-ink);
+        }
+
+        .exam-trust-grid {
+            display: grid;
+            gap: 12px;
+        }
+
+        .exam-trust-card {
+            border-radius: 20px;
+            border: 1px solid var(--exam-line);
+            background: linear-gradient(180deg, #f8fbff 0%, #ffffff 100%);
+            padding: 16px;
+            display: grid;
+            gap: 8px;
+        }
+
+        .exam-trust-card strong {
+            font-size: 13px;
+            font-weight: 900;
+        }
+
+        .exam-trust-card span {
+            font-size: 13px;
+            line-height: 1.7;
+            color: var(--exam-muted);
+        }
+
+        .exam-session-list {
+            display: grid;
+            gap: 16px;
+            margin-top: 18px;
+        }
+
+        .exam-session-hero {
+            border-radius: 22px;
+            border: 1px solid var(--exam-line);
+            background: linear-gradient(135deg, #ffffff 0%, #f6f9fe 100%);
+            padding: 18px;
+            display: grid;
+            gap: 12px;
+        }
+
+        .exam-session-grid {
+            display: grid;
+            gap: 14px;
+        }
+
+        .exam-card {
+            border-radius: 22px;
+            border: 1px solid var(--exam-line);
+            background: white;
+            padding: 18px;
+            display: grid;
+            gap: 14px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .exam-card::before {
+            content: "";
+            position: absolute;
+            inset: 0 auto 0 0;
+            width: 5px;
+            background: var(--exam-accent);
+        }
+
+        .exam-card.is-live::before { background: var(--exam-good); }
+        .exam-card.is-closed::before { background: var(--exam-danger); }
+
+        .exam-launch-reason {
+            color: var(--exam-muted);
+            font-size: 12px;
+            font-weight: 800;
+            line-height: 1.5;
+        }
+
+        .exam-card-head {
+            display: flex;
+            justify-content: space-between;
+            gap: 14px;
+            align-items: flex-start;
+            flex-wrap: wrap;
+        }
+
+        .exam-card-title {
+            font-size: 19px;
+            font-weight: 900;
+        }
+
+        .exam-card-copy {
+            margin-top: 4px;
+            font-size: 13px;
+            color: var(--exam-muted);
+            line-height: 1.6;
+        }
+
+        .exam-card-meta {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 10px;
+        }
+
+        .exam-card-meta div {
+            border: 1px solid var(--exam-line);
+            border-radius: 16px;
+            background: #fbfcff;
+            padding: 12px 14px;
+            display: grid;
+            gap: 6px;
+        }
+
+        .exam-card-meta strong {
+            font-size: 11px;
+            font-weight: 900;
+            color: var(--exam-muted);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .exam-card-meta span {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--exam-ink);
+            line-height: 1.4;
+        }
+
+        .exam-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 7px 12px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .exam-status-scheduled { background: var(--exam-accent-soft); color: var(--exam-accent); }
+        .exam-status-live { background: var(--exam-good-soft); color: var(--exam-good); }
+        .exam-status-closed { background: var(--exam-danger-soft); color: var(--exam-danger); }
+
+        .exam-chip-row {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .exam-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border-radius: 999px;
+            border: 1px solid var(--exam-line);
+            background: white;
+            padding: 8px 12px;
+            font-size: 11px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .exam-empty {
+            border: 1px dashed #b9c6d9;
+            border-radius: 22px;
+            padding: 34px 24px;
+            text-align: center;
+            color: var(--exam-muted);
+            background: linear-gradient(180deg, #f9fbfd 0%, #ffffff 100%);
+            display: grid;
+            gap: 12px;
+            place-items: center;
+        }
+
+        .exam-empty-icon {
+            width: 58px;
+            height: 58px;
+            border-radius: 20px;
+            background: var(--exam-accent-soft);
+            color: var(--exam-accent);
+            display: grid;
+            place-items: center;
+            font-size: 24px;
+        }
+
+        .exam-empty strong {
+            color: var(--exam-ink);
+            font-size: 18px;
+        }
+
+        .exam-dashboard-shell {
+            display: none;
+        }
+
+        .exam-dashboard-head {
+            display: flex;
+            justify-content: space-between;
+            gap: 14px;
+            align-items: flex-start;
+            flex-wrap: wrap;
+        }
+
+        .exam-confirm-kicker {
+            color: var(--exam-muted);
+            opacity: 1;
+        }
+
+        .exam-protected-shell {
+            width: min(1240px, calc(100vw - 32px));
+            margin: 0 auto;
+            padding: 28px 0 44px;
+            display: grid;
+            gap: 22px;
+        }
+
+        .exam-protected-hero {
+            border-radius: 30px;
+            border: 1px solid rgba(255,255,255,0.08);
+            background:
+                radial-gradient(circle at top right, rgba(255,255,255,0.18), transparent 32%),
+                linear-gradient(135deg, #111d34 0%, #0f4eb8 100%);
+            color: white;
+            padding: 28px;
+            box-shadow: 0 26px 56px rgba(17, 29, 52, 0.16);
+            display: grid;
+            gap: 14px;
+        }
+
+        .exam-hero-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .exam-hero-meta span {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.12);
+            padding: 8px 12px;
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .exam-protected-layout {
+            display: grid;
+            grid-template-columns: minmax(260px, 0.7fr) minmax(0, 1.3fr);
+            gap: 22px;
+            align-items: start;
+        }
+
+        .exam-protected-card {
+            border-radius: 26px;
+            border: 1px solid var(--exam-line);
+            background: rgba(255,255,255,0.94);
+            box-shadow: 0 18px 44px rgba(17, 29, 52, 0.06);
+            padding: 22px;
+            display: grid;
+            gap: 16px;
+            backdrop-filter: blur(10px);
+        }
+
+        .exam-progress-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+        }
+
+        .exam-progress-box {
+            border-radius: 18px;
+            border: 1px solid var(--exam-line);
+            background: #f7faff;
+            padding: 14px;
+            display: grid;
+            gap: 6px;
+        }
+
+        .exam-progress-box strong {
+            font-size: 11px;
+            font-weight: 900;
+            color: var(--exam-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .exam-progress-box span {
+            font-size: 25px;
+            font-weight: 900;
+        }
+
+        .exam-nav-list {
+            display: grid;
+            gap: 10px;
+        }
+
+        .exam-nav-btn {
+            min-height: 44px;
+            width: 100%;
+            justify-content: space-between;
+            background: white;
+            color: var(--exam-ink);
+            border: 1px solid var(--exam-line);
+            box-shadow: none;
+        }
+
+        .exam-nav-btn.is-answered {
+            background: var(--exam-good-soft);
+            border-color: #bfe6d8;
+            color: var(--exam-good);
+        }
+
+        .exam-nav-btn.is-flagged {
+            background: var(--exam-gold-soft);
+            border-color: #f0d28f;
+            color: var(--exam-gold);
+        }
+
+        .exam-question-list {
+            display: grid;
+            gap: 16px;
+        }
+
+        .exam-question-card {
+            border-radius: 22px;
+            border: 1px solid var(--exam-line);
+            background: linear-gradient(180deg, #fbfdff 0%, #ffffff 100%);
+            padding: 18px;
+            display: grid;
+            gap: 12px;
+        }
+
+        .exam-question-title {
+            font-size: 11px;
+            font-weight: 900;
+            color: var(--exam-muted);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .exam-question-copy {
+            font-size: 18px;
+            font-weight: 800;
+            line-height: 1.55;
+        }
+
+        .exam-question-score {
+            font-size: 12px;
+            color: var(--exam-muted);
+        }
+
+        .exam-question-toolbar {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .exam-flag-btn {
+            border: 1px solid var(--exam-line);
+            border-radius: 999px;
+            background: white;
+            min-height: 34px;
+            padding: 0 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            cursor: pointer;
+            color: var(--exam-muted);
+            font-size: 12px;
+            font-weight: 900;
+        }
+
+        .exam-flag-btn.is-active {
+            background: var(--exam-gold-soft);
+            border-color: #f0d28f;
+            color: var(--exam-gold);
+        }
+
+        .exam-option-list {
+            display: grid;
+            gap: 10px;
+        }
+
+        .exam-option {
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+            border: 1px solid var(--exam-line);
+            border-radius: 16px;
+            background: white;
+            padding: 12px 14px;
+            font-size: 14px;
+            line-height: 1.6;
+            transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+        }
+
+        .exam-option:hover,
+        .exam-option:focus-within {
+            border-color: rgba(15, 78, 184, 0.42);
+            box-shadow: 0 14px 26px rgba(15, 78, 184, 0.08);
+            transform: translateY(-1px);
+        }
+
+        .exam-sticky-timer {
+            position: sticky;
+            top: 12px;
+            z-index: 5;
+            border: 1px solid rgba(15, 78, 184, 0.22);
+            border-radius: 22px;
+            background: rgba(255, 255, 255, 0.94);
+            box-shadow: 0 18px 42px rgba(17, 29, 52, 0.08);
+            padding: 14px;
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 10px;
+            backdrop-filter: blur(12px);
+        }
+
+        .exam-sticky-timer div {
+            border-radius: 16px;
+            background: #f7faff;
+            border: 1px solid var(--exam-line);
+            padding: 12px 14px;
+            display: grid;
+            gap: 4px;
+        }
+
+        .exam-sticky-timer strong,
+        .exam-autosave strong {
+            font-size: 11px;
+            font-weight: 900;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--exam-muted);
+        }
+
+        .exam-sticky-timer span {
+            font-size: 18px;
+            font-weight: 900;
+        }
+
+        .exam-autosave {
+            border-radius: 16px;
+            border: 1px solid var(--exam-line);
+            background: #fbfcff;
+            padding: 12px 14px;
+            display: grid;
+            gap: 4px;
+            color: var(--exam-muted);
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .exam-blocked-shell {
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            padding: 28px;
+        }
+
+        .exam-blocked-card {
+            width: min(760px, 100%);
+            border-radius: 30px;
+            border: 1px solid var(--exam-line);
+            background: rgba(255, 255, 255, 0.94);
+            box-shadow: 0 28px 70px rgba(17, 29, 52, 0.14);
+            padding: 30px;
+            display: grid;
+            gap: 16px;
+            text-align: center;
+        }
+
+        .exam-blocked-icon {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto;
+            border-radius: 22px;
+            display: grid;
+            place-items: center;
+            color: white;
+            background: linear-gradient(135deg, #a12f39, #d24d63);
+            box-shadow: 0 18px 34px rgba(161, 47, 57, 0.2);
+            font-size: 24px;
+        }
+
+        .exam-confirm-backdrop {
+            position: fixed;
+            inset: 0;
+            z-index: 1000;
+            display: none;
+            place-items: center;
+            padding: 24px;
+            background: rgba(10, 18, 32, 0.58);
+            backdrop-filter: blur(8px);
+        }
+
+        .exam-confirm-backdrop.is-visible {
+            display: grid;
+        }
+
+        .exam-confirm-card {
+            width: min(520px, 100%);
+            border-radius: 28px;
+            background: white;
+            border: 1px solid var(--exam-line);
+            box-shadow: 0 30px 80px rgba(10, 18, 32, 0.28);
+            padding: 24px;
+            display: grid;
+            gap: 14px;
+        }
+
+        .exam-confirm-card h2 {
+            margin: 0;
+            font-size: 25px;
+        }
+
+        .exam-confirm-card p {
+            margin: 0;
+            color: var(--exam-muted);
+            line-height: 1.7;
+            font-size: 14px;
+        }
+
+        .exam-confirm-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .exam-action-row {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+        }
+
+        .exam-ready-panel,
+        .exam-receipt-card {
+            border-radius: 22px;
+            border: 1px solid var(--exam-line);
+            background: linear-gradient(180deg, #f8fbff 0%, #ffffff 100%);
+            padding: 24px;
+            display: grid;
+            gap: 14px;
+        }
+
+        .exam-receipt-card {
+            text-align: left;
+        }
+
+        @media (max-width: 980px) {
+            .exam-shell,
+            .exam-protected-layout {
+                grid-template-columns: 1fr;
+            }
+            .exam-card-meta,
+            .exam-step-row,
+            .exam-progress-grid,
+            .exam-system-grid,
+            .exam-sticky-timer {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="exam-portal-root">
+        <main class="exam-page">
+            <section class="exam-hero">
+                <div class="exam-hero-row">
+                    <div>
+                        <div class="exam-kicker">Separate Student Access</div>
+                        <h1>Computer Exam Portal</h1>
+                        <p>Students use this separate portal only inside the KIU anti-cheat browser. Identity is verified with university email and student ID before the scheduled exam can be started.</p>
+                    </div>
+                    <div class="exam-banner-card" id="exam-student-banner">
+                        <strong>Identity Check Required</strong>
+                        <span>Sign in to view your exam windows, countdowns, and secure launch actions.</span>
+                    </div>
+                </div>
+                <div class="exam-step-row">
+                    <div class="exam-step">
+                        <strong>1. Verify</strong>
+                        <span>Use the same email and student ID already tied to your university account.</span>
+                    </div>
+                    <div class="exam-step">
+                        <strong>2. Wait</strong>
+                        <span>Review the exact subject, time, and countdown before the session opens.</span>
+                    </div>
+                    <div class="exam-step">
+                        <strong>3. Launch Securely</strong>
+                        <span>Start opens the protected exam flow and hands control to the anti-cheat environment.</span>
+                    </div>
+                </div>
+            </section>
+
+            <div class="exam-shell">
+                <section class="exam-panel" id="exam-auth-pane">
+                    <h2>Student Sign In</h2>
+                    <p class="exam-panel-copy">Enter the university email and student ID/card number assigned to the exam account. Verification shows assigned sessions only; it does not start an exam.</p>
+                    <div class="exam-security-strip">
+                        <i class="fas fa-shield-halved"></i>
+                        <span>Secure anti-cheat browser detected</span>
+                    </div>
+                    <form class="exam-form" id="exam-login-form">
+                        <label class="exam-label">
+                            University Email
+                            <input class="exam-input" id="exam-login-email" type="email" autocomplete="username" placeholder="student@kiu.local">
+                        </label>
+                        <label class="exam-label">
+                            Student ID
+                            <input class="exam-input" id="exam-login-student-id" type="text" autocomplete="off" placeholder="e.g. STU-001">
+                        </label>
+                        <div class="exam-login-error" id="exam-login-error"></div>
+                        <button type="submit" class="exam-primary-btn" id="exam-login-submit"><i class="fas fa-arrow-right-to-bracket"></i> Verify Identity</button>
+                    </form>
+                </section>
+
+                <section class="exam-panel">
+                    <h2>Exam Access Rules</h2>
+                    <p class="exam-panel-copy">Review these before attempting any scheduled exam.</p>
+                    <div class="exam-system-grid">
+                        <div class="exam-system-tile"><strong>Frontend</strong><span id="exam-frontend-status">Online</span></div>
+                        <div class="exam-system-tile"><strong>Backend</strong><span id="exam-backend-status">Checking</span></div>
+                        <div class="exam-system-tile"><strong>Browser</strong><span>Protected</span></div>
+                    </div>
+                    <div class="exam-trust-grid">
+                        <div class="exam-trust-card">
+                            <strong>Secure start only</strong>
+                            <span>This portal is blocked in normal browsers. Open it through the KIU anti-cheat browser to view assigned sessions and start an exam.</span>
+                        </div>
+                        <div class="exam-trust-card">
+                            <strong>Session-specific timing</strong>
+                            <span>Availability depends on the exact admin schedule for your group. Early access stays locked even if the exam is visible.</span>
+                        </div>
+                        <div class="exam-trust-card">
+                            <strong>Protected attempt</strong>
+                            <span>Once inside the secure exam, closing or leaving the protected window may trigger automatic submission.</span>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <section class="exam-panel exam-dashboard-shell" id="exam-dashboard">
+                <div class="exam-dashboard-head">
+                    <div>
+                        <h2>My Exam Sessions</h2>
+                        <p class="exam-panel-copy">You only see sessions assigned to this student account. Live sessions appear first, then the next upcoming window.</p>
+                    </div>
+                    <button type="button" class="exam-secondary-btn" id="exam-logout-btn"><i class="fas fa-right-from-bracket"></i> Logout</button>
+                </div>
+                <div class="exam-notice" id="exam-portal-notice"></div>
+                <div class="exam-session-list" id="exam-session-list"></div>
+            </section>
+        </main>
+    </div>
+    <div class="exam-confirm-backdrop" id="exam-confirm-modal" role="dialog" aria-modal="true" aria-labelledby="exam-confirm-title">
+        <section class="exam-confirm-card">
+            <div class="exam-kicker exam-confirm-kicker" id="exam-confirm-kicker">Confirm Action</div>
+            <h2 id="exam-confirm-title">Continue?</h2>
+            <p id="exam-confirm-copy">Confirm before continuing.</p>
+            <div class="exam-confirm-actions">
+                <button type="button" class="exam-secondary-btn" id="exam-confirm-cancel">Cancel</button>
+                <button type="button" class="exam-primary-btn" id="exam-confirm-ok">Continue</button>
+            </div>
+        </section>
+    </div>
+    <script defer src="assets/js/pages/exam-portal.js?v=20260509-examportal-backend1"></script>
+</body>
+</html>

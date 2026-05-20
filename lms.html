@@ -1,0 +1,3839 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>KIU - Learning Management System</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230B192C'/%3E%3Ctext x='32' y='41' text-anchor='middle' font-family='Arial, sans-serif' font-size='24' font-weight='700' fill='white'%3EK%3C/text%3E%3C/svg%3E">
+    <link rel="stylesheet" href="assets/vendor/fontawesome/css/all.min.css?v=1776604822059">
+    <link rel="stylesheet" href="assets/css/kiu-fonts.css?v=20260515-fonts1">
+    <script>
+        (function primeLmsTheme() {
+            function parseJson(raw) {
+                if (!raw) return null;
+                try {
+                    return JSON.parse(raw);
+                } catch (e) {
+                    return null;
+                }
+            }
+
+            function normalizeRole(value) {
+                const role = String(value || '').trim().toLowerCase();
+                return ['student', 'professor', 'ta', 'admin', 'student_service'].includes(role) ? role : '';
+            }
+
+            function resolveScopeKey(authState, persistentState) {
+                const storedRole = normalizeRole(localStorage.getItem('currentUserRole'));
+                const authRole = normalizeRole(authState?.role);
+                const role = storedRole || authRole || 'student';
+                const faculty = String(
+                    localStorage.getItem('currentFaculty')
+                    || authState?.facultyCode
+                    || authState?.faculty
+                    || ''
+                ).trim().toUpperCase() || 'ECON';
+                return `${role}::${faculty}`;
+            }
+
+            try {
+                const persistentState = parseJson(localStorage.getItem('KIU_PERSISTENT_STATE'));
+                const authState = parseJson(localStorage.getItem('KIU_AUTH_STATE'));
+                const userId = String(
+                    authState?.id
+                    || sessionStorage.getItem('KIU_ACTIVE_SESSION_USER_ID')
+                    || persistentState?.auth?.activeUserId
+                    || authState?.email
+                    || ''
+                ).trim();
+                const scopeKey = resolveScopeKey(authState, persistentState);
+                const visualsByUser = userId ? persistentState?.homeDashboardPreferencesByUser?.[userId] : null;
+                const themeMode = String(
+                    visualsByUser?.visualsByScope?.[scopeKey]?.themeMode
+                    || visualsByUser?.visuals?.themeMode
+                    || ''
+                ).trim().toLowerCase();
+                if (themeMode !== 'light') return;
+                const root = document.documentElement;
+                root.classList.add('lux-light-mode');
+                root.dataset.luxThemeMode = 'light';
+                root.style.setProperty('--lux-bg', '#efebe4');
+                root.style.setProperty('--lux-bg-soft', '#f7f3ec');
+                root.style.setProperty('--lux-surface', '#ffffff');
+                root.style.setProperty('--lux-surface-2', '#f5f1ea');
+                root.style.setProperty('--lux-surface-3', '#ece6db');
+                root.style.setProperty('--lux-border', 'rgba(48,34,22,0.10)');
+                root.style.setProperty('--lux-border-strong', 'rgba(48,34,22,0.18)');
+                root.style.setProperty('--lux-text', '#201912');
+                root.style.setProperty('--lux-text-muted', 'rgba(32,25,18,0.66)');
+                root.style.setProperty('--lux-text-soft', 'rgba(32,25,18,0.36)');
+                root.style.setProperty('--lux-shadow', '0 24px 54px rgba(62,42,20,0.12)');
+            } catch (e) {}
+        })();
+    </script>
+    <link rel="stylesheet" href="assets/css/base.css?v=20260419-libsync1">
+    <link rel="stylesheet" href="assets/css/layout.css?v=1776604822059">
+    <link rel="stylesheet" href="assets/css/components.css?v=1776604822059">
+    <link rel="stylesheet" href="assets/css/index-luxury.css?v=20260503-lms-hero-fade1">
+    <link rel="stylesheet" href="assets/css/mobile-responsive.css?v=20260419-libsync1">
+    <script src="assets/js/theme-primer.js?v=20260419-flat5"></script>
+    <script>
+        (function initLmsExportLibraryLoader() {
+            const exportSources = {
+                jspdf: 'assets/vendor/export-libs/jspdf.umd.min.js',
+                docx: 'assets/vendor/export-libs/docx.iife.js',
+                fileSaver: 'assets/vendor/export-libs/FileSaver.min.js'
+            };
+            const pendingLoads = {};
+            const isReady = {
+                jspdf: () => typeof window.jspdf !== 'undefined' || typeof window.jsPDF !== 'undefined',
+                docx: () => typeof window.docx !== 'undefined',
+                fileSaver: () => typeof window.saveAs === 'function'
+            };
+            function loadScriptOnce(key) {
+                if (isReady[key]?.()) return Promise.resolve();
+                if (pendingLoads[key]) return pendingLoads[key];
+                pendingLoads[key] = new Promise((resolve, reject) => {
+                    const script = document.createElement('script');
+                    script.src = exportSources[key];
+                    script.async = true;
+                    script.onload = () => resolve();
+                    script.onerror = () => reject(new Error(`Could not load ${key} export library.`));
+                    document.head.appendChild(script);
+                });
+                return pendingLoads[key];
+            }
+            window.ensureLmsExportLibraries = function ensureLmsExportLibraries(format) {
+                const normalized = String(format || '').toLowerCase();
+                if (normalized === 'pdf') return loadScriptOnce('jspdf');
+                if (normalized === 'docx') return Promise.all([loadScriptOnce('docx'), loadScriptOnce('fileSaver')]);
+                return Promise.resolve();
+            };
+            function ensureLmsExportRuntime() {
+                if (typeof window.ensurePortalRegistrationRuntimeLoaded === 'function') {
+                    return Promise.resolve(window.ensurePortalRegistrationRuntimeLoaded()).catch(() => false);
+                }
+                return Promise.resolve(true);
+            }
+            function wrapExportFunction(name, formatIndex) {
+                const original = window[name];
+                if (typeof original !== 'function' || original.__lmsLazyExportWrapped) return false;
+                window[name] = async function lmsLazyExportWrapper() {
+                    const args = Array.from(arguments);
+                    const format = args[formatIndex];
+                    try {
+                        await window.ensureLmsExportLibraries(format);
+                    } catch (error) {
+                        alert('The export library could not be loaded. Please check your connection and try again.');
+                        return undefined;
+                    }
+                    return original.apply(this, args);
+                };
+                window[name].__lmsLazyExportWrapped = true;
+                return true;
+            }
+            function installExportStub(name, formatIndex) {
+                if (typeof window[name] === 'function') return;
+                const stub = async function lmsLazyExportStub() {
+                    const args = Array.from(arguments);
+                    const format = args[formatIndex];
+                    await ensureLmsExportRuntime();
+                    try {
+                        await window.ensureLmsExportLibraries(format);
+                    } catch (error) {
+                        alert('The export library could not be loaded. Please try again.');
+                        return undefined;
+                    }
+                    const realExport = window[name];
+                    if (typeof realExport === 'function' && realExport !== stub) {
+                        return realExport.apply(this, args);
+                    }
+                    alert('The quiz export tools are still loading. Please try again in a moment.');
+                    return undefined;
+                };
+                stub.__lmsLazyExportWrapped = true;
+                window[name] = stub;
+            }
+            function installExportWrappers() {
+                installExportStub('exportLmsQuizDraft', 0);
+                installExportStub('exportLmsQuizById', 1);
+                const wrappedDraft = wrapExportFunction('exportLmsQuizDraft', 0);
+                const wrappedById = wrapExportFunction('exportLmsQuizById', 1);
+                return wrappedDraft && wrappedById;
+            }
+            [0, 200, 800, 1800].forEach((delay) => {
+                window.setTimeout(installExportWrappers, delay);
+            });
+            document.addEventListener('DOMContentLoaded', installExportWrappers, { once: true });
+            window.addEventListener('load', installExportWrappers, { once: true });
+        })();
+    </script>
+    <style>
+        .page-section { display: block; }
+        .page-section[style*="display: none"],
+        .page-section[style*="display:none"] { display: none !important; }
+
+        /* Semantic tokens */
+        :root {
+            --lms-success: #10b981;
+            --lms-warning: #f59e0b;
+            --lms-info: #3b82f6;
+            --lms-danger: #ef4444;
+            --lms-purple: #8b5cf6;
+        }
+        body.lux-route-lms {
+            --lms-panel-radius: 16px;
+            --lms-card-radius: 14px;
+            --lms-control-radius: 12px;
+            --lms-shadow: 0 12px 28px rgba(0,0,0,0.14);
+            --lms-shadow-soft: 0 8px 20px rgba(0,0,0,0.10);
+            --lms-focus-ring: 0 0 0 3px rgba(var(--lux-accent-rgb),0.14);
+            --lms-pro-surface: rgba(13, 19, 31, var(--lux-panel-alpha, 0.84));
+            --lms-pro-surface-soft: rgba(255, 255, 255, calc(0.035 + var(--lux-glass-alpha, 0.08) * 0.55));
+            --lms-pro-control: rgba(255, 255, 255, calc(0.055 + var(--lux-glass-alpha, 0.08) * 0.5));
+            --lms-pro-border: rgba(255, 255, 255, 0.12);
+            --lms-pro-shadow: 0 14px 34px rgba(0,0,0,0.16);
+        }
+        html.lux-light-mode body.lux-route-lms,
+        body.lux-light-mode.lux-route-lms {
+            --lms-shadow: 0 10px 24px rgba(31,41,55,0.08);
+            --lms-shadow-soft: 0 8px 18px rgba(31,41,55,0.06);
+            --lms-pro-surface: rgba(255, 255, 255, var(--lux-panel-alpha, 0.88));
+            --lms-pro-surface-soft: rgba(248, 250, 252, calc(0.54 + var(--lux-glass-alpha, 0.08) * 0.7));
+            --lms-pro-control: rgba(255, 255, 255, calc(0.72 + var(--lux-glass-alpha, 0.08) * 0.5));
+            --lms-pro-border: rgba(35, 45, 64, 0.12);
+            --lms-pro-shadow: 0 12px 28px rgba(31,41,55,0.08);
+        }
+        body.lux-route-lms #app-content,
+        body.lux-route-lms #page-lms,
+        body.lux-route-lms #page-lms-groups,
+        body.lux-route-lms #page-lms-inner { background: transparent; }
+
+        /* Stage layout */
+        body.lux-route-lms .lms-route-stage {
+            display: grid; gap: 18px; max-width: 1380px; margin: 0 auto;
+        }
+
+        /* Panels & cards base */
+        body.lux-route-lms :is(.page-hero,.lux-card,.lms-route-hero,.lms-route-panel,.lms-route-card,.accordion-item,.surface-card,.course-card) {
+            border-radius: var(--lms-panel-radius);
+            border: 1px solid var(--lux-border);
+            background: var(--lux-surface);
+            box-shadow: var(--lms-shadow-soft);
+            color: var(--lux-text);
+        }
+        body.lux-route-lms :is(.page-hero,.lms-route-hero) {
+            background: linear-gradient(135deg,rgba(var(--lux-accent-rgb),0.10),transparent 38%),var(--lux-surface);
+            padding: 28px 32px;
+        }
+        body.lux-route-lms .lms-route-panel { padding: 20px; }
+
+        /* Typography */
+        body.lux-route-lms :is(.page-hero-title,.lux-card-title,.lms-route-title,.lms-route-empty-title) {
+            font-family: 'Inter',sans-serif;
+            color: var(--lux-text);
+        }
+        body.lux-route-lms .page-hero-title {
+            font-size: clamp(30px,3vw,42px); line-height: 1.08; font-weight: 850;
+        }
+        body.lux-route-lms .lux-card-title,
+        body.lux-route-lms .lms-route-title {
+            font-size: clamp(22px,2.1vw,30px); line-height: 1.15; font-weight: 820;
+        }
+        body.lux-route-lms :is(.page-hero-copy,.lux-card-copy,.lms-clean-card-copy,.lms-route-copy,.lms-route-card-copy,.lms-clean-subview-copy) {
+            max-width: 760px; color: var(--lux-text-muted); font-size: 13px; line-height: 1.65;
+        }
+
+        /* Kickers & labels */
+        body.lux-route-lms :is(.lms-clean-kicker,.lms-clean-card-kicker,.lms-route-eyebrow,.lms-clean-metric-label,.lms-route-stat-label,.lms-route-field-label,.lms-route-kv-label) {
+            color: var(--lux-text-muted); letter-spacing: 0.06em; font-size: 11px; font-weight: 800; text-transform: uppercase;
+        }
+        .lms-clean-kicker { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; }
+
+        /* Hero v2 compact */
+        .lms-hero-v2 { padding: 28px 32px; }
+        .lms-hero-v2-grid {
+            display: grid; grid-template-columns: minmax(0,1.05fr) minmax(360px,0.95fr);
+            gap: 24px; align-items: stretch;
+        }
+        .lms-hero-v2-title { font-size: clamp(30px,3.2vw,42px); font-weight: 700; letter-spacing: 0; margin-top: 10px; }
+        .lms-hero-v2-right { display: grid; gap: 12px; align-content: start; }
+        .lms-hero-v2-stats { display: grid; grid-template-columns: repeat(auto-fit,minmax(170px,1fr)); gap: 12px; }
+        .lms-hero-v2-stat {
+            display: flex; align-items: center; gap: 12px; padding: 14px 16px;
+            border-radius: var(--lms-card-radius); border: 1px solid var(--lux-border);
+            background: var(--lux-bg-soft); transition: transform 0.2s ease;
+        }
+        .lms-hero-v2-stat:hover { transform: translateY(-2px); }
+        .lms-hero-v2-stat-icon {
+            width: 38px; height: 38px; display: flex; align-items: center; justify-content: center;
+            border-radius: 12px; background: rgba(var(--lux-accent-rgb),0.12);
+            color: var(--lux-accent-2,#d8aa56); font-size: 15px; flex-shrink: 0;
+        }
+        .lms-hero-v2-stat-value {
+            font-family: 'DM Mono','Courier New',monospace; font-size: 18px; font-weight: 800;
+            color: var(--lux-text); letter-spacing: -0.02em; line-height: 1.2;
+        }
+        .lms-hero-v2-stat-label {
+            font-size: 11px; font-weight: 700; color: var(--lux-text-muted);
+            text-transform: uppercase; letter-spacing: 0.06em; margin-top: 2px;
+        }
+        .lms-hero-v2-meta { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+        .lms-hero-v2-left > * { animation: lms-stagger-in 0.5s ease both; }
+        .lms-hero-v2-left > *:nth-child(1) { animation-delay: 0.05s; }
+        .lms-hero-v2-left > *:nth-child(2) { animation-delay: 0.12s; }
+        .lms-hero-v2-left > *:nth-child(3) { animation-delay: 0.2s; }
+        .lms-hero-v2-left > *:nth-child(4) { animation-delay: 0.3s; }
+        .lms-hero-v2-right { animation: lms-stagger-in 0.5s ease 0.25s both; }
+        @keyframes lms-stagger-in {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Actions row */
+        .lms-clean-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 22px; }
+
+        /* Buttons */
+        body.lux-route-lms :is(.kiu-btn-blue,.kiu-btn-outline,.lms-clean-action-primary,.lms-clean-action-secondary,.lux-primary-btn,.lux-secondary-btn) {
+            min-height: 40px; border-radius: var(--lms-control-radius);
+            font-family: 'Inter',sans-serif; font-weight: 780;
+            display: inline-flex; align-items: center; gap: 8px; padding: 12px 18px;
+            cursor: pointer; transition: transform 0.18s ease;
+        }
+        body.lux-route-lms :is(.kiu-btn-blue,.lms-clean-action-primary,.lux-primary-btn) {
+            background: var(--lux-accent); color: #fff;
+            border: 1px solid rgba(var(--lux-accent-rgb),0.38); box-shadow: none;
+        }
+        body.lux-route-lms :is(.kiu-btn-outline,.lms-clean-action-secondary,.lux-secondary-btn) {
+            background: var(--lux-surface); color: var(--lux-text);
+            border: 1px solid var(--lux-border); box-shadow: none;
+        }
+        body.lux-route-lms :is(.kiu-btn-blue,.kiu-btn-outline,.lms-clean-action-primary,.lms-clean-action-secondary):hover {
+            transform: translateY(-1px);
+        }
+
+        /* Quiz builder workspace */
+        body.lux-route-lms .lms-quiz-builder-shell {
+            display: grid;
+            gap: 16px;
+        }
+        body.lux-route-lms .lms-quiz-tool-panel {
+            border: 1px solid var(--lux-border);
+            border-radius: 22px;
+            background: linear-gradient(135deg, rgba(var(--lux-accent-rgb),0.055), transparent 42%), var(--lux-surface);
+            box-shadow: var(--lms-shadow-soft);
+            overflow: hidden;
+        }
+        body.lux-route-lms .lms-quiz-tool-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            padding: 16px 18px;
+        }
+        body.lux-route-lms .lms-quiz-tool-title {
+            display: grid;
+            gap: 4px;
+            min-width: 0;
+        }
+        body.lux-route-lms .lms-quiz-tool-title strong {
+            color: var(--lux-text);
+            font-size: 16px;
+            letter-spacing: -0.02em;
+        }
+        body.lux-route-lms .lms-quiz-tool-title span {
+            color: var(--lux-text-muted);
+            font-size: 12px;
+            line-height: 1.45;
+        }
+        body.lux-route-lms .lms-quiz-tool-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+        body.lux-route-lms .lms-quiz-tool-body {
+            display: grid;
+            gap: 14px;
+            padding: 0 18px 18px;
+        }
+        body.lux-route-lms .lms-quiz-tool-panel.is-collapsed .lms-quiz-tool-body {
+            display: none;
+        }
+        body.lux-route-lms .lms-quiz-policy-card {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 14px 16px;
+            border: 1px solid var(--lux-border);
+            border-radius: 18px;
+            background: var(--lux-bg-soft);
+            color: var(--lux-text-muted);
+            font-size: 12px;
+            line-height: 1.45;
+        }
+        body.lux-route-lms .lms-quiz-policy-card input {
+            margin-top: 2px;
+            width: 18px;
+            height: 18px;
+            accent-color: var(--lux-accent);
+        }
+        body.lux-route-lms .lms-quiz-question-layout {
+            display: grid;
+            grid-template-columns: minmax(220px, 260px) minmax(0, 1fr);
+            gap: 16px;
+            align-items: start;
+        }
+        body.lux-route-lms .lms-quiz-question-layout.is-nav-collapsed {
+            grid-template-columns: minmax(0, 1fr);
+        }
+        body.lux-route-lms .lms-quiz-question-layout.is-nav-collapsed .lms-quiz-question-nav-card {
+            display: none;
+        }
+        body.lux-route-lms .lms-quiz-compact-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 11px;
+            border-radius: 999px;
+            border: 1px solid var(--lux-border);
+            background: var(--lux-bg-soft);
+            color: var(--lux-text-muted);
+            font-size: 11px;
+            font-weight: 850;
+            white-space: nowrap;
+        }
+        @media (max-width: 900px) {
+            body.lux-route-lms .lms-quiz-question-layout,
+            body.lux-route-lms .lms-quiz-question-layout.is-nav-collapsed {
+                grid-template-columns: 1fr;
+            }
+            body.lux-route-lms .lms-quiz-tool-head {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+            body.lux-route-lms .lms-quiz-tool-actions {
+                width: 100%;
+                justify-content: flex-start;
+            }
+        }
+
+        /* Pill badges */
+        body.lux-route-lms :is(.lux-status-pill,.page-hero-badge,.lms-route-pill,.portal-msg-mini-badge) {
+            border-radius: 999px; border: 1px solid var(--lux-border);
+            background: var(--lux-surface); color: var(--lux-text-muted); box-shadow: none;
+        }
+        .lux-status-pill.is-muted {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 7px 12px; font-size: 11px; font-weight: 700;
+        }
+        body.lux-route-lms .lms-route-pill {
+            display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px;
+            font-size: 11px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
+        }
+
+        /* Tab bar */
+        body.lux-route-lms .tabs-container.lms-tabs {
+            position: sticky; top: 0; z-index: 12; margin-top: 14px;
+            padding: 8px; gap: 6px;
+            border: 1px solid var(--lux-border); border-radius: var(--lms-panel-radius);
+            background: var(--lux-bg-soft);
+            display: flex; overflow-x: auto; flex-wrap: nowrap; scrollbar-width: thin;
+        }
+        body.lux-route-lms .tabs-container.lms-tabs .tab {
+            display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+            min-height: 40px; white-space: nowrap; padding: 10px 16px;
+            border-radius: var(--lms-control-radius); font-size: 12px; font-weight: 700;
+            color: var(--lux-text-muted); border: 1px solid transparent;
+            background: transparent; cursor: pointer; transition: color 0.22s ease, background-color 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease, transform 0.22s ease; position: relative;
+        }
+        body.lux-route-lms .tabs-container.lms-tabs .tab:hover { color: var(--lux-text); background: rgba(var(--lux-accent-rgb),0.06); }
+        body.lux-route-lms .tabs-container.lms-tabs .tab.active {
+            color: var(--lux-text); background: var(--lux-surface);
+            border-color: rgba(var(--lux-accent-rgb),0.22); box-shadow: var(--lms-shadow-soft);
+        }
+        body.lux-route-lms .tabs-container.lms-tabs .tab.active::after {
+            content: ''; position: absolute; bottom: 2px; left: 16px; right: 16px;
+            height: 2px; border-radius: 2px;
+            background: linear-gradient(90deg,var(--lux-accent),var(--lux-accent-2));
+            animation: lms-tab-slide 0.28s ease;
+        }
+        @keyframes lms-tab-slide { from { transform: scaleX(0); opacity: 0; } to { transform: scaleX(1); opacity: 1; } }
+
+        /* Grids */
+        body.lux-route-lms .lms-route-hero-grid { display: grid; grid-template-columns: minmax(0,1.3fr) minmax(280px,0.9fr); gap: 14px; align-items: start; }
+        body.lux-route-lms :is(.lms-route-card-grid,.lms-route-kv-grid) { display: grid; grid-template-columns: repeat(auto-fit,minmax(240px,1fr)); gap: 12px; }
+        body.lux-route-lms .lms-route-stat-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(150px,1fr)); gap: 12px; }
+        body.lux-route-lms .lms-route-field-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(220px,1fr)); gap: 14px; }
+        body.lux-route-lms .lms-route-split { display: grid; gap: 14px; }
+        .lms-clean-metric-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(0,1fr)); gap: 12px; }
+        .lms-clean-subject-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(280px,1fr)); gap: 12px; }
+        .lms-clean-group-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(0,1fr)); gap: 12px; }
+
+        /* Stat cards */
+        body.lux-route-lms .lms-route-stat {
+            padding: 15px 16px; border-radius: var(--lms-card-radius);
+            border: 1px solid var(--lux-border); background: var(--lux-bg-soft); color: var(--lux-text);
+        }
+        body.lux-route-lms .lms-route-stat-value,
+        body.lux-route-lms .lms-route-kv-value {
+            margin-top: 6px; font-size: 24px; font-weight: 800; color: var(--lux-text);
+        }
+
+        /* Route cards */
+        body.lux-route-lms .lms-route-card {
+            padding: 18px; border-radius: var(--lms-card-radius);
+            border: 1px solid var(--lux-border); background: var(--lux-bg-soft);
+            box-shadow: none; color: var(--lux-text);
+        }
+        body.lux-route-lms .lms-route-card-head {
+            display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+        }
+        body.lux-route-lms .lms-route-card-title { font-size: 18px; font-weight: 820; line-height: 1.25; color: var(--lux-text); }
+        body.lux-route-lms .lms-route-copy,
+        body.lux-route-lms .lms-route-card-copy,
+        body.lux-route-lms .lms-route-empty-copy { font-size: 13px; line-height: 1.6; color: var(--lux-text-muted); }
+        body.lux-route-lms .lms-route-meta { color: var(--lux-text-muted); }
+        body.lux-route-lms .lms-route-kv {
+            padding: 14px 16px; border-radius: var(--lms-card-radius);
+            background: var(--lux-bg-soft); border: 1px solid var(--lux-border);
+        }
+        body.lux-route-lms .lms-route-kv-label {
+            font-size: 11px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--lux-text-muted);
+        }
+        body.lux-route-lms .lms-route-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+
+        /* Metric cards */
+        .lms-clean-metric-card {
+            border: 1px solid var(--lux-border); border-radius: var(--lms-card-radius);
+            padding: 18px; background: var(--lux-bg-soft);
+        }
+        .lms-clean-metric-label { display: inline-flex; align-items: center; gap: 7px; }
+        .lms-clean-metric-value { margin-top: 10px; font-size: 36px; font-weight: 800; color: var(--lux-text); }
+        .lms-clean-metric-copy { margin-top: 8px; font-size: 13px; line-height: 1.55; color: var(--lux-text-muted); }
+
+        /* Subject cards */
+        .lms-clean-subject-card {
+            border: 1px solid var(--lux-border); border-radius: var(--lms-card-radius);
+            background: var(--lux-bg-soft); padding: 0; cursor: pointer; overflow: hidden;
+            transition: transform 0.16s ease,border-color 0.16s ease; appearance: none; width: 100%; text-align: left;
+            min-height: 172px; position: relative;
+        }
+        .lms-clean-subject-card::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
+            background: linear-gradient(90deg,var(--card-stripe,var(--lux-accent)),var(--card-stripe-end,var(--lux-accent-2)));
+            opacity: 0.8; transition: height 0.2s ease;
+        }
+        .lms-clean-subject-card:hover { transform: translateY(-2px); border-color: rgba(var(--lux-accent-rgb),0.32); }
+        .lms-clean-subject-card:hover::before { height: 5px; opacity: 1; }
+        .lms-clean-subject-card:nth-child(6n+1) { --card-stripe: #3b82f6; --card-stripe-end: #6366f1; }
+        .lms-clean-subject-card:nth-child(6n+2) { --card-stripe: #10b981; --card-stripe-end: #06b6d4; }
+        .lms-clean-subject-card:nth-child(6n+3) { --card-stripe: #f59e0b; --card-stripe-end: #ef4444; }
+        .lms-clean-subject-card:nth-child(6n+4) { --card-stripe: #8b5cf6; --card-stripe-end: #ec4899; }
+        .lms-clean-subject-card:nth-child(6n+5) { --card-stripe: #06b6d4; --card-stripe-end: #3b82f6; }
+        .lms-clean-subject-card:nth-child(6n+6) { --card-stripe: #ef4444; --card-stripe-end: #f59e0b; }
+        .lms-clean-subject-card { animation: lms-card-enter 0.4s ease both; }
+        .lms-clean-subject-card:nth-child(1) { animation-delay: 0.1s; }
+        .lms-clean-subject-card:nth-child(2) { animation-delay: 0.16s; }
+        .lms-clean-subject-card:nth-child(3) { animation-delay: 0.22s; }
+        .lms-clean-subject-card:nth-child(4) { animation-delay: 0.28s; }
+        .lms-clean-subject-card:nth-child(5) { animation-delay: 0.34s; }
+        .lms-clean-subject-card:nth-child(6) { animation-delay: 0.40s; }
+        @keyframes lms-card-enter { from { opacity: 0; transform: translateY(16px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        .lms-clean-card-body { padding: 20px; }
+        .lms-clean-card-title { margin-top: 12px; font-size: 18px; font-weight: 820; color: var(--lux-text); line-height: 1.25; }
+        .lms-clean-card-copy { margin-top: 8px; font-size: 13px; line-height: 1.55; color: var(--lux-text-muted); }
+        .lms-clean-card-kicker { display: inline-flex; align-items: center; gap: 7px; font-size: 11px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--lux-text-muted); }
+        .lms-clean-card-meta { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+        .lms-clean-card-meta.is-compact { margin-top: 12px; }
+        .lms-clean-subject-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+        .lms-clean-subview-copy { font-size: 13px; line-height: 1.6; color: var(--lux-text-muted); }
+        .lms-clean-note { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; }
+        .lms-clean-note-copy { font-size: 12px; color: var(--lux-text-muted); }
+
+        /* Workspace content area */
+        body.lux-route-lms #lms-content-area,
+        body.lux-route-lms #lms-gradebook-wrapper { margin-top: 22px; color: var(--lux-text); }
+        body.lux-route-lms .lms-theme-sync,
+        body.lux-route-lms .lms-route-stack { display: grid; gap: 18px; color: var(--lux-text); }
+        body.lux-route-lms #lms-content-area > div { animation: lms-fade-in 0.28s ease; }
+        @keyframes lms-fade-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Forms */
+        body.lux-route-lms .lms-route-field { display: grid; gap: 8px; }
+        body.lux-route-lms .lms-route-field-label { font-size: 11px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--lux-text-muted); }
+        body.lux-route-lms :is(input:not([type='checkbox']):not([type='radio']),select,textarea,.lms-route-input,.lms-route-select,.lms-route-textarea) {
+            width: 100%; padding: 12px 14px; border-radius: var(--lms-control-radius);
+            border: 1px solid var(--lux-border); background: var(--lux-surface);
+            color: var(--lux-text); outline: none; font-family: 'Inter',sans-serif; font-size: 13px;
+            transition: border-color 0.2s ease,box-shadow 0.2s ease;
+        }
+        body.lux-route-lms :is(input,select,textarea,.lms-route-input,.lms-route-select,.lms-route-textarea):focus {
+            border-color: rgba(var(--lux-accent-rgb),0.38); box-shadow: var(--lms-focus-ring); outline: none;
+        }
+        body.lux-route-lms :is(input,textarea)::placeholder { color: var(--lux-text-soft); }
+        body.lux-route-lms .lms-route-textarea { min-height: 140px; resize: vertical; }
+
+        /* Accordion */
+        body.lux-route-lms .accordion-item,
+        body.lux-route-lms .course-card { overflow: hidden; }
+        body.lux-route-lms .accordion-header {
+            display: flex; align-items: center; justify-content: space-between; gap: 12px;
+            padding: 16px 18px; cursor: pointer; border-bottom: 1px solid var(--lux-border);
+            color: var(--lux-text); background: var(--lux-bg-soft);
+            border-radius: var(--lms-card-radius) var(--lms-card-radius) 0 0;
+        }
+        body.lux-route-lms .accordion-content { padding: 18px; }
+
+        /* File items */
+        body.lux-route-lms .file-item {
+            display: flex; align-items: center; justify-content: space-between; gap: 12px;
+            padding: 14px 16px; border-radius: var(--lms-card-radius);
+            border: 1px solid var(--lux-border); background: var(--lux-bg-soft); color: var(--lux-text);
+        }
+
+        /* Chat */
+        body.lux-route-lms .lms-route-chat-board { display: grid; gap: 16px; }
+        body.lux-route-lms .lms-route-chat-list {
+            min-height: 360px; max-height: 600px; overflow: auto; display: grid; gap: 14px;
+            padding: 12px; border-radius: var(--lms-panel-radius);
+            border: 1px solid var(--lux-border); background: var(--lux-bg-soft);
+        }
+        body.lux-route-lms .lms-route-chat-row { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
+        body.lux-route-lms .lms-route-chat-row.is-me { align-items: flex-end; }
+        body.lux-route-lms .lms-route-chat-meta { font-size: 11px; color: var(--lux-text-muted); }
+        body.lux-route-lms .lms-route-chat-bubble {
+            max-width: min(720px,100%); padding: 14px 16px; border-radius: 14px;
+            background: var(--lux-surface); border: 1px solid var(--lux-border);
+            line-height: 1.55; color: var(--lux-text);
+        }
+        body.lux-route-lms .lms-route-chat-row.is-me .lms-route-chat-bubble {
+            background: var(--lux-accent); border-color: rgba(var(--lux-accent-rgb),0.35); color: #fff;
+        }
+
+        /* Empty states */
+        body.lux-route-lms .lms-route-empty {
+            padding: 34px 24px; text-align: center; border-radius: var(--lms-panel-radius);
+            border: 1px dashed var(--lux-border); background: var(--lux-bg-soft);
+        }
+        body.lux-route-lms .lms-route-empty-title { font-size: 22px; color: var(--lux-text); }
+        .lms-clean-empty {
+            padding: 48px 28px; text-align: center; border-radius: var(--lms-panel-radius);
+            border: 1px dashed var(--lux-border); background: var(--lux-bg-soft);
+        }
+        .lms-clean-empty::before {
+            content: '\f02d'; font-family: 'Font Awesome 6 Free','Font Awesome 5 Free';
+            font-weight: 900; display: block; font-size: 36px; color: var(--lux-text-soft);
+            margin-bottom: 16px; opacity: 0.5;
+        }
+        .lms-clean-empty-title { font-size: 22px; color: var(--lux-text); }
+        .lms-clean-empty-copy { margin-top: 10px; font-size: 13px; line-height: 1.6; color: var(--lux-text-muted); }
+
+        /* Post / interaction panels */
+        body.lux-route-lms .lms-post,
+        body.lux-route-lms .lms-comment-box {
+            border-radius: var(--lms-panel-radius); border: 1px solid var(--lux-border);
+            background: var(--lux-surface); box-shadow: var(--lms-shadow-soft); color: var(--lux-text);
+        }
+
+        /* Banner hidden */
+        body.lux-route-lms .lms-banner { display: none; }
+
+        /* LMS inner headings */
+        body.lux-route-lms #lms-content-area h2,
+        body.lux-route-lms #lms-content-area h3,
+        body.lux-route-lms #lms-content-area h4 { color: var(--lux-text); }
+
+        /* Role context row */
+        body.lux-route-lms .lms-role-context { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+
+        /* Quiz card styling */
+        body.lux-route-lms [data-lms-student-quiz-card="true"] {
+            border-radius: var(--lms-card-radius); border: 1px solid var(--lux-border);
+            background: var(--lux-bg-soft); color: var(--lux-text);
+        }
+
+        /* Live lecture quiz */
+        body.lux-route-lms .lms-live-shell { display: grid; gap: 18px; }
+        body.lux-route-lms .lms-live-hero {
+            display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 18px; align-items: center;
+            padding: clamp(20px,3vw,30px); border: 1px solid var(--lux-border); border-radius: 24px;
+            background:
+                radial-gradient(circle at 88% 8%, rgba(var(--lux-accent-rgb),0.22), transparent 34%),
+                linear-gradient(135deg, rgba(var(--lux-accent-rgb),0.10), transparent 38%),
+                var(--lms-pro-surface);
+            box-shadow: var(--lms-pro-shadow);
+            overflow: hidden; position: relative;
+        }
+        body.lux-route-lms .lms-live-hero::after {
+            content: ""; position: absolute; inset: auto 24px 0 24px; height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(var(--lux-accent-rgb),0.44), transparent);
+            opacity: 0.8;
+        }
+        body.lux-route-lms .lms-live-kicker,
+        body.lux-route-lms .lms-live-label {
+            color: var(--lux-text-muted); font-size: 11px; font-weight: 850;
+            letter-spacing: 0.07em; text-transform: uppercase;
+        }
+        body.lux-route-lms .lms-live-title {
+            margin-top: 7px; color: var(--lux-text); font-size: clamp(24px,2.4vw,36px);
+            font-weight: 850; letter-spacing: 0; line-height: 1.08;
+        }
+        body.lux-route-lms .lms-live-copy {
+            max-width: 760px; margin-top: 8px; color: var(--lux-text-muted);
+            font-size: 13px; line-height: 1.6;
+        }
+        body.lux-route-lms .lms-live-pill-row,
+        body.lux-route-lms .lms-live-actions {
+            display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+        }
+        body.lux-route-lms .lms-live-pill {
+            min-height: 30px; display: inline-flex; align-items: center; gap: 7px;
+            padding: 6px 10px; border-radius: 999px; border: 1px solid var(--lux-border);
+            background: var(--lms-pro-surface-soft); color: var(--lux-text);
+            font-size: 11px; font-weight: 780; white-space: nowrap;
+        }
+        body.lux-route-lms .lms-live-pill.is-live { border-color: rgba(16,185,129,0.28); color: #10b981; background: rgba(16,185,129,0.10); }
+        body.lux-route-lms .lms-live-pill.is-paused { border-color: rgba(245,158,11,0.32); color: #f59e0b; background: rgba(245,158,11,0.10); }
+        body.lux-route-lms .lms-live-pill.is-locked { border-color: rgba(239,68,68,0.32); color: #ef4444; background: rgba(239,68,68,0.10); }
+        body.lux-route-lms .lms-live-layout {
+            display: grid; grid-template-columns: minmax(0,1fr) minmax(340px,420px);
+            gap: 16px; align-items: start;
+        }
+        body.lux-route-lms .lms-live-panel,
+        body.lux-route-lms .lms-live-card,
+        body.lux-route-lms .lms-live-student-card {
+            border: 1px solid var(--lux-border); border-radius: 22px;
+            background:
+                linear-gradient(145deg, rgba(255,255,255,0.035), transparent 36%),
+                var(--lms-pro-surface);
+            color: var(--lux-text);
+            box-shadow: var(--lms-pro-shadow);
+            overflow: hidden;
+        }
+        body.lux-route-lms .lms-live-panel { padding: 18px; }
+        body.lux-route-lms .lms-live-card,
+        body.lux-route-lms .lms-live-student-card { padding: 16px; }
+        body.lux-route-lms .lms-live-stage {
+            display: grid; gap: 16px; min-height: 390px; align-content: center; text-align: center;
+            padding: clamp(22px,4vw,48px); border-radius: 24px; border: 1px solid var(--lux-border);
+            background:
+                radial-gradient(circle at 50% 0%, rgba(var(--lux-accent-rgb),0.20), transparent 34%),
+                linear-gradient(135deg, rgba(var(--lux-accent-rgb),0.12), transparent 42%),
+                var(--lms-pro-surface-soft);
+            position: relative; overflow: hidden;
+        }
+        body.lux-route-lms .lms-live-stage::before {
+            content: ""; position: absolute; inset: 0; pointer-events: none;
+            background-image: linear-gradient(rgba(var(--lux-accent-rgb),0.055) 1px, transparent 1px), linear-gradient(90deg, rgba(var(--lux-accent-rgb),0.04) 1px, transparent 1px);
+            background-size: 42px 42px; mask-image: radial-gradient(circle at center, rgba(0,0,0,0.8), transparent 74%);
+        }
+        body.lux-route-lms .lms-live-stage > * { position: relative; z-index: 1; }
+        body.lux-route-lms .lms-live-stage.is-waiting {
+            min-height: 520px;
+            align-content: center;
+        }
+        body.lux-route-lms .lms-live-stage.is-waiting::after,
+        body.lux-route-lms .lms-live-stage.is-broadcast::after {
+            content: ""; position: absolute; inset: auto 24px 24px auto;
+            width: 120px; height: 120px; border-radius: 32px;
+            border: 1px solid rgba(var(--lux-accent-rgb),0.16);
+            background: linear-gradient(135deg, rgba(var(--lux-accent-rgb),0.10), transparent);
+            transform: rotate(8deg);
+            opacity: 0.55;
+        }
+        body.lux-route-lms .lms-live-director-bar {
+            display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 10px;
+            margin-bottom: 14px;
+        }
+        body.lux-route-lms .lms-live-director-tile {
+            padding: 13px; border-radius: 16px; border: 1px solid var(--lux-border);
+            background: var(--lms-pro-surface-soft); color: var(--lux-text);
+        }
+        body.lux-route-lms .lms-live-director-tile strong {
+            display: block; font-size: 20px; line-height: 1; font-weight: 950;
+        }
+        body.lux-route-lms .lms-live-director-tile span {
+            display: block; margin-top: 6px; color: var(--lux-text-muted);
+            font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.08em;
+        }
+        body.lux-route-lms .lms-live-broadcast-actions {
+            display: grid; grid-template-columns: minmax(160px,1.2fr) repeat(4,minmax(120px,1fr));
+            gap: 9px; margin-top: 12px;
+        }
+        body.lux-route-lms .lms-live-broadcast-actions .kiu-btn-blue,
+        body.lux-route-lms .lms-live-broadcast-actions .kiu-btn-outline {
+            justify-content: center; min-height: 46px;
+        }
+        body.lux-route-lms .lms-live-operator-note {
+            padding: 12px 14px; border-radius: 16px; border: 1px solid rgba(var(--lux-accent-rgb),0.18);
+            background: rgba(var(--lux-accent-rgb),0.08); color: var(--lux-text-muted);
+            font-size: 12px; font-weight: 760; line-height: 1.5; text-align: left;
+        }
+        body.lux-route-lms .lms-live-status-rail {
+            display: grid; grid-template-columns: repeat(5,minmax(0,1fr)); gap: 8px; margin: 2px auto 0; width: min(720px,100%);
+        }
+        body.lux-route-lms .lms-live-status-step {
+            min-height: 38px; display: grid; place-items: center; border: 1px solid var(--lux-border);
+            border-radius: 13px; background: rgba(255,255,255,0.035); color: var(--lux-text-muted);
+            font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.06em;
+        }
+        body.lux-route-lms .lms-live-status-step.is-active {
+            border-color: rgba(var(--lux-accent-rgb),0.42); color: var(--lux-text);
+            background: rgba(var(--lux-accent-rgb),0.14); box-shadow: inset 0 0 0 1px rgba(var(--lux-accent-rgb),0.08);
+        }
+        body.lux-route-lms .lms-live-timer-shell {
+            display: grid; grid-template-columns: auto minmax(0,1fr); gap: 12px; align-items: center;
+            width: min(560px,100%); margin: 0 auto;
+            padding: 10px 12px; border-radius: 16px; border: 1px solid var(--lux-border);
+            background: rgba(0,0,0,0.12);
+        }
+        body.lux-route-lms .lms-live-timer-number {
+            width: 58px; height: 58px; display: grid; place-items: center; border-radius: 18px;
+            background: linear-gradient(135deg, rgba(var(--lux-accent-rgb),0.22), rgba(var(--lux-accent-rgb),0.08));
+            border: 1px solid rgba(var(--lux-accent-rgb),0.28); color: var(--lux-text);
+            font-size: 22px; font-weight: 950;
+        }
+        body.lux-route-lms .lms-live-timer-track {
+            height: 14px; overflow: hidden; border-radius: 999px; background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(var(--lux-accent-rgb),0.14);
+        }
+        body.lux-route-lms .lms-live-timer-fill {
+            display: block; height: 100%; width: var(--live-progress,0%);
+            border-radius: inherit; background: linear-gradient(90deg, #10b981, var(--lux-accent), #f59e0b);
+            transition: width 220ms linear;
+        }
+        body.lux-route-lms .lms-live-question-text {
+            color: var(--lux-text); font-size: clamp(24px,3.4vw,44px);
+            font-weight: 860; line-height: 1.12; letter-spacing: 0;
+        }
+        body.lux-route-lms .lms-live-options {
+            display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; margin-top: 8px;
+        }
+        body.lux-route-lms .lms-live-option {
+            min-height: 74px; width: 100%; display: flex; align-items: center; gap: 13px;
+            padding: 16px; border: 1px solid var(--lux-border); border-radius: 18px;
+            background:
+                linear-gradient(135deg, rgba(255,255,255,0.05), transparent 42%),
+                var(--lms-pro-surface-soft);
+            color: var(--lux-text);
+            font: inherit; font-weight: 780; text-align: left; cursor: pointer;
+            transition: transform 160ms ease, border-color 160ms ease, background 160ms ease, opacity 160ms ease, box-shadow 160ms ease;
+        }
+        body.lux-route-lms .lms-live-option:hover { border-color: rgba(var(--lux-accent-rgb),0.38); transform: translateY(-2px); box-shadow: 0 16px 34px rgba(0,0,0,0.16); }
+        body.lux-route-lms .lms-live-option:disabled { cursor: default; opacity: 0.72; transform: none; }
+        body.lux-route-lms .lms-live-option.is-selected { border-color: rgba(var(--lux-accent-rgb),0.45); background: rgba(var(--lux-accent-rgb),0.13); }
+        body.lux-route-lms .lms-live-option.is-correct { border-color: rgba(16,185,129,0.42); background: rgba(16,185,129,0.14); }
+        body.lux-route-lms .lms-live-option:nth-child(1) { border-color: rgba(239,68,68,0.20); }
+        body.lux-route-lms .lms-live-option:nth-child(2) { border-color: rgba(59,130,246,0.20); }
+        body.lux-route-lms .lms-live-option:nth-child(3) { border-color: rgba(245,158,11,0.22); }
+        body.lux-route-lms .lms-live-option:nth-child(4) { border-color: rgba(16,185,129,0.20); }
+        body.lux-route-lms .lms-live-option:nth-child(1) .lms-live-option-key { background: rgba(239,68,68,0.18); color: #ef4444; }
+        body.lux-route-lms .lms-live-option:nth-child(2) .lms-live-option-key { background: rgba(59,130,246,0.18); color: #3b82f6; }
+        body.lux-route-lms .lms-live-option:nth-child(3) .lms-live-option-key { background: rgba(245,158,11,0.20); color: #d97706; }
+        body.lux-route-lms .lms-live-option:nth-child(4) .lms-live-option-key { background: rgba(16,185,129,0.18); color: #10b981; }
+        body.lux-route-lms .lms-live-option-key {
+            width: 40px; height: 40px; display: grid; place-items: center; flex: 0 0 auto;
+            border-radius: 14px; background: rgba(var(--lux-accent-rgb),0.14);
+            color: var(--lux-accent); font-weight: 950; font-size: 15px;
+        }
+        body.lux-route-lms .lms-live-option-text { min-width: 0; line-height: 1.25; overflow-wrap: anywhere; }
+        body.lux-route-lms .lms-live-student-card .lms-live-option {
+            min-height: 92px; font-size: 16px; border-radius: 20px;
+        }
+        body.lux-route-lms .lms-live-form-grid,
+        body.lux-route-lms .lms-live-side-stack,
+        body.lux-route-lms .lms-live-question-list,
+        body.lux-route-lms .lms-live-score-list { display: grid; gap: 10px; }
+        body.lux-route-lms .lms-live-form-grid.two { grid-template-columns: repeat(2,minmax(0,1fr)); }
+        body.lux-route-lms .lms-live-question-item {
+            display: grid; gap: 10px; padding: 14px; border: 1px solid var(--lux-border);
+            border-radius: 17px; background:
+                linear-gradient(135deg, rgba(255,255,255,0.04), transparent 40%),
+                var(--lms-pro-surface-soft);
+            transition: border-color 160ms ease, background 160ms ease, transform 160ms ease;
+        }
+        body.lux-route-lms .lms-live-question-item.is-active {
+            border-color: rgba(var(--lux-accent-rgb),0.42); background: rgba(var(--lux-accent-rgb),0.10);
+            transform: translateY(-1px);
+        }
+        body.lux-route-lms .lms-live-question-meta {
+            display: flex; flex-wrap: wrap; gap: 7px; margin-top: 8px;
+        }
+        body.lux-route-lms .lms-live-answer-key {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 24px; height: 24px; border-radius: 9px;
+            background: rgba(var(--lux-accent-rgb),0.14); color: var(--lux-accent);
+            font-size: 11px; font-weight: 950;
+        }
+        body.lux-route-lms .lms-live-control-grid {
+            display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 9px; margin-top: 12px;
+        }
+        body.lux-route-lms .lms-live-control-grid .kiu-btn-blue,
+        body.lux-route-lms .lms-live-control-grid .kiu-btn-outline {
+            justify-content: center; min-height: 42px;
+        }
+        body.lux-route-lms .lms-live-score-row {
+            display: grid; grid-template-columns: auto minmax(0,1fr) auto; gap: 10px; align-items: center;
+            padding: 11px 12px; border-radius: 14px; border: 1px solid var(--lux-border);
+            background: var(--lms-pro-surface-soft);
+        }
+        body.lux-route-lms .lms-live-breakdown {
+            display: grid; gap: 8px; width: min(620px,100%); margin: 6px auto 0;
+        }
+        body.lux-route-lms .lms-live-breakdown-row {
+            display: grid; grid-template-columns: auto minmax(0,1fr) 32px; gap: 10px; align-items: center;
+            color: var(--lux-text); font-size: 12px; font-weight: 800;
+        }
+        body.lux-route-lms .lms-live-breakdown-bar {
+            height: 10px; overflow: hidden; border-radius: 999px; background: rgba(var(--lux-accent-rgb),0.10);
+            border: 1px solid rgba(var(--lux-accent-rgb),0.12);
+        }
+        body.lux-route-lms .lms-live-breakdown-bar span {
+            display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, rgba(var(--lux-accent-rgb),0.72), var(--lux-accent));
+        }
+        body.lux-route-lms .lms-live-presentation {
+            min-height: calc(100vh - 150px);
+        }
+        body.lux-route-lms .lms-live-presentation .lms-live-layout { grid-template-columns: minmax(0,1fr) minmax(280px,380px); }
+        body.lux-route-lms .lms-live-presentation .lms-live-stage { min-height: 600px; border-radius: 30px; }
+        body.lux-route-lms .lms-live-presentation .lms-live-question-text { font-size: clamp(36px,5.2vw,76px); max-width: 1100px; margin: 0 auto; }
+        body.lux-route-lms .lms-live-presentation .lms-live-option { min-height: 118px; font-size: clamp(17px,1.4vw,22px); }
+        body.lux-route-lms .lms-live-presentation .lms-live-option-key { width: 54px; height: 54px; border-radius: 18px; font-size: 20px; }
+        body.lux-route-lms .lms-live-rank {
+            width: 30px; height: 30px; display: grid; place-items: center;
+            border-radius: 10px; background: rgba(var(--lux-accent-rgb),0.14);
+            color: var(--lux-accent); font-size: 12px; font-weight: 900;
+        }
+        body.lux-route-lms .lms-live-phone { max-width: 680px; margin: 0 auto; }
+        body.lux-route-lms .lms-live-phone .lms-live-stage { min-height: 460px; }
+        body.lux-route-lms .lms-live-phone .lms-live-options { grid-template-columns: minmax(0,1fr); }
+        body.lux-route-lms .lms-live-join { display: grid; gap: 12px; max-width: 420px; margin: 0 auto; }
+        body.lux-route-lms .lms-live-student-wait {
+            min-height: 520px; display: grid; align-content: center; gap: 18px;
+            border-radius: 28px; padding: clamp(26px,5vw,56px); text-align: center;
+            border: 1px solid var(--lux-border);
+            background:
+                radial-gradient(circle at 50% 0%, rgba(var(--lux-accent-rgb),0.18), transparent 34%),
+                var(--lms-pro-surface);
+            box-shadow: var(--lms-pro-shadow);
+        }
+        body.lux-route-lms .lms-live-pulse {
+            width: 74px; height: 74px; margin: 0 auto; border-radius: 24px;
+            display: grid; place-items: center; color: var(--lux-accent);
+            background: rgba(var(--lux-accent-rgb),0.12);
+            border: 1px solid rgba(var(--lux-accent-rgb),0.22);
+            box-shadow: none;
+            animation: lms-live-pulse 1.8s ease-in-out infinite;
+            position: relative;
+        }
+        body.lux-route-lms .lms-live-pulse::after {
+            content: ""; position: absolute; inset: -8px; border-radius: 30px;
+            border: 1px solid rgba(var(--lux-accent-rgb),0.28);
+            opacity: 0; transform: scale(0.85);
+            animation: lms-live-pulse-ring 1.8s ease-in-out infinite;
+        }
+        @keyframes lms-live-pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+        }
+        @keyframes lms-live-pulse-ring {
+            0% { opacity: 0.35; transform: scale(0.86); }
+            70%, 100% { opacity: 0; transform: scale(1.2); }
+        }
+        body.lux-route-lms .lms-group-live-strip {
+            display: flex; align-items: center; justify-content: space-between; gap: 10px;
+            margin-top: 14px; padding: 10px 12px; border-radius: 14px; border: 1px solid var(--lux-border);
+            background: var(--lms-pro-surface-soft); color: var(--lux-text-muted);
+            font-size: 12px; font-weight: 760;
+        }
+        body.lux-route-lms .lms-group-live-strip.is-live {
+            border-color: rgba(16,185,129,0.28); color: var(--lux-text);
+        }
+        @media (max-width: 980px) {
+            body.lux-route-lms .lms-live-hero,
+            body.lux-route-lms .lms-live-layout { grid-template-columns: minmax(0,1fr); }
+            body.lux-route-lms .lms-live-stage { min-height: 300px; }
+            body.lux-route-lms .lms-live-control-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+            body.lux-route-lms .lms-live-director-bar,
+            body.lux-route-lms .lms-live-broadcast-actions { grid-template-columns: repeat(2,minmax(0,1fr)); }
+        }
+        @media (max-width: 640px) {
+            body.lux-route-lms .lms-live-options,
+            body.lux-route-lms .lms-live-form-grid.two { grid-template-columns: minmax(0,1fr); }
+            body.lux-route-lms .lms-live-status-rail { grid-template-columns: repeat(2,minmax(0,1fr)); }
+            body.lux-route-lms .lms-live-timer-shell { grid-template-columns: minmax(0,1fr); text-align: center; }
+            body.lux-route-lms .lms-live-timer-number { margin: 0 auto; }
+            body.lux-route-lms .lms-live-hero,
+            body.lux-route-lms .lms-live-panel,
+        body.lux-route-lms .lms-live-card { border-radius: 16px; padding: 14px; }
+            body.lux-route-lms .lms-live-control-grid { grid-template-columns: minmax(0,1fr); }
+            body.lux-route-lms .lms-live-director-bar,
+            body.lux-route-lms .lms-live-broadcast-actions { grid-template-columns: minmax(0,1fr); }
+        }
+
+        /* Professional LMS section layer */
+        body.lux-route-lms .lms-pro-hero {
+            position: relative;
+            overflow: hidden;
+            display: grid;
+            gap: 18px;
+            margin-bottom: 18px;
+            padding: 22px;
+            border: 1px solid rgba(var(--lux-accent-rgb),0.16);
+            border-radius: 24px;
+            background:
+                radial-gradient(circle at 100% 0%, rgba(var(--lux-accent-rgb),0.18), transparent 34%),
+                linear-gradient(135deg, color-mix(in srgb, var(--lux-surface) 94%, transparent), color-mix(in srgb, var(--lux-surface-2) 88%, transparent));
+            box-shadow: 0 22px 46px rgba(0,0,0,0.16);
+        }
+        body.lux-route-lms .lms-pro-hero-main {
+            display: grid;
+            grid-template-columns: 56px minmax(0,1fr);
+            gap: 14px;
+            align-items: start;
+        }
+        body.lux-route-lms .lms-pro-icon {
+            width: 56px;
+            height: 56px;
+            display: grid;
+            place-items: center;
+            border-radius: 18px;
+            color: #fff;
+            background: linear-gradient(135deg, var(--lux-accent), color-mix(in srgb, var(--lux-accent) 68%, #ef4444));
+            box-shadow: 0 16px 34px rgba(var(--lux-accent-rgb),0.24);
+        }
+        body.lux-route-lms .lms-pro-kicker {
+            color: rgba(var(--lux-accent-rgb),0.9);
+            font-size: 11px;
+            font-weight: 900;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+        body.lux-route-lms .lms-pro-hero h2 {
+            margin: 6px 0 0;
+            color: var(--lux-text);
+            font-size: 30px;
+            line-height: 1.08;
+            letter-spacing: 0;
+        }
+        body.lux-route-lms .lms-pro-hero p {
+            margin: 8px 0 0;
+            max-width: 780px;
+            color: var(--lux-text-muted);
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        body.lux-route-lms .lms-pro-actions,
+        body.lux-route-lms .lms-pro-stat-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        body.lux-route-lms .lms-pro-actions span {
+            display: inline-flex;
+            align-items: center;
+            min-height: 32px;
+            padding: 7px 11px;
+            border: 1px solid rgba(var(--lux-accent-rgb),0.14);
+            border-radius: 999px;
+            color: var(--lux-text);
+            background: rgba(255,255,255,0.045);
+            font-size: 11px;
+            font-weight: 900;
+        }
+        body.lux-route-lms .lms-pro-stat-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(130px, 1fr));
+        }
+        body.lux-route-lms .lms-pro-stat {
+            display: grid;
+            gap: 7px;
+            padding: 13px 14px;
+            border: 1px solid rgba(var(--lux-accent-rgb),0.11);
+            border-radius: 16px;
+            background: rgba(255,255,255,0.04);
+        }
+        body.lux-route-lms .lms-pro-stat span {
+            color: var(--lux-text-muted);
+            font-size: 11px;
+            font-weight: 900;
+            text-transform: uppercase;
+        }
+        body.lux-route-lms .lms-pro-stat strong {
+            color: var(--lux-text);
+            font-size: 22px;
+            line-height: 1;
+        }
+        body.lux-route-lms .lms-pro-surface {
+            border-color: rgba(var(--lux-accent-rgb),0.14) !important;
+            box-shadow: 0 18px 38px rgba(0,0,0,0.12);
+        }
+        body.lux-route-lms .lms-pro-empty {
+            border-color: rgba(var(--lux-accent-rgb),0.18) !important;
+            background:
+                radial-gradient(circle at 100% 0%, rgba(var(--lux-accent-rgb),0.1), transparent 30%),
+                color-mix(in srgb, var(--lux-surface) 92%, transparent) !important;
+        }
+        body.lux-route-lms .lms-deep-toolkit {
+            display: grid;
+            gap: 14px;
+            margin-bottom: 18px;
+            padding: 18px;
+            border: 1px solid rgba(var(--lux-accent-rgb),0.14);
+            border-radius: 24px;
+            background:
+                radial-gradient(circle at 0% 0%, rgba(var(--lux-accent-rgb),0.1), transparent 32%),
+                color-mix(in srgb, var(--lux-surface) 91%, transparent);
+            box-shadow: 0 18px 38px rgba(0,0,0,0.12);
+        }
+        body.lux-route-lms .lms-deep-head {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            align-items: flex-start;
+        }
+        body.lux-route-lms .lms-deep-head h3 {
+            margin: 5px 0 0;
+            color: var(--lux-text);
+            font-size: 20px;
+            letter-spacing: 0;
+        }
+        body.lux-route-lms .lms-deep-head > span {
+            display: inline-flex;
+            align-items: center;
+            min-height: 30px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            border: 1px solid rgba(var(--lux-accent-rgb),0.14);
+            color: var(--lux-text-muted);
+            background: rgba(255,255,255,0.04);
+            font-size: 11px;
+            font-weight: 900;
+        }
+        body.lux-route-lms .lms-deep-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0,1fr));
+            gap: 12px;
+        }
+        body.lux-route-lms .lms-deep-card,
+        body.lux-route-lms .lms-deep-panel,
+        body.lux-route-lms .lms-deep-column {
+            border: 1px solid rgba(var(--lux-accent-rgb),0.11);
+            border-radius: 18px;
+            background: rgba(255,255,255,0.04);
+        }
+        body.lux-route-lms .lms-deep-card {
+            display: grid;
+            grid-template-columns: 42px minmax(0,1fr);
+            gap: 12px;
+            padding: 14px;
+        }
+        body.lux-route-lms .lms-deep-card-icon {
+            width: 42px;
+            height: 42px;
+            display: grid;
+            place-items: center;
+            border-radius: 14px;
+            color: var(--lux-accent);
+            background: rgba(var(--lux-accent-rgb),0.1);
+        }
+        body.lux-route-lms .lms-deep-card strong {
+            display: block;
+            color: var(--lux-text);
+            font-size: 22px;
+            line-height: 1;
+        }
+        body.lux-route-lms .lms-deep-card span {
+            display: block;
+            margin-top: 5px;
+            color: var(--lux-text);
+            font-size: 12px;
+            font-weight: 900;
+        }
+        body.lux-route-lms .lms-deep-card p {
+            margin: 5px 0 0;
+            color: var(--lux-text-muted);
+            font-size: 12px;
+            line-height: 1.45;
+        }
+        body.lux-route-lms .lms-deep-panel {
+            display: grid;
+            gap: 9px;
+            padding: 12px;
+        }
+        body.lux-route-lms .lms-deep-list-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            align-items: flex-start;
+            padding: 11px 12px;
+            border-radius: 14px;
+            background: rgba(255,255,255,0.035);
+            border: 1px solid rgba(148,163,184,0.1);
+        }
+        body.lux-route-lms .lms-deep-list-row strong {
+            display: block;
+            color: var(--lux-text);
+            font-size: 13px;
+        }
+        body.lux-route-lms .lms-deep-list-row span {
+            display: block;
+            margin-top: 4px;
+            color: var(--lux-text-muted);
+            font-size: 11px;
+            line-height: 1.45;
+        }
+        body.lux-route-lms .lms-deep-list-row em {
+            flex-shrink: 0;
+            border-radius: 999px;
+            padding: 5px 8px;
+            border: 1px solid rgba(var(--lux-accent-rgb),0.14);
+            color: var(--lux-text-muted);
+            background: rgba(255,255,255,0.04);
+            font-size: 10px;
+            font-style: normal;
+            font-weight: 900;
+            white-space: nowrap;
+        }
+        body.lux-route-lms .lms-deep-list-row em.is-success { color: #34d399; border-color: rgba(16,185,129,0.22); background: rgba(16,185,129,0.1); }
+        body.lux-route-lms .lms-deep-list-row em.is-pending { color: #fbbf24; border-color: rgba(245,158,11,0.22); background: rgba(245,158,11,0.1); }
+        body.lux-route-lms .lms-deep-list-row em.is-danger { color: #fca5a5; border-color: rgba(239,68,68,0.24); background: rgba(239,68,68,0.1); }
+        body.lux-route-lms .lms-deep-question-composer {
+            display: grid;
+            grid-template-columns: minmax(0,1fr) auto;
+            gap: 10px;
+            align-items: center;
+            padding: 10px;
+            border-radius: 16px;
+            border: 1px solid rgba(var(--lux-accent-rgb),0.12);
+            background: rgba(var(--lux-accent-rgb),0.055);
+        }
+        body.lux-route-lms .lms-deep-row-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 7px;
+            margin-top: 9px;
+        }
+        body.lux-route-lms .lms-deep-row-actions button {
+            border: 1px solid rgba(var(--lux-accent-rgb),0.16);
+            border-radius: 999px;
+            padding: 6px 9px;
+            color: var(--lux-text);
+            background: rgba(255,255,255,0.055);
+            font-size: 10px;
+            font-weight: 900;
+            cursor: pointer;
+        }
+        body.lux-route-lms .lms-deep-row-actions button:hover {
+            border-color: rgba(var(--lux-accent-rgb),0.35);
+            background: rgba(var(--lux-accent-rgb),0.12);
+        }
+        body.lux-route-lms .lms-deep-board {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(190px,1fr));
+            gap: 12px;
+            overflow-x: auto;
+        }
+        body.lux-route-lms .lms-deep-column {
+            min-width: 190px;
+            overflow: hidden;
+        }
+        body.lux-route-lms .lms-deep-column-head {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 12px 13px;
+            border-bottom: 1px solid rgba(var(--lux-accent-rgb),0.1);
+            color: var(--lux-text);
+            font-size: 13px;
+            font-weight: 900;
+        }
+        body.lux-route-lms .lms-deep-column-head span {
+            color: var(--lux-text-muted);
+        }
+        body.lux-route-lms .lms-deep-column-body {
+            display: grid;
+            gap: 8px;
+            padding: 10px;
+        }
+        body.lux-route-lms .lms-deep-empty {
+            min-height: 120px;
+            display: grid;
+            place-items: center;
+            gap: 6px;
+            color: var(--lux-text-muted);
+            text-align: center;
+            padding: 14px;
+        }
+        body.lux-route-lms .lms-deep-empty i {
+            color: var(--lux-accent);
+            font-size: 22px;
+        }
+        body.lux-route-lms .lms-deep-empty strong,
+        body.lux-route-lms .lms-deep-feed-preview strong {
+            color: var(--lux-text);
+        }
+        body.lux-route-lms .lms-deep-feed-preview {
+            grid-template-columns: repeat(3, minmax(0,1fr));
+        }
+        body.lux-route-lms .lms-deep-feed-preview div {
+            padding: 12px;
+            border-radius: 14px;
+            background: rgba(255,255,255,0.035);
+        }
+        body.lux-route-lms .lms-deep-feed-preview span {
+            display: block;
+            margin-top: 6px;
+            color: var(--lux-text-muted);
+            font-size: 12px;
+            line-height: 1.5;
+        }
+        @media (max-width: 760px) {
+            body.lux-route-lms .lms-pro-hero {
+                padding: 16px;
+                border-radius: 18px;
+            }
+            body.lux-route-lms .lms-pro-hero-main,
+            body.lux-route-lms .lms-pro-stat-grid,
+            body.lux-route-lms .lms-deep-grid,
+            body.lux-route-lms .lms-deep-feed-preview {
+                grid-template-columns: minmax(0,1fr);
+            }
+            body.lux-route-lms .lms-pro-hero h2 {
+                font-size: 25px;
+            }
+        }
+
+        /* Gradebook table */
+        body.lux-route-lms .lms-route-table-shell { overflow: hidden; }
+        body.lux-route-lms #lms-gradebook-wrapper { border-radius: var(--lms-panel-radius); overflow: auto; }
+        body.lux-route-lms #lms-gradebook-wrapper :is(table,.kiu-table) {
+            width: 100%; min-width: 760px; border-collapse: separate; border-spacing: 0;
+            color: var(--lux-text); background: transparent;
+        }
+        body.lux-route-lms #lms-gradebook-wrapper :is(table,.kiu-table) thead th {
+            padding: 14px 12px; background: var(--lux-bg-soft); color: var(--lux-text-muted);
+            border-bottom: 1px solid var(--lux-border); font-size: 11px; font-weight: 800;
+            letter-spacing: 0.08em; text-transform: uppercase; position: sticky; top: 0; z-index: 2;
+        }
+        body.lux-route-lms #lms-gradebook-wrapper :is(table,.kiu-table) tbody td {
+            padding: 14px 12px; border-bottom: 1px solid var(--lux-border);
+            color: var(--lux-text); background: transparent; transition: background 0.15s ease;
+        }
+        body.lux-route-lms #lms-gradebook-wrapper :is(table,.kiu-table) tbody tr:hover td {
+            background: rgba(var(--lux-accent-rgb),0.04);
+        }
+        body.lux-route-lms #lms-gradebook-wrapper :is(#gradebook-assessment-controls,#gradebook-roster-selection,#gradebook-spreadsheet-view) {
+            color: var(--lux-text);
+        }
+
+        /* Grade color coding */
+        .gb-score-high { color: var(--lms-success); font-weight: 800; }
+        .gb-score-mid { color: var(--lms-warning); font-weight: 800; }
+        .gb-score-low { color: var(--lms-danger); font-weight: 800; }
+        .gb-score-bar {
+            height: 4px; border-radius: 2px; background: var(--lux-border); margin-top: 4px; overflow: hidden;
+        }
+        .gb-score-bar-fill {
+            height: 100%; border-radius: 2px; transition: width 0.4s ease;
+        }
+        .gb-score-bar-fill.high { background: var(--lms-success); }
+        .gb-score-bar-fill.mid { background: var(--lms-warning); }
+        .gb-score-bar-fill.low { background: var(--lms-danger); }
+        .gb-letter-badge {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 32px; height: 32px; border-radius: 8px; font-size: 14px; font-weight: 800;
+        }
+        .gb-letter-badge.grade-a { background: rgba(16,185,129,0.15); color: var(--lms-success); }
+        .gb-letter-badge.grade-b { background: rgba(59,130,246,0.15); color: var(--lms-info); }
+        .gb-letter-badge.grade-c { background: rgba(245,158,11,0.15); color: var(--lms-warning); }
+        .gb-letter-badge.grade-d { background: rgba(139,92,246,0.15); color: var(--lms-purple); }
+        .gb-letter-badge.grade-f { background: rgba(239,68,68,0.15); color: var(--lms-danger); }
+        .gb-letter-badge.grade-pending { background: rgba(245,158,11,0.16); color: #f59e0b; }
+        body.lux-route-lms .gb-modern-stats .gb-letter-badge {
+            width: auto;
+            min-width: 44px;
+            padding: 0 10px;
+            border-radius: 999px;
+        }
+
+        /* Modern LMS gradebook workspace */
+        body.lux-route-lms .gb-modern-workspace {
+            display: grid;
+            gap: 18px;
+        }
+        body.lux-route-lms .gb-student-context-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            padding: 18px 20px;
+            border: 1px solid rgba(var(--lux-accent-rgb),0.14);
+            border-radius: 22px;
+            background:
+                radial-gradient(circle at 100% 0%, rgba(var(--lux-accent-rgb),0.12), transparent 34%),
+                color-mix(in srgb, var(--lux-surface) 92%, transparent);
+            box-shadow: 0 16px 34px rgba(0,0,0,0.12);
+        }
+        body.lux-route-lms .gb-student-context-bar strong {
+            display: block;
+            margin-top: 5px;
+            color: var(--lux-text);
+            font-size: 18px;
+        }
+        body.lux-route-lms .gb-student-context-bar span {
+            display: block;
+            margin-top: 5px;
+            color: var(--lux-text-muted);
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        body.lux-route-lms .gb-context-actions {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+        body.lux-route-lms .gb-modern-hero,
+        body.lux-route-lms .gb-modern-card {
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(var(--lux-accent-rgb),0.16);
+            border-radius: 24px;
+            background:
+                radial-gradient(circle at 100% 0%, rgba(var(--lux-accent-rgb),0.16), transparent 34%),
+                color-mix(in srgb, var(--lux-surface) 92%, transparent);
+            box-shadow: 0 22px 46px rgba(0,0,0,0.18);
+        }
+        body.lux-route-lms .gb-modern-hero {
+            padding: 24px;
+        }
+        body.lux-route-lms .gb-modern-hero-main {
+            display: grid;
+            grid-template-columns: minmax(0,1fr) 150px;
+            gap: 18px;
+            align-items: center;
+        }
+        body.lux-route-lms .gb-modern-kicker {
+            font-size: 11px;
+            font-weight: 900;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: rgba(var(--lux-accent-rgb),0.9);
+        }
+        body.lux-route-lms .gb-modern-hero h2,
+        body.lux-route-lms .gb-modern-card h3 {
+            margin: 7px 0 0;
+            color: var(--lux-text);
+            letter-spacing: 0;
+        }
+        body.lux-route-lms .gb-modern-hero h2 {
+            font-size: 32px;
+            line-height: 1.08;
+        }
+        body.lux-route-lms .gb-modern-hero p,
+        body.lux-route-lms .gb-modern-card p {
+            margin: 8px 0 0;
+            max-width: 720px;
+            color: var(--lux-text-muted);
+            line-height: 1.6;
+            font-size: 13px;
+        }
+        body.lux-route-lms .gb-score-orbit {
+            width: 134px;
+            height: 134px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            justify-self: end;
+            background:
+                conic-gradient(var(--lux-accent) var(--gb-progress), rgba(148,163,184,0.18) 0),
+                rgba(255,255,255,0.04);
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06);
+        }
+        body.lux-route-lms .gb-score-orbit > div {
+            width: 102px;
+            height: 102px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            align-content: center;
+            background: var(--lux-surface);
+            border: 1px solid rgba(var(--lux-accent-rgb),0.14);
+        }
+        body.lux-route-lms .gb-score-orbit strong {
+            font-size: 34px;
+            line-height: 1;
+            color: var(--lux-text);
+        }
+        body.lux-route-lms .gb-score-orbit span {
+            margin-top: 5px;
+            max-width: 82px;
+            color: var(--lux-text-muted);
+            font-size: 11px;
+            font-weight: 800;
+            text-align: center;
+        }
+        body.lux-route-lms .gb-modern-stats,
+        body.lux-route-lms .gb-modern-grid {
+            display: grid;
+            gap: 12px;
+        }
+        body.lux-route-lms .gb-modern-stats {
+            grid-template-columns: repeat(4, minmax(0,1fr));
+            margin-top: 18px;
+        }
+        body.lux-route-lms .gb-modern-stats > div {
+            min-height: 88px;
+            display: grid;
+            align-content: center;
+            gap: 8px;
+            padding: 14px 16px;
+            border-radius: 18px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(var(--lux-accent-rgb),0.12);
+        }
+        body.lux-route-lms .gb-modern-stats span {
+            color: var(--lux-text-muted);
+            font-size: 11px;
+            font-weight: 900;
+            text-transform: uppercase;
+        }
+        body.lux-route-lms .gb-modern-stats strong {
+            color: var(--lux-text);
+            font-size: 26px;
+            line-height: 1;
+        }
+        body.lux-route-lms .gb-modern-grid {
+            grid-template-columns: minmax(320px,0.9fr) minmax(0,1.1fr);
+        }
+        body.lux-route-lms .gb-modern-card {
+            padding: 20px;
+        }
+        body.lux-route-lms .gb-modern-card-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 14px;
+            margin-bottom: 16px;
+        }
+        body.lux-route-lms .gb-weight-stack,
+        body.lux-route-lms .gb-explain-list,
+        body.lux-route-lms .gb-timeline {
+            display: grid;
+            gap: 12px;
+        }
+        body.lux-route-lms .gb-weight-label {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            color: var(--lux-text);
+            font-size: 12px;
+            font-weight: 800;
+        }
+        body.lux-route-lms .gb-weight-label span {
+            color: var(--lux-text-muted);
+        }
+        body.lux-route-lms .gb-weight-detail,
+        body.lux-route-lms .gb-composition-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px 12px;
+            margin-top: 7px;
+            color: var(--lux-text-muted);
+            font-size: 11px;
+            font-weight: 800;
+        }
+        body.lux-route-lms .gb-composition-bar {
+            display: flex;
+            height: 15px;
+            margin: 4px 0 12px;
+            overflow: hidden;
+            border-radius: 999px;
+            border: 1px solid rgba(148,163,184,0.18);
+            background: rgba(148,163,184,0.14);
+        }
+        body.lux-route-lms .gb-composition-bar span,
+        body.lux-route-lms .gb-weight-track.is-stacked span {
+            display: block;
+            height: 100%;
+        }
+        body.lux-route-lms .gb-composition-bar .is-earned,
+        body.lux-route-lms .gb-composition-legend i.is-earned {
+            background: #22c55e;
+        }
+        body.lux-route-lms .gb-composition-bar .is-pending,
+        body.lux-route-lms .gb-weight-track .is-pending,
+        body.lux-route-lms .gb-composition-legend i.is-pending {
+            background: #f59e0b;
+        }
+        body.lux-route-lms .gb-composition-bar .is-remaining,
+        body.lux-route-lms .gb-weight-track .is-remaining,
+        body.lux-route-lms .gb-composition-legend i.is-remaining {
+            background: rgba(148,163,184,0.32);
+        }
+        body.lux-route-lms .gb-composition-legend i {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            margin-right: 5px;
+            border-radius: 999px;
+            vertical-align: -1px;
+        }
+        body.lux-route-lms .gb-weight-track {
+            display: flex;
+            height: 9px;
+            margin-top: 8px;
+            border-radius: 999px;
+            overflow: hidden;
+            background: rgba(148,163,184,0.18);
+        }
+        body.lux-route-lms .gb-weight-track > span:first-child {
+            display: block;
+            height: 100%;
+        }
+        body.lux-route-lms .gb-explain-list div {
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+            padding: 12px 14px;
+            border-radius: 16px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(var(--lux-accent-rgb),0.1);
+            color: var(--lux-text-muted);
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        body.lux-route-lms .gb-explain-list i {
+            color: var(--lux-accent);
+            margin-top: 2px;
+        }
+        body.lux-route-lms .gb-transcript-card {
+            padding: 0;
+        }
+        body.lux-route-lms .gb-transcript-card > .gb-modern-card-head {
+            padding: 20px 20px 0;
+        }
+        body.lux-route-lms .gb-transcript-shell {
+            overflow: auto;
+        }
+        body.lux-route-lms .gb-transcript-table {
+            width: 100%;
+            min-width: 820px;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+        body.lux-route-lms .gb-transcript-table th {
+            padding: 13px 18px;
+            color: var(--lux-text-muted);
+            background: rgba(255,255,255,0.03);
+            border-top: 1px solid rgba(var(--lux-accent-rgb),0.1);
+            border-bottom: 1px solid rgba(var(--lux-accent-rgb),0.1);
+            font-size: 11px;
+            font-weight: 900;
+            text-align: left;
+            text-transform: uppercase;
+        }
+        body.lux-route-lms .gb-transcript-table td {
+            padding: 16px 18px;
+            border-bottom: 1px solid rgba(var(--lux-accent-rgb),0.08);
+            color: var(--lux-text);
+            vertical-align: middle;
+        }
+        body.lux-route-lms .gb-transcript-row:hover td {
+            background: rgba(var(--lux-accent-rgb),0.05);
+        }
+        body.lux-route-lms .gb-transcript-row {
+            cursor: pointer;
+        }
+        body.lux-route-lms .gb-subject-cell {
+            display: grid;
+            gap: 5px;
+        }
+        body.lux-route-lms .gb-subject-cell span {
+            color: var(--lux-text-muted);
+            font-size: 12px;
+        }
+        body.lux-route-lms .gb-status-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            width: max-content;
+            padding: 7px 10px;
+            border-radius: 999px;
+            border: 1px solid rgba(148,163,184,0.18);
+            font-size: 11px;
+            font-weight: 900;
+            white-space: nowrap;
+        }
+        body.lux-route-lms .gb-status-badge.is-graded {
+            background: rgba(16,185,129,0.12);
+            color: #34d399;
+            border-color: rgba(16,185,129,0.2);
+        }
+        body.lux-route-lms .gb-status-badge.is-pending {
+            background: rgba(245,158,11,0.13);
+            color: #fbbf24;
+            border-color: rgba(245,158,11,0.22);
+        }
+        body.lux-route-lms .gb-status-badge.is-missing {
+            background: rgba(148,163,184,0.12);
+            color: var(--lux-text-muted);
+        }
+        body.lux-route-lms .gb-modern-action {
+            min-height: 36px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            border: 1px solid rgba(var(--lux-accent-rgb),0.18);
+            border-radius: 12px;
+            padding: 8px 12px;
+            color: var(--lux-text);
+            background: rgba(255,255,255,0.05);
+            font-size: 12px;
+            font-weight: 900;
+            cursor: pointer;
+        }
+        body.lux-route-lms .gb-modern-action.is-primary {
+            color: #fff;
+            background: linear-gradient(135deg, var(--lux-accent), color-mix(in srgb, var(--lux-accent) 70%, #ef4444));
+            border-color: transparent;
+            box-shadow: 0 14px 26px rgba(var(--lux-accent-rgb),0.22);
+        }
+        body.lux-route-lms .gb-timeline-item {
+            display: grid;
+            grid-template-columns: 36px minmax(0,1fr) auto;
+            gap: 12px;
+            align-items: start;
+            padding: 14px;
+            border-radius: 18px;
+            background: rgba(255,255,255,0.035);
+            border: 1px solid rgba(var(--lux-accent-rgb),0.1);
+        }
+        body.lux-route-lms .gb-timeline-dot {
+            width: 36px;
+            height: 36px;
+            border-radius: 14px;
+            display: grid;
+            place-items: center;
+            color: var(--lux-accent);
+            background: rgba(var(--lux-accent-rgb),0.1);
+        }
+        body.lux-route-lms .gb-timeline-title {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
+            color: var(--lux-text);
+        }
+        body.lux-route-lms .gb-timeline-meta,
+        body.lux-route-lms .gb-timeline-note {
+            margin-top: 5px;
+            color: var(--lux-text-muted);
+            font-size: 12px;
+            line-height: 1.5;
+        }
+        body.lux-route-lms .gb-timeline-score {
+            color: var(--lux-text);
+            font-size: 18px;
+            font-weight: 900;
+        }
+        body.lux-route-lms .gb-empty-state {
+            display: grid;
+            place-items: center;
+            gap: 8px;
+            min-height: 150px;
+            text-align: center;
+            color: var(--lux-text-muted);
+        }
+        body.lux-route-lms .gb-empty-state i {
+            font-size: 24px;
+            color: var(--lux-accent);
+        }
+        body.lux-route-lms .gb-empty-state strong {
+            color: var(--lux-text);
+        }
+        body.lux-route-lms .gb-modal-shell {
+            width: min(1120px, 100%);
+            max-height: 92vh;
+            overflow: auto;
+            border: 1px solid rgba(var(--lux-accent-rgb),0.18);
+            border-radius: 28px;
+            background:
+                radial-gradient(circle at 100% 0%, rgba(var(--lux-accent-rgb),0.12), transparent 34%),
+                var(--lux-surface);
+            box-shadow: 0 30px 90px rgba(0,0,0,0.45);
+        }
+        body.lux-route-lms .gb-modal-hero {
+            display: grid;
+            grid-template-columns: minmax(0,1fr) 118px auto;
+            gap: 16px;
+            align-items: center;
+            padding: 24px 26px;
+            border-bottom: 1px solid rgba(var(--lux-accent-rgb),0.12);
+        }
+        body.lux-route-lms .gb-modal-hero h2 {
+            margin: 6px 0 0;
+            color: var(--lux-text);
+            font-size: 26px;
+            line-height: 1.1;
+        }
+        body.lux-route-lms .gb-modal-hero p {
+            margin: 6px 0 0;
+            color: var(--lux-text-muted);
+            font-size: 13px;
+        }
+        body.lux-route-lms .gb-modal-score {
+            width: 108px;
+            height: 108px;
+            border-radius: 28px;
+            display: grid;
+            place-items: center;
+            align-content: center;
+            background: rgba(var(--lux-accent-rgb),0.1);
+            border: 1px solid rgba(var(--lux-accent-rgb),0.18);
+        }
+        body.lux-route-lms .gb-modal-score strong {
+            color: var(--lux-text);
+            font-size: 32px;
+            line-height: 1;
+        }
+        body.lux-route-lms .gb-modal-score span {
+            margin-top: 6px;
+            color: var(--lux-text-muted);
+            font-size: 11px;
+            font-weight: 900;
+            text-align: center;
+        }
+        body.lux-route-lms .gb-modal-close {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border: 0;
+            border-radius: 14px;
+            padding: 11px 14px;
+            color: #fff;
+            background: linear-gradient(135deg, #ef4444, #b4534b);
+            font-weight: 900;
+            cursor: pointer;
+            box-shadow: 0 16px 30px rgba(239,68,68,0.22);
+        }
+        body.lux-route-lms .gb-modal-body {
+            padding: 22px 24px 26px;
+            contain: content;
+        }
+        body.lux-route-lms .gb-modal-category-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px,1fr));
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        body.lux-route-lms .gb-modal-category-card {
+            display: grid;
+            grid-template-rows: auto auto minmax(34px, auto);
+            gap: 11px;
+            min-width: 0;
+            width: 100%;
+            box-sizing: border-box;
+            min-height: 132px;
+            padding: 16px;
+            border: 1px solid rgba(var(--lux-accent-rgb),0.12);
+            border-radius: 18px;
+            background:
+                linear-gradient(145deg, rgba(255,255,255,0.075), rgba(255,255,255,0.035)),
+                rgba(8, 15, 31, 0.42);
+            text-align: left;
+            font: inherit;
+            cursor: pointer;
+            appearance: none;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+            transition: transform .16s ease, border-color .16s ease, background .16s ease;
+        }
+        body.lux-route-lms .gb-modal-category-card:hover,
+        body.lux-route-lms .gb-modal-category-card.is-active {
+            transform: translateY(-1px);
+            border-color: rgba(var(--lux-accent-rgb),0.35);
+            background:
+                radial-gradient(circle at 0 0, rgba(var(--lux-accent-rgb),0.18), transparent 58%),
+                rgba(18, 36, 78, 0.72);
+        }
+        body.lux-route-lms .gb-modal-category-top {
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+            align-items: flex-start;
+            min-width: 0;
+        }
+        body.lux-route-lms .gb-modal-category-card span,
+        body.lux-route-lms .gb-modal-category-card small {
+            color: var(--lux-text-muted);
+            font-size: 11px;
+            font-weight: 800;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        body.lux-route-lms .gb-modal-category-card > small {
+            display: none;
+        }
+        body.lux-route-lms .gb-modal-category-card strong {
+            color: var(--lux-text);
+            font-size: 30px;
+            line-height: 1;
+        }
+        body.lux-route-lms .gb-modal-category-card em {
+            flex: 0 0 auto;
+            font-style: normal;
+        }
+        body.lux-route-lms .gb-modal-category-body {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            min-width: 0;
+        }
+        body.lux-route-lms .gb-modal-category-body div {
+            display: grid;
+            gap: 4px;
+            justify-items: end;
+            min-width: 74px;
+        }
+        body.lux-route-lms .gb-modal-category-latest {
+            min-width: 0;
+            padding-top: 10px;
+            border-top: 1px solid rgba(148,163,184,0.14);
+        }
+        body.lux-route-lms .gb-modal-category-latest span {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            white-space: normal;
+            line-height: 1.35;
+        }
+        body.lux-route-lms .gb-staff-create-panel,
+        body.lux-route-lms .gb-modal-history-grid,
+        body.lux-route-lms .gb-modal-section-body {
+            display: grid;
+            gap: 14px;
+        }
+        body.lux-route-lms .gb-staff-create-card,
+        body.lux-route-lms .gb-custom-section-panel,
+        body.lux-route-lms .gb-modal-section {
+            border: 1px solid rgba(var(--lux-accent-rgb),0.13);
+            border-radius: 20px;
+            background: rgba(255,255,255,0.04);
+            padding: 16px;
+        }
+        body.lux-route-lms .gb-staff-create-grid,
+        body.lux-route-lms .gb-custom-section-panel > div:last-child {
+            display: grid;
+            grid-template-columns: minmax(160px,0.4fr) minmax(220px,1fr) auto;
+            gap: 10px;
+            align-items: end;
+        }
+        body.lux-route-lms .gb-staff-create-grid label,
+        body.lux-route-lms .gb-score-edit-card label {
+            display: grid;
+            gap: 7px;
+            color: var(--lux-text-muted);
+            font-size: 11px;
+            font-weight: 900;
+            text-transform: uppercase;
+        }
+        body.lux-route-lms .gb-staff-create-grid input,
+        body.lux-route-lms .gb-staff-create-grid select,
+        body.lux-route-lms .gb-custom-section-panel input,
+        body.lux-route-lms .gb-modal-history-actions input,
+        body.lux-route-lms .gb-score-edit-card input,
+        body.lux-route-lms .gb-score-edit-card textarea {
+            min-height: 40px;
+            border: 1px solid rgba(var(--lux-accent-rgb),0.16);
+            border-radius: 12px;
+            padding: 0 12px;
+            outline: none;
+            color: var(--lux-text);
+            background: rgba(255,255,255,0.05);
+        }
+        body.lux-route-lms .gb-score-edit-card textarea {
+            min-height: 86px;
+            padding: 12px;
+            resize: vertical;
+        }
+        body.lux-route-lms .gb-quick-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-top: 12px;
+        }
+        body.lux-route-lms .gb-quick-actions span {
+            color: var(--lux-text-muted);
+            font-size: 11px;
+            font-weight: 900;
+            text-transform: uppercase;
+        }
+        body.lux-route-lms .gb-quick-actions button,
+        body.lux-route-lms .gb-modal-section-actions button,
+        body.lux-route-lms .gb-modal-history-actions button,
+        body.lux-route-lms .gb-staff-actions button,
+        body.lux-route-lms .gb-staff-row-actions button,
+        body.lux-route-lms .gb-score-edit-actions button {
+            min-height: 34px;
+            border: 1px solid rgba(var(--lux-accent-rgb),0.17);
+            border-radius: 11px;
+            padding: 7px 10px;
+            color: var(--lux-text);
+            background: rgba(255,255,255,0.05);
+            font-size: 11px;
+            font-weight: 900;
+            cursor: pointer;
+        }
+        body.lux-route-lms button.is-primary,
+        body.lux-route-lms .gb-score-edit-actions button.is-primary {
+            color: #fff;
+            border-color: transparent;
+            background: linear-gradient(135deg, var(--lux-accent), #c65d54);
+        }
+        body.lux-route-lms button.is-danger {
+            color: #fecaca;
+            border-color: rgba(239,68,68,0.25);
+            background: rgba(239,68,68,0.1);
+        }
+        body.lux-route-lms .gb-modal-section-head {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+        body.lux-route-lms .gb-modal-section-head h3 {
+            margin: 5px 0 0;
+            color: var(--lux-text);
+            font-size: 17px;
+        }
+        body.lux-route-lms .gb-modal-section-head p {
+            margin: 5px 0 0;
+            color: var(--lux-text-muted);
+            font-size: 12px;
+        }
+        body.lux-route-lms .gb-modal-section-actions,
+        body.lux-route-lms .gb-modal-history-actions,
+        body.lux-route-lms .gb-staff-actions,
+        body.lux-route-lms .gb-staff-row-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+        body.lux-route-lms .gb-modal-history-card {
+            display: grid;
+            grid-template-columns: minmax(0,1fr) minmax(96px, auto);
+            gap: 14px;
+            padding: 16px;
+            border: 1px solid rgba(var(--lux-accent-rgb),0.11);
+            border-left: 4px solid rgba(148,163,184,0.5);
+            border-radius: 18px;
+            background:
+                linear-gradient(135deg, rgba(255,255,255,0.055), rgba(255,255,255,0.025)),
+                rgba(8,15,31,0.32);
+        }
+        body.lux-route-lms .gb-modal-history-card.is-pending {
+            border-left-color: #f59e0b;
+        }
+        body.lux-route-lms .gb-modal-history-card.is-graded {
+            border-left-color: #22c55e;
+        }
+        body.lux-route-lms .gb-modal-history-main {
+            display: grid;
+            grid-template-columns: 38px minmax(0,1fr);
+            gap: 12px;
+        }
+        body.lux-route-lms .gb-modal-history-icon {
+            width: 38px;
+            height: 38px;
+            display: grid;
+            place-items: center;
+            border-radius: 14px;
+            color: var(--lux-accent);
+            background: rgba(var(--lux-accent-rgb),0.1);
+        }
+        body.lux-route-lms .gb-modal-history-title {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+            color: var(--lux-text);
+        }
+        body.lux-route-lms .gb-modal-history-kind {
+            width: max-content;
+            margin-top: 7px;
+            padding: 5px 8px;
+            border-radius: 999px;
+            color: var(--lux-text-muted);
+            background: rgba(148,163,184,0.12);
+            font-size: 10px;
+            font-weight: 900;
+            text-transform: uppercase;
+        }
+        body.lux-route-lms .gb-modal-history-card p,
+        body.lux-route-lms .gb-modal-change-list span {
+            margin: 5px 0 0;
+            color: var(--lux-text-muted);
+            font-size: 12px;
+            line-height: 1.45;
+        }
+        body.lux-route-lms .gb-modal-change-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 7px;
+        }
+        body.lux-route-lms .gb-modal-change-list span {
+            margin: 0;
+            padding: 5px 8px;
+            border-radius: 999px;
+            background: rgba(148,163,184,0.12);
+        }
+        body.lux-route-lms .gb-modal-history-score {
+            display: grid;
+            min-width: 96px;
+            min-height: 76px;
+            align-content: center;
+            justify-items: center;
+            gap: 5px;
+            padding: 12px;
+            border-radius: 16px;
+            border: 1px solid rgba(var(--lux-accent-rgb),0.12);
+            background: rgba(var(--lux-accent-rgb),0.07);
+            color: var(--lux-text-muted);
+            font-size: 11px;
+            font-weight: 900;
+            text-transform: uppercase;
+        }
+        body.lux-route-lms .gb-modal-history-score strong {
+            color: var(--lux-text);
+            font-size: 20px;
+            text-transform: none;
+        }
+        body.lux-route-lms .gb-modal-history-actions {
+            grid-column: 1 / -1;
+            padding-top: 10px;
+            border-top: 1px solid rgba(148,163,184,0.12);
+        }
+        body.lux-route-lms .gb-modal-load-more {
+            min-height: 42px;
+            border: 1px dashed rgba(var(--lux-accent-rgb),0.28);
+            border-radius: 16px;
+            color: var(--lux-text);
+            background: rgba(var(--lux-accent-rgb),0.08);
+            font-weight: 900;
+            cursor: pointer;
+        }
+        body.lux-route-lms .gb-modal-empty {
+            min-height: 120px;
+            display: grid;
+            place-items: center;
+            gap: 7px;
+            color: var(--lux-text-muted);
+            text-align: center;
+        }
+        body.lux-route-lms .gb-modal-empty strong {
+            color: var(--lux-text);
+        }
+        body.lux-route-lms .gb-staff-workspace,
+        body.lux-route-lms .gb-staff-control-card {
+            display: grid;
+            gap: 14px;
+            margin-bottom: 14px;
+        }
+        body.lux-route-lms .gb-staff-hero,
+        body.lux-route-lms .gb-staff-control-card {
+            border: 1px solid rgba(var(--lux-accent-rgb),0.14);
+            border-radius: 22px;
+            padding: 18px;
+            background:
+                radial-gradient(circle at 100% 0%, rgba(var(--lux-accent-rgb),0.12), transparent 34%),
+                color-mix(in srgb, var(--lux-surface) 92%, transparent);
+        }
+        body.lux-route-lms .gb-staff-hero {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            align-items: flex-start;
+        }
+        body.lux-route-lms .gb-staff-hero h2 {
+            margin: 6px 0 0;
+            color: var(--lux-text);
+            font-size: 26px;
+        }
+        body.lux-route-lms .gb-staff-hero p {
+            margin: 6px 0 0;
+            max-width: 680px;
+            color: var(--lux-text-muted);
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        body.lux-route-lms .gb-staff-stat-grid {
+            display: grid;
+            grid-template-columns: repeat(5,minmax(120px,1fr));
+            gap: 10px;
+        }
+        body.lux-route-lms .gb-staff-stat-grid div {
+            padding: 13px 14px;
+            border: 1px solid rgba(var(--lux-accent-rgb),0.1);
+            border-radius: 16px;
+            background: rgba(255,255,255,0.04);
+        }
+        body.lux-route-lms .gb-staff-stat-grid span,
+        body.lux-route-lms .gb-selected-assessment-cell span,
+        body.lux-route-lms .gb-student-cell span {
+            display: block;
+            color: var(--lux-text-muted);
+            font-size: 11px;
+            font-weight: 800;
+        }
+        body.lux-route-lms .gb-staff-stat-grid strong {
+            display: block;
+            margin-top: 5px;
+            color: var(--lux-text);
+            font-size: 22px;
+        }
+        body.lux-route-lms .gb-staff-control-grid {
+            display: grid;
+            grid-template-columns: minmax(170px,0.35fr) 150px minmax(0,1fr);
+            gap: 12px;
+            align-items: end;
+        }
+        body.lux-route-lms .gb-staff-control-grid label {
+            display: grid;
+            gap: 7px;
+            color: var(--lux-text-muted);
+            font-size: 11px;
+            font-weight: 900;
+            text-transform: uppercase;
+        }
+        body.lux-route-lms .gb-staff-control-grid select,
+        body.lux-route-lms .gb-staff-control-grid input {
+            min-height: 42px;
+            border: 1px solid rgba(var(--lux-accent-rgb),0.16);
+            border-radius: 12px;
+            padding: 0 12px;
+            color: var(--lux-text);
+            background: rgba(255,255,255,0.05);
+        }
+        body.lux-route-lms .gb-staff-control-copy {
+            color: var(--lux-text-muted);
+            font-size: 12px;
+            line-height: 1.55;
+        }
+        body.lux-route-lms .gb-staff-weight-panel {
+            display: grid;
+            grid-template-columns: minmax(320px,0.8fr) minmax(260px,0.6fr);
+            gap: 12px;
+            margin-top: 12px;
+        }
+        body.lux-route-lms .gb-staff-linked-small {
+            display: grid;
+            gap: 8px;
+            align-content: start;
+            padding: 14px;
+            border: 1px solid rgba(var(--lux-accent-rgb),0.12);
+            border-radius: 16px;
+            background: rgba(255,255,255,0.04);
+        }
+        body.lux-route-lms .gb-staff-linked-small strong,
+        body.lux-route-lms .gb-student-cell strong,
+        body.lux-route-lms .gb-selected-assessment-cell strong {
+            color: var(--lux-text);
+        }
+        body.lux-route-lms .gb-score-edit-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 9100;
+            display: grid;
+            place-items: center;
+            padding: 20px;
+            background: rgba(15,23,42,0.78);
+            -webkit-backdrop-filter: none;
+            backdrop-filter: none;
+        }
+        body.lux-route-lms .gb-score-edit-card {
+            width: min(460px, 100%);
+            display: grid;
+            gap: 14px;
+            padding: 20px;
+            border-radius: 22px;
+            border: 1px solid rgba(var(--lux-accent-rgb),0.16);
+            background: var(--lux-surface);
+            box-shadow: 0 28px 80px rgba(0,0,0,0.38);
+        }
+        body.lux-route-lms .gb-score-edit-card h3 {
+            margin: 6px 0 0;
+            color: var(--lux-text);
+        }
+        body.lux-route-lms .gb-score-edit-card p {
+            margin: 5px 0 0;
+            color: var(--lux-text-muted);
+            font-size: 12px;
+        }
+        body.lux-route-lms .gb-score-edit-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        @media (max-width: 900px) {
+            body.lux-route-lms .gb-student-context-bar {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+            body.lux-route-lms .gb-context-actions {
+                justify-content: flex-start;
+            }
+            body.lux-route-lms .gb-modern-hero-main,
+            body.lux-route-lms .gb-modern-grid {
+                grid-template-columns: minmax(0,1fr);
+            }
+            body.lux-route-lms .gb-modal-hero,
+            body.lux-route-lms .gb-staff-hero,
+            body.lux-route-lms .gb-staff-control-grid,
+            body.lux-route-lms .gb-staff-weight-panel,
+            body.lux-route-lms .gb-staff-create-grid,
+            body.lux-route-lms .gb-custom-section-panel > div:last-child {
+                grid-template-columns: minmax(0,1fr);
+            }
+            body.lux-route-lms .gb-staff-hero {
+                display: grid;
+            }
+            body.lux-route-lms .gb-staff-stat-grid {
+                grid-template-columns: repeat(2,minmax(0,1fr));
+            }
+            body.lux-route-lms .gb-score-orbit {
+                justify-self: start;
+            }
+            body.lux-route-lms .gb-modern-stats {
+                grid-template-columns: repeat(2,minmax(0,1fr));
+            }
+        }
+        @media (max-width: 620px) {
+            body.lux-route-lms .gb-modern-hero,
+            body.lux-route-lms .gb-modern-card {
+                border-radius: 18px;
+                padding: 16px;
+            }
+            body.lux-route-lms .gb-modern-hero h2 {
+                font-size: 26px;
+            }
+            body.lux-route-lms .gb-modern-stats,
+            body.lux-route-lms .gb-timeline-item,
+            body.lux-route-lms .gb-modal-history-card {
+                grid-template-columns: minmax(0,1fr);
+            }
+            body.lux-route-lms .gb-modal-history-score {
+                justify-items: start;
+            }
+        }
+
+        /* Section switch */
+        .lms-section-switch {
+            display: flex; gap: 4px; margin-top: 14px; padding: 4px;
+            border-radius: var(--lms-control-radius); background: var(--lux-bg-soft);
+            border: 1px solid var(--lux-border); width: fit-content;
+        }
+        .lms-section-option {
+            display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px;
+            border-radius: calc(var(--lms-control-radius) - 2px); border: none;
+            background: transparent; color: var(--lux-text-muted); font-size: 12px;
+            font-weight: 700; cursor: pointer; transition: color 0.18s ease, background-color 0.18s ease, box-shadow 0.18s ease;
+        }
+        .lms-section-option.active {
+            background: var(--lux-surface); color: var(--lux-text);
+            box-shadow: var(--lms-shadow-soft);
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            body.lux-route-lms .lms-hero-v2-grid,
+            body.lux-route-lms .lms-route-hero-grid { grid-template-columns: minmax(0,1fr); }
+            .lms-hero-v2-grid { grid-template-columns: 1fr; gap: 20px; }
+        }
+        @media (max-width: 780px) {
+            .lms-clean-metric-grid,.lms-clean-subject-grid,.lms-clean-group-grid { grid-template-columns: minmax(0,1fr); }
+        }
+        @media (max-width: 640px) {
+            body.lux-route-lms .lms-route-stage { gap: 14px; }
+            body.lux-route-lms :is(.page-hero,.lux-card,.lms-route-hero,.lms-route-panel) {
+                padding: 18px; border-radius: 14px;
+            }
+            body.lux-route-lms .lms-hero-v2-stats,
+            body.lux-route-lms .lms-clean-metric-grid,
+            body.lux-route-lms .lms-route-stat-grid,
+            body.lux-route-lms .lms-route-field-grid { grid-template-columns: minmax(0,1fr); }
+        }
+
+        body.lux-route-lms .lms-bulk-panel {
+            margin: 12px 0 16px;
+            padding: 0;
+            border-radius: 12px;
+            border: 1px solid var(--lms-pro-border);
+            background: var(--lms-pro-surface) !important;
+            box-shadow: 0 14px 30px rgba(0,0,0,0.14);
+            overflow: hidden;
+            display: grid;
+            gap: 0;
+        }
+        body.lux-light-mode.lux-route-lms .lms-bulk-panel,
+        html.lux-light-mode body.lux-route-lms .lms-bulk-panel {
+            border-color: rgba(35,45,64,0.12);
+            background: rgba(255,255,255,var(--lux-panel-alpha,0.88)) !important;
+            box-shadow: 0 14px 30px rgba(58,45,31,0.09);
+        }
+        body.lux-route-lms .lms-bulk-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+            padding: 12px 14px;
+            border-bottom: 1px solid var(--lms-pro-border);
+        }
+        body.lux-route-lms .lms-bulk-head-main {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 0;
+        }
+        body.lux-route-lms .lms-bulk-icon {
+            width: 36px;
+            height: 36px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            background: rgba(var(--lux-accent-rgb),0.12);
+            color: var(--lux-text);
+            flex: 0 0 auto;
+        }
+        body.lux-route-lms .lms-bulk-head-actions,
+        body.lux-route-lms .lms-bulk-actions {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        body.lux-route-lms .lms-bulk-toggle {
+            min-height: 34px !important;
+            padding: 8px 12px !important;
+        }
+        body.lux-route-lms .lms-bulk-body {
+            display: grid;
+            gap: 12px;
+            padding: 12px;
+        }
+        body.lux-route-lms .lms-bulk-panel.is-collapsed .lms-bulk-body {
+            display: none;
+        }
+        body.lux-route-lms .lms-bulk-card {
+            border-radius: 10px;
+            border: 1px solid var(--lms-pro-border);
+            background: var(--lms-pro-surface-soft) !important;
+            padding: 12px;
+            display: grid;
+            gap: 12px;
+            box-shadow: none !important;
+        }
+        body.lux-light-mode.lux-route-lms .lms-bulk-card,
+        html.lux-light-mode body.lux-route-lms .lms-bulk-card {
+            border-color: rgba(35,45,64,0.10);
+            background: rgba(35,45,64,0.035);
+        }
+        body.lux-route-lms .lms-bulk-title {
+            color: var(--lux-text);
+            font-size: 15px;
+            font-weight: 850;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        body.lux-route-lms .lms-bulk-title i {
+            color: var(--lux-accent);
+        }
+        body.lux-route-lms .lms-bulk-copy {
+            color: var(--lux-text-muted);
+            font-size: 12px;
+            line-height: 1.4;
+        }
+        body.lux-route-lms .lms-bulk-selection {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 10px;
+            border-radius: 999px;
+            border: 1px solid rgba(var(--lux-accent-rgb),0.20);
+            background: rgba(var(--lux-accent-rgb),0.10);
+            color: var(--lux-accent);
+            font-size: 11px;
+            font-weight: 850;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+        body.lux-route-lms .lms-bulk-selection-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        body.lux-route-lms .lms-bulk-selection-actions .kiu-btn-outline {
+            min-height: 34px !important;
+            padding: 8px 12px !important;
+        }
+        body.lux-route-lms .lms-bulk-action-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+        body.lux-route-lms .lms-bulk-card textarea {
+            min-height: 110px !important;
+        }
+        body.lux-route-lms .lms-bulk-upload-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(150px, 0.82fr) minmax(145px, 0.78fr);
+            gap: 10px;
+            align-items: end;
+        }
+        body.lux-route-lms .lms-bulk-card #lms-bulk-material-weeks {
+            min-height: 92px !important;
+            max-height: 112px;
+        }
+        body.lux-route-lms .lms-bulk-group-select {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 10px;
+            margin-bottom: 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(var(--lux-accent-rgb),0.20);
+            background: rgba(var(--lux-accent-rgb),0.08);
+            color: var(--lux-text);
+            font-size: 12px;
+            font-weight: 800;
+            cursor: pointer;
+        }
+        body.lux-route-lms .lms-bulk-group-select input {
+            width: 16px;
+            height: 16px;
+            accent-color: rgb(var(--lux-accent-rgb));
+        }
+        @media (max-width: 980px) {
+            body.lux-route-lms .lms-bulk-action-grid,
+            body.lux-route-lms .lms-bulk-upload-grid {
+                grid-template-columns: minmax(0,1fr);
+            }
+        }
+        body.lux-route-lms .lux-lms-group-card {
+            cursor: pointer;
+        }
+        body.lux-route-lms #gradebook-spreadsheet-view .lms-route-table-shell {
+            border-radius: 8px !important;
+            padding: 18px !important;
+        }
+        body.lux-route-lms #gradebook-table {
+            border-collapse: separate !important;
+            border-spacing: 0 10px !important;
+            min-width: 900px;
+        }
+        body.lux-route-lms #gradebook-table thead th {
+            border: 0 !important;
+            background: transparent !important;
+            color: var(--lux-text-soft) !important;
+            font-size: 11px !important;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            padding: 8px 12px !important;
+        }
+        body.lux-route-lms #gradebook-table tbody td {
+            background: rgba(255,255,255,0.045) !important;
+            border-top: 1px solid rgba(255,255,255,0.07) !important;
+            border-bottom: 1px solid rgba(255,255,255,0.07) !important;
+            color: var(--lux-text) !important;
+            vertical-align: middle;
+            padding: 14px 12px !important;
+        }
+        body.lux-route-lms #gradebook-table tbody td:first-child {
+            border-left: 1px solid rgba(255,255,255,0.07) !important;
+            border-radius: 8px 0 0 8px;
+        }
+        body.lux-route-lms #gradebook-table tbody td:last-child {
+            border-right: 1px solid rgba(255,255,255,0.07) !important;
+            border-radius: 0 8px 8px 0;
+        }
+        body.lux-light-mode.lux-route-lms #gradebook-table tbody td,
+        html.lux-light-mode body.lux-route-lms #gradebook-table tbody td {
+            background: rgba(35,45,64,0.035) !important;
+            border-color: rgba(35,45,64,0.10) !important;
+        }
+        body.lux-route-lms #student-evaluation-history-modal > div {
+            border-radius: 8px !important;
+            background: linear-gradient(180deg, rgba(13,19,31,var(--lux-panel-alpha,0.94)), rgba(7,11,19,var(--lux-panel-alpha,0.92))) !important;
+            border: 1px solid rgba(255,255,255,0.12) !important;
+            color: var(--lux-text) !important;
+        }
+        body.lux-light-mode.lux-route-lms #student-evaluation-history-modal > div,
+        html.lux-light-mode body.lux-route-lms #student-evaluation-history-modal > div {
+            background: linear-gradient(180deg, rgba(255,255,255,var(--lux-panel-alpha,0.94)), rgba(246,241,234,var(--lux-panel-alpha,0.90))) !important;
+            border-color: rgba(35,45,64,0.12) !important;
+        }
+        body.lux-route-lms #student-evaluation-history-modal [style*="background:#ffffff"],
+        body.lux-route-lms #student-evaluation-history-modal [style*="background: #ffffff"],
+        body.lux-route-lms #student-evaluation-history-modal [style*="background:#f8fafc"],
+        body.lux-route-lms #student-evaluation-history-modal [style*="background:linear-gradient(135deg, #ffffff"] {
+            background: rgba(255,255,255,0.05) !important;
+            border-color: rgba(255,255,255,0.10) !important;
+            color: var(--lux-text) !important;
+            border-radius: 8px !important;
+        }
+        body.lux-light-mode.lux-route-lms #student-evaluation-history-modal [style*="background:#ffffff"],
+        body.lux-light-mode.lux-route-lms #student-evaluation-history-modal [style*="background: #ffffff"],
+        body.lux-light-mode.lux-route-lms #student-evaluation-history-modal [style*="background:#f8fafc"],
+        body.lux-light-mode.lux-route-lms #student-evaluation-history-modal [style*="background:linear-gradient(135deg, #ffffff"],
+        html.lux-light-mode body.lux-route-lms #student-evaluation-history-modal [style*="background:#ffffff"],
+        html.lux-light-mode body.lux-route-lms #student-evaluation-history-modal [style*="background: #ffffff"],
+        html.lux-light-mode body.lux-route-lms #student-evaluation-history-modal [style*="background:#f8fafc"],
+        html.lux-light-mode body.lux-route-lms #student-evaluation-history-modal [style*="background:linear-gradient(135deg, #ffffff"] {
+            background: rgba(35,45,64,0.035) !important;
+            border-color: rgba(35,45,64,0.10) !important;
+        }
+        body.lux-route-lms #student-evaluation-history-modal [style*="color:#64748b"],
+        body.lux-route-lms #student-evaluation-history-modal [style*="color: #64748b"],
+        body.lux-route-lms #student-evaluation-history-modal [style*="color:#475569"],
+        body.lux-route-lms #student-evaluation-history-modal [style*="color:var(--kiu-text-muted)"] {
+            color: var(--lux-text-muted) !important;
+        }
+        body.lux-route-lms #student-evaluation-history-modal [style*="color:var(--kiu-navy)"] {
+            color: var(--lux-text) !important;
+        }
+        body.lux-route-lms #student-evaluation-history-modal [style*="color:var(--kiu-blue)"] {
+            color: var(--lux-accent) !important;
+        }
+        body.lux-route-lms #student-evaluation-history-modal :is(input, select, textarea) {
+            background: rgba(255,255,255,0.06) !important;
+            border: 1px solid rgba(255,255,255,0.12) !important;
+            color: var(--lux-text) !important;
+            border-radius: 8px !important;
+        }
+        body.lux-light-mode.lux-route-lms #student-evaluation-history-modal :is(input, select, textarea),
+        html.lux-light-mode body.lux-route-lms #student-evaluation-history-modal :is(input, select, textarea) {
+            background: rgba(255,255,255,0.76) !important;
+            border-color: rgba(35,45,64,0.14) !important;
+        }
+
+        /* Professional LMS polish pass */
+        body.lux-route-lms :is(.lms-route-panel,.lms-route-card,.lms-route-stat,.lms-route-kv,.lms-clean-metric-card,.lux-lms-group-card,.lms-bulk-panel,.lms-bulk-card,.lms-session-official-card,.lms-session-marker-composer,.lms-session-marker-board,.lms-session-marker-card,.lms-call-create,.lms-call-card,.lms-call-stage,.lms-call-side-card,.lms-call-collab-panel,.lms-call-post,.lms-call-roster,.lms-call-feature,.lms-call-mode-panel > div,.lms-call-signal-grid span,.lms-call-post-grid span) {
+            background: var(--lms-pro-surface) !important;
+            border-color: var(--lms-pro-border) !important;
+            color: var(--lux-text) !important;
+            box-shadow: var(--lms-pro-shadow) !important;
+            -webkit-backdrop-filter: none !important;
+            backdrop-filter: none !important;
+        }
+        body.lux-route-lms :is(.lms-route-kv,.lms-route-stat,.lms-bulk-card,.lms-call-control,.lms-call-layout,.lms-call-chip,.lms-call-mini-action,.lms-call-question,.lms-call-activity,.lms-call-feed-item,.lms-call-material,.lms-call-breakout-room,.lms-call-media-placeholder,.lms-call-speaker-tile) {
+            background: var(--lms-pro-surface-soft) !important;
+            border-color: var(--lms-pro-border) !important;
+            box-shadow: none !important;
+        }
+        body.lux-route-lms :is(input:not([type='checkbox']):not([type='radio']),select,textarea,.lms-route-input,.lms-route-select,.lms-route-textarea,#lms-content-area select,#lms-gradebook-wrapper select,#student-evaluation-history-modal select,#student-evaluation-history-modal input,#student-evaluation-history-modal textarea) {
+            min-height: 42px !important;
+            border-radius: 10px !important;
+            border: 1px solid var(--lms-pro-border) !important;
+            background: var(--lms-pro-control) !important;
+            color: var(--lux-text) !important;
+            box-shadow: none !important;
+            font-size: 13px !important;
+            font-weight: 650 !important;
+            letter-spacing: 0 !important;
+            text-transform: none !important;
+        }
+        body.lux-route-lms :is(select,.lms-route-select,#lms-content-area select,#lms-gradebook-wrapper select,#student-evaluation-history-modal select) {
+            appearance: auto !important;
+            -webkit-appearance: auto !important;
+            padding: 0 12px !important;
+            cursor: pointer;
+        }
+        body.lux-route-lms :is(select[multiple],.lms-route-select[multiple],#lms-content-area select[multiple]) {
+            min-height: 150px !important;
+            padding: 10px 12px !important;
+        }
+        body.lux-route-lms :is(textarea,.lms-route-textarea) {
+            padding: 12px 14px !important;
+            line-height: 1.55;
+        }
+        body.lux-route-lms :is(select,input,textarea,.lms-route-input,.lms-route-select,.lms-route-textarea):focus {
+            border-color: rgba(var(--lux-accent-rgb),0.42) !important;
+            box-shadow: var(--lms-focus-ring) !important;
+        }
+        body.lux-route-lms select option {
+            color: #111827;
+            background: #ffffff;
+        }
+        body.lux-route-lms:not(.lux-light-mode) select option,
+        html:not(.lux-light-mode) body.lux-route-lms select option {
+            color: #f8fafc;
+            background: #111827;
+        }
+        body.lux-route-lms :is(.lms-route-field-label,.lms-clean-card-kicker,.lms-route-kv-label,.lms-route-pill,#gradebook-table thead th,.lms-session-marker-kicker span) {
+            letter-spacing: 0 !important;
+            text-transform: none !important;
+        }
+        body.lux-route-lms .lms-route-field-label,
+        body.lux-route-lms .lms-route-kv-label {
+            font-size: 12px !important;
+            font-weight: 780 !important;
+            color: var(--lux-text-muted) !important;
+        }
+        body.lux-route-lms .tabs-container.lms-tabs {
+            background: var(--lms-pro-surface) !important;
+            border-color: var(--lms-pro-border) !important;
+            box-shadow: var(--lms-shadow-soft);
+        }
+        body.lux-route-lms .tabs-container.lms-tabs .tab {
+            border-radius: 9px !important;
+            color: var(--lux-text-muted) !important;
+            letter-spacing: 0 !important;
+        }
+        body.lux-route-lms .tabs-container.lms-tabs .tab.active {
+            color: var(--lux-text) !important;
+            background: var(--lms-pro-surface-soft) !important;
+            border-color: rgba(var(--lux-accent-rgb),0.28) !important;
+        }
+        body.lux-route-lms :is(.kiu-btn-blue,.kiu-btn-outline,.lms-clean-action-primary,.lms-clean-action-secondary,.lux-primary-btn,.lux-secondary-btn) {
+            border-radius: 10px !important;
+            box-shadow: none !important;
+            letter-spacing: 0 !important;
+        }
+        body.lux-route-lms .lux-lms-group-card {
+            overflow: hidden;
+            transition: border-color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+        }
+        body.lux-route-lms .lux-lms-group-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(var(--lux-accent-rgb),0.30) !important;
+            box-shadow: 0 18px 40px rgba(var(--lux-accent-rgb),0.12) !important;
+        }
+        body.lux-route-lms .lux-lms-group-card .lux-card-body,
+        body.lux-route-lms .lms-route-card,
+        body.lux-route-lms .lms-route-panel {
+            padding: 18px !important;
+        }
+        body.lux-route-lms .lux-lms-group-card .lux-card-title {
+            font-size: clamp(22px, 2.1vw, 30px) !important;
+            line-height: 1.05 !important;
+            letter-spacing: 0 !important;
+        }
+        body.lux-route-lms #page-lms-groups .lms-route-stage {
+            gap: 10px;
+        }
+        body.lux-route-lms #page-lms-groups .lms-bulk-panel {
+            background: var(--lms-pro-surface) !important;
+            border-color: var(--lms-pro-border) !important;
+            box-shadow: 0 14px 30px rgba(0,0,0,0.14) !important;
+        }
+        body.lux-route-lms #page-lms-groups .lms-bulk-card {
+            background: var(--lms-pro-surface-soft) !important;
+            border-color: var(--lms-pro-border) !important;
+            box-shadow: none !important;
+        }
+        body.lux-route-lms #page-lms-groups .lms-bulk-panel.is-collapsed {
+            margin-bottom: 12px;
+        }
+        body.lux-route-lms .lms-clean-subview-hero {
+            min-height: 0 !important;
+        }
+        body.lux-route-lms .lms-clean-subview-hero .lux-card-body {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            min-height: 0 !important;
+            padding: 10px 16px !important;
+        }
+        body.lux-route-lms .lms-clean-subview-hero .lux-card-title {
+            font-size: clamp(24px, 2vw, 32px) !important;
+            line-height: 1.05;
+            margin-top: 2px;
+        }
+        body.lux-route-lms .lms-clean-subview-hero .lms-clean-subview-copy {
+            margin-top: 4px;
+            line-height: 1.35;
+        }
+        body.lux-route-lms .lms-clean-groups .lux-card-body {
+            padding: 16px !important;
+        }
+        body.lux-route-lms .lms-clean-groups .lux-card-head {
+            margin-bottom: 10px;
+        }
+        body.lux-route-lms .lms-clean-group-grid {
+            grid-template-columns: repeat(auto-fill, minmax(205px, 230px));
+            justify-content: start;
+            align-items: start;
+            gap: 14px;
+        }
+        body.lux-route-lms .lux-lms-group-card {
+            aspect-ratio: 1 / 1;
+            min-height: 0 !important;
+            border-radius: 12px !important;
+            display: flex !important;
+        }
+        body.lux-route-lms .lux-lms-group-card .lux-card-body {
+            width: 100%;
+            min-height: 0;
+            padding: 12px !important;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 10px;
+        }
+        body.lux-route-lms .lms-group-tile-top {
+            display: grid;
+            gap: 8px;
+            min-width: 0;
+        }
+        body.lux-route-lms .lms-group-tile-head {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 10px;
+            min-width: 0;
+        }
+        body.lux-route-lms .lms-group-tile-action {
+            width: 34px;
+            height: 34px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            border: 1px solid var(--lms-pro-border);
+            background: rgba(var(--lux-accent-rgb),0.12);
+            color: var(--lux-text);
+            flex: 0 0 auto;
+        }
+        body.lux-route-lms .lms-group-tile-title {
+            font-size: clamp(22px, 1.8vw, 28px) !important;
+            line-height: 1 !important;
+            font-weight: 850;
+            color: var(--lux-text);
+            overflow-wrap: anywhere;
+        }
+        body.lux-route-lms .lms-group-tile-subject {
+            font-size: 12px;
+            line-height: 1.35;
+            color: var(--lux-text-muted);
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+        body.lux-route-lms .lms-group-tile-meta {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 6px;
+        }
+        body.lux-route-lms .lms-group-tile-meta span {
+            min-width: 0;
+            height: 32px;
+            padding: 0 7px;
+            justify-content: center;
+            font-size: 10px;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+        body.lux-route-lms .lms-group-tile-select {
+            margin: 0 !important;
+            align-self: flex-start;
+            padding: 6px 8px !important;
+            font-size: 11px !important;
+        }
+        @media (max-width: 640px) {
+            body.lux-route-lms .lms-clean-subview-hero .lux-card-body {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+            body.lux-route-lms .lms-clean-group-grid {
+                grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            }
+        }
+        body.lux-route-lms :is(.page-hero-badge,.lux-status-pill,.lms-route-pill,.portal-msg-mini-badge) {
+            background: var(--lms-pro-surface-soft) !important;
+            border-color: var(--lms-pro-border) !important;
+            color: var(--lux-text) !important;
+            letter-spacing: 0 !important;
+        }
+        body.lux-route-lms .lms-route-kv-grid {
+            grid-template-columns: repeat(auto-fit,minmax(190px,1fr)) !important;
+            gap: 10px !important;
+        }
+        body.lux-route-lms .lms-gradebook-wrapper-shell {
+            display: none;
+            margin-top: 20px;
+        }
+        body.lux-route-lms .lms-route-kv-value {
+            font-size: clamp(16px, 1.6vw, 22px) !important;
+            overflow-wrap: anywhere;
+        }
+        body.lux-route-lms .lms-session-marker-form {
+            display: grid;
+            grid-template-columns: minmax(0, 0.9fr) minmax(280px, 1.1fr);
+            gap: 12px;
+            align-items: stretch;
+        }
+        body.lux-route-lms .lms-session-marker-composer {
+            padding: 0 !important;
+            overflow: hidden;
+        }
+        body.lux-route-lms .lms-session-marker-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+            padding: 12px 14px;
+            border-bottom: 1px solid var(--lms-pro-border);
+        }
+        body.lux-route-lms .lms-session-marker-toolbar-main {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 0;
+        }
+        body.lux-route-lms .lms-session-marker-toggle {
+            min-height: 34px !important;
+            padding: 8px 12px !important;
+        }
+        body.lux-route-lms .lms-session-marker-body {
+            padding: 12px;
+        }
+        body.lux-route-lms .lms-session-marker-composer.is-collapsed .lms-session-marker-body {
+            display: none;
+        }
+        body.lux-route-lms .lms-session-marker-main-fields {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 10px;
+        }
+        body.lux-route-lms .lms-session-marker-weeks-field select {
+            min-height: 128px !important;
+        }
+        body.lux-route-lms .lms-session-marker-note-row {
+            grid-column: 1 / -1;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 10px;
+            align-items: end;
+        }
+        body.lux-route-lms .lms-session-official-card strong {
+            font-size: clamp(18px, 2vw, 24px) !important;
+            overflow-wrap: anywhere;
+        }
+        body.lux-route-lms #gradebook-spreadsheet-view .lms-route-table-shell,
+        body.lux-route-lms #gradebook-table tbody td {
+            background: var(--lms-pro-surface-soft) !important;
+            border-color: var(--lms-pro-border) !important;
+        }
+        body.lux-route-lms #gradebook-table {
+            border-spacing: 0 8px !important;
+        }
+        body.lux-route-lms #gradebook-table :is(th,td) {
+            letter-spacing: 0 !important;
+        }
+        body.lux-route-lms .lms-call-control.is-active,
+        body.lux-route-lms .lms-call-layout.active,
+        body.lux-route-lms .lms-call-chip:hover,
+        body.lux-route-lms .lms-call-launcher button:hover {
+            color: #ffffff !important;
+            background: linear-gradient(135deg, rgba(var(--lux-accent-rgb),0.94), rgba(var(--lux-accent-rgb),0.72)) !important;
+            border-color: rgba(var(--lux-accent-rgb),0.42) !important;
+        }
+        body.lux-route-lms .lms-call-card.is-active {
+            border-color: rgba(34,197,94,0.34) !important;
+            box-shadow: 0 16px 34px rgba(34,197,94,0.12) !important;
+        }
+        body.lux-route-lms #student-evaluation-history-modal > div {
+            max-width: min(1120px, calc(100vw - 32px)) !important;
+        }
+        body.lux-route-lms #student-evaluation-history-modal :is(button,.kiu-btn-blue,.kiu-btn-outline) {
+            border-radius: 10px !important;
+            letter-spacing: 0 !important;
+        }
+        body.lux-route-lms :is(#lms-content-area,#lms-gradebook-wrapper,#student-evaluation-history-modal) [style*="background:white"],
+        body.lux-route-lms :is(#lms-content-area,#lms-gradebook-wrapper,#student-evaluation-history-modal) [style*="background: white"],
+        body.lux-route-lms :is(#lms-content-area,#lms-gradebook-wrapper,#student-evaluation-history-modal) [style*="background:#ffffff"],
+        body.lux-route-lms :is(#lms-content-area,#lms-gradebook-wrapper,#student-evaluation-history-modal) [style*="background: #ffffff"],
+        body.lux-route-lms :is(#lms-content-area,#lms-gradebook-wrapper,#student-evaluation-history-modal) [style*="background:#f8fafc"],
+        body.lux-route-lms :is(#lms-content-area,#lms-gradebook-wrapper,#student-evaluation-history-modal) [style*="background: #f8fafc"] {
+            background: var(--lms-pro-surface-soft) !important;
+            border-color: var(--lms-pro-border) !important;
+            color: var(--lux-text) !important;
+            box-shadow: none !important;
+        }
+        body.lux-route-lms :is(#lms-content-area,#lms-gradebook-wrapper,#student-evaluation-history-modal) [style*="border:1px solid #dbe7f5"],
+        body.lux-route-lms :is(#lms-content-area,#lms-gradebook-wrapper,#student-evaluation-history-modal) [style*="border:1px solid #e2e8f0"],
+        body.lux-route-lms :is(#lms-content-area,#lms-gradebook-wrapper,#student-evaluation-history-modal) [style*="border:1px dashed #cbd5e1"] {
+            border-color: var(--lms-pro-border) !important;
+        }
+        body.lux-route-lms :is(#lms-content-area,#lms-gradebook-wrapper,#student-evaluation-history-modal) [style*="color:var(--kiu-navy)"],
+        body.lux-route-lms :is(#lms-content-area,#lms-gradebook-wrapper,#student-evaluation-history-modal) [style*="color:#0f172a"],
+        body.lux-route-lms :is(#lms-content-area,#lms-gradebook-wrapper,#student-evaluation-history-modal) [style*="color:#111827"] {
+            color: var(--lux-text) !important;
+        }
+        body.lux-route-lms :is(#lms-content-area,#lms-gradebook-wrapper,#student-evaluation-history-modal) [style*="color:#64748b"],
+        body.lux-route-lms :is(#lms-content-area,#lms-gradebook-wrapper,#student-evaluation-history-modal) [style*="color:#94a3b8"],
+        body.lux-route-lms :is(#lms-content-area,#lms-gradebook-wrapper,#student-evaluation-history-modal) [style*="color:var(--lux-text-muted)"] {
+            color: var(--lux-text-muted) !important;
+        }
+        body.lux-route-lms #lms-content-area [style*="letter-spacing:0.08em"],
+        body.lux-route-lms #lms-gradebook-wrapper [style*="letter-spacing:0.08em"],
+        body.lux-route-lms #student-evaluation-history-modal [style*="letter-spacing:0.08em"] {
+            letter-spacing: 0 !important;
+        }
+        body.lux-site-modernized.lux-unified-shell.lux-route-lms .lux-lms-hero.lms-clean-hero {
+            background:
+                radial-gradient(circle at 12% 0%, rgba(255,255,255,0.075), transparent 32%),
+                radial-gradient(circle at 100% 0%, rgba(var(--lux-accent-rgb),0.18), transparent 40%),
+                linear-gradient(135deg, rgba(var(--lux-accent-rgb),0.09), transparent 44%),
+                linear-gradient(180deg, rgba(14,20,33,var(--lux-panel-alpha,0.72)), rgba(8,12,21,var(--lux-panel-alpha,0.56))) !important;
+            border-color: color-mix(in srgb, var(--lux-border) 70%, rgba(var(--lux-accent-rgb),0.34)) !important;
+            box-shadow:
+                0 22px 54px rgba(0,0,0,0.18),
+                0 0 0 1px rgba(var(--lux-accent-rgb),0.045),
+                inset 0 1px 0 rgba(255,255,255,0.10) !important;
+            -webkit-backdrop-filter: blur(8px) saturate(120%) !important;
+            backdrop-filter: blur(8px) saturate(120%) !important;
+        }
+        body.lux-site-modernized.lux-unified-shell.lux-light-mode.lux-route-lms .lux-lms-hero.lms-clean-hero {
+            background:
+                radial-gradient(circle at 10% 0%, rgba(255,255,255,0.82), transparent 34%),
+                radial-gradient(circle at 100% 0%, rgba(var(--lux-accent-rgb),0.18), transparent 40%),
+                linear-gradient(135deg, rgba(var(--lux-accent-rgb),0.08), transparent 45%),
+                linear-gradient(180deg, rgba(255,255,255,var(--lux-panel-alpha,0.78)), rgba(246,240,231,var(--lux-panel-alpha,0.62))) !important;
+            border-color: color-mix(in srgb, var(--lux-border) 70%, rgba(var(--lux-accent-rgb),0.28)) !important;
+            box-shadow:
+                0 22px 54px rgba(70,50,30,0.105),
+                0 0 0 1px rgba(var(--lux-accent-rgb),0.035),
+                inset 0 1px 0 rgba(255,255,255,0.82) !important;
+        }
+        @media (max-width: 860px) {
+            body.lux-route-lms .lms-session-marker-form,
+            body.lux-route-lms .lms-session-marker-main-fields,
+            body.lux-route-lms .lms-session-marker-note-row {
+                grid-template-columns: minmax(0,1fr);
+            }
+            body.lux-route-lms #lms-content-area [style*="grid-template-columns:repeat(4"],
+            body.lux-route-lms #lms-content-area [style*="grid-template-columns:repeat(3"],
+            body.lux-route-lms #lms-content-area [style*="grid-template-columns:minmax(220px, 260px)"],
+            body.lux-route-lms #lms-content-area [style*="grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(120px, 160px)"],
+            body.lux-route-lms #lms-content-area [style*="grid-template-columns:repeat(2"] {
+                grid-template-columns: minmax(0,1fr) !important;
+            }
+        }
+
+        body.lux-route-lms :is(.lms-route-panel,.lms-route-card,.lms-clean-subject-card,.lms-clean-groups,.lms-clean-subjects,.lms-clean-workspace-shell,.lms-live-panel,.lms-live-card,.gb-modern-card,.gb-modal-shell) {
+            contain: layout paint;
+        }
+        body.lux-route-lms :is(.lms-clean-subjects,#page-lms-groups,#page-lms-inner,#lms-gradebook-wrapper) {
+            content-visibility: auto;
+            contain-intrinsic-size: 640px;
+        }
+        body.lux-route-lms :is(#page-lms-groups,#page-lms-inner):not(.active-page) {
+            content-visibility: hidden;
+            contain-intrinsic-size: 1px 640px;
+        }
+        body.lux-route-lms :is(.gb-modal-shell,.gb-score-edit-card) {
+            box-shadow: 0 22px 56px rgba(0,0,0,0.30) !important;
+        }
+
+        @media (max-width: 760px) {
+            body.lux-route-lms .lms-live-stage::before {
+                display: none;
+            }
+            .lms-hero-v2-left > *,
+            .lms-hero-v2-right,
+            .lms-clean-subject-card,
+            body.lux-route-lms #lms-content-area > div {
+                animation: none !important;
+            }
+            body.lux-site-modernized.lux-unified-shell.lux-route-lms .lux-lms-hero.lms-clean-hero {
+                -webkit-backdrop-filter: none !important;
+                backdrop-filter: none !important;
+                box-shadow: 0 14px 34px rgba(0,0,0,0.14), inset 0 1px 0 rgba(255,255,255,0.08) !important;
+            }
+            body.lux-route-lms .gb-modal-shell,
+            body.lux-route-lms .gb-score-edit-card {
+                box-shadow: 0 18px 44px rgba(0,0,0,0.28) !important;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            body.lux-route-lms *,
+            body.lux-route-lms *::before,
+            body.lux-route-lms *::after {
+                animation-duration: 0.001ms !important;
+                animation-iteration-count: 1 !important;
+                scroll-behavior: auto !important;
+                transition-duration: 0.001ms !important;
+            }
+        }
+
+        /* Final LMS render deconflict layer: one renderer owns each tab. */
+        body.lux-route-lms #lms-content-area > [data-lms-pro-hero],
+        body.lux-route-lms #lms-content-area > [data-lms-deep-toolkit] {
+            display: none !important;
+        }
+        body.lux-route-lms #lms-content-area[data-active-lms-tab] > .lms-route-stack:first-child,
+        body.lux-route-lms #lms-content-area[data-active-lms-tab] > .lms-calls-page:first-child,
+        body.lux-route-lms #lms-content-area[data-active-lms-tab] > .lms-live-quiz-page:first-child {
+            margin-top: 0 !important;
+        }
+        body.lux-route-lms #student-evaluation-history-modal .gb-modal-shell {
+            width: min(1120px, calc(100vw - 32px)) !important;
+            max-height: calc(100vh - 48px) !important;
+            border-radius: 18px !important;
+            overflow: hidden !important;
+            background:
+                radial-gradient(circle at 0 0, rgba(var(--lux-accent-rgb),0.14), transparent 42%),
+                linear-gradient(180deg, rgba(13,19,31,var(--lux-panel-alpha,0.96)), rgba(7,11,19,var(--lux-panel-alpha,0.94))) !important;
+            border: 1px solid rgba(var(--lux-accent-rgb),0.18) !important;
+            color: var(--lux-text) !important;
+        }
+        body.lux-route-lms #student-evaluation-history-modal .gb-modal-body {
+            max-height: calc(100vh - 204px) !important;
+            overflow: auto !important;
+            padding: 22px 24px 26px !important;
+        }
+        body.lux-route-lms #student-evaluation-history-modal .gb-modal-category-grid {
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)) !important;
+            gap: 12px !important;
+            margin-bottom: 24px !important;
+        }
+        body.lux-route-lms #student-evaluation-history-modal .gb-modal-category-card {
+            display: grid !important;
+            grid-template-rows: auto auto minmax(34px, auto) !important;
+            min-height: 132px !important;
+            padding: 16px !important;
+            border-radius: 18px !important;
+            background:
+                linear-gradient(145deg, rgba(255,255,255,0.075), rgba(255,255,255,0.035)),
+                rgba(8, 15, 31, 0.42) !important;
+            border: 1px solid rgba(var(--lux-accent-rgb),0.12) !important;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.05) !important;
+            color: var(--lux-text) !important;
+        }
+        body.lux-route-lms #student-evaluation-history-modal .gb-modal-category-card.is-active,
+        body.lux-route-lms #student-evaluation-history-modal .gb-modal-category-card:hover {
+            background:
+                radial-gradient(circle at 0 0, rgba(var(--lux-accent-rgb),0.18), transparent 58%),
+                rgba(18, 36, 78, 0.72) !important;
+            border-color: rgba(var(--lux-accent-rgb),0.35) !important;
+        }
+        body.lux-route-lms #student-evaluation-history-modal .gb-modal-category-top,
+        body.lux-route-lms #student-evaluation-history-modal .gb-modal-category-body {
+            display: flex !important;
+            align-items: flex-start !important;
+            justify-content: space-between !important;
+            gap: 12px !important;
+            min-width: 0 !important;
+        }
+        body.lux-route-lms #student-evaluation-history-modal .gb-modal-category-body {
+            align-items: center !important;
+        }
+        body.lux-route-lms #student-evaluation-history-modal .gb-modal-category-body > div {
+            display: grid !important;
+            justify-items: end !important;
+            gap: 4px !important;
+        }
+        body.lux-route-lms #student-evaluation-history-modal .gb-modal-category-card > small {
+            display: none !important;
+        }
+        body.lux-route-lms #student-evaluation-history-modal .gb-modal-category-card strong {
+            font-size: 30px !important;
+            line-height: 1 !important;
+        }
+        body.lux-route-lms #student-evaluation-history-modal .gb-modal-category-latest {
+            min-width: 0 !important;
+            padding-top: 10px !important;
+            border-top: 1px solid rgba(148,163,184,0.14) !important;
+        }
+        body.lux-route-lms #student-evaluation-history-modal .gb-modal-category-latest span {
+            display: -webkit-box !important;
+            -webkit-line-clamp: 2 !important;
+            -webkit-box-orient: vertical !important;
+            overflow: hidden !important;
+            white-space: normal !important;
+            text-overflow: clip !important;
+        }
+    </style>
+</head>
+<body class="kiu-shell-loading lux-nonhome-page lux-route-lms lux-unified-shell">
+    <!-- MAIN CONTENT -->
+<!-- Navigation stubs (hidden, for JS compatibility) -->
+<nav id="prof-nav" aria-label="Professor navigation stub"></nav>
+<nav id="top-nav" aria-label="Top navigation stub"></nav>
+<nav id="admin-nav" aria-label="Admin navigation stub"></nav>
+<main id="app-content" class="lms-clean-shell">
+        <!-- HOME: Subject list -->
+        <div id="page-lms" class="page-section active-page">
+            <div class="lux-page-shell lms-route-stage">
+                <section class="page-hero lux-lms-hero lms-clean-hero lms-hero-v2">
+                    <div class="lms-hero-v2-grid">
+                        <div class="lms-hero-v2-left">
+                            <div class="lms-clean-kicker"><i class="fas fa-book-reader"></i> Learning Management System</div>
+                            <div class="page-hero-title lms-hero-v2-title" id="lms-hero-greeting">Learning Workspace</div>
+                            <div class="page-hero-copy">Open the right faculty subject, choose your group, and continue work in a focused LMS built for students, teaching staff, and administrators.</div>
+                        </div>
+                        <div class="lms-hero-v2-right" id="lms-subject-anchor">
+                            <div class="lms-hero-v2-stats">
+                                <div class="lms-hero-v2-stat">
+                                    <div class="lms-hero-v2-stat-icon"><i class="fas fa-building"></i></div>
+                                    <div>
+                                        <div class="lms-hero-v2-stat-value" id="lms-hero-faculty">Computer Science</div>
+                                        <div class="lms-hero-v2-stat-label">Active Faculty</div>
+                                    </div>
+                                </div>
+                                <div class="lms-hero-v2-stat">
+                                    <div class="lms-hero-v2-stat-icon"><i class="fas fa-book-open"></i></div>
+                                    <div>
+                                        <div class="lms-hero-v2-stat-value" id="lms-hero-subject-count">0</div>
+                                        <div class="lms-hero-v2-stat-label">Subjects</div>
+                                    </div>
+                                </div>
+                                <div class="lms-hero-v2-stat">
+                                    <div class="lms-hero-v2-stat-icon"><i class="fas fa-users"></i></div>
+                                    <div>
+                                        <div class="lms-hero-v2-stat-value" id="lms-hero-group-count">0</div>
+                                        <div class="lms-hero-v2-stat-label">Groups</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="lms-hero-v2-meta">
+                                <span class="lux-status-pill is-muted" id="lms-active-faculty-badge"><i class="fas fa-building"></i> Faculty: Computer Science</span>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Hidden elements for JS compatibility -->
+                    <div style="display:none">
+                        <span id="lms-subject-scope-title"></span>
+                        <span id="lms-subject-scope-copy"></span>
+                        <span id="lms-hero-next-step"></span>
+                        <span id="lms-hero-next-copy"></span>
+                        <span id="lms-signal-lane"></span>
+                        <span id="lms-signal-role"></span>
+                        <span id="lms-signal-state"></span>
+                        <span id="lms-signal-copy"></span>
+                        <span id="lms-signal-pill"></span>
+                        <span id="lms-ribbon-faculty"></span>
+                        <span id="lms-ribbon-theme"></span>
+                        <span id="lms-ribbon-subjects"></span>
+                    </div>
+                </section>
+
+
+                <section class="lux-card lms-clean-subjects">
+                    <div class="lux-card-body">
+                        <div class="lux-card-head lux-actions-between">
+                            <div>
+                                <div class="lms-clean-kicker"><i class="fas fa-layer-group"></i> Subjects</div>
+                                <div class="lux-card-title">Published faculty subjects</div>
+                                <div class="lux-card-copy">Published subjects for the selected faculty, ready to open by group.</div>
+                            </div>
+                            <span class="lux-status-pill is-muted" id="lms-lane-chip"><i class="fas fa-book-open"></i> Faculty LMS</span>
+                        </div>
+                        <div class="lms-clean-note">
+                            <div class="lms-clean-note-copy" id="lms-empty-guidance">Subject cards update automatically when faculty changes in the topbar.</div>
+                        </div>
+                        <div id="lms-subject-grid" class="lms-clean-subject-grid"></div>
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        <!-- GROUPS: Section list for a subject -->
+        <div id="page-lms-groups" class="page-section" style="display: none;">
+            <div class="lux-page-shell lms-route-stage">
+                <section class="lux-card lms-clean-subview-hero">
+                    <div class="lux-card-body">
+                        <div>
+                            <div class="lms-clean-kicker"><i class="fas fa-users"></i> Group view</div>
+                            <div class="lux-card-title" id="dynamic-subject-title">Subject</div>
+                            <div class="lms-clean-subview-copy">Choose a published group workspace.</div>
+                        </div>
+                        <button type="button" class="lms-clean-action-secondary" data-lms-action="close-groups">
+                            <i class="fas fa-arrow-left"></i> Back to subjects
+                        </button>
+                    </div>
+                </section>
+                <section class="lux-card lms-clean-groups">
+                    <div class="lux-card-body">
+                        <div class="lux-card-head">
+                            <div>
+                                <div class="lms-clean-kicker"><i class="fas fa-door-open"></i> Published sections</div>
+                                <div class="lux-card-copy">Compact group cards with schedule, room, and seats.</div>
+                            </div>
+                        </div>
+                        <div id="lms-bulk-group-tools"></div>
+                        <div id="dynamic-groups-grid" class="lms-clean-group-grid"></div>
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        <!-- COURSE: Inner workspace -->
+        <div id="page-lms-inner" class="page-section" style="display: none;">
+            <div class="lux-page-shell lms-route-stage">
+                <section class="lux-card lms-clean-workspace-shell">
+                    <div class="lux-card-body">
+                        <div class="lux-card-head lux-actions-between">
+                            <div>
+                                <div class="lms-clean-kicker"><i class="fas fa-graduation-cap"></i> Course workspace</div>
+                                <div class="lux-card-title" id="lms-course-title">Course title</div>
+                                <div class="lms-role-context" id="lms-course-context"></div>
+                                <div class="lms-section-switch" id="lms-section-switch" role="group" aria-label="Class type">
+                                    <button type="button" class="lms-section-option active" id="lms-section-lecture" data-lms-section="lecture">
+                                        <i class="fas fa-chalkboard-user"></i>
+                                        <span>Lecture</span>
+                                    </button>
+                                    <button type="button" class="lms-section-option" id="lms-section-workshop" data-lms-section="workshop">
+                                        <i class="fas fa-screwdriver-wrench"></i>
+                                        <span>Workshop</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <button type="button" class="lms-clean-action-secondary" data-lms-action="back-to-groups">
+                                <i class="fas fa-arrow-left"></i> Back to groups
+                            </button>
+                        </div>
+                        <div class="tabs-container lms-tabs">
+                            <div class="tab" id="tab-sessions" data-lms-tab="sessions"><i class="fas fa-calendar-check"></i> Sessions</div>
+                            <div class="tab" id="tab-live-quiz" data-lms-tab="live-quiz"><i class="fas fa-bolt"></i> Live Quiz</div>
+                            <div class="tab active" id="tab-interaction" data-lms-tab="interaction"><i class="fas fa-comments"></i> Interaction</div>
+                            <div class="tab" id="tab-calls" data-lms-tab="calls"><i class="fas fa-video"></i> Calls</div>
+                            <div class="tab" id="tab-members" data-lms-tab="members"><i class="fas fa-users"></i> Members</div>
+                            <div class="tab" id="tab-workspace" data-lms-tab="workspace"><i class="fas fa-clipboard-list"></i> Assignments</div>
+                            <div class="tab" id="tab-materials" data-lms-tab="materials"><i class="fas fa-folder-open"></i> Materials</div>
+                            <div class="tab" id="tab-concepts" data-lms-tab="concepts"><i class="fas fa-lightbulb"></i> Concepts</div>
+                            <div class="tab" id="tab-quiz" data-lms-tab="quiz"><i class="fas fa-pen-to-square"></i> Quiz</div>
+                            <div class="tab" id="tab-monitoring" data-lms-tab="monitoring"><i class="fas fa-shield-halved"></i> Monitoring</div>
+                            <div class="tab" id="tab-gradebook" data-lms-tab="gradebook"><i class="fas fa-chart-bar"></i> Grades</div>
+                        </div>
+                        <div class="lms-banner"></div>
+                        <div id="lms-content-area"></div>
+                        <div id="lms-gradebook-wrapper" class="lms-gradebook-wrapper-shell"></div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <!-- Page scripts -->
+    <script defer src="assets/js/app/app.js?v=20260505-authglobals1"></script>
+    <script defer src="assets/js/app/api.js?v=20260507-livequiz1"></script>
+    <script defer src="assets/js/app/auth.js?v=20260507-livequiz1"></script>
+    <script defer src="assets/js/data/initial-state.js?v=20260430-lmssessions1"></script>
+    <script defer src="assets/js/app/state.js?v=20260505-authglobals1"></script>
+    <script defer src="assets/js/shared/utilities.js?v=20260504-transparency-refresh1"></script>
+    <script defer src="assets/js/shared/faculty.js?v=20260505-authglobals1"></script>
+    <script defer src="assets/js/shared/messenger.js?v=20260429-peopleisolation1"></script>
+    <script defer src="assets/js/features/navigation.js?v=20260429-shellinit1"></script>
+    <script defer src="assets/js/features/ui.js?v=20260429-peopleisolation1"></script>
+    <script defer src="assets/js/features/index-luxury.js?v=20260504-transparency-refresh1"></script>
+<script defer src="assets/js/features/luxury-shell-chrome.js?v=20260518-luxshell1"></script>
+<script defer src="assets/js/features/luxury-home-model.js?v=20260518-luxhome1"></script>
+    <script defer src="assets/js/pages/gradebook.js?v=20260430-lmsbulk1"></script>
+    <script defer src="assets/js/pages/lms-live-quiz-workspace-runtime.js?v=20260518-lmslive1"></script>
+    <script defer src="assets/js/pages/lms-live-quiz-ui-runtime.js?v=20260518-lmsliveui1"></script>
+    <script defer src="assets/js/pages/lms-grade-sync-runtime.js?v=20260518-lmsgrade1"></script>
+    <script defer src="assets/js/pages/lms-file-storage-runtime.js?v=20260518-lmsfiles1"></script>
+    <script defer src="assets/js/pages/lms-calls-runtime.js?v=20260518-lmscalls1"></script>
+    <script defer src="assets/js/pages/lms-content-library-runtime.js?v=20260518-lmscontent1"></script>
+    <script defer src="assets/js/pages/lms-materials-runtime.js?v=20260518-lmsmaterials1"></script>
+    <script defer src="assets/js/pages/lms-assignments-runtime.js?v=20260518-lmsassignments1"></script>
+    <script defer src="assets/js/pages/lms-protected-quiz-runtime.js?v=20260518-lmsprotected1"></script>
+    <script defer src="assets/js/pages/lms-quiz-workspace-runtime.js?v=20260518-lmsquizworkspace1"></script>
+    <script defer src="assets/js/pages/lms-classroom-tabs-runtime.js?v=20260518-lmsclassroom1"></script>
+    <script defer src="assets/js/pages/lms.js?v=20260514-lmsperf4"></script>
+    <script>
+        (function () {
+            function safeHtml(value) {
+                if (typeof escapeHtml === 'function') return escapeHtml(String(value == null ? '' : value));
+                return String(value == null ? '' : value)
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#39;');
+            }
+            function repairLmsDisplayText(value, fallback = '') {
+                const raw = String(value == null ? '' : value).trim();
+                if (!raw) return String(fallback || '').trim();
+                const shouldRepair = ((typeof looksLikeMojibake === 'function' && looksLikeMojibake(raw))
+                    || /[\u00A0-\uFFFF]/.test(raw)
+                    || /[\u10A0-\u10FF]/.test(raw));
+                if (!shouldRepair) return raw;
+                let cleaned = raw;
+                try {
+                    if (typeof cleanupEncodingArtifacts === 'function') cleaned = cleanupEncodingArtifacts(cleaned);
+                } catch (error) {}
+                try {
+                    if (typeof toEnglishText === 'function') cleaned = toEnglishText(cleaned);
+                } catch (error) {}
+                cleaned = String(cleaned == null ? '' : cleaned).trim();
+                return cleaned || raw || String(fallback || '').trim();
+            }
+            function getLmsActiveFacultyCode() {
+                const storedFaculty = localStorage.getItem('currentFaculty');
+                const fallback = typeof getCurrentFaculty === 'function' ? getCurrentFaculty() : 'ECON';
+                return typeof normalizeFacultyCode === 'function'
+                    ? normalizeFacultyCode(storedFaculty || fallback, fallback)
+                    : (storedFaculty || fallback || 'ECON');
+            }
+            function getLmsSubjectName(subject) {
+                return repairLmsDisplayText(subject?.name || subject?.title || subject?.subjectName || subject?.label, 'Untitled Course');
+            }
+            function getLmsSubjectId(subject, index) {
+                return subject?.id || subject?.subjectId || subject?.courseId || `lms-subject-${index}`;
+            }
+            function getLmsSubjectFaculty(subject) {
+                return subject?.faculty || subject?.facultyCode || '';
+            }
+            function getLmsSubjectSource() {
+                const facultyCode = getLmsActiveFacultyCode();
+                const normalizedFaculty = typeof normalizeFacultyCode === 'function'
+                    ? normalizeFacultyCode(facultyCode, facultyCode || 'ECON')
+                    : facultyCode;
+                const matchesFaculty = (subject) => {
+                    const subjectFaculty = getLmsSubjectFaculty(subject);
+                    const normalizedSubjectFaculty = typeof normalizeFacultyCode === 'function'
+                        ? normalizeFacultyCode(subjectFaculty || normalizedFaculty, normalizedFaculty || 'ECON')
+                        : subjectFaculty;
+                    return normalizedSubjectFaculty === normalizedFaculty;
+                };
+                const facultyCurriculum = typeof getActiveCurriculum === 'function'
+                    ? (getActiveCurriculum(normalizedFaculty) || [])
+                    : [];
+                const flatCurriculum = Array.isArray(window.KIU_STATE?.curriculum)
+                    ? window.KIU_STATE.curriculum.filter(matchesFaculty)
+                    : [];
+                const profileCurriculum = Array.isArray(window.KIU_STATE?.facultyProfiles?.[normalizedFaculty]?.curriculum)
+                    ? window.KIU_STATE.facultyProfiles[normalizedFaculty].curriculum.filter(matchesFaculty)
+                    : [];
+                const merged = [].concat(facultyCurriculum, flatCurriculum, profileCurriculum);
+                const seen = new Set();
+                return merged.filter((subject, index) => {
+                    if (!matchesFaculty(subject)) return false;
+                    const subjectId = getLmsSubjectId(subject, index);
+                    if (seen.has(subjectId)) return false;
+                    seen.add(subjectId);
+                    return true;
+                });
+            }
+            function getLmsSubjectGroupCount(subject, subjectId) {
+                const directGroups = Array.isArray(subject?.groups) ? subject.groups : [];
+                if (directGroups.length) return directGroups.length;
+                if (typeof getAvailableGroupsForSubject === 'function') return getAvailableGroupsForSubject(subjectId).length;
+                return Array.isArray(window.KIU_STATE?.availableGroups?.[subjectId])
+                    ? window.KIU_STATE.availableGroups[subjectId].length
+                    : 0;
+            }
+            function scrollToLmsSubjects() {
+                const anchor = document.getElementById('lms-subject-anchor');
+                anchor?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+            function openSubjectByPredicate(predicate) {
+                const subjects = getLmsSubjectSource();
+                const subject = subjects.find(predicate) || subjects[0];
+                if (!subject) { scrollToLmsSubjects(); return; }
+                openLMSGroups(getLmsSubjectId(subject, 0), getLmsSubjectName(subject), subject.icon || 'fas fa-book-reader');
+            }
+            function openFirstLmsSubject() { openSubjectByPredicate(() => true); }
+            function getLmsSubjectSemesterValue(subject) {
+                const semester = subject?.semester ?? subject?.semesterNumber ?? null;
+                const normalized = Number.parseInt(semester, 10);
+                if (Number.isFinite(normalized) && normalized > 0) return normalized;
+                const fallback = String(semester || '').trim();
+                return fallback || '';
+            }
+            function getLmsSubjectCourseValue(subject) {
+                const directCourse = subject?.course ?? null;
+                const normalizedCourse = Number.parseInt(directCourse, 10);
+                if (Number.isFinite(normalizedCourse) && normalizedCourse > 0) return normalizedCourse;
+                const directCourseLabel = String(directCourse || '').trim();
+                if (directCourseLabel) return directCourseLabel;
+                const semesterValue = getLmsSubjectSemesterValue(subject);
+                const normalizedSemester = Number.parseInt(semesterValue, 10);
+                return Number.isFinite(normalizedSemester) && normalizedSemester > 0
+                    ? Math.ceil(normalizedSemester / 2)
+                    : '';
+            }
+            function buildLmsSubjectMetaBadges(subject) {
+                const badges = [];
+                const semesterValue = getLmsSubjectSemesterValue(subject);
+                if (semesterValue) {
+                    badges.push(`<span class="lux-status-pill is-muted"><i class="fas fa-calendar-week"></i> Semester ${safeHtml(String(semesterValue))}</span>`);
+                }
+                const courseValue = getLmsSubjectCourseValue(subject);
+                if (courseValue) {
+                    badges.push(`<span class="lux-status-pill is-muted"><i class="fas fa-graduation-cap"></i> Course ${safeHtml(String(courseValue))}</span>`);
+                }
+                return badges.length ? `<div class="lms-clean-subject-meta">${badges.join('')}</div>` : '';
+            }
+            function renderLmsHeroSummary(subjects) {
+                const facultyCode = getLmsActiveFacultyCode();
+                const facultyLabel = typeof getFacultyLabel === 'function' ? getFacultyLabel(facultyCode) : facultyCode;
+                const groupCount = subjects.reduce((sum, subject, index) => sum + getLmsSubjectGroupCount(subject, getLmsSubjectId(subject, index)), 0);
+                const heroFaculty = document.getElementById('lms-hero-faculty');
+                if (heroFaculty) heroFaculty.textContent = facultyLabel;
+                const heroSubjectCount = document.getElementById('lms-hero-subject-count');
+                if (heroSubjectCount) heroSubjectCount.textContent = String(subjects.length);
+                const heroGroupCount = document.getElementById('lms-hero-group-count');
+                if (heroGroupCount) heroGroupCount.textContent = String(groupCount);
+                const ribbonFaculty = document.getElementById('lms-ribbon-faculty');
+                if (ribbonFaculty) ribbonFaculty.textContent = facultyLabel;
+                const ribbonTheme = document.getElementById('lms-ribbon-theme');
+                if (ribbonTheme) ribbonTheme.textContent = document.body?.classList.contains('lux-light-mode') ? 'Light' : 'Dark';
+                const ribbonSubjects = document.getElementById('lms-ribbon-subjects');
+                if (ribbonSubjects) ribbonSubjects.textContent = String(subjects.length);
+                const signalLane = document.getElementById('lms-signal-lane');
+                if (signalLane) signalLane.textContent = facultyLabel;
+                const signalState = document.getElementById('lms-signal-state');
+                if (signalState) signalState.textContent = subjects.length ? 'Ready' : 'Waiting';
+                const signalCopy = document.getElementById('lms-signal-copy');
+                if (signalCopy) {
+                    signalCopy.textContent = subjects.length
+                        ? `${subjects.length} subjects and ${groupCount} groups are ready in this faculty scope.`
+                        : `No published LMS subjects yet. This faculty route is waiting for content.`;
+                }
+                const signalPill = document.getElementById('lms-signal-pill');
+                if (signalPill) {
+                    signalPill.innerHTML = subjects.length
+                        ? `<i class="fas fa-check-circle"></i> Faculty scope live`
+                        : `<i class="fas fa-bolt"></i> Waiting for publication`;
+                }
+            }
+            function renderLmsSubjectDeck() {
+                const grid = document.getElementById('lms-subject-grid');
+                if (!grid) return;
+                const facultyCode = getLmsActiveFacultyCode();
+                const facultyLabel = typeof getFacultyLabel === 'function' ? getFacultyLabel(facultyCode) : facultyCode;
+                const subjects = getLmsSubjectSource().slice(0, 18);
+                renderLmsHeroSummary(subjects);
+                const badge = document.getElementById('lms-active-faculty-badge');
+                if (badge) badge.innerHTML = `<i class="fas fa-building"></i> Faculty: ${safeHtml(facultyLabel)}`;
+                const scopeTitle = document.getElementById('lms-subject-scope-title');
+                if (scopeTitle) scopeTitle.textContent = `${facultyLabel} subject scope`;
+                const scopeCopy = document.getElementById('lms-subject-scope-copy');
+                if (scopeCopy) scopeCopy.textContent = `Only subjects published for ${facultyLabel} appear here. Open one to access groups, tabs, and the workspace.`;
+                const laneChip = document.getElementById('lms-lane-chip');
+                if (laneChip) laneChip.innerHTML = `<i class="fas fa-book-open"></i> ${safeHtml(facultyLabel)} LMS`;
+                const emptyGuidance = document.getElementById('lms-empty-guidance');
+                if (emptyGuidance) {
+                    emptyGuidance.textContent = subjects.length
+                        ? `${subjects.length} published subjects are currently available for ${facultyLabel}.`
+                        : `No subjects are published for ${facultyLabel} yet. Use the admin workspace to publish courses.`;
+                }
+                grid.innerHTML = subjects.map((subject, index) => {
+                    const subjectId = getLmsSubjectId(subject, index);
+                    const subjectName = getLmsSubjectName(subject);
+                    const groupCount = getLmsSubjectGroupCount(subject, subjectId);
+                    const icon = subject.icon || 'fas fa-book-reader';
+                    return `<button
+                        type="button"
+                        class="lms-clean-subject-card"
+                        data-subject-id="${safeHtml(subjectId)}"
+                        data-subject-title="${safeHtml(subjectName)}"
+                        data-icon-class="${safeHtml(icon)}"
+                        data-lms-subject-card="true">
+                        <div class="lms-clean-card-body">
+                            <div class="lms-clean-card-kicker"><i class="${safeHtml(icon)}"></i> Published</div>
+                            <div class="lms-clean-card-title">${safeHtml(subjectName)}</div>
+                            ${buildLmsSubjectMetaBadges(subject)}
+                            <div class="lms-clean-card-meta is-compact">
+                                <span class="lux-status-pill is-muted"><i class="fas fa-users"></i> ${groupCount} group${groupCount !== 1 ? 's' : ''}</span>
+                            </div>
+                        </div>
+                    </button>`;
+                }).join('') || `<div class="lms-clean-empty" style="grid-column:1/-1;">
+                    <div class="lms-clean-empty-title">No subjects yet</div>
+                    <div class="lms-clean-empty-copy">Publish subjects for the ${safeHtml(facultyLabel)} faculty from the admin workspace, then they appear here automatically.</div>
+                </div>`;
+            }
+            function refreshLmsFacultyScopedView() {
+                ensureLmsRouteVisualState();
+                renderLmsSubjectDeck();
+                scheduleLmsVisualShellSync();
+            }
+            window.refreshLmsFacultyScopedView = refreshLmsFacultyScopedView;
+            window.scrollToLmsSubjects = scrollToLmsSubjects;
+            window.openFirstLmsSubject = openFirstLmsSubject;
+            function ensureLmsExtendedRuntimeForTab(tabId) {
+                const normalized = String(tabId || '').toLowerCase();
+                const needsExtendedRuntime = ['quiz', 'monitoring', 'gradebook'].includes(normalized);
+                if (!needsExtendedRuntime || typeof window.ensurePortalRegistrationRuntimeLoaded !== 'function') {
+                    return Promise.resolve(true);
+                }
+                return Promise.resolve(window.ensurePortalRegistrationRuntimeLoaded()).catch(() => false);
+            }
+            function bindLmsDelegatedActions() {
+                if (document.body?.dataset.lmsDelegatedActionsBound === '1') return;
+                if (document.body) document.body.dataset.lmsDelegatedActionsBound = '1';
+                document.addEventListener('click', async (event) => {
+                    const subjectCard = event.target.closest?.('[data-lms-subject-card="true"]');
+                    if (subjectCard) {
+                        event.preventDefault();
+                        if (typeof window.openLMSGroupsFromCard === 'function') window.openLMSGroupsFromCard(subjectCard);
+                        return;
+                    }
+                    const actionButton = event.target.closest?.('[data-lms-action]');
+                    if (actionButton) {
+                        event.preventDefault();
+                        const action = actionButton.dataset.lmsAction;
+                        if (action === 'close-groups' && typeof window.closeLMSGroups === 'function') window.closeLMSGroups();
+                        if (action === 'back-to-groups' && typeof window.backToLMSGroups === 'function') window.backToLMSGroups();
+                        return;
+                    }
+                    const sectionButton = event.target.closest?.('[data-lms-section]');
+                    if (sectionButton) {
+                        event.preventDefault();
+                        if (typeof window.setLmsActiveSection === 'function') window.setLmsActiveSection(sectionButton.dataset.lmsSection);
+                        return;
+                    }
+                    const tabButton = event.target.closest?.('[data-lms-tab]');
+                    if (tabButton) {
+                        event.preventDefault();
+                        const tabId = tabButton.dataset.lmsTab;
+                        await ensureLmsExtendedRuntimeForTab(tabId);
+                        if (typeof window.switchLMSTab === 'function') window.switchLMSTab(tabId);
+                    }
+                });
+            }
+            function ensureLmsRouteVisualState() {
+                const body = document.body;
+                if (!body) return;
+                body.classList.remove('kiu-shell-loading', 'lux-home-page');
+                body.classList.add('lux-nonhome-page', 'lux-route-lms', 'lux-unified-shell', 'lux-site-modernized');
+                body.dataset.luxPage = 'lms';
+                body.dataset.luxEntry = 'lms';
+                if (!body.dataset.luxBackgroundMode) {
+                    body.dataset.luxBackgroundMode = localStorage.getItem('kiuLuxuryBackgroundMode') || 'constellation';
+                }
+                document.documentElement.dataset.luxPage = 'lms';
+            }
+            function isLmsVisualContextActive() {
+                const lmsSection = document.getElementById('page-lms');
+                if (!lmsSection) return true;
+                return lmsSection.classList.contains('active-page')
+                    || document.body.classList.contains('lux-route-lms');
+            }
+            function syncLmsVisualShell() {
+                ensureLmsRouteVisualState();
+                if (typeof window.updateTransparency === 'function') {
+                    const savedTransparency = parseInt(localStorage.getItem('kiuLuxurySurfaceTransparency') || '70', 10);
+                    if (!Number.isNaN(savedTransparency)) {
+                        window.updateTransparency(savedTransparency);
+                    }
+                } else if (typeof window.refreshLuxuryTransparencySurfaces === 'function') {
+                    window.refreshLuxuryTransparencySurfaces();
+                }
+                const activeBackgroundMode = document.body?.dataset.luxBackgroundMode
+                    || localStorage.getItem('kiuLuxuryBackgroundMode')
+                    || 'constellation';
+                if (typeof window.__kiuRefreshLuxuryBackground === 'function') {
+                    window.__kiuRefreshLuxuryBackground(activeBackgroundMode);
+                }
+            }
+            let lmsVisualSyncFrame = 0;
+            let lmsVisualSyncTimer = 0;
+            let lmsLastVisualSyncAt = 0;
+            function runScheduledLmsVisualShellSync() {
+                lmsVisualSyncFrame = 0;
+                lmsVisualSyncTimer = 0;
+                if (!isLmsVisualContextActive()) return;
+                lmsLastVisualSyncAt = Date.now();
+                ensureLmsRouteVisualState();
+                syncLmsVisualShell();
+            }
+            function scheduleLmsVisualShellSync() {
+                if (!isLmsVisualContextActive()) return;
+                ensureLmsRouteVisualState();
+                if (lmsVisualSyncFrame || lmsVisualSyncTimer) return;
+                const elapsed = Date.now() - lmsLastVisualSyncAt;
+                const delay = elapsed > 140 ? 0 : 140 - elapsed;
+                if (delay > 0) {
+                    lmsVisualSyncTimer = window.setTimeout(() => {
+                        lmsVisualSyncTimer = 0;
+                        lmsVisualSyncFrame = requestAnimationFrame(runScheduledLmsVisualShellSync);
+                    }, delay);
+                    return;
+                }
+                lmsVisualSyncFrame = requestAnimationFrame(runScheduledLmsVisualShellSync);
+            }
+
+            function initLmsPage() {
+                ensureLmsRouteVisualState();
+                bindLmsDelegatedActions();
+                renderLmsSubjectDeck();
+                scheduleLmsVisualShellSync();
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initLmsPage);
+            } else {
+                initLmsPage();
+            }
+
+            // Re-render on faculty switch
+            const originalSwitch = window.switchFacultyTheme;
+            window.switchFacultyTheme = function(value) {
+                if (typeof originalSwitch === 'function') originalSwitch(value);
+                ensureLmsRouteVisualState();
+                renderLmsSubjectDeck();
+                scheduleLmsVisualShellSync();
+            };
+
+            let lmsVisualNavigationHooked = false;
+            function hookLmsNavigationVisualSync() {
+                if (lmsVisualNavigationHooked || typeof window.navigate !== 'function') return;
+                const originalNavigate = window.navigate;
+                lmsVisualNavigationHooked = true;
+                window.navigate = function(pageId) {
+                    const result = originalNavigate.apply(this, arguments);
+                    if (String(pageId || '').toLowerCase() === 'lms') {
+                        window.setTimeout(() => {
+                            ensureLmsRouteVisualState();
+                            renderLmsSubjectDeck();
+                            scheduleLmsVisualShellSync();
+                        }, 0);
+                    }
+                    return result;
+                };
+            }
+
+            hookLmsNavigationVisualSync();
+            [0, 120, 360, 900, 1800, 3200].forEach((delay) => {
+                window.setTimeout(hookLmsNavigationVisualSync, delay);
+            });
+            document.addEventListener('DOMContentLoaded', hookLmsNavigationVisualSync, { once: true });
+            window.addEventListener('load', hookLmsNavigationVisualSync, { once: true });
+            window.addEventListener('pageshow', scheduleLmsVisualShellSync);
+            window.addEventListener('focus', scheduleLmsVisualShellSync);
+            document.addEventListener('visibilitychange', () => {
+                if (!document.hidden) scheduleLmsVisualShellSync();
+            });
+        })();
+    </script>
+<!-- MOBILE BOTTOM NAVIGATION (v2) -->
+<nav id="mobile-bottom-nav" aria-label="Mobile navigation" style="display:none;">
+    <div class="mobile-nav-row">
+        <button class="mobile-nav-btn is-active" data-nav-target="home" type="button" id="mob-nav-home"><i class="fas fa-th-large"></i><span>Home</span></button>
+        <button class="mobile-nav-btn" type="button" id="mob-nav-messages" data-action="messages"><i class="fas fa-comment-dots"></i><span>Chat</span><em class="mob-badge" id="mob-badge-msg" style="display:none;">0</em></button>
+        <button class="mobile-nav-btn" type="button" id="mob-nav-notif" data-action="notifications"><i class="fas fa-bell"></i><span>Alerts</span><em class="mob-badge" id="mob-badge-notif" style="display:none;">0</em></button>
+        <button class="mobile-nav-btn" type="button" id="mob-nav-theme" data-action="theme"><i class="fas fa-palette"></i><span>Theme</span></button>
+        <button class="mobile-nav-btn" type="button" id="mob-nav-more" data-action="more"><i class="fas fa-grip-horizontal"></i><span>More</span></button>
+    </div>
+</nav>
+<div id="mobile-action-sheet" class="mob-sheet" style="display:none;" role="dialog" aria-modal="true">
+    <div class="mob-sheet-backdrop" id="mob-sheet-backdrop"></div>
+    <div class="mob-sheet-panel">
+        <div class="mob-sheet-handle"><span></span></div>
+        <div class="mob-sheet-section"><div class="mob-sheet-label">Quick Actions</div><div class="mob-sheet-grid">
+            <button class="mob-sheet-btn" type="button" id="mob-act-admin"><span class="mob-sheet-icon"><i class="fas fa-user-shield"></i></span><span>Admin View</span></button>
+            <button class="mob-sheet-btn" type="button" id="mob-act-theme"><span class="mob-sheet-icon"><i class="fas fa-palette"></i></span><span>Theme</span></button>
+            <button class="mob-sheet-btn" type="button" id="mob-act-profile"><span class="mob-sheet-icon"><i class="fas fa-user-circle"></i></span><span>Profile</span></button>
+            <button class="mob-sheet-btn" type="button" id="mob-act-lightmode"><span class="mob-sheet-icon"><i class="fas fa-sun"></i></span><span>Light Mode</span></button>
+        </div></div>
+        <!-- Dynamic role-aware navigation will be injected here -->
+        <div id="mob-sheet-dynamic-nav"></div>
+        <div class="mob-sheet-footer"><button class="mob-sheet-close-btn" type="button" id="mob-sheet-close"><i class="fas fa-times"></i> Close</button></div>
+    </div>
+</div>
+<script>
+window.__KIU_STANDALONE_MOBILE_SHELL_CONFIG = {
+    activeTarget: 'lms',
+    adminVisibleRoles: ['admin', 'student_service', 'professor', 'ta'],
+    navByRole: {
+        student: [
+            {
+                group: 'Core',
+                items: [['home', 'Dashboard', 'fas fa-th-large'], ['lms', 'LMS', 'fas fa-book-reader'], ['timetable', 'Timetable', 'fas fa-chalkboard'], ['registration', 'Registration', 'fas fa-check-square']]
+            },
+            {
+                group: 'Records',
+                items: [['programs', 'Programs', 'fas fa-file-signature'], ['study-card', 'Study Card', 'far fa-address-card'], ['personal-data', 'Personal Data', 'far fa-user'], ['gradebook', 'Gradebook', 'fas fa-chart-bar']]
+            },
+            {
+                group: 'Support',
+                items: [['chancellery', 'E-Chancellery', 'fas fa-desktop'], ['student-service', 'Student Service', 'fas fa-headset'], ['library', 'Library', 'fas fa-book'], ['social', 'Social', 'fas fa-comments']]
+            }
+        ],
+        professor: [
+            {
+                group: 'Faculty',
+                items: [['home', 'Dashboard', 'fas fa-th-large'], ['timetable', 'Schedule', 'fas fa-calendar-week'], ['lms', 'LMS', 'fas fa-book-reader'], ['faculty-gradebook', 'Gradebook', 'fas fa-chart-bar']]
+            },
+            {
+                group: 'Campus',
+                items: [['library', 'Library', 'fas fa-book'], ['orders', 'Orders', 'fas fa-book-open'], ['social', 'Social', 'fas fa-comments'], ['chancellery', 'Appeals', 'fas fa-inbox']]
+            }
+        ],
+        ta: [
+            {
+                group: 'Faculty',
+                items: [['home', 'Dashboard', 'fas fa-th-large'], ['timetable', 'Schedule', 'fas fa-calendar-week'], ['lms', 'LMS', 'fas fa-book-reader']]
+            },
+            {
+                group: 'Support',
+                items: [['library', 'Library', 'fas fa-book'], ['orders', 'Orders', 'fas fa-book-open'], ['social', 'Social', 'fas fa-comments'], ['chancellery', 'Appeals', 'fas fa-inbox']]
+            }
+        ],
+        admin: [
+            {
+                group: 'Control',
+                items: [['home', 'Dashboard', 'fas fa-hammer'], ['admin-tools', 'Admin Tools', 'fas fa-layer-group'], ['admin-scheduler', 'Scheduler', 'fas fa-calendar-plus'], ['staff', 'Staff', 'fas fa-users-cog'], ['students-admin', 'Students', 'fas fa-user-graduate']]
+            },
+            {
+                group: 'Systems',
+                items: [['library', 'Library', 'fas fa-book'], ['orders', 'Orders', 'fas fa-book-open'], ['social', 'Social', 'fas fa-comments']]
+            }
+        ],
+        student_service: [
+            {
+                group: 'Service',
+                items: [['home', 'Dashboard', 'fas fa-th-large'], ['student-service', 'Inbox', 'fas fa-inbox'], ['orders', 'Orders', 'fas fa-book-open'], ['library', 'Library', 'fas fa-book']]
+            },
+            {
+                group: 'Campus',
+                items: [['social', 'Social', 'fas fa-comments']]
+            }
+        ]
+    }
+};
+</script>
+<script defer src="assets/js/pages/standalone-mobile-shell.js?v=20260520-lms-mobile1"></script>
+</body>
+</html>
+
+
+
+
+
+
+

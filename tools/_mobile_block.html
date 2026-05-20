@@ -1,0 +1,70 @@
+<!-- MOBILE BOTTOM NAVIGATION (v2) -->
+<nav id="mobile-bottom-nav" aria-label="Mobile navigation" style="display:none;">
+    <div class="mobile-nav-row">
+        <button class="mobile-nav-btn is-active" data-nav-target="home" type="button" id="mob-nav-home"><i class="fas fa-th-large"></i><span>Home</span></button>
+        <button class="mobile-nav-btn" type="button" id="mob-nav-messages" data-action="messages"><i class="fas fa-comment-dots"></i><span>Chat</span><em class="mob-badge" id="mob-badge-msg" style="display:none;">0</em></button>
+        <button class="mobile-nav-btn" type="button" id="mob-nav-notif" data-action="notifications"><i class="fas fa-bell"></i><span>Alerts</span><em class="mob-badge" id="mob-badge-notif" style="display:none;">0</em></button>
+        <button class="mobile-nav-btn" type="button" id="mob-nav-theme" data-action="theme"><i class="fas fa-palette"></i><span>Theme</span></button>
+        <button class="mobile-nav-btn" type="button" id="mob-nav-more" data-action="more"><i class="fas fa-grip-horizontal"></i><span>More</span></button>
+    </div>
+</nav>
+<div id="mobile-action-sheet" class="mob-sheet" style="display:none;" role="dialog" aria-modal="true">
+    <div class="mob-sheet-backdrop" id="mob-sheet-backdrop"></div>
+    <div class="mob-sheet-panel">
+        <div class="mob-sheet-handle"><span></span></div>
+        <div class="mob-sheet-section"><div class="mob-sheet-label">Quick Actions</div><div class="mob-sheet-grid">
+            <button class="mob-sheet-btn" id="mob-act-admin"><div class="mob-sheet-icon" style="background:linear-gradient(135deg,#f59e0b,#d97706);"><i class="fas fa-user-shield"></i></div><span>Admin View</span></button>
+            <button class="mob-sheet-btn" id="mob-act-theme"><div class="mob-sheet-icon" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9);"><i class="fas fa-palette"></i></div><span>Theme</span></button>
+            <button class="mob-sheet-btn" id="mob-act-profile"><div class="mob-sheet-icon" style="background:linear-gradient(135deg,#06b6d4,#0891b2);"><i class="fas fa-user-circle"></i></div><span>Profile</span></button>
+            <button class="mob-sheet-btn" id="mob-act-lightmode"><div class="mob-sheet-icon" style="background:linear-gradient(135deg,#f97316,#ea580c);"><i class="fas fa-sun"></i></div><span>Light Mode</span></button>
+        </div></div>
+        <!-- Dynamic role-aware navigation will be injected here -->
+        <div id="mob-sheet-dynamic-nav"></div>
+        <div class="mob-sheet-footer"><button class="mob-sheet-close-btn" id="mob-sheet-close"><i class="fas fa-times"></i> Close</button></div>
+    </div>
+</div>
+<script>
+(function initMobileExperience(){
+'use strict';var BP=1024;
+function isMob(){return window.innerWidth<=BP}
+function getRole(){var r='';try{r=typeof getEffectiveRole==='function'?getEffectiveRole():(typeof getEffectiveUserRole==='function'?getEffectiveUserRole():'')}catch(e){}return r||'student'}
+function autoCollapse(){if(!isMob())return;if(!document.body.classList.contains('lux-sidebar-collapsed')){document.body.classList.add('lux-sidebar-collapsed');document.body.dataset.luxSidebar='collapsed';localStorage.setItem('kiuLuxurySidebarCollapsed','1');var t=document.getElementById('lux-sidebar-toggle');if(t){t.classList.add('is-active');t.setAttribute('aria-pressed','true')}}}
+function buildRoleNav(){
+var container=document.getElementById('mob-sheet-dynamic-nav');if(!container)return;
+var role=getRole();
+var NAV={
+student:[{group:'Core',items:[['home','Dashboard','fas fa-th-large'],['lms','LMS','fas fa-book-reader'],['timetable','Timetable','fas fa-chalkboard'],['registration','Registration','fas fa-check-square']]},{group:'Records',items:[['programs','Programs','fas fa-file-signature'],['study-card','Study Card','far fa-address-card'],['personal-data','Personal Data','far fa-user'],['gradebook','Gradebook','fas fa-chart-bar']]},{group:'Support',items:[['chancellery','E-Chancellery','fas fa-desktop'],['student-service','Student Service','fas fa-headset'],['library','Library','fas fa-book'],['social','Social','fas fa-comments']]}],
+professor:[{group:'Faculty',items:[['home','Dashboard','fas fa-th-large'],['timetable','Schedule','fas fa-calendar-week'],['lms','LMS','fas fa-book-reader'],['faculty-gradebook','Gradebook','fas fa-chart-bar']]},{group:'Campus',items:[['library','Library','fas fa-book'],['orders','Orders','fas fa-book-open'],['social','Social','fas fa-comments'],['chancellery','Appeals','fas fa-inbox']]}],
+ta:[{group:'Faculty',items:[['home','Dashboard','fas fa-th-large'],['timetable','Schedule','fas fa-calendar-week'],['lms','LMS','fas fa-book-reader']]},{group:'Support',items:[['library','Library','fas fa-book'],['orders','Orders','fas fa-book-open'],['social','Social','fas fa-comments'],['chancellery','Appeals','fas fa-inbox']]}],
+admin:[{group:'Control',items:[['home','Dashboard','fas fa-hammer'],['admin-tools','Admin Tools','fas fa-layer-group'],['admin-scheduler','Scheduler','fas fa-calendar-plus'],['staff','Staff','fas fa-users-cog'],['students-admin','Students','fas fa-user-graduate']]},{group:'Systems',items:[['library','Library','fas fa-book'],['orders','Orders','fas fa-book-open'],['social','Social','fas fa-comments']]}],
+student_service:[{group:'Service',items:[['home','Dashboard','fas fa-th-large'],['student-service','Inbox','fas fa-inbox'],['orders','Orders','fas fa-book-open'],['library','Library','fas fa-book']]},{group:'Campus',items:[['social','Social','fas fa-comments']]}]
+};
+var groups=NAV[role]||NAV.student;
+var html='';
+groups.forEach(function(g){
+html+='<div class="mob-sheet-section"><div class="mob-sheet-label">'+g.group+'</div><div class="mob-sheet-nav">';
+g.items.forEach(function(item){
+html+='<button class="mob-sheet-nav-btn" data-nav-target="'+item[0]+'"><i class="'+item[2]+'"></i><span>'+item[1]+'</span></button>';
+});
+html+='</div></div>';
+});
+container.innerHTML=html;
+container.querySelectorAll('.mob-sheet-nav-btn[data-nav-target]').forEach(function(b){b.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();var t=b.getAttribute('data-nav-target');if(typeof window.navigate==='function')window.navigate(t);syncActive(t);closeSheet();closeSB()})});
+var adminSwitch=document.getElementById('mob-act-admin');
+if(adminSwitch)adminSwitch.style.display=(role==='admin'||role==='student_service'||role==='professor'||role==='ta')?'':'none';
+}
+function setupNav(){var nav=document.getElementById('mobile-bottom-nav');if(!nav)return;nav.querySelectorAll('.mobile-nav-btn[data-nav-target]').forEach(function(b){b.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();var t=b.getAttribute('data-nav-target');if(typeof window.navigate==='function')window.navigate(t);syncActive(t);closeSB();closeSheet()})});var mb=document.getElementById('mob-nav-messages');if(mb)mb.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();var f=document.querySelector('.portal-msg-fab');if(f){f.click();return}if(typeof window.toggleMessaging==='function'){window.toggleMessaging();return}var u=document.querySelector('[data-utility="messages"]');if(u)u.click()});var nb=document.getElementById('mob-nav-notif');if(nb)nb.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();var f=document.querySelector('.portal-notif-fab');if(f){f.click();return}if(typeof window.toggleNotifications==='function'){window.toggleNotifications();return}var u=document.querySelector('[data-utility="notifications"]');if(u)u.click()});var tb=document.getElementById('mob-nav-theme');if(tb)tb.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();openStd()});var xb=document.getElementById('mob-nav-more');if(xb)xb.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();toggleSheet()})}
+function openStd(){var b=document.querySelector('.lux-topbar-editor-btn');if(b){b.click();return}var s=document.querySelector('.lux-studio-backdrop');if(s){s.classList.add('is-open');return}if(typeof window.openStudio==='function')window.openStudio()}
+function setupSheet(){var bd=document.getElementById('mob-sheet-backdrop');if(bd)bd.addEventListener('click',closeSheet);var cb=document.getElementById('mob-sheet-close');if(cb)cb.addEventListener('click',closeSheet);var as=document.getElementById('mob-act-admin');if(as)as.addEventListener('click',function(e){e.preventDefault();closeSheet();var p=document.querySelector('.lux-picker-btn');if(p){p.click();return}});var ts=document.getElementById('mob-act-theme');if(ts)ts.addEventListener('click',function(e){e.preventDefault();closeSheet();openStd()});var ps=document.getElementById('mob-act-profile');if(ps)ps.addEventListener('click',function(e){e.preventDefault();closeSheet();if(typeof window.navigate==='function')window.navigate('profile-view')});var ls=document.getElementById('mob-act-lightmode');if(ls)ls.addEventListener('click',function(e){e.preventDefault();document.body.classList.toggle('lux-light-mode');var il=document.body.classList.contains('lux-light-mode');ls.querySelector('span').textContent=il?'Dark Mode':'Light Mode';ls.querySelector('i').className=il?'fas fa-moon':'fas fa-sun';localStorage.setItem('kiuLuxuryLightMode',il?'1':'0')})}
+function toggleSheet(){var s=document.getElementById('mobile-action-sheet');if(!s)return;s.style.display!=='none'?closeSheet():openSheet()}
+function openSheet(){var s=document.getElementById('mobile-action-sheet');if(!s)return;s.style.display='';document.body.style.overflow='hidden';requestAnimationFrame(function(){s.classList.add('is-open')});buildRoleNav()}
+function closeSheet(){var s=document.getElementById('mobile-action-sheet');if(!s)return;s.classList.remove('is-open');document.body.style.overflow='';setTimeout(function(){s.style.display='none'},300)}
+function syncActive(t){var n=document.getElementById('mobile-bottom-nav');if(!n)return;n.querySelectorAll('.mobile-nav-btn[data-nav-target]').forEach(function(b){b.classList.toggle('is-active',b.getAttribute('data-nav-target')===t)});['mob-nav-messages','mob-nav-notif','mob-nav-theme','mob-nav-more'].forEach(function(id){var b=document.getElementById(id);if(b)b.classList.remove('is-active')})}
+function hookNav(){var o=window.navigate;if(typeof o==='function'&&!window.__mobileNavHooked){window.__mobileNavHooked=true;window.navigate=function(t){var r=o.apply(this,arguments);if(isMob()){syncActive(t);closeSB();closeSheet()}return r}}}
+function closeSB(){if(!isMob())return;if(!document.body.classList.contains('lux-sidebar-collapsed')){if(typeof window.toggleSidebar==='function')window.toggleSidebar();else{document.body.classList.add('lux-sidebar-collapsed');document.body.dataset.luxSidebar='collapsed'}}}
+function onResize(){var n=document.getElementById('mobile-bottom-nav');if(!n)return;n.style.display=isMob()?'':'none';if(!isMob()){closeSheet()}}
+function init(){autoCollapse();setupNav();setupSheet();onResize();var ht=setInterval(function(){if(typeof window.navigate==='function'){clearInterval(ht);hookNav();buildRoleNav()}},200);setTimeout(function(){clearInterval(ht)},10000);window.addEventListener('resize',onResize);document.addEventListener('touchstart',function(e){if(!isMob()||document.body.classList.contains('lux-sidebar-collapsed'))return;window.__swX=e.touches[0].clientX;window.__swY=e.touches[0].clientY},{passive:true});document.addEventListener('touchend',function(e){if(!window.__swX)return;var dx=window.__swX-e.changedTouches[0].clientX;var dy=Math.abs(window.__swY-e.changedTouches[0].clientY);window.__swX=0;if(dx>60&&dy<100)closeSB()},{passive:true})}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init()})();
+</script>
+</body>
+</html>

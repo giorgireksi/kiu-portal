@@ -1,0 +1,114 @@
+version: "3.9"
+
+services:
+  caddy:
+    image: caddy:2.9-alpine
+    container_name: kiu-portal-caddy
+    restart: unless-stopped
+    env_file:
+      - .env.production
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./:/srv:ro
+      - ./infra/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - portal-backend
+
+  portal-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: kiu-portal-platform:production
+    container_name: kiu-portal-backend
+    restart: unless-stopped
+    working_dir: /app
+    command: ["sh", "-c", "mkdir -p /app/kiu-realtime-bridge/uploads /tmp/kiu-platform && chown -R node:node /app/kiu-realtime-bridge/uploads /tmp/kiu-platform && exec su-exec node sh -c 'node tools/migrate-postgres.js && exec node backend/platform/server.js'"]
+    env_file:
+      - .env.production
+    expose:
+      - "47833"
+    volumes:
+      - portal_uploads:/app/kiu-realtime-bridge/uploads
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:47833/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: kiu-portal-postgres
+    restart: unless-stopped
+    env_file:
+      - .env.production
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      - ./infra/postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: kiu-portal-redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+
+  minio:
+    image: minio/minio:RELEASE.2026-03-30T00-00-00Z
+    container_name: kiu-portal-minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    env_file:
+      - .env.production
+    volumes:
+      - minio_data:/data
+
+  coturn:
+    image: coturn/coturn:4.7
+    container_name: kiu-portal-coturn
+    restart: unless-stopped
+    network_mode: host
+    env_file:
+      - .env.production
+    volumes:
+      - ./infra/coturn/turnserver.conf.template:/etc/coturn/turnserver.conf.template:ro
+    command:
+      - /bin/sh
+      - -c
+      - >
+        sed
+        -e "s|__TURN_USERNAME__|$${KIU_TURN_USERNAME}|g"
+        -e "s|__TURN_CREDENTIAL__|$${KIU_TURN_CREDENTIAL}|g"
+        -e "s|__TURN_REALM__|$${KIU_TURN_REALM}|g"
+        -e "s|__TURN_SERVER_NAME__|$${KIU_TURN_SERVER_NAME}|g"
+        -e "s|__TURN_EXTERNAL_IP__|$${KIU_TURN_EXTERNAL_IP}|g"
+        /etc/coturn/turnserver.conf.template > /tmp/turnserver.conf
+        && turnserver -c /tmp/turnserver.conf
+
+volumes:
+  caddy_data:
+  caddy_config:
+  pg_data:
+  minio_data:
+  portal_uploads:
+  redis_data:

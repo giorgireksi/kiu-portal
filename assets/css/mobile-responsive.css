@@ -1,0 +1,2822 @@
+/* ═══════════════════════════════════════════════════════════
+   KIU PORTAL — RESPONSIVE DESIGN SYSTEM
+   Optimized for mobile-first, tablets, and desktop.
+   Works with the Luxury Editorial shell + legacy fallback.
+   ═══════════════════════════════════════════════════════════ */
+
+/* ─────────────────────────────────────────────────────────
+   §1  GLOBAL BASE — Prevents overflow, smooth text
+   ───────────────────────────────────────────────────────── */
+
+html, body {
+    max-width: 100%;
+    overflow-x: hidden;
+    -webkit-text-size-adjust: 100%;
+    /* scroll-behavior: smooth removed - causes jank on Chrome Windows */
+}
+
+*, *::before, *::after {
+    -webkit-tap-highlight-color: transparent;
+    box-sizing: border-box;
+}
+
+/* Touch scroll momentum on all scrollable areas */
+.lux-nav,
+.lux-studio-body,
+.modal-body,
+.kiu-table {
+    -webkit-overflow-scrolling: touch;
+}
+
+/* ─────────────────────────────────────────────────────────
+   §1B  MOBILE PERFORMANCE — GPU hints for smooth scroll
+   ───────────────────────────────────────────────────────── */
+
+/* Promote fixed elements to GPU layers to prevent scroll-jank */
+@media (max-width: 1024px) {
+    #lux-topbar,
+    #mobile-bottom-nav,
+    #lux-shell {
+        will-change: transform;
+        backface-visibility: hidden;
+        -webkit-backface-visibility: hidden;
+    }
+
+    /* Contain paint within page sections so off-screen content doesn't repaint */
+    .page-section {
+        contain: layout style;
+    }
+
+    /* Reduce transition complexity on mobile */
+    .lux-card, .lux-subcard, .lux-panel, .lux-nav-item {
+        transition: background-color 0.2s ease, border-color 0.2s ease !important;
+    }
+}
+
+/* ─────────────────────────────────────────────────────────
+   §2  TABLET LANDSCAPE  ≤1180px
+   Gentle grid adjustments, no structural changes.
+   ───────────────────────────────────────────────────────── */
+
+@media (max-width: 1180px) {
+    /* Luxury hero side stacks below */
+    .lux-hero-main {
+        max-width: 100% !important;
+    }
+
+    /* Already handled by index-luxury.css:
+       .lux-quick-grid → 3 cols
+       .lux-home-columns → 1 col
+       .lux-meta-grid → 1 col
+       .admin-grid-main → 1 col
+    */
+}
+
+/* ─────────────────────────────────────────────────────────
+   §2B  TABLET + MOBILE UI ≤1024px
+   Activate bottom nav, clean topbar, collapse sidebar.
+   This is the master threshold for "mobile UI mode".
+   ───────────────────────────────────────────────────────── */
+
+@media (max-width: 1024px) {
+
+    /* ── SHOW BOTTOM NAV ── */
+    #mobile-bottom-nav {
+        display: flex !important;
+    }
+
+    /* ── COMPLETELY HIDE TOPBAR ── */
+    #lux-topbar {
+        display: none !important;
+    }
+
+    /* ── COLLAPSE SIDEBAR (hidden by default, slides in on toggle) ── */
+    #lux-shell {
+        transform: translateX(-100%) !important;
+        position: fixed !important;
+        z-index: 9500 !important;
+        top: 0 !important;
+        height: 100vh !important;
+        height: 100dvh !important;
+    }
+
+    body:not(.lux-sidebar-collapsed) #lux-shell {
+        transform: translateX(0) !important;
+    }
+
+    body.lux-sidebar-collapsed #lux-shell {
+        transform: translateX(-100%) !important;
+    }
+
+    /* Overlay behind sidebar when open */
+    body:not(.lux-sidebar-collapsed)::after {
+        content: '' !important;
+        position: fixed !important;
+        inset: 0 !important;
+        background: rgba(0, 0, 0, 0.5) !important;
+        z-index: 9400 !important;
+        pointer-events: auto !important;
+    }
+
+    body.lux-sidebar-collapsed::after {
+        display: none !important;
+    }
+
+    /* ── CONTENT: no topbar, account for bottom nav ── */
+    #app-content {
+        padding-top: 16px !important;
+        margin-left: 0 !important;
+        padding-bottom: 80px !important;
+    }
+
+    body.lux-sidebar-collapsed #app-content {
+        margin-left: 0 !important;
+        padding-left: 16px !important;
+        padding-right: 16px !important;
+    }
+
+    footer {
+        margin-bottom: 80px !important;
+    }
+
+    /* ── HIDE FABS: replaced by bottom bar ── */
+    .portal-notif-fab-stack,
+    .portal-msg-fab-stack {
+        display: none !important;
+    }
+}
+
+/* ─────────────────────────────────────────────────────────
+   §3  TABLET PORTRAIT  ≤900px
+   Sidebar auto-hides, topbar stays fixed.
+   ───────────────────────────────────────────────────────── */
+
+@media (max-width: 900px) {
+
+    /* Override index-luxury.css that makes topbar relative at 900px —
+       we ALWAYS want it fixed on smaller screens. */
+    #lux-topbar {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        height: auto !important;
+        min-height: var(--lux-topbar-height, 56px) !important;
+        z-index: 500 !important;
+        border-radius: 0 !important;
+    }
+
+    #app-content {
+        margin-left: 0 !important;
+        padding-top: calc(var(--lux-topbar-height, 56px) + 20px) !important;
+        padding-left: 16px !important;
+        padding-right: 16px !important;
+    }
+
+    body.lux-sidebar-collapsed #app-content {
+        padding-left: 16px !important;
+        padding-right: 16px !important;
+    }
+
+    /* Fix luxury hero overflow */
+    .lux-hero h1 {
+        font-size: clamp(20px, 5vw, 34px) !important;
+        word-break: break-word;
+    }
+
+    .lux-hero p {
+        font-size: 12px !important;
+    }
+
+    /* Stat row: 2x2 grid */
+    .lux-stat-row {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        max-width: 100% !important;
+    }
+
+    /* Quick grid: 2 columns */
+    .lux-quick-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+
+    /* Home columns: single col */
+    .lux-home-columns {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* Meta grid: single col */
+    .lux-meta-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* Admin grid: single col */
+    .admin-grid-main {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* Topbar pickers: tighter */
+    .lux-picker-caption {
+        display: none !important;
+    }
+
+    .lux-user-chip-copy {
+        display: none !important;
+    }
+
+    /* Studio panel: full width on tablet */
+    .lux-studio-panel {
+        width: min(100vw, 420px) !important;
+    }
+
+    /* FABs: reposition */
+    .portal-notif-fab-stack {
+        left: 16px !important;
+        bottom: 24px !important;
+    }
+
+    .portal-msg-fab-stack {
+        left: 16px !important;
+        bottom: 106px !important;
+    }
+
+    /* Tables: horizontal scroll */
+    .kiu-table {
+        display: block !important;
+        overflow-x: auto !important;
+    }
+
+    /* Page section: full width */
+    .page-section {
+        max-width: none !important;
+        width: 100% !important;
+        margin: 0 !important;
+    }
+
+    /* Utility panels: better positioning */
+    .lux-utility-panel {
+        position: fixed !important;
+        top: var(--lux-topbar-height, 56px) !important;
+        right: 0 !important;
+        left: auto !important;
+        width: min(380px, 100vw) !important;
+        max-height: calc(100vh - var(--lux-topbar-height, 56px) - 20px) !important;
+        border-radius: 0 0 0 18px !important;
+    }
+
+    /* Picker panels: better mobile positioning */
+    .lux-picker-panel {
+        position: fixed !important;
+        top: var(--lux-topbar-height, 56px) !important;
+        right: 8px !important;
+        left: auto !important;
+        width: min(320px, calc(100vw - 16px)) !important;
+        max-height: 60vh !important;
+        overflow-y: auto !important;
+    }
+}
+
+/* ─────────────────────────────────────────────────────────
+   §4  MOBILE  ≤768px
+   Full mobile layout with bottom nav, slide-in sidebar,
+   compact topbar, and touch-optimized components.
+   ───────────────────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+
+    /* ── 4.1  TOPBAR: Compact fixed strip ── */
+
+    #lux-topbar {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: auto !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        height: auto !important;
+        min-height: auto !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        z-index: 9000 !important;
+        /* CRITICAL: index-luxury.css sets background:transparent and pointer-events:none globally.
+           We must override both to make topbar visible AND clickable on mobile. */
+        background: rgba(8, 12, 21, 0.97) !important;
+        pointer-events: auto !important;
+        backdrop-filter: blur(24px) saturate(180%) !important;
+        -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+        border: none !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+        border-radius: 0 !important;
+        box-shadow: 0 2px 20px rgba(0, 0, 0, 0.35) !important;
+        transform: none !important;
+        will-change: transform;
+        /* Override 620px flex-direction:column from luxury CSS */
+        flex-wrap: nowrap !important;
+        flex-direction: row !important;
+        inset: auto !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+    }
+
+    body.lux-light-mode #lux-topbar {
+        background: rgba(247, 243, 236, 0.95) !important;
+        border-bottom-color: rgba(0, 0, 0, 0.08) !important;
+        box-shadow: 0 2px 16px rgba(0, 0, 0, 0.08) !important;
+    }
+
+    #lux-topbar .lux-topbar-shell {
+        min-height: auto !important;
+        padding: 6px 10px !important;
+        margin: 0 !important;
+        border-radius: 0 !important;
+        border: none !important;
+        box-shadow: none !important;
+        background: transparent !important;
+        gap: 8px !important;
+        flex-wrap: nowrap !important;
+        align-items: center !important;
+    }
+
+    .lux-topbar-main {
+        gap: 8px !important;
+        flex-wrap: nowrap !important;
+        flex-shrink: 0 !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        width: auto !important;
+    }
+
+    /* Sidebar toggle — VISIBLE hamburger button on mobile */
+    .lux-sidebar-toggle-btn {
+        min-height: 42px !important;
+        min-width: 42px !important;
+        width: 42px !important;
+        padding: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        border-radius: 12px !important;
+        flex-shrink: 0 !important;
+        background: rgba(255, 255, 255, 0.08) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    }
+
+    body.lux-light-mode .lux-sidebar-toggle-btn {
+        background: rgba(0, 0, 0, 0.06) !important;
+        border-color: rgba(0, 0, 0, 0.08) !important;
+    }
+
+    .lux-sidebar-toggle-btn .lux-sidebar-toggle-label {
+        display: none !important;
+    }
+
+    /* Force a bars/hamburger icon */
+    .lux-sidebar-toggle-btn i {
+        font-size: 18px !important;
+        margin: 0 !important;
+        color: var(--lux-text, #f5f1e8) !important;
+    }
+
+    .lux-sidebar-toggle-btn i::before {
+        content: "\f0c9" !important; /* fa-bars */
+    }
+
+    /* Compact breadcrumb as mini page title on mobile */
+    .lux-breadcrumb {
+        display: flex !important;
+        font-size: 13px !important;
+        font-weight: 700 !important;
+        max-width: 140px !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        white-space: nowrap !important;
+        opacity: 0.9 !important;
+        letter-spacing: 0 !important;
+    }
+
+    /* Hide breadcrumb separator arrows and secondary crumbs */
+    .lux-breadcrumb-sep,
+    .lux-breadcrumb .lux-crumb:not(:last-child),
+    .lux-breadcrumb .lux-crumb-sep {
+        display: none !important;
+    }
+
+    .lux-search {
+        display: none !important;
+    }
+
+    /* Topbar spacer: minimal */
+    .lux-topbar-spacer {
+        flex: 1 1 0 !important;
+        min-width: 0 !important;
+    }
+
+    /* Actions: tight row — override 620px full-width column from luxury CSS */
+    .lux-topbar-actions {
+        display: flex !important;
+        gap: 4px !important;
+        align-items: center !important;
+        flex-wrap: nowrap !important;
+        flex-shrink: 0 !important;
+        width: auto !important;
+        flex-direction: row !important;
+        justify-content: flex-end !important;
+    }
+
+    /* Compact pickers */
+    .lux-picker-wrap {
+        flex-shrink: 0 !important;
+    }
+
+    .lux-picker-btn {
+        padding: 6px 8px !important;
+        min-height: 36px !important;
+        border-radius: 10px !important;
+        gap: 4px !important;
+    }
+
+    .lux-picker-caption {
+        display: none !important;
+    }
+
+    .lux-picker-btn strong {
+        font-size: 10px !important;
+        max-width: 72px !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        white-space: nowrap !important;
+    }
+
+    .lux-picker-btn i {
+        font-size: 9px !important;
+    }
+
+    /* Hide customize button */
+    .lux-topbar-editor-btn {
+        display: none !important;
+    }
+
+    /* Compact icon buttons */
+    .lux-topbar-actions .lux-icon-btn {
+        width: 36px !important;
+        height: 36px !important;
+        border-radius: 10px !important;
+        font-size: 13px !important;
+    }
+
+    /* Compact user chip — avatar only */
+    .lux-user-chip {
+        padding: 4px !important;
+        border-radius: 10px !important;
+        gap: 0 !important;
+    }
+
+    .lux-user-chip-copy {
+        display: none !important;
+    }
+
+    .lux-user-chip > i {
+        display: none !important;
+    }
+
+    .lux-user-chip .lux-avatar {
+        width: 28px !important;
+        height: 28px !important;
+        font-size: 10px !important;
+    }
+
+    /* User menu: full-width on mobile */
+    .lux-user-menu {
+        position: fixed !important;
+        top: auto !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        width: 100% !important;
+        min-width: 100% !important;
+        border-radius: 20px 20px 0 0 !important;
+        padding: 12px 16px calc(env(safe-area-inset-bottom, 0px) + 72px) !important;
+        z-index: 10000 !important;
+        box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.5) !important;
+    }
+
+    .lux-user-menu button {
+        min-height: 48px !important;
+        font-size: 14px !important;
+        padding: 14px 16px !important;
+        border-radius: 14px !important;
+    }
+
+    /* Icon badge: ensure visibility */
+    .lux-icon-badge {
+        font-size: 9px !important;
+        min-width: 16px !important;
+        height: 16px !important;
+        line-height: 16px !important;
+    }
+
+    /* ── 4.2  SIDEBAR: Full slide-out drawer ── */
+
+    #lux-shell {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        bottom: 0 !important;
+        width: 280px !important;
+        max-width: 82vw !important;
+        height: 100vh !important;
+        height: 100dvh !important;
+        z-index: 9500 !important;
+        transform: translateX(0) !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
+        transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        border-radius: 0 !important;
+        border: none !important;
+        border-right: 1px solid rgba(255, 255, 255, 0.06) !important;
+        margin: 0 !important;
+        box-shadow: 8px 0 40px rgba(0, 0, 0, 0.4) !important;
+        overflow-y: auto !important;
+    }
+
+    body.lux-sidebar-collapsed #lux-shell {
+        transform: translateX(-100%) !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+        box-shadow: none !important;
+    }
+
+    /* Dark overlay behind sidebar */
+    body:not(.lux-sidebar-collapsed)::after {
+        content: '' !important;
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        background: rgba(0, 0, 0, 0.55) !important;
+        backdrop-filter: blur(4px) !important;
+        -webkit-backdrop-filter: blur(4px) !important;
+        backface-visibility: hidden !important;
+        z-index: 9400 !important;
+        pointer-events: auto !important;
+        opacity: 1 !important;
+        transition: opacity 0.28s ease !important;
+    }
+
+    body.lux-sidebar-collapsed::after {
+        opacity: 0 !important;
+        pointer-events: none !important;
+    }
+
+    /* Sidebar brand */
+    .lux-brand {
+        padding: 16px 16px 12px !important;
+    }
+
+    .lux-brand-mark {
+        width: 34px !important;
+        height: 34px !important;
+        font-size: 15px !important;
+    }
+
+    .lux-brand-name {
+        font-size: 16px !important;
+    }
+
+    .lux-brand-sub {
+        font-size: 9px !important;
+    }
+
+    /* Sidebar nav items — touch-friendly */
+    .lux-nav {
+        padding: 8px 8px 16px !important;
+    }
+
+    .lux-nav-item {
+        min-height: 44px !important;
+        padding: 10px 14px !important;
+        margin: 0 0 4px !important;
+        border-radius: 14px !important;
+        font-size: 13px !important;
+        gap: 12px !important;
+    }
+
+    .lux-nav-item i {
+        width: 20px !important;
+        font-size: 14px !important;
+        text-align: center !important;
+    }
+
+    .lux-nav-group {
+        padding: 14px 14px 6px !important;
+        font-size: 9px !important;
+    }
+
+    /* Sidebar footer */
+    .lux-shell-footer {
+        padding: 12px 14px !important;
+        gap: 10px !important;
+    }
+
+    .lux-shell-footer .lux-avatar {
+        width: 32px !important;
+        height: 32px !important;
+        font-size: 11px !important;
+    }
+
+    .lux-user-name {
+        font-size: 12px !important;
+    }
+
+    .lux-user-role {
+        font-size: 10px !important;
+    }
+
+    /* ── 4.3  CONTENT AREA ── */
+
+    #app-content {
+        margin-left: 0 !important;
+        margin-top: 0 !important;
+        padding-top: 60px !important;
+        padding-left: 12px !important;
+        padding-right: 12px !important;
+        padding-bottom: 80px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        position: relative !important;
+        z-index: 1 !important;
+        overflow-x: hidden !important;
+        overflow-y: visible !important;
+    }
+
+    /* Ensure ALL containers show their content — override overflow:hidden */
+    .lux-page-shell,
+    .lux-card,
+    .lux-panel,
+    .content-box,
+    .surface-card,
+    .page-section {
+        overflow: visible !important;
+        min-width: 0 !important;
+    }
+
+    body.lux-sidebar-collapsed #app-content {
+        padding-left: 12px !important;
+        padding-right: 12px !important;
+    }
+
+    .page-section {
+        max-width: none !important;
+        width: 100% !important;
+        margin: 0 !important;
+    }
+
+    /* Non-home page widths — override luxury calc */
+    body.lux-nonhome-page #app-content,
+    body.lux-nonhome-page .page-section,
+    body.lux-family-admin .page-section,
+    body.lux-family-admin main,
+    body.lux-entry-profile-view .page-section,
+    body.lux-entry-profile-view main {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+
+    /* ── 4.4  LUXURY HERO ── */
+
+    .lux-hero {
+        padding: 18px 16px !important;
+        min-height: auto !important;
+    }
+
+    .lux-hero h1 {
+        font-size: clamp(18px, 5.5vw, 28px) !important;
+        line-height: 1.15 !important;
+        max-width: 100% !important;
+    }
+
+    .lux-hero p {
+        font-size: 12px !important;
+        line-height: 1.55 !important;
+        max-width: 100% !important;
+        margin-top: 8px !important;
+    }
+
+    .lux-kicker {
+        font-size: 9px !important;
+        letter-spacing: 0.14em !important;
+    }
+
+    /* Hero aside: stack below (NOT hidden — shows as full-width below hero copy) */
+    .lux-hero-side {
+        display: block !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin-top: 14px !important;
+    }
+
+    /* Hero stage grid → single column so side stacks below */
+    .lux-hero-stage {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* Hero actions: stack */
+    .lux-hero-actions {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        gap: 8px !important;
+        margin-top: 14px !important;
+    }
+
+    .lux-hero-actions button {
+        min-height: 40px !important;
+        flex: 1 1 140px !important;
+        font-size: 12px !important;
+        padding: 10px 14px !important;
+    }
+
+    /* ── 4.5  PILL ROW & STAT ROW ── */
+
+    .lux-pill-row {
+        gap: 6px !important;
+        margin-top: 12px !important;
+    }
+
+    .lux-pill {
+        padding: 5px 9px !important;
+        font-size: 9px !important;
+        backdrop-filter: none !important;
+    }
+
+    .lux-stat-row {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        max-width: 100% !important;
+        gap: 6px !important;
+        margin-top: 12px !important;
+    }
+
+    .lux-stat {
+        padding: 8px 10px !important;
+        border-radius: 10px !important;
+    }
+
+    .lux-stat strong {
+        font-size: 16px !important;
+    }
+
+    .lux-stat span {
+        font-size: 8px !important;
+    }
+
+    /* ── 4.6  ALERT BANNER ── */
+
+    .lux-alert {
+        padding: 14px 14px !important;
+        border-radius: 14px !important;
+        gap: 12px !important;
+        flex-wrap: wrap !important;
+    }
+
+    .lux-alert-icon {
+        width: 36px !important;
+        height: 36px !important;
+        border-radius: 10px !important;
+    }
+
+    .lux-alert-copy strong {
+        font-size: 12px !important;
+    }
+
+    .lux-alert-copy span {
+        font-size: 10px !important;
+    }
+
+    /* ── 4.7  QUICK GRID (Workspace Hub) ── */
+
+    .lux-quick-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 8px !important;
+    }
+
+    .lux-quick-btn {
+        padding: 14px 12px !important;
+        border-radius: 14px !important;
+    }
+
+    .lux-quick-btn .icon,
+    .dash-btn .icon-box {
+        width: 36px !important;
+        height: 36px !important;
+        border-radius: 10px !important;
+    }
+
+    .lux-quick-btn strong,
+    .dash-btn .btn-text {
+        font-size: 11px !important;
+        margin-top: 8px !important;
+    }
+
+    .lux-quick-btn span {
+        font-size: 9px !important;
+        line-height: 1.4 !important;
+    }
+
+    /* ── 4.8  HOME GRIDS ── */
+
+    .lux-home-columns {
+        grid-template-columns: 1fr !important;
+        gap: 10px !important;
+    }
+
+    .lux-meta-grid {
+        grid-template-columns: 1fr !important;
+        gap: 10px !important;
+    }
+
+    .lux-home-grid {
+        gap: 10px !important;
+    }
+
+    /* ── 4.9  CARDS & PANELS ── */
+
+    .lux-panel,
+    .lux-card,
+    .content-box,
+    .surface-card,
+    .admin-card,
+    .registration-cms-container {
+        border-radius: 14px !important;
+        padding: 14px !important;
+    }
+
+    .lux-mini-panel {
+        padding: 14px !important;
+    }
+
+    .lux-mini-panel h3 {
+        font-size: 18px !important;
+    }
+
+    .lux-card-title {
+        font-size: 12px !important;
+    }
+
+    .lux-card-meta {
+        font-size: 9px !important;
+    }
+
+    /* List rows */
+    .lux-list-row {
+        gap: 10px !important;
+        padding: 8px 0 !important;
+    }
+
+    .lux-list-row i {
+        width: 28px !important;
+        height: 28px !important;
+        border-radius: 8px !important;
+        font-size: 12px !important;
+    }
+
+    .lux-list-row strong {
+        font-size: 11px !important;
+    }
+
+    .lux-list-row span {
+        font-size: 9px !important;
+    }
+
+    /* Mini rows */
+    .lux-mini-row {
+        font-size: 11px !important;
+    }
+
+    /* Admin grid */
+    .admin-grid-main {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* ── 4.10  COLOUR & MOTION STUDIO ── */
+
+    .lux-studio-backdrop.is-open {
+        z-index: 10000 !important;
+    }
+
+    .lux-studio-panel {
+        width: 100vw !important;
+        max-width: 100% !important;
+        border-radius: 0 !important;
+        border-left: none !important;
+    }
+
+    .lux-studio-head {
+        padding: 16px 16px 14px !important;
+    }
+
+    .lux-studio-title {
+        font-size: 20px !important;
+    }
+
+    .lux-studio-sub {
+        font-size: 11px !important;
+    }
+
+    .lux-studio-body {
+        padding: 14px 16px 100px !important;
+        gap: 14px !important;
+    }
+
+    .lux-studio-section {
+        padding: 14px !important;
+    }
+
+    .lux-palette-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 8px !important;
+    }
+
+    .lux-palette-chip {
+        min-height: 72px !important;
+    }
+
+    .lux-range-row {
+        grid-template-columns: 60px minmax(0, 1fr) 42px !important;
+        gap: 8px !important;
+    }
+
+    .lux-mix-preview {
+        min-height: 64px !important;
+    }
+
+    .lux-apply-btn {
+        min-height: 48px !important;
+        font-size: 13px !important;
+    }
+
+    /* ── 4.11  MODALS ── */
+
+    .modal-overlay {
+        padding: 0 !important;
+        align-items: flex-end !important;
+    }
+
+    .modal-content {
+        width: 100% !important;
+        max-width: 100% !important;
+        max-height: 92vh !important;
+        max-height: 92dvh !important;
+        border-radius: 20px 20px 0 0 !important;
+        margin: 0 !important;
+        padding-bottom: env(safe-area-inset-bottom, 0) !important;
+    }
+
+    .modal-header {
+        padding: 16px 16px 12px !important;
+        position: sticky !important;
+        top: 0 !important;
+        z-index: 2 !important;
+        border-radius: 20px 20px 0 0 !important;
+    }
+
+    .modal-body {
+        padding: 12px 16px 16px !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+
+    .modal-footer {
+        padding: 10px 16px !important;
+        position: sticky !important;
+        bottom: 0 !important;
+        z-index: 2 !important;
+    }
+
+    .modal-header h3 {
+        font-size: 16px !important;
+    }
+
+    /* Modal grid layouts → single column */
+    .modal-body .admin-grid-main,
+    .modal-body [style*="grid-template-columns: 2fr"],
+    .modal-body [style*="grid-template-columns: 1fr 1fr 1fr"],
+    .modal-body [style*="grid-template-columns: 1fr 1fr"] {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* ── 4.12  LEGACY DASHBOARD GRID ── */
+
+    .dashboard-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 8px !important;
+        margin-top: 10px !important;
+    }
+
+    .dash-btn {
+        min-height: 100px !important;
+        padding: 12px 10px !important;
+        border-radius: 14px !important;
+    }
+
+    .dash-btn .icon-box {
+        width: 36px !important;
+        height: 36px !important;
+        font-size: 15px !important;
+        margin-bottom: 6px !important;
+    }
+
+    .dash-btn .btn-text {
+        font-size: 10px !important;
+    }
+
+    /* ── 4.13  LEGACY HERO SECTIONS ── */
+
+    .page-hero,
+    .portal-hero-panel,
+    .admin-hero,
+    .scheduler-hero {
+        padding: 16px !important;
+        border-radius: 14px !important;
+    }
+
+    .page-hero-title,
+    .portal-hero-title,
+    .admin-hero-title,
+    .scheduler-hero-title {
+        font-size: 18px !important;
+        line-height: 1.2 !important;
+    }
+
+    .page-hero-copy,
+    .portal-hero-copy,
+    .admin-hero-subtitle {
+        font-size: 12px !important;
+        line-height: 1.5 !important;
+        margin-top: 4px !important;
+    }
+
+    /* ── 4.14  TABLES ── */
+
+    .kiu-table {
+        display: block !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        border-radius: 12px !important;
+    }
+
+    .kiu-table thead th {
+        white-space: nowrap !important;
+        font-size: 10px !important;
+        padding: 8px !important;
+    }
+
+    .kiu-table td {
+        font-size: 11px !important;
+        padding: 8px !important;
+    }
+
+    /* ── 4.15  BUTTONS & INPUTS — Touch targets ≥44px ── */
+
+    .kiu-btn-blue,
+    .kiu-btn-outline,
+    .kiu-btn,
+    .lux-primary-btn,
+    .lux-secondary-btn,
+    .lux-ghost-btn,
+    .admin-glass-btn {
+        min-height: 44px !important;
+        padding: 10px 16px !important;
+        font-size: 13px !important;
+        border-radius: 12px !important;
+    }
+
+    input,
+    select,
+    textarea {
+        font-size: 16px !important;
+        min-height: 44px !important;
+        border-radius: 12px !important;
+    }
+
+    /* ── 4.16  LEGACY NAV BARS ── */
+
+    #top-nav,
+    #admin-nav,
+    #prof-nav {
+        width: calc(100% - 16px) !important;
+        margin-left: 8px !important;
+        margin-right: 8px !important;
+        margin-top: 8px !important;
+        min-height: 50px !important;
+        padding: 6px !important;
+        gap: 4px !important;
+        overflow-x: auto !important;
+        flex-wrap: nowrap !important;
+        border-radius: 12px !important;
+        scrollbar-width: none !important;
+    }
+
+    #top-nav::-webkit-scrollbar,
+    #admin-nav::-webkit-scrollbar,
+    #prof-nav::-webkit-scrollbar {
+        display: none !important;
+    }
+
+    .nav-item {
+        min-width: 68px !important;
+        min-height: 44px !important;
+        flex-shrink: 0 !important;
+        padding: 6px 10px !important;
+        font-size: 9px !important;
+        border-radius: 10px !important;
+    }
+
+    .nav-item i {
+        font-size: 14px !important;
+        display: block !important;
+        margin-bottom: 3px !important;
+    }
+
+    /* ── 4.17  LEGACY HEADER ── */
+
+    header {
+        width: calc(100% - 16px) !important;
+        margin-left: 8px !important;
+        margin-right: 8px !important;
+        margin-top: 4px !important;
+        height: 48px !important;
+        min-height: 48px !important;
+        padding: 0 10px !important;
+        flex-wrap: nowrap !important;
+        border-radius: 12px !important;
+    }
+
+    .header-left {
+        gap: 6px !important;
+    }
+
+    .kiu-logo {
+        width: 30px !important;
+        height: 30px !important;
+        font-size: 13px !important;
+    }
+
+    .header-greeting {
+        font-size: 13px !important;
+        white-space: nowrap !important;
+    }
+
+    .header-right {
+        gap: 4px !important;
+        flex-wrap: nowrap !important;
+    }
+
+    .faculty-switcher select,
+    .role-switcher select {
+        font-size: 10px !important;
+        padding: 4px 6px !important;
+        max-width: 90px !important;
+        border-radius: 8px !important;
+        min-height: 32px !important;
+    }
+
+    .user-info,
+    .lang-switcher {
+        display: none !important;
+    }
+
+    header button[onclick="openStudio()"] {
+        display: none !important;
+    }
+
+    /* ── 4.18  FOOTER ── */
+
+    footer {
+        width: calc(100% - 16px) !important;
+        margin-left: 8px !important;
+        margin-right: 8px !important;
+        margin-top: 8px !important;
+        margin-bottom: 80px !important;
+        padding: 10px 12px !important;
+        font-size: 10px !important;
+        border-radius: 12px !important;
+        text-align: center !important;
+    }
+
+    /* ── 4.19  BOTTOM NAVIGATION v2 — Command Bar ── */
+
+    #mobile-bottom-nav {
+        display: flex !important;
+        flex-direction: column !important;
+        position: fixed !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        z-index: 9100 !important;
+        background: rgba(8, 12, 21, 0.97) !important;
+        backdrop-filter: blur(24px) saturate(180%) !important;
+        -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+        border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+        box-shadow: 0 -2px 20px rgba(0, 0, 0, 0.3) !important;
+        padding: 0 !important;
+    }
+
+    body.lux-light-mode #mobile-bottom-nav {
+        background: rgba(247, 243, 236, 0.96) !important;
+        border-top-color: rgba(0, 0, 0, 0.06) !important;
+        box-shadow: 0 -2px 16px rgba(0, 0, 0, 0.05) !important;
+    }
+
+    .mobile-nav-row {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        height: 64px !important;
+        gap: 2px !important;
+        padding: 4px 8px env(safe-area-inset-bottom, 4px) !important;
+    }
+
+    .mobile-nav-btn {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 3px !important;
+        padding: 2px 0 !important;
+        flex: 1 1 0 !important;
+        min-width: 0 !important;
+        min-height: 48px !important;
+        border: none !important;
+        background: transparent !important;
+        color: rgba(255, 255, 255, 0.45) !important;
+        cursor: pointer !important;
+        border-radius: 12px !important;
+        transition: color 0.18s ease, background 0.18s ease !important;
+        position: relative !important;
+        -webkit-tap-highlight-color: transparent !important;
+    }
+
+    body.lux-light-mode .mobile-nav-btn {
+        color: rgba(0, 0, 0, 0.4) !important;
+    }
+
+    .mobile-nav-btn i {
+        font-size: 18px !important;
+        line-height: 1 !important;
+        transition: transform 0.18s ease !important;
+    }
+
+    .mobile-nav-btn span {
+        font-size: 8px !important;
+        font-weight: 600 !important;
+        letter-spacing: 0.02em !important;
+        white-space: nowrap !important;
+    }
+
+    .mobile-nav-btn:active {
+        transform: scale(0.92) !important;
+    }
+
+    .mobile-nav-btn:active i {
+        transform: scale(1.15) !important;
+    }
+
+    .mobile-nav-btn.is-active {
+        color: var(--lux-accent, #f0a050) !important;
+    }
+
+    .mobile-nav-btn.is-active i {
+        filter: drop-shadow(0 0 6px rgba(var(--lux-accent-rgb, 240, 160, 80), 0.4)) !important;
+    }
+
+    body.lux-light-mode .mobile-nav-btn.is-active {
+        color: var(--lux-accent, #c87830) !important;
+    }
+
+    /* Badge (new v2 style) */
+    .mob-badge {
+        position: absolute !important;
+        top: 0px !important;
+        right: calc(50% - 20px) !important;
+        min-width: 18px !important;
+        height: 18px !important;
+        border-radius: 999px !important;
+        background: #ef4444 !important;
+        color: #fff !important;
+        font-size: 9px !important;
+        font-weight: 800 !important;
+        font-style: normal !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 0 5px !important;
+        box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4) !important;
+        animation: mob-badge-pulse 2s ease infinite !important;
+    }
+
+    @keyframes mob-badge-pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+    }
+
+    /* ── ACTION SHEET (v2) ── */
+
+    .mob-sheet {
+        position: fixed !important;
+        inset: 0 !important;
+        z-index: 9200 !important;
+        pointer-events: none !important;
+    }
+
+    .mob-sheet.is-open {
+        pointer-events: auto !important;
+    }
+
+    .mob-sheet-backdrop {
+        position: absolute !important;
+        inset: 0 !important;
+        background: rgba(0, 0, 0, 0) !important;
+        transition: background 0.3s ease !important;
+    }
+
+    .mob-sheet.is-open .mob-sheet-backdrop {
+        background: rgba(0, 0, 0, 0.55) !important;
+        backdrop-filter: blur(4px) !important;
+        -webkit-backdrop-filter: blur(4px) !important;
+        backface-visibility: hidden !important;
+    }
+
+    .mob-sheet-panel {
+        position: absolute !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        max-height: 80vh !important;
+        max-height: 80dvh !important;
+        background: rgba(12, 16, 26, 0.98) !important;
+        border-radius: 24px 24px 0 0 !important;
+        border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+        box-shadow: 0 -16px 60px rgba(0, 0, 0, 0.5) !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        padding: 0 16px calc(env(safe-area-inset-bottom, 0px) + 8px) !important;
+        transform: translateY(100%) !important;
+        transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1) !important;
+    }
+
+    body.lux-light-mode .mob-sheet-panel {
+        background: rgba(252, 250, 246, 0.98) !important;
+        border-top-color: rgba(0, 0, 0, 0.08) !important;
+    }
+
+    .mob-sheet.is-open .mob-sheet-panel {
+        transform: translateY(0) !important;
+    }
+
+    .mob-sheet-handle {
+        display: flex !important;
+        justify-content: center !important;
+        padding: 10px 0 6px !important;
+    }
+
+    .mob-sheet-handle span {
+        width: 40px !important;
+        height: 4px !important;
+        border-radius: 4px !important;
+        background: rgba(255, 255, 255, 0.2) !important;
+    }
+
+    body.lux-light-mode .mob-sheet-handle span {
+        background: rgba(0, 0, 0, 0.15) !important;
+    }
+
+    .mob-sheet-section {
+        margin-bottom: 18px !important;
+    }
+
+    .mob-sheet-label {
+        font-size: 10px !important;
+        font-weight: 800 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.1em !important;
+        color: rgba(255, 255, 255, 0.4) !important;
+        margin-bottom: 10px !important;
+        padding: 0 4px !important;
+    }
+
+    body.lux-light-mode .mob-sheet-label {
+        color: rgba(0, 0, 0, 0.4) !important;
+    }
+
+    /* Quick action grid */
+    .mob-sheet-grid {
+        display: grid !important;
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: 10px !important;
+    }
+
+    .mob-sheet-btn {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        gap: 8px !important;
+        padding: 14px 4px !important;
+        border: none !important;
+        background: rgba(255, 255, 255, 0.04) !important;
+        border-radius: 16px !important;
+        cursor: pointer !important;
+        transition: background 0.18s ease, transform 0.18s ease !important;
+        color: var(--lux-text, #f5f1e8) !important;
+    }
+
+    body.lux-light-mode .mob-sheet-btn {
+        background: rgba(0, 0, 0, 0.04) !important;
+        color: var(--lux-text, #1d2633) !important;
+    }
+
+    .mob-sheet-btn:active {
+        transform: scale(0.94) !important;
+        background: rgba(255, 255, 255, 0.08) !important;
+    }
+
+    .mob-sheet-icon {
+        width: 44px !important;
+        height: 44px !important;
+        border-radius: 14px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        color: #fff !important;
+        font-size: 17px !important;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2) !important;
+    }
+
+    .mob-sheet-icon-admin {
+        background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+    }
+
+    #mob-act-admin .mob-sheet-icon {
+        background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+    }
+
+    .mob-sheet-icon-theme {
+        background: linear-gradient(135deg, #8b5cf6, #6d28d9) !important;
+    }
+
+    #mob-act-theme .mob-sheet-icon {
+        background: linear-gradient(135deg, #8b5cf6, #6d28d9) !important;
+    }
+
+    .mob-sheet-icon-profile {
+        background: linear-gradient(135deg, #06b6d4, #0891b2) !important;
+    }
+
+    #mob-act-profile .mob-sheet-icon {
+        background: linear-gradient(135deg, #06b6d4, #0891b2) !important;
+    }
+
+    .mob-sheet-icon-lightmode {
+        background: linear-gradient(135deg, #f97316, #ea580c) !important;
+    }
+
+    #mob-act-lightmode .mob-sheet-icon {
+        background: linear-gradient(135deg, #f97316, #ea580c) !important;
+    }
+
+    .mob-sheet-btn span {
+        font-size: 10px !important;
+        font-weight: 700 !important;
+        text-align: center !important;
+        line-height: 1.25 !important;
+    }
+
+    /* Navigation list */
+    .mob-sheet-nav {
+        display: grid !important;
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 6px !important;
+    }
+
+    .mob-sheet-nav-btn {
+        display: flex !important;
+        align-items: center !important;
+        gap: 10px !important;
+        padding: 12px 10px !important;
+        border: none !important;
+        background: rgba(255, 255, 255, 0.03) !important;
+        border-radius: 14px !important;
+        color: var(--lux-text, #f5f1e8) !important;
+        font-size: 11px !important;
+        font-weight: 700 !important;
+        cursor: pointer !important;
+        transition: background 0.15s ease !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+
+    body.lux-light-mode .mob-sheet-nav-btn {
+        background: rgba(0, 0, 0, 0.03) !important;
+        color: var(--lux-text, #1d2633) !important;
+    }
+
+    .mob-sheet-nav-btn:active {
+        background: rgba(var(--lux-accent-rgb, 240, 160, 80), 0.15) !important;
+    }
+
+    .mob-sheet-nav-btn i {
+        width: 20px !important;
+        text-align: center !important;
+        font-size: 13px !important;
+        color: var(--lux-accent, #f0a050) !important;
+        flex-shrink: 0 !important;
+    }
+
+    .mob-sheet-footer {
+        padding: 8px 0 4px !important;
+    }
+
+    .mob-sheet-close-btn {
+        width: 100% !important;
+        padding: 14px !important;
+        border: none !important;
+        background: rgba(255, 255, 255, 0.06) !important;
+        color: rgba(255, 255, 255, 0.6) !important;
+        border-radius: 14px !important;
+        font-size: 13px !important;
+        font-weight: 700 !important;
+        cursor: pointer !important;
+    }
+
+    body.lux-light-mode .mob-sheet-close-btn {
+        background: rgba(0, 0, 0, 0.05) !important;
+        color: rgba(0, 0, 0, 0.5) !important;
+    }
+
+    .mob-sheet-close-btn:active {
+        background: rgba(255, 255, 255, 0.1) !important;
+    }
+
+    /* FABs: hide on mobile (we have chat/notif in bottom bar now) */
+    .portal-notif-fab-stack,
+    .portal-msg-fab-stack {
+        display: none !important;
+    }
+
+    /* ── 4.20  ADMIN OPERATIONS (HOME) ── */
+
+    .lux-admin-ops-group {
+        padding: 14px !important;
+    }
+
+    .lux-admin-ops-btns {
+        grid-template-columns: 1fr !important;
+        gap: 6px !important;
+    }
+
+    .lux-admin-ops-btn {
+        min-height: 44px !important;
+        padding: 10px 14px !important;
+        font-size: 12px !important;
+    }
+
+    /* ── 4.21  PERFORMANCE: Reduce visual weight on mobile ── */
+
+    .lux-pill {
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+    }
+
+    /* Reduce complex backdrop filters on low-end mobile */
+    .lux-panel,
+    .content-box,
+    .registration-cms-container,
+    .admin-hero,
+    .dashboard-admin > .content-box,
+    .dashboard-admin .admin-card {
+        backdrop-filter: blur(8px) !important;
+        -webkit-backdrop-filter: blur(8px) !important;
+    }
+
+    /* Hide heavy background canvas elements on mobile for perf */
+    #lux-bg-canvas {
+        opacity: 0.5 !important;
+    }
+
+    /* ── 4.22  TABS ── */
+
+    .tabs-container,
+    .reg-tabs {
+        overflow-x: auto !important;
+        flex-wrap: nowrap !important;
+        scrollbar-width: none !important;
+        -webkit-overflow-scrolling: touch !important;
+        gap: 4px !important;
+    }
+
+    .tabs-container::-webkit-scrollbar,
+    .reg-tabs::-webkit-scrollbar {
+        display: none !important;
+    }
+
+    .tab,
+    .reg-tab {
+        white-space: nowrap !important;
+        flex-shrink: 0 !important;
+        min-height: 40px !important;
+        padding: 8px 14px !important;
+        font-size: 11px !important;
+    }
+
+    /* ── 4.23  HOME EDITOR TOOLBAR ── */
+
+    .lux-home-toolbar {
+        flex-wrap: wrap !important;
+        gap: 8px !important;
+        padding: 12px !important;
+    }
+
+    .lux-home-toolbar-actions {
+        width: 100% !important;
+    }
+
+    .lux-home-toolbar-actions > * {
+        flex: 1 1 auto !important;
+        min-height: 40px !important;
+    }
+
+    /* ── 4.24  WIDGET INSPECTOR (hide on mobile) ── */
+
+    .lux-home-inspector {
+        display: none !important;
+    }
+
+    /* ── 4.25  REGISTRATION PAGE ── */
+
+    .reg-header-info {
+        flex-direction: column !important;
+        gap: 8px !important;
+    }
+
+    .reg-header-info > div {
+        width: 100% !important;
+    }
+
+    /* ── 4.26  PROFILE PAGE ── */
+
+    .profile-card {
+        flex-direction: column !important;
+        text-align: center !important;
+        gap: 12px !important;
+    }
+}
+
+/* ─────────────────────────────────────────────────────────
+   §5  SMALL MOBILE  ≤400px
+   Extra-tight spacing for small screens.
+   ───────────────────────────────────────────────────────── */
+
+@media (max-width: 400px) {
+
+    /* Tighter topbar */
+    #lux-topbar .lux-topbar-shell {
+        padding: 4px 6px !important;
+        gap: 4px !important;
+    }
+
+    .lux-sidebar-toggle-btn {
+        min-width: 36px !important;
+        width: 36px !important;
+        min-height: 36px !important;
+    }
+
+    .lux-picker-btn {
+        padding: 4px 6px !important;
+        min-height: 32px !important;
+    }
+
+    .lux-picker-btn strong {
+        font-size: 9px !important;
+        max-width: 56px !important;
+    }
+
+    .lux-topbar-actions .lux-icon-btn {
+        width: 32px !important;
+        height: 32px !important;
+    }
+
+    /* Narrower sidebar */
+    #lux-shell {
+        width: 260px !important;
+    }
+
+    /* Tighter content */
+    #app-content {
+        padding-top: 54px !important;
+        padding-left: 8px !important;
+        padding-right: 8px !important;
+    }
+
+    /* Single column grids */
+    .dashboard-grid,
+    .lux-quick-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .lux-stat-row {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+
+    /* Smaller hero text */
+    .lux-hero h1 {
+        font-size: 18px !important;
+    }
+
+    .page-hero-title,
+    .portal-hero-title,
+    .admin-hero-title {
+        font-size: 16px !important;
+    }
+
+    /* Smaller bottom nav */
+    #mobile-bottom-nav {
+        height: 58px !important;
+        padding: 2px 4px env(safe-area-inset-bottom, 2px) !important;
+    }
+
+    .mobile-nav-btn {
+        min-width: 48px !important;
+    }
+
+    .mobile-nav-btn i {
+        font-size: 16px !important;
+    }
+
+    .mobile-nav-btn span {
+        font-size: 8px !important;
+    }
+
+    /* Panels & cards */
+    .lux-panel,
+    .lux-card,
+    .content-box,
+    .surface-card {
+        padding: 10px !important;
+    }
+
+    .lux-hero {
+        padding: 14px 12px !important;
+    }
+
+    .lux-mini-panel h3 {
+        font-size: 16px !important;
+    }
+
+    /* Footer above bottom nav */
+    footer {
+        margin-bottom: 72px !important;
+    }
+}
+
+/* ─────────────────────────────────────────────────────────
+   §6  LANDSCAPE MOBILE
+   Compact topbar, shorter sidebar, everything horizontal.
+   ───────────────────────────────────────────────────────── */
+
+@media (max-height: 500px) and (orientation: landscape) {
+
+    #lux-topbar .lux-topbar-shell {
+        padding: 2px 8px !important;
+    }
+
+    .lux-sidebar-toggle-btn {
+        min-height: 32px !important;
+        min-width: 32px !important;
+    }
+
+    .lux-picker-btn {
+        min-height: 30px !important;
+    }
+
+    #lux-shell {
+        width: 240px !important;
+    }
+
+    .lux-nav-item {
+        min-height: 36px !important;
+        padding: 6px 12px !important;
+        margin-bottom: 2px !important;
+        font-size: 12px !important;
+    }
+
+    #app-content {
+        padding-top: 46px !important;
+    }
+
+    /* Smaller bottom nav in landscape */
+    #mobile-bottom-nav {
+        height: 44px !important;
+        padding: 2px 8px !important;
+    }
+
+    .mobile-nav-btn span {
+        display: none !important;
+    }
+
+    .mobile-nav-btn {
+        min-height: 36px !important;
+        min-width: 40px !important;
+    }
+
+    .mobile-nav-btn i {
+        font-size: 16px !important;
+    }
+}
+
+/* ─────────────────────────────────────────────────────────
+   §7  iOS SAFE AREA INSETS
+   ───────────────────────────────────────────────────────── */
+
+@supports (-webkit-touch-callout: none) {
+    @media (max-width: 768px) {
+
+        #lux-topbar {
+            padding-top: max(0px, env(safe-area-inset-top)) !important;
+        }
+
+        #lux-shell {
+            padding-top: env(safe-area-inset-top) !important;
+            padding-left: env(safe-area-inset-left) !important;
+            padding-bottom: env(safe-area-inset-bottom) !important;
+        }
+
+        #app-content {
+            padding-top: calc(60px + env(safe-area-inset-top)) !important;
+        }
+
+        #mobile-bottom-nav {
+            padding-bottom: max(4px, env(safe-area-inset-bottom)) !important;
+            height: calc(64px + env(safe-area-inset-bottom)) !important;
+        }
+
+        footer {
+            margin-bottom: calc(80px + env(safe-area-inset-bottom)) !important;
+        }
+    }
+}
+
+/* ─────────────────────────────────────────────────────────
+   §8  REDUCED MOTION
+   ───────────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+    #lux-shell,
+    body::after,
+    .mobile-nav-btn,
+    .mobile-nav-btn i,
+    .lux-nav-item {
+        transition-duration: 0.01ms !important;
+    }
+
+    #lux-bg-canvas {
+        display: none !important;
+    }
+}
+
+/* ─────────────────────────────────────────────────────────
+   §9  DESKTOP — Hide Bottom Nav
+   ───────────────────────────────────────────────────────── */
+
+@media (min-width: 769px) {
+    #mobile-bottom-nav {
+        display: none !important;
+    }
+}
+
+/* ─────────────────────────────────────────────────────────
+   §10  COMPREHENSIVE PAGE-SPECIFIC MOBILE OVERRIDES
+   Every sub-page layout fix for ≤768px.
+   ───────────────────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+
+    /* ═══════════════════════════════════════════════════════
+       GLOBAL FIXES — Override index-luxury.css conflicts
+       ═══════════════════════════════════════════════════════ */
+
+    /* Fix: index-luxury.css line 2916 makes topbar relative at 980px
+       and line 2938 adds margins at 620px — already overridden in §4 */
+
+    /* Fix: overflow:hidden on many containers clips content on mobile */
+    .lux-page-shell *,
+    .content-box *,
+    .surface-card * {
+        max-width: 100% !important;
+    }
+
+    /* Fix: all grids that might have min-width forcing horizontal overflow */
+    [style*="grid-template-columns"],
+    [style*="grid-template-columns: 1fr 1fr 1fr"],
+    [style*="grid-template-columns: 2fr"],
+    [style*="grid-template-columns: repeat"] {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* Fix: inline style grids from JS-rendered content */
+    [style*="grid-template-columns: 1fr 1fr"] {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* Fix: min-width values that cause horizontal overflow */
+    .sch-body,
+    .sch-header-row {
+        min-width: 0 !important;
+    }
+
+    /* Fix: tabs container horizontal scroll */
+    .tabs-container,
+    .tab-row,
+    .lux-tab-row,
+    .social-tab-row {
+        display: flex !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        flex-wrap: nowrap !important;
+        gap: 6px !important;
+        padding-bottom: 4px !important;
+    }
+
+    .tabs-container .tab,
+    .tab-row .tab,
+    .lux-tab-row .tab {
+        white-space: nowrap !important;
+        flex-shrink: 0 !important;
+        min-height: 40px !important;
+        padding: 8px 12px !important;
+        font-size: 12px !important;
+    }
+
+    /* Fix: ALL table elements get horizontal scroll wrapper */
+    table,
+    .kiu-table {
+        display: block !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        width: 100% !important;
+    }
+
+    /* Fix: flex rows that refuse to wrap */
+    .lux-actions-between {
+        flex-direction: column !important;
+        gap: 10px !important;
+        align-items: flex-start !important;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       ADMIN SCHEDULER
+       ═══════════════════════════════════════════════════════ */
+
+    .scheduler-wrap {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 16px !important;
+    }
+
+    .sch-sidebar {
+        position: static !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        height: auto !important;
+        max-height: none !important;
+        overflow: visible !important;
+        border-right: none !important;
+        border-bottom: 1px solid var(--lux-border, rgba(255,255,255,0.1)) !important;
+    }
+
+    .sch-main {
+        width: 100% !important;
+        margin: 0 !important;
+    }
+
+    .sch-grid-shell {
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+
+    .sch-stat-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+
+    .sch-stat-card-wide {
+        grid-column: 1 / -1 !important;
+    }
+
+    .sch-action-grid {
+        grid-template-columns: 1fr 1fr !important;
+    }
+
+    .sch-control-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .sch-board-tools,
+    .sch-board-hero {
+        flex-direction: column !important;
+        gap: 10px !important;
+        align-items: stretch !important;
+    }
+
+    .sch-board-legend {
+        flex-wrap: wrap !important;
+        gap: 6px !important;
+    }
+
+    .sch-board-toolbar-row {
+        flex-direction: column !important;
+        align-items: stretch !important;
+    }
+
+    .sch-board-toolbar-row select {
+        width: 100% !important;
+        min-width: 0 !important;
+    }
+
+    .sch-modal {
+        width: 100vw !important;
+        max-width: 100% !important;
+        max-height: 90vh !important;
+        border-radius: 20px 20px 0 0 !important;
+        position: fixed !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        top: auto !important;
+        transform: none !important;
+    }
+
+    .sch-input-row,
+    .sch-input-group {
+        grid-template-columns: 1fr !important;
+    }
+
+    .sch-rail-hero,
+    .sch-rail-section {
+        padding: 16px !important;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       ADMIN LIBRARY
+       ═══════════════════════════════════════════════════════ */
+
+    .adlib-table {
+        display: block !important;
+        overflow-x: auto !important;
+    }
+
+    .adlib-table thead th:nth-child(n+5),
+    .adlib-table tbody td:nth-child(n+5) {
+        display: none !important;
+    }
+
+    .adlib-form-grid,
+    .adlib-filter-row {
+        grid-template-columns: 1fr !important;
+    }
+
+    .adlib-hero .lux-card-body {
+        grid-template-columns: 1fr !important;
+    }
+
+    .adlib-stat-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       ADMIN TOOLS
+       ═══════════════════════════════════════════════════════ */
+
+    .lux-admin-tools-hero {
+        padding: 16px !important;
+        grid-template-columns: 1fr !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+    }
+
+    .lux-admin-tools-hero h1 {
+        font-size: 22px !important;
+    }
+
+    .lux-subcards {
+        grid-template-columns: 1fr !important;
+    }
+
+    .lux-field-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .lux-hero-signal-list {
+        grid-template-columns: 1fr !important;
+    }
+
+    .lux-admin-ops-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    #curriculum-library-modules-root > div {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       ADMIN ORDERS
+       ═══════════════════════════════════════════════════════ */
+
+    .order-form-grid,
+    .admin-orders-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .admin-orders-filter-row {
+        flex-direction: column !important;
+        align-items: stretch !important;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       PROFILE VIEW
+       ═══════════════════════════════════════════════════════ */
+
+    .pv-body {
+        display: flex !important;
+        flex-direction: column !important;
+        max-height: none !important;
+        overflow: visible !important;
+    }
+
+    .pv-left {
+        border-right: none !important;
+        border-bottom: 1px solid var(--lux-border, rgba(255,255,255,0.1)) !important;
+        width: 100% !important;
+    }
+
+    .pv-right {
+        width: 100% !important;
+    }
+
+    .pv-avatar-wrap {
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+    }
+
+    .pv-meta {
+        text-align: center !important;
+        padding: 68px 16px 24px !important;
+    }
+
+    .pv-meta-pills {
+        justify-content: center !important;
+    }
+
+    .pv-header-actions {
+        top: 10px !important;
+        right: 10px !important;
+    }
+
+    .pv-tabs {
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        flex-wrap: nowrap !important;
+    }
+
+    .pv-tab {
+        white-space: nowrap !important;
+        min-height: 44px !important;
+        flex-shrink: 0 !important;
+    }
+
+    .pv-detail-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       PROFILE (own profile page)
+       ═══════════════════════════════════════════════════════ */
+
+    .profile-grid,
+    .profile-layout {
+        grid-template-columns: 1fr !important;
+    }
+
+    .profile-sidebar {
+        position: static !important;
+        width: 100% !important;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       LMS
+       ═══════════════════════════════════════════════════════ */
+
+    .lms-clean-hero-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .lms-clean-summary,
+    .lms-clean-scope-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .lms-clean-subject-grid,
+    .lms-clean-group-grid,
+    .lms-clean-metric-grid,
+    .lms-clean-signal-grid,
+    .lms-clean-ribbon-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .lms-tabs .tab,
+    .lms-tabs .tabs-container .tab {
+        min-height: 44px !important;
+        padding: 10px 12px !important;
+        font-size: 12px !important;
+        white-space: nowrap !important;
+        flex-shrink: 0 !important;
+    }
+
+    .lms-clean-subject-card {
+        width: 100% !important;
+    }
+
+    .lms-clean-stat-value {
+        font-size: 22px !important;
+    }
+
+    .lms-clean-signal-value {
+        font-size: 20px !important;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       TIMETABLE
+       ═══════════════════════════════════════════════════════ */
+
+    .lux-timetable-hero {
+        grid-template-columns: 1fr !important;
+    }
+
+    .lux-timetable-command-grid,
+    .lux-timetable-insight-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .lux-timetable-stage-head,
+    .lux-timetable-command-head {
+        flex-direction: column !important;
+        align-items: stretch !important;
+    }
+
+    .schedule-overview-row {
+        grid-template-columns: 1fr !important;
+    }
+
+    .timetable-grid,
+    .tt-grid,
+    #timetable-grid,
+    .schedule-session-rail {
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        width: 100% !important;
+    }
+
+    /* The schedule body has min-width:760px — let it scroll */
+    body.lux-route-timetable .sch-body {
+        min-width: 760px !important;
+    }
+
+    .lux-timetable-command,
+    .lux-timetable-stage,
+    .lux-timetable-insight {
+        padding: 16px !important;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       SOCIAL
+       ═══════════════════════════════════════════════════════ */
+
+    .social-app-shell {
+        grid-template-columns: 1fr !important;
+    }
+
+    .social-student-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .social-rail.is-left,
+    .social-rail.is-sticky {
+        position: static !important;
+        grid-column: 1 / -1 !important;
+    }
+
+    .social-reel-layout,
+    .social-reel-card.is-compact .social-reel-layout {
+        grid-template-columns: 1fr !important;
+    }
+
+    .social-hero,
+    .social-entity-cover {
+        padding: 16px !important;
+        border-radius: 18px !important;
+    }
+
+    .social-hero-title,
+    .social-entity-title {
+        font-size: clamp(18px, 5vw, 24px) !important;
+    }
+
+    .social-card-body,
+    .social-post-body {
+        padding: 14px !important;
+    }
+
+    .social-avatar {
+        width: 36px !important;
+        height: 36px !important;
+        border-radius: 12px !important;
+    }
+
+    .social-composer-top,
+    .social-comment-composer,
+    .social-actions-row,
+    .social-composer-footer {
+        flex-direction: column !important;
+        align-items: stretch !important;
+    }
+
+    .social-story-rail {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+
+    .social-story-viewer {
+        width: min(96vw, 520px) !important;
+    }
+
+    .social-media-grid,
+    .social-student-people,
+    .social-detail-grid,
+    .social-search-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .social-feed-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .social-compose-area textarea,
+    .social-textarea {
+        min-height: 80px !important;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       PERSONAL DATA
+       ═══════════════════════════════════════════════════════ */
+
+    .personal-data-layout {
+        grid-template-columns: 1fr !important;
+    }
+
+    .profile-card {
+        position: static !important;
+    }
+
+    .kpi-row,
+    .personal-data-record-grid,
+    .personal-data-record-list {
+        grid-template-columns: 1fr !important;
+    }
+
+    .personal-data-toolbar-row {
+        flex-direction: column !important;
+        align-items: stretch !important;
+    }
+
+    .personal-data-toolbar-row select {
+        min-width: 0 !important;
+        width: 100% !important;
+    }
+
+    .personal-data-toolbar-actions {
+        width: 100% !important;
+        justify-content: stretch !important;
+    }
+
+    .personal-data-toolbar-actions > * {
+        flex: 1 1 auto !important;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       REGISTRATION
+       ═══════════════════════════════════════════════════════ */
+
+    .registration-hero,
+    .registration-shell-grid,
+    .registration-insight-grid,
+    .registration-hero-focus-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .registration-control-row,
+    .registration-workspace-head,
+    .registration-footer-bar {
+        flex-direction: column !important;
+        align-items: stretch !important;
+    }
+
+    .registration-workspace-note {
+        text-align: left !important;
+        max-width: none !important;
+    }
+
+    .registration-course-row {
+        grid-template-columns: 1fr !important;
+    }
+
+    .registration-course-ects,
+    .registration-course-action,
+    .registration-course-meta {
+        grid-column: auto !important;
+    }
+
+    .reg-step-grid,
+    .reg-course-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       STUDENT SERVICE
+       ═══════════════════════════════════════════════════════ */
+
+    .student-service-hero {
+        grid-template-columns: 1fr !important;
+    }
+
+    .student-service-student-grid,
+    .student-service-ticket-grid,
+    .student-service-staff-grid,
+    .student-service-track-grid,
+    .student-service-ops-grid,
+    .student-service-home-rail,
+    .student-service-request-extra {
+        grid-template-columns: 1fr !important;
+    }
+
+    .student-service-zone-head,
+    .student-service-find-bar {
+        flex-direction: column !important;
+        align-items: stretch !important;
+    }
+
+    .student-service-lane-switcher-shell,
+    .student-service-lane-switcher {
+        flex-direction: column !important;
+        align-items: stretch !important;
+    }
+
+    .student-service-lane-choice-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .student-service-qa-composer-collapsed,
+    .student-service-qa-card-head,
+    .student-service-qa-card-footer,
+    .student-service-qa-answer-head {
+        grid-template-columns: 1fr !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+    }
+
+    .student-service-qa-filter-row,
+    .student-service-qa-similar-list,
+    .student-service-qa-card-stats,
+    .student-service-qa-activity-row {
+        flex-direction: column !important;
+        align-items: stretch !important;
+    }
+
+    .student-service-mini-action {
+        width: 100% !important;
+        justify-content: center !important;
+    }
+
+    .student-service-student-columns,
+    .student-service-staff-columns {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       LIBRARY
+       ═══════════════════════════════════════════════════════ */
+
+    .library-grid,
+    .library-search-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       STAFF & STUDENTS ADMIN
+       ═══════════════════════════════════════════════════════ */
+
+    .staff-table-wrapper,
+    .students-table-wrapper {
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+
+    .staff-hero,
+    .students-hero {
+        grid-template-columns: 1fr !important;
+    }
+
+    .staff-filter-row,
+    .students-filter-row {
+        flex-direction: column !important;
+        align-items: stretch !important;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       ORDERS
+       ═══════════════════════════════════════════════════════ */
+
+    .order-form-grid,
+    .orders-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .orders-filter-row {
+        flex-direction: column !important;
+        align-items: stretch !important;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       PROGRAMS
+       ═══════════════════════════════════════════════════════ */
+
+    .programs-grid,
+    .program-detail-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       STUDY CARD
+       ═══════════════════════════════════════════════════════ */
+
+    .study-card-grid,
+    .study-card-summary {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       GRADEBOOK
+       ═══════════════════════════════════════════════════════ */
+
+    .gradebook-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .gradebook-table-wrapper {
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       CHANCELLERY
+       ═══════════════════════════════════════════════════════ */
+
+    .chancellery-grid,
+    .chancellery-form-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       FACULTY GRADEBOOK / SCHEDULE
+       ═══════════════════════════════════════════════════════ */
+
+    .faculty-gradebook-grid,
+    .faculty-schedule-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .faculty-gradebook-table-wrapper,
+    .faculty-schedule-table-wrapper {
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       GENERAL — Shared component overrides
+       ═══════════════════════════════════════════════════════ */
+
+    /* Hero titles */
+    .page-hero-title {
+        font-size: clamp(18px, 5.5vw, 28px) !important;
+        word-break: break-word !important;
+    }
+
+    .page-hero-copy {
+        font-size: 12px !important;
+        line-height: 1.5 !important;
+    }
+
+    .lux-page-kicker {
+        font-size: 10px !important;
+    }
+
+    /* Card bodies */
+    .lux-card-body {
+        padding: 16px !important;
+    }
+
+    .lux-card-head {
+        flex-direction: column !important;
+        gap: 10px !important;
+        align-items: flex-start !important;
+    }
+
+    .lux-card-title {
+        font-size: 14px !important;
+        word-break: break-word !important;
+    }
+
+    .lux-card-copy {
+        font-size: 12px !important;
+    }
+
+    /* Pill rows */
+    .lux-pill-row {
+        flex-wrap: wrap !important;
+        gap: 6px !important;
+    }
+
+    .lux-status-pill {
+        font-size: 10px !important;
+        padding: 4px 8px !important;
+    }
+
+    /* Buttons */
+    .lux-primary-btn,
+    .lux-secondary-btn,
+    .lux-ghost-btn {
+        min-height: 44px !important;
+        font-size: 12px !important;
+        padding: 10px 14px !important;
+    }
+
+    /* Form controls */
+    .lux-control,
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="number"],
+    input[type="search"],
+    input[type="date"],
+    input[type="time"],
+    select,
+    textarea {
+        min-height: 44px !important;
+        font-size: 14px !important;
+    }
+
+    /* Action buttons in rows */
+    .lux-actions-row {
+        flex-direction: column !important;
+        gap: 8px !important;
+        align-items: stretch !important;
+    }
+
+    .lux-actions-row > * {
+        width: 100% !important;
+    }
+
+    /* Strip grids */
+    .lux-strip-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* Utility panels */
+    .lux-utility-panel {
+        position: fixed !important;
+        top: var(--lux-topbar-height, 56px) !important;
+        right: 0 !important;
+        left: 0 !important;
+        width: 100% !important;
+        max-height: calc(100vh - var(--lux-topbar-height, 56px) - 64px) !important;
+        border-radius: 0 0 18px 18px !important;
+    }
+
+    /* Picker panels */
+    .lux-picker-panel {
+        position: fixed !important;
+        top: var(--lux-topbar-height, 56px) !important;
+        right: 0 !important;
+        left: 0 !important;
+        width: 100% !important;
+        max-height: 50vh !important;
+        overflow-y: auto !important;
+        border-radius: 0 0 18px 18px !important;
+    }
+
+    /* FABs: reposition above bottom nav */
+    .portal-notif-fab-stack {
+        left: 16px !important;
+        bottom: calc(72px + env(safe-area-inset-bottom, 0px)) !important;
+    }
+
+    .portal-msg-fab-stack {
+        left: 16px !important;
+        bottom: calc(136px + env(safe-area-inset-bottom, 0px)) !important;
+    }
+
+    /* Message/notification docks: full-width on mobile */
+    .portal-msg-page-shell,
+    .portal-msg-modal-window,
+    .portal-notif-modal-window {
+        width: calc(100vw - 16px) !important;
+        max-width: calc(100vw - 16px) !important;
+        right: 8px !important;
+        left: 8px !important;
+        bottom: calc(72px + env(safe-area-inset-bottom, 0px)) !important;
+        max-height: calc(100vh - 140px) !important;
+    }
+
+    /* Non-home page content padding for bottom nav */
+    body.lux-nonhome-page #app-content {
+        padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 80px) !important;
+    }
+
+    /* Ensure all images scale down */
+    img,
+    video {
+        max-width: 100% !important;
+        height: auto !important;
+    }
+
+    /* Prevent text overflow on long words */
+    h1, h2, h3, h4, h5, h6,
+    .lux-card-title,
+    .page-hero-title,
+    .lux-admin-tools-hero h1 {
+        overflow-wrap: break-word !important;
+        word-wrap: break-word !important;
+        hyphens: auto !important;
+    }
+}
+
+/* ─────────────────────────────────────────────────────────
+   §11  EXTRA-SMALL SCREENS ≤400px
+   Additional overrides for very small phones.
+   ───────────────────────────────────────────────────────── */
+
+@media (max-width: 400px) {
+
+    #app-content {
+        padding-left: 8px !important;
+        padding-right: 8px !important;
+    }
+
+    .lux-card-body {
+        padding: 12px !important;
+    }
+
+    .lux-stat-row {
+        grid-template-columns: 1fr !important;
+    }
+
+    .lux-quick-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .dashboard-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .sch-stat-grid,
+    .sch-action-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .social-story-rail {
+        grid-template-columns: 1fr !important;
+    }
+
+    .adlib-stat-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .page-hero-title,
+    .lux-hero h1 {
+        font-size: 18px !important;
+    }
+
+    .lux-breadcrumb {
+        max-width: 100px !important;
+        font-size: 11px !important;
+    }
+}

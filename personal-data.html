@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
+    <title>KIU - Student Portal</title>
+    <link rel="stylesheet" href="assets/vendor/fontawesome/css/all.min.css?v=1776604822068">
+    <link rel="stylesheet" href="assets/css/kiu-fonts.css?v=20260515-fonts1">
+    <link rel="stylesheet" href="assets/css/base.css?v=20260419-libsync1">
+    <link rel="stylesheet" href="assets/css/layout.css?v=1776604822068">
+    <link rel="stylesheet" href="assets/css/components.css?v=1776604822068">
+    <link rel="stylesheet" href="assets/css/index-luxury.css?v=20260503-personal-fade1">
+<link rel="stylesheet" href="assets/css/mobile-responsive.css?v=20260419-libsync1">
+    <script src="assets/js/theme-primer.js?v=20260419-flat5"></script>
+    <link rel="stylesheet" href="assets/css/personal-data-route.css?v=20260515-pdata-route1">
+
+</head>
+<body class="lux-unified-shell kiu-shell-loading lux-nonhome-page lux-route-personal-data">
+<!-- Navigation stubs (hidden, for JS compatibility) -->
+<nav id="prof-nav" aria-label="Professor navigation stub"></nav>
+<nav id="top-nav" aria-label="Top navigation stub"></nav>
+<nav id="admin-nav" aria-label="Admin navigation stub"></nav>
+
+    <!-- MAIN CONTENT -->
+    <main id="app-content">
+        <div id="page-personal-data" class="page-section active-page">
+            <section class="page-hero personal-data-hero">
+                <div class="personal-data-hero-copy">
+                    <div class="page-hero-kicker"><i class="far fa-id-card"></i> Personal Data</div>
+                    <div class="page-hero-title personal-data-hero-title">Official Student Record</div>
+                    <div class="page-hero-copy">A clean view of identity, enrollment, academic standing, and university record details used across the LMS.</div>
+                    <div class="page-hero-meta">
+                        <span class="page-hero-badge"><i class="far fa-user"></i> Identity</span>
+                        <span class="page-hero-badge"><i class="fas fa-chart-line"></i> Academic status</span>
+                        <span class="page-hero-badge"><i class="fas fa-shield-alt"></i> Enrollment record</span>
+                    </div>
+                </div>
+                <div class="personal-data-hero-panel">
+                    <span>Record source</span>
+                    <strong>University profile center</strong>
+                    <em>Synced with study card, registration, timetable, and academic history.</em>
+                </div>
+            </section>
+
+            <div class="filter-shell personal-data-toolbar">
+                <div class="personal-data-toolbar-row">
+                    <div class="personal-data-toolbar-copy">
+                        <div class="filter-shell-title"><i class="fas fa-graduation-cap"></i> Program Context</div>
+                        <p>Current academic program used for this record.</p>
+                    </div>
+                    <select id="program-context-select" aria-label="Program context"><option>Program</option></select>
+                    <div class="personal-data-toolbar-actions">
+                        <button type="button" class="lux-secondary-btn" data-personal-data-nav-target="study-card"><i class="far fa-address-card"></i> Study Card</button>
+                        <button type="button" class="lux-secondary-btn" data-personal-data-nav-target="registration"><i class="fas fa-check-square"></i> Registration</button>
+                        <button type="button" class="lux-primary-btn" data-personal-data-nav-target="timetable"><i class="fas fa-chalkboard"></i> Timetable</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="personal-data-layout">
+                <section class="profile-card surface-card personal-data-identity-card">
+                    <div class="personal-data-card-kicker"><i class="far fa-id-badge"></i> Identity</div>
+                    <div class="personal-data-profile-row">
+                        <div class="personal-data-avatar-shell">
+                            <img loading="lazy" id="personal-data-avatar" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" alt="Profile">
+                        </div>
+                        <div>
+                            <div id="personal-data-name" class="personal-data-name">Portal User</div>
+                            <div class="status-badge" id="personal-data-status">Active</div>
+                        </div>
+                    </div>
+                    <div id="personal-data-program" class="personal-data-card-copy">Loading...</div>
+                    <div class="personal-data-id-grid">
+                        <div class="personal-data-card-meta"><span>Student ID</span><strong id="personal-data-id">-</strong></div>
+                        <div class="personal-data-card-meta"><span>Record state</span><strong id="personal-data-record-state">-</strong></div>
+                    </div>
+                </section>
+
+                <section class="surface-card personal-data-stats-card">
+                    <div class="personal-data-section-head">
+                        <div class="personal-data-card-kicker"><i class="fas fa-chart-line"></i> Academic Snapshot</div>
+                        <div id="personal-data-level-heading" class="personal-data-level-heading">Loading...</div>
+                        <p class="personal-data-card-copy">Current academic progress and standing at a glance.</p>
+                    </div>
+                    <div class="kpi-row">
+                        <div class="kpi-box">
+                            <div class="personal-data-metric-icon"><i class="fas fa-layer-group"></i></div>
+                            <div>
+                                <div class="kpi-label">Semester</div>
+                                <div class="kpi-value" id="personal-data-kpi-semester">-</div>
+                            </div>
+                        </div>
+                        <div class="kpi-box">
+                            <div class="personal-data-metric-icon"><i class="fas fa-chart-simple"></i></div>
+                            <div>
+                                <div class="kpi-label">GPA</div>
+                                <div class="kpi-value" id="personal-data-kpi-gpa">-</div>
+                            </div>
+                        </div>
+                        <div class="kpi-box">
+                            <div class="personal-data-metric-icon"><i class="fas fa-award"></i></div>
+                            <div>
+                                <div class="kpi-label">ECTS</div>
+                                <div class="kpi-value" id="personal-data-kpi-ects">-</div>
+                            </div>
+                        </div>
+                        <div class="kpi-box">
+                            <div class="personal-data-metric-icon"><i class="fas fa-shield-alt"></i></div>
+                            <div>
+                                <div class="kpi-label">Standing</div>
+                                <div class="kpi-value" id="personal-data-kpi-average">-</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="surface-card personal-data-facts-card">
+                    <div class="personal-data-section-head">
+                        <div class="personal-data-card-kicker"><i class="fas fa-clipboard-list"></i> <span id="personal-data-records-title">Record Snapshot</span></div>
+                        <p class="personal-data-card-copy">Enrollment facts used by registration and student services.</p>
+                    </div>
+                    <div class="personal-data-record-grid">
+                        <article class="personal-data-mini">
+                            <span>Faculty</span>
+                            <strong id="personal-data-faculty">-</strong>
+                        </article>
+                        <article class="personal-data-mini">
+                            <span>Program</span>
+                            <strong id="personal-data-program-name">-</strong>
+                        </article>
+                        <article class="personal-data-mini">
+                            <span>Entry date</span>
+                            <strong id="personal-data-entry-date">-</strong>
+                        </article>
+                        <article class="personal-data-mini">
+                            <span>Current term</span>
+                            <strong id="personal-data-current-term">-</strong>
+                        </article>
+                        <article class="personal-data-mini">
+                            <span>Tuition hold</span>
+                            <strong id="personal-data-hold">-</strong>
+                        </article>
+                        <article class="personal-data-mini">
+                            <span>Probation</span>
+                            <strong id="personal-data-probation">-</strong>
+                        </article>
+                        <article class="personal-data-mini">
+                            <span>Course load</span>
+                            <strong id="personal-data-load">-</strong>
+                        </article>
+                    </div>
+                </section>
+
+                <section class="surface-card personal-data-record-card">
+                    <div class="personal-data-section-head">
+                        <div class="personal-data-card-kicker"><i class="fas fa-folder-open"></i> Academic Record</div>
+                        <p class="personal-data-card-copy">Detailed profile fields from the active university record.</p>
+                    </div>
+                    <div id="personal-data-records-body" class="personal-data-record-list">
+                        <div class="personal-data-record-item">
+                            <span class="personal-data-record-label">Loading</span>
+                            <span class="personal-data-record-value">Loading...</span>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </div>
+    </main>
+
+<script defer src="assets/js/app/app.js?v=20260426-reset3"></script>
+<script defer src="assets/js/app/api.js?v=20260426-sessionfix3"></script>
+<script defer src="assets/js/app/auth.js?v=20260429-authfix2"></script>
+<script defer src="assets/js/data/initial-state.js?v=1776604822068"></script>
+<script defer src="assets/js/app/state.js?v=20260429-statestackfix1"></script>
+<script defer src="assets/js/shared/utilities.js?v=20260504-transparency-refresh1"></script>
+<script defer src="assets/js/shared/faculty.js?v=20260429-peopleisolation1"></script>
+<script defer src="assets/js/pages/personal-data-page.js?v=20260515-pdata-page1"></script>
+<script defer src="assets/js/features/navigation.js?v=20260429-shellinit1"></script>
+<script defer src="assets/js/features/ui.js?v=20260429-peopleisolation1"></script>
+<script defer src="assets/js/features/index-luxury.js?v=20260504-transparency-refresh1"></script>
+<script defer src="assets/js/features/luxury-shell-chrome.js?v=20260518-luxshell1"></script>
+<script defer src="assets/js/features/luxury-home-model.js?v=20260518-luxhome1"></script>
+<!-- MOBILE BOTTOM NAVIGATION (v2) -->
+<nav id="mobile-bottom-nav" aria-label="Mobile navigation" style="display:none;">
+    <div class="mobile-nav-row">
+        <button class="mobile-nav-btn is-active" data-nav-target="home" type="button" id="mob-nav-home"><i class="fas fa-th-large"></i><span>Home</span></button>
+        <button class="mobile-nav-btn" type="button" id="mob-nav-messages" data-action="messages"><i class="fas fa-comment-dots"></i><span>Chat</span><em class="mob-badge" id="mob-badge-msg" style="display:none;">0</em></button>
+        <button class="mobile-nav-btn" type="button" id="mob-nav-notif" data-action="notifications"><i class="fas fa-bell"></i><span>Alerts</span><em class="mob-badge" id="mob-badge-notif" style="display:none;">0</em></button>
+        <button class="mobile-nav-btn" type="button" id="mob-nav-theme" data-action="theme"><i class="fas fa-palette"></i><span>Theme</span></button>
+        <button class="mobile-nav-btn" type="button" id="mob-nav-more" data-action="more"><i class="fas fa-grip-horizontal"></i><span>More</span></button>
+    </div>
+</nav>
+<div id="mobile-action-sheet" class="mob-sheet" style="display:none;" role="dialog" aria-modal="true">
+    <div class="mob-sheet-backdrop" id="mob-sheet-backdrop"></div>
+    <div class="mob-sheet-panel">
+        <div class="mob-sheet-handle"><span></span></div>
+        <div class="mob-sheet-section"><div class="mob-sheet-label">Quick Actions</div><div class="mob-sheet-grid">
+            <button class="mob-sheet-btn" id="mob-act-admin" type="button"><span class="mob-sheet-icon"><i class="fas fa-user-shield"></i></span><span>Admin View</span></button>
+            <button class="mob-sheet-btn" id="mob-act-theme" type="button"><span class="mob-sheet-icon"><i class="fas fa-palette"></i></span><span>Theme</span></button>
+            <button class="mob-sheet-btn" id="mob-act-profile" type="button"><span class="mob-sheet-icon"><i class="fas fa-user-circle"></i></span><span>Profile</span></button>
+            <button class="mob-sheet-btn" id="mob-act-lightmode" type="button"><span class="mob-sheet-icon"><i class="fas fa-sun"></i></span><span>Light Mode</span></button>
+        </div></div>
+        <!-- Dynamic role-aware navigation will be injected here -->
+        <div id="mob-sheet-dynamic-nav"></div>
+        <div class="mob-sheet-footer"><button class="mob-sheet-close-btn" id="mob-sheet-close" type="button"><i class="fas fa-times"></i> Close</button></div>
+    </div>
+</div>
+<script>
+function setupToolbar(){document.querySelectorAll('.personal-data-toolbar-actions [data-personal-data-nav-target]').forEach(function(b){b.addEventListener('click',function(e){e.preventDefault();var t=b.getAttribute('data-personal-data-nav-target');if(typeof window.navigate==='function')window.navigate(t)})})}
+document.addEventListener('DOMContentLoaded', setupToolbar, { once: true });
+window.__KIU_STANDALONE_MOBILE_SHELL_CONFIG = {
+    activeTarget: 'personal-data',
+    adminVisibleRoles: ['admin', 'student_service', 'professor', 'ta'],
+    navByRole: {
+        student: [
+            {
+                group: 'Core',
+                items: [['home', 'Dashboard', 'fas fa-th-large'], ['lms', 'LMS', 'fas fa-book-reader'], ['timetable', 'Timetable', 'fas fa-chalkboard'], ['registration', 'Registration', 'fas fa-check-square']]
+            },
+            {
+                group: 'Records',
+                items: [['programs', 'Programs', 'fas fa-file-signature'], ['study-card', 'Study Card', 'far fa-address-card'], ['personal-data', 'Personal Data', 'far fa-user'], ['gradebook', 'Gradebook', 'fas fa-chart-bar']]
+            },
+            {
+                group: 'Support',
+                items: [['chancellery', 'E-Chancellery', 'fas fa-desktop'], ['student-service', 'Student Service', 'fas fa-headset'], ['library', 'Library', 'fas fa-book'], ['social', 'Social', 'fas fa-comments']]
+            }
+        ],
+        professor: [
+            {
+                group: 'Faculty',
+                items: [['home', 'Dashboard', 'fas fa-th-large'], ['timetable', 'Schedule', 'fas fa-calendar-week'], ['lms', 'LMS', 'fas fa-book-reader'], ['faculty-gradebook', 'Gradebook', 'fas fa-chart-bar']]
+            },
+            {
+                group: 'Campus',
+                items: [['library', 'Library', 'fas fa-book'], ['orders', 'Orders', 'fas fa-book-open'], ['social', 'Social', 'fas fa-comments'], ['chancellery', 'Appeals', 'fas fa-inbox']]
+            }
+        ],
+        ta: [
+            {
+                group: 'Faculty',
+                items: [['home', 'Dashboard', 'fas fa-th-large'], ['timetable', 'Schedule', 'fas fa-calendar-week'], ['lms', 'LMS', 'fas fa-book-reader']]
+            },
+            {
+                group: 'Support',
+                items: [['library', 'Library', 'fas fa-book'], ['orders', 'Orders', 'fas fa-book-open'], ['social', 'Social', 'fas fa-comments'], ['chancellery', 'Appeals', 'fas fa-inbox']]
+            }
+        ],
+        admin: [
+            {
+                group: 'Control',
+                items: [['home', 'Dashboard', 'fas fa-hammer'], ['admin-tools', 'Admin Tools', 'fas fa-layer-group'], ['admin-scheduler', 'Scheduler', 'fas fa-calendar-plus'], ['staff', 'Staff', 'fas fa-users-cog'], ['students-admin', 'Students', 'fas fa-user-graduate']]
+            },
+            {
+                group: 'Systems',
+                items: [['library', 'Library', 'fas fa-book'], ['orders', 'Orders', 'fas fa-book-open'], ['social', 'Social', 'fas fa-comments']]
+            }
+        ],
+        student_service: [
+            {
+                group: 'Service',
+                items: [['home', 'Dashboard', 'fas fa-th-large'], ['student-service', 'Inbox', 'fas fa-inbox'], ['orders', 'Orders', 'fas fa-book-open'], ['library', 'Library', 'fas fa-book']]
+            },
+            {
+                group: 'Campus',
+                items: [['social', 'Social', 'fas fa-comments']]
+            }
+        ]
+    }
+};
+</script>
+<script defer src="assets/js/pages/standalone-mobile-shell.js?v=20260520-personal-data-mobile1"></script>
+</body>
+</html>
+
+
+
+
+
+
+

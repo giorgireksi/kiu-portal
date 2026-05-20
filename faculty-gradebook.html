@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
+    <title>KIU - Gradebook &amp; Assessment</title>
+    <link rel="stylesheet" href="assets/vendor/fontawesome/css/all.min.css?v=1776604822041">
+    <link rel="stylesheet" href="assets/css/kiu-fonts.css?v=20260515-fonts1">
+    <link rel="stylesheet" href="assets/css/base.css?v=20260419-libsync1">
+    <link rel="stylesheet" href="assets/css/layout.css?v=1776604822041">
+    <link rel="stylesheet" href="assets/css/components.css?v=1776604822041">
+    <link rel="stylesheet" href="assets/css/index-luxury.css?v=20260419-libsync1">
+<link rel="stylesheet" href="assets/css/mobile-responsive.css?v=20260419-libsync1">
+    <script src="assets/js/theme-primer.js?v=20260419-flat5"></script>
+</head>
+<body class="lux-unified-shell kiu-shell-loading lux-nonhome-page lux-route-faculty-gradebook">
+<!-- Navigation stubs (hidden, for JS compatibility) -->
+<nav id="prof-nav" aria-label="Professor navigation stub"></nav>
+<nav id="top-nav" aria-label="Top navigation stub"></nav>
+<nav id="admin-nav" aria-label="Admin navigation stub"></nav>
+
+    <!-- MAIN CONTENT -->
+    <main id="app-content">
+        <div id="page-faculty-gradebook" class="page-section active-page">
+            <div class="lux-page-shell lux-faculty-gradebook-page">
+                <section class="page-hero lux-faculty-hero">
+                    <div class="lux-faculty-hero-main">
+                        <div id="faculty-page-kicker" class="lux-page-kicker"><i class="fas fa-clipboard-check"></i> Assessment workspace</div>
+                        <div id="faculty-page-title" class="page-hero-title lux-page-title">Teaching Dashboard</div>
+                        <div id="faculty-page-copy" class="page-hero-copy lux-page-copy">Review teaching rosters, edit grades, track assessment submissions, and maintain a complete grade history without switching pages.</div>
+                        <div class="page-hero-meta">
+                            <span class="page-hero-badge"><i class="fas fa-users"></i> Roster management</span>
+                            <span class="page-hero-badge"><i class="fas fa-pen-to-square"></i> Grade editing &amp; history</span>
+                            <span class="page-hero-badge"><i class="fas fa-sync-alt"></i> Real-time synchronization</span>
+                        </div>
+                    </div>
+                    <aside class="lux-faculty-hero-focus">
+                        <div class="lux-faculty-focus-kicker" id="faculty-hero-focus-label">Teaching context</div>
+                        <div class="lux-faculty-focus-title" id="faculty-hero-focus-title">Loading teaching roles</div>
+                        <div class="lux-faculty-focus-copy" id="faculty-hero-focus-copy">Your teaching assignments and current faculty scope will appear here. Select a roster card to begin grading.</div>
+                        <div class="lux-faculty-focus-meta" id="faculty-hero-focus-meta">
+                            <span><i class="fas fa-chart-bar"></i> Assessment intelligence</span>
+                        </div>
+                    </aside>
+                </section>
+
+                <section class="surface-card lux-faculty-command">
+                    <div class="lux-faculty-command-head">
+                        <div>
+                            <div class="lux-card-title">Assessment Control Center</div>
+                            <p>Select a roster section below, choose an assessment criterion, and edit grades with full history tracking.</p>
+                        </div>
+                        <div class="lux-faculty-command-note" id="faculty-command-note">Grading workspace for teaching roles.</div>
+                    </div>
+
+                    <div class="lux-faculty-command-grid">
+                        <div class="filter-shell lux-faculty-filters" id="faculty-filters">
+                            <div class="filter-shell-title">Roster Filters</div>
+                            <div class="lux-field-stack">
+                                <label for="fs-filter-sem">Semester</label>
+                                <select id="fs-filter-sem" data-gradebook-roster-filter="1">
+                                    <option value="1">Semester 1</option><option value="2">Semester 2</option><option value="3" selected>Semester 3</option><option value="4">Semester 4</option>
+                                </select>
+                            </div>
+                            <div class="lux-field-stack only-admin">
+                                <label for="fs-filter-fac">Faculty</label>
+                                <select id="fs-filter-fac" data-gradebook-roster-filter="1">
+                                    <option value="ECON">Management &amp; Business</option>
+                                    <option value="CS">Computer Science</option>
+                                    <option value="LAW">Law</option>
+                                    <option value="MED">Medicine</option>
+                                    <option value="ARTS">Arts &amp; Humanities</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div id="faculty-assessment-controls" class="schedule-toolbar-host lux-faculty-controls">
+                            <div class="schedule-toolbar">
+                                <div class="schedule-week-nav">
+                                    <button type="button" class="lux-secondary-btn" data-gradebook-action="back" style="display:none;" id="faculty-back-btn" aria-label="Back to Roster">
+                                        <i class="fas fa-arrow-left"></i> Back to Roster
+                                    </button>
+                                    <button type="button" id="faculty-save-btn" class="lux-primary-btn" data-gradebook-action="save" style="display:none;">
+                                        <i class="fas fa-save"></i> Save Grades
+                                    </button>
+                                </div>
+                                <div class="schedule-overview-row">
+                                    <span id="faculty-overview-rosters" class="schedule-chip"><i class="fas fa-book"></i> 0 rosters</span>
+                                    <span id="faculty-overview-edited" class="schedule-chip"><i class="fas fa-pen-to-square"></i> 0 grades edited</span>
+                                    <span id="faculty-overview-saved" class="schedule-chip schedule-chip-soft"><i class="fas fa-check"></i> Ready to save</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="lux-faculty-insight-grid">
+                    <article class="surface-card lux-faculty-insight">
+                        <div class="lux-faculty-insight-label">Roster Status</div>
+                        <div class="lux-faculty-insight-value" id="faculty-insight-section">Preparing rosters</div>
+                        <p id="faculty-insight-section-copy">Active section, enrollment count, and last edited time will appear here.</p>
+                        <div class="lux-faculty-insight-list" id="faculty-insight-section-list">
+                            <span>Loading section info</span>
+                            <span>Loading student count</span>
+                            <span>Loading last update</span>
+                        </div>
+                    </article>
+                    <article class="surface-card lux-faculty-insight">
+                        <div class="lux-faculty-insight-label">Assessment State</div>
+                        <div class="lux-faculty-insight-value" id="faculty-insight-progress">Reading assessment state</div>
+                        <p id="faculty-insight-progress-copy">Entered assessments, completion rate, and pending reviews will appear here.</p>
+                        <div class="lux-faculty-insight-list" id="faculty-insight-progress-list">
+                            <span>Loading assessment count</span>
+                            <span>Loading completion %</span>
+                            <span>Loading pending count</span>
+                        </div>
+                    </article>
+                    <article class="surface-card lux-faculty-insight">
+                        <div class="lux-faculty-insight-label">Action Items</div>
+                        <div class="lux-faculty-insight-value" id="faculty-insight-next">Loading next actions</div>
+                        <p id="faculty-insight-next-copy">Pending edits, flagged students, and required submissions will appear here.</p>
+                        <div class="lux-faculty-insight-list" id="faculty-insight-next-list">
+                            <span>Loading pending edits</span>
+                            <span>Loading flagged records</span>
+                            <span>Loading submissions</span>
+                        </div>
+                    </article>
+                </section>
+
+                <section class="surface-card lux-faculty-stage">
+                    <div class="lux-faculty-stage-head">
+                        <div>
+                            <div class="lux-card-title">Grading Workspace</div>
+                            <p id="faculty-stage-copy">Select a roster card to open the grading spreadsheet view. Then choose an assessment criterion and edit student grades directly.</p>
+                        </div>
+                        <div class="lux-faculty-stage-status" id="faculty-stage-status">Roster view active</div>
+                    </div>
+                    <div id="faculty-master-container" class="lux-faculty-canvas">
+                        <!-- Roster selection and spreadsheet grading UI injected here -->
+                        <div class="lux-roster-view" id="lux-roster-view">
+                            <div id="gradebook-roster-selection"></div>
+                        </div>
+                        <div class="lux-spreadsheet-view" id="lux-spreadsheet-view" style="display:none;"></div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+<script defer src="assets/js/app/app.js?v=20260426-reset3"></script>
+<script defer src="assets/js/app/api.js?v=20260426-sessionfix3"></script>
+<script defer src="assets/js/app/auth.js?v=20260429-authfix2"></script>
+<script defer src="assets/js/data/initial-state.js?v=1776604822041"></script>
+<script defer src="assets/js/app/state.js?v=20260429-statestackfix1"></script>
+<script defer src="assets/js/shared/utilities.js?v=20260504-transparency-refresh1"></script>
+<script defer src="assets/js/shared/faculty.js?v=20260429-peopleisolation1"></script>
+<script defer src="assets/js/features/navigation.js?v=20260429-shellinit1"></script>
+<script defer src="assets/js/features/ui.js?v=20260429-peopleisolation1"></script>
+<script defer src="assets/js/features/index-luxury.js?v=20260504-transparency-refresh1"></script>
+<script defer src="assets/js/features/luxury-shell-chrome.js?v=20260518-luxshell1"></script>
+<script defer src="assets/js/features/luxury-home-model.js?v=20260518-luxhome1"></script>
+<script defer src="assets/js/pages/gradebook.js?v=20260430-lmsgrades1"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        if (typeof bindStandaloneGradebookShell === 'function') bindStandaloneGradebookShell();
+        if (typeof renderGradebookRosterSelection === 'function' && document.getElementById('gradebook-roster-selection')) renderGradebookRosterSelection();
+        if (typeof initGradebook === 'function' && document.getElementById('gradebook-body')) initGradebook();
+    });
+</script>
+<!-- MOBILE BOTTOM NAVIGATION (v2) -->
+<nav id="mobile-bottom-nav" aria-label="Mobile navigation" style="display:none;">
+    <div class="mobile-nav-row">
+        <button class="mobile-nav-btn is-active" data-nav-target="home" type="button" id="mob-nav-home"><i class="fas fa-th-large"></i><span>Home</span></button>
+        <button class="mobile-nav-btn" type="button" id="mob-nav-messages" data-action="messages"><i class="fas fa-comment-dots"></i><span>Chat</span><em class="mob-badge" id="mob-badge-msg" style="display:none;">0</em></button>
+        <button class="mobile-nav-btn" type="button" id="mob-nav-notif" data-action="notifications"><i class="fas fa-bell"></i><span>Alerts</span><em class="mob-badge" id="mob-badge-notif" style="display:none;">0</em></button>
+        <button class="mobile-nav-btn" type="button" id="mob-nav-theme" data-action="theme"><i class="fas fa-palette"></i><span>Theme</span></button>
+        <button class="mobile-nav-btn" type="button" id="mob-nav-more" data-action="more"><i class="fas fa-grip-horizontal"></i><span>More</span></button>
+    </div>
+</nav>
+<div id="mobile-action-sheet" class="mob-sheet" style="display:none;" role="dialog" aria-modal="true">
+    <div class="mob-sheet-backdrop" id="mob-sheet-backdrop"></div>
+    <div class="mob-sheet-panel">
+        <div class="mob-sheet-handle"><span></span></div>
+        <div class="mob-sheet-section"><div class="mob-sheet-label">Quick Actions</div><div class="mob-sheet-grid">
+            <button class="mob-sheet-btn" type="button" id="mob-act-admin"><span class="mob-sheet-icon"><i class="fas fa-user-shield"></i></span><span>Admin View</span></button>
+            <button class="mob-sheet-btn" type="button" id="mob-act-theme"><span class="mob-sheet-icon"><i class="fas fa-palette"></i></span><span>Theme</span></button>
+            <button class="mob-sheet-btn" type="button" id="mob-act-profile"><span class="mob-sheet-icon"><i class="fas fa-user-circle"></i></span><span>Profile</span></button>
+            <button class="mob-sheet-btn" type="button" id="mob-act-lightmode"><span class="mob-sheet-icon"><i class="fas fa-sun"></i></span><span>Light Mode</span></button>
+        </div></div>
+        <!-- Dynamic role-aware navigation will be injected here -->
+        <div id="mob-sheet-dynamic-nav"></div>
+        <div class="mob-sheet-footer"><button class="mob-sheet-close-btn" type="button" id="mob-sheet-close"><i class="fas fa-times"></i> Close</button></div>
+    </div>
+</div>
+<script>
+window.__KIU_STANDALONE_MOBILE_SHELL_CONFIG = {
+    activeTarget: 'faculty-gradebook',
+    adminVisibleRoles: ['admin', 'student_service', 'professor', 'ta'],
+    navByRole: {
+        student: [
+            {
+                group: 'Core',
+                items: [['home', 'Dashboard', 'fas fa-th-large'], ['lms', 'LMS', 'fas fa-book-reader'], ['timetable', 'Timetable', 'fas fa-chalkboard'], ['registration', 'Registration', 'fas fa-check-square']]
+            },
+            {
+                group: 'Records',
+                items: [['programs', 'Programs', 'fas fa-file-signature'], ['study-card', 'Study Card', 'far fa-address-card'], ['personal-data', 'Personal Data', 'far fa-user'], ['gradebook', 'Gradebook', 'fas fa-chart-bar']]
+            },
+            {
+                group: 'Support',
+                items: [['chancellery', 'E-Chancellery', 'fas fa-desktop'], ['student-service', 'Student Service', 'fas fa-headset'], ['library', 'Library', 'fas fa-book'], ['social', 'Social', 'fas fa-comments']]
+            }
+        ],
+        professor: [
+            {
+                group: 'Faculty',
+                items: [['home', 'Dashboard', 'fas fa-th-large'], ['timetable', 'Schedule', 'fas fa-calendar-week'], ['lms', 'LMS', 'fas fa-book-reader'], ['faculty-gradebook', 'Gradebook', 'fas fa-chart-bar']]
+            },
+            {
+                group: 'Campus',
+                items: [['library', 'Library', 'fas fa-book'], ['orders', 'Orders', 'fas fa-book-open'], ['social', 'Social', 'fas fa-comments'], ['chancellery', 'Appeals', 'fas fa-inbox']]
+            }
+        ],
+        ta: [
+            {
+                group: 'Faculty',
+                items: [['home', 'Dashboard', 'fas fa-th-large'], ['timetable', 'Schedule', 'fas fa-calendar-week'], ['lms', 'LMS', 'fas fa-book-reader']]
+            },
+            {
+                group: 'Support',
+                items: [['library', 'Library', 'fas fa-book'], ['orders', 'Orders', 'fas fa-book-open'], ['social', 'Social', 'fas fa-comments'], ['chancellery', 'Appeals', 'fas fa-inbox']]
+            }
+        ],
+        admin: [
+            {
+                group: 'Control',
+                items: [['home', 'Dashboard', 'fas fa-hammer'], ['admin-tools', 'Admin Tools', 'fas fa-layer-group'], ['admin-scheduler', 'Scheduler', 'fas fa-calendar-plus'], ['staff', 'Staff', 'fas fa-users-cog'], ['students-admin', 'Students', 'fas fa-user-graduate']]
+            },
+            {
+                group: 'Systems',
+                items: [['library', 'Library', 'fas fa-book'], ['orders', 'Orders', 'fas fa-book-open'], ['social', 'Social', 'fas fa-comments']]
+            }
+        ],
+        student_service: [
+            {
+                group: 'Service',
+                items: [['home', 'Dashboard', 'fas fa-th-large'], ['student-service', 'Inbox', 'fas fa-inbox'], ['orders', 'Orders', 'fas fa-book-open'], ['library', 'Library', 'fas fa-book']]
+            },
+            {
+                group: 'Campus',
+                items: [['social', 'Social', 'fas fa-comments']]
+            }
+        ]
+    }
+};
+</script>
+<script defer src="assets/js/pages/standalone-mobile-shell.js?v=20260520-faculty-gradebook-mobile1"></script>
+</body>
+</html>
+
+
+
+
+
+
+

@@ -1,0 +1,4 @@
+email,microsoft_oid,microsoft_tenant_id,display_name,account_type,faculty_code,student_number,employee_number,program_code,cohort_year,semester,status
+student.alpha@kiu.edu.ge,,,,student,BUS,STUDENT-001,,BBA-2025,2025,1,active
+professor.alpha@kiu.edu.ge,,,,professor,BUS,,EMP-001,,,active
+ta.alpha@kiu.edu.ge,,,,ta,BUS,,EMP-002,,,active

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>KIU Campus Social Network</title>
+    <meta name="description" content="Connect with fellow students, join study groups, share updates, and stay engaged with your campus community at KIU.">
+    <link rel="stylesheet" href="assets/vendor/fontawesome/css/all.min.css?v=1776604822083">
+    <link rel="stylesheet" href="assets/css/kiu-fonts.css?v=20260515-fonts1">
+    <link rel="stylesheet" href="assets/css/base.css?v=20260427-socialfix1">
+    <link rel="stylesheet" href="assets/css/layout.css?v=1776604822083">
+    <link rel="stylesheet" href="assets/css/components.css?v=1776604822083">
+    <link rel="stylesheet" href="assets/css/index-luxury.css?v=20260504-social-fade1">
+    <link rel="stylesheet" href="assets/css/mobile-responsive.css?v=20260427-socialfix1">
+    <script src="assets/js/theme-primer.js?v=20260419-flat5"></script>
+<link rel="stylesheet" href="assets/css/social-rebuild.css?v=20260510-social-ux100">
+</head>
+<body class="kiu-shell-loading lux-nonhome-page lux-route-social lux-unified-shell" data-faculty="ECON">
+<!-- Navigation stubs (hidden, for JS compatibility) -->
+<nav id="prof-nav" aria-label="Professor navigation stub"></nav>
+<nav id="top-nav" aria-label="Top navigation stub"></nav>
+<nav id="admin-nav" aria-label="Admin navigation stub"></nav>
+
+    <main id="app-content">
+        <div id="page-social" class="page-section active-page">
+            <div id="public-social-root">
+                <div id="social-neo-root" class="social-neo social-neo-facebook" data-panel="feed">
+                    <div id="social-neo-flash-region"></div>
+                    <div id="social-neo-topbar-region"></div>
+                    <div id="social-neo-command-region"></div>
+                    <div class="social-neo-shell">
+                        <div class="social-neo-center" id="social-neo-center-region">
+                            <section class="social-neo-card">
+                                <div class="social-neo-empty-hero">
+                                    <i class="fas fa-comments"></i>
+                                    <strong>Preparing campus social</strong>
+                                    <span>The live workspace shell is loading in place.</span>
+                                </div>
+                            </section>
+                        </div>
+                        <div id="social-neo-rail-region"></div>
+                    </div>
+                    <div id="social-neo-drawer-region"></div>
+                    <div id="social-neo-mobile-tab-region"></div>
+                    <div id="social-neo-toast-region"></div>
+                    <div id="social-neo-dialog-region"></div>
+                    <div id="social-neo-story-viewer-region"></div>
+                    <div id="social-neo-story-composer-region"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <nav id="mobile-bottom-nav" aria-label="Mobile navigation" style="display:none;">
+        <div class="mobile-nav-row">
+            <button class="mobile-nav-btn is-active" data-social-nav="home" data-social-panel="feed" type="button" id="mob-nav-home">
+                <i class="fas fa-house"></i>
+                <span>Home</span>
+            </button>
+            <button class="mobile-nav-btn" data-social-nav="community" data-social-panel="community" type="button" id="mob-nav-community">
+                <i class="fas fa-user-group"></i>
+                <span>Community</span>
+            </button>
+            <button class="mobile-nav-btn" data-social-nav="events" data-social-panel="events" type="button" id="mob-nav-events">
+                <i class="fas fa-calendar-days"></i>
+                <span>Events</span>
+            </button>
+<button class="mobile-nav-btn" data-social-nav="lost-and-found" data-social-panel="lost-and-found" type="button" id="mob-nav-lost-found">
+                <i class="fas fa-magnifying-glass-location"></i>
+                <span>Lost &amp; Found</span>
+            </button>
+            <button class="mobile-nav-btn" data-social-nav="inbox" type="button" id="mob-nav-inbox">
+                <i class="fas fa-inbox"></i>
+                <span>Inbox</span>
+                <em class="mob-badge" id="mob-badge-inbox" style="display:none;">0</em>
+            </button>
+            <button class="mobile-nav-btn" data-social-nav="more" type="button" id="mob-nav-more" data-action="more">
+                <i class="fas fa-grip-horizontal"></i>
+                <span>More</span>
+            </button>
+        </div>
+    </nav>
+
+    <div id="mobile-action-sheet" class="mob-sheet" style="display:none;" role="dialog" aria-modal="true" aria-label="Mobile quick actions">
+        <div class="mob-sheet-backdrop" id="mob-sheet-backdrop"></div>
+        <div class="mob-sheet-panel">
+            <div class="mob-sheet-handle"><span></span></div>
+            <div class="mob-sheet-section">
+                <div class="mob-sheet-label">Quick Actions</div>
+                <div class="mob-sheet-grid">
+                    <button class="mob-sheet-btn" id="mob-act-admin" type="button">
+                        <span class="mob-sheet-icon"><i class="fas fa-user-shield"></i></span>
+                        <span>Admin View</span>
+                    </button>
+                    <button class="mob-sheet-btn" id="mob-act-theme" type="button">
+                        <span class="mob-sheet-icon"><i class="fas fa-palette"></i></span>
+                        <span>Theme</span>
+                    </button>
+                    <button class="mob-sheet-btn" id="mob-act-profile" type="button">
+                        <span class="mob-sheet-icon"><i class="fas fa-user-circle"></i></span>
+                        <span>Profile</span>
+                    </button>
+                    <button class="mob-sheet-btn" id="mob-act-lightmode" type="button">
+                        <span class="mob-sheet-icon"><i class="fas fa-sun"></i></span>
+                        <span>Light Mode</span>
+                    </button>
+                </div>
+            </div>
+            <div id="mob-sheet-dynamic-nav"></div>
+            <div class="mob-sheet-footer">
+                <button class="mob-sheet-close-btn" id="mob-sheet-close" type="button">
+                    <i class="fas fa-times"></i>
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+<script defer src="assets/js/app/app.js?v=20260430-portfoliolux1"></script>
+    <script defer src="assets/js/app/api.js?v=20260426-sessionfix5"></script>
+<script defer src="assets/js/app/auth.js?v=20260429-authfix2"></script>
+<script defer src="assets/js/data/initial-state.js?v=20260429-lostfound3"></script>
+<script defer src="assets/js/app/state.js?v=20260430-portfoliolux1"></script>
+<script defer src="assets/js/shared/faculty-core.js?v=1776604822083"></script>
+<script defer src="assets/js/shared/utilities.js?v=20260510-social-ux100"></script>
+<script defer src="assets/js/features/navigation.js?v=20260429-shellinit1"></script>
+<script defer src="assets/js/features/index-luxury.js?v=20260504-transparency-refresh1"></script>
+<script defer src="assets/js/features/luxury-shell-chrome.js?v=20260518-luxshell1"></script>
+<script defer src="assets/js/features/luxury-home-model.js?v=20260518-luxhome1"></script>
+<script defer src="assets/js/pages/social-mobile.js?v=20260429-portfolio1"></script>
+<script defer src="assets/js/pages/social-page.js?v=20260510-social-ux100"></script>
+</body>
+</html>
+
+
+
+
+
+
+

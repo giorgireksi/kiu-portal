@@ -1,0 +1,72 @@
+version: "3.9"
+
+services:
+  portal-web:
+    image: nginx:1.27-alpine
+    container_name: kiu-portal-web
+    ports:
+      - "8080:80"
+    volumes:
+      - ./:/usr/share/nginx/html:ro
+      - ./infra/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - portal-backend
+
+  portal-backend:
+    image: node:22-alpine
+    container_name: kiu-portal-backend
+    working_dir: /app
+    command: ["node", "backend/platform/server.js"]
+    env_file:
+      - .env
+    ports:
+      - "47833:47833"
+    volumes:
+      - ./:/app
+      - portal_uploads:/app/kiu-realtime-bridge/uploads
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: kiu-portal-postgres
+    env_file:
+      - .env
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      - ./infra/postgres/init:/docker-entrypoint-initdb.d:ro
+
+  minio:
+    image: minio/minio:RELEASE.2026-03-30T00-00-00Z
+    container_name: kiu-portal-minio
+    command: server /data --console-address ":9001"
+    env_file:
+      - .env
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+
+  redis:
+    image: redis:7-alpine
+    container_name: kiu-portal-redis
+    ports:
+      - "6379:6379"
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+
+  coturn:
+    image: coturn/coturn:4.7
+    container_name: kiu-portal-coturn
+    network_mode: host
+    volumes:
+      - ./infra/coturn/turnserver.conf:/etc/coturn/turnserver.conf:ro
+    command: ["turnserver", "-c", "/etc/coturn/turnserver.conf"]
+
+volumes:
+  pg_data:
+  minio_data:
+  portal_uploads:
+  redis_data:

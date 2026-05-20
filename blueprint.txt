@@ -1,0 +1,230 @@
+I want you to act like a serious product + engineering planner for a real hosted software product.
+
+  First, understand the platform deeply before writing anything. Do not give generic advice. Inspect the actual
+  codebase, routes, modules, shared state, UI shell, storage/persistence model, tests, docs, specs, competitor notes,
+  and any existing roadmap or architecture files. You must ground the plan in the real current state of the product.
+
+  Your job is to create ONE SINGLE Markdown file only for this section of the product:
+
+  SECTION TO PLAN:
+  [PUT SECTION NAME HERE]
+  Examples:
+  - Dashboard
+  - CRM
+  - Settings
+  - Analytics
+  - Support Portal
+  - Documents
+  - Automations
+
+  PROJECT / PRODUCT CONTEXT:
+  [DESCRIBE THE PRODUCT BRIEFLY HERE]
+  Example:
+  “This is a business operating system for SMB teams. It includes tasks, projects, CRM, meetings, docs, invoicing,
+  support, automations, analytics, admin, and AI.”
+
+  IMPORTANT RULES:
+  - This is for a real hosted production product.
+  - No fake things.
+  - No demo-only things.
+  - No preview/proof/sample-workspace assumptions.
+  - No shallow filler tasks.
+  - No generic startup advice.
+  - No vague “improve UX” bullets without specifics.
+  - Everything must be serious, concrete, and buildable.
+  - The output must be useful for both human engineers and LLM coding agents.
+  - Everything must be in ONE `.md` file only.
+  - Do not split the plan into multiple files.
+  - The file should become the single source of truth for that section.
+
+  WHAT I WANT IN THE SINGLE MARKDOWN FILE:
+  Create a very high-quality master plan for this section. It must include all of the following:
+
+  1. Objective
+  - What this section should become.
+  - Why it matters in the product.
+
+  2. Scope
+  - Exact route(s), surface(s), and related systems this section touches.
+
+  3. Current Evidence Base
+  - List the actual files, routes, tests, docs, specs, and components you inspected.
+
+  4. Platform Context
+  - Explain how this section fits into the whole platform.
+  - Include dependencies like auth, permissions, notifications, search, offline/realtime, top bar, mobile shell,
+  integrations, shared links, analytics, etc. only if truly relevant.
+
+  5. Product Standard
+  - Based on the actual product vision/spec.
+  - Explain what this section must do in a great final product.
+
+  6. Competitor Bar To Beat
+  - Name the real competitor strengths relevant to this section.
+  - Explain exactly what must be better, not just “compete with X”.
+
+  7. Hard Truth: What Is Wrong Right Now
+  - Be brutally honest.
+  - Explain current weaknesses, fake/prototype debt, UX debt, data trust issues, architecture issues, route issues,
+  persistence issues, and product issues.
+
+  8. What Is Worth Keeping
+  - Do not rewrite everything blindly.
+  - Identify what is already strategically good and should be hardened.
+
+  9. What “Perfect” Means For This Section
+  - Define the final quality bar clearly.
+
+  10. Role-Based Questions This Section Must Answer
+  - If relevant, define what founders/operators/sales/support/etc. need from this section.
+
+  11. What I Would Actually Build
+  - Be opinionated.
+  - Say exactly what you would personally build if you were responsible for making this section excellent.
+  - This must not be generic.
+
+  12. Final Section Blueprint
+  - Describe the final ideal structure of the section.
+  - Example: top bar, summary layer, decision lane, detail layer, controls, deep context, etc.
+  - This must be specific to the section you are planning.
+
+  13. Final Widget / Panel / Surface Specification
+  - Define the final major pieces one by one.
+  - For each piece include:
+    - purpose
+    - placement
+    - required inputs
+    - required outputs
+    - states
+    - primary actions
+    - failure behavior
+    - permission behavior if relevant
+    - drill-down behavior if relevant
+
+  14. UI/UX Direction
+  - Make it humane, sharp, production-grade, and user-friendly.
+  - Cover:
+    - visual hierarchy
+    - interaction design
+    - information density
+    - empty states
+    - error states
+    - loading states
+    - mobile behavior
+    - accessibility
+  - Avoid vague advice.
+
+  15. Architecture Direction
+  - Explain how this section should be structured technically.
+  - Cover:
+    - route shell
+    - components
+    - data contracts
+    - persistence
+    - server vs local state
+    - permissions
+    - event/review state
+    - realtime/offline behavior
+    - testability
+
+  16. Cross-System Dependencies That Must Not Be Ignored
+  - Explain what outside systems can break this section if they are ignored.
+
+  17. Metric Contract Matrix
+  - For the critical metrics/outputs, define:
+    - metric name
+    - source of truth
+    - reporting period
+    - freshness expectation
+    - drill-down route
+    - stale/failure behavior
+
+  18. Section-By-Section Rewrite Plan
+  - For each current sub-surface, say:
+    - keep
+    - improve
+    - replace
+    - remove
+    - move elsewhere
+
+  19. Non-Negotiable Production Rules
+  - Hard rules for what must never ship.
+
+  20. Execution Rules For Engineers And LLMs
+  - Explain how implementation should be approached safely and clearly.
+
+  21. Task Quality Audit
+  - Judge whether the tasks are truly understandable or still too broad.
+  - Be honest.
+
+  22. How To Convert Master Tasks Into Buildable Tickets
+  - Explain the ticket template required before coding.
+
+  23. Is This Enough To Surpass Competitors?
+  - Give a brutally honest answer.
+  - Explain where this section can win.
+  - Explain where this section alone is not enough.
+
+  24. Expected Outcome If 100% Of The Plan Is Completed Well
+  - Explain how much better this section becomes in practical terms.
+
+  25. What Else Must Be True To Truly Surpass Competitors
+  - Mention surrounding product areas that must also be strong.
+
+  26. Granular Task Backlog
+  - Create a large detailed backlog.
+  - Every task must:
+    - have a stable task ID
+    - have one clear objective
+    - have a precise “Done when” clause
+  - Group tasks by epics/themes.
+  - Do not create vague tasks.
+
+  27. First 25 Build Tasks
+  - Convert the highest-priority work into smaller PR-sized tasks.
+  - These must be much more implementation-ready than the master backlog.
+
+  28. Suggested Implementation Order
+  - Give the best sequence.
+
+  29. Definition Of Done
+  - Define when this section can truly be called production-ready.
+
+  30. Hosted Human Usability Standard
+  - This is critical.
+  - Explain whether the final hosted version of this section will actually be good for real humans.
+  - Define exact user quality standards.
+
+  31. What Must Never Ship
+  - Hard no-go conditions.
+
+  32. Final Phase Plan
+  - Turn the work into phases like:
+    - kill prototype debt
+    - make it trustworthy
+    - make it useful in under 10 seconds
+    - integrate it with the platform shell
+    - make it hostable without excuses
+
+  33. If Time Or Budget Gets Tight
+  - Explain what to do first and what not to waste time on.
+
+  34. Final Recommendation
+  - End with your blunt final judgment.
+
+  OUTPUT REQUIREMENTS:
+  - Output must be a single Markdown file only.
+  - It must be specific to this project and section.
+  - It must read like a serious internal product/engineering master plan.
+  - It must be useful for both human coders and LLM agents.
+  - It must be opinionated, concrete, and unforgiving about fake/prototype quality.
+  - It must not be shallow.
+  - It must not be generic.
+  - It must not create multiple files.
+
+  QUALITY BAR:
+  I do not want something that only sounds smart.
+  I want something that would genuinely help build a production-grade section that can surpass competitors.
+
+  Before writing, inspect deeply.
+  Then write the final single-file Markdown plan.

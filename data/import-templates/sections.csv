@@ -1,0 +1,2 @@
+subject_code,subject_name,faculty_code,ects,term_code,section_code,session_type,professor_email,ta_email,seats_total,room_label,day_label,start_time,end_time
+ECON-S1-234,Principles of Economics,BUS,6,2026-SPRING,ECON-S1-234-G1,seminar,professor.alpha@kiu.edu.ge,ta.alpha@kiu.edu.ge,35,A101,Monday,09:00,10:50

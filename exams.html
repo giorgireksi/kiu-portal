@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
+    <title>KIU - Exams</title>
+    <link rel="stylesheet" href="assets/vendor/fontawesome/css/all.min.css?v=1776604822079">
+    <link rel="stylesheet" href="assets/css/kiu-fonts.css?v=20260515-fonts1">
+    <link rel="stylesheet" href="assets/css/base.css?v=20260419-libsync1">
+    <link rel="stylesheet" href="assets/css/layout.css?v=1776604822079">
+    <link rel="stylesheet" href="assets/css/components.css?v=1776604822079">
+    <link rel="stylesheet" href="assets/css/index-luxury.css?v=20260504-exams-fade1">
+    <link rel="stylesheet" href="assets/css/mobile-responsive.css?v=20260419-libsync1">
+    <link rel="stylesheet" href="assets/css/exam-studio.css?v=20260504-exams-fade1">
+    <script src="assets/js/theme-primer.js?v=20260419-flat5"></script>
+</head>
+<body class="lux-unified-shell kiu-shell-loading lux-nonhome-page lux-route-exams">
+<nav id="prof-nav" aria-label="Professor navigation stub"></nav>
+<nav id="top-nav" aria-label="Top navigation stub"></nav>
+<nav id="admin-nav" aria-label="Admin navigation stub"></nav>
+<nav id="service-nav" aria-label="Student service navigation stub"></nav>
+
+    <main id="app-content">
+        <div id="page-exams" class="page-section active-page">
+            <div id="admin-exams-root" class="exams-shell-root"></div>
+        </div>
+    </main>
+
+<script defer src="assets/js/app/app.js?v=20260426-reset3"></script>
+<script defer src="assets/js/app/api.js?v=20260426-sessionfix5"></script>
+<script defer src="assets/js/app/auth.js?v=20260429-authfix2"></script>
+    <script defer src="assets/js/data/initial-state.js?v=1776604822079"></script>
+<script defer src="assets/js/app/state.js?v=20260429-statestackfix1"></script>
+<script defer src="assets/js/shared/utilities.js?v=20260504-exams-fade1"></script>
+<script defer src="assets/js/shared/faculty.js?v=20260429-peopleisolation1"></script>
+<script defer src="assets/js/features/navigation.js?v=20260429-shellinit1"></script>
+<script defer src="assets/js/features/ui.js?v=20260429-peopleisolation1"></script>
+<script defer src="assets/js/features/index-luxury.js?v=20260504-transparency-refresh1"></script>
+<script defer src="assets/js/features/luxury-shell-chrome.js?v=20260518-luxshell1"></script>
+<script defer src="assets/js/features/luxury-home-model.js?v=20260518-luxhome1"></script>
+<script defer src="assets/js/pages/exams-console.js?v=20260504-exams-fade1"></script>
+<script>
+    (function initExamExportLibraryLoader() {
+        const exportSources = {
+            jspdf: 'assets/vendor/export-libs/jspdf.umd.min.js',
+            docx: 'assets/vendor/export-libs/docx.iife.js',
+            fileSaver: 'assets/vendor/export-libs/FileSaver.min.js'
+        };
+        const pendingLoads = {};
+        const isReady = {
+            jspdf: () => typeof window.jspdf !== 'undefined' || typeof window.jsPDF !== 'undefined',
+            docx: () => typeof window.docx !== 'undefined',
+            fileSaver: () => typeof window.saveAs === 'function'
+        };
+
+        function loadScriptOnce(key) {
+            if (isReady[key]?.()) return Promise.resolve();
+            if (pendingLoads[key]) return pendingLoads[key];
+            pendingLoads[key] = new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = exportSources[key];
+                script.async = true;
+                script.onload = () => resolve();
+                script.onerror = () => reject(new Error(`Could not load ${key} export library.`));
+                document.head.appendChild(script);
+            });
+            return pendingLoads[key];
+        }
+
+        window.ensureExamExportLibraries = function ensureExamExportLibraries(format) {
+            const normalized = String(format || '').toLowerCase();
+            if (normalized === 'pdf') return loadScriptOnce('jspdf');
+            if (normalized === 'docx') return Promise.all([loadScriptOnce('docx'), loadScriptOnce('fileSaver')]);
+            return Promise.resolve();
+        };
+    })();
+</script>
+
+<nav id="mobile-bottom-nav" aria-label="Mobile navigation" style="display:none;">
+    <div class="mobile-nav-row">
+        <button class="mobile-nav-btn" data-nav-target="home" type="button" id="mob-nav-home"><i class="fas fa-th-large"></i><span>Home</span></button>
+        <button class="mobile-nav-btn" type="button" id="mob-nav-messages" data-action="messages"><i class="fas fa-comment-dots"></i><span>Chat</span><em class="mob-badge" id="mob-badge-msg" style="display:none;">0</em></button>
+        <button class="mobile-nav-btn" type="button" id="mob-nav-notif" data-action="notifications"><i class="fas fa-bell"></i><span>Alerts</span><em class="mob-badge" id="mob-badge-notif" style="display:none;">0</em></button>
+        <button class="mobile-nav-btn" type="button" id="mob-nav-theme" data-action="theme"><i class="fas fa-palette"></i><span>Theme</span></button>
+        <button class="mobile-nav-btn is-active" type="button" id="mob-nav-more" data-action="more"><i class="fas fa-grip-horizontal"></i><span>More</span></button>
+    </div>
+</nav>
+<div id="mobile-action-sheet" class="mob-sheet" style="display:none;" role="dialog" aria-modal="true">
+    <div class="mob-sheet-backdrop" id="mob-sheet-backdrop"></div>
+    <div class="mob-sheet-panel">
+        <div class="mob-sheet-handle"><span></span></div>
+        <div class="mob-sheet-section"><div class="mob-sheet-label">Quick Actions</div><div class="mob-sheet-grid">
+            <button class="mob-sheet-btn" type="button" id="mob-act-admin"><span class="mob-sheet-icon"><i class="fas fa-user-shield"></i></span><span>Admin View</span></button>
+            <button class="mob-sheet-btn" type="button" id="mob-act-theme"><span class="mob-sheet-icon"><i class="fas fa-palette"></i></span><span>Theme</span></button>
+            <button class="mob-sheet-btn" type="button" id="mob-act-profile"><span class="mob-sheet-icon"><i class="fas fa-user-circle"></i></span><span>Profile</span></button>
+            <button class="mob-sheet-btn" type="button" id="mob-act-lightmode"><span class="mob-sheet-icon"><i class="fas fa-sun"></i></span><span>Light Mode</span></button>
+        </div></div>
+        <div id="mob-sheet-dynamic-nav"></div>
+        <div class="mob-sheet-footer"><button class="mob-sheet-close-btn" type="button" id="mob-sheet-close"><i class="fas fa-times"></i> Close</button></div>
+    </div>
+</div>
+<script>
+window.__KIU_STANDALONE_MOBILE_SHELL_CONFIG = {
+    activeTarget: 'exams',
+    adminVisibleRoles: ['admin', 'student_service', 'professor', 'ta'],
+    navByRole: {
+        student: [
+            {
+                group: 'Core',
+                items: [['home', 'Dashboard', 'fas fa-th-large'], ['news', 'News', 'fas fa-newspaper'], ['lms', 'LMS', 'fas fa-book-reader'], ['timetable', 'Timetable', 'fas fa-chalkboard']]
+            },
+            {
+                group: 'Records',
+                items: [['programs', 'Programs', 'fas fa-file-signature'], ['study-card', 'Study Card', 'far fa-address-card'], ['registration', 'Registration', 'fas fa-check-square'], ['gradebook', 'Gradebook', 'fas fa-chart-bar']]
+            }
+        ],
+        professor: [
+            {
+                group: 'Faculty',
+                items: [['home', 'Dashboard', 'fas fa-th-large'], ['news', 'News', 'fas fa-newspaper'], ['exams', 'Exams', 'fas fa-file-signature'], ['timetable', 'Schedule', 'fas fa-calendar-week']]
+            },
+            {
+                group: 'Campus',
+                items: [['lms', 'LMS', 'fas fa-book-reader'], ['faculty-gradebook', 'Gradebook', 'fas fa-chart-bar'], ['library', 'Library', 'fas fa-book'], ['orders', 'Orders', 'fas fa-book-open']]
+            }
+        ],
+        ta: [
+            {
+                group: 'Faculty',
+                items: [['home', 'Dashboard', 'fas fa-th-large'], ['news', 'News', 'fas fa-newspaper'], ['exams', 'Exams', 'fas fa-file-signature'], ['timetable', 'Schedule', 'fas fa-calendar-week']]
+            },
+            {
+                group: 'Campus',
+                items: [['lms', 'LMS', 'fas fa-book-reader'], ['library', 'Library', 'fas fa-book'], ['orders', 'Orders', 'fas fa-book-open'], ['social', 'Social', 'fas fa-comments']]
+            }
+        ],
+        admin: [
+            {
+                group: 'Control',
+                items: [['home', 'Dashboard', 'fas fa-hammer'], ['news', 'News', 'fas fa-newspaper'], ['exams', 'Exams', 'fas fa-file-signature'], ['admin-tools', 'Admin Tools', 'fas fa-layer-group']]
+            },
+            {
+                group: 'Systems',
+                items: [['admin-scheduler', 'Scheduler', 'fas fa-calendar-plus'], ['staff', 'Staff', 'fas fa-users-cog'], ['students-admin', 'Students', 'fas fa-user-graduate'], ['orders', 'Orders', 'fas fa-book-open']]
+            }
+        ],
+        student_service: [
+            {
+                group: 'Service',
+                items: [['home', 'Dashboard', 'fas fa-th-large'], ['news', 'News', 'fas fa-newspaper'], ['student-service', 'Inbox', 'fas fa-inbox'], ['orders', 'Orders', 'fas fa-book-open']]
+            },
+            {
+                group: 'Campus',
+                items: [['library', 'Library', 'fas fa-book'], ['social', 'Social', 'fas fa-comments']]
+            }
+        ]
+    }
+};
+</script>
+<script defer src="assets/js/pages/standalone-mobile-shell.js?v=20260520-exams-mobile1"></script>
+</body>
+</html>
+
+
+
+
+

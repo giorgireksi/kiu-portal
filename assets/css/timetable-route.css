@@ -1,0 +1,463 @@
+/* Studio modal styles extracted from inline styles */
+.studio-modal { display:none; max-width:400px; max-height:90vh; flex-direction:column; overflow:hidden; }
+.studio-header { background:linear-gradient(135deg,rgba(var(--lux-accent-rgb),0.24),rgba(9,13,22,0.96)); color:#fff; border-bottom:1px solid rgba(255,255,255,0.08); }
+.studio-header h3 { margin:0; font-size:17px; display:flex; align-items:center; gap:10px; font-weight:700; }
+.studio-header .modal-close { cursor:pointer; color:rgba(255,255,255,0.7); transition:color 0.2s; }
+.studio-header .modal-close:hover { color:#fff; }
+.studio-body { flex:1; overflow-y:auto; padding:22px; background:rgba(9,13,22,0.98); }
+.studio-section { margin-bottom:24px; }
+.studio-label { font-size:11px; color:var(--lux-text-muted,#888); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:14px; font-weight:800; display:flex; align-items:center; gap:8px; }
+.studio-palette-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.studio-swatch { border-radius:14px; overflow:hidden; height:72px; border:2px solid rgba(255,255,255,0.06); cursor:pointer; transition:all 0.25s ease; padding:0; }
+.studio-swatch:hover { border-color:rgba(var(--lux-accent-rgb),0.4); transform:translateY(-2px); box-shadow:0 8px 20px rgba(0,0,0,0.3); }
+.studio-swatch-inner { width:100%; height:100%; display:flex; align-items:center; justify-content:center; }
+.studio-swatch-inner span { color:#fff; font-weight:700; font-size:12px; text-shadow:0 2px 4px rgba(0,0,0,0.4); }
+.studio-mode-row { display:flex; gap:10px; }
+.studio-mode-btn { flex:1; padding:12px; border-radius:12px; border:1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.04); color:var(--lux-text,#fff); cursor:pointer; font-weight:700; font-size:13px; transition:all 0.22s; display:flex; align-items:center; justify-content:center; gap:8px; }
+.studio-mode-btn:hover { border-color:rgba(var(--lux-accent-rgb),0.3); background:rgba(var(--lux-accent-rgb),0.08); }
+.studio-panel { background:rgba(255,255,255,0.03); padding:16px; border-radius:14px; border:1px solid rgba(255,255,255,0.06); }
+.studio-slider-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+.studio-slider-row label { font-size:12px; color:var(--lux-text-muted,#aaa); font-weight:600; }
+.studio-val { font-size:11px; color:rgba(var(--lux-accent-rgb),0.9); font-weight:700; }
+.studio-range { width:100%; cursor:pointer; margin-bottom:6px; }
+.studio-hint-row { display:flex; justify-content:space-between; font-size:10px; color:rgba(255,255,255,0.3); margin-top:2px; }
+.studio-bg-stack { display:flex; flex-direction:column; gap:8px; }
+.studio-bg-btn { padding:12px 14px; border-radius:12px; border:1px solid rgba(255,255,255,0.06); background:rgba(255,255,255,0.03); color:var(--lux-text,#fff); cursor:pointer; text-align:left; transition:all 0.22s; width:100%; }
+.studio-bg-btn:hover { border-color:rgba(var(--lux-accent-rgb),0.3); background:rgba(var(--lux-accent-rgb),0.06); transform:translateY(-1px); }
+.studio-bg-btn .studio-bg-title { font-weight:700; font-size:13px; display:flex; align-items:center; gap:8px; }
+.studio-bg-btn .studio-bg-copy { font-size:11px; color:var(--lux-text-muted,#aaa); margin-top:4px; }
+.studio-slider-group { margin-bottom:14px; }
+.studio-preview { padding:12px; border-radius:10px; text-align:center; font-size:12px; color:#fff; font-weight:600; margin-bottom:12px; font-family:'DM Mono',monospace; }
+.studio-apply-btn { width:100%; padding:12px; background:linear-gradient(135deg,var(--lux-accent),var(--lux-accent-2,#c97e2c)); color:#fff; border:none; border-radius:12px; cursor:pointer; font-weight:700; font-size:13px; transition:all 0.22s; }
+.studio-apply-btn:hover { transform:translateY(-1px); box-shadow:0 8px 20px rgba(var(--lux-accent-rgb),0.3); }
+
+/* Timetable entrance animations */
+.lux-timetable-hero-main > * {
+    animation: tt-stagger 0.5s ease both;
+}
+.lux-timetable-hero-main > *:nth-child(1) { animation-delay: 0.05s; }
+.lux-timetable-hero-main > *:nth-child(2) { animation-delay: 0.12s; }
+.lux-timetable-hero-main > *:nth-child(3) { animation-delay: 0.20s; }
+.lux-timetable-hero-main > *:nth-child(4) { animation-delay: 0.28s; }
+.lux-timetable-hero-focus {
+    animation: tt-stagger 0.5s ease 0.2s both;
+}
+@keyframes tt-stagger {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.lux-timetable-insight {
+    animation: tt-card-in 0.4s ease both;
+}
+.lux-timetable-insight:nth-child(1) { animation-delay: 0.1s; }
+.lux-timetable-insight:nth-child(2) { animation-delay: 0.18s; }
+.lux-timetable-insight:nth-child(3) { animation-delay: 0.26s; }
+@keyframes tt-card-in {
+    from { opacity: 0; transform: translateY(16px) scale(0.97); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Timetable insight card hover */
+.lux-timetable-insight {
+    transition: transform 0.22s ease, box-shadow 0.22s ease;
+}
+.lux-timetable-insight:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 20px 44px rgba(0,0,0,0.24), 0 0 0 1px rgba(var(--lux-accent-rgb),0.12);
+}
+
+/* Timetable insight label icons */
+.lux-timetable-insight-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.lux-timetable-insight-label i {
+    font-size: 10px;
+    opacity: 0.7;
+}
+
+/* Timetable view switcher pill */
+body.lux-route-timetable .schedule-view-switcher {
+    position: relative;
+}
+body.lux-route-timetable .schedule-view-switcher-btn.is-active::after {
+    content: '';
+    position: absolute;
+    bottom: 4px;
+    left: 12px;
+    right: 12px;
+    height: 2px;
+    border-radius: 2px;
+    background: linear-gradient(90deg, var(--lux-accent), var(--lux-accent-2, #c97e2c));
+    animation: tt-tab-slide 0.28s ease;
+}
+@keyframes tt-tab-slide {
+    from { transform: scaleX(0); opacity: 0; }
+    to { transform: scaleX(1); opacity: 1; }
+}
+
+/* Timetable week arrow polish */
+body.lux-route-timetable .schedule-week-arrow {
+    transition: all 0.2s ease;
+}
+body.lux-route-timetable .schedule-week-arrow:hover {
+    transform: translateY(-2px) scale(1.05);
+}
+body.lux-route-timetable .schedule-week-arrow:active {
+    transform: translateY(0) scale(0.97);
+    transition-duration: 0.08s;
+}
+
+/* Timetable overview chips */
+body.lux-route-timetable .schedule-chip {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+body.lux-route-timetable .schedule-chip:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 18px rgba(0,0,0,0.18);
+}
+
+/* Timetable canvas fade-in */
+.lux-timetable-stage {
+    animation: tt-stagger 0.5s ease 0.35s both;
+}
+
+/* Timetable schedule event hover */
+body.lux-route-timetable .sch-event {
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+body.lux-route-timetable .sch-event:hover {
+    transform: translateY(-2px) scale(1.01);
+    box-shadow: 0 22px 42px rgba(0,0,0,0.32), 0 0 0 1px rgba(var(--lux-accent-rgb),0.14) !important;
+    z-index: 10;
+}
+
+/* Timetable body copy */
+body.lux-route-timetable .lux-timetable-focus-copy,
+body.lux-route-timetable .lux-timetable-command-head p {
+    line-height: 1.65;
+}
+
+.timetable-stage-status-dot {
+    font-size: 6px;
+    color: #10b981;
+    vertical-align: middle;
+    margin-right: 4px;
+}
+body.lux-route-timetable .lux-timetable-hero {
+    display: grid;
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+    align-items: stretch;
+    padding: 16px 22px !important;
+}
+body.lux-route-timetable .lux-timetable-hero-top {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(300px, 0.75fr);
+    gap: 18px;
+    align-items: stretch;
+    width: 100%;
+}
+body.lux-route-timetable .lux-timetable-hero-focus {
+    padding: 12px 16px !important;
+    min-height: 0 !important;
+}
+body.lux-route-timetable .lux-timetable-focus-title {
+    font-size: clamp(16px, 1.25vw, 20px) !important;
+    line-height: 1.12;
+}
+body.lux-route-timetable .lux-timetable-focus-copy {
+    font-size: 12px !important;
+    line-height: 1.35 !important;
+    margin-top: 6px !important;
+}
+body.lux-route-timetable .lux-timetable-focus-meta {
+    margin-top: 8px !important;
+}
+body.lux-route-timetable .lux-timetable-command {
+    width: 100%;
+    max-width: none;
+    min-height: 0 !important;
+    height: auto !important;
+    padding: 22px 26px 26px !important;
+    border-radius: 20px;
+    background: rgba(255,255,255,0.045);
+    border: 1px solid rgba(255,255,255,0.08);
+    box-shadow: none;
+}
+body.lux-route-timetable .lux-timetable-command-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 22px;
+}
+body.lux-route-timetable .lux-timetable-command-note {
+    flex: 0 0 auto;
+    padding: 12px 24px;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,0.14);
+    background: rgba(255,255,255,0.03);
+    font-size: 13px;
+    font-weight: 850;
+    letter-spacing: 0.04em;
+}
+body.lux-route-timetable .lux-timetable-command-grid {
+    display: grid;
+    grid-template-columns: minmax(230px, 285px) minmax(0, 1fr);
+    align-items: start !important;
+    gap: 28px;
+    min-height: 0 !important;
+}
+body.lux-route-timetable .lux-timetable-filters {
+    min-height: 0 !important;
+    height: 270px !important;
+    align-self: start !important;
+    max-width: 285px;
+    padding: 18px 18px !important;
+    border-radius: 16px;
+}
+body.lux-route-timetable .lux-timetable-filters .lux-field-stack {
+    gap: 10px;
+    margin-top: 34px;
+}
+body.lux-route-timetable .lux-timetable-filters select {
+    min-height: 50px !important;
+    height: 50px !important;
+    padding: 10px 16px !important;
+    border-radius: 14px !important;
+    font-size: 14px !important;
+}
+body.lux-route-timetable .lux-timetable-controls {
+    display: grid;
+    grid-template-columns: minmax(360px, 1fr) minmax(240px, 300px);
+    grid-template-areas:
+        "view next"
+        "chips next"
+        "week next";
+    gap: 18px 36px;
+    min-width: 0;
+    overflow: visible;
+    align-content: start;
+    align-items: start;
+}
+body.lux-route-timetable #timetable-schedule-controls,
+body.lux-route-timetable .schedule-toolbar,
+body.lux-route-timetable .schedule-view-row,
+body.lux-route-timetable .schedule-week-nav {
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+body.lux-route-timetable .schedule-toolbar,
+body.lux-route-timetable .schedule-view-row,
+body.lux-route-timetable .schedule-week-nav {
+    min-width: 0;
+    max-width: 100%;
+}
+body.lux-route-timetable .schedule-week-nav {
+    flex-wrap: wrap;
+}
+body.lux-route-timetable .schedule-view-row {
+    grid-area: view;
+}
+body.lux-route-timetable .schedule-toolbar {
+    display: contents !important;
+}
+body.lux-route-timetable .schedule-toolbar > .schedule-week-nav {
+    grid-area: week;
+}
+body.lux-route-timetable .schedule-toolbar > .schedule-overview-row {
+    grid-area: chips;
+}
+body.lux-route-timetable .schedule-toolbar > .lux-timetable-next-compact {
+    grid-area: next;
+}
+body.lux-route-timetable .schedule-view-switcher,
+body.lux-route-timetable .schedule-view-row,
+body.lux-route-timetable .schedule-week-nav {
+    width: 100% !important;
+    max-width: 100% !important;
+    justify-self: start !important;
+    align-self: flex-start !important;
+    flex: 0 0 auto !important;
+}
+body.lux-route-timetable .schedule-view-switcher {
+    width: 355px !important;
+    max-width: 100% !important;
+    min-height: 66px;
+    padding: 7px !important;
+    border-radius: 15px;
+}
+body.lux-route-timetable .schedule-view-switcher-btn {
+    min-height: 52px !important;
+    padding: 0 22px !important;
+    border-radius: 12px !important;
+    font-size: 14px !important;
+    gap: 10px;
+}
+body.lux-route-timetable .schedule-week-nav {
+    display: grid !important;
+    grid-template-columns: 56px minmax(0, 1fr) 56px;
+    grid-template-areas:
+        "prev label next"
+        ". current .";
+    align-items: center;
+    gap: 4px 18px;
+    min-height: 98px;
+    padding: 18px 34px !important;
+    border: 1px solid var(--lux-border) !important;
+    border-radius: 16px;
+    background: rgba(255,255,255,0.025) !important;
+}
+body.lux-route-timetable .schedule-week-nav .schedule-week-arrow:first-child {
+    grid-area: prev;
+}
+body.lux-route-timetable .schedule-week-nav .schedule-week-arrow:nth-of-type(2) {
+    grid-area: next;
+}
+body.lux-route-timetable .schedule-week-arrow {
+    width: 42px !important;
+    height: 42px !important;
+    border-radius: 12px !important;
+}
+body.lux-route-timetable .schedule-week-label {
+    grid-area: label;
+    flex: 0 0 auto !important;
+    width: auto !important;
+    min-width: 0 !important;
+    justify-self: center;
+    font-size: 18px !important;
+    font-weight: 900 !important;
+    text-align: center;
+}
+body.lux-route-timetable .schedule-current-week-btn {
+    grid-area: current;
+    justify-self: center;
+    min-height: 0 !important;
+    height: auto !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    color: var(--lux-accent) !important;
+    box-shadow: none !important;
+    font-size: 12px !important;
+    font-weight: 850 !important;
+}
+body.lux-route-timetable .schedule-overview-row {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: start !important;
+    gap: 0;
+    min-height: 92px;
+    padding: 20px 24px !important;
+    border: 1px solid var(--lux-border);
+    border-radius: 16px;
+    background: rgba(255,255,255,0.025);
+}
+body.lux-route-timetable .schedule-overview-row .schedule-chip {
+    min-height: 54px !important;
+    height: 54px !important;
+    max-height: 54px !important;
+    padding: 8px 14px !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    white-space: normal;
+    text-align: center;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    font-size: 13px !important;
+    gap: 12px;
+}
+body.lux-route-timetable .schedule-overview-row .schedule-chip:not(:last-child) {
+    border-right: 1px solid rgba(255,255,255,0.14) !important;
+}
+body.lux-route-timetable .schedule-overview-row .schedule-chip i {
+    font-size: 26px;
+    color: var(--lux-accent);
+}
+body.lux-route-timetable .lux-timetable-next-compact {
+    padding: 26px 24px !important;
+    border-radius: 16px;
+    border: 1px solid var(--lux-border);
+    background: var(--lux-surface);
+    display: grid;
+    gap: 13px;
+    min-width: 0;
+    min-height: 300px;
+    max-width: 300px;
+    align-self: start;
+}
+body.lux-route-timetable .lux-timetable-next-compact .lux-timetable-insight-label {
+    font-size: 11px;
+    font-weight: 850;
+    color: var(--lux-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+}
+body.lux-route-timetable .lux-timetable-next-compact .lux-timetable-insight-value {
+    font-size: 21px;
+    font-weight: 850;
+    color: var(--lux-text);
+    line-height: 1.1;
+}
+body.lux-route-timetable .lux-timetable-next-compact p {
+    margin: 0;
+    color: var(--lux-text-muted);
+    font-size: 13px;
+    line-height: 1.35;
+}
+body.lux-route-timetable .lux-timetable-next-compact .lux-timetable-insight-list {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+body.lux-route-timetable .lux-timetable-next-compact .lux-timetable-insight-list span {
+    min-height: 34px;
+    padding: 8px 12px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 750;
+}
+html.lux-light-mode body.lux-route-timetable .lux-timetable-stage,
+body.lux-light-mode.lux-route-timetable .lux-timetable-stage {
+    background: #ffffff !important;
+    border-color: rgba(35,45,64,0.12) !important;
+    box-shadow: 0 18px 40px rgba(31,41,55,0.08) !important;
+}
+html.lux-light-mode body.lux-route-timetable .lux-timetable-canvas,
+body.lux-light-mode.lux-route-timetable .lux-timetable-canvas {
+    background: #ffffff !important;
+}
+html.lux-light-mode body.lux-route-timetable :is(.sch-day-card,.sch-day-column,.sch-list-day,.sch-grid-day),
+body.lux-light-mode.lux-route-timetable :is(.sch-day-card,.sch-day-column,.sch-list-day,.sch-grid-day) {
+    background: #ffffff !important;
+}
+@media (max-width: 980px) {
+    body.lux-route-timetable .lux-timetable-hero-top,
+    body.lux-route-timetable .lux-timetable-command-grid {
+        grid-template-columns: 1fr;
+    }
+    body.lux-route-timetable .lux-timetable-filters {
+        max-width: none;
+    }
+    body.lux-route-timetable .lux-timetable-controls {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+            "view"
+            "week"
+            "chips"
+            "next";
+    }
+    body.lux-route-timetable .lux-timetable-next-compact {
+        max-width: none;
+    }
+    body.lux-route-timetable .schedule-overview-row {
+        grid-template-columns: 1fr;
+    }
+}

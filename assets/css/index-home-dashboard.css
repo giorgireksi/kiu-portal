@@ -1,0 +1,1293 @@
+/* Route-owned home dashboard and builder styles extracted from index-luxury.css. */
+
+#page-home.page-section {
+    max-width: none;
+    width: 100%;
+    margin: 0;
+}
+
+#lux-home-shell {
+    margin-bottom: 24px;
+    width: 100%;
+}
+
+#page-home.page-section,
+#page-home.page-section>#lux-home-shell,
+#page-home.page-section>#lux-home-shell>.lux-home-grid,
+#page-home.page-section>#lux-home-shell>.lux-home-grid--builder,
+#page-home.page-section .lux-home-workbench,
+#page-home.page-section .lux-dashboard-canvas.is-desktop {
+    max-width: none;
+    width: 100%;
+}
+
+#page-home.page-section>#lux-home-shell>.lux-home-grid--builder[data-editing="true"],
+#page-home.page-section>#lux-home-shell>.lux-home-grid--builder[data-editing="true"] .lux-home-workbench,
+#page-home.page-section>#lux-home-shell>.lux-home-grid--builder[data-editing="true"] .lux-dashboard-canvas.is-desktop {
+    width: 100% !important;
+    max-width: none !important;
+    min-width: 100% !important;
+}
+
+#page-home.page-section>#lux-home-shell>.lux-home-grid--builder[data-editing="true"] {
+    overflow: visible;
+}
+
+#page-home> :not(#lux-home-shell) {
+    display: none !important;
+}
+
+.lux-home-grid {
+    display: grid;
+    gap: 16px;
+}
+
+.lux-home-grid {
+    gap: 18px;
+}
+
+.lux-home-grid.is-student .lux-hero,
+.lux-home-grid.is-student .lux-strip-card,
+.lux-home-grid.is-student .lux-quick-btn {
+    background-image:
+        linear-gradient(180deg, rgba(255, 255, 255, calc(var(--lux-raised-alpha) + 0.01)), rgba(255, 255, 255, var(--lux-glass-alpha))),
+        radial-gradient(circle at top right, rgba(215, 170, 86, calc(0.08 + var(--lux-card-glow-alpha))), transparent 34%);
+}
+
+.lux-home-grid.is-professor .lux-hero,
+.lux-home-grid.is-professor .lux-strip-card,
+.lux-home-grid.is-professor .lux-quick-btn {
+    background-image:
+        linear-gradient(180deg, rgba(255, 255, 255, var(--lux-raised-alpha)), rgba(255, 255, 255, var(--lux-glass-alpha))),
+        radial-gradient(circle at top right, rgba(var(--lux-accent-rgb), calc(0.08 + var(--lux-card-glow-alpha))), transparent 34%);
+}
+
+.lux-home-grid.is-ta .lux-hero,
+.lux-home-grid.is-ta .lux-strip-card,
+.lux-home-grid.is-ta .lux-quick-btn {
+    background-image:
+        linear-gradient(180deg, rgba(255, 255, 255, var(--lux-raised-alpha)), rgba(255, 255, 255, var(--lux-glass-alpha))),
+        radial-gradient(circle at top right, rgba(72, 191, 134, calc(0.07 + var(--lux-card-glow-alpha))), transparent 34%);
+}
+
+.lux-home-grid.is-admin .lux-hero,
+.lux-home-grid.is-admin .lux-strip-card,
+.lux-home-grid.is-admin .lux-quick-btn {
+    background-image:
+        linear-gradient(180deg, rgba(255, 255, 255, var(--lux-raised-alpha)), rgba(255, 255, 255, var(--lux-glass-alpha))),
+        radial-gradient(circle at top right, rgba(var(--lux-accent-rgb), calc(0.05 + var(--lux-card-glow-alpha))), transparent 30%);
+}
+
+.lux-home-grid.is-student_service .lux-hero,
+.lux-home-grid.is-student_service .lux-strip-card,
+.lux-home-grid.is-student_service .lux-quick-btn {
+    background-image:
+        linear-gradient(180deg, rgba(255, 255, 255, var(--lux-raised-alpha)), rgba(255, 255, 255, var(--lux-glass-alpha))),
+        radial-gradient(circle at top right, rgba(72, 191, 134, calc(0.07 + var(--lux-card-glow-alpha))), transparent 34%);
+}
+
+#lux-home-shell {
+    display: grid;
+    gap: 18px;
+}
+
+.lux-home-grid {
+    display: grid;
+    gap: 18px;
+}
+
+.lux-home-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 16px;
+    padding: 4px 4px 2px;
+}
+
+.lux-home-toolbar strong {
+    display: block;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 28px;
+    line-height: 1.02;
+    color: var(--lux-text);
+}
+
+.lux-home-toolbar p {
+    margin: 8px 0 0;
+    max-width: 720px;
+    font-size: 13px;
+    line-height: 1.65;
+    color: var(--lux-text-muted);
+}
+
+.lux-home-toolbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.lux-home-toolbar-note {
+    font-size: 11px;
+    line-height: 1.5;
+    color: var(--lux-text-soft);
+}
+
+.lux-dashboard-canvas {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 18px;
+    align-items: start;
+}
+
+.lux-widget-shell {
+    grid-column: span var(--lux-widget-span);
+    min-width: 0;
+    display: grid;
+    gap: 10px;
+}
+
+.lux-widget-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 12px;
+    border-radius: 18px;
+    border: 1px dashed rgba(var(--lux-accent-rgb), 0.32);
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(16px);
+}
+
+.lux-widget-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--lux-text-soft);
+}
+
+.lux-widget-grab,
+.lux-widget-size,
+.lux-widget-remove {
+    border: none;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+}
+
+.lux-widget-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.lux-widget-size {
+    width: 28px;
+    height: 28px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.04);
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--lux-text-muted);
+}
+
+.lux-widget-size.is-active,
+.lux-widget-size:hover,
+.lux-widget-remove:hover {
+    color: var(--lux-text);
+    border-color: rgba(var(--lux-accent-rgb), 0.34);
+    background: rgba(var(--lux-accent-rgb), 0.12);
+}
+
+.lux-widget-remove {
+    width: 30px;
+    height: 30px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.lux-widget-shell.is-drop-target .lux-widget-body {
+    outline: 1px dashed rgba(var(--lux-accent-rgb), 0.44);
+    outline-offset: 8px;
+}
+
+.lux-widget-shell.is-dragging {
+    opacity: 0.64;
+}
+
+.lux-widget-body {
+    min-width: 0;
+}
+
+.lux-widget-shell.is-shortcut .lux-widget-body .lux-quick-btn {
+    height: 100%;
+}
+
+.lux-home-grid.is-editing {
+    grid-template-columns: minmax(0, 1fr) 340px;
+    align-items: start;
+}
+
+.lux-home-editor-panel {
+    position: sticky;
+    top: 96px;
+    display: grid;
+    gap: 16px;
+    align-self: start;
+}
+
+.lux-editor-card {
+    padding: 18px;
+}
+
+.lux-editor-copy,
+.lux-editor-empty {
+    font-size: 12px;
+    line-height: 1.6;
+    color: var(--lux-text-muted);
+}
+
+.lux-editor-chip-grid,
+.lux-editor-reset-grid,
+.lux-reset-grid {
+    display: grid;
+    gap: 10px;
+}
+
+.lux-editor-chip {
+    text-align: left;
+}
+
+.lux-reset-grid .lux-control-btn,
+.lux-editor-chip {
+    width: 100%;
+    text-align: left;
+}
+
+.lux-editor-chip strong {
+    display: block;
+    margin-bottom: 4px;
+}
+
+.lux-editor-field {
+    display: grid;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.lux-editor-field span {
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--lux-text-soft);
+}
+
+.lux-editor-field input,
+.lux-editor-field select {
+    width: 100%;
+    min-height: 44px;
+    padding: 0 14px;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--lux-text);
+    outline: none;
+}
+
+.lux-editor-field-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.lux-dashboard-section {
+    padding: 18px;
+}
+
+.lux-quick-grid--embedded {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
+@media (max-width:1420px) {
+    .lux-home-grid.is-editing {
+        grid-template-columns: 1fr;
+    }
+
+    .lux-home-editor-panel {
+        position: static;
+    }
+}
+
+@media (max-width:1200px) {
+    .lux-quick-grid--embedded {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width:980px) {
+    .lux-dashboard-canvas {
+        grid-template-columns: 1fr;
+    }
+
+    .lux-widget-shell {
+        grid-column: 1 / -1;
+    }
+
+    .lux-editor-field-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .lux-quick-grid--embedded {
+        grid-template-columns: 1fr;
+    }
+}
+
+.lux-home-grid--builder {
+    width: 100%;
+    gap: 26px;
+}
+
+.lux-home-toolbar--builder {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 18px;
+}
+
+.lux-home-toolbar-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.lux-home-workbench {
+    position: relative;
+    display: block;
+}
+
+.lux-dashboard-canvas {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    grid-auto-rows: var(--lux-grid-row-height);
+    gap: 18px;
+    align-items: start;
+}
+
+.lux-dashboard-canvas.is-stacked {
+    grid-template-columns: 1fr;
+    grid-auto-rows: auto;
+}
+
+.lux-dashboard-canvas.is-desktop {
+    display: block;
+    position: relative;
+}
+
+.lux-dashboard-canvas.is-desktop .lux-grid-widget {
+    position: absolute;
+    will-change: left, top, width, height, transform;
+    touch-action: none;
+}
+
+.lux-dashboard-canvas.is-editing {
+    padding: 6px;
+    border-radius: 28px;
+    background:
+        linear-gradient(180deg, rgba(var(--lux-glass-tint-rgb), 0.06), rgba(var(--lux-glass-tint-rgb), 0.03));
+    outline: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.lux-dashboard-canvas.is-desktop .lux-grid-widget {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.lux-dashboard-canvas.is-desktop .lux-grid-widget-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    height: auto;
+    overflow: auto;
+}
+
+.lux-dashboard-canvas.is-desktop .lux-grid-widget-body>* {
+    height: auto;
+    min-height: 0;
+}
+
+.lux-dashboard-canvas.is-desktop .lux-panel,
+.lux-dashboard-canvas.is-desktop .lux-card,
+.lux-dashboard-canvas.is-desktop .lux-builder-card,
+.lux-dashboard-canvas.is-desktop .lux-builder-section,
+.lux-dashboard-canvas.is-desktop .lux-builder-hero,
+.lux-dashboard-canvas.is-desktop .lux-dashboard-section,
+.lux-dashboard-canvas.is-desktop .lux-hero,
+.lux-dashboard-canvas.is-desktop .lux-hero-side,
+.lux-dashboard-canvas.is-desktop .lux-strip-card,
+.lux-dashboard-canvas.is-desktop .lux-widget-minimized-card {
+    min-height: 0 !important;
+    height: auto !important;
+}
+
+.lux-grid-widget {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+    border-radius: 26px;
+    overflow: visible;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+.lux-grid-widget:hover {
+    transform: translateY(-2px);
+    box-shadow:
+        0 24px 48px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08),
+        0 0 0 1px rgba(var(--lux-bg-glow-rgb), 0.05);
+}
+
+.lux-dashboard-canvas.is-editing .lux-grid-widget:hover {
+    transform: none;
+    box-shadow:
+        0 18px 38px rgba(0, 0, 0, 0.18),
+        inset 0 1px 0 rgba(255, 255, 255, 0.06),
+        0 0 0 1px rgba(var(--lux-bg-glow-rgb), 0.04);
+}
+
+body.lux-dashboard-gesture-active,
+body.lux-dashboard-gesture-active * {
+    user-select: none !important;
+    -webkit-user-select: none !important;
+}
+
+body.lux-dashboard-gesture-active .lux-dashboard-canvas.is-editing .lux-grid-widget {
+    transition: none !important;
+}
+
+body.lux-dashboard-gesture-active .lux-dashboard-canvas.is-editing .lux-grid-widget:hover,
+.lux-dashboard-canvas.is-editing .lux-grid-widget.is-live-moving {
+    box-shadow:
+        0 16px 34px rgba(0, 0, 0, 0.18),
+        inset 0 1px 0 rgba(255, 255, 255, 0.06),
+        0 0 0 2px rgba(var(--lux-accent-rgb), 0.28);
+}
+
+.lux-grid-widget.is-selected {
+    box-shadow:
+        0 28px 58px rgba(0, 0, 0, 0.24),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1),
+        0 0 0 2px rgba(var(--lux-accent-rgb), 0.34),
+        0 0 32px rgba(var(--lux-bg-glow-rgb), 0.14);
+}
+
+.lux-dashboard-canvas.is-editing .lux-grid-widget.is-selected {
+    box-shadow:
+        0 26px 54px rgba(0, 0, 0, 0.22),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08),
+        0 0 0 2px rgba(var(--lux-accent-rgb), 0.32),
+        0 0 28px rgba(var(--lux-bg-glow-rgb), 0.12);
+}
+
+.lux-grid-widget.is-overlapping {
+    outline: 1px solid rgba(255, 177, 79, 0.36);
+    outline-offset: 1px;
+}
+
+.lux-dashboard-canvas.is-editing .lux-grid-widget.is-overlapping {
+    box-shadow:
+        0 18px 38px rgba(0, 0, 0, 0.18),
+        inset 0 1px 0 rgba(255, 255, 255, 0.06),
+        0 0 0 2px rgba(255, 177, 79, 0.32),
+        0 0 28px rgba(255, 177, 79, 0.18);
+}
+
+.lux-grid-widget-body,
+.lux-grid-widget-body>* {
+    min-height: 0;
+}
+
+.lux-grid-widget-body {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: auto;
+    overflow-y: scroll;
+}
+
+.lux-grid-widget-body>* {
+    height: auto;
+}
+
+.lux-grid-widget.is-minimized .lux-grid-widget-body {
+    min-height: 0;
+    overflow: hidden;
+}
+
+.lux-widget-minimized-card {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 18px;
+}
+
+.lux-widget-minimized-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 15px;
+    display: grid;
+    place-items: center;
+    background: rgba(var(--lux-accent-rgb), 0.18);
+    color: var(--lux-text);
+    flex-shrink: 0;
+}
+
+.lux-widget-minimized-copy {
+    min-width: 0;
+    flex: 1 1 auto;
+}
+
+.lux-widget-minimized-copy strong {
+    display: block;
+    font-size: 14px;
+    line-height: 1.2;
+}
+
+.lux-widget-minimized-copy span {
+    display: block;
+    margin-top: 4px;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--lux-text-soft);
+}
+
+.lux-grid-widget.is-ghost-source {
+    opacity: 0.42;
+}
+
+.lux-grid-widget.is-live-moving {
+    opacity: 0.96;
+    cursor: grabbing;
+    pointer-events: none;
+}
+
+.lux-widget-overlap-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 28px;
+    height: 28px;
+    display: grid;
+    place-items: center;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 177, 79, 0.5);
+    background: linear-gradient(180deg, rgba(255, 177, 79, 0.22), rgba(255, 177, 79, 0.12));
+    color: #ffd28d;
+    font-size: 15px;
+    line-height: 1;
+    box-shadow:
+        0 12px 28px rgba(0, 0, 0, 0.22),
+        0 0 18px rgba(255, 177, 79, 0.16);
+    z-index: 12;
+    pointer-events: none;
+}
+
+.lux-widget-toolbar--builder {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 14px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    cursor: grab;
+    user-select: none;
+    touch-action: none;
+}
+
+.lux-widget-toolbar-copy {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+    cursor: grab;
+    user-select: none;
+    touch-action: none;
+}
+
+.lux-widget-toolbar-copy strong {
+    display: block;
+    font-size: 12px;
+    line-height: 1.2;
+}
+
+.lux-widget-toolbar-copy span {
+    display: block;
+    margin-top: 3px;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--lux-text-soft);
+}
+
+.lux-widget-toolbar-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+.lux-widget-size-btn,
+.lux-widget-move-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(var(--lux-glass-tint-rgb), 0.22);
+    color: var(--lux-text);
+    display: grid;
+    place-items: center;
+}
+
+.lux-widget-size-btn--labelled {
+    width: auto;
+    min-width: 44px;
+    padding: 0 12px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.lux-widget-size-btn.is-active,
+.lux-widget-size-btn--labelled.is-active {
+    background: rgba(var(--lux-accent-rgb), 0.28);
+    border-color: rgba(var(--lux-accent-rgb), 0.5);
+    box-shadow: 0 12px 28px rgba(var(--lux-bg-glow-rgb), 0.16);
+}
+
+.lux-widget-resize-handle {
+    position: absolute;
+    width: 34px;
+    height: 34px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(var(--lux-accent-rgb), 0.22);
+    color: var(--lux-text);
+    display: grid;
+    place-items: center;
+    z-index: 5;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    box-shadow: 0 12px 28px rgba(var(--lux-bg-glow-rgb), 0.16);
+}
+
+.lux-widget-resize-handle--east {
+    top: 50%;
+    right: -12px;
+    transform: translateY(-50%);
+    cursor: ew-resize;
+}
+
+.lux-widget-resize-handle--west {
+    top: 50%;
+    left: -12px;
+    transform: translateY(-50%);
+    cursor: ew-resize;
+}
+
+.lux-widget-resize-handle--north {
+    left: 50%;
+    top: -12px;
+    transform: translateX(-50%);
+    cursor: ns-resize;
+}
+
+.lux-widget-resize-handle--south {
+    left: 50%;
+    bottom: -12px;
+    transform: translateX(-50%);
+    cursor: ns-resize;
+}
+
+.lux-widget-resize-handle--corner {
+    right: -12px;
+    bottom: -12px;
+    cursor: nwse-resize;
+}
+
+.lux-widget-guide {
+    pointer-events: none;
+    position: absolute;
+    border-radius: 24px;
+    border: 2px dashed rgba(var(--lux-accent-rgb), 0.84);
+    background:
+        linear-gradient(180deg, rgba(var(--lux-accent-rgb), 0.16), rgba(var(--lux-accent-rgb), 0.08)),
+        rgba(var(--lux-bg-glow-rgb), 0.08);
+    box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.05),
+        0 0 44px rgba(var(--lux-bg-glow-rgb), 0.28),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    z-index: 7;
+    display: none;
+    overflow: visible;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+}
+
+.lux-widget-guide.is-visible {
+    display: block;
+}
+
+.lux-widget-guide-origin,
+.lux-widget-guide-dot {
+    position: absolute;
+    border-radius: 999px;
+    pointer-events: none;
+}
+
+.lux-widget-guide-origin {
+    width: 10px;
+    height: 10px;
+    top: 12px;
+    left: 12px;
+    background: rgba(var(--lux-accent-rgb), 0.96);
+    box-shadow:
+        0 0 0 5px rgba(var(--lux-accent-rgb), 0.18),
+        0 0 18px rgba(var(--lux-bg-glow-rgb), 0.34);
+}
+
+.lux-widget-guide-dot {
+    width: 14px;
+    height: 14px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(255, 255, 255, 0.98);
+    box-shadow:
+        0 0 0 8px rgba(var(--lux-accent-rgb), 0.18),
+        0 0 30px rgba(var(--lux-bg-glow-rgb), 0.34);
+    animation: luxGuidePulse 1.15s ease-in-out infinite;
+}
+
+.lux-widget-guide-label {
+    position: absolute;
+    top: -14px;
+    right: 18px;
+    padding: 7px 12px;
+    border-radius: 999px;
+    border: 1px solid rgba(var(--lux-accent-rgb), 0.4);
+    background: rgba(var(--lux-glass-tint-rgb), 0.92);
+    color: var(--lux-text);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    box-shadow:
+        0 14px 30px rgba(0, 0, 0, 0.24),
+        0 0 22px rgba(var(--lux-bg-glow-rgb), 0.18);
+    white-space: nowrap;
+}
+
+@keyframes luxGuidePulse {
+
+    0%,
+    100% {
+        transform: translate(-50%, -50%) scale(1);
+        box-shadow:
+            0 0 0 8px rgba(var(--lux-accent-rgb), 0.18),
+            0 0 30px rgba(var(--lux-bg-glow-rgb), 0.34);
+    }
+
+    50% {
+        transform: translate(-50%, -50%) scale(1.16);
+        box-shadow:
+            0 0 0 12px rgba(var(--lux-accent-rgb), 0.12),
+            0 0 38px rgba(var(--lux-bg-glow-rgb), 0.42);
+    }
+}
+
+.lux-builder-card,
+.lux-builder-section,
+.lux-builder-hero {
+    height: 100%;
+}
+
+.lux-dashboard-canvas.is-editing .lux-grid-widget {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.lux-dashboard-canvas.is-editing .lux-grid-widget-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    height: auto;
+    overflow: auto;
+}
+
+.lux-dashboard-canvas.is-editing .lux-grid-widget-body>* {
+    height: auto;
+    min-height: 0;
+}
+
+.lux-dashboard-canvas.is-editing .lux-panel,
+.lux-dashboard-canvas.is-editing .lux-card,
+.lux-dashboard-canvas.is-editing .lux-builder-card,
+.lux-dashboard-canvas.is-editing .lux-builder-section,
+.lux-dashboard-canvas.is-editing .lux-builder-hero,
+.lux-dashboard-canvas.is-editing .lux-dashboard-section,
+.lux-dashboard-canvas.is-editing .lux-hero,
+.lux-dashboard-canvas.is-editing .lux-hero-side,
+.lux-dashboard-canvas.is-editing .lux-strip-card,
+.lux-dashboard-canvas.is-editing .lux-widget-minimized-card {
+    min-height: 0 !important;
+    height: auto !important;
+}
+
+.lux-builder-copy {
+    margin-top: 4px;
+    font-size: 12px;
+    line-height: 1.55;
+    color: var(--lux-text-muted);
+}
+
+.lux-builder-card-foot {
+    margin-top: 16px;
+}
+
+.lux-shortcut-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+
+.lux-shortcut-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 16px;
+    display: grid;
+    place-items: center;
+    background: rgba(var(--lux-accent-rgb), 0.18);
+    color: var(--lux-text);
+    box-shadow: 0 16px 24px rgba(var(--lux-bg-glow-rgb), 0.14);
+}
+
+.lux-shortcut-body {
+    margin-top: 18px;
+}
+
+.lux-shortcut-body strong {
+    display: block;
+    font-size: 18px;
+    line-height: 1.2;
+}
+
+.lux-shortcut-body p {
+    margin: 10px 0 0;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--lux-text-muted);
+}
+
+.lux-shortcut-foot {
+    margin-top: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.lux-shortcut-status {
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--lux-text-soft);
+}
+
+.lux-home-editor-panel--builder {
+    position: fixed;
+    top: 128px;
+    right: 24px;
+    width: min(360px, calc(100vw - 40px));
+    max-height: calc(100vh - 152px);
+    overflow: hidden;
+    display: grid;
+    gap: 0;
+    z-index: 42;
+    border-radius: 28px;
+}
+
+.lux-home-editor-panel--builder.is-floating {
+    right: auto;
+}
+
+.lux-home-editor-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 14px 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(var(--lux-glass-tint-rgb), 0.2);
+    cursor: grab;
+    user-select: none;
+    touch-action: none;
+}
+
+.lux-home-editor-header-copy strong {
+    display: block;
+    font-size: 13px;
+}
+
+.lux-home-editor-header-copy span {
+    display: block;
+    margin-top: 4px;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--lux-text-soft);
+}
+
+.lux-home-editor-header-actions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.lux-home-editor-body {
+    max-height: calc(100vh - 212px);
+    overflow: auto;
+    display: grid;
+    gap: 18px;
+    padding: 18px;
+}
+
+.lux-home-editor-chip {
+    position: fixed;
+    z-index: 42;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: linear-gradient(180deg, rgba(var(--lux-glass-tint-rgb), 0.3), rgba(var(--lux-glass-tint-rgb), 0.16));
+    color: var(--lux-text);
+    box-shadow:
+        0 18px 36px rgba(0, 0, 0, 0.24),
+        0 0 0 1px rgba(var(--lux-bg-glow-rgb), 0.06);
+    backdrop-filter: blur(calc(var(--lux-glass-blur) + 2px)) saturate(150%);
+    -webkit-backdrop-filter: blur(calc(var(--lux-glass-blur) + 2px)) saturate(150%);
+}
+
+.lux-home-editor-chip i {
+    color: rgb(var(--lux-accent-rgb));
+}
+
+.lux-editor-card--size {
+    position: relative;
+}
+
+.lux-editor-size-card-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 14px;
+}
+
+.lux-editor-size-card-head strong {
+    display: block;
+    font-size: 15px;
+    line-height: 1.2;
+}
+
+.lux-editor-size-card-head span {
+    display: block;
+    margin-top: 6px;
+    font-size: 12px;
+    line-height: 1.55;
+    color: var(--lux-text-muted);
+}
+
+.lux-editor-size-badge {
+    flex-shrink: 0;
+    padding: 7px 12px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(var(--lux-accent-rgb), 0.12);
+    color: var(--lux-text-soft);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.lux-editor-size-actions {
+    margin-top: 16px;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.lux-editor-size-axis {
+    margin-top: 16px;
+    display: grid;
+    gap: 10px;
+}
+
+.lux-editor-size-axis-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.lux-editor-size-axis-head span {
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--lux-text-soft);
+}
+
+.lux-editor-size-axis-head strong {
+    font-size: 12px;
+    color: var(--lux-text);
+}
+
+.lux-editor-size-choice-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.lux-editor-size-choice {
+    min-width: 42px;
+    height: 34px;
+    padding: 0 12px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(var(--lux-glass-tint-rgb), 0.18);
+    color: var(--lux-text);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+}
+
+.lux-editor-size-choice.is-active {
+    background: rgba(var(--lux-accent-rgb), 0.26);
+    border-color: rgba(var(--lux-accent-rgb), 0.52);
+    color: var(--lux-text);
+    box-shadow: 0 12px 24px rgba(var(--lux-bg-glow-rgb), 0.16);
+}
+
+.lux-editor-size-note {
+    margin-top: 14px;
+    font-size: 11px;
+    line-height: 1.6;
+    color: var(--lux-text-soft);
+}
+
+.lux-editor-library-grid,
+.lux-editor-reset-grid,
+.lux-editor-mobile-list {
+    display: grid;
+    gap: 10px;
+}
+
+.lux-home-grid--builder[data-editing="false"] .lux-home-workbench {
+    display: block;
+}
+
+.lux-home-grid--builder[data-editing="true"] .lux-dashboard-canvas.is-desktop {
+    width: 100%;
+    min-height: calc(100vh - 210px);
+}
+
+.lux-editor-library-item {
+    padding: 14px 16px;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    text-align: left;
+    background: rgba(var(--lux-glass-tint-rgb), 0.2);
+    color: var(--lux-text);
+}
+
+.lux-editor-library-item--restore {
+    border-style: dashed;
+}
+
+.lux-editor-library-item strong,
+.lux-editor-mobile-copy strong {
+    display: block;
+    font-size: 13px;
+}
+
+.lux-editor-library-item span,
+.lux-editor-mobile-copy span,
+.lux-editor-empty {
+    display: block;
+    margin-top: 6px;
+    font-size: 12px;
+    line-height: 1.55;
+    color: var(--lux-text-muted);
+}
+
+.lux-editor-mobile-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 14px;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(var(--lux-glass-tint-rgb), 0.16);
+}
+
+.lux-editor-mobile-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+.lux-editor-mobile-actions button {
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(var(--lux-glass-tint-rgb), 0.22);
+    color: var(--lux-text);
+}
+
+.lux-colour-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.lux-colour-control {
+    display: grid;
+    gap: 8px;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--lux-text-soft);
+}
+
+.lux-colour-control input[type="color"] {
+    width: 100%;
+    height: 44px;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    padding: 4px;
+    background: rgba(var(--lux-glass-tint-rgb), 0.22);
+}
+
+.lux-mix-preview--advanced {
+    margin-top: 14px;
+}
+
+body.lux-light-mode #lux-topbar .lux-search input,
+body.lux-light-mode #lux-topbar .lux-picker-btn,
+body.lux-light-mode #lux-topbar .lux-topbar-editor-btn,
+
+@media (max-width:1420px) {
+    .lux-home-workbench {
+        grid-template-columns: 1fr;
+    }
+
+    .lux-home-editor-panel--builder {
+        position: static;
+        width: auto;
+        max-height: none;
+    }
+
+    .lux-home-editor-body {
+        max-height: none;
+    }
+}
+
+@media (max-width:980px) {
+    .lux-home-toolbar--builder {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .lux-home-toolbar-actions {
+        width: 100%;
+    }
+
+    .lux-home-toolbar-actions>* {
+        flex: 1 1 auto;
+    }
+
+    .lux-colour-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Dashboard view fades: big home widgets across student,
+staff,
+service,
+and admin dashboard views. */
+body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell .lux-home-toolbar,
+body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell .lux-home-grid > .lux-panel,
+body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell .lux-home-grid > .lux-card,
+body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell .lux-home-grid > .lux-hero,
+body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell .lux-dashboard-canvas .lux-grid-widget,
+body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell .lux-grid-widget > .lux-grid-widget-body > .lux-dashboard-section,
+body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell .lux-grid-widget > .lux-grid-widget-body > .lux-panel,
+body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell .lux-grid-widget > .lux-grid-widget-body > .lux-card,
+body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell .lux-grid-widget > .lux-grid-widget-body > .lux-hero {
+    background:
+        radial-gradient(circle at 6% 0%, rgba(255, 255, 255, calc(var(--lux-color-fade-alpha, .92) * .08)), transparent 32%),
+        radial-gradient(circle at 74% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .28)), transparent 42%),
+        radial-gradient(circle at 100% 96%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .92) * .18)), transparent 40%),
+        linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .10)), rgba(10, 15, 24, calc(var(--lux-transparency-alpha, .92) * .89)) 44%, rgba(7, 10, 18, calc(var(--lux-transparency-alpha, .92) * .80))) !important;
+    border-color: rgba(var(--lux-accent-rgb), 0.22) !important;
+    box-shadow:
+        0 24px 58px rgba(0, 0, 0, 0.24),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08),
+        0 0 0 1px rgba(var(--lux-accent-rgb), 0.04) !important;
+    backdrop-filter: blur(var(--lux-transparency-blur, 20px)) saturate(var(--lux-transparency-saturate, 145%)) !important;
+    -webkit-backdrop-filter: blur(var(--lux-transparency-blur, 20px)) saturate(var(--lux-transparency-saturate, 145%)) !important;
+}
+
+body.lux-light-mode.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell .lux-home-toolbar,
+body.lux-light-mode.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell .lux-home-grid > .lux-panel,
+body.lux-light-mode.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell .lux-home-grid > .lux-card,
+body.lux-light-mode.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell .lux-home-grid > .lux-hero,
+body.lux-light-mode.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell .lux-dashboard-canvas .lux-grid-widget,
+body.lux-light-mode.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell .lux-grid-widget > .lux-grid-widget-body > .lux-dashboard-section,
+body.lux-light-mode.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell .lux-grid-widget > .lux-grid-widget-body > .lux-panel,
+body.lux-light-mode.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell .lux-grid-widget > .lux-grid-widget-body > .lux-card,
+body.lux-light-mode.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell .lux-grid-widget > .lux-grid-widget-body > .lux-hero,
+html.lux-light-mode body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell .lux-home-toolbar,
+html.lux-light-mode body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell .lux-home-grid > .lux-panel,
+html.lux-light-mode body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell .lux-home-grid > .lux-card,
+html.lux-light-mode body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell .lux-home-grid > .lux-hero,
+html.lux-light-mode body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell .lux-dashboard-canvas .lux-grid-widget,
+html.lux-light-mode body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell .lux-grid-widget > .lux-grid-widget-body > .lux-dashboard-section,
+html.lux-light-mode body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell .lux-grid-widget > .lux-grid-widget-body > .lux-panel,
+html.lux-light-mode body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell .lux-grid-widget > .lux-grid-widget-body > .lux-card,
+html.lux-light-mode body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell .lux-grid-widget > .lux-grid-widget-body > .lux-hero {
+    background:
+        radial-gradient(circle at 6% 0%, rgba(255, 255, 255, calc(var(--lux-color-fade-alpha, .86) * .88)), transparent 34%),
+        radial-gradient(circle at 74% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .24)), transparent 42%),
+        radial-gradient(circle at 100% 96%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .86) * .14)), transparent 40%),
+        linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .065)), rgba(255, 255, 255, calc(var(--lux-transparency-alpha, .86) * .84)) 44%, rgba(247, 241, 232, calc(var(--lux-transparency-alpha, .86) * .70))) !important;
+    border-color: rgba(var(--lux-accent-rgb), 0.16) !important;
+}

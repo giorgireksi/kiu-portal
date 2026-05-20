@@ -1,0 +1,602 @@
+/* Admin Library route-owned styling extracted from admin-library.html. */
+
+/* Transparency defaults for this page */
+body.lux-route-admin-library {
+    --lux-panel-alpha: 0.72;
+    --lux-glass-alpha: 0.10;
+    --lux-glass-blur: 24px;
+}
+
+/* Light mode variable overrides */
+body.lux-light-mode.lux-route-admin-library {
+    --lux-text: #201912;
+    --lux-text-muted: rgba(32, 25, 18, 0.66);
+    --lux-text-soft: rgba(32, 25, 18, 0.36);
+    --lux-surface: #ffffff;
+    --lux-surface-2: #f5f1ea;
+    --lux-surface-3: #ece6db;
+    --lux-border: rgba(48, 34, 22, 0.10);
+    --lux-border-strong: rgba(48, 34, 22, 0.18);
+    --lux-panel-alpha: 0.72;
+    --lux-glass-alpha: 0.10;
+    --lux-glass-blur: 16px;
+}
+
+.adlib-page {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    gap: 22px;
+}
+
+.adlib-form-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+    margin-top: 16px;
+}
+
+@media (max-width: 1100px) {
+    .adlib-form-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 600px) {
+    .adlib-form-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.adlib-form-field {
+    display: grid;
+    gap: 6px;
+}
+
+.adlib-form-field label {
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--lux-text-muted);
+}
+
+.adlib-filter-row {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+@media (max-width: 900px) {
+    .adlib-filter-row {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 600px) {
+    .adlib-filter-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Luxury Table */
+.adlib-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.24);
+    border: 1px solid var(--lux-border);
+}
+
+.adlib-table thead th {
+    padding: 14px 16px;
+    text-align: left;
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--lux-text-muted);
+    background: rgba(255, 255, 255, calc(0.04 + var(--lux-panel-alpha) * 0.08));
+    border-bottom: 1px solid var(--lux-border);
+}
+
+.adlib-table tbody td {
+    padding: 14px 16px;
+    font-size: 13px;
+    color: var(--lux-text);
+    border-bottom: 1px solid var(--lux-border);
+    vertical-align: middle;
+}
+
+.adlib-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.adlib-table tbody tr:hover td {
+    background: rgba(var(--lux-accent-rgb), 0.06);
+}
+
+.adlib-table .empty {
+    text-align: center;
+    padding: 48px 24px;
+    color: var(--lux-text-muted);
+}
+
+/* Light mode table */
+body.lux-light-mode .adlib-table thead th {
+    background: rgba(0, 0, 0, calc(0.03 + var(--lux-panel-alpha) * 0.06));
+}
+
+body.lux-light-mode .adlib-table tbody td {
+    border-bottom-color: var(--lux-border);
+}
+
+body.lux-light-mode .adlib-table {
+    box-shadow: 0 18px 40px rgba(62, 42, 20, 0.10);
+}
+
+/* Parameters Modal and Luxury Glass */
+.adlib-modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 6000;
+    background: rgba(2, 6, 23, calc(0.46 + var(--lux-glass-alpha) * 0.20));
+    backdrop-filter: blur(var(--lux-glass-blur));
+    align-items: center;
+    justify-content: center;
+}
+
+.adlib-modal {
+    width: min(580px, 92vw);
+    max-height: 85vh;
+    overflow-y: auto;
+    border-radius: 28px;
+    border: 1px solid var(--lux-border);
+    background:
+        radial-gradient(circle at top right, rgba(var(--lux-accent-rgb), 0.12), transparent 34%),
+        linear-gradient(180deg, rgba(12, 18, 31, calc(0.76 + var(--lux-panel-alpha) * 0.20)), rgba(8, 12, 20, calc(0.78 + var(--lux-glass-alpha) * 0.20)));
+    box-shadow: 0 32px 80px rgba(0, 0, 0, 0.48);
+    backdrop-filter: blur(var(--lux-glass-blur));
+}
+
+.adlib-modal-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 22px 24px 16px;
+    border-bottom: 1px solid var(--lux-border);
+}
+
+.adlib-modal-head .title {
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--lux-text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.adlib-modal-head .close-btn {
+    appearance: none;
+    border: 1px solid var(--lux-border);
+    background: rgba(255, 255, 255, calc(0.04 + var(--lux-panel-alpha) * 0.08));
+    color: var(--lux-text-muted);
+    border-radius: 10px;
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 700;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.adlib-modal-head .close-btn:hover {
+    background: rgba(255, 255, 255, calc(0.08 + var(--lux-panel-alpha) * 0.12));
+    border-color: rgba(var(--lux-accent-rgb), 0.3);
+}
+
+.adlib-modal-body {
+    padding: 22px 24px;
+    display: grid;
+    gap: 18px;
+}
+
+.adlib-modal-body .pm-row {
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+}
+
+.adlib-modal-body .pm-row select,
+.adlib-modal-body .pm-row input {
+    flex: 1;
+}
+
+.pm-chip-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.pm-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    border: 1px solid var(--lux-border);
+    background: rgba(255, 255, 255, calc(0.05 + var(--lux-panel-alpha) * 0.10));
+    color: var(--lux-text);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.pm-chip i {
+    cursor: pointer;
+    opacity: 0.6;
+    transition: opacity 0.15s;
+}
+
+.pm-chip i:hover {
+    opacity: 1;
+    color: var(--lux-red);
+}
+
+/* Light mode modal */
+body.lux-light-mode .adlib-modal-overlay {
+    background: rgba(180, 160, 140, 0.28);
+}
+
+body.lux-light-mode .adlib-modal {
+    background:
+        radial-gradient(circle at top right, rgba(var(--lux-accent-rgb), 0.10), transparent 34%),
+        linear-gradient(180deg, rgba(255, 255, 255, calc(0.76 + var(--lux-panel-alpha) * 0.20)), rgba(247, 242, 233, calc(0.78 + var(--lux-glass-alpha) * 0.20)));
+    border-color: var(--lux-border);
+    box-shadow: 0 32px 80px rgba(62, 42, 20, 0.14);
+}
+
+body.lux-light-mode .adlib-modal-head .close-btn {
+    background: rgba(0, 0, 0, calc(0.04 + var(--lux-panel-alpha) * 0.06));
+}
+
+body.lux-light-mode .pm-chip {
+    background: rgba(0, 0, 0, calc(0.04 + var(--lux-panel-alpha) * 0.08));
+    border-color: var(--lux-border);
+}
+
+/* Delete button in table */
+.adlib-delete-btn {
+    appearance: none;
+    border: 1px solid var(--lux-border);
+    background: rgba(255, 255, 255, calc(0.04 + var(--lux-panel-alpha) * 0.08));
+    color: var(--lux-red);
+    border-radius: 10px;
+    padding: 7px 10px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: background 0.15s, border-color 0.15s, transform 0.15s;
+}
+
+.adlib-delete-btn:hover {
+    background: rgba(222, 98, 98, calc(0.14 + var(--lux-panel-alpha) * 0.12));
+    border-color: rgba(222, 98, 98, calc(0.3 + var(--lux-panel-alpha) * 0.15));
+    transform: translateY(-1px);
+}
+
+body.lux-light-mode .adlib-delete-btn {
+    background: rgba(0, 0, 0, calc(0.03 + var(--lux-panel-alpha) * 0.06));
+}
+
+body.lux-route-admin-library.lux-route-library .admin-library-page {
+    display: grid;
+    gap: 22px;
+}
+
+body.lux-route-admin-library.lux-route-library .admin-library-hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 22px;
+}
+
+body.lux-route-admin-library.lux-route-library .admin-library-entry-shell,
+body.lux-route-admin-library.lux-route-library .admin-library-filter-shell {
+    display: grid;
+    gap: 14px;
+}
+
+body.lux-route-admin-library.lux-route-library .admin-library-shell-copy {
+    margin-top: -2px;
+    color: var(--lux-text-muted);
+    max-width: 760px;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+body.lux-route-admin-library.lux-route-library .admin-library-metric-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+body.lux-route-admin-library.lux-route-library .admin-library-metric-card {
+    display: grid;
+    gap: 6px;
+    min-width: 0;
+    padding: 16px 18px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(12, 18, 28, 0.22));
+}
+
+body.lux-route-admin-library.lux-route-library .admin-library-metric-label {
+    font-size: 10px;
+    line-height: 1;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--lux-text-soft);
+    font-weight: 800;
+}
+
+body.lux-route-admin-library.lux-route-library .admin-library-metric-card strong {
+    font-size: 24px;
+    line-height: 1;
+    color: var(--lux-text);
+}
+
+body.lux-route-admin-library.lux-route-library .admin-library-form-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+    padding: 0 !important;
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+body.lux-route-admin-library.lux-route-library .admin-library-form-grid .library-picker-field {
+    min-width: 0;
+}
+
+body.lux-route-admin-library.lux-route-library .admin-library-form-grid .library-picker-field.library-field-wide {
+    grid-column: span 2;
+}
+
+body.lux-route-admin-library.lux-route-library .admin-library-entry-shell .lib-input {
+    width: 100%;
+}
+
+body.lux-route-admin-library.lux-route-library .admin-library-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 4px;
+}
+
+body.lux-route-admin-library.lux-route-library .admin-library-catalog-table th:last-child,
+body.lux-route-admin-library.lux-route-library .admin-library-catalog-table td:last-child {
+    text-align: right;
+}
+
+body.lux-route-admin-library.lux-route-library .admin-library-remove-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    background: rgba(255, 255, 255, 0.04);
+    color: #f1cbc7;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 700;
+    transition: background 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
+    white-space: nowrap;
+}
+
+body.lux-route-admin-library.lux-route-library .admin-library-remove-btn:hover {
+    background: rgba(220, 116, 116, 0.14);
+    border-color: rgba(220, 116, 116, 0.28);
+    transform: translateY(-1px);
+}
+
+body.lux-route-admin-library.lux-route-library .admin-library-catalog-foot {
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+body.lux-route-admin-library.lux-route-library .admin-library-catalog-foot #admin-library-filtered-summary {
+    color: var(--lux-text-soft);
+}
+
+body.lux-route-admin-library.lux-route-library .admin-library-modal-overlay {
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+}
+
+body.lux-route-admin-library.lux-route-library .admin-library-modal {
+    width: min(760px, 96vw);
+    max-height: min(88vh, 920px);
+    overflow: auto;
+}
+
+body.lux-route-admin-library.lux-route-library .admin-library-modal .modal-header,
+body.lux-route-admin-library.lux-route-library .admin-library-modal .modal-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 18px 22px;
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+body.lux-route-admin-library.lux-route-library .admin-library-modal .modal-body {
+    display: grid;
+    gap: 18px;
+    padding: 22px;
+}
+
+body.lux-route-admin-library.lux-route-library .admin-library-modal .lib-input {
+    width: 100%;
+    min-height: 52px;
+    padding: 14px 16px;
+    border-radius: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background:
+        radial-gradient(circle at 100% 0%, rgba(var(--lux-accent-rgb), 0.08), transparent 28%),
+        linear-gradient(180deg, rgba(14, 18, 28, 0.98), rgba(9, 13, 21, 0.92));
+    color: var(--lux-text);
+    box-shadow: none;
+}
+
+body.lux-route-admin-library.lux-route-library .admin-library-modal .lib-input::placeholder {
+    color: var(--lux-text-soft);
+}
+
+body.lux-route-admin-library.lux-route-library .admin-library-modal-copy {
+    color: var(--lux-text-muted);
+    line-height: 1.6;
+}
+
+body.lux-route-admin-library.lux-route-library .admin-library-param-row {
+    display: grid;
+    grid-template-columns: minmax(0, 220px) minmax(0, 1fr) auto;
+    gap: 12px;
+    align-items: end;
+}
+
+body.lux-route-admin-library.lux-route-library .admin-library-param-groups {
+    display: grid;
+    gap: 14px;
+}
+
+body.lux-route-admin-library.lux-route-library .admin-library-param-group {
+    display: grid;
+    gap: 10px;
+    padding: 16px 18px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.03);
+}
+
+body.lux-route-admin-library.lux-route-library .admin-library-param-title {
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--lux-text-soft);
+}
+
+body.lux-route-admin-library.lux-route-library .admin-library-chip-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+body.lux-route-admin-library.lux-route-library .admin-library-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 14px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--lux-text);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+body.lux-route-admin-library.lux-route-library .admin-library-chip button {
+    border: 0;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    opacity: 0.7;
+    padding: 0;
+}
+
+body.lux-route-admin-library.lux-route-library .admin-library-chip button:hover {
+    opacity: 1;
+    color: #f1cbc7;
+}
+
+body.lux-light-mode.lux-route-admin-library.lux-route-library .admin-library-metric-card,
+body.lux-light-mode.lux-route-admin-library.lux-route-library .admin-library-param-group {
+    border-color: rgba(48, 34, 22, 0.10);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.66), rgba(247, 241, 232, 0.80));
+}
+
+body.lux-light-mode.lux-route-admin-library.lux-route-library .admin-library-remove-btn {
+    border-color: rgba(48, 34, 22, 0.12);
+    background: rgba(255, 255, 255, 0.70);
+    color: #8a3c32;
+}
+
+body.lux-light-mode.lux-route-admin-library.lux-route-library .admin-library-chip {
+    border-color: rgba(48, 34, 22, 0.10);
+    background: rgba(255, 255, 255, 0.74);
+}
+
+body.lux-light-mode.lux-route-admin-library.lux-route-library .admin-library-modal .lib-input {
+    border-color: rgba(48, 34, 22, 0.10);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(247, 241, 232, 0.96));
+    color: var(--lux-text);
+}
+
+body.lux-light-mode.lux-route-admin-library.lux-route-library .admin-library-catalog-table tbody tr {
+    background: rgba(255, 255, 255, 0.56);
+}
+
+body.lux-light-mode.lux-route-admin-library.lux-route-library .admin-library-catalog-table tbody tr:hover td {
+    background: rgba(var(--lux-accent-rgb), 0.08);
+}
+
+body[data-lux-performance='efficient'].lux-route-admin-library .adlib-table {
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
+}
+
+body[data-lux-performance='efficient'].lux-route-admin-library .adlib-modal-overlay {
+    backdrop-filter: blur(8px);
+}
+
+body[data-lux-performance='efficient'].lux-route-admin-library .adlib-modal {
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.34);
+    backdrop-filter: blur(12px);
+}
+
+body[data-lux-performance='efficient'].lux-route-admin-library.lux-route-library .admin-library-metric-card,
+body[data-lux-performance='efficient'].lux-route-admin-library.lux-route-library .admin-library-param-group {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(12, 18, 28, 0.18));
+}
+
+@media (max-width: 1100px) {
+    body.lux-route-admin-library.lux-route-library .admin-library-form-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    body.lux-route-admin-library.lux-route-library .admin-library-form-grid .library-picker-field.library-field-wide {
+        grid-column: span 2;
+    }
+}
+
+@media (max-width: 720px) {
+    body.lux-route-admin-library.lux-route-library .admin-library-metric-row,
+    body.lux-route-admin-library.lux-route-library .admin-library-param-row,
+    body.lux-route-admin-library.lux-route-library .admin-library-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    body.lux-route-admin-library.lux-route-library .admin-library-form-grid .library-picker-field.library-field-wide {
+        grid-column: auto;
+    }
+
+    body.lux-route-admin-library.lux-route-library .admin-library-actions {
+        justify-content: stretch;
+    }
+
+}

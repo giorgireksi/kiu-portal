@@ -1,0 +1,909 @@
+body.lux-route-staff #staff-content.staff-command-root {
+    width: min(100%, 1580px);
+    margin: 0 auto;
+    padding: 0 18px 84px;
+}
+
+@media (min-width: 901px) {
+    body.lux-route-staff #app-content {
+        margin-left: var(--lux-sidebar-width) !important;
+        width: calc(100% - var(--lux-sidebar-width)) !important;
+        max-width: calc(100% - var(--lux-sidebar-width)) !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+
+    body.lux-route-staff #staff-content .staff-hub-table-wrap {
+        scroll-padding-left: calc(var(--lux-sidebar-width) + 24px);
+    }
+
+    body.lux-route-staff #staff-content [data-staff-action="select"],
+    body.lux-route-staff #staff-content [data-staff-action="open-platform-profile"] {
+        scroll-margin-left: calc(var(--lux-sidebar-width) + 24px);
+    }
+}
+
+body.lux-route-staff .staff-shell-loading-state {
+    text-align: center;
+    padding: 68px 20px;
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-staff .staff-shell-loading-icon {
+    font-size: 32px;
+    margin-bottom: 16px;
+    display: block;
+}
+
+body.lux-route-staff .staff-shell-modal {
+    display: none;
+}
+
+body.lux-route-staff .staff-shell-modal-wide {
+    max-width: 600px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-shell {
+    display: grid;
+    gap: 22px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-surface,
+body.lux-route-staff #staff-content .staff-hub-hero,
+body.lux-route-staff #staff-content .staff-hub-modal,
+body.lux-route-staff #staff-content .staff-hub-profile {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(var(--lux-accent-rgb), 0.18);
+    border-radius: 26px;
+    background:
+        radial-gradient(circle at 6% 0%, rgba(255, 255, 255, calc(var(--lux-transparency-alpha, .92) * .08)), transparent 34%),
+        radial-gradient(circle at 76% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, .92) * .24)), transparent 40%),
+        radial-gradient(circle at 100% 96%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-transparency-alpha, .92) * .14)), transparent 40%),
+        linear-gradient(
+            135deg,
+            rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, .92) * .075)),
+            rgba(10, 15, 24, calc(var(--lux-transparency-alpha, .92) * .90)) 44%,
+            rgba(7, 10, 18, calc(var(--lux-transparency-alpha, .92) * .82))
+        );
+    box-shadow:
+        0 24px 58px rgba(0, 0, 0, 0.24),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(var(--lux-transparency-blur, 20px)) saturate(var(--lux-transparency-saturate, 145%));
+    -webkit-backdrop-filter: blur(var(--lux-transparency-blur, 20px)) saturate(var(--lux-transparency-saturate, 145%));
+}
+
+body.lux-light-mode.lux-route-staff #staff-content .staff-hub-surface,
+body.lux-light-mode.lux-route-staff #staff-content .staff-hub-hero,
+body.lux-light-mode.lux-route-staff #staff-content .staff-hub-modal,
+body.lux-light-mode.lux-route-staff #staff-content .staff-hub-profile,
+html.lux-light-mode body.lux-route-staff #staff-content .staff-hub-surface,
+html.lux-light-mode body.lux-route-staff #staff-content .staff-hub-hero,
+html.lux-light-mode body.lux-route-staff #staff-content .staff-hub-modal,
+html.lux-light-mode body.lux-route-staff #staff-content .staff-hub-profile {
+    background:
+        radial-gradient(circle at 8% 0%, rgba(255, 255, 255, calc(var(--lux-transparency-alpha, .86) * .88)), transparent 34%),
+        radial-gradient(circle at 76% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, .86) * .20)), transparent 40%),
+        radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-transparency-alpha, .86) * .12)), transparent 40%),
+        linear-gradient(
+            135deg,
+            rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, .86) * .055)),
+            rgba(255, 255, 255, calc(var(--lux-transparency-alpha, .86) * .84)) 44%,
+            rgba(247, 241, 232, calc(var(--lux-transparency-alpha, .86) * .70))
+        );
+}
+
+body.lux-route-staff #staff-content .staff-hub-shell > * {
+    animation: staff-hub-fade-in 0.36s ease both;
+}
+
+body.lux-route-staff #staff-content .staff-hub-shell > *:nth-child(2) { animation-delay: 0.05s; }
+body.lux-route-staff #staff-content .staff-hub-shell > *:nth-child(3) { animation-delay: 0.1s; }
+body.lux-route-staff #staff-content .staff-hub-shell > *:nth-child(4) { animation-delay: 0.15s; }
+
+body.lux-route-staff #staff-content .staff-hub-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(340px, 0.85fr);
+    gap: 26px;
+    min-height: 280px;
+    padding: 36px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-hero::before,
+body.lux-route-staff #staff-content .staff-hub-profile::before {
+    content: "";
+    position: absolute;
+    inset: auto -8% -28% auto;
+    width: 360px;
+    height: 360px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(var(--lux-accent-rgb), 0.18), transparent 64%);
+    pointer-events: none;
+    animation: staff-hub-orbit 14s linear infinite;
+}
+
+body.lux-route-staff #staff-content .staff-hub-hero-copy {
+    max-width: 760px;
+    margin-top: 12px;
+    color: var(--lux-text-muted);
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+body.lux-route-staff #staff-content .staff-hub-kicker,
+body.lux-route-staff #staff-content .staff-hub-overline {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: rgba(var(--lux-accent-rgb), 0.96);
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+body.lux-route-staff #staff-content .staff-hub-title {
+    margin: 12px 0 0;
+    color: var(--lux-text);
+    font-size: clamp(32px, 4vw, 48px);
+    line-height: 1.02;
+    letter-spacing: -0.04em;
+}
+
+body.lux-route-staff #staff-content .staff-hub-hero-meta,
+body.lux-route-staff #staff-content .staff-hub-action-row,
+body.lux-route-staff #staff-content .staff-hub-inline-actions,
+body.lux-route-staff #staff-content .staff-hub-modal-actions,
+body.lux-route-staff #staff-content .staff-hub-toolbar-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+}
+
+body.lux-route-staff #staff-content .staff-hub-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 32px;
+    padding: 0 12px;
+    border-radius: 999px;
+    border: 1px solid rgba(var(--lux-accent-rgb), 0.2);
+    background: rgba(var(--lux-accent-rgb), 0.08);
+    color: var(--lux-text-muted);
+    font-size: 12px;
+    font-weight: 800;
+}
+
+body.lux-route-staff #staff-content .staff-hub-hero-panel {
+    display: grid;
+    gap: 14px;
+    align-content: start;
+}
+
+body.lux-route-staff #staff-content .staff-hub-focus-card,
+body.lux-route-staff #staff-content .staff-hub-mini-card {
+    border: 1px solid rgba(var(--lux-accent-rgb), 0.16);
+    border-radius: 20px;
+    background: rgba(255, 255, 255, calc(var(--lux-transparency-alpha, .92) * .05));
+    padding: 18px;
+}
+
+body.lux-light-mode.lux-route-staff #staff-content .staff-hub-focus-card,
+body.lux-light-mode.lux-route-staff #staff-content .staff-hub-mini-card,
+html.lux-light-mode body.lux-route-staff #staff-content .staff-hub-focus-card,
+html.lux-light-mode body.lux-route-staff #staff-content .staff-hub-mini-card {
+    background: rgba(255, 255, 255, calc(var(--lux-transparency-alpha, .86) * .62));
+}
+
+body.lux-route-staff #staff-content .staff-hub-focus-card h2,
+body.lux-route-staff #staff-content .staff-hub-section-title {
+    margin: 0;
+    color: var(--lux-text);
+    font-size: 18px;
+    line-height: 1.2;
+}
+
+body.lux-route-staff #staff-content .staff-hub-focus-card p,
+body.lux-route-staff #staff-content .staff-hub-section-copy,
+body.lux-route-staff #staff-content .staff-hub-mini-copy {
+    margin: 6px 0 0;
+    color: var(--lux-text-muted);
+    font-size: 13px;
+    line-height: 1.55;
+}
+
+body.lux-route-staff #staff-content .staff-hub-hero-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-metrics {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-metric-card {
+    padding: 18px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-metric-card strong {
+    display: block;
+    margin-top: 12px;
+    color: var(--lux-text);
+    font-size: 32px;
+    line-height: 1;
+    letter-spacing: -0.04em;
+}
+
+body.lux-route-staff #staff-content .staff-hub-metric-card span,
+body.lux-route-staff #staff-content .staff-hub-text-muted {
+    color: var(--lux-text-muted);
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+body.lux-route-staff #staff-content .staff-hub-controls {
+    padding: 28px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-controls-head,
+body.lux-route-staff #staff-content .staff-hub-profile-head,
+body.lux-route-staff #staff-content .staff-hub-directory-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 18px;
+    flex-wrap: wrap;
+}
+
+body.lux-route-staff #staff-content .staff-hub-filter-grid,
+body.lux-route-staff #staff-content .staff-hub-filter-grid-secondary,
+body.lux-route-staff #staff-content .staff-hub-form-grid,
+body.lux-route-staff #staff-content .staff-hub-info-grid {
+    display: grid;
+    gap: 14px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-filter-grid {
+    grid-template-columns: minmax(300px, 1.55fr) repeat(4, minmax(150px, .8fr));
+    margin-top: 18px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-filter-grid-secondary {
+    grid-template-columns: repeat(4, minmax(160px, 1fr)) auto;
+    margin-top: 14px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-field,
+body.lux-route-staff #staff-command-modal-root .staff-hub-field {
+    display: grid;
+    gap: 7px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-field label,
+body.lux-route-staff #staff-command-modal-root .staff-hub-field label {
+    color: var(--lux-text-muted);
+    font-size: 12px;
+    font-weight: 800;
+}
+
+body.lux-route-staff #staff-content .staff-hub-control,
+body.lux-route-staff #staff-command-modal-root .staff-hub-control {
+    width: 100%;
+    min-height: 42px;
+    padding: 0 14px;
+    border: 1px solid rgba(var(--lux-accent-rgb), 0.16);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, calc(var(--lux-transparency-alpha, .92) * .06));
+    color: var(--lux-text);
+    outline: none;
+    font: inherit;
+}
+
+body.lux-light-mode.lux-route-staff #staff-content .staff-hub-control,
+body.lux-light-mode.lux-route-staff #staff-command-modal-root .staff-hub-control,
+html.lux-light-mode body.lux-route-staff #staff-content .staff-hub-control,
+html.lux-light-mode body.lux-route-staff #staff-command-modal-root .staff-hub-control {
+    background: rgba(255, 255, 255, calc(var(--lux-transparency-alpha, .86) * .74));
+}
+
+body.lux-route-staff #staff-content textarea.staff-hub-control,
+body.lux-route-staff #staff-command-modal-root textarea.staff-hub-control {
+    min-height: 104px;
+    padding: 12px 14px;
+    resize: vertical;
+}
+
+body.lux-route-staff #staff-content .staff-hub-control:focus,
+body.lux-route-staff #staff-command-modal-root .staff-hub-control:focus {
+    border-color: rgba(var(--lux-accent-rgb), 0.42);
+    box-shadow: 0 0 0 4px rgba(var(--lux-accent-rgb), 0.10);
+}
+
+body.lux-route-staff #staff-content .staff-hub-chips,
+body.lux-route-staff #staff-command-modal-root .staff-hub-chips,
+body.lux-route-staff #staff-content .staff-hub-tab-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-chip,
+body.lux-route-staff #staff-command-modal-root .staff-hub-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 30px;
+    padding: 0 11px;
+    border-radius: 999px;
+    border: 1px solid rgba(var(--lux-accent-rgb), 0.18);
+    background: rgba(var(--lux-accent-rgb), 0.08);
+    color: var(--lux-text-muted);
+    font-size: 12px;
+    font-weight: 800;
+}
+
+body.lux-route-staff #staff-content .staff-hub-chip.is-success,
+body.lux-route-staff #staff-command-modal-root .staff-hub-chip.is-success {
+    border-color: rgba(32, 197, 124, 0.28);
+    background: rgba(32, 197, 124, 0.14);
+    color: #76e6ae;
+}
+
+body.lux-route-staff #staff-content .staff-hub-chip.is-warning,
+body.lux-route-staff #staff-command-modal-root .staff-hub-chip.is-warning {
+    border-color: rgba(244, 162, 97, 0.28);
+    background: rgba(244, 162, 97, 0.14);
+    color: #ffd1a4;
+}
+
+body.lux-route-staff #staff-content .staff-hub-chip.is-danger,
+body.lux-route-staff #staff-command-modal-root .staff-hub-chip.is-danger {
+    border-color: rgba(248, 113, 113, 0.28);
+    background: rgba(248, 113, 113, 0.14);
+    color: #ffd2d2;
+}
+
+body.lux-route-staff #staff-content .staff-hub-directory-panel,
+body.lux-route-staff #staff-content .staff-hub-profile {
+    padding: 18px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-workspace {
+    display: grid;
+    gap: 20px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-table-wrap {
+    overflow: auto;
+    border: 1px solid rgba(var(--lux-accent-rgb), 0.12);
+    border-radius: 20px;
+    background: rgba(255, 255, 255, calc(var(--lux-transparency-alpha, .92) * .04));
+}
+
+body.lux-route-staff #staff-content .staff-hub-table {
+    width: 100%;
+    min-width: 1180px;
+    border-collapse: collapse;
+}
+
+body.lux-route-staff #staff-content .staff-hub-table th,
+body.lux-route-staff #staff-content .staff-hub-table td {
+    padding: 15px 16px;
+    border-bottom: 1px solid rgba(var(--lux-accent-rgb), 0.12);
+    text-align: left;
+    vertical-align: middle;
+}
+
+body.lux-route-staff #staff-content .staff-hub-table th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    color: var(--lux-text-muted);
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    background: rgba(var(--lux-accent-rgb), 0.10);
+}
+
+body.lux-route-staff #staff-content .staff-hub-table tbody tr {
+    transition: background 0.18s ease, transform 0.18s ease;
+}
+
+body.lux-route-staff #staff-content .staff-hub-table tbody tr:hover,
+body.lux-route-staff #staff-content .staff-hub-table tbody tr.is-selected {
+    background: rgba(var(--lux-accent-rgb), 0.08);
+}
+
+body.lux-route-staff #staff-content .staff-hub-person {
+    display: grid;
+    grid-template-columns: 52px minmax(0, 1fr);
+    gap: 12px;
+    align-items: center;
+}
+
+body.lux-route-staff #staff-content .staff-hub-avatar,
+body.lux-route-staff #staff-command-modal-root .staff-hub-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 16px;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    background: linear-gradient(135deg, rgba(var(--lux-accent-rgb), 0.24), rgba(var(--lux-home-secondary-rgb), 0.14));
+    color: var(--lux-text);
+    font-size: 13px;
+    font-weight: 900;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+body.lux-route-staff #staff-content .staff-hub-avatar img,
+body.lux-route-staff #staff-command-modal-root .staff-hub-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+body.lux-route-staff #staff-content .staff-hub-avatar.is-large,
+body.lux-route-staff #staff-command-modal-root .staff-hub-avatar.is-large {
+    width: 84px;
+    height: 84px;
+    border-radius: 26px;
+    font-size: 24px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-name {
+    color: var(--lux-text);
+    font-size: 15px;
+    font-weight: 900;
+    line-height: 1.2;
+}
+
+body.lux-route-staff #staff-content .staff-hub-meta {
+    margin-top: 4px;
+    color: var(--lux-text-muted);
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+body.lux-route-staff #staff-content .staff-hub-progress {
+    display: grid;
+    gap: 6px;
+    min-width: 120px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-progress-track {
+    height: 7px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+body.lux-route-staff #staff-content .staff-hub-progress-fill {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, var(--lux-accent), var(--lux-accent-2, var(--lux-accent)));
+}
+
+body.lux-route-staff #staff-content .staff-hub-empty {
+    display: grid;
+    place-items: center;
+    gap: 10px;
+    padding: 52px 20px;
+    text-align: center;
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-staff #staff-content .staff-hub-profile {
+    padding: 0;
+}
+
+body.lux-route-staff #staff-content .staff-hub-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 16px 24px;
+    border-bottom: 1px solid rgba(var(--lux-accent-rgb), 0.12);
+    background: rgba(255, 255, 255, calc(var(--lux-transparency-alpha, .92) * .04));
+}
+
+body.lux-route-staff #staff-content .staff-hub-profile-head {
+    padding: 28px 24px;
+    background:
+        radial-gradient(circle at top right, rgba(var(--lux-accent-rgb), 0.16), transparent 34%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent 70%);
+}
+
+body.lux-route-staff #staff-content .staff-hub-profile-head-main {
+    display: grid;
+    grid-template-columns: minmax(0, 1.25fr) minmax(220px, 0.7fr) auto;
+    gap: 18px;
+    align-items: center;
+}
+
+body.lux-route-staff #staff-content .staff-hub-profile-id {
+    display: grid;
+    grid-template-columns: 84px minmax(0, 1fr);
+    gap: 16px;
+    align-items: center;
+}
+
+body.lux-route-staff #staff-content .staff-hub-profile-id h2 {
+    margin: 6px 0 0;
+    color: var(--lux-text);
+    font-size: clamp(30px, 4vw, 42px);
+    line-height: 1.02;
+    letter-spacing: -0.04em;
+}
+
+body.lux-route-staff #staff-content .staff-hub-profile-id p {
+    margin: 8px 0 0;
+    color: var(--lux-text-muted);
+    font-size: 13px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-tabs {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 8px;
+    padding: 12px 18px;
+    border-top: 1px solid rgba(var(--lux-accent-rgb), 0.12);
+    border-bottom: 1px solid rgba(var(--lux-accent-rgb), 0.12);
+    background: rgba(255, 255, 255, calc(var(--lux-transparency-alpha, .92) * .03));
+}
+
+body.lux-route-staff #staff-content .staff-hub-tab {
+    min-height: 38px;
+    border: 1px solid transparent;
+    border-radius: 12px;
+    background: transparent;
+    color: var(--lux-text-muted);
+    font: inherit;
+    font-size: 12px;
+    font-weight: 900;
+    transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+}
+
+body.lux-route-staff #staff-content .staff-hub-tab:hover,
+body.lux-route-staff #staff-content .staff-hub-tab.is-active {
+    background: rgba(var(--lux-accent-rgb), 0.12);
+    border-color: rgba(var(--lux-accent-rgb), 0.22);
+    color: var(--lux-text);
+}
+
+body.lux-route-staff #staff-content .staff-hub-profile-body {
+    display: grid;
+    gap: 16px;
+    padding: 24px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-info-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+body.lux-route-staff #staff-content .staff-hub-info-card,
+body.lux-route-staff #staff-content .staff-hub-list-item,
+body.lux-route-staff #staff-content .staff-hub-warning {
+    border: 1px solid rgba(var(--lux-accent-rgb), 0.14);
+    border-radius: 18px;
+    background: rgba(255, 255, 255, calc(var(--lux-transparency-alpha, .92) * .04));
+    padding: 14px;
+}
+
+body.lux-light-mode.lux-route-staff #staff-content .staff-hub-info-card,
+body.lux-light-mode.lux-route-staff #staff-content .staff-hub-list-item,
+body.lux-light-mode.lux-route-staff #staff-content .staff-hub-warning,
+html.lux-light-mode body.lux-route-staff #staff-content .staff-hub-info-card,
+html.lux-light-mode body.lux-route-staff #staff-content .staff-hub-list-item,
+html.lux-light-mode body.lux-route-staff #staff-content .staff-hub-warning {
+    background: rgba(255, 255, 255, calc(var(--lux-transparency-alpha, .86) * .58));
+}
+
+body.lux-route-staff #staff-content .staff-hub-info-card.is-full {
+    grid-column: 1 / -1;
+}
+
+body.lux-route-staff #staff-content .staff-hub-info-card span {
+    display: block;
+    color: var(--lux-text-muted);
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+body.lux-route-staff #staff-content .staff-hub-info-card strong {
+    display: block;
+    margin-top: 6px;
+    color: var(--lux-text);
+    font-size: 15px;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+}
+
+body.lux-route-staff #staff-content .staff-hub-info-card p {
+    margin: 8px 0 0;
+    color: var(--lux-text-muted);
+    font-size: 13px;
+    line-height: 1.55;
+}
+
+body.lux-route-staff #staff-content .staff-hub-list {
+    display: grid;
+    gap: 10px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-list-item strong {
+    display: block;
+    color: var(--lux-text);
+    font-size: 14px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-list-item small {
+    display: block;
+    margin-top: 6px;
+    color: var(--lux-text-muted);
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+body.lux-route-staff #staff-content .staff-hub-warning {
+    border-color: rgba(244, 162, 97, 0.22);
+    background: rgba(244, 162, 97, 0.10);
+    color: #ffd3a3;
+}
+
+body.lux-light-mode.lux-route-staff #staff-content .staff-hub-warning,
+html.lux-light-mode body.lux-route-staff #staff-content .staff-hub-warning {
+    color: #7e4e1a;
+}
+
+body.lux-route-staff #staff-command-modal-root[hidden] {
+    display: none;
+}
+
+body.lux-route-staff #staff-command-modal-root .staff-hub-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 5000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(5, 8, 14, 0.66);
+    backdrop-filter: blur(12px);
+}
+
+body.lux-route-staff #staff-command-modal-root .staff-hub-modal {
+    width: min(1160px, 100%);
+    max-height: min(92vh, 1100px);
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+}
+
+body.lux-route-staff #staff-command-modal-root .staff-hub-modal-head,
+body.lux-route-staff #staff-command-modal-root .staff-hub-modal-foot {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 14px;
+    padding: 20px 22px;
+    border-bottom: 1px solid rgba(var(--lux-accent-rgb), 0.12);
+}
+
+body.lux-route-staff #staff-command-modal-root .staff-hub-modal-foot {
+    border-top: 1px solid rgba(var(--lux-accent-rgb), 0.12);
+    border-bottom: 0;
+}
+
+body.lux-route-staff #staff-command-modal-root .staff-hub-modal-body {
+    overflow: auto;
+    padding: 22px;
+    display: grid;
+    gap: 18px;
+}
+
+body.lux-route-staff #staff-command-modal-root .staff-hub-form-section {
+    display: grid;
+    gap: 14px;
+    padding: 18px;
+    border: 1px solid rgba(var(--lux-accent-rgb), 0.14);
+    border-radius: 22px;
+    background: rgba(255, 255, 255, calc(var(--lux-transparency-alpha, .92) * .04));
+}
+
+body.lux-route-staff #staff-command-modal-root .staff-hub-form-section-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+body.lux-route-staff #staff-command-modal-root .staff-hub-form-section-head strong {
+    display: block;
+    color: var(--lux-text);
+    font-size: 16px;
+}
+
+body.lux-route-staff #staff-command-modal-root .staff-hub-form-section-head p {
+    margin: 6px 0 0;
+    color: var(--lux-text-muted);
+    font-size: 13px;
+}
+
+body.lux-route-staff #staff-command-modal-root .staff-hub-form-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+body.lux-route-staff #staff-command-modal-root .staff-hub-form-grid.is-two {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+body.lux-route-staff #staff-command-modal-root .staff-hub-form-grid.is-one {
+    grid-template-columns: 1fr;
+}
+
+body.lux-route-staff #staff-command-modal-root .staff-hub-help {
+    color: var(--lux-text-muted);
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+body.lux-route-staff #staff-command-modal-root .staff-hub-error {
+    display: none;
+    color: #ffd2d2;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+body.lux-route-staff #staff-command-modal-root .staff-hub-field.is-invalid .staff-hub-control {
+    border-color: rgba(248, 113, 113, 0.48);
+}
+
+body.lux-route-staff #staff-command-modal-root .staff-hub-field.is-invalid .staff-hub-error {
+    display: block;
+}
+
+body.lux-route-staff #staff-command-modal-root .staff-hub-modal-title {
+    margin: 0;
+    color: var(--lux-text);
+    font-size: 22px;
+}
+
+body.lux-route-staff #staff-command-modal-root .staff-hub-modal-copy {
+    margin: 6px 0 0;
+    color: var(--lux-text-muted);
+    font-size: 13px;
+}
+
+body.lux-route-staff #staff-command-toast {
+    position: fixed;
+    right: 20px;
+    bottom: 22px;
+    z-index: 5500;
+    width: min(420px, calc(100vw - 40px));
+    padding: 14px 16px;
+    border-radius: 16px;
+    border: 1px solid rgba(var(--lux-accent-rgb), 0.24);
+    background:
+        linear-gradient(135deg, rgba(var(--lux-accent-rgb), 0.18), rgba(255, 255, 255, 0.05));
+    color: var(--lux-text);
+    box-shadow: 0 18px 34px rgba(0, 0, 0, 0.24);
+    opacity: 0;
+    transform: translateY(12px);
+    pointer-events: none;
+    transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+body.lux-route-staff #staff-command-toast.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+@keyframes staff-hub-fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes staff-hub-orbit {
+    0% { transform: translate3d(0, 0, 0) scale(0.98); }
+    50% { transform: translate3d(-14px, -18px, 0) scale(1.03); }
+    100% { transform: translate3d(0, 0, 0) scale(0.98); }
+}
+
+@media (max-width: 1280px) {
+    body.lux-route-staff #staff-content .staff-hub-hero,
+    body.lux-route-staff #staff-content .staff-hub-filter-grid,
+    body.lux-route-staff #staff-content .staff-hub-filter-grid-secondary,
+    body.lux-route-staff #staff-content .staff-hub-profile-head-main,
+    body.lux-route-staff #staff-command-modal-root .staff-hub-form-grid,
+    body.lux-route-staff #staff-command-modal-root .staff-hub-form-grid.is-two {
+        grid-template-columns: 1fr;
+    }
+
+    body.lux-route-staff #staff-content .staff-hub-metrics {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 900px) {
+    body.lux-route-staff #staff-content.staff-command-root {
+        padding: 0 12px 72px;
+    }
+
+    body.lux-route-staff #staff-content .staff-hub-hero,
+    body.lux-route-staff #staff-content .staff-hub-controls,
+    body.lux-route-staff #staff-content .staff-hub-directory-panel,
+    body.lux-route-staff #staff-content .staff-hub-profile {
+        padding-left: 18px;
+        padding-right: 18px;
+    }
+
+    body.lux-route-staff #staff-content .staff-hub-tabs {
+        overflow-x: auto;
+        display: flex;
+    }
+
+    body.lux-route-staff #staff-content .staff-hub-tab {
+        flex: 0 0 auto;
+        padding: 0 14px;
+    }
+
+    body.lux-route-staff #staff-content .staff-hub-info-grid,
+    body.lux-route-staff #staff-content .staff-hub-hero-grid,
+    body.lux-route-staff #staff-content .staff-hub-metrics {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 640px) {
+    body.lux-route-staff #staff-content .staff-hub-hero {
+        min-height: auto;
+        padding: 24px 18px;
+    }
+
+    body.lux-route-staff #staff-content .staff-hub-action-row,
+    body.lux-route-staff #staff-content .staff-hub-inline-actions,
+    body.lux-route-staff #staff-content .staff-hub-modal-actions,
+    body.lux-route-staff #staff-content .staff-hub-toolbar-actions,
+    body.lux-route-staff #staff-command-modal-root .staff-hub-modal-head,
+    body.lux-route-staff #staff-command-modal-root .staff-hub-modal-foot {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    body.lux-route-staff #staff-content .staff-hub-hero .lux-primary-btn,
+    body.lux-route-staff #staff-content .staff-hub-hero .lux-secondary-btn,
+    body.lux-route-staff #staff-content .staff-hub-controls .lux-primary-btn,
+    body.lux-route-staff #staff-content .staff-hub-controls .lux-secondary-btn,
+    body.lux-route-staff #staff-content .staff-hub-toolbar .lux-primary-btn,
+    body.lux-route-staff #staff-content .staff-hub-toolbar .lux-secondary-btn,
+    body.lux-route-staff #staff-command-modal-root .lux-primary-btn,
+    body.lux-route-staff #staff-command-modal-root .lux-secondary-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    body.lux-route-staff #staff-command-modal-root .staff-hub-modal-backdrop {
+        padding: 0;
+    }
+
+    body.lux-route-staff #staff-command-modal-root .staff-hub-modal {
+        width: 100%;
+        max-height: none;
+        min-height: 100vh;
+        border-radius: 0;
+    }
+}

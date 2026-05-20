@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <link rel="icon" href="data:,">
+    <title>Protected Quiz Launch</title>
+    <link rel="stylesheet" href="assets/vendor/fontawesome/css/all.min.css?v=1776604822063">
+    <link rel="stylesheet" href="assets/css/kiu-fonts.css?v=20260515-fonts1">
+    <script>
+        (function applyLaunchPerformanceMode() {
+            try {
+                const prefersReducedMotion = typeof window.matchMedia === 'function'
+                    && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                const lowConcurrency = typeof navigator.hardwareConcurrency === 'number'
+                    && navigator.hardwareConcurrency > 0
+                    && navigator.hardwareConcurrency <= 4;
+                const lowMemory = typeof navigator.deviceMemory === 'number'
+                    && navigator.deviceMemory > 0
+                    && navigator.deviceMemory <= 4;
+                if (prefersReducedMotion || lowConcurrency || lowMemory) {
+                    document.documentElement.dataset.launchPerformance = 'reduced';
+                }
+            } catch (error) {}
+        })();
+    </script>
+    <style>
+        :root {
+            color-scheme: dark;
+            --bg-a: #05101d;
+            --bg-b: #0c1b2f;
+            --panel: rgba(7, 16, 29, 0.88);
+            --line: rgba(255, 255, 255, 0.08);
+            --line-strong: rgba(212, 173, 111, 0.24);
+            --text: #f7f3eb;
+            --muted: rgba(247, 243, 235, 0.68);
+            --accent: #d4ad6f;
+            --accent-soft: rgba(212, 173, 111, 0.14);
+            --success: #30d49a;
+            --danger: #ff8f8f;
+            --warn: #ffd36d;
+            --launch-body-bg:
+                radial-gradient(circle at top right, rgba(212, 173, 111, 0.18), transparent 28%),
+                radial-gradient(circle at bottom left, rgba(72, 136, 255, 0.12), transparent 24%),
+                linear-gradient(180deg, var(--bg-b), var(--bg-a));
+            --launch-shell-bg:
+                linear-gradient(180deg, rgba(11, 21, 36, 0.96), rgba(6, 12, 23, 0.98));
+            --launch-head-bg:
+                radial-gradient(circle at top right, rgba(212, 173, 111, 0.14), transparent 34%),
+                linear-gradient(180deg, rgba(18, 30, 49, 0.88), rgba(8, 14, 25, 0.94));
+            --launch-surface-bg: rgba(255, 255, 255, 0.03);
+            --launch-progress-track: rgba(255, 255, 255, 0.08);
+            --launch-progress-fill: linear-gradient(90deg, rgba(212, 173, 111, 0.25), rgba(212, 173, 111, 0.88));
+            --launch-shell-shadow: 0 26px 58px rgba(0, 0, 0, 0.34);
+            --launch-btn-transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+            --launch-progress-animation: pulseProgress 1.15s ease-in-out infinite alternate;
+            --launch-primary-bg: linear-gradient(135deg, #f0cc8c, #d4ad6f);
+            --launch-danger-bg: linear-gradient(135deg, #ffb3b3, #ff8f8f);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: 'Inter', sans-serif;
+            color: var(--text);
+            background: var(--launch-body-bg);
+            display: grid;
+            place-items: center;
+            padding: 18px;
+        }
+
+        .launch-shell {
+            width: min(460px, 100%);
+            border-radius: 28px;
+            border: 1px solid var(--line);
+            background: var(--launch-shell-bg);
+            box-shadow: var(--launch-shell-shadow);
+            overflow: hidden;
+        }
+
+        .launch-head {
+            padding: 26px 26px 18px;
+            border-bottom: 1px solid var(--line);
+            background: var(--launch-head-bg);
+        }
+
+        .launch-kicker {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: var(--muted);
+        }
+
+        .launch-kicker::before {
+            content: '';
+            width: 28px;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.24);
+        }
+
+        .launch-title {
+            margin: 14px 0 8px;
+            font-family: 'Playfair Display', serif;
+            font-size: 34px;
+            line-height: 1.04;
+        }
+
+        .launch-copy {
+            color: var(--muted);
+            font-size: 14px;
+            line-height: 1.7;
+        }
+
+        .launch-body {
+            padding: 22px 26px 26px;
+            display: grid;
+            gap: 18px;
+        }
+
+        .launch-status-card,
+        .launch-meta,
+        .launch-actions {
+            border: 1px solid var(--line);
+            background: var(--launch-surface-bg);
+            border-radius: 22px;
+        }
+
+        .launch-status-card {
+            padding: 22px;
+            display: grid;
+            gap: 16px;
+        }
+
+        .launch-status-head {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .launch-status-icon {
+            width: 54px;
+            height: 54px;
+            border-radius: 18px;
+            display: grid;
+            place-items: center;
+            background: var(--accent-soft);
+            color: var(--accent);
+            font-size: 22px;
+            border: 1px solid var(--line-strong);
+        }
+
+        .launch-status-label {
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: var(--muted);
+        }
+
+        .launch-status-title {
+            margin-top: 4px;
+            font-size: 22px;
+            font-weight: 800;
+            line-height: 1.2;
+        }
+
+        .launch-status-copy {
+            margin-top: 6px;
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.75;
+        }
+
+        .launch-progress {
+            position: relative;
+            height: 8px;
+            border-radius: 999px;
+            background: var(--launch-progress-track);
+            overflow: hidden;
+        }
+
+        .launch-progress > span {
+            position: absolute;
+            inset: 0;
+            width: 35%;
+            border-radius: inherit;
+            background: var(--launch-progress-fill);
+            animation: var(--launch-progress-animation);
+            transform-origin: left center;
+        }
+
+        @keyframes pulseProgress {
+            from { transform: scaleX(0.48); opacity: 0.56; }
+            to { transform: scaleX(1); opacity: 1; }
+        }
+
+        .launch-meta {
+            padding: 16px 18px;
+            display: grid;
+            gap: 10px;
+        }
+
+        .launch-meta-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            align-items: baseline;
+        }
+
+        .launch-meta-label {
+            font-size: 11px;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: var(--muted);
+            font-weight: 800;
+        }
+
+        .launch-meta-value {
+            font-size: 13px;
+            color: var(--text);
+            text-align: right;
+        }
+
+        .launch-actions {
+            padding: 16px;
+            display: grid;
+            gap: 12px;
+        }
+
+        .launch-action-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .launch-btn {
+            appearance: none;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 12px 14px;
+            font: inherit;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: var(--launch-btn-transition);
+        }
+
+        .launch-btn:hover { transform: translateY(-1px); }
+
+        .launch-btn-primary {
+            color: #0b1423;
+            background: var(--launch-primary-bg);
+            border-color: rgba(212, 173, 111, 0.4);
+        }
+
+        .launch-btn-secondary {
+            color: var(--text);
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        .launch-btn-danger {
+            color: #2a0d10;
+            background: var(--launch-danger-bg);
+            border-color: rgba(255, 143, 143, 0.4);
+        }
+
+        .launch-note {
+            font-size: 12px;
+            color: var(--muted);
+            line-height: 1.7;
+        }
+
+        html[data-launch-performance="reduced"] {
+            --launch-body-bg: linear-gradient(180deg, var(--bg-b), var(--bg-a));
+            --launch-head-bg: linear-gradient(180deg, rgba(18, 30, 49, 0.88), rgba(8, 14, 25, 0.94));
+            --launch-surface-bg: rgba(255, 255, 255, 0.02);
+            --launch-shell-shadow: 0 16px 34px rgba(0, 0, 0, 0.28);
+            --launch-progress-fill: linear-gradient(90deg, rgba(212, 173, 111, 0.72), rgba(212, 173, 111, 0.72));
+            --launch-btn-transition: border-color 0.18s ease, background 0.18s ease;
+            --launch-progress-animation: none;
+        }
+
+        html[data-launch-performance="reduced"] .launch-progress > span {
+            width: 100%;
+            transform: scaleX(0.72);
+            opacity: 0.9;
+        }
+
+        html[data-launch-performance="reduced"] .launch-btn:hover {
+            transform: none;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .launch-progress > span {
+                width: 100%;
+                transform: scaleX(0.72);
+                opacity: 0.9;
+            }
+
+            .launch-btn {
+                transition: none;
+            }
+
+            .launch-btn:hover {
+                transform: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="launch-shell">
+        <div class="launch-head">
+            <div class="launch-kicker">Desktop Detection Window</div>
+            <div class="launch-title">Anti-Cheat Handoff</div>
+            <div class="launch-copy">This secure popup checks for the installed Anti-Cheat App, wakes it if needed, and hands the protected quiz off to the desktop browser.</div>
+        </div>
+        <div class="launch-body">
+            <div class="launch-status-card">
+                <div class="launch-status-head">
+                    <div class="launch-status-icon" id="status-icon"><i class="fas fa-shield-alt"></i></div>
+                    <div>
+                        <div class="launch-status-label" id="status-label">Preparing launch</div>
+                        <div class="launch-status-title" id="status-title">Opening Anti-Cheat</div>
+                        <div class="launch-status-copy" id="status-copy">The desktop app will take over this protected quiz launch. Your LMS tab stays unchanged.</div>
+                    </div>
+                </div>
+                <div class="launch-progress" id="status-progress"><span></span></div>
+            </div>
+            <div class="launch-meta">
+                <div class="launch-meta-row">
+                    <div class="launch-meta-label">Mode</div>
+                    <div class="launch-meta-value" id="meta-mode">Protected Quiz</div>
+                </div>
+                <div class="launch-meta-row">
+                    <div class="launch-meta-label">Quiz</div>
+                    <div class="launch-meta-value" id="meta-quiz">Protected delivery</div>
+                </div>
+                <div class="launch-meta-row">
+                    <div class="launch-meta-label">Group</div>
+                    <div class="launch-meta-value" id="meta-group">Waiting for handoff</div>
+                </div>
+            </div>
+            <div class="launch-actions">
+                <div class="launch-action-row">
+                    <button type="button" class="launch-btn launch-btn-primary" id="retry-btn" style="display:none;">
+                        <i class="fas fa-rotate-right"></i> Try Again
+                    </button>
+                    <a class="launch-btn launch-btn-secondary" id="install-btn" href="#" target="_blank" rel="noopener" style="display:none;">
+                        <i class="fas fa-download"></i> Install App
+                    </a>
+                    <button type="button" class="launch-btn launch-btn-secondary" id="close-btn">
+                        <i class="fas fa-xmark"></i> Close Window
+                    </button>
+                </div>
+                <div class="launch-note" id="launch-note">
+                    If the Anti-Cheat App is already installed, this window should close automatically after the handoff finishes.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="assets/js/app/api.js?v=20260427-qa1"></script>
+    <script>
+        const LMS_PENDING_PROTECTED_QUIZ_POPUP_RETURN_KEY = 'KIU_PENDING_PROTECTED_QUIZ_POPUP_RETURN_TO';
+        const LMS_PENDING_PROTECTED_QUIZ_POPUP_REASON_KEY = 'KIU_PENDING_PROTECTED_QUIZ_POPUP_REASON';
+        const ANTI_CHEAT_DESKTOP_BRIDGE_ORIGINS = ['http://127.0.0.1:47835', 'http://localhost:47835'];
+
+        const statusLabelEl = document.getElementById('status-label');
+        const statusTitleEl = document.getElementById('status-title');
+        const statusCopyEl = document.getElementById('status-copy');
+        const statusIconEl = document.getElementById('status-icon');
+        const statusProgressEl = document.getElementById('status-progress');
+        const retryButtonEl = document.getElementById('retry-btn');
+        const installButtonEl = document.getElementById('install-btn');
+        const closeButtonEl = document.getElementById('close-btn');
+        const noteEl = document.getElementById('launch-note');
+        const metaModeEl = document.getElementById('meta-mode');
+        const metaQuizEl = document.getElementById('meta-quiz');
+        const metaGroupEl = document.getElementById('meta-group');
+
+        function getLaunchParams() {
+            const params = new URLSearchParams(window.location.search || '');
+            return {
+                mode: String(params.get('mode') || 'quiz').trim().toLowerCase(),
+                quizId: String(params.get('quizId') || '').trim(),
+                courseId: String(params.get('courseId') || '').trim(),
+                resourceKey: String(params.get('resourceKey') || '').trim(),
+                studentId: String(params.get('studentId') || '').trim(),
+                studentName: String(params.get('studentName') || '').trim(),
+                clientType: String(params.get('clientType') || '').trim(),
+                securityLevel: String(params.get('securityLevel') || '').trim(),
+                installUrl: String(params.get('installUrl') || '').trim(),
+                quizTitle: String(params.get('quizTitle') || '').trim(),
+                subjectLabel: String(params.get('subjectLabel') || '').trim(),
+                groupLabel: String(params.get('groupLabel') || '').trim(),
+                returnStatusTarget: String(params.get('returnStatusTarget') || '').trim()
+            };
+        }
+
+        function updateMeta(params) {
+            metaModeEl.textContent = params.mode === 'open-app' ? 'Open App Only' : 'Protected Quiz';
+            metaQuizEl.textContent = params.quizTitle || 'Protected delivery';
+            metaGroupEl.textContent = [params.subjectLabel, params.groupLabel].filter(Boolean).join(' / ') || 'Anti-Cheat desktop handoff';
+            if (params.installUrl && params.installUrl !== '#') {
+                installButtonEl.href = params.installUrl;
+            }
+        }
+
+        function setStatus({ label, title, copy, icon = 'fa-shield-alt', tone = 'info', progress = true, note = '' }) {
+            statusLabelEl.textContent = label;
+            statusTitleEl.textContent = title;
+            statusCopyEl.textContent = copy;
+            statusIconEl.innerHTML = `<i class="fas ${icon}"></i>`;
+            statusProgressEl.style.display = progress ? 'block' : 'none';
+            statusIconEl.style.color = tone === 'success' ? 'var(--success)' : tone === 'danger' ? 'var(--danger)' : tone === 'warn' ? 'var(--warn)' : 'var(--accent)';
+            statusIconEl.style.background = tone === 'success'
+                ? 'rgba(48, 212, 154, 0.12)'
+                : tone === 'danger'
+                    ? 'rgba(255, 143, 143, 0.14)'
+                    : tone === 'warn'
+                        ? 'rgba(255, 211, 109, 0.14)'
+                        : 'var(--accent-soft)';
+            noteEl.textContent = note || 'If the Anti-Cheat App is already installed, this window should close automatically after the handoff finishes.';
+        }
+
+        function notifyOpener(type, payload = {}) {
+            try {
+                if (window.opener && !window.opener.closed) {
+                    window.opener.postMessage({
+                        source: 'kiu-protected-launch',
+                        type,
+                        payload
+                    }, window.location.origin);
+                }
+            } catch (error) {}
+        }
+
+        function clearPopupResumeState() {
+            try {
+                sessionStorage.removeItem(LMS_PENDING_PROTECTED_QUIZ_POPUP_RETURN_KEY);
+                sessionStorage.removeItem(LMS_PENDING_PROTECTED_QUIZ_POPUP_REASON_KEY);
+            } catch (error) {}
+        }
+
+        function redirectToProtectedQuizLogin(reason) {
+            try {
+                sessionStorage.setItem(LMS_PENDING_PROTECTED_QUIZ_POPUP_RETURN_KEY, window.location.href);
+                sessionStorage.setItem(LMS_PENDING_PROTECTED_QUIZ_POPUP_REASON_KEY, String(reason || 'Please sign in again before the protected quiz can be launched.'));
+            } catch (error) {}
+            window.location.replace('login.html');
+        }
+
+        async function fetchDesktopBridgeJson(origin, path, options = {}) {
+            const controller = typeof AbortController === 'function' ? new AbortController() : null;
+            const timeoutMs = Number(options.timeoutMs || 1200);
+            let timeoutId = null;
+            if (controller && timeoutMs > 0) timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+            try {
+                const response = await fetch(`${String(origin || '').replace(/\/$/, '')}${path}`, {
+                    method: options.method || 'GET',
+                    headers: options.headers || {},
+                    body: options.body,
+                    signal: controller?.signal
+                });
+                const payload = await response.json().catch(() => ({}));
+                return {
+                    ok: response.ok && payload?.ok !== false,
+                    status: response.status,
+                    payload
+                };
+            } catch (error) {
+                return { ok: false, status: 0, payload: null };
+            } finally {
+                if (timeoutId) clearTimeout(timeoutId);
+            }
+        }
+
+        function wakeAntiCheatDesktopApp(protocolUrl = 'anticheat://open?screen=settings&source=kiu-lms-popup') {
+            const targetUrl = String(protocolUrl || '').trim();
+            if (!targetUrl) return;
+            try {
+                const frame = document.createElement('iframe');
+                frame.style.display = 'none';
+                frame.setAttribute('aria-hidden', 'true');
+                frame.src = targetUrl;
+                document.body.appendChild(frame);
+                setTimeout(() => {
+                    try { frame.remove(); } catch (error) {}
+                }, 1200);
+                return;
+            } catch (error) {}
+            try {
+                const link = document.createElement('a');
+                link.href = targetUrl;
+                link.target = '_blank';
+                link.rel = 'noopener noreferrer';
+                link.style.display = 'none';
+                document.body.appendChild(link);
+                link.click();
+                setTimeout(() => {
+                    try { link.remove(); } catch (error) {}
+                }, 1200);
+            } catch (error) {}
+        }
+
+        async function findActiveAntiCheatDesktopBridge() {
+            for (const origin of ANTI_CHEAT_DESKTOP_BRIDGE_ORIGINS) {
+                const probe = await fetchDesktopBridgeJson(origin, '/health', { timeoutMs: 900 });
+                if (probe.ok) return origin;
+            }
+            return '';
+        }
+
+        async function waitForAntiCheatDesktopBridge(options = {}) {
+            const timeoutMs = Number(options.timeoutMs || 10000);
+            const intervalMs = Number(options.intervalMs || 350);
+            const wakeProtocolUrl = String(options.wakeProtocolUrl || '').trim();
+            const startedAt = Date.now();
+            let wakeIssued = false;
+            while ((Date.now() - startedAt) <= timeoutMs) {
+                const origin = await findActiveAntiCheatDesktopBridge();
+                if (origin) return origin;
+                if (!wakeIssued && wakeProtocolUrl) {
+                    wakeIssued = true;
+                    wakeAntiCheatDesktopApp(wakeProtocolUrl);
+                }
+                await new Promise((resolve) => setTimeout(resolve, intervalMs));
+            }
+            return '';
+        }
+
+        async function handoffToDesktopApp(payload, options = {}) {
+            const origin = await waitForAntiCheatDesktopBridge({
+                timeoutMs: Number(options.timeoutMs || 10000),
+                intervalMs: Number(options.intervalMs || 350),
+                wakeProtocolUrl: String(options.wakeProtocolUrl || '').trim()
+            });
+            if (!origin) {
+                return { ok: false, reason: 'not_detected', payload: null };
+            }
+            const launch = await fetchDesktopBridgeJson(origin, '/launch', {
+                method: 'POST',
+                timeoutMs: 3500,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload || {})
+            });
+            return {
+                ok: launch.ok,
+                reason: launch.ok ? 'ok' : 'bridge_rejected',
+                payload: launch.payload || null
+            };
+        }
+
+        function setFailureActions({ installUrl = '', retry = true }) {
+            retryButtonEl.style.display = retry ? 'inline-flex' : 'none';
+            installButtonEl.style.display = installUrl && installUrl !== '#' ? 'inline-flex' : 'none';
+        }
+
+        function closeLaunchWindowSoon() {
+            setTimeout(() => {
+                try {
+                    window.close();
+                } catch (error) {}
+            }, 700);
+        }
+
+        async function buildProtectedQuizLaunchPayload(params) {
+            const portalToken = typeof getPortalSessionToken === 'function' ? String(getPortalSessionToken() || '').trim() : '';
+            if (!portalToken) {
+                redirectToProtectedQuizLogin('Please sign in again before the protected quiz can be launched.');
+                return null;
+            }
+            const result = await createProtectedQuizLaunchTicket(params.quizId, {
+                courseId: params.courseId,
+                resourceKey: params.resourceKey,
+                studentId: params.studentId,
+                studentName: params.studentName,
+                clientType: params.clientType,
+                securityLevel: params.securityLevel
+            });
+            const launchUrl = String(result?.launchUrl || '').trim();
+            if (!launchUrl) throw new Error('Protected launch URL was not returned.');
+            const parsed = new URL(launchUrl);
+            const ticket = String(parsed.searchParams.get('ticket') || '').trim();
+            const backendUrl = String(parsed.searchParams.get('backendUrl') || (typeof getKiuPortalBackendUrl === 'function' ? getKiuPortalBackendUrl() : '') || '').trim();
+            if (!ticket || !backendUrl) {
+                throw new Error('The protected launch payload is incomplete.');
+            }
+            return {
+                launchType: 'protected_quiz',
+                ticket,
+                backendUrl,
+                source: 'kiu-lms-popup'
+            };
+        }
+
+        async function runOpenAppFlow(params) {
+            setStatus({
+                label: 'Checking install',
+                title: 'Checking for installed Anti-Cheat App',
+                copy: 'This window is looking for the desktop launcher on your computer before it asks the app to open.'
+            });
+            const result = await handoffToDesktopApp({
+                launchType: 'open_app',
+                source: 'kiu-lms-popup'
+            }, {
+                wakeProtocolUrl: 'anticheat://open?screen=settings&source=kiu-lms-popup'
+            });
+            if (result.ok) {
+                notifyOpener('open-app-success', { mode: params.mode });
+                setStatus({
+                    label: 'Ready',
+                    title: 'Anti-Cheat App Opened',
+                    copy: 'The desktop launcher is open. You can close this popup now.',
+                    icon: 'fa-check',
+                    tone: 'success',
+                    progress: false,
+                    note: 'The Anti-Cheat App is ready in a separate desktop window.'
+                });
+                closeLaunchWindowSoon();
+                return;
+            }
+            notifyOpener('open-app-failed', { mode: params.mode, reason: result.reason });
+            setStatus({
+                label: 'App not detected',
+                title: 'Anti-Cheat App Was Not Detected',
+                copy: 'We could not confirm the desktop launcher on this computer. Install it or try opening it manually, then retry.',
+                icon: 'fa-triangle-exclamation',
+                tone: 'warn',
+                progress: false,
+                note: 'This browser window will not open the quiz itself. The desktop Anti-Cheat App must handle the launch.'
+            });
+            setFailureActions({ installUrl: params.installUrl, retry: true });
+        }
+
+        async function runProtectedQuizFlow(params) {
+            setStatus({
+                label: 'Preparing ticket',
+                title: 'Preparing Protected Quiz Ticket',
+                copy: 'This secure popup is requesting a one-time protected launch ticket for your anti-cheat session.'
+            });
+            let launchPayload = null;
+            try {
+                launchPayload = await buildProtectedQuizLaunchPayload(params);
+            } catch (error) {
+                if (error?.status === 401 || error?.status === 403) {
+                    redirectToProtectedQuizLogin(
+                        error?.status === 403
+                            ? 'Your student session must be refreshed before the protected quiz can be launched.'
+                            : 'Please sign in again before the protected quiz can be launched.'
+                    );
+                    return;
+                }
+                throw error;
+            }
+
+            setStatus({
+                label: 'Checking desktop app',
+                title: 'Checking for installed Anti-Cheat App',
+                copy: 'The browser is now looking for the desktop anti-cheat bridge. If the app is closed, it will be asked to open.'
+            });
+
+            const handoff = await handoffToDesktopApp(launchPayload, {
+                wakeProtocolUrl: 'anticheat://open?screen=settings&source=kiu-lms-popup-launch'
+            });
+            if (handoff.ok) {
+                notifyOpener('protected-launch-success', { quizId: params.quizId, resourceKey: params.resourceKey });
+                setStatus({
+                    label: 'Launching quiz',
+                    title: 'Protected Quiz Opened In Anti-Cheat',
+                    copy: 'The desktop anti-cheat browser accepted the protected quiz ticket. This popup will close automatically.',
+                    icon: 'fa-check',
+                    tone: 'success',
+                    progress: false,
+                    note: 'Your regular browser LMS tab stays unchanged while the quiz opens in the Anti-Cheat App.'
+                });
+                clearPopupResumeState();
+                closeLaunchWindowSoon();
+                return;
+            }
+
+            notifyOpener('protected-launch-failed', {
+                quizId: params.quizId,
+                resourceKey: params.resourceKey,
+                reason: handoff.reason
+            });
+            setStatus({
+                label: 'App not detected',
+                title: 'Anti-Cheat App Could Not Be Confirmed',
+                copy: 'The popup could not confirm a running desktop bridge. Open or install the Anti-Cheat App, then retry the launch.',
+                icon: 'fa-triangle-exclamation',
+                tone: 'warn',
+                progress: false,
+                note: 'The protected quiz will only open inside the Anti-Cheat App. It will never open in this browser window.'
+            });
+            setFailureActions({ installUrl: params.installUrl, retry: true });
+        }
+
+        async function startProtectedLaunch() {
+            clearPopupResumeState();
+            const params = getLaunchParams();
+            updateMeta(params);
+            retryButtonEl.onclick = () => {
+                retryButtonEl.style.display = 'none';
+                startProtectedLaunch().catch(handleTopLevelFailure);
+            };
+            closeButtonEl.onclick = () => window.close();
+
+            if (params.mode === 'open-app') {
+                await runOpenAppFlow(params);
+                return;
+            }
+            await runProtectedQuizFlow(params);
+        }
+
+        function handleTopLevelFailure(error) {
+            console.error('Protected launch popup failed.', error);
+            setStatus({
+                label: 'Launch failed',
+                title: 'Protected Quiz Launch Failed',
+                copy: String(error?.message || 'The anti-cheat handoff could not be completed from this popup.'),
+                icon: 'fa-circle-exclamation',
+                tone: 'danger',
+                progress: false,
+                note: 'Retry after confirming that the Anti-Cheat App is installed and your KIU session is still valid.'
+            });
+            const params = getLaunchParams();
+            setFailureActions({ installUrl: params.installUrl, retry: true });
+        }
+
+        startProtectedLaunch().catch(handleTopLevelFailure);
+    </script>
+</body>
+</html>

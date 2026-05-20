@@ -1,0 +1,3 @@
+ECON Foundations testing brief
+
+Use this seeded material to verify downloads, file previews, and LMS group visibility for professor, TA, and student accounts.
