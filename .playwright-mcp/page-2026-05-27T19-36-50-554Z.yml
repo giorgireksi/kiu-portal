@@ -1,0 +1,114 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e4]:
+    - generic [ref=e6]:
+      - generic [ref=e7]:
+        - generic [ref=e8]: Campus Social Network
+        - heading "Pages" [level=1] [ref=e9]
+        - paragraph [ref=e10]: Follow official labs, clubs, offices, and faculty pages.
+        - generic [ref=e11]:
+          - generic [ref=e12]:
+            - strong
+            - generic [ref=e13]: Pages
+          - generic [ref=e14]:
+            - strong
+            - generic [ref=e15]: Following
+          - generic [ref=e16]:
+            - strong
+            - generic [ref=e17]: Managed
+        - generic [ref=e18]:
+          - button "Discover" [pressed] [ref=e19] [cursor=pointer]
+          - button "Following" [ref=e20] [cursor=pointer]
+      - generic [ref=e21]:
+        - button "PA Portal Administrator Admin" [ref=e22] [cursor=pointer]:
+          - generic [ref=e23]: PA
+          - generic [ref=e24]:
+            - strong [ref=e25]: Portal Administrator
+            - generic [ref=e26]: Admin
+        - generic [ref=e27]:
+          - button " Messages" [ref=e28] [cursor=pointer]:
+            - generic [ref=e29]: 
+            - text: Messages
+          - button " Profile" [ref=e30] [cursor=pointer]:
+            - generic [ref=e31]: 
+            - text: Profile
+          - button " Menu" [ref=e32] [cursor=pointer]:
+            - generic [ref=e33]: 
+            - text: Menu
+    - region "Follow offices, clubs, labs, and managed campus pages." [ref=e35]:
+      - generic [ref=e36]:
+        - generic [ref=e37]: Official and student pages
+        - heading "Follow offices, clubs, labs, and managed campus pages." [level=2] [ref=e38]
+        - paragraph [ref=e39]: 0 pages / 0 following / 0 managed
+        - generic [ref=e40]:
+          - button " Discover pages" [ref=e41] [cursor=pointer]:
+            - generic [ref=e42]: 
+            - generic [ref=e43]: Discover pages
+          - button " Following" [ref=e44] [cursor=pointer]:
+            - generic [ref=e45]: 
+            - generic [ref=e46]: Following
+          - button "+ Create page" [ref=e47] [cursor=pointer]:
+            - generic [ref=e48]: +
+            - generic [ref=e49]: Create page
+      - generic [ref=e50]:
+        - generic [ref=e51]:
+          - article [ref=e52]:
+            - strong
+            - generic [ref=e53]: Pages
+          - article [ref=e54]:
+            - strong
+            - generic [ref=e55]: Following
+          - article [ref=e56]:
+            - strong
+            - generic [ref=e57]: Managed
+        - generic [ref=e58]:
+          - article [ref=e59]:
+            - generic [ref=e61]: 
+            - generic [ref=e62]:
+              - strong [ref=e63]: Trust markers
+              - generic [ref=e64]: Official and managed pages receive stronger identity treatment.
+          - article [ref=e65]:
+            - generic [ref=e67]: 
+            - generic [ref=e68]:
+              - strong [ref=e69]: Page feeds
+              - generic [ref=e70]: Page posts stay separated from personal posts when needed.
+          - article [ref=e71]:
+            - generic [ref=e73]: 
+            - generic [ref=e74]:
+              - strong [ref=e75]: Manager tools
+              - generic [ref=e76]: Page owners get visible edit and publishing controls.
+    - generic [ref=e77]:
+      - generic:            
+      - generic [ref=e79]:
+        - generic [ref=e80]:
+          - generic [ref=e81]:
+            - generic [ref=e82]:
+              - generic [ref=e83]: pages
+              - generic [ref=e84]: managed by you
+              - generic [ref=e85]: official
+            - heading "Build pages that feel like real public communities." [level=2] [ref=e86]
+            - paragraph [ref=e87]: Create branded destinations for companies, products, student communities, clubs, or official university teams. Pages get their own cover, follow button, contact details, and a feed with official and community posts.
+          - generic [ref=e88]:
+            - article [ref=e89]:
+              - strong
+              - text: Brand / community pages
+            - article [ref=e90]:
+              - strong
+              - text: Campus / official pages
+            - button "+ Create Page" [ref=e91] [cursor=pointer]:
+              - generic [ref=e92]: +
+              - text: Create Page
+        - generic [ref=e93]:
+          - generic [ref=e94]:
+            - generic [ref=e95]: Search pages
+            - searchbox "Search pages" [ref=e96]
+          - button " Search" [ref=e97] [cursor=pointer]:
+            - generic [ref=e98]: 
+            - text: Search
+        - generic [ref=e100]:
+          - generic [ref=e101]: 
+          - strong [ref=e102]: No pages yet
+          - generic [ref=e103]: Use Create Page to launch the first page in this space.
+          - button "+ Create Page" [ref=e105] [cursor=pointer]:
+            - generic [ref=e106]: +
+            - text: Create Page
+  - text:                         

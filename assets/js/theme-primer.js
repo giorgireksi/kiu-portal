@@ -9,16 +9,37 @@
 
     var root = document.documentElement;
     var validShellRoles = ['student', 'professor', 'ta', 'admin', 'student_service'];
+    var PORTAL_CACHE_RESET_KEY = 'KIU_PORTAL_CACHE_RESET_VERSION';
+    var PORTAL_CACHE_RESET_VERSION = '20260606-postactions6';
+    var LUXURY_VISUAL_DEFAULTS_VERSION_KEY = 'KIU_LUXURY_VISUAL_DEFAULTS_VERSION';
+    var LUXURY_VISUAL_DEFAULTS_VERSION = '20260605-oceanteal-defaults1';
+    var DEFAULT_LUXURY_THEME_MODE = 'dark';
+    var DEFAULT_LUXURY_SURFACE_TRANSPARENCY = '13';
+    var DEFAULT_LUXURY_PALETTE = 'ocean-teal';
+
+    function parseJson(raw) {
+        if (!raw) return null;
+        try {
+            return JSON.parse(raw);
+        } catch (e) {
+            return null;
+        }
+    }
+
+    function normalizeRole(value) {
+        var role = String(value || '').trim().toLowerCase();
+        return validShellRoles.indexOf(role) !== -1 ? role : '';
+    }
 
     function getRequestedShellRole() {
         try {
             var params = new URLSearchParams(window.location.search || '');
-            var requestedRole = String(params.get('view') || '').trim().toLowerCase();
-            if (validShellRoles.indexOf(requestedRole) !== -1) return requestedRole;
+            var requestedRole = normalizeRole(params.get('view'));
+            if (requestedRole) return requestedRole;
         } catch (e) {}
         try {
-            var storedRole = String(localStorage.getItem('currentUserRole') || '').trim().toLowerCase();
-            if (validShellRoles.indexOf(storedRole) !== -1) return storedRole;
+            var storedRole = normalizeRole(localStorage.getItem('currentUserRole'));
+            if (storedRole) return storedRole;
         } catch (e) {}
         return 'student';
     }
@@ -40,9 +61,167 @@
             styleEl = document.createElement('style');
             styleEl.id = styleId;
         }
-        styleEl.textContent = cssText;
+        styleEl.media = 'all';
+        styleEl.textContent = cssText || ':root{}';
         document.head.appendChild(styleEl);
     }
+
+    function hasCurrentLuxuryVisualDefaultsVersion() {
+        try {
+            return String(localStorage.getItem(LUXURY_VISUAL_DEFAULTS_VERSION_KEY) || '').trim() === LUXURY_VISUAL_DEFAULTS_VERSION;
+        } catch (e) {
+            return false;
+        }
+    }
+
+    function resolveScopedVisuals() {
+        var persistentState = null;
+        var authState = null;
+        var storedFaculty = '';
+        var storedRole = '';
+        try {
+            persistentState = parseJson(localStorage.getItem('KIU_PERSISTENT_STATE'));
+            authState = parseJson(localStorage.getItem('KIU_AUTH_STATE'));
+            storedFaculty = String(localStorage.getItem('currentFaculty') || '').trim().toUpperCase();
+            storedRole = normalizeRole(localStorage.getItem('currentUserRole'));
+        } catch (e) {}
+
+        var authRole = normalizeRole(authState && authState.role);
+        var role = storedRole || authRole || 'student';
+        var faculty = storedFaculty
+            || String(
+                (authState && (authState.facultyCode || authState.faculty))
+                || ''
+            ).trim().toUpperCase()
+            || 'ECON';
+        var userId = String(
+            (authState && (authState.id || authState.email))
+            || sessionStorage.getItem('KIU_ACTIVE_SESSION_USER_ID')
+            || (persistentState && persistentState.auth && persistentState.auth.activeUserId)
+            || ''
+        ).trim();
+        var visualsByUser = userId && persistentState && persistentState.homeDashboardPreferencesByUser
+            ? persistentState.homeDashboardPreferencesByUser[userId]
+            : null;
+        var scopeKey = role + '::' + faculty;
+        return (visualsByUser && visualsByUser.visualsByScope && visualsByUser.visualsByScope[scopeKey])
+            || (visualsByUser && visualsByUser.visuals)
+            || {};
+    }
+
+    function resolveScopedThemeMode() {
+        var hasCurrentDefaults = hasCurrentLuxuryVisualDefaultsVersion();
+        var savedMode = '';
+        if (hasCurrentDefaults) {
+            try { savedMode = String(localStorage.getItem('kiuLuxuryThemeMode') || '').trim().toLowerCase(); } catch (e) {}
+        }
+        if (savedMode === 'light' || savedMode === 'dark') return savedMode;
+        if (!hasCurrentDefaults) return DEFAULT_LUXURY_THEME_MODE;
+        var scopedTheme = String(
+            resolveScopedVisuals().themeMode
+            || ''
+        ).trim().toLowerCase();
+        return scopedTheme === 'light' ? 'light' : DEFAULT_LUXURY_THEME_MODE;
+    }
+
+    function applyLightModeRootTokens(mode) {
+        var nextMode = mode === 'light' ? 'light' : 'dark';
+        if (nextMode === 'light') {
+            root.style.setProperty('--lux-bg', '#efebe4');
+            root.style.setProperty('--lux-bg-soft', '#f7f3ec');
+            root.style.setProperty('--lux-surface', '#ffffff');
+            root.style.setProperty('--lux-surface-2', '#f5f1ea');
+            root.style.setProperty('--lux-surface-3', '#ece6db');
+            root.style.setProperty('--lux-border', 'rgba(48,34,22,0.10)');
+            root.style.setProperty('--lux-border-strong', 'rgba(48,34,22,0.18)');
+            root.style.setProperty('--lux-text', '#201912');
+            root.style.setProperty('--lux-text-muted', 'rgba(32,25,18,0.66)');
+            root.style.setProperty('--lux-text-soft', 'rgba(32,25,18,0.36)');
+            root.style.setProperty('--lux-shadow', '0 24px 54px rgba(62,42,20,0.12)');
+            return;
+        }
+        [
+            '--lux-bg',
+            '--lux-bg-soft',
+            '--lux-surface',
+            '--lux-surface-2',
+            '--lux-surface-3',
+            '--lux-border',
+            '--lux-border-strong',
+            '--lux-text',
+            '--lux-text-muted',
+            '--lux-text-soft',
+            '--lux-shadow'
+        ].forEach(function (name) {
+            root.style.removeProperty(name);
+        });
+    }
+
+    function isLoopbackPortalOrigin() {
+        try {
+            var protocol = String(window.location && window.location.protocol || '').trim().toLowerCase();
+            var host = String(window.location && window.location.hostname || '').trim().toLowerCase();
+            return (protocol === 'http:' || protocol === 'https:')
+                && (host === '127.0.0.1' || host === 'localhost');
+        } catch (e) {
+            return false;
+        }
+    }
+
+    function maybeResetStaleLocalPortalWorker() {
+        if (!isLoopbackPortalOrigin()) return;
+        if (!navigator.serviceWorker || !navigator.serviceWorker.controller) return;
+
+        var seenVersion = '';
+        var resetMarker = 'KIU_PORTAL_LOCAL_SW_RESET_' + PORTAL_CACHE_RESET_VERSION;
+        var alreadyReset = '';
+
+        try { seenVersion = String(localStorage.getItem(PORTAL_CACHE_RESET_KEY) || '').trim(); } catch (e) {}
+        try { alreadyReset = String(sessionStorage.getItem(resetMarker) || '').trim(); } catch (e) {}
+
+        if (seenVersion === PORTAL_CACHE_RESET_VERSION || alreadyReset === '1') return;
+
+        try { sessionStorage.setItem(resetMarker, '1'); } catch (e) {}
+
+        var unregisterPromise = Promise.resolve();
+        if (typeof navigator.serviceWorker.getRegistrations === 'function') {
+            unregisterPromise = navigator.serviceWorker.getRegistrations()
+                .then(function (registrations) {
+                    return Promise.all((registrations || []).map(function (registration) {
+                        try {
+                            return registration.unregister();
+                        } catch (error) {
+                            return false;
+                        }
+                    }));
+                })
+                .catch(function () { return null; });
+        }
+
+        var cachePromise = Promise.resolve();
+        if (typeof caches !== 'undefined' && caches && typeof caches.keys === 'function') {
+            cachePromise = caches.keys()
+                .then(function (keys) {
+                    return Promise.all((keys || [])
+                        .filter(function (key) { return String(key || '').indexOf('kiu-portal-shell-') === 0; })
+                        .map(function (key) { return caches.delete(key); }));
+                })
+                .catch(function () { return null; });
+        }
+
+        Promise.all([unregisterPromise, cachePromise])
+            .catch(function () { return null; })
+            .then(function () {
+                try { localStorage.setItem(PORTAL_CACHE_RESET_KEY, PORTAL_CACHE_RESET_VERSION); } catch (e) {}
+                try { window.location.reload(); } catch (e) {}
+            });
+    }
+
+    window.__kiuThemePrimerAppendLateStyle = appendLateStyle;
+    window.__kiuApplyThemePrimerLightModeTokens = applyLightModeRootTokens;
+    window.__kiuResolveScopedThemeMode = resolveScopedThemeMode;
+
+    maybeResetStaleLocalPortalWorker();
 
     function joinScopedSelectors(shell, selectors) {
         return selectors.map(function (selector) {
@@ -140,13 +319,10 @@
             '.registration-course-row',
             '.registration-module-choice',
             '.registration-track-group',
-            '.reg-tabs',
             '.sch-sidebar',
             '.sch-main',
             '.sch-rail-hero',
             '.sch-rail-section',
-            '.sch-board-hero',
-            '.sch-board-legend',
             '.sch-grid-shell',
             '.sch-modal',
             '.palette-card',
@@ -219,12 +395,6 @@
             '.page-hero',
             '.admin-hero',
             '.portal-msg-page-top',
-            '.sch-sidebar',
-            '.sch-main',
-            '.sch-rail-hero',
-            '.sch-rail-section',
-            '.sch-board-hero',
-            '.sch-board-legend',
             '.registration-hero',
             '.registration-hero-focus',
             '.lux-faculty-hero-focus',
@@ -240,9 +410,6 @@
             '.filter-shell',
             '.portal-msg-panel',
             '.portal-msg-group-modal',
-            '.sch-stat-card',
-            '.palette-card',
-            '.sch-palette-card',
             '.registration-focus-card',
             '.registration-mini-metric',
             '.registration-insight-card',
@@ -264,8 +431,7 @@
             '.course-card',
             '.accordion-item',
             '.file-item',
-            '.tabs-container',
-            '.reg-tabs'
+            '.tabs-container'
         ];
         var pseudoSurfaces = clearSurfaces.concat(softSurfaces);
         return '' +
@@ -296,28 +462,54 @@
             '}';
     }
 
+    function shouldSkipFlatSurfaceOverrides() {
+        if (!document.body) return false;
+        return document.body.classList.contains('lux-route-timetable')
+            || document.body.classList.contains('lux-route-lms')
+            || document.body.classList.contains('lux-route-admin-library')
+            || document.body.classList.contains('lux-entry-admin-library');
+    }
+
     function applyFlatSurfaceOverrides() {
+        if (shouldSkipFlatSurfaceOverrides()) return;
         appendLateStyle('lux-flat-surface-overrides', getFlatSurfaceOverrideCss());
     }
 
     // 1. Theme mode (dark/light) — read from localStorage
-    var savedMode = '';
-    try { savedMode = localStorage.getItem('kiuLuxuryThemeMode') || ''; } catch (e) {}
+    var savedMode = resolveScopedThemeMode();
     if (savedMode === 'light') {
         root.classList.add('lux-light-mode');
         root.dataset.luxThemeMode = 'light';
+        applyLightModeRootTokens('light');
     } else {
         root.dataset.luxThemeMode = 'dark';
+        applyLightModeRootTokens('dark');
     }
 
     // 1b. Surface transparency — set early so CSS can render correct backgrounds
+    var hasCurrentVisualDefaults = hasCurrentLuxuryVisualDefaultsVersion();
+    var scopedVisuals = hasCurrentVisualDefaults ? resolveScopedVisuals() : {};
     var savedTransparency = '';
-    try { savedTransparency = localStorage.getItem('kiuLuxurySurfaceTransparency') || ''; } catch (e) {}
+    if (hasCurrentVisualDefaults) {
+        try { savedTransparency = localStorage.getItem('kiuLuxurySurfaceTransparency') || ''; } catch (e) {}
+    }
+    if (!savedTransparency && scopedVisuals && scopedVisuals.surfaceTransparency != null) {
+        savedTransparency = String(scopedVisuals.surfaceTransparency || '').trim();
+    }
+    if (!savedTransparency) savedTransparency = DEFAULT_LUXURY_SURFACE_TRANSPARENCY;
     var backgroundAnimationsEnabled = true;
-    try {
-        var savedBackgroundAnimations = String(localStorage.getItem('kiuLuxuryBackgroundAnimationsEnabled') || '').trim().toLowerCase();
-        backgroundAnimationsEnabled = !(savedBackgroundAnimations === '0' || savedBackgroundAnimations === 'false' || savedBackgroundAnimations === 'off');
-    } catch (e) {}
+    if (hasCurrentVisualDefaults) {
+        try {
+            var savedBackgroundAnimations = String(localStorage.getItem('kiuLuxuryBackgroundAnimationsEnabled') || '').trim().toLowerCase();
+            if (savedBackgroundAnimations) {
+                backgroundAnimationsEnabled = !(savedBackgroundAnimations === '0' || savedBackgroundAnimations === 'false' || savedBackgroundAnimations === 'off');
+            } else if (typeof scopedVisuals.backgroundAnimationsEnabled === 'boolean') {
+                backgroundAnimationsEnabled = scopedVisuals.backgroundAnimationsEnabled;
+            }
+        } catch (e) {}
+    } else if (typeof scopedVisuals.backgroundAnimationsEnabled === 'boolean') {
+        backgroundAnimationsEnabled = scopedVisuals.backgroundAnimationsEnabled;
+    }
     if (savedTransparency) {
         root.dataset.luxTransparency = savedTransparency;
         var transInt = parseInt(savedTransparency, 10);
@@ -376,10 +568,7 @@
                 'html.lux-high-transparency.lux-high-transparency.lux-high-transparency ' + _bodySelector + ' .lux-sidebar' +
                 '{background:' + _sidebarBg + '!important}';
 
-            var styleEl = document.createElement('style');
-            styleEl.id = 'lux-high-trans-primer';
-            styleEl.textContent = css;
-            document.head.appendChild(styleEl);
+            appendLateStyle('lux-high-trans-primer', css);
         }
     }
 
@@ -400,7 +589,13 @@
 
     // 3. Palette — read saved palette key
     var savedPalette = '';
-    try { savedPalette = localStorage.getItem('kiuLuxuryPalette') || localStorage.getItem('kiu-palette') || ''; } catch (e) {}
+    if (hasCurrentVisualDefaults) {
+        try { savedPalette = localStorage.getItem('kiuLuxuryPalette') || localStorage.getItem('kiu-palette') || ''; } catch (e) {}
+    }
+    if (!savedPalette) {
+        savedPalette = String(scopedVisuals.paletteKey || '').trim();
+    }
+    if (!savedPalette) savedPalette = DEFAULT_LUXURY_PALETTE;
 
     // Apply to body as soon as it exists
     function applyBodyState() {
@@ -445,14 +640,31 @@
         // in navigation.js, but if that never fires, this
         // timeout ensures the user isn't stuck on a blank page.
         // ═══════════════════════════════════════════════════════
-        setTimeout(function forceRevealPage() {
+        var revealPollMs = 50;
+        var revealDeadlineMs = 400;
+        var revealElapsedMs = 0;
+        function forceRevealPage() {
             root.classList.remove('kiu-shell-loading');
             if (document.body) {
                 document.body.classList.remove('kiu-shell-loading');
             }
-        }, 1500); // 1.5s max wait — page WILL show by then
+        }
+        function tryRevealPageEarly() {
+            var navRoot = document.getElementById('lux-nav');
+            if (navRoot && navRoot.children && navRoot.children.length > 0) {
+                forceRevealPage();
+                return;
+            }
+            revealElapsedMs += revealPollMs;
+            if (revealElapsedMs >= revealDeadlineMs) {
+                forceRevealPage();
+                return;
+            }
+            setTimeout(tryRevealPageEarly, revealPollMs);
+        }
+        setTimeout(tryRevealPageEarly, revealPollMs);
 
-        if (!b.classList.contains('lux-route-home')) {
+        if (!b.classList.contains('lux-route-home') && !shouldSkipFlatSurfaceOverrides()) {
             setTimeout(applyFlatSurfaceOverrides, 0);
         }
     }
@@ -473,6 +685,7 @@
 
     window.addEventListener('load', function () {
         if (document.body && document.body.classList.contains('lux-route-home')) return;
+        if (shouldSkipFlatSurfaceOverrides()) return;
         applyFlatSurfaceOverrides();
     }, { once: true });
 })();

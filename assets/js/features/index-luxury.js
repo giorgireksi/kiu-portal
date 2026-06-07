@@ -85,7 +85,13 @@
         { key: 'slate-sapphire', accent: '#426cda', accent2: '#89b0ff' },
         { key: 'pine-jade', accent: '#168b66', accent2: '#6ad1a0' },
         { key: 'burgundy-rose', accent: '#b94447', accent2: '#d8846b' },
-        { key: 'sand-pearl', accent: '#c2b280', accent2: '#d4c4a0' },
+        {
+            key: 'sand-pearl',
+            accent: '#c2b280',
+            accent2: '#d4c4a0',
+            lightLineRgb: '92,68,28',
+            lightParticleRgb: '76,56,30'
+        },
         { key: 'ink-orchid', accent: '#7b4bab', accent2: '#a66bc4' },
         { key: 'ocean-teal', accent: '#008080', accent2: '#26a69a' }
     ];
@@ -125,34 +131,34 @@
     }
 
     const BACKGROUND_MODES = [
-        { key: 'constellation', label: 'Constellation Veil', icon: 'fas fa-braille', copy: 'Particle network background.' },
-        { key: 'aurora', label: 'Aurora Drift', icon: 'fas fa-wind', copy: 'Flowing aurora effect.' },
-        { key: 'mesh', label: 'Horizon Mesh', icon: 'fas fa-wave-square', copy: 'Subtle grid pattern.' }
+        { key: 'peak', label: 'Peak Terrain', icon: 'fas fa-mountain', copy: 'Ridged particle terrain waves.' },
+        { key: 'layered', label: 'Layered Waves', icon: 'fas fa-water', copy: 'Stacked wave bands with ribbon haze.' },
+        { key: 'orbit', label: 'Orbit Field', icon: 'fas fa-circle-notch', copy: 'Swirling orbital particle field.' },
+        { key: 'corners', label: 'Corner Focus', icon: 'fas fa-border-all', copy: 'Edge-focused particle streams.' }
     ];
 
-    const BACKGROUND_INTENSITIES = [
-        { key: 'low', label: 'Low', copy: 'Minimal.' },
-        { key: 'standard', label: 'Standard', copy: 'Default.' },
-        { key: 'high', label: 'High', copy: 'Vivid.' }
-    ];
-
-    const GLOW_STRENGTHS = [
-        { key: 'soft', label: 'Soft', copy: 'Soft.' },
-        { key: 'balanced', label: 'Balanced', copy: 'Default.' },
-        { key: 'rich', label: 'Rich', copy: 'Strong.' }
+    const PARTICLE_QUALITY_OPTIONS = [
+        { key: 'auto', label: 'Auto', copy: 'Match device performance tier.' },
+        { key: 'low', label: 'Low', copy: 'Lightweight particle count.' },
+        { key: 'balanced', label: 'Balanced', copy: 'Default quality profile.' },
+        { key: 'high', label: 'High', copy: 'Maximum particle density.' }
     ];
 
     const HOME_ROLE_KEYS = ['student', 'professor', 'ta', 'admin', 'student_service'];
     const HOME_LAYOUT_VERSION = 1;
+    const FORCED_LUXURY_VISUAL_DEFAULTS_VERSION = '20260605-oceanteal-defaults1';
+    const GLOBAL_LUXURY_PALETTE_SCOPE = '*';
     const DEFAULT_HOME_VISUALS = {
         themeMode: 'dark',
-        backgroundMode: 'constellation',
+        backgroundMode: 'orbit',
         backgroundAnimationsEnabled: true,
-        backgroundIntensity: 'standard',
-        glowStrength: 'balanced',
-        paletteKey: '',
-        paletteFaculty: '',
-        customPalette: null
+        particleMotion: 100,
+        particleDensity: 100,
+        particleQuality: 'balanced',
+        paletteKey: 'ocean-teal',
+        paletteFaculty: GLOBAL_LUXURY_PALETTE_SCOPE,
+        customPalette: null,
+        surfaceTransparency: '13'
     };
     const HOME_EDITOR_STATE = {
         editing: false,
@@ -241,6 +247,37 @@
             .replace(/^-+|-+$/g, '') || fallback;
     }
 
+    function resolveLuxRouteBodyToken(pageId, entryId) {
+        const entry = sanitizeBodyToken(entryId, '');
+        const page = sanitizeBodyToken(pageId, 'home');
+        if (entry === 'admin-library' || entry === 'admin-orders') return entry;
+        if (entry && page && (page === entry || page.startsWith(`${entry}-`))) return entry;
+        return page;
+    }
+
+    function getLuxRouteBodyClassTokens(pageId, entryId) {
+        const entry = sanitizeBodyToken(entryId, '');
+        const tokens = new Set([sanitizeBodyToken(resolveLuxRouteBodyToken(pageId, entryId), 'portal')]);
+        if (entry === 'admin-library') {
+            tokens.add('admin-library');
+        } else if (entry === 'admin-orders') {
+            tokens.add('admin-orders');
+            tokens.add('orders');
+        }
+        return Array.from(tokens);
+    }
+
+    function applyLuxRouteBodyClasses(pageId, entryId) {
+        getLuxRouteBodyClassTokens(pageId, entryId).forEach((token) => {
+            document.body.classList.add(`lux-route-${token}`);
+        });
+    }
+
+    function isLuxRouteWorkspace(pageId = getActivePageId(), entryId = getActiveEntryPageId()) {
+        if (resolveLuxRouteBodyToken(pageId, entryId) === 'lms') return true;
+        return Boolean(document.body?.classList?.contains('lux-route-lms'));
+    }
+
     function resolveEntryPageId(pathname = window.location.pathname) {
         const normalizedPath = String(pathname || '').replace(/\\/g, '/').toLowerCase();
         const fileName = normalizedPath.split('/').filter(Boolean).pop() || '';
@@ -263,8 +300,10 @@
     }
 
     function getActivePageId() {
+        const standaloneEntry = resolveEntryPageId();
+        if (standaloneEntry === 'social') return 'social';
         const active = document.querySelector('.page-section.active-page') ||
-            Array.from(document.querySelectorAll('.page-section')).find((section) => section.style.display !== 'none');
+            Array.from(document.querySelectorAll('.page-section')).find((section) => !section.hidden && section.style.display !== 'none');
         return active?.id?.replace(/^page-/, '') || resolveRuntimePageId() || 'home';
     }
 
@@ -275,6 +314,21 @@
     function getPageFamily(pageId = getActivePageId(), entryId = getActiveEntryPageId()) {
         if (PAGE_FAMILIES[entryId]) return PAGE_FAMILIES[entryId];
         return PAGE_FAMILIES[pageId] || 'portal';
+    }
+
+    function isAdminLibraryRouteContext(pageId = getActivePageId(), entryId = getActiveEntryPageId()) {
+        const entry = sanitizeBodyToken(entryId, '');
+        if (entry === 'admin-library') return true;
+        return sanitizeBodyToken(pageId, '') === 'library'
+            && Boolean(document.getElementById('page-library')?.querySelector?.('.alib-workspace'));
+    }
+
+    function reconcileAdminLibraryRouteClasses(pageId = getActivePageId(), entryId = getActiveEntryPageId()) {
+        if (!isAdminLibraryRouteContext(pageId, entryId)) return;
+        document.body.classList.add('lux-route-admin-library');
+        document.body.classList.remove('lux-route-library');
+        if (!document.body.dataset.luxPage) document.body.dataset.luxPage = 'library';
+        if (!document.body.dataset.luxEntry) document.body.dataset.luxEntry = 'admin-library';
     }
 
     function applyPortalPageState() {
@@ -300,11 +354,12 @@
                 document.body.classList.remove(className);
             }
         });
+        applyLuxRouteBodyClasses(pageId, entryId);
         document.body.classList.add(
-            `lux-route-${sanitizeBodyToken(pageId)}`,
             `lux-entry-${sanitizeBodyToken(entryId || pageId)}`,
             `lux-family-${sanitizeBodyToken(family)}`
         );
+        reconcileAdminLibraryRouteClasses(pageId, entryId);
     }
 
     function isSidebarCollapsed() {
@@ -399,12 +454,13 @@
     const HOME_GRID_ROW_HEIGHT = 28;
     const ADVANCED_DEFAULT_VISUALS = {
         themeMode: 'dark',
-        backgroundMode: 'constellation',
+        backgroundMode: 'orbit',
         backgroundAnimationsEnabled: true,
-        backgroundIntensity: 'standard',
-        glowStrength: 'balanced',
-        paletteKey: '',
-        paletteFaculty: '',
+        particleMotion: 100,
+        particleDensity: 100,
+        particleQuality: 'balanced',
+        paletteKey: 'ocean-teal',
+        paletteFaculty: GLOBAL_LUXURY_PALETTE_SCOPE,
         customPalette: null,
         accentColor: '',
         accentColor2: '',
@@ -412,13 +468,29 @@
         particleColor: '',
         lineColor: '',
         glowColor: '',
-        hazeColor: ''
+        hazeColor: '',
+        surfaceTransparency: '13'
     };
 
     function buildAdvancedDefaultVisuals() {
         return {
             ...ADVANCED_DEFAULT_VISUALS,
             customPalette: null
+        };
+    }
+
+    function buildForcedLuxuryVisualDefaults() {
+        return {
+            ...buildAdvancedDefaultVisuals(),
+            customPalette: null,
+            accentColor: '',
+            accentColor2: '',
+            glassTint: '',
+            particleColor: '',
+            lineColor: '',
+            glowColor: '',
+            hazeColor: '',
+            surfaceTransparency: String(ADVANCED_DEFAULT_VISUALS.surfaceTransparency)
         };
     }
 
@@ -528,6 +600,64 @@
         return nextEntry;
     }
 
+    function applyForcedLuxuryVisualDefaults(values = {}) {
+        return {
+            ...(values && typeof values === 'object' ? values : {}),
+            ...buildForcedLuxuryVisualDefaults()
+        };
+    }
+
+    function migrateForcedLuxuryVisualDefaults() {
+        let currentVersion = '';
+        try {
+            currentVersion = String(localStorage.getItem('KIU_LUXURY_VISUAL_DEFAULTS_VERSION') || '').trim();
+        } catch (e) {}
+        if (currentVersion === FORCED_LUXURY_VISUAL_DEFAULTS_VERSION) return;
+
+        const forcedDefaults = buildForcedLuxuryVisualDefaults();
+        const store = ensureDashboardPreferenceStore();
+        const currentUserId = getDashboardPreferenceUserId();
+        if (!store[currentUserId] || typeof store[currentUserId] !== 'object') {
+            store[currentUserId] = createDashboardPreferenceEntry();
+        }
+
+        Object.keys(store).forEach((userId) => {
+            const entry = store[userId] && typeof store[userId] === 'object'
+                ? store[userId]
+                : createDashboardPreferenceEntry();
+            entry.visuals = applyForcedLuxuryVisualDefaults(entry.visuals);
+            entry.visualsByScope = entry.visualsByScope && typeof entry.visualsByScope === 'object'
+                ? entry.visualsByScope
+                : {};
+            Object.keys(entry.visualsByScope).forEach((scopeKey) => {
+                entry.visualsByScope[scopeKey] = applyForcedLuxuryVisualDefaults(entry.visualsByScope[scopeKey]);
+            });
+            store[userId] = entry;
+        });
+
+        try {
+            localStorage.setItem('kiuLuxuryThemeMode', forcedDefaults.themeMode);
+            localStorage.setItem('kiuLuxuryBackgroundMode', forcedDefaults.backgroundMode);
+            localStorage.setItem('kiuLuxuryBackgroundAnimationsEnabled', forcedDefaults.backgroundAnimationsEnabled ? '1' : '0');
+            localStorage.setItem('kiuLuxuryParticleMotion', String(forcedDefaults.particleMotion));
+            localStorage.setItem('kiuLuxuryParticleDensity', String(forcedDefaults.particleDensity));
+            localStorage.setItem('kiuLuxuryParticleQuality', forcedDefaults.particleQuality);
+            localStorage.setItem('kiuLuxurySurfaceTransparency', String(forcedDefaults.surfaceTransparency));
+            localStorage.setItem('kiuLuxurySurfaceTransparencyValue', (Number(forcedDefaults.surfaceTransparency) / 100).toFixed(2));
+            localStorage.setItem('kiuLuxuryPalette', forcedDefaults.paletteKey);
+            localStorage.setItem('kiuLuxuryPaletteFaculty', forcedDefaults.paletteFaculty);
+            localStorage.setItem('kiu-palette', forcedDefaults.paletteKey);
+            localStorage.removeItem('kiuLuxuryCustomPalette');
+            localStorage.removeItem('kiuLuxuryCustomPaletteFaculty');
+            localStorage.removeItem('kiuLuxuryMixerState');
+            localStorage.setItem('KIU_LUXURY_VISUAL_DEFAULTS_VERSION', FORCED_LUXURY_VISUAL_DEFAULTS_VERSION);
+        } catch (e) {}
+
+        if (typeof saveState === 'function') saveState();
+    }
+
+    migrateForcedLuxuryVisualDefaults();
+
     function getDefaultInspectorState() {
         const width = Math.min(390, Math.max(320, (window.innerWidth || 1440) - 48));
         return {
@@ -597,6 +727,9 @@
         [
             'kiuLuxuryThemeMode',
             'kiuLuxuryBackgroundMode',
+            'kiuLuxuryParticleMotion',
+            'kiuLuxuryParticleDensity',
+            'kiuLuxuryParticleQuality',
             'kiuLuxuryBackgroundIntensity',
             'kiuLuxuryGlowStrength',
             'kiuLuxurySurfaceTransparency',
@@ -609,9 +742,8 @@
             'kiu-palette'
         ].forEach((key) => localStorage.removeItem(key));
 
-        const paletteClasses = ['obsidian-amber', 'slate-sapphire', 'pine-jade', 'burgundy-rose', 'sand-pearl', 'ink-orchid'];
+        const paletteClasses = ['obsidian-amber', 'slate-sapphire', 'pine-jade', 'burgundy-rose', 'sand-pearl', 'ink-orchid', 'ocean-teal'];
         paletteClasses.forEach((palette) => document.body.classList.remove(`palette-${palette}`));
-        document.body.style.background = '';
 
         const scopeKey = getHomeScopeKey();
         updateDashboardPreferenceEntry((entry) => {
@@ -625,6 +757,9 @@
         [
             'kiuLuxuryThemeMode',
             'kiuLuxuryBackgroundMode',
+            'kiuLuxuryParticleMotion',
+            'kiuLuxuryParticleDensity',
+            'kiuLuxuryParticleQuality',
             'kiuLuxuryBackgroundIntensity',
             'kiuLuxuryGlowStrength',
             'kiuLuxurySurfaceTransparency',
@@ -684,7 +819,7 @@
 
     function getPaletteByKey(key) {
         return LUXURY_PALETTES.find((palette) => palette.key === key)
-            || LUXURY_PALETTES.find((palette) => palette.key === 'obsidian-amber') // Default, not faculty-based
+            || LUXURY_PALETTES.find((palette) => palette.key === DEFAULT_HOME_VISUALS.paletteKey)
             || LUXURY_PALETTES[0];
     }
 
@@ -734,6 +869,15 @@
         ].join(',');
     }
 
+    function buildLightModeBackdropTokens(accentRgb, accent2Rgb, options = {}) {
+        const ink = String(options.inkRgb || '32,26,20').trim();
+        const line = options.lineRgb || blendRgbTriplets(ink, accentRgb, 0.62);
+        const particle = options.particleRgb || blendRgbTriplets(ink, accent2Rgb, 0.54);
+        const haze = options.hazeRgb || blendRgbTriplets('239,228,213', accentRgb, 0.18);
+        const glow = options.glowRgb || blendRgbTriplets(accentRgb, accent2Rgb, 0.35);
+        return { line, particle, haze, glow };
+    }
+
     function rgbTripletToHex(triplet, fallback = '#c8822a') {
         const parts = String(triplet || '')
             .split(',')
@@ -781,7 +925,7 @@
 
     function getFacultyLuxuryPaletteState(facultyCode = getCurrentFacultyCode()) {
         const normalizedFaculty = String(facultyCode || 'ECON').toUpperCase();
-        const fallbackPalette = getPaletteByKey('obsidian-amber');
+        const fallbackPalette = getPaletteByKey(DEFAULT_HOME_VISUALS.paletteKey);
         let facultyProfile = null;
         try {
             if (typeof getFacultyProfile === 'function') facultyProfile = getFacultyProfile(normalizedFaculty) || null;
@@ -810,7 +954,10 @@
     }
 
     function isVisualPaletteScopedToFaculty(visuals, facultyCode = getCurrentFacultyCode()) {
-        return String(visuals?.paletteFaculty || '').toUpperCase() === String(facultyCode || '').toUpperCase();
+        const scopedFaculty = String(visuals?.paletteFaculty || '').trim().toUpperCase();
+        if (!scopedFaculty && (visuals?.paletteKey || visuals?.customPalette?.accent)) return true;
+        if (scopedFaculty === GLOBAL_LUXURY_PALETTE_SCOPE || scopedFaculty === 'GLOBAL') return true;
+        return scopedFaculty === String(facultyCode || '').trim().toUpperCase();
     }
 
     function resolveCustomPalette() {
@@ -832,18 +979,12 @@
         const visuals = getDashboardVisuals();
         const stored = visuals?.paletteKey || localStorage.getItem('kiuLuxuryPalette') || localStorage.getItem('kiu-palette');
         if (stored === 'custom' || isBuiltInLuxuryPaletteKey(stored)) return stored;
-        return visuals?.paletteKey || 'obsidian-amber';
+        return visuals?.paletteKey || DEFAULT_HOME_VISUALS.paletteKey;
     }
 
     function applyPaletteValues(accent, accent2, persist, key) {
-        const root = document.documentElement;
-        root.style.setProperty('--lux-accent', accent);
-        root.style.setProperty('--lux-accent-2', accent2);
-        root.style.setProperty('--lux-accent-rgb', colorToRgbTriplet(accent));
-
         const paletteClasses = ['obsidian-amber', 'slate-sapphire', 'pine-jade', 'burgundy-rose', 'sand-pearl', 'ink-orchid', 'ocean-teal'];
         paletteClasses.forEach((palette) => document.body.classList.remove(`palette-${palette}`));
-        document.body.style.background = '';
 
         if (key && key !== 'custom' && paletteClasses.includes(key)) {
             document.body.classList.add(`palette-${key}`);
@@ -859,6 +1000,18 @@
             var _palTransVal = getDashboardVisuals().surfaceTransparency || localStorage.getItem('kiuLuxurySurfaceTransparency');
             window.queueLuxuryTransparencyRefresh(_palTransVal);
         }
+        if (typeof window.__kiuApplyResolvedPalette === 'function') {
+            window.__kiuApplyResolvedPalette();
+            return;
+        }
+
+        const root = document.documentElement;
+        root.style.setProperty('--lux-accent', accent);
+        root.style.setProperty('--lux-accent-2', accent2);
+        root.style.setProperty('--lux-accent-rgb', colorToRgbTriplet(accent));
+        if (typeof window.__kiuApplyLmsParticleTheme === 'function') {
+            window.__kiuApplyLmsParticleTheme();
+        }
         if (typeof window.__kiuRefreshLuxuryBackground === 'function') {
             window.__kiuRefreshLuxuryBackground();
         }
@@ -866,7 +1019,6 @@
 
     function applyPaletteKey(key, persist) {
         const palette = getPaletteByKey(key);
-        applyPaletteValues(palette.accent, palette.accent2, persist, palette.key);
         if (persist) {
             localStorage.removeItem('kiuLuxuryCustomPalette');
             localStorage.removeItem('kiuLuxuryCustomPaletteFaculty');
@@ -883,15 +1035,10 @@
                 hazeColor: ''
             });
         }
+        applyPaletteValues(palette.accent, palette.accent2, persist, palette.key);
     }
 
     function applyCustomPalette(accent, accent2, persist) {
-        applyPaletteValues(accent, accent2, persist, 'custom');
-
-        const paletteClasses = ['obsidian-amber', 'slate-sapphire', 'pine-jade', 'burgundy-rose', 'sand-pearl', 'ink-orchid', 'ocean-teal'];
-        paletteClasses.forEach((palette) => document.body.classList.remove(`palette-${palette}`));
-        document.body.style.background = '';
-
         if (persist) {
             localStorage.setItem('kiuLuxuryCustomPalette', JSON.stringify({ accent, accent2 }));
             localStorage.setItem('kiuLuxuryCustomPaletteFaculty', getCurrentFacultyCode());
@@ -909,6 +1056,7 @@
                 hazeColor: ''
             });
         }
+        applyPaletteValues(accent, accent2, persist, 'custom');
     }
 
     function applyResolvedPalette() {
@@ -958,6 +1106,12 @@
         const lineColor = visualsAreScoped ? (visuals.lineColor || accent) : facultyPalette.accent;
         const glowColor = visualsAreScoped ? (visuals.glowColor || accent2) : facultyPalette.accent2;
         const hazeColor = visualsAreScoped ? (visuals.hazeColor || accent) : facultyPalette.accent;
+        const lightBackdrop = lightMode
+            ? buildLightModeBackdropTokens(accentRgb, accent2Rgb, {
+                lineRgb: palette.lightLineRgb,
+                particleRgb: palette.lightParticleRgb
+            })
+            : null;
         root.style.setProperty('--lux-accent', accent);
         root.style.setProperty('--lux-accent-2', accent2);
         root.style.setProperty('--lux-accent-rgb', accentRgb);
@@ -967,10 +1121,22 @@
         root.style.setProperty('--lux-shell-end-rgb', shellEndRgb);
         root.style.setProperty('--lux-shell-glow-rgb', shellGlowRgb);
         root.style.setProperty('--lux-home-secondary-rgb', accent2Rgb);
-        root.style.setProperty('--lux-bg-particle-rgb', colorToRgbTriplet(particleColor, accent2Rgb));
-        root.style.setProperty('--lux-bg-line-rgb', colorToRgbTriplet(lineColor, accentRgb));
-        root.style.setProperty('--lux-bg-glow-rgb', colorToRgbTriplet(glowColor, accent2Rgb));
-        root.style.setProperty('--lux-bg-haze-rgb', colorToRgbTriplet(hazeColor, accentRgb));
+        root.style.setProperty(
+            '--lux-bg-particle-rgb',
+            lightBackdrop ? lightBackdrop.particle : colorToRgbTriplet(particleColor, accent2Rgb)
+        );
+        root.style.setProperty(
+            '--lux-bg-line-rgb',
+            lightBackdrop ? lightBackdrop.line : colorToRgbTriplet(lineColor, accentRgb)
+        );
+        root.style.setProperty(
+            '--lux-bg-glow-rgb',
+            lightBackdrop ? lightBackdrop.glow : colorToRgbTriplet(glowColor, accent2Rgb)
+        );
+        root.style.setProperty(
+            '--lux-bg-haze-rgb',
+            lightBackdrop ? lightBackdrop.haze : colorToRgbTriplet(hazeColor, accentRgb)
+        );
         root.style.setProperty('--kiu-blue', accent);
         root.style.setProperty('--kiu-dark-blue', rgbTripletToHex(shellEndRgb, accent));
         root.style.setProperty('--kiu-navy', rgbTripletToHex(shellEndRgb, accent));
@@ -982,41 +1148,204 @@
         if (typeof window.queueLuxuryTransparencyRefresh === 'function') {
             window.queueLuxuryTransparencyRefresh(getDashboardVisuals().surfaceTransparency || localStorage.getItem('kiuLuxurySurfaceTransparency'));
         }
+        if (typeof window.__kiuApplyLmsParticleTheme === 'function') {
+            window.__kiuApplyLmsParticleTheme();
+        }
     }
+
+    window.__kiuApplyResolvedPalette = typeof applyResolvedPalette === 'function'
+        ? applyResolvedPalette
+        : window.__kiuApplyResolvedPalette;
+
+    function buildLuxuryTransparencyModel(value, lightMode = false) {
+        const percentage = Math.max(0, Math.min(100, parseInt(value, 10) || 0));
+        const fillRatio = typeof window.mapLuxuryTransparencyFillRatio === 'function'
+            ? window.mapLuxuryTransparencyFillRatio(percentage)
+            : (percentage + 1) / 101;
+        const transparencyRatio = fillRatio;
+        const colorFadeRatio = Math.max(0.01, Math.min(1, fillRatio * 0.92));
+        return {
+            percentage,
+            transparencyRatio,
+            fillRatio,
+            colorFadeRatio,
+            panelAlpha: lightMode
+                ? Math.max(0.12, 0.12 + (fillRatio * 0.83))
+                : Math.max(0.08, 0.08 + (fillRatio * 0.84)),
+            raisedAlpha: lightMode
+                ? 0.03 + (fillRatio * 0.16)
+                : 0.02 + (fillRatio * 0.14),
+            glassAlpha: lightMode
+                ? 0.02 + (fillRatio * 0.10)
+                : 0.015 + (fillRatio * 0.08),
+            panelFillAlpha: lightMode
+                ? 0.04 + (fillRatio * 0.20)
+                : 0.03 + (fillRatio * 0.16),
+            raisedFillAlpha: lightMode
+                ? 0.02 + (fillRatio * 0.14)
+                : 0.015 + (fillRatio * 0.12),
+            utilityFillAlpha: lightMode
+                ? 0.05 + (fillRatio * 0.22)
+                : 0.04 + (fillRatio * 0.18),
+            utilityAlpha: lightMode
+                ? 0.18 + (fillRatio * 0.66)
+                : 0.16 + (fillRatio * 0.70),
+            topbarFillAlpha: lightMode
+                ? 0.16 + (fillRatio * 0.62)
+                : 0.14 + (fillRatio * 0.72),
+            topbarRaisedAlpha: 0.04 + (fillRatio * 0.16),
+            glassHighlightAlpha: lightMode
+                ? 0.01 + (fillRatio * 0.04)
+                : 0.006 + (fillRatio * 0.02),
+            highTransparency: percentage <= 20
+        };
+    }
+
+    window.__kiuBuildLuxuryTransparencyModel = typeof buildLuxuryTransparencyModel === 'function'
+        ? buildLuxuryTransparencyModel
+        : window.__kiuBuildLuxuryTransparencyModel;
+    window.buildLuxuryTransparencyModel = typeof buildLuxuryTransparencyModel === 'function'
+        ? buildLuxuryTransparencyModel
+        : window.buildLuxuryTransparencyModel;
+
+    function applyLuxuryTransparencyTokenState(tokenState = {}, options = {}) {
+        const root = document.documentElement;
+        const propertyMap = {
+            '--lux-panel-alpha': tokenState.panelAlpha,
+            '--lux-transparency-alpha': tokenState.fillRatio,
+            '--lux-color-fade-alpha': tokenState.colorFadeRatio,
+            '--lux-raised-alpha': tokenState.raisedAlpha,
+            '--lux-glass-alpha': tokenState.glassAlpha,
+            '--lux-panel-fill-alpha': tokenState.panelFillAlpha,
+            '--lux-raised-fill-alpha': tokenState.raisedFillAlpha,
+            '--lux-utility-fill-alpha': tokenState.utilityFillAlpha,
+            '--lux-utility-alpha': tokenState.utilityAlpha,
+            '--lux-topbar-fill-alpha': tokenState.topbarFillAlpha,
+            '--lux-topbar-raised-alpha': tokenState.topbarRaisedAlpha,
+            '--lux-glass-highlight-alpha': tokenState.glassHighlightAlpha
+        };
+        if (Object.prototype.hasOwnProperty.call(options, 'panelGlow')) propertyMap['--lux-panel-glow'] = options.panelGlow;
+        if (Object.prototype.hasOwnProperty.call(options, 'glowScale')) propertyMap['--lux-glow-scale'] = options.glowScale;
+        if (Object.prototype.hasOwnProperty.call(options, 'cardGlowAlpha')) propertyMap['--lux-card-glow-alpha'] = options.cardGlowAlpha;
+        Object.entries(propertyMap).forEach(([name, value]) => {
+            if (value == null) return;
+            root.style.setProperty(name, String(value));
+        });
+    }
+
+    window.__kiuApplyTransparencyTokenState = typeof applyLuxuryTransparencyTokenState === 'function'
+        ? applyLuxuryTransparencyTokenState
+        : window.__kiuApplyTransparencyTokenState;
+
+    function ensureLuxuryHighTransparencyStyleElement() {
+        let styleEl = document.getElementById('lux-high-trans-primer');
+        if (!styleEl) {
+            if (typeof window.__kiuThemePrimerAppendLateStyle === 'function') {
+                window.__kiuThemePrimerAppendLateStyle('lux-high-trans-primer', ':root{}');
+                styleEl = document.getElementById('lux-high-trans-primer');
+            }
+            if (!styleEl) {
+                styleEl = document.createElement('style');
+                styleEl.id = 'lux-high-trans-primer';
+                styleEl.textContent = ':root{}';
+                document.head.appendChild(styleEl);
+            }
+        }
+        styleEl.media = 'all';
+        if (!String(styleEl.textContent || '').trim()) styleEl.textContent = ':root{}';
+        return styleEl;
+    }
+
+    function applyLuxuryHighTransparencyState(enabled, cssText = '') {
+        const root = document.documentElement;
+        if (enabled) {
+            root.classList.add('lux-high-transparency');
+            const styleEl = ensureLuxuryHighTransparencyStyleElement();
+            if (cssText) styleEl.textContent = cssText;
+            return;
+        }
+        root.classList.remove('lux-high-transparency');
+        const styleEl = ensureLuxuryHighTransparencyStyleElement();
+        styleEl.textContent = ':root{}';
+        styleEl.media = 'all';
+    }
+
+    function applySharedLightModeRootTokens(mode) {
+        if (typeof window.__kiuApplyThemePrimerLightModeTokens === 'function') {
+            window.__kiuApplyThemePrimerLightModeTokens(mode);
+            return;
+        }
+        const root = document.documentElement;
+        if (mode === 'light') {
+            root.style.setProperty('--lux-bg', '#efebe4');
+            root.style.setProperty('--lux-bg-soft', '#f7f3ec');
+            root.style.setProperty('--lux-surface', '#ffffff');
+            root.style.setProperty('--lux-surface-2', '#f5f1ea');
+            root.style.setProperty('--lux-surface-3', '#ece6db');
+            root.style.setProperty('--lux-border', 'rgba(48,34,22,0.10)');
+            root.style.setProperty('--lux-border-strong', 'rgba(48,34,22,0.18)');
+            root.style.setProperty('--lux-text', '#201912');
+            root.style.setProperty('--lux-text-muted', 'rgba(32,25,18,0.66)');
+            root.style.setProperty('--lux-text-soft', 'rgba(32,25,18,0.36)');
+            root.style.setProperty('--lux-shadow', '0 24px 54px rgba(62,42,20,0.12)');
+            return;
+        }
+        ['--lux-bg', '--lux-bg-soft', '--lux-surface', '--lux-surface-2', '--lux-surface-3', '--lux-border', '--lux-border-strong', '--lux-text', '--lux-text-muted', '--lux-text-soft', '--lux-shadow']
+            .forEach((name) => root.style.removeProperty(name));
+    }
+
+    window.__kiuApplyHighTransparencyState = typeof applyLuxuryHighTransparencyState === 'function'
+        ? applyLuxuryHighTransparencyState
+        : window.__kiuApplyHighTransparencyState;
+
+    function queueLuxuryRefreshOperation(run) {
+        window.clearTimeout(window.__luxTransparencyPaletteRefreshTimer);
+        window.__luxTransparencyPaletteRefreshTimer = window.setTimeout(() => {
+            window.__luxTransparencyPaletteRefreshTimer = null;
+            if (typeof window.requestAnimationFrame === 'function') {
+                window.requestAnimationFrame(run);
+            } else {
+                run();
+            }
+        }, 0);
+    }
+
+    window.__kiuQueueLuxuryRefreshOperation = typeof queueLuxuryRefreshOperation === 'function'
+        ? queueLuxuryRefreshOperation
+        : window.__kiuQueueLuxuryRefreshOperation;
+
+    function applyLuxuryTransparencyPreferenceState(percentage, transparencyRatio) {
+        const normalizedPercentage = Math.max(0, Math.min(100, parseInt(percentage, 10) || 0));
+        const normalizedRatio = Number.isFinite(Number(transparencyRatio))
+            ? Number(transparencyRatio)
+            : normalizedPercentage / 100;
+        localStorage.setItem('kiuLuxurySurfaceTransparency', String(normalizedPercentage));
+        localStorage.setItem('kiuLuxurySurfaceTransparencyValue', normalizedRatio.toFixed(2));
+        document.documentElement.dataset.luxTransparency = String(normalizedPercentage);
+    }
+
+    window.__kiuApplyTransparencyPreferenceState = typeof applyLuxuryTransparencyPreferenceState === 'function'
+        ? applyLuxuryTransparencyPreferenceState
+        : window.__kiuApplyTransparencyPreferenceState;
 
     function applyAtmosphereSettings() {
         const root = document.documentElement;
-        const intensity = getBackgroundIntensity();
-        const glow = getGlowStrength();
+        const particleQuality = getParticleQuality();
+        const resolvedQuality = particleQuality === 'auto'
+            ? (getLuxuryPerformanceTier(false) === 'high' ? 'high' : getLuxuryPerformanceTier(false) === 'efficient' ? 'low' : 'balanced')
+            : particleQuality;
         const lightMode = getThemeMode() === 'light';
-        const glowMap = {
-            soft: { glowScale: '0.88', buttonGlow: '0.28', panelGlow: '0.14' },
-            balanced: { glowScale: '1', buttonGlow: '0.44', panelGlow: '0.2' },
-            rich: { glowScale: '1.18', buttonGlow: '0.64', panelGlow: '0.28' }
-        };
-        const glowConfig = glowMap[glow] || glowMap.balanced;
+        const glowConfig = { glowScale: '1', buttonGlow: '0.44', panelGlow: '0.2' };
         const panelFillMin = lightMode ? 0.016 : 0.012;
         const raisedFillMin = lightMode ? 0.008 : 0.006;
         const utilityFillMin = lightMode ? 0.024 : 0.022;
         const topbarFillMin = lightMode ? 0.34 : 0.78;
         const topbarRaisedMin = lightMode ? 0.05 : 0.16;
-        const canvasOpacity = lightMode
-            ? (intensity === 'high' ? '0.68' : intensity === 'low' ? '0.46' : '0.58')
-            : (intensity === 'high' ? '0.96' : intensity === 'low' ? '0.72' : '0.84');
-        const overlayOpacity = lightMode
-            ? (intensity === 'high' ? '0.22' : intensity === 'low' ? '0.34' : '0.28')
-            : (intensity === 'high' ? '0.06' : intensity === 'low' ? '0.16' : '0.11');
-        const hazeTop = lightMode
-            ? (intensity === 'high' ? '0.02' : intensity === 'low' ? '0.08' : '0.05')
-            : (intensity === 'high' ? '0.004' : intensity === 'low' ? '0.014' : '0.008');
-        const hazeBottom = lightMode
-            ? (intensity === 'high' ? '0.06' : intensity === 'low' ? '0.12' : '0.09')
-            : (intensity === 'high' ? '0.1' : intensity === 'low' ? '0.16' : '0.13');
         const backgroundAnimationsEnabled = areBackgroundAnimationsEnabled();
-        root.style.setProperty('--lux-canvas-opacity', backgroundAnimationsEnabled ? canvasOpacity : '0');
-        root.style.setProperty('--lux-overlay-opacity', backgroundAnimationsEnabled ? overlayOpacity : '0');
-        root.style.setProperty('--lux-page-haze-top', backgroundAnimationsEnabled ? hazeTop : '0');
-        root.style.setProperty('--lux-page-haze-bottom', backgroundAnimationsEnabled ? hazeBottom : '0');
+        root.style.setProperty('--lux-canvas-opacity', backgroundAnimationsEnabled ? '1' : '0');
+        root.style.setProperty('--lux-overlay-opacity', '0');
+        root.style.setProperty('--lux-page-haze-top', backgroundAnimationsEnabled ? '0' : '0');
+        root.style.setProperty('--lux-page-haze-bottom', backgroundAnimationsEnabled ? '0' : '0');
         root.style.setProperty('--lux-panel-fill-alpha', String(panelFillMin));
         root.style.setProperty('--lux-raised-fill-alpha', String(raisedFillMin));
         root.style.setProperty('--lux-utility-fill-alpha', String(utilityFillMin));
@@ -1025,32 +1354,44 @@
         root.style.setProperty('--lux-topbar-fill-alpha', String(topbarFillMin));
         root.style.setProperty('--lux-topbar-raised-alpha', String(topbarRaisedMin));
         root.style.setProperty('--lux-button-glow', glowConfig.buttonGlow);
-        var _savedTransVal = parseInt(getDashboardVisuals().surfaceTransparency || localStorage.getItem('kiuLuxurySurfaceTransparency') || '70', 10);
+        var _savedTransVal = parseInt(
+            getDashboardVisuals().surfaceTransparency
+            || localStorage.getItem('kiuLuxurySurfaceTransparency')
+            || DEFAULT_HOME_VISUALS.surfaceTransparency,
+            10
+        );
         var _transparencyModel = typeof window.buildLuxuryTransparencyModel === 'function'
             ? window.buildLuxuryTransparencyModel(_savedTransVal, lightMode)
             : null;
         var _panelA = _transparencyModel ? _transparencyModel.panelAlpha : (_savedTransVal >= 95 ? (lightMode ? 0.95 : 0.92) : Math.max(0.03, _savedTransVal / 100 * 0.92));
         var _isHighTrans2 = _transparencyModel ? _transparencyModel.highTransparency : _savedTransVal >= 80;
-        root.style.setProperty('--lux-panel-glow', _isHighTrans2 ? '0' : glowConfig.panelGlow);
-        root.style.setProperty('--lux-glow-scale', _isHighTrans2 ? '0' : glowConfig.glowScale);
-        root.style.setProperty('--lux-panel-alpha', String(_panelA));
-        root.style.setProperty('--lux-transparency-alpha', String(_transparencyModel ? _transparencyModel.fillRatio : Math.max(0, 1 - (_savedTransVal / 100))));
-        root.style.setProperty('--lux-color-fade-alpha', String(_transparencyModel ? _transparencyModel.colorFadeRatio : Math.max(0.42, Math.min(1, 0.34 + ((Math.max(0, 1 - (_savedTransVal / 100))) * 0.68)))));
-        root.style.setProperty('--lux-raised-alpha', String(_transparencyModel ? _transparencyModel.raisedAlpha : 0.012));
-        root.style.setProperty('--lux-glass-alpha', String(_transparencyModel ? _transparencyModel.glassAlpha : 0.006));
-        root.style.setProperty('--lux-card-glow-alpha', _isHighTrans2 ? '0' : String(0.016));
-        root.style.setProperty('--lux-utility-alpha', String(_transparencyModel ? _transparencyModel.utilityAlpha : (lightMode ? 0.02 : 0.08)));
-        if (_transparencyModel) {
-            root.style.setProperty('--lux-panel-fill-alpha', String(_transparencyModel.panelFillAlpha));
-            root.style.setProperty('--lux-raised-fill-alpha', String(_transparencyModel.raisedFillAlpha));
-            root.style.setProperty('--lux-utility-fill-alpha', String(_transparencyModel.utilityFillAlpha));
-            root.style.setProperty('--lux-topbar-fill-alpha', String(_transparencyModel.topbarFillAlpha));
-            root.style.setProperty('--lux-topbar-raised-alpha', String(_transparencyModel.topbarRaisedAlpha));
-            root.style.setProperty('--lux-glass-highlight-alpha', String(_transparencyModel.glassHighlightAlpha));
-        }
+        const transparencyTokenState = _transparencyModel
+            ? {
+                ..._transparencyModel,
+                panelAlpha: _panelA
+            }
+            : {
+                panelAlpha: _panelA,
+                fillRatio: Math.max(0, 1 - (_savedTransVal / 100)),
+                colorFadeRatio: Math.max(0.01, Math.min(1, (Math.max(0, 1 - (_savedTransVal / 100))) * 0.92)),
+                raisedAlpha: 0.012,
+                glassAlpha: 0.006,
+                panelFillAlpha: panelFillMin,
+                raisedFillAlpha: raisedFillMin,
+                utilityFillAlpha: utilityFillMin,
+                utilityAlpha: lightMode ? 0.02 : 0.08,
+                topbarFillAlpha: topbarFillMin,
+                topbarRaisedAlpha: topbarRaisedMin,
+                glassHighlightAlpha: lightMode ? 0.02 : 0.012
+            };
+        applyLuxuryTransparencyTokenState(transparencyTokenState, {
+            panelGlow: _isHighTrans2 ? '0' : glowConfig.panelGlow,
+            glowScale: _isHighTrans2 ? '0' : glowConfig.glowScale,
+            cardGlowAlpha: _isHighTrans2 ? '0' : String(0.016)
+        });
         root.style.setProperty('--lux-grid-row-height', `${HOME_GRID_ROW_HEIGHT}px`);
-        document.body.dataset.luxBackgroundIntensity = intensity;
-        document.body.dataset.luxGlowStrength = glow;
+        document.body.dataset.luxBackgroundIntensity = resolvedQuality;
+        document.body.dataset.luxParticleQuality = particleQuality;
         document.body.dataset.luxBackgroundAnimation = backgroundAnimationsEnabled ? 'on' : 'off';
     }
 
@@ -1067,30 +1408,19 @@
         document.body.dataset.luxThemeMode = nextMode;
         root.classList.toggle('lux-light-mode', nextMode === 'light');
         root.dataset.luxThemeMode = nextMode;
-        if (nextMode === 'light') {
-            root.style.setProperty('--lux-bg', '#efebe4');
-            root.style.setProperty('--lux-bg-soft', '#f7f3ec');
-            root.style.setProperty('--lux-surface', '#ffffff');
-            root.style.setProperty('--lux-surface-2', '#f5f1ea');
-            root.style.setProperty('--lux-surface-3', '#ece6db');
-            root.style.setProperty('--lux-border', 'rgba(48,34,22,0.10)');
-            root.style.setProperty('--lux-border-strong', 'rgba(48,34,22,0.18)');
-            root.style.setProperty('--lux-text', '#201912');
-            root.style.setProperty('--lux-text-muted', 'rgba(32,25,18,0.66)');
-            root.style.setProperty('--lux-text-soft', 'rgba(32,25,18,0.36)');
-            root.style.setProperty('--lux-shadow', '0 24px 54px rgba(62,42,20,0.12)');
-        } else {
-            ['--lux-bg', '--lux-bg-soft', '--lux-surface', '--lux-surface-2', '--lux-surface-3', '--lux-border', '--lux-border-strong', '--lux-text', '--lux-text-muted', '--lux-text-soft', '--lux-shadow']
-                .forEach((name) => root.style.removeProperty(name));
-        }
+        applySharedLightModeRootTokens(nextMode);
         if (persist) {
             localStorage.setItem('kiuLuxuryThemeMode', nextMode);
             setDashboardVisuals({ themeMode: nextMode });
         }
 
+        applyResolvedPalette();
+
         // Re-apply transparency so inline backgrounds recalculate for the new mode
         if (typeof updateTransparency === 'function') {
-            const saved = getDashboardVisuals().surfaceTransparency || localStorage.getItem('kiuLuxurySurfaceTransparency') || '70';
+            const saved = getDashboardVisuals().surfaceTransparency
+                || localStorage.getItem('kiuLuxurySurfaceTransparency')
+                || DEFAULT_HOME_VISUALS.surfaceTransparency;
             updateTransparency(parseInt(saved));
         }
         if (typeof window.__kiuRefreshLuxuryBackground === 'function') {
@@ -1100,9 +1430,12 @@
 
     function sanitizeBackgroundMode(mode) {
         const normalized = String(mode || '').trim().toLowerCase();
-        if (normalized === 'tunnel') return 'aurora';
-        if (normalized === 'grid') return 'mesh';
-        return BACKGROUND_MODES.some((item) => item.key === normalized) ? normalized : 'constellation';
+        if (normalized === 'tunnel') return 'orbit';
+        if (normalized === 'grid') return 'corners';
+        if (normalized === 'constellation') return 'peak';
+        if (normalized === 'aurora') return 'orbit';
+        if (normalized === 'mesh') return 'corners';
+        return BACKGROUND_MODES.some((item) => item.key === normalized) ? normalized : 'peak';
     }
 
     function areBackgroundAnimationsEnabled() {
@@ -1160,42 +1493,63 @@
         showToast(`Background: ${BACKGROUND_MODES.find((item) => item.key === validMode)?.label || validMode}`);
     }
 
-    function getBackgroundIntensity() {
-        const stored = String(getDashboardVisuals().backgroundIntensity || DEFAULT_HOME_VISUALS.backgroundIntensity).trim().toLowerCase();
-        return BACKGROUND_INTENSITIES.some((item) => item.key === stored) ? stored : 'standard';
+    function getParticleMotion() {
+        const raw = getDashboardVisuals().particleMotion ?? localStorage.getItem('kiuLuxuryParticleMotion') ?? DEFAULT_HOME_VISUALS.particleMotion;
+        const value = Number(raw);
+        if (Number.isNaN(value)) return DEFAULT_HOME_VISUALS.particleMotion;
+        return Math.min(120, Math.max(0, Math.round(value)));
     }
 
-    function setBackgroundIntensity(level, persist) {
-        const nextLevel = BACKGROUND_INTENSITIES.some((item) => item.key === level) ? level : 'standard';
-        document.body.dataset.luxBackgroundIntensity = nextLevel;
+    function setParticleMotion(value, persist = true) {
+        const nextValue = Math.min(120, Math.max(0, Math.round(Number(value) || DEFAULT_HOME_VISUALS.particleMotion)));
         if (persist) {
-            localStorage.setItem('kiuLuxuryBackgroundIntensity', nextLevel);
-            setDashboardVisuals({ backgroundIntensity: nextLevel });
+            localStorage.setItem('kiuLuxuryParticleMotion', String(nextValue));
+            setDashboardVisuals({ particleMotion: nextValue });
         }
         if (typeof window.__kiuRefreshLuxuryBackground === 'function') {
             window.__kiuRefreshLuxuryBackground();
         }
         syncStudioUi();
-        showToast(`Motion intensity: ${BACKGROUND_INTENSITIES.find((item) => item.key === nextLevel)?.label || nextLevel}`);
     }
 
-    function getGlowStrength() {
-        const stored = String(getDashboardVisuals().glowStrength || DEFAULT_HOME_VISUALS.glowStrength).trim().toLowerCase();
-        return GLOW_STRENGTHS.some((item) => item.key === stored) ? stored : 'balanced';
+    function getParticleDensity() {
+        const raw = getDashboardVisuals().particleDensity ?? localStorage.getItem('kiuLuxuryParticleDensity') ?? DEFAULT_HOME_VISUALS.particleDensity;
+        const value = Number(raw);
+        if (Number.isNaN(value)) return DEFAULT_HOME_VISUALS.particleDensity;
+        return Math.min(100, Math.max(35, Math.round(value)));
     }
 
-    function setGlowStrength(level, persist) {
-        const nextLevel = GLOW_STRENGTHS.some((item) => item.key === level) ? level : 'balanced';
-        document.body.dataset.luxGlowStrength = nextLevel;
+    function setParticleDensity(value, persist = true) {
+        const nextValue = Math.min(100, Math.max(35, Math.round(Number(value) || DEFAULT_HOME_VISUALS.particleDensity)));
         if (persist) {
-            localStorage.setItem('kiuLuxuryGlowStrength', nextLevel);
-            setDashboardVisuals({ glowStrength: nextLevel });
+            localStorage.setItem('kiuLuxuryParticleDensity', String(nextValue));
+            setDashboardVisuals({ particleDensity: nextValue });
         }
         if (typeof window.__kiuRefreshLuxuryBackground === 'function') {
             window.__kiuRefreshLuxuryBackground();
         }
         syncStudioUi();
-        showToast(`Glow: ${GLOW_STRENGTHS.find((item) => item.key === nextLevel)?.label || nextLevel}`);
+    }
+
+    function getParticleQuality() {
+        const stored = String(
+            getDashboardVisuals().particleQuality ?? localStorage.getItem('kiuLuxuryParticleQuality') ?? DEFAULT_HOME_VISUALS.particleQuality
+        ).trim().toLowerCase();
+        return PARTICLE_QUALITY_OPTIONS.some((item) => item.key === stored) ? stored : DEFAULT_HOME_VISUALS.particleQuality;
+    }
+
+    function setParticleQuality(level, persist = true) {
+        const nextLevel = PARTICLE_QUALITY_OPTIONS.some((item) => item.key === level) ? level : DEFAULT_HOME_VISUALS.particleQuality;
+        document.body.dataset.luxParticleQuality = nextLevel;
+        if (persist) {
+            localStorage.setItem('kiuLuxuryParticleQuality', nextLevel);
+            setDashboardVisuals({ particleQuality: nextLevel });
+        }
+        if (typeof window.__kiuRefreshLuxuryBackground === 'function') {
+            window.__kiuRefreshLuxuryBackground();
+        }
+        syncStudioUi();
+        showToast(`Particle quality: ${PARTICLE_QUALITY_OPTIONS.find((item) => item.key === nextLevel)?.label || nextLevel}`);
     }
 
     const DEFAULT_STUDIO_MIXER = {
@@ -1580,7 +1934,7 @@
                 <div class="lux-nav" id="lux-nav"></div>
                 <div class="lux-shell-footer">
                     <div class="lux-avatar" id="lux-avatar">KI</div>
-                    <div style="min-width:0;">
+                    <div class="lux-shell-footer-copy">
                         <div class="lux-user-name" id="lux-user-name">Portal User</div>
                         <div class="lux-user-role" id="lux-user-role">University Portal</div>
                     </div>
@@ -1617,7 +1971,7 @@
                         <div class="lux-picker-wrap" data-picker-wrap="role">
                             <button class="lux-picker-btn" id="lux-role-picker-btn" type="button" aria-haspopup="listbox" aria-expanded="false">
                                 <span class="lux-picker-caption">View</span>
-                                <strong id="lux-role-picker-value">Portal View</strong>
+                                <strong id="lux-role-picker-value">Workspace</strong>
                                 <i class="fas fa-chevron-down"></i>
                             </button>
                         </div>
@@ -1646,7 +2000,7 @@
                                 <span id="lux-chip-name">Portal</span>
                                 <small id="lux-chip-role">Dashboard</small>
                             </span>
-                            <i class="fas fa-chevron-down" style="font-size:10px;color:var(--lux-text-soft)"></i>
+                            <i class="fas fa-chevron-down lux-user-chip-chevron" aria-hidden="true"></i>
                         </button>
                     </div>
                 </div>
@@ -1654,6 +2008,46 @@
             document.body.appendChild(topbar);
         }
         applySidebarState();
+    }
+
+    function renderHomeChromeSkeleton(homeShell = document.getElementById('lux-home-shell')) {
+        if (!homeShell || homeShellHasDashboardContent(homeShell)) return;
+        if (homeShell.querySelector('[data-home-chrome-skeleton="1"]')) return;
+        homeShell.innerHTML = `
+            <div class="lux-home-grid is-loading" data-home-chrome-skeleton="1" data-home-loading-shell="1">
+                <section class="lux-card">
+                    <div class="lux-card-body lux-stack-grid">
+                        <div class="lux-kicker">Dashboard</div>
+                        <div class="page-hero-title lux-home-loading-title">Loading dashboard…</div>
+                        <div class="lux-card-copy">Navigation is ready. Personal widgets will appear in a moment.</div>
+                    </div>
+                </section>
+            </div>
+        `;
+    }
+
+    function bootstrapIndexPortalChromeSync() {
+        if (typeof isIndexPortalShell !== 'function' || !isIndexPortalShell()) return false;
+        applyPortalPageState();
+        closePickerPanels();
+        const navRoot = document.getElementById('lux-nav');
+        if (navRoot && !navRoot.children.length) {
+            navRoot.dataset.renderSignature = '';
+        }
+        if (typeof renderNav === 'function') renderNav();
+        if (typeof populateFacultySwitcher === 'function') populateFacultySwitcher();
+        if (typeof populateRoleSwitcher === 'function') populateRoleSwitcher();
+        syncTopbar();
+        const activePageId = getActivePageId();
+        if ((activePageId === 'home' || !activePageId) && window.__kiuLuxuryHomeDashboardLoaded !== true) {
+            const homeShell = ensureHomeShell();
+            if (homeShell) renderHomeChromeSkeleton(homeShell);
+        }
+        if (typeof markPortalShellReady === 'function') {
+            markPortalShellReady();
+        }
+        window.__kiuIndexChromeBootstrapped = true;
+        return true;
     }
 
     function ensureHomeShell() {
@@ -1675,20 +2069,60 @@
 
     /* Route-owned admin tools luxury bundle loader */
     let renderLuxuryAdminToolsPage = function ensureLuxuryAdminToolsPageRender() {
-        if (!isLuxuryAdminToolsRoute() || window.__kiuLuxuryAdminToolsDashboardLoaded === true) return;
-        ensureLuxuryAdminToolsBundle().then((loaded) => {
-            if (loaded) renderLuxuryAdminToolsPage();
+        if (!isLuxuryAdminToolsRoute()) return Promise.resolve(false);
+        return ensureLuxuryAdminToolsBundle().then((loaded) => {
+            if (!loaded) return false;
+            return renderLuxuryAdminToolsPage();
         });
     };
     let __luxAdminToolsBundlePromise = null;
+    let __luxAdminToolsChunkRetryAttempts = 0;
+    let __luxAdminToolsChunkRetryTimer = null;
 
     function isLuxuryAdminToolsRoute() {
         return getActivePageId() === 'admin-tools' || document.body?.classList?.contains('lux-route-admin-tools');
     }
 
+    function scheduleLuxuryAdminToolsChunkRetry() {
+        const retryDelaysMs = [50, 200, 500];
+        if (__luxAdminToolsChunkRetryAttempts >= retryDelaysMs.length) {
+            __luxAdminToolsChunkRetryAttempts = 0;
+            return;
+        }
+        if (__luxAdminToolsChunkRetryTimer) {
+            window.clearTimeout(__luxAdminToolsChunkRetryTimer);
+        }
+        const delayMs = retryDelaysMs[__luxAdminToolsChunkRetryAttempts];
+        __luxAdminToolsChunkRetryAttempts += 1;
+        __luxAdminToolsChunkRetryTimer = window.setTimeout(() => {
+            __luxAdminToolsChunkRetryTimer = null;
+            if (window.__kiuLuxuryAdminToolsDashboardLoaded === true) {
+                __luxAdminToolsChunkRetryAttempts = 0;
+                if (isLuxuryAdminToolsRoute()) renderLuxuryAdminToolsPage();
+                return;
+            }
+            const encoded = String(window.__kiuLuxuryAdminToolsChunkBase64 || '').trim();
+            if (encoded) {
+                __luxAdminToolsChunkRetryAttempts = 0;
+                ensureLuxuryAdminToolsBundle().then((loaded) => {
+                    if (loaded && isLuxuryAdminToolsRoute()) renderLuxuryAdminToolsPage();
+                });
+                return;
+            }
+            scheduleLuxuryAdminToolsChunkRetry();
+        }, delayMs);
+    }
+
     window.__kiuLuxuryAdminToolsChunkBase64 = window.__kiuLuxuryAdminToolsChunkBase64 || '';
     window.__kiuRegisterLuxuryAdminToolsChunk = function registerLuxuryAdminToolsChunk(base64Source) {
         window.__kiuLuxuryAdminToolsChunkBase64 = String(base64Source || '');
+        ensureLuxuryAdminToolsBundle().then((loaded) => {
+            if (!loaded) {
+                scheduleLuxuryAdminToolsChunkRetry();
+                return;
+            }
+            if (isLuxuryAdminToolsRoute()) renderLuxuryAdminToolsPage();
+        });
     };
 
     function ensureLuxuryAdminToolsBundle() {
@@ -1697,7 +2131,11 @@
         if (__luxAdminToolsBundlePromise) return __luxAdminToolsBundlePromise;
         __luxAdminToolsBundlePromise = Promise.resolve().then(() => {
             const encoded = String(window.__kiuLuxuryAdminToolsChunkBase64 || '').trim();
-            if (!encoded) return false;
+            if (!encoded) {
+                scheduleLuxuryAdminToolsChunkRetry();
+                return false;
+            }
+            __luxAdminToolsChunkRetryAttempts = 0;
             eval(decodeLuxuryHomeChunkSource(encoded));
             window.__kiuLuxuryAdminToolsDashboardLoaded = true;
             return true;
@@ -1713,14 +2151,15 @@
         return __luxAdminToolsBundlePromise;
     }
 
+    window.ensureLuxuryAdminToolsBundle = ensureLuxuryAdminToolsBundle;
+
     Object.assign(window, {
         ROLE_LABELS,
         PAGE_LABELS,
         NAV_BY_ROLE,
         STUDIO_PALETTES,
         BACKGROUND_MODES,
-        BACKGROUND_INTENSITIES,
-        GLOW_STRENGTHS,
+        PARTICLE_QUALITY_OPTIONS,
         DEFAULT_STUDIO_MIXER,
         HOME_EDITOR_STATE,
         isBuiltInLuxuryPaletteKey,
@@ -1750,20 +2189,20 @@
         areBackgroundAnimationsEnabled,
         setBackgroundAnimationsEnabled,
         setBackgroundMode,
-        getBackgroundIntensity,
-        setBackgroundIntensity,
-        getGlowStrength,
-        setGlowStrength,
+        getParticleMotion,
+        setParticleMotion,
+        getParticleDensity,
+        setParticleDensity,
+        getParticleQuality,
+        setParticleQuality,
+        getLuxuryBackgroundRenderProfile,
         sanitizeStudioMixerState,
         getStudioMixerState,
         setStudioMixerState,
         readStudioMixerInputs,
         writeStudioMixerInputs,
         syncVisualStateOnly,
-        syncAll,
-        getNotificationSnapshot,
-        getMessengerSnapshot,
-        buildHomeModel
+        syncAll
     });
 
     const shellChrome = () => window;
@@ -1793,7 +2232,6 @@
         '.social-neo-entity-card',
         '.social-neo-event-card',
         '.social-neo-message',
-        '.social-neo-comment-bubble',
         '.social-neo-empty',
         '.lms-clean-subject-card',
         '.lms-clean-metric-card',
@@ -1913,16 +2351,16 @@
         if (!toast) {
             toast = document.createElement('div');
             toast.id = 'lux-toast';
-            toast.style.cssText = 'position:fixed;right:24px;bottom:24px;z-index:80;padding:12px 16px;border-radius:14px;background:rgba(11,15,27,0.92);border:1px solid rgba(255,255,255,0.12);color:#f5f1e8;box-shadow:0 18px 45px rgba(0,0,0,0.36);font-size:12px;backdrop-filter:blur(14px);opacity:0;transform:translateY(8px);transition:opacity .18s ease,transform .18s ease;';
+            toast.className = 'lux-toast';
             document.body.appendChild(toast);
+        } else if (!toast.classList.contains('lux-toast')) {
+            toast.classList.add('lux-toast');
         }
         toast.textContent = message;
-        toast.style.opacity = '1';
-        toast.style.transform = 'translateY(0)';
+        toast.classList.add('is-visible');
         clearTimeout(window.__luxToastTimer);
         window.__luxToastTimer = setTimeout(() => {
-            toast.style.opacity = '0';
-            toast.style.transform = 'translateY(8px)';
+            toast.classList.remove('is-visible');
         }, 1600);
     }
 
@@ -2058,8 +2496,6 @@
         const root = document.documentElement;
         document.body.dataset.luxPerformance = profile.tier;
         root.style.setProperty('--lux-glass-blur', `${profile.glassBlur}px`);
-        root.style.setProperty('--lux-transparency-blur', `${profile.transparencyBlur}px`);
-        root.style.setProperty('--lux-transparency-saturate', profile.transparencySaturate);
         root.style.setProperty('--lux-glass-alpha', profile.glassAlpha);
         root.style.setProperty('--lux-utility-alpha', profile.utilityAlpha);
         root.style.setProperty('--lux-card-glow-alpha', profile.cardGlowAlpha);
@@ -2084,28 +2520,58 @@
         if (!node || node.nodeType !== 1) return true;
         if (/^(SCRIPT|STYLE|LINK|META|TITLE|NOSCRIPT|CANVAS|SVG|PATH)$/.test(node.tagName)) return true;
         if (node.closest('.lux-timetable-page, .social-neo')) return true;
+        if (node.classList?.contains('lms-session-marker-type-chip') || node.closest?.('.lms-session-marker-type-chips')) return true;
+        if (document.body?.classList?.contains('lux-route-lms')) return true;
+        if (node.closest('#page-lms, #page-lms-groups, #page-lms-inner, #lms-content-area')) return true;
+        if (node.closest('#page-registration .reg-tabs')) return true;
+        if (node.classList?.contains('curriculum-library-scroll-btn')) return true;
+        if (node.classList?.contains('curriculum-library-scroll-controls')) return true;
+        if (node.classList?.contains('lux-scroll-rail__btn')) return true;
+        if (node.classList?.contains('lux-scroll-rail__dock')) return true;
+        if (node.classList?.contains('lux-scroll-rail__controls')) return true;
+        if (node.closest?.('.lux-scroll-rail__dock, .lux-scroll-rail__controls')) return true;
+        if (node.classList?.contains('curriculum-library-panel') || node.classList?.contains('curriculum-library-panel--detail')) return true;
+        if (node.classList?.contains('lux-curriculum-subject-card')) return true;
+        if (
+            node.classList?.contains('lux-curriculum-subject-card__head') ||
+            node.classList?.contains('lux-curriculum-subject-card__body') ||
+            node.classList?.contains('lux-curriculum-subject-card__footer') ||
+            node.classList?.contains('lux-curriculum-subject-card__chips')
+        ) return true;
+        if (node.closest?.('.lux-curriculum-subject-card')) return true;
+        if (node.closest?.('.curriculum-library-panel, .curriculum-library-panel--detail, .curriculum-library-scroll-controls')) return true;
+        if (node.closest?.('#kiu-structured-form-modal')) return true;
+        if (node.closest?.('#course-selection-modal-bg')) return true;
+        if (node.closest?.('#schModalOverlay')) return true;
+        if (node.closest?.('#schPresetManagerOverlay')) return true;
+        if (node.classList?.contains('palette-card')) return true;
+        if (node.closest?.('#palette-list')) return true;
         return Boolean(node.closest('#lux-shell, #lux-topbar, #lux-studio-backdrop, #mobile-bottom-nav, #mobile-action-sheet, #lux-home-shell, .lux-picker-panel'));
     }
 
     function sanitizeLegacyVisualInlineStyle(styleText, options = {}) {
         const text = String(styleText || '').trim();
-        if (!text) return '';
-        const next = [];
+        if (!text) return { kept: [], removed: [] };
+        const kept = [];
+        const removed = [];
         text.split(';').forEach((entry) => {
             const part = entry.trim();
             if (!part) return;
             const colonIndex = part.indexOf(':');
             if (colonIndex === -1) {
-                next.push(part);
+                kept.push(part);
                 return;
             }
             const prop = part.slice(0, colonIndex).trim().toLowerCase();
             const value = part.slice(colonIndex + 1).trim();
             const shouldStrip = LUX_LEGACY_VISUAL_PROPS.has(prop) || prop.startsWith('border-');
-            if (shouldStrip && (options.stripAllVisuals || hasLegacyVisualValue(value))) return;
-            next.push(`${prop}: ${value}`);
+            if (shouldStrip && (options.stripAllVisuals || hasLegacyVisualValue(value))) {
+                removed.push(prop);
+                return;
+            }
+            kept.push(`${prop}: ${value}`);
         });
-        return next.join('; ');
+        return { kept, removed };
     }
 
     function decorateLegacyVisualNode(node) {
@@ -2113,6 +2579,12 @@
         if (
             document.body.classList.contains('lux-route-students-admin') &&
             (node.id === 'students-content' || node.closest?.('#students-content'))
+        ) {
+            return;
+        }
+        if (
+            document.body.classList.contains('lux-route-staff') &&
+            (node.id === 'staff-content' || node.closest?.('#staff-content'))
         ) {
             return;
         }
@@ -2151,10 +2623,10 @@
             const sanitized = sanitizeLegacyVisualInlineStyle(styleText, {
                 stripAllVisuals: isField || isButton || isTab || isSurface || isTable || isPill
             });
-            const normalizedOriginal = styleText.trim();
-            if (sanitized) {
-                if (sanitized !== normalizedOriginal) node.setAttribute('style', sanitized);
-            } else if (normalizedOriginal) {
+            if (sanitized.removed.length) {
+                sanitized.removed.forEach((prop) => node.style.removeProperty(prop));
+            }
+            if (!node.getAttribute('style') || !String(node.getAttribute('style') || '').trim()) {
                 node.removeAttribute('style');
             }
         }
@@ -2242,14 +2714,148 @@
     }
 
     let queuedShellSyncFrame = null;
+    let queuedNavigateSyncFrame = null;
+    let __luxPendingNavigateSyncPageId = null;
 
-    function queueShellSync() {
+    function isStandaloneLmsRouteActive() {
+        return !isIndexPortalShell() && getActiveEntryPageId() === 'lms';
+    }
+
+    function syncLayoutForPage(pageId) {
+        const activePageId = String(pageId || getActivePageId() || 'home').trim().toLowerCase() || 'home';
+        if (activePageId === 'home' || !activePageId) {
+            renderHomeShell();
+        }
+        if (activePageId === 'admin-tools') {
+            renderLuxuryAdminToolsPage();
+        }
+        if (activePageId === 'social') {
+            if (typeof schedulePublicSocialRenderBoost === 'function') schedulePublicSocialRenderBoost();
+        }
+        if (activePageId === 'exams') {
+            if (typeof renderExamsPageShellContext === 'function') renderExamsPageShellContext();
+            if (getEffectiveRole() !== USER_ROLES.STUDENT && typeof renderAdminExamSection === 'function') {
+                renderAdminExamSection();
+            }
+        }
+    }
+
+    function isLuxNavEmpty() {
+        const navRoot = document.getElementById('lux-nav');
+        return Boolean(navRoot) && navRoot.children.length === 0;
+    }
+
+    function resetLuxuryHomeDashboardBundleState() {
+        window.__kiuLuxuryHomeDashboardLoaded = false;
+        __luxHomeDashboardBundlePromise = null;
+    }
+
+    function rehydrateIndexPortalEntry(options = {}) {
+        if (typeof isIndexPortalShell !== 'function' || !isIndexPortalShell()) return;
+        const pageId = String(options.pageId || getActivePageId() || 'home').trim().toLowerCase() || 'home';
+        const onHome = pageId === 'home';
+        const chromeOnly = options.chromeOnly === true;
+        if (
+            options.resetHomeBundle
+            || (onHome && window.__kiuLuxuryHomeDashboardLoaded !== true && homeShellHasLoadingPlaceholder())
+        ) {
+            resetLuxuryHomeDashboardBundleState();
+        }
+        applyPortalPageState();
+        closePickerPanels();
+        const navRoot = document.getElementById('lux-nav');
+        if (navRoot && !navRoot.children.length) {
+            navRoot.dataset.renderSignature = '';
+        }
+        if (typeof markPortalShellReady === 'function') {
+            markPortalShellReady();
+        }
+        if (!chromeOnly && options.fullSync !== false && typeof syncAll === 'function') {
+            syncAll();
+            return;
+        }
+        if (typeof renderNav === 'function') renderNav();
+        if (typeof populateFacultySwitcher === 'function') populateFacultySwitcher();
+        if (typeof populateRoleSwitcher === 'function') populateRoleSwitcher();
+        syncTopbar();
+        if (!chromeOnly) {
+            syncLayoutForPage(pageId);
+            return;
+        }
+        if (onHome && window.__kiuLuxuryHomeDashboardLoaded !== true) {
+            const homeShell = ensureHomeShell();
+            if (homeShell && !homeShellHasDashboardContent(homeShell)) {
+                renderHomeChromeSkeleton(homeShell);
+            }
+        }
+    }
+
+    function recoverIndexPortalShell(options = {}) {
+        rehydrateIndexPortalEntry({
+            ...options,
+            fullSync: options.fullSync !== false
+        });
+    }
+
+    function syncAfterNavigate(pageId) {
+        const targetPageId = String(pageId || getActivePageId() || 'home').trim().toLowerCase() || 'home';
+        applyPortalPageState();
+        closePickerPanels();
+        renderNav();
+        syncTopbar();
+        const visualSignature = buildVisualStateSyncSignature();
+        if (window.__luxLastVisualStateSyncSignature !== visualSignature) {
+            syncVisualStateOnly();
+        }
+        if (window.__luxLastNavigateLayoutPageId !== targetPageId) {
+            window.__luxLastNavigateLayoutPageId = targetPageId;
+            syncLayoutForPage(targetPageId);
+        }
+        const navRoot = document.getElementById('lux-nav');
+        if (navRoot && !navRoot.children.length) {
+            navRoot.dataset.renderSignature = '';
+            if (typeof renderNav === 'function') renderNav();
+        }
+    }
+
+    function queueNavigateSync(args, result) {
+        if (result?.navigationSkipped) return;
+        if (window.__kiuRoleSwitchRedirectPending || window.__kiuFacultySwitchRedirectPending) return;
+        const pageId = String(args?.[0] || getActivePageId() || 'home').trim().toLowerCase() || 'home';
+        __luxPendingNavigateSyncPageId = pageId;
+        if (queuedNavigateSyncFrame) return;
+        queuedNavigateSyncFrame = window.requestAnimationFrame(() => {
+            queuedNavigateSyncFrame = null;
+            if (window.__kiuRoleSwitchRedirectPending || window.__kiuFacultySwitchRedirectPending) return;
+            const targetPageId = __luxPendingNavigateSyncPageId;
+            __luxPendingNavigateSyncPageId = null;
+            syncAfterNavigate(targetPageId);
+        });
+    }
+
+    function queueShellSync(args, result) {
+        if (result?.navigationSkipped) return;
         if (window.__kiuRoleSwitchRedirectPending || window.__kiuFacultySwitchRedirectPending) return;
         if (queuedShellSyncFrame) return;
         queuedShellSyncFrame = window.requestAnimationFrame(() => {
             queuedShellSyncFrame = null;
             if (window.__kiuRoleSwitchRedirectPending || window.__kiuFacultySwitchRedirectPending) return;
+            if (!isIndexPortalShell() && typeof window.refreshStandaloneDesktopRouteShellContext === 'function') {
+                window.refreshStandaloneDesktopRouteShellContext({ rerender: true, refreshActiveRoute: true });
+                return;
+            }
+            if (isStandaloneLmsRouteActive() && typeof window.refreshStandaloneLmsShellContext === 'function') {
+                window.refreshStandaloneLmsShellContext({ refreshSubjectDeck: false });
+                return;
+            }
+            if (!isIndexPortalShell() && typeof window.refreshStandaloneDesktopShellChrome === 'function') {
+                window.refreshStandaloneDesktopShellChrome();
+                return;
+            }
             syncAll();
+            if (isIndexPortalShell() && isLuxNavEmpty()) {
+                rehydrateIndexPortalEntry({ pageId: getActivePageId(), reason: 'shell-sync' });
+            }
         });
     }
 
@@ -2298,14 +2904,24 @@
             visuals.paletteKey || resolvePaletteKey() || '',
             JSON.stringify(visuals.customPalette || {}),
             visuals.backgroundMode || getBackgroundMode() || '',
-            visuals.backgroundIntensity || getBackgroundIntensity() || '',
-            visuals.glowStrength || getGlowStrength() || '',
-            typeof visuals.backgroundAnimationsEnabled === 'boolean' ? String(visuals.backgroundAnimationsEnabled) : String(areBackgroundAnimationsEnabled())
+            String(visuals.particleMotion ?? getParticleMotion()),
+            String(visuals.particleDensity ?? getParticleDensity()),
+            visuals.particleQuality || getParticleQuality() || '',
+            typeof visuals.backgroundAnimationsEnabled === 'boolean' ? String(visuals.backgroundAnimationsEnabled) : String(areBackgroundAnimationsEnabled()),
+            String(visuals.surfaceTransparency ?? localStorage.getItem('kiuLuxurySurfaceTransparency') ?? 13)
         ].join('|');
     }
 
     function syncAll() {
         const activePageId = getActivePageId();
+        const onAdminToolsRoute = document.body?.classList?.contains('lux-route-admin-tools');
+        const onLmsRoute = isLuxRouteWorkspace(activePageId, getActiveEntryPageId());
+        if (onAdminToolsRoute) {
+            const now = Date.now();
+            const lastSyncAt = window.__luxAdminToolsSyncAllAt || 0;
+            if (now - lastSyncAt < 400) return;
+            window.__luxAdminToolsSyncAllAt = now;
+        }
         applyThemeMode(getThemeMode(), false);
         applyResolvedPalette();
         applyAtmosphereSettings();
@@ -2318,16 +2934,24 @@
         populateRoleSwitcher();
         syncLayout();
         syncStudioUi();
-        queueLegacyVisualRefresh(document.querySelector('.page-section.active-page') || document.body);
+        if (!onAdminToolsRoute && !onLmsRoute) {
+            queueLegacyVisualRefresh(document.querySelector('.page-section.active-page') || document.body);
+        }
+        if (onLmsRoute && typeof window.ensureLmsRouteVisualState === 'function') {
+            window.ensureLmsRouteVisualState();
+        }
+        if (isAdminLibraryRouteContext(activePageId, getActiveEntryPageId()) && typeof window.ensureAdminLibraryRouteVisualState === 'function') {
+            window.ensureAdminLibraryRouteVisualState();
+        }
         /* FIX: Re-apply transparency after palette/theme/atmosphere changes
            so inline surface backgrounds recalculate with current accent colors */
-        if (typeof updateTransparency === 'function') {
+        if (typeof window.queueLuxuryTransparencyRefresh === 'function') {
             var _syncTransVal = getDashboardVisuals().surfaceTransparency || localStorage.getItem('kiuLuxurySurfaceTransparency');
             if (_syncTransVal) {
                 var _syncTransparencySignature = buildTransparencySyncSignature(activePageId, _syncTransVal);
                 if (window.__luxLastTransparencySyncSignature !== _syncTransparencySignature) {
                     window.__luxLastTransparencySyncSignature = _syncTransparencySignature;
-                    updateTransparency(parseInt(_syncTransVal));
+                    window.queueLuxuryTransparencyRefresh(parseInt(_syncTransVal, 10));
                 }
             }
         }
@@ -2345,60 +2969,199 @@
         applyLuxuryPerformanceProfile();
         document.body.dataset.luxBackgroundMode = getBackgroundMode();
         syncStudioUi();
-        queueLegacyVisualRefresh(document.querySelector('.page-section.active-page') || document.body);
-        if (typeof updateTransparency === 'function') {
+        if (!isLuxRouteWorkspace()) {
+            queueLegacyVisualRefresh(document.querySelector('.page-section.active-page') || document.body);
+        }
+        if (typeof window.queueLuxuryTransparencyRefresh === 'function') {
             const transparencyValue = getDashboardVisuals().surfaceTransparency || localStorage.getItem('kiuLuxurySurfaceTransparency');
             if (transparencyValue) {
-                updateTransparency(parseInt(transparencyValue, 10));
+                window.queueLuxuryTransparencyRefresh(parseInt(transparencyValue, 10));
             }
+        }
+        if (typeof window.__kiuApplyLmsParticleTheme === 'function') {
+            window.__kiuApplyLmsParticleTheme();
+        }
+        if (typeof window.__kiuRefreshLuxuryBackground === 'function') {
+            window.__kiuRefreshLuxuryBackground();
+        }
+        if (isLuxRouteWorkspace() && typeof window.ensureLmsRouteVisualState === 'function') {
+            window.ensureLmsRouteVisualState();
         }
     }
 
+    window.getDashboardVisuals = typeof getDashboardVisuals === 'function'
+        ? getDashboardVisuals
+        : window.getDashboardVisuals;
+    window.setDashboardVisuals = typeof setDashboardVisuals === 'function'
+        ? setDashboardVisuals
+        : window.setDashboardVisuals;
+    window.applyPaletteKey = typeof applyPaletteKey === 'function'
+        ? applyPaletteKey
+        : window.applyPaletteKey;
+    window.applyThemeMode = typeof applyThemeMode === 'function'
+        ? applyThemeMode
+        : window.applyThemeMode;
+    window.setBackgroundMode = typeof setBackgroundMode === 'function'
+        ? setBackgroundMode
+        : window.setBackgroundMode;
+    window.syncAll = typeof syncAll === 'function'
+        ? syncAll
+        : window.syncAll;
+    window.syncVisualStateOnly = typeof syncVisualStateOnly === 'function'
+        ? syncVisualStateOnly
+        : window.syncVisualStateOnly;
+    window.syncAfterNavigate = typeof syncAfterNavigate === 'function'
+        ? syncAfterNavigate
+        : window.syncAfterNavigate;
+
     /* Dashboard Builder Overrides */
     /* Route-owned home dashboard and editor bundle loader */
+    const HOME_DASHBOARD_LOAD_TIMEOUT_MS = 10000;
     let renderDynamicHomeShell = function noopRenderDynamicHomeShell() {};
     let startBackground = function noopStartBackground() {};
     let __luxHomeShellResizeTimer = null;
     let __luxHomeDashboardBundlePromise = null;
+    let __luxHomeShellLoadTimeout = null;
+    let __luxHomeShellLoadGeneration = 0;
+    let __luxHomeDashboardChunkRetryTimer = null;
+    let __luxHomeDashboardChunkRetryAttempts = 0;
+
+    function homeShellHasLoadingPlaceholder(homeShell = document.getElementById('lux-home-shell')) {
+        return Boolean(homeShell?.querySelector?.('[data-home-loading-shell="1"]'));
+    }
+
+    function homeShellHasDashboardContent(homeShell = document.getElementById('lux-home-shell')) {
+        if (!homeShell) return false;
+        return Boolean(
+            homeShell.querySelector('[data-dashboard-canvas="1"], .lux-grid-widget, .lux-dashboard-section, .lux-widget-stack, .lux-home-grid--builder')
+        );
+    }
+
+    function clearHomeShellLoadTimeout() {
+        if (__luxHomeShellLoadTimeout) {
+            window.clearTimeout(__luxHomeShellLoadTimeout);
+            __luxHomeShellLoadTimeout = null;
+        }
+    }
+
+    function renderHomeShellLoadingPlaceholder(homeShell) {
+        homeShell.innerHTML = `
+            <div class="lux-home-grid is-loading" data-home-loading-shell="1">
+                <section class="lux-card">
+                    <div class="lux-card-body lux-stack-grid">
+                        <div class="lux-kicker">Dashboard</div>
+                        <div class="page-hero-title lux-home-loading-title">Preparing your KIU workspace</div>
+                        <div class="lux-card-copy">Loading the faculty-scoped home dashboard, recent updates, schedule context, registration status, and quick actions for the active portal role.</div>
+                        <div class="lux-pill-row">
+                            <span class="lux-status-pill is-muted"><i class="fas fa-layer-group"></i> Home shell</span>
+                            <span class="lux-status-pill is-muted"><i class="fas fa-bell"></i> Notifications</span>
+                            <span class="lux-status-pill is-muted"><i class="fas fa-calendar-week"></i> Schedule</span>
+                            <span class="lux-status-pill is-muted"><i class="fas fa-user-shield"></i> Role context</span>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        `;
+    }
+
+    function renderHomeShellRecoveryPanel(homeShell, { title, copy, showRetry = true } = {}) {
+        clearHomeShellLoadTimeout();
+        const safeTitle = escapeHtml(title || 'Dashboard could not load');
+        const safeCopy = escapeHtml(copy || 'The home dashboard bundle did not finish loading. Try again or refresh the page.');
+        homeShell.innerHTML = `
+            <div class="lux-home-grid is-loading" data-home-recovery-shell="1">
+                <section class="lux-card">
+                    <div class="lux-card-body lux-stack-grid">
+                        <div class="lux-kicker">Dashboard</div>
+                        <div class="page-hero-title lux-home-loading-title">${safeTitle}</div>
+                        <div class="lux-card-copy">${safeCopy}</div>
+                        ${showRetry ? '<button class="lux-primary-btn" type="button" data-home-dashboard-retry="1">Retry loading dashboard</button>' : ''}
+                    </div>
+                </section>
+            </div>
+        `;
+        if (!showRetry) return;
+        const retryButton = homeShell.querySelector('[data-home-dashboard-retry="1"]');
+        if (!retryButton || retryButton.__luxHomeRetryBound) return;
+        retryButton.__luxHomeRetryBound = true;
+        retryButton.addEventListener('click', () => {
+            window.__kiuLuxuryHomeDashboardLoaded = false;
+            __luxHomeDashboardBundlePromise = null;
+            renderHomeShell();
+        });
+    }
+
+    function scheduleHomeShellLoadTimeout(generation) {
+        clearHomeShellLoadTimeout();
+        __luxHomeShellLoadTimeout = window.setTimeout(() => {
+            __luxHomeShellLoadTimeout = null;
+            if (generation !== __luxHomeShellLoadGeneration) return;
+            if (!isLuxuryHomeRoute()) return;
+            const homeShell = document.getElementById('lux-home-shell');
+            if (!homeShell || homeShellHasDashboardContent(homeShell)) return;
+            renderHomeShellRecoveryPanel(homeShell, {
+                title: 'Dashboard is taking longer than expected',
+                copy: 'The home dashboard is still loading. You can retry now without leaving this page.'
+            });
+        }, HOME_DASHBOARD_LOAD_TIMEOUT_MS);
+    }
 
     function renderHomeShell() {
         const homeShell = ensureHomeShell();
         if (!homeShell) return;
+        const loadGeneration = ++__luxHomeShellLoadGeneration;
         if (isLuxuryHomeRoute() && window.__kiuLuxuryHomeDashboardLoaded !== true) {
-            if (!homeShell.textContent.trim()) {
-                homeShell.innerHTML = `
-                    <div class="lux-home-grid is-loading" data-home-loading-shell="1">
-                        <section class="lux-card">
-                            <div class="lux-card-body" style="display:grid; gap:16px;">
-                                <div class="lux-kicker">Dashboard</div>
-                                <div class="page-hero-title" style="font-size:clamp(30px,3vw,42px); line-height:1.05;">Preparing your KIU workspace</div>
-                                <div class="lux-card-copy">Loading the faculty-scoped home dashboard, recent updates, schedule context, registration status, and quick actions for the active portal role.</div>
-                                <div class="lux-pill-row">
-                                    <span class="lux-status-pill is-muted"><i class="fas fa-layer-group"></i> Home shell</span>
-                                    <span class="lux-status-pill is-muted"><i class="fas fa-bell"></i> Notifications</span>
-                                    <span class="lux-status-pill is-muted"><i class="fas fa-calendar-week"></i> Schedule</span>
-                                    <span class="lux-status-pill is-muted"><i class="fas fa-user-shield"></i> Role context</span>
-                                </div>
-                            </div>
-                        </section>
-                    </div>
-                `;
+            if (!homeShell.textContent.trim() || homeShell.querySelector('[data-home-recovery-shell="1"]')) {
+                renderHomeShellLoadingPlaceholder(homeShell);
             }
-            ensureLuxuryHomeDashboardBundle().then((loaded) => {
-                if (loaded) renderHomeShell();
+            scheduleHomeShellLoadTimeout(loadGeneration);
+            ensureLuxuryHomeDashboardBundle({ preload: false, allowWhileNotHome: true }).then((loaded) => {
+                if (loadGeneration !== __luxHomeShellLoadGeneration) return;
+                if (!isLuxuryHomeRoute()) return;
+                if (loaded) {
+                    renderHomeShell();
+                    return;
+                }
+                renderHomeShellRecoveryPanel(homeShell, {
+                    title: 'Dashboard could not load',
+                    copy: 'The home dashboard bundle was not available yet. Retry once the portal scripts finish loading.'
+                });
             });
             return;
         }
-        renderDynamicHomeShell(homeShell);
+        clearHomeShellLoadTimeout();
+        try {
+            renderDynamicHomeShell(homeShell);
+        } catch (error) {
+            console.error('Home dashboard render failed.', error);
+            renderHomeShellRecoveryPanel(homeShell, {
+                title: 'Dashboard render failed',
+                copy: 'Something went wrong while building the home dashboard. Retry or refresh the page.'
+            });
+        }
     }
 
     function isLuxuryHomeRoute() {
-        return getActivePageId() === 'home' || document.body?.classList?.contains('lux-route-home');
+        return getActivePageId() === 'home';
+    }
+
+    function scheduleLuxuryHomeDashboardPreload() {
+        if (typeof isIndexPortalShell !== 'function' || !isIndexPortalShell()) return;
+        const run = () => ensureLuxuryHomeDashboardBundle({ preload: true });
+        if (typeof window.requestIdleCallback === 'function') {
+            window.requestIdleCallback(run, { timeout: 1200 });
+            return;
+        }
+        window.setTimeout(run, 0);
     }
 
     window.__kiuLuxuryHomeChunkBase64 = window.__kiuLuxuryHomeChunkBase64 || '';
     window.__kiuRegisterLuxuryHomeChunk = function registerLuxuryHomeChunk(base64Source) {
         window.__kiuLuxuryHomeChunkBase64 = String(base64Source || '');
+        ensureLuxuryHomeDashboardBundle({ preload: true }).then((loaded) => {
+            if (!loaded) return;
+            if (isLuxuryHomeRoute()) renderHomeShell();
+        });
     };
 
     function decodeLuxuryHomeChunkSource(base64Source) {
@@ -2407,13 +3170,53 @@
         return new TextDecoder('utf-8').decode(bytes);
     }
 
-    function ensureLuxuryHomeDashboardBundle() {
-        if (!isLuxuryHomeRoute()) return Promise.resolve(false);
+    function scheduleLuxuryHomeDashboardChunkRetry() {
+        const retryDelaysMs = [50, 200, 500];
+        if (__luxHomeDashboardChunkRetryAttempts >= retryDelaysMs.length) {
+            __luxHomeDashboardChunkRetryAttempts = 0;
+            return;
+        }
+        if (__luxHomeDashboardChunkRetryTimer) {
+            window.clearTimeout(__luxHomeDashboardChunkRetryTimer);
+        }
+        const delayMs = retryDelaysMs[__luxHomeDashboardChunkRetryAttempts];
+        __luxHomeDashboardChunkRetryAttempts += 1;
+        __luxHomeDashboardChunkRetryTimer = window.setTimeout(() => {
+            __luxHomeDashboardChunkRetryTimer = null;
+            if (window.__kiuLuxuryHomeDashboardLoaded === true) {
+                __luxHomeDashboardChunkRetryAttempts = 0;
+                return;
+            }
+            const encoded = String(window.__kiuLuxuryHomeChunkBase64 || '').trim();
+            if (encoded) {
+                __luxHomeDashboardChunkRetryAttempts = 0;
+                ensureLuxuryHomeDashboardBundle({ preload: false, allowWhileNotHome: true }).then((loaded) => {
+                    if (loaded && isLuxuryHomeRoute()) renderHomeShell();
+                });
+                return;
+            }
+            scheduleLuxuryHomeDashboardChunkRetry();
+        }, delayMs);
+    }
+
+    function ensureLuxuryHomeDashboardBundle(options = {}) {
+        const preload = options.preload === true;
+        const allowWhileNotHome = options.allowWhileNotHome === true;
+        if (!preload && !allowWhileNotHome && !isLuxuryHomeRoute()) return Promise.resolve(false);
+        if (typeof isIndexPortalShell === 'function' && !isIndexPortalShell() && !preload) {
+            return Promise.resolve(false);
+        }
         if (window.__kiuLuxuryHomeDashboardLoaded === true) return Promise.resolve(true);
         if (__luxHomeDashboardBundlePromise) return __luxHomeDashboardBundlePromise;
         __luxHomeDashboardBundlePromise = Promise.resolve().then(() => {
             const encoded = String(window.__kiuLuxuryHomeChunkBase64 || '').trim();
-            if (!encoded) return false;
+            if (!encoded) {
+                if (typeof isIndexPortalShell === 'function' && isIndexPortalShell()) {
+                    scheduleLuxuryHomeDashboardChunkRetry();
+                }
+                return false;
+            }
+            __luxHomeDashboardChunkRetryAttempts = 0;
             eval(`${decodeLuxuryHomeChunkSource(encoded)}
 window.buildHomeWidgetDefinitions = typeof buildHomeWidgetDefinitions === 'function' ? buildHomeWidgetDefinitions : window.buildHomeWidgetDefinitions;`);
             window.__kiuLuxuryHomeDashboardLoaded = true;
@@ -2430,18 +3233,27 @@ window.buildHomeWidgetDefinitions = typeof buildHomeWidgetDefinitions === 'funct
         return __luxHomeDashboardBundlePromise;
     }
 
+    window.renderHomeShell = renderHomeShell;
+    window.ensureLuxuryHomeDashboardBundle = ensureLuxuryHomeDashboardBundle;
+    window.recoverIndexPortalShell = recoverIndexPortalShell;
+    window.rehydrateIndexPortalEntry = rehydrateIndexPortalEntry;
+    window.bootstrapIndexPortalChromeSync = bootstrapIndexPortalChromeSync;
+
     ready(() => {
         window.renderLuxuryAdminToolsPage = (...args) => renderLuxuryAdminToolsPage(...args);
         ensureShell();
         ensureHomeShell();
         bindUserMenu();
         bindTopbarControls();
+        if (typeof isIndexPortalShell === 'function' && isIndexPortalShell()) {
+            bootstrapIndexPortalChromeSync();
+        }
         applyThemeMode(getThemeMode(), false);
         applyResolvedPalette();
         applyAtmosphereSettings();
         applyLuxuryPerformanceProfile();
 
-        wrapFunction('navigate', queueShellSync);
+        wrapFunction('navigate', queueNavigateSync);
         wrapFunction('switchRole', queueShellSync);
         wrapFunction('switchFacultyTheme', queueShellSync);
         wrapFunction('refreshShellIdentity', queueShellSync);
@@ -2456,22 +3268,58 @@ window.buildHomeWidgetDefinitions = typeof buildHomeWidgetDefinitions === 'funct
             }, 90);
         });
 
+        if (typeof isIndexPortalShell === 'function' && isIndexPortalShell()) {
+            scheduleLuxuryHomeDashboardPreload();
+            window.addEventListener('pageshow', (event) => {
+                if (typeof isIndexPortalShell !== 'function' || !isIndexPortalShell()) return;
+                if (typeof markPortalShellReady === 'function') {
+                    markPortalShellReady();
+                }
+                const activePageId = getActivePageId();
+                const onHome = activePageId === 'home';
+                const needsRehydrate = event.persisted
+                    || document.documentElement?.classList.contains('kiu-shell-loading')
+                    || document.body?.classList.contains('kiu-shell-loading')
+                    || isLuxNavEmpty()
+                    || (onHome && (homeShellHasLoadingPlaceholder() || !homeShellHasDashboardContent()));
+                if (!needsRehydrate) return;
+                rehydrateIndexPortalEntry({
+                    pageId: activePageId,
+                    reason: event.persisted ? 'pageshow-bfcache' : 'pageshow-recover',
+                    resetHomeBundle: onHome && !homeShellHasDashboardContent()
+                });
+            });
+        }
+
         const scheduleInitialShellSync = window.requestIdleCallback || ((cb) => window.setTimeout(cb, 0));
         scheduleInitialShellSync(() => {
-            const runInitialShellSync = () => {
-                syncAll();
+            const runDeferredVisualEnhancements = () => {
                 enhanceUniversalPickers(document.querySelector('.page-section.active-page') || document);
                 observeUniversalPickers();
                 observeLegacyVisualTree();
                 queueLegacyVisualRefresh(document.querySelector('.page-section.active-page') || document.body);
                 queueHeavySurfaceObservationRefresh();
-                startBackground();
+                if (typeof window.scheduleLuxuryTransparencyBootRefresh === 'function') {
+                    window.scheduleLuxuryTransparencyBootRefresh(
+                        getDashboardVisuals().surfaceTransparency || localStorage.getItem('kiuLuxurySurfaceTransparency') || 13
+                    );
+                }
+                if (typeof window.__kiuInitLuxuryParticleBackground === 'function') {
+                    window.__kiuInitLuxuryParticleBackground();
+                }
             };
+            const scheduleDeferredVisualEnhancements = window.requestIdleCallback || ((cb) => window.setTimeout(cb, 0));
             if (isLuxuryHomeRoute()) {
-                ensureLuxuryHomeDashboardBundle().finally(runInitialShellSync);
+                ensureLuxuryHomeDashboardBundle({ preload: false, allowWhileNotHome: true }).then((loaded) => {
+                    if (loaded && isLuxuryHomeRoute()) {
+                        renderHomeShell();
+                    }
+                });
+                scheduleDeferredVisualEnhancements(runDeferredVisualEnhancements);
                 return;
             }
-            runInitialShellSync();
+            syncAll();
+            scheduleDeferredVisualEnhancements(runDeferredVisualEnhancements);
         });
     });
 

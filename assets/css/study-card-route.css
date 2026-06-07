@@ -1,0 +1,1216 @@
+body.lux-route-study-card {
+    /* ===== Single source of truth: color-fade / glow / glass recipe =====
+       Every study-card surface references these tokens. Retune the look here
+       once and it propagates across the whole page (and matches the
+       dashboard / LMS / registration / programs). Glow radials follow
+       --lux-color-fade-alpha; the dark base follows --lux-transparency-alpha. */
+    --sc-fade-surface:
+        radial-gradient(circle at 8% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .92) * .075)), transparent 32%),
+        radial-gradient(circle at 72% 4%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .28)), transparent 38%),
+        radial-gradient(circle at 100% 92%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .92) * .18)), transparent 38%),
+        linear-gradient(135deg,
+            rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .10)),
+            rgba(10,15,24, calc(var(--lux-transparency-alpha, .92) * .89)) 44%,
+            rgba(7,10,18, calc(var(--lux-transparency-alpha, .92) * .80)));
+    --sc-fade-surface-soft:
+        radial-gradient(circle at 12% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .92) * .06)), transparent 30%),
+        radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .16)), transparent 36%),
+        linear-gradient(135deg,
+            rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .07)),
+            rgba(12,18,30, calc(var(--lux-transparency-alpha, .92) * .82)) 46%,
+            rgba(8,12,21, calc(var(--lux-transparency-alpha, .92) * .72)));
+    --sc-fade-control:
+        linear-gradient(180deg, rgba(255,255,255, calc(0.04 + var(--lux-glass-alpha, .06))), rgba(255,255,255, 0.02)),
+        radial-gradient(circle at top right, rgba(var(--lux-accent-rgb), 0.10), transparent 32%);
+    --sc-fade-border: rgba(var(--lux-accent-rgb), 0.22);
+    --sc-fade-border-soft: rgba(255,255,255, 0.11);
+    --sc-fade-shadow:
+        0 24px 58px rgba(0,0,0,0.24),
+        inset 0 1px 0 rgba(255,255,255,0.08),
+        0 0 0 1px rgba(var(--lux-accent-rgb),0.04);
+    --sc-fade-shadow-soft:
+        0 18px 40px rgba(0,0,0,0.20),
+        inset 0 1px 0 rgba(255,255,255,0.06);
+    --sc-fade-glow-ring: 0 0 0 1px rgba(var(--lux-accent-rgb),0.30), 0 18px 40px rgba(var(--lux-accent-rgb), var(--lux-panel-glow, 0.22));
+    --sc-fade-blur: blur(var(--lux-transparency-blur, 18px)) saturate(var(--lux-transparency-saturate, 138%));
+}
+
+html.lux-light-mode body.lux-route-study-card,
+body.lux-light-mode.lux-route-study-card {
+    --sc-fade-surface:
+        radial-gradient(circle at 8% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .86) * .88)), transparent 34%),
+        radial-gradient(circle at 72% 4%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .19)), transparent 38%),
+        radial-gradient(circle at 100% 92%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .86) * .13)), transparent 38%),
+        linear-gradient(135deg,
+            rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .075)),
+            rgba(255,255,255, calc(var(--lux-transparency-alpha, .86) * .88)) 44%,
+            rgba(247,241,232, calc(var(--lux-transparency-alpha, .86) * .72)));
+    --sc-fade-surface-soft:
+        radial-gradient(circle at 12% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .86) * .72)), transparent 32%),
+        radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .14)), transparent 36%),
+        linear-gradient(135deg,
+            rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .05)),
+            rgba(255,255,255, calc(var(--lux-transparency-alpha, .86) * .82)) 46%,
+            rgba(250,246,239, calc(var(--lux-transparency-alpha, .86) * .66)));
+    --sc-fade-control:
+        linear-gradient(180deg, rgba(255,255,255, 0.82), rgba(248,244,237, 0.62)),
+        radial-gradient(circle at top right, rgba(var(--lux-accent-rgb), 0.10), transparent 32%);
+    --sc-fade-border: rgba(var(--lux-accent-rgb), 0.18);
+    --sc-fade-border-soft: rgba(48,34,22, 0.12);
+    --sc-fade-shadow:
+        0 22px 48px rgba(107,91,62,0.13),
+        inset 0 1px 0 rgba(255,255,255,0.74);
+    --sc-fade-shadow-soft:
+        0 16px 34px rgba(107,91,62,0.10),
+        inset 0 1px 0 rgba(255,255,255,0.66);
+    --sc-fade-glow-ring: 0 0 0 1px rgba(var(--lux-accent-rgb),0.22), 0 16px 34px rgba(var(--lux-accent-rgb), 0.16);
+    --sc-fade-blur: blur(var(--lux-transparency-blur, 18px)) saturate(var(--lux-transparency-saturate, 140%));
+}
+
+body.lux-route-study-card .page-hero {
+    background: var(--sc-fade-surface) !important;
+    border-color: var(--sc-fade-border) !important;
+    box-shadow: var(--sc-fade-shadow) !important;
+    -webkit-backdrop-filter: var(--sc-fade-blur) !important;
+    backdrop-filter: var(--sc-fade-blur) !important;
+}
+
+body.lux-route-study-card .page-hero::before {
+    background:
+        linear-gradient(120deg, rgba(255, 255, 255, 0.03), transparent 42%),
+        radial-gradient(circle at 80% 18%, rgba(var(--lux-accent-rgb), 0.10), transparent 24%) !important;
+}
+
+body.lux-route-study-card .page-hero-badge {
+    border-color: var(--sc-fade-border) !important;
+    background: var(--sc-fade-control) !important;
+    color: var(--lux-text) !important;
+    -webkit-backdrop-filter: var(--sc-fade-blur);
+    backdrop-filter: var(--sc-fade-blur);
+}
+
+body.lux-route-study-card .filter-shell,
+body.lux-route-study-card .content-box.surface-card {
+    background: var(--sc-fade-surface) !important;
+    border-color: var(--sc-fade-border) !important;
+    box-shadow: var(--sc-fade-shadow) !important;
+    -webkit-backdrop-filter: var(--sc-fade-blur) !important;
+    backdrop-filter: var(--sc-fade-blur) !important;
+}
+
+body.lux-route-study-card .filter-shell-title {
+    color: rgba(var(--lux-accent-rgb), 0.84);
+}
+
+body.lux-route-study-card .study-card-filter-shell {
+    justify-content: space-between;
+}
+
+body.lux-route-study-card .study-card-filter-actions {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+body.lux-route-study-card #study-card-program-select {
+    padding: 10px 15px;
+    border-radius: 10px;
+    outline: none;
+    font-size: 13px;
+    background: var(--sc-fade-control) !important;
+    border: 1px solid var(--sc-fade-border-soft) !important;
+    color: var(--lux-text) !important;
+    box-shadow: var(--sc-fade-shadow-soft) !important;
+    -webkit-backdrop-filter: var(--sc-fade-blur);
+    backdrop-filter: var(--sc-fade-blur);
+}
+
+body.lux-route-study-card #study-card-container {
+    background: var(--sc-fade-surface) !important;
+    border-color: var(--sc-fade-border) !important;
+    box-shadow: var(--sc-fade-shadow) !important;
+    -webkit-backdrop-filter: var(--sc-fade-blur) !important;
+    backdrop-filter: var(--sc-fade-blur) !important;
+}
+
+body.lux-route-study-card .study-card-semester-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 12px;
+}
+
+body.lux-route-study-card .study-card-semester-table thead th {
+    color: rgba(var(--lux-accent-rgb), 0.76);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    font-weight: 800;
+    padding: 0 14px 10px;
+}
+
+body.lux-route-study-card .study-card-term-row {
+    background: var(--sc-fade-surface-soft) !important;
+    -webkit-backdrop-filter: var(--sc-fade-blur);
+    backdrop-filter: var(--sc-fade-blur);
+}
+
+body.lux-route-study-card .study-card-semester-table tbody td {
+    padding: 16px 14px;
+    border-top: 1px solid var(--sc-fade-border-soft);
+    border-bottom: 1px solid var(--sc-fade-border-soft);
+    color: var(--lux-text);
+}
+
+body.lux-route-study-card .study-card-term-row td:first-child {
+    border-left: 1px solid var(--sc-fade-border-soft);
+    border-radius: 18px 0 0 18px;
+}
+
+body.lux-route-study-card .study-card-term-row td:last-child {
+    border-right: 1px solid var(--sc-fade-border-soft);
+    border-radius: 0 18px 18px 0;
+}
+
+body.lux-route-study-card .study-card-term-block {
+    margin-top: 30px;
+}
+
+body.lux-route-study-card .study-card-term-block.is-first {
+    margin-top: 0;
+}
+
+body.lux-route-study-card .study-card-heading--left {
+    text-align: left;
+}
+
+body.lux-route-study-card .study-card-heading--right {
+    text-align: right;
+}
+
+body.lux-route-study-card .study-card-cell--subject {
+    width: 28%;
+    font-weight: 700;
+}
+
+body.lux-route-study-card .study-card-cell--professor {
+    width: 18%;
+}
+
+body.lux-route-study-card .study-card-cell--ects {
+    width: 10%;
+    text-align: center;
+    font-weight: 800;
+}
+
+body.lux-route-study-card .study-card-cell--score {
+    width: 10%;
+    text-align: center;
+    font-weight: 900;
+    color: var(--lux-text);
+}
+
+body.lux-route-study-card .study-card-cell--grade {
+    width: 10%;
+    text-align: center;
+}
+
+body.lux-route-study-card .study-card-cell--assessment {
+    width: 24%;
+    text-align: right;
+}
+
+body.lux-route-study-card .study-card-semester-table .study-card-subject-id {
+    color: rgba(var(--lux-accent-rgb), 0.86);
+}
+
+body.lux-route-study-card .study-card-semester-table .study-card-subject-meta,
+body.lux-route-study-card .study-card-semester-table .study-card-prof-meta,
+body.lux-route-study-card .study-card-empty {
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-study-card .study-card-cell-meta {
+    margin-top: 6px;
+    font-size: 11px;
+}
+
+body.lux-route-study-card .study-card-grade-circle {
+    --study-card-grade-color: rgba(var(--lux-accent-rgb), 0.20);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0 10px;
+    border-radius: 999px;
+    border: 1px solid var(--study-card-grade-color, var(--sc-fade-border));
+    background: linear-gradient(180deg, color-mix(in srgb, var(--study-card-grade-color, var(--lux-accent)) 15%, transparent), var(--sc-fade-surface-soft));
+    color: var(--lux-text);
+    font-weight: 900;
+    box-shadow: var(--sc-fade-shadow-soft);
+    -webkit-backdrop-filter: var(--sc-fade-blur);
+    backdrop-filter: var(--sc-fade-blur);
+}
+
+body.lux-route-study-card .study-card-grade-circle--empty {
+    --study-card-grade-color: #94a3b8;
+}
+
+body.lux-route-study-card .study-card-grade-circle--grade-a {
+    --study-card-grade-color: var(--lux-accent);
+}
+
+body.lux-route-study-card .study-card-grade-circle--grade-b {
+    --study-card-grade-color: var(--lux-accent-2);
+}
+
+body.lux-route-study-card .study-card-grade-circle--grade-c {
+    --study-card-grade-color: rgba(var(--lux-home-secondary-rgb, 110, 160, 255), 0.96);
+}
+
+body.lux-route-study-card .study-card-grade-circle--grade-d {
+    --study-card-grade-color: #d4a24d;
+}
+
+body.lux-route-study-card .study-card-grade-circle--grade-e {
+    --study-card-grade-color: #c97b4b;
+}
+
+body.lux-route-study-card .study-card-grade-circle--grade-fx,
+body.lux-route-study-card .study-card-grade-circle--grade-f {
+    --study-card-grade-color: #d46b6b;
+}
+
+body.lux-route-study-card .study-card-grade-circle.is-empty {
+    color: transparent;
+}
+
+body.lux-route-study-card .study-card-assessment-btn {
+    padding: 10px 14px;
+}
+
+body.lux-route-study-card.study-card-assessment-open {
+    overflow: hidden;
+}
+
+body.lux-route-study-card #student-evaluation-history-modal.gb-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 7400;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(4, 8, 16, 0.72);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+}
+
+body.lux-light-mode.lux-route-study-card #student-evaluation-history-modal.gb-modal-overlay,
+html.lux-light-mode body.lux-route-study-card #student-evaluation-history-modal.gb-modal-overlay {
+    background: rgba(15, 23, 42, 0.45);
+}
+
+body.lux-route-study-card .study-card-assessment-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 7200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(15, 23, 42, 0.72);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+}
+
+body.lux-route-study-card .study-card-assessment-window {
+    display: flex;
+    flex-direction: column;
+    width: min(1240px, calc(100vw - 32px));
+    height: min(88vh, 920px);
+    border-radius: 28px;
+    overflow: hidden;
+    border: 1px solid var(--sc-fade-border);
+    background: var(--sc-fade-surface) !important;
+    box-shadow: var(--sc-fade-shadow);
+    -webkit-backdrop-filter: var(--sc-fade-blur);
+    backdrop-filter: var(--sc-fade-blur);
+}
+
+body.lux-route-study-card .study-card-assessment-window__header {
+    display: flex;
+    justify-content: space-between;
+    gap: 18px;
+    align-items: flex-start;
+    padding: 24px 26px;
+    background: var(--sc-fade-surface-soft) !important;
+    border-bottom: 1px solid var(--sc-fade-border-soft);
+    color: var(--lux-text);
+    -webkit-backdrop-filter: var(--sc-fade-blur);
+    backdrop-filter: var(--sc-fade-blur);
+}
+
+body.lux-route-study-card .study-card-assessment-window__copy {
+    min-width: min(100%, 420px);
+}
+
+body.lux-route-study-card .study-card-assessment-window__actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+body.lux-route-study-card .study-card-assessment-pill {
+    background: var(--sc-fade-control) !important;
+    border-color: var(--sc-fade-border-soft) !important;
+    color: var(--lux-text);
+    -webkit-backdrop-filter: var(--sc-fade-blur);
+    backdrop-filter: var(--sc-fade-blur);
+}
+
+body.lux-route-study-card .study-card-assessment-window__header .study-card-summary-kicker {
+    margin-bottom: 4px;
+}
+
+body.lux-route-study-card .study-card-assessment-window__title {
+    margin-top: 0;
+    font-size: 24px;
+}
+
+body.lux-route-study-card .study-card-assessment-window__meta {
+    margin-top: 6px;
+    font-size: 13px;
+}
+
+body.lux-route-study-card .study-card-assessment-window__actions {
+    align-items: center;
+}
+
+body.lux-route-study-card .study-card-assessment-window__actions .study-card-grade-circle {
+    width: 40px;
+    height: 40px;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+body.lux-route-study-card .study-card-assessment-window__body {
+    flex: 1;
+    min-height: 0;
+    padding: 24px;
+    overflow: auto;
+    background: var(--sc-fade-surface-soft) !important;
+    -webkit-backdrop-filter: var(--sc-fade-blur);
+    backdrop-filter: var(--sc-fade-blur);
+}
+
+body.lux-route-study-card .study-card-assessment-window__body--gradebook,
+body.lux-route-study-card .study-card-gradebook-overlay {
+    display: grid;
+    gap: 20px;
+}
+
+body.lux-route-study-card .study-card-gradebook-overlay .study-card-overlay-metrics {
+    margin: 0;
+}
+
+body.lux-route-study-card .study-card-gradebook-overlay .study-card-overlay-metrics .lux-strip-card {
+    background: var(--sc-fade-surface) !important;
+    border: 1px solid var(--sc-fade-border) !important;
+    box-shadow: var(--sc-fade-shadow-soft) !important;
+    -webkit-backdrop-filter: var(--sc-fade-blur);
+    backdrop-filter: var(--sc-fade-blur);
+}
+
+body.lux-route-study-card .study-card-gradebook-overlay .study-card-overlay-metrics-grade {
+    margin-top: 8px;
+}
+
+body.lux-route-study-card .study-card-gradebook-overlay .study-card-overlay-metrics-letter h3 {
+    display: none;
+}
+
+body.lux-route-study-card .study-card-gradebook-overlay .gb-modern-card,
+body.lux-route-study-card .study-card-gradebook-overlay .gb-transcript-card,
+body.lux-route-study-card .study-card-gradebook-overlay .gb-timeline {
+    margin: 0;
+}
+
+body.lux-route-study-card .study-card-gradebook-overlay .gb-modern-card.gb-weight-card,
+body.lux-route-study-card .study-card-gradebook-overlay .gb-transcript-card {
+    padding: 0;
+    border-radius: 22px;
+    border: 1px solid var(--sc-fade-border) !important;
+    background: var(--sc-fade-surface) !important;
+    box-shadow: var(--sc-fade-shadow) !important;
+    -webkit-backdrop-filter: var(--sc-fade-blur);
+    backdrop-filter: var(--sc-fade-blur);
+    overflow: hidden;
+}
+
+body.lux-route-study-card .study-card-gradebook-overlay .gb-modern-card.gb-weight-card {
+    padding: 20px 22px;
+}
+
+body.lux-route-study-card .study-card-gradebook-overlay .gb-modern-kicker,
+body.lux-route-study-card .study-card-gradebook-overlay .study-card-assessment-window__history-kicker {
+    color: rgba(var(--lux-accent-rgb), 0.76);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+body.lux-route-study-card .study-card-gradebook-overlay .gb-modern-card-head h3 {
+    margin-top: 4px;
+    font-size: 20px;
+    font-weight: 900;
+    line-height: 1.2;
+    color: var(--lux-text);
+}
+
+body.lux-route-study-card .study-card-gradebook-overlay .gb-modern-card-head p,
+body.lux-route-study-card .study-card-gradebook-overlay .study-card-assessment-window__history-copy {
+    max-width: 640px;
+    margin-top: 6px;
+    color: var(--lux-text-muted);
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+body.lux-route-study-card .study-card-gradebook-overlay .gb-scheme-progress-section {
+    gap: 14px;
+}
+
+body.lux-route-study-card .study-card-gradebook-overlay .gb-composition-bar {
+    height: 18px;
+    margin: 6px 0 10px;
+    border-color: rgba(148, 163, 184, 0.22);
+    background: rgba(148, 163, 184, 0.16);
+}
+
+body.lux-route-study-card .study-card-gradebook-overlay .gb-composition-legend {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 0;
+    font-size: 12px;
+}
+
+body.lux-route-study-card .study-card-gradebook-overlay .gb-composition-legend > span {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-height: 72px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    border: 1px solid var(--sc-fade-border-soft);
+    background: var(--sc-fade-control) !important;
+    box-shadow: var(--sc-fade-shadow-soft);
+    color: var(--lux-text-muted);
+    font-size: 11px;
+    font-weight: 800;
+    line-height: 1.35;
+    -webkit-backdrop-filter: var(--sc-fade-blur);
+    backdrop-filter: var(--sc-fade-blur);
+}
+
+body.lux-route-study-card .study-card-gradebook-overlay .gb-composition-legend i {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    margin-right: 0;
+    border-radius: 999px;
+    vertical-align: 0;
+}
+
+body.lux-route-study-card .study-card-gradebook-overlay .gb-weight-stack {
+    gap: 10px;
+}
+
+body.lux-route-study-card .study-card-gradebook-overlay .gb-weight-row {
+    padding: 12px 14px;
+    border-radius: 14px;
+    border: 1px solid var(--sc-fade-border-soft);
+    background: var(--sc-fade-control) !important;
+    box-shadow: var(--sc-fade-shadow-soft);
+    -webkit-backdrop-filter: var(--sc-fade-blur);
+    backdrop-filter: var(--sc-fade-blur);
+}
+
+body.lux-route-study-card .study-card-gradebook-overlay .gb-weight-label strong {
+    color: var(--lux-text);
+}
+
+body.lux-route-study-card .study-card-gradebook-overlay .gb-weight-row-meta {
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-study-card .study-card-gradebook-overlay .gb-weight-stat {
+    font-size: 12px;
+}
+
+body.lux-route-study-card .study-card-gradebook-overlay .gb-weight-track {
+    height: 10px;
+}
+
+body.lux-route-study-card .study-card-gradebook-overlay .gb-transcript-card > .gb-modern-card-head {
+    padding: 20px 22px 0;
+}
+
+body.lux-route-study-card .study-card-gradebook-overlay .gb-transcript-table th {
+    background: var(--sc-fade-surface-soft) !important;
+    color: var(--lux-text);
+    letter-spacing: 0.06em;
+}
+
+body.lux-route-study-card .study-card-gradebook-overlay .gb-transcript-row:hover td {
+    background: rgba(var(--lux-accent-rgb), 0.08);
+}
+
+body.lux-route-study-card .study-card-gradebook-overlay .gb-timeline {
+    padding: 20px 22px;
+    border-radius: 22px;
+    border: 1px solid var(--sc-fade-border) !important;
+    background: var(--sc-fade-surface) !important;
+    box-shadow: var(--sc-fade-shadow) !important;
+    -webkit-backdrop-filter: var(--sc-fade-blur);
+    backdrop-filter: var(--sc-fade-blur);
+}
+
+body.lux-route-study-card .study-card-gradebook-overlay .gb-timeline-item {
+    padding: 12px 14px;
+    border-radius: 14px;
+    border: 1px solid var(--sc-fade-border-soft);
+    background: var(--sc-fade-control) !important;
+    box-shadow: var(--sc-fade-shadow-soft);
+    -webkit-backdrop-filter: var(--sc-fade-blur);
+    backdrop-filter: var(--sc-fade-blur);
+}
+
+body.lux-route-study-card .study-card-gradebook-overlay .gb-timeline-dot {
+    width: 34px;
+    height: 34px;
+    border-radius: 12px;
+    background: rgba(var(--lux-accent-rgb), 0.12);
+    color: rgba(var(--lux-accent-rgb), 0.9);
+}
+
+body.lux-route-study-card .study-card-gradebook-overlay .gb-timeline-title,
+body.lux-route-study-card .study-card-gradebook-overlay .gb-timeline-meta {
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-study-card .study-card-gradebook-overlay .gb-timeline-title strong {
+    color: var(--lux-text);
+}
+
+body.lux-route-study-card .study-card-gradebook-overlay .gb-timeline-score {
+    color: var(--lux-text);
+    font-weight: 900;
+}
+
+body.lux-route-study-card .study-card-gradebook-overlay .study-card-assessment-window__history-head {
+    padding-top: 4px;
+    border-top: 1px solid var(--sc-fade-border-soft);
+}
+
+body.lux-route-study-card .study-card-gradebook-overlay .study-card-assessment-window__history-list {
+    display: grid;
+    gap: 10px;
+}
+
+body.lux-route-study-card .study-card-gradebook-overlay .study-card-history-section,
+body.lux-route-study-card .study-card-gradebook-overlay .study-card-history-entry,
+body.lux-route-study-card .study-card-gradebook-overlay .study-card-history-row {
+    border: 1px solid var(--sc-fade-border-soft);
+    border-radius: 14px;
+    background: var(--sc-fade-control) !important;
+    box-shadow: var(--sc-fade-shadow-soft);
+    -webkit-backdrop-filter: var(--sc-fade-blur);
+    backdrop-filter: var(--sc-fade-blur);
+}
+
+body.lux-route-study-card .study-card-assessment-window__summary {
+    display: grid;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+body.lux-route-study-card .study-card-assessment-window__chips,
+body.lux-route-study-card .study-card-summary-chip-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+body.lux-route-study-card .study-card-assessment-window__chip {
+    background: var(--sc-fade-control) !important;
+    border-color: var(--sc-fade-border-soft) !important;
+    color: var(--lux-text);
+    -webkit-backdrop-filter: var(--sc-fade-blur);
+    backdrop-filter: var(--sc-fade-blur);
+}
+
+body.lux-route-study-card .study-card-assessment-window__cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+}
+
+body.lux-route-study-card .study-card-assessment-window__card {
+    padding: 16px;
+    background: var(--sc-fade-control) !important;
+    border: 1px solid var(--sc-fade-border-soft) !important;
+    border-radius: 16px;
+    box-shadow: var(--sc-fade-shadow-soft);
+    -webkit-backdrop-filter: var(--sc-fade-blur);
+    backdrop-filter: var(--sc-fade-blur);
+}
+
+body.lux-route-study-card .study-card-assessment-window__card-kicker,
+body.lux-route-study-card .study-card-summary-card-kicker {
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(var(--lux-accent-rgb), 0.82);
+}
+
+body.lux-route-study-card .study-card-assessment-window__card-value {
+    margin-top: 8px;
+    font-size: 26px;
+}
+
+body.lux-route-study-card .study-card-assessment-window__card-copy {
+    margin-top: 8px;
+}
+
+body.lux-route-study-card .study-card-assessment-window__history-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+}
+
+body.lux-route-study-card .study-card-assessment-window__history-kicker,
+body.lux-route-study-card .study-card-summary-kicker {
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(var(--lux-accent-rgb),0.82);
+}
+
+body.lux-route-study-card .study-card-assessment-window__history-copy,
+body.lux-route-study-card .study-card-summary-copy {
+    margin-top: 4px;
+    font-size: 13px;
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-study-card .study-card-assessment-window__history-list {
+    display: grid;
+    gap: 12px;
+}
+
+body.lux-route-study-card .study-card-shell {
+    display: grid;
+    gap: 24px;
+}
+
+body.lux-route-study-card .study-card-shell__summary {
+    display: grid;
+    gap: 16px;
+}
+
+body.lux-route-study-card .study-card-shell__terms {
+    display: grid;
+    gap: 24px;
+}
+
+body.lux-route-study-card .study-card-summary-title {
+    margin-top: 8px;
+    font-size: 28px;
+    font-weight: 900;
+    color: var(--lux-text);
+}
+
+body.lux-route-study-card .study-card-summary-copy {
+    max-width: 640px;
+}
+
+body.lux-route-study-card .study-card-summary-chip-row {
+    margin-top: 18px;
+}
+
+body.lux-route-study-card .study-card-history-section,
+body.lux-route-study-card .study-card-history-entry,
+body.lux-route-study-card .study-card-history-row {
+    border: 1px solid var(--sc-fade-border-soft);
+    border-radius: 14px;
+    background: var(--sc-fade-control) !important;
+    box-shadow: var(--sc-fade-shadow-soft);
+    -webkit-backdrop-filter: var(--sc-fade-blur);
+    backdrop-filter: var(--sc-fade-blur);
+}
+
+body.lux-route-study-card .study-card-history-section {
+    padding: 12px 14px;
+}
+
+body.lux-route-study-card .study-card-history-section-head,
+body.lux-route-study-card .study-card-history-entry-head,
+body.lux-route-study-card .study-card-history-row,
+body.lux-route-study-card .study-card-history-row-actions,
+body.lux-route-study-card .study-card-history-section-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+body.lux-route-study-card .study-card-history-section-head,
+body.lux-route-study-card .study-card-history-entry-head,
+body.lux-route-study-card .study-card-history-row {
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+body.lux-route-study-card .study-card-history-section-head {
+    margin-bottom: 10px;
+}
+
+body.lux-route-study-card .study-card-history-section-toolbar {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+body.lux-route-study-card .study-card-history-section-kicker,
+body.lux-route-study-card .study-card-history-entry-pill {
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+body.lux-route-study-card .study-card-history-section-kicker {
+    color: rgba(var(--lux-accent-rgb), 0.76);
+}
+
+body.lux-route-study-card .study-card-history-section-copy,
+body.lux-route-study-card .study-card-history-entry-subtitle,
+body.lux-route-study-card .study-card-history-entry-meta,
+body.lux-route-study-card .study-card-history-entry-note,
+body.lux-route-study-card .study-card-history-entry-history,
+body.lux-route-study-card .study-card-history-entry-history-row,
+body.lux-route-study-card .study-card-history-empty,
+body.lux-route-study-card .study-card-history-row-meta {
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-study-card .study-card-history-section-copy {
+    margin-top: 4px;
+    font-size: 12px;
+}
+
+body.lux-route-study-card .study-card-history-section-total,
+body.lux-route-study-card .study-card-history-entry-score,
+body.lux-route-study-card .study-card-history-row-score {
+    font-weight: 900;
+    color: var(--lux-accent);
+}
+
+body.lux-route-study-card .study-card-history-section-total {
+    font-size: 14px;
+}
+
+body.lux-route-study-card .study-card-history-entry-list {
+    display: grid;
+    gap: 8px;
+}
+
+body.lux-route-study-card .study-card-history-section-actions {
+    align-items: center;
+}
+
+body.lux-route-study-card .study-card-history-section-input {
+    width: 110px;
+    padding: 8px 10px;
+    border: 1px solid var(--sc-fade-border-soft);
+    border-radius: 10px;
+    outline: none;
+    background: var(--sc-fade-control);
+    color: var(--lux-text);
+    -webkit-backdrop-filter: var(--sc-fade-blur);
+    backdrop-filter: var(--sc-fade-blur);
+}
+
+body.lux-route-study-card .study-card-history-section-btn {
+    padding: 8px 12px;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+body.lux-route-study-card .study-card-history-entry {
+    display: grid;
+    gap: 8px;
+    padding: 12px 14px;
+}
+
+body.lux-route-study-card .study-card-history-entry-main {
+    min-width: 0;
+    display: grid;
+    gap: 5px;
+}
+
+body.lux-route-study-card .study-card-history-entry-badges {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+body.lux-route-study-card .study-card-history-entry-title {
+    font-size: 13px;
+    font-weight: 900;
+    color: var(--lux-text);
+}
+
+body.lux-route-study-card .study-card-history-entry-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
+    border-radius: 999px;
+    background: var(--sc-fade-control);
+    border: 1px solid var(--sc-fade-border-soft);
+    color: var(--lux-accent);
+    font-size: 10px;
+    -webkit-backdrop-filter: var(--sc-fade-blur);
+    backdrop-filter: var(--sc-fade-blur);
+}
+
+body.lux-route-study-card .study-card-history-entry-subtitle,
+body.lux-route-study-card .study-card-history-entry-meta,
+body.lux-route-study-card .study-card-history-entry-note,
+body.lux-route-study-card .study-card-history-row-meta {
+    font-size: 11px;
+}
+
+body.lux-route-study-card .study-card-history-entry-score {
+    font-size: 16px;
+}
+
+body.lux-route-study-card .study-card-history-entry-history {
+    display: grid;
+    gap: 4px;
+    padding-top: 8px;
+    border-top: 1px dashed rgba(var(--lux-accent-rgb), 0.14);
+    font-size: 11px;
+}
+
+body.lux-route-study-card .study-card-history-entry-history-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+body.lux-route-study-card .study-card-history-entry-history-score {
+    color: var(--lux-text);
+}
+
+body.lux-route-study-card .study-card-history-empty {
+    padding: 8px 0;
+    font-size: 12px;
+}
+
+body.lux-route-study-card .study-card-history-row {
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    gap: 14px;
+}
+
+body.lux-route-study-card .study-card-history-row-main {
+    min-width: 0;
+}
+
+body.lux-route-study-card .study-card-history-row-title {
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--lux-text);
+}
+
+body.lux-route-study-card .study-card-history-row-meta {
+    margin-top: 4px;
+}
+
+body.lux-route-study-card .study-card-history-row-actions {
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+body.lux-route-study-card .study-card-history-row-score {
+    font-size: 15px;
+}
+
+body.lux-route-study-card .study-card-history-row-btn {
+    padding: 5px 8px;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+body.lux-route-study-card .study-card-history-section-body {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+body.lux-route-study-card #page-study-card .page-hero,
+body.lux-route-study-card #page-study-card .filter-shell,
+body.lux-route-study-card #study-card-container {
+    position: relative;
+    overflow: hidden;
+}
+
+body.lux-route-study-card #study-card-container .study-card-term-header,
+body.lux-route-study-card .semester-header.study-card-term-header {
+    background: var(--sc-fade-surface-soft) !important;
+    border: 1px solid var(--sc-fade-border) !important;
+    box-shadow: var(--sc-fade-shadow-soft);
+    -webkit-backdrop-filter: var(--sc-fade-blur);
+    backdrop-filter: var(--sc-fade-blur);
+}
+
+body.lux-route-study-card .study-card-summary-stage,
+body.lux-route-study-card #study-card-container .lux-strip-card.surface-card {
+    background: var(--sc-fade-surface) !important;
+    border-color: var(--sc-fade-border) !important;
+    box-shadow: var(--sc-fade-shadow) !important;
+    -webkit-backdrop-filter: var(--sc-fade-blur) !important;
+    backdrop-filter: var(--sc-fade-blur) !important;
+}
+
+body.lux-route-study-card #study-card-container .lux-status-pill {
+    background: var(--sc-fade-control) !important;
+    border-color: var(--sc-fade-border-soft) !important;
+    -webkit-backdrop-filter: var(--sc-fade-blur);
+    backdrop-filter: var(--sc-fade-blur);
+}
+
+/* Legacy study-card shell families moved from base.css. */
+body.lux-route-study-card .semester-header {
+    background: var(--sc-fade-surface-soft) !important;
+    border: 1px solid var(--sc-fade-border);
+    color: var(--lux-text);
+    padding: 15px 20px;
+    font-weight: 700;
+    font-size: 13px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: var(--sc-fade-shadow-soft);
+    -webkit-backdrop-filter: var(--sc-fade-blur);
+    backdrop-filter: var(--sc-fade-blur);
+}
+
+body.lux-route-study-card .grade-circle {
+    width: 30px;
+    height: 30px;
+    background: var(--sc-fade-control);
+    border: 1px solid var(--sc-fade-border-soft);
+    color: var(--lux-text);
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: 700;
+    font-size: 13px;
+    margin: 0 auto;
+    box-shadow: var(--sc-fade-shadow-soft);
+    -webkit-backdrop-filter: var(--sc-fade-blur);
+    backdrop-filter: var(--sc-fade-blur);
+}
+
+body.lux-route-study-card .grade-popover-container {
+    position: relative;
+    display: inline-block;
+}
+
+body.lux-route-study-card .grade-popover {
+    position: absolute;
+    right: 0;
+    top: 100%;
+    background: var(--sc-fade-surface) !important;
+    border: 1px solid var(--sc-fade-border);
+    box-shadow: var(--sc-fade-shadow);
+    z-index: 100;
+    display: none;
+    width: max-content;
+    padding: 10px;
+    border-radius: 12px;
+    color: var(--lux-text);
+    -webkit-backdrop-filter: var(--sc-fade-blur);
+    backdrop-filter: var(--sc-fade-blur);
+}
+
+body.lux-route-study-card .grade-popover.show {
+    display: block;
+}
+
+body.lux-route-study-card .grade-popover table {
+    border-collapse: collapse;
+    font-size: 11px;
+    text-align: center;
+}
+
+body.lux-route-study-card .grade-popover th {
+    background: var(--sc-fade-control);
+    padding: 5px;
+    border: 1px solid var(--sc-fade-border-soft);
+    color: var(--lux-text);
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    height: 150px;
+    white-space: nowrap;
+}
+
+body.lux-route-study-card .grade-popover td {
+    padding: 8px;
+    border: 1px solid var(--sc-fade-border-soft);
+    color: var(--lux-text);
+}
+
+body.lux-route-study-card #study-card-container {
+    overflow: visible !important;
+}
+
+body.lux-route-study-card #study-card-container .kiu-table,
+body.lux-route-study-card #study-card-container .kiu-table tbody,
+body.lux-route-study-card #study-card-container .kiu-table tr,
+body.lux-route-study-card #study-card-container .kiu-table td {
+    overflow: visible;
+}
+
+body.lux-route-study-card #study-card-container .grade-popover {
+    z-index: 60;
+    width: min(820px, calc(100vw - 96px));
+    max-height: min(72vh, 720px);
+    overflow: auto;
+}
+
+/* Light-mode glass parity for newly tokenized study-card surfaces */
+body.lux-light-mode.lux-route-study-card #study-card-program-select,
+html.lux-light-mode body.lux-route-study-card #study-card-program-select,
+body.lux-light-mode.lux-route-study-card .page-hero-badge,
+html.lux-light-mode body.lux-route-study-card .page-hero-badge,
+body.lux-light-mode.lux-route-study-card #study-card-container .lux-status-pill,
+html.lux-light-mode body.lux-route-study-card #study-card-container .lux-status-pill,
+body.lux-light-mode.lux-route-study-card .study-card-grade-circle,
+html.lux-light-mode body.lux-route-study-card .study-card-grade-circle,
+body.lux-light-mode.lux-route-study-card .grade-circle,
+html.lux-light-mode body.lux-route-study-card .grade-circle,
+body.lux-light-mode.lux-route-study-card .study-card-assessment-window,
+html.lux-light-mode body.lux-route-study-card .study-card-assessment-window,
+body.lux-light-mode.lux-route-study-card .study-card-assessment-window__header,
+html.lux-light-mode body.lux-route-study-card .study-card-assessment-window__header,
+body.lux-light-mode.lux-route-study-card .study-card-assessment-window__body,
+html.lux-light-mode body.lux-route-study-card .study-card-assessment-window__body,
+body.lux-light-mode.lux-route-study-card .study-card-assessment-window__chip,
+html.lux-light-mode body.lux-route-study-card .study-card-assessment-window__chip,
+body.lux-light-mode.lux-route-study-card .study-card-assessment-window__card,
+html.lux-light-mode body.lux-route-study-card .study-card-assessment-window__card,
+body.lux-light-mode.lux-route-study-card .study-card-assessment-pill,
+html.lux-light-mode body.lux-route-study-card .study-card-assessment-pill,
+body.lux-light-mode.lux-route-study-card .study-card-history-section,
+html.lux-light-mode body.lux-route-study-card .study-card-history-section,
+body.lux-light-mode.lux-route-study-card .study-card-history-entry,
+html.lux-light-mode body.lux-route-study-card .study-card-history-entry,
+body.lux-light-mode.lux-route-study-card .study-card-history-row,
+html.lux-light-mode body.lux-route-study-card .study-card-history-row,
+body.lux-light-mode.lux-route-study-card .grade-popover,
+html.lux-light-mode body.lux-route-study-card .grade-popover {
+    color: var(--lux-text);
+}
+
+body.lux-light-mode.lux-route-study-card #page-study-card .page-hero,
+html.lux-light-mode body.lux-route-study-card #page-study-card .page-hero,
+body.lux-light-mode.lux-route-study-card #page-study-card .filter-shell,
+html.lux-light-mode body.lux-route-study-card #page-study-card .filter-shell,
+body.lux-light-mode.lux-route-study-card #study-card-container,
+html.lux-light-mode body.lux-route-study-card #study-card-container,
+body.lux-light-mode.lux-route-study-card .study-card-summary-stage,
+html.lux-light-mode body.lux-route-study-card .study-card-summary-stage,
+body.lux-light-mode.lux-route-study-card #study-card-container .lux-strip-card.surface-card,
+html.lux-light-mode body.lux-route-study-card #study-card-container .lux-strip-card.surface-card,
+body.lux-light-mode.lux-route-study-card #study-card-container .study-card-term-header,
+html.lux-light-mode body.lux-route-study-card #study-card-container .study-card-term-header,
+body.lux-light-mode.lux-route-study-card .study-card-term-row,
+html.lux-light-mode body.lux-route-study-card .study-card-term-row {
+    background: var(--sc-fade-surface) !important;
+    border-color: var(--sc-fade-border) !important;
+    box-shadow: var(--sc-fade-shadow) !important;
+    color: var(--lux-text);
+}
+
+body.lux-light-mode.lux-route-study-card #study-card-container .study-card-term-header,
+html.lux-light-mode body.lux-route-study-card #study-card-container .study-card-term-header,
+body.lux-light-mode.lux-route-study-card .semester-header.study-card-term-header,
+html.lux-light-mode body.lux-route-study-card .semester-header.study-card-term-header,
+body.lux-light-mode.lux-route-study-card .study-card-term-row,
+html.lux-light-mode body.lux-route-study-card .study-card-term-row,
+body.lux-light-mode.lux-route-study-card #study-card-container .lux-strip-card.surface-card,
+html.lux-light-mode body.lux-route-study-card #study-card-container .lux-strip-card.surface-card,
+body.lux-light-mode.lux-route-study-card .study-card-grade-circle,
+html.lux-light-mode body.lux-route-study-card .study-card-grade-circle,
+body.lux-light-mode.lux-route-study-card .study-card-assessment-window__header,
+html.lux-light-mode body.lux-route-study-card .study-card-assessment-window__header,
+body.lux-light-mode.lux-route-study-card .study-card-assessment-window__body,
+html.lux-light-mode body.lux-route-study-card .study-card-assessment-window__body,
+body.lux-light-mode.lux-route-study-card .study-card-assessment-window__chip,
+html.lux-light-mode body.lux-route-study-card .study-card-assessment-window__chip,
+body.lux-light-mode.lux-route-study-card .study-card-assessment-window__card,
+html.lux-light-mode body.lux-route-study-card .study-card-assessment-window__card,
+body.lux-light-mode.lux-route-study-card .study-card-history-section,
+html.lux-light-mode body.lux-route-study-card .study-card-history-section,
+body.lux-light-mode.lux-route-study-card .study-card-history-entry,
+html.lux-light-mode body.lux-route-study-card .study-card-history-entry,
+body.lux-light-mode.lux-route-study-card .study-card-history-row,
+html.lux-light-mode body.lux-route-study-card .study-card-history-row,
+body.lux-light-mode.lux-route-study-card .grade-popover,
+html.lux-light-mode body.lux-route-study-card .grade-popover,
+body.lux-light-mode.lux-route-study-card .study-card-gradebook-overlay .lux-strip-card.surface-card,
+html.lux-light-mode body.lux-route-study-card .study-card-gradebook-overlay .lux-strip-card.surface-card,
+body.lux-light-mode.lux-route-study-card .study-card-gradebook-overlay .gb-modern-card.gb-weight-card,
+html.lux-light-mode body.lux-route-study-card .study-card-gradebook-overlay .gb-modern-card.gb-weight-card,
+body.lux-light-mode.lux-route-study-card .study-card-gradebook-overlay .gb-transcript-card,
+html.lux-light-mode body.lux-route-study-card .study-card-gradebook-overlay .gb-transcript-card,
+body.lux-light-mode.lux-route-study-card .study-card-gradebook-overlay .gb-timeline,
+html.lux-light-mode body.lux-route-study-card .study-card-gradebook-overlay .gb-timeline,
+body.lux-light-mode.lux-route-study-card .study-card-gradebook-overlay .gb-weight-row,
+html.lux-light-mode body.lux-route-study-card .study-card-gradebook-overlay .gb-weight-row,
+body.lux-light-mode.lux-route-study-card .study-card-gradebook-overlay .gb-composition-legend > span,
+html.lux-light-mode body.lux-route-study-card .study-card-gradebook-overlay .gb-composition-legend > span,
+body.lux-light-mode.lux-route-study-card .study-card-gradebook-overlay .gb-timeline-item,
+html.lux-light-mode body.lux-route-study-card .study-card-gradebook-overlay .gb-timeline-item,
+body.lux-light-mode.lux-route-study-card .study-card-gradebook-overlay .study-card-history-section,
+html.lux-light-mode body.lux-route-study-card .study-card-gradebook-overlay .study-card-history-section,
+body.lux-light-mode.lux-route-study-card .study-card-gradebook-overlay .study-card-history-entry,
+html.lux-light-mode body.lux-route-study-card .study-card-gradebook-overlay .study-card-history-entry {
+    background: var(--sc-fade-surface-soft) !important;
+    border-color: var(--sc-fade-border-soft) !important;
+    box-shadow: var(--sc-fade-shadow-soft) !important;
+}
+
+body.lux-light-mode.lux-route-study-card .grade-popover th,
+html.lux-light-mode body.lux-route-study-card .grade-popover th,
+body.lux-light-mode.lux-route-study-card .grade-popover td,
+html.lux-light-mode body.lux-route-study-card .grade-popover td {
+    color: var(--lux-text);
+    border-color: var(--sc-fade-border-soft);
+}

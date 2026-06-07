@@ -12,12 +12,15 @@
     <link rel="stylesheet" href="assets/vendor/fontawesome/css/all.min.css?v=1776604822096">
     <link rel="stylesheet" href="assets/css/kiu-fonts.css?v=20260515-fonts1">
     <link rel="stylesheet" href="assets/css/base.css?v=20260419-libsync1">
-    <link rel="stylesheet" href="assets/css/layout.css?v=1776604822096">
-    <link rel="stylesheet" href="assets/css/components.css?v=1776604822096">
-    <link rel="stylesheet" href="assets/css/index-luxury.css?v=20260505-career-real-agents1">
+    <link rel="stylesheet" href="assets/css/layout.css?v=20260528-layoutfix2">
+    <link rel="stylesheet" href="assets/css/lux-tokens.css?v=20260606-luxscrollbar1">
+    <link rel="stylesheet" href="assets/css/lux-surfaces.css?v=20260527-profcss1">
+    <link rel="stylesheet" href="assets/css/lux-controls.css?v=20260606-pickerscroll1">
+    <link rel="stylesheet" href="assets/css/lux-layout-primitives.css?v=20260606-luxscrollbar1">
+    <link rel="stylesheet" href="assets/css/index-luxury.css?v=20260531-routeglass15">
     <link rel="stylesheet" href="assets/css/mobile-responsive.css?v=20260419-libsync1">
-    <script src="assets/js/theme-primer.js?v=20260419-flat5"></script>
-    <link rel="stylesheet" href="assets/css/career-market-route.css?v=20260516-career-route1">
+    <script src="assets/js/theme-primer.js?v=20260604-styleguard2"></script>
+    <link rel="stylesheet" href="assets/css/career-market-route.css?v=20260531-routeglass15">
 </head>
 <body class="kiu-shell-loading lux-nonhome-page lux-route-career-market lux-unified-shell role-student" data-faculty="ECON">
 <nav id="prof-nav" aria-label="Professor navigation stub"></nav>
@@ -77,13 +80,13 @@
                 <div class="career-chat-body" id="career-chat-body">
                     <div class="career-empty-state" id="career-empty-state">
                         <div class="career-report-workspace">
-                            <div class="career-workspace-hero">
-                                <div>
+                            <div class="career-workspace-hero lux-hero-stage">
+                                <div class="lux-hero-main">
                                     <div class="career-kicker">Multi-agent career report</div>
                                     <div class="career-workspace-title">Build your report step by step.</div>
                                     <div class="career-workspace-copy">Answer one focused section at a time. At the end, the multi-agent workflow reviews your evidence, market fit, missing skills, and risks.</div>
                                 </div>
-                                <div class="career-workspace-badge"><i class="fas fa-users-gear"></i> 6-agent workflow</div>
+                                <div class="career-workspace-badge lux-strip-card surface-card"><i class="fas fa-users-gear"></i> 6-agent workflow</div>
                             </div>
 
                             <div class="career-wizard-stage" id="career-wizard-stage" aria-live="polite">
@@ -131,8 +134,8 @@
                 </button>
 
                 <div class="career-provider-field">
-                    <label for="career-provider-select">Provider</label>
-                    <select id="career-provider-select" autocomplete="off">
+                    <label class="career-provider-field-label" for="career-provider-select">Provider</label>
+                    <select class="career-provider-field-select" id="career-provider-select" autocomplete="off">
                         <option value="google-gemini">Google Gemini</option>
                         <option value="nvidia-nim">NVIDIA NIM</option>
                         <option value="openai">OpenAI</option>
@@ -142,43 +145,43 @@
                 </div>
 
                 <div class="career-provider-field">
-                    <label for="career-api-key-input">API key</label>
-                    <input id="career-api-key-input" type="password" autocomplete="new-password" placeholder="Paste API key">
+                    <label class="career-provider-field-label" for="career-api-key-input">API key</label>
+                    <input class="career-provider-field-input" id="career-api-key-input" type="password" autocomplete="new-password" placeholder="Paste API key">
                     <div class="career-provider-help" id="career-api-key-help">Stored in this browser and sent to the portal AI proxy only when a request runs. Leave blank to keep the saved key.</div>
                 </div>
 
                 <div class="career-provider-field">
-                    <label for="career-model-name-input">Model name</label>
-                    <input id="career-model-name-input" type="text" autocomplete="off" placeholder="Example: gemini-2.5-flash-lite">
+                    <label class="career-provider-field-label" for="career-model-name-input">Model name</label>
+                    <input class="career-provider-field-input" id="career-model-name-input" type="text" autocomplete="off" placeholder="Example: gemini-2.5-flash-lite">
                 </div>
 
                 <div class="career-provider-grid">
                     <div class="career-provider-route-card">
-                        <strong id="career-provider-route-title">Automatic route</strong>
+                        <strong class="career-provider-route-title" id="career-provider-route-title">Automatic route</strong>
                         <div class="career-provider-meta">
-                            <span id="career-provider-route-mode">Provider mode will appear here.</span>
-                            <span id="career-provider-route-endpoint">Endpoint will be configured automatically.</span>
-                            <span id="career-provider-route-auth">Authentication will be handled automatically.</span>
+                            <span class="career-provider-meta-line" id="career-provider-route-mode">Provider mode will appear here.</span>
+                            <span class="career-provider-meta-line" id="career-provider-route-endpoint">Endpoint will be configured automatically.</span>
+                            <span class="career-provider-meta-line" id="career-provider-route-auth">Authentication will be handled automatically.</span>
                         </div>
                     </div>
                     <div class="career-provider-route-card">
-                        <strong>Runtime</strong>
+                        <strong class="career-provider-route-title">Runtime</strong>
                         <div class="career-provider-meta">
-                            <span>Agent calls run sequentially so users can inspect each handoff.</span>
-                            <span>Saved keys stay in local browser storage for this static build.</span>
+                            <span class="career-provider-meta-line">Agent calls run sequentially so users can inspect each handoff.</span>
+                            <span class="career-provider-meta-line">Saved keys stay in local browser storage for this static build.</span>
                         </div>
                     </div>
                 </div>
 
                 <div class="career-provider-field">
-                    <label for="career-provider-instructions">Manual provider instructions</label>
-                    <textarea id="career-provider-instructions" placeholder="Paste notes, model instructions, provider setup notes, prompt rules, or API documentation details here."></textarea>
+                    <label class="career-provider-field-label" for="career-provider-instructions">Manual provider instructions</label>
+                    <textarea class="career-provider-field-textarea" id="career-provider-instructions" placeholder="Paste notes, model instructions, provider setup notes, prompt rules, or API documentation details here."></textarea>
                     <div class="career-provider-help">These notes are included in the browser-side provider workflow when relevant.</div>
                 </div>
 
                 <div class="career-provider-field">
-                    <label for="career-provider-files">Instruction files or images</label>
-                    <input id="career-provider-files" type="file" multiple accept="image/*,.txt,.md,.json,.pdf">
+                    <label class="career-provider-field-label" for="career-provider-files">Instruction files or images</label>
+                    <input class="career-provider-field-file-input" id="career-provider-files" type="file" multiple accept="image/*,.txt,.md,.json,.pdf">
                     <div class="career-provider-help">File names and small text/image contents are saved locally where possible.</div>
                     <div class="career-provider-file-list" id="career-provider-file-list"></div>
                 </div>
@@ -188,7 +191,7 @@
                     <button class="career-secondary-action" type="button" id="career-provider-test"><i class="fas fa-signal"></i> Test connection</button>
                     <button class="career-provider-save" type="submit"><i class="fas fa-floppy-disk"></i> Save settings</button>
                 </div>
-                <div class="career-provider-health" id="career-provider-health">Connection has not been tested in this browser session.</div>
+                <div class="career-provider-health career-provider-health-copy" id="career-provider-health">Connection has not been tested in this browser session.</div>
             </form>
         </section>
     </div>
@@ -230,18 +233,18 @@
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-            <div class="career-report-document">
+            <div class="career-report-document career-tool-report-document">
                 <section class="career-report-section">
-                    <h3>Student workflow</h3>
-                    <p>The student enters faculty context, profession area, target roles, skills, evidence, subjects, goals, constraints, and concerns. The UI keeps this step by step so students do not face a wall of fields.</p>
+                    <h3 class="career-report-section-title career-tool-section-title">Student workflow</h3>
+                    <p class="career-report-section-copy career-tool-section-copy">The student enters faculty context, profession area, target roles, skills, evidence, subjects, goals, constraints, and concerns. The UI keeps this step by step so students do not face a wall of fields.</p>
                 </section>
                 <section class="career-report-section">
-                    <h3>Multi-agent report</h3>
-                    <p>The workflow runs a coordinator plus specialist analysts for student fit, market trends, AI/AGI impact, skill gaps, and roadmap planning. The final output follows the fixed 16-section report contract.</p>
+                    <h3 class="career-report-section-title career-tool-section-title">Multi-agent report</h3>
+                    <p class="career-report-section-copy career-tool-section-copy">The workflow runs a coordinator plus specialist analysts for student fit, market trends, AI/AGI impact, skill gaps, and roadmap planning. The final output follows the fixed 16-section report contract.</p>
                 </section>
                 <section class="career-report-section">
-                    <h3>Provider instructions</h3>
-                    <p>The provider settings panel stores provider, model, API key, manual instructions, and uploaded instruction references in local browser storage for this static build. A production deployment should move keys and files to backend-only storage.</p>
+                    <h3 class="career-report-section-title career-tool-section-title">Provider instructions</h3>
+                    <p class="career-report-section-copy career-tool-section-copy">The provider settings panel stores provider, model, API key, manual instructions, and uploaded instruction references in local browser storage for this static build. A production deployment should move keys and files to backend-only storage.</p>
                 </section>
             </div>
         </section>
@@ -253,25 +256,26 @@
 <script defer src="assets/js/app/auth.js?v=20260429-authfix2"></script>
 <script defer src="assets/js/data/initial-state.js?v=1776604822050"></script>
 <script defer src="assets/js/app/state.js?v=20260505-authglobals1"></script>
-<script defer src="assets/js/shared/utilities.js?v=20260505-career-real-agents1"></script>
+<script defer src="assets/js/shared/utilities.js?v=20260605-blurfix1"></script>
 <script defer src="assets/js/shared/faculty.js?v=20260505-authglobals1"></script>
 <script defer src="assets/js/shared/messenger.js?v=20260429-peopleisolation1"></script>
 <script defer src="assets/js/features/navigation.js?v=20260503-career-chat1"></script>
 <script defer src="assets/js/features/ui.js?v=20260429-peopleisolation1"></script>
-<script defer src="assets/js/features/index-luxury.js?v=20260504-transparency-refresh1"></script>
-<script defer src="assets/js/features/luxury-shell-chrome.js?v=20260518-luxshell1"></script>
+<script defer src="assets/js/features/index-luxury.js?v=20260605-blurfix1"></script>
+<script type="module" src="assets/js/features/luxury-particle-background.js?v=20260531-partbg8"></script>
+<script defer src="assets/js/features/luxury-shell-chrome.js?v=20260606-pickerscroll1"></script>
 <script defer src="assets/js/features/luxury-home-model.js?v=20260518-luxhome1"></script>
 
-<nav id="mobile-bottom-nav" aria-label="Mobile navigation" style="display:none;">
+<nav id="mobile-bottom-nav" aria-label="Mobile navigation" hidden>
     <div class="mobile-nav-row">
         <button class="mobile-nav-btn is-active" data-nav-target="home" type="button" id="mob-nav-home"><i class="fas fa-th-large"></i><span>Home</span></button>
-        <button class="mobile-nav-btn" type="button" id="mob-nav-messages" data-action="messages"><i class="fas fa-comment-dots"></i><span>Chat</span><em class="mob-badge" id="mob-badge-msg" style="display:none;">0</em></button>
-        <button class="mobile-nav-btn" type="button" id="mob-nav-notif" data-action="notifications"><i class="fas fa-bell"></i><span>Alerts</span><em class="mob-badge" id="mob-badge-notif" style="display:none;">0</em></button>
+        <button class="mobile-nav-btn" type="button" id="mob-nav-messages" data-action="messages"><i class="fas fa-comment-dots"></i><span>Chat</span><em class="mob-badge" id="mob-badge-msg" hidden>0</em></button>
+        <button class="mobile-nav-btn" type="button" id="mob-nav-notif" data-action="notifications"><i class="fas fa-bell"></i><span>Alerts</span><em class="mob-badge" id="mob-badge-notif" hidden>0</em></button>
         <button class="mobile-nav-btn" type="button" id="mob-nav-theme" data-action="theme"><i class="fas fa-palette"></i><span>Theme</span></button>
         <button class="mobile-nav-btn" type="button" id="mob-nav-more" data-action="more"><i class="fas fa-grip-horizontal"></i><span>More</span></button>
     </div>
 </nav>
-<div id="mobile-action-sheet" class="mob-sheet" style="display:none;" role="dialog" aria-modal="true">
+<div id="mobile-action-sheet" class="mob-sheet" hidden role="dialog" aria-modal="true">
     <div class="mob-sheet-backdrop" id="mob-sheet-backdrop"></div>
     <div class="mob-sheet-panel">
         <div class="mob-sheet-handle"><span></span></div>

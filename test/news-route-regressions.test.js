@@ -20,12 +20,12 @@ describe('News route regressions', () => {
         expect(appJs).toContain('window.ensurePortalNewsRuntimeLoaded = function ensurePortalNewsRuntimeLoaded()');
         expect(indexHtml).toContain('id="page-news"');
         expect(indexHtml).toContain('id="portal-news-root"');
-        expect(indexHtml).toContain('assets/css/news-route.css?v=20260515-newsroute2');
+        expect(indexHtml).toContain('assets/css/news-route.css?v=20260530-newsfx1');
         expect(newsHtml).toContain('id="page-news"');
         expect(newsHtml).toContain('id="portal-news-root"');
         expect(newsHtml).toContain('assets/js/features/navigation.js?v=20260429-shellinit1');
         expect(newsHtml).toContain('assets/js/pages/news.js?v=20260516-newsroute3');
-        expect(newsHtml).toContain('assets/css/news-route.css?v=20260515-newsroute2');
+        expect(newsHtml).toContain('assets/css/news-route.css?v=20260530-newsfx1');
         expect(newsHtml).toContain('bootStandaloneNewsPage');
         expect(newsHtml).not.toContain("window.location.replace(target);");
     });
@@ -83,8 +83,24 @@ describe('News route regressions', () => {
         expect(newsJs).toContain('installNewsWorkspaceDelegates');
         expect(newsJs).toContain('data-news-submit-reply');
         expect(newsJs).toContain('data-news-compose-field');
+        expect(newsJs).toContain('class="surface-card newsx-panel newsx-sidebar"');
+        expect(newsJs).toContain('class="lux-summary-surface lux-summary-surface--hero newsx-hero"');
+        expect(newsJs).toContain('class="surface-card newsx-panel newsx-filter"');
+        expect(newsJs).toContain('class="newsx-btn lux-secondary-btn"');
+        expect(newsJs).toContain('class="newsx-btn newsx-btn-primary lux-primary-btn"');
+        expect(newsJs).toContain('class="newsx-pane-btn lux-secondary-btn lux-select-card');
+        expect(newsJs).toContain('class="newsx-section-btn lux-secondary-btn lux-select-card');
+        expect(newsJs).toContain('class="newsx-account-card lux-select-card lux-summary-surface lux-summary-surface--panel');
+        expect(newsJs).toContain('class="newsx-check lux-check-card lux-summary-surface lux-summary-surface--panel');
+        expect(newsJs).toContain('class="lux-empty-state newsx-empty"');
+        expect(newsJs).toContain('class="lux-empty-state lux-error-state newsx-error"');
         expect(newsCss).toContain('#portal-news-root .newsx-feed-card');
         expect(newsCss).toContain('content-visibility: auto;');
+        expect(readAsset('assets/css/lux-surfaces.css')).toContain('.lux-select-card {');
+        expect(readAsset('assets/css/lux-surfaces.css')).toContain('.lux-check-card {');
+        expect(newsCss).not.toContain('#portal-news-root .newsx-section-btn:hover,');
+        expect(newsCss).not.toContain('#portal-news-root .newsx-check input {');
+        expect(newsCss).not.toContain('#portal-news-root .newsx-panel,\n#portal-news-root .newsx-hero {');
     });
 
     it('loads the privilege workspace on demand instead of front-loading it for every news boot', () => {

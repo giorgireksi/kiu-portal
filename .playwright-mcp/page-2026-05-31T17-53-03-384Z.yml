@@ -1,0 +1,345 @@
+- generic [active] [ref=e1]:
+  - main [ref=e2]:
+    - generic [ref=e4]:
+      - generic [ref=e5]:
+        - generic [ref=e6]:
+          - generic [ref=e7]:
+            - generic [ref=e8]: 
+            - text: Registrar Command Deck
+          - heading "Direct student operations for every faculty." [level=1] [ref=e9]
+          - paragraph [ref=e10]: Audit record quality, review academic risk, resolve Microsoft account readiness, and move from registrar triage into full student profiles without breaking the KIU admin flow.
+          - generic [ref=e11]:
+            - generic [ref=e12]:
+              - generic [ref=e13]: 
+              - text: All faculties
+            - generic [ref=e14]:
+              - generic [ref=e15]: 
+              - text: 1 student in scope
+            - generic [ref=e16]:
+              - generic [ref=e17]: 
+              - text: 1 active risk case
+            - generic [ref=e18]:
+              - generic [ref=e19]: 
+              - text: 0 account review
+          - generic [ref=e20]:
+            - button " Add Student" [ref=e21] [cursor=pointer]:
+              - generic [ref=e22]: 
+              - text: Add Student
+            - button " Review Accounts" [ref=e23] [cursor=pointer]:
+              - generic [ref=e24]: 
+              - text: Review Accounts
+            - button " Missing Documents" [ref=e25] [cursor=pointer]:
+              - generic [ref=e26]: 
+              - text: Missing Documents
+        - generic [ref=e27]:
+          - generic [ref=e28]:
+            - strong [ref=e29]: Registrar Priorities
+            - paragraph [ref=e30]: Focus the queue before shifting into directory edits or deep profile audits.
+          - generic [ref=e31]:
+            - article [ref=e32]:
+              - generic [ref=e33]: Active
+              - strong [ref=e34]: "1"
+              - generic [ref=e35]: Live academic records
+            - article [ref=e36]:
+              - generic [ref=e37]: Pending setup
+              - strong [ref=e38]: "0"
+              - generic [ref=e39]: Account or status review
+            - article [ref=e40]:
+              - generic [ref=e41]: Missing docs
+              - strong [ref=e42]: "0"
+              - generic [ref=e43]: Compliance follow-up
+            - article [ref=e44]:
+              - generic [ref=e45]: Archived
+              - strong [ref=e46]: "0"
+              - generic [ref=e47]: Hidden by default
+          - generic [ref=e48]:
+            - generic [ref=e49]:
+              - generic [ref=e50]: 
+              - text: Audit-sensitive workflow
+            - paragraph [ref=e51]: Move from triage into student detail without losing faculty scope, filter context, or review history.
+      - generic [ref=e52]:
+        - article [ref=e53]:
+          - text: Total students
+          - strong [ref=e54]: "1"
+          - text: Within the current scope
+        - article [ref=e55]:
+          - text: Currently enrolled
+          - strong [ref=e56]: "0"
+          - text: Students with active courses
+        - article [ref=e57]:
+          - text: At risk
+          - strong [ref=e58]: "1"
+          - text: Medium or high risk signals
+        - article [ref=e59]:
+          - text: Pending setup
+          - strong [ref=e60]: "0"
+          - text: Needs onboarding action
+        - article [ref=e61]:
+          - text: Missing documents
+          - strong [ref=e62]: "0"
+          - text: Document review needed
+        - article [ref=e63]:
+          - text: Archived
+          - strong [ref=e64]: "0"
+          - text: Available via archive filter
+      - generic [ref=e65]:
+        - generic [ref=e66]:
+          - generic [ref=e67]:
+            - generic [ref=e68]: Directory controls
+            - heading "Student filters and actions" [level=2] [ref=e69]
+            - paragraph [ref=e70]: Use the improved LMS management workflow on top of KIU faculty-scoped data.
+          - generic [ref=e71]:
+            - button " Import JSON" [ref=e72] [cursor=pointer]:
+              - generic [ref=e73]: 
+              - text: Import JSON
+            - button " Export JSON" [ref=e74] [cursor=pointer]:
+              - generic [ref=e75]: 
+              - text: Export JSON
+            - button " Export CSV" [ref=e76] [cursor=pointer]:
+              - generic [ref=e77]: 
+              - text: Export CSV
+            - button " Add Student" [ref=e78] [cursor=pointer]:
+              - generic [ref=e79]: 
+              - text: Add Student
+        - generic [ref=e80]:
+          - generic [ref=e81]:
+            - generic [ref=e82]: Search directory
+            - searchbox "Search directory" [ref=e83]
+          - generic [ref=e84]:
+            - generic [ref=e85]: Faculty
+            - combobox "Faculty" [ref=e86]:
+              - option "All faculties" [selected]
+              - option "Business Management"
+          - generic [ref=e87]:
+            - generic [ref=e88]: Status
+            - combobox "Status" [ref=e89]:
+              - option "All statuses" [selected]
+              - option "Active"
+              - option "Probation"
+              - option "Suspended"
+              - option "Archived"
+          - generic [ref=e90]:
+            - generic [ref=e91]: Program
+            - combobox "Program" [ref=e92]:
+              - option "All programs" [selected]
+              - option "Program pending"
+        - generic [ref=e93]:
+          - generic [ref=e94]:
+            - generic [ref=e95]: Year / level
+            - combobox "Year / level" [ref=e96]:
+              - option "All years" [selected]
+              - option "Foundation"
+              - option "Year 1"
+              - option "Year 2"
+              - option "Year 3"
+              - option "Year 4"
+              - option "Graduate"
+          - generic [ref=e97]:
+            - generic [ref=e98]: Academic standing
+            - combobox "Academic standing" [ref=e99]:
+              - option "All standings" [selected]
+              - option "Excellent"
+              - option "Good Standing"
+              - option "Warning"
+              - option "Probation"
+              - option "At Risk"
+              - option "Incomplete"
+          - generic [ref=e100]:
+            - generic [ref=e101]: Sort
+            - combobox "Sort" [ref=e102]:
+              - option "Name" [selected]
+              - option "Student ID"
+              - option "Program"
+              - option "Year / level"
+              - option "GPA"
+              - option "Recently updated"
+              - option "Risk level"
+              - option "Profile completion"
+          - generic [ref=e103]:
+            - generic [ref=e104]: LMS account
+            - combobox "LMS account" [ref=e105]:
+              - option "All accounts" [selected]
+              - option "Not Invited"
+              - option "Invitation Sent"
+              - option "Account Active"
+              - option "Login Disabled"
+              - option "Needs Review"
+          - generic [ref=e106]:
+            - generic [ref=e107]: Profile status
+            - combobox "Profile status" [ref=e108]:
+              - option "All profiles" [selected]
+              - option "Complete"
+              - option "Incomplete"
+              - option "Missing Documents"
+              - option "Missing Advisor"
+          - generic [ref=e109]:
+            - generic [ref=e110]: Enrollment
+            - combobox "Enrollment" [ref=e111]:
+              - option "All students" [selected]
+              - option "Enrolled"
+              - option "Not Enrolled"
+              - option "Full-time"
+              - option "Part-time"
+              - option "Exchange Student"
+              - option "Visiting Student"
+              - option "Not Enrolled"
+          - generic [ref=e112]:
+            - generic [ref=e113]: Archive
+            - combobox "Archive" [ref=e114]:
+              - option "Active records" [selected]
+              - option "All records"
+              - option "Archived only"
+          - generic [ref=e115]:
+            - generic [ref=e116]: Risk
+            - combobox "Risk" [ref=e117]:
+              - option "All risk levels" [selected]
+              - option "Low"
+              - option "Medium"
+              - option "High"
+              - option "Inactive"
+        - generic [ref=e118]:
+          - generic [ref=e119]:
+            - generic [ref=e120]: Archive
+            - combobox "Archive" [ref=e121]:
+              - option "Active records" [selected]
+              - option "All records"
+              - option "Archived only"
+          - generic [ref=e122]:
+            - generic [ref=e123]: Risk
+            - combobox "Risk" [ref=e124]:
+              - option "All risk levels" [selected]
+              - option "Low"
+              - option "Medium"
+              - option "High"
+              - option "Inactive"
+          - generic [ref=e125]:
+            - generic [ref=e126]: Quick reviews
+            - combobox "Quick reviews" [ref=e127]:
+              - option "Select a quick view" [selected]
+              - option "High risk"
+              - option "Missing documents"
+              - option "Incomplete profiles"
+              - option "No advisor"
+          - button " Clear filters" [ref=e128] [cursor=pointer]:
+            - generic [ref=e129]: 
+            - text: Clear filters
+          - button " Refresh from KIU" [ref=e130] [cursor=pointer]:
+            - generic [ref=e131]: 
+            - text: Refresh from KIU
+        - generic [ref=e132]:
+          - generic [ref=e134]: No active filters
+          - generic [ref=e135]:
+            - button " Recently updated" [ref=e136] [cursor=pointer]:
+              - generic [ref=e137]: 
+              - text: Recently updated
+            - button " Account review" [ref=e138] [cursor=pointer]:
+              - generic [ref=e139]: 
+              - text: Account review
+      - generic [ref=e140]:
+        - generic [ref=e141]:
+          - generic [ref=e142]:
+            - generic [ref=e143]: Student registry
+            - heading "Operational directory" [level=2] [ref=e144]
+            - paragraph [ref=e145]: 1 result shown. Open full records, edit, archive, or export.
+          - generic [ref=e147]:
+            - generic [ref=e148]: 
+            - text: Audit sensitive
+        - table [ref=e150]:
+          - rowgroup [ref=e151]:
+            - row "Student Program Enrollment Academic Engagement Account Completion" [ref=e152]:
+              - columnheader "Student" [ref=e153]
+              - columnheader "Program" [ref=e154]
+              - columnheader "Enrollment" [ref=e155]
+              - columnheader "Academic" [ref=e156]
+              - columnheader "Engagement" [ref=e157]
+              - columnheader "Account" [ref=e158]
+              - columnheader "Completion" [ref=e159]
+              - columnheader [ref=e160]
+          - rowgroup [ref=e161]:
+            - row "QS QA Student Alpha admin-testing-econ-student · qa.student.alpha@student.kiu.edu.ge Program pending Business Management Year 1 · Not Enrolled 0 courses · Semester 1 At Risk GPA 0.00 · 0 ECTS High risk 0% attendance · 0 missing Account Active Login enabled · No login 62% · 5 missing View Edit Archive" [ref=e162]:
+              - cell "QS QA Student Alpha admin-testing-econ-student · qa.student.alpha@student.kiu.edu.ge" [ref=e163]:
+                - generic [ref=e164]:
+                  - generic [ref=e165]: QS
+                  - generic [ref=e166]:
+                    - generic [ref=e167]: QA Student Alpha
+                    - generic [ref=e168]: admin-testing-econ-student · qa.student.alpha@student.kiu.edu.ge
+              - cell "Program pending Business Management" [ref=e169]:
+                - generic [ref=e170]:
+                  - strong [ref=e171]: Program pending
+                  - generic [ref=e172]: Business Management
+              - cell "Year 1 · Not Enrolled 0 courses · Semester 1" [ref=e173]:
+                - generic [ref=e174]:
+                  - strong [ref=e175]: Year 1 · Not Enrolled
+                  - generic [ref=e176]: 0 courses · Semester 1
+              - cell "At Risk GPA 0.00 · 0 ECTS" [ref=e177]:
+                - generic [ref=e178]:
+                  - generic [ref=e179]: At Risk
+                  - generic [ref=e180]: GPA 0.00 · 0 ECTS
+              - cell "High risk 0% attendance · 0 missing" [ref=e181]:
+                - generic [ref=e182]:
+                  - generic [ref=e183]: High risk
+                  - generic [ref=e184]: 0% attendance · 0 missing
+              - cell "Account Active Login enabled · No login" [ref=e185]:
+                - generic [ref=e186]:
+                  - generic [ref=e187]: Account Active
+                  - generic [ref=e188]: Login enabled · No login
+              - cell "62% · 5 missing" [ref=e189]:
+                - generic [ref=e192]: 62% · 5 missing
+              - cell "View Edit Archive" [ref=e193]:
+                - generic [ref=e194]:
+                  - button "View" [ref=e195] [cursor=pointer]
+                  - button "Edit" [ref=e196] [cursor=pointer]
+                  - button "Archive" [ref=e197] [cursor=pointer]
+  - text:                  
+  - generic:   
+  - generic:   
+  - complementary:
+    - generic:
+      - generic: K
+      - generic:
+        - generic: KIU
+        - generic: Integrated Campus Portal
+    - generic:
+      - generic: KI
+      - generic:
+        - generic: Portal User
+        - generic: University Portal
+  - generic [ref=e198]:
+    - generic [ref=e199]:
+      - button "Show nav" [pressed] [ref=e200] [cursor=pointer]:
+        - generic [ref=e201]: Show nav
+      - generic [ref=e202]:
+        - text: KIU
+        - generic [ref=e203]: 
+        - strong [ref=e204]: Dashboard
+      - generic [ref=e205]:
+        - generic [ref=e206]: 
+        - textbox "Search modules, staff, documents, requests..." [ref=e207]
+    - generic [ref=e208]:
+      - button "Faculty Business Management " [ref=e210] [cursor=pointer]:
+        - generic [ref=e211]: Faculty
+        - strong [ref=e212]: Business Management
+        - generic [ref=e213]: 
+      - button "View Portal View " [ref=e215] [cursor=pointer]:
+        - generic [ref=e216]: View
+        - strong [ref=e217]: Portal View
+        - generic [ref=e218]: 
+      - button " Customize" [ref=e219] [cursor=pointer]:
+        - generic [ref=e220]: 
+        - generic [ref=e221]: Customize
+      - button "" [ref=e222] [cursor=pointer]:
+        - generic [ref=e223]: 
+      - button " 0" [ref=e225] [cursor=pointer]:
+        - generic [ref=e226]: 
+        - generic [ref=e227]: "0"
+      - button " 0" [ref=e229] [cursor=pointer]:
+        - generic [ref=e230]: 
+        - generic [ref=e231]: "0"
+      - button "KI Portal Dashboard" [ref=e232] [cursor=pointer]:
+        - generic [ref=e233]: KI
+        - generic [ref=e234]:
+          - generic [ref=e235]: Portal
+          - generic [ref=e236]: Dashboard
+        - generic [ref=e237]: 
+  - status
+  - text: 

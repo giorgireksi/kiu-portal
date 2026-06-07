@@ -1,4 +1,4 @@
-﻿(function initAdminSchedulerController() {
+(function initAdminSchedulerController() {
     'use strict';
 
     const DAY_ORDER = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
@@ -18,11 +18,21 @@
     });
     const SCHEDULER_CREATE_MODAL_TEMPLATE_ID = 'sch-modal-template';
     const SCHEDULER_CREATE_MODAL_ID = 'schModalOverlay';
+    const SCHEDULER_PRESET_MANAGER_TEMPLATE_ID = 'sch-preset-manager-template';
+    const SCHEDULER_PRESET_MANAGER_ID = 'schPresetManagerOverlay';
     const SCHEDULER_QUIZ_MODAL_TEMPLATE_ID = 'prof-quiz-modal-template';
     const SCHEDULER_QUIZ_MODAL_ID = 'profQuizModalOverlay';
+    const SCHEDULER_PALETTE_SEARCH_DEBOUNCE_MS = 120;
+    const SCHEDULER_SESSION_PRESETS_KEY = 'kiuSchedulerSessionPresets';
+    const SCHEDULER_DEFAULT_GROUP_PRESETS = ['G1', 'G2', 'G3', 'G4', 'L1', 'L2', 'Lab-1'];
+    const SCHEDULER_DEFAULT_ROOM_PRESETS = ['A-101', 'A-102', 'A-201', 'B-201', 'B-202', 'C-301', 'C-303', 'K-201', 'LAB-1', 'LAB-2'];
     let selectedPaletteSubject = null;
     let schedulerInitialized = false;
     let profQuizQuestions = [];
+    let schedulerPaletteSearchHandle = 0;
+    let schedulerPresetSearchHandle = 0;
+    let schedulerRefreshHandle = 0;
+    let schedulerRefreshQueued = { palette: false, grid: false };
 
     function el(id) {
         return document.getElementById(id);
@@ -37,6 +47,23 @@
         if (!node || node.dataset[marker]) return;
         node.dataset[marker] = '1';
         node.addEventListener(eventName, handler);
+    }
+
+    function queueSchedulerRefresh(options = {}) {
+        schedulerRefreshQueued.palette = schedulerRefreshQueued.palette || options.palette === true;
+        schedulerRefreshQueued.grid = schedulerRefreshQueued.grid || options.grid === true;
+        if (schedulerRefreshHandle) return;
+        const schedule = typeof window.requestAnimationFrame === 'function'
+            ? window.requestAnimationFrame.bind(window)
+            : (callback) => window.setTimeout(callback, 16);
+        schedulerRefreshHandle = schedule(() => {
+            schedulerRefreshHandle = 0;
+            const runPalette = schedulerRefreshQueued.palette;
+            const runGrid = schedulerRefreshQueued.grid;
+            schedulerRefreshQueued = { palette: false, grid: false };
+            if (runPalette) renderPalette();
+            if (runGrid) renderGrid();
+        });
     }
 
     function ensureMountedTemplate(templateId, nodeId) {
@@ -67,16 +94,441 @@
         select.dataset.luxPickerLabel = label;
     }
 
+    function normalizeSchedulerPresetName(value) {
+        return String(value || '').replace(/\s+/g, ' ').trim();
+    }
+
+    function readSchedulerSessionPresets() {
+        try {
+            const raw = localStorage.getItem(SCHEDULER_SESSION_PRESETS_KEY);
+            const parsed = raw ? JSON.parse(raw) : null;
+            return {
+                groups: Array.isArray(parsed?.groups) ? parsed.groups.map(normalizeSchedulerPresetName).filter(Boolean) : [],
+                rooms: Array.isArray(parsed?.rooms) ? parsed.rooms.map(normalizeSchedulerPresetName).filter(Boolean) : [],
+                hiddenGroups: Array.isArray(parsed?.hiddenGroups) ? parsed.hiddenGroups.map(normalizeSchedulerPresetName).filter(Boolean) : [],
+                hiddenRooms: Array.isArray(parsed?.hiddenRooms) ? parsed.hiddenRooms.map(normalizeSchedulerPresetName).filter(Boolean) : []
+            };
+        } catch (error) {
+            return { groups: [], rooms: [], hiddenGroups: [], hiddenRooms: [] };
+        }
+    }
+
+    function writeSchedulerSessionPresets(presets) {
+        try {
+            localStorage.setItem(SCHEDULER_SESSION_PRESETS_KEY, JSON.stringify({
+                groups: Array.isArray(presets?.groups) ? presets.groups : [],
+                rooms: Array.isArray(presets?.rooms) ? presets.rooms : [],
+                hiddenGroups: Array.isArray(presets?.hiddenGroups) ? presets.hiddenGroups : [],
+                hiddenRooms: Array.isArray(presets?.hiddenRooms) ? presets.hiddenRooms : []
+            }));
+        } catch (error) {
+            /* ignore quota errors */
+        }
+    }
+
+    function getSchedulerHiddenPresetKey(kind) {
+        return kind === 'room' ? 'hiddenRooms' : 'hiddenGroups';
+    }
+
+    function mergeSchedulerPresetLists(...lists) {
+        const seen = new Set();
+        const merged = [];
+        lists.flat().forEach((entry) => {
+            const normalized = normalizeSchedulerPresetName(entry);
+            if (!normalized) return;
+            const key = normalized.toLowerCase();
+            if (seen.has(key)) return;
+            seen.add(key);
+            merged.push(normalized);
+        });
+        return merged.sort((left, right) => left.localeCompare(right, undefined, { sensitivity: 'base' }));
+    }
+
+    function harvestSchedulerPresetValuesFromSchedule() {
+        const groups = new Set();
+        const rooms = new Set();
+        try {
+            const sessions = typeof getAvailableScheduleItemsForWeek === 'function'
+                ? getAvailableScheduleItemsForWeek(getSchedulerWeekStart()) || []
+                : [];
+            sessions.forEach((session) => {
+                const groupName = normalizeSchedulerPresetName(session?.name || session?.id || '');
+                const roomName = normalizeSchedulerPresetName(session?.room || '');
+                if (groupName) groups.add(groupName);
+                if (roomName && roomName !== 'TBD') rooms.add(roomName);
+            });
+        } catch (error) {
+            /* ignore harvest failures */
+        }
+        return {
+            groups: [...groups],
+            rooms: [...rooms]
+        };
+    }
+
+    function saveSchedulerSessionPreset(kind, rawName) {
+        const name = normalizeSchedulerPresetName(rawName);
+        if (!name) return null;
+        const presets = readSchedulerSessionPresets();
+        const key = kind === 'room' ? 'rooms' : 'groups';
+        const exists = (presets[key] || []).some((entry) => entry.toLowerCase() === name.toLowerCase());
+        if (!exists) {
+            presets[key] = [...(presets[key] || []), name];
+            writeSchedulerSessionPresets(presets);
+        }
+        return name;
+    }
+
+    function rebuildSchedulerPresetSelect(select, values, placeholderLabel, currentValue = '') {
+        if (!select) return;
+        const fragment = document.createDocumentFragment();
+        fragment.appendChild(new Option(placeholderLabel, ''));
+        values.forEach((value) => fragment.appendChild(new Option(value, value)));
+        select.replaceChildren(fragment);
+        select.value = values.some((value) => value === currentValue) ? currentValue : '';
+        select.removeAttribute('size');
+        select.size = 0;
+    }
+
+    function refreshSchedulerGroupRoomPickers(options = {}) {
+        const presets = readSchedulerSessionPresets();
+        const harvested = harvestSchedulerPresetValuesFromSchedule();
+        const ensureGroup = normalizeSchedulerPresetName(options.ensureGroup || el('sch-group')?.value || '');
+        const ensureRoom = normalizeSchedulerPresetName(options.ensureRoom || el('sch-room')?.value || '');
+        const groupValues = mergeSchedulerPresetLists(
+            getVisibleSchedulerDefaultPresets('group'),
+            presets.groups,
+            harvested.groups,
+            ensureGroup ? [ensureGroup] : []
+        );
+        const roomValues = mergeSchedulerPresetLists(
+            getVisibleSchedulerDefaultPresets('room'),
+            presets.rooms,
+            harvested.rooms,
+            ensureRoom ? [ensureRoom] : []
+        );
+        labelSchedulerSelect('sch-group', 'Group ID');
+        labelSchedulerSelect('sch-room', 'Room');
+        rebuildSchedulerPresetSelect(el('sch-group'), groupValues, 'Select group', ensureGroup || el('sch-group')?.value || '');
+        rebuildSchedulerPresetSelect(el('sch-room'), roomValues, 'Select room', ensureRoom || el('sch-room')?.value || '');
+    }
+
+    function syncSchedulerPickerSelect(selectId) {
+        const select = el(selectId);
+        if (!select) return;
+        select.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+
+    function markSchedulerDurationCustom() {
+        const durationField = el('sch-duration');
+        if (!durationField || durationField.value === 'custom') return;
+        durationField.value = 'custom';
+        syncSchedulerPickerSelect('sch-duration');
+    }
+
+    function handleSchedulerManualTimeEdit() {
+        markSchedulerDurationCustom();
+        schCheckConflict();
+    }
+
+    function escapeSchedulerPresetHtml(value) {
+        return String(value || '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
+
+    function getSchedulerPresetDefaults(kind) {
+        return kind === 'room' ? SCHEDULER_DEFAULT_ROOM_PRESETS : SCHEDULER_DEFAULT_GROUP_PRESETS;
+    }
+
+    function getVisibleSchedulerDefaultPresets(kind) {
+        const presets = readSchedulerSessionPresets();
+        const hiddenKey = getSchedulerHiddenPresetKey(kind);
+        const hiddenKeys = new Set((presets[hiddenKey] || []).map((entry) => entry.toLowerCase()));
+        return getSchedulerPresetDefaults(kind).filter((entry) => !hiddenKeys.has(entry.toLowerCase()));
+    }
+
+    function hideSchedulerDefaultPreset(kind, rawName) {
+        const name = normalizeSchedulerPresetName(rawName);
+        if (!name) return false;
+        const isBuiltInDefault = getSchedulerPresetDefaults(kind).some((entry) => entry.toLowerCase() === name.toLowerCase());
+        if (!isBuiltInDefault) return false;
+        const presets = readSchedulerSessionPresets();
+        const hiddenKey = getSchedulerHiddenPresetKey(kind);
+        const hidden = presets[hiddenKey] || [];
+        if (hidden.some((entry) => entry.toLowerCase() === name.toLowerCase())) return true;
+        presets[hiddenKey] = [...hidden, name];
+        writeSchedulerSessionPresets(presets);
+        return true;
+    }
+
+    function getSchedulerPresetCatalog(kind, options = {}) {
+        const presets = readSchedulerSessionPresets();
+        const harvested = harvestSchedulerPresetValuesFromSchedule();
+        const key = kind === 'room' ? 'rooms' : 'groups';
+        const ensureValue = normalizeSchedulerPresetName(
+            options.ensureValue
+            || (kind === 'room' ? el('sch-room')?.value : el('sch-group')?.value)
+            || ''
+        );
+        const stored = presets[key] || [];
+        const defaults = getVisibleSchedulerDefaultPresets(kind);
+        const harvestedValues = harvested[key] || [];
+        const merged = mergeSchedulerPresetLists(
+            defaults,
+            stored,
+            harvestedValues,
+            ensureValue ? [ensureValue] : []
+        );
+        return { stored, defaults, harvested: harvestedValues, merged, ensureValue };
+    }
+
+    function deleteSchedulerSessionPreset(kind, rawName) {
+        const name = normalizeSchedulerPresetName(rawName);
+        if (!name) return false;
+        const presets = readSchedulerSessionPresets();
+        const key = kind === 'room' ? 'rooms' : 'groups';
+        const nextValues = (presets[key] || []).filter((entry) => entry.toLowerCase() !== name.toLowerCase());
+        if (nextValues.length === (presets[key] || []).length) return false;
+        presets[key] = nextValues;
+        writeSchedulerSessionPresets(presets);
+        return true;
+    }
+
+    function filterSchedulerPresetManagerList(query, catalog) {
+        const normalizedQuery = String(query || '').trim().toLowerCase();
+        if (!normalizedQuery) return catalog.merged;
+        return catalog.merged.filter((name) => name.toLowerCase().includes(normalizedQuery));
+    }
+
+    function getSchedulerPresetManagerKind() {
+        const overlay = el(SCHEDULER_PRESET_MANAGER_ID);
+        const kind = overlay?.dataset?.presetKind || overlay?.getAttribute('data-preset-kind') || 'group';
+        return kind === 'room' ? 'room' : 'group';
+    }
+
+    function syncSchedulerPresetManagerChrome(kind) {
+        const isRoom = kind === 'room';
+        const title = el('sch-preset-manage-title');
+        const subtitle = el('sch-preset-manage-subtitle');
+        const draft = el('sch-preset-manage-draft');
+        const overlay = el(SCHEDULER_PRESET_MANAGER_ID);
+        if (overlay) overlay.dataset.presetKind = kind;
+        if (title) {
+            title.innerHTML = isRoom
+                ? '<i class="fas fa-door-open"></i> Manage Rooms'
+                : '<i class="fas fa-users"></i> Manage Groups';
+        }
+        if (subtitle) {
+            subtitle.textContent = isRoom
+                ? 'Add, search, or remove rooms from pickers.'
+                : 'Add, search, or remove groups from pickers.';
+        }
+        if (draft) draft.placeholder = isRoom ? 'New room' : 'New group';
+    }
+
+    function renderSchedulerPresetManagerList(kind, query = '') {
+        const list = el('sch-preset-list');
+        const emptyState = el('sch-preset-manage-empty');
+        const countNode = el('sch-preset-manage-count');
+        if (!list) return;
+        const catalog = getSchedulerPresetCatalog(kind);
+        const visibleNames = filterSchedulerPresetManagerList(query, catalog);
+        const storedKeys = new Set(catalog.stored.map((entry) => entry.toLowerCase()));
+        const visibleDefaultKeys = new Set(catalog.defaults.map((entry) => entry.toLowerCase()));
+        const allDefaultKeys = new Set(getSchedulerPresetDefaults(kind).map((entry) => entry.toLowerCase()));
+        const harvestedKeys = new Set(catalog.harvested.map((entry) => entry.toLowerCase()));
+        const fragment = document.createDocumentFragment();
+
+        visibleNames.forEach((name) => {
+            const item = document.createElement('div');
+            item.className = 'sch-preset-manage-item';
+            item.setAttribute('role', 'listitem');
+            const lowerName = name.toLowerCase();
+            const badges = [];
+            if (storedKeys.has(lowerName)) badges.push('<span class="sch-preset-manage-badge sch-preset-manage-badge--saved">Saved</span>');
+            if (allDefaultKeys.has(lowerName)) badges.push('<span class="sch-preset-manage-badge sch-preset-manage-badge--default">Default</span>');
+            if (harvestedKeys.has(lowerName)) badges.push('<span class="sch-preset-manage-badge sch-preset-manage-badge--schedule">In schedule</span>');
+            const actionButtons = [];
+            if (storedKeys.has(lowerName) || visibleDefaultKeys.has(lowerName)) {
+                actionButtons.push(`<button type="button" class="sch-preset-manage-delete-btn" data-scheduler-preset-remove="${escapeSchedulerPresetHtml(name)}" aria-label="Remove ${escapeSchedulerPresetHtml(name)}"><i class="fas fa-trash-alt"></i></button>`);
+            }
+            const actionsMarkup = actionButtons.length
+                ? `<div class="sch-preset-manage-item-actions">${actionButtons.join('')}</div>`
+                : '';
+            item.innerHTML = `
+                <div class="sch-preset-manage-item-main">
+                    <div class="sch-preset-manage-item-label">${escapeSchedulerPresetHtml(name)}</div>
+                    <div class="sch-preset-manage-badges">${badges.join('')}</div>
+                </div>
+                ${actionsMarkup}
+            `;
+            fragment.appendChild(item);
+        });
+
+        list.replaceChildren(fragment);
+        if (countNode) countNode.textContent = String(visibleNames.length);
+        if (emptyState) emptyState.hidden = visibleNames.length > 0;
+    }
+
+    function finishSchedulerPresetManager() {
+        const kind = getSchedulerPresetManagerKind();
+        const ensureGroup = normalizeSchedulerPresetName(el('sch-group')?.value || '');
+        const ensureRoom = normalizeSchedulerPresetName(el('sch-room')?.value || '');
+        refreshSchedulerGroupRoomPickers({ ensureGroup, ensureRoom });
+        syncSchedulerPickerSelect('sch-group');
+        syncSchedulerPickerSelect('sch-room');
+        if (kind === 'room') schCheckConflict();
+        closeSchedulerPresetManager();
+    }
+
+    function handleSchedulerPresetManagerAdd(kind) {
+        const draftField = el('sch-preset-manage-draft');
+        const savedName = saveSchedulerSessionPreset(kind, draftField?.value || '');
+        if (!savedName) return;
+        if (draftField) draftField.value = '';
+        renderSchedulerPresetManagerList(kind, el('sch-preset-search')?.value || '');
+        const selectId = kind === 'room' ? 'sch-room' : 'sch-group';
+        const select = el(selectId);
+        if (select) {
+            select.value = savedName;
+            syncSchedulerPickerSelect(selectId);
+        }
+        refreshSchedulerGroupRoomPickers(kind === 'room'
+            ? { ensureRoom: savedName, ensureGroup: normalizeSchedulerPresetName(el('sch-group')?.value || '') }
+            : { ensureGroup: savedName, ensureRoom: normalizeSchedulerPresetName(el('sch-room')?.value || '') });
+        if (kind === 'room') schCheckConflict();
+    }
+
+    function handleSchedulerPresetManagerRemove(kind, rawName) {
+        const name = normalizeSchedulerPresetName(rawName);
+        if (!name) return;
+        const presets = readSchedulerSessionPresets();
+        const key = kind === 'room' ? 'rooms' : 'groups';
+        const isSaved = (presets[key] || []).some((entry) => entry.toLowerCase() === name.toLowerCase());
+        const isDefault = getVisibleSchedulerDefaultPresets(kind).some((entry) => entry.toLowerCase() === name.toLowerCase());
+        if (!isSaved && !isDefault) return;
+        const selectId = kind === 'room' ? 'sch-room' : 'sch-group';
+        const currentValue = normalizeSchedulerPresetName(el(selectId)?.value || '');
+        if (currentValue && currentValue.toLowerCase() === name.toLowerCase()) {
+            const label = kind === 'room' ? 'room' : 'group';
+            const confirmed = window.confirm(`Remove ${label} "${name}" from pickers? The current field will keep this value until you change it.`);
+            if (!confirmed) return;
+        }
+        let changed = false;
+        if (isSaved) changed = deleteSchedulerSessionPreset(kind, name) || changed;
+        if (isDefault) changed = hideSchedulerDefaultPreset(kind, name) || changed;
+        if (!changed) return;
+        const ensureGroup = normalizeSchedulerPresetName(el('sch-group')?.value || '');
+        const ensureRoom = normalizeSchedulerPresetName(el('sch-room')?.value || '');
+        refreshSchedulerGroupRoomPickers({ ensureGroup, ensureRoom });
+        renderSchedulerPresetManagerList(kind, el('sch-preset-search')?.value || '');
+        syncSchedulerPickerSelect('sch-group');
+        syncSchedulerPickerSelect('sch-room');
+        if (kind === 'room') schCheckConflict();
+    }
+
+    function closeSchedulerPresetManager() {
+        const overlay = el(SCHEDULER_PRESET_MANAGER_ID);
+        if (!overlay) return;
+        overlay.classList.remove('open');
+        overlay.hidden = true;
+        const searchField = el('sch-preset-search');
+        const draftField = el('sch-preset-manage-draft');
+        if (searchField) searchField.value = '';
+        if (draftField) draftField.value = '';
+        if (schedulerPresetSearchHandle) {
+            window.clearTimeout(schedulerPresetSearchHandle);
+            schedulerPresetSearchHandle = 0;
+        }
+    }
+
+    function bindSchedulerPresetManagerListeners(overlay) {
+        bindNodeOnce(overlay, 'click', 'schedulerPresetManagerClickBound', (event) => {
+            const removeButton = event.target.closest('[data-scheduler-preset-remove]');
+            if (removeButton) {
+                event.preventDefault();
+                handleSchedulerPresetManagerRemove(
+                    getSchedulerPresetManagerKind(),
+                    removeButton.getAttribute('data-scheduler-preset-remove')
+                );
+                return;
+            }
+            if (event.target.closest('[data-scheduler-preset-add]')) {
+                event.preventDefault();
+                handleSchedulerPresetManagerAdd(getSchedulerPresetManagerKind());
+                return;
+            }
+            if (event.target.closest('[data-admin-scheduler-preset-done]')) {
+                event.preventDefault();
+                finishSchedulerPresetManager();
+                return;
+            }
+            if (event.target === event.currentTarget || event.target.closest('[data-admin-scheduler-preset-close]')) {
+                event.preventDefault();
+                closeSchedulerPresetManager();
+            }
+        });
+
+        bindNodeOnce(el('sch-preset-search'), 'input', 'schedulerPresetSearchBound', (event) => {
+            const query = event.target?.value || '';
+            if (schedulerPresetSearchHandle) window.clearTimeout(schedulerPresetSearchHandle);
+            schedulerPresetSearchHandle = window.setTimeout(() => {
+                schedulerPresetSearchHandle = 0;
+                renderSchedulerPresetManagerList(getSchedulerPresetManagerKind(), query);
+            }, SCHEDULER_PALETTE_SEARCH_DEBOUNCE_MS);
+        });
+
+        bindNodeOnce(overlay, 'keydown', 'schedulerPresetManagerKeyBound', (event) => {
+            if (event.key === 'Escape') {
+                event.preventDefault();
+                closeSchedulerPresetManager();
+            }
+        });
+    }
+
+    function ensureSchedulerPresetManager() {
+        const overlay = ensureMountedTemplate(SCHEDULER_PRESET_MANAGER_TEMPLATE_ID, SCHEDULER_PRESET_MANAGER_ID);
+        if (!overlay) return null;
+        overlay.hidden = false;
+        bindSchedulerPresetManagerListeners(overlay);
+        if (document.body.classList.contains('lux-route-admin-scheduler')) {
+            overlay.dataset.luxSchPresetModal = '1';
+            overlay.querySelector('.sch-modal')?.setAttribute('data-lux-glass-root', '1');
+        }
+        return overlay;
+    }
+
+    function openSchedulerPresetManager(kind) {
+        const normalizedKind = kind === 'room' ? 'room' : 'group';
+        if (typeof window.closePickerPanels === 'function') {
+            window.closePickerPanels();
+        }
+        const overlay = ensureSchedulerPresetManager();
+        if (!overlay) return;
+        syncSchedulerPresetManagerChrome(normalizedKind);
+        const searchField = el('sch-preset-search');
+        const draftField = el('sch-preset-manage-draft');
+        if (searchField) searchField.value = '';
+        if (draftField) draftField.value = '';
+        renderSchedulerPresetManagerList(normalizedKind, '');
+        overlay.classList.add('open');
+        if (typeof window.queueLuxuryTransparencyRefresh === 'function') {
+            window.queueLuxuryTransparencyRefresh(undefined, { roots: [overlay] });
+        }
+        window.setTimeout(() => searchField?.focus(), 0);
+    }
+
     function normalizeSchedulerSelectOptions() {
         const currentFaculty = normalizeFacultyCode(localStorage.getItem('currentFaculty') || 'ECON', 'ECON');
         const semester = String((typeof KIU_STATE !== 'undefined' && KIU_STATE.activeSemester) || 3);
         labelSchedulerSelect('admin-tt-faculty', 'Faculty');
-        labelSchedulerSelect('grid-view-fac', 'Faculty');
         labelSchedulerSelect('admin-tt-semester', 'Semester');
         labelSchedulerSelect('admin-tt-prof', 'Professor');
         labelSchedulerSelect('admin-tt-ta', 'Teaching assistant');
         rebuildSchedulerSelect(el('admin-tt-faculty'), SCHEDULER_FACULTY_OPTIONS, currentFaculty);
-        rebuildSchedulerSelect(el('grid-view-fac'), SCHEDULER_FACULTY_OPTIONS, currentFaculty);
         rebuildSchedulerSelect(el('admin-tt-semester'), SCHEDULER_SEMESTER_OPTIONS, semester);
     }
 
@@ -175,7 +627,7 @@
     function getVisibleSchedulerSessions() {
         const weekStart = getSchedulerWeekStart();
         const semester = parseInt(el('admin-tt-semester')?.value || '3', 10);
-        const facultyCode = el('grid-view-fac')?.value || el('admin-tt-faculty')?.value || localStorage.getItem('currentFaculty') || 'ECON';
+        const facultyCode = el('admin-tt-faculty')?.value || localStorage.getItem('currentFaculty') || 'ECON';
         const profFilter = el('admin-tt-prof')?.value || 'all';
         const taFilter = el('admin-tt-ta')?.value || 'all';
         const resolvedFaculty = facultyCode === 'all' ? null : normalizeFacultyCode(facultyCode, getCurrentFaculty());
@@ -224,7 +676,7 @@
         const staffCount = new Set(
             visibleSessions.flatMap((session) => [session.prof, session.ta].filter((name) => name && name !== 'TBD'))
         ).size;
-        const facultyCode = el('grid-view-fac')?.value || el('admin-tt-faculty')?.value || localStorage.getItem('currentFaculty') || 'ECON';
+        const facultyCode = el('admin-tt-faculty')?.value || localStorage.getItem('currentFaculty') || 'ECON';
         const semester = el('admin-tt-semester')?.value || '3';
         const isCurrentWeek = weekStart === currentWeek;
 
@@ -242,21 +694,23 @@
         if (badge) badge.textContent = isCurrentWeek ? 'Current week' : 'Selected week';
     }
 
+    function schedulerRosterDisplayName(person = {}) {
+        return String(person.name || person.nameEn || person.displayName || person.id || '').trim();
+    }
+
     function populateProfList() {
         const facultyValue = el('admin-tt-faculty')?.value || localStorage.getItem('currentFaculty') || 'ECON';
         const facultyFilter = facultyValue === 'all' ? null : normalizeFacultyCode(facultyValue, getCurrentFaculty());
         const professors = getAllStaff('professors', facultyFilter);
         const tas = getAllStaff('tas', facultyFilter);
-        const list = el('sch-profs-list');
-        if (list) {
-            list.innerHTML = [...professors, ...tas].map((person) => `<option value="${person.name}">`).join('');
-        }
-
         const profSelect = el('admin-tt-prof');
         if (profSelect) {
             const currentValue = profSelect.value || 'all';
             profSelect.innerHTML = '<option value="all">All professors</option>'
-                + professors.map((person) => `<option value="${person.name}">${person.name}</option>`).join('');
+                + professors.map((person) => {
+                    const label = schedulerRosterDisplayName(person);
+                    return `<option value="${label}">${label}</option>`;
+                }).join('');
             profSelect.value = [...profSelect.options].some((option) => option.value === currentValue) ? currentValue : 'all';
             profSelect.removeAttribute('size');
             profSelect.size = 0;
@@ -266,7 +720,10 @@
         if (taSelect) {
             const currentValue = taSelect.value || 'all';
             taSelect.innerHTML = '<option value="all">All teaching assistants</option>'
-                + tas.map((person) => `<option value="${person.name}">${person.name}</option>`).join('');
+                + tas.map((person) => {
+                    const label = schedulerRosterDisplayName(person);
+                    return `<option value="${label}">${label}</option>`;
+                }).join('');
             taSelect.value = [...taSelect.options].some((option) => option.value === currentValue) ? currentValue : 'all';
             taSelect.removeAttribute('size');
             taSelect.size = 0;
@@ -294,12 +751,21 @@
         list.replaceChildren(fragment);
         updateSchedulerRailChrome();
     }
+    function syncPaletteSelectionState(selectedId = selectedPaletteSubject?.id || '') {
+        const list = el('palette-list');
+        if (!list) return;
+        const normalizedId = String(selectedId || '').trim();
+        list.querySelectorAll('[data-scheduler-subject-id]').forEach((card) => {
+            card.classList.toggle('selected', String(card.dataset.schedulerSubjectId || '').trim() === normalizedId);
+        });
+    }
+
     function selectPaletteItem(id) {
         const paletteSubjects = getSchedulerPaletteSubjects();
         const allSubjects = mergeUniqueSubjects([...(KIU_STATE.curriculum || []), ...paletteSubjects]);
         selectedPaletteSubject = allSubjects.find((subject) => subject.id === id) || null;
         window.selectedPaletteSubject = selectedPaletteSubject;
-        renderPalette();
+        syncPaletteSelectionState(id);
         const subjectSelect = el('sch-subject');
         if (subjectSelect) subjectSelect.value = id;
     }
@@ -307,7 +773,17 @@
     function setSchModalMode(mode = 'create') {
         const isEdit = mode === 'edit';
         const modeInput = el('sch-edit-mode');
+        const modal = el('schModalOverlay');
+        const title = el('sch-modal-title');
+        const chip = el('sch-modal-mode-chip');
         if (modeInput) modeInput.value = isEdit ? 'edit' : 'create';
+        if (modal) modal.dataset.schModalMode = isEdit ? 'edit' : 'create';
+        if (chip) chip.textContent = isEdit ? 'Edit' : 'Create';
+        if (title) {
+            title.innerHTML = isEdit
+                ? '<i class="fas fa-pen-to-square"></i> Edit Class Session'
+                : '<i class="fas fa-calendar-plus"></i> New Class Session';
+        }
         if (!isEdit) {
             ['sch-edit-course', 'sch-edit-group', 'sch-edit-weekstart'].forEach((id) => {
                 const field = el(id);
@@ -363,41 +839,27 @@
 
     function buildProfessorQuizEmptyState() {
         const empty = document.createElement('div');
-        empty.style.fontSize = '12px';
-        empty.style.color = 'var(--lux-text-muted)';
-        empty.style.textAlign = 'center';
-        empty.style.padding = '10px';
+        empty.className = 'quiz-question-empty-state';
         empty.textContent = 'No questions yet.';
         return empty;
     }
 
     function buildProfessorQuizQuestionCard(question, index) {
         const card = document.createElement('div');
-        card.style.background = 'var(--lux-surface-hover)';
-        card.style.border = '1px solid var(--lux-border)';
-        card.style.borderRadius = '8px';
-        card.style.padding = '10px';
+        card.className = 'quiz-question-card';
 
         const header = document.createElement('div');
-        header.style.display = 'flex';
-        header.style.justifyContent = 'space-between';
-        header.style.marginBottom = '6px';
+        header.className = 'quiz-question-card-head';
 
         const label = document.createElement('span');
-        label.style.fontSize = '12px';
-        label.style.fontWeight = '700';
-        label.style.color = 'var(--lux-text)';
+        label.className = 'quiz-question-card-label';
         label.textContent = `Q${index + 1}`;
 
         const removeButton = document.createElement('button');
         removeButton.type = 'button';
         removeButton.dataset.profQuizQuestionRemove = String(index);
-        removeButton.style.border = 'none';
-        removeButton.style.background = 'transparent';
-        removeButton.style.padding = '0';
-        removeButton.style.color = '#dc2626';
-        removeButton.style.cursor = 'pointer';
-        removeButton.style.fontSize = '11px';
+        removeButton.className = 'quiz-question-remove-btn';
+        removeButton.setAttribute('aria-label', `Remove question ${index + 1}`);
 
         const removeIcon = document.createElement('i');
         removeIcon.className = 'fas fa-trash';
@@ -407,15 +869,7 @@
 
         const questionLabel = document.createElement('label');
         questionLabel.htmlFor = `pq-question-text-${index}`;
-        questionLabel.style.position = 'absolute';
-        questionLabel.style.width = '1px';
-        questionLabel.style.height = '1px';
-        questionLabel.style.padding = '0';
-        questionLabel.style.margin = '-1px';
-        questionLabel.style.overflow = 'hidden';
-        questionLabel.style.clip = 'rect(0,0,0,0)';
-        questionLabel.style.whiteSpace = 'nowrap';
-        questionLabel.style.border = '0';
+        questionLabel.className = 'sch-visually-hidden';
         questionLabel.textContent = `Question ${index + 1} text`;
 
         const questionInput = document.createElement('input');
@@ -425,23 +879,14 @@
         questionInput.placeholder = 'Question text...';
         questionInput.value = question.text || '';
         questionInput.dataset.profQuizQuestionText = String(index);
-        questionInput.style.width = '100%';
-        questionInput.style.padding = '7px';
-        questionInput.style.border = '1px solid var(--lux-border)';
-        questionInput.style.borderRadius = '6px';
-        questionInput.style.background = 'var(--lux-surface)';
-        questionInput.style.color = 'var(--lux-text)';
-        questionInput.style.marginBottom = '6px';
+        questionInput.className = 'quiz-question-input';
 
         const pointsRow = document.createElement('div');
-        pointsRow.style.display = 'flex';
-        pointsRow.style.alignItems = 'center';
-        pointsRow.style.gap = '6px';
+        pointsRow.className = 'quiz-question-points-row';
 
         const pointsLabel = document.createElement('label');
         pointsLabel.htmlFor = `pq-question-points-${index}`;
-        pointsLabel.style.fontSize = '11px';
-        pointsLabel.style.color = 'var(--lux-text-muted)';
+        pointsLabel.className = 'quiz-question-points-label';
         pointsLabel.textContent = 'Pts:';
 
         const pointsInput = document.createElement('input');
@@ -450,11 +895,8 @@
         pointsInput.name = `pq-question-points-${index}`;
         pointsInput.value = String(question.points ?? 10);
         pointsInput.dataset.profQuizQuestionPoints = String(index);
-        pointsInput.style.width = '50px';
-        pointsInput.style.padding = '3px 6px';
-        pointsInput.style.border = '1px solid var(--lux-border)';
-        pointsInput.style.borderRadius = '4px';
-        pointsInput.style.fontSize = '11px';
+        pointsInput.min = '0';
+        pointsInput.className = 'quiz-question-points-input';
 
         pointsRow.append(pointsLabel, pointsInput);
         card.append(header, questionLabel, questionInput, pointsRow);
@@ -593,24 +1035,32 @@
 
     function bindSchedulerCreateModalListeners(modal) {
         bindNodeOnce(modal, 'click', 'schedulerModalClickBound', (event) => {
+            const manageButton = event.target.closest('[data-scheduler-preset-manage]');
+            if (manageButton) {
+                event.preventDefault();
+                openSchedulerPresetManager(manageButton.getAttribute('data-scheduler-preset-manage'));
+                return;
+            }
             if (event.target === event.currentTarget || event.target.closest('[data-admin-scheduler-modal-close]')) {
                 event.preventDefault();
                 closeSchModal();
             }
         });
 
-        ['sch-time', 'sch-duration'].forEach((id) => {
-            bindNodeOnce(el(id), 'change', `${id.replace(/-/g, '')}Bound`, () => {
-                schCalcEnd();
-                schCheckConflict();
-            });
-        });
-        bindNodeOnce(el('sch-endtime'), 'input', 'schedulerEndTimeBound', () => {
-            const durationField = el('sch-duration');
-            if (durationField) durationField.value = 'custom';
+        bindNodeOnce(el('sch-duration'), 'change', 'schdurationBound', () => {
+            schCalcEnd();
             schCheckConflict();
         });
-        bindNodeOnce(el('sch-prof'), 'input', 'schedulerProfInputBound', schCheckConflict);
+        bindNodeOnce(el('sch-time'), 'input', 'schedulerStartTimeInputBound', handleSchedulerManualTimeEdit);
+        bindNodeOnce(el('sch-time'), 'change', 'schedulerStartTimeChangeBound', handleSchedulerManualTimeEdit);
+        bindNodeOnce(el('sch-endtime'), 'input', 'schedulerEndTimeInputBound', handleSchedulerManualTimeEdit);
+        bindNodeOnce(el('sch-endtime'), 'change', 'schedulerEndTimeChangeBound', handleSchedulerManualTimeEdit);
+        bindNodeOnce(el('sch-session-type'), 'change', 'schedulerSessionTypeBound', (event) => {
+            const field = event.target;
+            if (field) field.dataset.userSet = '1';
+            schCheckConflict();
+        });
+        bindNodeOnce(el('sch-room'), 'change', 'schedulerRoomInputBound', schCheckConflict);
         bindNodeOnce(el('sch-day'), 'change', 'schedulerDayBound', schCheckConflict);
         bindNodeOnce(el('sch-create-btn'), 'click', 'schedulerCreateButtonBound', (event) => {
             event.preventDefault();
@@ -620,8 +1070,21 @@
 
     function ensureSchedulerCreateModal() {
         const modal = ensureMountedTemplate(SCHEDULER_CREATE_MODAL_TEMPLATE_ID, SCHEDULER_CREATE_MODAL_ID);
-        if (modal) bindSchedulerCreateModalListeners(modal);
+        if (modal) {
+            bindSchedulerCreateModalListeners(modal);
+            if (document.body.classList.contains('lux-route-admin-scheduler')) {
+                modal.dataset.luxSchModal = '1';
+                modal.querySelector('.sch-modal')?.setAttribute('data-lux-glass-root', '1');
+            }
+        }
         return modal;
+    }
+
+    function syncSchedulerSessionTypeDefault() {
+        const sessionTypeField = el('sch-session-type');
+        if (!sessionTypeField || sessionTypeField.dataset.userSet === '1') return;
+        const current = String(sessionTypeField.value || 'lecture').toLowerCase();
+        sessionTypeField.value = current === 'seminar' ? 'seminar' : 'lecture';
     }
 
     function openSchModal(day, time, semester, weekStart = getSchedulerWeekStart()) {
@@ -631,15 +1094,16 @@
         const normalizedTime = normalizeTimeString(time, '09:00');
         const displayDay = normalizeSchedulerDayLabel(day, 'en') || 'Monday';
         const selectedSemester = parseInt(String(semester || el('admin-tt-semester')?.value || '3'), 10) || 3;
-        const facultyValue = el('grid-view-fac')?.value || el('admin-tt-faculty')?.value || localStorage.getItem('currentFaculty') || 'ECON';
+        const facultyValue = el('admin-tt-faculty')?.value || localStorage.getItem('currentFaculty') || 'ECON';
         const normalizedFaculty = getSchedulerModalFacultyCode(facultyValue);
         const facultyProfile = getFacultyProfile(normalizedFaculty);
 
         setSchModalMode('create');
-        setText('sch-modal-subtitle', `${displayDay} Â· ${normalizedTime}`);
+        setText('sch-modal-subtitle', `${displayDay} - ${normalizedTime}`);
         setText('sch-modal-week', `Week of ${formatWeekRangeLabel(normalizedWeek)}`);
         populateProfList();
         populateSchedulerSubjectOptions(selectedSemester, normalizedFaculty);
+        refreshSchedulerGroupRoomPickers();
 
         if (el('sch-day')) el('sch-day').value = displayDay;
         if (el('sch-time')) el('sch-time').value = normalizedTime;
@@ -652,12 +1116,23 @@
         const taFilter = el('admin-tt-ta')?.value;
         if (el('sch-prof')) el('sch-prof').value = profFilter && profFilter !== 'all' ? profFilter : '';
         if (el('sch-ta')) el('sch-ta').value = taFilter && taFilter !== 'all' ? taFilter : '';
+        if (el('sch-session-type')) {
+            el('sch-session-type').value = 'lecture';
+            el('sch-session-type').dataset.userSet = '0';
+        }
+        syncSchedulerSessionTypeDefault();
 
         const conflictBox = el('sch-conflict-msg');
         if (conflictBox) conflictBox.classList.remove('show');
 
         schCalcEnd();
+        if (typeof window.enhanceUniversalPickers === 'function') {
+            window.enhanceUniversalPickers(modal);
+        }
         modal.classList.add('open');
+        if (typeof window.queueLuxuryTransparencyRefresh === 'function') {
+            window.queueLuxuryTransparencyRefresh(undefined, { roots: [modal] });
+        }
     }
 
     function openSchEditModal(courseId, groupId, weekStart = getSchedulerWeekStart()) {
@@ -687,15 +1162,22 @@
         }
 
         const groupValue = session.name || session.id || groupId;
+        const roomValue = session.room && session.room !== 'TBD' ? session.room : '';
         const durationMinutes = parseInt(String(session.duration || '110').match(/\d+/)?.[0] || '110', 10);
         const endValue = normalizeTimeString(session.endTime || '', '') || minutesToTimeString(convertTimeToMinutes(session.time) + durationMinutes);
 
+        refreshSchedulerGroupRoomPickers({ ensureGroup: groupValue, ensureRoom: roomValue });
         if (el('sch-group')) el('sch-group').value = groupValue;
         if (el('sch-day')) el('sch-day').value = normalizeSchedulerDayLabel(session.day, 'en') || el('sch-day').value;
         if (el('sch-time')) el('sch-time').value = normalizeTimeString(session.time || '', '09:00');
-        if (el('sch-room')) el('sch-room').value = session.room && session.room !== 'TBD' ? session.room : '';
+        if (el('sch-room')) el('sch-room').value = roomValue;
         if (el('sch-prof')) el('sch-prof').value = session.prof && session.prof !== 'TBD' ? session.prof : '';
         if (el('sch-ta')) el('sch-ta').value = session.ta || '';
+        if (el('sch-session-type')) {
+            const sessionType = String(session.sessionType || '').toLowerCase() === 'seminar' ? 'seminar' : 'lecture';
+            el('sch-session-type').value = sessionType;
+            el('sch-session-type').dataset.userSet = '1';
+        }
         if (el('sch-capacity')) el('sch-capacity').value = String(session.capacity || 40);
         if (el('sch-endtime')) el('sch-endtime').value = endValue;
 
@@ -712,19 +1194,29 @@
         if (el('sch-edit-weekstart')) el('sch-edit-weekstart').value = normalizedWeek;
         if (el('sch-edit-was-override')) el('sch-edit-was-override').value = session.isWeekOverride ? '1' : '0';
 
+        ['sch-group', 'sch-room', 'sch-day', 'sch-duration', 'sch-session-type', 'sch-apply-scope', 'sch-subject'].forEach(syncSchedulerPickerSelect);
         schCheckConflict();
     }
 
     function closeSchModal() {
+        closeSchedulerPresetManager();
+        if (typeof window.closePickerPanels === 'function') {
+            window.closePickerPanels();
+        }
         const modal = el('schModalOverlay');
         if (modal) modal.classList.remove('open');
         setSchModalMode('create');
+        const button = el('sch-create-btn');
+        if (button) button.classList.remove('is-success-state');
         ['sch-group', 'sch-room', 'sch-prof', 'sch-ta'].forEach((id) => {
             const field = el(id);
             if (field) field.value = '';
         });
-        const conflictBox = el('sch-conflict-msg');
-        if (conflictBox) conflictBox.classList.remove('show');
+        if (el('sch-session-type')) {
+            el('sch-session-type').value = 'lecture';
+            el('sch-session-type').dataset.userSet = '0';
+        }
+        clearSchedulerConflictState();
     }
 
     function schCalcEnd() {
@@ -762,18 +1254,20 @@
 
     function buildSchedulerEmptyState(message) {
         const state = document.createElement('div');
-        state.className = 'sch-empty-state';
+        state.className = 'sch-empty-state lux-summary-surface lux-summary-surface--panel';
         state.textContent = message;
         return state;
     }
 
     function buildSchedulerPaletteCard(subject, facultyCode, isActive) {
+        const toneToken = getSchedulerEventToneToken(facultyCode);
         const tone = getSchedulerFacultyTone(facultyCode);
         const card = document.createElement('button');
         card.type = 'button';
-        card.className = `palette-card${isActive ? ' selected' : ''}`;
+        card.className = `palette-card lux-strip-card surface-card lux-summary-surface lux-summary-surface--panel${isActive ? ' selected' : ''}`;
         card.dataset.schedulerSubjectId = subject.id;
-        card.style.borderLeftColor = tone.accent;
+        card.dataset.schPaletteTone = toneToken;
+        card.style.setProperty('--sch-event-rgb', tone.rgb);
 
         const id = document.createElement('div');
         id.className = 'pc-id';
@@ -793,15 +1287,16 @@
 
     function buildSchedulerDayHeader(entry, isToday) {
         const dayCol = document.createElement('div');
-        dayCol.className = `sch-day-col${isToday ? ' today' : ''}`;
-        dayCol.textContent = entry.en;
+        dayCol.className = `sch-day-col${isToday ? ' is-today' : ''}`;
+
+        const title = document.createElement('div');
+        title.className = 'sch-day-col-label';
+        title.textContent = entry.en;
 
         const meta = document.createElement('div');
-        meta.style.fontSize = '10px';
-        meta.style.fontWeight = '400';
-        meta.style.opacity = '0.6';
+        meta.className = 'sch-day-col-meta';
         meta.textContent = entry.shortDate;
-        dayCol.appendChild(meta);
+        dayCol.append(title, meta);
         return dayCol;
     }
 
@@ -809,6 +1304,7 @@
         const timeSlot = document.createElement('div');
         timeSlot.className = 'sch-time-slot';
         const label = document.createElement('span');
+        label.className = 'sch-time-slot-copy';
         label.textContent = slot;
         timeSlot.appendChild(label);
         return timeSlot;
@@ -842,20 +1338,27 @@
         return meta;
     }
 
-    function buildSchedulerEventAction(action, courseId, groupId, iconClass, extraStyle = {}) {
+    function buildSchedulerEventAction(action, courseId, groupId, iconClass) {
         const actionNode = document.createElement('div');
-        actionNode.className = 'ev-trash';
+        actionNode.className = `ev-trash ev-action ev-action--${action}`;
         actionNode.dataset.schedulerSessionAction = action;
         actionNode.dataset.courseId = courseId;
         actionNode.dataset.groupId = groupId;
-        Object.entries(extraStyle).forEach(([key, value]) => {
-            actionNode.style[key] = value;
-        });
 
         const icon = document.createElement('i');
         icon.className = iconClass;
         actionNode.appendChild(icon);
         return actionNode;
+    }
+
+    function getSchedulerEventToneToken(facultyCode) {
+        switch (normalizeFacultyCode(facultyCode || 'ECON')) {
+            case 'CS': return 'cs';
+            case 'LAW': return 'law';
+            case 'MED': return 'med';
+            case 'ARTS': return 'arts';
+            default: return 'econ';
+        }
     }
 
     function buildSchedulerEventCard(session, weekStart) {
@@ -864,19 +1367,22 @@
         const durationMinutes = parseInt(String(session.duration || '110').match(/\d+/)?.[0] || '110', 10);
         const heightPx = Math.max(40, (durationMinutes / 60) * 100 - 4);
         const facultyCode = normalizeFacultyCode(session.faculty || deriveFaculty(session.courseId));
+        const toneToken = getSchedulerEventToneToken(facultyCode);
         const tone = getSchedulerFacultyTone(facultyCode);
         const isDraft = session.prof === 'TBD' || session.room === 'TBD';
 
         const card = document.createElement('div');
         card.className = 'sch-event';
-        card.style.top = `${topPx}px`;
-        card.style.height = `${heightPx}px`;
-        card.style.background = tone.softBg;
-        card.style.borderLeftColor = tone.accent;
+        card.style.setProperty('--sch-event-top', `${topPx}px`);
+        card.style.setProperty('--sch-event-height', `${heightPx}px`);
+        card.style.setProperty('--sch-event-rgb', tone.rgb);
         card.dataset.schedulerSessionAction = 'edit';
         card.dataset.courseId = session.courseId;
         card.dataset.groupId = session.id;
         card.dataset.weekStart = weekStart;
+        card.dataset.schEventTone = toneToken;
+        if (isDraft) card.classList.add('is-draft');
+        if (session.isWeekOverride) card.classList.add('is-week-override');
 
         if (isDraft || session.isWeekOverride) {
             const badge = document.createElement('div');
@@ -884,7 +1390,7 @@
             if (isDraft) {
                 badge.textContent = 'DRAFT';
             } else {
-                badge.style.background = tone.accent;
+                badge.classList.add('is-week-override');
                 badge.textContent = 'WEEK';
             }
             card.appendChild(badge);
@@ -892,12 +1398,10 @@
 
         const title = document.createElement('div');
         title.className = 'ev-title';
-        title.style.color = tone.accent;
         title.textContent = session.courseId;
 
         const titleMeta = document.createElement('span');
-        titleMeta.style.opacity = '0.6';
-        titleMeta.style.fontWeight = '400';
+        titleMeta.className = 'ev-title-meta';
         titleMeta.textContent = `(${session.id})`;
         title.appendChild(document.createTextNode(' '));
         title.appendChild(titleMeta);
@@ -906,7 +1410,7 @@
         const professorContent = session.prof === 'TBD'
             ? (() => {
                 const missing = document.createElement('span');
-                missing.style.color = '#dc2626';
+                missing.className = 'ev-value is-missing';
                 missing.textContent = 'No Professor';
                 return missing;
             })()
@@ -916,78 +1420,110 @@
         const roomWrapper = document.createElement('span');
         if (session.room === 'TBD') {
             const missingRoom = document.createElement('span');
-            missingRoom.style.color = '#dc2626';
+            missingRoom.className = 'ev-value is-missing';
             missingRoom.textContent = 'No Room';
             roomWrapper.appendChild(missingRoom);
         } else {
             roomWrapper.appendChild(document.createTextNode(session.room));
         }
-        roomWrapper.appendChild(document.createTextNode(` · ${session.duration}`));
+        const duration = document.createElement('span');
+        duration.className = 'ev-duration';
+        duration.textContent = ` · ${session.duration}`;
+        roomWrapper.appendChild(duration);
         card.appendChild(buildSchedulerEventMeta('fas fa-map-marker-alt', roomWrapper));
 
-        card.appendChild(buildSchedulerEventAction('stats', session.courseId, session.id, 'fas fa-circle-info', {
-            right: '28px',
-            color: 'var(--lux-text-muted)'
-        }));
+        card.appendChild(buildSchedulerEventAction('stats', session.courseId, session.id, 'fas fa-circle-info'));
         card.appendChild(buildSchedulerEventAction('delete', session.courseId, session.id, 'fas fa-trash'));
         return card;
     }
 
     function buildSchedulerInfoBanner(message) {
         const banner = document.createElement('div');
-        banner.style.padding = '12px 16px';
-        banner.style.background = 'rgba(var(--lux-accent-rgb),0.08)';
-        banner.style.borderTop = '1px solid var(--lux-border)';
-        banner.style.color = 'var(--lux-text-muted)';
-        banner.style.fontSize = '12px';
-        banner.style.textAlign = 'center';
-        banner.style.fontWeight = '600';
+        banner.className = 'sch-info-banner lux-summary-surface lux-summary-surface--panel';
         banner.textContent = message;
         return banner;
     }
 
     function buildSchedulerEmptyWeekNotice(weekStart) {
         const empty = document.createElement('div');
-        empty.style.padding = '16px';
-        empty.style.background = 'var(--lux-surface-hover)';
-        empty.style.borderTop = '1px solid var(--lux-border)';
-        empty.style.color = 'var(--lux-text-muted)';
-        empty.style.fontSize = '12px';
-        empty.style.textAlign = 'center';
+        empty.className = 'sch-empty-week-notice lux-summary-surface lux-summary-surface--panel';
         empty.textContent = `No sessions scheduled for ${formatWeekRangeLabel(weekStart)}.`;
         return empty;
+    }
+
+    function applySchedulerConflictState(state, text, iconClass) {
+        const messageBox = el('sch-conflict-msg');
+        const textNode = el('sch-conflict-text');
+        const iconNode = el('sch-conflict-icon');
+        if (!messageBox || !textNode || !iconNode) return;
+        messageBox.dataset.conflictState = state;
+        textNode.textContent = text;
+        iconNode.className = iconClass;
+        messageBox.classList.add('show');
+    }
+
+    function clearSchedulerConflictState() {
+        const messageBox = el('sch-conflict-msg');
+        if (!messageBox) return;
+        messageBox.dataset.conflictState = 'hidden';
+        messageBox.classList.remove('show');
     }
 
     function schCheckConflict() {
         const courseId = el('sch-subject')?.value?.trim();
         const groupId = el('sch-group')?.value?.trim();
         const professor = el('sch-prof')?.value?.trim();
+        const room = el('sch-room')?.value?.trim();
         const day = normalizeSchedulerDayLabel(el('sch-day')?.value, 'ge');
         const time = normalizeTimeString(el('sch-time')?.value, '');
         const end = normalizeTimeString(el('sch-endtime')?.value, '');
         const weekStart = el('sch-weekstart-hidden')?.value || getSchedulerWeekStart();
-        const messageBox = el('sch-conflict-msg');
-        const textNode = el('sch-conflict-text');
         const isEdit = el('sch-edit-mode')?.value === 'edit';
         const originalCourse = el('sch-edit-course')?.value || '';
         const originalGroup = el('sch-edit-group')?.value || '';
 
-        if (!messageBox || !textNode) return;
-        if (!professor || !day || !time) {
-            messageBox.classList.remove('show');
+        if (!day || !time) {
+            clearSchedulerConflictState();
             return;
         }
 
         const excludeKey = isEdit && originalCourse && originalGroup
             ? `${originalCourse}::${originalGroup.toLowerCase()}`
             : (courseId && groupId ? `${courseId}::${groupId.toLowerCase()}` : null);
-        const overlap = findScheduleConflict('professor', professor, day, time, end, excludeKey, weekStart);
-        if (overlap) {
-            textNode.textContent = `Conflict: ${professor} already has ${overlap.courseId} (${overlap.id}) scheduled during ${formatWeekRangeLabel(weekStart)}.`;
-            messageBox.classList.add('show');
-        } else {
-            messageBox.classList.remove('show');
+        const professorOverlap = findScheduleConflict('professor', professor, day, time, end, excludeKey, weekStart);
+        if (professorOverlap) {
+            applySchedulerConflictState(
+                'danger',
+                `Conflict: ${professor} already has ${professorOverlap.courseId} (${professorOverlap.id}) scheduled during ${formatWeekRangeLabel(weekStart)}.`,
+                'fas fa-exclamation-triangle'
+            );
+            return;
         }
+
+        const roomOverlap = findScheduleConflict('room', room, day, time, end, excludeKey, weekStart);
+        if (roomOverlap) {
+            applySchedulerConflictState(
+                'danger',
+                `Conflict: Room ${room} is already booked for ${roomOverlap.courseId} (${roomOverlap.id}) during ${formatWeekRangeLabel(weekStart)}.`,
+                'fas fa-exclamation-triangle'
+            );
+            return;
+        }
+
+        const hasPreviewableAssignment = Boolean(professor || room);
+        if (!hasPreviewableAssignment) {
+            clearSchedulerConflictState();
+            return;
+        }
+
+        const previewParts = [];
+        if (professor) previewParts.push(`Professor ${professor}`);
+        if (room) previewParts.push(`Room ${room}`);
+        applySchedulerConflictState(
+            'success',
+            `${previewParts.join(' and ')} ${previewParts.length === 1 ? 'is' : 'are'} clear for ${normalizeSchedulerDayLabel(day, 'en')} ${time}${end ? `-${end}` : ''}.`,
+            'fas fa-circle-check'
+        );
     }
 
     function renderGrid() {
@@ -1005,20 +1541,17 @@
         syncSchedulerWeekChrome();
 
         const root = document.createElement('div');
-        root.style.display = 'flex';
-        root.style.flexDirection = 'column';
-        root.style.minHeight = '1200px';
+        root.className = 'sch-grid-root';
+        root.dataset.schedulerWeekState = isCurrentWeek ? 'current' : 'selected';
 
         const headerRow = document.createElement('div');
         headerRow.className = 'sch-header-row';
         const timezoneCol = document.createElement('div');
-        timezoneCol.className = 'sch-time-col';
-        timezoneCol.style.padding = '10px 4px';
-        timezoneCol.style.fontSize = '9px';
-        timezoneCol.style.fontWeight = '700';
-        timezoneCol.style.color = 'var(--lux-text-muted)';
-        timezoneCol.style.textAlign = 'center';
-        timezoneCol.textContent = 'GMT+4';
+        timezoneCol.className = 'sch-time-col sch-time-col--header';
+        const timezoneCopy = document.createElement('div');
+        timezoneCopy.className = 'sch-time-col-copy';
+        timezoneCopy.textContent = 'GMT+4';
+        timezoneCol.appendChild(timezoneCopy);
         headerRow.appendChild(timezoneCol);
 
         weekEntries.forEach((entry, index) => {
@@ -1113,6 +1646,9 @@
         const room = el('sch-room')?.value?.trim() || 'TBD';
         const professor = el('sch-prof')?.value?.trim() || 'TBD';
         const ta = el('sch-ta')?.value?.trim() || '';
+        const sessionType = typeof inferSchedulerSessionType === 'function'
+            ? inferSchedulerSessionType(professor, ta, el('sch-session-type')?.value || 'lecture')
+            : (String(el('sch-session-type')?.value || 'lecture').toLowerCase() === 'seminar' ? 'seminar' : 'lecture');
         const capacity = parseInt(el('sch-capacity')?.value || '40', 10) || 40;
         const semester = parseInt(el('sch-semester-hidden')?.value || '3', 10) || 3;
         const weekStart = el('sch-weekstart-hidden')?.value || getSchedulerWeekStart();
@@ -1161,6 +1697,7 @@
             ta,
             room,
             duration: `${durationMinutes}min`,
+            sessionType,
             capacity,
             registered: 0
         }, {
@@ -1214,51 +1751,44 @@
         if (button) {
             const originalHtml = button.innerHTML;
             button.innerHTML = `<i class="fas fa-check"></i> ${isEdit ? 'Session Updated!' : 'Session Created!'}`;
-            button.style.background = 'linear-gradient(135deg, #16a34a, #15803d)';
+            button.classList.add('is-success-state');
             setTimeout(() => {
                 button.innerHTML = originalHtml;
-                button.style.background = '';
+                button.classList.remove('is-success-state');
             }, 2000);
         }
     }
 
-    function syncSchedulerFacultyScope(facultyValue, sourceIsGrid = false) {
+    function syncSchedulerFacultyScope(facultyValue) {
         normalizeSchedulerSelectOptions();
         const normalizedFaculty = facultyValue === 'all'
             ? 'all'
             : normalizeFacultyCode(facultyValue, getCurrentFaculty());
 
         if (el('admin-tt-faculty')) el('admin-tt-faculty').value = normalizedFaculty;
-        if (el('grid-view-fac')) el('grid-view-fac').value = normalizedFaculty;
 
         if (normalizedFaculty !== 'all') {
             localStorage.setItem('currentFaculty', normalizedFaculty);
             if (typeof switchFacultyTheme === 'function') {
                 switchFacultyTheme(normalizedFaculty, { refreshDependentViews: false });
             }
-            if (typeof ensureAdminTestingPersonas === 'function') {
-                ensureAdminTestingPersonas(normalizedFaculty);
-            }
         }
 
-        if (!sourceIsGrid) {
-            selectedPaletteSubject = null;
-            window.selectedPaletteSubject = null;
-        }
+        selectedPaletteSubject = null;
+        window.selectedPaletteSubject = null;
 
         populateProfList();
-        renderPalette();
-        renderGrid();
+        queueSchedulerRefresh({ palette: true, grid: true });
     }
 
     function changeSchedulerWeek(offset) {
         setStoredWeekStart(SCHEDULER_WEEK_STORAGE_KEY, shiftWeekStartISO(getSchedulerWeekStart(), offset));
-        renderGrid();
+        queueSchedulerRefresh({ grid: true });
     }
 
     function jumpSchedulerToCurrentWeek() {
         setStoredWeekStart(SCHEDULER_WEEK_STORAGE_KEY, getCurrentWeekStartISO());
-        renderGrid();
+        queueSchedulerRefresh({ grid: true });
     }
 
     function openSchedulerQuickCreate() {
@@ -1278,7 +1808,6 @@
         const faculty = localStorage.getItem('currentFaculty') || 'ECON';
         const semester = String((typeof KIU_STATE !== 'undefined' && KIU_STATE.activeSemester) || 3);
         if (el('admin-tt-faculty')) el('admin-tt-faculty').value = faculty;
-        if (el('grid-view-fac')) el('grid-view-fac').value = faculty;
         if (el('admin-tt-semester')) el('admin-tt-semester').value = semester;
         if (el('admin-tt-prof')) el('admin-tt-prof').value = 'all';
         if (el('admin-tt-ta')) el('admin-tt-ta').value = 'all';
@@ -1292,28 +1821,28 @@
         bindNodeOnce(el('admin-tt-faculty'), 'change', 'schedulerFacultyBound', (event) => {
             syncSchedulerFacultyScope(event.target.value);
         });
-        bindNodeOnce(el('grid-view-fac'), 'change', 'schedulerGridFacultyBound', (event) => {
-            syncSchedulerFacultyScope(event.target.value, true);
-        });
         bindNodeOnce(el('admin-tt-semester'), 'change', 'schedulerSemesterBound', () => {
             selectedPaletteSubject = null;
-            renderPalette();
-            renderGrid();
+            queueSchedulerRefresh({ palette: true, grid: true });
         });
         bindNodeOnce(el('admin-tt-prof'), 'change', 'schedulerProfBound', () => {
             if (el('admin-tt-prof')?.value !== 'all' && el('admin-tt-ta')) {
                 el('admin-tt-ta').value = 'all';
             }
-            renderGrid();
+            queueSchedulerRefresh({ grid: true });
         });
         bindNodeOnce(el('admin-tt-ta'), 'change', 'schedulerTaBound', () => {
             if (el('admin-tt-ta')?.value !== 'all' && el('admin-tt-prof')) {
                 el('admin-tt-prof').value = 'all';
             }
-            renderGrid();
+            queueSchedulerRefresh({ grid: true });
         });
         bindNodeOnce(el('palette-search'), 'input', 'schedulerPaletteSearchBound', () => {
-            renderPalette();
+            if (schedulerPaletteSearchHandle) window.clearTimeout(schedulerPaletteSearchHandle);
+            schedulerPaletteSearchHandle = window.setTimeout(() => {
+                schedulerPaletteSearchHandle = 0;
+                queueSchedulerRefresh({ palette: true });
+            }, SCHEDULER_PALETTE_SEARCH_DEBOUNCE_MS);
         });
         bindNodeOnce(el('palette-list'), 'click', 'schedulerPaletteClickBound', (event) => {
             const card = event.target.closest('[data-scheduler-subject-id]');
@@ -1347,17 +1876,6 @@
             );
         });
 
-        document.querySelectorAll('[data-admin-scheduler-action]').forEach((button) => {
-            bindNodeOnce(button, 'click', 'schedulerShellActionBound', (event) => {
-                event.preventDefault();
-                const action = button.dataset.adminSchedulerAction || '';
-                if (action === 'new-session') openSchedulerQuickCreate();
-                if (action === 'today') jumpSchedulerToCurrentWeek();
-                if (action === 'reset') resetSchedulerRail();
-                if (action === 'palette') focusSchedulerPalette();
-            });
-        });
-
         document.querySelectorAll('[data-admin-scheduler-week]').forEach((button) => {
             bindNodeOnce(button, 'click', 'schedulerWeekActionBound', (event) => {
                 event.preventDefault();
@@ -1378,24 +1896,44 @@
             requireAuth();
         }
 
+        const appContent = el('app-content');
+        const schedulerPage = el('page-admin-scheduler');
+        if (appContent && schedulerPage) {
+            Array.from(appContent.children).forEach((child) => {
+                if (child !== schedulerPage && child.classList?.contains('page-section')) {
+                    child.remove();
+                }
+            });
+            schedulerPage.hidden = false;
+            schedulerPage.style.display = 'block';
+            schedulerPage.classList.add('active-page');
+            if (schedulerPage.parentElement !== appContent) {
+                appContent.prepend(schedulerPage);
+            }
+            if (typeof invalidateDomCache === 'function') {
+                invalidateDomCache();
+            }
+        }
+
+        document.body.classList.remove('lux-home-page', 'lux-route-home', 'kiu-shell-loading');
+        document.body.classList.add('lux-unified-shell', 'lux-nonhome-page', 'lux-route-admin-scheduler');
+        document.body.dataset.luxPage = 'admin-scheduler';
+        document.body.dataset.luxEntry = 'admin-scheduler';
+        document.body.dataset.luxFamily = 'admin';
         document.body.classList.remove('kiu-shell-loading');
 
         const currentFaculty = normalizeFacultyCode(localStorage.getItem('currentFaculty') || 'ECON', 'ECON');
-        if (typeof ensureAdminTestingPersonas === 'function') {
-            ensureAdminTestingPersonas(currentFaculty);
-        }
-
         normalizeSchedulerSelectOptions();
         if (el('admin-tt-faculty')) el('admin-tt-faculty').value = currentFaculty;
-        if (el('grid-view-fac')) el('grid-view-fac').value = currentFaculty;
+
         if (el('admin-tt-semester')) {
             el('admin-tt-semester').value = String((typeof KIU_STATE !== 'undefined' && KIU_STATE.activeSemester) || 3);
         }
 
         bindSchedulerListeners();
         populateProfList();
-        renderPalette();
-        renderGrid();
+        queueSchedulerRefresh({ palette: true, grid: true });
+
 
         window.dispatchEvent(new CustomEvent('kiu:scheduler-ready'));
     }

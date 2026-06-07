@@ -13,7 +13,7 @@ function bootFacultyGradebookMobileShell(options = {}) {
       <button id="lux-sidebar-toggle"></button>
       <nav id="mobile-bottom-nav" aria-label="Mobile navigation" style="display:none;">
         <div class="mobile-nav-row">
-          <button class="mobile-nav-btn is-active" id="mob-nav-home" type="button" data-nav-target="home"></button>
+          <button class="mobile-nav-btn is-active" id="mob-nav-home" type="button" data-nav-target="faculty-gradebook"></button>
           <button class="mobile-nav-btn" id="mob-nav-messages" type="button"></button>
           <button class="mobile-nav-btn" id="mob-nav-notif" type="button"></button>
           <button class="mobile-nav-btn" id="mob-nav-theme" type="button"></button>
@@ -71,23 +71,26 @@ function bootFacultyGradebookMobileShell(options = {}) {
 describe('faculty gradebook mobile shell migration', () => {
   it('migrates the page onto the shared standalone mobile shell contract', () => {
     const source = readSource('faculty-gradebook.html');
-    const guardrailSource = readSource('tools/check-architecture-guardrails.js');
+    const classificationModuleSource = readSource('tools/visual-route-classification.js');
     const classificationSource = readSource('PORTAL_VISUAL_ROUTE_CLASSIFICATION.md');
 
     expect(source).toContain('window.__KIU_STANDALONE_MOBILE_SHELL_CONFIG = {');
     expect(source).toContain("activeTarget: 'faculty-gradebook'");
     expect(source).toContain('assets/js/pages/standalone-mobile-shell.js');
+    expect(source).toContain('assets/css/faculty-gradebook-route.css?v=20260531-fgvisual1');
+    expect(source).toContain('data-nav-target="faculty-gradebook"');
     expect(source).not.toContain('(function initMobileExperience(){');
 
-    expect(guardrailSource).toContain("'faculty-gradebook.html': { category: 'standard-shell', dedicatedCss: [], mobileShell: 'shared-standalone' }");
+    expect(classificationModuleSource).toContain("'faculty-gradebook.html': { category: 'standard-shell', dedicatedCss: ['assets/css/faculty-gradebook-route.css'], mobileShell: 'shared-standalone' }");
     expect(classificationSource).toContain("| `faculty-gradebook.html` | `standard-shell` |");
   });
 
-  it('uses the shared standalone shell on first tap and clears the default home active state', () => {
+  it('uses the shared standalone shell on first tap and keeps gradebook as the active bottom nav', () => {
     const dom = bootFacultyGradebookMobileShell({ withNavigate: false });
     const doc = dom.window.document;
 
-    expect(doc.getElementById('mob-nav-home')?.classList.contains('is-active')).toBe(false);
+    expect(doc.getElementById('mob-nav-home')?.getAttribute('data-nav-target')).toBe('faculty-gradebook');
+    expect(doc.getElementById('mob-nav-home')?.classList.contains('is-active')).toBe(true);
 
     doc.getElementById('mob-nav-more')?.dispatchEvent(new dom.window.MouseEvent('click', { bubbles: true }));
     doc.querySelector('#mob-sheet-dynamic-nav [data-nav-target="lms"]')

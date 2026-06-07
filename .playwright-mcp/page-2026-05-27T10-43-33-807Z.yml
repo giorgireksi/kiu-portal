@@ -1,0 +1,66 @@
+- generic [active] [ref=e1]:
+  - text:  
+  - main [ref=e2]:
+    - generic [ref=e4]:
+      - generic [ref=e6]:
+        - generic [ref=e7]:
+          - generic [ref=e8]:
+            - generic [ref=e9]: 
+            - text: Orders Inbox
+          - generic [ref=e10]: Official orders and decisions
+          - generic [ref=e11]: Review official orders and institutional decisions sent to your portal account. Orders are shared by administrators and scoped to the groups or people they selected.
+          - generic [ref=e12]:
+            - generic [ref=e13]:
+              - generic [ref=e14]: 
+              - text: Student
+            - generic [ref=e15]:
+              - generic [ref=e16]: 
+              - text: Business Management
+            - generic [ref=e17]:
+              - generic [ref=e18]: 
+              - text: 0 unread
+        - complementary [ref=e19]:
+          - generic [ref=e20]:
+            - strong [ref=e21]: "0"
+            - generic [ref=e22]: Tracked orders live in the same benchmark widget language used on the home dashboard.
+          - generic [ref=e23]:
+            - generic [ref=e24]:
+              - generic [ref=e25]: Sent orders
+              - strong [ref=e26]: "0"
+              - emphasis [ref=e27]: All official decisions currently visible in your inbox.
+            - generic [ref=e28]:
+              - generic [ref=e29]: Unread
+              - strong [ref=e30]: "0"
+              - emphasis [ref=e31]: Items that still need your attention.
+            - generic [ref=e32]:
+              - generic [ref=e33]: Delivered today
+              - strong [ref=e34]: "0"
+              - emphasis [ref=e35]: Fresh orders published during the current day.
+      - generic [ref=e36]:
+        - generic [ref=e39]:
+          - generic [ref=e40]:
+            - generic [ref=e41]:
+              - generic [ref=e42]: My Orders
+              - generic [ref=e43]: Official decisions delivered to your account.
+            - generic [ref=e44]: 0 total
+          - textbox "Search by order title, type, or date" [ref=e45]
+          - generic [ref=e46]:
+            - button "All" [pressed] [ref=e47] [cursor=pointer]
+            - button "Unread" [ref=e48] [cursor=pointer]
+            - button "Read" [ref=e49] [cursor=pointer]
+          - generic [ref=e52]: No orders matched your current search.
+        - generic [ref=e56]:
+          - generic [ref=e57]: 
+          - text: No orders are available for this account yet.
+  - complementary:
+    - generic:
+      - generic: K
+      - generic:
+        - generic: KIU
+        - generic: Integrated Campus Portal
+    - generic:
+      - generic: KI
+      - generic:
+        - generic: Portal User
+        - generic: University Portal
+  - text:         

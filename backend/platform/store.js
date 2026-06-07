@@ -471,6 +471,20 @@ function pickClientOwnedPortalState(source = {}) {
     }, {});
 }
 
+const PORTAL_STATE_SERVER_STRIP_KEYS = new Set([
+    'auth',
+    'domain',
+    'lmsLiveQuizzes'
+]);
+
+function sanitizePortalStateForServer(source = {}) {
+    const sanitized = clone(source && typeof source === 'object' ? source : {});
+    PORTAL_STATE_SERVER_STRIP_KEYS.forEach((key) => {
+        delete sanitized[key];
+    });
+    return sanitized;
+}
+
 function collectConfiguredHostnames(...values) {
     return uniqueStrings(values.flatMap((value) => {
         try {
@@ -734,1144 +748,6 @@ class PlatformStore {
         return this.createPortalBootstrap();
     }
 
-    normalizeTestingFacultyCode(facultyCode = '') {
-        return normalizeCode(facultyCode || 'ECON') || 'ECON';
-    }
-
-    buildTestingAccountSpecs(facultyCode = 'ECON') {
-        const normalizedFacultyCode = this.normalizeTestingFacultyCode(facultyCode);
-        const facultySlug = normalizedFacultyCode.toLowerCase();
-        return [
-            {
-                id: `${facultySlug}-student-demo`,
-                name: `${normalizedFacultyCode} Student Demo`,
-                nameEn: `${normalizedFacultyCode} Student Demo`,
-                displayName: `${normalizedFacultyCode} Student Demo`,
-                email: `${facultySlug}.student@kiu.local`,
-                role: 'student',
-                facultyCode: normalizedFacultyCode,
-                program: `${normalizedFacultyCode} Demo Program`,
-                semester: 3,
-                testingProfile: 'student-primary',
-                testingScenario: 'Active LMS student with seeded schedule, grades, quiz access, and service thread',
-                testingCapabilities: [
-                    'View active schedule',
-                    'Open LMS group materials and assignments',
-                    'Write a published quiz',
-                    'See seeded grades and notifications'
-                ],
-                password: 'change-me-student'
-            },
-            {
-                id: `${facultySlug}-student-demo-2`,
-                name: `${normalizedFacultyCode} Student Demo Two`,
-                nameEn: `${normalizedFacultyCode} Student Demo Two`,
-                displayName: `${normalizedFacultyCode} Student Demo Two`,
-                email: `${facultySlug}.student2@kiu.local`,
-                role: 'student',
-                facultyCode: normalizedFacultyCode,
-                program: `${normalizedFacultyCode} Demo Program`,
-                semester: 3,
-                testingProfile: 'student-secondary',
-                testingScenario: 'Open-registration student who can join groups and test fresh workflows',
-                testingCapabilities: [
-                    'Browse curriculum and groups',
-                    'Join available groups manually',
-                    'Use student portal and exam login',
-                    'Receive grades and messages after enrollment'
-                ],
-                password: 'change-me-student'
-            },
-            {
-                id: `${facultySlug}-professor-demo`,
-                name: `${normalizedFacultyCode} Professor Demo`,
-                nameEn: `${normalizedFacultyCode} Professor Demo`,
-                displayName: `${normalizedFacultyCode} Professor Demo`,
-                email: `${facultySlug}.professor@kiu.local`,
-                role: 'professor',
-                facultyCode: normalizedFacultyCode,
-                testingProfile: 'professor',
-                testingScenario: 'Teaching owner with schedule, LMS authoring, grading, and cross-role chat',
-                testingCapabilities: [
-                    'Appear on teaching schedule',
-                    'Manage LMS group workspace',
-                    'Grade seeded students',
-                    'Message TA, service, and students'
-                ],
-                password: 'change-me-professor'
-            },
-            {
-                id: `${facultySlug}-ta-demo`,
-                name: `${normalizedFacultyCode} Teaching Assistant Demo`,
-                nameEn: `${normalizedFacultyCode} Teaching Assistant Demo`,
-                displayName: `${normalizedFacultyCode} Teaching Assistant Demo`,
-                email: `${facultySlug}.ta@kiu.local`,
-                role: 'ta',
-                facultyCode: normalizedFacultyCode,
-                testingProfile: 'ta',
-                testingScenario: 'Teaching assistant with schedule, student support, and grading visibility',
-                testingCapabilities: [
-                    'Appear on teaching schedule',
-                    'Support LMS group workflows',
-                    'Chat with professor, service, and students',
-                    'Work with seeded grade and support context'
-                ],
-                password: 'change-me-ta'
-            },
-            {
-                id: `${facultySlug}-service-demo`,
-                name: `${normalizedFacultyCode} Student Service Demo`,
-                nameEn: `${normalizedFacultyCode} Student Service Demo`,
-                displayName: `${normalizedFacultyCode} Student Service Demo`,
-                email: `${facultySlug}.service@kiu.local`,
-                role: 'student_service',
-                facultyCode: normalizedFacultyCode,
-                testingProfile: 'student-service',
-                testingScenario: 'Student service desk with assigned cases, student context, and staff links',
-                testingCapabilities: [
-                    'Review service tickets and handoffs',
-                    'See student schedule and grade context',
-                    'Chat with professor, TA, and students',
-                    'Operate as a real support desk user'
-                ],
-                password: 'change-me-service'
-            }
-        ];
-    }
-
-    listTestingAccounts(filters = {}) {
-        const normalizedFacultyCode = this.normalizeTestingFacultyCode(filters.facultyCode || filters.faculty || 'ECON');
-        return this.buildTestingAccountSpecs(normalizedFacultyCode)
-            .map(spec => {
-                const account = this.state.accounts[spec.id];
-                if (!account) return null;
-                const sanitized = this.sanitizeAccountForClient(account);
-                if (!sanitized) return null;
-                return {
-                    ...sanitized,
-                    isDemoAccount: true,
-                    testingProfile: spec.testingProfile,
-                    testingScenario: spec.testingScenario,
-                    testingCapabilities: clone(spec.testingCapabilities || []),
-                    testingFaculty: normalizedFacultyCode,
-                    loginEmail: spec.email,
-                    demoPassword: spec.password,
-                    examPortalEmail: spec.email,
-                    examPortalId: spec.id
-                };
-            })
-            .filter(Boolean);
-    }
-
-    ensureTestingPackForFaculty(facultyCode = 'ECON') {
-        const normalizedFacultyCode = this.normalizeTestingFacultyCode(facultyCode);
-        const specs = this.buildTestingAccountSpecs(normalizedFacultyCode);
-        specs.forEach(spec => {
-            this.upsertAccount({
-                ...spec,
-                isDemoAccount: true,
-                testingFaculty: normalizedFacultyCode,
-                activationRequired: false,
-                mustChangePassword: false,
-                accountStatus: 'active'
-            });
-        });
-
-        const demoAccounts = Object.fromEntries(
-            specs.map(spec => [spec.testingProfile, this.getAccountById(spec.id) || this.state.accounts[spec.id] || spec])
-        );
-        const demoCourses = this.ensureTestingFacultyCourses(normalizedFacultyCode);
-        const demoSections = this.ensureTestingFacultySections(normalizedFacultyCode, demoCourses, demoAccounts);
-
-        this.ensureTestingEnrollments(demoSections, demoAccounts);
-        this.ensureTestingPortalStateForFaculty(normalizedFacultyCode, demoCourses, demoSections, demoAccounts);
-        this.ensureTestingLmsArtifactsForFaculty(normalizedFacultyCode, demoCourses, demoSections, demoAccounts);
-        this.ensureTestingStudentServiceStateForFaculty(normalizedFacultyCode, demoCourses, demoSections, demoAccounts);
-        this.ensureTestingSocialStateForFaculty(normalizedFacultyCode, demoCourses, demoSections, demoAccounts);
-        this.ensureTestingMessengerStateForFaculty(normalizedFacultyCode, demoAccounts);
-        this.ensureTestingNotificationsForFaculty(normalizedFacultyCode, demoAccounts, demoCourses);
-        this.save();
-        return this.listTestingAccounts({ facultyCode: normalizedFacultyCode });
-    }
-
-    ensureTestingFacultyCourses(facultyCode = 'ECON') {
-        const normalizedFacultyCode = this.normalizeTestingFacultyCode(facultyCode);
-        const courseBlueprints = [
-            {
-                id: `${normalizedFacultyCode}-DEMO-101`,
-                code: `${normalizedFacultyCode}101`,
-                name: `${normalizedFacultyCode} Foundations`,
-                semester: 3,
-                ects: 6,
-                moduleName: 'Core Foundations',
-                prerequisites: []
-            },
-            {
-                id: `${normalizedFacultyCode}-DEMO-201`,
-                code: `${normalizedFacultyCode}201`,
-                name: `${normalizedFacultyCode} Research Methods`,
-                semester: 3,
-                ects: 5,
-                moduleName: 'Core Foundations',
-                prerequisites: [`${normalizedFacultyCode}101`]
-            },
-            {
-                id: `${normalizedFacultyCode}-DEMO-220`,
-                code: `${normalizedFacultyCode}220`,
-                name: `${normalizedFacultyCode} Applied Lab`,
-                semester: 3,
-                ects: 4,
-                moduleName: 'Applied Practice',
-                prerequisites: [`${normalizedFacultyCode}101`]
-            },
-            {
-                id: `${normalizedFacultyCode}-DEMO-230`,
-                code: `${normalizedFacultyCode}230`,
-                name: `${normalizedFacultyCode} Communication Studio`,
-                semester: 3,
-                ects: 5,
-                moduleName: 'Applied Practice',
-                prerequisites: []
-            }
-        ];
-
-        courseBlueprints.forEach(course => {
-            const current = this.state.courses[course.id] || {};
-            this.state.courses[course.id] = {
-                ...current,
-                id: course.id,
-                code: course.code,
-                name: course.name,
-                facultyCode: normalizedFacultyCode,
-                semester: course.semester,
-                ects: course.ects,
-                moduleName: course.moduleName,
-                prerequisites: clone(course.prerequisites),
-                updatedAt: nowIso(),
-                createdAt: current.createdAt || nowIso()
-            };
-        });
-        return courseBlueprints.map(course => clone(this.state.courses[course.id]));
-    }
-
-    ensureTestingFacultySections(facultyCode = 'ECON', courses = [], demoAccounts = {}) {
-        const normalizedFacultyCode = this.normalizeTestingFacultyCode(facultyCode);
-        const professorName = String(demoAccounts.professor?.displayName || demoAccounts.professor?.nameEn || demoAccounts.professor?.name || `${normalizedFacultyCode} Professor Demo`).trim();
-        const taName = String(demoAccounts.ta?.displayName || demoAccounts.ta?.nameEn || demoAccounts.ta?.name || `${normalizedFacultyCode} Teaching Assistant Demo`).trim();
-        const sectionBlueprints = [
-            {
-                courseId: courses[0]?.id,
-                code: 'G1',
-                name: 'Group 1',
-                sessionType: 'lecture',
-                day: 'Monday',
-                time: '10:00',
-                startTime: '10:00',
-                endTime: '12:00',
-                room: `${normalizedFacultyCode}-A201`,
-                semester: 3
-            },
-            {
-                courseId: courses[1]?.id,
-                code: 'G1',
-                name: 'Group 1',
-                sessionType: 'lecture',
-                day: 'Tuesday',
-                time: '12:30',
-                startTime: '12:30',
-                endTime: '14:30',
-                room: `${normalizedFacultyCode}-B104`,
-                semester: 3
-            },
-            {
-                courseId: courses[2]?.id,
-                code: 'LAB1',
-                name: 'Lab 1',
-                sessionType: 'lab',
-                day: 'Thursday',
-                time: '15:00',
-                startTime: '15:00',
-                endTime: '17:00',
-                room: `${normalizedFacultyCode}-LAB7`,
-                semester: 3
-            },
-            {
-                courseId: courses[3]?.id,
-                code: 'G2',
-                name: 'Group 2',
-                sessionType: 'seminar',
-                day: 'Friday',
-                time: '09:30',
-                startTime: '09:30',
-                endTime: '11:30',
-                room: `${normalizedFacultyCode}-C303`,
-                semester: 3
-            }
-        ].filter(section => section.courseId);
-
-        return sectionBlueprints.map(section => {
-            const persisted = this.upsertSection({
-                id: `${section.courseId}::${section.code}`,
-                courseId: section.courseId,
-                code: section.code,
-                name: section.name,
-                facultyCode: normalizedFacultyCode,
-                termId: `${normalizedFacultyCode}-TERM-ACTIVE`,
-                sessionType: section.sessionType,
-                seatsTotal: 24,
-                seatsTaken: 0,
-                room: section.room,
-                professorId: demoAccounts.professor?.id || '',
-                taIds: demoAccounts.ta?.id ? [demoAccounts.ta.id] : [],
-                schedule: [{
-                    day: section.day,
-                    startTime: section.startTime,
-                    endTime: section.endTime
-                }]
-            });
-            return {
-                ...persisted,
-                groupId: section.code,
-                groupName: section.name,
-                faculty: normalizedFacultyCode,
-                semester: section.semester,
-                day: section.day,
-                time: section.time,
-                duration: `${section.startTime}-${section.endTime}`,
-                prof: professorName,
-                ta: taName
-            };
-        });
-    }
-
-    ensureTestingEnrollments(sections = [], demoAccounts = {}) {
-        const enrolledSections = sections.slice(0, 2).filter(Boolean);
-        const activeStudent = demoAccounts['student-primary'];
-        if (!activeStudent?.id) return;
-
-        enrolledSections.forEach(section => {
-            const enrollmentId = `enr::${activeStudent.id}::${section.id}`;
-            this.state.enrollments[enrollmentId] = {
-                id: enrollmentId,
-                studentId: activeStudent.id,
-                courseId: section.courseId,
-                sectionId: section.id,
-                status: 'active',
-                registeredAt: this.state.enrollments[enrollmentId]?.registeredAt || nowIso(),
-                createdAt: this.state.enrollments[enrollmentId]?.createdAt || nowIso(),
-                updatedAt: nowIso()
-            };
-
-            const activeEnrollments = Object.values(this.state.enrollments || {}).filter(item =>
-                String(item?.sectionId || '') === String(section.id || '')
-                && String(item?.status || '').trim().toLowerCase() === 'active'
-            );
-            if (this.state.sections[section.id]) {
-                this.state.sections[section.id].seatsTaken = uniqueStrings(activeEnrollments.map(item => item.studentId)).length;
-                this.state.sections[section.id].updatedAt = nowIso();
-            }
-        });
-
-        const assessmentSeed = [
-            {
-                criterion: 'quiz',
-                assessmentNumber: 1,
-                score: 86,
-                updatedBy: demoAccounts.professor?.id || ''
-            },
-            {
-                criterion: 'homework',
-                assessmentNumber: 1,
-                score: 92,
-                updatedBy: demoAccounts.ta?.id || demoAccounts.professor?.id || ''
-            },
-            {
-                criterion: 'midterm',
-                assessmentNumber: 1,
-                score: 81,
-                updatedBy: demoAccounts.professor?.id || ''
-            }
-        ];
-
-        enrolledSections.forEach(section => {
-            const gradebook = this.ensureGradebook(section.courseId);
-            const record = gradebook.records?.[activeStudent.id] || null;
-            assessmentSeed.forEach(seed => {
-                const alreadySeeded = Array.isArray(record?.assessments?.[seed.criterion])
-                    && record.assessments[seed.criterion].some(item => safeNumber(item?.number, 1) === seed.assessmentNumber);
-                if (alreadySeeded) return;
-                this.setScore({
-                    courseId: section.courseId,
-                    studentId: activeStudent.id,
-                    criterion: seed.criterion,
-                    assessmentNumber: seed.assessmentNumber,
-                    score: seed.score,
-                    updatedBy: seed.updatedBy
-                });
-            });
-        });
-    }
-
-    ensureTestingPortalStateForFaculty(facultyCode = 'ECON', courses = [], sections = [], demoAccounts = {}) {
-        const normalizedFacultyCode = this.normalizeTestingFacultyCode(facultyCode);
-        const portalState = this.state.portal.state = this.state.portal.state && typeof this.state.portal.state === 'object'
-            ? this.state.portal.state
-            : {};
-        portalState.registrationOpen = true;
-        portalState.curriculum = Array.isArray(portalState.curriculum) ? portalState.curriculum : [];
-        portalState.availableGroups = portalState.availableGroups && typeof portalState.availableGroups === 'object' ? portalState.availableGroups : {};
-        portalState.studentSchedulesByStudent = portalState.studentSchedulesByStudent && typeof portalState.studentSchedulesByStudent === 'object' ? portalState.studentSchedulesByStudent : {};
-        portalState.studentRegistrations = portalState.studentRegistrations && typeof portalState.studentRegistrations === 'object' ? portalState.studentRegistrations : {};
-        portalState.studentGrades = portalState.studentGrades && typeof portalState.studentGrades === 'object' ? portalState.studentGrades : {};
-        portalState.tuitionBalances = portalState.tuitionBalances && typeof portalState.tuitionBalances === 'object' ? portalState.tuitionBalances : {};
-        portalState.probationStatus = portalState.probationStatus && typeof portalState.probationStatus === 'object' ? portalState.probationStatus : {};
-        portalState.users = Array.isArray(portalState.users) ? portalState.users : [];
-        portalState.facultyProfiles = portalState.facultyProfiles && typeof portalState.facultyProfiles === 'object' ? portalState.facultyProfiles : {};
-        portalState.groupAssignments = portalState.groupAssignments && typeof portalState.groupAssignments === 'object' ? portalState.groupAssignments : {};
-        portalState.groupMaterials = portalState.groupMaterials && typeof portalState.groupMaterials === 'object' ? portalState.groupMaterials : {};
-        portalState.groupSubmissions = portalState.groupSubmissions && typeof portalState.groupSubmissions === 'object' ? portalState.groupSubmissions : {};
-        portalState.groupConcepts = portalState.groupConcepts && typeof portalState.groupConcepts === 'object' ? portalState.groupConcepts : {};
-        portalState.groupConceptRatings = portalState.groupConceptRatings && typeof portalState.groupConceptRatings === 'object' ? portalState.groupConceptRatings : {};
-        portalState.groupWeekConfigs = portalState.groupWeekConfigs && typeof portalState.groupWeekConfigs === 'object' ? portalState.groupWeekConfigs : {};
-        portalState.groupQuizzes = portalState.groupQuizzes && typeof portalState.groupQuizzes === 'object' ? portalState.groupQuizzes : {};
-        portalState.groupQuizSubmissions = portalState.groupQuizSubmissions && typeof portalState.groupQuizSubmissions === 'object' ? portalState.groupQuizSubmissions : {};
-        portalState.lmsQuizBuilder = portalState.lmsQuizBuilder && typeof portalState.lmsQuizBuilder === 'object' ? portalState.lmsQuizBuilder : {};
-        portalState.studentServiceTickets = Array.isArray(portalState.studentServiceTickets) ? portalState.studentServiceTickets : [];
-        portalState.studentServiceArticles = Array.isArray(portalState.studentServiceArticles) ? portalState.studentServiceArticles : [];
-        portalState.studentServiceMacros = Array.isArray(portalState.studentServiceMacros) ? portalState.studentServiceMacros : [];
-
-        const facultyProfile = portalState.facultyProfiles[normalizedFacultyCode] = portalState.facultyProfiles[normalizedFacultyCode] && typeof portalState.facultyProfiles[normalizedFacultyCode] === 'object'
-            ? portalState.facultyProfiles[normalizedFacultyCode]
-            : { students: [], professors: [], tas: [], student_service: [], curriculum: [] };
-        ['students', 'professors', 'tas', 'student_service', 'curriculum'].forEach(key => {
-            facultyProfile[key] = Array.isArray(facultyProfile[key]) ? facultyProfile[key] : [];
-        });
-
-        const upsertPortalUser = (account) => {
-            if (!account?.id) return;
-            const userRecord = {
-                id: account.id,
-                name: account.name || account.displayName || account.email || account.id,
-                nameEn: account.nameEn || account.displayName || account.name || account.email || account.id,
-                displayName: account.displayName || account.nameEn || account.name || account.email || account.id,
-                email: account.email || '',
-                role: account.role || 'student',
-                faculty: normalizedFacultyCode,
-                facultyCode: normalizedFacultyCode,
-                semester: Number(account.semester || 0) || 0,
-                program: String(account.program || '').trim(),
-                avatar: account.avatar || account.photo || displayInitials(account.displayName || account.nameEn || account.name || account.email || account.id),
-                photo: account.photo || account.avatar || displayInitials(account.displayName || account.nameEn || account.name || account.email || account.id),
-                status: 'Active'
-            };
-            const existingUserIndex = portalState.users.findIndex(entry => String(entry?.id || '') === userRecord.id);
-            if (existingUserIndex >= 0) portalState.users[existingUserIndex] = { ...portalState.users[existingUserIndex], ...userRecord };
-            else portalState.users.push(userRecord);
-
-            const facultyBucketKey = userRecord.role === 'professor'
-                ? 'professors'
-                : userRecord.role === 'ta'
-                    ? 'tas'
-                    : userRecord.role === 'student_service'
-                        ? 'student_service'
-                        : 'students';
-            const bucket = facultyProfile[facultyBucketKey];
-            const existingBucketIndex = bucket.findIndex(entry => String(entry?.id || '') === userRecord.id);
-            if (existingBucketIndex >= 0) bucket[existingBucketIndex] = { ...bucket[existingBucketIndex], ...userRecord };
-            else bucket.push({ ...userRecord });
-        };
-
-        Object.values(demoAccounts).forEach(upsertPortalUser);
-
-        courses.forEach(course => {
-            const existingIndex = portalState.curriculum.findIndex(entry => String(entry?.id || '') === String(course.id || ''));
-            const curriculumEntry = {
-                id: course.id,
-                code: course.code,
-                name: course.name,
-                ects: course.ects,
-                semester: course.semester,
-                faculty: normalizedFacultyCode,
-                facultyCode: normalizedFacultyCode,
-                moduleName: course.moduleName || 'Demo Module',
-                prerequisites: clone(course.prerequisites || []),
-                antiRequisites: []
-            };
-            if (existingIndex >= 0) portalState.curriculum[existingIndex] = { ...portalState.curriculum[existingIndex], ...curriculumEntry };
-            else portalState.curriculum.push(curriculumEntry);
-
-            const facultyCurriculumIndex = facultyProfile.curriculum.findIndex(entry => String(entry?.id || '') === String(course.id || ''));
-            if (facultyCurriculumIndex >= 0) facultyProfile.curriculum[facultyCurriculumIndex] = { ...facultyProfile.curriculum[facultyCurriculumIndex], ...curriculumEntry };
-            else facultyProfile.curriculum.push({ ...curriculumEntry });
-        });
-
-        sections.forEach(section => {
-            const persistedSection = this.state.sections?.[section.id] || section;
-            portalState.availableGroups[section.courseId] = Array.isArray(portalState.availableGroups[section.courseId])
-                ? portalState.availableGroups[section.courseId].filter(group => String(group?.id || '') !== String(section.groupId || ''))
-                : [];
-            portalState.availableGroups[section.courseId].push({
-                id: section.groupId,
-                name: section.groupName,
-                sectionId: section.id,
-                day: section.day,
-                time: section.time,
-                duration: section.duration,
-                room: section.room,
-                faculty: normalizedFacultyCode,
-                semester: section.semester,
-                prof: section.prof,
-                ta: section.ta,
-                capacity: persistedSection.seatsTotal || section.seatsTotal || 24,
-                registered: persistedSection.seatsTaken || section.seatsTaken || 0
-            });
-        });
-
-        const activeSectionMap = new Map(sections.map(section => [String(section.id || ''), section]));
-        const activeEnrollmentsByStudent = Object.values(this.state.enrollments || {}).reduce((accumulator, enrollment) => {
-            if (String(enrollment?.status || '').trim().toLowerCase() !== 'active') return accumulator;
-            const section = activeSectionMap.get(String(enrollment?.sectionId || ''));
-            if (!section) return accumulator;
-            const studentId = String(enrollment?.studentId || '').trim();
-            if (!studentId) return accumulator;
-            accumulator[studentId] = Array.isArray(accumulator[studentId]) ? accumulator[studentId] : [];
-            accumulator[studentId].push(section);
-            return accumulator;
-        }, {});
-
-        const buildScheduleEntry = (section) => ({
-            courseId: section.courseId,
-            courseName: this.state.courses[section.courseId]?.name || section.courseId,
-            groupId: section.groupId,
-            groupName: section.groupName,
-            day: section.day,
-            time: section.time,
-            room: section.room,
-            faculty: normalizedFacultyCode,
-            semester: section.semester,
-            ects: Number(this.state.courses[section.courseId]?.ects || 0),
-            registeredAt: nowIso()
-        });
-
-        const mergeScheduleEntries = (existingEntries = [], seededEntries = []) => {
-            const merged = new Map();
-            [...existingEntries, ...seededEntries].forEach(entry => {
-                if (!entry || typeof entry !== 'object') return;
-                const key = `${String(entry.courseId || '').trim()}::${String(entry.groupId || '').trim()}`;
-                if (!key || key === '::') return;
-                merged.set(key, {
-                    ...(merged.get(key) || {}),
-                    ...entry
-                });
-            });
-            return [...merged.values()];
-        };
-
-        const upsertRosterStudent = (rosterKey, studentRecord) => {
-            if (!rosterKey) return;
-            const roster = Array.isArray(portalState.studentGrades[rosterKey]) ? portalState.studentGrades[rosterKey] : [];
-            const nextRoster = roster.filter(entry => String(entry?.id || '') !== String(studentRecord.id || ''));
-            nextRoster.push({
-                ...(roster.find(entry => String(entry?.id || '') === String(studentRecord.id || '')) || {}),
-                ...studentRecord
-            });
-            portalState.studentGrades[rosterKey] = nextRoster;
-        };
-
-        Object.values(demoAccounts).forEach(account => {
-            if (String(account?.role || '').trim().toLowerCase() !== 'student' || !account?.id) return;
-            const seededSchedule = (activeEnrollmentsByStudent[account.id] || []).map(buildScheduleEntry);
-            const existingSchedule = Array.isArray(portalState.studentSchedulesByStudent[account.id])
-                ? portalState.studentSchedulesByStudent[account.id]
-                : [];
-            portalState.studentSchedulesByStudent[account.id] = mergeScheduleEntries(existingSchedule, seededSchedule);
-
-            const existingRegistrations = Array.isArray(portalState.studentRegistrations[account.id])
-                ? portalState.studentRegistrations[account.id].map(item => String(item))
-                : [];
-            const seededRegistrations = portalState.studentSchedulesByStudent[account.id].map(entry => String(entry.courseId || ''));
-            portalState.studentRegistrations[account.id] = uniqueStrings([...existingRegistrations, ...seededRegistrations]);
-
-            if (!Object.prototype.hasOwnProperty.call(portalState.tuitionBalances, account.id)) {
-                portalState.tuitionBalances[account.id] = 0;
-            }
-            if (!Object.prototype.hasOwnProperty.call(portalState.probationStatus, account.id)) {
-                portalState.probationStatus[account.id] = false;
-            }
-        });
-
-        const primaryStudent = demoAccounts['student-primary'];
-        if (primaryStudent?.id) {
-            const seededSections = activeEnrollmentsByStudent[primaryStudent.id] || [];
-            seededSections.forEach(section => {
-                const canonicalRosterKey = `${section.courseId}::${section.groupId}`;
-                const legacyRosterKey = `${String(section.courseId || '').toLowerCase()}_${String(section.groupId || '').toLowerCase()}`;
-                const studentRecord = {
-                    id: primaryStudent.id,
-                    name: primaryStudent.displayName || primaryStudent.nameEn || primaryStudent.name || primaryStudent.id,
-                    quiz: 86,
-                    homework: 92,
-                    midterm: 81,
-                    final: 0,
-                    updatedAt: nowIso(),
-                    updatedBy: demoAccounts.professor?.id || ''
-                };
-                [canonicalRosterKey, legacyRosterKey, section.courseId].forEach(rosterKey => upsertRosterStudent(rosterKey, studentRecord));
-            });
-        }
-    }
-
-    ensureTestingMessengerStateForFaculty(facultyCode = 'ECON', demoAccounts = {}) {
-        const normalizedFacultyCode = this.normalizeTestingFacultyCode(facultyCode);
-        const seedChat = (chatId, members, senderId, textValue) => {
-            if (this.state.chats[chatId]?.messages?.length) return;
-            this.appendMessage({
-                chatId,
-                type: 'direct',
-                members,
-                createdBy: senderId,
-                message: {
-                    text: textValue,
-                    senderName: this.state.accounts[senderId]?.displayName || senderId
-                },
-                senderId
-            });
-        };
-
-        const studentId = demoAccounts['student-primary']?.id || '';
-        const studentSecondaryId = demoAccounts['student-secondary']?.id || '';
-        const professorId = demoAccounts.professor?.id || '';
-        const taId = demoAccounts.ta?.id || '';
-        const serviceId = demoAccounts['student-service']?.id || '';
-        if (studentId && professorId) {
-            seedChat(`chat::${normalizedFacultyCode.toLowerCase()}::student-professor`, [studentId, professorId], professorId, 'Welcome to the testing workspace. This conversation is ready for real-time messaging and file sharing.');
-        }
-        if (studentId && taId) {
-            seedChat(`chat::${normalizedFacultyCode.toLowerCase()}::student-ta`, [studentId, taId], taId, 'TA support lane is ready. Use this chat to test message delivery and notifications.');
-        }
-        if (studentId && serviceId) {
-            seedChat(`chat::${normalizedFacultyCode.toLowerCase()}::student-service`, [studentId, serviceId], serviceId, 'Student service testing is active. Submit a request or continue the thread here.');
-        }
-        if (professorId && taId) {
-            seedChat(`chat::${normalizedFacultyCode.toLowerCase()}::professor-ta`, [professorId, taId], professorId, 'Professor and TA coordination lane is ready for grading, quiz review, and section operations.');
-        }
-        if (professorId && serviceId) {
-            seedChat(`chat::${normalizedFacultyCode.toLowerCase()}::professor-service`, [professorId, serviceId], serviceId, 'Student Service can reach the professor here when a ticket needs academic verification.');
-        }
-        if (taId && serviceId) {
-            seedChat(`chat::${normalizedFacultyCode.toLowerCase()}::ta-service`, [taId, serviceId], taId, 'TA and Student Service coordination is ready for student follow-up and group access checks.');
-        }
-        if (studentSecondaryId && serviceId) {
-            seedChat(`chat::${normalizedFacultyCode.toLowerCase()}::student2-service`, [studentSecondaryId, serviceId], serviceId, 'This student starts with open registration, so use this thread to test fresh support and onboarding cases.');
-        }
-    }
-
-    ensureTestingNotificationsForFaculty(facultyCode = 'ECON', demoAccounts = {}, courses = []) {
-        const normalizedFacultyCode = this.normalizeTestingFacultyCode(facultyCode);
-        const professorId = demoAccounts.professor?.id || '';
-        const studentId = demoAccounts['student-primary']?.id || '';
-        const courseName = String(courses[0]?.name || `${normalizedFacultyCode} Foundations`).trim();
-        const existing = Object.values(this.state.notifications || {}).some(item =>
-            String(item?.recipientUserId || '') === professorId
-            && String(item?.type || '') === 'demo-ready'
-            && String(item?.sourceDomain || '') === 'testing'
-        );
-        if (!existing && professorId) {
-            this.createNotification({
-                recipientUserId: professorId,
-                sourceDomain: 'testing',
-                type: 'demo-ready',
-                title: 'Testing accounts prepared',
-                body: `${normalizedFacultyCode} demo faculty pack is ready with rosters, grades, and messaging.`,
-                routePage: 'admin-tools'
-            });
-        }
-        const studentExisting = Object.values(this.state.notifications || {}).some(item =>
-            String(item?.recipientUserId || '') === studentId
-            && String(item?.type || '') === 'registration-open'
-            && String(item?.sourceDomain || '') === 'registration'
-        );
-        if (!studentExisting && studentId) {
-            this.createNotification({
-                recipientUserId: studentId,
-                sourceDomain: 'registration',
-                type: 'registration-open',
-                title: 'Registration window ready',
-                body: `${courseName} and the rest of the demo schedule are ready for student testing.`,
-                routePage: 'registration'
-            });
-        }
-    }
-
-    ensureTestingStoredFileReference(payload = {}) {
-        const normalizedId = String(payload.id || '').trim();
-        if (!normalizedId) return null;
-        const existing = this.state.files[normalizedId];
-        const stored = existing
-            ? clone(existing)
-            : this.createFileFromUpload({
-                id: normalizedId,
-                name: String(payload.name || `${normalizedId}.txt`).trim(),
-                type: String(payload.type || 'text/plain').trim(),
-                dataUrl: `data:${String(payload.type || 'text/plain').trim()};base64,${Buffer.from(String(payload.text || '').trim(), 'utf8').toString('base64')}`,
-                uploadedBy: String(payload.uploadedBy || '').trim(),
-                scope: String(payload.scope || 'testing').trim()
-            });
-        if (!stored) return null;
-        return {
-            id: `${normalizedId}_ref`,
-            name: stored.name,
-            type: stored.type,
-            size: stored.size,
-            storageKey: stored.id,
-            storageBackend: 'bridge',
-            uploadedAt: stored.uploadedAt,
-            dataUrl: ''
-        };
-    }
-
-    ensureTestingLmsArtifactsForFaculty(facultyCode = 'ECON', courses = [], sections = [], demoAccounts = {}) {
-        const normalizedFacultyCode = this.normalizeTestingFacultyCode(facultyCode);
-        const facultySlug = normalizedFacultyCode.toLowerCase();
-        const portalState = this.state.portal.state = this.state.portal.state && typeof this.state.portal.state === 'object'
-            ? this.state.portal.state
-            : {};
-        portalState.groupAssignments = portalState.groupAssignments && typeof portalState.groupAssignments === 'object' ? portalState.groupAssignments : {};
-        portalState.groupMaterials = portalState.groupMaterials && typeof portalState.groupMaterials === 'object' ? portalState.groupMaterials : {};
-        portalState.groupSubmissions = portalState.groupSubmissions && typeof portalState.groupSubmissions === 'object' ? portalState.groupSubmissions : {};
-        portalState.groupConcepts = portalState.groupConcepts && typeof portalState.groupConcepts === 'object' ? portalState.groupConcepts : {};
-        portalState.groupConceptRatings = portalState.groupConceptRatings && typeof portalState.groupConceptRatings === 'object' ? portalState.groupConceptRatings : {};
-        portalState.groupWeekConfigs = portalState.groupWeekConfigs && typeof portalState.groupWeekConfigs === 'object' ? portalState.groupWeekConfigs : {};
-        portalState.groupQuizzes = portalState.groupQuizzes && typeof portalState.groupQuizzes === 'object' ? portalState.groupQuizzes : {};
-        portalState.groupQuizSubmissions = portalState.groupQuizSubmissions && typeof portalState.groupQuizSubmissions === 'object' ? portalState.groupQuizSubmissions : {};
-        portalState.lmsQuizBuilder = portalState.lmsQuizBuilder && typeof portalState.lmsQuizBuilder === 'object' ? portalState.lmsQuizBuilder : {};
-
-        const professorId = String(demoAccounts.professor?.id || '').trim();
-        const taId = String(demoAccounts.ta?.id || '').trim();
-        const primaryStudent = demoAccounts['student-primary'];
-        const defaultWeeks = ['No Week / General', 'Week 1', 'Week 2', 'Week 3'];
-        const seededSections = sections.slice(0, 2).filter(Boolean);
-
-        seededSections.forEach((section, index) => {
-            const course = courses.find(item => String(item?.id || '') === String(section.courseId || '')) || this.state.courses[section.courseId] || {};
-            const resourceKey = `${section.courseId}::${section.groupId}`;
-            const materialId = `testing-material-${facultySlug}-${index + 1}`;
-            const assignmentId = `testing-assignment-${facultySlug}-${index + 1}`;
-            const quizId = `testing-quiz-${facultySlug}-${index + 1}`;
-            const draftQuizId = `testing-quiz-draft-${facultySlug}-${index + 1}`;
-            const variantAId = `${quizId}-variant-a`;
-            const variantBId = `${quizId}-variant-b`;
-            const createdAt = nowIso();
-
-            portalState.groupWeekConfigs[resourceKey] = uniqueStrings([
-                ...(Array.isArray(portalState.groupWeekConfigs[resourceKey]) ? portalState.groupWeekConfigs[resourceKey] : []),
-                ...defaultWeeks
-            ]);
-            portalState.groupMaterials[resourceKey] = Array.isArray(portalState.groupMaterials[resourceKey]) ? portalState.groupMaterials[resourceKey] : [];
-            portalState.groupAssignments[resourceKey] = Array.isArray(portalState.groupAssignments[resourceKey]) ? portalState.groupAssignments[resourceKey] : [];
-            portalState.groupSubmissions[resourceKey] = portalState.groupSubmissions[resourceKey] && typeof portalState.groupSubmissions[resourceKey] === 'object' ? portalState.groupSubmissions[resourceKey] : {};
-            portalState.groupConcepts[resourceKey] = Array.isArray(portalState.groupConcepts[resourceKey]) ? portalState.groupConcepts[resourceKey] : [];
-            portalState.groupConceptRatings[resourceKey] = portalState.groupConceptRatings[resourceKey] && typeof portalState.groupConceptRatings[resourceKey] === 'object' ? portalState.groupConceptRatings[resourceKey] : {};
-            portalState.groupQuizzes[resourceKey] = Array.isArray(portalState.groupQuizzes[resourceKey]) ? portalState.groupQuizzes[resourceKey] : [];
-            portalState.groupQuizSubmissions[resourceKey] = portalState.groupQuizSubmissions[resourceKey] && typeof portalState.groupQuizSubmissions[resourceKey] === 'object' ? portalState.groupQuizSubmissions[resourceKey] : {};
-
-            const materialAttachment = this.ensureTestingStoredFileReference({
-                id: `testing-file-material-${facultySlug}-${index + 1}`,
-                name: `${String(course.code || section.courseId || 'course').toLowerCase()}-group-brief.txt`,
-                type: 'text/plain',
-                uploadedBy: professorId,
-                scope: 'lms-material',
-                text: `${course.name || section.courseId} testing brief\n\nUse this seeded material to verify downloads, file previews, and LMS group visibility for professor, TA, and student accounts.`
-            });
-            if (!portalState.groupMaterials[resourceKey].some(item => String(item?.id || '') === materialId)) {
-                portalState.groupMaterials[resourceKey].push({
-                    id: materialId,
-                    title: `${course.name || section.courseId} Group Brief`,
-                    description: 'Seeded material for validating cross-role LMS access, downloads, and group content visibility.',
-                    weekLabel: 'Week 1',
-                    attachment: materialAttachment,
-                    createdAt,
-                    createdBy: professorId
-                });
-            }
-
-            const assignmentAttachment = this.ensureTestingStoredFileReference({
-                id: `testing-file-assignment-${facultySlug}-${index + 1}`,
-                name: `${String(course.code || section.courseId || 'course').toLowerCase()}-assignment.txt`,
-                type: 'text/plain',
-                uploadedBy: professorId,
-                scope: 'lms-assignment',
-                text: `${course.name || section.courseId} assignment instructions\n\n1. Open the LMS group.\n2. Upload a file or text answer.\n3. Confirm that TA and professor can review the submission.`
-            });
-            if (!portalState.groupAssignments[resourceKey].some(item => String(item?.id || '') === assignmentId)) {
-                portalState.groupAssignments[resourceKey].push({
-                    id: assignmentId,
-                    title: `${course.name || section.courseId} Practice Assignment`,
-                    description: 'Seeded assignment used for validating file submissions, grading visibility, and student-to-staff workflow.',
-                    weekLabel: 'Week 2',
-                    deadline: new Date(Date.now() + (1000 * 60 * 60 * 24 * 10)).toISOString(),
-                    lateAllowed: true,
-                    attachment: assignmentAttachment,
-                    createdAt,
-                    createdBy: professorId
-                });
-            }
-
-            portalState.groupSubmissions[resourceKey][assignmentId] = portalState.groupSubmissions[resourceKey][assignmentId] && typeof portalState.groupSubmissions[resourceKey][assignmentId] === 'object'
-                ? portalState.groupSubmissions[resourceKey][assignmentId]
-                : {};
-            if (primaryStudent?.id && !portalState.groupSubmissions[resourceKey][assignmentId][primaryStudent.id]) {
-                portalState.groupSubmissions[resourceKey][assignmentId][primaryStudent.id] = {
-                    studentId: primaryStudent.id,
-                    studentName: primaryStudent.displayName || primaryStudent.nameEn || primaryStudent.name || primaryStudent.id,
-                    text: `Seeded submission for ${course.name || section.courseId}. This verifies that teachers and TAs can open student work immediately.`,
-                    file: this.ensureTestingStoredFileReference({
-                        id: `testing-file-submission-${facultySlug}-${index + 1}`,
-                        name: `${String(course.code || section.courseId || 'course').toLowerCase()}-submission.txt`,
-                        type: 'text/plain',
-                        uploadedBy: primaryStudent.id,
-                        scope: 'lms-submission',
-                        text: `Student submission for ${course.name || section.courseId}\n\nThis attachment exists so staff accounts can test reviewing uploaded homework without creating content manually.`
-                    }),
-                    submittedAt: createdAt
-                };
-            }
-
-            const workspace = portalState.lmsQuizBuilder[resourceKey] = portalState.lmsQuizBuilder[resourceKey] && typeof portalState.lmsQuizBuilder[resourceKey] === 'object'
-                ? portalState.lmsQuizBuilder[resourceKey]
-                : {};
-            workspace.drafts = Array.isArray(workspace.drafts) ? workspace.drafts : [];
-            workspace.published = Array.isArray(workspace.published) ? workspace.published : [];
-            workspace.closed = Array.isArray(workspace.closed) ? workspace.closed : [];
-            workspace.submissions = workspace.submissions && typeof workspace.submissions === 'object' ? workspace.submissions : {};
-            workspace.ui = workspace.ui && typeof workspace.ui === 'object' ? workspace.ui : {};
-
-            if (!workspace.drafts.some(item => String(item?.id || '') === draftQuizId)) {
-                workspace.drafts.unshift({
-                    id: draftQuizId,
-                    title: `${course.name || section.courseId} Draft Follow-up Quiz`,
-                    description: 'Seeded draft so professor and TA testing accounts can review the authoring workflow immediately.',
-                    assessmentType: 'quiz',
-                    status: 'draft',
-                    weekLabel: 'Week 3',
-                    durationMinutes: 15,
-                    createdAt,
-                    updatedAt: createdAt,
-                    publishedAt: null,
-                    publishedBy: '',
-                    allowedStudentIds: primaryStudent?.id ? [String(primaryStudent.id)] : [],
-                    questions: [
-                        {
-                            id: `${draftQuizId}-q1`,
-                            type: 'mcq',
-                            text: 'Which dashboard section is used to review group materials?',
-                            score: 1,
-                            optionCount: 4,
-                            options: ['Programs', 'LMS', 'Orders', 'Profile'],
-                            correctOption: 1,
-                            expectedAnswer: ''
-                        }
-                    ],
-                    variantEnabled: false,
-                    variants: [],
-                    studentVariantMap: {}
-                });
-            }
-
-            if (!workspace.published.some(item => String(item?.id || '') === quizId)) {
-                const baseQuestions = [
-                    {
-                        id: `${quizId}-q1`,
-                        type: 'mcq',
-                        text: `Which group is assigned to ${course.name || section.courseId}?`,
-                        score: 1,
-                        optionCount: 4,
-                        options: [section.groupName || section.groupId, 'Group 9', 'Seminar 4', 'No group'],
-                        correctOption: 0,
-                        expectedAnswer: ''
-                    },
-                    {
-                        id: `${quizId}-q2`,
-                        type: 'mcq',
-                        text: 'Which role can grade this seeded workspace?',
-                        score: 1,
-                        optionCount: 4,
-                        options: ['Only student', 'Professor and TA', 'Only guest', 'Nobody'],
-                        correctOption: 1,
-                        expectedAnswer: ''
-                    },
-                    {
-                        id: `${quizId}-q3`,
-                        type: 'written',
-                        text: 'Write one sentence describing the main outcome of this practice session.',
-                        score: 2,
-                        optionCount: 0,
-                        options: [],
-                        correctOption: null,
-                        expectedAnswer: 'The student can describe the testing workflow clearly.'
-                    }
-                ];
-                const allowedStudentIds = primaryStudent?.id ? [String(primaryStudent.id)] : [];
-                const publishedQuiz = {
-                    id: quizId,
-                    title: `${course.name || section.courseId} Practice Quiz`,
-                    description: 'Seeded published quiz for validating quiz access, variants, grading, and staff review.',
-                    assessmentType: 'quiz',
-                    status: 'published',
-                    weekLabel: 'Week 1',
-                    durationMinutes: 20,
-                    createdAt,
-                    updatedAt: createdAt,
-                    publishedAt: createdAt,
-                    publishedBy: professorId,
-                    allowedStudentIds,
-                    attendanceRequired: true,
-                    submissionsVisible: true,
-                    attendanceMode: 'manual-access-list',
-                    lockedAfterPublish: true,
-                    variantEnabled: true,
-                    variantCount: 2,
-                    questionsPerVariant: 2,
-                    studentVariantMap: primaryStudent?.id ? { [String(primaryStudent.id)]: variantAId } : {},
-                    variants: [
-                        {
-                            id: variantAId,
-                            label: 'Variant A',
-                            customized: false,
-                            generatedAt: createdAt,
-                            questions: [baseQuestions[0], baseQuestions[2]]
-                        },
-                        {
-                            id: variantBId,
-                            label: 'Variant B',
-                            customized: false,
-                            generatedAt: createdAt,
-                            questions: [baseQuestions[1], baseQuestions[2]]
-                        }
-                    ],
-                    questions: baseQuestions
-                };
-                workspace.published.unshift(publishedQuiz);
-                portalState.groupQuizzes[resourceKey].push({
-                    id: publishedQuiz.id,
-                    title: publishedQuiz.title,
-                    status: publishedQuiz.status,
-                    publishedAt: publishedQuiz.publishedAt,
-                    allowedStudentIds: clone(publishedQuiz.allowedStudentIds)
-                });
-            }
-
-            workspace.submissions[quizId] = workspace.submissions[quizId] && typeof workspace.submissions[quizId] === 'object'
-                ? workspace.submissions[quizId]
-                : {};
-        });
-    }
-
-    ensureTestingStudentServiceStateForFaculty(facultyCode = 'ECON', courses = [], sections = [], demoAccounts = {}) {
-        const normalizedFacultyCode = this.normalizeTestingFacultyCode(facultyCode);
-        const facultySlug = normalizedFacultyCode.toLowerCase();
-        const portalState = this.state.portal.state = this.state.portal.state && typeof this.state.portal.state === 'object'
-            ? this.state.portal.state
-            : {};
-        portalState.studentServiceTickets = Array.isArray(portalState.studentServiceTickets) ? portalState.studentServiceTickets : [];
-        portalState.studentServiceArticles = Array.isArray(portalState.studentServiceArticles) ? portalState.studentServiceArticles : [];
-        portalState.studentServiceMacros = Array.isArray(portalState.studentServiceMacros) ? portalState.studentServiceMacros : [];
-
-        const primaryStudent = demoAccounts['student-primary'];
-        const serviceUser = demoAccounts['student-service'];
-        const professor = demoAccounts.professor;
-        const ta = demoAccounts.ta;
-        const firstCourse = courses[0] || {};
-        const firstSection = sections[0] || {};
-        const now = nowIso();
-
-        const seededTicketId = `testing-svc-${facultySlug}-registration-check`;
-        if (primaryStudent?.id && serviceUser?.id && !portalState.studentServiceTickets.some(ticket => String(ticket?.id || '') === seededTicketId)) {
-            portalState.studentServiceTickets.unshift({
-                id: seededTicketId,
-                studentId: primaryStudent.id,
-                studentName: primaryStudent.displayName || primaryStudent.nameEn || primaryStudent.name || primaryStudent.id,
-                semester: Number(primaryStudent.semester || 0) || 0,
-                serviceArea: 'registration',
-                category: 'Registration / Enrollment',
-                title: `${firstCourse.name || normalizedFacultyCode} registration checkpoint`,
-                message: 'Please confirm that my joined group, LMS files, and quiz access are visible to the teaching team.',
-                status: 'Waiting for Student',
-                createdAt: now,
-                updatedAt: now,
-                relatedSubjectId: firstCourse.id || '',
-                relatedSubjectName: firstCourse.name || '',
-                relatedContextLabel: `${firstCourse.name || normalizedFacultyCode}${firstSection.groupName ? ` / ${firstSection.groupName}` : ''}`,
-                faculty: normalizedFacultyCode,
-                assignedToRole: 'student_service',
-                assignedToId: serviceUser.id,
-                assignedToName: serviceUser.displayName || serviceUser.nameEn || serviceUser.name || serviceUser.id,
-                intakeContext: {
-                    sourcePage: 'registration',
-                    sourceLabel: 'Registration',
-                    roleAtSubmission: 'student',
-                    facultyAtSubmission: normalizedFacultyCode,
-                    studentBalance: Number(portalState.tuitionBalances?.[primaryStudent.id] || 0),
-                    probationActive: Boolean(portalState.probationStatus?.[primaryStudent.id]),
-                    registeredSubjects: Array.isArray(portalState.studentSchedulesByStudent?.[primaryStudent.id]) ? portalState.studentSchedulesByStudent[primaryStudent.id].length : 0,
-                    savedRegistrations: Array.isArray(portalState.studentRegistrations?.[primaryStudent.id]) ? portalState.studentRegistrations[primaryStudent.id].length : 0
-                },
-                handoff: {
-                    status: 'Requested',
-                    targetRole: 'professor',
-                    targetId: professor?.id || '',
-                    targetName: professor?.displayName || professor?.nameEn || professor?.name || '',
-                    requestedAt: now,
-                    note: `Faculty handoff seeded for ${ta?.displayName || ta?.nameEn || ta?.name || 'TA'} and professor verification.`
-                },
-                thread: [
-                    {
-                        id: `${seededTicketId}-thread-1`,
-                        authorId: primaryStudent.id,
-                        authorName: primaryStudent.displayName || primaryStudent.nameEn || primaryStudent.name || primaryStudent.id,
-                        authorRole: 'student',
-                        message: 'I need to confirm that my group schedule, LMS files, and quiz access are working before live onboarding starts.',
-                        createdAt: now,
-                        type: 'request'
-                    },
-                    {
-                        id: `${seededTicketId}-thread-2`,
-                        authorId: serviceUser.id,
-                        authorName: serviceUser.displayName || serviceUser.nameEn || serviceUser.name || serviceUser.id,
-                        authorRole: 'student_service',
-                        message: 'Student Service checked the registration context and handed the case to teaching staff so TA and professor can verify the academic side.',
-                        createdAt: now,
-                        type: 'reply'
-                    }
-                ]
-            });
-        }
-
-        const articleId = `testing-svc-article-${facultySlug}-registration`;
-        if (!portalState.studentServiceArticles.some(article => String(article?.id || '') === articleId)) {
-            portalState.studentServiceArticles.unshift({
-                id: articleId,
-                title: `${normalizedFacultyCode} demo registration and LMS access guide`,
-                summary: 'Use this article to validate that testing students can join groups and open the seeded LMS workspace.',
-                content: `1. Sign in as the secondary student demo account.\n2. Join an available group from registration.\n3. Reopen LMS and verify materials, assignments, and the testing quiz.\n4. Use Student Service if the roster or schedule context is missing.`,
-                category: 'Registration / Enrollment',
-                serviceArea: 'registration',
-                faculty: normalizedFacultyCode,
-                featured: true,
-                published: true,
-                createdAt: now,
-                updatedAt: now
-            });
-        }
-
-        const macroId = `testing-svc-macro-${facultySlug}-routing`;
-        if (!portalState.studentServiceMacros.some(macro => String(macro?.id || '') === macroId)) {
-            portalState.studentServiceMacros.unshift({
-                id: macroId,
-                title: 'Route academic access issue',
-                category: 'Registration / Enrollment',
-                serviceArea: 'registration',
-                content: `Student Service verified the portal context. Escalate to ${professor?.displayName || 'Professor'} and ${ta?.displayName || 'TA'} if the group roster, LMS files, or quiz access still do not match the student schedule.`,
-                published: true,
-                createdAt: now,
-                updatedAt: now
-            });
-        }
-    }
-
-    ensureTestingSocialStateForFaculty(facultyCode = 'ECON', courses = [], sections = [], demoAccounts = {}) {
-        const normalizedFacultyCode = this.normalizeTestingFacultyCode(facultyCode);
-        const facultySlug = normalizedFacultyCode.toLowerCase();
-        const professorId = String(demoAccounts.professor?.id || '').trim();
-        const taId = String(demoAccounts.ta?.id || '').trim();
-        const serviceId = String(demoAccounts['student-service']?.id || '').trim();
-        const primaryStudentId = String(demoAccounts['student-primary']?.id || '').trim();
-        const secondaryStudentId = String(demoAccounts['student-secondary']?.id || '').trim();
-        const firstCourse = courses[0] || {};
-        const firstSection = sections[0] || {};
-
-        Object.values(demoAccounts).forEach(account => {
-            if (!account?.id) return;
-            this.upsertSocialProfile(account.id, {
-                userId: account.id,
-                visibility: 'public',
-                defaultAudience: 'campus',
-                digestFrequency: 'daily',
-                eventReminderLeadHours: 24
-            }, account.id);
-        });
-
-        const ensureAcceptedConnection = (leftId, rightId) => {
-            const left = String(leftId || '').trim();
-            const right = String(rightId || '').trim();
-            if (!left || !right || left === right || this.isSocialConnection(left, right)) return;
-            const pending = this.getPendingSocialConnectionRequestBetween(left, right);
-            if (pending) {
-                const recipientId = String(pending.toId || '').trim();
-                if (recipientId) this.respondSocialConnectionRequest(pending.id, recipientId, true);
-                return;
-            }
-            const request = this.sendSocialConnectionRequest(left, right);
-            if (request?.id) this.respondSocialConnectionRequest(request.id, right, true);
-        };
-
-        [
-            [professorId, taId],
-            [professorId, serviceId],
-            [taId, serviceId],
-            [primaryStudentId, professorId],
-            [primaryStudentId, taId],
-            [primaryStudentId, serviceId],
-            [secondaryStudentId, serviceId]
-        ].forEach(pair => ensureAcceptedConnection(pair[0], pair[1]));
-
-        if (!professorId) return;
-        const groupId = `testing-group-${facultySlug}-hub`;
-        let group = this.getSocialGroupRecord(groupId);
-        if (!group) {
-            group = this.createSocialGroup({
-                id: groupId,
-                ownerUserId: professorId,
-                name: `${normalizedFacultyCode} Testing Hub`,
-                description: `Cross-role testing workspace for ${firstCourse.name || normalizedFacultyCode}. The secondary student can join manually to test public group access.`,
-                visibility: 'public',
-                facultyCode: normalizedFacultyCode,
-                adminIds: taId ? [taId] : [],
-                memberIds: [primaryStudentId, serviceId].filter(Boolean),
-                createdAt: nowIso(),
-                updatedAt: nowIso()
-            }, professorId);
-        } else {
-            group.adminIds = uniqueStrings([...(Array.isArray(group.adminIds) ? group.adminIds : []), taId].filter(Boolean));
-            group.memberIds = uniqueStrings([...(Array.isArray(group.memberIds) ? group.memberIds : []), primaryStudentId, serviceId].filter(Boolean));
-            group.pendingMemberIds = (Array.isArray(group.pendingMemberIds) ? group.pendingMemberIds : []).filter(userId =>
-                !group.memberIds.includes(userId)
-            );
-            group.facultyCode = group.facultyCode || normalizedFacultyCode;
-            group.description = group.description || `Testing workspace for ${normalizedFacultyCode} cross-role validation.`;
-            group.updatedAt = nowIso();
-            this.normalizeSocialGroupState(group);
-        }
-        if (!group?.id) return;
-
-        const chatResult = this.ensureSocialGroupChat(group.id, professorId);
-        const chatId = String(chatResult?.chat?.id || group.chatId || '').trim();
-        const groupChat = chatId ? this.state.chats[chatId] : null;
-        if (groupChat && (!Array.isArray(groupChat.messages) || groupChat.messages.length === 0)) {
-            this.appendMessage({
-                chatId,
-                type: 'group',
-                members: this.getSocialGroupMemberIds(group),
-                name: group.name,
-                createdBy: professorId,
-                senderId: professorId,
-                message: {
-                    text: `Testing hub is ready for ${normalizedFacultyCode}. Professor, TA, Student Service, and the active student are already connected here, and the secondary student can join from the portal to test live membership changes.`,
-                    senderName: this.state.accounts[professorId]?.displayName || professorId
-                }
-            });
-        }
-    }
 
     sanitizeAccountForClient(account) {
         const sanitized = sanitizeAccount(account);
@@ -2855,8 +1731,8 @@ class PlatformStore {
         return revokeSessionsForUser.call(this, userId, reason);
     }
 
-    updateSessionImpersonation(token, impersonatedRole) {
-        return updateSessionImpersonation.call(this, token, impersonatedRole);
+    updateSessionImpersonation(token, impersonatedRole, impersonatedUserId = '') {
+        return updateSessionImpersonation.call(this, token, impersonatedRole, impersonatedUserId);
     }
 
     clearSessionImpersonation(token) {
@@ -3680,7 +2556,14 @@ class PlatformStore {
 
     createPortalBootstrap() {
         const portalState = clone(this.state.portal.state || {});
-        portalState.lmsLiveQuizzes = clone(this.state.portal.liveQuizWorkspaces || {});
+        portalState.lmsLiveQuizzes = Object.entries(this.state.portal.liveQuizWorkspaces || {}).reduce((accumulator, [key, workspace]) => {
+            const normalized = clone(workspace || {}) || {};
+            if (normalized && typeof normalized === 'object') {
+                delete normalized.ui;
+            }
+            accumulator[key] = normalized;
+            return accumulator;
+        }, {});
         return {
             state: portalState,
             meta: clone(this.state.portal.meta || {}),
@@ -3789,11 +2672,22 @@ class PlatformStore {
         const existingState = this.state.portal.state && typeof this.state.portal.state === 'object'
             ? this.state.portal.state
             : {};
-        const incomingState = pickClientOwnedPortalState(nextState);
+        const sanitizedIncoming = sanitizePortalStateForServer(nextState);
         this.state.portal.state = {
             ...clone(existingState),
-            ...incomingState
+            ...sanitizedIncoming
         };
+        const incomingMeta = sanitizedIncoming.meta && typeof sanitizedIncoming.meta === 'object'
+            ? sanitizedIncoming.meta
+            : {};
+        this.state.portal.meta = this.state.portal.meta && typeof this.state.portal.meta === 'object'
+            ? this.state.portal.meta
+            : {};
+        const savedAt = incomingMeta.portalStateSavedAt || nowIso();
+        this.state.portal.meta.portalStateSavedAt = savedAt;
+        if (incomingMeta.registrationCmsRevision != null) {
+            this.state.portal.meta.registrationCmsRevision = incomingMeta.registrationCmsRevision;
+        }
         this.save();
         return this.createPortalBootstrap();
     }
@@ -3808,7 +2702,11 @@ class PlatformStore {
         this.state.portal.liveQuizWorkspaces = this.state.portal.liveQuizWorkspaces && typeof this.state.portal.liveQuizWorkspaces === 'object'
             ? this.state.portal.liveQuizWorkspaces
             : {};
-        return clone(this.state.portal.liveQuizWorkspaces[key] || null);
+        const workspace = clone(this.state.portal.liveQuizWorkspaces[key] || null);
+        if (workspace && typeof workspace === 'object') {
+            delete workspace.ui;
+        }
+        return workspace;
     }
 
     saveLmsLiveQuizWorkspace(resourceKey = '', workspace = {}) {
@@ -3818,6 +2716,7 @@ class PlatformStore {
             ? this.state.portal.liveQuizWorkspaces
             : {};
         const nextWorkspace = clone(workspace && typeof workspace === 'object' ? workspace : {}) || {};
+        delete nextWorkspace.ui;
         nextWorkspace.updatedAt = nowIso();
         this.state.portal.liveQuizWorkspaces[key] = nextWorkspace;
         this.save();
@@ -3889,6 +2788,40 @@ class PlatformStore {
         if (chat.hiddenByUser[normalizedUserId]) {
             delete chat.hiddenByUser[normalizedUserId];
             chat.updatedAt = nowIso();
+            this.save();
+        }
+        return clone(chat);
+    }
+
+    markChatMessagesRead(chatId, userId) {
+        const normalizedChatId = String(chatId || '').trim();
+        const normalizedUserId = String(userId || '').trim();
+        if (!normalizedChatId || !normalizedUserId) return null;
+        const chat = this.state.chats[normalizedChatId];
+        if (!chat || !asArray(chat.members).includes(normalizedUserId)) return null;
+        let changed = false;
+        const now = nowIso();
+        chat.messages = asArray(chat.messages).map((message) => {
+            if (String(message?.senderId || '').trim() === normalizedUserId) return message;
+            const seenBy = uniqueStrings([...asArray(message?.seenBy), normalizedUserId]);
+            if (seenBy.length === asArray(message?.seenBy).length) return message;
+            changed = true;
+            return {
+                ...message,
+                seenBy,
+                seenAtByUser: {
+                    ...(message?.seenAtByUser && typeof message.seenAtByUser === 'object' ? message.seenAtByUser : {}),
+                    [normalizedUserId]: now
+                }
+            };
+        });
+        chat.hiddenByUser = chat.hiddenByUser && typeof chat.hiddenByUser === 'object' ? chat.hiddenByUser : {};
+        if (chat.hiddenByUser[normalizedUserId]) {
+            delete chat.hiddenByUser[normalizedUserId];
+            changed = true;
+        }
+        if (changed) {
+            chat.updatedAt = now;
             this.save();
         }
         return clone(chat);

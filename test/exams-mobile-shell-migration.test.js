@@ -72,6 +72,7 @@ describe('exams mobile shell migration', () => {
   it('migrates the page onto the shared standalone mobile shell contract', () => {
     const source = readSource('exams.html');
     const guardrailSource = readSource('tools/check-architecture-guardrails.js');
+    const visualClassificationSource = readSource('tools/visual-route-classification.js');
     const classificationSource = readSource('PORTAL_VISUAL_ROUTE_CLASSIFICATION.md');
 
     expect(source).toContain('window.__KIU_STANDALONE_MOBILE_SHELL_CONFIG = {');
@@ -79,7 +80,8 @@ describe('exams mobile shell migration', () => {
     expect(source).toContain('assets/js/pages/standalone-mobile-shell.js');
     expect(source).not.toContain('(function initMobileExperience(){');
 
-    expect(guardrailSource).toContain("'exams.html': { category: 'special-surface', dedicatedCss: ['assets/css/exam-studio.css'], mobileShell: 'shared-standalone' }");
+    expect(guardrailSource).toContain('routeVisualClassification');
+    expect(visualClassificationSource).toContain("'exams.html': { category: 'special-surface', dedicatedCss: ['assets/css/exam-studio.css'], mobileShell: 'shared-standalone' }");
     expect(classificationSource).toContain("| `exams.html` | `special-surface` |");
   });
 

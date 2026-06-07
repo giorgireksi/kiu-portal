@@ -70,7 +70,7 @@ function bootProfileViewMobileShell(options = {}) {
 describe('profile-view mobile shell migration', () => {
   it('migrates the page onto the shared standalone mobile shell contract', () => {
     const source = readSource('profile-view.html');
-    const guardrailSource = readSource('tools/check-architecture-guardrails.js');
+    const classificationScriptSource = readSource('tools/visual-route-classification.js');
     const classificationSource = readSource('PORTAL_VISUAL_ROUTE_CLASSIFICATION.md');
 
     expect(source).toContain('window.__KIU_STANDALONE_MOBILE_SHELL_CONFIG = {');
@@ -78,7 +78,7 @@ describe('profile-view mobile shell migration', () => {
     expect(source).toContain('assets/js/pages/standalone-mobile-shell.js');
     expect(source).not.toContain('(function initMobileExperience(){');
 
-    expect(guardrailSource).toContain("'profile-view.html': { category: 'standard-shell', dedicatedCss: ['assets/css/profile-view-route.css'], mobileShell: 'shared-standalone' }");
+    expect(classificationScriptSource).toContain("'profile-view.html': { category: 'standard-shell', dedicatedCss: ['assets/css/profile-view-route.css'], mobileShell: 'shared-standalone' }");
     expect(classificationSource).toContain("| `profile-view.html` | `standard-shell` |");
   });
 

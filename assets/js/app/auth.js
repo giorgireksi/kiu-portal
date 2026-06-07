@@ -1,4 +1,4 @@
-/* Authentication and session helpers extracted from core.js. Source of truth remains root core.js compatibility bundle. */
+/* Authentication and session helpers extracted from the legacy core.js bundle. Active routes now load split files directly. */
 
 // AUTHENTICATION LOGIC
 const KIU_REALTIME_BRIDGE_TIMEOUT_MS = 4000;
@@ -85,6 +85,19 @@ function loadAuthState() {
                 }
             })();
             const isAdminAccount = currentUser.role === USER_ROLES.ADMIN;
+            if (!isAdminAccount) {
+                try {
+                    const pendingRole = String(localStorage.getItem(PENDING_ROLE_SWITCH_KEY) || '').trim().toLowerCase();
+                    if (pendingRole && pendingRole !== currentUser.role) {
+                        localStorage.removeItem(PENDING_ROLE_SWITCH_KEY);
+                    }
+                    sessionStorage.removeItem(ACTIVE_ROLE_IMPERSONATION_KEY);
+                    currentUserRole = currentUser.role;
+                    localStorage.setItem('currentUserRole', currentUser.role);
+                } catch (storageError) {
+                    console.warn('Could not clear stale impersonation keys for faculty account.', storageError);
+                }
+            }
             const hasStoredImpersonatedRole = isAdminAccount && Object.values(USER_ROLES).includes(storedImpersonatedRole);
             const impersonationEnabled = hasStoredImpersonatedRole && storedImpersonatedRole !== currentUser.role;
             if (impersonationEnabled) {
@@ -383,7 +396,19 @@ function getKiuRealtimeBridgeUrl() {
 
 function shouldSkipKiuRealtimeBridge() {
     if (typeof getPortalSessionToken === 'function' && !getPortalSessionToken()) return true;
+    if (document.body?.classList?.contains('lux-route-admin-tools')) return true;
+    if (/\/admin-tools\.html(?:$|[?#])/i.test(String(window.location.pathname || ''))) return true;
     return window.location.protocol === 'file:' && !localStorage.getItem(KIU_REALTIME_BRIDGE_KEY);
+}
+
+function teardownKiuRealtimeEventStream() {
+    const runtime = ensureKiuRealtimeRuntime();
+    if (runtime.eventSource) {
+        try { runtime.eventSource.close(); } catch (error) {}
+        runtime.eventSource = null;
+    }
+    runtime.bootstrappedFor = '';
+    runtime.online = false;
 }
 
 function ensureKiuRealtimeRuntime() {
@@ -401,10 +426,16 @@ function ensureKiuRealtimeRuntime() {
         bootstrapPromise: null,
         pushSubscriptionPromise: null,
         bridgeUnavailableUntil: 0,
+        sseBlockedUntil: 0,
         lastBridgeError: '',
         lastBrowserNoticeAtByKey: {}
     };
     return window.__kiuRealtimeRuntime;
+}
+
+function isKiuRealtimeSseBlocked() {
+    const runtime = ensureKiuRealtimeRuntime();
+    return Boolean(runtime.sseBlockedUntil && Date.now() < runtime.sseBlockedUntil);
 }
 
 function supportsBrowserNotifications() {
@@ -586,12 +617,15 @@ async function kiuRealtimeFetch(path, options = {}) {
 
 function buildRealtimeAccountPayload(user) {
     if (!user) return null;
+    const displayName = cleanupEncodingArtifacts(toEnglishText(user.displayName || user.nameEn || user.name || user.email || user.id));
+    const rosterName = String(user.name || user.nameEn || displayName || '').trim();
+    const rosterNameEn = String(user.nameEn || user.name || displayName || '').trim();
     return {
         id: String(user.id || '').trim(),
         email: String(user.email || '').trim().toLowerCase(),
-        name: String(user.name || '').trim(),
-        nameEn: String(user.nameEn || '').trim(),
-        displayName: cleanupEncodingArtifacts(toEnglishText(user.nameEn || user.name || user.email || user.id)),
+        name: rosterName,
+        nameEn: rosterNameEn,
+        displayName,
         role: String(user.role || USER_ROLES.STUDENT).trim().toLowerCase(),
         faculty: String(user.faculty || user.facultyCode || '').trim(),
         facultyCode: String(user.facultyCode || user.faculty || '').trim(),
@@ -600,8 +634,87 @@ function buildRealtimeAccountPayload(user) {
         temporaryPassword: String(user.temporaryPassword || '').trim(),
         mustChangePassword: Boolean(user.mustChangePassword),
         accountStatus: String(user.accountStatus || 'active').trim(),
-        createdAt: String(user.createdAt || new Date().toISOString())
+        createdAt: String(user.createdAt || new Date().toISOString()),
+        isAdminTestingPersona: typeof isAdminTestingPersonaId === 'function'
+            ? isAdminTestingPersonaId(user.id)
+            : String(user.id || '').trim().toLowerCase().startsWith('admin-testing-')
     };
+}
+
+function ensureFacultyProfileShell(facultyCode) {
+    const normalizedFaculty = normalizeFacultyCode(facultyCode || '', '');
+    if (!normalizedFaculty) return null;
+    if (typeof KIU_STATE === 'undefined' || !KIU_STATE) return null;
+    if (!KIU_STATE.facultyProfiles || typeof KIU_STATE.facultyProfiles !== 'object') {
+        KIU_STATE.facultyProfiles = {};
+    }
+    if (!KIU_STATE.facultyProfiles[normalizedFaculty]) {
+        KIU_STATE.facultyProfiles[normalizedFaculty] = {
+            professors: [],
+            tas: [],
+            students: [],
+            curriculum: []
+        };
+    }
+    const profile = KIU_STATE.facultyProfiles[normalizedFaculty];
+    ['professors', 'tas', 'students', 'curriculum'].forEach((key) => {
+        if (!Array.isArray(profile[key])) profile[key] = [];
+    });
+    return profile;
+}
+
+function upsertFacultyRosterMember(normalized) {
+    if (!normalized?.id) return;
+    const facultyCode = normalizeFacultyCode(normalized.facultyCode || normalized.faculty || '', '');
+    if (!facultyCode) return;
+    const profile = ensureFacultyProfileShell(facultyCode);
+    if (!profile) return;
+    const bucketKey = normalized.role === USER_ROLES.PROFESSOR
+        ? 'professors'
+        : normalized.role === USER_ROLES.TA
+            ? 'tas'
+            : normalized.role === USER_ROLES.STUDENT
+                ? 'students'
+                : null;
+    if (!bucketKey) return;
+    const rosterMember = {
+        ...normalized,
+        faculty: facultyCode,
+        facultyCode,
+        status: normalized.accountStatus === 'disabled' ? 'Suspended' : 'Active'
+    };
+    const memberIndex = profile[bucketKey].findIndex(member => String(member?.id) === normalized.id);
+    if (memberIndex >= 0) {
+        profile[bucketKey][memberIndex] = { ...profile[bucketKey][memberIndex], ...rosterMember };
+    } else {
+        profile[bucketKey].push(rosterMember);
+    }
+}
+
+function syncAdminTestingPersonaRosters(accounts = []) {
+    if (currentUser?.role !== USER_ROLES.ADMIN) return 0;
+    const list = ensureArray(accounts).filter((account) => {
+        const id = String(account?.id || '').trim();
+        return id && (typeof isAdminTestingPersonaId === 'function' ? isAdminTestingPersonaId(id) : id.toLowerCase().startsWith('admin-testing-'));
+    });
+    if (!list.length) return 0;
+    list.forEach((account) => {
+        const normalized = buildRealtimeAccountPayload(account);
+        if (!normalized?.id || !normalized.email) return;
+        normalized.isAdminTestingPersona = true;
+        if (!Array.isArray(KIU_STATE.users)) KIU_STATE.users = [];
+        const existingIndex = KIU_STATE.users.findIndex(user => String(user?.id) === normalized.id);
+        if (existingIndex >= 0) {
+            KIU_STATE.users[existingIndex] = { ...KIU_STATE.users[existingIndex], ...normalized };
+        } else {
+            KIU_STATE.users.push({ ...normalized });
+        }
+        upsertFacultyRosterMember(normalized);
+        if (normalized.role === USER_ROLES.STUDENT && typeof ensureAdminTestingStudentAcademicShell === 'function') {
+            ensureAdminTestingStudentAcademicShell(normalized.id);
+        }
+    });
+    return list.length;
 }
 
 function mergeMessagesById(existingMessages = [], incomingMessages = []) {
@@ -620,7 +733,6 @@ function upsertPortalUserFromRealtime(account, persist = true) {
     const normalized = buildRealtimeAccountPayload(account);
     if (!normalized || !normalized.id || !normalized.email) return null;
 
-    ensureCanonicalState();
     const runtime = ensureKiuRealtimeRuntime();
     runtime.accountsById[normalized.id] = {
         ...runtime.accountsById[normalized.id],
@@ -638,32 +750,61 @@ function upsertPortalUserFromRealtime(account, persist = true) {
         KIU_STATE.users.push({ ...normalized });
     }
 
-    const facultyCode = normalizeFacultyCode(normalized.facultyCode || normalized.faculty || '', normalized.facultyCode || normalized.faculty || '');
-    if (facultyCode && KIU_STATE.facultyProfiles?.[facultyCode]) {
-        const profile = KIU_STATE.facultyProfiles[facultyCode];
-        const bucketKey = normalized.role === USER_ROLES.PROFESSOR
-            ? 'professors'
-            : normalized.role === USER_ROLES.TA
-                ? 'tas'
-                : normalized.role === USER_ROLES.STUDENT
-                    ? 'students'
-                    : null;
-        if (bucketKey) {
-            if (!Array.isArray(profile[bucketKey])) profile[bucketKey] = [];
-            const memberIndex = profile[bucketKey].findIndex(member => String(member?.id) === normalized.id);
-            if (memberIndex >= 0) {
-                profile[bucketKey][memberIndex] = {
-                    ...profile[bucketKey][memberIndex],
-                    ...normalized
-                };
-            } else {
-                profile[bucketKey].push({ ...normalized });
-            }
+    if (normalized.isAdminTestingPersona || (typeof isAdminTestingPersonaId === 'function' && isAdminTestingPersonaId(normalized.id))) {
+        upsertFacultyRosterMember(normalized);
+        if (normalized.role === USER_ROLES.STUDENT && typeof ensureAdminTestingStudentAcademicShell === 'function') {
+            ensureAdminTestingStudentAcademicShell(normalized.id);
+        }
+    } else {
+        const facultyCode = normalizeFacultyCode(normalized.facultyCode || normalized.faculty || '', '');
+        if (facultyCode && KIU_STATE.facultyProfiles?.[facultyCode]) {
+            upsertFacultyRosterMember(normalized);
         }
     }
 
     if (persist) saveState();
     return normalized;
+}
+
+function hydratePortalUsersFromAccounts(accounts = [], options = {}) {
+    const persist = Boolean(options?.persist);
+    const list = ensureArray(accounts).filter((account) => Boolean(account?.id));
+    if (!list.length) return 0;
+    list.forEach((account) => upsertPortalUserFromRealtime(account, false));
+    if (currentUser?.role === USER_ROLES.ADMIN) {
+        syncAdminTestingPersonaRosters(list);
+    }
+    if (typeof ensureCanonicalState === 'function') ensureCanonicalState();
+    if (persist && typeof saveState === 'function') saveState();
+    return list.length;
+}
+
+async function refreshImpersonationDirectoryFromBackend(requestedRole = '', preferredFaculty = '') {
+    if (currentUser?.role !== USER_ROLES.ADMIN) return 0;
+    if (typeof getPortalSessionToken !== 'function' || !getPortalSessionToken()) return 0;
+    if (typeof kiuPortalFetch !== 'function') return 0;
+    try {
+        const normalizedRole = String(requestedRole || '').trim().toLowerCase();
+        const facultyCode = normalizeFacultyCode(
+            preferredFaculty || localStorage.getItem('currentFaculty') || currentUser?.facultyCode || currentUser?.faculty || '',
+            ''
+        );
+        let accounts = [];
+        if (normalizedRole && facultyCode) {
+            const filteredPayload = await kiuPortalFetch(
+                `/api/accounts?limit=500&role=${encodeURIComponent(normalizedRole)}&facultyCode=${encodeURIComponent(facultyCode)}`
+            );
+            accounts = Array.isArray(filteredPayload?.accounts) ? filteredPayload.accounts : [];
+        }
+        if (!accounts.length) {
+            const payload = await kiuPortalFetch('/api/accounts?limit=500');
+            accounts = Array.isArray(payload?.accounts) ? payload.accounts : [];
+        }
+        return hydratePortalUsersFromAccounts(accounts, { persist: false });
+    } catch (error) {
+        console.warn('Could not refresh impersonation directory from backend.', error);
+        return 0;
+    }
 }
 
 function upsertPortalMessengerChatFromRealtime(chat, persist = false) {
@@ -947,11 +1088,17 @@ function connectKiuRealtimeEventStream() {
     const runtime = ensureKiuRealtimeRuntime();
     const currentUserId = getCurrentUserId();
     if (!currentUserId) return;
-    if (shouldSkipKiuRealtimeBridge()) return;
-    if (runtime.eventSource && runtime.bootstrappedFor === String(currentUserId)) return;
+    if (shouldSkipKiuRealtimeBridge()) {
+        teardownKiuRealtimeEventStream();
+        return;
+    }
+    if (isKiuRealtimeSseBlocked()) return;
+    const normalizedUserId = String(currentUserId);
+    if (runtime.eventSource && runtime.bootstrappedFor === normalizedUserId && !isKiuRealtimeSseBlocked()) {
+        return;
+    }
     if (runtime.eventSource) {
-        try { runtime.eventSource.close(); } catch (error) {}
-        runtime.eventSource = null;
+        teardownKiuRealtimeEventStream();
     }
     const portalSessionToken = typeof getPortalSessionToken === 'function' ? getPortalSessionToken() : '';
     if (!portalSessionToken) return;
@@ -966,19 +1113,40 @@ function connectKiuRealtimeEventStream() {
         handleKiuRealtimeEventPayload(payload);
     }, (error) => {
         runtime.online = false;
+        if (Number(error?.status) === 429) {
+            runtime.sseBlockedUntil = Date.now() + (5 * 60 * 1000);
+            console.warn('Realtime event stream paused after too many connections. It will retry in a few minutes.');
+        }
         if (runtime.eventSource === eventSource) {
             runtime.eventSource = null;
             runtime.bootstrappedFor = '';
         }
     });
     runtime.eventSource = eventSource;
-    runtime.bootstrappedFor = String(currentUserId);
+    runtime.bootstrappedFor = normalizedUserId;
 }
+
+function bindKiuRealtimePageExitTeardown() {
+    if (typeof window === 'undefined' || window.__kiuRealtimePageExitTeardownBound) return;
+    const teardownOnExit = () => {
+        if (typeof teardownKiuRealtimeEventStream === 'function') {
+            teardownKiuRealtimeEventStream();
+        }
+    };
+    window.addEventListener('pagehide', teardownOnExit);
+    window.addEventListener('beforeunload', teardownOnExit);
+    window.__kiuRealtimePageExitTeardownBound = true;
+}
+
+bindKiuRealtimePageExitTeardown();
 
 async function bootstrapKiuRealtimeBridge(force = false) {
     const currentUser = getCurrentUser();
     if (!currentUser?.id) return false;
-    if (shouldSkipKiuRealtimeBridge()) return false;
+    if (shouldSkipKiuRealtimeBridge()) {
+        teardownKiuRealtimeEventStream();
+        return false;
+    }
     maybePromptBrowserNotificationPermission();
     const runtime = ensureKiuRealtimeRuntime();
     const currentUserId = String(currentUser.id || '');
@@ -999,7 +1167,14 @@ async function bootstrapKiuRealtimeBridge(force = false) {
         await syncUserToRealtimeBridge(currentUser);
         const snapshot = await kiuRealtimeFetch(`/api/messenger/snapshot?userId=${encodeURIComponent(currentUserId)}`);
         applyKiuRealtimeSnapshot(snapshot, true);
-        connectKiuRealtimeEventStream();
+        const hasActiveStream = Boolean(
+            runtime.eventSource
+            && runtime.bootstrappedFor === currentUserId
+            && !isKiuRealtimeSseBlocked()
+        );
+        if (!hasActiveStream) {
+            connectKiuRealtimeEventStream();
+        }
         if (Notification.permission === 'granted') {
             ensureBrowserPushSubscription(force).catch(() => null);
         }
@@ -1021,16 +1196,22 @@ function scheduleKiuRealtimeBootstrap(force = false) {
     const runtime = ensureKiuRealtimeRuntime();
     const currentUserId = String(getCurrentUserId() || '');
     if (!currentUserId) return;
+    if (shouldSkipKiuRealtimeBridge()) {
+        teardownKiuRealtimeEventStream();
+        return;
+    }
+    if (isKiuRealtimeSseBlocked() && !force) return;
     const alreadyScheduledForCurrentUser = runtime.bootstrapScheduledHandle && runtime.bootstrapScheduledFor === currentUserId;
     if (!force && (alreadyScheduledForCurrentUser || runtime.bootstrapPromise)) return;
     if (runtime.bootstrapScheduledHandle) {
         clearTimeout(runtime.bootstrapScheduledHandle);
     }
     runtime.bootstrapScheduledFor = currentUserId;
+    const bootstrapDelayMs = force ? 0 : 250;
     runtime.bootstrapScheduledHandle = setTimeout(() => {
         runtime.bootstrapScheduledHandle = null;
         bootstrapKiuRealtimeBridge(force).catch(() => null);
-    }, 0);
+    }, bootstrapDelayMs);
 }
 
 async function authLogin(email, password) {
@@ -1134,6 +1315,10 @@ function getPortalRoleLanding(role = USER_ROLES.STUDENT) {
 }
 
 window.getPortalRoleLanding = getPortalRoleLanding;
+window.ensureFacultyProfileShell = ensureFacultyProfileShell;
+window.syncAdminTestingPersonaRosters = syncAdminTestingPersonaRosters;
+window.hydratePortalUsersFromAccounts = hydratePortalUsersFromAccounts;
+window.refreshImpersonationDirectoryFromBackend = refreshImpersonationDirectoryFromBackend;
 
 function syncAuthenticatedSessionState() {
     if (!currentUser?.id) return;
@@ -1179,9 +1364,6 @@ function syncAuthenticatedSessionState() {
                 localStorage.getItem('currentFaculty') || currentUser.facultyCode || currentUser.faculty || 'ECON',
                 'ECON'
             );
-            if (typeof ensureAdminTestingPersonas === 'function') {
-                ensureAdminTestingPersonas(preferredFaculty);
-            }
             if (typeof getPreferredImpersonationUserForRole === 'function') {
                 const persona = getPreferredImpersonationUserForRole(currentUserRole || USER_ROLES.STUDENT, preferredFaculty);
                 if (persona?.id) return String(persona.id);

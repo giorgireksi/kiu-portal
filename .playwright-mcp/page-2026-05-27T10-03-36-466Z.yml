@@ -1,0 +1,539 @@
+- generic [active] [ref=e1]:
+  - main [ref=e2]:
+    - generic [ref=e4]:
+      - generic [ref=e5]:
+        - generic [ref=e6]:
+          - generic [ref=e7]:
+            - generic [ref=e8]: 
+            - text: Registrar Command Deck
+          - heading "Student operations in one surface." [level=1] [ref=e9]
+          - paragraph [ref=e10]: Manage records, audit profile quality, investigate academic risk, review Microsoft account readiness, and move between directory and deep student profiles without leaving the KIU admin shell.
+          - generic [ref=e11]:
+            - generic [ref=e12]:
+              - generic [ref=e13]: 
+              - text: All faculties
+            - generic [ref=e14]:
+              - generic [ref=e15]: 
+              - text: 1 student in scope
+            - generic [ref=e16]:
+              - generic [ref=e17]: 
+              - text: 1 active risk case
+        - generic [ref=e19]:
+          - article [ref=e20]:
+            - text: Active
+            - strong [ref=e21]: "1"
+            - text: Live academic records
+          - article [ref=e22]:
+            - text: Pending setup
+            - strong [ref=e23]: "0"
+            - text: Account or status review
+          - article [ref=e24]:
+            - text: Missing docs
+            - strong [ref=e25]: "0"
+            - text: Compliance follow-up
+          - article [ref=e26]:
+            - text: Archived
+            - strong [ref=e27]: "0"
+            - text: Hidden by default
+      - generic [ref=e28]:
+        - article [ref=e29]:
+          - text: Total students
+          - strong [ref=e30]: "1"
+          - text: Within the current scope
+        - article [ref=e31]:
+          - text: Currently enrolled
+          - strong [ref=e32]: "0"
+          - text: Students with active courses
+        - article [ref=e33]:
+          - text: At risk
+          - strong [ref=e34]: "1"
+          - text: Medium or high risk signals
+        - article [ref=e35]:
+          - text: Pending setup
+          - strong [ref=e36]: "0"
+          - text: Needs onboarding action
+        - article [ref=e37]:
+          - text: Missing documents
+          - strong [ref=e38]: "0"
+          - text: Document review needed
+        - article [ref=e39]:
+          - text: Archived
+          - strong [ref=e40]: "0"
+          - text: Available via archive filter
+      - generic [ref=e41]:
+        - generic [ref=e42]:
+          - generic [ref=e43]:
+            - generic [ref=e44]: Directory controls
+            - heading "Student filters and actions" [level=2] [ref=e45]
+            - paragraph [ref=e46]: Use the improved LMS management workflow on top of KIU faculty-scoped data.
+          - generic [ref=e47]:
+            - button " Import JSON" [ref=e48] [cursor=pointer]:
+              - generic [ref=e49]: 
+              - text: Import JSON
+            - button " Export JSON" [ref=e50] [cursor=pointer]:
+              - generic [ref=e51]: 
+              - text: Export JSON
+            - button " Export CSV" [ref=e52] [cursor=pointer]:
+              - generic [ref=e53]: 
+              - text: Export CSV
+            - button " Add Student" [ref=e54] [cursor=pointer]:
+              - generic [ref=e55]: 
+              - text: Add Student
+        - generic [ref=e56]:
+          - generic [ref=e57]:
+            - generic [ref=e58]: Search directory
+            - searchbox "Search directory" [ref=e59]
+          - generic [ref=e60]:
+            - generic [ref=e61]: Faculty
+            - generic [ref=e62]:
+              - generic [ref=e63]: Faculty
+              - button "Faculty Faculty" [ref=e64] [cursor=pointer]:
+                - strong [ref=e66]: All faculties
+                - generic [ref=e67]: 
+              - listbox:
+                - option [selected]:
+                  - strong: All faculties
+                  - generic: Current selection
+                - option:
+                  - strong: Business Management
+                  - generic: Choose faculty
+          - generic [ref=e68]:
+            - generic [ref=e69]: Status
+            - generic [ref=e70]:
+              - generic [ref=e71]: Status
+              - button "Status Status" [ref=e72] [cursor=pointer]:
+                - strong [ref=e74]: All statuses
+                - generic [ref=e75]: 
+              - listbox:
+                - option [selected]:
+                  - strong: All statuses
+                  - generic: Current selection
+                - option:
+                  - strong: Active
+                  - generic: Choose status
+                - option:
+                  - strong: Probation
+                  - generic: Choose status
+                - option:
+                  - strong: Suspended
+                  - generic: Choose status
+                - option:
+                  - strong: Archived
+                  - generic: Choose status
+          - generic [ref=e76]:
+            - generic [ref=e77]: Program
+            - generic [ref=e78]:
+              - generic [ref=e79]: Program
+              - button "Program Program" [ref=e80] [cursor=pointer]:
+                - strong [ref=e82]: All programs
+                - generic [ref=e83]: 
+              - listbox:
+                - option [selected]:
+                  - strong: All programs
+                  - generic: Current selection
+                - option:
+                  - strong: Program pending
+                  - generic: Choose program
+        - generic [ref=e84]:
+          - generic [ref=e85]:
+            - generic [ref=e86]: Year / level
+            - generic [ref=e87]:
+              - generic [ref=e88]: Year / level
+              - button "Year / level Year / level" [ref=e89] [cursor=pointer]:
+                - strong [ref=e91]: All years
+                - generic [ref=e92]: 
+              - listbox:
+                - option [selected]:
+                  - strong: All years
+                  - generic: Current selection
+                - option:
+                  - strong: Foundation
+                  - generic: Choose year / level
+                - option:
+                  - strong: Year 1
+                  - generic: Choose year / level
+                - option:
+                  - strong: Year 2
+                  - generic: Choose year / level
+                - option:
+                  - strong: Year 3
+                  - generic: Choose year / level
+                - option:
+                  - strong: Year 4
+                  - generic: Choose year / level
+                - option:
+                  - strong: Graduate
+                  - generic: Choose year / level
+          - generic [ref=e93]:
+            - generic [ref=e94]: Academic standing
+            - generic [ref=e95]:
+              - generic [ref=e96]: Academic standing
+              - button "Academic standing Academic standing" [ref=e97] [cursor=pointer]:
+                - strong [ref=e99]: All standings
+                - generic [ref=e100]: 
+              - listbox:
+                - option [selected]:
+                  - strong: All standings
+                  - generic: Current selection
+                - option:
+                  - strong: Excellent
+                  - generic: Choose academic standing
+                - option:
+                  - strong: Good Standing
+                  - generic: Choose academic standing
+                - option:
+                  - strong: Warning
+                  - generic: Choose academic standing
+                - option:
+                  - strong: Probation
+                  - generic: Choose academic standing
+                - option:
+                  - strong: At Risk
+                  - generic: Choose academic standing
+                - option:
+                  - strong: Incomplete
+                  - generic: Choose academic standing
+          - generic [ref=e101]:
+            - generic [ref=e102]: Sort
+            - generic [ref=e103]:
+              - generic [ref=e104]: Sort
+              - button "Sort Sort" [ref=e105] [cursor=pointer]:
+                - strong [ref=e107]: Name
+                - generic [ref=e108]: 
+              - listbox:
+                - option [selected]:
+                  - strong: Name
+                  - generic: Current selection
+                - option:
+                  - strong: Student ID
+                  - generic: Choose sort
+                - option:
+                  - strong: Program
+                  - generic: Choose sort
+                - option:
+                  - strong: Year / level
+                  - generic: Choose sort
+                - option:
+                  - strong: GPA
+                  - generic: Choose sort
+                - option:
+                  - strong: Recently updated
+                  - generic: Choose sort
+                - option:
+                  - strong: Risk level
+                  - generic: Choose sort
+                - option:
+                  - strong: Profile completion
+                  - generic: Choose sort
+          - generic [ref=e109]:
+            - generic [ref=e110]: LMS account
+            - generic [ref=e111]:
+              - generic [ref=e112]: LMS account
+              - button "LMS account LMS account" [ref=e113] [cursor=pointer]:
+                - strong [ref=e115]: All accounts
+                - generic [ref=e116]: 
+              - listbox:
+                - option [selected]:
+                  - strong: All accounts
+                  - generic: Current selection
+                - option:
+                  - strong: Not Invited
+                  - generic: Choose lms account
+                - option:
+                  - strong: Invitation Sent
+                  - generic: Choose lms account
+                - option:
+                  - strong: Account Active
+                  - generic: Choose lms account
+                - option:
+                  - strong: Login Disabled
+                  - generic: Choose lms account
+                - option:
+                  - strong: Needs Review
+                  - generic: Choose lms account
+          - generic [ref=e117]:
+            - generic [ref=e118]: Profile status
+            - generic [ref=e119]:
+              - generic [ref=e120]: Profile status
+              - button "Profile status Profile status" [ref=e121] [cursor=pointer]:
+                - strong [ref=e123]: All profiles
+                - generic [ref=e124]: 
+              - listbox:
+                - option [selected]:
+                  - strong: All profiles
+                  - generic: Current selection
+                - option:
+                  - strong: Complete
+                  - generic: Choose profile status
+                - option:
+                  - strong: Incomplete
+                  - generic: Choose profile status
+                - option:
+                  - strong: Missing Documents
+                  - generic: Choose profile status
+                - option:
+                  - strong: Missing Advisor
+                  - generic: Choose profile status
+          - generic [ref=e125]:
+            - generic [ref=e126]: Enrollment
+            - generic [ref=e127]:
+              - generic [ref=e128]: Enrollment
+              - button "Enrollment Enrollment" [ref=e129] [cursor=pointer]:
+                - strong [ref=e131]: All students
+                - generic [ref=e132]: 
+              - listbox:
+                - option [selected]:
+                  - strong: All students
+                  - generic: Current selection
+                - option:
+                  - strong: Enrolled
+                  - generic: Choose enrollment
+                - option:
+                  - strong: Not Enrolled
+                  - generic: Choose enrollment
+                - option:
+                  - strong: Full-time
+                  - generic: Choose enrollment
+                - option:
+                  - strong: Part-time
+                  - generic: Choose enrollment
+                - option:
+                  - strong: Exchange Student
+                  - generic: Choose enrollment
+                - option:
+                  - strong: Visiting Student
+                  - generic: Choose enrollment
+                - option:
+                  - strong: Not Enrolled
+                  - generic: Choose enrollment
+          - generic [ref=e133]:
+            - generic [ref=e134]: Archive
+            - generic [ref=e135]:
+              - generic [ref=e136]: Archive
+              - button "Archive Archive" [ref=e137] [cursor=pointer]:
+                - strong [ref=e139]: Active records
+                - generic [ref=e140]: 
+              - listbox:
+                - option [selected]:
+                  - strong: Active records
+                  - generic: Current selection
+                - option:
+                  - strong: All records
+                  - generic: Choose archive
+                - option:
+                  - strong: Archived only
+                  - generic: Choose archive
+          - generic [ref=e141]:
+            - generic [ref=e142]: Risk
+            - generic [ref=e143]:
+              - generic [ref=e144]: Risk
+              - button "Risk Risk" [ref=e145] [cursor=pointer]:
+                - strong [ref=e147]: All risk levels
+                - generic [ref=e148]: 
+              - listbox:
+                - option [selected]:
+                  - strong: All risk levels
+                  - generic: Current selection
+                - option:
+                  - strong: Low
+                  - generic: Choose risk
+                - option:
+                  - strong: Medium
+                  - generic: Choose risk
+                - option:
+                  - strong: High
+                  - generic: Choose risk
+                - option:
+                  - strong: Inactive
+                  - generic: Choose risk
+        - generic [ref=e149]:
+          - generic [ref=e150]:
+            - generic [ref=e151]: Archive
+            - generic [ref=e152]:
+              - generic [ref=e153]: Archive
+              - button "Archive Archive" [ref=e154] [cursor=pointer]:
+                - strong [ref=e156]: Active records
+                - generic [ref=e157]: 
+              - listbox:
+                - option [selected]:
+                  - strong: Active records
+                  - generic: Current selection
+                - option:
+                  - strong: All records
+                  - generic: Choose archive
+                - option:
+                  - strong: Archived only
+                  - generic: Choose archive
+          - generic [ref=e158]:
+            - generic [ref=e159]: Risk
+            - generic [ref=e160]:
+              - generic [ref=e161]: Risk
+              - button "Risk Risk" [ref=e162] [cursor=pointer]:
+                - strong [ref=e164]: All risk levels
+                - generic [ref=e165]: 
+              - listbox:
+                - option [selected]:
+                  - strong: All risk levels
+                  - generic: Current selection
+                - option:
+                  - strong: Low
+                  - generic: Choose risk
+                - option:
+                  - strong: Medium
+                  - generic: Choose risk
+                - option:
+                  - strong: High
+                  - generic: Choose risk
+                - option:
+                  - strong: Inactive
+                  - generic: Choose risk
+          - generic [ref=e166]:
+            - generic [ref=e167]: Quick reviews
+            - generic [ref=e168]:
+              - generic [ref=e169]: Quick reviews
+              - button "Quick reviews Quick reviews" [ref=e170] [cursor=pointer]:
+                - strong [ref=e172]: Select a quick view
+                - generic [ref=e173]: 
+              - listbox:
+                - option [selected]:
+                  - strong: Select a quick view
+                  - generic: Current selection
+                - option:
+                  - strong: High risk
+                  - generic: Choose quick reviews
+                - option:
+                  - strong: Missing documents
+                  - generic: Choose quick reviews
+                - option:
+                  - strong: Incomplete profiles
+                  - generic: Choose quick reviews
+                - option:
+                  - strong: No advisor
+                  - generic: Choose quick reviews
+          - button " Clear filters" [ref=e174] [cursor=pointer]:
+            - generic [ref=e175]: 
+            - text: Clear filters
+          - button " Refresh from KIU" [ref=e176] [cursor=pointer]:
+            - generic [ref=e177]: 
+            - text: Refresh from KIU
+        - generic [ref=e178]:
+          - generic [ref=e180]: No active filters
+          - generic [ref=e181]:
+            - button " Recently updated" [ref=e182] [cursor=pointer]:
+              - generic [ref=e183]: 
+              - text: Recently updated
+            - button " Account review" [ref=e184] [cursor=pointer]:
+              - generic [ref=e185]: 
+              - text: Account review
+      - generic [ref=e186]:
+        - generic [ref=e187]:
+          - generic [ref=e188]:
+            - generic [ref=e189]: Student registry
+            - heading "Operational directory" [level=2] [ref=e190]
+            - paragraph [ref=e191]: 1 result shown. Open full records, edit, archive, or export.
+          - generic [ref=e193]:
+            - generic [ref=e194]: 
+            - text: Audit sensitive
+        - table [ref=e196]:
+          - rowgroup [ref=e197]:
+            - row "Student Program Enrollment Academic Engagement Account Completion" [ref=e198]:
+              - columnheader "Student" [ref=e199]
+              - columnheader "Program" [ref=e200]
+              - columnheader "Enrollment" [ref=e201]
+              - columnheader "Academic" [ref=e202]
+              - columnheader "Engagement" [ref=e203]
+              - columnheader "Account" [ref=e204]
+              - columnheader "Completion" [ref=e205]
+              - columnheader [ref=e206]
+          - rowgroup [ref=e207]:
+            - row "QS QA Student Alpha admin-testing-econ-student · qa.student.alpha@student.kiu.edu.ge Program pending Business Management Year 1 · Not Enrolled 0 courses · Semester 1 At Risk GPA 0.00 · 0 ECTS High risk 0% attendance · 0 missing Account Active Login enabled · No login 62% · 5 missing View Edit Archive" [ref=e208]:
+              - cell "QS QA Student Alpha admin-testing-econ-student · qa.student.alpha@student.kiu.edu.ge" [ref=e209]:
+                - generic [ref=e210]:
+                  - generic [ref=e211]: QS
+                  - generic [ref=e212]:
+                    - generic [ref=e213]: QA Student Alpha
+                    - generic [ref=e214]: admin-testing-econ-student · qa.student.alpha@student.kiu.edu.ge
+              - cell "Program pending Business Management" [ref=e215]:
+                - generic [ref=e216]:
+                  - strong [ref=e217]: Program pending
+                  - generic [ref=e218]: Business Management
+              - cell "Year 1 · Not Enrolled 0 courses · Semester 1" [ref=e219]:
+                - generic [ref=e220]:
+                  - strong [ref=e221]: Year 1 · Not Enrolled
+                  - generic [ref=e222]: 0 courses · Semester 1
+              - cell "At Risk GPA 0.00 · 0 ECTS" [ref=e223]:
+                - generic [ref=e224]:
+                  - generic [ref=e225]: At Risk
+                  - generic [ref=e226]: GPA 0.00 · 0 ECTS
+              - cell "High risk 0% attendance · 0 missing" [ref=e227]:
+                - generic [ref=e228]:
+                  - generic [ref=e229]: High risk
+                  - generic [ref=e230]: 0% attendance · 0 missing
+              - cell "Account Active Login enabled · No login" [ref=e231]:
+                - generic [ref=e232]:
+                  - generic [ref=e233]: Account Active
+                  - generic [ref=e234]: Login enabled · No login
+              - cell "62% · 5 missing" [ref=e235]:
+                - generic [ref=e238]: 62% · 5 missing
+              - cell "View Edit Archive" [ref=e239]:
+                - generic [ref=e240]:
+                  - button "View" [ref=e241] [cursor=pointer]
+                  - button "Edit" [ref=e242] [cursor=pointer]
+                  - button "Archive" [ref=e243] [cursor=pointer]
+  - text:                  
+  - generic:    
+  - generic:   
+  - text:  
+  - complementary:
+    - generic:
+      - generic: K
+      - generic:
+        - generic: KIU
+        - generic: Integrated Campus Portal
+    - generic:
+      - generic: Control
+      - button " Dashboard":
+        - generic: 
+        - generic: Dashboard
+      - button " Admin Tools":
+        - generic: 
+        - generic: Admin Tools
+      - button " Scheduler":
+        - generic: 
+        - generic: Scheduler
+      - button " Staff":
+        - generic: 
+        - generic: Staff
+      - button " Students":
+        - generic: 
+        - generic: Students
+      - generic: Systems
+      - button " News":
+        - generic: 
+        - generic: News
+      - button " Library":
+        - generic: 
+        - generic: Library
+      - button " Orders":
+        - generic: 
+        - generic: Orders
+      - button " Social":
+        - generic: 
+        - generic: Social
+      - button " Exams":
+        - generic: 
+        - generic: Exams
+      - button " Programs":
+        - generic: 
+        - generic: Programs
+      - button " Profile":
+        - generic: 
+        - generic: Profile
+    - generic:
+      - generic: PA
+      - generic:
+        - generic: Portal Administrator
+        - generic: Admin View - Business Management
+  - text:         
+  - status
+  - text:        

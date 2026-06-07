@@ -433,9 +433,16 @@ function buildSocialCommentTree(comments = []) {
 function findSocialCommentRecord(comments = [], commentId = '') {
     const normalizedCommentId = socialText(commentId);
     if (!normalizedCommentId) return null;
-    return asArray(comments)
-        .map(comment => normalizeSocialComment.call(this, comment))
-        .find(comment => socialText(comment.id) === normalizedCommentId) || null;
+    const stack = [...asArray(comments)];
+    while (stack.length) {
+        const comment = stack.shift();
+        if (!comment || typeof comment !== 'object') continue;
+        if (socialText(comment.id) === normalizedCommentId) return comment;
+        if (Array.isArray(comment.replies) && comment.replies.length) {
+            stack.push(...comment.replies);
+        }
+    }
+    return null;
 }
 
 function collectSocialCommentThreadIds(comments = [], commentId = '') {

@@ -9,12 +9,12 @@
             nav = document.createElement('nav');
             nav.id = 'mobile-bottom-nav';
             nav.setAttribute('aria-label', 'Mobile navigation');
-            nav.style.display = 'none';
+            nav.hidden = true;
             nav.innerHTML = '' +
                 '<div class="mobile-nav-row">' +
                     '<button class="mobile-nav-btn is-active" data-nav-target="home" type="button" id="mob-nav-home"><i class="fas fa-th-large"></i><span>Home</span></button>' +
-                    '<button class="mobile-nav-btn" type="button" id="mob-nav-messages" data-action="messages"><i class="fas fa-comment-dots"></i><span>Chat</span><em class="mob-badge" id="mob-badge-msg" style="display:none;">0</em></button>' +
-                    '<button class="mobile-nav-btn" type="button" id="mob-nav-notif" data-action="notifications"><i class="fas fa-bell"></i><span>Alerts</span><em class="mob-badge" id="mob-badge-notif" style="display:none;">0</em></button>' +
+                    '<button class="mobile-nav-btn" type="button" id="mob-nav-messages" data-action="messages"><i class="fas fa-comment-dots"></i><span>Chat</span><em class="mob-badge" id="mob-badge-msg" hidden>0</em></button>' +
+                    '<button class="mobile-nav-btn" type="button" id="mob-nav-notif" data-action="notifications"><i class="fas fa-bell"></i><span>Alerts</span><em class="mob-badge" id="mob-badge-notif" hidden>0</em></button>' +
                     '<button class="mobile-nav-btn" type="button" id="mob-nav-theme" data-action="theme"><i class="fas fa-palette"></i><span>Theme</span></button>' +
                     '<button class="mobile-nav-btn" type="button" id="mob-nav-more" data-action="more" aria-haspopup="dialog" aria-expanded="false"><i class="fas fa-grip-horizontal"></i><span>More</span></button>' +
                 '</div>';
@@ -26,7 +26,7 @@
             sheet = document.createElement('div');
             sheet.id = 'mobile-action-sheet';
             sheet.className = 'mob-sheet';
-            sheet.style.display = 'none';
+            sheet.hidden = true;
             sheet.setAttribute('role', 'dialog');
             sheet.setAttribute('aria-modal', 'true');
             sheet.setAttribute('aria-hidden', 'true');
@@ -35,10 +35,10 @@
                 '<div class="mob-sheet-panel">' +
                     '<div class="mob-sheet-handle"><span></span></div>' +
                     '<div class="mob-sheet-section"><div class="mob-sheet-label">Quick Actions</div><div class="mob-sheet-grid">' +
-                        '<button class="mob-sheet-btn" id="mob-act-admin"><div class="mob-sheet-icon" style="background:linear-gradient(135deg,#f59e0b,#d97706);"><i class="fas fa-user-shield"></i></div><span>Admin View</span></button>' +
-                        '<button class="mob-sheet-btn" id="mob-act-theme"><div class="mob-sheet-icon" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9);"><i class="fas fa-palette"></i></div><span>Theme</span></button>' +
-                        '<button class="mob-sheet-btn" id="mob-act-profile"><div class="mob-sheet-icon" style="background:linear-gradient(135deg,#06b6d4,#0891b2);"><i class="fas fa-user-circle"></i></div><span>Profile</span></button>' +
-                        '<button class="mob-sheet-btn" id="mob-act-lightmode"><div class="mob-sheet-icon" style="background:linear-gradient(135deg,#f97316,#ea580c);"><i class="fas fa-sun"></i></div><span>Light Mode</span></button>' +
+                        '<button class="mob-sheet-btn" type="button" id="mob-act-admin"><span class="mob-sheet-icon"><i class="fas fa-user-shield"></i></span><span>Admin View</span></button>' +
+                        '<button class="mob-sheet-btn" type="button" id="mob-act-theme"><span class="mob-sheet-icon"><i class="fas fa-palette"></i></span><span>Theme</span></button>' +
+                        '<button class="mob-sheet-btn" type="button" id="mob-act-profile"><span class="mob-sheet-icon"><i class="fas fa-user-circle"></i></span><span>Profile</span></button>' +
+                        '<button class="mob-sheet-btn" type="button" id="mob-act-lightmode"><span class="mob-sheet-icon"><i class="fas fa-sun"></i></span><span>Light Mode</span></button>' +
                     '</div></div>' +
                     '<div id="mob-sheet-dynamic-nav"></div>' +
                     '<div class="mob-sheet-footer"><button class="mob-sheet-close-btn" id="mob-sheet-close"><i class="fas fa-times"></i> Close</button></div>' +
@@ -84,6 +84,26 @@
         if (!toggle) return;
         toggle.classList.add('is-active');
         toggle.setAttribute('aria-pressed', 'true');
+    }
+
+    function isElementShown(element) {
+        if (!element) return false;
+        var explicitState = element.getAttribute('data-mob-visible');
+        if (explicitState === 'true') return true;
+        if (explicitState === 'false') return false;
+        if (element.hidden || element.getAttribute('aria-hidden') === 'true') return false;
+        return !/display\s*:\s*none/i.test(String(element.getAttribute('style') || ''));
+    }
+
+    function setElementShown(element, shown, displayValue) {
+        void displayValue;
+        if (!element) return;
+        element.hidden = !shown;
+        element.setAttribute('data-mob-visible', shown ? 'true' : 'false');
+    }
+
+    function setSheetBodyState(isOpen) {
+        document.body.classList.toggle('mob-sheet-open', isOpen === true);
     }
 
     function buildRoleNav() {
@@ -139,7 +159,7 @@
         });
 
         var adminSwitch = document.getElementById('mob-act-admin');
-        if (adminSwitch) adminSwitch.style.display = role === 'admin' ? '' : 'none';
+        if (adminSwitch) adminSwitch.hidden = role !== 'admin';
     }
 
     function setupNav() {
@@ -293,7 +313,7 @@
     function toggleSheet() {
         var sheet = document.getElementById('mobile-action-sheet');
         if (!sheet) return;
-        if (sheet.style.display !== 'none') {
+        if (isElementShown(sheet)) {
             closeSheet();
             return;
         }
@@ -305,10 +325,10 @@
         if (!sheet) return;
         var moreButton = document.getElementById('mob-nav-more');
         var closeButton = document.getElementById('mob-sheet-close');
-        sheet.style.display = '';
+        setElementShown(sheet, true);
         sheet.setAttribute('aria-hidden', 'false');
         if (moreButton) moreButton.setAttribute('aria-expanded', 'true');
-        document.body.style.overflow = 'hidden';
+        setSheetBodyState(true);
         requestAnimationFrame(function () {
             sheet.classList.add('is-open');
             if (closeButton) {
@@ -329,9 +349,9 @@
         sheet.setAttribute('aria-hidden', 'true');
         if (moreButton) moreButton.setAttribute('aria-expanded', 'false');
         if (closeButton) closeButton.removeAttribute('data-mob-sheet-focus');
-        document.body.style.overflow = '';
+        setSheetBodyState(false);
         setTimeout(function () {
-            sheet.style.display = 'none';
+            setElementShown(sheet, false);
             if (options.restoreFocus !== false && moreButton) moreButton.focus();
         }, 300);
     }
@@ -377,7 +397,7 @@
     function onResize() {
         var nav = document.getElementById('mobile-bottom-nav');
         if (!nav) return;
-        nav.style.display = isMobileViewport() ? '' : 'none';
+        setElementShown(nav, isMobileViewport());
         if (!isMobileViewport()) closeSheet();
     }
 

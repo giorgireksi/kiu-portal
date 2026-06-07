@@ -49,7 +49,7 @@
         document.addEventListener('input', (event) => {
             if (event.target.matches('[data-admin-orders-transparency]') && typeof window.updateTransparency === 'function') {
                 if (typeof window.setDashboardVisuals === 'function') {
-                    window.setDashboardVisuals({ surfaceTransparency: String(event.target.value || '70') });
+                    window.setDashboardVisuals({ surfaceTransparency: String(event.target.value || '13') });
                 }
                 window.updateTransparency(event.target.value);
             }
@@ -60,8 +60,8 @@
     }
 
     function ensureAdminOrdersContent() {
-        if (typeof window.renderAdminOrders === 'function') {
-            window.renderAdminOrders();
+        if (typeof renderAdminOrders === 'function') {
+            renderAdminOrders();
         }
     }
 
@@ -72,11 +72,13 @@
 
         const facultyCode = localStorage.getItem('currentFaculty') || 'ECON';
         if (typeof window.switchFacultyTheme === 'function') {
-            window.switchFacultyTheme(facultyCode);
+            window.switchFacultyTheme(facultyCode, { refreshDependentViews: false });
         }
 
-        if (typeof window.syncAll === 'function') {
-            window.syncAll();
+        if (typeof window.refreshStandaloneDesktopRouteShellContext === 'function') {
+            window.refreshStandaloneDesktopRouteShellContext({ rerender: false, refreshActiveRoute: false });
+        } else if (typeof window.refreshStandaloneDesktopShellChrome === 'function') {
+            window.refreshStandaloneDesktopShellChrome();
         } else if (typeof window.initPalette === 'function') {
             window.initPalette();
         }
@@ -86,7 +88,7 @@
 
         setTimeout(() => {
             if (typeof window.updateTransparency === 'function') {
-                const saved = localStorage.getItem('kiuLuxurySurfaceTransparency') || '70';
+                const saved = localStorage.getItem('kiuLuxurySurfaceTransparency') || '13';
                 window.updateTransparency(parseInt(saved, 10));
             }
         }, 300);

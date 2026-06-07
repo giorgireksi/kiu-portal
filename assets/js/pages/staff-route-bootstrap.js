@@ -1,6 +1,8 @@
 (function initStaffRouteBootstrap() {
     'use strict';
 
+    // Compatibility-only deferred loader kept until old tooling references stop
+    // pointing at the staff mobile-shell bootstrap path.
     const MOBILE_BREAKPOINT = 1024;
     const MOBILE_SHELL_SCRIPT_URL = 'assets/js/pages/staff-mobile-shell.js?v=20260510-staff-admin3';
     let mobileShellRequested = false;

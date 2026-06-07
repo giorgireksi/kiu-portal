@@ -35,8 +35,8 @@ describe('Social Lost & Found regressions', () => {
         const socialHtml = readAsset('social.html');
 
         expect(socialPageJs).toContain("const SOCIAL_COMMUNITY_MODULE_URL = 'assets/js/pages/social-community.js?v=20260516-socialcommunity-module1';");
-        expect(socialPageJs).toContain("const SOCIAL_LOST_FOUND_MODULE_URL = 'assets/js/pages/social-lost-found.js?v=20260516-sociallostfound-module1';");
-        expect(socialPageJs).toContain("const SOCIAL_ALERTS_MODULE_URL = 'assets/js/pages/social-alerts.js?v=20260516-socialalerts-module1';");
+        expect(socialPageJs).toContain("const SOCIAL_LOST_FOUND_MODULE_URL = 'assets/js/pages/social-lost-found.js?v=20260604-lfnative1';");
+        expect(socialPageJs).toContain("const SOCIAL_ALERTS_MODULE_URL = 'assets/js/pages/social-alerts.js?v=20260604-alertcats1';");
         expect(socialPageJs).toContain("const SOCIAL_MESSAGES_MODULE_URL = 'assets/js/pages/social-messages.js?v=20260516-socialmessages-module1';");
         expect(socialPageJs).toContain("const SOCIAL_PROFILE_MODULE_URL = 'assets/js/pages/social-profile.js?v=20260516-socialprofile-module1';");
         expect(socialPageJs).toContain('function ensureSocialCommunityModule()');
@@ -72,20 +72,22 @@ describe('Social Lost & Found regressions', () => {
         expect(profileModuleJs).toContain('window.renderSocialProfilePanel = renderProfilePageBody;');
         expect(profileModuleJs).toContain('Edit Profile');
         expect(socialMobileJs).toContain('lost-and-found');
-        expect(appJs).toContain('social-runtime-lite.js?v=20260429-portfolio1');
-        expect(appJs).toContain('assets/js/pages/social-page.js?v=20260510-social-ux100');
+        expect(appJs).toContain('social-runtime-lite.js?v=20260606-postactions6');
+        expect(appJs).toContain('assets/js/pages/social-page.js?v=20260606-postactions6');
         expect(appJs).toContain('window.__KIU_SOCIAL_PAGE_REBUILT');
         expect(appJs).toContain('window.__KIU_SOCIAL_MOBILE_SHELL_INIT');
-        expect(socialHtml).toContain('assets/js/app/app.js?v=20260430-portfoliolux1');
+        expect(socialHtml).not.toContain('assets/js/app/app.js?v=20260430-portfoliolux1');
         expect(socialHtml).toContain('mob-nav-lost-found');
-        expect(socialHtml).not.toContain('assets/js/features/ui.js');
+        expect(socialHtml).toContain('assets/js/features/ui.js');
         expect(socialHtml).not.toContain('assets/js/pages/social-community.js');
         expect(socialHtml).not.toContain('assets/js/pages/social-lost-found.js');
         expect(socialHtml).not.toContain('assets/js/pages/social-alerts.js');
         expect(socialHtml).not.toContain('assets/js/pages/social-profile.js');
+        expect(socialHtml).toContain('id="social-neo-workspace-nav-region"');
         expect(socialHtml).not.toContain('id="social-loading-placeholder"');
         expect(socialHtml).toContain('id="social-neo-root"');
         expect(socialHtml).toContain('id="social-neo-center-region"');
+        expect(socialHtml).toContain('id="app-content"');
         expect(socialHtml).toContain('Preparing campus social');
         expect(socialHtml).not.toContain('style="opacity: 0; transition: opacity 0.3s ease;"');
     });
@@ -144,6 +146,29 @@ describe('Social Lost & Found regressions', () => {
         expect(socialMobileJs).not.toContain("['email', 'Email', 'fas fa-envelope']");
         expect(socialMobileJs).toContain("['news', 'News', 'fas fa-newspaper']");
         expect(stateJs).not.toContain("'email'");
-        expect(navigationJs).toContain("if (normalizedPageId === 'news') return resolveShellRouteUrl('news', role);");
+        expect(navigationJs).toContain("'news': 'news.html'");
+        expect(navigationJs).toContain("if (PORTAL_STANDALONE_ROUTE_IDS.has(normalizedPageId)) return 'standalone';");
+    });
+
+    it('keeps the story viewer/composer and social muted helper slice on explicit classes', () => {
+        const socialPageJs = readAsset('assets/js/pages/social-page.js');
+        const socialCss = readAsset('assets/css/social-rebuild.css');
+
+        expect(socialPageJs).toContain('class="social-neo-muted social-neo-muted-mt-6"');
+        expect(socialPageJs).toContain('class="social-neo-btn social-neo-btn-ghost social-neo-story-close-btn"');
+        expect(socialPageJs).toContain('class="social-neo-story-caption"');
+        expect(socialPageJs).toContain('class="social-neo-story-compose-copy"');
+        expect(socialPageJs).toContain('class="social-neo-btn social-neo-btn-ghost social-neo-story-upload-btn social-neo-story-upload-shell"');
+        expect(socialPageJs).not.toContain('style="margin-top:6px"');
+        expect(socialPageJs).not.toContain('style="margin-left:auto"');
+        expect(socialPageJs).not.toContain('style="position:absolute;bottom:60px;left:12px;right:12px;');
+        expect(socialPageJs).not.toContain('style="color:var(--sn-txt2);font-size:13px;margin:8px 0"');
+        expect(socialPageJs).not.toContain('style="cursor:pointer;justify-content:center"');
+        expect(socialCss).toContain('.social-neo-muted-mt-6');
+        expect(socialCss).toContain('.social-neo-story-close-btn');
+        expect(socialCss).toContain('.social-neo-story-caption');
+        expect(socialCss).toContain('.social-neo-story-compose-copy');
+        expect(socialCss).toContain('.social-neo-story-upload-btn');
+        expect(socialCss).toContain('.social-neo-story-upload-shell');
     });
 });

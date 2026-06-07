@@ -10,6 +10,11 @@
     <title>Protected Quiz Launch</title>
     <link rel="stylesheet" href="assets/vendor/fontawesome/css/all.min.css?v=1776604822063">
     <link rel="stylesheet" href="assets/css/kiu-fonts.css?v=20260515-fonts1">
+    <link rel="stylesheet" href="assets/css/lux-tokens.css?v=20260606-luxscrollbar1">
+    <link rel="stylesheet" href="assets/css/lux-surfaces.css?v=20260527-profcss1">
+    <link rel="stylesheet" href="assets/css/lux-controls.css?v=20260606-pickerscroll1">
+    <link rel="stylesheet" href="assets/css/lux-layout-primitives.css?v=20260606-luxscrollbar1">
+    <link rel="stylesheet" href="assets/css/protected-launch-route.css?v=20260524-protectedlaunch1">
     <script>
         (function applyLaunchPerformanceMode() {
             try {
@@ -27,309 +32,16 @@
             } catch (error) {}
         })();
     </script>
-    <style>
-        :root {
-            color-scheme: dark;
-            --bg-a: #05101d;
-            --bg-b: #0c1b2f;
-            --panel: rgba(7, 16, 29, 0.88);
-            --line: rgba(255, 255, 255, 0.08);
-            --line-strong: rgba(212, 173, 111, 0.24);
-            --text: #f7f3eb;
-            --muted: rgba(247, 243, 235, 0.68);
-            --accent: #d4ad6f;
-            --accent-soft: rgba(212, 173, 111, 0.14);
-            --success: #30d49a;
-            --danger: #ff8f8f;
-            --warn: #ffd36d;
-            --launch-body-bg:
-                radial-gradient(circle at top right, rgba(212, 173, 111, 0.18), transparent 28%),
-                radial-gradient(circle at bottom left, rgba(72, 136, 255, 0.12), transparent 24%),
-                linear-gradient(180deg, var(--bg-b), var(--bg-a));
-            --launch-shell-bg:
-                linear-gradient(180deg, rgba(11, 21, 36, 0.96), rgba(6, 12, 23, 0.98));
-            --launch-head-bg:
-                radial-gradient(circle at top right, rgba(212, 173, 111, 0.14), transparent 34%),
-                linear-gradient(180deg, rgba(18, 30, 49, 0.88), rgba(8, 14, 25, 0.94));
-            --launch-surface-bg: rgba(255, 255, 255, 0.03);
-            --launch-progress-track: rgba(255, 255, 255, 0.08);
-            --launch-progress-fill: linear-gradient(90deg, rgba(212, 173, 111, 0.25), rgba(212, 173, 111, 0.88));
-            --launch-shell-shadow: 0 26px 58px rgba(0, 0, 0, 0.34);
-            --launch-btn-transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
-            --launch-progress-animation: pulseProgress 1.15s ease-in-out infinite alternate;
-            --launch-primary-bg: linear-gradient(135deg, #f0cc8c, #d4ad6f);
-            --launch-danger-bg: linear-gradient(135deg, #ffb3b3, #ff8f8f);
-        }
-
-        * { box-sizing: border-box; }
-
-        body {
-            margin: 0;
-            min-height: 100vh;
-            font-family: 'Inter', sans-serif;
-            color: var(--text);
-            background: var(--launch-body-bg);
-            display: grid;
-            place-items: center;
-            padding: 18px;
-        }
-
-        .launch-shell {
-            width: min(460px, 100%);
-            border-radius: 28px;
-            border: 1px solid var(--line);
-            background: var(--launch-shell-bg);
-            box-shadow: var(--launch-shell-shadow);
-            overflow: hidden;
-        }
-
-        .launch-head {
-            padding: 26px 26px 18px;
-            border-bottom: 1px solid var(--line);
-            background: var(--launch-head-bg);
-        }
-
-        .launch-kicker {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 11px;
-            font-weight: 800;
-            letter-spacing: 0.18em;
-            text-transform: uppercase;
-            color: var(--muted);
-        }
-
-        .launch-kicker::before {
-            content: '';
-            width: 28px;
-            height: 1px;
-            background: rgba(255, 255, 255, 0.24);
-        }
-
-        .launch-title {
-            margin: 14px 0 8px;
-            font-family: 'Playfair Display', serif;
-            font-size: 34px;
-            line-height: 1.04;
-        }
-
-        .launch-copy {
-            color: var(--muted);
-            font-size: 14px;
-            line-height: 1.7;
-        }
-
-        .launch-body {
-            padding: 22px 26px 26px;
-            display: grid;
-            gap: 18px;
-        }
-
-        .launch-status-card,
-        .launch-meta,
-        .launch-actions {
-            border: 1px solid var(--line);
-            background: var(--launch-surface-bg);
-            border-radius: 22px;
-        }
-
-        .launch-status-card {
-            padding: 22px;
-            display: grid;
-            gap: 16px;
-        }
-
-        .launch-status-head {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-        }
-
-        .launch-status-icon {
-            width: 54px;
-            height: 54px;
-            border-radius: 18px;
-            display: grid;
-            place-items: center;
-            background: var(--accent-soft);
-            color: var(--accent);
-            font-size: 22px;
-            border: 1px solid var(--line-strong);
-        }
-
-        .launch-status-label {
-            font-size: 12px;
-            font-weight: 800;
-            letter-spacing: 0.16em;
-            text-transform: uppercase;
-            color: var(--muted);
-        }
-
-        .launch-status-title {
-            margin-top: 4px;
-            font-size: 22px;
-            font-weight: 800;
-            line-height: 1.2;
-        }
-
-        .launch-status-copy {
-            margin-top: 6px;
-            color: var(--muted);
-            font-size: 13px;
-            line-height: 1.75;
-        }
-
-        .launch-progress {
-            position: relative;
-            height: 8px;
-            border-radius: 999px;
-            background: var(--launch-progress-track);
-            overflow: hidden;
-        }
-
-        .launch-progress > span {
-            position: absolute;
-            inset: 0;
-            width: 35%;
-            border-radius: inherit;
-            background: var(--launch-progress-fill);
-            animation: var(--launch-progress-animation);
-            transform-origin: left center;
-        }
-
-        @keyframes pulseProgress {
-            from { transform: scaleX(0.48); opacity: 0.56; }
-            to { transform: scaleX(1); opacity: 1; }
-        }
-
-        .launch-meta {
-            padding: 16px 18px;
-            display: grid;
-            gap: 10px;
-        }
-
-        .launch-meta-row {
-            display: flex;
-            justify-content: space-between;
-            gap: 12px;
-            align-items: baseline;
-        }
-
-        .launch-meta-label {
-            font-size: 11px;
-            letter-spacing: 0.14em;
-            text-transform: uppercase;
-            color: var(--muted);
-            font-weight: 800;
-        }
-
-        .launch-meta-value {
-            font-size: 13px;
-            color: var(--text);
-            text-align: right;
-        }
-
-        .launch-actions {
-            padding: 16px;
-            display: grid;
-            gap: 12px;
-        }
-
-        .launch-action-row {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .launch-btn {
-            appearance: none;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
-            padding: 12px 14px;
-            font: inherit;
-            font-size: 13px;
-            font-weight: 700;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            transition: var(--launch-btn-transition);
-        }
-
-        .launch-btn:hover { transform: translateY(-1px); }
-
-        .launch-btn-primary {
-            color: #0b1423;
-            background: var(--launch-primary-bg);
-            border-color: rgba(212, 173, 111, 0.4);
-        }
-
-        .launch-btn-secondary {
-            color: var(--text);
-            background: rgba(255, 255, 255, 0.04);
-        }
-
-        .launch-btn-danger {
-            color: #2a0d10;
-            background: var(--launch-danger-bg);
-            border-color: rgba(255, 143, 143, 0.4);
-        }
-
-        .launch-note {
-            font-size: 12px;
-            color: var(--muted);
-            line-height: 1.7;
-        }
-
-        html[data-launch-performance="reduced"] {
-            --launch-body-bg: linear-gradient(180deg, var(--bg-b), var(--bg-a));
-            --launch-head-bg: linear-gradient(180deg, rgba(18, 30, 49, 0.88), rgba(8, 14, 25, 0.94));
-            --launch-surface-bg: rgba(255, 255, 255, 0.02);
-            --launch-shell-shadow: 0 16px 34px rgba(0, 0, 0, 0.28);
-            --launch-progress-fill: linear-gradient(90deg, rgba(212, 173, 111, 0.72), rgba(212, 173, 111, 0.72));
-            --launch-btn-transition: border-color 0.18s ease, background 0.18s ease;
-            --launch-progress-animation: none;
-        }
-
-        html[data-launch-performance="reduced"] .launch-progress > span {
-            width: 100%;
-            transform: scaleX(0.72);
-            opacity: 0.9;
-        }
-
-        html[data-launch-performance="reduced"] .launch-btn:hover {
-            transform: none;
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-            .launch-progress > span {
-                width: 100%;
-                transform: scaleX(0.72);
-                opacity: 0.9;
-            }
-
-            .launch-btn {
-                transition: none;
-            }
-
-            .launch-btn:hover {
-                transform: none;
-            }
-        }
-    </style>
 </head>
-<body>
-    <div class="launch-shell">
-        <div class="launch-head">
+<body class="protected-launch-page palette-obsidian-amber">
+    <div class="launch-shell lux-summary-surface lux-summary-surface--panel">
+        <div class="launch-head lux-summary-surface lux-summary-surface--hero">
             <div class="launch-kicker">Desktop Detection Window</div>
             <div class="launch-title">Anti-Cheat Handoff</div>
             <div class="launch-copy">This secure popup checks for the installed Anti-Cheat App, wakes it if needed, and hands the protected quiz off to the desktop browser.</div>
         </div>
         <div class="launch-body">
-            <div class="launch-status-card">
+            <div class="launch-status-card lux-summary-surface lux-summary-surface--panel" data-launch-tone="info">
                 <div class="launch-status-head">
                     <div class="launch-status-icon" id="status-icon"><i class="fas fa-shield-alt"></i></div>
                     <div>
@@ -338,9 +50,9 @@
                         <div class="launch-status-copy" id="status-copy">The desktop app will take over this protected quiz launch. Your LMS tab stays unchanged.</div>
                     </div>
                 </div>
-                <div class="launch-progress" id="status-progress"><span></span></div>
+                <div class="launch-progress" id="status-progress" data-launch-tone="info"><span></span></div>
             </div>
-            <div class="launch-meta">
+            <div class="launch-meta lux-summary-surface lux-summary-surface--panel">
                 <div class="launch-meta-row">
                     <div class="launch-meta-label">Mode</div>
                     <div class="launch-meta-value" id="meta-mode">Protected Quiz</div>
@@ -354,19 +66,19 @@
                     <div class="launch-meta-value" id="meta-group">Waiting for handoff</div>
                 </div>
             </div>
-            <div class="launch-actions">
+            <div class="launch-actions lux-summary-surface lux-summary-surface--panel" data-launch-tone="info">
                 <div class="launch-action-row">
-                    <button type="button" class="launch-btn launch-btn-primary" id="retry-btn" style="display:none;">
+                    <button type="button" class="launch-btn lux-primary-btn" id="retry-btn" hidden>
                         <i class="fas fa-rotate-right"></i> Try Again
                     </button>
-                    <a class="launch-btn launch-btn-secondary" id="install-btn" href="#" target="_blank" rel="noopener" style="display:none;">
+                    <a class="launch-btn lux-secondary-btn" id="install-btn" href="#" target="_blank" rel="noopener" hidden>
                         <i class="fas fa-download"></i> Install App
                     </a>
-                    <button type="button" class="launch-btn launch-btn-secondary" id="close-btn">
+                    <button type="button" class="launch-btn lux-secondary-btn" id="close-btn">
                         <i class="fas fa-xmark"></i> Close Window
                     </button>
                 </div>
-                <div class="launch-note" id="launch-note">
+                <div class="launch-note" id="launch-note" data-launch-tone="info">
                     If the Anti-Cheat App is already installed, this window should close automatically after the handoff finishes.
                 </div>
             </div>
@@ -384,6 +96,8 @@
         const statusCopyEl = document.getElementById('status-copy');
         const statusIconEl = document.getElementById('status-icon');
         const statusProgressEl = document.getElementById('status-progress');
+        const statusCardEl = document.querySelector('.launch-status-card');
+        const actionsCardEl = document.querySelector('.launch-actions');
         const retryButtonEl = document.getElementById('retry-btn');
         const installButtonEl = document.getElementById('install-btn');
         const closeButtonEl = document.getElementById('close-btn');
@@ -407,8 +121,20 @@
                 quizTitle: String(params.get('quizTitle') || '').trim(),
                 subjectLabel: String(params.get('subjectLabel') || '').trim(),
                 groupLabel: String(params.get('groupLabel') || '').trim(),
-                returnStatusTarget: String(params.get('returnStatusTarget') || '').trim()
+                returnStatusTarget: String(params.get('returnStatusTarget') || '').trim(),
+                returnTo: String(params.get('returnTo') || '').trim(),
+                inline: String(params.get('inline') || '').trim()
             };
+        }
+
+        function getLaunchReturnUrl(params) {
+            const configured = String(params.returnTo || '').trim();
+            if (configured) return configured;
+            try {
+                return new URL('lms.html', window.location.href).toString();
+            } catch (error) {
+                return 'lms.html';
+            }
         }
 
         function updateMeta(params) {
@@ -425,15 +151,12 @@
             statusTitleEl.textContent = title;
             statusCopyEl.textContent = copy;
             statusIconEl.innerHTML = `<i class="fas ${icon}"></i>`;
-            statusProgressEl.style.display = progress ? 'block' : 'none';
-            statusIconEl.style.color = tone === 'success' ? 'var(--success)' : tone === 'danger' ? 'var(--danger)' : tone === 'warn' ? 'var(--warn)' : 'var(--accent)';
-            statusIconEl.style.background = tone === 'success'
-                ? 'rgba(48, 212, 154, 0.12)'
-                : tone === 'danger'
-                    ? 'rgba(255, 143, 143, 0.14)'
-                    : tone === 'warn'
-                        ? 'rgba(255, 211, 109, 0.14)'
-                        : 'var(--accent-soft)';
+            statusProgressEl.hidden = progress !== true;
+            statusIconEl.dataset.launchTone = tone;
+            statusProgressEl.dataset.launchTone = tone;
+            if (statusCardEl) statusCardEl.dataset.launchTone = tone;
+            if (actionsCardEl) actionsCardEl.dataset.launchTone = tone;
+            noteEl.dataset.launchTone = tone;
             noteEl.textContent = note || 'If the Anti-Cheat App is already installed, this window should close automatically after the handoff finishes.';
         }
 
@@ -494,7 +217,7 @@
             if (!targetUrl) return;
             try {
                 const frame = document.createElement('iframe');
-                frame.style.display = 'none';
+                frame.hidden = true;
                 frame.setAttribute('aria-hidden', 'true');
                 frame.src = targetUrl;
                 document.body.appendChild(frame);
@@ -508,7 +231,7 @@
                 link.href = targetUrl;
                 link.target = '_blank';
                 link.rel = 'noopener noreferrer';
-                link.style.display = 'none';
+                link.hidden = true;
                 document.body.appendChild(link);
                 link.click();
                 setTimeout(() => {
@@ -566,13 +289,16 @@
         }
 
         function setFailureActions({ installUrl = '', retry = true }) {
-            retryButtonEl.style.display = retry ? 'inline-flex' : 'none';
-            installButtonEl.style.display = installUrl && installUrl !== '#' ? 'inline-flex' : 'none';
+            retryButtonEl.hidden = retry !== true;
+            installButtonEl.hidden = !(installUrl && installUrl !== '#');
         }
 
-        function closeLaunchWindowSoon() {
+        function closeLaunchWindowSoon(params) {
             setTimeout(() => {
                 try {
+                    if (String(params?.inline || '').trim() === '1' || !window.opener) {
+                        return;
+                    }
                     window.close();
                 } catch (error) {}
             }, 700);
@@ -625,13 +351,15 @@
                 setStatus({
                     label: 'Ready',
                     title: 'Anti-Cheat App Opened',
-                    copy: 'The desktop launcher is open. You can close this popup now.',
+                    copy: 'The desktop launcher is open. You can return to LMS once this window closes or redirects back.',
                     icon: 'fa-check',
                     tone: 'success',
                     progress: false,
-                    note: 'The Anti-Cheat App is ready in a separate desktop window.'
+                    note: String(params.inline || '').trim() === '1'
+                        ? 'The Anti-Cheat App is ready. This launch window will stay on the handoff page until the app takes over.'
+                        : 'The Anti-Cheat App is ready in a separate desktop window.'
                 });
-                closeLaunchWindowSoon();
+                closeLaunchWindowSoon(params);
                 return;
             }
             notifyOpener('open-app-failed', { mode: params.mode, reason: result.reason });
@@ -682,14 +410,16 @@
                 setStatus({
                     label: 'Launching quiz',
                     title: 'Protected Quiz Opened In Anti-Cheat',
-                    copy: 'The desktop anti-cheat browser accepted the protected quiz ticket. This popup will close automatically.',
+                    copy: 'The desktop anti-cheat browser accepted the protected quiz ticket. This launch window will close or return automatically.',
                     icon: 'fa-check',
                     tone: 'success',
                     progress: false,
-                    note: 'Your regular browser LMS tab stays unchanged while the quiz opens in the Anti-Cheat App.'
+                    note: String(params.inline || '').trim() === '1'
+                        ? 'Your LMS page is being handed off to the Anti-Cheat App.'
+                        : 'Your regular browser LMS tab stays unchanged while the quiz opens in the Anti-Cheat App.'
                 });
                 clearPopupResumeState();
-                closeLaunchWindowSoon();
+                closeLaunchWindowSoon(params);
                 return;
             }
 
@@ -715,10 +445,16 @@
             const params = getLaunchParams();
             updateMeta(params);
             retryButtonEl.onclick = () => {
-                retryButtonEl.style.display = 'none';
+                retryButtonEl.hidden = true;
                 startProtectedLaunch().catch(handleTopLevelFailure);
             };
-            closeButtonEl.onclick = () => window.close();
+            closeButtonEl.onclick = () => {
+                if (String(params.inline || '').trim() === '1' || !window.opener) {
+                    window.location.replace(getLaunchReturnUrl(params));
+                    return;
+                }
+                window.close();
+            };
 
             if (params.mode === 'open-app') {
                 await runOpenAppFlow(params);

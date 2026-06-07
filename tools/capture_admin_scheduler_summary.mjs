@@ -129,7 +129,7 @@ async function ensureEditableSchedulerEvent(page, runMode) {
             : '';
         const semester = parseInt(document.getElementById('admin-tt-semester')?.value || '3', 10) || 3;
         const faculty = document.getElementById('admin-tt-faculty')?.value
-            || document.getElementById('grid-view-fac')?.value
+            || document.getElementById('admin-tt-faculty')?.value
             || localStorage.getItem('currentFaculty')
             || 'ECON';
         const day = typeof window.normalizeSchedulerDayLabel === 'function'

@@ -1,0 +1,93 @@
+- generic [active] [ref=e1]:
+  - text:  
+  - main [ref=e2]:
+    - generic [ref=e9]:
+      - generic [ref=e10]: 
+      - strong [ref=e11]: Preparing campus social
+      - generic [ref=e12]: The live workspace shell is loading in place.
+  - text:                         
+  - complementary:
+    - generic:
+      - generic: K
+      - generic:
+        - generic: KIU
+        - generic: Integrated Campus Portal
+    - generic:
+      - generic: Control
+      - button " Dashboard":
+        - generic: 
+        - generic: Dashboard
+      - button " Admin Tools":
+        - generic: 
+        - generic: Admin Tools
+      - button " Scheduler":
+        - generic: 
+        - generic: Scheduler
+      - button " Staff":
+        - generic: 
+        - generic: Staff
+      - button " Students":
+        - generic: 
+        - generic: Students
+      - generic: Systems
+      - button " News":
+        - generic: 
+        - generic: News
+      - button " Library":
+        - generic: 
+        - generic: Library
+      - button " Orders":
+        - generic: 
+        - generic: Orders
+      - button " Social":
+        - generic: 
+        - generic: Social
+      - button " Exams":
+        - generic: 
+        - generic: Exams
+      - button " Programs":
+        - generic: 
+        - generic: Programs
+      - button " Profile":
+        - generic: 
+        - generic: Profile
+    - generic:
+      - generic: PA
+      - generic:
+        - generic: Portal Administrator
+        - generic: Admin View - Business Management
+  - generic [ref=e13]:
+    - generic [ref=e14]:
+      - button "Show nav" [pressed] [ref=e15] [cursor=pointer]:
+        - generic [ref=e16]: Show nav
+      - generic [ref=e17]:
+        - text: KIU
+        - generic [ref=e18]: 
+        - strong [ref=e19]: Social
+      - generic [ref=e20]:
+        - generic [ref=e21]: 
+        - textbox "Search modules, staff, documents, requests..." [ref=e22]
+    - generic [ref=e23]:
+      - button "Faculty Management " [ref=e25] [cursor=pointer]:
+        - generic [ref=e26]: Faculty
+        - strong [ref=e27]: Management
+        - generic [ref=e28]: 
+      - button "View Admin View " [ref=e30] [cursor=pointer]:
+        - generic [ref=e31]: View
+        - strong [ref=e32]: Admin View
+        - generic [ref=e33]: 
+      - text: 
+      - button "" [ref=e34] [cursor=pointer]:
+        - generic [ref=e35]: 
+      - button " 0" [ref=e37] [cursor=pointer]:
+        - generic [ref=e38]: 
+        - generic: "0"
+      - button " 0" [ref=e40] [cursor=pointer]:
+        - generic [ref=e41]: 
+        - generic: "0"
+      - button "PA Portal Social / Admin View" [ref=e42] [cursor=pointer]:
+        - generic [ref=e43]: PA
+        - generic [ref=e44]:
+          - generic [ref=e45]: Portal
+          - generic [ref=e46]: Social / Admin View
+        - generic [ref=e47]: 

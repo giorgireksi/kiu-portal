@@ -92,39 +92,39 @@
             }[item.status] || 'Open';
             const kindLabel = item.kind === 'found' ? 'Found' : 'Lost';
             return `
-                <article class="social-neo-card social-neo-entity-card">
-                    <div class="social-neo-inline" style="justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap">
-                        <div class="social-neo-person" style="gap:12px;align-items:flex-start">
+                <article class="social-neo-card social-neo-entity-card social-neo-lf-card">
+                    <div class="social-neo-inline social-neo-inline-between-start-wrap social-neo-lf-card-head">
+                        <div class="social-neo-person social-neo-person-start-gap-12 social-neo-lf-card-person">
                             ${avatar(author, 'social-neo-avatar-sm')}
                             <div>
-                                <div class="social-neo-inline" style="gap:8px;flex-wrap:wrap">
+                                <div class="social-neo-inline social-neo-inline-gap-8-wrap social-neo-lf-card-title-row">
                                     <strong>${escape(text(item.title || 'Untitled listing'))}</strong>
                                     <span class="social-neo-pill">${escape(kindLabel)}</span>
                                     <span class="social-neo-pill">${escape(statusLabel)}</span>
                                 </div>
-                                <div class="social-neo-muted" style="margin-top:4px">${escape(displayName(author))} · ${escape(text(item.campusScope) === 'campus' ? 'All campus' : facultyLabel(text(item.facultyCode || facultyCode)))}</div>
+                                <div class="social-neo-muted social-neo-badge-row-mt-4 social-neo-lf-card-meta">${escape(displayName(author))} · ${escape(text(item.campusScope) === 'campus' ? 'All campus' : facultyLabel(text(item.facultyCode || facultyCode)))}</div>
                             </div>
                         </div>
-                        <div class="social-neo-inline" style="gap:8px;flex-wrap:wrap;justify-content:flex-end">
+                        <div class="social-neo-inline social-neo-inline-end-gap-8-wrap social-neo-lf-card-summary">
                             <span class="social-neo-pill">${escape(text(item.category || 'General'))}</span>
                             ${text(item.eventDate) ? `<span class="social-neo-pill"><i class="fas fa-calendar"></i> ${escape(when(item.eventDate))}</span>` : ''}
                         </div>
                     </div>
-                    <div style="margin-top:12px;display:grid;gap:12px;grid-template-columns:repeat(12,minmax(0,1fr))">
-                        ${item.imageUrl ? `<div style="grid-column:span 4"><img src="${escape(item.imageUrl)}" alt="${escape(text(item.title || 'Lost and found item'))}" style="width:100%;height:160px;object-fit:cover;border-radius:18px;border:1px solid rgba(255,255,255,.08)"></div>` : ''}
-                        <div style="${item.imageUrl ? 'grid-column:span 8;' : 'grid-column:span 12;'}display:flex;flex-direction:column;gap:12px">
+                    <div class="${item.imageUrl ? 'social-neo-grid-2' : 'social-neo-stack'} social-neo-grid-tight social-neo-grid-mt-12 social-neo-lf-card-media-grid ${item.imageUrl ? 'social-neo-lf-card-media-grid-has-media' : 'social-neo-lf-card-media-grid-no-media'}">
+                        ${item.imageUrl ? `<div class="social-neo-media social-neo-lf-card-media-frame"><img class="social-neo-lf-card-media-image" src="${escape(item.imageUrl)}" alt="${escape(text(item.title || 'Lost and found item'))}"></div>` : ''}
+                        <div class="social-neo-stack social-neo-lf-card-content ${item.imageUrl ? 'social-neo-lf-card-content-has-media' : 'social-neo-lf-card-content-full'}">
                             <div class="social-neo-muted">${escape(text(item.description || 'No description provided.'))}</div>
                             <div class="social-neo-badge-row">
                                 ${text(item.locationText) ? `<span class="social-neo-pill"><i class="fas fa-location-dot"></i> ${escape(item.locationText)}</span>` : ''}
                                 <span class="social-neo-pill"><i class="fas fa-graduation-cap"></i> ${escape(text(item.campusScope) === 'campus' ? 'All campus' : facultyLabel(text(item.facultyCode || facultyCode)))}</span>
                                 ${text(item.updatedAt) ? `<span class="social-neo-pill"><i class="fas fa-clock"></i> Updated ${escape(when(item.updatedAt))}</span>` : ''}
                             </div>
-                            <div class="social-neo-inline" style="justify-content:space-between;gap:8px;flex-wrap:wrap">
-                                <div class="social-neo-inline" style="gap:8px;flex-wrap:wrap">
+                            <div class="social-neo-inline social-neo-inline-between-gap-8-wrap social-neo-lf-card-actions">
+                                <div class="social-neo-inline social-neo-inline-gap-8-wrap social-neo-lf-card-actions-main">
                                     <button class="social-neo-btn social-neo-btn-primary social-neo-btn-sm" type="button" data-action="lost-found-contact" data-item-id="${escape(item.id)}" data-user-id="${escape(item.authorUserId)}"><i class="fas fa-comments"></i> Contact</button>
                                     ${canManage && item.status !== 'resolved' ? `<button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="lost-found-resolve" data-item-id="${escape(item.id)}"><i class="fas fa-circle-check"></i> Mark resolved</button>` : ''}
                                 </div>
-                                <div class="social-neo-inline" style="gap:8px;flex-wrap:wrap">
+                                <div class="social-neo-inline social-neo-inline-gap-8-wrap social-neo-lf-card-actions-side">
                                     ${canManage ? `<button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="lost-found-edit" data-item-id="${escape(item.id)}"><i class="fas fa-pen"></i> Edit</button>` : ''}
                                     ${canRemove ? `<button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="lost-found-delete" data-item-id="${escape(item.id)}"><i class="fas fa-trash"></i> Remove</button>` : ''}
                                 </div>
@@ -156,26 +156,26 @@
                             <strong>Lost &amp; Found</strong>
                             <span>Post campus items, search by faculty, and contact owners directly.</span>
                         </div>
-                        <div class="social-neo-inline" style="gap:8px;flex-wrap:wrap">
+                        <div class="social-neo-inline social-neo-inline-gap-8-wrap social-neo-lf-metric-row">
                             <span class="social-neo-pill"><strong>${escape(openCount)}</strong><span>Open</span></span>
                             <span class="social-neo-pill"><strong>${escape(lostCount)}</strong><span>Lost</span></span>
                             <span class="social-neo-pill"><strong>${escape(foundCount)}</strong><span>Found</span></span>
                             <span class="social-neo-pill"><strong>${escape(resolvedCount)}</strong><span>Resolved</span></span>
                         </div>
                     </div>
-                    <div class="social-neo-inline" style="gap:8px;flex-wrap:wrap;margin-top:10px">
+                    <div class="social-neo-inline social-neo-inline-gap-8-wrap social-neo-stack-mt-10 social-neo-lf-filter-row">
                         ${['open', 'lost', 'found', 'resolved'].map((filter) => `
                             <button class="social-neo-tab ${text(runtime.ui?.lostFoundFilter || 'open') === filter ? 'is-active' : ''}" type="button" data-action="panel-lost-found" data-lost-found-filter="${escape(filter)}">${escape(filter.charAt(0).toUpperCase() + filter.slice(1))}</button>
                         `).join('')}
                     </div>
-                    <div class="social-neo-form-grid social-neo-form-grid-2" style="margin-top:14px">
+                    <div class="social-neo-form-grid social-neo-form-grid-2 social-neo-stack-mt-14 social-neo-lf-search-grid">
                         <label for="${escape(controlId('lost-found-search'))}">
                             <span class="social-neo-label">Search</span>
                             <input class="social-neo-input" id="${escape(controlId('lost-found-search'))}" type="search" name="lostFoundSearch" placeholder="Search title, category, location, or author" value="${escape(text(runtime.ui?.lostFoundSearch || ''))}">
                         </label>
                         <label for="${escape(controlId('lost-found-faculty'))}">
                             <span class="social-neo-label">Faculty scope</span>
-                            <select class="social-neo-select" id="${escape(controlId('lost-found-faculty'))}" name="lostFoundFaculty">
+                            <select class="social-neo-select" id="${escape(controlId('lost-found-faculty'))}" name="lostFoundFaculty" data-lux-native>
                                 ${facultyOptions.map((option) => `<option value="${escape(option.value)}" ${browseFaculty === option.value ? 'selected' : ''}>${escape(option.label)}</option>`).join('')}
                             </select>
                         </label>
@@ -188,17 +188,17 @@
                             <strong>${escape(composerLabel)}</strong>
                             <span>${escape(editItem ? 'Update the details and republish the item.' : 'Keep this collapsed until you actually need to post a listing.')}</span>
                         </div>
-                        <div class="social-neo-inline" style="gap:8px;flex-wrap:wrap">
+                        <div class="social-neo-inline social-neo-inline-gap-8-wrap social-neo-lf-composer-head-actions">
                             <button class="social-neo-btn ${composerOpen ? 'social-neo-btn-ghost' : 'social-neo-btn-primary'} social-neo-btn-sm" type="button" data-action="lost-found-compose-toggle"><i class="fas ${composerOpen ? 'fa-angle-up' : 'fa-plus'}"></i> ${escape(composerToggleLabel)}</button>
                             ${composerOpen ? `<button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="lost-found-reset"><i class="fas fa-xmark"></i> ${escape(editItem ? 'Cancel edit' : 'Clear draft')}</button>` : ''}
                         </div>
                     </div>
                     ${composerOpen ? `
-                    <form class="social-neo-stack" data-form="lost-found-item" style="margin-top:14px">
+                    <form class="social-neo-stack social-neo-stack-mt-14 social-neo-lf-composer-form" data-form="lost-found-item">
                         <div class="social-neo-form-grid social-neo-form-grid-2">
                             <label for="${escape(controlId('lost-found-kind'))}">
                                 <span class="social-neo-label">Type</span>
-                                <select class="social-neo-select" id="${escape(controlId('lost-found-kind'))}" name="lostFoundKind">
+                                <select class="social-neo-select" id="${escape(controlId('lost-found-kind'))}" name="lostFoundKind" data-lux-native>
                                     <option value="lost" ${draft.kind === 'lost' ? 'selected' : ''}>Lost item</option>
                                     <option value="found" ${draft.kind === 'found' ? 'selected' : ''}>Found item</option>
                                 </select>
@@ -229,7 +229,7 @@
                         <div class="social-neo-form-grid social-neo-form-grid-2">
                             <label>
                                 <span class="social-neo-label">Listing status</span>
-                                <select class="social-neo-select" name="lostFoundStatus">
+                                <select class="social-neo-select" name="lostFoundStatus" data-lux-native>
                                     <option value="open" ${draft.status === 'open' ? 'selected' : ''}>Open</option>
                                     <option value="claimed" ${draft.status === 'claimed' ? 'selected' : ''}>Claimed</option>
                                     <option value="resolved" ${draft.status === 'resolved' ? 'selected' : ''}>Resolved</option>
@@ -237,34 +237,34 @@
                             </label>
                             <label>
                                 <span class="social-neo-label">Scope</span>
-                                <select class="social-neo-select" name="lostFoundScope">
+                                <select class="social-neo-select" name="lostFoundScope" data-lux-native>
                                     <option value="current" ${draft.facultyScope === 'current' ? 'selected' : ''}>Current faculty</option>
                                     <option value="all" ${draft.facultyScope === 'all' ? 'selected' : ''}>All campus</option>
                                 </select>
                             </label>
                         </div>
-                        <div class="social-neo-inline" style="gap:10px;flex-wrap:wrap">
-                            <label class="social-neo-btn social-neo-btn-ghost" style="cursor:pointer">
+                        <div class="social-neo-inline social-neo-inline-gap-10-wrap social-neo-lf-upload-row">
+                            <label class="social-neo-btn social-neo-btn-ghost social-neo-btn-pointer social-neo-lf-upload-btn">
                                 <i class="fas fa-image"></i> Add photo
                                 <input name="lostFoundFile" type="file" accept="image/*" hidden>
                             </label>
                             ${draft.file ? `<span class="social-neo-draft-file"><i class="fas fa-image"></i> ${escape(draft.file.name || 'Image selected')}</span>` : ''}
-                            <span style="flex:1"></span>
+                            <span class="social-neo-flex-spacer social-neo-lf-upload-spacer"></span>
                             <button class="social-neo-btn social-neo-btn-primary" type="submit"><i class="fas fa-paper-plane"></i> ${escape(submitLabel)}</button>
                         </div>
                     </form>
                     ${suggestions.length ? `
-                        <div class="social-neo-stack" style="margin-top:16px">
+                        <div class="social-neo-stack social-neo-stack-mt-14 social-neo-lf-suggestions">
                             <div class="social-neo-section-head">
                                 <div><strong>Similar items</strong><span>These recent posts look close to your draft and may already help.</span></div>
                             </div>
-                            <div class="social-neo-stack">
+                            <div class="social-neo-stack social-neo-lf-suggestions-list">
                                 ${suggestions.map(renderCard).join('')}
                             </div>
                         </div>
                     ` : ''}
                     ` : `
-                    <div class="social-neo-muted" style="margin-top:14px">Open the composer only when you need to post. The list stays compact by default.</div>
+                    <div class="social-neo-muted social-neo-stack-mt-14 social-neo-lf-compose-note">Open the composer only when you need to post. The list stays compact by default.</div>
                     `}
                 </section>
 

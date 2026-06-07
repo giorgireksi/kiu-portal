@@ -1,73 +1,75 @@
-/* Route-owned Students Admin LMS styles. Keep this file independent from legacy directory/admin shell styling. */
+/* Students Admin route — single source of truth: --sadmin-fade-* tokens */
 body.lux-route-students-admin {
-    --students-lms-bg: #070b12;
-    --students-lms-page-start: rgba(8, 13, 22, calc(var(--lux-panel-alpha, 0.92) * 1.02));
-    --students-lms-page-end: rgba(5, 8, 17, calc(var(--lux-panel-alpha, 0.92) * 1.06));
-    --students-lms-page-accent: rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, 0.92) * 0.16));
-    --students-lms-page-secondary: rgba(var(--lux-home-secondary-rgb, var(--lux-accent-rgb)), calc(var(--lux-transparency-alpha, 0.92) * 0.12));
-    --students-lms-surface: rgba(10, 16, 24, calc(var(--lux-panel-alpha, 0.92) * 0.94));
-    --students-lms-surface-soft: rgba(7, 10, 18, calc(var(--lux-panel-alpha, 0.92) * 0.86));
-    --students-lms-surface-raised: rgba(15, 23, 36, calc(var(--lux-panel-alpha, 0.92) * 0.92));
-    --students-lms-surface-edge: rgba(255, 255, 255, calc(var(--lux-transparency-alpha, 0.92) * 0.08));
-    --students-lms-surface-accent: rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, 0.92) * 0.24));
-    --students-lms-surface-secondary: rgba(var(--lux-home-secondary-rgb, var(--lux-accent-rgb)), calc(var(--lux-transparency-alpha, 0.92) * 0.14));
-    --students-lms-surface-fill:
-        radial-gradient(circle at 6% 0%, var(--students-lms-surface-edge), transparent 34%),
-        radial-gradient(circle at 76% 0%, var(--students-lms-surface-accent), transparent 40%),
-        radial-gradient(circle at 100% 96%, var(--students-lms-surface-secondary), transparent 40%),
-        linear-gradient(155deg, var(--students-lms-surface-raised), var(--students-lms-surface-soft));
-    --students-lms-surface-subtle:
-        radial-gradient(circle at 0% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, 0.92) * 0.10)), transparent 34%),
-        linear-gradient(180deg, rgba(255, 255, 255, calc(var(--lux-transparency-alpha, 0.92) * 0.035)), rgba(255, 255, 255, calc(var(--lux-transparency-alpha, 0.92) * 0.018)));
-    --students-lms-surface-strong:
+    --sadmin-fade-bg: #070b12;
+    --sadmin-fade-page-start: rgba(8, 13, 22, calc(var(--lux-panel-alpha, 0.92) * 1.02));
+    --sadmin-fade-page-end: rgba(5, 8, 17, calc(var(--lux-panel-alpha, 0.92) * 1.06));
+    --sadmin-fade-page-accent: rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, 0.92) * 0.18));
+    --sadmin-fade-page-secondary: rgba(var(--lux-home-secondary-rgb, var(--lux-accent-rgb)), calc(var(--lux-color-fade-alpha, 0.92) * 0.12));
+    --sadmin-fade-surface: rgba(10, 16, 24, calc(var(--lux-panel-alpha, 0.92) * 0.94));
+    --sadmin-fade-surface-soft: rgba(7, 10, 18, calc(var(--lux-panel-alpha, 0.92) * 0.86));
+    --sadmin-fade-surface-raised: rgba(15, 23, 36, calc(var(--lux-panel-alpha, 0.92) * 0.92));
+    --sadmin-fade-surface-edge: rgba(255, 255, 255, calc(var(--lux-color-fade-alpha, 0.92) * 0.08));
+    --sadmin-fade-surface-accent: rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, 0.92) * 0.28));
+    --sadmin-fade-surface-secondary: rgba(var(--lux-home-secondary-rgb, var(--lux-accent-rgb)), calc(var(--lux-color-fade-alpha, 0.92) * 0.18));
+    --sadmin-fade-surface-fill:
+        radial-gradient(circle at 6% 0%, var(--sadmin-fade-surface-edge), transparent 34%),
+        radial-gradient(circle at 74% 0%, var(--sadmin-fade-surface-accent), transparent 42%),
+        radial-gradient(circle at 100% 96%, var(--sadmin-fade-surface-secondary), transparent 40%),
+        linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, 0.92) * 0.10)), rgba(10, 15, 24, calc(var(--lux-transparency-alpha, 0.92) * 0.89)) 44%, rgba(7, 10, 18, calc(var(--lux-transparency-alpha, 0.92) * 0.80)));
+    --sadmin-fade-surface-subtle:
+        radial-gradient(circle at 12% 0%, rgba(255, 255, 255, calc(var(--lux-color-fade-alpha, 0.92) * 0.055)), transparent 30%),
+        radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, 0.92) * 0.14)), transparent 34%),
+        linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, 0.92) * 0.065)), rgba(10, 15, 24, calc(var(--lux-transparency-alpha, 0.92) * 0.88)) 46%, rgba(7, 10, 18, calc(var(--lux-transparency-alpha, 0.92) * 0.80)));
+    --sadmin-fade-surface-strong:
         linear-gradient(155deg, rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, 0.92) * 0.09)), rgba(10, 15, 24, calc(var(--lux-panel-alpha, 0.92) * 0.96)) 38%, rgba(7, 10, 18, calc(var(--lux-panel-alpha, 0.92) * 0.90)));
-    --students-lms-border: rgba(var(--lux-accent-rgb), 0.18);
-    --students-lms-border-soft: rgba(255, 255, 255, calc(0.04 + var(--lux-transparency-alpha, 0.92) * 0.05));
-    --students-lms-text: #f4f1ea;
-    --students-lms-muted: rgba(244, 241, 234, 0.72);
-    --students-lms-shadow: 0 24px 58px rgba(0, 0, 0, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.08);
-    --students-lms-shadow-soft: 0 18px 36px rgba(0, 0, 0, 0.18);
-    --students-lms-row: rgba(8, 13, 22, calc(0.58 + var(--lux-panel-alpha, 0.92) * 0.34));
-    --students-lms-row-hover: rgba(var(--lux-accent-rgb), calc(0.04 + var(--lux-transparency-alpha, 0.92) * 0.08));
-    --students-lms-glass-blur: var(--lux-transparency-blur, 20px);
-    --students-lms-glass-saturate: var(--lux-transparency-saturate, 145%);
+    --sadmin-fade-border: rgba(var(--lux-accent-rgb), 0.18);
+    --sadmin-fade-border-soft: rgba(255, 255, 255, calc(0.04 + var(--lux-transparency-alpha, 0.92) * 0.05));
+    --sadmin-fade-text: #f4f1ea;
+    --sadmin-fade-muted: rgba(244, 241, 234, 0.72);
+    --sadmin-fade-shadow: 0 24px 58px rgba(0, 0, 0, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    --sadmin-fade-shadow-soft: 0 18px 36px rgba(0, 0, 0, 0.18);
+    --sadmin-fade-row: rgba(8, 13, 22, calc(0.58 + var(--lux-panel-alpha, 0.92) * 0.34));
+    --sadmin-fade-row-hover: rgba(var(--lux-accent-rgb), calc(0.04 + var(--lux-transparency-alpha, 0.92) * 0.08));
+    --sadmin-fade-glass-blur: var(--lux-transparency-blur, 20px);
+    --sadmin-fade-glass-saturate: var(--lux-transparency-saturate, 145%);
     background:
-        radial-gradient(circle at 18% 10%, var(--students-lms-page-accent), transparent 32%),
-        radial-gradient(circle at 88% 78%, var(--students-lms-page-secondary), transparent 28%),
-        linear-gradient(180deg, var(--students-lms-page-start) 0%, var(--students-lms-page-end) 100%) !important;
-    color: var(--students-lms-text) !important;
+        radial-gradient(circle at 18% 10%, var(--sadmin-fade-page-accent), transparent 32%),
+        radial-gradient(circle at 88% 78%, var(--sadmin-fade-page-secondary), transparent 28%),
+        linear-gradient(180deg, var(--sadmin-fade-page-start) 0%, var(--sadmin-fade-page-end) 100%) !important;
+    color: var(--sadmin-fade-text) !important;
 }
 body.lux-light-mode.lux-route-students-admin,
 html.lux-light-mode body.lux-route-students-admin {
-    --students-lms-bg: #f6f8fb;
-    --students-lms-page-start: rgba(247, 242, 235, calc(var(--lux-panel-alpha, 0.86) * 0.96));
-    --students-lms-page-end: rgba(241, 236, 227, calc(var(--lux-panel-alpha, 0.86) * 0.92));
-    --students-lms-page-accent: rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, 0.86) * 0.14));
-    --students-lms-page-secondary: rgba(var(--lux-home-secondary-rgb, var(--lux-accent-rgb)), calc(var(--lux-transparency-alpha, 0.86) * 0.08));
-    --students-lms-surface: rgba(255, 255, 255, calc(var(--lux-panel-alpha, 0.86) * 0.90));
-    --students-lms-surface-soft: rgba(247, 241, 232, calc(var(--lux-panel-alpha, 0.86) * 0.76));
-    --students-lms-surface-raised: rgba(255, 255, 255, calc(var(--lux-panel-alpha, 0.86) * 0.96));
-    --students-lms-surface-edge: rgba(255, 255, 255, calc(var(--lux-transparency-alpha, 0.86) * 0.88));
-    --students-lms-surface-accent: rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, 0.86) * 0.20));
-    --students-lms-surface-secondary: rgba(var(--lux-home-secondary-rgb, var(--lux-accent-rgb)), calc(var(--lux-transparency-alpha, 0.86) * 0.12));
-    --students-lms-surface-subtle:
-        radial-gradient(circle at 0% 0%, rgba(var(--lux-accent-rgb), 0.08), transparent 34%),
-        linear-gradient(180deg, rgba(255, 255, 255, calc(var(--lux-transparency-alpha, 0.86) * 0.62)), rgba(247, 241, 232, calc(var(--lux-transparency-alpha, 0.86) * 0.46)));
-    --students-lms-surface-strong:
-        linear-gradient(155deg, rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, 0.86) * 0.06)), rgba(255, 255, 255, calc(var(--lux-panel-alpha, 0.86) * 0.92)) 40%, rgba(247, 241, 232, calc(var(--lux-panel-alpha, 0.86) * 0.82)));
-    --students-lms-border: rgba(31, 52, 86, 0.13);
-    --students-lms-border-soft: rgba(31, 52, 86, 0.10);
-    --students-lms-text: #142033;
-    --students-lms-muted: #526176;
-    --students-lms-shadow: 0 18px 42px rgba(24, 42, 70, 0.10), inset 0 1px 0 rgba(255, 255, 255, 0.74);
-    --students-lms-shadow-soft: 0 16px 30px rgba(24, 42, 70, 0.08);
-    --students-lms-row: rgba(255, 255, 255, calc(0.68 + var(--lux-panel-alpha, 0.86) * 0.18));
-    --students-lms-row-hover: rgba(var(--lux-accent-rgb), calc(0.03 + var(--lux-transparency-alpha, 0.86) * 0.05));
+    --sadmin-fade-bg: #f6f8fb;
+    --sadmin-fade-page-start: rgba(247, 242, 235, calc(var(--lux-panel-alpha, 0.86) * 0.96));
+    --sadmin-fade-page-end: rgba(241, 236, 227, calc(var(--lux-panel-alpha, 0.86) * 0.92));
+    --sadmin-fade-page-accent: rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, 0.86) * 0.14));
+    --sadmin-fade-page-secondary: rgba(var(--lux-home-secondary-rgb, var(--lux-accent-rgb)), calc(var(--lux-color-fade-alpha, 0.86) * 0.08));
+    --sadmin-fade-surface: rgba(255, 255, 255, calc(var(--lux-panel-alpha, 0.86) * 0.90));
+    --sadmin-fade-surface-soft: rgba(247, 241, 232, calc(var(--lux-panel-alpha, 0.86) * 0.76));
+    --sadmin-fade-surface-raised: rgba(255, 255, 255, calc(var(--lux-panel-alpha, 0.86) * 0.96));
+    --sadmin-fade-surface-edge: rgba(255, 255, 255, calc(var(--lux-color-fade-alpha, 0.86) * 0.88));
+    --sadmin-fade-surface-accent: rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, 0.86) * 0.24));
+    --sadmin-fade-surface-secondary: rgba(var(--lux-home-secondary-rgb, var(--lux-accent-rgb)), calc(var(--lux-color-fade-alpha, 0.86) * 0.14));
+    --sadmin-fade-surface-subtle:
+        radial-gradient(circle at 12% 0%, rgba(255, 255, 255, calc(var(--lux-color-fade-alpha, 0.86) * 0.62)), transparent 30%),
+        radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, 0.86) * 0.14)), transparent 34%),
+        linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, 0.86) * 0.045)), rgba(255, 255, 255, calc(var(--lux-transparency-alpha, 0.86) * 0.84)) 46%, rgba(247, 241, 232, calc(var(--lux-transparency-alpha, 0.86) * 0.72)));
+    --sadmin-fade-surface-strong:
+        linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, 0.86) * 0.06)), rgba(255, 255, 255, calc(var(--lux-transparency-alpha, 0.86) * 0.84)) 44%, rgba(247, 241, 232, calc(var(--lux-transparency-alpha, 0.86) * 0.72)));
+    --sadmin-fade-border: rgba(31, 52, 86, 0.13);
+    --sadmin-fade-border-soft: rgba(31, 52, 86, 0.10);
+    --sadmin-fade-text: #142033;
+    --sadmin-fade-muted: #526176;
+    --sadmin-fade-shadow: 0 18px 42px rgba(24, 42, 70, 0.10), inset 0 1px 0 rgba(255, 255, 255, 0.74);
+    --sadmin-fade-shadow-soft: 0 16px 30px rgba(24, 42, 70, 0.08);
+    --sadmin-fade-row: rgba(255, 255, 255, calc(0.68 + var(--lux-panel-alpha, 0.86) * 0.18));
+    --sadmin-fade-row-hover: rgba(var(--lux-accent-rgb), calc(0.03 + var(--lux-transparency-alpha, 0.86) * 0.05));
     background:
-        radial-gradient(circle at 18% 10%, var(--students-lms-page-accent), transparent 32%),
-        radial-gradient(circle at 88% 78%, var(--students-lms-page-secondary), transparent 28%),
-        linear-gradient(180deg, var(--students-lms-page-start), var(--students-lms-page-end)) !important;
-    color: var(--students-lms-text) !important;
+        radial-gradient(circle at 18% 10%, var(--sadmin-fade-page-accent), transparent 32%),
+        radial-gradient(circle at 88% 78%, var(--sadmin-fade-page-secondary), transparent 28%),
+        linear-gradient(180deg, var(--sadmin-fade-page-start), var(--sadmin-fade-page-end)) !important;
+    color: var(--sadmin-fade-text) !important;
 }
 body.lux-route-students-admin #app-content {
     background: transparent !important;
@@ -86,7 +88,7 @@ body.lux-route-students-admin #app-content {
     display: grid;
     gap: 20px;
     padding: 4px 18px 48px;
-    color: var(--students-lms-text);
+    color: var(--sadmin-fade-text);
 }
 #students-content .students-lms-hero,
 #students-content .students-lms-profile-header {
@@ -101,12 +103,12 @@ body.lux-route-students-admin #app-content {
 #students-content .students-lms-table-shell {
     position: relative;
     overflow: hidden;
-    border: 1px solid var(--students-lms-border);
-    background: var(--students-lms-surface-fill);
-    color: var(--students-lms-text);
-    box-shadow: var(--students-lms-shadow);
-    backdrop-filter: blur(var(--students-lms-glass-blur)) saturate(var(--students-lms-glass-saturate));
-    -webkit-backdrop-filter: blur(var(--students-lms-glass-blur)) saturate(var(--students-lms-glass-saturate));
+    border: 1px solid var(--sadmin-fade-border);
+    background: var(--sadmin-fade-surface-fill);
+    color: var(--sadmin-fade-text);
+    box-shadow: var(--sadmin-fade-shadow);
+    backdrop-filter: blur(var(--sadmin-fade-glass-blur)) saturate(var(--sadmin-fade-glass-saturate));
+    -webkit-backdrop-filter: blur(var(--sadmin-fade-glass-blur)) saturate(var(--sadmin-fade-glass-saturate));
 }
 #students-content .students-lms-panel,
 #students-content .students-lms-profile-card,
@@ -165,7 +167,7 @@ body.lux-route-students-admin #app-content {
     border-radius: 999px;
     border: 1px solid rgba(var(--lux-accent-rgb), 0.24);
     background: rgba(var(--lux-accent-rgb), 0.14);
-    color: var(--students-lms-text);
+    color: var(--sadmin-fade-text);
     font-size: 11px;
     font-weight: 800;
     letter-spacing: 0.08em;
@@ -173,10 +175,11 @@ body.lux-route-students-admin #app-content {
 }
 #students-content .students-lms-title {
     margin: 14px 0 10px;
-    font-size: clamp(34px, 4vw, 50px);
+    font-size: clamp(40px, 4.8vw, 62px);
     line-height: 0.98;
     letter-spacing: -0.06em;
-    color: var(--students-lms-text);
+    color: var(--sadmin-fade-text);
+    max-width: 12ch;
 }
 body.lux-route-students-admin #students-content .students-lms-title,
 body.lux-route-students-admin #students-content .students-lms-profile-title,
@@ -184,7 +187,7 @@ body.lux-route-students-admin #students-content .students-lms-panel h2,
 body.lux-route-students-admin #students-content .students-lms-profile-card h3,
 body.lux-route-students-admin #students-content .students-lms-name,
 body.lux-route-students-admin #students-content .students-lms-cell-stack strong {
-    color: var(--students-lms-text) !important;
+    color: var(--sadmin-fade-text) !important;
 }
 body.lux-route-students-admin #students-content .students-lms-copy,
 body.lux-route-students-admin #students-content .students-lms-panel-head p,
@@ -198,12 +201,12 @@ body.lux-route-students-admin #students-content .students-lms-label,
 body.lux-route-students-admin #students-content .students-lms-meta,
 body.lux-route-students-admin #students-content .students-lms-cell-stack small,
 body.lux-route-students-admin #students-content .students-lms-progress-note {
-    color: var(--students-lms-muted) !important;
+    color: var(--sadmin-fade-muted) !important;
 }
 #students-content .students-lms-copy {
     max-width: 820px;
     margin: 0;
-    color: var(--students-lms-muted);
+    color: var(--sadmin-fade-muted);
     font-size: 14px;
     line-height: 1.7;
 }
@@ -228,13 +231,13 @@ body.lux-route-students-admin #students-content .students-lms-progress-note {
     border-radius: 999px;
     border: 1px solid rgba(var(--lux-accent-rgb), 0.18);
     background: rgba(255,255,255,0.05);
-    color: var(--students-lms-text);
+    color: var(--sadmin-fade-text);
     font-size: 12px;
     font-weight: 700;
 }
 #students-content .students-lms-chip.is-muted,
 #students-content .students-lms-pill.is-muted {
-    color: var(--students-lms-muted);
+    color: var(--sadmin-fade-muted);
     border-color: rgba(255,255,255,0.10);
 }
 #students-content .students-lms-chip.is-danger,
@@ -263,8 +266,74 @@ body.lux-route-students-admin #students-content .students-lms-progress-note {
 }
 #students-content .students-lms-hero-board {
     display: grid;
+    gap: 14px;
+    align-content: start;
+    padding: 20px;
+    border-radius: 24px;
+    border: 1px solid rgba(var(--lux-accent-rgb), 0.16);
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.015)),
+        radial-gradient(circle at top right, rgba(var(--lux-accent-rgb), 0.12), transparent 30%);
+    box-shadow: 0 18px 38px rgba(0, 0, 0, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+#students-content .students-lms-command-head {
+    display: grid;
+    gap: 6px;
+}
+#students-content .students-lms-command-head strong {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 28px;
+    line-height: 1.02;
+    color: var(--sadmin-fade-text);
+}
+#students-content .students-lms-command-head p,
+#students-content .students-lms-command-note p {
+    margin: 0;
+    color: var(--sadmin-fade-muted);
+    font-size: 12px;
+    line-height: 1.65;
+}
+#students-content .students-lms-command-grid {
     gap: 12px;
-    align-content: end;
+}
+#students-content .students-lms-command-card {
+    display: grid;
+    gap: 6px;
+    padding: 16px;
+    border-radius: 18px;
+    border: 1px solid rgba(var(--lux-accent-rgb), 0.12);
+    background: var(--sadmin-fade-card-bg);
+    box-shadow: var(--sadmin-fade-card-shadow);
+}
+#students-content .students-lms-command-card span {
+    color: var(--sadmin-fade-muted);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+}
+#students-content .students-lms-command-card strong {
+    display: block;
+    margin-top: 6px;
+    color: var(--sadmin-fade-text);
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 22px;
+    line-height: 1.04;
+}
+#students-content .students-lms-command-card small {
+    color: var(--sadmin-fade-muted);
+    font-size: 12px;
+    line-height: 1.55;
+}
+#students-content .students-lms-command-note {
+    display: grid;
+    gap: 10px;
+}
+#students-content .students-lms-hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 18px;
 }
 #students-content .students-lms-board-grid,
 #students-content .students-lms-metric-grid,
@@ -308,11 +377,11 @@ body.lux-route-students-admin #students-content .students-lms-progress-note {
     padding: 18px;
     border-radius: 20px;
     border: 1px solid rgba(var(--lux-accent-rgb), 0.14);
-    background: linear-gradient(155deg, rgba(255,255,255,0.06), rgba(7,10,18,0.28));
+    background: var(--sadmin-fade-card-bg);
 }
 #students-content .students-lms-stat-card span,
 #students-content .students-lms-profile-card span {
-    color: var(--students-lms-muted);
+    color: var(--sadmin-fade-muted);
     font-size: 11px;
     font-weight: 700;
     letter-spacing: 0.08em;
@@ -322,7 +391,7 @@ body.lux-route-students-admin #students-content .students-lms-progress-note {
 #students-content .students-lms-profile-card strong {
     display: block;
     margin-top: 8px;
-    color: var(--students-lms-text);
+    color: var(--sadmin-fade-text);
     font-size: 27px;
     letter-spacing: -0.04em;
 }
@@ -331,7 +400,7 @@ body.lux-route-students-admin #students-content .students-lms-progress-note {
 #students-content .students-lms-profile-card p,
 #students-content .students-lms-empty,
 #students-content .students-lms-list-item small {
-    color: var(--students-lms-muted);
+    color: var(--sadmin-fade-muted);
 }
 #students-content .students-lms-panel {
     padding: 24px;
@@ -346,7 +415,7 @@ body.lux-route-students-admin #students-content .students-lms-progress-note {
 }
 #students-content .students-lms-panel-head p {
     margin: 6px 0 0;
-    color: var(--students-lms-muted);
+    color: var(--sadmin-fade-muted);
     font-size: 13px;
 }
 #students-content .students-lms-filter-grid {
@@ -354,6 +423,26 @@ body.lux-route-students-admin #students-content .students-lms-progress-note {
     grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: 12px;
     margin-top: 16px;
+}
+#students-content .students-lms-filter-grid > label {
+    display: grid;
+    gap: 0;
+    padding: 14px;
+    border: 1px solid rgba(var(--lux-accent-rgb), 0.12);
+    border-radius: 18px;
+    background:
+        linear-gradient(
+            180deg,
+            rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, 0.92) * 0.07)),
+            rgba(255, 255, 255, calc(var(--lux-transparency-alpha, 0.92) * 0.03))
+        );
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.10);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease, transform 0.15s ease;
+}
+#students-content .students-lms-filter-grid > label:focus-within {
+    border-color: rgba(var(--lux-accent-rgb), 0.28);
+    box-shadow: 0 18px 32px rgba(var(--lux-accent-rgb), 0.12);
+    transform: translateY(-1px);
 }
 #students-content .students-lms-filter-grid.secondary {
     grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -364,7 +453,7 @@ body.lux-route-students-admin #students-content .students-lms-progress-note {
 #students-content .students-lms-label {
     display: block;
     margin-bottom: 8px;
-    color: var(--students-lms-muted);
+    color: var(--sadmin-fade-muted);
     font-size: 11px;
     font-weight: 700;
     letter-spacing: 0.08em;
@@ -377,7 +466,7 @@ body.lux-route-students-admin #students-content .students-lms-progress-note {
     border: 1px solid rgba(255,255,255,0.10);
     border-radius: 14px;
     background: rgba(6, 10, 16, 0.34);
-    color: var(--students-lms-text);
+    color: var(--sadmin-fade-text);
     padding: 0 14px;
     box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
 }
@@ -409,7 +498,7 @@ body.lux-route-students-admin #students-content .students-lms-progress-note {
     border-radius: 14px;
     border: 1px solid rgba(255,255,255,0.10);
     background: rgba(255,255,255,0.06);
-    color: var(--students-lms-text);
+    color: var(--sadmin-fade-text);
     font-size: 13px;
     font-weight: 800;
     cursor: pointer;
@@ -458,7 +547,7 @@ body.lux-route-students-admin #students-content .students-lms-progress-note {
     top: 0;
     z-index: 1;
     background: rgba(var(--lux-accent-rgb), 0.13);
-    color: var(--students-lms-muted);
+    color: var(--sadmin-fade-muted);
     font-size: 11px;
     text-transform: uppercase;
     letter-spacing: 0.08em;
@@ -534,40 +623,83 @@ body.lux-route-students-admin #students-content .students-lms-progress-note {
 }
 #students-content .students-lms-profile-title {
     margin: 10px 0 8px;
-    color: var(--students-lms-text);
+    color: var(--sadmin-fade-text);
     font-size: clamp(32px, 4vw, 46px);
     line-height: 1;
     letter-spacing: -0.055em;
 }
 #students-content .students-lms-tabs {
     margin-top: 18px;
+    padding: 10px;
+    border: 1px solid rgba(var(--lux-accent-rgb), 0.10);
+    border-radius: 999px;
+    background:
+        linear-gradient(
+            135deg,
+            rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, 0.92) * 0.07)),
+            rgba(255, 255, 255, calc(var(--lux-transparency-alpha, 0.92) * 0.03))
+        );
+    box-shadow: 0 16px 28px rgba(0, 0, 0, 0.10);
 }
 #students-content .students-lms-tab {
-    min-height: 38px;
-    padding: 0 14px;
+    min-height: 40px;
+    padding: 0 16px;
     border-radius: 999px;
-    border: 1px solid rgba(255,255,255,0.10);
-    background: rgba(255,255,255,0.04);
-    color: var(--students-lms-muted);
+    border: 1px solid rgba(var(--lux-accent-rgb), 0.10);
+    background:
+        linear-gradient(
+            135deg,
+            rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, 0.92) * 0.05)),
+            rgba(255, 255, 255, calc(var(--lux-transparency-alpha, 0.92) * 0.02))
+        );
+    color: var(--sadmin-fade-muted);
     font-size: 12px;
     font-weight: 800;
     cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
 }
-#students-content .students-lms-tab.active {
-    background: rgba(var(--lux-accent-rgb), 0.18);
-    color: var(--students-lms-text);
+#students-content .students-lms-tab:hover,
+#students-content .students-lms-tab:focus-visible {
+    border-color: rgba(var(--lux-accent-rgb), 0.24);
+    color: var(--sadmin-fade-text);
+    box-shadow: 0 12px 24px rgba(var(--lux-accent-rgb), 0.10);
+    transform: translateY(-1px);
+}
+#students-content .students-lms-tab.active,
+#students-content .students-lms-tab[aria-pressed='true'] {
+    background:
+        linear-gradient(
+            135deg,
+            rgba(var(--lux-accent-rgb), 0.22),
+            rgba(var(--lux-home-secondary-rgb,196,143,58), 0.16)
+        );
+    color: var(--sadmin-fade-text);
     border-color: rgba(var(--lux-accent-rgb), 0.30);
+    box-shadow: 0 14px 26px rgba(var(--lux-accent-rgb), 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 #students-content .students-lms-profile-card {
     padding: 18px;
     border-radius: 18px;
-    border: 1px solid rgba(255,255,255,0.08);
-    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(var(--lux-accent-rgb), 0.12);
+    background:
+        linear-gradient(
+            165deg,
+            rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, 0.92) * 0.08)),
+            rgba(255, 255, 255, calc(var(--lux-transparency-alpha, 0.92) * 0.03))
+        );
+    box-shadow: 0 18px 34px rgba(0, 0, 0, 0.12);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease, transform 0.15s ease;
+}
+#students-content .students-lms-profile-card:hover,
+#students-content .students-lms-profile-card:focus-within {
+    border-color: rgba(var(--lux-accent-rgb), 0.22);
+    box-shadow: 0 22px 40px rgba(var(--lux-accent-rgb), 0.12);
+    transform: translateY(-1px);
 }
 #students-content .students-lms-profile-card h3,
 #students-content .students-lms-panel h2 {
     margin: 0;
-    color: var(--students-lms-text);
+    color: var(--sadmin-fade-text);
     font-size: 17px;
 }
 #students-content .students-lms-info-list,
@@ -582,6 +714,22 @@ body.lux-route-students-admin #students-content .students-lms-progress-note {
     gap: 12px;
     align-items: center;
     justify-content: space-between;
+    padding: 12px 14px;
+    border: 1px solid rgba(var(--lux-accent-rgb), 0.10);
+    border-radius: 16px;
+    background:
+        linear-gradient(
+            135deg,
+            rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, 0.92) * 0.06)),
+            rgba(255, 255, 255, calc(var(--lux-transparency-alpha, 0.92) * 0.02))
+        );
+}
+#students-content .students-lms-list-item {
+    transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+}
+#students-content .students-lms-list-item:hover {
+    border-color: rgba(var(--lux-accent-rgb), 0.20);
+    box-shadow: 0 14px 26px rgba(var(--lux-accent-rgb), 0.10);
 }
 #students-content .students-lms-info-item strong {
     margin-top: 0;
@@ -613,7 +761,10 @@ body.lux-route-students-admin #students-content .students-lms-progress-note {
     overflow: auto;
     border-radius: 26px;
     border: 1px solid rgba(var(--lux-accent-rgb), 0.18);
-    background: linear-gradient(155deg, rgba(10, 16, 24, 0.96), rgba(8, 12, 18, 0.96));
+    background:
+        radial-gradient(circle at 12% 0%, rgba(255, 255, 255, 0.08), transparent 34%),
+        radial-gradient(circle at 88% 0%, rgba(var(--lux-accent-rgb), 0.16), transparent 36%),
+        linear-gradient(155deg, rgba(10, 16, 24, 0.96), rgba(8, 12, 18, 0.96));
     box-shadow: 0 36px 96px rgba(0,0,0,0.44);
 }
 #students-admin-lms-modal .students-lms-modal-head {
@@ -626,10 +777,12 @@ body.lux-route-students-admin #students-content .students-lms-progress-note {
     padding: 24px 24px 18px;
     background: linear-gradient(180deg, rgba(11,16,26,0.98), rgba(11,16,26,0.88));
     border-bottom: 1px solid rgba(255,255,255,0.06);
+    backdrop-filter: blur(calc(var(--sadmin-fade-overlay-blur, 16px) * 0.72));
+    -webkit-backdrop-filter: blur(calc(var(--sadmin-fade-overlay-blur, 16px) * 0.72));
 }
 #students-admin-lms-modal .students-lms-modal-head h2 {
     margin: 4px 0 6px;
-    color: var(--students-lms-text);
+    color: var(--sadmin-fade-text);
     letter-spacing: -0.04em;
 }
 #students-admin-lms-modal .students-lms-modal-body {
@@ -640,12 +793,18 @@ body.lux-route-students-admin #students-content .students-lms-progress-note {
 #students-admin-lms-modal .students-lms-form-section {
     padding: 18px;
     border-radius: 20px;
-    border: 1px solid rgba(255,255,255,0.08);
-    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(var(--lux-accent-rgb), 0.12);
+    background:
+        linear-gradient(
+            165deg,
+            rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, 0.92) * 0.08)),
+            rgba(255, 255, 255, calc(var(--lux-transparency-alpha, 0.92) * 0.02))
+        );
+    box-shadow: 0 16px 30px rgba(0, 0, 0, 0.10);
 }
 #students-admin-lms-modal .students-lms-form-section h3 {
     margin: 0 0 14px;
-    color: var(--students-lms-text);
+    color: var(--sadmin-fade-text);
 }
 #students-admin-lms-modal .students-lms-form-grid {
     display: grid;
@@ -664,6 +823,9 @@ body.lux-route-students-admin #students-content .students-lms-progress-note {
     gap: 10px;
     padding: 18px 24px 22px;
     background: linear-gradient(180deg, rgba(10,16,24,0), rgba(10,16,24,0.98) 32%);
+    border-top: 1px solid rgba(var(--lux-accent-rgb), 0.10);
+    backdrop-filter: blur(calc(var(--sadmin-fade-overlay-blur, 16px) * 0.48));
+    -webkit-backdrop-filter: blur(calc(var(--sadmin-fade-overlay-blur, 16px) * 0.48));
 }
 #students-admin-lms-toast {
     position: fixed;
@@ -675,7 +837,7 @@ body.lux-route-students-admin #students-content .students-lms-progress-note {
     border-radius: 14px;
     border: 1px solid rgba(var(--lux-accent-rgb),0.20);
     background: rgba(10,16,24,0.92);
-    color: var(--students-lms-text);
+    color: var(--sadmin-fade-text);
     opacity: 0;
     transform: translateY(10px);
     pointer-events: none;
@@ -718,6 +880,10 @@ body.lux-route-students-admin #students-content .students-lms-progress-note {
     #students-content .students-lms-hero {
         padding: 22px;
     }
+    #students-content .students-lms-title {
+        max-width: none;
+        font-size: clamp(34px, 10vw, 48px);
+    }
 }
 @media (max-width: 720px) {
     #students-content .students-lms-board-grid,
@@ -740,10 +906,10 @@ body.lux-route-students-admin #students-content .students-lms-progress-note {
 #students-content .students-lms-hero-copyblock { position: relative; z-index: 1; }
 #students-content .students-lms-person { display: flex; align-items: center; gap: 12px; min-width: 240px; }
 #students-content .students-lms-name,
-#students-content .students-lms-cell-stack strong { color: var(--students-lms-text); font-weight: 800; }
+#students-content .students-lms-cell-stack strong { color: var(--sadmin-fade-text); font-weight: 800; }
 #students-content .students-lms-meta,
 #students-content .students-lms-cell-stack small,
-#students-content .students-lms-progress-note { color: var(--students-lms-muted); }
+#students-content .students-lms-progress-note { color: var(--sadmin-fade-muted); }
 #students-content .students-lms-meta { margin-top: 2px; font-size: 12px; line-height: 1.35; }
 #students-content .students-lms-cell-stack { display: grid; gap: 4px; }
 #students-content .students-lms-cell-stack.wide { gap: 6px; }
@@ -765,7 +931,7 @@ body.lux-route-students-admin #students-content .students-lms-progress-note {
 #students-content .students-lms-progress.spaced-sm,
 #students-content .students-lms-filter-chip-row.spaced-sm { margin-top: 12px; }
 #students-content .students-lms-table-wrap { margin-top: 16px; }
-#students-content .students-lms-empty-cell { text-align: center; padding: 42px 20px; color: var(--students-lms-muted); }
+#students-content .students-lms-empty-cell { text-align: center; padding: 42px 20px; color: var(--sadmin-fade-muted); }
 #students-content .students-lms-completion-cell small,
 #students-content .students-lms-progress-note { display: block; margin-top: 6px; }
 #students-content .students-lms-completion-value { display: block; margin-top: 12px; font-size: 20px; }
@@ -775,70 +941,70 @@ body.lux-route-students-admin #students-content .students-lms-progress-note {
 
 /* Theme finishing layer: one semantic token set controls both modes. */
 body.lux-route-students-admin {
-    --students-lms-control-bg: rgba(255, 255, 255, calc(var(--lux-transparency-alpha, 0.92) * 0.05));
-    --students-lms-control-border: var(--students-lms-border-soft);
-    --students-lms-chip-bg: rgba(255, 255, 255, calc(var(--lux-transparency-alpha, 0.92) * 0.06));
-    --students-lms-chip-muted-bg: rgba(255, 255, 255, calc(var(--lux-transparency-alpha, 0.92) * 0.035));
-    --students-lms-table-head-bg: rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, 0.92) * 0.13));
-    --students-lms-table-border: rgba(255, 255, 255, calc(0.04 + var(--lux-transparency-alpha, 0.92) * 0.03));
-    --students-lms-button-bg: rgba(255, 255, 255, calc(var(--lux-transparency-alpha, 0.92) * 0.06));
-    --students-lms-button-soft-bg: rgba(255, 255, 255, calc(var(--lux-transparency-alpha, 0.92) * 0.04));
-    --students-lms-button-border: rgba(255, 255, 255, calc(0.04 + var(--lux-transparency-alpha, 0.92) * 0.06));
-    --students-lms-card-bg: var(--students-lms-surface-subtle);
-    --students-lms-card-border: rgba(var(--lux-accent-rgb), 0.14);
-    --students-lms-card-shadow: var(--students-lms-shadow-soft);
-    --students-lms-table-wrap-bg: rgba(6, 10, 16, calc(0.10 + var(--lux-panel-alpha, 0.92) * 0.20));
-    --students-lms-tab-bg: rgba(255, 255, 255, calc(var(--lux-transparency-alpha, 0.92) * 0.04));
-    --students-lms-overlay: rgba(4, 7, 12, calc(0.44 + var(--lux-transparency-alpha, 0.92) * 0.26));
-    --students-lms-overlay-blur: calc(var(--lux-transparency-blur, 20px) * 0.8);
-    --students-lms-modal-fill: var(--students-lms-surface-strong);
-    --students-lms-modal-head-bg: linear-gradient(180deg, rgba(11, 16, 26, calc(var(--lux-panel-alpha, 0.92) * 1.04)), rgba(11, 16, 26, calc(var(--lux-panel-alpha, 0.92) * 0.92)));
-    --students-lms-form-fill: var(--students-lms-surface-subtle);
-    --students-lms-modal-footer-bg: linear-gradient(180deg, rgba(10, 16, 24, 0), rgba(10, 16, 24, calc(var(--lux-panel-alpha, 0.92) * 1.02)) 32%);
-    --students-lms-modal-shadow: 0 36px 96px rgba(0, 0, 0, 0.44);
-    --students-lms-toast-fill: linear-gradient(155deg, rgba(10, 16, 24, calc(var(--lux-panel-alpha, 0.92) * 1.02)), rgba(8, 12, 18, calc(var(--lux-panel-alpha, 0.92) * 0.96)));
-    --students-lms-toast-shadow: 0 24px 48px rgba(0, 0, 0, 0.26);
+    --sadmin-fade-control-bg: rgba(255, 255, 255, calc(var(--lux-transparency-alpha, 0.92) * 0.05));
+    --sadmin-fade-control-border: var(--sadmin-fade-border-soft);
+    --sadmin-fade-chip-bg: rgba(255, 255, 255, calc(var(--lux-transparency-alpha, 0.92) * 0.06));
+    --sadmin-fade-chip-muted-bg: rgba(255, 255, 255, calc(var(--lux-transparency-alpha, 0.92) * 0.035));
+    --sadmin-fade-table-head-bg: rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, 0.92) * 0.13));
+    --sadmin-fade-table-border: rgba(255, 255, 255, calc(0.04 + var(--lux-transparency-alpha, 0.92) * 0.03));
+    --sadmin-fade-button-bg: rgba(255, 255, 255, calc(var(--lux-transparency-alpha, 0.92) * 0.06));
+    --sadmin-fade-button-soft-bg: rgba(255, 255, 255, calc(var(--lux-transparency-alpha, 0.92) * 0.04));
+    --sadmin-fade-button-border: rgba(255, 255, 255, calc(0.04 + var(--lux-transparency-alpha, 0.92) * 0.06));
+    --sadmin-fade-card-bg: var(--sadmin-fade-surface-subtle);
+    --sadmin-fade-card-border: rgba(var(--lux-accent-rgb), 0.14);
+    --sadmin-fade-card-shadow: var(--sadmin-fade-shadow-soft);
+    --sadmin-fade-table-wrap-bg: rgba(6, 10, 16, calc(0.10 + var(--lux-panel-alpha, 0.92) * 0.20));
+    --sadmin-fade-tab-bg: rgba(255, 255, 255, calc(var(--lux-transparency-alpha, 0.92) * 0.04));
+    --sadmin-fade-overlay: rgba(4, 7, 12, calc(0.44 + var(--lux-transparency-alpha, 0.92) * 0.26));
+    --sadmin-fade-overlay-blur: calc(var(--lux-transparency-blur, 20px) * 0.8);
+    --sadmin-fade-modal-fill: var(--sadmin-fade-surface-strong);
+    --sadmin-fade-modal-head-bg: linear-gradient(180deg, rgba(11, 16, 26, calc(var(--lux-panel-alpha, 0.92) * 1.04)), rgba(11, 16, 26, calc(var(--lux-panel-alpha, 0.92) * 0.92)));
+    --sadmin-fade-form-fill: var(--sadmin-fade-surface-subtle);
+    --sadmin-fade-modal-footer-bg: linear-gradient(180deg, rgba(10, 16, 24, 0), rgba(10, 16, 24, calc(var(--lux-panel-alpha, 0.92) * 1.02)) 32%);
+    --sadmin-fade-modal-shadow: 0 36px 96px rgba(0, 0, 0, 0.44);
+    --sadmin-fade-toast-fill: linear-gradient(155deg, rgba(10, 16, 24, calc(var(--lux-panel-alpha, 0.92) * 1.02)), rgba(8, 12, 18, calc(var(--lux-panel-alpha, 0.92) * 0.96)));
+    --sadmin-fade-toast-shadow: 0 24px 48px rgba(0, 0, 0, 0.26);
 }
 body.lux-light-mode.lux-route-students-admin,
 html.lux-light-mode body.lux-route-students-admin {
-    --students-lms-control-bg: rgba(255, 255, 255, calc(var(--lux-transparency-alpha, 0.86) * 0.76));
-    --students-lms-control-border: rgba(31, 52, 86, 0.16);
-    --students-lms-chip-bg: rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, 0.86) * 0.12));
-    --students-lms-chip-muted-bg: rgba(255, 255, 255, calc(var(--lux-transparency-alpha, 0.86) * 0.58));
-    --students-lms-table-head-bg: rgba(255, 253, 248, calc(var(--lux-transparency-alpha, 0.86) * 0.86));
-    --students-lms-table-border: rgba(31, 52, 86, 0.10);
-    --students-lms-button-bg: rgba(255, 255, 255, calc(var(--lux-transparency-alpha, 0.86) * 0.62));
-    --students-lms-button-soft-bg: rgba(255, 255, 255, calc(var(--lux-transparency-alpha, 0.86) * 0.54));
-    --students-lms-button-border: rgba(31, 52, 86, 0.12);
-    --students-lms-card-bg: var(--students-lms-surface-subtle);
-    --students-lms-card-border: rgba(var(--lux-accent-rgb), 0.12);
-    --students-lms-card-shadow: 0 16px 28px rgba(24, 42, 70, 0.08);
-    --students-lms-table-wrap-bg: rgba(255, 255, 255, calc(var(--lux-transparency-alpha, 0.86) * 0.58));
-    --students-lms-tab-bg: rgba(255, 255, 255, calc(var(--lux-transparency-alpha, 0.86) * 0.56));
-    --students-lms-overlay: rgba(15, 23, 42, calc(0.16 + var(--lux-transparency-alpha, 0.86) * 0.16));
-    --students-lms-modal-fill: var(--students-lms-surface-fill);
-    --students-lms-modal-head-bg: linear-gradient(180deg, rgba(255, 255, 255, calc(var(--lux-transparency-alpha, 0.86) * 0.88)), rgba(247, 241, 232, calc(var(--lux-transparency-alpha, 0.86) * 0.74)));
-    --students-lms-form-fill: rgba(255, 255, 255, calc(var(--lux-transparency-alpha, 0.86) * 0.54));
-    --students-lms-modal-footer-bg: linear-gradient(180deg, rgba(255, 255, 255, 0), rgba(247, 241, 232, calc(var(--lux-transparency-alpha, 0.86) * 0.82)) 34%);
-    --students-lms-modal-shadow: 0 30px 72px rgba(24, 42, 70, 0.18);
-    --students-lms-toast-fill: linear-gradient(155deg, rgba(255, 255, 255, calc(var(--lux-transparency-alpha, 0.86) * 0.88)), rgba(247, 241, 232, calc(var(--lux-transparency-alpha, 0.86) * 0.74)));
-    --students-lms-toast-shadow: 0 18px 36px rgba(24, 42, 70, 0.12);
+    --sadmin-fade-control-bg: rgba(255, 255, 255, calc(var(--lux-transparency-alpha, 0.86) * 0.76));
+    --sadmin-fade-control-border: rgba(31, 52, 86, 0.16);
+    --sadmin-fade-chip-bg: rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, 0.86) * 0.12));
+    --sadmin-fade-chip-muted-bg: rgba(255, 255, 255, calc(var(--lux-transparency-alpha, 0.86) * 0.58));
+    --sadmin-fade-table-head-bg: rgba(255, 253, 248, calc(var(--lux-transparency-alpha, 0.86) * 0.86));
+    --sadmin-fade-table-border: rgba(31, 52, 86, 0.10);
+    --sadmin-fade-button-bg: rgba(255, 255, 255, calc(var(--lux-transparency-alpha, 0.86) * 0.62));
+    --sadmin-fade-button-soft-bg: rgba(255, 255, 255, calc(var(--lux-transparency-alpha, 0.86) * 0.54));
+    --sadmin-fade-button-border: rgba(31, 52, 86, 0.12);
+    --sadmin-fade-card-bg: var(--sadmin-fade-surface-subtle);
+    --sadmin-fade-card-border: rgba(var(--lux-accent-rgb), 0.12);
+    --sadmin-fade-card-shadow: 0 16px 28px rgba(24, 42, 70, 0.08);
+    --sadmin-fade-table-wrap-bg: rgba(255, 255, 255, calc(var(--lux-transparency-alpha, 0.86) * 0.58));
+    --sadmin-fade-tab-bg: rgba(255, 255, 255, calc(var(--lux-transparency-alpha, 0.86) * 0.56));
+    --sadmin-fade-overlay: rgba(15, 23, 42, calc(0.16 + var(--lux-transparency-alpha, 0.86) * 0.16));
+    --sadmin-fade-modal-fill: var(--sadmin-fade-surface-fill);
+    --sadmin-fade-modal-head-bg: linear-gradient(180deg, rgba(255, 255, 255, calc(var(--lux-transparency-alpha, 0.86) * 0.88)), rgba(247, 241, 232, calc(var(--lux-transparency-alpha, 0.86) * 0.74)));
+    --sadmin-fade-form-fill: rgba(255, 255, 255, calc(var(--lux-transparency-alpha, 0.86) * 0.54));
+    --sadmin-fade-modal-footer-bg: linear-gradient(180deg, rgba(255, 255, 255, 0), rgba(247, 241, 232, calc(var(--lux-transparency-alpha, 0.86) * 0.82)) 34%);
+    --sadmin-fade-modal-shadow: 0 30px 72px rgba(24, 42, 70, 0.18);
+    --sadmin-fade-toast-fill: linear-gradient(155deg, rgba(255, 255, 255, calc(var(--lux-transparency-alpha, 0.86) * 0.88)), rgba(247, 241, 232, calc(var(--lux-transparency-alpha, 0.86) * 0.74)));
+    --sadmin-fade-toast-shadow: 0 18px 36px rgba(24, 42, 70, 0.12);
 }
 #students-content .students-lms-stat-card {
-    background: var(--students-lms-card-bg) !important;
-    border-color: var(--students-lms-card-border) !important;
-    box-shadow: var(--students-lms-card-shadow) !important;
+    background: var(--sadmin-fade-card-bg) !important;
+    border-color: var(--sadmin-fade-card-border) !important;
+    box-shadow: var(--sadmin-fade-card-shadow) !important;
 }
 #students-content .students-lms-control,
 #students-content .students-lms-textarea {
-    background: var(--students-lms-control-bg) !important;
-    border-color: var(--students-lms-control-border) !important;
-    color: var(--students-lms-text) !important;
+    background: var(--sadmin-fade-control-bg) !important;
+    border-color: var(--sadmin-fade-control-border) !important;
+    color: var(--sadmin-fade-text) !important;
 }
 #students-content .students-lms-btn {
-    background: var(--students-lms-button-bg) !important;
-    border-color: var(--students-lms-button-border) !important;
-    color: var(--students-lms-text) !important;
+    background: var(--sadmin-fade-button-bg) !important;
+    border-color: var(--sadmin-fade-button-border) !important;
+    color: var(--sadmin-fade-text) !important;
 }
 #students-content .students-lms-btn.primary {
     background: linear-gradient(135deg, rgba(var(--lux-accent-rgb), 0.88), rgba(var(--lux-home-secondary-rgb, 196, 143, 58), 0.92)) !important;
@@ -851,18 +1017,18 @@ html.lux-light-mode body.lux-route-students-admin {
     color: #ffd8d8 !important;
 }
 #students-content .students-lms-btn.soft {
-    background: var(--students-lms-button-soft-bg) !important;
+    background: var(--sadmin-fade-button-soft-bg) !important;
 }
 #students-content .students-lms-chip,
 #students-content .students-lms-pill {
-    background: var(--students-lms-chip-bg) !important;
-    color: var(--students-lms-text) !important;
+    background: var(--sadmin-fade-chip-bg) !important;
+    color: var(--sadmin-fade-text) !important;
 }
 #students-content .students-lms-chip.is-muted,
 #students-content .students-lms-pill.is-muted {
-    background: var(--students-lms-chip-muted-bg) !important;
-    color: var(--students-lms-muted) !important;
-    border-color: var(--students-lms-border-soft) !important;
+    background: var(--sadmin-fade-chip-muted-bg) !important;
+    color: var(--sadmin-fade-muted) !important;
+    border-color: var(--sadmin-fade-border-soft) !important;
 }
 #students-content .students-lms-chip.is-danger,
 #students-content .students-lms-pill.is-danger {
@@ -889,70 +1055,185 @@ html.lux-light-mode body.lux-route-students-admin {
     background: rgba(var(--lux-accent-rgb), 0.18) !important;
 }
 #students-content .students-lms-table-wrap {
-    background: var(--students-lms-table-wrap-bg) !important;
-    border-color: var(--students-lms-table-border) !important;
-    backdrop-filter: blur(calc(var(--students-lms-glass-blur) * 0.6)) saturate(var(--students-lms-glass-saturate)) !important;
-    -webkit-backdrop-filter: blur(calc(var(--students-lms-glass-blur) * 0.6)) saturate(var(--students-lms-glass-saturate)) !important;
+    background: var(--sadmin-fade-table-wrap-bg) !important;
+    border-color: var(--sadmin-fade-table-border) !important;
+    backdrop-filter: blur(calc(var(--sadmin-fade-glass-blur) * 0.6)) saturate(var(--sadmin-fade-glass-saturate)) !important;
+    -webkit-backdrop-filter: blur(calc(var(--sadmin-fade-glass-blur) * 0.6)) saturate(var(--sadmin-fade-glass-saturate)) !important;
 }
 #students-content .students-lms-profile-card {
-    background: var(--students-lms-surface-subtle) !important;
-    border-color: var(--students-lms-border-soft) !important;
-    box-shadow: var(--students-lms-card-shadow) !important;
+    background: var(--sadmin-fade-surface-subtle) !important;
+    border-color: var(--sadmin-fade-border-soft) !important;
+    box-shadow: var(--sadmin-fade-card-shadow) !important;
 }
 #students-content .students-lms-tab {
-    background: var(--students-lms-tab-bg) !important;
-    border-color: var(--students-lms-border-soft) !important;
-    color: var(--students-lms-muted) !important;
+    background: var(--sadmin-fade-tab-bg) !important;
+    border-color: var(--sadmin-fade-border-soft) !important;
+    color: var(--sadmin-fade-muted) !important;
 }
 #students-content .students-lms-tab.active {
     background: rgba(var(--lux-accent-rgb), 0.18) !important;
-    color: var(--students-lms-text) !important;
+    color: var(--sadmin-fade-text) !important;
     border-color: rgba(var(--lux-accent-rgb), 0.30) !important;
 }
 #students-content .students-lms-table-shell .students-lms-table,
 #students-content .students-lms-table-shell .students-lms-table tbody tr,
 #students-content .students-lms-table-shell .students-lms-table tbody td,
 #students-content .students-lms-table-shell .students-lms-table tbody th {
-    background: var(--students-lms-row) !important;
-    color: var(--students-lms-text) !important;
-    border-bottom-color: var(--students-lms-table-border) !important;
+    background: var(--sadmin-fade-row) !important;
+    color: var(--sadmin-fade-text) !important;
+    border-bottom-color: var(--sadmin-fade-table-border) !important;
 }
 #students-content .students-lms-table-shell .students-lms-table thead th {
-    background: var(--students-lms-table-head-bg) !important;
-    color: var(--students-lms-muted) !important;
-    border-bottom-color: var(--students-lms-table-border) !important;
+    background: var(--sadmin-fade-table-head-bg) !important;
+    color: var(--sadmin-fade-muted) !important;
+    border-bottom-color: var(--sadmin-fade-table-border) !important;
 }
 #students-content .students-lms-table-shell tbody tr:hover,
 #students-content .students-lms-table-shell tbody tr:hover td,
 #students-content .students-lms-table-shell tbody tr:hover th {
-    background: var(--students-lms-row-hover) !important;
+    background: var(--sadmin-fade-row-hover) !important;
 }
 #students-admin-lms-modal {
-    background: var(--students-lms-overlay) !important;
-    backdrop-filter: blur(var(--students-lms-overlay-blur)) saturate(var(--students-lms-glass-saturate)) !important;
-    -webkit-backdrop-filter: blur(var(--students-lms-overlay-blur)) saturate(var(--students-lms-glass-saturate)) !important;
+    background: var(--sadmin-fade-overlay) !important;
+    backdrop-filter: blur(var(--sadmin-fade-overlay-blur)) saturate(var(--sadmin-fade-glass-saturate)) !important;
+    -webkit-backdrop-filter: blur(var(--sadmin-fade-overlay-blur)) saturate(var(--sadmin-fade-glass-saturate)) !important;
 }
 #students-admin-lms-modal .students-lms-modal-card {
-    background: var(--students-lms-modal-fill) !important;
-    color: var(--students-lms-text) !important;
-    border-color: var(--students-lms-border) !important;
-    box-shadow: var(--students-lms-modal-shadow) !important;
+    background: var(--sadmin-fade-modal-fill) !important;
+    color: var(--sadmin-fade-text) !important;
+    border-color: var(--sadmin-fade-border) !important;
+    box-shadow: var(--sadmin-fade-modal-shadow) !important;
 }
 #students-admin-lms-modal .students-lms-modal-head {
-    background: var(--students-lms-modal-head-bg) !important;
-    border-bottom-color: var(--students-lms-table-border) !important;
+    background: var(--sadmin-fade-modal-head-bg) !important;
+    border-bottom-color: var(--sadmin-fade-table-border) !important;
 }
 #students-admin-lms-modal .students-lms-form-section {
-    background: var(--students-lms-form-fill) !important;
-    color: var(--students-lms-text) !important;
-    border-color: var(--students-lms-border-soft) !important;
+    background: var(--sadmin-fade-form-fill) !important;
+    color: var(--sadmin-fade-text) !important;
+    border-color: var(--sadmin-fade-border-soft) !important;
 }
 #students-admin-lms-modal .students-lms-form-actions {
-    background: var(--students-lms-modal-footer-bg) !important;
+    background: var(--sadmin-fade-modal-footer-bg) !important;
 }
 #students-admin-lms-toast {
-    background: var(--students-lms-toast-fill) !important;
-    color: var(--students-lms-text) !important;
-    border-color: var(--students-lms-border) !important;
-    box-shadow: var(--students-lms-toast-shadow) !important;
+    background: var(--sadmin-fade-toast-fill) !important;
+    color: var(--sadmin-fade-text) !important;
+    border-color: var(--sadmin-fade-border) !important;
+    box-shadow: var(--sadmin-fade-toast-shadow) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Home-style command center restyle
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+body.lux-route-students-admin #students-content .students-lms-hero,
+body.lux-route-students-admin #students-content .students-lms-profile-header {
+    border-top: 3px solid rgba(var(--lux-accent-rgb), 0.55);
+}
+
+body.lux-route-students-admin #students-content .students-lms-title,
+body.lux-route-students-admin #students-content .students-lms-profile-title {
+    font-size: clamp(34px, 4vw, 52px);
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+}
+
+body.lux-route-students-admin #students-content .students-lms-kicker {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(var(--lux-accent-rgb), 0.92) !important;
+}
+
+body.lux-route-students-admin #students-content .students-lms-command-head,
+body.lux-route-students-admin #students-content .students-lms-panel-head {
+    padding-bottom: 12px;
+    margin-bottom: 4px;
+    border-bottom: 1px solid var(--sadmin-fade-border-soft);
+}
+
+body.lux-route-students-admin #students-content .students-lms-stat-card {
+    position: relative;
+    overflow: hidden;
+    padding: 20px 20px 20px 24px;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+body.lux-route-students-admin #students-content .students-lms-stat-card::before {
+    content: '';
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 3px;
+    background: linear-gradient(
+        180deg,
+        rgba(var(--lux-accent-rgb), 0.85),
+        rgba(var(--lux-home-secondary-rgb), 0.45)
+    );
+    border-radius: 20px 0 0 20px;
+}
+
+body.lux-route-students-admin #students-content .students-lms-stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 28px rgba(var(--lux-accent-rgb), 0.10), var(--sadmin-fade-shadow-soft);
+}
+
+body.lux-route-students-admin #students-content .students-lms-stat-card span {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    color: rgba(var(--lux-accent-rgb), 0.88) !important;
+}
+
+body.lux-route-students-admin #students-content .students-lms-stat-card strong {
+    font-size: clamp(22px, 2.2vw, 30px);
+    font-variant-numeric: tabular-nums;
+}
+
+body.lux-route-students-admin #students-content .students-lms-panel,
+body.lux-route-students-admin #students-content .students-lms-profile-card {
+    padding: 22px 24px;
+}
+
+body.lux-route-students-admin #students-content .students-lms-tabs {
+    gap: 8px;
+    padding: 8px;
+}
+
+body.lux-route-students-admin #students-content .students-lms-tab.active,
+body.lux-route-students-admin #students-content .students-lms-tab[aria-pressed='true'] {
+    border-top: 2px solid rgba(var(--lux-accent-rgb), 0.55);
+}
+
+/* High-transparency reinstatement */
+html.lux-high-transparency body.lux-route-students-admin:not(.lux-light-mode) #students-content :is(
+    .students-lms-hero,
+    .students-lms-profile-header,
+    .students-lms-panel,
+    .students-lms-table-shell
+) {
+    background: var(--sadmin-fade-surface-fill) !important;
+    border-color: var(--sadmin-fade-border) !important;
+    box-shadow: var(--sadmin-fade-shadow) !important;
+    backdrop-filter: blur(var(--sadmin-fade-glass-blur)) saturate(var(--sadmin-fade-glass-saturate)) !important;
+    -webkit-backdrop-filter: blur(var(--sadmin-fade-glass-blur)) saturate(var(--sadmin-fade-glass-saturate)) !important;
+}
+
+html.lux-high-transparency body.lux-route-students-admin:not(.lux-light-mode) #students-content :is(
+    .students-lms-stat-card,
+    .students-lms-profile-card
+) {
+    background: var(--sadmin-fade-surface-subtle) !important;
+    border-color: var(--sadmin-fade-border-soft) !important;
+    box-shadow: var(--sadmin-fade-shadow-soft) !important;
+    backdrop-filter: blur(var(--sadmin-fade-glass-blur)) saturate(var(--sadmin-fade-glass-saturate)) !important;
+    -webkit-backdrop-filter: blur(var(--sadmin-fade-glass-blur)) saturate(var(--sadmin-fade-glass-saturate)) !important;
+}
+
+html.lux-high-transparency body.lux-route-students-admin:not(.lux-light-mode) #students-admin-lms-modal .students-lms-modal-card {
+    background: var(--sadmin-fade-modal-fill) !important;
+    border-color: var(--sadmin-fade-border) !important;
+    box-shadow: var(--sadmin-fade-modal-shadow) !important;
 }

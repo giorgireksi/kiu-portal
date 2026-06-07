@@ -29,7 +29,9 @@ describe('profile route regressions', () => {
         expect(html).toContain('assets/js/pages/timetable-runtime.js?v=20260516-surface-split1');
         expect(html).toContain('assets/js/pages/profile-route.js?v=20260516-profiletabsplit1');
         expect(html).not.toContain('assets/js/pages/registration.js');
-        expect(html).toContain('assets/css/profile-route.css?v=20260516-profileroute1');
+        expect(html).toContain('assets/css/profile-route.css?v=20260531-profglass1');
+        expect(html).toContain('assets/css/index-luxury.css?v=20260531-profglass1');
+        expect(html).toContain('assets/js/shared/utilities.js?v=20260531-profglass1');
         expect(html).toContain('<nav id="prof-nav" aria-label="Professor navigation stub"></nav>');
         expect(html).toContain('<nav id="top-nav" aria-label="Top navigation stub"></nav>');
         expect(html).toContain('<nav id="admin-nav" aria-label="Admin navigation stub"></nav>');
@@ -46,17 +48,19 @@ describe('profile route regressions', () => {
         expect(html).toContain('class="profile-shell-layout"');
         expect(html).toContain('class="profile-shell-nav"');
         expect(html).toContain('class="profile-shell-content"');
+        expect(html).toContain('class="content-box surface-card profile-shell-nav-card"');
         expect(html).toContain('class="content-box surface-card profile-shell-card"');
+        expect(html).toContain('class="tab profile-shell-tab lux-secondary-btn lux-rail-tab active"');
         expect(html).toContain('data-profile-tab="info"');
         expect(html).toContain('data-modal-close="1"');
         expect(html).toContain('id="profile-tab-info" data-profile-mounted="1"');
-        expect(html).toContain('id="profile-tab-email" data-profile-mounted="0"');
-        expect(html).toContain('id="profile-tab-password" data-profile-mounted="0"');
+        expect(html).toContain('id="profile-tab-email" data-profile-mounted="0" class="profile-shell-lazy-pane" hidden');
+        expect(html).toContain('id="profile-tab-password" data-profile-mounted="0" class="profile-shell-lazy-pane" hidden');
         expect(html).toContain('autocomplete="current-password"');
         expect(html).toContain('autocomplete="new-password"');
-        expect(html).toContain('<button class="kiu-btn-blue profile-shell-action" type="button">Update</button>');
-        expect(html).toContain('<button class="profile-shell-disabled-action" type="button">Update</button>');
-        expect(html).toContain('id="profile-tab-calendar" class="profile-shell-calendar" data-profile-mounted="0"');
+        expect(html).toContain('<button class="lux-primary-btn profile-shell-action" type="button">Update</button>');
+        expect(html).toContain('<button class="lux-disabled-btn profile-shell-disabled-action" type="button" aria-disabled="true" disabled>Update</button>');
+        expect(html).toContain('id="profile-tab-calendar" class="profile-shell-calendar" data-profile-mounted="0" hidden');
         expect(html).toContain('id="profile-tab-template-email"');
         expect(html).toContain('id="profile-tab-template-password"');
         expect(html).toContain('id="profile-tab-template-calendar"');
@@ -71,9 +75,48 @@ describe('profile route regressions', () => {
         expect(appJs).toContain("const PROFILE_CALENDAR_WEEK_STORAGE_KEY = 'KIU_PROFILE_CALENDAR_WEEK_START';");
         expect(facultyJs).toContain('function renderPortalMessengerWorkspace()');
         expect(facultyJs).toContain('function openPortalMessengerChat(chatId)');
+        expect(facultyJs).toContain('class="portal-msg-page-shell"');
+        expect(facultyJs).toContain('class="portal-msg-shell"');
+        expect(facultyJs).toContain('class="portal-msg-composer"');
+        expect(facultyJs).toContain('class="portal-msg-chat-item');
+        expect(facultyJs).not.toContain('data-notif-action="open-item" style="width:100%; text-align:left;');
         expect(profileRouteJs).toContain('function ensureProfileTabContent(tab) {');
+        expect(profileRouteJs).toContain('function setProfilePanelShown(panel, shown) {');
         expect(profileRouteJs).toContain('function switchProfileTab(tab, element) {');
+        expect(profileRouteJs).not.toContain("style.borderLeftColor = 'var(--kiu-blue)'");
+        expect(profileRouteJs).toContain("setProfilePanelShown(document.getElementById('profile-tab-info'), false);");
         expect(profileRouteJs).toContain("const trigger = event.target.closest('[data-profile-tab]');");
+        expect(html).toContain('assets/css/lux-controls.css?v=20260527-profcss1');
+        expect(readSource('assets/css/lux-controls.css')).toContain('.lux-rail-tab {');
+        expect(readSource('assets/css/profile-route.css')).not.toContain('body.lux-route-profile .profile-shell-tab.active {');
+        expect(readSource('assets/css/profile-route.css')).not.toContain('body.lux-route-profile .profile-form-group input {');
+        expect(readSource('assets/css/profile-route.css')).not.toContain('body.lux-route-profile .profile-form-group input:focus {');
+        expect(readSource('assets/css/profile-route.css')).toContain('body.lux-route-profile .profile-shell-input {');
         expect(timetableRuntimeJs).toContain('function renderProfileCalendar() {');
+    });
+
+    it('keeps profile edit glass tokens aligned with utilities and index dedupe', () => {
+        const css = readSource('assets/css/profile-route.css');
+        const luxuryCss = readSource('assets/css/index-luxury.css');
+        const utilitiesSource = readSource('assets/js/shared/utilities.js');
+
+        expect(css).toContain('--prof-fade-surface');
+        expect(css).toContain('--prof-fade-chip');
+        expect(css).toContain('--prof-fade-row');
+        expect(css).toContain('--prof-fade-blur');
+        expect(css).toContain('#page-profile .page-hero');
+        expect(css).toContain('background: var(--prof-fade-surface) !important');
+        expect(css).toContain('Home-style command center restyle');
+        expect(css).toContain('html.lux-high-transparency body.lux-route-profile');
+        expect(css).not.toContain('rgba(255, 255, 255, 0.18)');
+
+        expect(luxuryCss).toContain(':not(.lux-route-profile)');
+        expect(luxuryCss).toMatch(/body\.lux-nonhome-page:not\(\.lux-route-students-admin\):not\(\.lux-route-profile\) \.page-hero/);
+
+        expect(utilitiesSource).toContain("document.body.classList.contains('lux-route-profile')");
+        expect(utilitiesSource).toContain("el.closest?.('#page-profile')");
+        expect(utilitiesSource).toContain("el.classList.contains('profile-shell-nav-card')");
+        expect(utilitiesSource).toContain("el.classList.contains('profile-shell-card')");
+        expect(utilitiesSource).toContain("el.classList.contains('lux-hero-signal')");
     });
 });

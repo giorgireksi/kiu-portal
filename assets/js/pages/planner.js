@@ -1,6 +1,22 @@
-/* Planner, timetable, and calendar logic extracted from core.js. Source of truth remains root core.js compatibility bundle. */
+/* Planner, timetable, and calendar logic extracted from the legacy core.js bundle. Active routes now load split files directly. */
 
 // --- ADMIN TERM-PLANNER ENGINE ---
+function syncAdminRegistrationToggleState(isOpen) {
+    const regIcon = document.getElementById('admin-reg-icon');
+    const regText = document.getElementById('admin-reg-text');
+    if (regIcon) {
+        regIcon.className = isOpen ? 'fas fa-toggle-on' : 'fas fa-toggle-off';
+        regIcon.dataset.registrationState = isOpen ? 'open' : 'closed';
+    }
+    if (regText) regText.innerText = isOpen ? 'Registration Window Open' : 'Registration Window Closed';
+}
+
+function setPlannerModalPanelVisibility(panel, shown) {
+    if (!panel) return;
+    panel.hidden = !shown;
+    panel.classList.toggle('is-active', shown);
+}
+
 function initAdminTermPlanner() {
     refreshSemesterDropdowns();
     const allSubjects = typeof getAllCurriculumSubjects === 'function' ? getAllCurriculumSubjects() : (KIU_STATE.curriculum || []);
@@ -20,13 +36,7 @@ function initAdminTermPlanner() {
     const regText = document.getElementById('admin-reg-text');
     if (regToggle) {
         regToggle.checked = KIU_STATE.registrationOpen !== false;
-        if (regToggle.checked) {
-            if(regIcon) { regIcon.className = 'fas fa-toggle-on'; regIcon.style.color = 'var(--kiu-green)'; }
-            if(regText) regText.innerText = 'Registration Window Open';
-        } else {
-            if(regIcon) { regIcon.className = 'fas fa-toggle-off'; regIcon.style.color = 'var(--kiu-red)'; }
-            if(regText) regText.innerText = 'Registration Window Closed';
-        }
+        syncAdminRegistrationToggleState(Boolean(regToggle.checked));
     }
     
     // Populate Master Subject dropdown for Section Generator
@@ -65,15 +75,9 @@ function toggleRegistrationStatus() {
     KIU_STATE.registrationOpen = regToggle.checked;
     saveState();
     refreshShellIdentity();
-    
-    const regIcon = document.getElementById('admin-reg-icon');
-    const regText = document.getElementById('admin-reg-text');
-    if (KIU_STATE.registrationOpen) {
-        if(regIcon) { regIcon.className = 'fas fa-toggle-on'; regIcon.style.color = 'var(--kiu-green)'; }
-        if(regText) regText.innerText = 'Registration Window Open';
-    } else {
-        if(regIcon) { regIcon.className = 'fas fa-toggle-off'; regIcon.style.color = 'var(--kiu-red)'; }
-        if(regText) regText.innerText = 'Registration Window Closed';
+
+    syncAdminRegistrationToggleState(Boolean(KIU_STATE.registrationOpen));
+    if (!KIU_STATE.registrationOpen) {
         alert('Registration globally closed. Students cannot modify schedules.');
     }
 }
@@ -107,281 +111,10 @@ function updateGenerateSubjects(context = 'admin') {
 
 // Timetable, schedule-surface, and profile-calendar runtime moved to assets/js/pages/timetable-runtime.js.
 
-// --- STUDY CARD ENGINE ---
-function renderStudyCard() {
-    const container = document.getElementById('study-card-container');
-    if (!container) return; // Not on the study-card page
-    
-    const effectiveRole = typeof getEffectiveUserRole === 'function'
-        ? getEffectiveUserRole()
-        : (currentUserRole || USER_ROLES.STUDENT);
-    if (effectiveRole !== USER_ROLES.STUDENT) {
-        container.innerHTML = '<div style="padding:40px; text-align:center; color:var(--kiu-text-muted);">Study Card is only available in the student portal.</div>';
-        return;
-    }
-    
-    const currentSchedule = getCurrentStudentSchedule();
-    if (!currentSchedule || currentSchedule.length === 0) {
-        container.innerHTML = '<div style="padding:40px; text-align:center; color:var(--kiu-text-muted);">You have no registered subjects. Please complete Academic Registration.</div>';
-        return;
-    }
-
-    // 1. Group Schedule by Semester
-    const semesterBuckets = {}; // { 3: [subject1, subject2], 2: [subject3] }
-    
-    currentSchedule.forEach(s => {
-        // Resolve Semester
-        let targetSem = 3; // Default Fallback for mocks
-        const groupObj = KIU_STATE.availableGroups && KIU_STATE.availableGroups[s.courseId] && KIU_STATE.availableGroups[s.courseId].find(x => x.id === s.groupId);
-        if (groupObj && groupObj.semester) {
-            targetSem = parseInt(groupObj.semester);
-        } else if (KIU_STATE.activeSemester) {
-            targetSem = parseInt(KIU_STATE.activeSemester);
-        }
-        
-        if (!semesterBuckets[targetSem]) semesterBuckets[targetSem] = [];
-        // Map Grades
-        const rosterId = resolveGradebookRosterKey(s.courseId, s.groupId, getEnrolledStudentsForGroup(s.courseId, s.groupId));
-        const studentGradesList = KIU_STATE.studentGrades && KIU_STATE.studentGrades[rosterId] ? KIU_STATE.studentGrades[rosterId] : [];
-        const myUserId = getCurrentUserId() || '60111';
-        
-        // Find My Grade Object 
-        const myGradeObjRaw = studentGradesList.find(st => st.id === myUserId) || null;
-        const myGradeObj = myGradeObjRaw ? ensureGradeRecordHistories(myGradeObjRaw) : null; // Handle robust legacy array formats
-        
-        let subGrade = 0, finGrade = 0, hwGrade = 0, qGrade = 0;
-        if (myGradeObj && typeof myGradeObj === 'object') {
-            subGrade = myGradeObj.mid || 0;
-            finGrade = myGradeObj.final || 0;
-            hwGrade = myGradeObj.qa || 0;
-            qGrade = myGradeObj.q1 || 0;
-        }
-        const total = subGrade + finGrade + hwGrade + qGrade;
-        
-        // Map Letter Grade
-        let letter = 'F', color = 'var(--kiu-red)';
-        if (total >= 91) { letter = 'A'; color = 'var(--lux-accent)'; }
-        else if (total >= 81) { letter = 'B'; color = 'var(--lux-accent-2)'; }
-        else if (total >= 71) { letter = 'C'; color = 'rgba(var(--lux-home-secondary-rgb, 110, 160, 255), 0.96)'; }
-        else if (total >= 61) { letter = 'D'; color = '#d4a24d'; }
-        else if (total >= 51) { letter = 'E'; color = '#c97b4b'; }
-        else if (total === 0 && !myGradeObj) { letter = '-'; color = 'var(--lux-text-muted)'; } // Not graded yet
-
-        semesterBuckets[targetSem].push({
-            courseName: s.courseName || s.name,
-            prof: s.prof || groupObj?.prof || '-',
-            ects: s.ects || 6,
-            totalPoint: total,
-            letterGrade: letter,
-            gradeColor: color,
-            details: {
-                mid: subGrade,
-                fin: finGrade,
-                hw: hwGrade,
-                qz: qGrade,
-                historyHtml: myGradeObj ? renderStudyCardHistorySections(myGradeObj) : '<div style="font-size:12px; color: var(--lux-text-muted);">No assessment history yet.</div>'
-            }
-        });
-    });
-
-    // 2. Generate Semantic Blocks based on Terms
-    let html = '';
-    const sortedTerms = Object.keys(semesterBuckets).sort((a,b) => b - a); // Descending Semester
-    
-    sortedTerms.forEach(termNum => {
-        const semTitle = getStudyCardSemesterLabel(termNum);
-        
-        html += `<div class="semester-header" style="margin-top: ${html === '' ? '0' : '30px'};"><span>${semTitle}</span><span style="display:flex; gap: 60px;"><span>Instructor</span><span>ECTS</span><span>Points</span><span>Grade</span><span>Details</span></span></div>`;
-        html += `<table class="kiu-table"><tbody>`;
-        
-        semesterBuckets[termNum].forEach(subj => {
-            html += `<tr>
-                <td style="width: 30%;">${subj.courseName}</td>
-                <td style="width: 20%;">${subj.prof} <i class="fas fa-info-circle" style="color:var(--kiu-text-muted); margin-left:5px;"></i></td>
-                <td style="width: 10%; text-align:center;">${subj.ects}</td>
-                <td style="width: 10%; text-align:center;">${subj.totalPoint}</td>
-                <td style="width: 10%; text-align:center;">
-                    <div class="grade-circle study-card-grade-circle" style="border-color:${subj.gradeColor}; background:linear-gradient(180deg, ${subj.gradeColor}26, rgba(10,15,24,0.96)); ${subj.letterGrade === '-' ? 'color:transparent;' : ''}">${subj.letterGrade}</div>
-                </td>
-                <td style="width: 20%; text-align:right;">
-                    <div class="grade-popover-container">
-                        <button type="button" class="lux-secondary-btn" data-planner-grade-details="1"><i class="fas fa-chevron-down"></i> Grade Details</button>
-                        <div class="grade-popover">
-                            <table>
-                                <tr><th>Midterm</th><th>Final</th><th>Homework</th><th>Quiz</th></tr>
-                                <tr><td>${subj.details.mid}</td><td>${subj.details.fin}</td><td>${subj.details.hw}</td><td>${subj.details.qz}</td></tr>
-                            </table>
-                            <div style="display:grid; gap:10px; margin-top:12px;">
-                                ${subj.details.historyHtml}
-                            </div>
-                        </div>
-                    </div>
-                </td>
-            </tr>`;
-        });
-        
-        html += `</tbody></table>`;
-    });
-    
-    container.innerHTML = localizeHtmlMarkup(html);
-}
-
-function getStudyCardSemesterLabel(semesterNumber) {
-    const safeSemester = Math.max(1, parseInt(semesterNumber, 10) || 1);
-    const academicYearStart = 2024 + Math.floor((safeSemester - 1) / 2);
-    const season = safeSemester % 2 === 0 ? 'Spring' : 'Fall';
-    return `${academicYearStart}/${academicYearStart + 1} ${season} Semester - ${safeSemester}`;
-}
-
-function getStudyCardLetterGrade(score, hasAnyScore) {
-    if (!hasAnyScore) {
-        return { label: '-', color: '#94a3b8' };
-    }
-    if (score >= 91) return { label: 'A', color: 'var(--lux-accent)' };
-    if (score >= 81) return { label: 'B', color: 'var(--lux-accent-2)' };
-    if (score >= 71) return { label: 'C', color: 'rgba(var(--lux-home-secondary-rgb, 110, 160, 255), 0.96)' };
-    if (score >= 61) return { label: 'D', color: '#d4a24d' };
-    if (score >= 51) return { label: 'E', color: '#c97b4b' };
-    if (score >= 41) return { label: 'FX', color: '#d46b6b' };
-    return { label: 'F', color: '#d46b6b' };
-}
-
-function normalizeStudyCardIdentifier(value) {
-    if (typeof normalizeIdentifier === 'function') {
-        return normalizeIdentifier(value);
-    }
-    return String(value || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '');
-}
-
-function getStudyCardSubjectTokens(courseId, subject) {
-    const tokens = new Set();
-    [
-        courseId,
-        subject?.id,
-        subject?.code,
-        subject?.courseId,
-        subject?.subjectId,
-        subject?.name
-    ].forEach(value => {
-        const token = normalizeStudyCardIdentifier(value);
-        if (token) tokens.add(token);
-    });
-    return Array.from(tokens);
-}
-
-function resolveStudyCardGradeRecord(courseId, groupId, enrolledStudents, studentId, primaryRosterId, subject) {
-    const rosters = KIU_STATE.studentGrades || {};
-    const findStudentRecord = (roster) => Array.isArray(roster)
-        ? roster.find(entry => String(entry?.id) === String(studentId)) || null
-        : null;
-    const primaryRecord = findStudentRecord(rosters[primaryRosterId]);
-    if (primaryRecord) {
-        return { rosterId: primaryRosterId, record: primaryRecord };
-    }
-
-    const courseTokens = getStudyCardSubjectTokens(courseId, subject);
-    const groupToken = normalizeStudyCardIdentifier(groupId || 'default');
-    const enrolledStudentIds = new Set((enrolledStudents || []).map(student => String(student?.id || student?.studentId || '')));
-    let bestMatch = { score: 0, rosterId: primaryRosterId, record: null };
-
-    Object.entries(rosters).forEach(([candidateRosterId, roster]) => {
-        const record = findStudentRecord(roster);
-        if (!record) return;
-
-        const keyToken = normalizeStudyCardIdentifier(candidateRosterId);
-        const recordCourseToken = normalizeStudyCardIdentifier(record.courseId || record.subjectId || record.idCourse || record.subject);
-        const recordGroupToken = normalizeStudyCardIdentifier(record.groupId || record.group || record.sectionId);
-        let score = 0;
-
-        if (candidateRosterId === primaryRosterId) score += 12;
-        if (groupToken && (keyToken.includes(groupToken) || recordGroupToken === groupToken)) score += 3;
-        if (enrolledStudentIds.has(String(studentId))) score += 1;
-
-        courseTokens.forEach(token => {
-            if (!token) return;
-            if (keyToken.includes(token)) score += 5;
-            if (recordCourseToken === token) score += 6;
-        });
-
-        if (typeof resolveSubjectIdFromRosterId === 'function') {
-            const domain = typeof getDomain === 'function' ? getDomain() : {};
-            const subjectList = Object.values(domain.subjectsById || {}).concat(KIU_STATE.curriculum || []);
-            const resolvedSubjectId = normalizeStudyCardIdentifier(resolveSubjectIdFromRosterId(candidateRosterId, subjectList));
-            if (resolvedSubjectId && courseTokens.includes(resolvedSubjectId)) score += 6;
-        }
-
-        if (score > bestMatch.score) {
-            bestMatch = { score, rosterId: candidateRosterId, record };
-        }
-    });
-
-    return bestMatch.score >= 5
-        ? { rosterId: bestMatch.rosterId, record: bestMatch.record }
-        : { rosterId: primaryRosterId, record: null };
-}
-
-function closeStudyCardAssessmentWindow() {
-    const existing = document.getElementById('study-card-assessment-window');
-    if (existing) existing.remove();
-    if (document.body.dataset.studyCardAssessmentOverflow !== undefined) {
-        document.body.style.overflow = document.body.dataset.studyCardAssessmentOverflow;
-        delete document.body.dataset.studyCardAssessmentOverflow;
-    }
-}
-
-function bindStudyCardAssessmentDelegates() {
-    if (window.__studyCardAssessmentDelegatesBound) return;
-    window.__studyCardAssessmentDelegatesBound = true;
-
-    document.addEventListener('click', (event) => {
-        const closeTrigger = event.target.closest('[data-study-card-assessment-close]');
-        if (closeTrigger) {
-            event.preventDefault();
-            closeStudyCardAssessmentWindow();
-            return;
-        }
-
-        const assessmentTrigger = event.target.closest('[data-study-card-assessment-key]');
-        if (!assessmentTrigger) return;
-        event.preventDefault();
-        const cacheKey = assessmentTrigger.getAttribute('data-study-card-assessment-key');
-        if (cacheKey) openStudyCardAssessmentWindow(cacheKey);
-    });
-}
-
-bindStudyCardAssessmentDelegates();
-
-function ensurePlannerLegacyInteractiveStyles() {
-    if (document.getElementById('planner-legacy-interactive-styles')) return;
-    const style = document.createElement('style');
-    style.id = 'planner-legacy-interactive-styles';
-    style.textContent = `
-        .grid-slot-interactive:hover {
-            background: rgba(0, 0, 0, 0.02);
-        }
-        .calendar-event-card {
-            transition: 0.15s ease;
-        }
-        .calendar-event-card:hover {
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-            transform: translateY(-1px);
-        }
-    `;
-    document.head.appendChild(style);
-}
-
 function bindPlannerLegacyDelegates() {
     if (window.__plannerLegacyDelegatesBound) return;
     window.__plannerLegacyDelegatesBound = true;
-    ensurePlannerLegacyInteractiveStyles();
     document.addEventListener('click', (event) => {
-        const gradeDetailsTrigger = event.target.closest('[data-planner-grade-details]');
-        if (gradeDetailsTrigger) {
-            event.preventDefault();
-            toggleGradeDetails(gradeDetailsTrigger);
-            return;
-        }
-
         const schedulerStatsTrigger = event.target.closest('[data-scheduler-stats]');
         if (schedulerStatsTrigger) {
             event.preventDefault();
@@ -455,240 +188,14 @@ function bindPlannerLegacyDelegates() {
 
 bindPlannerLegacyDelegates();
 
-function openStudyCardAssessmentWindow(cacheKey) {
-    const cache = window.__studyCardAssessmentCache || {};
-    const subject = cache[cacheKey];
-    if (!subject) return;
-
-    closeStudyCardAssessmentWindow();
-
-    document.body.dataset.studyCardAssessmentOverflow = document.body.style.overflow || '';
-    document.body.style.overflow = 'hidden';
-
-    const overlay = document.createElement('div');
-    overlay.id = 'study-card-assessment-window';
-    overlay.style.cssText = 'position:fixed; inset:0; z-index:7200; background:rgba(15,23,42,0.72); backdrop-filter:blur(6px); display:flex; align-items:center; justify-content:center; padding:24px;';
-    overlay.onclick = (event) => {
-        if (event.target === overlay) closeStudyCardAssessmentWindow();
-    };
-
-    overlay.innerHTML = `
-        <div class="study-card-assessment-window">
-            <div class="study-card-assessment-window__header">
-                <div style="min-width:0;">
-                    <div class="study-card-assessment-window__title">${escapeHtml(subject.courseName)}</div>
-                    <div class="study-card-assessment-window__meta">${escapeHtml(subject.courseId)} · ${escapeHtml(subject.professorLabel)}</div>
-                    <div class="study-card-assessment-window__meta">Group: ${escapeHtml(subject.groupName)} · Roster: ${escapeHtml(subject.rosterId || '-')}</div>
-                </div>
-                <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end;">
-                    <span class="lms-route-pill"><i class="fas fa-chart-line"></i> Score ${escapeHtml(String(subject.overallScore || 0))}</span>
-                    <span class="lms-route-pill"><i class="fas fa-award"></i> ${escapeHtml(subject.letterMeta?.label || '-')}</span>
-                    <button type="button" class="lux-secondary-btn" data-study-card-assessment-close>
-                        <i class="fas fa-window-minimize"></i> Minimize
-                    </button>
-                </div>
-            </div>
-            <div class="study-card-assessment-window__body">
-                    <div style="display:grid; gap:12px; margin-bottom:16px;">
-                        <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                            ${(subject.weightChips || []).map(chip => `
-                                <span class="lms-route-pill" style="background:rgba(var(--lux-accent-rgb),0.08); border-color:rgba(var(--lux-accent-rgb),0.14); color:var(--lux-text);">
-                                    ${escapeHtml(chip)}
-                                </span>
-                            `).join('')}
-                        </div>
-                        <div class="lms-route-card-grid" style="grid-template-columns:repeat(auto-fit, minmax(160px, 1fr));">
-                            ${(subject.breakdown || []).map(item => `
-                                <div class="lms-route-card" style="padding:16px;">
-                                    <div class="lms-route-eyebrow">${escapeHtml(item.label)}</div>
-                                    <div class="lms-route-title" style="font-size:26px; margin-top:8px;">${escapeHtml(String(item.value ?? 0))}</div>
-                                    <div class="lms-route-copy" style="margin-top:8px;">${escapeHtml(String(item.count || 0))} saved entr${item.count === 1 ? 'y' : 'ies'}</div>
-                                </div>
-                            `).join('')}
-                        </div>
-                    </div>
-                    <div style="display:flex; justify-content:space-between; gap:12px; align-items:center; margin-bottom:14px; flex-wrap:wrap;">
-                        <div>
-                            <div style="font-size:12px; font-weight:800; text-transform:uppercase; color:rgba(var(--lux-accent-rgb),0.82);">Raw Assessment History</div>
-                            <div style="font-size:13px; color:var(--lux-text-muted); margin-top:4px;">Each saved attempt, score, and update is shown here without aggregate summary cards.</div>
-                        </div>
-                    </div>
-                    <div style="display:grid; gap:12px;">
-                        ${subject.historyHtml}
-                    </div>
-            </div>
-        </div>
-    `;
-
-    document.body.appendChild(overlay);
-}
-
-function renderStudyCard() {
-    const container = document.getElementById('study-card-container');
-    if (!container) return;
-
-    const currentUser = getCurrentUser();
-    const effectiveRole = typeof getEffectiveUserRole === 'function'
-        ? getEffectiveUserRole()
-        : (currentUserRole || currentUser?.role || USER_ROLES.STUDENT);
-    if (!currentUser || effectiveRole !== USER_ROLES.STUDENT) {
-        container.innerHTML = '<div style="padding:40px; text-align:center; color:var(--kiu-text-muted);">Study Card is only available in the student portal.</div>';
-        return;
-    }
-
-    const rawSchedule = getCurrentStudentSchedule();
-    const seenCourseGroups = new Set();
-    const currentSchedule = (rawSchedule || []).filter(item => {
-        const courseId = String(item?.courseId || item?.id || item?.subjectId || '').trim();
-        const groupId = String(item?.groupId || item?.group || item?.sectionId || '').trim();
-        if (!courseId) return false;
-        const dedupeKey = `${normalizeIdentifier(courseId)}::${normalizeIdentifier(groupId || 'default')}`;
-        if (seenCourseGroups.has(dedupeKey)) return false;
-        seenCourseGroups.add(dedupeKey);
-        return true;
+function syncPlannerSchedulerEventMetrics(root = document) {
+    if (!root || typeof root.querySelectorAll !== 'function') return;
+    root.querySelectorAll('.sch-event-card[data-sch-top][data-sch-height]').forEach((node) => {
+        const top = Number(node.getAttribute('data-sch-top'));
+        const height = Number(node.getAttribute('data-sch-height'));
+        node.style.setProperty('--sch-event-top', `${Number.isFinite(top) ? top : 0}px`);
+        node.style.setProperty('--sch-event-height', `${Number.isFinite(height) ? height : 0}px`);
     });
-
-    if (!currentSchedule.length) {
-        container.innerHTML = '<div style="padding:40px; text-align:center; color:var(--kiu-text-muted);">You have no registered subjects yet. Complete Academic Registration to populate your Study Card.</div>';
-        return;
-    }
-
-    const domain = getDomain?.() || {};
-    const subjectsById = domain.subjectsById || {};
-    const semesterBuckets = {};
-
-    currentSchedule.forEach(scheduleItem => {
-        const courseId = String(scheduleItem?.courseId || scheduleItem?.id || scheduleItem?.subjectId || '').trim();
-        const groupId = String(scheduleItem?.groupId || scheduleItem?.group || scheduleItem?.sectionId || '').trim();
-        const availableGroups = Array.isArray(KIU_STATE.availableGroups?.[courseId]) ? KIU_STATE.availableGroups[courseId] : [];
-        const groupObj = availableGroups.find(group => normalizeIdentifier(group?.id) === normalizeIdentifier(groupId)) || null;
-        const subject = subjectsById[courseId] || (KIU_STATE.curriculum || []).find(item => String(item?.id) === courseId) || null;
-        const semester = Math.max(1, parseInt(scheduleItem?.semester || groupObj?.semester || subject?.semester || currentUser?.semester || KIU_STATE.activeSemester || 1, 10) || 1);
-
-        const enrolledStudents = getEnrolledStudentsForGroup(courseId, groupId);
-        const rosterId = resolveGradebookRosterKey(courseId, groupId, enrolledStudents);
-        const gradeMatch = resolveStudyCardGradeRecord(courseId, groupId, enrolledStudents, currentUser.id, rosterId, subject);
-        const gradeRosterId = gradeMatch.rosterId || rosterId;
-        const rawRecord = gradeMatch.record || null;
-        const record = syncGradeRecordSummaries(ensureGradeRecordHistories(rawRecord || {
-            id: currentUser.id,
-            name: currentUser.name || currentUser.nameEn || 'Student'
-        }));
-        const weightProfile = typeof getGradebookWeightProfileForRoster === 'function'
-            ? getGradebookWeightProfileForRoster(gradeRosterId)
-            : { q1: 0.10, qa: 0.10, mid: 0.30, fin: 0.50 };
-
-        const quizScore = Number(getAssessmentDisplayValue(record, GRADEBOOK_CRITERIA.quiz) || 0);
-        const oralQuizScore = Number(getAssessmentDisplayValue(record, GRADEBOOK_CRITERIA.oralQuiz) || 0);
-        const homeworkScore = Number(getAssessmentDisplayValue(record, GRADEBOOK_CRITERIA.homework) || 0);
-        const midtermScore = Number(getAssessmentDisplayValue(record, GRADEBOOK_CRITERIA.midterm) || 0);
-        const examScore = Number((typeof getGradebookEffectiveExamScore === 'function'
-            ? getGradebookEffectiveExamScore(record)
-            : getStudentEffectiveFinalRetakeScore(record)) || 0);
-        const getScoredAssessmentCount = (criterionKey) => getAssessmentEntries(record, criterionKey)
-            .filter(entry => entry && entry.score !== null && entry.score !== undefined && entry.score !== '')
-            .length;
-        const examScoreCount = getScoredAssessmentCount(GRADEBOOK_CRITERIA.final.key) + getScoredAssessmentCount(GRADEBOOK_CRITERIA.retake.key);
-        const visibleOutcome = typeof getGradebookVisibleOutcome === 'function'
-            ? getGradebookVisibleOutcome(record, weightProfile)
-            : {
-                scoreLabel: String(Math.max(0, Math.min(100, Math.round(Number(getGradeRecordCombinedKiuPassScore(record, gradeRosterId) || 0)))))
-            };
-        const overallScore = Math.max(0, Math.min(100, parseInt(visibleOutcome.scoreLabel, 10) || 0));
-        const hasAnyScore = Object.values(record.assessments || {}).some(entries => Array.isArray(entries) && entries.length > 0)
-            || [quizScore, oralQuizScore, homeworkScore, midtermScore, examScore].some(score => Number(score) > 0);
-        const letterMeta = getStudyCardLetterGrade(overallScore, hasAnyScore);
-        const courseName = scheduleItem?.courseName || scheduleItem?.name || subject?.name || courseId || 'Subject';
-        const professorLabel = scheduleItem?.prof || groupObj?.prof || groupObj?.teacher || groupObj?.ta || 'Professor TBA';
-        const ects = getCourseEctsValue(scheduleItem) || getCourseEctsValue(subject) || 6;
-
-        if (!semesterBuckets[semester]) semesterBuckets[semester] = [];
-        semesterBuckets[semester].push({
-            courseId,
-            courseName,
-            groupName: groupObj?.name || groupId || '-',
-            professorLabel,
-            ects,
-            overallScore,
-            letterMeta,
-            rosterId: gradeRosterId,
-            studentId: currentUser.id,
-            studentName: currentUser.name || currentUser.nameEn || 'Student',
-            breakdown: [
-                { label: 'Quiz', shortLabel: 'Quiz', value: quizScore, count: getScoredAssessmentCount(GRADEBOOK_CRITERIA.quiz.key) },
-                { label: 'Oral Quiz', shortLabel: 'Oral', value: oralQuizScore, count: getScoredAssessmentCount(GRADEBOOK_CRITERIA.oralQuiz.key) },
-                { label: 'Homework', shortLabel: 'HW', value: homeworkScore, count: getScoredAssessmentCount(GRADEBOOK_CRITERIA.homework.key) },
-                { label: 'Midterm', shortLabel: 'Mid', value: midtermScore, count: getScoredAssessmentCount(GRADEBOOK_CRITERIA.midterm.key) },
-                { label: 'Exam / Retake', shortLabel: 'Exam', value: examScore, count: examScoreCount }
-            ],
-            weightChips: [
-                `Quiz ${Math.round(Number(weightProfile.q1 || 0) * 100)}%`,
-                `Homework ${Math.round(Number(weightProfile.qa || 0) * 100)}%`,
-                `Midterm ${Math.round(Number(weightProfile.mid || 0) * 100)}%`,
-                `Final / Retake ${Math.round(Number(weightProfile.fin || 0) * 100)}%`
-            ],
-            historyHtml: renderStudyCardHistorySections(record, currentUser.id, currentUser.name || currentUser.nameEn || 'Student')
-        });
-    });
-
-    const sortedTerms = Object.keys(semesterBuckets)
-        .map(value => parseInt(value, 10))
-        .filter(value => Number.isFinite(value))
-        .sort((a, b) => b - a);
-
-    const assessmentWindowCache = {};
-    const html = sortedTerms.map((termNum, index) => {
-        const rows = semesterBuckets[termNum]
-            .sort((a, b) => String(a.courseName || '').localeCompare(String(b.courseName || ''), undefined, { sensitivity: 'base' }))
-            .map(subject => {
-                const assessmentCacheKey = `study-card-${toDomToken(subject.courseId)}-${toDomToken(subject.groupName)}-${termNum}`;
-                assessmentWindowCache[assessmentCacheKey] = subject;
-                return `
-                <tr>
-                    <td style="width:28%; font-weight:700;">
-                        <div>${escapeHtml(subject.courseName)}</div>
-                        <div class="study-card-subject-meta" style="font-size:11px; margin-top:6px;">${escapeHtml(subject.courseId)}</div>
-                    </td>
-                    <td style="width:18%;">
-                        <div>${escapeHtml(subject.professorLabel)}</div>
-                        <div class="study-card-prof-meta" style="font-size:11px; margin-top:6px;">${escapeHtml(subject.groupName)}</div>
-                    </td>
-                    <td style="width:10%; text-align:center; font-weight:800;">${subject.ects}</td>
-                    <td style="width:10%; text-align:center; font-weight:900; color:var(--lux-text);">${subject.overallScore}</td>
-                    <td style="width:10%; text-align:center;">
-                        <div class="grade-circle study-card-grade-circle" style="border-color:${subject.letterMeta.color}; box-shadow:inset 0 1px 0 rgba(255,255,255,0.06), 0 0 0 1px ${subject.letterMeta.color}33; background:linear-gradient(180deg, ${subject.letterMeta.color}26, rgba(10,15,24,0.96)); ${subject.letterMeta.label === '-' ? 'color:transparent;' : ''}">${escapeHtml(subject.letterMeta.label)}</div>
-                    </td>
-                    <td style="width:24%; text-align:right;">
-                        <button type="button" class="lux-primary-btn study-card-assessment-btn" data-study-card-assessment-key="${escapeHtml(assessmentCacheKey)}"><i class="fas fa-up-right-and-down-left-from-center"></i> Assessment</button>
-                    </td>
-                </tr>
-            `;
-            }).join('');
-
-        return `
-            <div style="margin-top:${index === 0 ? '0' : '30px'};">
-                <div class="semester-header">
-                    <span>${escapeHtml(getStudyCardSemesterLabel(termNum))}</span>
-                </div>
-                <table class="kiu-table study-card-semester-table">
-                    <thead>
-                        <tr>
-                            <th style="text-align:left;">Subject</th>
-                            <th style="text-align:left;">Professor</th>
-                            <th>ECTS</th>
-                            <th>Score</th>
-                            <th>Letter Grade</th>
-                            <th style="text-align:right;">Assessment</th>
-                        </tr>
-                    </thead>
-                    <tbody>${rows}</tbody>
-                </table>
-            </div>
-        `;
-    }).join('');
-
-    window.__studyCardAssessmentCache = assessmentWindowCache;
-    container.innerHTML = localizeHtmlMarkup(html);
 }
 
 // --- ADMIN MASTER GRID ENGINE ---
@@ -762,23 +269,33 @@ function renderAdminCurriculumPalette() {
             categories[derivedFaculty].push(sub);
         }
     });
+
+    function getPlannerPaletteToneClass(facultyName) {
+        switch (facultyName) {
+            case 'Computer Science': return 'sch-palette-tone-cs';
+            case 'Business Management': return 'sch-palette-tone-biz';
+            case 'Medicine': return 'sch-palette-tone-med';
+            case 'Arts & Humanities': return 'sch-palette-tone-arts';
+            default: return 'sch-palette-tone-law';
+        }
+    }
     
     activeFaculties.forEach(fac => {
         if (categories[fac].length > 0) {
-            const facColor = fac === 'Computer Science' ? '#0f6cbd' : (fac === 'Business Management' ? '#a4262c' : '#107c41');
-            html += `<div style="font-size: 11px; font-weight: 800; color: ${facColor}; text-transform: uppercase; margin-bottom: 8px; margin-top: 10px; padding-bottom: 4px; border-bottom: 1px solid #edebe9; display: flex; align-items: center; justify-content: space-between;">
+            const toneClass = getPlannerPaletteToneClass(fac);
+            html += `<div class="sch-palette-group ${toneClass}">
                 ${fac}
-                <span style="background: ${facColor}20; padding: 2px 6px; border-radius: 10px; font-size: 10px; color: ${facColor};">${categories[fac].length}</span>
+                <span class="sch-palette-group-count">${categories[fac].length}</span>
             </div>`;
             
             categories[fac].forEach(sub => {
             html += `
-                    <div class="palette-item" data-admin-planner-palette-subject="${escapeHtml(sub.id)}" data-admin-planner-palette-name="${escapeHtml(sub.name)}" style="background:white; border:1px solid #edebe9; border-left: 3px solid ${facColor}; padding:10px 12px; border-radius:6px; font-size:12px; cursor:pointer; display:flex; justify-content:space-between; align-items:center; transition:0.2s; box-shadow:0 1px 3px rgba(0,0,0,0.02); margin-bottom:5px;">
-                        <div style="display:flex; flex-direction:column;">
-                            <span style="font-weight:700; color:#201f1e;">${sub.id}</span>
-                            <span style="font-size:10px; color:#605e5c; line-height: 1.3; margin-top: 2px;">${sub.name}</span>
+                    <div class="palette-item sch-palette-item ${toneClass}" data-admin-planner-palette-subject="${escapeHtml(sub.id)}" data-admin-planner-palette-name="${escapeHtml(sub.name)}">
+                        <div class="sch-palette-item-copy">
+                            <span class="sch-palette-item-id">${sub.id}</span>
+                            <span class="sch-palette-item-name">${sub.name}</span>
                         </div>
-                        <i class="fas fa-plus-circle" style="color: ${facColor}; opacity:0.8;"></i>
+                        <i class="fas fa-plus-circle sch-palette-item-icon"></i>
                     </div>
                 `;
             });
@@ -786,7 +303,7 @@ function renderAdminCurriculumPalette() {
     });
     
     if (html === '') {
-        html = '<div style="font-size: 12px; color: #605e5c; text-align: center; margin-top: 20px;">No subjects found.</div>';
+        html = '<div class="sch-palette-empty">No subjects found.</div>';
     }
     
     palette.innerHTML = localizeHtmlMarkup(html);
@@ -794,15 +311,13 @@ function renderAdminCurriculumPalette() {
 
 function selectPaletteSubject(id, name) {
     document.querySelectorAll('.palette-item').forEach(el => {
-        el.style.borderColor = 'var(--kiu-border)';
-        el.style.background = 'white';
+        el.classList.remove('is-selected');
     });
     // Multi-highlight support for visual feedback
     const items = document.querySelectorAll('.palette-item');
     for (let item of items) {
-        if (item.innerText.includes(id)) {
-            item.style.borderColor = 'var(--kiu-blue)';
-            item.style.background = '#f1f8ff';
+        if (String(item.getAttribute('data-admin-planner-palette-subject') || '').trim() === String(id || '').trim()) {
+            item.classList.add('is-selected');
         }
     }
     const subSelect = document.getElementById('admin-generate-subject');
@@ -880,6 +395,9 @@ function generateClassGroup() {
         if (overlap) { alert(`CONFLICT: Room ${finalRoom} is booked for ${overlap.courseId} (${overlap.id}).`); return; }
     }
 
+    const instructorPlaceholder = /^(tbd|unassigned|n\/a|--|-)$/i;
+    const hasAssignedProf = Boolean(String(finalProf || '').trim()) && !instructorPlaceholder.test(String(finalProf || '').trim());
+    const hasAssignedTa = Boolean(String(ta || '').trim()) && !instructorPlaceholder.test(String(ta || '').trim());
     const newGroup = {
         id: finalGroupId.toLowerCase(),
         name: finalGroupId,
@@ -892,6 +410,7 @@ function generateClassGroup() {
         ta: ta,
         room: finalRoom,
         duration: `${durMins}min`,
+        sessionType: hasAssignedTa && !hasAssignedProf ? 'seminar' : 'lecture',
         capacity: parseInt(capacity) || 40,
         registered: 0
     };
@@ -970,31 +489,27 @@ function renderAdminMasterGrid() {
     const timeSlots = ['09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00'];
     const activeFaculties = targetFac === 'all' ? ['Computer Science', 'Business Management', 'Law'] : [targetFac];
     
-    let html = `<div style="display: flex; flex-direction: column; min-height: 800px; height: 100%; border: 1px solid #e1dfdd; border-radius: 8px; overflow: hidden; background: white; font-family: 'Segoe UI', system-ui, sans-serif; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+    let html = `<div class="sch-board-shell">
         <!-- Calendar Header -->
-        <div style="display: flex; background: #ffffff; border-bottom: 2px solid #edebe9; position: sticky; top: 0; z-index: 20;">
-            <div style="width: 70px; border-right: 1px solid #edebe9; flex-shrink: 0; padding: 12px; text-align: center; color: #605e5c; font-size: 11px; font-weight: 700; text-transform: uppercase; background: #faf9f8; display: flex; align-items: center; justify-content: center;">
+        <div class="sch-board-header">
+            <div class="sch-board-timezone">
                 GMT+4
             </div>
-            <div style="display: flex; flex: 1;">`;
+            <div class="sch-board-header-days">`;
             
     days.forEach((d, idx) => {
-        // Today styling mockup
-        const todayStyling = idx === 0 ? `color: #0f6cbd; border-bottom: 4px solid #0f6cbd; padding-bottom: 8px;` : `color: #323130; padding-bottom: 12px;`;
-        
         let subHeaders = '';
         if (activeFaculties.length > 1) {
-            subHeaders = `<div style="display: flex; width: 100%; margin-top: 8px; font-size: 10px; font-weight: 600; color: #a19f9d; text-transform: uppercase;">`;
+            subHeaders = `<div class="sch-board-subheaders">`;
             activeFaculties.forEach((fac, fIdx) => {
-                const bRight = fIdx < activeFaculties.length - 1 ? 'border-right: 1px dashed #edebe9;' : '';
                 const facAcronym = fac === 'Computer Science' ? 'CS' : (fac === 'Business Management' ? 'BUS' : 'LAW');
-                subHeaders += `<div style="flex: 1; text-align: center; ${bRight}">${facAcronym}</div>`;
+                subHeaders += `<div class="sch-board-subheader-cell${fIdx < activeFaculties.length - 1 ? ' is-divider' : ''}">${facAcronym}</div>`;
             });
             subHeaders += `</div>`;
         }
         
-        html += `<div style="flex: 1; display: flex; flex-direction: column; align-items: center; border-right: 1px solid #edebe9; padding-top: 12px; background: ${idx === 0 ? '#f3f2f1' : '#ffffff'};">
-            <div style="font-size: 14px; font-weight: 700; ${todayStyling}">${d}</div>
+        html += `<div class="sch-board-day-header${idx === 0 ? ' is-today' : ''}">
+            <div class="sch-board-day-title${idx === 0 ? ' is-today' : ''}">${d}</div>
             ${subHeaders}
         </div>`;
     });
@@ -1002,29 +517,27 @@ function renderAdminMasterGrid() {
     html += `</div></div>
         
         <!-- Calendar Body (Scrollable) -->
-        <div style="display: flex; flex: 1; overflow-y: auto; position: relative; height: 1320px;">
+        <div class="sch-board-body">
             <!-- Time Sidebar -->
-            <div style="width: 70px; border-right: 1px solid #edebe9; background: #faf9f8; flex-shrink: 0; display: flex; flex-direction: column;">`;
+            <div class="sch-board-time-column">`;
             
     timeSlots.forEach(t => {
-        html += `<div style="height: 120px; border-bottom: 1px solid #edebe9; position: relative; box-sizing: border-box;">
-            <span style="position: absolute; right: 6px; top: -8px; font-size: 12px; font-weight: 600; color: #605e5c; background: #faf9f8; padding: 0 4px; border-radius: 4px;">${t}</span>
+        html += `<div class="sch-board-time-slot">
+            <span class="sch-board-time-label">${t}</span>
         </div>`;
     });
     
     html += `</div>`;
     
-    days.forEach((d, idx) => {
-        const bgDay = idx === 0 ? 'background: #ffffff;' : 'background: #ffffff;';
-        html += `<div style="flex: 1; border-right: 1px solid #edebe9; position: relative; z-index: 2; display: flex; ${bgDay}" class="scheduler-col">`;
+    days.forEach((d) => {
+        html += `<div class="scheduler-col sch-board-day-column">`;
         
         activeFaculties.forEach((fac, fIdx) => {
-            const laneBorder = fIdx < activeFaculties.length - 1 ? 'border-right: 1px dashed #edebe9;' : '';
-            html += `<div style="flex: 1; position: relative; ${laneBorder}">`;
+            html += `<div class="sch-board-lane${fIdx < activeFaculties.length - 1 ? ' is-divider' : ''}">`;
             
             // 1. Draw Invisible Clickable Slots Background
             timeSlots.forEach(t => {
-                html += `<div data-scheduler-open="1" data-scheduler-day="${escapeHtml(d)}" data-scheduler-time="${escapeHtml(t)}" class="grid-slot-interactive" style="height: 120px; width: 100%; border-bottom: 1px solid #e1dfdd; box-sizing: border-box; cursor: crosshair;"></div>`;
+                html += `<div data-scheduler-open="1" data-scheduler-day="${escapeHtml(d)}" data-scheduler-time="${escapeHtml(t)}" class="grid-slot-interactive sch-grid-slot"></div>`;
             });
             
             // 2. Draw Absolute Positioned Events
@@ -1042,28 +555,27 @@ function renderAdminMasterGrid() {
                 const isBiz = si.faculty === 'Business Management';
                 
                 const color = isCS ? '#0f6cbd' : (isBiz ? '#a4262c' : '#107c41');
-                const bgColor = isCS ? '#e5f0fa' : (isBiz ? '#fdf3f4' : '#eaf6ed');
-                const hoverShadow = 'box-shadow: 0 4px 8px rgba(0,0,0,0.15);';
+                const eventToneClass = isCS ? 'is-cs' : (isBiz ? 'is-biz' : 'is-law');
                 
                 // Unassigned Badges Check
-                const unassignedWarning = (si.prof === 'TBD' || si.room === 'TBD') 
-                    ? `<div style="position:absolute; top:-6px; right:-6px; background:#a4262c; color:white; font-size:8px; padding:2px 4px; border-radius:10px; font-weight:bold; box-shadow:0 1px 3px rgba(0,0,0,0.2); z-index:20;">DRAFT</div>` 
+                const unassignedWarning = (si.prof === 'TBD' || si.room === 'TBD')
+                    ? `<div class="sch-event-draft-badge">DRAFT</div>`
                     : '';
                 
                 html += `
-                <div class="calendar-event-card" data-scheduler-edit="1" data-scheduler-course="${escapeHtml(si.courseId)}" data-scheduler-group="${escapeHtml(si.id)}" style="position: absolute; top: ${topPx}px; left: 4px; right: 4px; height: ${heightPx - 8}px; background: ${bgColor}; border-left: 4px solid ${color}; padding: 6px 8px; border-radius: 4px; border: 1px solid ${color}; box-sizing: border-box; cursor: pointer; overflow: hidden; z-index: 10;">
+                <div class="calendar-event-card sch-event-card ${eventToneClass}" data-scheduler-edit="1" data-scheduler-course="${escapeHtml(si.courseId)}" data-scheduler-group="${escapeHtml(si.id)}" data-sch-top="${topPx}" data-sch-height="${heightPx - 8}">
                     ${unassignedWarning}
-                    <div style="font-weight: 700; color: #201f1e; font-size: 11px; margin-bottom: 2px; line-height: 1.2;">
-                        ${si.courseId} <span style="font-weight: normal; color: #605e5c;">(${si.id})</span>
+                    <div class="sch-event-card-title">
+                        ${si.courseId} <span class="sch-event-card-group">(${si.id})</span>
                     </div>
-                    <div style="font-size: 10px; color: ${si.prof === 'TBD' ? '#a4262c' : '#484644'}; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; margin-bottom: 2px; font-weight: ${si.prof === 'TBD' ? 'bold' : 'normal'};">
-                        <i class="fas fa-user-circle" style="opacity: 0.7;"></i> ${si.prof === 'TBD' ? 'No Professor' : si.prof}
+                    <div class="sch-event-card-meta${si.prof === 'TBD' ? ' is-missing' : ''}">
+                        <i class="fas fa-user-circle sch-event-card-icon"></i> ${si.prof === 'TBD' ? 'No Professor' : si.prof}
                     </div>
-                    <div style="font-size: 10px; color: ${si.room === 'TBD' ? '#a4262c' : '#484644'}; font-weight: 600;">
-                        <i class="fas fa-map-marker-alt" style="opacity: 0.7;"></i> ${si.room === 'TBD' ? 'No Room' : si.room}
+                    <div class="sch-event-card-room${si.room === 'TBD' ? ' is-missing' : ''}">
+                        <i class="fas fa-map-marker-alt sch-event-card-icon"></i> ${si.room === 'TBD' ? 'No Room' : si.room}
                     </div>
-                    <i class="fas fa-circle-info trash-hover" data-scheduler-stats="1" data-scheduler-course="${escapeHtml(si.courseId)}" data-scheduler-group="${escapeHtml(si.id)}" style="position: absolute; bottom: 6px; right: 26px; color: #201f1e; opacity: 0; cursor: pointer; font-size: 12px; transition: 0.2s;"></i>
-                    <i class="fas fa-trash trash-hover" data-scheduler-delete="1" data-scheduler-course="${escapeHtml(si.courseId)}" data-scheduler-group="${escapeHtml(si.id)}" style="position: absolute; bottom: 6px; right: 6px; color: #a4262c; opacity: 0; cursor: pointer; font-size: 12px; transition: 0.2s;"></i>
+                    <i class="fas fa-circle-info trash-hover sch-event-card-utility sch-event-card-utility--stats" data-scheduler-stats="1" data-scheduler-course="${escapeHtml(si.courseId)}" data-scheduler-group="${escapeHtml(si.id)}"></i>
+                    <i class="fas fa-trash trash-hover sch-event-card-utility sch-event-card-utility--delete" data-scheduler-delete="1" data-scheduler-course="${escapeHtml(si.courseId)}" data-scheduler-group="${escapeHtml(si.id)}"></i>
                 </div>`;
             });
             
@@ -1075,6 +587,7 @@ function renderAdminMasterGrid() {
     
     html += `</div></div></div>`;
     container.innerHTML = localizeHtmlMarkup(html);
+    syncPlannerSchedulerEventMetrics(container);
 }
 
 // Helper: get the MODAL version of a field (last element with that ID, since modal is appended last in DOM)
@@ -1153,9 +666,9 @@ function openSchedulerModal(day, time) {
     if (!overlay || !schedulerModal) { console.error('schedulerModal or overlay not found'); return; }
 
     // Hide all other modal-content panels, show only schedulerModal's panel
-    document.querySelectorAll('#modal-overlay .modal-content').forEach(el => el.style.display = 'none');
+    document.querySelectorAll('#modal-overlay .modal-content').forEach((el) => setPlannerModalPanelVisibility(el, false));
     const mc = schedulerModal.querySelector('.modal-content');
-    if (mc) mc.style.display = 'block';
+    setPlannerModalPanelVisibility(mc, true);
     overlay.classList.add('active');
 }
 
@@ -1224,7 +737,7 @@ function closeSchedulerModal() {
     const schedulerModal = document.getElementById('schedulerModal');
     if (schedulerModal) {
         const mc = schedulerModal.querySelector('.modal-content');
-        if (mc) mc.style.display = 'none';
+        setPlannerModalPanelVisibility(mc, false);
     }
 
     // Clear modal-specific inputs
@@ -1397,6 +910,14 @@ function getAdminOpsTone(value) {
     return { bg: '#f1f5f9', text: '#475569' };
 }
 
+function getAdminOpsToneClass(value) {
+    const normalized = String(value || '').trim().toLowerCase();
+    if (['ready', 'completed', 'resolved', 'active', 'open'].includes(normalized)) return 'is-ready';
+    if (['configured', 'queued', 'in_progress', 'in-progress', 'pending', 'waiting'].includes(normalized)) return 'is-pending';
+    if (['failed', 'error', 'disabled', 'blocked'].includes(normalized)) return 'is-danger';
+    return 'is-neutral';
+}
+
 function ensureAdminSystemOpsRoot() {
     const dashboard = document.querySelector('#page-admin-tools .dashboard-admin')
         || document.querySelector('#page-home .only-admin.dashboard-admin');
@@ -1405,11 +926,9 @@ function ensureAdminSystemOpsRoot() {
     if (!root) {
         root = document.createElement('div');
         root.id = 'admin-system-ops-root';
-        root.className = 'content-box admin-card';
-        root.style.marginTop = '24px';
-        root.style.marginBottom = '24px';
+        root.className = 'content-box admin-card admin-system-ops-root';
         const firstCard = dashboard.querySelector('.content-box.admin-card');
-        if (firstCard) dashboard.insertBefore(root, firstCard);
+        if (firstCard && firstCard.parentNode === dashboard) dashboard.insertBefore(root, firstCard);
         else dashboard.appendChild(root);
     }
     return root;
@@ -1440,92 +959,85 @@ function renderAdminSystemOpsDashboard() {
     const authoritativeSystems = systems.filter(system => system.isAuthoritative !== false).length;
     const openConflicts = conflicts.filter(conflict => String(conflict.resolutionStatus || '').trim().toLowerCase() !== 'resolved').length;
     const latestSync = syncRuns[0] || null;
-    const accentTone = getFacultyThemeTone(getCurrentFaculty(), {
-        useCurrentPalette: true,
-        softAlpha: 0.12,
-        tintAlpha: 0.18,
-        borderAlpha: 0.24
-    });
-
     root.innerHTML = `
-        <div class="admin-card-title">
-            <div class="admin-card-title-icon">
-                <i class="fas fa-server" style="font-size:14px;"></i>
+        <div class="admin-card-title admin-system-ops-head">
+            <div class="admin-card-title-icon admin-system-ops-head-icon">
+                <i class="fas fa-server"></i>
             </div>
-            <div style="flex:1;">
+            <div class="admin-system-ops-head-copy">
                 <div class="admin-card-title-text">University Systems and Sync</div>
                 <div class="admin-card-subtitle">Live backend readiness, connected systems, sync history, open conflicts, and audit activity.</div>
             </div>
-            <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
-                <span style="font-size:11px; color:var(--kiu-text-muted);">${runtime.lastLoadedAt ? `Last refresh: ${adminOpsEscape(adminOpsFormatDateTime(runtime.lastLoadedAt))}` : 'Waiting for first refresh'}</span>
-                <button type="button" class="kiu-btn-outline" data-admin-planner-refresh-system-ops="1" ${runtime.loading ? 'disabled' : ''}>
+            <div class="admin-system-ops-head-actions">
+                <span class="admin-system-ops-head-meta">${runtime.lastLoadedAt ? `Last refresh: ${adminOpsEscape(adminOpsFormatDateTime(runtime.lastLoadedAt))}` : 'Waiting for first refresh'}</span>
+                <button type="button" class="kiu-btn-outline admin-system-ops-refresh-btn" data-admin-planner-refresh-system-ops="1" ${runtime.loading ? 'disabled' : ''}>
                     <i class="fas fa-rotate-right"></i> ${runtime.loading ? 'Refreshing...' : 'Refresh'}
                 </button>
             </div>
         </div>
-        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(170px, 1fr)); gap:14px; margin-top:18px;">
-            <div class="content-box surface-card" style="padding:16px;">
-                <div style="font-size:11px; text-transform:uppercase; letter-spacing:0.08em; color:var(--kiu-text-muted);">Environment</div>
-                <div style="font-size:24px; font-weight:900; color:var(--kiu-navy); margin-top:8px;">${adminOpsEscape(adminOpsFormatStatusLabel(runtime.status?.environment, 'Unknown'))}</div>
+        <div class="admin-system-ops-stat-grid">
+            <div class="content-box surface-card admin-system-ops-stat-card">
+                <div class="admin-system-ops-stat-label">Environment</div>
+                <div class="admin-system-ops-stat-value">${adminOpsEscape(adminOpsFormatStatusLabel(runtime.status?.environment, 'Unknown'))}</div>
             </div>
-            <div class="content-box surface-card" style="padding:16px;">
-                <div style="font-size:11px; text-transform:uppercase; letter-spacing:0.08em; color:var(--kiu-text-muted);">Connected systems</div>
-                <div style="font-size:24px; font-weight:900; color:${accentTone.accent}; margin-top:8px;">${systems.length}</div>
-                <div style="font-size:11px; color:var(--kiu-text-muted); margin-top:6px;">${readySystems} ready</div>
+            <div class="content-box surface-card admin-system-ops-stat-card">
+                <div class="admin-system-ops-stat-label">Connected systems</div>
+                <div class="admin-system-ops-stat-value admin-system-ops-stat-value-accent">${systems.length}</div>
+                <div class="admin-system-ops-stat-copy">${readySystems} ready</div>
             </div>
-            <div class="content-box surface-card" style="padding:16px;">
-                <div style="font-size:11px; text-transform:uppercase; letter-spacing:0.08em; color:var(--kiu-text-muted);">Authoritative sources</div>
-                <div style="font-size:24px; font-weight:900; color:#0f766e; margin-top:8px;">${authoritativeSystems}</div>
-                <div style="font-size:11px; color:var(--kiu-text-muted); margin-top:6px;">Systems marked as source of truth</div>
+            <div class="content-box surface-card admin-system-ops-stat-card">
+                <div class="admin-system-ops-stat-label">Authoritative sources</div>
+                <div class="admin-system-ops-stat-value admin-system-ops-stat-value-success">${authoritativeSystems}</div>
+                <div class="admin-system-ops-stat-copy">Systems marked as source of truth</div>
             </div>
-            <div class="content-box surface-card" style="padding:16px;">
-                <div style="font-size:11px; text-transform:uppercase; letter-spacing:0.08em; color:var(--kiu-text-muted);">Open conflicts</div>
-                <div style="font-size:24px; font-weight:900; color:#b91c1c; margin-top:8px;">${openConflicts}</div>
-                <div style="font-size:11px; color:var(--kiu-text-muted); margin-top:6px;">${latestSync ? `Latest sync: ${adminOpsEscape(adminOpsFormatStatusLabel(latestSync.runStatus || latestSync.status, 'Unknown'))}` : 'No sync runs recorded yet'}</div>
+            <div class="content-box surface-card admin-system-ops-stat-card">
+                <div class="admin-system-ops-stat-label">Open conflicts</div>
+                <div class="admin-system-ops-stat-value admin-system-ops-stat-value-danger">${openConflicts}</div>
+                <div class="admin-system-ops-stat-copy">${latestSync ? `Latest sync: ${adminOpsEscape(adminOpsFormatStatusLabel(latestSync.runStatus || latestSync.status, 'Unknown'))}` : 'No sync runs recorded yet'}</div>
             </div>
-            <div class="content-box surface-card" style="padding:16px;">
-                <div style="font-size:11px; text-transform:uppercase; letter-spacing:0.08em; color:var(--kiu-text-muted);">Connected mailboxes</div>
-                <div style="font-size:24px; font-weight:900; color:#2563eb; margin-top:8px;">${Number(runtime.status?.connectedMailboxes || 0)}</div>
-                <div style="font-size:11px; color:var(--kiu-text-muted); margin-top:6px;">${Number(runtime.status?.failedMailboxes || 0)} with sync failure state</div>
+            <div class="content-box surface-card admin-system-ops-stat-card">
+                <div class="admin-system-ops-stat-label">Connected mailboxes</div>
+                <div class="admin-system-ops-stat-value admin-system-ops-stat-value-info">${Number(runtime.status?.connectedMailboxes || 0)}</div>
+                <div class="admin-system-ops-stat-copy">${Number(runtime.status?.failedMailboxes || 0)} with sync failure state</div>
             </div>
         </div>
-        <div style="display:grid; grid-template-columns:minmax(360px, 1.1fr) minmax(300px, 0.9fr); gap:18px; margin-top:18px; align-items:start;">
-            <div class="content-box surface-card" style="padding:18px;">
-                <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:14px;">
+        <div class="admin-system-ops-grid admin-system-ops-grid-primary">
+            <div class="content-box surface-card admin-system-ops-section-card">
+                <div class="admin-system-ops-section-head">
                     <div>
-                        <div style="font-size:15px; font-weight:900; color:var(--kiu-navy);">System registry</div>
-                        <div style="font-size:12px; color:var(--kiu-text-muted); margin-top:4px;">Identity, SIS, finance, HR, curriculum, and portal collaboration services.</div>
+                        <div class="admin-system-ops-section-title">System registry</div>
+                        <div class="admin-system-ops-section-copy">Identity, SIS, finance, HR, curriculum, and portal collaboration services.</div>
                     </div>
-                    <span style="font-size:11px; color:var(--kiu-text-muted);">Storage: ${adminOpsEscape(runtime.status?.storageMode || 'Unknown')}</span>
+                    <span class="admin-system-ops-section-meta">Storage: ${adminOpsEscape(runtime.status?.storageMode || 'Unknown')}</span>
                 </div>
-                <div style="display:grid; gap:10px;">
+                <div class="admin-system-ops-list">
                     ${systems.map(system => {
-                        const tone = getAdminOpsTone(system.status);
+                        const toneClass = getAdminOpsToneClass(system.status);
                         return `
-                            <div style="padding:14px; border:1px solid var(--kiu-border); border-radius:14px; background:white;">
-                                <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;">
-                                    <strong style="font-size:13px; color:var(--kiu-navy);">${adminOpsEscape(system.displayName || system.systemCode)}</strong>
-                                    <span style="font-size:10px; font-weight:800; color:${tone.text}; background:${tone.bg}; padding:4px 8px; border-radius:999px;">${adminOpsEscape(adminOpsFormatStatusLabel(system.status, 'Unknown'))}</span>
+                            <div class="admin-system-ops-item-card">
+                                <div class="admin-system-ops-item-head">
+                                    <strong class="admin-system-ops-item-title">${adminOpsEscape(system.displayName || system.systemCode)}</strong>
+                                    <span class="admin-system-ops-pill ${toneClass}">${adminOpsEscape(adminOpsFormatStatusLabel(system.status, 'Unknown'))}</span>
                                 </div>
-                                <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:8px;">
-                                    <span style="font-size:10px; padding:4px 8px; border-radius:999px; background:#f8fafc; color:#334155; border:1px solid var(--kiu-border);">${adminOpsEscape(adminOpsFormatStatusLabel(system.ownerDomain, 'External'))}</span>
-                                    <span style="font-size:10px; padding:4px 8px; border-radius:999px; background:${accentTone.softBg}; color:${accentTone.accent}; border:1px solid ${accentTone.border};">${adminOpsEscape(adminOpsFormatStatusLabel(system.syncMode, 'Unknown'))}</span>
-                                    <span style="font-size:10px; padding:4px 8px; border-radius:999px; background:${system.isAuthoritative !== false ? '#dcfce7' : '#f8fafc'}; color:${system.isAuthoritative !== false ? '#166534' : '#475569'};">${system.isAuthoritative !== false ? 'Source of truth' : 'Dependent system'}</span>
-                                    <span style="font-size:10px; padding:4px 8px; border-radius:999px; background:${system.apiKeyConfigured ? '#dcfce7' : '#fff7ed'}; color:${system.apiKeyConfigured ? '#166534' : '#9a3412'};">${system.apiKeyConfigured ? 'Credentials set' : 'Credentials missing'}</span>
+                                <div class="admin-system-ops-pill-row">
+                                    <span class="admin-system-ops-pill is-domain">${adminOpsEscape(adminOpsFormatStatusLabel(system.ownerDomain, 'External'))}</span>
+                                    <span class="admin-system-ops-pill is-accent">${adminOpsEscape(adminOpsFormatStatusLabel(system.syncMode, 'Unknown'))}</span>
+                                    <span class="admin-system-ops-pill ${system.isAuthoritative !== false ? 'is-ready' : 'is-neutral'}">${system.isAuthoritative !== false ? 'Source of truth' : 'Dependent system'}</span>
+                                    <span class="admin-system-ops-pill ${system.apiKeyConfigured ? 'is-ready' : 'is-warning'}">${system.apiKeyConfigured ? 'Credentials set' : 'Credentials missing'}</span>
                                 </div>
-                                <div style="font-size:11px; color:var(--kiu-text-muted); margin-top:8px; line-height:1.6;">
+                                <div class="admin-system-ops-item-copy">
                                     Endpoint: ${adminOpsEscape(system.baseUrl || 'Not configured')}<br>
                                     Last checked: ${adminOpsEscape(adminOpsFormatDateTime(system.lastCheckedAt))}
                                 </div>
                             </div>
                         `;
-                    }).join('') || '<div style="padding:18px; text-align:center; color:var(--kiu-text-muted); border:1px dashed var(--kiu-border); border-radius:14px;">No integration systems are registered yet.</div>'}
+                    }).join('') || '<div class="admin-system-ops-empty-state">No integration systems are registered yet.</div>'}
                 </div>
             </div>
-            <div style="display:grid; gap:18px;">
-                <div class="content-box surface-card" style="padding:18px;">
-                    <div style="font-size:15px; font-weight:900; color:var(--kiu-navy); margin-bottom:14px;">Platform readiness</div>
-                    <div style="display:grid; gap:10px;">
+            <div class="admin-system-ops-column">
+                <div class="content-box surface-card admin-system-ops-section-card">
+                    <div class="admin-system-ops-section-title admin-system-ops-section-title-spaced">Platform readiness</div>
+                    <div class="admin-system-ops-list">
                         ${[
                             { label: 'Backend bridge', ready: Boolean(runtime.status?.backendUrl), detail: runtime.status?.backendUrl || 'Not configured' },
                             { label: 'Microsoft sign-in', ready: Boolean(runtime.status?.microsoftReady), detail: runtime.status?.microsoftReady ? 'Configured' : 'Not configured' },
@@ -1533,76 +1045,76 @@ function renderAdminSystemOpsDashboard() {
                             { label: 'Shared uploads', ready: Boolean(runtime.status?.uploadsReady), detail: runtime.status?.uploadsReady ? 'Uploads directory ready' : 'Uploads path missing' },
                             { label: 'TURN / RTC relay', ready: Boolean(runtime.status?.turnConfigured), detail: runtime.status?.turnConfigured ? 'TURN servers configured' : 'TURN not configured yet' }
                         ].map(item => `
-                            <div style="padding:12px; border-radius:14px; border:1px solid var(--kiu-border); background:white; display:flex; align-items:flex-start; justify-content:space-between; gap:12px;">
+                            <div class="admin-system-ops-ready-card">
                                 <div>
-                                    <div style="font-size:12px; font-weight:800; color:var(--kiu-navy);">${adminOpsEscape(item.label)}</div>
-                                    <div style="font-size:11px; color:var(--kiu-text-muted); margin-top:4px;">${adminOpsEscape(item.detail)}</div>
+                                    <div class="admin-system-ops-ready-title">${adminOpsEscape(item.label)}</div>
+                                    <div class="admin-system-ops-ready-copy">${adminOpsEscape(item.detail)}</div>
                                 </div>
-                                <span style="font-size:10px; font-weight:800; color:${item.ready ? '#166534' : '#b91c1c'}; background:${item.ready ? '#dcfce7' : '#fee2e2'}; padding:4px 8px; border-radius:999px;">${item.ready ? 'Ready' : 'Attention'}</span>
+                                <span class="admin-system-ops-pill ${item.ready ? 'is-ready' : 'is-danger'}">${item.ready ? 'Ready' : 'Attention'}</span>
                             </div>
                         `).join('')}
                     </div>
-                    ${runtime.lastError ? `<div style="margin-top:12px; padding:12px; border-radius:14px; background:#fee2e2; color:#991b1b; font-size:12px; line-height:1.6;">${adminOpsEscape(runtime.lastError)}</div>` : ''}
+                    ${runtime.lastError ? `<div class="admin-system-ops-error-note">${adminOpsEscape(runtime.lastError)}</div>` : ''}
                 </div>
-                <div class="content-box surface-card" style="padding:18px;">
-                    <div style="font-size:15px; font-weight:900; color:var(--kiu-navy); margin-bottom:14px;">Recent sync runs</div>
-                    <div style="display:grid; gap:10px;">
+                <div class="content-box surface-card admin-system-ops-section-card">
+                    <div class="admin-system-ops-section-title admin-system-ops-section-title-spaced">Recent sync runs</div>
+                    <div class="admin-system-ops-list">
                         ${syncRuns.slice(0, 5).map(run => {
-                            const tone = getAdminOpsTone(run.runStatus || run.status);
+                            const toneClass = getAdminOpsToneClass(run.runStatus || run.status);
                             return `
-                                <div style="padding:12px; border-radius:14px; border:1px solid var(--kiu-border); background:white;">
-                                    <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
-                                        <strong style="font-size:12px; color:var(--kiu-navy);">${adminOpsEscape(adminOpsFormatStatusLabel(run.systemCode, 'System'))}</strong>
-                                        <span style="font-size:10px; font-weight:800; color:${tone.text}; background:${tone.bg}; padding:4px 8px; border-radius:999px;">${adminOpsEscape(adminOpsFormatStatusLabel(run.runStatus || run.status, 'Unknown'))}</span>
+                                <div class="admin-system-ops-item-card admin-system-ops-item-card-compact">
+                                    <div class="admin-system-ops-item-head">
+                                        <strong class="admin-system-ops-item-title admin-system-ops-item-title-compact">${adminOpsEscape(adminOpsFormatStatusLabel(run.systemCode, 'System'))}</strong>
+                                        <span class="admin-system-ops-pill ${toneClass}">${adminOpsEscape(adminOpsFormatStatusLabel(run.runStatus || run.status, 'Unknown'))}</span>
                                     </div>
-                                    <div style="font-size:11px; color:#475569; margin-top:6px;">Scope: ${adminOpsEscape(adminOpsFormatStatusLabel(run.syncScope || run.scope, 'Full'))}</div>
-                                    <div style="font-size:11px; color:var(--kiu-text-muted); margin-top:6px;">Seen ${Number(run.recordsSeen || 0)} | Changed ${Number(run.recordsChanged || 0)}</div>
-                                    <div style="font-size:11px; color:var(--kiu-text-muted); margin-top:6px;">Started ${adminOpsEscape(adminOpsFormatDateTime(run.startedAt))}</div>
-                                    ${run.errorSummary ? `<div style="font-size:11px; color:#991b1b; margin-top:6px;">${adminOpsEscape(run.errorSummary)}</div>` : ''}
+                                    <div class="admin-system-ops-run-meta">Scope: ${adminOpsEscape(adminOpsFormatStatusLabel(run.syncScope || run.scope, 'Full'))}</div>
+                                    <div class="admin-system-ops-item-copy admin-system-ops-item-copy-tight">Seen ${Number(run.recordsSeen || 0)} | Changed ${Number(run.recordsChanged || 0)}</div>
+                                    <div class="admin-system-ops-item-copy admin-system-ops-item-copy-tight">Started ${adminOpsEscape(adminOpsFormatDateTime(run.startedAt))}</div>
+                                    ${run.errorSummary ? `<div class="admin-system-ops-run-error">${adminOpsEscape(run.errorSummary)}</div>` : ''}
                                 </div>
                             `;
-                        }).join('') || '<div style="padding:16px; text-align:center; color:var(--kiu-text-muted); border:1px dashed var(--kiu-border); border-radius:14px;">No sync runs have been recorded yet.</div>'}
+                        }).join('') || '<div class="admin-system-ops-empty-state">No sync runs have been recorded yet.</div>'}
                     </div>
                 </div>
             </div>
         </div>
-        <div style="display:grid; grid-template-columns:minmax(320px, 0.95fr) minmax(360px, 1.05fr); gap:18px; margin-top:18px; align-items:start;">
-            <div class="content-box surface-card" style="padding:18px;">
-                <div style="font-size:15px; font-weight:900; color:var(--kiu-navy); margin-bottom:14px;">Open reconciliation conflicts</div>
-                <div style="display:grid; gap:10px;">
+        <div class="admin-system-ops-grid admin-system-ops-grid-secondary">
+            <div class="content-box surface-card admin-system-ops-section-card">
+                <div class="admin-system-ops-section-title admin-system-ops-section-title-spaced">Open reconciliation conflicts</div>
+                <div class="admin-system-ops-list">
                     ${conflicts.slice(0, 6).map(conflict => {
-                        const tone = getAdminOpsTone(conflict.resolutionStatus);
+                        const toneClass = getAdminOpsToneClass(conflict.resolutionStatus);
                         return `
-                            <div style="padding:14px; border-radius:14px; border:1px solid var(--kiu-border); background:white;">
-                                <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
-                                    <strong style="font-size:12px; color:var(--kiu-navy);">${adminOpsEscape(adminOpsFormatStatusLabel(conflict.systemCode, 'System'))} / ${adminOpsEscape(adminOpsFormatStatusLabel(conflict.entityType, 'Record'))}</strong>
-                                    <span style="font-size:10px; font-weight:800; color:${tone.text}; background:${tone.bg}; padding:4px 8px; border-radius:999px;">${adminOpsEscape(adminOpsFormatStatusLabel(conflict.resolutionStatus, 'Open'))}</span>
+                            <div class="admin-system-ops-item-card">
+                                <div class="admin-system-ops-item-head">
+                                    <strong class="admin-system-ops-item-title admin-system-ops-item-title-compact">${adminOpsEscape(adminOpsFormatStatusLabel(conflict.systemCode, 'System'))} / ${adminOpsEscape(adminOpsFormatStatusLabel(conflict.entityType, 'Record'))}</strong>
+                                    <span class="admin-system-ops-pill ${toneClass}">${adminOpsEscape(adminOpsFormatStatusLabel(conflict.resolutionStatus, 'Open'))}</span>
                                 </div>
-                                <div style="font-size:11px; color:#475569; margin-top:6px;">Field: ${adminOpsEscape(conflict.conflictField)}</div>
-                                <div style="font-size:11px; color:var(--kiu-text-muted); margin-top:6px;">Local: ${adminOpsEscape(conflict.localRecordId || 'n/a')} | External: ${adminOpsEscape(conflict.externalRecordKey || 'n/a')}</div>
-                                <div style="margin-top:8px; padding:10px; border-radius:12px; background:#f8fafc; font-size:11px; color:#334155; line-height:1.6;">
+                                <div class="admin-system-ops-run-meta">Field: ${adminOpsEscape(conflict.conflictField)}</div>
+                                <div class="admin-system-ops-item-copy admin-system-ops-item-copy-tight">Local: ${adminOpsEscape(conflict.localRecordId || 'n/a')} | External: ${adminOpsEscape(conflict.externalRecordKey || 'n/a')}</div>
+                                <div class="admin-system-ops-conflict-diff">
                                     Portal value: ${adminOpsEscape(typeof conflict.localValue === 'object' ? JSON.stringify(conflict.localValue) : conflict.localValue ?? 'null')}<br>
                                     External value: ${adminOpsEscape(typeof conflict.externalValue === 'object' ? JSON.stringify(conflict.externalValue) : conflict.externalValue ?? 'null')}
                                 </div>
                             </div>
                         `;
-                    }).join('') || '<div style="padding:16px; text-align:center; color:var(--kiu-text-muted); border:1px dashed var(--kiu-border); border-radius:14px;">No open conflicts are recorded right now.</div>'}
+                    }).join('') || '<div class="admin-system-ops-empty-state">No open conflicts are recorded right now.</div>'}
                 </div>
             </div>
-            <div class="content-box surface-card" style="padding:18px;">
-                <div style="font-size:15px; font-weight:900; color:var(--kiu-navy); margin-bottom:14px;">Audit trail</div>
-                <div style="display:grid; gap:10px;">
+            <div class="content-box surface-card admin-system-ops-section-card">
+                <div class="admin-system-ops-section-title admin-system-ops-section-title-spaced">Audit trail</div>
+                <div class="admin-system-ops-list">
                     ${auditEvents.slice(0, 8).map(event => `
-                        <div style="padding:12px 14px; border:1px solid var(--kiu-border); border-radius:14px; background:white;">
-                            <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;">
-                                <strong style="font-size:12px; color:var(--kiu-navy);">${adminOpsEscape(adminOpsFormatStatusLabel(event.eventDomain, 'Domain'))} / ${adminOpsEscape(adminOpsFormatStatusLabel(event.eventType, 'Event'))}</strong>
-                                <span style="font-size:10px; padding:4px 8px; border-radius:999px; background:#f8fafc; color:#475569; border:1px solid var(--kiu-border);">${adminOpsEscape(adminOpsFormatStatusLabel(event.sourceSystem, 'Portal'))}</span>
+                        <div class="admin-system-ops-item-card admin-system-ops-item-card-compact">
+                            <div class="admin-system-ops-item-head admin-system-ops-item-head-wrap">
+                                <strong class="admin-system-ops-item-title admin-system-ops-item-title-compact">${adminOpsEscape(adminOpsFormatStatusLabel(event.eventDomain, 'Domain'))} / ${adminOpsEscape(adminOpsFormatStatusLabel(event.eventType, 'Event'))}</strong>
+                                <span class="admin-system-ops-pill is-domain">${adminOpsEscape(adminOpsFormatStatusLabel(event.sourceSystem, 'Portal'))}</span>
                             </div>
-                            <div style="font-size:11px; color:#475569; margin-top:6px;">Entity: ${adminOpsEscape(event.entityType)} / ${adminOpsEscape(event.entityId)}</div>
-                            <div style="font-size:11px; color:var(--kiu-text-muted); margin-top:6px;">Actor: ${adminOpsEscape(event.actorUserId || 'system')} ${event.actorRole ? `(${adminOpsEscape(adminOpsFormatStatusLabel(event.actorRole, 'Role'))})` : ''}</div>
-                            <div style="font-size:11px; color:var(--kiu-text-muted); margin-top:6px;">${adminOpsEscape(adminOpsFormatDateTime(event.createdAt))}</div>
+                            <div class="admin-system-ops-run-meta">Entity: ${adminOpsEscape(event.entityType)} / ${adminOpsEscape(event.entityId)}</div>
+                            <div class="admin-system-ops-item-copy admin-system-ops-item-copy-tight">Actor: ${adminOpsEscape(event.actorUserId || 'system')} ${event.actorRole ? `(${adminOpsEscape(adminOpsFormatStatusLabel(event.actorRole, 'Role'))})` : ''}</div>
+                            <div class="admin-system-ops-item-copy admin-system-ops-item-copy-tight">${adminOpsEscape(adminOpsFormatDateTime(event.createdAt))}</div>
                         </div>
-                    `).join('') || '<div style="padding:16px; text-align:center; color:var(--kiu-text-muted); border:1px dashed var(--kiu-border); border-radius:14px;">No audit events have been recorded yet.</div>'}
+                    `).join('') || '<div class="admin-system-ops-empty-state">No audit events have been recorded yet.</div>'}
                 </div>
             </div>
         </div>
@@ -1700,7 +1212,7 @@ function onAdminDashboardLoad() {
     const ctxBadge = document.getElementById('admin-faculty-context');
     if (ctxBadge) {
         ctxBadge.textContent = getFacultyLabel(fac);
-        ctxBadge.style.background = 'rgba(255,255,255,0.2)';
+        ctxBadge.classList.add('admin-faculty-context-chip');
     }
 
     // Sync user management faculty dropdown to current faculty
@@ -1712,6 +1224,7 @@ function onAdminDashboardLoad() {
 
     // Keep the Registration Structure CMS alive after refreshes.
     if (document.getElementById('admin-reg-content-container')) {
+        if (typeof bindAdminRegistrationCmsDelegates === 'function') bindAdminRegistrationCmsDelegates();
         ensureAdminRegistrationCmsDefaults(fac);
         bootAdminRegistrationCms(adminRegActiveTab || 'prog');
     }
@@ -1737,6 +1250,15 @@ function renderBroadCalendar() {
     const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
     const dayNames   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 
+    function getBroadCalendarEventToneClass(eventRecord = {}) {
+        const bg = String(eventRecord.color || '').trim().toLowerCase();
+        const fg = String(eventRecord.textColor || '').trim().toLowerCase();
+        if (bg === '#dcfce7' && fg === '#166534') return 'lux-calendar-event--holiday';
+        if (bg === '#fef3c7' && fg === '#92400e') return 'lux-calendar-event--exam';
+        if (bg === '#fce7f3' && fg === '#831843') return 'lux-calendar-event--deadline';
+        return 'lux-calendar-event--academic';
+    }
+
     // Get events for this month
     if (!KIU_STATE.calendarEvents) KIU_STATE.calendarEvents = {};
     const monthKey = `${viewYear}-${String(viewMonth+1).padStart(2,'0')}`;
@@ -1746,37 +1268,30 @@ function renderBroadCalendar() {
     const daysInMonth = new Date(viewYear, viewMonth+1, 0).getDate();
 
     let html = `
-    <div style="background:white; border-radius:12px; border:1px solid var(--kiu-border); overflow:hidden;">
-        <!-- Header -->
-        <div style="display:flex; justify-content:space-between; align-items:center; padding:18px 24px; background:var(--kiu-gradient-blue); color:white;">
-            <button type="button" data-bc-nav="-1" style="background:rgba(255,255,255,0.2); border:none; color:white; width:34px; height:34px; border-radius:50%; cursor:pointer; font-size:16px;">&#8249;</button>
-            <div style="text-align:center;">
-                <div style="font-size:18px; font-weight:700;">${monthNames[viewMonth]} ${viewYear}</div>
-                <div style="font-size:11px; opacity:0.8;">Academic Calendar / ${viewYear < currentYear ? 'Past' : viewYear > currentYear ? 'Future' : 'Current Year'}</div>
+    <div class="admin-broad-calendar-shell lux-calendar-board">
+        <div class="lux-calendar-header">
+            <button type="button" data-bc-nav="-1" class="lux-calendar-nav" aria-label="Previous month">&#8249;</button>
+            <div class="lux-calendar-heading">
+                <div class="lux-calendar-title">${monthNames[viewMonth]} ${viewYear}</div>
+                <div class="lux-calendar-subtitle">Academic Calendar / ${viewYear < currentYear ? 'Past' : viewYear > currentYear ? 'Future' : 'Current Year'}</div>
             </div>
-            <button type="button" data-bc-nav="1" style="background:rgba(255,255,255,0.2); border:none; color:white; width:34px; height:34px; border-radius:50%; cursor:pointer; font-size:16px;">&#8250;</button>
+            <button type="button" data-bc-nav="1" class="lux-calendar-nav" aria-label="Next month">&#8250;</button>
         </div>
-
-        <!-- Year Jump -->
-        <div style="padding:10px 24px; background:#f8f9fa; border-bottom:1px solid var(--kiu-border); display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-            <span style="font-size:11px; font-weight:700; color:var(--kiu-text-muted);">Jump to year:</span>
+        <div class="lux-calendar-jumps">
+            <span class="admin-broad-calendar-jump-label">Jump to year:</span>
             ${Array.from({length: 2040-2024+1}, (_,i) => 2024+i).map(y =>
-                `<button type="button" data-bc-year="${y}" style="padding:3px 8px; border-radius:6px; border:1px solid var(--kiu-border); font-size:11px; font-weight:${y===viewYear?'800':'400'}; background:${y===viewYear?'var(--kiu-blue)':'white'}; color:${y===viewYear?'white':'var(--kiu-text-main)'}; cursor:pointer;">${y}</button>`
+                `<button type="button" data-bc-year="${y}" class="admin-broad-calendar-jump-btn${y===viewYear ? ' is-active' : ''}">${y}</button>`
             ).join('')}
         </div>
-
-        <!-- Day headers -->
-        <div style="display:grid; grid-template-columns:repeat(7,1fr); background:#f8f9fa; border-bottom:1px solid var(--kiu-border);">
-            ${dayNames.map(d => `<div style="text-align:center; padding:8px; font-size:11px; font-weight:700; color:var(--kiu-text-muted);">${d}</div>`).join('')}
+        <div class="lux-calendar-days">
+            ${dayNames.map(d => `<div>${d}</div>`).join('')}
         </div>
-
-        <!-- Days grid -->
-        <div style="display:grid; grid-template-columns:repeat(7,1fr);">
+        <div class="lux-calendar-grid">
     `;
 
     // Empty cells before first day
     for (let i = 0; i < firstDay; i++) {
-        html += `<div style="padding:8px; min-height:80px; background:#fafafa; border:1px solid #f0f0f0;"></div>`;
+        html += '<div class="lux-calendar-cell is-empty"></div>';
     }
 
     for (let d = 1; d <= daysInMonth; d++) {
@@ -1784,10 +1299,10 @@ function renderBroadCalendar() {
         const dateStr = `${viewYear}-${String(viewMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
         const dayEvents = events.filter(e => e.date === dateStr);
 
-        html += `<div data-bc-date="${dateStr}" style="padding:6px 8px; min-height:80px; border:1px solid #f0f0f0; background:${isToday ? '#eff6ff' : 'white'}; vertical-align:top; cursor:pointer;">
-            <div style="font-size:13px; font-weight:700; color:${isToday ? 'var(--kiu-blue)' : 'var(--kiu-text-main)'}; ${isToday ? 'background:var(--kiu-blue); color:white; width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center;' : ''}">${d}</div>
+        html += `<div data-bc-date="${dateStr}" class="lux-calendar-cell${isToday ? ' is-today' : ''}">
+            <div class="lux-calendar-date">${d}</div>
             ${dayEvents.map(ev => `
-                <div style="margin-top:3px; padding:2px 5px; background:${ev.color || '#dbeafe'}; color:${ev.textColor || '#1e40af'}; border-radius:4px; font-size:10px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${ev.title}">${ev.title}</div>
+                <div class="lux-calendar-event ${getBroadCalendarEventToneClass(ev)}" title="${ev.title}">${ev.title}</div>
             `).join('')}
         </div>`;
     }
@@ -1796,7 +1311,7 @@ function renderBroadCalendar() {
     const totalCells = firstDay + daysInMonth;
     const remaining = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7);
     for (let i = 0; i < remaining; i++) {
-        html += `<div style="padding:8px; min-height:80px; background:#fafafa; border:1px solid #f0f0f0;"></div>`;
+        html += '<div class="lux-calendar-cell is-empty"></div>';
     }
 
     html += `</div>`;
@@ -1805,19 +1320,19 @@ function renderBroadCalendar() {
     const canEdit = currentUserRole === USER_ROLES.ADMIN;
     if (canEdit) {
         html += `
-        <div style="padding:16px 24px; border-top:1px solid var(--kiu-border); background:#f8f9fa; display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap;">
-            <div><label style="font-size:11px; font-weight:700; color:var(--kiu-text-muted);">DATE</label><br>
-            <input type="date" id="bc-event-date" style="padding:7px 10px; border:1px solid var(--kiu-border); border-radius:6px; outline:none; font-size:12px; margin-top:3px;"></div>
-            <div style="flex:1; min-width:200px;"><label style="font-size:11px; font-weight:700; color:var(--kiu-text-muted);">EVENT TITLE</label><br>
-            <input type="text" id="bc-event-title" placeholder="e.g. Midterm Exams Start" style="width:100%; padding:7px 10px; border:1px solid var(--kiu-border); border-radius:6px; outline:none; font-size:12px; margin-top:3px;"></div>
-            <div><label style="font-size:11px; font-weight:700; color:var(--kiu-text-muted);">TYPE</label><br>
-            <select id="bc-event-type" style="padding:7px 10px; border:1px solid var(--kiu-border); border-radius:6px; outline:none; font-size:12px; margin-top:3px; background:white;">
+        <div class="admin-broad-calendar-editor">
+            <div class="admin-broad-calendar-field"><label class="admin-broad-calendar-label">DATE</label>
+            <input type="date" id="bc-event-date" class="admin-broad-calendar-control"></div>
+            <div class="admin-broad-calendar-field admin-broad-calendar-field--wide"><label class="admin-broad-calendar-label">EVENT TITLE</label>
+            <input type="text" id="bc-event-title" placeholder="e.g. Midterm Exams Start" class="admin-broad-calendar-control"></div>
+            <div class="admin-broad-calendar-field"><label class="admin-broad-calendar-label">TYPE</label>
+            <select id="bc-event-type" class="admin-broad-calendar-control">
                 <option value="#dbeafe|#1e40af">Academic</option>
                 <option value="#dcfce7|#166534">Holiday</option>
                 <option value="#fef3c7|#92400e">Exam</option>
                 <option value="#fce7f3|#831843">Deadline</option>
             </select></div>
-            <button type="button" class="kiu-btn-blue" data-bc-add="1" style="border-radius:6px; padding:8px 16px; font-size:12px;"><i class="fas fa-plus"></i> Add Event</button>
+            <button type="button" class="kiu-btn-blue admin-broad-calendar-btn" data-bc-add="1"><i class="fas fa-plus"></i> Add Event</button>
         </div>`;
     }
 

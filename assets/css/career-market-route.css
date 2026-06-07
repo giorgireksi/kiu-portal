@@ -1,5 +1,10 @@
-body.lux-route-career-market #app-content {
+        body.lux-route-career-market #app-content {
             min-height: 100vh;
+        }
+
+        body.lux-route-career-market.career-modal-open,
+        body.lux-route-career-market.career-sheet-open {
+            overflow: hidden;
         }
 
         body.lux-route-career-market .career-chat-page {
@@ -144,6 +149,12 @@ body.lux-route-career-market #app-content {
             text-align: left;
         }
 
+        body.lux-route-career-market .career-report-saved-item {
+            display: grid;
+            gap: 4px;
+            align-content: start;
+        }
+
         body.lux-route-career-market .career-history-empty {
             border: 1px solid rgba(var(--lux-border-rgb), .16);
             border-radius: 12px;
@@ -182,7 +193,24 @@ body.lux-route-career-market #app-content {
             white-space: nowrap;
         }
 
+        body.lux-route-career-market .career-report-saved-title {
+            color: var(--lux-text);
+            font-size: 12px;
+            font-weight: 750;
+            line-height: 1.35;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
         body.lux-route-career-market .career-history-date {
+            margin-top: 5px;
+            color: var(--lux-text-muted);
+            font-size: 10px;
+            font-weight: 700;
+        }
+
+        body.lux-route-career-market .career-report-saved-date {
             margin-top: 5px;
             color: var(--lux-text-muted);
             font-size: 10px;
@@ -543,15 +571,16 @@ body.lux-route-career-market #app-content {
             gap: 7px;
         }
 
-        body.lux-route-career-market .career-provider-field label {
+        body.lux-route-career-market .career-provider-field-label {
             color: var(--lux-text);
             font-size: 12px;
             font-weight: 800;
         }
 
-        body.lux-route-career-market .career-provider-field input,
-        body.lux-route-career-market .career-provider-field select,
-        body.lux-route-career-market .career-provider-field textarea {
+        body.lux-route-career-market .career-provider-field-input,
+        body.lux-route-career-market .career-provider-field-select,
+        body.lux-route-career-market .career-provider-field-textarea,
+        body.lux-route-career-market .career-provider-field-file-input {
             width: 100%;
             min-height: 42px;
             border-radius: 12px;
@@ -563,13 +592,13 @@ body.lux-route-career-market #app-content {
             outline: 0;
         }
 
-        body.lux-route-career-market .career-provider-field textarea {
+        body.lux-route-career-market .career-provider-field-textarea {
             min-height: 112px;
             resize: vertical;
             line-height: 1.5;
         }
 
-        body.lux-route-career-market .career-provider-field input[type="file"] {
+        body.lux-route-career-market .career-provider-field-file-input {
             padding: 10px 12px;
         }
 
@@ -646,6 +675,10 @@ body.lux-route-career-market #app-content {
             align-items: start;
         }
 
+        body.lux-route-career-market .career-workspace-hero-main {
+            min-width: 0;
+        }
+
         body.lux-route-career-market .career-kicker {
             color: var(--lux-accent);
             font-size: 11px;
@@ -683,6 +716,12 @@ body.lux-route-career-market #app-content {
             font-size: 12px;
             font-weight: 800;
             white-space: nowrap;
+        }
+
+        body.lux-route-career-market .career-workspace-badge-card,
+        body.lux-route-career-market .career-reports-new-btn,
+        body.lux-route-career-market .career-vacancy-run-btn {
+            justify-content: center;
         }
 
         body.lux-route-career-market .career-progress {
@@ -750,6 +789,21 @@ body.lux-route-career-market #app-content {
             line-height: 1.45;
         }
 
+        body.lux-route-career-market .career-report-status-note,
+        body.lux-route-career-market .career-vacancy-status-note {
+            color: inherit;
+        }
+
+        body.lux-route-career-market .career-report-provider-open-btn,
+        body.lux-route-career-market .career-vacancy-provider-open-btn {
+            justify-content: center;
+        }
+
+        body.lux-route-career-market .career-report-empty-note,
+        body.lux-route-career-market .career-vacancy-empty-note {
+            margin-top: 0;
+        }
+
         body.lux-route-career-market .career-intake-grid {
             display: grid;
             grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -765,15 +819,15 @@ body.lux-route-career-market #app-content {
             grid-column: 1 / -1;
         }
 
-        body.lux-route-career-market .career-field label {
+        body.lux-route-career-market .career-field-label {
             color: var(--lux-text);
             font-size: 12px;
             font-weight: 800;
         }
 
-        body.lux-route-career-market .career-field input,
-        body.lux-route-career-market .career-field select,
-        body.lux-route-career-market .career-field textarea {
+        body.lux-route-career-market .career-field-input,
+        body.lux-route-career-market .career-field-select,
+        body.lux-route-career-market .career-field-textarea {
             width: 100%;
             border-radius: 13px;
             border: 1px solid rgba(var(--lux-accent-rgb), 0.14);
@@ -785,14 +839,14 @@ body.lux-route-career-market #app-content {
             outline: 0;
         }
 
-        body.lux-route-career-market .career-field textarea {
+        body.lux-route-career-market .career-field-textarea {
             min-height: 84px;
             resize: vertical;
             line-height: 1.5;
         }
 
-        body.lux-route-career-market .career-field input::placeholder,
-        body.lux-route-career-market .career-field textarea::placeholder {
+        body.lux-route-career-market .career-field-input::placeholder,
+        body.lux-route-career-market .career-field-textarea::placeholder {
             color: var(--lux-text-muted);
         }
 
@@ -884,6 +938,10 @@ body.lux-route-career-market #app-content {
             margin: 14px 0;
         }
 
+        body.lux-route-career-market .career-report-score-grid {
+            margin: 14px 0;
+        }
+
         body.lux-route-career-market .career-score-box {
             border-radius: 14px;
             border: 1px solid rgba(var(--lux-accent-rgb), 0.12);
@@ -891,13 +949,17 @@ body.lux-route-career-market #app-content {
             background: rgba(var(--lux-topbar-tint-rgb, 11,18,32), 0.03);
         }
 
-        body.lux-route-career-market .career-score-box strong {
+        body.lux-route-career-market .career-report-score-card {
+            border-color: inherit;
+        }
+
+        body.lux-route-career-market .career-score-box-label {
             display: block;
             color: var(--lux-text);
             font-size: 20px;
         }
 
-        body.lux-route-career-market .career-score-box span {
+        body.lux-route-career-market .career-score-box-value {
             display: block;
             margin-top: 3px;
             color: var(--lux-text-muted);
@@ -951,6 +1013,14 @@ body.lux-route-career-market #app-content {
             background: rgba(var(--lux-topbar-tint-rgb, 11,18,32), 0.03);
             font-size: 11px;
             font-weight: 800;
+        }
+
+        body.lux-route-career-market .career-step-icon {
+            flex: 0 0 auto;
+        }
+
+        body.lux-route-career-market .career-step-label {
+            color: inherit;
         }
 
         body.lux-route-career-market .career-step-dot.is-active {
@@ -1022,10 +1092,16 @@ body.lux-route-career-market #app-content {
             margin-top: 18px;
         }
 
-        body.lux-route-career-market .career-wizard-actions > div {
+        body.lux-route-career-market .career-wizard-actions-main {
             display: flex;
             flex-wrap: wrap;
             gap: 10px;
+        }
+
+        body.lux-route-career-market .career-wizard-save-draft-btn,
+        body.lux-route-career-market .career-wizard-back-btn,
+        body.lux-route-career-market .career-wizard-next-btn {
+            justify-content: center;
         }
 
         body.lux-route-career-market .career-review-grid {
@@ -1041,7 +1117,7 @@ body.lux-route-career-market #app-content {
             background: rgba(var(--lux-topbar-tint-rgb, 11,18,32), 0.025);
         }
 
-        body.lux-route-career-market .career-review-item strong {
+        body.lux-route-career-market .career-review-item-label {
             display: block;
             color: var(--lux-text);
             font-size: 11px;
@@ -1050,7 +1126,7 @@ body.lux-route-career-market #app-content {
             letter-spacing: 0.06em;
         }
 
-        body.lux-route-career-market .career-review-item span {
+        body.lux-route-career-market .career-review-item-value {
             color: var(--lux-text-soft);
             font-size: 12px;
             line-height: 1.5;
@@ -1064,7 +1140,7 @@ body.lux-route-career-market #app-content {
             margin-top: 14px;
         }
 
-        body.lux-route-career-market .career-agent-mini div {
+        body.lux-route-career-market .career-agent-mini-card {
             border: 1px solid rgba(var(--lux-accent-rgb), 0.11);
             border-radius: 13px;
             padding: 10px;
@@ -1072,6 +1148,17 @@ body.lux-route-career-market #app-content {
             background: rgba(var(--lux-topbar-tint-rgb, 11,18,32), 0.025);
             font-size: 11px;
             line-height: 1.4;
+        }
+
+        body.lux-route-career-market .career-agent-mini-title {
+            display: block;
+            color: var(--lux-text);
+            margin-bottom: 4px;
+        }
+
+        body.lux-route-career-market .career-agent-mini-copy {
+            display: block;
+            color: var(--lux-text-soft);
         }
 
         body.lux-route-career-market .career-report-document {
@@ -1136,7 +1223,7 @@ body.lux-route-career-market #app-content {
             margin-bottom: 12px;
         }
 
-        body.lux-route-career-market .career-instruction-section-head input,
+        body.lux-route-career-market .career-instruction-section-title-input,
         body.lux-route-career-market .career-instruction-textarea {
             width: 100%;
             border-radius: 12px;
@@ -1147,7 +1234,7 @@ body.lux-route-career-market #app-content {
             outline: 0;
         }
 
-        body.lux-route-career-market .career-instruction-section-head input {
+        body.lux-route-career-market .career-instruction-section-title-input {
             min-height: 40px;
             padding: 0 11px;
             font-weight: 850;
@@ -1176,6 +1263,10 @@ body.lux-route-career-market #app-content {
             font-weight: 850;
         }
 
+        body.lux-route-career-market .career-instruction-block-label {
+            color: inherit;
+        }
+
         body.lux-route-career-market .career-instruction-block-actions,
         body.lux-route-career-market .career-instruction-toolbar {
             display: flex;
@@ -1193,6 +1284,12 @@ body.lux-route-career-market #app-content {
             padding: 0 9px;
             font-size: 11px;
             font-weight: 850;
+        }
+
+        body.lux-route-career-market .career-instruction-section-remove-btn,
+        body.lux-route-career-market .career-instruction-add-text-btn,
+        body.lux-route-career-market .career-instruction-add-image-btn {
+            justify-content: center;
         }
 
         body.lux-route-career-market .career-instruction-textarea {
@@ -1216,12 +1313,20 @@ body.lux-route-career-market #app-content {
             padding-top: 18px;
         }
 
+        body.lux-route-career-market .career-tool-report-document {
+            display: grid;
+        }
+
         body.lux-route-career-market .career-report-section:first-child {
             border-top: 0;
             padding-top: 0;
         }
 
-        body.lux-route-career-market .career-report-section h3 {
+        body.lux-route-career-market .career-vacancy-section {
+            padding-top: 0;
+        }
+
+        body.lux-route-career-market .career-report-section-title {
             margin: 0 0 10px;
             color: var(--lux-text);
             font-size: clamp(18px, 1.7vw, 24px);
@@ -1230,11 +1335,16 @@ body.lux-route-career-market #app-content {
             letter-spacing: 0;
         }
 
-        body.lux-route-career-market .career-report-section p {
+        body.lux-route-career-market .career-report-section-copy {
             margin: 0 0 10px;
             color: var(--lux-text-soft);
             font-size: 13px;
             line-height: 1.7;
+        }
+
+        body.lux-route-career-market .career-tool-section-title,
+        body.lux-route-career-market .career-tool-section-copy {
+            color: inherit;
         }
 
         body.lux-route-career-market .career-report-section ul {
@@ -1281,15 +1391,15 @@ body.lux-route-career-market #app-content {
             font-size: 12px;
         }
 
-        body.lux-route-career-market .career-report-table th,
-        body.lux-route-career-market .career-report-table td {
+        body.lux-route-career-market .career-report-table-head-cell,
+        body.lux-route-career-market .career-report-table-cell {
             border-bottom: 1px solid rgba(var(--lux-accent-rgb), 0.10);
             padding: 10px 11px;
             text-align: left;
             vertical-align: top;
         }
 
-        body.lux-route-career-market .career-report-table th {
+        body.lux-route-career-market .career-report-table-head-cell {
             color: var(--lux-text);
             font-weight: 850;
             background: rgba(var(--lux-topbar-tint-rgb, 11,18,32), 0.035);
@@ -1611,15 +1721,17 @@ body.lux-route-career-market #app-content {
         body.lux-light-mode.lux-route-career-market .career-empty-title,
         body.lux-light-mode.lux-route-career-market .career-workspace-title,
         body.lux-light-mode.lux-route-career-market .career-wizard-title,
-        body.lux-light-mode.lux-route-career-market .career-review-item strong,
-        body.lux-light-mode.lux-route-career-market .career-report-section h3,
+        body.lux-light-mode.lux-route-career-market .career-review-item-label,
+        body.lux-light-mode.lux-route-career-market .career-report-section-title,
         body.lux-light-mode.lux-route-career-market .career-report-subcard strong,
         body.lux-light-mode.lux-route-career-market .career-report-table th,
         body.lux-light-mode.lux-route-career-market .career-section-title,
         body.lux-light-mode.lux-route-career-market .career-progress-step strong,
         body.lux-light-mode.lux-route-career-market .career-field label,
         body.lux-light-mode.lux-route-career-market .career-agent-title,
-        body.lux-light-mode.lux-route-career-market .career-score-box strong,
+        body.lux-light-mode.lux-route-career-market .career-agent-mini-title,
+        body.lux-light-mode.lux-route-career-market .career-intake-gate-title,
+        body.lux-light-mode.lux-route-career-market .career-score-box-label,
         body.lux-light-mode.lux-route-career-market .career-chat-title,
         body.lux-light-mode.lux-route-career-market .career-rail-title,
         body.lux-light-mode.lux-route-career-market .career-history-title {
@@ -1629,14 +1741,17 @@ body.lux-route-career-market #app-content {
         body.lux-light-mode.lux-route-career-market .career-empty-copy,
         body.lux-light-mode.lux-route-career-market .career-workspace-copy,
         body.lux-light-mode.lux-route-career-market .career-wizard-copy,
-        body.lux-light-mode.lux-route-career-market .career-review-item span,
-        body.lux-light-mode.lux-route-career-market .career-report-section p,
+        body.lux-light-mode.lux-route-career-market .career-review-item-value,
+        body.lux-light-mode.lux-route-career-market .career-report-section-copy,
         body.lux-light-mode.lux-route-career-market .career-report-section ul,
         body.lux-light-mode.lux-route-career-market .career-report-table,
         body.lux-light-mode.lux-route-career-market .career-section-note,
         body.lux-light-mode.lux-route-career-market .career-progress-step span,
         body.lux-light-mode.lux-route-career-market .career-agent-copy,
-        body.lux-light-mode.lux-route-career-market .career-score-box span,
+        body.lux-light-mode.lux-route-career-market .career-agent-mini-copy,
+        body.lux-light-mode.lux-route-career-market .career-intake-gate-copy,
+        body.lux-light-mode.lux-route-career-market .career-intake-gate-note,
+        body.lux-light-mode.lux-route-career-market .career-score-box-value,
         body.lux-light-mode.lux-route-career-market .career-chat-sub,
         body.lux-light-mode.lux-route-career-market .career-rail-sub,
         body.lux-light-mode.lux-route-career-market .career-history-date {
@@ -1823,6 +1938,30 @@ body.lux-route-career-market #app-content {
             overflow: hidden;
         }
 
+        body.lux-route-career-market .career-agent-node[data-agent-id='coordinator'] {
+            --career-agent-rgb: 59, 130, 246;
+        }
+
+        body.lux-route-career-market .career-agent-node[data-agent-id='evidence'] {
+            --career-agent-rgb: 16, 185, 129;
+        }
+
+        body.lux-route-career-market .career-agent-node[data-agent-id='market'] {
+            --career-agent-rgb: 212, 148, 58;
+        }
+
+        body.lux-route-career-market .career-agent-node[data-agent-id='risk'] {
+            --career-agent-rgb: 244, 63, 94;
+        }
+
+        body.lux-route-career-market .career-agent-node[data-agent-id='roadmap'] {
+            --career-agent-rgb: 139, 92, 246;
+        }
+
+        body.lux-route-career-market .career-agent-node[data-agent-id='writer'] {
+            --career-agent-rgb: 6, 182, 212;
+        }
+
         body.lux-route-career-market .career-agent-node.is-coordinator {
             grid-column: auto;
             min-height: 340px;
@@ -1963,6 +2102,15 @@ body.lux-route-career-market #app-content {
             padding-right: 4px;
         }
 
+        body.lux-route-career-market .career-report-saved-stream {
+            display: grid;
+            gap: 10px;
+        }
+
+        body.lux-route-career-market .career-vacancy-output-shell {
+            min-height: 160px;
+        }
+
         body.lux-route-career-market .career-agent-tabs {
             display: flex;
             align-items: center;
@@ -2013,14 +2161,38 @@ body.lux-route-career-market #app-content {
             gap: 10px;
         }
 
-        body.lux-route-career-market .career-agent-finding-list article {
+        body.lux-route-career-market .career-agent-finding-card {
             padding: 13px 14px;
             border: 1px solid rgba(255, 255, 255, .10);
             border-radius: 8px;
             background: rgba(255, 255, 255, .035);
         }
 
-        body.lux-route-career-market .career-agent-finding-list ul {
+        body.lux-route-career-market .career-agent-finding-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        body.lux-route-career-market .career-agent-finding-title,
+        body.lux-route-career-market .career-agent-log-title {
+            display: block;
+            color: var(--lux-text);
+            font-size: 15px;
+            line-height: 1.25;
+        }
+
+        body.lux-route-career-market .career-agent-finding-confidence,
+        body.lux-route-career-market .career-agent-log-status {
+            display: block;
+            margin-top: 6px;
+            color: var(--lux-text-muted);
+            font-size: 12px;
+            line-height: 1.45;
+        }
+
+        body.lux-route-career-market .career-agent-finding-points {
             margin: 8px 0 0;
             padding-left: 18px;
             color: var(--lux-text-soft);
@@ -2040,6 +2212,11 @@ body.lux-route-career-market #app-content {
             justify-content: space-between;
             gap: 10px;
             margin-bottom: 8px;
+        }
+
+        body.lux-route-career-market .career-agent-log--empty {
+            display: grid;
+            gap: 6px;
         }
 
         body.lux-route-career-market .career-agent-output {
@@ -2116,6 +2293,21 @@ body.lux-route-career-market #app-content {
             background: rgba(16, 185, 129, .08);
         }
 
+        body.lux-route-career-market .career-intake-gate-title {
+            display: block;
+        }
+
+        body.lux-route-career-market .career-intake-gate-copy {
+            display: block;
+        }
+
+        body.lux-route-career-market .career-intake-gate-note {
+            margin: 6px 0 0;
+            color: var(--lux-text-muted);
+            font-size: 12px;
+            line-height: 1.45;
+        }
+
         body.lux-route-career-market .career-provider-grid {
             display: grid;
             grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -2128,6 +2320,13 @@ body.lux-route-career-market #app-content {
             border-radius: 8px;
         }
 
+        body.lux-route-career-market .career-provider-route-title {
+            display: block;
+            color: var(--lux-text);
+            font-size: 14px;
+            font-weight: 800;
+        }
+
         body.lux-route-career-market .career-provider-meta {
             display: grid;
             gap: 6px;
@@ -2137,12 +2336,20 @@ body.lux-route-career-market #app-content {
             line-height: 1.45;
         }
 
+        body.lux-route-career-market .career-provider-meta-line {
+            display: block;
+        }
+
         body.lux-route-career-market .career-provider-health {
             padding: 10px 12px;
             border: 1px solid rgba(255, 255, 255, .10);
             border-radius: 8px;
             color: var(--lux-text-muted);
             font-size: 12px;
+        }
+
+        body.lux-route-career-market .career-provider-health-copy {
+            line-height: 1.5;
         }
 
         body.lux-route-career-market .career-provider-chip {

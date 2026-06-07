@@ -4,9 +4,49 @@ function getLuxurySharedConfig() {
     return window.__KIU_LUXURY_SHARED || {};
 }
 
+const DEFAULT_ROLE_LABELS = {
+    student: 'Student Portal',
+    professor: 'Professor View',
+    ta: 'TA View',
+    admin: 'Admin View',
+    student_service: 'Student Service View'
+};
+
 function getRoleLabels() {
     const roleLabels = getLuxurySharedConfig().ROLE_LABELS;
-    return roleLabels && typeof roleLabels === 'object' ? roleLabels : {};
+    if (roleLabels && typeof roleLabels === 'object') {
+        return { ...DEFAULT_ROLE_LABELS, ...roleLabels };
+    }
+    return { ...DEFAULT_ROLE_LABELS };
+}
+
+function resolveRolePickerLabel(role) {
+    const normalized = String(role || '').trim().toLowerCase();
+    return getRoleLabels()[normalized] || DEFAULT_ROLE_LABELS[normalized] || 'Workspace';
+}
+
+function resolveBootstrappedShellRole() {
+    try {
+        const viewParam = String(new URLSearchParams(window.location.search || '').get('view') || '').trim().toLowerCase();
+        if (viewParam && DEFAULT_ROLE_LABELS[viewParam]) return viewParam;
+    } catch (error) {}
+    if (typeof getEffectiveUserRole === 'function') {
+        try {
+            const effectiveRole = String(getEffectiveUserRole() || '').trim().toLowerCase();
+            if (effectiveRole && DEFAULT_ROLE_LABELS[effectiveRole]) return effectiveRole;
+        } catch (error) {}
+    }
+    try {
+        const storedRole = String(localStorage.getItem('currentUserRole') || '').trim().toLowerCase();
+        if (storedRole && DEFAULT_ROLE_LABELS[storedRole]) return storedRole;
+    } catch (error) {}
+    return 'student';
+}
+
+function seedRolePickerLabel() {
+    const value = document.getElementById('lux-role-picker-value');
+    if (!value) return;
+    value.textContent = resolveRolePickerLabel(resolveBootstrappedShellRole());
 }
 
 function getPageLabels() {
@@ -29,6 +69,29 @@ function pageTarget(pageId) {
     const sharedPageTarget = getLuxurySharedConfig().pageTarget;
     if (typeof sharedPageTarget === 'function') return sharedPageTarget(pageId);
     return pageId === 'profile' ? 'profile-view' : pageId;
+}
+
+function prefetchPortalRoute(pageId) {
+    const normalizedPageId = String(pageId || '').trim().toLowerCase();
+    if (!normalizedPageId || typeof window.resolvePortalRouteUrl !== 'function') return;
+    const role = typeof getEffectiveUserRole === 'function'
+        ? getEffectiveUserRole()
+        : (typeof getEffectiveRole === 'function' ? getEffectiveRole() : 'student');
+    let targetUrl = '';
+    try {
+        targetUrl = window.resolvePortalRouteUrl(pageTarget(normalizedPageId), role);
+    } catch (error) {
+        return;
+    }
+    if (!targetUrl) return;
+    const prefetched = window.__kiuPrefetchedNavUrls || (window.__kiuPrefetchedNavUrls = new Set());
+    if (prefetched.has(targetUrl)) return;
+    prefetched.add(targetUrl);
+    const link = document.createElement('link');
+    link.rel = 'prefetch';
+    link.as = 'document';
+    link.href = targetUrl;
+    document.head.appendChild(link);
 }
 
 function queueAccessibleFocus(target) {
@@ -170,7 +233,7 @@ function ensureShellPickerPanel(panelId) {
     const wrapper = button?.closest('.lux-picker-wrap');
     if (!wrapper) return null;
     const panel = document.createElement('div');
-    panel.className = 'lux-picker-panel';
+    panel.className = 'lux-picker-panel lux-picker-panel-scroll';
     panel.id = panelId;
     panel.dataset.triggerId = buttonId;
     panel.setAttribute('role', 'listbox');
@@ -214,10 +277,43 @@ function toggleUtilityPanel(panelId, buttonId) {
     }
 }
 
+const PICKER_SCROLL_EXEMPT_SELECTORS = [
+    '.sch-modal-overlay.open',
+    '#schModalOverlay.open',
+    '#schPresetManagerOverlay.open',
+    '#course-selection-modal-bg',
+    '#modal-overlay:not([hidden])',
+    '.modal-overlay.open',
+    '.admin-library-modal-overlay.open',
+    '[data-lux-picker-scroll-exempt]'
+].join(', ');
+
+function isPickerScrollExempt(panel, scrollTarget) {
+    if (!scrollTarget || scrollTarget === panel || panel.contains(scrollTarget)) return true;
+    const triggerId = panel.dataset.triggerId;
+    const trigger = triggerId ? document.getElementById(triggerId) : null;
+    if (!trigger) return false;
+    const exemptRoot = scrollTarget.closest?.(PICKER_SCROLL_EXEMPT_SELECTORS);
+    return Boolean(exemptRoot && exemptRoot.contains(trigger));
+}
+
+function clearLuxPickerPanelListeners(panel) {
+    if (!panel) return;
+    if (panel._luxPickerScrollHandler) {
+        window.removeEventListener('scroll', panel._luxPickerScrollHandler, true);
+        panel._luxPickerScrollHandler = null;
+    }
+    if (panel._luxPickerWheelHandler) {
+        panel.removeEventListener('wheel', panel._luxPickerWheelHandler);
+        panel._luxPickerWheelHandler = null;
+    }
+}
+
 function closePickerPanels(options = {}) {
     const openPanels = Array.from(document.querySelectorAll('.lux-picker-panel.is-open'));
     const restoreTargetId = options.restoreFocus ? (openPanels[0]?.dataset.triggerId || '') : '';
     openPanels.forEach((panel) => {
+        clearLuxPickerPanelListeners(panel);
         panel.classList.remove('is-open');
         panel.setAttribute('aria-hidden', 'true');
         restoreTeleportedNode(panel);
@@ -264,11 +360,18 @@ function togglePickerPanel(panelId, buttonId) {
         button.classList.add('is-active');
         button.setAttribute('aria-expanded', 'true');
         focusFirstInteractive(panel, '.lux-picker-option.is-active, .lux-picker-option');
-        const scrollHandler = () => {
+        clearLuxPickerPanelListeners(panel);
+        const scrollHandler = (event) => {
+            if (isPickerScrollExempt(panel, event.target)) return;
             closePickerPanels();
-            window.removeEventListener('scroll', scrollHandler, true);
         };
+        panel._luxPickerScrollHandler = scrollHandler;
         window.addEventListener('scroll', scrollHandler, true);
+        const wheelHandler = (event) => {
+            event.stopPropagation();
+        };
+        panel._luxPickerWheelHandler = wheelHandler;
+        panel.addEventListener('wheel', wheelHandler, { passive: true });
     }
 }
 
@@ -319,37 +422,60 @@ function getCleanPickerLabelText(node) {
     return clone.textContent.replace(/\s+/g, ' ').trim();
 }
 
-function inferPickerCaption(select) {
-    if (!select) return 'Select';
-    const explicit = select.getAttribute('aria-label') || select.dataset.luxPickerLabel || select.getAttribute('title');
-    if (explicit) return String(explicit).trim();
+function isExternalPickerLabelNode(node) {
+    if (!node || node.nodeType !== 1) return false;
+    if (node.classList?.contains('lux-picker-label')) return false;
+    if (/^label$/i.test(node.tagName)) return true;
+    return node.classList?.contains('em-lbl')
+        || node.classList?.contains('pvsm-lbl')
+        || node.classList?.contains('peg-lbl');
+}
+
+function resolveExternalPickerLabel(select) {
+    if (!select) return null;
     if (select.id) {
         const escapedId = window.CSS && typeof window.CSS.escape === 'function'
             ? window.CSS.escape(select.id)
             : String(select.id).replace(/"/g, '\\"');
         const associated = document.querySelector(`label[for="${escapedId}"]`);
-        if (associated) {
-            const text = getCleanPickerLabelText(associated);
-            if (text) return text;
-        }
+        if (isExternalPickerLabelNode(associated)) return associated;
     }
     const previous = select.previousElementSibling;
-    if (previous && ((previous.tagName && /label/i.test(previous.tagName)) || previous.classList?.contains('em-lbl') || previous.classList?.contains('pvsm-lbl') || previous.classList?.contains('peg-lbl'))) {
-        const text = getCleanPickerLabelText(previous);
-        if (text) return text;
-    }
+    if (isExternalPickerLabelNode(previous)) return previous;
     const parentLabel = select.closest('label');
-    if (parentLabel) {
-        const text = getCleanPickerLabelText(parentLabel);
-        if (text) return text;
-    }
+    if (parentLabel && !parentLabel.classList?.contains('lux-picker-label')) return parentLabel;
     const parent = select.parentElement;
     if (parent) {
         const labelNode = parent.querySelector('label');
-        if (labelNode) {
-            const text = getCleanPickerLabelText(labelNode);
-            if (text) return text;
-        }
+        if (isExternalPickerLabelNode(labelNode)) return labelNode;
+    }
+    const fieldShell = select.closest('.sch-input-group, .sch-control-group');
+    if (fieldShell) {
+        if (fieldShell.matches('label')) return fieldShell;
+        const nestedLabel = fieldShell.querySelector('.sch-input-label-row label, :scope > label');
+        if (isExternalPickerLabelNode(nestedLabel)) return nestedLabel;
+    }
+    return null;
+}
+
+function wirePickerButtonAriaLabel(button, externalLabel, select) {
+    if (!button || !externalLabel) return;
+    let labelId = externalLabel.id;
+    if (!labelId && select?.id) {
+        labelId = `${select.id}-field-label`;
+        externalLabel.id = labelId;
+    }
+    if (labelId) button.setAttribute('aria-labelledby', labelId);
+}
+
+function inferPickerCaption(select) {
+    if (!select) return 'Select';
+    const explicit = select.getAttribute('aria-label') || select.dataset.luxPickerLabel || select.getAttribute('title');
+    if (explicit) return String(explicit).trim();
+    const externalLabel = resolveExternalPickerLabel(select);
+    if (externalLabel) {
+        const text = getCleanPickerLabelText(externalLabel);
+        if (text) return text;
     }
     return normalizePickerLabel(select.name || select.id || 'Select');
 }
@@ -398,6 +524,7 @@ function shouldEnhanceSelect(select) {
     if (select.closest('#lux-topbar')) return false;
     if (select.closest('.lux-picker-field')) return false;
     if (select.closest('.library-picker-field')) return false;
+    if (select.closest('body.lux-route-lms, #page-lms, #page-lms-groups, #page-lms-inner, #lms-content-area')) return false;
     return true;
 }
 
@@ -409,12 +536,10 @@ function enhanceUniversalPicker(select) {
     wrapper.className = 'lux-picker-field lux-universal-picker-field';
     const panelId = select.id ? `${select.id}-lux-panel` : `lux-picker-panel-${Math.random().toString(36).slice(2, 10)}`;
     const buttonId = select.id ? `${select.id}-lux-btn` : `lux-picker-btn-${Math.random().toString(36).slice(2, 10)}`;
+    const externalLabel = resolveExternalPickerLabel(select);
+    const compactPicker = Boolean(externalLabel);
     const caption = inferPickerCaption(select);
     select.dataset.luxPickerLabel = caption;
-
-    const captionEl = document.createElement('span');
-    captionEl.className = 'lux-picker-label';
-    captionEl.textContent = caption;
 
     const button = document.createElement('button');
     button.type = 'button';
@@ -422,22 +547,41 @@ function enhanceUniversalPicker(select) {
     button.id = buttonId;
     button.setAttribute('aria-haspopup', 'listbox');
     button.setAttribute('aria-expanded', 'false');
-    button.innerHTML = `
+    if (compactPicker) {
+        button.classList.add('lux-picker-btn--compact');
+        button.innerHTML = `
+        <div class="lux-picker-copy">
+            <strong class="lux-picker-value"></strong>
+        </div>
+        <i class="fas fa-chevron-down"></i>
+    `;
+        wirePickerButtonAriaLabel(button, externalLabel, select);
+    } else {
+        button.innerHTML = `
         <div class="lux-picker-copy">
             <span class="lux-picker-caption">${escapeHtml(caption)}</span>
             <strong class="lux-picker-value"></strong>
         </div>
         <i class="fas fa-chevron-down"></i>
     `;
+    }
 
     const panel = document.createElement('div');
-    panel.className = 'lux-picker-panel lux-universal-picker-panel';
+    panel.className = 'lux-picker-panel lux-universal-picker-panel lux-picker-panel-scroll';
     panel.id = panelId;
     panel.setAttribute('role', 'listbox');
     panel.setAttribute('aria-hidden', 'true');
     panel.tabIndex = -1;
+    if (select.closest('#schModalOverlay, #schPresetManagerOverlay')) {
+        panel.classList.add('sch-session-picker-panel');
+    }
 
-    wrapper.appendChild(captionEl);
+    if (!compactPicker) {
+        const captionEl = document.createElement('span');
+        captionEl.className = 'lux-picker-label';
+        captionEl.textContent = caption;
+        wrapper.appendChild(captionEl);
+    }
     wrapper.appendChild(button);
     wrapper.appendChild(panel);
     parent.insertBefore(wrapper, select);
@@ -647,34 +791,112 @@ function renderTopbarUtilityPanels(currentUser) {
     });
 }
 
+function renderNavRecoveryFallback(navRoot, error) {
+    console.error('Luxury navigation render failed.', error);
+    navRoot.dataset.renderSignature = 'recovery';
+    navRoot.innerHTML = `
+        <div class="lux-nav-group">Navigation</div>
+        <button class="lux-nav-item" type="button" data-nav-recovery-retry="1">
+            <i class="fas fa-rotate-right"></i>
+            <span>Reload navigation</span>
+        </button>
+    `;
+    const retryButton = navRoot.querySelector('[data-nav-recovery-retry="1"]');
+    if (retryButton && !retryButton.dataset.bound) {
+        retryButton.dataset.bound = '1';
+        retryButton.addEventListener('click', () => {
+            navRoot.dataset.renderSignature = '';
+            if (typeof window.recoverIndexPortalShell === 'function') {
+                window.recoverIndexPortalShell({ reason: 'nav-recovery-retry' });
+                return;
+            }
+            renderNav();
+        });
+    }
+}
+
 function renderNav() {
-    const role = getEffectiveRole();
+    const role = typeof getEffectiveUserRole === 'function'
+        ? getEffectiveUserRole()
+        : (typeof getEffectiveRole === 'function' ? getEffectiveRole() : 'student');
     const navRoot = document.getElementById('lux-nav');
     if (!navRoot) return;
-    const activePage = getActivePageId();
+    if (!navRoot.children.length && navRoot.dataset.renderSignature) {
+        navRoot.dataset.renderSignature = '';
+    }
+    const activePage = typeof getActivePageId === 'function' ? getActivePageId() : 'home';
     const navByRole = getNavByRole();
-    const groups = navByRole[role] || navByRole.student || [];
-    const signature = `${role}|${activePage}`;
-    if (navRoot.dataset.renderSignature === signature) return;
-    navRoot.innerHTML = groups.map((group) => `
-        <div class="lux-nav-group">${escapeHtml(group.group)}</div>
-        ${group.items.map(([pageId, label, icon, badge]) => `
-            <button class="lux-nav-item${activePage === pageId ? ' is-active' : ''}" type="button" data-nav-target="${escapeHtml(pageId)}">
-                <i class="${escapeHtml(icon)}"></i>
-                <span>${escapeHtml(label)}</span>
-                ${badge ? `<span class="lux-nav-badge">${escapeHtml(badge)}</span>` : ''}
-            </button>
-        `).join('')}
-    `).join('');
-    navRoot.dataset.renderSignature = signature;
+    const configuredGroups = navByRole[role] || navByRole.student || [];
+    const groups = configuredGroups.length ? configuredGroups : getFallbackNavGroups(role);
+    if (!groups.length) {
+        navRoot.dataset.renderSignature = '';
+        return;
+    }
+    const itemSignature = groups
+        .map((group) => `${group.group}:${group.items.map((item) => item[0]).join(',')}`)
+        .join(';');
+    const signature = `${role}|${activePage}|${itemSignature}`;
+    if (navRoot.dataset.renderSignature === signature && navRoot.children.length) return;
+    try {
+        navRoot.innerHTML = groups.map((group) => `
+            <div class="lux-nav-group">${escapeHtml(group.group)}</div>
+            ${group.items.map(([pageId, label, icon, badge]) => `
+                <button class="lux-nav-item${activePage === pageId ? ' is-active' : ''}" type="button" data-nav-target="${escapeHtml(pageId)}">
+                    <i class="${escapeHtml(icon)}"></i>
+                    <span>${escapeHtml(label)}</span>
+                    ${badge ? `<span class="lux-nav-badge">${escapeHtml(badge)}</span>` : ''}
+                </button>
+            `).join('')}
+        `).join('');
+        navRoot.dataset.renderSignature = signature;
+    } catch (error) {
+        renderNavRecoveryFallback(navRoot, error);
+        return;
+    }
     if (navRoot.dataset.bound !== '1') {
         navRoot.addEventListener('click', (event) => {
             const button = event.target.closest('[data-nav-target]');
             if (!button || !navRoot.contains(button)) return;
             if (typeof navigate === 'function') navigate(pageTarget(button.dataset.navTarget));
         });
+        navRoot.addEventListener('mouseover', (event) => {
+            const button = event.target.closest('[data-nav-target]');
+            if (!button || !navRoot.contains(button)) return;
+            prefetchPortalRoute(button.dataset.navTarget);
+        });
         navRoot.dataset.bound = '1';
     }
+}
+
+window.renderNav = renderNav;
+window.populateRoleSwitcher = populateRoleSwitcher;
+window.syncTopbar = syncTopbar;
+window.seedRolePickerLabel = seedRolePickerLabel;
+window.resolveRolePickerLabel = resolveRolePickerLabel;
+
+function getFallbackNavGroups(role) {
+    if (role === 'admin') {
+        return [
+            {
+                group: 'Control',
+                items: [['home', 'Dashboard', 'fas fa-hammer'], ['admin-tools', 'Admin Tools', 'fas fa-layer-group'], ['admin-scheduler', 'Scheduler', 'fas fa-calendar-plus'], ['staff', 'Staff', 'fas fa-users-cog'], ['students-admin', 'Students', 'fas fa-user-graduate']]
+            },
+            {
+                group: 'Systems',
+                items: [['news', 'News', 'fas fa-newspaper'], ['library', 'Library', 'fas fa-book'], ['orders', 'Orders', 'fas fa-book-open'], ['social', 'Social', 'fas fa-comments']]
+            }
+        ];
+    }
+    return [
+        {
+            group: 'Core',
+            items: [['home', 'Dashboard', 'fas fa-th-large'], ['lms', 'LMS', 'fas fa-book-reader'], ['timetable', 'Timetable', 'fas fa-chalkboard'], ['registration', 'Registration', 'fas fa-check-square']]
+        },
+        {
+            group: 'Support',
+            items: [['news', 'News', 'fas fa-newspaper'], ['chancellery', 'E-Chancellery', 'fas fa-desktop'], ['student-service', 'Student Service', 'fas fa-headset'], ['library', 'Library', 'fas fa-book'], ['social', 'Social', 'fas fa-comments']]
+        }
+    ];
 }
 
 function ensureStudio() {
@@ -709,9 +931,9 @@ function ensureStudio() {
                     <div class="lux-transparency-control">
                         <div class="lux-transparency-header">
                             <span class="lux-transparency-label"><i class="fas fa-layer-group"></i> Opacity Level</span>
-                            <span class="lux-transparency-value" id="lux-transparency-value">70%</span>
+                            <span class="lux-transparency-value" id="lux-transparency-value">13%</span>
                         </div>
-                        <input type="range" class="lux-range" id="lux-transparency-slider" min="0" max="100" value="70">
+                        <input type="range" class="lux-range" id="lux-transparency-slider" min="0" max="100" value="13">
                         <div class="lux-transparency-meta">
                             <span><i class="fas fa-eye"></i> Full Transparent (0%)</span>
                             <span><i class="fas fa-eye-slash"></i> Solid (100%)</span>
@@ -719,7 +941,7 @@ function ensureStudio() {
                     </div>
                 </div>
                 <div class="lux-studio-section">
-                    <div class="lux-studio-label">3D Background</div>
+                    <div class="lux-studio-label">Particle Variant</div>
                     <div class="lux-bg-mode-grid" id="lux-bg-mode-grid"></div>
                 </div>
                 <div class="lux-studio-section">
@@ -730,17 +952,33 @@ function ensureStudio() {
                     </div>
                 </div>
                 <div class="lux-studio-section">
-                    <div class="lux-studio-label">Motion Intensity</div>
-                    <div class="lux-control-grid" id="lux-bg-intensity-grid"></div>
+                    <div class="lux-studio-label">Particle Motion</div>
+                    <div class="lux-transparency-control">
+                        <div class="lux-transparency-header">
+                            <span class="lux-transparency-label"><i class="fas fa-wind"></i> Motion</span>
+                            <span class="lux-transparency-value" id="lux-particle-motion-value">100</span>
+                        </div>
+                        <input type="range" class="lux-range" id="lux-particle-motion-slider" min="0" max="120" value="100">
+                    </div>
                 </div>
                 <div class="lux-studio-section">
-                    <div class="lux-studio-label">Glow Strength</div>
-                    <div class="lux-control-grid" id="lux-glow-strength-grid"></div>
+                    <div class="lux-studio-label">Particle Density</div>
+                    <div class="lux-transparency-control">
+                        <div class="lux-transparency-header">
+                            <span class="lux-transparency-label"><i class="fas fa-braille"></i> Density</span>
+                            <span class="lux-transparency-value" id="lux-particle-density-value">100</span>
+                        </div>
+                        <input type="range" class="lux-range" id="lux-particle-density-slider" min="35" max="100" value="100">
+                    </div>
+                </div>
+                <div class="lux-studio-section">
+                    <div class="lux-studio-label">Particle Quality</div>
+                    <div class="lux-control-grid" id="lux-particle-quality-grid"></div>
                 </div>
                 <div class="lux-studio-section">
                     <div class="lux-studio-label">Default & Reset</div>
                     <div class="lux-reset-grid">
-                        <button class="lux-control-btn" id="lux-reset-visuals" type="button"><strong>Reset visual settings</strong><span>Theme, palette, glow, and motion.</span></button>
+                        <button class="lux-control-btn" id="lux-reset-visuals" type="button"><strong>Reset visual settings</strong><span>Theme, palette, particles, and opacity.</span></button>
                         <button class="lux-control-btn" id="lux-reset-current-layout" type="button"><strong>Reset current role layout</strong><span>Restore the active dashboard to its KIU default.</span></button>
                         <button class="lux-control-btn" id="lux-reset-all-layouts" type="button"><strong>Reset all role layouts</strong><span>Clear every saved dashboard arrangement for this user.</span></button>
                         <button class="lux-control-btn" id="lux-reset-home-defaults" type="button"><strong>Reset home to KIU defaults</strong><span>Reset both layouts and visual settings without touching portal data.</span></button>
@@ -844,29 +1082,41 @@ function ensureStudio() {
         });
         document.getElementById('lux-bg-mode-grid')?.appendChild(button);
     });
-    BACKGROUND_INTENSITIES.forEach((mode) => {
+    const particleMotionSlider = document.getElementById('lux-particle-motion-slider');
+    const particleMotionValue = document.getElementById('lux-particle-motion-value');
+    if (particleMotionSlider && typeof getParticleMotion === 'function') {
+        particleMotionSlider.value = String(getParticleMotion());
+        if (particleMotionValue) particleMotionValue.textContent = particleMotionSlider.value;
+        particleMotionSlider.addEventListener('input', (event) => {
+            const value = event.target.value;
+            if (particleMotionValue) particleMotionValue.textContent = value;
+            if (typeof setParticleMotion === 'function') setParticleMotion(value, true);
+            if (typeof syncVisualStateOnly === 'function') syncVisualStateOnly();
+        });
+    }
+    const particleDensitySlider = document.getElementById('lux-particle-density-slider');
+    const particleDensityValue = document.getElementById('lux-particle-density-value');
+    if (particleDensitySlider && typeof getParticleDensity === 'function') {
+        particleDensitySlider.value = String(getParticleDensity());
+        if (particleDensityValue) particleDensityValue.textContent = particleDensitySlider.value;
+        particleDensitySlider.addEventListener('input', (event) => {
+            const value = event.target.value;
+            if (particleDensityValue) particleDensityValue.textContent = value;
+            if (typeof setParticleDensity === 'function') setParticleDensity(value, true);
+            if (typeof syncVisualStateOnly === 'function') syncVisualStateOnly();
+        });
+    }
+    (PARTICLE_QUALITY_OPTIONS || []).forEach((mode) => {
         const button = document.createElement('button');
         button.type = 'button';
         button.className = 'lux-control-btn';
-        button.dataset.bgIntensity = mode.key;
+        button.dataset.particleQuality = mode.key;
         button.innerHTML = `<strong>${escapeHtml(mode.label)}</strong><span>${escapeHtml(mode.copy)}</span>`;
         button.addEventListener('click', () => {
-            setBackgroundIntensity(mode.key, true);
+            if (typeof setParticleQuality === 'function') setParticleQuality(mode.key, true);
             if (typeof syncVisualStateOnly === 'function') syncVisualStateOnly();
         });
-        document.getElementById('lux-bg-intensity-grid')?.appendChild(button);
-    });
-    GLOW_STRENGTHS.forEach((mode) => {
-        const button = document.createElement('button');
-        button.type = 'button';
-        button.className = 'lux-control-btn';
-        button.dataset.glowStrength = mode.key;
-        button.innerHTML = `<strong>${escapeHtml(mode.label)}</strong><span>${escapeHtml(mode.copy)}</span>`;
-        button.addEventListener('click', () => {
-            setGlowStrength(mode.key, true);
-            if (typeof syncVisualStateOnly === 'function') syncVisualStateOnly();
-        });
-        document.getElementById('lux-glow-strength-grid')?.appendChild(button);
+        document.getElementById('lux-particle-quality-grid')?.appendChild(button);
     });
     document.getElementById('lux-reset-visuals')?.addEventListener('click', () => {
         if (window.confirm('Reset visual settings for this portal profile?')) resetVisualSettings();
@@ -962,11 +1212,20 @@ function syncStudioUi() {
     studio.querySelectorAll('[data-bg-mode]').forEach((button) => {
         button.classList.toggle('is-active', button.dataset.bgMode === getBackgroundMode());
     });
-    studio.querySelectorAll('[data-bg-intensity]').forEach((button) => {
-        button.classList.toggle('is-active', button.dataset.bgIntensity === getBackgroundIntensity());
-    });
-    studio.querySelectorAll('[data-glow-strength]').forEach((button) => {
-        button.classList.toggle('is-active', button.dataset.glowStrength === getGlowStrength());
+    const motionSlider = document.getElementById('lux-particle-motion-slider');
+    const motionValue = document.getElementById('lux-particle-motion-value');
+    if (motionSlider && typeof getParticleMotion === 'function') {
+        motionSlider.value = String(getParticleMotion());
+        if (motionValue) motionValue.textContent = motionSlider.value;
+    }
+    const densitySlider = document.getElementById('lux-particle-density-slider');
+    const densityValue = document.getElementById('lux-particle-density-value');
+    if (densitySlider && typeof getParticleDensity === 'function') {
+        densitySlider.value = String(getParticleDensity());
+        if (densityValue) densityValue.textContent = densitySlider.value;
+    }
+    studio.querySelectorAll('[data-particle-quality]').forEach((button) => {
+        button.classList.toggle('is-active', typeof getParticleQuality === 'function' && button.dataset.particleQuality === getParticleQuality());
     });
     ['lux-reset-current-layout', 'lux-reset-all-layouts', 'lux-reset-home-defaults'].forEach((id) => {
         const button = document.getElementById(id);
@@ -1059,10 +1318,25 @@ function populateFacultySwitcher(options = {}) {
             const optionButton = event.target.closest('[data-faculty-option]');
             if (!optionButton || !panel.contains(optionButton)) return;
             closePickerPanels();
-            if (typeof switchFacultyTheme === 'function') switchFacultyTheme(optionButton.dataset.facultyOption, { forceReload: true });
+            if (typeof switchFacultyTheme === 'function') {
+                switchFacultyTheme(optionButton.dataset.facultyOption, { refreshDependentViews: true });
+            }
         });
         panel.dataset.bound = '1';
     }
+}
+
+function roleSwitcherHasPersona(roleKey, preferredFaculty = '') {
+    if (roleKey === 'admin') return true;
+    const faculty = preferredFaculty
+        || (typeof getCurrentFacultyCode === 'function' ? getCurrentFacultyCode() : '')
+        || (typeof localStorage !== 'undefined' ? localStorage.getItem('currentFaculty') : '')
+        || 'ECON';
+    if (typeof hasImpersonationPersonaForRole === 'function') {
+        return hasImpersonationPersonaForRole(roleKey, faculty);
+    }
+    if (typeof getPreferredImpersonationUserForRole !== 'function') return true;
+    return Boolean(getPreferredImpersonationUserForRole(roleKey, faculty)?.id);
 }
 
 function populateRoleSwitcher(options = {}) {
@@ -1073,18 +1347,46 @@ function populateRoleSwitcher(options = {}) {
     const roles = ['student', 'professor', 'ta', 'admin', 'student_service'];
     const activeRole = getShellRole();
     const roleLabels = getRoleLabels();
-    value.textContent = roleLabels[activeRole] || 'Portal View';
+    const authenticatedAdmin = (
+        (typeof currentUser !== 'undefined' && String(currentUser?.role || '').trim().toLowerCase() === 'admin')
+        || (typeof getCurrentUser === 'function' && String(getCurrentUser()?.role || '').trim().toLowerCase() === 'admin')
+    );
+    const preferredFaculty = typeof getCurrentFacultyCode === 'function'
+        ? getCurrentFacultyCode()
+        : (typeof localStorage !== 'undefined' ? localStorage.getItem('currentFaculty') : '');
+    const staffUrl = typeof resolvePortalRouteUrl === 'function'
+        ? resolvePortalRouteUrl('staff', 'admin')
+        : 'staff.html';
+    value.textContent = resolveRolePickerLabel(activeRole);
     if (!panel && !options.ensurePanel) return;
     panel = panel || ensureShellPickerPanel('lux-role-picker-panel');
     if (!panel) return;
-    const signature = activeRole;
+    const personaSignature = authenticatedAdmin
+        ? roles.map((roleKey) => `${roleKey}:${roleSwitcherHasPersona(roleKey, preferredFaculty) ? '1' : '0'}`).join('|')
+        : '';
+    const signature = `${activeRole}|${personaSignature}`;
     if (panel.dataset.renderSignature !== signature) {
-        panel.innerHTML = roles.map((roleKey) => `
+        panel.innerHTML = roles.map((roleKey) => {
+            const roleDescription = roleKey === 'student_service'
+                ? 'Student support operations'
+                : roleKey === 'admin'
+                    ? 'Full administrative controls'
+                    : roleKey === 'ta'
+                        ? 'Teaching support workspace'
+                        : roleKey === 'professor'
+                            ? 'Faculty delivery workspace'
+                            : 'Student academic workspace';
+            const missingPersona = authenticatedAdmin && roleKey !== 'admin' && !roleSwitcherHasPersona(roleKey, preferredFaculty);
+            const personaHint = missingPersona
+                ? ` No account — create in Staff (${staffUrl}).`
+                : '';
+            return `
             <button class="lux-picker-option${roleKey === activeRole ? ' is-active' : ''}" type="button" data-role-option="${escapeHtml(roleKey)}">
-                <strong>${escapeHtml(roleLabels[roleKey])}</strong>
-                <span>${escapeHtml(roleKey === 'student_service' ? 'Student support operations' : roleKey === 'admin' ? 'Full administrative controls' : roleKey === 'ta' ? 'Teaching support workspace' : roleKey === 'professor' ? 'Faculty delivery workspace' : 'Student academic workspace')}</span>
+                <strong>${escapeHtml(resolveRolePickerLabel(roleKey))}</strong>
+                <span>${escapeHtml(`${roleDescription}${personaHint}`)}</span>
             </button>
-        `).join('');
+        `;
+        }).join('');
         panel.dataset.renderSignature = signature;
     }
     if (panel.dataset.bound !== '1') {
@@ -1098,25 +1400,93 @@ function populateRoleSwitcher(options = {}) {
     }
 }
 
+function syncViewAsBanner() {
+    const adminAccount = typeof currentUser !== 'undefined' ? currentUser : null;
+    const effectiveRole = typeof getEffectiveUserRole === 'function'
+        ? getEffectiveUserRole()
+        : (typeof getEffectiveRole === 'function' ? getEffectiveRole() : '');
+    const impersonating = adminAccount?.role === USER_ROLES.ADMIN
+        && effectiveRole
+        && effectiveRole !== USER_ROLES.ADMIN;
+    let banner = document.getElementById('lux-view-as-banner');
+    if (!impersonating) {
+        if (banner) banner.remove();
+        document.body.classList.remove('lux-view-as-active');
+        return;
+    }
+    const persona = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
+    const personaName = persona?.nameEn || persona?.name || persona?.displayName || persona?.id || 'Test user';
+    const roleLabels = getRoleLabels();
+    const roleLabel = roleLabels[effectiveRole] || effectiveRole;
+    if (!banner) {
+        banner = document.createElement('div');
+        banner.id = 'lux-view-as-banner';
+        banner.className = 'lux-view-as-banner';
+        banner.setAttribute('role', 'status');
+        document.body.prepend(banner);
+    }
+    document.body.classList.add('lux-view-as-active');
+    banner.replaceChildren();
+    const copy = document.createElement('span');
+    copy.className = 'lux-view-as-banner__copy';
+    copy.append('Viewing as ');
+    const nameNode = document.createElement('strong');
+    nameNode.textContent = personaName;
+    copy.append(nameNode, ` (${roleLabel}). Shared portal data; actions apply to this account.`);
+    const exitButton = document.createElement('button');
+    exitButton.type = 'button';
+    exitButton.className = 'lux-view-as-banner__exit';
+    exitButton.id = 'lux-view-as-exit';
+    exitButton.textContent = 'Exit view-as';
+    banner.append(copy, exitButton);
+    if (!exitButton.dataset.bound) {
+        exitButton.dataset.bound = '1';
+        exitButton.addEventListener('click', async (event) => {
+            event.preventDefault();
+            if (typeof fastRedirectRoleSwitch === 'function') {
+                await fastRedirectRoleSwitch(USER_ROLES.ADMIN);
+                return;
+            }
+            if (typeof switchRole === 'function') switchRole(USER_ROLES.ADMIN);
+        });
+    }
+}
+
 function syncTopbar() {
+    syncViewAsBanner();
     const currentUser = typeof getCurrentUserSafe === 'function' ? getCurrentUserSafe() : null;
     const notifications = typeof getNotificationSnapshot === 'function' ? getNotificationSnapshot(currentUser) : { unread: 0 };
     const messenger = typeof getMessengerSnapshot === 'function' ? getMessengerSnapshot(currentUser) : { unread: 0 };
-    const activePageId = getActivePageId();
+    const activePageId = typeof getActivePageId === 'function' ? getActivePageId() : 'home';
     const onHome = activePageId === 'home';
-    const shellRole = getShellRole(activePageId);
+    const shellRole = typeof getShellRole === 'function' ? getShellRole(activePageId) : 'student';
     const roleLabels = getRoleLabels();
-    const footerAvatar = shellRole === 'student' ? 'KI' : getUserInitials();
-    const footerName = shellRole === 'student' ? 'Portal User' : getUserName();
-    const footerRole = shellRole === 'student' ? 'University Portal' : `${roleLabels[getEffectiveRole()] || 'Portal'} - ${getFacultyName(getCurrentFacultyCode())}`;
-    const chipRole = shellRole === 'student' ? 'Student Portal / University Portal' : `${pageLabel(activePageId)} / ${roleLabels[getEffectiveRole()] || 'Portal'}`;
-    document.getElementById('lux-breadcrumb-page').textContent = pageLabel(activePageId);
-    document.getElementById('lux-avatar').textContent = footerAvatar;
-    document.getElementById('lux-chip-avatar').textContent = footerAvatar;
-    document.getElementById('lux-user-name').textContent = footerName;
-    document.getElementById('lux-chip-name').textContent = shellRole === 'student' ? 'Portal' : (getUserName().split(/\s+/)[0] || 'Portal');
-    document.getElementById('lux-user-role').textContent = footerRole;
-    document.getElementById('lux-chip-role').textContent = chipRole;
+    const effectiveRole = typeof getEffectiveRole === 'function' ? getEffectiveRole() : 'student';
+    const currentFacultyCode = typeof getCurrentFacultyCode === 'function' ? getCurrentFacultyCode() : '';
+    const resolvedUserName = typeof getUserName === 'function' ? getUserName() : 'Portal User';
+    const homeEditorState = typeof HOME_EDITOR_STATE === 'object' && HOME_EDITOR_STATE
+        ? HOME_EDITOR_STATE
+        : { editing: false, role: '' };
+    const footerAvatar = shellRole === 'student'
+        ? 'KI'
+        : (typeof getUserInitials === 'function' ? getUserInitials() : 'KI');
+    const footerName = shellRole === 'student' ? 'Portal User' : resolvedUserName;
+    const facultyName = typeof getFacultyName === 'function' ? getFacultyName(currentFacultyCode) : 'University Portal';
+    const currentPageLabel = typeof pageLabel === 'function' ? pageLabel(activePageId) : 'Dashboard';
+    const footerRole = shellRole === 'student' ? 'University Portal' : `${roleLabels[effectiveRole] || 'Portal'} - ${facultyName}`;
+    const chipRole = shellRole === 'student' ? 'Student Portal / University Portal' : `${currentPageLabel} / ${roleLabels[effectiveRole] || 'Portal'}`;
+    const setText = (id, value) => {
+        const node = document.getElementById(id);
+        if (!node) return;
+        node.textContent = value;
+    };
+    setText('lux-breadcrumb-page', currentPageLabel);
+    setText('lux-avatar', footerAvatar);
+    setText('lux-chip-avatar', footerAvatar);
+    setText('lux-user-name', footerName);
+    setText('lux-chip-name', shellRole === 'student' ? 'Portal' : (resolvedUserName.split(/\s+/)[0] || 'Portal'));
+    setText('lux-user-role', footerRole);
+    setText('lux-chip-role', chipRole);
     const editButton = document.getElementById('lux-dashboard-edit-btn');
     const editLabel = document.getElementById('lux-dashboard-edit-label');
     const bell = document.getElementById('lux-notification-btn');
@@ -1124,7 +1494,7 @@ function syncTopbar() {
     const chat = document.getElementById('lux-chat-btn');
     const chatBadge = document.getElementById('lux-chat-badge');
     if (editButton && editLabel) {
-        const isEditing = HOME_EDITOR_STATE.editing && HOME_EDITOR_STATE.role === getEffectiveRole();
+        const isEditing = homeEditorState.editing && homeEditorState.role === effectiveRole;
         editButton.classList.toggle('is-active', isEditing);
         editButton.hidden = !onHome;
         editLabel.textContent = isEditing ? 'Exit Edit' : 'Customize';
@@ -1151,6 +1521,18 @@ function syncTopbar() {
     if (document.querySelector('#lux-notification-panel.is-open, #lux-chat-panel.is-open')) {
         renderTopbarUtilityPanels(currentUser);
     }
+    if (document.body?.classList?.contains('lux-route-lms') && typeof window.ensureLmsRouteVisualState === 'function') {
+        window.ensureLmsRouteVisualState();
+    }
+    if (
+        (document.body?.classList?.contains('lux-route-admin-library')
+            || document.body?.classList?.contains('lux-entry-admin-library')
+            || document.getElementById('page-library')?.querySelector('.alib-workspace'))
+        && typeof window.ensureAdminLibraryRouteVisualState === 'function'
+    ) {
+        window.ensureAdminLibraryRouteVisualState();
+    }
+    populateRoleSwitcher();
 }
 
 function clearPortalCacheAndReload() {
@@ -1434,6 +1816,11 @@ function initializeLuxuryShellChromeBindings(attemptsRemaining = 24) {
     if (hasShellChrome) {
         bindUserMenu();
         bindTopbarControls();
+        if (document.getElementById('lux-shell')) {
+            renderNav();
+        }
+        seedRolePickerLabel();
+        populateRoleSwitcher();
         return;
     }
     if (attemptsRemaining <= 0) return;

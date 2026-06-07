@@ -10,23 +10,25 @@ function ensureProfileTabContent(tab) {
     return panel;
 }
 
+function setProfilePanelShown(panel, shown) {
+    if (!panel) return;
+    panel.hidden = !shown;
+    panel.classList.toggle('is-active', shown);
+}
+
 function switchProfileTab(tab, element) {
     document.querySelectorAll('#page-profile .tab').forEach((node) => {
         node.classList.remove('active');
-        node.style.borderLeftColor = 'transparent';
     });
     element.classList.add('active');
-    element.style.borderLeftColor = 'var(--kiu-blue)';
 
-    document.getElementById('profile-tab-info').style.display = 'none';
-    document.getElementById('profile-tab-email').style.display = 'none';
-    document.getElementById('profile-tab-password').style.display = 'none';
-    const calendarTab = document.getElementById('profile-tab-calendar');
-    if (calendarTab) calendarTab.style.display = 'none';
-    const messengerTab = document.getElementById('profile-tab-messenger');
-    if (messengerTab) messengerTab.style.display = 'none';
+    setProfilePanelShown(document.getElementById('profile-tab-info'), false);
+    setProfilePanelShown(document.getElementById('profile-tab-email'), false);
+    setProfilePanelShown(document.getElementById('profile-tab-password'), false);
+    setProfilePanelShown(document.getElementById('profile-tab-calendar'), false);
+    setProfilePanelShown(document.getElementById('profile-tab-messenger'), false);
     const targetPanel = ensureProfileTabContent(tab) || document.getElementById(`profile-tab-${tab}`);
-    if (targetPanel) targetPanel.style.display = 'block';
+    setProfilePanelShown(targetPanel, true);
 
     if (tab === 'calendar') {
         setTimeout(() => renderProfileCalendar(), 50);

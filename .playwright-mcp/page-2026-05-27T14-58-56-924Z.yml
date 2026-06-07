@@ -1,0 +1,390 @@
+- generic [active] [ref=e1]:
+  - text:  
+  - main [ref=e2]:
+    - generic [ref=e4]:
+      - generic [ref=e5]:
+        - generic [ref=e6]:
+          - generic [ref=e7]:
+            - generic [ref=e8]: 
+            - text: Faculty Operations Deck
+          - heading "Run staff operations for School of Business Management & Economics." [level=1] [ref=e9]
+          - paragraph [ref=e10]: Govern profile quality, teaching load, staffing risk, and account lifecycle from one operations surface instead of splitting work across directory cleanup, access review, and scheduler triage.
+          - generic [ref=e11]:
+            - generic [ref=e12] [cursor=pointer]:
+              - generic [ref=e13]: 
+              - text: School of Business Management & Economics
+            - generic [ref=e14] [cursor=pointer]:
+              - generic [ref=e15]: 
+              - text: 3 staff records
+            - generic [ref=e16] [cursor=pointer]:
+              - generic [ref=e17]: 
+              - text: 2 teaching-active profiles
+            - generic [ref=e18] [cursor=pointer]:
+              - generic [ref=e19]: 
+              - text: 1 students in scope
+            - generic [ref=e20] [cursor=pointer]:
+              - generic [ref=e21]: 
+              - text: 3 issues in queue
+          - generic [ref=e22]:
+            - generic [ref=e23]:
+              - generic [ref=e24]: Search command center
+              - searchbox "Search command center" [ref=e25]
+            - generic [ref=e26]:
+              - generic [ref=e27]: View role
+              - combobox "View role" [ref=e28]:
+                - option "Admin Preview" [selected]
+                - option "Faculty Preview"
+                - option "Viewer Preview"
+          - generic [ref=e29]:
+            - button " Import Roster" [ref=e30] [cursor=pointer]:
+              - generic [ref=e31]: 
+              - text: Import Roster
+            - button " Export Roster" [ref=e32] [cursor=pointer]:
+              - generic [ref=e33]: 
+              - text: Export Roster
+            - button " Add Staff Profile" [ref=e34] [cursor=pointer]:
+              - generic [ref=e35]: 
+              - text: Add Staff Profile
+        - generic [ref=e36]:
+          - generic [ref=e37]:
+            - strong [ref=e38]: Command Map
+            - generic [ref=e39]: Keep directory quality, staffing risk, and access actions moving in one review lane.
+          - generic [ref=e40]:
+            - article [ref=e41]:
+              - text: Directory health
+              - strong [ref=e42]: 3 incomplete
+              - emphasis [ref=e43]: Profiles missing publish-ready data
+            - article [ref=e44]:
+              - text: Account review
+              - strong [ref=e45]: 0 pending
+              - emphasis [ref=e46]: Invitation, review, or login recovery
+            - article [ref=e47]:
+              - text: Scheduler risk
+              - strong [ref=e48]: 0 unassigned
+              - emphasis [ref=e49]: 0 overloaded teaching records
+          - generic [ref=e50]:
+            - generic [ref=e51]:
+              - generic [ref=e52]: 
+              - text: 3 active profiles
+            - paragraph [ref=e53]: Use the staff directory and scheduler together to close course ownership gaps before the term goes live.
+      - generic [ref=e54]:
+        - article [ref=e55]:
+          - generic [ref=e56]: Total staff
+          - strong [ref=e57]: "3"
+          - text: 3 active visible records by default
+        - article [ref=e58]:
+          - generic [ref=e59]: Teaching staff
+          - strong [ref=e60]: "2"
+          - text: Professors and teaching assistants with academic assignments
+        - article [ref=e61]:
+          - generic [ref=e62]: Incomplete
+          - strong [ref=e63]: "3"
+          - text: Profiles below the publishing threshold
+        - article [ref=e64]:
+          - generic [ref=e65]: Account review
+          - strong [ref=e66]: "0"
+          - text: Needs invitation, review, or login recovery
+        - article [ref=e67]:
+          - generic [ref=e68]: No office hours
+          - strong [ref=e69]: "3"
+          - text: Availability is missing for student contact
+        - article [ref=e70]:
+          - generic [ref=e71]: Overloaded
+          - strong [ref=e72]: "0"
+          - text: Weekly teaching load is at or above threshold
+        - article [ref=e73]:
+          - generic [ref=e74]: Unassigned sections
+          - strong [ref=e75]: "0"
+          - text: Groups missing a professor or TA in scheduler scope
+        - article [ref=e76]:
+          - generic [ref=e77]: Archived
+          - strong [ref=e78]: "0"
+          - text: Records hidden from default staff operations
+      - generic [ref=e79]:
+        - generic [ref=e80]:
+          - generic [ref=e81]:
+            - generic [ref=e82]: Directory controls
+            - heading "Search, filter, and govern staff profiles" [level=2] [ref=e83]
+            - paragraph [ref=e84]: 3 results shown. Review completeness, teaching scope, account state, and lifecycle flags without leaving the directory.
+          - generic [ref=e85]:
+            - button " Export CSV" [ref=e86] [cursor=pointer]:
+              - generic [ref=e87]: 
+              - text: Export CSV
+            - button " Register professor" [ref=e88] [cursor=pointer]:
+              - generic [ref=e89]: 
+              - text: Register professor
+            - button " Register TA" [ref=e90] [cursor=pointer]:
+              - generic [ref=e91]: 
+              - text: Register TA
+            - button " Register service staff" [ref=e92] [cursor=pointer]:
+              - generic [ref=e93]: 
+              - text: Register service staff
+        - generic [ref=e94]:
+          - button " All staff" [ref=e95] [cursor=pointer]:
+            - generic [ref=e96]: 
+            - text: All staff
+          - button " Needs account" [ref=e97] [cursor=pointer]:
+            - generic [ref=e98]: 
+            - text: Needs account
+          - button " Overloaded" [ref=e99] [cursor=pointer]:
+            - generic [ref=e100]: 
+            - text: Overloaded
+          - button " Unassigned" [ref=e101] [cursor=pointer]:
+            - generic [ref=e102]: 
+            - text: Unassigned
+        - generic [ref=e103]:
+          - generic [ref=e104]:
+            - generic [ref=e105]: Search directory
+            - searchbox "Search directory" [ref=e106]
+          - generic [ref=e107]:
+            - generic [ref=e108]: Role
+            - combobox "Role" [ref=e109]:
+              - option "All roles" [selected]
+              - option "Professor"
+              - option "Teaching Assistant"
+              - option "Student Service Advisor"
+          - generic [ref=e110]:
+            - generic [ref=e111]: Department
+            - combobox "Department" [ref=e112]:
+              - option "All departments" [selected]
+              - option "Business Management"
+          - generic [ref=e113]:
+            - generic [ref=e114]: Status
+            - combobox "Status" [ref=e115]:
+              - option "All statuses" [selected]
+              - option "Active"
+              - option "Pending Setup"
+              - option "On Leave"
+              - option "Part-Time"
+              - option "Visiting"
+              - option "Inactive"
+              - option "Archived"
+          - generic [ref=e116]:
+            - generic [ref=e117]: Sort
+            - combobox "Sort" [ref=e118]:
+              - option "Name" [selected]
+              - option "Department"
+              - option "Role"
+              - option "Recently updated"
+              - option "Most courses"
+              - option "Profile completeness"
+        - generic [ref=e119]:
+          - generic [ref=e120]:
+            - generic [ref=e121]: Account
+            - combobox "Account" [ref=e122]:
+              - option "All accounts" [selected]
+              - option "Not Invited"
+              - option "Invitation Sent"
+              - option "Account Active"
+              - option "Login Disabled"
+              - option "Needs Review"
+          - generic [ref=e123]:
+            - generic [ref=e124]: Profile status
+            - combobox "Profile status" [ref=e125]:
+              - option "All profiles" [selected]
+              - option "Complete profiles"
+              - option "Incomplete profiles"
+              - option "Missing photo"
+              - option "Missing office hours"
+              - option "Missing courses"
+          - generic [ref=e126]:
+            - generic [ref=e127]: Teaching
+            - combobox "Teaching" [ref=e128]:
+              - option "All staff" [selected]
+              - option "Teaching this semester"
+              - option "Not teaching this semester"
+              - option "High teaching load"
+          - generic [ref=e129]:
+            - generic [ref=e130]: Archive
+            - combobox "Archive" [ref=e131]:
+              - option "Active records" [selected]
+              - option "Archived only"
+              - option "All records"
+          - button " Review missing data" [ref=e132] [cursor=pointer]:
+            - generic [ref=e133]: 
+            - text: Review missing data
+        - generic [ref=e135]: No active filters
+      - generic [ref=e136]:
+        - generic [ref=e137]:
+          - generic [ref=e138]:
+            - generic [ref=e139]: Staff directory
+            - heading "Operational records" [level=2] [ref=e140]
+            - paragraph [ref=e141]: Open full profile pages, review readiness, and act on account or staffing issues directly from the table.
+          - button " Clear filters" [ref=e143] [cursor=pointer]:
+            - generic [ref=e144]: 
+            - text: Clear filters
+        - table "Staff directory" [ref=e147]:
+          - rowgroup [ref=e148]:
+            - row "Staff member Role Department Teaching Office Status Completion Actions" [ref=e149]:
+              - columnheader "Staff member" [ref=e150]
+              - columnheader "Role" [ref=e151]
+              - columnheader "Department" [ref=e152]
+              - columnheader "Teaching" [ref=e153]
+              - columnheader "Office" [ref=e154]
+              - columnheader "Status" [ref=e155]
+              - columnheader "Completion" [ref=e156]
+              - columnheader "Actions" [ref=e157]
+          - rowgroup [ref=e158]:
+            - row "QP QA Prof Alpha Professor Professor Professor Business Management School of Business Management & Economics No course assignment Assignment not required B-300 No office hours Active Account Active 45 45% · 5 missing  View  Edit  Archive" [ref=e159]:
+              - cell "QP QA Prof Alpha Professor" [ref=e160]:
+                - button "QP QA Prof Alpha Professor" [ref=e161] [cursor=pointer]:
+                  - generic [ref=e162]:
+                    - generic [ref=e163]: QP
+                    - generic [ref=e164]:
+                      - generic [ref=e165]: QA Prof Alpha
+                      - generic [ref=e166]: Professor
+              - cell "Professor Professor" [ref=e167]:
+                - generic [ref=e168]: Professor
+                - generic [ref=e169]: Professor
+              - cell "Business Management School of Business Management & Economics" [ref=e170]:
+                - strong [ref=e171]: Business Management
+                - generic [ref=e172]: School of Business Management & Economics
+              - cell "No course assignment Assignment not required" [ref=e173]:
+                - strong [ref=e174]: No course assignment
+                - generic [ref=e175]: Assignment not required
+              - cell "B-300 No office hours" [ref=e176]:
+                - strong [ref=e177]: B-300
+                - generic [ref=e178]: No office hours
+              - cell "Active Account Active" [ref=e179]:
+                - generic [ref=e180]: Active
+                - generic [ref=e181]: Account Active
+              - cell "45 45% · 5 missing" [ref=e182]:
+                - generic [ref=e183]:
+                  - progressbar [ref=e185]
+                  - generic [ref=e186]: 45% · 5 missing
+              - cell " View  Edit  Archive" [ref=e187]:
+                - generic [ref=e188]:
+                  - button " View" [ref=e189] [cursor=pointer]:
+                    - generic [ref=e190]: 
+                    - text: View
+                  - button " Edit" [ref=e191] [cursor=pointer]:
+                    - generic [ref=e192]: 
+                    - text: Edit
+                  - button " Archive" [ref=e193] [cursor=pointer]:
+                    - generic [ref=e194]: 
+                    - text: Archive
+            - row "QS QA Service Alpha Student Service Advisor Student Service Advisor Student Service Business Management School of Business Management & Economics No course assignment Assignment not required A-101 No office hours Active Account Active 55 55% · 4 missing  View  Edit  Archive" [ref=e195]:
+              - cell "QS QA Service Alpha Student Service Advisor" [ref=e196]:
+                - button "QS QA Service Alpha Student Service Advisor" [ref=e197] [cursor=pointer]:
+                  - generic [ref=e198]:
+                    - generic [ref=e199]: QS
+                    - generic [ref=e200]:
+                      - generic [ref=e201]: QA Service Alpha
+                      - generic [ref=e202]: Student Service Advisor
+              - cell "Student Service Advisor Student Service" [ref=e203]:
+                - generic [ref=e204]: Student Service Advisor
+                - generic [ref=e205]: Student Service
+              - cell "Business Management School of Business Management & Economics" [ref=e206]:
+                - strong [ref=e207]: Business Management
+                - generic [ref=e208]: School of Business Management & Economics
+              - cell "No course assignment Assignment not required" [ref=e209]:
+                - strong [ref=e210]: No course assignment
+                - generic [ref=e211]: Assignment not required
+              - cell "A-101 No office hours" [ref=e212]:
+                - strong [ref=e213]: A-101
+                - generic [ref=e214]: No office hours
+              - cell "Active Account Active" [ref=e215]:
+                - generic [ref=e216]: Active
+                - generic [ref=e217]: Account Active
+              - cell "55 55% · 4 missing" [ref=e218]:
+                - generic [ref=e219]:
+                  - progressbar [ref=e221]
+                  - generic [ref=e222]: 55% · 4 missing
+              - cell " View  Edit  Archive" [ref=e223]:
+                - generic [ref=e224]:
+                  - button " View" [ref=e225] [cursor=pointer]:
+                    - generic [ref=e226]: 
+                    - text: View
+                  - button " Edit" [ref=e227] [cursor=pointer]:
+                    - generic [ref=e228]: 
+                    - text: Edit
+                  - button " Archive" [ref=e229] [cursor=pointer]:
+                    - generic [ref=e230]: 
+                    - text: Archive
+            - row "QT QA TA Alpha Teaching Assistant Teaching Assistant Teaching Assistant Business Management School of Business Management & Economics No course assignment Assignment not required C-116 No office hours Active Account Active 45 45% · 5 missing  View  Edit  Archive" [ref=e231]:
+              - cell "QT QA TA Alpha Teaching Assistant" [ref=e232]:
+                - button "QT QA TA Alpha Teaching Assistant" [ref=e233] [cursor=pointer]:
+                  - generic [ref=e234]:
+                    - generic [ref=e235]: QT
+                    - generic [ref=e236]:
+                      - generic [ref=e237]: QA TA Alpha
+                      - generic [ref=e238]: Teaching Assistant
+              - cell "Teaching Assistant Teaching Assistant" [ref=e239]:
+                - generic [ref=e240]: Teaching Assistant
+                - generic [ref=e241]: Teaching Assistant
+              - cell "Business Management School of Business Management & Economics" [ref=e242]:
+                - strong [ref=e243]: Business Management
+                - generic [ref=e244]: School of Business Management & Economics
+              - cell "No course assignment Assignment not required" [ref=e245]:
+                - strong [ref=e246]: No course assignment
+                - generic [ref=e247]: Assignment not required
+              - cell "C-116 No office hours" [ref=e248]:
+                - strong [ref=e249]: C-116
+                - generic [ref=e250]: No office hours
+              - cell "Active Account Active" [ref=e251]:
+                - generic [ref=e252]: Active
+                - generic [ref=e253]: Account Active
+              - cell "45 45% · 5 missing" [ref=e254]:
+                - generic [ref=e255]:
+                  - progressbar [ref=e257]
+                  - generic [ref=e258]: 45% · 5 missing
+              - cell " View  Edit  Archive" [ref=e259]:
+                - generic [ref=e260]:
+                  - button " View" [ref=e261] [cursor=pointer]:
+                    - generic [ref=e262]: 
+                    - text: View
+                  - button " Edit" [ref=e263] [cursor=pointer]:
+                    - generic [ref=e264]: 
+                    - text: Edit
+                  - button " Archive" [ref=e265] [cursor=pointer]:
+                    - generic [ref=e266]: 
+                    - text: Archive
+  - text:  
+  - status
+  - text:                   
+  - complementary:
+    - generic:
+      - generic: K
+      - generic:
+        - generic: KIU
+        - generic: Integrated Campus Portal
+    - generic:
+      - generic: KI
+      - generic:
+        - generic: Portal User
+        - generic: University Portal
+  - generic [ref=e267]:
+    - generic [ref=e268]:
+      - button "Show nav" [pressed] [ref=e269] [cursor=pointer]:
+        - generic [ref=e270]: Show nav
+      - generic [ref=e271]:
+        - text: KIU
+        - generic [ref=e272]: 
+        - strong [ref=e273]: Dashboard
+      - generic [ref=e274]:
+        - generic [ref=e275]: 
+        - textbox "Search modules, staff, documents, requests..." [ref=e276]
+    - generic [ref=e277]:
+      - button "Faculty Faculty " [ref=e279] [cursor=pointer]:
+        - generic [ref=e280]: Faculty
+        - strong [ref=e281]: Faculty
+        - generic [ref=e282]: 
+      - button "View Portal View " [ref=e284] [cursor=pointer]:
+        - generic [ref=e285]: View
+        - strong [ref=e286]: Portal View
+        - generic [ref=e287]: 
+      - text: 
+      - button "" [ref=e288] [cursor=pointer]:
+        - generic [ref=e289]: 
+      - button " 0" [ref=e291] [cursor=pointer]:
+        - generic [ref=e292]: 
+        - generic [ref=e293]: "0"
+      - button " 0" [ref=e295] [cursor=pointer]:
+        - generic [ref=e296]: 
+        - generic [ref=e297]: "0"
+      - button "KI Portal Dashboard" [ref=e298] [cursor=pointer]:
+        - generic [ref=e299]: KI
+        - generic [ref=e300]:
+          - generic [ref=e301]: Portal
+          - generic [ref=e302]: Dashboard
+        - generic [ref=e303]: 

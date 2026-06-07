@@ -1,0 +1,222 @@
+- generic [active] [ref=e1]:
+  - text:  
+  - main [ref=e2]:
+    - generic [ref=e5]:
+      - generic [ref=e7]:
+        - generic [ref=e8]:
+          - generic [ref=e9]: Academic Control Deck
+          - heading "Design the academic operating system for Business Management." [level=1] [ref=e10]
+          - paragraph [ref=e11]: Shape curriculum modules, stage new subjects, and wire registration logic from one orchestration surface instead of hopping between disconnected admin forms.
+          - generic [ref=e12]:
+            - generic [ref=e13]:
+              - generic [ref=e14]: 
+              - text: Business Management
+            - generic [ref=e15]:
+              - generic [ref=e16]: 
+              - text: 0 modules
+            - generic [ref=e17]:
+              - generic [ref=e18]: 
+              - text: 4 setup lanes
+            - generic [ref=e19]:
+              - generic [ref=e20]: 
+              - text: "Target Module: No module selected"
+          - generic [ref=e21]:
+            - button " Open Scheduler" [ref=e22] [cursor=pointer]:
+              - generic [ref=e23]: 
+              - text: Open Scheduler
+            - button " Jump To Builder" [ref=e24] [cursor=pointer]:
+              - generic [ref=e25]: 
+              - text: Jump To Builder
+            - button " Open Registration Lanes" [ref=e26] [cursor=pointer]:
+              - generic [ref=e27]: 
+              - text: Open Registration Lanes
+        - complementary [ref=e28]:
+          - generic [ref=e29]:
+            - strong [ref=e30]: Command Map
+            - generic [ref=e31]: Three linked control zones keep curriculum, subject intake, and registration policy moving in one direction.
+          - generic [ref=e32]:
+            - article [ref=e33]:
+              - generic [ref=e34]: Library
+              - strong [ref=e35]: 0 modules
+              - emphasis [ref=e36]: Core structure and sequencing
+            - article [ref=e37]:
+              - generic [ref=e38]: Builder Target
+              - strong [ref=e39]: Semester 1
+              - emphasis [ref=e40]: "Target Module: No module selected"
+            - article [ref=e41]:
+              - generic [ref=e42]: Registration
+              - strong [ref=e43]: 4 lanes
+              - emphasis [ref=e44]: Program, free credits, concentration, and minor
+          - generic [ref=e45]:
+            - generic [ref=e46]:
+              - generic [ref=e47]: 
+              - text: 4 testing personas
+            - paragraph [ref=e48]: Use testing personas and scheduler handoff to validate how academic rules land in the real student and faculty flows.
+      - generic [ref=e49]:
+        - article [ref=e50]:
+          - generic [ref=e51]:
+            - generic [ref=e52]:
+              - generic [ref=e54]: 
+              - generic [ref=e55]:
+                - generic [ref=e56]: Curriculum Library
+                - generic [ref=e57]: Control zone
+            - heading "0" [level=3] [ref=e58]
+            - paragraph [ref=e59]: Modules currently organized for Business Management.
+            - generic [ref=e60]: Sequence changes start here.
+        - article [ref=e61]:
+          - generic [ref=e62]:
+            - generic [ref=e63]:
+              - generic [ref=e65]: 
+              - generic [ref=e66]:
+                - generic [ref=e67]: Subject Builder
+                - generic [ref=e68]: Target lane
+            - heading "Semester 1" [level=3] [ref=e69]
+            - paragraph [ref=e70]: Create course records and wire them into live curriculum modules.
+            - generic [ref=e71]: "Target Module: No module selected"
+        - article [ref=e72]:
+          - generic [ref=e73]:
+            - generic [ref=e74]:
+              - generic [ref=e76]: 
+              - generic [ref=e77]:
+                - generic [ref=e78]: Registration Setup
+                - generic [ref=e79]: Active lane
+            - heading "Program" [level=3] [ref=e80]
+            - paragraph [ref=e81]: Current lane focus inside the registration structure workspace.
+            - generic [ref=e82]: 4 total setup lanes online.
+        - article [ref=e83]:
+          - generic [ref=e84]:
+            - generic [ref=e85]:
+              - generic [ref=e87]: 
+              - generic [ref=e88]:
+                - generic [ref=e89]: Testing Coverage
+                - generic [ref=e90]: Validation
+            - heading "4" [level=3] [ref=e91]
+            - paragraph [ref=e92]: Role-specific personas ready to test curriculum and registration behavior end-to-end.
+            - generic [ref=e93]: Switch roles without leaving admin control.
+      - generic [ref=e94]:
+        - generic [ref=e95]:
+          - generic [ref=e96]:
+            - generic [ref=e97]:
+              - generic [ref=e98]: Curriculum Library
+              - generic [ref=e99]: Browse and organize subjects by module.
+            - button " Add Module" [ref=e100] [cursor=pointer]:
+              - generic [ref=e101]: 
+              - text: Add Module
+          - generic [ref=e103]:
+            - generic [ref=e104]:
+              - generic [ref=e105]:
+                - generic [ref=e106]:
+                  - generic [ref=e107]: Curriculum Modules
+                  - generic [ref=e108]: 0 modules in Business Management
+                - button " Add Module" [ref=e109] [cursor=pointer]:
+                  - generic [ref=e110]: 
+                  - text: Add Module
+              - generic [ref=e112]: No modules are available yet.
+            - generic [ref=e114]:
+              - generic [ref=e115]: 
+              - strong [ref=e116]: Select or create a module
+              - generic [ref=e117]: Choose a module from the list or create one now to start organizing subjects.
+              - button "+ Create Module" [ref=e118] [cursor=pointer]:
+                - generic [ref=e119]: +
+                - text: Create Module
+        - generic [ref=e120]:
+          - generic [ref=e121]:
+            - generic [ref=e122]: Add Subject
+            - generic [ref=e123]: Create a new course for the active faculty.
+          - generic [ref=e124]:
+            - generic [ref=e125]: 
+            - generic [ref=e126]: "Target Module: No module selected"
+          - generic [ref=e127]: Create or select a curriculum module first, then save the subject into it.
+          - generic [ref=e128]:
+            - textbox "Course name" [ref=e129]
+            - textbox "Code (auto or custom)" [ref=e130]
+            - spinbutton [ref=e131]: "6"
+            - combobox [ref=e132]:
+              - option "Semester 1" [selected]
+              - option "Semester 2"
+              - option "Semester 3"
+              - option "Semester 4"
+              - option "Semester 5"
+              - option "Semester 6"
+              - option "Semester 7"
+              - option "Semester 8"
+              - option "Semester 9"
+              - option "Semester 10"
+              - option "Semester 11"
+              - option "Semester 12"
+              - option "Custom Semester..."
+          - generic [ref=e133]:
+            - generic [ref=e134]:
+              - generic [ref=e135]: Prerequisites
+              - generic [ref=e136]: Optional — set course requirements.
+            - textbox "Search for a prerequisite course..." [ref=e137]
+          - generic [ref=e138]:
+            - generic [ref=e139] [cursor=pointer]:
+              - checkbox "Require a prerequisite course" [ref=e140]
+              - text: Require a prerequisite course
+            - generic [ref=e141]:
+              - generic [ref=e142]: No anti-requisites selected
+              - button "Clear All" [ref=e144] [cursor=pointer]
+              - generic [ref=e146]: No subjects found
+          - generic [ref=e147]: Semester 1 is odd. This subject is visible in odd semesters unless the override is enabled.
+          - generic [ref=e148]:
+            - checkbox "Make this subject available in both odd and even semesters" [ref=e149] [cursor=pointer]
+            - text: Make this subject available in both odd and even semesters
+          - button "+ Save Subject" [disabled] [ref=e151]:
+            - generic [ref=e152]: +
+            - text: Save Subject
+      - generic [ref=e153]:
+        - generic [ref=e154]:
+          - generic [ref=e155]: Registration Setup
+          - generic [ref=e156]: Configure program modules, electives, and specializations.
+        - generic [ref=e157]:
+          - button "Program" [ref=e158] [cursor=pointer]
+          - button "Free Credits" [ref=e159] [cursor=pointer]
+          - button "Concentration" [ref=e160] [cursor=pointer]
+          - button "Minor" [ref=e161] [cursor=pointer]
+        - generic [ref=e162]:
+          - generic [ref=e163]:
+            - generic [ref=e164]:
+              - generic [ref=e165]: Program Modules
+              - generic [ref=e166]: Organize your program into modules and assign courses.
+            - button "+ Add Module" [ref=e167] [cursor=pointer]:
+              - generic [ref=e168]: +
+              - text: Add Module
+          - generic [ref=e169]:
+            - generic [ref=e170]:
+              - generic [ref=e171]:
+                - generic [ref=e172]: Modules
+                - generic [ref=e173]: "0"
+              - generic [ref=e175]:
+                - generic [ref=e176]: 
+                - strong [ref=e177]: No modules yet
+                - generic [ref=e178]: Create your first program module to get started.
+            - generic [ref=e180]:
+              - generic [ref=e181]: 
+              - strong [ref=e182]: Select a module
+              - generic [ref=e183]: Choose a module from the list to manage its subjects.
+  - text:                     
+  - generic:    
+  - generic:   
+  - generic [ref=e197]:
+    - generic [ref=e198]:
+      - generic [ref=e199]: Notification Center
+      - generic [ref=e200]: Track real grades, service replies, schedule changes, official orders, and selected social activity in one place.
+    - generic [ref=e201]:
+      - button " Minimize" [ref=e202] [cursor=pointer]:
+        - generic [ref=e203]: 
+        - text: Minimize
+      - button "" [ref=e204]:
+        - generic [ref=e205]: 
+  - complementary:
+    - generic:
+      - generic: K
+      - generic:
+        - generic: KIU
+        - generic: Integrated Campus Portal
+    - generic:
+      - generic: KI
+      - generic:
+        - generic: Portal User
+        - generic: University Portal
+  - text:         

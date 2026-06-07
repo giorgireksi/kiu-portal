@@ -10,6 +10,9 @@
         text,
         filterNotificationsByView,
         classifyNotification,
+        classifyNotificationCategory,
+        getCategoryUnreadCounts,
+        ALERTS_CATEGORIES,
         unreadNotifications,
         escape,
         when,
@@ -25,6 +28,9 @@
         || typeof text !== 'function'
         || typeof filterNotificationsByView !== 'function'
         || typeof classifyNotification !== 'function'
+        || typeof classifyNotificationCategory !== 'function'
+        || typeof getCategoryUnreadCounts !== 'function'
+        || !Array.isArray(ALERTS_CATEGORIES)
         || typeof unreadNotifications !== 'function'
         || typeof escape !== 'function'
         || typeof when !== 'function'
@@ -35,136 +41,154 @@
         throw new Error('Social alerts hooks are unavailable.');
     }
 
+    const CATEGORY_META = {
+        all:        { color: 'var(--sn-accent, #c8822a)',  colorRgb: '200,130,42' },
+        academic:   { color: '#f59e0b', colorRgb: '245,158,11' },
+        messages:   { color: '#3b82f6', colorRgb: '59,130,246' },
+        social:     { color: '#10b981', colorRgb: '16,185,129' },
+        university: { color: '#f43f5e', colorRgb: '244,63,94' },
+        support:    { color: '#8b5cf6', colorRgb: '139,92,246' }
+    };
+
+    function renderPillBar(activeFilter, counts) {
+        return ALERTS_CATEGORIES.map(cat => {
+            const isActive = activeFilter === cat.id;
+            const count = counts[cat.id] || 0;
+            const meta = CATEGORY_META[cat.id] || CATEGORY_META.all;
+            const activeStyle = isActive
+                ? `background:${meta.color};color:#fff;box-shadow:0 4px 14px rgba(${meta.colorRgb},0.35);`
+                : '';
+            const countBadge = count > 0
+                ? `<span class="sn-alerts-pill-count" ${isActive ? '' : `style="background:rgba(${meta.colorRgb},0.15);color:${meta.color};"`}>${escape(String(count))}</span>`
+                : '';
+            return `<button class="sn-alerts-pill${isActive ? ' is-active' : ''}" type="button"
+                data-action="panel-alerts" data-alerts-filter="${escape(cat.id)}"
+                style="${activeStyle}"
+                aria-selected="${isActive ? 'true' : 'false'}" role="tab">
+                <i class="fas ${escape(cat.icon)}"></i>
+                <span>${escape(cat.label)}</span>
+                ${countBadge}
+            </button>`;
+        }).join('');
+    }
+
+    function renderNotificationCard(notification) {
+        const cat = classifyNotificationCategory(notification);
+        const meta = CATEGORY_META[cat] || CATEGORY_META.all;
+        const catInfo = ALERTS_CATEGORIES.find(c => c.id === cat) || ALERTS_CATEGORIES[0];
+        const routePage = text(notification.routePage || '');
+        const routeData = notification.routeData || {};
+        let actionBtns = '';
+        if (routeData.chatId) {
+            actionBtns += `<button class="social-neo-link-btn" type="button" data-action="notification-open-chat" data-chat-id="${escape(text(routeData.chatId))}" data-notification-id="${escape(text(notification.id))}">Open chat</button>`;
+        } else if (routeData.groupId) {
+            actionBtns += `<button class="social-neo-link-btn" type="button" data-action="notification-open-group" data-group-id="${escape(text(routeData.groupId))}" data-notification-id="${escape(text(notification.id))}">Open group</button>`;
+        } else if (routePage === 'lms' || routePage === 'student-service' || routePage === 'orders') {
+            actionBtns += `<button class="social-neo-link-btn" type="button" data-action="notification-read" data-notification-id="${escape(text(notification.id))}">View</button>`;
+        }
+        if (!notification.read) {
+            actionBtns += `<button class="social-neo-link-btn" type="button" data-action="notification-read" data-notification-id="${escape(text(notification.id))}">Mark read</button>`;
+        }
+        return `
+            <article class="sn-alert-card ${notification.read ? '' : 'is-unread'}" data-category="${escape(cat)}" style="--sn-card-accent:${meta.color};--sn-card-accent-rgb:${meta.colorRgb};">
+                <div class="sn-alert-card-icon" aria-hidden="true">
+                    <i class="fas ${escape(catInfo.icon)}"></i>
+                </div>
+                <div class="sn-alert-card-body">
+                    <div class="sn-alert-card-head">
+                        <strong>${escape(text(notification.title || 'Notification'))}</strong>
+                        <span class="sn-alert-card-time">${escape(when(notification.createdAt))}</span>
+                    </div>
+                    <p>${escape(text(notification.text || ''))}</p>
+                    <div class="sn-alert-card-actions">
+                        ${actionBtns}
+                    </div>
+                </div>
+                ${notification.read ? '' : `<span class="sn-alert-card-dot" aria-label="Unread"></span>`}
+            </article>
+        `;
+    }
+
+    function renderEmptyState(categoryId) {
+        const cat = ALERTS_CATEGORIES.find(c => c.id === categoryId) || ALERTS_CATEGORIES[0];
+        const meta = CATEGORY_META[categoryId] || CATEGORY_META.all;
+        const emptyMessages = {
+            all: 'No notifications right now.',
+            academic: 'Grades, schedule changes, and enrollment updates will appear here.',
+            messages: 'Email, chat messages, and call alerts will appear here.',
+            social: 'Posts, follows, groups, and event updates will appear here.',
+            university: 'Announcements, news, and campus updates will appear here.',
+            support: 'Service tickets and moderation alerts will appear here.'
+        };
+        return `
+            <div class="sn-alerts-empty">
+                <div class="sn-alerts-empty-icon" style="color:${meta.color};">
+                    <i class="fas ${escape(cat.icon)}"></i>
+                </div>
+                <p>${escape(emptyMessages[categoryId] || emptyMessages.all)}</p>
+            </div>
+        `;
+    }
+
     window.renderAlertsPanel = function renderAlertsPanel() {
         const user = currentUser();
         const notifications = notificationItems();
         const reports = Array.isArray(state().social?.reports) ? state().social.reports : [];
-        const alertsFilter = text(state().ui?.alertsFilter || 'unread') || 'unread';
-        const visibleNotifications = filterNotificationsByView(notifications, alertsFilter);
-        const priorityNotifications = visibleNotifications.filter((notification) => classifyNotification(notification) !== 'system');
-        const systemNotifications = visibleNotifications.filter((notification) => classifyNotification(notification) === 'system');
+        const activeFilter = text(state().ui?.alertsFilter || 'all') || 'all';
+        const counts = getCategoryUnreadCounts(notifications);
+        const visibleNotifications = filterNotificationsByView(notifications, activeFilter);
         const openReports = reports.filter((report) => text(report.reportStatus || 'open') === 'open');
         const isAdmin = text(user?.role) === roleValue('ADMIN', 'admin');
-        const digest = {
-            mentions: notifications.filter((item) => text(item.type) === 'mention' && !item.read).length,
-            replies: notifications.filter((item) => text(item.type) === 'comment-reply' && !item.read).length,
-            reminders: notifications.filter((item) => text(item.type) === 'event-reminder' && !item.read).length,
-            approvals: notifications.filter((item) => text(item.type).includes('approval') && !item.read).length
-        };
+
+        const markLabel = activeFilter === 'all'
+            ? 'Mark all read'
+            : `Mark ${activeFilter} read`;
+
         return `
-            <div class="social-neo-grid-2">
-                <section class="social-neo-card">
-                    <div class="social-neo-section-head">
-                        <div><strong>Activity digest</strong></div>
-                        <span class="social-neo-pill"><strong>${escape(unreadNotifications())}</strong><span>Unread</span></span>
+            <div class="sn-alerts-panel">
+                ${counts[activeFilter] > 0 ? `
+                    <div class="sn-alerts-actions">
+                        <button class="sn-alerts-mark-read" type="button" data-action="notification-mark-category-read" data-category="${escape(activeFilter)}">
+                            <i class="fas fa-check-double"></i>
+                            <span>${escape(markLabel)}</span>
+                        </button>
                     </div>
-                    <div class="social-neo-badge-row">
-                        <span class="social-neo-pill">${escape(digest.mentions)} mentions</span>
-                        <span class="social-neo-pill">${escape(digest.replies)} replies</span>
-                        <span class="social-neo-pill">${escape(digest.approvals)} approvals</span>
-                        <span class="social-neo-pill">${escape(digest.reminders)} reminders</span>
-                    </div>
-                    <div class="social-neo-list">
-                        ${(priorityNotifications.length ? priorityNotifications : systemNotifications).length ? (priorityNotifications.length ? priorityNotifications : systemNotifications).map((notification) => `
-                            <article class="social-neo-alert ${notification.read ? '' : 'is-unread'}">
-                                <div>
-                                    <strong>${escape(text(notification.title || 'Notification'))}</strong>
-                                    <p>${escape(text(notification.text || ''))}</p>
-                                    <div class="social-neo-badge-row">
-                                        <span class="social-neo-pill">${escape(classifyNotification(notification))}</span>
-                                        ${notification.read ? '' : `<span class="social-neo-pill">Unread</span>`}
-                                    </div>
-                                    <span>${escape(when(notification.createdAt))}</span>
-                                </div>
-                                <div class="social-neo-inline">
-                                    ${notification.routeData?.chatId ? `<button class="social-neo-link-btn" type="button" data-action="notification-open-chat" data-chat-id="${escape(text(notification.routeData.chatId))}" data-notification-id="${escape(text(notification.id))}">Open chat</button>` : notification.routeData?.groupId ? `<button class="social-neo-link-btn" type="button" data-action="notification-open-group" data-group-id="${escape(text(notification.routeData.groupId))}" data-notification-id="${escape(text(notification.id))}">Open group</button>` : ''}
-                                    ${!notification.read ? `<button class="social-neo-link-btn" type="button" data-action="notification-read" data-notification-id="${escape(text(notification.id))}">Mark read</button>` : ''}
-                                </div>
-                            </article>
-                        `).join('') : `<div class="social-neo-empty">No alerts match the current inbox filter.</div>`}
-                        ${priorityNotifications.length && systemNotifications.length ? `
-                            <div class="social-neo-divider"></div>
-                            <span class="social-neo-label">System and campus notices</span>
-                            ${systemNotifications.map((notification) => `
-                                <article class="social-neo-alert ${notification.read ? '' : 'is-unread'}">
-                                    <div>
-                                        <strong>${escape(text(notification.title || 'Notification'))}</strong>
-                                        <p>${escape(text(notification.text || ''))}</p>
-                                        <span>${escape(when(notification.createdAt))}</span>
-                                    </div>
-                                    <div class="social-neo-inline">
-                                        ${!notification.read ? `<button class="social-neo-link-btn" type="button" data-action="notification-read" data-notification-id="${escape(text(notification.id))}">Mark read</button>` : ''}
-                                    </div>
-                                </article>
-                            `).join('')}
-                        ` : ''}
-                    </div>
-                </section>
-                <section class="social-neo-card">
-                    <div class="social-neo-section-head">
-                        <div><strong>${isAdmin ? 'Moderation queue' : 'Social reminders'}</strong></div>
-                        <span class="social-neo-pill"><strong>${escape(isAdmin ? openReports.length : digest.reminders)}</strong><span>${isAdmin ? 'Open reports' : 'Pending'}</span></span>
-                    </div>
-                    ${isAdmin ? `
-                        <div class="social-neo-list">
+                ` : ''}
+                <div class="sn-alerts-list">
+                    ${visibleNotifications.length
+                        ? visibleNotifications.map(renderNotificationCard).join('')
+                        : renderEmptyState(activeFilter)
+                    }
+                </div>
+                ${isAdmin ? `
+                    <div class="sn-alerts-moderation">
+                        <button class="sn-alerts-mod-toggle" type="button" data-action="alerts-moderation-toggle">
+                            <i class="fas fa-shield-halved"></i>
+                            <span>Moderation queue</span>
+                            <span class="sn-alerts-mod-count">${escape(String(openReports.length))}</span>
+                            <i class="fas fa-chevron-down sn-alerts-mod-chevron"></i>
+                        </button>
+                        <div class="sn-alerts-mod-body" data-bind="alerts-moderation-body">
                             ${openReports.length ? openReports.map((report) => `
-                                <article class="social-neo-alert">
-                                    <div style="width:100%">
-                                        <strong>${escape(text(report.targetEntityType || 'content').toUpperCase())}</strong>
-                                        <p>${escape(text(report.reportReason || 'No reason provided.'))}</p>
-                                        <div class="social-neo-badge-row">
-                                            <span class="social-neo-pill">${escape(text(report.targetEntityType || 'post'))}</span>
-                                            <span class="social-neo-pill">${escape(text(report.targetEntityId || ''))}</span>
-                                        </div>
-                                        <textarea class="social-neo-textarea" rows="2" placeholder="Resolution note (optional)" data-bind="report-resolution-note" data-report-id="${escape(text(report.id))}">${escape(text(state().ui?.reportResolutionNotes?.[text(report.id)] || ''))}</textarea>
+                                <article class="sn-alert-card sn-alert-card--report">
+                                    <div class="sn-alert-card-icon" aria-hidden="true" style="color:#f43f5e;">
+                                        <i class="fas fa-flag"></i>
                                     </div>
-                                    <div class="social-neo-inline">
-                                        <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="report-resolve" data-report-id="${escape(text(report.id))}" data-report-action="dismiss">Dismiss</button>
-                                        <button class="social-neo-btn social-neo-btn-primary social-neo-btn-sm" type="button" data-action="report-resolve" data-report-id="${escape(text(report.id))}" data-report-action="remove">Remove</button>
+                                    <div class="sn-alert-card-body">
+                                        <div class="sn-alert-card-head">
+                                            <strong>${escape(text(report.targetEntityType || 'content').toUpperCase())}</strong>
+                                        </div>
+                                        <p>${escape(text(report.reportReason || 'No reason provided.'))}</p>
+                                        <textarea class="social-neo-textarea" rows="2" placeholder="Resolution note (optional)" data-bind="report-resolution-note" data-report-id="${escape(text(report.id))}">${escape(text(state().ui?.reportResolutionNotes?.[text(report.id)] || ''))}</textarea>
+                                        <div class="sn-alert-card-actions">
+                                            <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="report-resolve" data-report-id="${escape(text(report.id))}" data-report-action="dismiss">Dismiss</button>
+                                            <button class="social-neo-btn social-neo-btn-primary social-neo-btn-sm" type="button" data-action="report-resolve" data-report-id="${escape(text(report.id))}" data-report-action="remove">Remove</button>
+                                        </div>
                                     </div>
                                 </article>
                             `).join('') : `<div class="social-neo-empty">No open reports.</div>`}
                         </div>
-                    ` : `
-                        <div class="social-neo-list">
-                            <article class="social-neo-entity-card">
-                                <div>
-                                    <strong>Reply and mention follow-up</strong>
-                                    <span>Unread mentions and reply alerts stay here until you clear them.</span>
-                                </div>
-                            </article>
-                            <article class="social-neo-entity-card">
-                                <div>
-                                    <strong>Event reminders</strong>
-                                    <span>Your RSVP reminders are generated from profile reminder settings.</span>
-                                </div>
-                            </article>
-                        </div>
-                    `}
-                </section>
-                ${isAdmin ? `
-                    <section class="social-neo-card">
-                        <div class="social-neo-section-head">
-                            <div><strong>Moderation history</strong></div>
-                        </div>
-                        <div class="social-neo-list">
-                            ${reports.length ? reports.map((report) => `
-                                <article class="social-neo-entity-card">
-                                    <div>
-                                        <strong>${escape(text(report.targetEntityType || 'Item'))} / ${escape(text(report.targetEntityId || 'Unknown'))}</strong>
-                                        <span>${escape(text(report.reportReason || 'No reason supplied.'))}</span>
-                                        <div class="social-neo-badge-row">
-                                            <span class="social-neo-pill">${escape(text(report.reportStatus || 'open'))}</span>
-                                            <span class="social-neo-pill">${escape(when(report.createdAt))}</span>
-                                            ${report.resolvedAt ? `<span class="social-neo-pill">Resolved ${escape(when(report.resolvedAt))}</span>` : ''}
-                                            ${report.resolvedBy ? `<span class="social-neo-pill">By ${escape(displayName(accountById(report.resolvedBy) || { id: report.resolvedBy }))}</span>` : ''}
-                                        </div>
-                                        ${report.resolutionNote ? `<p>${escape(text(report.resolutionNote))}</p>` : ''}
-                                    </div>
-                                </article>
-                            `).join('') : `<div class="social-neo-empty">No moderation reports.</div>`}
-                        </div>
-                    </section>
+                    </div>
                 ` : ''}
             </div>
         `;

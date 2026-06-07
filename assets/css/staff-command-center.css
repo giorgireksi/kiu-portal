@@ -1,3 +1,274 @@
+/* Staff Command Center — single source of truth: --staff-fade-* tokens */
+
+body.lux-route-staff {
+    --lux-glass-blur: 24px;
+    /* Page layer — opaque backdrop so panels never float over the particle field */
+    --staff-fade-bg: #070b12;
+    --staff-fade-page-start: rgba(8, 13, 22, calc(var(--lux-panel-alpha, 0.92) * 1.02));
+    --staff-fade-page-end: rgba(5, 8, 17, calc(var(--lux-panel-alpha, 0.92) * 1.06));
+    --staff-fade-page-accent: rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, 0.92) * 0.18));
+    --staff-fade-page-secondary: rgba(var(--lux-home-secondary-rgb, var(--lux-accent-rgb)), calc(var(--lux-color-fade-alpha, 0.92) * 0.12));
+    /* Large glass panels (hero, command panel, controls, directory, profile, modal) */
+    --staff-fade-surface:
+        radial-gradient(circle at 6% 0%, rgba(255, 255, 255, calc(var(--lux-color-fade-alpha, .92) * 0.08)), transparent 34%),
+        radial-gradient(circle at 74% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * 0.28)), transparent 42%),
+        radial-gradient(circle at 100% 96%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .92) * 0.18)), transparent 40%),
+        linear-gradient(135deg,
+            rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * 0.10)),
+            rgba(10, 15, 24, calc(var(--lux-transparency-alpha, .92) * 0.89)) 44%,
+            rgba(7, 10, 18, calc(var(--lux-transparency-alpha, .92) * 0.80)));
+    /* Subtle stat cards — same stops as --sadmin-fade-surface-subtle / buildLuxuryRoutePanelGradient(small) */
+    --staff-fade-surface-subtle:
+        radial-gradient(circle at 12% 0%, rgba(255, 255, 255, calc(var(--lux-color-fade-alpha, .92) * 0.055)), transparent 30%),
+        radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * 0.14)), transparent 34%),
+        linear-gradient(135deg,
+            rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * 0.065)),
+            rgba(10, 15, 24, calc(var(--lux-transparency-alpha, .92) * 0.88)) 46%,
+            rgba(7, 10, 18, calc(var(--lux-transparency-alpha, .92) * 0.80)));
+    --staff-fade-card-bg: var(--staff-fade-surface-subtle);
+    --staff-fade-control:
+        linear-gradient(180deg, rgba(255, 255, 255, calc(0.04 + var(--lux-glass-alpha, .06))), rgba(255, 255, 255, 0.02)),
+        radial-gradient(circle at top right, rgba(var(--lux-accent-rgb), 0.10), transparent 32%);
+    --staff-fade-chip: var(--staff-fade-control);
+    --staff-fade-border: rgba(var(--lux-accent-rgb), 0.22);
+    --staff-fade-card-border: rgba(var(--lux-accent-rgb), 0.14);
+    --staff-fade-border-soft: rgba(255, 255, 255, 0.10);
+    --staff-fade-shadow:
+        0 24px 58px rgba(0, 0, 0, 0.24),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08),
+        0 0 0 1px rgba(var(--lux-accent-rgb), 0.04);
+    --staff-fade-shadow-soft:
+        0 20px 44px rgba(0, 0, 0, 0.20),
+        inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    --staff-fade-card-shadow: 0 18px 36px rgba(0, 0, 0, 0.18);
+    --staff-fade-blur: blur(var(--lux-transparency-blur, 20px)) saturate(var(--lux-transparency-saturate, 145%));
+    --staff-fade-row: rgba(var(--lux-glass-tint-rgb, 16, 23, 38), calc(var(--lux-raised-fill-alpha, 0.045) + 0.04));
+    --staff-fade-row-hover: rgba(var(--lux-accent-rgb), calc(0.04 + var(--lux-transparency-alpha, 0.92) * 0.06));
+    background:
+        radial-gradient(circle at 18% 10%, var(--staff-fade-page-accent), transparent 32%),
+        radial-gradient(circle at 88% 78%, var(--staff-fade-page-secondary), transparent 28%),
+        linear-gradient(180deg, var(--staff-fade-page-start) 0%, var(--staff-fade-page-end) 100%) !important;
+    color: var(--lux-text) !important;
+}
+
+body.lux-light-mode.lux-route-staff,
+html.lux-light-mode body.lux-route-staff {
+    --staff-fade-bg: #f6f8fb;
+    --staff-fade-page-start: rgba(247, 242, 235, calc(var(--lux-panel-alpha, 0.86) * 0.96));
+    --staff-fade-page-end: rgba(241, 236, 227, calc(var(--lux-panel-alpha, 0.86) * 0.92));
+    --staff-fade-page-accent: rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, 0.86) * 0.14));
+    --staff-fade-page-secondary: rgba(var(--lux-home-secondary-rgb, var(--lux-accent-rgb)), calc(var(--lux-color-fade-alpha, 0.86) * 0.08));
+    --staff-fade-surface:
+        radial-gradient(circle at 6% 0%, rgba(255, 255, 255, calc(var(--lux-color-fade-alpha, .86) * 0.88)), transparent 34%),
+        radial-gradient(circle at 74% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * 0.24)), transparent 42%),
+        radial-gradient(circle at 100% 96%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .86) * 0.14)), transparent 40%),
+        linear-gradient(135deg,
+            rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * 0.065)),
+            rgba(255, 255, 255, calc(var(--lux-transparency-alpha, .86) * 0.84)) 44%,
+            rgba(247, 241, 232, calc(var(--lux-transparency-alpha, .86) * 0.70)));
+    --staff-fade-surface-subtle:
+        radial-gradient(circle at 12% 0%, rgba(255, 255, 255, calc(var(--lux-color-fade-alpha, .86) * 0.62)), transparent 30%),
+        radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * 0.14)), transparent 34%),
+        linear-gradient(135deg,
+            rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * 0.045)),
+            rgba(255, 255, 255, calc(var(--lux-transparency-alpha, .86) * 0.84)) 46%,
+            rgba(247, 241, 232, calc(var(--lux-transparency-alpha, .86) * 0.72)));
+    --staff-fade-card-bg: var(--staff-fade-surface-subtle);
+    --staff-fade-control:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(248, 244, 237, 0.62)),
+        radial-gradient(circle at top right, rgba(var(--lux-accent-rgb), 0.10), transparent 32%);
+    --staff-fade-border: rgba(var(--lux-accent-rgb), 0.16);
+    --staff-fade-card-border: rgba(31, 52, 86, 0.13);
+    --staff-fade-border-soft: rgba(77, 52, 31, 0.12);
+    --staff-fade-shadow:
+        0 18px 42px rgba(73, 48, 25, 0.10),
+        inset 0 1px 0 rgba(255, 255, 255, 0.74);
+    --staff-fade-shadow-soft:
+        0 14px 30px rgba(73, 48, 25, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.62);
+    --staff-fade-card-shadow: 0 16px 30px rgba(24, 42, 70, 0.08);
+    --staff-fade-row: rgba(255, 255, 255, calc(var(--lux-raised-fill-alpha, 0.06) + 0.48));
+    --staff-fade-row-hover: rgba(var(--lux-accent-rgb), calc(0.03 + var(--lux-transparency-alpha, 0.86) * 0.05));
+}
+
+body.lux-route-staff #app-content {
+    background: transparent !important;
+}
+
+body.lux-route-staff #staff-content {
+    position: relative;
+    z-index: 1;
+}
+
+/* Tier 1 — Large glass panels */
+body.lux-route-staff #staff-content :is(
+    .page-hero,
+    .staff-hub-hero,
+    .staff-hub-command-panel,
+    .staff-hub-controls,
+    .staff-hub-directory-panel,
+    .staff-hub-profile,
+    .staff-hub-modal,
+    .admin-directory-hero,
+    .admin-directory-controls,
+    .admin-directory-card,
+    .lux-card,
+    .lux-person-card
+) {
+    position: relative;
+    overflow: hidden;
+    background: var(--staff-fade-surface) !important;
+    border: 1px solid var(--staff-fade-border) !important;
+    box-shadow: var(--staff-fade-shadow) !important;
+    backdrop-filter: var(--staff-fade-blur) !important;
+    -webkit-backdrop-filter: var(--staff-fade-blur) !important;
+    color: var(--lux-text) !important;
+}
+
+/* Tier 2 — Subtle inner cards (info, list, command-in-hero) */
+body.lux-route-staff #staff-content :is(
+    .staff-hub-command-card,
+    .staff-hub-info-card,
+    .staff-hub-warning,
+    .staff-hub-list-item,
+    .staff-hub-mini-card,
+    .staff-hub-focus-card,
+    .lux-strip-card:not(.staff-hub-metric-card),
+    .lux-data-card,
+    .lux-inline-card,
+    .lux-subcard,
+    .lux-person-head,
+    .lux-inline-meta,
+    .prof-reg-info-box
+) {
+    position: relative;
+    overflow: hidden;
+    background: var(--staff-fade-card-bg) !important;
+    border: 1px solid var(--staff-fade-card-border) !important;
+    box-shadow: var(--staff-fade-card-shadow) !important;
+    backdrop-filter: var(--staff-fade-blur) !important;
+    -webkit-backdrop-filter: var(--staff-fade-blur) !important;
+    color: var(--lux-text) !important;
+}
+
+/* Stat/metric cards — students-admin .students-lms-stat-card parity (not panel tier) */
+body.lux-route-staff #staff-content .staff-hub-metric-card,
+body.lux-route-staff #staff-content .staff-hub-metric-card.lux-strip-card,
+body.lux-route-staff #staff-content .staff-hub-metric-card.surface-card {
+    position: relative;
+    z-index: 1;
+    min-width: 0;
+    overflow: hidden;
+    padding: 20px 20px 20px 24px;
+    border-radius: 20px;
+    background: var(--staff-fade-card-bg) !important;
+    border: 1px solid var(--staff-fade-card-border) !important;
+    box-shadow: var(--staff-fade-card-shadow) !important;
+    backdrop-filter: var(--staff-fade-blur) !important;
+    -webkit-backdrop-filter: var(--staff-fade-blur) !important;
+    color: var(--lux-text) !important;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+body.lux-route-staff #staff-content .staff-hub-metric-card::before {
+    content: '';
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 3px;
+    background: linear-gradient(
+        180deg,
+        rgba(var(--lux-accent-rgb), 0.85),
+        rgba(var(--lux-home-secondary-rgb), 0.45)
+    );
+    border-radius: 20px 0 0 20px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-metric-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 28px rgba(var(--lux-accent-rgb), 0.10), var(--staff-fade-card-shadow) !important;
+}
+
+body.lux-route-staff #staff-content .staff-hub-metric-card > span:first-child {
+    display: block;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(var(--lux-accent-rgb), 0.88) !important;
+}
+
+body.lux-route-staff #staff-content .staff-hub-metric-card strong {
+    display: block;
+    margin-top: 8px;
+    font-size: clamp(22px, 2.2vw, 30px);
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.04em;
+}
+
+body.lux-route-staff #staff-content .staff-hub-metric-card small {
+    display: block;
+    margin-top: 6px;
+    font-size: 12px;
+    line-height: 1.45;
+    color: var(--lux-text-muted);
+}
+
+/* Tier 3 — Token atoms: controls, chips, tabs */
+body.lux-route-staff #staff-content :is(
+    .staff-hub-control,
+    .lux-control,
+    .staff-hub-tab,
+    .lux-tab-btn,
+    .lux-picker-btn,
+    .staff-hub-command-badge
+) {
+    background: var(--staff-fade-control) !important;
+    border: 1px solid var(--staff-fade-border-soft) !important;
+    box-shadow: var(--staff-fade-shadow-soft);
+    backdrop-filter: var(--staff-fade-blur);
+    -webkit-backdrop-filter: var(--staff-fade-blur);
+    color: var(--lux-text) !important;
+}
+
+body.lux-route-staff #staff-content :is(
+    .staff-hub-chip,
+    .lux-status-pill,
+    .lux-filter-pill
+) {
+    background: var(--staff-fade-chip) !important;
+    border: 1px solid var(--staff-fade-border-soft) !important;
+    backdrop-filter: var(--staff-fade-blur);
+    -webkit-backdrop-filter: var(--staff-fade-blur);
+}
+
+body.lux-route-staff #staff-content .staff-hub-row-button,
+body.lux-route-staff #staff-content .staff-hub-table tbody tr {
+    background: var(--staff-fade-row) !important;
+    border-color: var(--staff-fade-border-soft) !important;
+    transition: background 200ms ease, border-color 200ms ease;
+}
+
+body.lux-route-staff #staff-content .staff-hub-row-button:hover {
+    background: var(--staff-fade-row-hover) !important;
+}
+
+body.lux-route-staff #staff-content .staff-hub-tab.is-active,
+body.lux-route-staff #staff-content .staff-hub-tab.active,
+body.lux-route-staff #staff-content .lux-tab-btn.is-active,
+body.lux-route-staff #staff-content .lux-tab-btn.active {
+    border-color: rgba(var(--lux-accent-rgb), 0.34) !important;
+    background:
+        radial-gradient(circle at 0% 0%, rgba(var(--lux-accent-rgb), 0.14), transparent 36%),
+        var(--staff-fade-control) !important;
+}
+
+body.lux-route-staff #staff-content .lux-empty-state {
+    background: var(--staff-fade-row) !important;
+    border: 1px dashed var(--staff-fade-border-soft) !important;
+}
+
+/* === Root layout === */
 body.lux-route-staff #staff-content.staff-command-root {
     width: min(100%, 1580px);
     margin: 0 auto;
@@ -23,6 +294,7 @@ body.lux-route-staff #staff-content.staff-command-root {
     }
 }
 
+/* === Loading state === */
 body.lux-route-staff .staff-shell-loading-state {
     text-align: center;
     padding: 68px 20px;
@@ -43,54 +315,10 @@ body.lux-route-staff .staff-shell-modal-wide {
     max-width: 600px;
 }
 
+/* === Main shell grid === */
 body.lux-route-staff #staff-content .staff-hub-shell {
     display: grid;
     gap: 22px;
-}
-
-body.lux-route-staff #staff-content .staff-hub-surface,
-body.lux-route-staff #staff-content .staff-hub-hero,
-body.lux-route-staff #staff-content .staff-hub-modal,
-body.lux-route-staff #staff-content .staff-hub-profile {
-    position: relative;
-    overflow: hidden;
-    border: 1px solid rgba(var(--lux-accent-rgb), 0.18);
-    border-radius: 26px;
-    background:
-        radial-gradient(circle at 6% 0%, rgba(255, 255, 255, calc(var(--lux-transparency-alpha, .92) * .08)), transparent 34%),
-        radial-gradient(circle at 76% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, .92) * .24)), transparent 40%),
-        radial-gradient(circle at 100% 96%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-transparency-alpha, .92) * .14)), transparent 40%),
-        linear-gradient(
-            135deg,
-            rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, .92) * .075)),
-            rgba(10, 15, 24, calc(var(--lux-transparency-alpha, .92) * .90)) 44%,
-            rgba(7, 10, 18, calc(var(--lux-transparency-alpha, .92) * .82))
-        );
-    box-shadow:
-        0 24px 58px rgba(0, 0, 0, 0.24),
-        inset 0 1px 0 rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(var(--lux-transparency-blur, 20px)) saturate(var(--lux-transparency-saturate, 145%));
-    -webkit-backdrop-filter: blur(var(--lux-transparency-blur, 20px)) saturate(var(--lux-transparency-saturate, 145%));
-}
-
-body.lux-light-mode.lux-route-staff #staff-content .staff-hub-surface,
-body.lux-light-mode.lux-route-staff #staff-content .staff-hub-hero,
-body.lux-light-mode.lux-route-staff #staff-content .staff-hub-modal,
-body.lux-light-mode.lux-route-staff #staff-content .staff-hub-profile,
-html.lux-light-mode body.lux-route-staff #staff-content .staff-hub-surface,
-html.lux-light-mode body.lux-route-staff #staff-content .staff-hub-hero,
-html.lux-light-mode body.lux-route-staff #staff-content .staff-hub-modal,
-html.lux-light-mode body.lux-route-staff #staff-content .staff-hub-profile {
-    background:
-        radial-gradient(circle at 8% 0%, rgba(255, 255, 255, calc(var(--lux-transparency-alpha, .86) * .88)), transparent 34%),
-        radial-gradient(circle at 76% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, .86) * .20)), transparent 40%),
-        radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-transparency-alpha, .86) * .12)), transparent 40%),
-        linear-gradient(
-            135deg,
-            rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, .86) * .055)),
-            rgba(255, 255, 255, calc(var(--lux-transparency-alpha, .86) * .84)) 44%,
-            rgba(247, 241, 232, calc(var(--lux-transparency-alpha, .86) * .70))
-        );
 }
 
 body.lux-route-staff #staff-content .staff-hub-shell > * {
@@ -101,9 +329,10 @@ body.lux-route-staff #staff-content .staff-hub-shell > *:nth-child(2) { animatio
 body.lux-route-staff #staff-content .staff-hub-shell > *:nth-child(3) { animation-delay: 0.1s; }
 body.lux-route-staff #staff-content .staff-hub-shell > *:nth-child(4) { animation-delay: 0.15s; }
 
+/* === Hero layout === */
 body.lux-route-staff #staff-content .staff-hub-hero {
     display: grid;
-    grid-template-columns: minmax(0, 1.15fr) minmax(340px, 0.85fr);
+    grid-template-columns: minmax(0, 1.24fr) minmax(340px, 0.76fr);
     gap: 26px;
     min-height: 280px;
     padding: 36px;
@@ -124,10 +353,9 @@ body.lux-route-staff #staff-content .staff-hub-profile::before {
 
 body.lux-route-staff #staff-content .staff-hub-hero-copy {
     max-width: 760px;
-    margin-top: 12px;
-    color: var(--lux-text-muted);
+    margin-top: 14px;
     font-size: 15px;
-    line-height: 1.6;
+    line-height: 1.72;
 }
 
 body.lux-route-staff #staff-content .staff-hub-kicker,
@@ -135,7 +363,6 @@ body.lux-route-staff #staff-content .staff-hub-overline {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    color: rgba(var(--lux-accent-rgb), 0.96);
     font-size: 11px;
     font-weight: 900;
     letter-spacing: 0.08em;
@@ -144,10 +371,10 @@ body.lux-route-staff #staff-content .staff-hub-overline {
 
 body.lux-route-staff #staff-content .staff-hub-title {
     margin: 12px 0 0;
-    color: var(--lux-text);
-    font-size: clamp(32px, 4vw, 48px);
-    line-height: 1.02;
+    font-size: clamp(38px, 4.8vw, 62px);
+    line-height: 0.96;
     letter-spacing: -0.04em;
+    max-width: 11ch;
 }
 
 body.lux-route-staff #staff-content .staff-hub-hero-meta,
@@ -161,45 +388,28 @@ body.lux-route-staff #staff-content .staff-hub-toolbar-actions {
     align-items: center;
 }
 
-body.lux-route-staff #staff-content .staff-hub-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    min-height: 32px;
-    padding: 0 12px;
-    border-radius: 999px;
-    border: 1px solid rgba(var(--lux-accent-rgb), 0.2);
-    background: rgba(var(--lux-accent-rgb), 0.08);
-    color: var(--lux-text-muted);
-    font-size: 12px;
-    font-weight: 800;
+body.lux-route-staff #staff-content .staff-hub-hero-meta--spaced {
+    margin-top: 16px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-action-row--spaced {
+    margin-top: 20px;
 }
 
 body.lux-route-staff #staff-content .staff-hub-hero-panel {
     display: grid;
-    gap: 14px;
+    gap: 16px;
     align-content: start;
 }
 
-body.lux-route-staff #staff-content .staff-hub-focus-card,
-body.lux-route-staff #staff-content .staff-hub-mini-card {
-    border: 1px solid rgba(var(--lux-accent-rgb), 0.16);
-    border-radius: 20px;
-    background: rgba(255, 255, 255, calc(var(--lux-transparency-alpha, .92) * .05));
-    padding: 18px;
+body.lux-route-staff #staff-content .staff-hub-hero-search-grid {
+    grid-template-columns: minmax(320px, 1.2fr) minmax(220px, 0.8fr);
 }
 
-body.lux-light-mode.lux-route-staff #staff-content .staff-hub-focus-card,
-body.lux-light-mode.lux-route-staff #staff-content .staff-hub-mini-card,
-html.lux-light-mode body.lux-route-staff #staff-content .staff-hub-focus-card,
-html.lux-light-mode body.lux-route-staff #staff-content .staff-hub-mini-card {
-    background: rgba(255, 255, 255, calc(var(--lux-transparency-alpha, .86) * .62));
-}
-
+/* === Focus card and mini card (layout only) === */
 body.lux-route-staff #staff-content .staff-hub-focus-card h2,
 body.lux-route-staff #staff-content .staff-hub-section-title {
     margin: 0;
-    color: var(--lux-text);
     font-size: 18px;
     line-height: 1.2;
 }
@@ -208,43 +418,101 @@ body.lux-route-staff #staff-content .staff-hub-focus-card p,
 body.lux-route-staff #staff-content .staff-hub-section-copy,
 body.lux-route-staff #staff-content .staff-hub-mini-copy {
     margin: 6px 0 0;
-    color: var(--lux-text-muted);
     font-size: 13px;
     line-height: 1.55;
 }
 
+body.lux-route-staff #staff-content .staff-hub-command-panel {
+    padding: 22px;
+    border-radius: 24px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-command-head {
+    display: grid;
+    gap: 6px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-command-head strong {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 28px;
+    line-height: 1.02;
+}
+
+body.lux-route-staff #staff-content .staff-hub-command-head span,
+body.lux-route-staff #staff-content .staff-hub-command-note p {
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.65;
+}
+
+body.lux-route-staff #staff-content .staff-hub-command-grid,
 body.lux-route-staff #staff-content .staff-hub-hero-grid {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 12px;
 }
 
+body.lux-route-staff #staff-content .staff-hub-command-card,
+body.lux-route-staff #staff-content .staff-hub-focus-card,
+body.lux-route-staff #staff-content .staff-hub-mini-card {
+    padding: 16px;
+    border-radius: 18px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-command-card span {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+}
+
+body.lux-route-staff #staff-content .staff-hub-command-card strong {
+    display: block;
+    margin-top: 6px;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 24px;
+    line-height: 1.02;
+}
+
+body.lux-route-staff #staff-content .staff-hub-command-card em {
+    display: block;
+    margin-top: 6px;
+    font-style: normal;
+    font-size: 12px;
+    line-height: 1.55;
+}
+
+body.lux-route-staff #staff-content .staff-hub-command-note {
+    display: grid;
+    gap: 10px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-command-badge {
+    display: inline-flex;
+    width: fit-content;
+    align-items: center;
+    gap: 8px;
+    min-height: 36px;
+    padding: 0 14px;
+    border-radius: 999px;
+    background: rgba(var(--lux-accent-rgb), 0.18);
+    border: 1px solid rgba(var(--lux-accent-rgb), 0.32);
+    font-size: 11px;
+    font-weight: 700;
+}
+
+/* === Metrics grid layout === */
 body.lux-route-staff #staff-content .staff-hub-metrics {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 16px;
 }
 
-body.lux-route-staff #staff-content .staff-hub-metric-card {
-    padding: 18px;
-}
-
-body.lux-route-staff #staff-content .staff-hub-metric-card strong {
-    display: block;
-    margin-top: 12px;
-    color: var(--lux-text);
-    font-size: 32px;
-    line-height: 1;
-    letter-spacing: -0.04em;
-}
-
-body.lux-route-staff #staff-content .staff-hub-metric-card span,
 body.lux-route-staff #staff-content .staff-hub-text-muted {
-    color: var(--lux-text-muted);
     font-size: 12px;
     line-height: 1.45;
 }
 
+/* === Controls layout === */
 body.lux-route-staff #staff-content .staff-hub-controls {
     padding: 28px;
 }
@@ -283,31 +551,19 @@ body.lux-route-staff #staff-command-modal-root .staff-hub-field {
     gap: 7px;
 }
 
+body.lux-route-staff #staff-content .staff-hub-field--grow {
+    min-width: 280px;
+    flex: 1 1 280px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-field--compact {
+    min-width: 170px;
+}
+
 body.lux-route-staff #staff-content .staff-hub-field label,
 body.lux-route-staff #staff-command-modal-root .staff-hub-field label {
-    color: var(--lux-text-muted);
     font-size: 12px;
     font-weight: 800;
-}
-
-body.lux-route-staff #staff-content .staff-hub-control,
-body.lux-route-staff #staff-command-modal-root .staff-hub-control {
-    width: 100%;
-    min-height: 42px;
-    padding: 0 14px;
-    border: 1px solid rgba(var(--lux-accent-rgb), 0.16);
-    border-radius: 14px;
-    background: rgba(255, 255, 255, calc(var(--lux-transparency-alpha, .92) * .06));
-    color: var(--lux-text);
-    outline: none;
-    font: inherit;
-}
-
-body.lux-light-mode.lux-route-staff #staff-content .staff-hub-control,
-body.lux-light-mode.lux-route-staff #staff-command-modal-root .staff-hub-control,
-html.lux-light-mode body.lux-route-staff #staff-content .staff-hub-control,
-html.lux-light-mode body.lux-route-staff #staff-command-modal-root .staff-hub-control {
-    background: rgba(255, 255, 255, calc(var(--lux-transparency-alpha, .86) * .74));
 }
 
 body.lux-route-staff #staff-content textarea.staff-hub-control,
@@ -317,12 +573,7 @@ body.lux-route-staff #staff-command-modal-root textarea.staff-hub-control {
     resize: vertical;
 }
 
-body.lux-route-staff #staff-content .staff-hub-control:focus,
-body.lux-route-staff #staff-command-modal-root .staff-hub-control:focus {
-    border-color: rgba(var(--lux-accent-rgb), 0.42);
-    box-shadow: 0 0 0 4px rgba(var(--lux-accent-rgb), 0.10);
-}
-
+/* === Chips layout === */
 body.lux-route-staff #staff-content .staff-hub-chips,
 body.lux-route-staff #staff-command-modal-root .staff-hub-chips,
 body.lux-route-staff #staff-content .staff-hub-tab-chips {
@@ -331,21 +582,7 @@ body.lux-route-staff #staff-content .staff-hub-tab-chips {
     gap: 8px;
 }
 
-body.lux-route-staff #staff-content .staff-hub-chip,
-body.lux-route-staff #staff-command-modal-root .staff-hub-chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    min-height: 30px;
-    padding: 0 11px;
-    border-radius: 999px;
-    border: 1px solid rgba(var(--lux-accent-rgb), 0.18);
-    background: rgba(var(--lux-accent-rgb), 0.08);
-    color: var(--lux-text-muted);
-    font-size: 12px;
-    font-weight: 800;
-}
-
+/* === Semantic state colors for chips (route content, not shared chrome) === */
 body.lux-route-staff #staff-content .staff-hub-chip.is-success,
 body.lux-route-staff #staff-command-modal-root .staff-hub-chip.is-success {
     border-color: rgba(32, 197, 124, 0.28);
@@ -367,6 +604,12 @@ body.lux-route-staff #staff-command-modal-root .staff-hub-chip.is-danger {
     color: #ffd2d2;
 }
 
+body.lux-light-mode.lux-route-staff #staff-content .staff-hub-chip.is-warning,
+html.lux-light-mode body.lux-route-staff #staff-content .staff-hub-chip.is-warning {
+    color: #7e4e1a;
+}
+
+/* === Directory and profile layouts === */
 body.lux-route-staff #staff-content .staff-hub-directory-panel,
 body.lux-route-staff #staff-content .staff-hub-profile {
     padding: 18px;
@@ -377,11 +620,9 @@ body.lux-route-staff #staff-content .staff-hub-workspace {
     gap: 20px;
 }
 
+/* === Table layout === */
 body.lux-route-staff #staff-content .staff-hub-table-wrap {
     overflow: auto;
-    border: 1px solid rgba(var(--lux-accent-rgb), 0.12);
-    border-radius: 20px;
-    background: rgba(255, 255, 255, calc(var(--lux-transparency-alpha, .92) * .04));
 }
 
 body.lux-route-staff #staff-content .staff-hub-table {
@@ -393,7 +634,6 @@ body.lux-route-staff #staff-content .staff-hub-table {
 body.lux-route-staff #staff-content .staff-hub-table th,
 body.lux-route-staff #staff-content .staff-hub-table td {
     padding: 15px 16px;
-    border-bottom: 1px solid rgba(var(--lux-accent-rgb), 0.12);
     text-align: left;
     vertical-align: middle;
 }
@@ -402,28 +642,43 @@ body.lux-route-staff #staff-content .staff-hub-table th {
     position: sticky;
     top: 0;
     z-index: 1;
-    color: var(--lux-text-muted);
     font-size: 11px;
     font-weight: 900;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    background: rgba(var(--lux-accent-rgb), 0.10);
 }
 
 body.lux-route-staff #staff-content .staff-hub-table tbody tr {
     transition: background 0.18s ease, transform 0.18s ease;
 }
 
-body.lux-route-staff #staff-content .staff-hub-table tbody tr:hover,
-body.lux-route-staff #staff-content .staff-hub-table tbody tr.is-selected {
-    background: rgba(var(--lux-accent-rgb), 0.08);
+body.lux-route-staff #staff-content .staff-hub-row-button {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    inline-size: 100%;
+    padding: 0;
+    border: 0;
+    background: none;
+    box-shadow: none;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
 }
 
+body.lux-route-staff #staff-content .staff-hub-row-button:focus-visible .staff-hub-person,
+body.lux-route-staff #staff-content .staff-hub-row-button:hover .staff-hub-person {
+    transform: translateY(-1px);
+}
+
+/* === Person card layout === */
 body.lux-route-staff #staff-content .staff-hub-person {
     display: grid;
     grid-template-columns: 52px minmax(0, 1fr);
     gap: 12px;
     align-items: center;
+    padding: 12px 14px;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, transform 0.18s ease;
 }
 
 body.lux-route-staff #staff-content .staff-hub-avatar,
@@ -434,11 +689,8 @@ body.lux-route-staff #staff-command-modal-root .staff-hub-avatar {
     display: grid;
     place-items: center;
     overflow: hidden;
-    background: linear-gradient(135deg, rgba(var(--lux-accent-rgb), 0.24), rgba(var(--lux-home-secondary-rgb), 0.14));
-    color: var(--lux-text);
     font-size: 13px;
     font-weight: 900;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
 body.lux-route-staff #staff-content .staff-hub-avatar img,
@@ -457,7 +709,6 @@ body.lux-route-staff #staff-command-modal-root .staff-hub-avatar.is-large {
 }
 
 body.lux-route-staff #staff-content .staff-hub-name {
-    color: var(--lux-text);
     font-size: 15px;
     font-weight: 900;
     line-height: 1.2;
@@ -465,7 +716,6 @@ body.lux-route-staff #staff-content .staff-hub-name {
 
 body.lux-route-staff #staff-content .staff-hub-meta {
     margin-top: 4px;
-    color: var(--lux-text-muted);
     font-size: 12px;
     line-height: 1.4;
 }
@@ -480,14 +730,14 @@ body.lux-route-staff #staff-content .staff-hub-progress-track {
     height: 7px;
     overflow: hidden;
     border-radius: 999px;
-    background: rgba(255, 255, 255, 0.08);
 }
 
 body.lux-route-staff #staff-content .staff-hub-progress-fill {
     display: block;
+    width: var(--staff-hub-progress, 0%);
     height: 100%;
     border-radius: inherit;
-    background: linear-gradient(90deg, var(--lux-accent), var(--lux-accent-2, var(--lux-accent)));
+    transition: width 0.24s ease;
 }
 
 body.lux-route-staff #staff-content .staff-hub-empty {
@@ -496,11 +746,16 @@ body.lux-route-staff #staff-content .staff-hub-empty {
     gap: 10px;
     padding: 52px 20px;
     text-align: center;
-    color: var(--lux-text-muted);
 }
 
+body.lux-route-staff #staff-content .staff-hub-empty-icon {
+    font-size: 32px;
+}
+
+/* === Profile layout === */
 body.lux-route-staff #staff-content .staff-hub-profile {
     padding: 0;
+    overflow: hidden;
 }
 
 body.lux-route-staff #staff-content .staff-hub-toolbar {
@@ -510,15 +765,10 @@ body.lux-route-staff #staff-content .staff-hub-toolbar {
     gap: 12px;
     flex-wrap: wrap;
     padding: 16px 24px;
-    border-bottom: 1px solid rgba(var(--lux-accent-rgb), 0.12);
-    background: rgba(255, 255, 255, calc(var(--lux-transparency-alpha, .92) * .04));
 }
 
 body.lux-route-staff #staff-content .staff-hub-profile-head {
     padding: 28px 24px;
-    background:
-        radial-gradient(circle at top right, rgba(var(--lux-accent-rgb), 0.16), transparent 34%),
-        linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent 70%);
 }
 
 body.lux-route-staff #staff-content .staff-hub-profile-head-main {
@@ -537,7 +787,6 @@ body.lux-route-staff #staff-content .staff-hub-profile-id {
 
 body.lux-route-staff #staff-content .staff-hub-profile-id h2 {
     margin: 6px 0 0;
-    color: var(--lux-text);
     font-size: clamp(30px, 4vw, 42px);
     line-height: 1.02;
     letter-spacing: -0.04em;
@@ -545,37 +794,23 @@ body.lux-route-staff #staff-content .staff-hub-profile-id h2 {
 
 body.lux-route-staff #staff-content .staff-hub-profile-id p {
     margin: 8px 0 0;
-    color: var(--lux-text-muted);
     font-size: 13px;
 }
 
+/* === Tabs layout === */
 body.lux-route-staff #staff-content .staff-hub-tabs {
     display: grid;
     grid-template-columns: repeat(6, minmax(0, 1fr));
     gap: 8px;
     padding: 12px 18px;
-    border-top: 1px solid rgba(var(--lux-accent-rgb), 0.12);
-    border-bottom: 1px solid rgba(var(--lux-accent-rgb), 0.12);
-    background: rgba(255, 255, 255, calc(var(--lux-transparency-alpha, .92) * .03));
 }
 
 body.lux-route-staff #staff-content .staff-hub-tab {
     min-height: 38px;
-    border: 1px solid transparent;
-    border-radius: 12px;
-    background: transparent;
-    color: var(--lux-text-muted);
     font: inherit;
     font-size: 12px;
     font-weight: 900;
-    transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
-}
-
-body.lux-route-staff #staff-content .staff-hub-tab:hover,
-body.lux-route-staff #staff-content .staff-hub-tab.is-active {
-    background: rgba(var(--lux-accent-rgb), 0.12);
-    border-color: rgba(var(--lux-accent-rgb), 0.22);
-    color: var(--lux-text);
+    transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
 }
 
 body.lux-route-staff #staff-content .staff-hub-profile-body {
@@ -588,22 +823,10 @@ body.lux-route-staff #staff-content .staff-hub-info-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+/* === Info card and list item layout === */
 body.lux-route-staff #staff-content .staff-hub-info-card,
-body.lux-route-staff #staff-content .staff-hub-list-item,
-body.lux-route-staff #staff-content .staff-hub-warning {
-    border: 1px solid rgba(var(--lux-accent-rgb), 0.14);
-    border-radius: 18px;
-    background: rgba(255, 255, 255, calc(var(--lux-transparency-alpha, .92) * .04));
+body.lux-route-staff #staff-content .staff-hub-list-item {
     padding: 14px;
-}
-
-body.lux-light-mode.lux-route-staff #staff-content .staff-hub-info-card,
-body.lux-light-mode.lux-route-staff #staff-content .staff-hub-list-item,
-body.lux-light-mode.lux-route-staff #staff-content .staff-hub-warning,
-html.lux-light-mode body.lux-route-staff #staff-content .staff-hub-info-card,
-html.lux-light-mode body.lux-route-staff #staff-content .staff-hub-list-item,
-html.lux-light-mode body.lux-route-staff #staff-content .staff-hub-warning {
-    background: rgba(255, 255, 255, calc(var(--lux-transparency-alpha, .86) * .58));
 }
 
 body.lux-route-staff #staff-content .staff-hub-info-card.is-full {
@@ -612,7 +835,6 @@ body.lux-route-staff #staff-content .staff-hub-info-card.is-full {
 
 body.lux-route-staff #staff-content .staff-hub-info-card span {
     display: block;
-    color: var(--lux-text-muted);
     font-size: 11px;
     font-weight: 900;
     letter-spacing: 0.06em;
@@ -622,7 +844,6 @@ body.lux-route-staff #staff-content .staff-hub-info-card span {
 body.lux-route-staff #staff-content .staff-hub-info-card strong {
     display: block;
     margin-top: 6px;
-    color: var(--lux-text);
     font-size: 15px;
     line-height: 1.35;
     overflow-wrap: anywhere;
@@ -630,7 +851,6 @@ body.lux-route-staff #staff-content .staff-hub-info-card strong {
 
 body.lux-route-staff #staff-content .staff-hub-info-card p {
     margin: 8px 0 0;
-    color: var(--lux-text-muted);
     font-size: 13px;
     line-height: 1.55;
 }
@@ -640,24 +860,44 @@ body.lux-route-staff #staff-content .staff-hub-list {
     gap: 10px;
 }
 
+body.lux-route-staff #staff-content .staff-hub-chips--spaced,
+body.lux-route-staff #staff-content .staff-hub-list--spaced,
+body.lux-route-staff #staff-content .staff-hub-inline-actions--spaced,
+body.lux-route-staff #staff-content .staff-hub-section-copy--spaced {
+    margin-top: 12px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-inline-actions--section-gap {
+    margin-top: 18px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-chips--section-gap {
+    margin-top: 14px;
+}
+
+body.lux-route-staff #staff-content .staff-hub-mini-stat {
+    display: block;
+    margin-top: 10px;
+    font-size: 24px;
+    line-height: 1;
+    letter-spacing: -0.03em;
+}
+
 body.lux-route-staff #staff-content .staff-hub-list-item strong {
     display: block;
-    color: var(--lux-text);
     font-size: 14px;
 }
 
 body.lux-route-staff #staff-content .staff-hub-list-item small {
     display: block;
     margin-top: 6px;
-    color: var(--lux-text-muted);
     font-size: 12px;
     line-height: 1.45;
 }
 
+/* === Warning card (route content, layout only) === */
 body.lux-route-staff #staff-content .staff-hub-warning {
-    border-color: rgba(244, 162, 97, 0.22);
-    background: rgba(244, 162, 97, 0.10);
-    color: #ffd3a3;
+    padding: 14px;
 }
 
 body.lux-light-mode.lux-route-staff #staff-content .staff-hub-warning,
@@ -665,6 +905,7 @@ html.lux-light-mode body.lux-route-staff #staff-content .staff-hub-warning {
     color: #7e4e1a;
 }
 
+/* === Modal layout === */
 body.lux-route-staff #staff-command-modal-root[hidden] {
     display: none;
 }
@@ -677,8 +918,6 @@ body.lux-route-staff #staff-command-modal-root .staff-hub-modal-backdrop {
     align-items: center;
     justify-content: center;
     padding: 24px;
-    background: rgba(5, 8, 14, 0.66);
-    backdrop-filter: blur(12px);
 }
 
 body.lux-route-staff #staff-command-modal-root .staff-hub-modal {
@@ -686,6 +925,7 @@ body.lux-route-staff #staff-command-modal-root .staff-hub-modal {
     max-height: min(92vh, 1100px);
     display: grid;
     grid-template-rows: auto minmax(0, 1fr) auto;
+    overflow: hidden;
 }
 
 body.lux-route-staff #staff-command-modal-root .staff-hub-modal-head,
@@ -695,12 +935,10 @@ body.lux-route-staff #staff-command-modal-root .staff-hub-modal-foot {
     align-items: center;
     gap: 14px;
     padding: 20px 22px;
-    border-bottom: 1px solid rgba(var(--lux-accent-rgb), 0.12);
 }
 
 body.lux-route-staff #staff-command-modal-root .staff-hub-modal-foot {
     border-top: 1px solid rgba(var(--lux-accent-rgb), 0.12);
-    border-bottom: 0;
 }
 
 body.lux-route-staff #staff-command-modal-root .staff-hub-modal-body {
@@ -714,9 +952,6 @@ body.lux-route-staff #staff-command-modal-root .staff-hub-form-section {
     display: grid;
     gap: 14px;
     padding: 18px;
-    border: 1px solid rgba(var(--lux-accent-rgb), 0.14);
-    border-radius: 22px;
-    background: rgba(255, 255, 255, calc(var(--lux-transparency-alpha, .92) * .04));
 }
 
 body.lux-route-staff #staff-command-modal-root .staff-hub-form-section-head {
@@ -727,13 +962,11 @@ body.lux-route-staff #staff-command-modal-root .staff-hub-form-section-head {
 
 body.lux-route-staff #staff-command-modal-root .staff-hub-form-section-head strong {
     display: block;
-    color: var(--lux-text);
     font-size: 16px;
 }
 
 body.lux-route-staff #staff-command-modal-root .staff-hub-form-section-head p {
     margin: 6px 0 0;
-    color: var(--lux-text-muted);
     font-size: 13px;
 }
 
@@ -750,14 +983,12 @@ body.lux-route-staff #staff-command-modal-root .staff-hub-form-grid.is-one {
 }
 
 body.lux-route-staff #staff-command-modal-root .staff-hub-help {
-    color: var(--lux-text-muted);
     font-size: 12px;
     line-height: 1.45;
 }
 
 body.lux-route-staff #staff-command-modal-root .staff-hub-error {
     display: none;
-    color: #ffd2d2;
     font-size: 12px;
     font-weight: 800;
 }
@@ -772,33 +1003,21 @@ body.lux-route-staff #staff-command-modal-root .staff-hub-field.is-invalid .staf
 
 body.lux-route-staff #staff-command-modal-root .staff-hub-modal-title {
     margin: 0;
-    color: var(--lux-text);
     font-size: 22px;
 }
 
 body.lux-route-staff #staff-command-modal-root .staff-hub-modal-copy {
     margin: 6px 0 0;
-    color: var(--lux-text-muted);
     font-size: 13px;
 }
 
+/* === Toast layout === */
 body.lux-route-staff #staff-command-toast {
     position: fixed;
     right: 20px;
     bottom: 22px;
     z-index: 5500;
     width: min(420px, calc(100vw - 40px));
-    padding: 14px 16px;
-    border-radius: 16px;
-    border: 1px solid rgba(var(--lux-accent-rgb), 0.24);
-    background:
-        linear-gradient(135deg, rgba(var(--lux-accent-rgb), 0.18), rgba(255, 255, 255, 0.05));
-    color: var(--lux-text);
-    box-shadow: 0 18px 34px rgba(0, 0, 0, 0.24);
-    opacity: 0;
-    transform: translateY(12px);
-    pointer-events: none;
-    transition: opacity 0.18s ease, transform 0.18s ease;
 }
 
 body.lux-route-staff #staff-command-toast.is-visible {
@@ -806,6 +1025,7 @@ body.lux-route-staff #staff-command-toast.is-visible {
     transform: translateY(0);
 }
 
+/* === Animations === */
 @keyframes staff-hub-fade-in {
     from {
         opacity: 0;
@@ -823,8 +1043,10 @@ body.lux-route-staff #staff-command-toast.is-visible {
     100% { transform: translate3d(0, 0, 0) scale(0.98); }
 }
 
+/* === Responsive === */
 @media (max-width: 1280px) {
     body.lux-route-staff #staff-content .staff-hub-hero,
+    body.lux-route-staff #staff-content .staff-hub-hero-search-grid,
     body.lux-route-staff #staff-content .staff-hub-filter-grid,
     body.lux-route-staff #staff-content .staff-hub-filter-grid-secondary,
     body.lux-route-staff #staff-content .staff-hub-profile-head-main,
@@ -849,6 +1071,15 @@ body.lux-route-staff #staff-command-toast.is-visible {
     body.lux-route-staff #staff-content .staff-hub-profile {
         padding-left: 18px;
         padding-right: 18px;
+    }
+
+    body.lux-route-staff #staff-content .staff-hub-title {
+        max-width: none;
+        font-size: clamp(34px, 10vw, 48px);
+    }
+
+    body.lux-route-staff #staff-content .staff-hub-command-panel {
+        padding: 18px;
     }
 
     body.lux-route-staff #staff-content .staff-hub-tabs {
@@ -906,4 +1137,660 @@ body.lux-route-staff #staff-command-toast.is-visible {
         min-height: 100vh;
         border-radius: 0;
     }
+}
+
+/* === Legacy directory route composition (layout only, visual chrome delegated to shared classes) === */
+body.lux-route-staff #staff-content .admin-directory-hero {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) minmax(360px, 520px) !important;
+    gap: 28px !important;
+    min-height: 270px !important;
+    padding: 40px !important;
+}
+
+body.lux-route-staff #staff-content .admin-directory-controls {
+    padding: 28px !important;
+}
+
+body.lux-route-staff #staff-content .admin-directory-card {
+    display: grid !important;
+    gap: 18px !important;
+    min-height: 420px !important;
+    padding: 24px !important;
+}
+
+body.lux-route-staff #staff-content .lux-person-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)) !important;
+    gap: 18px !important;
+}
+
+body.lux-route-staff #staff-content .admin-directory-filter-grid {
+    grid-template-columns: minmax(260px, 1.4fr) repeat(2, minmax(190px, .8fr)) !important;
+    gap: 14px !important;
+    margin-top: 18px !important;
+}
+
+body.lux-route-staff #staff-content .staff-tabs {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 12px !important;
+}
+
+/* === Staff directory runtime contract (layout only) === */
+body.lux-route-staff #staff-content .staff-dir-card-section {
+    display: grid !important;
+    gap: 10px !important;
+}
+
+body.lux-route-staff #staff-content .staff-dir-head {
+    display: grid !important;
+    grid-template-columns: auto minmax(0, 1fr) auto !important;
+    gap: 14px !important;
+    align-items: start !important;
+}
+
+body.lux-route-staff #staff-content .staff-dir-identity {
+    display: grid !important;
+    gap: 4px !important;
+    min-width: 0 !important;
+}
+
+body.lux-route-staff #staff-content .staff-dir-name {
+    font-size: 17px !important;
+    font-weight: 900 !important;
+    line-height: 1.15 !important;
+}
+
+body.lux-route-staff #staff-content .staff-dir-name-en,
+body.lux-route-staff #staff-content .staff-dir-name-alt {
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    line-height: 1.35 !important;
+}
+
+body.lux-route-staff #staff-content .staff-dir-title,
+body.lux-route-staff #staff-content .staff-dir-role,
+body.lux-route-staff #staff-content .staff-dir-meta,
+body.lux-route-staff #staff-content .staff-dir-load-meta,
+body.lux-route-staff #staff-content .staff-dir-load-summary,
+body.lux-route-staff #staff-content .staff-dir-schedule-meta,
+body.lux-route-staff #staff-content .staff-dir-session-meta,
+body.lux-route-staff #staff-content .staff-dir-session-count,
+body.lux-route-staff #staff-content .staff-dir-empty-note {
+    font-size: 12px !important;
+    line-height: 1.45 !important;
+}
+
+body.lux-route-staff #staff-content .staff-dir-inline-meta {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 10px 14px !important;
+    align-items: center !important;
+}
+
+body.lux-route-staff #staff-content .staff-dir-inline-meta > span {
+    display: inline-flex !important;
+    gap: 8px !important;
+    align-items: center !important;
+    min-width: 0 !important;
+}
+
+body.lux-route-staff #staff-content .staff-dir-stat-grid {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+}
+
+body.lux-route-staff #staff-content .staff-dir-stat-card strong {
+    font-size: 20px !important;
+    line-height: 1 !important;
+}
+
+body.lux-route-staff #staff-content .staff-dir-stat-card span {
+    font-size: 11px !important;
+    font-weight: 800 !important;
+    letter-spacing: .05em !important;
+    text-transform: uppercase !important;
+}
+
+/* === Progress bar (route content) === */
+body.lux-route-staff #staff-content .staff-dir-progress,
+body.lux-route-staff #staff-content .staff-dir-load-bar {
+    height: 8px !important;
+    overflow: hidden !important;
+    display: block !important;
+}
+
+body.lux-route-staff #staff-content .staff-dir-progress-fill,
+body.lux-route-staff #staff-content .staff-dir-load-bar > i {
+    display: block !important;
+    width: var(--staff-dir-progress, 0%) !important;
+    height: 100% !important;
+    border-radius: inherit !important;
+    background: linear-gradient(90deg, var(--lux-accent), var(--lux-accent-2, var(--lux-accent))) !important;
+    transition: width 0.24s ease;
+}
+
+body.lux-route-staff #staff-content .staff-dir-progress-fill.is-success,
+body.lux-route-staff #staff-content .staff-dir-load-bar[data-staff-dir-load-tone='success'] > i {
+    background: linear-gradient(90deg, #20c57c, #76e6ae) !important;
+}
+
+body.lux-route-staff #staff-content .staff-dir-progress-fill.is-warning,
+body.lux-route-staff #staff-content .staff-dir-load-bar[data-staff-dir-load-tone='warning'] > i {
+    background: linear-gradient(90deg, #f4a261, #ffd1a4) !important;
+}
+
+body.lux-route-staff #staff-content .staff-dir-progress-fill.is-danger,
+body.lux-route-staff #staff-content .staff-dir-load-bar[data-staff-dir-load-tone='danger'] > i {
+    background: linear-gradient(90deg, #f87171, #ffb4b4) !important;
+}
+
+/* === Semantic text colors (route content) === */
+body.lux-route-staff #staff-content .staff-dir-load-meta.is-success {
+    color: #76e6ae !important;
+}
+
+body.lux-route-staff #staff-content .staff-dir-load-meta.is-warning {
+    color: #ffd1a4 !important;
+}
+
+body.lux-route-staff #staff-content .staff-dir-load-meta.is-danger {
+    color: #ffd2d2 !important;
+}
+
+body.lux-route-staff #staff-content .staff-dir-section {
+    display: grid !important;
+    gap: 10px !important;
+}
+
+body.lux-route-staff #staff-content .staff-dir-section-title {
+    margin-bottom: 8px !important;
+}
+
+body.lux-route-staff #staff-content .staff-dir-subject-pills {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 10px !important;
+}
+
+body.lux-route-staff #staff-content .staff-dir-schedule-count {
+    margin-top: 0 !important;
+}
+
+body.lux-route-staff #staff-content .staff-dir-schedule-list,
+body.lux-route-staff #staff-content .staff-dir-session-list {
+    display: grid !important;
+    gap: 8px !important;
+}
+
+body.lux-route-staff #staff-content .staff-dir-schedule-item,
+body.lux-route-staff #staff-content .staff-dir-session-head {
+    display: grid !important;
+    gap: 6px !important;
+}
+
+body.lux-route-staff #staff-content .staff-dir-schedule-title,
+body.lux-route-staff #staff-content .staff-dir-session-title {
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    line-height: 1.35 !important;
+}
+
+body.lux-route-staff #staff-content .staff-dir-schedule-empty {
+    color: var(--lux-text-muted) !important;
+}
+
+body.lux-route-staff #staff-content .staff-dir-stack-tight {
+    display: grid !important;
+    gap: 8px !important;
+}
+
+/* === Directory section heads === */
+body.lux-route-staff #staff-content .staff-dir-load-head,
+body.lux-route-staff #staff-content .staff-dir-section-head,
+body.lux-route-staff #staff-content .staff-dir-subject-head,
+body.lux-route-staff #staff-content .staff-dir-schedule-head {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    align-items: flex-start !important;
+    justify-content: space-between !important;
+    gap: 10px !important;
+}
+
+body.lux-route-staff #staff-content .staff-dir-load-meta {
+    margin-top: 0 !important;
+    font-weight: 700 !important;
+}
+
+body.lux-route-staff #staff-content .staff-dir-load-summary,
+body.lux-route-staff #staff-content .staff-dir-session-count {
+    margin-top: 0 !important;
+}
+
+/* === Person grid and card layout === */
+body.lux-route-staff #staff-content .lux-person-grid {
+    display: grid !important;
+}
+
+body.lux-route-staff #staff-content .lux-person-name,
+body.lux-route-staff #staff-content .lux-card-title,
+body.lux-route-staff #staff-content .lux-card-copy,
+body.lux-route-staff #staff-content .lux-meta,
+body.lux-route-staff #staff-content .lux-overline,
+body.lux-route-staff #staff-content .lux-subcard,
+body.lux-route-staff #staff-content .lux-subcard *:not(i),
+body.lux-route-staff #staff-content .page-hero-title,
+body.lux-route-staff #staff-content .page-hero-copy,
+body.lux-route-staff #staff-content .page-hero-badge {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+body.lux-route-staff #staff-content .lux-person-name {
+    font-weight: 800;
+    line-height: 1.2;
+}
+
+body.lux-route-staff #staff-content .lux-inline-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 14px;
+}
+
+body.lux-route-staff #staff-content .lux-inline-meta span {
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+body.lux-route-staff #staff-content .lux-card-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+body.lux-route-staff #staff-content .lux-card-actions > * {
+    flex: 0 1 auto;
+    max-width: 100%;
+}
+
+body.lux-route-staff #staff-content .lux-actions-between {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 14px;
+    align-items: center;
+    justify-content: space-between;
+}
+
+body.lux-route-staff #staff-content .staff-tabs {
+    gap: 12px;
+}
+
+body.lux-route-staff #staff-content .staff-tabs .lux-picker-btn {
+    flex: 1 1 220px;
+    min-width: 0;
+}
+
+body.lux-route-staff #staff-content .staff-tabs .lux-picker-btn strong {
+    font-size: 13px;
+}
+
+body.lux-route-staff #staff-content .staff-tabs .lux-picker-btn i {
+    font-size: 12px;
+}
+
+/* === Admin metrics and grids (layout only) === */
+body.lux-route-staff #staff-content .admin-hero-metrics,
+body.lux-route-staff #staff-content .admin-summary-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)) !important;
+    gap: 12px !important;
+}
+
+body.lux-route-staff #staff-content .admin-hero-metrics article {
+    min-width: 0 !important;
+    padding: 18px !important;
+}
+
+body.lux-route-staff #staff-content .admin-hero-metrics span,
+body.lux-route-staff #staff-content .admin-mini-grid span {
+    display: block !important;
+    font-size: 11px !important;
+    font-weight: 800 !important;
+    letter-spacing: .06em !important;
+    line-height: 1.25 !important;
+    text-transform: uppercase !important;
+}
+
+body.lux-route-staff #staff-content .admin-hero-metrics strong {
+    display: block !important;
+    margin-top: 8px !important;
+    font-size: clamp(22px, 3vw, 38px) !important;
+    line-height: 1 !important;
+}
+
+body.lux-route-staff #staff-content .admin-directory-filter-grid {
+    grid-template-columns: minmax(260px, 1.4fr) repeat(2, minmax(190px, .8fr)) !important;
+    gap: 14px !important;
+    margin-top: 18px !important;
+}
+
+body.lux-route-staff #staff-content .admin-record-strip,
+body.lux-route-staff #staff-content .admin-saved-views {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+}
+
+body.lux-route-staff #staff-content .admin-saved-views {
+    margin: 18px 0 !important;
+}
+
+body.lux-route-staff #staff-content .admin-mini-grid {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+}
+
+body.lux-route-staff #staff-content .admin-mini-grid > div {
+    min-width: 0 !important;
+    padding: 14px !important;
+}
+
+body.lux-route-staff #staff-content .admin-mini-grid strong {
+    display: block !important;
+    font-size: 20px !important;
+    line-height: 1.05 !important;
+}
+
+body.lux-route-staff #staff-content .admin-table-head {
+    margin: 0 0 18px !important;
+}
+
+body.lux-route-staff .lux-danger-btn {
+    color: #ffd2d2 !important;
+    border-color: rgba(248, 113, 113, .36) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Home-style command center restyle
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+body.lux-route-staff #staff-content .staff-hub-hero,
+body.lux-route-staff #staff-content .page-hero.staff-hub-hero {
+    border-top: 3px solid rgba(var(--lux-accent-rgb), 0.55);
+}
+
+body.lux-route-staff #staff-content .staff-hub-kicker,
+body.lux-route-staff #staff-content .staff-hub-overline {
+    color: rgba(var(--lux-accent-rgb), 0.88);
+}
+
+body.lux-route-staff #staff-content .staff-hub-command-head {
+    padding-bottom: 12px;
+    margin-bottom: 4px;
+    border-bottom: 1px solid var(--staff-fade-border-soft);
+}
+
+body.lux-route-staff #staff-content .staff-hub-metrics {
+    gap: 12px;
+}
+
+html.lux-high-transparency body.lux-route-staff:not(.lux-light-mode) #staff-content :is(
+    .page-hero,
+    .staff-hub-hero,
+    .staff-hub-command-panel,
+    .staff-hub-controls,
+    .staff-hub-directory-panel,
+    .staff-hub-profile,
+    .staff-hub-modal,
+    .lux-card,
+    .lux-person-card
+) {
+    background: var(--staff-fade-surface) !important;
+    border-color: var(--staff-fade-border) !important;
+    box-shadow: var(--staff-fade-shadow) !important;
+    backdrop-filter: var(--staff-fade-blur) !important;
+    -webkit-backdrop-filter: var(--staff-fade-blur) !important;
+}
+
+html.lux-high-transparency body.lux-route-staff:not(.lux-light-mode) #staff-content .staff-hub-metric-card,
+html.lux-high-transparency body.lux-route-staff:not(.lux-light-mode) #staff-content :is(
+    .staff-hub-command-card,
+    .staff-hub-info-card,
+    .staff-hub-warning,
+    .staff-hub-list-item,
+    .staff-hub-mini-card,
+    .staff-hub-focus-card,
+    .lux-data-card,
+    .lux-strip-card:not(.staff-hub-metric-card)
+) {
+    background: var(--staff-fade-card-bg) !important;
+    border-color: var(--staff-fade-card-border) !important;
+    box-shadow: var(--staff-fade-card-shadow) !important;
+    backdrop-filter: var(--staff-fade-blur) !important;
+    -webkit-backdrop-filter: var(--staff-fade-blur) !important;
+}
+
+/* === Print styles (unchanged) === */
+body.staff-dir-print,
+body.staff-dir-print-page {
+    margin: 0;
+    background: #ffffff;
+    color: #1f2933;
+    font-family: "Segoe UI", Arial, sans-serif;
+}
+
+body.staff-dir-print .staff-dir-print-shell,
+body.staff-dir-print-page .staff-dir-print-shell {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 40px;
+}
+
+body.staff-dir-print .staff-dir-print-head,
+body.staff-dir-print-page .staff-dir-print-head {
+    display: grid;
+    gap: 8px;
+    margin-bottom: 32px;
+    text-align: center;
+}
+
+body.staff-dir-print .staff-dir-print-hero,
+body.staff-dir-print-page .staff-dir-print-hero {
+    min-height: 0 !important;
+}
+
+body.staff-dir-print .staff-dir-print-kicker,
+body.staff-dir-print-page .staff-dir-print-kicker {
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: #4a5568;
+}
+
+body.staff-dir-print .staff-dir-print-title,
+body.staff-dir-print-page .staff-dir-print-title {
+    margin: 0;
+    color: #102131;
+    font-size: 30px;
+    line-height: 1.1;
+}
+
+body.staff-dir-print .staff-dir-print-subtitle,
+body.staff-dir-print-page .staff-dir-print-subtitle {
+    margin: 0;
+    color: #526070;
+    font-size: 15px;
+}
+
+body.staff-dir-print .staff-dir-print-meta,
+body.staff-dir-print-page .staff-dir-print-print-meta {
+    display: grid;
+    gap: 8px;
+    margin: 0 0 24px;
+}
+
+body.staff-dir-print .staff-dir-print-meta-row,
+body.staff-dir-print-page .staff-dir-print-meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+body.staff-dir-print .staff-dir-print-meta-label,
+body.staff-dir-print-page .staff-dir-print-meta-label {
+    font-weight: 700;
+    color: #102131;
+}
+
+body.staff-dir-print .staff-dir-print-summary,
+body.staff-dir-print-page .staff-dir-print-summary {
+    display: grid !important;
+    gap: 18px !important;
+}
+
+body.staff-dir-print .staff-dir-print-overline,
+body.staff-dir-print-page .staff-dir-print-overline {
+    color: #526070 !important;
+}
+
+body.staff-dir-print .staff-dir-print-badge,
+body.staff-dir-print-page .staff-dir-print-badge {
+    align-self: start;
+}
+
+body.staff-dir-print .staff-dir-print-rows,
+body.staff-dir-print-page .staff-dir-print-rows {
+    display: grid;
+    gap: 12px;
+}
+
+body.staff-dir-print .staff-dir-print-row,
+body.staff-dir-print-page .staff-dir-print-row {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 12px !important;
+    align-items: stretch !important;
+}
+
+body.staff-dir-print .staff-dir-print-cell,
+body.staff-dir-print-page .staff-dir-print-cell {
+    display: grid;
+    gap: 6px;
+}
+
+body.staff-dir-print .staff-dir-print-cell strong,
+body.staff-dir-print-page .staff-dir-print-cell strong {
+    color: #102131;
+    font-size: 11px;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+}
+
+body.staff-dir-print .staff-dir-print-cell small,
+body.staff-dir-print-page .staff-dir-print-cell small {
+    color: #526070;
+    font-size: 13px;
+}
+
+body.staff-dir-print .staff-dir-print-table,
+body.staff-dir-print-page .staff-dir-print-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+body.staff-dir-print .staff-dir-print-table th,
+body.staff-dir-print .staff-dir-print-table td,
+body.staff-dir-print-page .staff-dir-print-table th,
+body.staff-dir-print-page .staff-dir-print-table td {
+    border: 1px solid #d6dde5;
+    padding: 10px 12px;
+    text-align: left;
+}
+
+body.staff-dir-print .staff-dir-print-table th,
+body.staff-dir-print-page .staff-dir-print-table th {
+    background: #f4f6f8;
+    font-size: 12px;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+}
+
+body.staff-dir-print .staff-dir-print-summary-stat,
+body.staff-dir-print-page .staff-dir-print-summary-stat {
+    margin-top: 20px;
+    font-size: 15px;
+    font-weight: 700;
+    color: #102131;
+}
+
+body.staff-dir-print .staff-dir-print-stamp-wrap,
+body.staff-dir-print-page .staff-dir-print-stamp-wrap {
+    margin-top: 24px;
+    text-align: center;
+}
+
+body.staff-dir-print .staff-dir-print-stamp,
+body.staff-dir-print-page .staff-dir-print-stamp {
+    display: inline-block;
+    padding: 10px 14px;
+    border: 3px solid #c73f34;
+    color: #c73f34;
+    font-size: 14px;
+    font-weight: 900;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    transform: rotate(-15deg);
+}
+
+@media print {
+    body.staff-dir-print .staff-dir-print-shell,
+    body.staff-dir-print-page .staff-dir-print-shell {
+        padding: 0;
+    }
+}
+
+/* === Responsive (legacy directory) === */
+@media (max-width: 1120px) {
+    body.lux-route-staff #staff-content .admin-directory-hero,
+    body.lux-route-staff #staff-content .admin-directory-filter-grid,
+    body.lux-route-staff #staff-content .staff-tabs {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+@media (max-width: 720px) {
+    body.lux-route-staff #staff-content {
+        padding: 0 12px 56px !important;
+    }
+
+    body.lux-route-staff #staff-content .lux-person-grid,
+    body.lux-route-staff #staff-content .admin-mini-grid {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* === Scroll margin for name fields === */
+body.lux-route-staff #staff-name-geo:focus,
+body.lux-route-staff #staff-name-en:focus {
+    border-color: var(--lux-accent) !important;
+    box-shadow: 0 0 0 3px rgba(var(--lux-accent-rgb), 0.1);
+}
+
+/* === Staff route page shell layout === */
+body.lux-route-staff #staff-content,
+body.lux-route-staff #staff-content.staff-command-root {
+    position: relative;
+    z-index: 1;
+}
+
+body.lux-route-staff .lux-page-shell {
+    display: grid;
+    gap: 18px;
 }

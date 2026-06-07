@@ -251,6 +251,37 @@ Forbidden cross-domain write paths:
 - non-LMS domains must not duplicate course teaching-team resolution or section-to-course staff checks
 - callers must not bypass `isCourseTeachingStaff(...)` when enforcing staff-only LMS course actions
 
+## `lms-live-quiz-service.js`
+
+Module:
+- `backend/platform/domains/lms-live-quiz-service.js`
+
+Public API:
+- `countLiveQuizAnswers(workspace = {})`
+- `getLiveQuizCurrentQuestion(session = {})`
+- `getLiveQuizQuestionTimeState(question = {})`
+- `mergeStaffLiveQuizWorkspace(existingWorkspace = {}, submittedWorkspace = {})`
+- `mergeStudentLiveQuizJoin(existingWorkspace = {}, submittedWorkspace = {}, sessionAccount = null, helpers = {})`
+- `mergeStudentLiveQuizAnswer(existingWorkspace = {}, submittedWorkspace = {}, sessionAccount = null, helpers = {})`
+- `mergeLiveQuizParticipantAnswers(clientParticipant = {}, serverParticipant = {})`
+- `recalculateLiveQuizParticipant(participant = {}, session = {})`
+- `scoreLiveQuizAnswer(question = {}, selectedOption = null, answeredAt = new Date())`
+- `submitStudentLiveQuizJoin(existingWorkspace = {}, payload = {}, sessionAccount = null, helpers = {})`
+- `submitStudentLiveQuizAnswer(existingWorkspace = {}, payload = {}, sessionAccount = null, helpers = {})`
+
+Owned state:
+- none directly; persistence remains in `state.portal.liveQuizWorkspaces` via `PlatformStore.saveLmsLiveQuizWorkspace(...)`
+
+Allowed callers:
+- `backend/platform/server.js` live-quiz merge helpers
+- `backend/platform/routes/lms-live-quiz-routes.js` through injected merge helpers only
+
+Forbidden cross-domain write paths:
+- route modules must not reimplement participant answer merge or staff workspace replacement
+- staff workspace saves must use `mergeStaffLiveQuizWorkspace(...)` so server participant answers are preserved
+- student join writes must use `mergeStudentLiveQuizJoin(...)` or `submitStudentLiveQuizJoin(...)`
+- student answer writes must use `mergeStudentLiveQuizAnswer(...)` or `submitStudentLiveQuizAnswer(...)`
+
 ## `social-state-service.js`
 
 Module:
@@ -820,6 +851,8 @@ Module:
 
 Owned routes:
 - `GET /api/lms/live-quizzes/:resourceKey`
+- `POST /api/lms/live-quizzes/:resourceKey/join`
+- `POST /api/lms/live-quizzes/:resourceKey/answers`
 - `POST /api/lms/live-quizzes/:resourceKey`
 
 Allowed callers:
@@ -827,7 +860,8 @@ Allowed callers:
 
 Forbidden boundaries:
 - no direct `require('./store')`
-- no duplicated student-answer merge logic outside `mergeStudentLiveQuizAnswer(...)`
+- no duplicated student-join or student-answer merge logic outside `mergeStudentLiveQuizJoin(...)` / `submitStudentLiveQuizJoin(...)` / `mergeStudentLiveQuizAnswer(...)` / `submitStudentLiveQuizAnswer(...)`
+- no staff workspace replace that bypasses `mergeStaffLiveQuizWorkspace(...)`
 - no unrelated gradebook/protected-exam/social route handlers in this module
 
 ### `academic-routes.js`
@@ -1084,6 +1118,7 @@ Module owner:
 
 Public helper surface:
 - `mergeStudentLiveQuizAnswer(existingWorkspace = {}, submittedWorkspace = {}, sessionAccount = null)`
+- `mergeStudentLiveQuizJoin(existingWorkspace = {}, submittedWorkspace = {}, sessionAccount = null)`
 - `requireLmsLiveQuizWorkspaceAccess(request, response, resourceKey, action = 'read')`
 - `requireGradebookCourseAccess(request, response, allowedRoles, courseId, action = 'read')`
 - `requireCourseStaffAccess(request, response, courseId, action = 'read', allowedRoles = STAFF_ROLES)`

@@ -180,6 +180,10 @@ function canViewSocialProject(project, userId) {
     if (canManageSocialProject.call(this, project, normalizedUserId)) return true;
     if (getSocialProjectMemberIds.call(this, project).includes(normalizedUserId)) return true;
     if (getSocialProjectAdvisorIds.call(this, project).includes(normalizedUserId)) return true;
+    // Faculty oversight: professors, TAs, and admins can always see every project
+    // team and its tasks regardless of the team's chosen visibility.
+    const oversightRole = socialText(this.getSocialAccount(normalizedUserId)?.role).toLowerCase();
+    if (['professor', 'ta', 'admin'].includes(oversightRole)) return true;
     const hiddenUserIds = socialIdArray(project.hiddenUserIds || []);
     if (hiddenUserIds.includes(normalizedUserId)) return false;
     const status = normalizeProjectStatus(project.status || 'draft');
@@ -496,15 +500,49 @@ function createSocialProject(payload = {}, actorId = '') {
         updatedAt: socialText(payload.updatedAt || createdAt)
     };
     this.state.social.projects.unshift(project);
+    // Role-based team building:
+    //  - Professors / TAs / admins assemble teams directly: picked students are
+    //    auto-joined (no invite acceptance needed).
+    //  - Students can only invite; invitees stay pending until they accept.
+    const creatorRole = socialText(this.getSocialAccount(ownerUserId)?.role).toLowerCase();
+    const isTeacherFlow = ['professor', 'ta', 'admin'].includes(creatorRole);
     const inviteIds = socialIdArray(payload.inviteeIds || payload.memberIds || payload.members || []);
     inviteIds.forEach((memberId) => {
         if (!memberId || memberId === ownerUserId) return;
-        project.memberRolesByUser[memberId] = normalizeProjectRole(
+        const desiredRole = normalizeProjectRole(
             payload.memberRolesByUser && typeof payload.memberRolesByUser === 'object'
                 ? payload.memberRolesByUser[memberId]
                 : 'member'
         );
-        this.inviteSocialGroupMember(group.id, memberId, normalizedActorId || ownerUserId, `You were invited to project workspace ${project.name}.`);
+        if (isTeacherFlow) {
+            // Auto-joined: record the role immediately and add to the team group.
+            project.memberRolesByUser[memberId] = desiredRole;
+            this.setSocialGroupMembership(group.id, memberId, 'join', normalizedActorId || ownerUserId);
+            this.createNotification({
+                recipientUserId: memberId,
+                sourceDomain: 'social',
+                type: 'project-team-added',
+                title: 'Added to a project team',
+                body: `${this.getSocialActorDisplayName(ownerUserId)} added you to the project team ${project.name}.`,
+                routePage: 'social',
+                routeData: { projectId: socialText(project.id) }
+            });
+            this.appendSocialProjectActivity(project.id, normalizedActorId || ownerUserId, 'member-added', `${this.getSocialActorDisplayName(ownerUserId)} added ${this.getSocialActorDisplayName(memberId)} to the team.`);
+        } else {
+            // Invite-only: record the invitee as pending so only invited users can
+            // join (they must accept), and notify them.
+            const targetGroup = this.getSocialGroupRecord(group.id);
+            if (targetGroup) {
+                if (!Array.isArray(targetGroup.pendingMemberIds)) targetGroup.pendingMemberIds = [];
+                if (!targetGroup.memberIds?.includes(memberId) && !targetGroup.pendingMemberIds.includes(memberId)) {
+                    targetGroup.pendingMemberIds.push(memberId);
+                    if (!targetGroup.invitedMemberIds) targetGroup.invitedMemberIds = [];
+                    if (!targetGroup.invitedMemberIds.includes(memberId)) targetGroup.invitedMemberIds.push(memberId);
+                }
+            }
+            this.inviteSocialGroupMember(group.id, memberId, normalizedActorId || ownerUserId, `You were invited to project workspace ${project.name}.`);
+            this.appendSocialProjectActivity(project.id, normalizedActorId || ownerUserId, 'member-invited', `${this.getSocialActorDisplayName(ownerUserId)} invited ${this.getSocialActorDisplayName(memberId)} to the project.`);
+        }
     });
     this.appendSocialProjectActivity(project.id, ownerUserId, 'project-created', `${this.getSocialActorDisplayName(ownerUserId)} created the project workspace.`);
     this.saveSocialMutation(normalizedActorId || ownerUserId, 'project-created', 'social-project', project.id, null, project);
@@ -630,9 +668,27 @@ function inviteSocialProjectMember(projectId, memberId, role = 'member', actorId
         project.instructorViewerIds = socialIdArray(project.instructorViewerIds || []).filter(item => item !== normalizedMemberId);
     }
     project.updatedAt = nowIso();
-    const result = this.inviteSocialGroupMember(project.groupId, normalizedMemberId, normalizedActorId, `You were invited to project workspace ${project.name}.`);
-    this.appendSocialProjectActivity(project.id, normalizedActorId, 'member-invited', `${this.getSocialActorDisplayName(normalizedActorId)} invited ${this.getSocialActorDisplayName(normalizedMemberId)} to the project.`);
-    this.saveSocialMutation(normalizedActorId, 'project-member-invited', 'social-project', project.id, null, {
+    // Professors / TAs / admins add members directly (auto-joined); students send
+    // an invite the recipient must accept.
+    const actorRole = socialText(this.getSocialAccount(normalizedActorId)?.role).toLowerCase();
+    const autoJoin = ['professor', 'ta', 'admin'].includes(actorRole);
+    let result = null;
+    if (autoJoin) {
+        result = this.setSocialGroupMembership(project.groupId, normalizedMemberId, 'join', normalizedActorId);
+        this.createNotification({
+            recipientUserId: normalizedMemberId,
+            sourceDomain: 'social',
+            type: 'project-team-added',
+            title: 'Added to a project team',
+            body: `${this.getSocialActorDisplayName(normalizedActorId)} added you to the project team ${project.name}.`,
+            routePage: 'social',
+            routeData: { projectId: socialText(project.id) }
+        });
+    } else {
+        result = this.inviteSocialGroupMember(project.groupId, normalizedMemberId, normalizedActorId, `You were invited to project workspace ${project.name}.`);
+    }
+    this.appendSocialProjectActivity(project.id, normalizedActorId, autoJoin ? 'member-added' : 'member-invited', `${this.getSocialActorDisplayName(normalizedActorId)} ${autoJoin ? 'added' : 'invited'} ${this.getSocialActorDisplayName(normalizedMemberId)} ${autoJoin ? 'to' : 'to'} the project.`);
+    this.saveSocialMutation(normalizedActorId, autoJoin ? 'project-member-added' : 'project-member-invited', 'social-project', project.id, null, {
         memberId: normalizedMemberId,
         role: project.memberRolesByUser[normalizedMemberId]
     });

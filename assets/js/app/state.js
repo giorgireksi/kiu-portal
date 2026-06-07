@@ -1,17 +1,43 @@
-/* Persistent state and role/page access helpers extracted from core.js. Source of truth remains root core.js compatibility bundle. */
+/* Persistent state and role/page access helpers extracted from the legacy core.js bundle. Active routes now load split files directly. */
 
 function createFreshKiuState() {
     return JSON.parse(JSON.stringify(KIU_EMPTY_STATE));
 }
 
 let KIU_STATE = JSON.parse(localStorage.getItem('KIU_PERSISTENT_STATE') || 'null') || createFreshKiuState();
+if (KIU_STATE && typeof KIU_STATE === 'object') {
+    delete KIU_STATE.lmsLiveQuizzes;
+}
 try {
     const requiredCleanupVersion = String(typeof MANUAL_TESTING_STATE_VERSION === 'number' ? MANUAL_TESTING_STATE_VERSION : 6);
     const persistedCleanupVersion = localStorage.getItem(REAL_TESTING_CLEANUP_FLAG);
     const stateCleanupVersion = String(KIU_STATE?.meta?.manualTestingSanitizedVersion || '');
     const shouldResetPersistedState = persistedCleanupVersion !== requiredCleanupVersion || stateCleanupVersion !== requiredCleanupVersion;
     if (shouldResetPersistedState) {
+        const preservedRegistrationCms = {
+            adminProgramStructures: KIU_STATE?.adminProgramStructures,
+            registrationCMSByFaculty: KIU_STATE?.registrationCMSByFaculty,
+            registrationCMS: KIU_STATE?.registrationCMS,
+            registrationCmsRevision: KIU_STATE?.meta?.registrationCmsRevision,
+            registrationCmsSavedAt: KIU_STATE?.meta?.registrationCmsSavedAt
+        };
         KIU_STATE = createFreshKiuState();
+        if (preservedRegistrationCms.adminProgramStructures && typeof preservedRegistrationCms.adminProgramStructures === 'object') {
+            KIU_STATE.adminProgramStructures = JSON.parse(JSON.stringify(preservedRegistrationCms.adminProgramStructures));
+        }
+        if (preservedRegistrationCms.registrationCMSByFaculty && typeof preservedRegistrationCms.registrationCMSByFaculty === 'object') {
+            KIU_STATE.registrationCMSByFaculty = JSON.parse(JSON.stringify(preservedRegistrationCms.registrationCMSByFaculty));
+        }
+        if (preservedRegistrationCms.registrationCMS && typeof preservedRegistrationCms.registrationCMS === 'object') {
+            KIU_STATE.registrationCMS = JSON.parse(JSON.stringify(preservedRegistrationCms.registrationCMS));
+        }
+        if (!KIU_STATE.meta || typeof KIU_STATE.meta !== 'object') KIU_STATE.meta = {};
+        if (preservedRegistrationCms.registrationCmsRevision) {
+            KIU_STATE.meta.registrationCmsRevision = preservedRegistrationCms.registrationCmsRevision;
+        }
+        if (preservedRegistrationCms.registrationCmsSavedAt) {
+            KIU_STATE.meta.registrationCmsSavedAt = preservedRegistrationCms.registrationCmsSavedAt;
+        }
         try {
             sessionStorage.removeItem(ACTIVE_SESSION_KEY);
             sessionStorage.removeItem(ACTIVE_ROLE_IMPERSONATION_KEY);
@@ -383,9 +409,43 @@ function queueKiuUiRefresh(snapshot) {
         }
     });
 }
+function getRegistrationCmsPersistFootprint(state = KIU_STATE) {
+    try {
+        return JSON.stringify({
+            adminProgramStructures: state?.adminProgramStructures || {},
+            registrationCMSByFaculty: state?.registrationCMSByFaculty || {}
+        });
+    } catch (error) {
+        return '';
+    }
+}
+
 function saveState() {
     const uiScrollSnapshot = captureUiScrollSnapshot();
     ensureCanonicalState();
+    const registrationCmsFootprintBefore = getRegistrationCmsPersistFootprint(KIU_STATE);
+    if (typeof persistRegistrationCmsGlobalsToFaculty === 'function') {
+        const cmsFaculty = normalizeFacultyCode(
+            (document.getElementById('admin-reg-content-container') && typeof getAdminRegistrationFaculty === 'function'
+                ? getAdminRegistrationFaculty()
+                : '')
+            || (typeof getCurrentFaculty === 'function' ? getCurrentFaculty() : '')
+            || localStorage.getItem('currentFaculty')
+            || 'ECON',
+            'ECON'
+        );
+        persistRegistrationCmsGlobalsToFaculty(cmsFaculty);
+    }
+    if (!KIU_STATE.meta || typeof KIU_STATE.meta !== 'object') KIU_STATE.meta = {};
+    const previousRegistrationCmsRevision = Number(KIU_STATE.meta.registrationCmsRevision || 0);
+    const registrationCmsFootprintAfter = getRegistrationCmsPersistFootprint(KIU_STATE);
+    const registrationCmsChanged = registrationCmsFootprintBefore !== registrationCmsFootprintAfter;
+    KIU_STATE.meta.portalStateSavedAt = Date.now();
+    if (registrationCmsChanged) {
+        const cmsTimestamp = Date.now();
+        KIU_STATE.meta.registrationCmsRevision = cmsTimestamp;
+        KIU_STATE.meta.registrationCmsSavedAt = cmsTimestamp;
+    }
     const persistedRegistrationCms = (() => {
         const legacy = (KIU_STATE.registrationCMS && typeof KIU_STATE.registrationCMS === 'object')
             ? KIU_STATE.registrationCMS
@@ -408,7 +468,15 @@ function saveState() {
         registrationCMS: persistedRegistrationCms
     };
     delete persisted.domain;
+    delete persisted.lmsLiveQuizzes;
     localStorage.setItem('KIU_PERSISTENT_STATE', JSON.stringify(persisted));
+    if (KIU_STATE.meta.registrationCmsRevision !== previousRegistrationCmsRevision) {
+        try {
+            window.dispatchEvent(new CustomEvent('kiu:registration-cms-changed', {
+                detail: { revision: KIU_STATE.meta.registrationCmsRevision }
+            }));
+        } catch (error) {}
+    }
     if (typeof queuePortalStateSync === 'function') queuePortalStateSync('saveState');
     queueKiuUiRefresh(uiScrollSnapshot);
     setTimeout(() => {
@@ -866,13 +934,21 @@ function buildCanonicalDomain(state) {
         if (semDiff !== 0) return semDiff;
         return String(a.name || '').localeCompare(String(b.name || ''));
     });
-    const subjectsById = Object.fromEntries(subjectList.map(subject => [subject.id, {
+    const subjectsById = Object.fromEntries(subjectList.map(subject => {
+        const semesterList = Array.isArray(subject.semesters) && subject.semesters.length
+            ? subject.semesters.map((entry) => Number(entry)).filter((entry) => Number.isFinite(entry) && entry > 0).sort((a, b) => a - b)
+            : [Number(subject.semester || 0)].filter((entry) => Number.isFinite(entry) && entry > 0);
+        const primarySemester = semesterList.length ? semesterList[0] : (subject.semester || null);
+        return [subject.id, {
         ...subject,
         facultyId: subject.faculty || null,
-        semesterNumber: subject.semester || null,
+        semesters: semesterList.length ? semesterList : undefined,
+        semesterNumber: primarySemester,
+        semester: primarySemester != null ? primarySemester : subject.semester,
         prerequisites: subject.cond || 'None',
         antirequisites: subject.antireq || 'None'
-    }]));
+        }];
+    }));
 
     const sectionsById = {};
     const sectionsBySubject = {};
@@ -1025,9 +1101,6 @@ function getCurrentUserFromState(state) {
             || 'ECON',
             'ECON'
         );
-        if (typeof ensureAdminTestingPersonas === 'function') {
-            ensureAdminTestingPersonas(preferredFaculty);
-        }
         if (typeof getPreferredImpersonationUserForRole === 'function') {
             const persona = getPreferredImpersonationUserForRole(storedImpersonatedRole, preferredFaculty);
             if (persona?.id) {
@@ -1035,201 +1108,67 @@ function getCurrentUserFromState(state) {
             }
         }
     } catch (error) {
-        console.warn('Could not resolve active admin testing persona from state.', error);
+        console.warn('Could not resolve active admin impersonation user from state.', error);
     }
     return resolvedActiveUser;
 }
 
-function buildAdminTestingPersonaSpecs(faculty = localStorage.getItem('currentFaculty') || currentUser?.facultyCode || currentUser?.faculty || 'ECON') {
-    const facultyCode = normalizeFacultyCode(faculty, 'ECON');
-    const facultyLabel = getFacultyLabel(facultyCode);
-    const personaPrefix = `admin-testing-${facultyCode.toLowerCase()}`;
-    const activeSemester = parseInt(KIU_STATE?.activeSemester || 3, 10) || 3;
-
-    /* Resolve first 3 curriculum subjects for the faculty to auto-assign */
-    const facultyCurriculum = (() => {
-        try {
-            if (typeof getFacultyCurriculumFromProfiles === 'function') {
-                return getFacultyCurriculumFromProfiles(facultyCode) || [];
-            }
-            const fp = KIU_STATE?.facultyProfiles?.[facultyCode];
-            return Array.isArray(fp?.curriculum) ? fp.curriculum : [];
-        } catch (_e) { return []; }
-    })();
-    const semesterSubjects = facultyCurriculum
-        .filter(s => String(s?.semester || '') === String(activeSemester) || !s?.semester)
-        .slice(0, 3)
-        .map(s => s.id);
-    const allSubjectIds = facultyCurriculum.slice(0, 5).map(s => s.id);
-
-    /* QA testing placeholder names per faculty */
-    const PERSONA_NAMES = {
-        ECON: { prof: 'QA Prof Alpha', ta: 'QA TA Alpha', student: 'QA Student Alpha', service: 'QA Service Alpha' },
-        CS:   { prof: 'QA Prof Beta', ta: 'QA TA Beta', student: 'QA Student Beta', service: 'QA Service Beta' },
-        LAW:  { prof: 'QA Prof Gamma', ta: 'QA TA Gamma', student: 'QA Student Gamma', service: 'QA Service Gamma' },
-        MED:  { prof: 'QA Prof Delta', ta: 'QA TA Delta', student: 'QA Student Delta', service: 'QA Service Delta' },
-        ARTS: { prof: 'QA Prof Epsilon', ta: 'QA TA Epsilon', student: 'QA Student Epsilon', service: 'QA Service Epsilon' }
-    };
-    const names = PERSONA_NAMES[facultyCode] || PERSONA_NAMES.ECON;
-
-    const PROGRAM_MAP = {
-        ECON: 'BSc Business Administration',
-        CS:   'BSc Computer Science',
-        LAW:  'BA Law',
-        MED:  'MD Medicine',
-        ARTS: 'BA Arts & Humanities'
-    };
-
-    const shared = {
-        faculty: facultyCode,
-        facultyCode,
-        isAdminTestingPersona: true,
-        testingOwnerRole: USER_ROLES.ADMIN,
-        testingFaculty: facultyCode,
-        status: 'Active',
-        joinYear: 2024
-    };
-    return [
-        {
-            ...shared,
-            id: `${personaPrefix}-professor`,
-            role: USER_ROLES.PROFESSOR,
-            title: 'Professor',
-            name: names.prof,
-            nameEn: names.prof,
-            displayName: names.prof,
-            email: `${names.prof.toLowerCase().replace(/\s+/g, '.')}@kiu.edu.ge`,
-            office: `B-${300 + Math.floor(Math.random() * 20)}`,
-            phone: '+995 555 100 ' + String(10 + (facultyCode.charCodeAt(0) % 90)).padStart(3, '0'),
-            maxHours: 18,
-            subjects: allSubjectIds.length ? allSubjectIds : semesterSubjects,
-            testingScenario: 'Built-in faculty tester for LMS authoring, schedule, exams, grading, and messaging.',
-            testingCapabilities: ['Create and manage groups', 'Open faculty schedule and gradebook', 'Upload LMS files', 'Create quizzes and exams', 'Grade students', 'Message TA and students']
-        },
-        {
-            ...shared,
-            id: `${personaPrefix}-ta`,
-            role: USER_ROLES.TA,
-            title: 'Teaching Assistant',
-            name: names.ta,
-            nameEn: names.ta,
-            displayName: names.ta,
-            email: `${names.ta.toLowerCase().replace(/\s+/g, '.')}@kiu.edu.ge`,
-            office: `C-${100 + Math.floor(Math.random() * 20)}`,
-            phone: '+995 555 200 ' + String(10 + (facultyCode.charCodeAt(0) % 90)).padStart(3, '0'),
-            maxHours: 12,
-            subjects: semesterSubjects,
-            assignedProf: names.prof,
-            testingScenario: 'Built-in TA tester for support, messaging, grading visibility, and group operations.',
-            testingCapabilities: ['Join faculty workflow instantly', 'Moderate group activity', 'Support grading and quizzes', 'Assist professor with LMS', 'Message professor and students']
-        },
-        {
-            ...shared,
-            id: `${personaPrefix}-student`,
-            role: USER_ROLES.STUDENT,
-            title: 'Student',
-            name: names.student,
-            nameEn: names.student,
-            displayName: names.student,
-            email: `${names.student.toLowerCase().replace(/\s+/g, '.')}@student.kiu.edu.ge`,
-            program: PROGRAM_MAP[facultyCode] || `${facultyLabel} Program`,
-            semester: activeSemester,
-            course: activeSemester,
-            gpa: 3.45,
-            ects: (activeSemester - 1) * 30,
-            enrollmentYear: 2024,
-            subjects: semesterSubjects,
-            testingScenario: 'Built-in student tester for registration, portal, LMS, quizzes, grades, and group joining.',
-            testingCapabilities: ['Join available groups', 'Write quizzes and exams', 'Receive grades', 'Use messaging and files', 'Browse LMS materials']
-        },
-        {
-            ...shared,
-            id: `${personaPrefix}-student-service`,
-            role: USER_ROLES.STUDENT_SERVICE,
-            title: 'Student Service Advisor',
-            name: names.service,
-            nameEn: names.service,
-            displayName: names.service,
-            email: `${names.service.toLowerCase().replace(/\s+/g, '.')}@kiu.edu.ge`,
-            office: `A-101`,
-            phone: '+995 555 300 ' + String(10 + (facultyCode.charCodeAt(0) % 90)).padStart(3, '0'),
-            testingScenario: 'Built-in student service tester for tickets, communication, and student support workflows.',
-            testingCapabilities: ['Open service inbox', 'Coordinate with students and faculty', 'Review requests', 'Operate service workflows']
-        }
-    ];
+function isAdminTestingPersonaId(id = '') {
+    return String(id || '').trim().toLowerCase().startsWith('admin-testing-');
 }
 
-function upsertFacultyProfilePersonaMember(profile, collectionKey, persona) {
-    if (!profile || !collectionKey || !persona?.id) return;
-    profile[collectionKey] = Array.isArray(profile[collectionKey]) ? profile[collectionKey] : [];
-    const existingIndex = profile[collectionKey].findIndex(member => String(member?.id || '') === String(persona.id));
-    const memberRecord = {
-        id: persona.id,
-        name: persona.displayName || persona.nameEn || persona.name || persona.id,
-        nameEn: persona.nameEn || persona.displayName || persona.name || persona.id,
-        displayName: persona.displayName || persona.nameEn || persona.name || persona.id,
-        email: persona.email || '',
-        faculty: persona.facultyCode || persona.faculty || '',
-        facultyCode: persona.facultyCode || persona.faculty || '',
-        role: persona.role,
-        isAdminTestingPersona: true
+function shouldRetainAdminTestingPersonas() {
+    return String(currentUser?.role || '').trim().toLowerCase() === USER_ROLES.ADMIN;
+}
+
+function resolveRetainAdminTestingPersonasOption(options = {}) {
+    if (Object.prototype.hasOwnProperty.call(options, 'retainAdminTestingPersonas')) {
+        return Boolean(options.retainAdminTestingPersonas);
+    }
+    return shouldRetainAdminTestingPersonas();
+}
+
+function isDemoOrTestingUserRecord(user = {}, options = {}) {
+    if (!user || typeof user !== 'object') return false;
+    const id = String(user.id || user.userId || user.studentId || '').trim().toLowerCase();
+    const retainAdminTesting = resolveRetainAdminTestingPersonasOption(options);
+    if (isAdminTestingPersonaId(id) && retainAdminTesting) return false;
+    if (user.isDemoAccount) return true;
+    if (user.isAdminTestingPersona && !retainAdminTesting) return true;
+    if (!id) return false;
+    if (isAdminTestingPersonaId(id)) return true;
+    if (id.includes('-demo') || id.endsWith('-demo')) return true;
+    if (id.startsWith('testing-')) return true;
+    if (/^(econ|cs|law|med|arts)-(student|professor|ta|service)(-demo)?/.test(id)) return true;
+    return false;
+}
+
+function stripSeededMockStudents(state = KIU_STATE, options = {}) {
+    if (!state || typeof state !== 'object') return state;
+    if (Array.isArray(state.users)) {
+        state.users = state.users.filter(user => !isDemoOrTestingUserRecord(user, options));
+    }
+    if (state.facultyProfiles && typeof state.facultyProfiles === 'object') {
+        Object.values(state.facultyProfiles).forEach((profile) => {
+            if (!profile || typeof profile !== 'object') return;
+            ['professors', 'tas', 'students'].forEach((key) => {
+                if (!Array.isArray(profile[key])) return;
+                profile[key] = profile[key].filter(member => !isDemoOrTestingUserRecord(member, options));
+            });
+        });
+    }
+    const purgeStudentKeyedMap = (map) => {
+        if (!map || typeof map !== 'object') return;
+        Object.keys(map).forEach((studentId) => {
+            if (isDemoOrTestingUserRecord({ id: studentId }, options)) delete map[studentId];
+        });
     };
-    if (existingIndex >= 0) {
-        profile[collectionKey][existingIndex] = {
-            ...profile[collectionKey][existingIndex],
-            ...memberRecord
-        };
-        return;
-    }
-    profile[collectionKey].push(memberRecord);
-}
-
-function ensureAdminTestingPersonas(faculty = localStorage.getItem('currentFaculty') || currentUser?.facultyCode || currentUser?.faculty || 'ECON') {
-    const facultyCode = normalizeFacultyCode(faculty, 'ECON');
-    if (!KIU_STATE.facultyProfiles || typeof KIU_STATE.facultyProfiles !== 'object') {
-        KIU_STATE.facultyProfiles = JSON.parse(JSON.stringify(KIU_EMPTY_STATE.facultyProfiles || {}));
-    }
-    if (!KIU_STATE.facultyProfiles[facultyCode]) {
-        KIU_STATE.facultyProfiles[facultyCode] = { curriculum: [], professors: [], tas: [], students: [] };
-    }
-    if (!Array.isArray(KIU_STATE.users)) KIU_STATE.users = [];
-    if (!KIU_STATE.studentSchedulesByStudent || typeof KIU_STATE.studentSchedulesByStudent !== 'object') KIU_STATE.studentSchedulesByStudent = {};
-    if (!KIU_STATE.studentRegistrations || typeof KIU_STATE.studentRegistrations !== 'object') KIU_STATE.studentRegistrations = {};
-    if (!KIU_STATE.studentGrades || typeof KIU_STATE.studentGrades !== 'object') KIU_STATE.studentGrades = {};
-    if (!KIU_STATE.studentPassedCourses || typeof KIU_STATE.studentPassedCourses !== 'object') KIU_STATE.studentPassedCourses = {};
-    const profile = KIU_STATE.facultyProfiles[facultyCode];
-    const personas = buildAdminTestingPersonaSpecs(facultyCode);
-    personas.forEach(persona => {
-        const userIndex = KIU_STATE.users.findIndex(user => String(user?.id || '') === String(persona.id));
-        const mergedPersona = userIndex >= 0
-            ? { ...KIU_STATE.users[userIndex], ...persona }
-            : { ...persona };
-        if (userIndex >= 0) KIU_STATE.users[userIndex] = mergedPersona;
-        else KIU_STATE.users.push(mergedPersona);
-        if (persona.role === USER_ROLES.PROFESSOR) upsertFacultyProfilePersonaMember(profile, 'professors', mergedPersona);
-        if (persona.role === USER_ROLES.TA) upsertFacultyProfilePersonaMember(profile, 'tas', mergedPersona);
-        if (persona.role === USER_ROLES.STUDENT) {
-            upsertFacultyProfilePersonaMember(profile, 'students', mergedPersona);
-            if (!Array.isArray(KIU_STATE.studentSchedulesByStudent[persona.id])) {
-                KIU_STATE.studentSchedulesByStudent[persona.id] = [];
-            }
-            if (!Array.isArray(KIU_STATE.studentRegistrations[persona.id])) {
-                KIU_STATE.studentRegistrations[persona.id] = [];
-            }
-            if (!Array.isArray(KIU_STATE.studentGrades[persona.id])) {
-                KIU_STATE.studentGrades[persona.id] = [];
-            }
-            if (!Array.isArray(KIU_STATE.studentPassedCourses[persona.id])) {
-                KIU_STATE.studentPassedCourses[persona.id] = [];
-            }
-        }
-    });
-    return personas.map(persona => KIU_STATE.users.find(user => String(user?.id || '') === String(persona.id)) || persona);
-}
-
-function getAdminTestingPersonas(faculty = localStorage.getItem('currentFaculty') || currentUser?.facultyCode || currentUser?.faculty || 'ECON') {
-    const facultyCode = normalizeFacultyCode(faculty, 'ECON');
-    return ensureAdminTestingPersonas(facultyCode).filter(persona => normalizeFacultyCode(persona?.facultyCode || persona?.faculty || '', '') === facultyCode);
+    purgeStudentKeyedMap(state.studentSchedulesByStudent);
+    purgeStudentKeyedMap(state.studentRegistrations);
+    purgeStudentKeyedMap(state.studentGrades);
+    purgeStudentKeyedMap(state.studentPassedCourses);
+    purgeStudentKeyedMap(state.tuitionBalances);
+    return state;
 }
 
 function getFacultyCurriculumFromProfiles(facultyFilter) {
@@ -1267,31 +1206,116 @@ function syncCanonicalCurriculumState() {
     return KIU_STATE.curriculum;
 }
 
-window.buildAdminTestingPersonaSpecs = buildAdminTestingPersonaSpecs;
-window.ensureAdminTestingPersonas = ensureAdminTestingPersonas;
-window.getAdminTestingPersonas = getAdminTestingPersonas;
+function ensureAdminTestingStudentAcademicShell(studentId, state = KIU_STATE) {
+    const normalizedId = String(studentId || '').trim();
+    if (!normalizedId || !isAdminTestingPersonaId(normalizedId)) return false;
+    if (!state || typeof state !== 'object') return false;
+    if (!state.studentSchedulesByStudent || typeof state.studentSchedulesByStudent !== 'object') {
+        state.studentSchedulesByStudent = {};
+    }
+    if (!Object.prototype.hasOwnProperty.call(state.studentSchedulesByStudent, normalizedId)) {
+        state.studentSchedulesByStudent[normalizedId] = [];
+    }
+    if (!state.studentRegistrations || typeof state.studentRegistrations !== 'object') {
+        state.studentRegistrations = {};
+    }
+    if (!Object.prototype.hasOwnProperty.call(state.studentRegistrations, normalizedId)) {
+        state.studentRegistrations[normalizedId] = [];
+    }
+    if (!state.tuitionBalances || typeof state.tuitionBalances !== 'object') {
+        state.tuitionBalances = {};
+    }
+    if (!Object.prototype.hasOwnProperty.call(state.tuitionBalances, normalizedId)) {
+        state.tuitionBalances[normalizedId] = 0;
+    }
+    return true;
+}
+
+window.isAdminTestingPersonaId = isAdminTestingPersonaId;
+window.shouldRetainAdminTestingPersonas = shouldRetainAdminTestingPersonas;
+window.isDemoOrTestingUserRecord = isDemoOrTestingUserRecord;
+window.stripSeededMockStudents = stripSeededMockStudents;
+window.ensureAdminTestingStudentAcademicShell = ensureAdminTestingStudentAcademicShell;
 window.getFacultyCurriculumFromProfiles = getFacultyCurriculumFromProfiles;
 window.getAllCurriculumSubjects = getAllCurriculumSubjects;
 window.syncCanonicalCurriculumState = syncCanonicalCurriculumState;
+window.hasImpersonationPersonaForRole = hasImpersonationPersonaForRole;
+window.isImpersonationEligibleAccount = isImpersonationEligibleAccount;
+window.collectImpersonationCandidatesForRole = collectImpersonationCandidatesForRole;
+
+function isArchivedImpersonationAccount(record = {}) {
+    const status = String(record?.status || record?.accountStatus || 'active').trim().toLowerCase();
+    return status === 'archived' || status === 'inactive';
+}
+
+function isImpersonationEligibleAccount(record = {}, options = {}) {
+    if (!record?.id) return false;
+    if (isArchivedImpersonationAccount(record)) return false;
+    if (options.allowTesting) return true;
+    return !isDemoOrTestingUserRecord(record);
+}
+
+function adminImpersonationAllowsTestingFallback() {
+    return String(currentUser?.role || '').trim().toLowerCase() === USER_ROLES.ADMIN;
+}
+
+function mergeImpersonationRecordsById(records = []) {
+    const byId = new Map();
+    records.forEach((record) => {
+        const id = String(record?.id || '').trim();
+        if (!id) return;
+        byId.set(id, { ...byId.get(id), ...record });
+    });
+    return [...byId.values()];
+}
+
+function collectRawImpersonationRecordsForRole(normalizedRole) {
+    const matchesRole = (record) => String(record?.role || '').trim().toLowerCase() === normalizedRole;
+    const fromUsers = Array.isArray(KIU_STATE?.users) ? KIU_STATE.users.filter(matchesRole) : [];
+    const fromFaculty = collectFacultyMembers(KIU_STATE?.facultyProfiles || {}).filter(matchesRole);
+    let fromAccounts = [];
+    if (typeof ensureKiuRealtimeRuntime === 'function') {
+        try {
+            const accountsById = ensureKiuRealtimeRuntime().accountsById || {};
+            fromAccounts = Object.values(accountsById).filter(matchesRole);
+        } catch (error) {
+            fromAccounts = [];
+        }
+    }
+    return mergeImpersonationRecordsById([...fromUsers, ...fromFaculty, ...fromAccounts]);
+}
+
+function collectImpersonationCandidatesForRole(normalizedRole, options = {}) {
+    const rawRecords = collectRawImpersonationRecordsForRole(normalizedRole);
+    const allowTestingFallback = Object.prototype.hasOwnProperty.call(options, 'allowTestingFallback')
+        ? Boolean(options.allowTestingFallback)
+        : adminImpersonationAllowsTestingFallback();
+    const nonDemoCandidates = rawRecords.filter((record) => isImpersonationEligibleAccount(record, { allowTesting: false }));
+    if (nonDemoCandidates.length) return nonDemoCandidates;
+    if (allowTestingFallback) {
+        return rawRecords.filter((record) => isImpersonationEligibleAccount(record, { allowTesting: true }));
+    }
+    return [];
+}
+
+function pickImpersonationPersonaForFaculty(candidates = [], preferredFaculty = '') {
+    if (!candidates.length) return null;
+    const normalizedFaculty = normalizeFacultyCode(preferredFaculty || '', '');
+    if (!normalizedFaculty) return candidates[0];
+    return candidates.find((user) => (
+        normalizeFacultyCode(user?.facultyCode || user?.faculty || '', '') === normalizedFaculty
+    )) || candidates[0];
+}
 
 function getPreferredImpersonationUserForRole(role, preferredFaculty = localStorage.getItem('currentFaculty') || '') {
     const normalizedRole = String(role || '').trim().toLowerCase();
-    if (!normalizedRole || !Array.isArray(KIU_STATE?.users)) return null;
-    if (currentUser?.role === USER_ROLES.ADMIN) {
-        ensureAdminTestingPersonas(preferredFaculty || getCurrentFaculty());
-    }
-    const candidates = KIU_STATE.users.filter((user) => String(user?.role || '').trim().toLowerCase() === normalizedRole);
-    if (!candidates.length) return null;
-    const normalizedFaculty = normalizeFacultyCode(preferredFaculty || '', '');
-    const personaCandidates = candidates.filter(user => user?.isAdminTestingPersona);
-    if (!normalizedFaculty) return personaCandidates[0] || candidates[0];
-    const sameFacultyPersona = personaCandidates.find((user) => (
-        normalizeFacultyCode(user?.facultyCode || user?.faculty || '', '') === normalizedFaculty
-    ));
-    const sameFacultyCandidate = candidates.find((user) => (
-        normalizeFacultyCode(user?.facultyCode || user?.faculty || '', '') === normalizedFaculty
-    ));
-    return sameFacultyPersona || sameFacultyCandidate || null;
+    if (!normalizedRole) return null;
+    const candidates = collectImpersonationCandidatesForRole(normalizedRole);
+    return pickImpersonationPersonaForFaculty(candidates, preferredFaculty);
+}
+
+function hasImpersonationPersonaForRole(role, preferredFaculty = localStorage.getItem('currentFaculty') || '') {
+    return Boolean(getPreferredImpersonationUserForRole(role, preferredFaculty)?.id);
 }
 
 function syncLegacyStudentStateForCurrentUser() {
@@ -1309,7 +1333,9 @@ function ensureCanonicalState() {
     kiuCanonicalStateInProgress = true;
     try {
     ensureExamSessionStore();
-    if (typeof stripSeededMockStudents === 'function') stripSeededMockStudents(KIU_STATE);
+    if (typeof stripSeededMockStudents === 'function') {
+        stripSeededMockStudents(KIU_STATE, { retainAdminTestingPersonas: shouldRetainAdminTestingPersonas() });
+    }
     pruneDeletedStaffMembersFromState(KIU_STATE);
 
     if (!KIU_STATE.facultyProfiles || typeof KIU_STATE.facultyProfiles !== 'object') {
@@ -1335,18 +1361,6 @@ function ensureCanonicalState() {
             faculty: currentUser.facultyCode || currentUser.faculty || '',
             facultyCode: currentUser.facultyCode || currentUser.faculty || ''
         });
-    }
-    const shouldEnsureAdminTestingPersonas = (() => {
-        if (currentUser?.role === USER_ROLES.ADMIN) return true;
-        try {
-            const parsed = JSON.parse(localStorage.getItem('KIU_AUTH_STATE') || 'null');
-            return String(parsed?.role || '').trim().toLowerCase() === USER_ROLES.ADMIN;
-        } catch (error) {
-            return false;
-        }
-    })();
-    if (shouldEnsureAdminTestingPersonas) {
-        ensureAdminTestingPersonas(localStorage.getItem('currentFaculty') || currentUser?.facultyCode || currentUser?.faculty || 'ECON');
     }
     KIU_STATE.users = mergeUniqueById([
         ...KIU_STATE.users,
@@ -1377,6 +1391,9 @@ function ensureCanonicalState() {
     }
 
     if (!KIU_STATE.availableGroups) KIU_STATE.availableGroups = {};
+    if (typeof migrateAvailableGroupsSessionTypes === 'function') {
+        migrateAvailableGroupsSessionTypes();
+    }
     if (needsDisplayTextRepair) {
         Object.entries(KIU_STATE.availableGroups).forEach(([subjectId, groups]) => {
             KIU_STATE.availableGroups[subjectId] = (groups || [])
@@ -1545,6 +1562,23 @@ function userHasPortalPrivilege(privilegeId = '') {
     if (role === USER_ROLES.ADMIN) return true;
     return getCurrentUserPrivileges().includes(normalizedPrivilegeId);
 }
+
+function userHasPortalPrivilegeForAuthUser(privilegeId = '') {
+    const normalizedPrivilegeId = String(privilegeId || '').trim();
+    if (!normalizedPrivilegeId) return false;
+    const authUser = currentUser
+        || (typeof getStoredAuthState === 'function' ? getStoredAuthState() : null)
+        || null;
+    if (!authUser?.id) return false;
+    const authRole = String(authUser.role || '').trim().toLowerCase();
+    if (authRole === USER_ROLES.ADMIN) return true;
+    const effectivePrivileges = Array.isArray(authUser.effectivePrivileges) ? authUser.effectivePrivileges : [];
+    const grantedPrivileges = Array.isArray(authUser.grantedPrivileges) ? authUser.grantedPrivileges : [];
+    const privileges = [...new Set([...effectivePrivileges, ...grantedPrivileges].map(value => String(value || '').trim()).filter(Boolean))];
+    return privileges.includes(normalizedPrivilegeId);
+}
+
+window.userHasPortalPrivilegeForAuthUser = userHasPortalPrivilegeForAuthUser;
 
 // PERFORMANCE: Cache allowed pages to avoid rebuilding Set on every navigation call
 let _allowedPagesCache = null;
@@ -1781,7 +1815,6 @@ function setActiveSessionUserByRole(role) {
     }
     const normalizedRole = String(role || currentUserRole || currentUser?.role || USER_ROLES.STUDENT).trim().toLowerCase();
     const preferredFaculty = localStorage.getItem('currentFaculty') || currentUser?.facultyCode || currentUser?.faculty || '';
-    ensureAdminTestingPersonas(preferredFaculty || 'ECON');
     const targetUser = (currentUser && String(currentUser.role || '').trim().toLowerCase() === normalizedRole)
         ? currentUser
         : getPreferredImpersonationUserForRole(normalizedRole, preferredFaculty);
@@ -1819,6 +1852,19 @@ function hasPermission(permission) {
 }
 
 loadAuthState();
+if (typeof window !== 'undefined' && !window.__kiuPortalFlushHooksBound) {
+    window.__kiuPortalFlushHooksBound = true;
+    const flushPortalStateOnLeave = () => {
+        if (typeof flushPortalStateBeforeNavigation === 'function') {
+            flushPortalStateBeforeNavigation({ keepalive: true });
+        }
+    };
+    window.addEventListener('beforeunload', flushPortalStateOnLeave);
+    window.addEventListener('pagehide', flushPortalStateOnLeave);
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') flushPortalStateOnLeave();
+    });
+}
 if (typeof schedulePortalBackendBootstrap === 'function') schedulePortalBackendBootstrap();
 ensureCanonicalState();
 

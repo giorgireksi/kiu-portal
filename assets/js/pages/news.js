@@ -51,6 +51,26 @@
             .replace(/'/g, '&#39;');
     }
 
+    function renderNewsEmptyState(title, copy = '') {
+        return `
+            <div class="lux-empty-state newsx-empty">
+                <i class="fas fa-newspaper"></i>
+                <strong class="lux-empty-state__title">${escapeHtml(title)}</strong>
+                ${copy ? `<span class="lux-empty-state__copy">${escapeHtml(copy)}</span>` : ''}
+            </div>
+        `;
+    }
+
+    function renderNewsErrorState(copy) {
+        return `
+            <div class="lux-empty-state lux-error-state newsx-error">
+                <i class="fas fa-triangle-exclamation"></i>
+                <strong class="lux-empty-state__title">News feed unavailable</strong>
+                <span class="lux-empty-state__copy">${escapeHtml(copy || 'The News workspace is unavailable right now.')}</span>
+            </div>
+        `;
+    }
+
     function q(id) {
         return document.getElementById(id);
     }
@@ -285,7 +305,7 @@
     function renderSections() {
         const buttons = [
             `
-                <button type="button" class="newsx-section-btn ${runtime.selectedSection === 'all' ? 'is-active' : ''}" data-news-section="all">
+                <button type="button" class="newsx-section-btn lux-secondary-btn lux-select-card ${runtime.selectedSection === 'all' ? 'is-active' : ''}" data-news-section="all">
                     <span class="newsx-sec-icon"><i class="fas fa-globe"></i></span>
                     <div class="newsx-grow">
                         <div class="newsx-account-name">All Updates</div>
@@ -295,7 +315,7 @@
                 </button>
             `
         ].concat((runtime.sections || []).map(section => `
-            <button type="button" class="newsx-section-btn ${runtime.selectedSection === section.key ? 'is-active' : ''}" data-news-section="${escapeHtml(section.key || 'general')}">
+            <button type="button" class="newsx-section-btn lux-secondary-btn lux-select-card ${runtime.selectedSection === section.key ? 'is-active' : ''}" data-news-section="${escapeHtml(section.key || 'general')}">
                 <span class="newsx-sec-icon"><i class="fas ${getSectionIcon(section.key)}"></i></span>
                 <div class="newsx-grow">
                     <div class="newsx-account-name">${escapeHtml(section.label || 'General')}</div>
@@ -306,7 +326,7 @@
         `)).join('');
 
         return `
-            <aside class="newsx-panel newsx-sidebar">
+            <aside class="surface-card newsx-panel newsx-sidebar">
                 <div class="newsx-sidebar-deco">
                     <div class="newsx-sidebar-deco-icon"><i class="fas fa-newspaper"></i></div>
                     <div>
@@ -329,18 +349,27 @@
             ? post.audienceFacultyCodes.join(', ')
             : 'All faculties';
         return `
-            <div class="newsx-stat-grid">
-                <div class="newsx-stat">
-                    <span class="newsx-stat-label">Audience</span>
-                    <span class="newsx-stat-value">${escapeHtml(roles)}</span>
+            <div class="newsx-stat-grid lux-strip-grid lux-strip-grid--adaptive">
+                <div class="newsx-stat lux-strip-card surface-card lux-summary-surface lux-summary-surface--panel">
+                    <div class="lux-card-body lux-mini-panel">
+                        <div class="newsx-stat-label">Audience</div>
+                        <h3 class="newsx-stat-value">${escapeHtml(roles)}</h3>
+                        <p>Who can see this announcement right now.</p>
+                    </div>
                 </div>
-                <div class="newsx-stat">
-                    <span class="newsx-stat-label">Faculty Scope</span>
-                    <span class="newsx-stat-value">${escapeHtml(faculties)}</span>
+                <div class="newsx-stat lux-strip-card surface-card lux-summary-surface lux-summary-surface--panel">
+                    <div class="lux-card-body lux-mini-panel">
+                        <div class="newsx-stat-label">Faculty Scope</div>
+                        <h3 class="newsx-stat-value">${escapeHtml(faculties)}</h3>
+                        <p>Which faculties are included in the current delivery scope.</p>
+                    </div>
                 </div>
-                <div class="newsx-stat">
-                    <span class="newsx-stat-label">Private Replies</span>
-                    <span class="newsx-stat-value">${escapeHtml(String(post.privateReplyCount || 0))}</span>
+                <div class="newsx-stat lux-strip-card surface-card lux-summary-surface lux-summary-surface--panel">
+                    <div class="lux-card-body lux-mini-panel">
+                        <div class="newsx-stat-label">Private Replies</div>
+                        <h3 class="newsx-stat-value">${escapeHtml(String(post.privateReplyCount || 0))}</h3>
+                        <p>Private thread responses attached to this update.</p>
+                    </div>
                 </div>
             </div>
         `;
@@ -352,7 +381,7 @@
         return `
             <div class="newsx-private-list">
                 ${privateReplies.map(reply => `
-                    <div class="newsx-private-item">
+                    <div class="newsx-private-item lux-summary-surface lux-summary-surface--panel">
                         <div class="newsx-private-meta">
                             <strong>${escapeHtml(reply.authorName || 'Reply')}</strong>
                             <span>${escapeHtml(formatDateTime(reply.createdAt))}</span>
@@ -372,9 +401,9 @@
             <div class="newsx-card-header">
                 <div class="newsx-grow">
                     <div class="newsx-chip-row">
-                        <span class="newsx-chip"><i class="fas fa-tag"></i> ${escapeHtml(post.sectionLabel || 'General')}</span>
-                        ${post.pinned ? `<span class="newsx-chip is-pinned"><i class="fas fa-thumbtack"></i> Pinned</span>` : ''}
-                        ${post.priority && post.priority !== 'standard' ? `<span class="newsx-chip${priorityClass}"><i class="fas fa-bell"></i> ${escapeHtml(post.priority)}</span>` : ''}
+                        <span class="newsx-chip lux-status-pill"><i class="fas fa-tag"></i> ${escapeHtml(post.sectionLabel || 'General')}</span>
+                        ${post.pinned ? `<span class="newsx-chip lux-status-pill is-pinned"><i class="fas fa-thumbtack"></i> Pinned</span>` : ''}
+                        ${post.priority && post.priority !== 'standard' ? `<span class="newsx-chip lux-status-pill${priorityClass}"><i class="fas fa-bell"></i> ${escapeHtml(post.priority)}</span>` : ''}
                     </div>
                     <h3 class="newsx-card-title">${escapeHtml(post.title || 'University update')}</h3>
                     <div class="newsx-author-row">
@@ -384,7 +413,7 @@
                         </div>
                     </div>
                 </div>
-                ${post.viewerCanModerateReplies ? `<span class="newsx-chip"><i class="fas fa-user-shield"></i> Moderator</span>` : ''}
+                ${post.viewerCanModerateReplies ? `<span class="newsx-chip lux-status-pill"><i class="fas fa-user-shield"></i> Moderator</span>` : ''}
             </div>
         `;
     }
@@ -400,14 +429,14 @@
             <div class="newsx-private-box">
                 <div class="newsx-chip-row">
                     ${post.allowReplies !== false
-                        ? `<span class="newsx-chip"><i class="fas fa-lock"></i> Private replies</span>`
-                        : `<span class="newsx-chip"><i class="fas fa-ban"></i> Replies disabled</span>`}
+                        ? `<span class="newsx-chip lux-status-pill"><i class="fas fa-lock"></i> Private replies</span>`
+                        : `<span class="newsx-chip lux-status-pill"><i class="fas fa-ban"></i> Replies disabled</span>`}
                 </div>
                 ${renderPrivateReplies(post)}
                 ${post.allowReplies !== false ? `
-                    <textarea id="news-reply-${escapeHtml(toFieldToken(postId))}" name="news_reply_${escapeHtml(toFieldToken(postId))}" class="newsx-textarea" rows="3" placeholder="Send a private response to this announcement..." data-news-reply-input="${escapeHtml(postId)}">${escapeHtml(replyDraft)}</textarea>
+                    <textarea id="news-reply-${escapeHtml(toFieldToken(postId))}" name="news_reply_${escapeHtml(toFieldToken(postId))}" class="newsx-textarea lux-control" rows="3" placeholder="Send a private response to this announcement..." data-news-reply-input="${escapeHtml(postId)}">${escapeHtml(replyDraft)}</textarea>
                     <div class="newsx-btn-row">
-                        <button type="button" class="newsx-btn newsx-btn-primary" data-news-submit-reply="${escapeHtml(postId)}"><i class="fas fa-paper-plane"></i> Send Private Reply</button>
+                        <button type="button" class="newsx-btn newsx-btn-primary lux-primary-btn" data-news-submit-reply="${escapeHtml(postId)}"><i class="fas fa-paper-plane"></i> Send Private Reply</button>
                     </div>
                 ` : ''}
             </div>
@@ -422,20 +451,20 @@
                 <h3 class="newsx-headline">Publisher</h3>
                 <p class="newsx-subtle">Compose and publish official announcements.</p>
                 <div class="newsx-check-grid newsx-stack-14">
-                    <input id="news-compose-title" name="news_compose_title" class="newsx-input" type="text" value="${escapeHtml(compose.title)}" placeholder="Headline" data-news-compose-field="title">
-                    <input id="news-compose-section" name="news_compose_section" class="newsx-input" type="text" value="${escapeHtml(compose.sectionLabel)}" placeholder="Section label" data-news-compose-field="sectionLabel">
-                    <select id="news-compose-priority" name="news_compose_priority" class="newsx-select" data-news-compose-field="priority">
+                    <input id="news-compose-title" name="news_compose_title" class="newsx-input lux-control" type="text" value="${escapeHtml(compose.title)}" placeholder="Headline" data-news-compose-field="title">
+                    <input id="news-compose-section" name="news_compose_section" class="newsx-input lux-control" type="text" value="${escapeHtml(compose.sectionLabel)}" placeholder="Section label" data-news-compose-field="sectionLabel">
+                    <select id="news-compose-priority" name="news_compose_priority" class="newsx-select lux-control" data-news-compose-field="priority">
                         <option value="standard" ${compose.priority === 'standard' ? 'selected' : ''}>Standard priority</option>
                         <option value="important" ${compose.priority === 'important' ? 'selected' : ''}>Important</option>
                         <option value="critical" ${compose.priority === 'critical' ? 'selected' : ''}>Critical</option>
                     </select>
-                    <textarea id="news-compose-body" name="news_compose_body" class="newsx-textarea" rows="7" placeholder="Write the announcement body..." data-news-compose-field="body">${escapeHtml(compose.body)}</textarea>
+                    <textarea id="news-compose-body" name="news_compose_body" class="newsx-textarea lux-control" rows="7" placeholder="Write the announcement body..." data-news-compose-field="body">${escapeHtml(compose.body)}</textarea>
                 </div>
                 <div class="newsx-stack-16">
                     <div class="newsx-meta newsx-meta-label">Target Audience</div>
                     <div class="newsx-check-grid">
                         ${ROLE_OPTIONS.map(([roleId, label]) => `
-                            <label class="newsx-check">
+                            <label class="newsx-check lux-check-card lux-summary-surface lux-summary-surface--panel">
                                 <input id="news-role-${escapeHtml(toFieldToken(roleId))}" name="news_role_${escapeHtml(toFieldToken(roleId))}" type="checkbox" ${compose.audienceRoles.includes(roleId) ? 'checked' : ''} data-news-audience-role="${escapeHtml(roleId)}">
                                 <div>
                                     <strong>${escapeHtml(label)}</strong>
@@ -449,7 +478,7 @@
                     <div class="newsx-meta newsx-meta-label">Faculty Scope</div>
                     <div class="newsx-check-grid">
                         ${getFacultyOptions().map(option => `
-                            <label class="newsx-check">
+                            <label class="newsx-check lux-check-card lux-summary-surface lux-summary-surface--panel">
                                 <input id="news-faculty-${escapeHtml(toFieldToken(option.code))}" name="news_faculty_${escapeHtml(toFieldToken(option.code))}" type="checkbox" ${compose.audienceFacultyCodes.includes(option.code) ? 'checked' : ''} data-news-audience-faculty="${escapeHtml(option.code)}">
                                 <div>
                                     <strong>${escapeHtml(option.label)}</strong>
@@ -460,14 +489,14 @@
                     </div>
                 </div>
                 <div class="newsx-check-grid newsx-stack-16">
-                    <label class="newsx-check">
+                    <label class="newsx-check lux-check-card lux-summary-surface lux-summary-surface--panel">
                         <input id="news-compose-allow-replies" name="news_compose_allow_replies" type="checkbox" ${compose.allowReplies ? 'checked' : ''} data-news-compose-boolean="allowReplies">
                         <div>
                             <strong>Allow private replies</strong>
                             <div class="newsx-meta">Readers can respond privately.</div>
                         </div>
                     </label>
-                    <label class="newsx-check">
+                    <label class="newsx-check lux-check-card lux-summary-surface lux-summary-surface--panel">
                         <input id="news-compose-pinned" name="news_compose_pinned" type="checkbox" ${compose.pinned ? 'checked' : ''} data-news-compose-boolean="pinned">
                         <div>
                             <strong>Pin this announcement</strong>
@@ -476,8 +505,8 @@
                     </label>
                 </div>
                 <div class="newsx-btn-row newsx-stack-16">
-                    <button type="button" class="newsx-btn newsx-btn-primary" data-news-publish><i class="fas fa-bullhorn"></i> Publish</button>
-                    <button type="button" class="newsx-btn" data-news-reset-compose><i class="fas fa-rotate-left"></i> Reset</button>
+                    <button type="button" class="newsx-btn newsx-btn-primary lux-primary-btn" data-news-publish><i class="fas fa-bullhorn"></i> Publish</button>
+                    <button type="button" class="newsx-btn lux-secondary-btn" data-news-reset-compose><i class="fas fa-rotate-left"></i> Reset</button>
                 </div>
             </section>
         `;
@@ -490,7 +519,7 @@
                 <section class="newsx-section">
                     <h3 class="newsx-headline">Delegated Privileges</h3>
                     <p class="newsx-subtle">Loading delegated privilege controls only when this pane is opened.</p>
-                    <div class="newsx-empty newsx-stack-14">Loading privilege controls...</div>
+                    ${renderNewsEmptyState('Loading privilege controls...', 'Delegated privilege controls load only when this pane is opened.')}
                 </section>
             `;
         }
@@ -509,20 +538,20 @@
             <section class="newsx-section">
                 <h3 class="newsx-headline">Delegated Privileges</h3>
                 <p class="newsx-subtle">Delegate specific permissions without granting full admin access.</p>
-                <input id="news-privilege-search" name="news_privilege_search" class="newsx-input newsx-stack-14" type="text" value="${escapeHtml(runtime.privilegeSearch)}" placeholder="Search account" data-news-privilege-search>
+                <input id="news-privilege-search" name="news_privilege_search" class="newsx-input newsx-stack-14 lux-control" type="text" value="${escapeHtml(runtime.privilegeSearch)}" placeholder="Search account" data-news-privilege-search>
                 <div class="newsx-account-list">
                     ${filteredAccounts.map(account => `
-                        <button type="button" class="newsx-account-card ${String(selectedAccount?.id || '') === String(account.id || '') ? 'is-active' : ''}" data-news-select-account="${escapeHtml(String(account.id || ''))}">
+                        <button type="button" class="newsx-account-card lux-select-card lux-summary-surface lux-summary-surface--panel ${String(selectedAccount?.id || '') === String(account.id || '') ? 'is-active' : ''}" data-news-select-account="${escapeHtml(String(account.id || ''))}">
                             <div class="newsx-account-name">${escapeHtml(account.displayName || account.nameEn || account.name || account.id || 'Account')}</div>
                             <div class="newsx-meta">${escapeHtml(account.email || '')}</div>
                             <div class="newsx-meta">${escapeHtml(account.role || 'account')} - ${escapeHtml(account.facultyCode || 'UNIV')}</div>
                         </button>
-                    `).join('') || `<div class="newsx-empty">No accounts matched the current search.</div>`}
+                    `).join('') || renderNewsEmptyState('No accounts matched the current search.')}
                 </div>
                 ${selectedAccount ? `
                     <div class="newsx-check-grid newsx-stack-14">
                         ${(runtime.privileges || []).map(privilege => `
-                            <label class="newsx-check">
+                            <label class="newsx-check lux-check-card lux-summary-surface lux-summary-surface--panel">
                                 <input
                                     id="news-privilege-${escapeHtml(toFieldToken(selectedAccount.id))}-${escapeHtml(toFieldToken(privilege.id))}"
                                     name="news_privilege_${escapeHtml(toFieldToken(selectedAccount.id))}_${escapeHtml(toFieldToken(privilege.id))}"
@@ -540,7 +569,7 @@
                         `).join('')}
                     </div>
                     <div class="newsx-btn-row newsx-stack-16">
-                        <button type="button" class="newsx-btn newsx-btn-primary" data-news-save-privileges="${escapeHtml(String(selectedAccount.id || ''))}"><i class="fas fa-shield-halved"></i> Save Privileges</button>
+                        <button type="button" class="newsx-btn newsx-btn-primary lux-primary-btn" data-news-save-privileges="${escapeHtml(String(selectedAccount.id || ''))}"><i class="fas fa-shield-halved"></i> Save Privileges</button>
                     </div>
                 ` : ''}
             </section>
@@ -550,7 +579,7 @@
     function renderAdminRail() {
         if (!canManageNews() && !canManagePrivileges()) {
             return `
-                <aside class="newsx-panel newsx-rail">
+                <aside class="surface-card newsx-panel newsx-rail">
                     <section class="newsx-section">
                         <h3 class="newsx-headline">Private Replies</h3>
                         <p class="newsx-subtle">Your replies are private -- visible only to you and university staff.</p>
@@ -564,12 +593,12 @@
         const paneId = panes.some(([value]) => value === runtime.adminPane) ? runtime.adminPane : panes[0]?.[0] || 'compose';
         runtime.adminPane = paneId;
         return `
-            <aside class="newsx-panel newsx-rail">
+            <aside class="surface-card newsx-panel newsx-rail">
                 ${panes.length > 1 ? `
                     <div class="newsx-section newsx-pane-switch-wrap">
                         <div class="newsx-pane-switch">
                             ${panes.map(([paneKey, label]) => `
-                                <button type="button" class="newsx-pane-btn ${runtime.adminPane === paneKey ? 'is-active' : ''}" data-news-admin-pane="${escapeHtml(paneKey)}">${escapeHtml(label)}</button>
+                                <button type="button" class="newsx-pane-btn lux-secondary-btn lux-select-card ${runtime.adminPane === paneKey ? 'is-active' : ''}" data-news-admin-pane="${escapeHtml(paneKey)}">${escapeHtml(label)}</button>
                             `).join('')}
                         </div>
                     </div>
@@ -582,16 +611,16 @@
     function renderNewsHero(currentUser) {
         const pinnedCount = runtime.posts.filter(post => post?.pinned).length;
         return `
-            <section class="newsx-hero">
+            <section class="lux-summary-surface lux-summary-surface--hero newsx-hero">
                 <div class="newsx-hero-illustration"></div>
                 <div class="newsx-kicker"><i class="fas fa-broadcast-tower newsx-icon-leading"></i> University News</div>
                 <h1 class="newsx-title">Campus News</h1>
                 <p class="newsx-copy">Official announcements, updates, and private channels filtered to what matters to you.</p>
                 <div class="newsx-hero-meta">
-                    <span class="newsx-badge"><i class="fas fa-user-circle"></i> ${escapeHtml(currentUser.displayName || currentUser.nameEn || currentUser.name || currentUser.id)}</span>
-                    <span class="newsx-badge"><i class="fas fa-newspaper"></i> ${escapeHtml(String(runtime.posts.length))} updates</span>
-                    <span class="newsx-badge"><i class="fas fa-layer-group"></i> ${escapeHtml(String(runtime.sections.length))} sections</span>
-                    ${pinnedCount ? `<span class="newsx-badge"><i class="fas fa-thumbtack"></i> ${escapeHtml(String(pinnedCount))} pinned</span>` : ''}
+                    <span class="newsx-badge lux-status-pill"><i class="fas fa-user-circle"></i> ${escapeHtml(currentUser.displayName || currentUser.nameEn || currentUser.name || currentUser.id)}</span>
+                    <span class="newsx-badge lux-status-pill"><i class="fas fa-newspaper"></i> ${escapeHtml(String(runtime.posts.length))} updates</span>
+                    <span class="newsx-badge lux-status-pill"><i class="fas fa-layer-group"></i> ${escapeHtml(String(runtime.sections.length))} sections</span>
+                    ${pinnedCount ? `<span class="newsx-badge lux-status-pill"><i class="fas fa-thumbtack"></i> ${escapeHtml(String(pinnedCount))} pinned</span>` : ''}
                 </div>
             </section>
         `;
@@ -599,12 +628,12 @@
 
     function renderNewsFilterBar() {
         return `
-            <section class="newsx-panel newsx-filter">
+            <section class="surface-card newsx-panel newsx-filter">
                 <div class="newsx-filter-grid">
-                    <input id="news-feed-search" name="news_feed_search" class="newsx-input" type="text" value="${escapeHtml(runtime.search)}" placeholder="Search by title, body, author, or section..." data-news-search-input>
-                    <button type="button" class="newsx-btn" data-news-refresh><i class="fas fa-rotate"></i> Refresh</button>
+                    <input id="news-feed-search" name="news_feed_search" class="newsx-input lux-control" type="text" value="${escapeHtml(runtime.search)}" placeholder="Search by title, body, author, or section..." data-news-search-input>
+                    <button type="button" class="newsx-btn lux-secondary-btn" data-news-refresh><i class="fas fa-rotate"></i> Refresh</button>
                 </div>
-                ${runtime.error ? `<div class="newsx-error">${escapeHtml(runtime.error)}</div>` : ''}
+                ${runtime.error ? renderNewsErrorState(runtime.error) : ''}
             </section>
         `;
     }
@@ -627,13 +656,13 @@
     function renderNewsFeedStateMarkup() {
         if (runtime.loading && !runtime.posts.length) {
             return `
-                <div class="newsx-panel newsx-feed-card newsx-loading-card">
+                <div class="surface-card newsx-panel newsx-feed-card newsx-loading-card">
                     <div class="newsx-loading-line is-120"></div>
                     <div class="newsx-loading-line is-70"></div>
                     <div class="newsx-loading-line is-50"></div>
                     <div class="newsx-loading-block"></div>
                 </div>
-                <div class="newsx-panel newsx-feed-card newsx-loading-card">
+                <div class="surface-card newsx-panel newsx-feed-card newsx-loading-card">
                     <div class="newsx-loading-line is-90"></div>
                     <div class="newsx-loading-line is-55"></div>
                     <div class="newsx-loading-line is-40"></div>
@@ -641,7 +670,7 @@
             `;
         }
         if (!runtime.posts.length) {
-            return `<div class="newsx-empty">No announcements matched the current section or search.</div>`;
+            return renderNewsEmptyState('No announcements matched the current section or search.');
         }
         return '';
     }
@@ -651,7 +680,7 @@
         let shell = host.querySelector('[data-news-post-shell="1"]');
         if (!shell) {
             host.innerHTML = `
-                <article class="newsx-panel newsx-feed-card" data-news-post-shell="1" data-news-post-id="${escapeHtml(postId)}">
+                <article class="surface-card newsx-panel newsx-feed-card" data-news-post-shell="1" data-news-post-id="${escapeHtml(postId)}">
                     <div data-news-post-header="1"></div>
                     <div data-news-post-audience="1"></div>
                     <div class="newsx-divider"></div>

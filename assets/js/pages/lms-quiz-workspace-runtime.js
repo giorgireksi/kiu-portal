@@ -1,6 +1,147 @@
-﻿/* LMS quiz workspace runtime extracted from lms.js. */
+/* LMS quiz workspace runtime extracted from lms.js. */
 
 const LMS_STUDENT_QUIZ_FOCUS_STATE_KEY = 'KIU_LMS_STUDENT_QUIZ_FOCUS_STATE';
+
+function jsQuote(value) {
+    return `'${String(value || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`;
+}
+
+function getAdminQuizTotalScore(quiz = {}) {
+    return (Array.isArray(quiz?.questions) ? quiz.questions : []).reduce((sum, question) => {
+        const score = Number(question?.score || 0);
+        return sum + (Number.isFinite(score) ? score : 0);
+    }, 0);
+}
+
+const LMS_DEFAULT_ANTI_CHEAT_POLICY = {
+    processScanning: true,
+    clipboardClearing: true,
+    focusProtection: true,
+    inputBlocking: true,
+    kioskMode: true,
+    vmDetection: true,
+    devToolsProtection: true,
+    allowDebugTools: false,
+    navigationProtection: true,
+    securityDialogs: true,
+    violationScreen: true,
+    blockedProcesses: [
+        'TeamViewer.exe', 'AnyDesk.exe', 'Discord.exe', 'obs64.exe', 'obs32.exe',
+        'Zoom.exe', 'Skype.exe', 'Cheat Engine.exe', 'x64dbg.exe', 'Wireshark.exe',
+        'SnippingTool.exe', 'ScreenClippingHost.exe'
+    ],
+    allowedDomains: [],
+    heartbeatMs: 2000,
+    processScanMs: 1500
+};
+
+function normalizeLmsAntiCheatPolicy(policy = {}) {
+    const source = policy && typeof policy === 'object' ? policy : {};
+    const merged = { ...LMS_DEFAULT_ANTI_CHEAT_POLICY, ...source };
+    const uniqueList = values => Array.from(new Set((Array.isArray(values) ? values : [])
+        .map(value => String(value || '').trim())
+        .filter(Boolean)));
+    const boundedMs = (value, fallback) => {
+        const numeric = Number(value);
+        if (!Number.isFinite(numeric)) return fallback;
+        return Math.min(60000, Math.max(1000, Math.round(numeric)));
+    };
+    return {
+        processScanning: merged.processScanning !== false,
+        clipboardClearing: merged.clipboardClearing !== false,
+        focusProtection: merged.focusProtection !== false,
+        inputBlocking: merged.inputBlocking !== false,
+        kioskMode: merged.kioskMode !== false,
+        vmDetection: merged.vmDetection !== false,
+        devToolsProtection: merged.devToolsProtection !== false,
+        allowDebugTools: merged.allowDebugTools === true,
+        navigationProtection: merged.navigationProtection !== false,
+        securityDialogs: merged.securityDialogs !== false,
+        violationScreen: merged.violationScreen !== false,
+        blockedProcesses: uniqueList(merged.blockedProcesses).length ? uniqueList(merged.blockedProcesses) : [...LMS_DEFAULT_ANTI_CHEAT_POLICY.blockedProcesses],
+        allowedDomains: uniqueList(merged.allowedDomains),
+        heartbeatMs: boundedMs(merged.heartbeatMs, LMS_DEFAULT_ANTI_CHEAT_POLICY.heartbeatMs),
+        processScanMs: boundedMs(merged.processScanMs, LMS_DEFAULT_ANTI_CHEAT_POLICY.processScanMs)
+    };
+}
+
+function renderLmsAntiCheatPolicyControls(quiz = {}) {
+    const policy = normalizeLmsAntiCheatPolicy(quiz.antiCheatPolicy);
+    const flags = [
+        ['processScanning', 'Process scanner'],
+        ['clipboardClearing', 'Clipboard clearing'],
+        ['focusProtection', 'Focus enforcement'],
+        ['inputBlocking', 'Input restrictions'],
+        ['kioskMode', 'Kiosk mode'],
+        ['vmDetection', 'VM detection'],
+        ['devToolsProtection', 'DevTools protection'],
+        ['navigationProtection', 'Navigation protection'],
+        ['securityDialogs', 'Security dialogs'],
+        ['violationScreen', 'Violation screen'],
+        ['allowDebugTools', 'Allow DevTools']
+    ];
+    return `
+        <div class="lms-quiz-access-policy-stack" data-lms-anticheat-policy="true">
+            <div class="lms-quiz-access-policy-title">Anti-cheat restrictions</div>
+            <div class="lms-quiz-access-policy-grid">
+                ${flags.map(([key, label]) => `
+                    <label class="lms-quiz-policy-card lms-quiz-access-policy-item">
+                        <input type="checkbox" data-lms-ac-policy="${escapeHtml(key)}" ${policy[key] === true ? 'checked' : ''}>
+                        <span><strong>${escapeHtml(label)}</strong><br>Applied by the desktop app after launch ticket redemption.</span>
+                    </label>
+                `).join('')}
+            </div>
+            <label class="lms-quiz-policy-card lms-quiz-access-policy-item">
+                <span><strong>Heartbeat interval</strong><br>Milliseconds between protected session heartbeats.</span>
+                <input class="lms-route-input" type="number" min="1000" max="60000" step="500" data-lms-ac-policy="heartbeatMs" value="${Number(policy.heartbeatMs || 2000)}">
+            </label>
+            <label class="lms-quiz-policy-card lms-quiz-access-policy-item">
+                <span><strong>Process scan interval</strong><br>Milliseconds between blocked software checks.</span>
+                <input class="lms-route-input" type="number" min="1000" max="60000" step="500" data-lms-ac-policy="processScanMs" value="${Number(policy.processScanMs || 1500)}">
+            </label>
+            <label class="lms-quiz-policy-card lms-quiz-access-policy-item">
+                <span><strong>Allowed domains</strong><br>One hostname per line; LMS and backend domains are added automatically.</span>
+                <textarea class="lms-route-input" rows="3" data-lms-ac-policy="allowedDomains">${escapeHtml((policy.allowedDomains || []).join('\n'))}</textarea>
+            </label>
+            <label class="lms-quiz-policy-card lms-quiz-access-policy-item">
+                <span><strong>Blocked processes</strong><br>One process name per line.</span>
+                <textarea class="lms-route-input" rows="4" data-lms-ac-policy="blockedProcesses">${escapeHtml((policy.blockedProcesses || []).join('\n'))}</textarea>
+            </label>
+        </div>
+    `;
+}
+
+function readLmsAntiCheatPolicyFromAccessDialog(quiz = {}) {
+    const current = normalizeLmsAntiCheatPolicy(quiz.antiCheatPolicy);
+    const readList = key => String(document.querySelector(`#lms-quiz-access-overlay [data-lms-ac-policy="${key}"]`)?.value || '')
+        .split(/\r?\n|,/)
+        .map(value => String(value || '').trim())
+        .filter(Boolean);
+    const readBool = key => document.querySelector(`#lms-quiz-access-overlay [data-lms-ac-policy="${key}"]`)?.checked === true;
+    const readMs = (key, fallback) => {
+        const numeric = Number(document.querySelector(`#lms-quiz-access-overlay [data-lms-ac-policy="${key}"]`)?.value || fallback);
+        if (!Number.isFinite(numeric)) return fallback;
+        return Math.min(60000, Math.max(1000, Math.round(numeric)));
+    };
+    return normalizeLmsAntiCheatPolicy({
+        ...current,
+        processScanning: readBool('processScanning'),
+        clipboardClearing: readBool('clipboardClearing'),
+        focusProtection: readBool('focusProtection'),
+        inputBlocking: readBool('inputBlocking'),
+        kioskMode: readBool('kioskMode'),
+        vmDetection: readBool('vmDetection'),
+        devToolsProtection: readBool('devToolsProtection'),
+        allowDebugTools: readBool('allowDebugTools'),
+        navigationProtection: readBool('navigationProtection'),
+        securityDialogs: readBool('securityDialogs'),
+        violationScreen: readBool('violationScreen'),
+        allowedDomains: readList('allowedDomains'),
+        blockedProcesses: readList('blockedProcesses'),
+        heartbeatMs: readMs('heartbeatMs', current.heartbeatMs),
+        processScanMs: readMs('processScanMs', current.processScanMs)
+    });
+}
 
 function openLmsQuizAccessDialog(resourceKey, quizId) {
     closeLmsQuizFloatingLayers();
@@ -14,67 +155,68 @@ function openLmsQuizAccessDialog(resourceKey, quizId) {
     const attendanceGateEnabled = quiz.attendanceGateEnabled !== false;
     const checkboxRows = students.length
         ? students.map(student => `
-            <label style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 14px; border:1px solid var(--lux-border); border-radius:14px; background:var(--lux-surface);">
-                <span style="display:flex; flex-direction:column; gap:4px;">
-                    <span style="font-size:13px; font-weight:800; color:var(--kiu-navy);">${escapeHtml(student.name)}</span>
-                    <span style="font-size:11px; color:var(--lux-text-muted);">${escapeHtml(student.id)}</span>
+            <label class="lms-quiz-access-student-row">
+                <span class="lms-quiz-access-student-meta">
+                    <span class="lms-quiz-access-student-name">${escapeHtml(student.name)}</span>
+                    <span class="lms-quiz-access-student-id">${escapeHtml(student.id)}</span>
                 </span>
-                <input type="checkbox" data-lms-quiz-access="true" value="${escapeHtml(student.id)}" ${selectedIds.has(String(student.id)) ? 'checked' : ''} style="width:18px; height:18px;">
+                <input class="lms-quiz-access-checkbox" type="checkbox" data-lms-quiz-access="true" value="${escapeHtml(student.id)}" ${selectedIds.has(String(student.id)) ? 'checked' : ''}>
             </label>
         `).join('')
-        : `<div style="padding:20px; text-align:center; color:var(--lux-text-muted);">No enrolled students found for this group.</div>`;
+        : `<div class="lms-quiz-access-empty">No enrolled students found for this group.</div>`;
 
     const overlay = document.createElement('div');
     overlay.id = 'lms-quiz-access-overlay';
-    overlay.style.cssText = 'position:fixed; inset:0; z-index:8200; background:rgba(15,23,42,0.72); backdrop-filter:blur(4px); display:flex; align-items:center; justify-content:center; padding:20px;';
+    overlay.className = 'lms-quiz-access-overlay';
     overlay.onclick = event => {
         if (event.target === overlay) overlay.remove();
     };
     overlay.innerHTML = `
-        <div style="width:min(760px, 100%); max-height:88vh; overflow:auto; background:var(--lux-bg-soft); border-radius:24px; border:1px solid rgba(148,163,184,0.18); box-shadow:0 28px 80px rgba(15,23,42,0.35);">
-            <div style="padding:18px 22px; background:linear-gradient(135deg, var(--kiu-navy), var(--kiu-blue)); color:white; display:flex; justify-content:space-between; gap:12px; align-items:flex-start;">
-                <div>
-                    <div style="font-size:20px; font-weight:900;">${getLmsQuizLifecycleStatus(quiz) === 'draft' ? 'Publish Quiz' : 'Manage Quiz Access'}</div>
-                    <div style="font-size:12px; opacity:0.92; margin-top:4px;">Default roster starts with all enrolled students. Uncheck students who are absent from class.</div>
+        <div class="lms-quiz-access-dialog">
+            <div class="lms-quiz-access-head">
+                <div class="lms-quiz-access-head-copy">
+                    <div class="lms-quiz-access-title">${getLmsQuizLifecycleStatus(quiz) === 'draft' ? 'Publish Quiz' : 'Manage Quiz Access'}</div>
+                    <div class="lms-quiz-access-copy">Default roster starts with all enrolled students. Uncheck students who are absent from class.</div>
                 </div>
-                <button type="button" class="kiu-btn-outline" data-lms-click="document.getElementById('lms-quiz-access-overlay')?.remove()" style="border-color:rgba(255,255,255,0.35); color:white; background:rgba(255,255,255,0.08);"><i class="fas fa-times"></i> Close</button>
+                <button type="button" class="kiu-btn-outline lms-quiz-access-close-btn" data-lms-click="document.getElementById('lms-quiz-access-overlay')?.remove()"><i class="fas fa-times"></i> Close</button>
             </div>
-            <div style="padding:22px; display:grid; gap:16px;">
-                <div style="display:flex; justify-content:space-between; gap:12px; align-items:center; flex-wrap:wrap;">
-                    <div>
-                        <div style="font-size:13px; font-weight:800; color:var(--kiu-navy);">${escapeHtml(quiz.title || getLmsQuizDisplayLabel(quiz))}</div>
-                        <div style="font-size:12px; color:var(--lux-text-muted); margin-top:4px;">${escapeHtml(getLmsQuizDisplayLabel(quiz))}${quiz.weekLabel ? `  -  ${escapeHtml(quiz.weekLabel)}` : ''}</div>
+            <div class="lms-quiz-access-body">
+                <div class="lms-quiz-access-toolbar">
+                    <div class="lms-quiz-access-summary">
+                        <div class="lms-quiz-access-summary-title">${escapeHtml(quiz.title || getLmsQuizDisplayLabel(quiz))}</div>
+                        <div class="lms-quiz-access-summary-copy">${escapeHtml(getLmsQuizDisplayLabel(quiz))}${quiz.weekLabel ? `  -  ${escapeHtml(quiz.weekLabel)}` : ''}</div>
                     </div>
-                    <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                        <button type="button" class="kiu-btn-outline" data-lms-click="document.querySelectorAll('#lms-quiz-access-overlay [data-lms-quiz-access=true]').forEach(el => el.checked = true)" style="padding:9px 12px; font-size:12px;">Select All</button>
-                        <button type="button" class="kiu-btn-outline" data-lms-click="document.querySelectorAll('#lms-quiz-access-overlay [data-lms-quiz-access=true]').forEach(el => el.checked = false)" style="padding:9px 12px; font-size:12px;">Clear All</button>
+                    <div class="lms-quiz-access-toolbar-actions">
+                        <button type="button" class="kiu-btn-outline lms-quiz-access-toolbar-btn" data-lms-click="document.querySelectorAll('#lms-quiz-access-overlay [data-lms-quiz-access=true]').forEach(el => el.checked = true)">Select All</button>
+                        <button type="button" class="kiu-btn-outline lms-quiz-access-toolbar-btn" data-lms-click="document.querySelectorAll('#lms-quiz-access-overlay [data-lms-quiz-access=true]').forEach(el => el.checked = false)">Clear All</button>
                     </div>
                 </div>
                 ${lifecycle === 'draft'
-                    ? `<div style="display:grid; gap:10px; padding:14px; border-radius:16px; background:var(--lux-surface); border:1px solid #dbe7f5;">
-                            <div style="font-size:12px; font-weight:800; color:var(--kiu-navy);">Publish Mode</div>
-                            <label style="display:flex; gap:10px; align-items:flex-start; font-size:12px; color:var(--lux-text-muted);">
+                    ? `<div class="lms-quiz-access-policy-stack">
+                            <div class="lms-quiz-access-policy-title">Publish Mode</div>
+                            <label class="lms-quiz-policy-card lms-quiz-access-policy-item">
                                 <input type="radio" name="lms-quiz-publish-mode" value="manual" ${currentPublishMode === 'manual' ? 'checked' : ''}>
                                 <span><strong>Publish now</strong><br>Students can answer as soon as the quiz is available.</span>
                             </label>
-                            <label style="display:flex; gap:10px; align-items:flex-start; font-size:12px; color:var(--lux-text-muted);">
+                            <label class="lms-quiz-policy-card lms-quiz-access-policy-item">
                                 <input type="radio" name="lms-quiz-publish-mode" value="scheduled" ${currentPublishMode === 'scheduled' ? 'checked' : ''}>
                                 <span><strong>Automatic publish</strong><br>The quiz opens at the start time and closes itself at the end time.</span>
                             </label>
-                            <label style="display:flex; gap:10px; align-items:flex-start; font-size:12px; color:var(--lux-text-muted);">
+                            <label class="lms-quiz-policy-card lms-quiz-access-policy-item">
                                 <input type="checkbox" id="lms-quiz-attendance-gate" ${attendanceGateEnabled ? 'checked' : ''}>
                                 <span><strong>Attendance gate</strong><br>TA / professor must mark the student present in the LMS review board before Start Quiz unlocks.</span>
                             </label>
                         </div>`
-                    : `<div style="display:grid; gap:8px; padding:14px; border-radius:16px; background:var(--lux-surface); border:1px solid #dbe7f5; font-size:12px; color:var(--lux-text-muted);">
-                            <strong>Current mode:</strong> ${currentPublishMode === 'scheduled' ? 'Automatic publish by time' : 'Manual publish'}
+                    : `<div class="lms-quiz-access-status-card">
+                            <div><strong>Current mode:</strong> ${currentPublishMode === 'scheduled' ? 'Automatic publish by time' : 'Manual publish'}</div>
                             <div><strong>Attendance gate:</strong> ${attendanceGateEnabled ? 'Present students only' : 'Disabled'}</div>
                         </div>`
                 }
-                <div style="display:grid; gap:10px; max-height:420px; overflow:auto;">${checkboxRows}</div>
-                <div style="display:flex; justify-content:flex-end; gap:10px; flex-wrap:wrap;">
-                    <button type="button" class="kiu-btn-outline" data-lms-click="document.getElementById('lms-quiz-access-overlay')?.remove()" style="padding:10px 14px; font-size:12px;">Cancel</button>
-                    <button type="button" class="kiu-btn-blue" data-lms-click="saveLmsQuizAccessSettings(${jsQuote(resourceKey)}, ${jsQuote(quiz.id)})" style="padding:10px 14px; font-size:12px;"><i class="fas fa-check"></i> ${lifecycle === 'draft' ? 'Save Publish Settings' : 'Save Access'}</button>
+                ${renderLmsAntiCheatPolicyControls(quiz)}
+                <div class="lms-quiz-access-student-list">${checkboxRows}</div>
+                <div class="lms-quiz-access-footer">
+                    <button type="button" class="kiu-btn-outline lms-quiz-access-footer-btn" data-lms-click="document.getElementById('lms-quiz-access-overlay')?.remove()">Cancel</button>
+                    <button type="button" class="kiu-btn-blue lms-quiz-access-footer-btn" data-lms-click="saveLmsQuizAccessSettings(${jsQuote(resourceKey)}, ${jsQuote(quiz.id)})"><i class="fas fa-check"></i> ${lifecycle === 'draft' ? 'Save Publish Settings' : 'Save Access'}</button>
                 </div>
             </div>
         </div>
@@ -186,6 +328,7 @@ function saveLmsQuizAccessSettings(resourceKey, quizId) {
     quiz.requiresBlueExamNetwork = false;
     quiz.blueSessionMode = 'helper-session';
     quiz.attendanceGateEnabled = attendanceGateEnabled;
+    quiz.antiCheatPolicy = readLmsAntiCheatPolicyFromAccessDialog(quiz);
     quiz.publishedAt = requestedMode === 'scheduled'
         ? (isLmsQuizVisibleToStudentsNow(quiz) ? (quiz.publishedAt || new Date().toISOString()) : null)
         : (quiz.publishedAt || new Date().toISOString());
@@ -265,39 +408,34 @@ function renderEmbeddedLmsQuizSectionCards(resourceKey, quizzes, quizUiState) {
         const lifecycle = getLmsQuizLifecycleStatus(quiz);
         const stats = getLmsQuizSubmissionStats(resourceKey, quiz);
         const allowCountLabel = `${stats.allowedCount}/${stats.totalEligible}`;
-        const statusColors = lifecycle === 'draft'
-            ? { bg: '#f8fafc', color: '#64748b' }
-            : lifecycle === 'published'
-                ? { bg: '#ecfdf5', color: '#047857' }
-                : { bg: '#fef2f2', color: '#b91c1c' };
         return `
-            <div data-quiz-id="${escapeHtml(quiz.id)}" style="background:white; border:1px solid #dbe7f5; border-radius:18px; padding:18px; box-shadow:0 14px 30px rgba(15, 23, 42, 0.05);">
-                <div style="display:flex; justify-content:space-between; gap:12px; align-items:flex-start; flex-wrap:wrap;">
+            <div data-quiz-id="${escapeHtml(quiz.id)}" class="lms-quiz-card">
+                <div class="lms-quiz-card-head">
                     <div>
-                        <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
-                            <span style="font-size:11px; font-weight:800; text-transform:uppercase; color:var(--lux-text-muted);">${escapeHtml(getLmsQuizDisplayLabel(quiz))}${quiz.weekLabel ? `  -  ${escapeHtml(quiz.weekLabel)}` : ''}</span>
-                            <span style="background:${statusColors.bg}; color:${statusColors.color}; padding:6px 10px; border-radius:999px; font-size:11px; font-weight:800;">${escapeHtml(lifecycle)}</span>
+                        <div class="lms-quiz-card-badges">
+                            <span class="lms-quiz-card-eyebrow">${escapeHtml(getLmsQuizDisplayLabel(quiz))}${quiz.weekLabel ? `  -  ${escapeHtml(quiz.weekLabel)}` : ''}</span>
+                            <span class="lms-quiz-card-status is-${escapeHtml(lifecycle)}">${escapeHtml(lifecycle)}</span>
                         </div>
-                        <div style="font-size:16px; font-weight:800; color:var(--kiu-navy); margin-top:6px;">${escapeHtml(quiz.title || 'Untitled Quiz')}</div>
-                        <div style="font-size:12px; color:var(--lux-text-muted); margin-top:4px;">${quiz.availableFrom ? `Starts ${escapeHtml(formatLmsDateTime(quiz.availableFrom))}` : 'Starts immediately'}${quiz.availableUntil ? `  -  Ends ${escapeHtml(formatLmsDateTime(quiz.availableUntil))}` : ''}</div>
-                        <div style="font-size:12px; color:var(--lux-text-muted); margin-top:4px;">Published by: ${escapeHtml(quiz.publishedBy || 'Not published yet')}</div>
+                        <div class="lms-quiz-card-title">${escapeHtml(quiz.title || 'Untitled Quiz')}</div>
+                        <div class="lms-quiz-card-meta">${quiz.availableFrom ? `Starts ${escapeHtml(formatLmsDateTime(quiz.availableFrom))}` : 'Starts immediately'}${quiz.availableUntil ? `  -  Ends ${escapeHtml(formatLmsDateTime(quiz.availableUntil))}` : ''}</div>
+                        <div class="lms-quiz-card-meta">Published by: ${escapeHtml(quiz.publishedBy || 'Not published yet')}</div>
                     </div>
-                    <div style="background:rgba(var(--lux-accent-rgb),0.06); color:var(--lux-text-muted); padding:6px 12px; border-radius:999px; font-size:12px; font-weight:800;">${escapeHtml(String(getAdminQuizTotalScore(quiz)))} pts</div>
+                    <div class="lms-quiz-card-score-pill">${escapeHtml(String(getAdminQuizTotalScore(quiz)))} pts</div>
                 </div>
-                <div style="display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:10px; margin-top:16px;">
-                    <div style="padding:12px; border-radius:14px; background:var(--lux-bg-soft); border:1px solid var(--lux-border);"><div style="font-size:10px; text-transform:uppercase; font-weight:800; color:var(--lux-text-muted);">Questions</div><div style="font-size:22px; font-weight:900; color:var(--kiu-navy); margin-top:4px;">${escapeHtml(String((quiz.questions || []).length))}</div></div>
-                    <div style="padding:12px; border-radius:14px; background:var(--lux-bg-soft); border:1px solid var(--lux-border);"><div style="font-size:10px; text-transform:uppercase; font-weight:800; color:var(--lux-text-muted);">Allowed</div><div style="font-size:22px; font-weight:900; color:var(--kiu-navy); margin-top:4px;">${escapeHtml(allowCountLabel)}</div></div>
-                    <div style="padding:12px; border-radius:14px; background:var(--lux-bg-soft); border:1px solid var(--lux-border);"><div style="font-size:10px; text-transform:uppercase; font-weight:800; color:var(--lux-text-muted);">Pending Review</div><div style="font-size:22px; font-weight:900; color:var(--kiu-navy); margin-top:4px;">${escapeHtml(String(stats.pendingReviewCount))}</div></div>
-                    <div style="padding:12px; border-radius:14px; background:var(--lux-bg-soft); border:1px solid var(--lux-border);"><div style="font-size:10px; text-transform:uppercase; font-weight:800; color:var(--lux-text-muted);">Graded</div><div style="font-size:22px; font-weight:900; color:var(--kiu-navy); margin-top:4px;">${escapeHtml(String(stats.gradedCount))}</div></div>
+                <div class="lms-quiz-card-stats">
+                    <div class="lms-quiz-card-stat"><div class="lms-quiz-card-stat-label">Questions</div><div class="lms-quiz-card-stat-value">${escapeHtml(String((quiz.questions || []).length))}</div></div>
+                    <div class="lms-quiz-card-stat"><div class="lms-quiz-card-stat-label">Allowed</div><div class="lms-quiz-card-stat-value">${escapeHtml(allowCountLabel)}</div></div>
+                    <div class="lms-quiz-card-stat"><div class="lms-quiz-card-stat-label">Pending Review</div><div class="lms-quiz-card-stat-value">${escapeHtml(String(stats.pendingReviewCount))}</div></div>
+                    <div class="lms-quiz-card-stat"><div class="lms-quiz-card-stat-label">Graded</div><div class="lms-quiz-card-stat-value">${escapeHtml(String(stats.gradedCount))}</div></div>
                 </div>
-                <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:16px;">
+                <div class="lms-quiz-card-actions">
                     ${lifecycle === 'draft'
-                        ? `<button class="kiu-btn-outline" data-lms-click="loadAdminQuizForEdit(${jsQuote(quiz.id)})" style="padding:9px 14px; font-size:12px;"><i class="fas fa-pen"></i> Edit Draft</button>
-                           <button class="kiu-btn-blue" data-lms-click="openLmsQuizAccessDialog(${jsQuote(resourceKey)}, ${jsQuote(quiz.id)})" style="padding:9px 14px; font-size:12px;"><i class="fas fa-paper-plane"></i> Publish</button>
-                           <button class="kiu-btn-outline" data-lms-click="deleteAdminQuiz(${jsQuote(quiz.id)})" style="padding:9px 14px; font-size:12px; color:#dc2626; border-color:#fecaca;"><i class="fas fa-trash"></i> Delete Draft</button>`
-                        : `<button class="kiu-btn-outline" data-lms-click="toggleLmsQuizReviewPanel(${jsQuote(resourceKey)}, ${jsQuote(quiz.id)})" style="padding:9px 14px; font-size:12px;"><i class="fas fa-users"></i> View Submissions</button>
-                           <button class="kiu-btn-outline" data-lms-click="openLmsQuizAccessDialog(${jsQuote(resourceKey)}, ${jsQuote(quiz.id)})" style="padding:9px 14px; font-size:12px;"><i class="fas fa-user-check"></i> Manage Access</button>
-                           ${lifecycle === 'published' ? `<button class="kiu-btn-outline" data-lms-click="closeLmsQuiz(${jsQuote(resourceKey)}, ${jsQuote(quiz.id)})" style="padding:9px 14px; font-size:12px; color:var(--lux-text-muted); border-color:#fed7aa;"><i class="fas fa-stop-circle"></i> Close Quiz</button>` : ''}`
+                        ? `<button class="kiu-btn-outline lms-quiz-card-action" data-lms-click="loadAdminQuizForEdit(${jsQuote(quiz.id)})"><i class="fas fa-pen"></i> Edit Draft</button>
+                           <button class="kiu-btn-blue lms-quiz-card-action" data-lms-click="openLmsQuizAccessDialog(${jsQuote(resourceKey)}, ${jsQuote(quiz.id)})"><i class="fas fa-paper-plane"></i> Publish</button>
+                           <button class="kiu-btn-outline lms-quiz-card-action lms-quiz-card-action-danger" data-lms-click="deleteAdminQuiz(${jsQuote(quiz.id)})"><i class="fas fa-trash"></i> Delete Draft</button>`
+                        : `<button class="kiu-btn-outline lms-quiz-card-action" data-lms-click="toggleLmsQuizReviewPanel(${jsQuote(resourceKey)}, ${jsQuote(quiz.id)})"><i class="fas fa-users"></i> View Submissions</button>
+                           <button class="kiu-btn-outline lms-quiz-card-action" data-lms-click="openLmsQuizAccessDialog(${jsQuote(resourceKey)}, ${jsQuote(quiz.id)})"><i class="fas fa-user-check"></i> Manage Access</button>
+                           ${lifecycle === 'published' ? `<button class="kiu-btn-outline lms-quiz-card-action lms-quiz-card-action-warning" data-lms-click="closeLmsQuiz(${jsQuote(resourceKey)}, ${jsQuote(quiz.id)})"><i class="fas fa-stop-circle"></i> Close Quiz</button>` : ''}`
                     }
                 </div>
                 
@@ -310,17 +448,17 @@ function renderEmbeddedLmsQuizSectionCards(resourceKey, quizzes, quizUiState) {
     const closed = quizzes.filter(quiz => getLmsQuizLifecycleStatus(quiz) === 'closed');
     const reviewQueue = quizzes.filter(quiz => getLmsQuizSubmissionStats(resourceKey, quiz).pendingReviewCount > 0);
     const renderGroup = (title, description, items) => `
-        <div style="display:grid; gap:14px;">
-            <div>
-                <div style="font-size:12px; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; color:var(--lux-text-muted);">${title}</div>
-                <div style="font-size:13px; color:var(--lux-text-muted); margin-top:4px;">${description}</div>
+        <div class="lms-quiz-card-group">
+            <div class="lms-quiz-card-group-head">
+                <div class="lms-quiz-card-group-title">${title}</div>
+                <div class="lms-quiz-card-group-copy">${description}</div>
             </div>
-            ${items.length ? items.map(renderQuizCard).join('') : `<div style="background:white; border:1px dashed #cbd5e1; border-radius:18px; padding:24px; text-align:center; color:var(--lux-text-muted);">Nothing here yet.</div>`}
+            ${items.length ? items.map(renderQuizCard).join('') : `<div class="lms-quiz-card-empty">Nothing here yet.</div>`}
         </div>
     `;
 
     return `
-        <div style="display:grid; gap:18px;">
+        <div class="lms-quiz-card-group-list">
             ${renderGroup('Draft Quizzes', 'Drafts are visible to staff only until you publish them to the selected students in class.', drafts)}
             ${renderGroup('Published Quizzes', 'Published quizzes are visible to allowed students only and are locked from editing.', published)}
             ${renderGroup('Review Queue', 'These quizzes already have student submissions waiting for TA or professor review.', reviewQueue)}
@@ -388,8 +526,7 @@ function updateLmsPostSubmitLockCountdowns() {
             node.textContent = `Available again in ${formatCountdownDuration(remainingMs)} after submission.`;
             if (button) {
                 button.disabled = true;
-                button.style.opacity = '0.55';
-                button.style.cursor = 'not-allowed';
+                button.classList.add('is-locked');
             }
             return;
         }
@@ -397,8 +534,7 @@ function updateLmsPostSubmitLockCountdowns() {
         if (button) {
             const unlockedLabel = String(button.getAttribute('data-unlocked-label') || 'View Quiz');
             button.disabled = false;
-            button.style.opacity = '';
-            button.style.cursor = '';
+            button.classList.remove('is-locked');
             button.innerHTML = `<i class="fas fa-arrow-right"></i> ${escapeHtml(unlockedLabel)}`;
         }
         node.removeAttribute('data-lms-post-submit-lock');
@@ -442,21 +578,19 @@ function decorateLmsPostSubmitLockedQuizCards(container, quizzes, resourceKey, s
             statusNode.setAttribute('data-lms-post-submit-lock', 'true');
             statusNode.setAttribute('data-lock-until', lockUntil.toISOString());
             statusNode.setAttribute('data-lock-button', buttonId);
-            statusNode.style.color = '#b45309';
-            statusNode.style.fontWeight = '800';
+            statusNode.classList.add('is-warning');
             statusNode.textContent = getLmsQuizPostSubmitLockMessage(submission);
             actionButton.disabled = true;
-            actionButton.style.opacity = '0.55';
-            actionButton.style.cursor = 'not-allowed';
+            actionButton.classList.add('is-locked');
             actionButton.innerHTML = '<i class="fas fa-clock"></i> Locked After Submit';
             return;
         }
         statusNode.removeAttribute('data-lms-post-submit-lock');
         statusNode.removeAttribute('data-lock-until');
         statusNode.removeAttribute('data-lock-button');
+        statusNode.classList.remove('is-warning');
         actionButton.disabled = false;
-        actionButton.style.opacity = '';
-        actionButton.style.cursor = '';
+        actionButton.classList.remove('is-locked');
         actionButton.innerHTML = `<i class="fas fa-arrow-right"></i> ${escapeHtml(actionLabel)}`;
     });
     startActiveLmsPostSubmitLockInterval();
@@ -500,26 +634,8 @@ function buildEmptyLmsStudentQuizFocusState() {
 }
 
 function ensureLmsStudentQuizFocusStyles() {
-    if (document.getElementById('kiu-lms-quiz-focus-styles')) return;
-    const style = document.createElement('style');
-    style.id = 'kiu-lms-quiz-focus-styles';
-    style.textContent = `
-        body.kiu-lms-quiz-focus-active #mobile-bottom-nav,
-        body.kiu-lms-quiz-focus-active #top-nav,
-        body.kiu-lms-quiz-focus-active #prof-nav,
-        body.kiu-lms-quiz-focus-active #admin-nav,
-        body.kiu-lms-quiz-focus-active #service-nav,
-        body.kiu-lms-quiz-focus-active .lux-topbar,
-        body.kiu-lms-quiz-focus-active .lux-sidebar,
-        body.kiu-lms-quiz-focus-active .portal-msg-fab,
-        body.kiu-lms-quiz-focus-active .portal-notif-fab {
-            display: none !important;
-        }
-        body.kiu-lms-quiz-focus-active {
-            overflow-x: hidden;
-        }
-    `;
-    document.head.appendChild(style);
+    // Explicit owner: assets/css/lms-route.css
+    return;
 }
 
 function syncLmsStudentQuizFocusChrome(state = null) {
@@ -586,7 +702,7 @@ function disableLmsStudentQuizFocusMode() {
 }
 
 function getCurrentLmsActiveTab() {
-    const activeTab = document.querySelector('#page-lms-inner .tab.active');
+    const activeTab = document.querySelector('#page-lms-inner [data-lms-tab].is-active');
     return activeTab ? String(activeTab.id || '').replace(/^tab-/, '') : 'interaction';
 }
 
@@ -716,6 +832,11 @@ function getLmsQuizBuilderDraft(resourceKey = currentLmsQuizCourseKey || current
     return getLmsQuizBuilderEditorState(resourceKey)?.editorDraft || null;
 }
 
+function isLmsQuizTabActive(quizTab) {
+    if (!quizTab?.classList) return false;
+    return quizTab.classList.contains('is-active') || quizTab.classList.contains('active');
+}
+
 function resetLmsQuizBuilderDraft(resourceKey = currentLmsQuizCourseKey || currentCourseId) {
     const context = resolveLmsQuizWorkspace(resourceKey);
     if (!context?.resourceKey) return;
@@ -723,13 +844,23 @@ function resetLmsQuizBuilderDraft(resourceKey = currentLmsQuizCourseKey || curre
     uiState.editorDraft = createLmsQuizBuilderDraft(context);
     uiState.activeQuestionId = uiState.editorDraft.questions[0]?.id || null;
     uiState.activeVariantId = null;
+    rerenderCurrentLmsQuizWorkspace();
 }
 
 function rerenderCurrentLmsQuizWorkspace() {
     const quizTab = document.getElementById('tab-quiz');
     const contentArea = document.getElementById('lms-content-area');
-    if (!quizTab || !contentArea || !quizTab.classList.contains('active')) return;
+    if (!quizTab || !contentArea || !isLmsQuizTabActive(quizTab)) return;
     renderLmsQuizSection(currentLmsQuizCourseKey || currentCourseId);
+    if (typeof window.syncLmsTabRenderCacheFromDom === 'function') {
+        const sectionType = typeof getCurrentLmsSectionType === 'function'
+            ? getCurrentLmsSectionType()
+            : '';
+        const courseKey = typeof getLmsTabCourseKey === 'function'
+            ? getLmsTabCourseKey('quiz')
+            : (currentLmsQuizCourseKey || currentCourseId);
+        window.syncLmsTabRenderCacheFromDom('quiz', courseKey, sectionType);
+    }
 }
 
 function getActiveLmsQuizBuilderQuestion(resourceKey = currentLmsQuizCourseKey || currentCourseId) {
@@ -1056,6 +1187,19 @@ function getLmsQuizStatusBadge(status) {
         closed: { label: 'Closed', bg: '#fef2f2', color: '#dc2626' }
     };
     return meta[status] || meta.draft;
+}
+
+function getLmsQuizStatusToneClass(status) {
+    const toneMap = {
+        draft: 'is-draft',
+        upcoming: 'is-upcoming',
+        open: 'is-open',
+        'in-progress': 'is-in-progress',
+        submitted: 'is-submitted',
+        graded: 'is-graded',
+        closed: 'is-closed'
+    };
+    return toneMap[String(status || 'draft')] || 'is-draft';
 }
 
 function loadLmsQuizDraftForEdit(quizId) {
@@ -1421,65 +1565,60 @@ function renderLmsQuizLifecycleCard(context, quiz, sectionType) {
     const latestAlertLabel = stats.latestAlert
         ? `${stats.latestAlert.note || stats.latestAlert.type || 'Monitoring event'}  -  ${formatLmsDateTime(stats.latestAlert.createdAt)}`
         : '';
-    const statusColors = lifecycle === 'draft'
-        ? { bg: '#f8fafc', color: '#64748b' }
-        : lifecycle === 'published'
-            ? { bg: '#ecfdf5', color: '#047857' }
-            : { bg: '#fef2f2', color: '#b91c1c' };
     const showReviewPanel = false;
     return `
-        <div data-quiz-id="${escapeHtml(quiz.id)}" style="background:white; border:1px solid #dbe7f5; border-radius:18px; padding:18px; box-shadow:0 14px 30px rgba(15, 23, 42, 0.05);">
-            <div style="display:flex; justify-content:space-between; gap:12px; align-items:flex-start; flex-wrap:wrap;">
+        <div data-quiz-id="${escapeHtml(quiz.id)}" class="lms-quiz-card">
+            <div class="lms-quiz-card-head">
                 <div>
-                    <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
-                        <span style="font-size:11px; font-weight:800; text-transform:uppercase; color:var(--lux-text-muted);">${escapeHtml(getLmsQuizDisplayLabel(quiz))}${quiz.weekLabel ? `  -  ${escapeHtml(quiz.weekLabel)}` : ''}</span>
-                        <span style="background:${statusColors.bg}; color:${statusColors.color}; padding:6px 10px; border-radius:999px; font-size:11px; font-weight:800;">${escapeHtml(lifecycle)}</span>
-                        ${quiz.variantEnabled ? `<span style="background:rgba(var(--lux-accent-rgb),0.05); color:var(--lux-accent); padding:6px 10px; border-radius:999px; font-size:11px; font-weight:800;">Variant Set</span>` : ''}
-                        ${hasLiveAlerts ? `<span style="display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border-radius:999px; background:rgba(220,38,38,0.06); color:#dc2626; font-size:11px; font-weight:900; border:1px solid rgba(239,68,68,0.18);"><span class="lms-monitor-pulse-dot"></span> Live Alert</span>` : ''}
+                    <div class="lms-quiz-card-badges">
+                        <span class="lms-quiz-card-eyebrow">${escapeHtml(getLmsQuizDisplayLabel(quiz))}${quiz.weekLabel ? `  -  ${escapeHtml(quiz.weekLabel)}` : ''}</span>
+                        <span class="lms-quiz-card-status is-${escapeHtml(lifecycle)}">${escapeHtml(lifecycle)}</span>
+                        ${quiz.variantEnabled ? `<span class="lms-quiz-card-pill-accent">Variant Set</span>` : ''}
+                        ${hasLiveAlerts ? `<span class="lms-quiz-card-pill-alert"><span class="lms-monitor-pulse-dot"></span> Live Alert</span>` : ''}
                     </div>
-                    <div style="font-size:16px; font-weight:800; color:var(--kiu-navy); margin-top:6px;">${escapeHtml(quiz.title || 'Untitled Quiz')}</div>
-                        <div style="font-size:12px; color:var(--lux-text-muted); margin-top:4px;">${quiz.availableFrom ? `Starts ${escapeHtml(formatLmsDateTime(quiz.availableFrom))}` : 'Starts immediately'}${quiz.availableUntil ? `  -  Ends ${escapeHtml(formatLmsDateTime(quiz.availableUntil))}` : ''}${variantSummary ? `  -  ${escapeHtml(variantSummary)}` : ''}</div>
-                    <div style="font-size:12px; color:var(--lux-text-muted); margin-top:4px;">Published by: ${escapeHtml(quiz.publishedBy || 'Not published yet')}</div>
-                    ${getLmsQuizLifecycleStatus(quiz) !== 'draft' ? `<div style="font-size:11px; color:var(--lux-text-muted); margin-top:6px;">Mode: ${escapeHtml(String(quiz.publishMode || 'manual') === 'scheduled' ? 'Automatic publish and end by time' : 'Manual publish with manual end')}</div>` : ''}
+                    <div class="lms-quiz-card-title">${escapeHtml(quiz.title || 'Untitled Quiz')}</div>
+                    <div class="lms-quiz-card-meta">${quiz.availableFrom ? `Starts ${escapeHtml(formatLmsDateTime(quiz.availableFrom))}` : 'Starts immediately'}${quiz.availableUntil ? `  -  Ends ${escapeHtml(formatLmsDateTime(quiz.availableUntil))}` : ''}${variantSummary ? `  -  ${escapeHtml(variantSummary)}` : ''}</div>
+                    <div class="lms-quiz-card-meta">Published by: ${escapeHtml(quiz.publishedBy || 'Not published yet')}</div>
+                    ${getLmsQuizLifecycleStatus(quiz) !== 'draft' ? `<div class="lms-quiz-card-mode">Mode: ${escapeHtml(String(quiz.publishMode || 'manual') === 'scheduled' ? 'Automatic publish and end by time' : 'Manual publish with manual end')}</div>` : ''}
                 </div>
-                <div style="background:rgba(var(--lux-accent-rgb),0.06); color:var(--lux-text-muted); padding:6px 12px; border-radius:999px; font-size:12px; font-weight:800;">${escapeHtml(String(getAdminQuizTotalScore(quiz)))} pts</div>
+                <div class="lms-quiz-card-score-pill">${escapeHtml(String(getAdminQuizTotalScore(quiz)))} pts</div>
             </div>
-            ${hasLiveAlerts ? `<div style="margin-top:14px; padding:14px 16px; border-radius:16px; background:rgba(var(--lux-accent-rgb),0.06); border:1px solid rgba(249,115,22,0.22); color:var(--lux-text-muted);">
-                <div style="display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; align-items:center;">
-                    <div style="font-size:13px; font-weight:800; display:flex; align-items:center; gap:8px;"><span class="lms-monitor-pulse-dot"></span> Live Alert: ${stats.alertCount} warning${stats.alertCount === 1 ? '' : 's'} across ${stats.alertedStudents} student${stats.alertedStudents === 1 ? '' : 's'}</div>
-                    <div style="font-size:11px; font-weight:800; color:var(--lux-text-muted);">Monitor this quiz now</div>
+            ${hasLiveAlerts ? `<div class="lms-quiz-card-alert-panel">
+                <div class="lms-quiz-card-alert-head">
+                    <div class="lms-quiz-card-alert-title"><span class="lms-monitor-pulse-dot"></span> Live Alert: ${stats.alertCount} warning${stats.alertCount === 1 ? '' : 's'} across ${stats.alertedStudents} student${stats.alertedStudents === 1 ? '' : 's'}</div>
+                    <div class="lms-quiz-card-alert-copy">Monitor this quiz now</div>
                 </div>
-                ${latestAlertLabel ? `<div style="font-size:12px; margin-top:6px; color:var(--lux-text-muted);">Latest: ${escapeHtml(latestAlertLabel)}</div>` : ''}
+                ${latestAlertLabel ? `<div class="lms-quiz-card-alert-latest">Latest: ${escapeHtml(latestAlertLabel)}</div>` : ''}
             </div>` : ''}
-            <div style="display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:10px; margin-top:16px;">
-                <div style="padding:12px; border-radius:14px; background:var(--lux-bg-soft); border:1px solid var(--lux-border);"><div style="font-size:10px; text-transform:uppercase; font-weight:800; color:var(--lux-text-muted);">${quiz.variantEnabled ? 'Base Pool' : 'Questions'}</div><div style="font-size:22px; font-weight:900; color:var(--kiu-navy); margin-top:4px;">${escapeHtml(String((quiz.questions || []).length))}</div></div>
-                <div style="padding:12px; border-radius:14px; background:var(--lux-bg-soft); border:1px solid var(--lux-border);"><div style="font-size:10px; text-transform:uppercase; font-weight:800; color:var(--lux-text-muted);">Allowed</div><div style="font-size:22px; font-weight:900; color:var(--kiu-navy); margin-top:4px;">${escapeHtml(allowCountLabel)}</div></div>
-                <div style="padding:12px; border-radius:14px; background:var(--lux-bg-soft); border:1px solid var(--lux-border);"><div style="font-size:10px; text-transform:uppercase; font-weight:800; color:var(--lux-text-muted);">Pending Review</div><div style="font-size:22px; font-weight:900; color:var(--kiu-navy); margin-top:4px;">${escapeHtml(String(stats.pendingReviewCount))}</div></div>
-                <div style="padding:12px; border-radius:14px; background:${hasLiveAlerts ? '#fff7ed' : '#f8fbff'}; border:1px solid ${hasLiveAlerts ? 'rgba(249,115,22,0.22)' : '#e2e8f0'};"><div style="font-size:10px; text-transform:uppercase; font-weight:800; color:${hasLiveAlerts ? '#c2410c' : '#64748b'};">${hasLiveAlerts ? 'Live Alerts' : (quiz.variantEnabled ? 'Variants' : 'Graded')}</div><div style="font-size:22px; font-weight:900; color:${hasLiveAlerts ? '#9a3412' : 'var(--kiu-navy)'}; margin-top:4px;">${escapeHtml(String(hasLiveAlerts ? stats.alertCount : (quiz.variantEnabled ? ((quiz.variants || []).length || 0) : stats.gradedCount)))}</div></div>
+            <div class="lms-quiz-card-stats">
+                <div class="lms-quiz-card-stat"><div class="lms-quiz-card-stat-label">${quiz.variantEnabled ? 'Base Pool' : 'Questions'}</div><div class="lms-quiz-card-stat-value">${escapeHtml(String((quiz.questions || []).length))}</div></div>
+                <div class="lms-quiz-card-stat"><div class="lms-quiz-card-stat-label">Allowed</div><div class="lms-quiz-card-stat-value">${escapeHtml(allowCountLabel)}</div></div>
+                <div class="lms-quiz-card-stat"><div class="lms-quiz-card-stat-label">Pending Review</div><div class="lms-quiz-card-stat-value">${escapeHtml(String(stats.pendingReviewCount))}</div></div>
+                <div class="lms-quiz-card-stat ${hasLiveAlerts ? 'is-alert' : ''}"><div class="lms-quiz-card-stat-label">${hasLiveAlerts ? 'Live Alerts' : (quiz.variantEnabled ? 'Variants' : 'Graded')}</div><div class="lms-quiz-card-stat-value">${escapeHtml(String(hasLiveAlerts ? stats.alertCount : (quiz.variantEnabled ? ((quiz.variants || []).length || 0) : stats.gradedCount)))}</div></div>
             </div>
-            <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:16px;">
+            <div class="lms-quiz-card-actions">
                 ${sectionType === 'draft'
-                    ? `<button class="kiu-btn-outline" data-lms-click="loadLmsQuizDraftForEdit(${jsQuote(quiz.id)})" style="padding:9px 14px; font-size:12px;"><i class="fas fa-pen"></i> Edit Draft</button>
-                       <button class="kiu-btn-blue" data-lms-click="openLmsQuizAccessDialog(${jsQuote(context.resourceKey)}, ${jsQuote(quiz.id)})" style="padding:9px 14px; font-size:12px;"><i class="fas fa-paper-plane"></i> Publish</button>
-                       <button class="kiu-btn-outline" data-lms-click="deleteLmsQuizDraft(${jsQuote(quiz.id)})" style="padding:9px 14px; font-size:12px; color:#dc2626; border-color:#fecaca;"><i class="fas fa-trash"></i> Delete Draft</button>`
-                    : `<button class="kiu-btn-outline" data-lms-click="toggleLmsQuizReviewPanel(${jsQuote(context.resourceKey)}, ${jsQuote(quiz.id)})" style="padding:9px 14px; font-size:12px;"><i class="fas fa-users"></i> View Submissions</button>
-                       <button class="kiu-btn-outline" data-lms-click="exportLmsQuizMonitoringLog(${jsQuote(context.resourceKey)}, ${jsQuote(quiz.id)})" style="padding:9px 14px; font-size:12px;"><i class="fas fa-file-export"></i> Export Monitoring</button>
-                       <button class="kiu-btn-outline" data-lms-click="openLmsQuizAccessDialog(${jsQuote(context.resourceKey)}, ${jsQuote(quiz.id)})" style="padding:9px 14px; font-size:12px;"><i class="fas fa-user-check"></i> Manage Access</button>
-                       ${lifecycle === 'published' ? `<button class="kiu-btn-outline" data-lms-click="closeLmsQuiz(${jsQuote(context.resourceKey)}, ${jsQuote(quiz.id)})" style="padding:9px 14px; font-size:12px; color:var(--lux-text-muted); border-color:#fed7aa;"><i class="fas fa-stop-circle"></i> Close Quiz</button>` : ''}`}
+                    ? `<button class="kiu-btn-outline lms-quiz-card-action" data-lms-click="loadLmsQuizDraftForEdit(${jsQuote(quiz.id)})"><i class="fas fa-pen"></i> Edit Draft</button>
+                       <button class="kiu-btn-blue lms-quiz-card-action" data-lms-click="openLmsQuizAccessDialog(${jsQuote(context.resourceKey)}, ${jsQuote(quiz.id)})"><i class="fas fa-paper-plane"></i> Publish</button>
+                       <button class="kiu-btn-outline lms-quiz-card-action lms-quiz-card-action-danger" data-lms-click="deleteLmsQuizDraft(${jsQuote(quiz.id)})"><i class="fas fa-trash"></i> Delete Draft</button>`
+                    : `<button class="kiu-btn-outline lms-quiz-card-action" data-lms-click="toggleLmsQuizReviewPanel(${jsQuote(context.resourceKey)}, ${jsQuote(quiz.id)})"><i class="fas fa-users"></i> View Submissions</button>
+                       <button class="kiu-btn-outline lms-quiz-card-action" data-lms-click="exportLmsQuizMonitoringLog(${jsQuote(context.resourceKey)}, ${jsQuote(quiz.id)})"><i class="fas fa-file-export"></i> Export Monitoring</button>
+                       <button class="kiu-btn-outline lms-quiz-card-action" data-lms-click="openLmsQuizAccessDialog(${jsQuote(context.resourceKey)}, ${jsQuote(quiz.id)})"><i class="fas fa-user-check"></i> Manage Access</button>
+                       ${lifecycle === 'published' ? `<button class="kiu-btn-outline lms-quiz-card-action lms-quiz-card-action-warning" data-lms-click="closeLmsQuiz(${jsQuote(context.resourceKey)}, ${jsQuote(quiz.id)})"><i class="fas fa-stop-circle"></i> Close Quiz</button>` : ''}`}
             </div>
-            ${variantAssignments.length ? `<div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:14px;">${variantAssignments.map(entry => `<span style="display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border-radius:999px; background:var(--lux-bg-soft); color:var(--lux-text-muted); border:1px solid #dbe7f5; font-size:11px; font-weight:800;">${escapeHtml(entry.label)}  -  ${entry.count} student${entry.count === 1 ? '' : 's'}</span>`).join('')}</div>` : ''}
+            ${variantAssignments.length ? `<div class="lms-quiz-card-variant-list">${variantAssignments.map(entry => `<span class="lms-quiz-card-variant-pill">${escapeHtml(entry.label)}  -  ${entry.count} student${entry.count === 1 ? '' : 's'}</span>`).join('')}</div>` : ''}
         </div>
     `;
 }
 
 function renderLmsQuizBoardSection(title, description, itemsMarkup) {
     return `
-        <div style="display:grid; gap:14px;">
-            <div>
-                <div style="font-size:12px; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; color:var(--lux-text-muted);">${title}</div>
-                <div style="font-size:13px; color:var(--lux-text-muted); margin-top:4px;">${description}</div>
+        <div class="lms-quiz-card-group">
+            <div class="lms-quiz-card-group-head">
+                <div class="lms-quiz-card-group-title">${title}</div>
+                <div class="lms-quiz-card-group-copy">${description}</div>
             </div>
-            ${itemsMarkup || '<div style="background:white; border:1px dashed #cbd5e1; border-radius:18px; padding:24px; text-align:center; color:var(--lux-text-muted);">Nothing here yet.</div>'}
+            ${itemsMarkup || '<div class="lms-quiz-card-empty">Nothing here yet.</div>'}
         </div>
     `;
 }
@@ -1556,33 +1695,8 @@ function getLmsQuizWorkspaceAlertSummary(resourceKey) {
 }
 
 function ensureLmsMonitoringVisualStyles() {
-    if (document.getElementById('lms-monitoring-visual-styles')) return;
-    const style = document.createElement('style');
-    style.id = 'lms-monitoring-visual-styles';
-    style.textContent = `
-        @keyframes lmsMonitorPulse {
-            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.55); opacity: 0.95; }
-            70% { transform: scale(1.08); box-shadow: 0 0 0 12px rgba(239, 68, 68, 0); opacity: 1; }
-            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); opacity: 0.95; }
-        }
-        .lms-monitor-pulse-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 999px;
-            background:#dc2626;
-            display: inline-block;
-            animation: lmsMonitorPulse 1.6s infinite;
-        }
-        @keyframes lmsMonitorFlash {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.0); }
-            30% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0.16); }
-            60% { box-shadow: 0 0 0 14px rgba(239, 68, 68, 0.06); }
-        }
-        .lms-monitor-flash-panel {
-            animation: lmsMonitorFlash 1.8s ease-in-out 3;
-        }
-    `;
-    document.head.appendChild(style);
+    // Explicit owner: assets/css/lms-route.css
+    return;
 }
 
 function getLmsQuizLiveMonitorEntries(resourceKey, options = {}) {
@@ -1637,10 +1751,10 @@ function renderLmsQuizBoardPagePreview(context, page = 'drafts', limit = 3) {
     const previewItems = getRecentLmsQuizCards(meta.items, limit);
     const cards = previewItems.map(quiz => renderLmsQuizLifecycleCard(context, quiz, meta.sectionType)).join('');
     const summary = meta.items.length > limit
-        ? `<div style="font-size:12px; color:var(--lux-text-muted);">Showing latest ${previewItems.length} of ${meta.items.length} quizzes.</div>`
+        ? `<div class="lms-quiz-board-preview-copy">Showing latest ${previewItems.length} of ${meta.items.length} quizzes.</div>`
         : '';
     return `
-        <div style="display:grid; gap:14px;">
+        <div class="lms-quiz-card-group">
             ${renderLmsQuizBoardSection(meta.title, meta.description, cards)}
             ${summary}
         </div>
@@ -1697,36 +1811,36 @@ function openLmsQuizBoardModal(page = null) {
     closeLmsQuizFloatingLayers();
     const overlay = document.createElement('div');
     overlay.id = 'lms-quiz-board-modal';
-    overlay.style.cssText = 'position:fixed; inset:0; z-index:7800; background:rgba(15,23,42,0.74); backdrop-filter:blur(4px); display:flex; align-items:center; justify-content:center; padding:18px;';
+    overlay.className = 'lms-quiz-board-overlay';
     overlay.onclick = event => {
         if (event.target === overlay) closeLmsQuizBoardModal();
     };
     overlay.innerHTML = `
-        <div style="width:min(1380px, 100%); height:min(90vh, 100%); background:var(--lux-bg-soft); border-radius:28px; border:1px solid rgba(148,163,184,0.18); box-shadow:0 28px 80px rgba(15,23,42,0.35); overflow:hidden; display:grid; grid-template-rows:auto 1fr;">
-            <div style="padding:18px 22px; background:linear-gradient(135deg, var(--kiu-navy), var(--kiu-blue)); color:white; display:flex; align-items:flex-start; justify-content:space-between; gap:12px;">
-                <div>
-                    <div style="font-size:12px; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; opacity:0.8;">Quiz Board</div>
-                    <div style="font-size:24px; font-weight:900; margin-top:6px;">${escapeHtml(meta.title)}  -  ${escapeHtml(context.subject?.name || context.courseId)}  -  ${escapeHtml(context.group?.name || context.groupId)}</div>
-                    <div style="font-size:13px; opacity:0.92; margin-top:6px;">${escapeHtml(meta.description)}</div>
+        <div class="lms-quiz-board-modal">
+            <div class="lms-quiz-board-head">
+                <div class="lms-quiz-board-head-copy">
+                    <div class="lms-quiz-board-kicker">Quiz Board</div>
+                    <div class="lms-quiz-board-title">${escapeHtml(meta.title)}  -  ${escapeHtml(context.subject?.name || context.courseId)}  -  ${escapeHtml(context.group?.name || context.groupId)}</div>
+                    <div class="lms-quiz-board-copy">${escapeHtml(meta.description)}</div>
                 </div>
-                <button type="button" class="kiu-btn-outline" data-lms-click="closeLmsQuizBoardModal()" style="border-color:rgba(255,255,255,0.35); color:white; background:rgba(255,255,255,0.08);"><i class="fas fa-times"></i> Close</button>
+                <button type="button" class="kiu-btn-outline lms-quiz-board-close-btn" data-lms-click="closeLmsQuizBoardModal()"><i class="fas fa-times"></i> Close</button>
             </div>
-            <div style="padding:22px; overflow:auto; display:grid; gap:18px;">
-                <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
-                    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <div class="lms-quiz-board-body">
+                <div class="lms-quiz-board-toolbar">
+                    <div class="lms-quiz-board-tabs">
                         ${modalTabs.map(tab => `
-                            <button type="button" data-lms-click="openLmsQuizBoardModal(${jsQuote(tab.key)})" class="${targetPage === tab.key ? 'kiu-btn-blue' : 'kiu-btn-outline'}" style="padding:10px 14px; font-size:12px; border-radius:999px;">
+                            <button type="button" data-lms-click="openLmsQuizBoardModal(${jsQuote(tab.key)})" class="${targetPage === tab.key ? 'kiu-btn-blue' : 'kiu-btn-outline'} lms-quiz-board-tab">
                                 ${escapeHtml(tab.label)}
                             </button>
                         `).join('')}
                     </div>
-                    <div style="background:white; border:1px solid #dbe7f5; border-radius:999px; padding:10px 14px; font-size:12px; font-weight:800; color:var(--lux-text-muted);">
+                    <div class="lms-quiz-board-count-pill">
                         ${escapeHtml(String(meta.items.length))} total in this section
                     </div>
                 </div>
                 ${meta.items.length
                     ? meta.items.map(quiz => renderLmsQuizLifecycleCard(context, quiz, meta.sectionType)).join('')
-                    : '<div style="background:white; border:1px dashed #cbd5e1; border-radius:18px; padding:30px; text-align:center; color:var(--lux-text-muted);">Nothing here yet.</div>'}
+                    : '<div class="lms-quiz-board-empty">Nothing here yet.</div>'}
             </div>
         </div>
     `;
@@ -1888,34 +2002,34 @@ function renderLmsStaffQuizWorkspace(context) {
             : (Boolean(String(question.text || '').trim()) && !(question.options || []).slice(0, question.optionCount || 0).some(option => !String(option || '').trim()));
         const isActive = question.id === activeQuestion?.id;
         return `
-            <button type="button" data-lms-click="setActiveLmsQuizBuilderQuestion(${jsQuote(question.id)})" style="display:flex; align-items:center; justify-content:space-between; gap:10px; width:100%; padding:12px 14px; border:1px solid ${isActive ? '#60a5fa' : '#dbe7f5'}; border-radius:16px; background:${isActive ? 'linear-gradient(135deg, #eff6ff, #dbeafe)' : '#ffffff'}; color:var(--lux-text); cursor:pointer; text-align:left; box-shadow:${isActive ? '0 12px 28px rgba(37,99,235,0.12)' : 'none'};">
-                <span style="font-size:12px; font-weight:800;">Q${index + 1}</span>
-                <span style="font-size:10px; font-weight:800; color:var(--lux-text-muted);">${String(question.type || 'mcq') === 'written' ? 'Written' : 'MCQ'}</span>
-                <span style="font-size:10px; font-weight:800; color:${complete ? '#047857' : '#c2410c'};">${complete ? 'Ready' : 'Draft'}</span>
+            <button type="button" data-lms-click="setActiveLmsQuizBuilderQuestion(${jsQuote(question.id)})" class="lms-quiz-question-nav-btn ${isActive ? 'is-active' : ''}">
+                <span class="lms-quiz-question-nav-index">Q${index + 1}</span>
+                <span class="lms-quiz-question-nav-type">${String(question.type || 'mcq') === 'written' ? 'Written' : 'MCQ'}</span>
+                <span class="lms-quiz-question-nav-state ${complete ? 'is-ready' : 'is-draft'}">${complete ? 'Ready' : 'Draft'}</span>
             </button>
         `;
     }).join('');
     const activeQuestionType = String(activeQuestion?.type || 'mcq');
     const activeOptionControls = activeQuestion && activeQuestionType !== 'written'
         ? Array.from({ length: activeQuestion.optionCount || 0 }, (_, optionIndex) => `
-            <div style="display:flex; align-items:center; gap:10px; margin-top:10px; padding:10px 12px; border:1px solid #dbe7f5; border-radius:14px; background:var(--lux-bg-soft);">
+            <div class="lms-quiz-option-row">
                 <input type="radio" name="lms-quiz-correct-${escapeHtml(activeQuestion.id)}" ${activeQuestion.correctOption === optionIndex ? 'checked' : ''} data-lms-change="setLmsQuizQuestionCorrectOption(${jsQuote(activeQuestion.id)}, ${optionIndex})" title="Correct answer" />
-                <div style="width:26px; height:26px; border-radius:999px; background:rgba(var(--lux-accent-rgb),0.08); color:var(--kiu-blue); font-size:11px; font-weight:800; display:flex; align-items:center; justify-content:center;">${String.fromCharCode(65 + optionIndex)}</div>
-                <input type="text" value="${escapeHtml(activeQuestion.options?.[optionIndex] || '')}" data-lms-input="updateLmsQuizQuestionOptionText(${jsQuote(activeQuestion.id)}, ${optionIndex}, this.value)" placeholder="Option ${optionIndex + 1}" style="flex:1; min-height:42px; border:1px solid #dbe7f5; border-radius:12px; padding:0 12px; outline:none; background:white;" />
+                <div class="lms-quiz-option-marker">${String.fromCharCode(65 + optionIndex)}</div>
+                <input type="text" value="${escapeHtml(activeQuestion.options?.[optionIndex] || '')}" data-lms-input="updateLmsQuizQuestionOptionText(${jsQuote(activeQuestion.id)}, ${optionIndex}, this.value)" placeholder="Option ${optionIndex + 1}" class="lms-quiz-option-input" />
             </div>
         `).join('')
         : '';
     const activeAnswerComposer = activeQuestionType === 'written'
         ? `
-            <div>
-                <div style="font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:0.08em; color:var(--lux-text-muted); margin-bottom:6px;">Written Answer Key</div>
-                <textarea rows="5" data-lms-input="updateLmsQuizQuestionField(${jsQuote(activeQuestion.id)}, 'expectedAnswer', this.value)" placeholder="Write the reference answer or grading note here..." style="width:100%; border:1px solid #dbe7f5; border-radius:16px; padding:14px 15px; resize:vertical; outline:none; background:white;">${escapeHtml(activeQuestion.expectedAnswer || '')}</textarea>
-                <div style="font-size:11px; color:var(--lux-text-muted); margin-top:8px;">Students will manually type their answer for this question.</div>
+            <div class="lms-quiz-answer-composer">
+                <div class="lms-quiz-answer-composer-label">Written Answer Key</div>
+                <textarea rows="5" data-lms-input="updateLmsQuizQuestionField(${jsQuote(activeQuestion.id)}, 'expectedAnswer', this.value)" placeholder="Write the reference answer or grading note here..." class="lms-quiz-answer-textarea">${escapeHtml(activeQuestion.expectedAnswer || '')}</textarea>
+                <div class="lms-quiz-answer-composer-copy">Students will manually type their answer for this question.</div>
             </div>
         `
         : `
-            <div>
-                <div style="font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:0.08em; color:var(--lux-text-muted); margin-bottom:6px;">Answer Options</div>
+            <div class="lms-quiz-answer-composer">
+                <div class="lms-quiz-answer-composer-label">Answer Options</div>
                 ${activeOptionControls}
             </div>
         `;
@@ -1932,7 +2046,7 @@ function renderLmsStaffQuizWorkspace(context) {
         <option value="${escapeHtml(question.id)}">Base Q${index + 1}  -  ${escapeHtml(String(question.text || '').trim() || 'Untitled question')}</option>
     `).join('');
     const variantTabsMarkup = (draft?.variants || []).map((variant, index) => `
-        <button type="button" data-lms-click="setActiveLmsQuizBuilderVariant(${jsQuote(variant.id)})" style="padding:10px 14px; border-radius:999px; border:1px solid ${activeVariant?.id === variant.id ? '#60a5fa' : '#dbe7f5'}; background:${activeVariant?.id === variant.id ? 'linear-gradient(135deg, #eff6ff, #dbeafe)' : '#ffffff'}; color:${activeVariant?.id === variant.id ? '#1d4ed8' : '#334155'}; font-size:12px; font-weight:800;">
+        <button type="button" data-lms-click="setActiveLmsQuizBuilderVariant(${jsQuote(variant.id)})" class="lms-quiz-variant-tab ${activeVariant?.id === variant.id ? 'is-active' : ''}">
             ${escapeHtml(variant.label || getDefaultLmsQuizVariantLabel(index))}${variant.customized ? '  -  Customized' : ''}
         </button>
     `).join('');
@@ -1941,164 +2055,164 @@ function renderLmsStaffQuizWorkspace(context) {
             const questionType = String(question.type || 'mcq') === 'written' ? 'written' : 'mcq';
             const replacementSelectId = `lms-variant-replace-${toDomToken(`${activeVariant.id}-${question.id}`)}`;
             return `
-                <div style="padding:16px; border:1px solid #dbe7f5; border-radius:18px; background:var(--lux-surface); display:grid; gap:12px;">
-                    <div style="display:flex; justify-content:space-between; gap:10px; align-items:flex-start; flex-wrap:wrap;">
+                <div class="lms-quiz-variant-question-card">
+                    <div class="lms-quiz-variant-question-head">
                         <div>
-                            <div style="font-size:11px; font-weight:800; text-transform:uppercase; color:var(--lux-text-muted);">${escapeHtml(activeVariant.label)}  -  Question ${index + 1}</div>
-                            <div style="font-size:12px; color:var(--lux-text-muted); margin-top:4px;">${question.sourceQuestionId ? `From base pool  -  ${escapeHtml(question.sourceQuestionId)}` : 'Manual copy'}</div>
+                            <div class="lms-quiz-variant-question-kicker">${escapeHtml(activeVariant.label)}  -  Question ${index + 1}</div>
+                            <div class="lms-quiz-variant-question-copy">${question.sourceQuestionId ? `From base pool  -  ${escapeHtml(question.sourceQuestionId)}` : 'Manual copy'}</div>
                         </div>
-                        <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                            <button type="button" class="kiu-btn-outline" data-lms-click="removeLmsQuizVariantQuestion(${jsQuote(activeVariant.id)}, ${jsQuote(question.id)})" style="padding:8px 12px; font-size:11px; color:#dc2626; border-color:#fecaca;"><i class="fas fa-trash"></i> Remove</button>
+                        <div class="lms-quiz-variant-question-actions">
+                            <button type="button" class="kiu-btn-outline lms-quiz-variant-action-danger" data-lms-click="removeLmsQuizVariantQuestion(${jsQuote(activeVariant.id)}, ${jsQuote(question.id)})"><i class="fas fa-trash"></i> Remove</button>
                         </div>
                     </div>
-                    <textarea rows="3" data-lms-input="updateLmsQuizVariantQuestionField(${jsQuote(activeVariant.id)}, ${jsQuote(question.id)}, 'text', this.value)" placeholder="Variant question text..." style="width:100%; border:1px solid #dbe7f5; border-radius:14px; padding:12px 14px; resize:vertical; outline:none; background:white;">${escapeHtml(question.text || '')}</textarea>
-                    <div style="display:grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(120px, 160px); gap:12px;">
-                        <label style="display:grid; gap:6px; font-size:11px; font-weight:700; color:var(--lux-text-muted);">Question Type<select data-lms-change="setLmsQuizVariantQuestionType(${jsQuote(activeVariant.id)}, ${jsQuote(question.id)}, this.value)" style="min-height:42px; border:1px solid #dbe7f5; border-radius:12px; padding:0 12px; outline:none; background:white;"><option value="mcq" ${questionType === 'mcq' ? 'selected' : ''}>Multiple Choice</option><option value="written" ${questionType === 'written' ? 'selected' : ''}>Written Answer</option></select></label>
-                        <label style="display:grid; gap:6px; font-size:11px; font-weight:700; color:var(--lux-text-muted);">Options<select data-lms-change="setLmsQuizVariantQuestionOptionCount(${jsQuote(activeVariant.id)}, ${jsQuote(question.id)}, this.value)" ${questionType === 'written' ? 'disabled' : ''} style="min-height:42px; border:1px solid #dbe7f5; border-radius:12px; padding:0 12px; outline:none; background:${questionType === 'written' ? '#f8fafc' : 'white'};">${[2,3,4,5,6].map(count => `<option value="${count}" ${Number(question.optionCount) === count ? 'selected' : ''}>${count} options</option>`).join('')}</select></label>
-                        <label style="display:grid; gap:6px; font-size:11px; font-weight:700; color:var(--lux-text-muted);">Score<input type="number" min="1" step="1" value="${escapeHtml(String(question.score || 1))}" data-lms-input="updateLmsQuizVariantQuestionField(${jsQuote(activeVariant.id)}, ${jsQuote(question.id)}, 'score', this.value)" style="min-height:42px; border:1px solid #dbe7f5; border-radius:12px; padding:0 12px; outline:none; background:white;" /></label>
+                    <textarea rows="3" data-lms-input="updateLmsQuizVariantQuestionField(${jsQuote(activeVariant.id)}, ${jsQuote(question.id)}, 'text', this.value)" placeholder="Variant question text..." class="lms-quiz-variant-question-textarea">${escapeHtml(question.text || '')}</textarea>
+                    <div class="lms-quiz-variant-question-grid">
+                        <label class="lms-quiz-variant-field">Question Type<select data-lms-change="setLmsQuizVariantQuestionType(${jsQuote(activeVariant.id)}, ${jsQuote(question.id)}, this.value)" class="lms-quiz-variant-control"><option value="mcq" ${questionType === 'mcq' ? 'selected' : ''}>Multiple Choice</option><option value="written" ${questionType === 'written' ? 'selected' : ''}>Written Answer</option></select></label>
+                        <label class="lms-quiz-variant-field">Options<select data-lms-change="setLmsQuizVariantQuestionOptionCount(${jsQuote(activeVariant.id)}, ${jsQuote(question.id)}, this.value)" ${questionType === 'written' ? 'disabled' : ''} class="lms-quiz-variant-control ${questionType === 'written' ? 'is-disabled' : ''}">${[2,3,4,5,6].map(count => `<option value="${count}" ${Number(question.optionCount) === count ? 'selected' : ''}>${count} options</option>`).join('')}</select></label>
+                        <label class="lms-quiz-variant-field">Score<input type="number" min="1" step="1" value="${escapeHtml(String(question.score || 1))}" data-lms-input="updateLmsQuizVariantQuestionField(${jsQuote(activeVariant.id)}, ${jsQuote(question.id)}, 'score', this.value)" class="lms-quiz-variant-control" /></label>
                     </div>
                     ${questionType === 'written'
-                        ? `<textarea rows="3" data-lms-input="updateLmsQuizVariantQuestionField(${jsQuote(activeVariant.id)}, ${jsQuote(question.id)}, 'expectedAnswer', this.value)" placeholder="Reference answer..." style="width:100%; border:1px solid #dbe7f5; border-radius:14px; padding:12px 14px; resize:vertical; outline:none; background:white;">${escapeHtml(question.expectedAnswer || '')}</textarea>`
-                        : `<div style="display:grid; gap:10px;">${Array.from({ length: question.optionCount || 0 }, (_, optionIndex) => `
-                            <div style="display:flex; align-items:center; gap:10px; padding:10px 12px; border:1px solid #dbe7f5; border-radius:14px; background:var(--lux-bg-soft);">
+                        ? `<textarea rows="3" data-lms-input="updateLmsQuizVariantQuestionField(${jsQuote(activeVariant.id)}, ${jsQuote(question.id)}, 'expectedAnswer', this.value)" placeholder="Reference answer..." class="lms-quiz-variant-question-textarea">${escapeHtml(question.expectedAnswer || '')}</textarea>`
+                        : `<div class="lms-quiz-variant-option-list">${Array.from({ length: question.optionCount || 0 }, (_, optionIndex) => `
+                            <div class="lms-quiz-option-row">
                                 <input type="radio" name="lms-variant-correct-${escapeHtml(question.id)}" ${question.correctOption === optionIndex ? 'checked' : ''} data-lms-change="setLmsQuizVariantQuestionCorrectOption(${jsQuote(activeVariant.id)}, ${jsQuote(question.id)}, ${optionIndex})">
-                                <div style="width:26px; height:26px; border-radius:999px; background:rgba(var(--lux-accent-rgb),0.08); color:var(--kiu-blue); font-size:11px; font-weight:800; display:flex; align-items:center; justify-content:center;">${String.fromCharCode(65 + optionIndex)}</div>
-                                <input type="text" value="${escapeHtml(question.options?.[optionIndex] || '')}" data-lms-input="updateLmsQuizVariantQuestionOptionText(${jsQuote(activeVariant.id)}, ${jsQuote(question.id)}, ${optionIndex}, this.value)" placeholder="Option ${optionIndex + 1}" style="flex:1; min-height:40px; border:1px solid #dbe7f5; border-radius:12px; padding:0 12px; outline:none; background:white;">
+                                <div class="lms-quiz-option-marker">${String.fromCharCode(65 + optionIndex)}</div>
+                                <input type="text" value="${escapeHtml(question.options?.[optionIndex] || '')}" data-lms-input="updateLmsQuizVariantQuestionOptionText(${jsQuote(activeVariant.id)}, ${jsQuote(question.id)}, ${optionIndex}, this.value)" placeholder="Option ${optionIndex + 1}" class="lms-quiz-option-input">
                             </div>
                         `).join('')}</div>`
                     }
-                    <div style="display:grid; grid-template-columns:minmax(0, 1fr) auto; gap:10px; align-items:end;">
-                        <label style="display:grid; gap:6px; font-size:11px; font-weight:700; color:var(--lux-text-muted);">Replace With Base Question<select id="${replacementSelectId}" style="min-height:42px; border:1px solid #dbe7f5; border-radius:12px; padding:0 12px; outline:none; background:white;"><option value="">Choose base question</option>${baseQuestionOptionMarkup}</select></label>
-                        <button type="button" class="kiu-btn-outline" data-lms-click="replaceLmsQuizVariantQuestionWithBaseQuestion(${jsQuote(activeVariant.id)}, ${jsQuote(question.id)}, document.getElementById(${jsQuote(replacementSelectId)})?.value)" style="padding:10px 14px; font-size:12px;"><i class="fas fa-arrows-rotate"></i> Replace</button>
+                    <div class="lms-quiz-variant-replace-row">
+                        <label class="lms-quiz-variant-field">Replace With Base Question<select id="${replacementSelectId}" class="lms-quiz-variant-control"><option value="">Choose base question</option>${baseQuestionOptionMarkup}</select></label>
+                        <button type="button" class="kiu-btn-outline lms-quiz-variant-action" data-lms-click="replaceLmsQuizVariantQuestionWithBaseQuestion(${jsQuote(activeVariant.id)}, ${jsQuote(question.id)}, document.getElementById(${jsQuote(replacementSelectId)})?.value)"><i class="fas fa-arrows-rotate"></i> Replace</button>
                     </div>
                 </div>
             `;
         }).join('')
-        : '<div style="padding:18px; border:1px dashed #cbd5e1; border-radius:18px; background:var(--lux-surface); color:var(--lux-text-muted);">Generate variants first, then adjust each question manually here.</div>';
+        : '<div class="lms-quiz-variant-empty">Generate variants first, then adjust each question manually here.</div>';
 
     contentArea.innerHTML = upgradeLmsLegacyMarkup(`
-        <div style="display:grid; gap:24px;">
-            <div style="background:linear-gradient(135deg, rgba(15,23,42,0.96), rgba(37,99,235,0.9)); color:white; border-radius:22px; padding:20px 22px; box-shadow:0 18px 36px rgba(15,23,42,0.16);">
-                <div style="display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; align-items:flex-start;">
+        <div class="lms-quiz-studio-shell lms-quiz-builder">
+            <div class="lms-quiz-studio-hero">
+                <div class="lms-quiz-studio-hero-head">
                     <div>
-                        <div style="font-size:12px; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; opacity:0.8;">LMS Quiz Builder</div>
-                        <div style="font-size:24px; font-weight:900; margin-top:8px;">${escapeHtml(context.subject?.name || context.courseId)}  -  ${escapeHtml(context.group?.name || context.groupId)}</div>
-                        <div style="font-size:13px; opacity:0.92; margin-top:6px;">Draft first, publish only to students who are actually in class, then review full quiz papers from one place.</div>
+                        <div class="lms-quiz-studio-kicker">LMS Quiz Builder</div>
+                        <div class="lms-quiz-studio-title">${escapeHtml(context.subject?.name || context.courseId)}  -  ${escapeHtml(context.group?.name || context.groupId)}</div>
+                        <div class="lms-quiz-studio-copy">Draft first, publish only to students who are actually in class, then review full quiz papers from one place.</div>
                     </div>
-                    <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                        <span style="background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.18); padding:8px 12px; border-radius:999px; font-size:12px; font-weight:800;"><i class="fas fa-layer-group"></i> ${escapeHtml(context.group?.name || context.groupId)}</span>
-                        <span style="background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.18); padding:8px 12px; border-radius:999px; font-size:12px; font-weight:800;"><i class="fas fa-users"></i> ${context.students.length} students</span>
+                    <div class="lms-quiz-studio-hero-pills">
+                        <span class="lms-quiz-studio-hero-pill"><i class="fas fa-layer-group"></i> ${escapeHtml(context.group?.name || context.groupId)}</span>
+                        <span class="lms-quiz-studio-hero-pill"><i class="fas fa-users"></i> ${context.students.length} students</span>
                     </div>
                 </div>
             </div>
-            <div style="display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:16px;">
-                <div style="background:white; border:1px solid #dbe7f5; border-radius:20px; padding:18px; box-shadow:0 14px 30px rgba(15, 23, 42, 0.05);"><div style="font-size:11px; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; color:var(--lux-text-muted);">Draft Quizzes</div><div style="font-size:30px; font-weight:900; color:var(--kiu-navy); margin-top:10px;">${workspace.drafts.length}</div></div>
-                <div style="background:white; border:1px solid #dbe7f5; border-radius:20px; padding:18px; box-shadow:0 14px 30px rgba(15, 23, 42, 0.05);"><div style="font-size:11px; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; color:var(--lux-text-muted);">Published Quizzes</div><div style="font-size:30px; font-weight:900; color:var(--kiu-navy); margin-top:10px;">${workspace.published.length}</div></div>
-                <div style="background:white; border:1px solid #dbe7f5; border-radius:20px; padding:18px; box-shadow:0 14px 30px rgba(15, 23, 42, 0.05);"><div style="font-size:11px; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; color:var(--lux-text-muted);">Base Pool Questions</div><div style="font-size:30px; font-weight:900; color:var(--kiu-navy); margin-top:10px;">${draft?.questions?.length || 0}</div></div>
-                <div style="background:${alertSummary.alertCount > 0 ? '#fff7ed' : 'white'}; border:1px solid ${alertSummary.alertCount > 0 ? 'rgba(249,115,22,0.24)' : '#dbe7f5'}; border-radius:20px; padding:18px; box-shadow:0 14px 30px rgba(15, 23, 42, 0.05);"><div style="font-size:11px; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; color:${alertSummary.alertCount > 0 ? '#c2410c' : '#64748b'};">${alertSummary.alertCount > 0 ? 'Live Alerts' : 'Variant Mode'}</div><div style="font-size:30px; font-weight:900; color:${alertSummary.alertCount > 0 ? '#9a3412' : 'var(--kiu-navy)'}; margin-top:10px;">${alertSummary.alertCount > 0 ? alertSummary.alertCount : (draft?.variantEnabled ? (draft?.variants?.length || draft?.variantCount || 0) : 'Off')}</div><div style="font-size:12px; color:${alertSummary.alertCount > 0 ? '#9a3412' : '#64748b'}; margin-top:6px;">${alertSummary.alertCount > 0 ? `${alertSummary.alertedStudents} student${alertSummary.alertedStudents === 1 ? '' : 's'} need attention` : escapeHtml(variantSummaryLabel)}</div></div>
+            <div class="lms-quiz-studio-stat-grid">
+                <div class="lms-quiz-studio-stat-card"><div class="lms-quiz-studio-stat-label">Draft Quizzes</div><div class="lms-quiz-studio-stat-value">${workspace.drafts.length}</div></div>
+                <div class="lms-quiz-studio-stat-card"><div class="lms-quiz-studio-stat-label">Published Quizzes</div><div class="lms-quiz-studio-stat-value">${workspace.published.length}</div></div>
+                <div class="lms-quiz-studio-stat-card"><div class="lms-quiz-studio-stat-label">Base Pool Questions</div><div class="lms-quiz-studio-stat-value">${draft?.questions?.length || 0}</div></div>
+                <div class="lms-quiz-studio-stat-card ${alertSummary.alertCount > 0 ? 'is-alert' : ''}"><div class="lms-quiz-studio-stat-label">${alertSummary.alertCount > 0 ? 'Live Alerts' : 'Variant Mode'}</div><div class="lms-quiz-studio-stat-value">${alertSummary.alertCount > 0 ? alertSummary.alertCount : (draft?.variantEnabled ? (draft?.variants?.length || draft?.variantCount || 0) : 'Off')}</div><div class="lms-quiz-studio-stat-copy">${alertSummary.alertCount > 0 ? `${alertSummary.alertedStudents} student${alertSummary.alertedStudents === 1 ? '' : 's'} need attention` : escapeHtml(variantSummaryLabel)}</div></div>
             </div>
-            ${alertSummary.alertCount > 0 ? `<div style="padding:18px 20px; border-radius:20px; background:rgba(var(--lux-accent-rgb),0.06); border:1px solid rgba(249,115,22,0.24); color:var(--lux-text-muted); box-shadow:0 14px 30px rgba(249,115,22,0.08);">
-                <div style="display:flex; justify-content:space-between; gap:12px; align-items:flex-start; flex-wrap:wrap;">
+            ${alertSummary.alertCount > 0 ? `<div class="lms-quiz-studio-alert-summary">
+                <div class="lms-quiz-studio-alert-summary-head">
                     <div>
-                        <div style="font-size:14px; font-weight:900;">Monitoring alerts are coming in</div>
-                        <div style="font-size:13px; margin-top:6px;">${alertSummary.alertedStudents} student${alertSummary.alertedStudents === 1 ? '' : 's'} triggered ${alertSummary.alertCount} warning${alertSummary.alertCount === 1 ? '' : 's'} across ${alertSummary.quizzesWithAlerts} quiz${alertSummary.quizzesWithAlerts === 1 ? '' : 'zes'}.</div>
-                        ${alertSummary.latestAlert ? `<div style="font-size:12px; margin-top:6px; color:var(--lux-text-muted);">Latest: ${escapeHtml(alertSummary.latestAlert.note || alertSummary.latestAlert.type || 'Monitoring event')}  -  ${escapeHtml(formatLmsDateTime(alertSummary.latestAlert.createdAt))}</div>` : ''}
+                        <div class="lms-quiz-studio-alert-summary-title">Monitoring alerts are coming in</div>
+                        <div class="lms-quiz-studio-alert-summary-copy">${alertSummary.alertedStudents} student${alertSummary.alertedStudents === 1 ? '' : 's'} triggered ${alertSummary.alertCount} warning${alertSummary.alertCount === 1 ? '' : 's'} across ${alertSummary.quizzesWithAlerts} quiz${alertSummary.quizzesWithAlerts === 1 ? '' : 'zes'}.</div>
+                        ${alertSummary.latestAlert ? `<div class="lms-quiz-studio-alert-summary-latest">Latest: ${escapeHtml(alertSummary.latestAlert.note || alertSummary.latestAlert.type || 'Monitoring event')}  -  ${escapeHtml(formatLmsDateTime(alertSummary.latestAlert.createdAt))}</div>` : ''}
                     </div>
-                    <button type="button" class="kiu-btn-outline" data-lms-click="setLmsQuizBoardPage('review')" style="padding:10px 14px; font-size:12px; border-color:#fdba74; color:var(--lux-text-muted); background:white;">
+                    <button type="button" class="kiu-btn-outline lms-quiz-studio-alert-action" data-lms-click="setLmsQuizBoardPage('review')">
                         <i class="fas fa-triangle-exclamation"></i> Open Review Queue
                     </button>
                 </div>
             </div>` : ''}
-            ${liveMonitorEntries.length ? `<div id="lms-live-monitor-panel" class="${hasFreshMonitorAlert ? 'lms-monitor-flash-panel' : ''}" style="position:sticky; top:16px; z-index:6; padding:18px 20px; border-radius:22px; background:rgba(220,38,38,0.06); border:1px solid rgba(239,68,68,0.18); box-shadow:0 18px 34px rgba(239,68,68,0.08); display:grid; gap:14px;">
-                <div style="display:flex; justify-content:space-between; gap:12px; align-items:flex-start; flex-wrap:wrap;">
+            ${liveMonitorEntries.length ? `<div id="lms-live-monitor-panel" class="lms-live-monitor-panel ${hasFreshMonitorAlert ? 'lms-monitor-flash-panel' : ''}">
+                <div class="lms-live-monitor-head">
                     <div>
-                        <div style="font-size:12px; font-weight:900; letter-spacing:0.08em; text-transform:uppercase; color:#dc2626;">Live Monitor</div>
-                        <div style="font-size:18px; font-weight:900; color:var(--lux-text-muted); margin-top:6px;">Flagged students in running quizzes</div>
-                        <div style="font-size:13px; color:#dc2626; margin-top:6px;">${monitorMode === 'all' ? 'This panel shows all flagged students, including closed quizzes with warning history.' : 'This panel only shows students with monitoring warnings in quizzes that are live right now.'}</div>
+                        <div class="lms-live-monitor-kicker">Live Monitor</div>
+                        <div class="lms-live-monitor-title">Flagged students in running quizzes</div>
+                        <div class="lms-live-monitor-copy">${monitorMode === 'all' ? 'This panel shows all flagged students, including closed quizzes with warning history.' : 'This panel only shows students with monitoring warnings in quizzes that are live right now.'}</div>
                     </div>
-                    <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
-                        <div style="display:inline-flex; align-items:center; gap:8px; padding:10px 12px; border-radius:999px; background:white; color:#dc2626; font-size:12px; font-weight:900; border:1px solid rgba(239,68,68,0.18);">
+                    <div class="lms-live-monitor-controls">
+                        <div class="lms-live-monitor-count-pill">
                             <span class="lms-monitor-pulse-dot"></span> ${liveMonitorEntries.length} ${monitorMode === 'all' ? 'flagged case' : 'active case'}${liveMonitorEntries.length === 1 ? '' : 's'}
                         </div>
-                        <button type="button" class="${monitorMode === 'running' ? 'kiu-btn-blue' : 'kiu-btn-outline'}" data-lms-click="setLmsQuizMonitorMode('running')" style="padding:8px 12px; font-size:11px; border-radius:999px;">
+                        <button type="button" class="${monitorMode === 'running' ? 'kiu-btn-blue' : 'kiu-btn-outline'} lms-live-monitor-filter-btn" data-lms-click="setLmsQuizMonitorMode('running')">
                             Running Quiz Only
                         </button>
-                        <button type="button" class="${monitorMode === 'all' ? 'kiu-btn-blue' : 'kiu-btn-outline'}" data-lms-click="setLmsQuizMonitorMode('all')" style="padding:8px 12px; font-size:11px; border-radius:999px;">
+                        <button type="button" class="${monitorMode === 'all' ? 'kiu-btn-blue' : 'kiu-btn-outline'} lms-live-monitor-filter-btn" data-lms-click="setLmsQuizMonitorMode('all')">
                             All Flagged
                         </button>
-                        <button type="button" class="${monitorAckFilter === 'all' ? 'kiu-btn-blue' : 'kiu-btn-outline'}" data-lms-click="setLmsQuizMonitorAckFilter('all')" style="padding:8px 12px; font-size:11px; border-radius:999px;">
+                        <button type="button" class="${monitorAckFilter === 'all' ? 'kiu-btn-blue' : 'kiu-btn-outline'} lms-live-monitor-filter-btn" data-lms-click="setLmsQuizMonitorAckFilter('all')">
                             All Alerts
                         </button>
-                        <button type="button" class="${monitorAckFilter === 'unacknowledged' ? 'kiu-btn-blue' : 'kiu-btn-outline'}" data-lms-click="setLmsQuizMonitorAckFilter('unacknowledged')" style="padding:8px 12px; font-size:11px; border-radius:999px;">
+                        <button type="button" class="${monitorAckFilter === 'unacknowledged' ? 'kiu-btn-blue' : 'kiu-btn-outline'} lms-live-monitor-filter-btn" data-lms-click="setLmsQuizMonitorAckFilter('unacknowledged')">
                             Unacknowledged
                         </button>
-                        <button type="button" class="${monitorAckFilter === 'acknowledged' ? 'kiu-btn-blue' : 'kiu-btn-outline'}" data-lms-click="setLmsQuizMonitorAckFilter('acknowledged')" style="padding:8px 12px; font-size:11px; border-radius:999px;">
+                        <button type="button" class="${monitorAckFilter === 'acknowledged' ? 'kiu-btn-blue' : 'kiu-btn-outline'} lms-live-monitor-filter-btn" data-lms-click="setLmsQuizMonitorAckFilter('acknowledged')">
                             Acknowledged
                         </button>
                     </div>
                 </div>
-                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:12px;">
+                <div class="lms-live-monitor-grid">
                     ${liveMonitorEntries.slice(0, 8).map(entry => `
-                        <div style="background:white; border:1px solid rgba(239,68,68,0.18); border-radius:18px; padding:16px; display:grid; gap:10px;">
-                            <div style="display:flex; justify-content:space-between; gap:8px; align-items:flex-start;">
+                        <div class="lms-live-monitor-card">
+                            <div class="lms-live-monitor-card-head">
                                 <div>
-                                    <div style="font-size:15px; font-weight:900; color:var(--lux-text-muted);">${escapeHtml(entry.studentName)}</div>
-                                    <div style="font-size:11px; color:#dc2626; margin-top:4px;">${escapeHtml(entry.studentId)}  -  ${escapeHtml(entry.quizLabel)}</div>
+                                    <div class="lms-live-monitor-student-name">${escapeHtml(entry.studentName)}</div>
+                                    <div class="lms-live-monitor-student-meta">${escapeHtml(entry.studentId)}  -  ${escapeHtml(entry.quizLabel)}</div>
                                 </div>
-                                <span style="display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border-radius:999px; background:${entry.isAcknowledged ? '#ecfdf5' : '#fff1f2'}; color:${entry.isAcknowledged ? '#047857' : '#b91c1c'}; font-size:11px; font-weight:900; border:1px solid ${entry.isAcknowledged ? 'rgba(16,185,129,0.18)' : 'rgba(239,68,68,0.18)'};">${entry.isAcknowledged ? '<i class="fas fa-check"></i>' : '<span class="lms-monitor-pulse-dot"></span>'}${entry.alertCount}</span>
+                                <span class="lms-live-monitor-alert-pill ${entry.isAcknowledged ? 'is-acknowledged' : 'is-open'}">${entry.isAcknowledged ? '<i class="fas fa-check"></i>' : '<span class="lms-monitor-pulse-dot"></span>'}${entry.alertCount}</span>
                             </div>
-                            <div style="font-size:12px; color:var(--lux-text-muted); line-height:1.5;">
+                            <div class="lms-live-monitor-latest">
                                 <strong>Latest:</strong> ${escapeHtml(entry.latestAlert.note || entry.latestAlert.type || 'Monitoring event')}
                             </div>
-                            <div style="font-size:11px; color:#dc2626;">${escapeHtml(formatLmsDateTime(entry.latestAlert.createdAt))}  -  Attendance: ${escapeHtml(entry.attendanceStatus)}  -  Status: ${escapeHtml(entry.submissionStatus)}  -  Quiz: ${escapeHtml(entry.availability)}</div>
-                            ${entry.isAcknowledged ? `<div style="font-size:11px; color:var(--lux-accent);">Acknowledged by staff at ${escapeHtml(formatLmsDateTime(entry.acknowledgedAt))}</div>` : ''}
-                            <div style="display:flex; justify-content:flex-end; gap:8px; flex-wrap:wrap;">
-                                ${entry.isAcknowledged ? '' : `<button type="button" class="kiu-btn-outline" data-lms-click="acknowledgeLmsQuizMonitorAlert(${jsQuote(context.resourceKey)}, ${jsQuote(entry.quizId)}, ${jsQuote(entry.studentId)})" style="padding:8px 12px; font-size:11px; border-color:#86efac; color:var(--lux-accent); background:var(--lux-surface);">
+                            <div class="lms-live-monitor-timeline">${escapeHtml(formatLmsDateTime(entry.latestAlert.createdAt))}  -  Attendance: ${escapeHtml(entry.attendanceStatus)}  -  Status: ${escapeHtml(entry.submissionStatus)}  -  Quiz: ${escapeHtml(entry.availability)}</div>
+                            ${entry.isAcknowledged ? `<div class="lms-live-monitor-ack-note">Acknowledged by staff at ${escapeHtml(formatLmsDateTime(entry.acknowledgedAt))}</div>` : ''}
+                            <div class="lms-live-monitor-actions">
+                                ${entry.isAcknowledged ? '' : `<button type="button" class="kiu-btn-outline lms-live-monitor-action lms-live-monitor-action-ack" data-lms-click="acknowledgeLmsQuizMonitorAlert(${jsQuote(context.resourceKey)}, ${jsQuote(entry.quizId)}, ${jsQuote(entry.studentId)})">
                                     <i class="fas fa-check"></i> Acknowledge
                                 </button>`}
-                                <button type="button" class="kiu-btn-outline" data-lms-click="openLmsQuizReviewModal(${jsQuote(context.resourceKey)}, ${jsQuote(entry.quizId)}, ${jsQuote(entry.studentId)})" style="padding:8px 12px; font-size:11px; border-color:#fda4af; color:#dc2626; background:var(--lux-surface);">
+                                <button type="button" class="kiu-btn-outline lms-live-monitor-action lms-live-monitor-action-open" data-lms-click="openLmsQuizReviewModal(${jsQuote(context.resourceKey)}, ${jsQuote(entry.quizId)}, ${jsQuote(entry.studentId)})">
                                     <i class="fas fa-eye"></i> Open Student Monitor
                                 </button>
                             </div>
                         </div>
                     `).join('')}
                 </div>
-                ${liveMonitorEntries.length > 8 ? `<div style="font-size:12px; color:#dc2626;">Showing first 8 ${monitorMode === 'all' ? 'flagged' : 'active'} cases. Open Review Queue for the full list.</div>` : ''}
+                ${liveMonitorEntries.length > 8 ? `<div class="lms-live-monitor-more-copy">Showing first 8 ${monitorMode === 'all' ? 'flagged' : 'active'} cases. Open Review Queue for the full list.</div>` : ''}
             </div>` : ''}
-            <div style="display:grid; grid-template-columns:minmax(0, 1.4fr) minmax(360px, 0.9fr); gap:24px; align-items:start;">
-                <div style="background:var(--lux-surface); border:1px solid #dbe7f5; border-radius:28px; padding:22px; box-shadow:0 24px 50px rgba(15, 23, 42, 0.08);">
-                    <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:16px; margin-bottom:18px;">
+            <div class="lms-quiz-studio-layout">
+                <div class="lms-quiz-studio-main-card">
+                    <div class="lms-quiz-studio-main-head">
                         <div>
-                            <div style="font-size:12px; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; color:var(--lux-text-muted);">Group Quiz Studio</div>
-                            <div style="font-size:24px; font-weight:900; color:var(--kiu-navy); margin-top:6px;">${draft?.editingQuizId ? 'Edit Draft Quiz' : 'Create Draft Quiz'}</div>
-                            <div style="font-size:13px; color:var(--lux-text-muted); margin-top:6px;">Save first, then publish from the right-side board only when the class roster is ready.</div>
+                            <div class="lms-quiz-studio-main-kicker">Group Quiz Studio</div>
+                            <div class="lms-quiz-studio-main-title">${draft?.editingQuizId ? 'Edit Draft Quiz' : 'Create Draft Quiz'}</div>
+                            <div class="lms-quiz-studio-main-copy">Save first, then publish from the right-side board only when the class roster is ready.</div>
                         </div>
-                        <div style="background:rgba(var(--lux-accent-rgb),0.08); color:var(--kiu-blue); border-radius:18px; padding:12px 14px; min-width:132px; text-align:center;">
-                            <div style="font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:0.08em;">Current Week</div>
-                            <div style="font-size:14px; font-weight:900; margin-top:6px;">${escapeHtml(draft?.weekLabel || context.weeks?.[0] || 'Week 1')}</div>
+                        <div class="lms-quiz-studio-week-pill">
+                            <div class="lms-quiz-studio-week-label">Current Week</div>
+                            <div class="lms-quiz-studio-week-value">${escapeHtml(draft?.weekLabel || context.weeks?.[0] || 'Week 1')}</div>
                         </div>
                     </div>
-                    <div style="display:grid; grid-template-columns:minmax(0, 1.2fr) minmax(200px, 0.8fr); gap:14px; margin-bottom:14px;">
-                        <label style="display:grid; gap:6px; font-size:11px; font-weight:700; color:var(--lux-text-muted);">Quiz Title<input type="text" value="${escapeHtml(draft?.title || '')}" data-lms-input="setLmsQuizDraftField('title', this.value)" placeholder="e.g. Midterm Quiz 1" style="min-height:46px; border:1px solid #dbe7f5; border-radius:14px; padding:0 14px; outline:none; background:white;" /></label>
-                        <label style="display:grid; gap:6px; font-size:11px; font-weight:700; color:var(--lux-text-muted);">Subject<input type="text" value="${escapeHtml(context.subject?.name || context.courseId)}" disabled style="min-height:46px; border:1px solid #dbe7f5; border-radius:14px; padding:0 14px; outline:none; background:var(--lux-bg-soft);" /></label>
+                    <div class="lms-quiz-studio-field-grid lms-quiz-studio-field-grid--hero">
+                        <label class="lms-quiz-studio-field">Quiz Title<input type="text" value="${escapeHtml(draft?.title || '')}" data-lms-input="setLmsQuizDraftField('title', this.value)" placeholder="e.g. Midterm Quiz 1" class="lms-quiz-studio-control" /></label>
+                        <label class="lms-quiz-studio-field">Subject<input type="text" value="${escapeHtml(context.subject?.name || context.courseId)}" disabled class="lms-quiz-studio-control lms-quiz-studio-control--muted" /></label>
                     </div>
-                    <div style="display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:14px; margin-bottom:14px;">
-                        <label style="display:grid; gap:6px; font-size:11px; font-weight:700; color:var(--lux-text-muted);">Assessment Type<select data-lms-change="setLmsQuizDraftField('assessmentType', this.value)" style="min-height:46px; border:1px solid #dbe7f5; border-radius:14px; padding:0 14px; outline:none; background:white;">${['quiz','oral-quiz','midterm','final','retake'].map(type => `<option value="${type}" ${normalizeLmsQuizAssessmentType(draft?.assessmentType) === type ? 'selected' : ''}>${escapeHtml(getLmsQuizAssessmentMeta(type).label)}</option>`).join('')}</select></label>
-                        <label style="display:grid; gap:6px; font-size:11px; font-weight:700; color:var(--lux-text-muted);">Week<select data-lms-change="setLmsQuizDraftField('weekLabel', this.value)" style="min-height:46px; border:1px solid #dbe7f5; border-radius:14px; padding:0 14px; outline:none; background:white;">${(context.weeks?.length ? context.weeks : ['Week 1']).map(week => `<option value="${escapeHtml(week)}" ${normalizeLmsWeekLabel(draft?.weekLabel) === normalizeLmsWeekLabel(week) ? 'selected' : ''}>${escapeHtml(week)}</option>`).join('')}</select></label>
-                        <label style="display:grid; gap:6px; font-size:11px; font-weight:700; color:var(--lux-text-muted);">Timer (minutes)<input type="number" min="1" value="${escapeHtml(String(draft?.durationMinutes || 20))}" data-lms-input="setLmsQuizDraftField('durationMinutes', this.value)" style="min-height:46px; border:1px solid #dbe7f5; border-radius:14px; padding:0 14px; outline:none; background:white;" /></label>
+                    <div class="lms-quiz-studio-field-grid lms-quiz-studio-field-grid--triple">
+                        <label class="lms-quiz-studio-field">Assessment Type<select data-lms-change="setLmsQuizDraftField('assessmentType', this.value)" class="lms-quiz-studio-control">${['quiz','oral-quiz','midterm','final','retake'].map(type => `<option value="${type}" ${normalizeLmsQuizAssessmentType(draft?.assessmentType) === type ? 'selected' : ''}>${escapeHtml(getLmsQuizAssessmentMeta(type).label)}</option>`).join('')}</select></label>
+                        <label class="lms-quiz-studio-field">Week<select data-lms-change="setLmsQuizDraftField('weekLabel', this.value)" class="lms-quiz-studio-control">${(context.weeks?.length ? context.weeks : ['Week 1']).map(week => `<option value="${escapeHtml(week)}" ${normalizeLmsWeekLabel(draft?.weekLabel) === normalizeLmsWeekLabel(week) ? 'selected' : ''}>${escapeHtml(week)}</option>`).join('')}</select></label>
+                        <label class="lms-quiz-studio-field">Timer (minutes)<input type="number" min="1" value="${escapeHtml(String(draft?.durationMinutes || 20))}" data-lms-input="setLmsQuizDraftField('durationMinutes', this.value)" class="lms-quiz-studio-control" /></label>
                     </div>
-                    <div style="display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:14px; margin-bottom:18px;">
-                        <label style="display:grid; gap:6px; font-size:11px; font-weight:700; color:var(--lux-text-muted);">Start Time<input type="datetime-local" value="${escapeHtml(String(draft?.availableFrom || ''))}" data-lms-change="setLmsQuizDraftField('availableFrom', this.value)" style="min-height:46px; border:1px solid #dbe7f5; border-radius:14px; padding:0 14px; outline:none; background:white;" /></label>
-                        <label style="display:grid; gap:6px; font-size:11px; font-weight:700; color:var(--lux-text-muted);">End Time<input type="datetime-local" value="${escapeHtml(String(draft?.availableUntil || ''))}" data-lms-change="setLmsQuizDraftField('availableUntil', this.value)" style="min-height:46px; border:1px solid #dbe7f5; border-radius:14px; padding:0 14px; outline:none; background:white;" /></label>
+                    <div class="lms-quiz-studio-field-grid lms-quiz-studio-field-grid--double">
+                        <label class="lms-quiz-studio-field">Start Time<input type="datetime-local" value="${escapeHtml(String(draft?.availableFrom || ''))}" data-lms-change="setLmsQuizDraftField('availableFrom', this.value)" class="lms-quiz-studio-control" /></label>
+                        <label class="lms-quiz-studio-field">End Time<input type="datetime-local" value="${escapeHtml(String(draft?.availableUntil || ''))}" data-lms-change="setLmsQuizDraftField('availableUntil', this.value)" class="lms-quiz-studio-control" /></label>
                     </div>
-                    <div style="display:grid; gap:14px; margin-bottom:18px;">
+                    <div class="lms-quiz-studio-policy-block">
                         <label class="lms-quiz-policy-card">
                             <input type="checkbox" ${draft?.attendanceGateEnabled !== false ? 'checked' : ''} data-lms-change="setLmsQuizDraftField('attendanceGateEnabled', this.checked)">
                             <span><strong>Attendance gate</strong><br>TA / professor must mark the student present in the LMS review board before Start Quiz unlocks.</span>
                         </label>
                     </div>
-                    <label style="display:grid; gap:6px; font-size:11px; font-weight:700; color:var(--lux-text-muted); margin-bottom:18px;">Quiz Notes<textarea rows="3" data-lms-input="setLmsQuizDraftField('instructions', this.value)" placeholder="Short notes for the invigilator or setup rules..." style="width:100%; border:1px solid #dbe7f5; border-radius:16px; padding:14px 15px; resize:vertical; outline:none; background:white;">${escapeHtml(draft?.instructions || '')}</textarea></label>
-                    <div class="lms-quiz-tool-panel ${variantSetExpanded ? '' : 'is-collapsed'}" style="margin-bottom:18px;">
+                    <label class="lms-quiz-studio-field lms-quiz-studio-notes-field">Quiz Notes<textarea rows="3" data-lms-input="setLmsQuizDraftField('instructions', this.value)" placeholder="Short notes for the invigilator or setup rules..." class="lms-quiz-studio-textarea">${escapeHtml(draft?.instructions || '')}</textarea></label>
+                    <div class="lms-quiz-tool-panel lms-quiz-variant-panel ${variantSetExpanded ? '' : 'is-collapsed'}">
                         <div class="lms-quiz-tool-head">
                             <div class="lms-quiz-tool-title">
                                 <strong>Quiz Variant Set</strong>
@@ -2106,40 +2220,40 @@ function renderLmsStaffQuizWorkspace(context) {
                             </div>
                             <div class="lms-quiz-tool-actions">
                                 <span class="lms-quiz-compact-badge"><i class="fas fa-clone"></i> ${draft?.variantEnabled ? 'Variants on' : 'Variants off'}</span>
-                                <button type="button" class="kiu-btn-outline" data-lms-click="toggleLmsQuizVariantSetPanel()" style="padding:9px 12px; font-size:12px;"><i class="fas ${variantSetExpanded ? 'fa-chevron-up' : 'fa-chevron-down'}"></i> ${variantSetExpanded ? 'Hide setup' : 'Show setup'}</button>
+                                <button type="button" class="kiu-btn-outline lms-quiz-variant-action-btn" data-lms-click="toggleLmsQuizVariantSetPanel()"><i class="fas ${variantSetExpanded ? 'fa-chevron-up' : 'fa-chevron-down'}"></i> ${variantSetExpanded ? 'Hide setup' : 'Show setup'}</button>
                             </div>
                         </div>
                         <div class="lms-quiz-tool-body">
-                            <label style="display:flex; gap:10px; align-items:center; width:max-content; max-width:100%; padding:10px 14px; border:1px solid #dbe7f5; border-radius:16px; background:white; font-size:12px; font-weight:700; color:var(--lux-text-muted);">
+                            <label class="lms-quiz-variant-toggle">
                                 <input type="checkbox" ${draft?.variantEnabled ? 'checked' : ''} data-lms-change="setLmsQuizDraftField('variantEnabled', this.checked); rerenderCurrentLmsQuizWorkspace();">
                                 Enable variants
                             </label>
-                            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(160px, 1fr)); gap:12px;">
-                                <label style="display:grid; gap:6px; font-size:11px; font-weight:700; color:var(--lux-text-muted);">Variant Count<input type="number" min="1" max="8" value="${escapeHtml(String(draft?.variantCount || 3))}" data-lms-input="setLmsQuizDraftField('variantCount', this.value)" style="min-height:44px; border:1px solid #dbe7f5; border-radius:12px; padding:0 12px; outline:none; background:${draft?.variantEnabled ? 'white' : '#f8fafc'};" ${draft?.variantEnabled ? '' : 'disabled'}></label>
-                                <label style="display:grid; gap:6px; font-size:11px; font-weight:700; color:var(--lux-text-muted);">Questions Per Variant<input type="number" min="1" value="${escapeHtml(String(draft?.questionsPerVariant || 10))}" data-lms-input="setLmsQuizDraftField('questionsPerVariant', this.value)" style="min-height:44px; border:1px solid #dbe7f5; border-radius:12px; padding:0 12px; outline:none; background:${draft?.variantEnabled ? 'white' : '#f8fafc'};" ${draft?.variantEnabled ? '' : 'disabled'}></label>
-                                <label style="display:grid; gap:6px; font-size:11px; font-weight:700; color:var(--lux-text-muted);">Assignment<input type="text" value="Auto-fixed" disabled style="min-height:44px; border:1px solid #dbe7f5; border-radius:12px; padding:0 12px; outline:none; background:var(--lux-bg-soft);"></label>
-                                <label style="display:grid; gap:6px; font-size:11px; font-weight:700; color:var(--lux-text-muted);">Generation<input type="text" value="Unique-first randomization" disabled style="min-height:44px; border:1px solid #dbe7f5; border-radius:12px; padding:0 12px; outline:none; background:var(--lux-bg-soft);"></label>
+                            <div class="lms-quiz-variant-config-grid">
+                                <label class="lms-quiz-variant-field">Variant Count<input type="number" min="1" max="8" value="${escapeHtml(String(draft?.variantCount || 3))}" data-lms-input="setLmsQuizDraftField('variantCount', this.value)" class="lms-quiz-variant-config-control ${draft?.variantEnabled ? '' : 'is-disabled'}" ${draft?.variantEnabled ? '' : 'disabled'}></label>
+                                <label class="lms-quiz-variant-field">Questions Per Variant<input type="number" min="1" value="${escapeHtml(String(draft?.questionsPerVariant || 10))}" data-lms-input="setLmsQuizDraftField('questionsPerVariant', this.value)" class="lms-quiz-variant-config-control ${draft?.variantEnabled ? '' : 'is-disabled'}" ${draft?.variantEnabled ? '' : 'disabled'}></label>
+                                <label class="lms-quiz-variant-field">Assignment<input type="text" value="Auto-fixed" disabled class="lms-quiz-variant-config-control lms-quiz-variant-config-control--muted"></label>
+                                <label class="lms-quiz-variant-field">Generation<input type="text" value="Unique-first randomization" disabled class="lms-quiz-variant-config-control lms-quiz-variant-config-control--muted"></label>
                             </div>
                             ${draft?.variantEnabled ? `
-                                <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                                    <button type="button" class="kiu-btn-blue" data-lms-click="generateLmsQuizVariants()" style="padding:10px 14px; font-size:12px;"><i class="fas fa-wand-magic-sparkles"></i> Generate Variants</button>
-                                    <button type="button" class="kiu-btn-outline" data-lms-click="regenerateAllLmsQuizVariants()" style="padding:10px 14px; font-size:12px;"><i class="fas fa-rotate"></i> Regenerate All</button>
-                                    <button type="button" class="kiu-btn-outline" data-lms-click="resetLmsQuizVariantsToBasePool()" style="padding:10px 14px; font-size:12px;"><i class="fas fa-layer-group"></i> Reset to Base Pool</button>
+                                <div class="lms-quiz-variant-action-row">
+                                    <button type="button" class="kiu-btn-blue lms-quiz-variant-action-btn" data-lms-click="generateLmsQuizVariants()"><i class="fas fa-wand-magic-sparkles"></i> Generate Variants</button>
+                                    <button type="button" class="kiu-btn-outline lms-quiz-variant-action-btn" data-lms-click="regenerateAllLmsQuizVariants()"><i class="fas fa-rotate"></i> Regenerate All</button>
+                                    <button type="button" class="kiu-btn-outline lms-quiz-variant-action-btn" data-lms-click="resetLmsQuizVariantsToBasePool()"><i class="fas fa-layer-group"></i> Reset to Base Pool</button>
                                 </div>
-                                <div style="display:grid; gap:14px; padding:16px; border:1px solid #dbe7f5; border-radius:18px; background:var(--lux-surface);">
-                                    <div style="display:flex; justify-content:space-between; gap:12px; align-items:center; flex-wrap:wrap;">
+                                <div class="lms-quiz-variant-workspace">
+                                    <div class="lms-quiz-variant-workspace-head">
                                         <div>
-                                            <div style="font-size:11px; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; color:var(--lux-text-muted);">Variant Tabs</div>
-                                            <div style="font-size:12px; color:var(--lux-text-muted); margin-top:6px;">Generate first, then adjust a single variant manually if needed.</div>
+                                            <div class="lms-quiz-variant-workspace-kicker">Variant Tabs</div>
+                                            <div class="lms-quiz-variant-workspace-copy">Generate first, then adjust a single variant manually if needed.</div>
                                         </div>
-                                        ${activeVariant ? `<button type="button" class="kiu-btn-outline" data-lms-click="regenerateLmsQuizVariant(${jsQuote(activeVariant.id)})" style="padding:10px 14px; font-size:12px;"><i class="fas fa-repeat"></i> Regenerate ${escapeHtml(activeVariant.label)}</button>` : ''}
+                                        ${activeVariant ? `<button type="button" class="kiu-btn-outline lms-quiz-variant-action-btn" data-lms-click="regenerateLmsQuizVariant(${jsQuote(activeVariant.id)})"><i class="fas fa-repeat"></i> Regenerate ${escapeHtml(activeVariant.label)}</button>` : ''}
                                     </div>
-                                    <div style="display:flex; gap:10px; flex-wrap:wrap;">${variantTabsMarkup || '<span style="font-size:12px; color:var(--lux-text-muted);">No variants generated yet.</span>'}</div>
-                                    ${activeVariant ? `<div style="display:grid; gap:10px; grid-template-columns:minmax(0, 1fr) auto; align-items:end;">
-                                        <label style="display:grid; gap:6px; font-size:11px; font-weight:700; color:var(--lux-text-muted);">Add Base Question To ${escapeHtml(activeVariant.label)}<select id="lms-variant-add-base-question" style="min-height:44px; border:1px solid #dbe7f5; border-radius:12px; padding:0 12px; outline:none; background:white;"><option value="">Choose base question</option>${baseQuestionOptionMarkup}</select></label>
-                                        <button type="button" class="kiu-btn-outline" data-lms-click="addBaseQuestionToLmsQuizVariant(${jsQuote(activeVariant.id)}, document.getElementById('lms-variant-add-base-question')?.value)" style="padding:10px 14px; font-size:12px;"><i class="fas fa-plus"></i> Add Question</button>
+                                    <div class="lms-quiz-variant-tab-row">${variantTabsMarkup || '<span class="lms-quiz-variant-empty-copy">No variants generated yet.</span>'}</div>
+                                    ${activeVariant ? `<div class="lms-quiz-variant-add-row">
+                                        <label class="lms-quiz-variant-field">Add Base Question To ${escapeHtml(activeVariant.label)}<select id="lms-variant-add-base-question" class="lms-quiz-variant-config-control"><option value="">Choose base question</option>${baseQuestionOptionMarkup}</select></label>
+                                        <button type="button" class="kiu-btn-outline lms-quiz-variant-action-btn" data-lms-click="addBaseQuestionToLmsQuizVariant(${jsQuote(activeVariant.id)}, document.getElementById('lms-variant-add-base-question')?.value)"><i class="fas fa-plus"></i> Add Question</button>
                                     </div>` : ''}
-                                    <div style="display:grid; gap:14px;">${activeVariantQuestionsMarkup}</div>
+                                    <div class="lms-quiz-variant-question-list">${activeVariantQuestionsMarkup}</div>
                                 </div>
                             ` : ''}
                         </div>
@@ -2151,87 +2265,87 @@ function renderLmsStaffQuizWorkspace(context) {
                                 <span>${escapeHtml(questionNavigatorStatus)}. Hide the whole builder when you only need quiz settings or saved quizzes.</span>
                             </div>
                             <div class="lms-quiz-tool-actions">
-                                <button class="kiu-btn-outline" data-lms-click="resetLmsQuizBuilderDraft()" style="padding:10px 14px; font-size:12px;"><i class="fas fa-rotate-left"></i> Reset Draft</button>
-                                <button class="kiu-btn-blue" data-lms-click="addLmsQuizQuestion()" style="padding:10px 14px; font-size:12px;"><i class="fas fa-plus"></i> Add Question</button>
-                                <button type="button" class="kiu-btn-outline" data-lms-click="toggleLmsQuizQuestionNavigatorPanel()" style="padding:9px 12px; font-size:12px;"><i class="fas ${questionNavigatorExpanded ? 'fa-chevron-up' : 'fa-chevron-down'}"></i> ${questionNavigatorExpanded ? 'Hide builder' : 'Show builder'}</button>
+                                <button class="kiu-btn-outline lms-quiz-action-btn" data-lms-click="resetLmsQuizBuilderDraft()"><i class="fas fa-rotate-left"></i> Reset Draft</button>
+                                <button class="kiu-btn-blue lms-quiz-action-btn" data-lms-click="addLmsQuizQuestion()"><i class="fas fa-plus"></i> Add Question</button>
+                                <button type="button" class="kiu-btn-outline lms-quiz-action-btn" data-lms-click="toggleLmsQuizQuestionNavigatorPanel()"><i class="fas ${questionNavigatorExpanded ? 'fa-chevron-up' : 'fa-chevron-down'}"></i> ${questionNavigatorExpanded ? 'Hide builder' : 'Show builder'}</button>
                             </div>
                         </div>
                         <div class="lms-quiz-tool-body">
                     <div class="lms-quiz-question-layout">
-                        <div class="lms-quiz-question-nav-card" style="background:white; border:1px solid #dbe7f5; border-radius:20px; padding:14px; box-shadow:0 14px 30px rgba(15, 23, 42, 0.05);">
-                            <div style="font-size:11px; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; color:var(--lux-text-muted); margin-bottom:10px;">Questions</div>
-                            <div id="lms-quiz-question-nav" style="display:grid; gap:10px; max-height:620px; overflow:auto; padding-right:4px;">${questionNavigator}</div>
+                        <div class="lms-quiz-question-nav-card">
+                            <div class="lms-quiz-question-nav-title">Questions</div>
+                            <div id="lms-quiz-question-nav" class="lms-quiz-question-nav-list">${questionNavigator}</div>
                         </div>
-                        <div style="background:white; border:1px solid #dbe7f5; border-radius:22px; padding:18px; box-shadow:0 18px 36px rgba(15, 23, 42, 0.06); min-height:100%;">
-                            <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:14px;">
+                        <div class="lms-quiz-question-editor-card">
+                            <div class="lms-quiz-question-editor-head">
                                 <div>
-                                    <div style="font-size:11px; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; color:var(--lux-text-muted);">Question ${activeQuestionIndex + 1} of ${draft?.questions?.length || 0}</div>
-                                    <div style="font-size:15px; font-weight:800; color:var(--kiu-navy); margin-top:4px;">Focused Question Editor</div>
+                                    <div class="lms-quiz-question-editor-kicker">Question ${activeQuestionIndex + 1} of ${draft?.questions?.length || 0}</div>
+                                    <div class="lms-quiz-question-editor-title">Focused Question Editor</div>
                                 </div>
-                                <div style="display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end;">
-                                    <button class="kiu-btn-outline" data-lms-click="removeActiveLmsQuizBuilderQuestion()" style="padding:8px 12px; font-size:11px; color:#dc2626; border-color:#fecaca;" ${(draft?.questions?.length || 0) <= 1 ? 'disabled' : ''}><i class="fas fa-trash"></i> Remove</button>
+                                <div class="lms-quiz-question-editor-actions">
+                                    <button class="kiu-btn-outline lms-quiz-question-remove-btn" data-lms-click="removeActiveLmsQuizBuilderQuestion()" ${(draft?.questions?.length || 0) <= 1 ? 'disabled' : ''}><i class="fas fa-trash"></i> Remove</button>
                                 </div>
                             </div>
-                            <div style="display:grid; gap:12px;">
-                                <textarea rows="5" data-lms-input="updateLmsQuizQuestionField(${jsQuote(activeQuestion?.id || '')}, 'text', this.value)" placeholder="Write the question here..." style="width:100%; border:1px solid #dbe7f5; border-radius:16px; padding:14px 15px; resize:vertical; outline:none; background:white;">${escapeHtml(activeQuestion?.text || '')}</textarea>
-                                <div style="display:grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(120px, 160px); gap:12px;">
-                                    <label style="display:grid; gap:6px; font-size:11px; font-weight:700; color:var(--lux-text-muted);">Question Type<select data-lms-change="setLmsQuizQuestionType(${jsQuote(activeQuestion?.id || '')}, this.value)" style="min-height:42px; border:1px solid #dbe7f5; border-radius:12px; padding:0 12px; outline:none; background:white;"><option value="mcq" ${activeQuestionType === 'mcq' ? 'selected' : ''}>Multiple Choice</option><option value="written" ${activeQuestionType === 'written' ? 'selected' : ''}>Written Answer</option></select></label>
-                                    <label style="display:grid; gap:6px; font-size:11px; font-weight:700; color:var(--lux-text-muted);">Options Per Question<select data-lms-change="setLmsQuizQuestionOptionCount(${jsQuote(activeQuestion?.id || '')}, this.value)" ${activeQuestionType === 'written' ? 'disabled' : ''} style="min-height:42px; border:1px solid #dbe7f5; border-radius:12px; padding:0 12px; outline:none; background:${activeQuestionType === 'written' ? '#f8fafc' : 'white'};">${[2,3,4,5,6].map(count => `<option value="${count}" ${Number(activeQuestion?.optionCount) === count ? 'selected' : ''}>${count} options</option>`).join('')}</select></label>
-                                    <label style="display:grid; gap:6px; font-size:11px; font-weight:700; color:var(--lux-text-muted);">Score<input type="number" min="1" step="1" value="${escapeHtml(String(activeQuestion?.score || 1))}" data-lms-input="updateLmsQuizQuestionField(${jsQuote(activeQuestion?.id || '')}, 'score', this.value)" style="min-height:42px; border:1px solid #dbe7f5; border-radius:12px; padding:0 12px; outline:none; background:white;" /></label>
+                            <div class="lms-quiz-question-editor-body">
+                                <textarea rows="5" data-lms-input="updateLmsQuizQuestionField(${jsQuote(activeQuestion?.id || '')}, 'text', this.value)" placeholder="Write the question here..." class="lms-quiz-question-textarea">${escapeHtml(activeQuestion?.text || '')}</textarea>
+                                <div class="lms-quiz-question-meta-grid">
+                                    <label class="lms-quiz-question-field">Question Type<select data-lms-change="setLmsQuizQuestionType(${jsQuote(activeQuestion?.id || '')}, this.value)" class="lms-quiz-question-control"><option value="mcq" ${activeQuestionType === 'mcq' ? 'selected' : ''}>Multiple Choice</option><option value="written" ${activeQuestionType === 'written' ? 'selected' : ''}>Written Answer</option></select></label>
+                                    <label class="lms-quiz-question-field">Options Per Question<select data-lms-change="setLmsQuizQuestionOptionCount(${jsQuote(activeQuestion?.id || '')}, this.value)" ${activeQuestionType === 'written' ? 'disabled' : ''} class="lms-quiz-question-control ${activeQuestionType === 'written' ? 'is-disabled' : ''}">${[2,3,4,5,6].map(count => `<option value="${count}" ${Number(activeQuestion?.optionCount) === count ? 'selected' : ''}>${count} options</option>`).join('')}</select></label>
+                                    <label class="lms-quiz-question-field">Score<input type="number" min="1" step="1" value="${escapeHtml(String(activeQuestion?.score || 1))}" data-lms-input="updateLmsQuizQuestionField(${jsQuote(activeQuestion?.id || '')}, 'score', this.value)" class="lms-quiz-question-control" /></label>
                                 </div>
                                 ${activeAnswerComposer}
                             </div>
-                            <div style="display:flex; justify-content:space-between; gap:10px; margin-top:18px; flex-wrap:wrap;">
-                                <button class="kiu-btn-outline" data-lms-click="stepLmsQuizBuilderQuestion(-1)" ${activeQuestionIndex <= 0 ? 'disabled' : ''} style="padding:10px 14px; font-size:12px; ${activeQuestionIndex <= 0 ? 'opacity:0.45; cursor:not-allowed;' : ''}"><i class="fas fa-arrow-left"></i> Previous</button>
-                                <button class="kiu-btn-outline" data-lms-click="stepLmsQuizBuilderQuestion(1)" ${activeQuestionIndex >= (draft?.questions?.length || 1) - 1 ? 'disabled' : ''} style="padding:10px 14px; font-size:12px; ${activeQuestionIndex >= (draft?.questions?.length || 1) - 1 ? 'opacity:0.45; cursor:not-allowed;' : ''}">Next <i class="fas fa-arrow-right"></i></button>
+                            <div class="lms-quiz-question-step-row">
+                                <button class="kiu-btn-outline lms-quiz-question-step-btn ${activeQuestionIndex <= 0 ? 'is-disabled' : ''}" data-lms-click="stepLmsQuizBuilderQuestion(-1)" ${activeQuestionIndex <= 0 ? 'disabled' : ''}><i class="fas fa-arrow-left"></i> Previous</button>
+                                <button class="kiu-btn-outline lms-quiz-question-step-btn ${activeQuestionIndex >= (draft?.questions?.length || 1) - 1 ? 'is-disabled' : ''}" data-lms-click="stepLmsQuizBuilderQuestion(1)" ${activeQuestionIndex >= (draft?.questions?.length || 1) - 1 ? 'disabled' : ''}>Next <i class="fas fa-arrow-right"></i></button>
                             </div>
                         </div>
                     </div>
-                    <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:20px;">
-                        <button class="kiu-btn-blue" data-lms-click="saveLmsQuizBuilderDraft()" style="padding:12px 18px; font-size:13px;"><i class="fas fa-save"></i> ${draft?.editingQuizId ? 'Update Draft' : 'Save Draft'}</button>
+                    <div class="lms-quiz-question-save-row">
+                        <button class="kiu-btn-blue lms-quiz-question-save-btn" data-lms-click="saveLmsQuizBuilderDraft()"><i class="fas fa-save"></i> ${draft?.editingQuizId ? 'Update Draft' : 'Save Draft'}</button>
                     </div>
                         </div>
                     </div>
                 </div>
-                <div style="display:grid; gap:18px;">
-                    <div style="background:white; border:1px solid #dbe7f5; border-radius:24px; padding:20px; box-shadow:0 18px 36px rgba(15, 23, 42, 0.06);">
-                        <div style="font-size:12px; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; color:var(--lux-text-muted);">Quiz Rules</div>
-                        <ul style="margin:14px 0 0; padding-left:18px; color:var(--lux-text-muted); font-size:13px; line-height:1.7;">
+                <div class="lms-quiz-side-rail">
+                    <div class="lms-quiz-rules-card">
+                        <div class="lms-quiz-rules-title">Quiz Rules</div>
+                        <ul class="lms-quiz-rules-list">
                             <li>Every quiz is tied automatically to this LMS group.</li>
                             <li>Save creates a draft only. Students cannot see drafts.</li>
                             <li>Publish opens the class roster so you can uncheck absent students.</li>
                             <li>Written answers stay in review until TA or professor scores them.</li>
                         </ul>
                     </div>
-                    <div style="background:var(--lux-surface); border:1px solid #dbe7f5; border-radius:24px; padding:20px; box-shadow:0 18px 36px rgba(15, 23, 42, 0.06);">
-                        <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:14px; flex-wrap:wrap;">
+                    <div class="lms-quiz-saved-card">
+                        <div class="lms-quiz-saved-head">
                             <div>
-                                <div style="font-size:12px; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; color:var(--lux-text-muted);">Saved Quizzes</div>
-                                <div style="font-size:18px; font-weight:900; color:var(--kiu-navy); margin-top:4px;">${escapeHtml(context.subject?.name || context.courseId)}  -  ${escapeHtml(context.group?.name || context.groupId)}</div>
+                                <div class="lms-quiz-saved-title">Saved Quizzes</div>
+                                <div class="lms-quiz-saved-subtitle">${escapeHtml(context.subject?.name || context.courseId)}  -  ${escapeHtml(context.group?.name || context.groupId)}</div>
                             </div>
-                            <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
-                                <button type="button" class="kiu-btn-outline" data-lms-click="openLmsQuizBoardModal(${jsQuote(boardPage)})" style="padding:10px 14px; font-size:12px; border-radius:999px;">
+                            <div class="lms-quiz-saved-actions">
+                                <button type="button" class="kiu-btn-outline lms-quiz-saved-open-btn" data-lms-click="openLmsQuizBoardModal(${jsQuote(boardPage)})">
                                     <i class="fas fa-up-right-and-down-left-from-center"></i> Open Full View
                                 </button>
-                                <div style="background:var(--lux-surface); color:white; border-radius:14px; padding:10px 12px; font-size:12px; font-weight:800;">${ensureLmsQuizzesForKey(context.resourceKey).length} total</div>
+                                <div class="lms-quiz-saved-count-pill">${ensureLmsQuizzesForKey(context.resourceKey).length} total</div>
                             </div>
                         </div>
-                        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:18px;">
+                        <div class="lms-quiz-saved-tab-row">
                             ${[
                                 { key: 'drafts', label: `Draft Quizzes (${workspace.drafts.length})` },
                                 { key: 'published', label: `Published (${workspace.published.length}${alertSummary.quizzesWithAlerts ? `  -  ${alertSummary.quizzesWithAlerts} alert` : ''})` },
                                 { key: 'review', label: `Review Queue (${reviewItems.length}${alertSummary.alertCount ? `  -  ${alertSummary.alertCount} warn` : ''})` },
                                 { key: 'results', label: `Results (${workspace.closed.length})` }
                             ].map(tab => `
-                                <button type="button" data-lms-click="setLmsQuizBoardPage(${jsQuote(tab.key)})" class="${boardPage === tab.key ? 'kiu-btn-blue' : 'kiu-btn-outline'}" style="padding:10px 14px; font-size:12px; border-radius:999px;">
+                                <button type="button" data-lms-click="setLmsQuizBoardPage(${jsQuote(tab.key)})" class="${boardPage === tab.key ? 'kiu-btn-blue' : 'kiu-btn-outline'} lms-quiz-saved-tab-btn">
                                     ${escapeHtml(tab.label)}
                                 </button>
                             `).join('')}
                         </div>
-                        <div style="font-size:12px; color:var(--lux-text-muted); margin-bottom:16px;">
+                        <div class="lms-quiz-saved-copy">
                             This board stays compact on purpose. It shows only the latest 3 quizzes for the selected section. Use <strong>Open Full View</strong> to see all quizzes and full details in a maximized window.
                         </div>
-                        <div style="display:grid; gap:18px;">
+                        <div class="lms-quiz-saved-page-shell">
                             ${renderActiveLmsQuizBoardPage(context)}
                         </div>
                     </div>
@@ -2247,15 +2361,15 @@ function renderLmsStaffQuizWorkspace(context) {
     } catch (error) {
         console.error('Staff LMS quiz workspace render failed', error);
         contentArea.innerHTML = upgradeLmsLegacyMarkup(`
-            <div style="display:grid; gap:16px;">
-                <div style="background:var(--lux-surface); border:1px solid #fca5a5; border-radius:22px; padding:24px; box-shadow:0 18px 36px rgba(15,23,42,0.08);">
-                    <div style="font-size:18px; font-weight:900; color:#991b1b;">Quiz Builder could not load</div>
-                    <div style="font-size:13px; color:var(--lux-text-muted); margin-top:8px;">The staff quiz workspace hit a runtime problem, so we stopped it before it could break the whole LMS page.</div>
-                    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:16px;">
-                        <button type="button" class="kiu-btn-outline" data-lms-click="resetLmsQuizBuilderDraft(${jsQuote(context.resourceKey)}); renderLmsQuizSection(${jsQuote(context.resourceKey)})" style="padding:10px 14px; font-size:12px;">
+            <div class="lms-quiz-error-shell">
+                <div class="lms-quiz-error-card">
+                    <div class="lms-quiz-error-title">Quiz Builder could not load</div>
+                    <div class="lms-quiz-error-copy">The staff quiz workspace hit a runtime problem, so we stopped it before it could break the whole LMS page.</div>
+                    <div class="lms-quiz-error-actions">
+                        <button type="button" class="kiu-btn-outline lms-quiz-error-btn" data-lms-click="resetLmsQuizBuilderDraft(${jsQuote(context.resourceKey)}); renderLmsQuizSection(${jsQuote(context.resourceKey)})">
                             <i class="fas fa-life-ring"></i> Reset Builder Draft
                         </button>
-                        <button type="button" class="kiu-btn-blue" data-lms-click="renderLmsQuizSection(${jsQuote(context.resourceKey)})" style="padding:10px 14px; font-size:12px;">
+                        <button type="button" class="kiu-btn-blue lms-quiz-error-btn" data-lms-click="renderLmsQuizSection(${jsQuote(context.resourceKey)})">
                             <i class="fas fa-rotate-right"></i> Reload Quiz Workspace
                         </button>
                     </div>
@@ -2273,15 +2387,26 @@ function renderLmsStudentQuizWorkspace(context) {
 function renderLmsQuizSection(courseId) {
     const contentArea = document.getElementById('lms-content-area');
     if (!contentArea) return;
+    if (typeof cleanupLmsInjectedEnhancementBlocks === 'function') {
+        cleanupLmsInjectedEnhancementBlocks(contentArea);
+    }
     prepareLmsContentAreaForTab('quiz', contentArea);
     const context = resolveLmsQuizWorkspace(courseId);
     if (!context?.resourceKey) {
-        contentArea.innerHTML = upgradeLmsLegacyMarkup(`<div style="background:var(--lux-surface); border:1px dashed var(--kiu-border); border-radius:18px; padding:30px; text-align:center; color:var(--kiu-text-muted);">Open a valid LMS group first to use the quiz workspace.</div>`);
+        contentArea.innerHTML = upgradeLmsLegacyMarkup(`<div class="lms-quiz-empty-state">Open a valid LMS group first to use the quiz workspace.</div>`);
         return;
     }
     currentLmsQuizCourseKey = context.resourceKey;
     syncLmsQuizWorkspaceLifecycle(context.resourceKey);
-    if (getEffectiveUserRole() === USER_ROLES.STUDENT) {
+    const effectiveRole = typeof getEffectiveUserRole === 'function' ? getEffectiveUserRole() : '';
+    const authRole = String(currentUser?.role || '').trim().toLowerCase();
+    if (authRole === USER_ROLES.ADMIN && effectiveRole === USER_ROLES.STUDENT) {
+        console.warn('LMS quiz workspace: admin View-as is routed to the student quiz UI. Use Professor or TA view for Quiz Builder.', {
+            effectiveRole,
+            authRole
+        });
+    }
+    if (effectiveRole === USER_ROLES.STUDENT) {
         renderLmsStudentQuizWorkspace(context);
         return;
     }
@@ -2338,6 +2463,7 @@ function renderStudentLmsQuizSection(courseId, subject = null, group = null) {
                     ? String(submission.status)
                     : availability;
                 const badge = getLmsQuizStatusBadge(badgeKey);
+                const badgeToneClass = getLmsQuizStatusToneClass(badgeKey);
                 const statusLine = String(submission?.status || '') === 'graded'
                     ? `Score: ${Number(submission.finalScoreRaw || 0)} / ${getAdminQuizTotalScore(studentVariantQuiz)}${studentVariantSummary}`
                     : ['submitted', 'auto-submitted'].includes(String(submission?.status || ''))
@@ -2348,50 +2474,50 @@ function renderStudentLmsQuizSection(courseId, subject = null, group = null) {
                             ? `${studentQuestionCount} questions  -  ${quiz.durationMinutes || 20} min${studentVariantSummary}  -  ${sessionGate.status === 'live' ? 'Session live' : sessionGate.message || 'Waiting for session'}`
                             : `${studentQuestionCount} questions  -  ${quiz.durationMinutes || 20} min${studentVariantSummary}`;
                 return `
-                    <div data-lms-student-quiz-card="true" style="background:var(--lux-surface); border:1px solid #dbe7f5; border-radius:20px; padding:18px; box-shadow:0 14px 30px rgba(15,23,42,0.05);">
-                        <div style="display:flex; justify-content:space-between; gap:12px; align-items:flex-start; flex-wrap:wrap;">
+                    <div data-lms-student-quiz-card="true" class="lms-student-quiz-card">
+                        <div class="lms-student-quiz-card-head">
                             <div>
-                                <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-                                    <div style="font-size:12px; font-weight:800; color:var(--lux-text-muted); text-transform:uppercase;">${escapeHtml(getLmsQuizDisplayLabel(quiz))}${quiz.weekLabel ? `  -  ${escapeHtml(quiz.weekLabel)}` : ''}</div>
-                                    ${sessionGate.required ? `<span style="display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border-radius:999px; background:${sessionGate.status === 'live' ? '#ecfdf5' : '#eff6ff'}; color:${sessionGate.status === 'live' ? '#047857' : '#1d4ed8'}; font-size:10px; font-weight:900;"><i class="fas fa-desktop"></i> Lab session ${escapeHtml(sessionGate.status)}</span>` : ''}
-                                    ${submission.variantLabel ? `<span style="display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border-radius:999px; background:rgba(var(--lux-accent-rgb),0.05); color:var(--lux-accent); font-size:10px; font-weight:900;"><i class="fas fa-clone"></i> ${escapeHtml(submission.variantLabel)}</span>` : ''}
+                                <div class="lms-student-quiz-card-title-row">
+                                    <div class="lms-student-quiz-card-eyebrow">${escapeHtml(getLmsQuizDisplayLabel(quiz))}${quiz.weekLabel ? `  -  ${escapeHtml(quiz.weekLabel)}` : ''}</div>
+                                    ${sessionGate.required ? `<span class="lms-student-quiz-pill ${sessionGate.status === 'live' ? 'is-live' : 'is-info'}"><i class="fas fa-desktop"></i> Lab session ${escapeHtml(sessionGate.status)}</span>` : ''}
+                                    ${submission.variantLabel ? `<span class="lms-student-quiz-pill is-accent"><i class="fas fa-clone"></i> ${escapeHtml(submission.variantLabel)}</span>` : ''}
                                 </div>
-                                <div style="font-size:18px; font-weight:900; color:var(--kiu-navy); margin-top:6px;">${escapeHtml(quiz.title || getLmsQuizDisplayLabel(quiz))}</div>
-                                <div data-lms-student-quiz-status="true" style="font-size:12px; color:var(--lux-text-muted); margin-top:6px;">${escapeHtml(statusLine)}</div>
-                                <div style="font-size:11px; color:var(--lux-text-muted); margin-top:4px;">${quiz.availableFrom ? `Starts ${escapeHtml(formatLmsDateTime(quiz.availableFrom))}` : 'Starts immediately'}${quiz.availableUntil ? `  -  Ends ${escapeHtml(formatLmsDateTime(quiz.availableUntil))}` : ''}</div>
+                                <div class="lms-student-quiz-card-title">${escapeHtml(quiz.title || getLmsQuizDisplayLabel(quiz))}</div>
+                                <div data-lms-student-quiz-status="true" class="lms-student-quiz-card-status">${escapeHtml(statusLine)}</div>
+                                <div class="lms-student-quiz-card-schedule">${quiz.availableFrom ? `Starts ${escapeHtml(formatLmsDateTime(quiz.availableFrom))}` : 'Starts immediately'}${quiz.availableUntil ? `  -  Ends ${escapeHtml(formatLmsDateTime(quiz.availableUntil))}` : ''}</div>
                             </div>
-                            <span style="background:${badge.bg}; color:${badge.color}; padding:8px 12px; border-radius:999px; font-size:12px; font-weight:800;">${escapeHtml(badge.label)}</span>
+                            <span class="lms-student-quiz-status-pill ${badgeToneClass}">${escapeHtml(badge.label)}</span>
                         </div>
-                        <div style="display:flex; justify-content:flex-end; margin-top:16px;">
-                            <button data-lms-student-quiz-action="true" type="button" class="kiu-btn-blue" data-lms-click="openLmsStudentQuiz(${jsQuote(resourceKey)}, ${jsQuote(quiz.id)})" style="padding:10px 14px; font-size:12px;">
+                        <div class="lms-student-quiz-card-action-row">
+                            <button data-lms-student-quiz-action="true" type="button" class="kiu-btn-blue lms-student-quiz-primary-btn" data-lms-click="openLmsStudentQuiz(${jsQuote(resourceKey)}, ${jsQuote(quiz.id)})">
                                 <i class="fas fa-arrow-right"></i> ${escapeHtml(['submitted', 'auto-submitted', 'graded'].includes(String(submission?.status || '')) ? 'View Quiz' : 'Open in Anti-Cheat')}
                             </button>
                         </div>
                     </div>
                 `;
-            }).join('') : `<div style="background:white; border:1px dashed #cbd5e1; border-radius:20px; padding:42px 28px; text-align:center; color:var(--lux-text-muted);"><i class="fas fa-file-signature" style="font-size:34px; opacity:0.35; margin-bottom:12px;"></i><div style="font-size:16px; font-weight:800; color:var(--kiu-navy);">No quizzes are visible yet</div><div style="font-size:12px; margin-top:6px;">Published quizzes for ${escapeHtml(subjectLabel)}  -  ${escapeHtml(groupLabel)} will appear here when they are started or scheduled.</div></div>`;
+            }).join('') : `<div class="lms-quiz-empty-state"><i class="fas fa-file-signature lms-empty-state-icon"></i><div class="lms-empty-state-title">No quizzes are visible yet</div><div class="lms-empty-state-copy">Published quizzes for ${escapeHtml(subjectLabel)}  -  ${escapeHtml(groupLabel)} will appear here when they are started or scheduled.</div></div>`;
 
             contentArea.innerHTML = upgradeLmsLegacyMarkup(`
-                <div style="display:grid; gap:18px;">
-                    <div style="background:linear-gradient(135deg, rgba(15,23,42,0.96), rgba(37,99,235,0.9)); color:white; border-radius:22px; padding:20px 22px; box-shadow:0 18px 36px rgba(15,23,42,0.16);">
-                        <div style="font-size:12px; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; opacity:0.8;">My Quizzes</div>
-                        <div style="font-size:24px; font-weight:900; margin-top:8px;">${escapeHtml(subjectLabel)}  -  ${escapeHtml(groupLabel)}</div>
-                        <div style="font-size:13px; opacity:0.92; margin-top:6px;">Students can only answer and submit. Quiz opening and ending are controlled by the professor or teaching assistant.</div>
-                        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:12px;">
-                            <span style="display:inline-flex; align-items:center; gap:6px; padding:8px 12px; border-radius:999px; background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.18); font-size:12px; font-weight:800;">
+                <div class="lms-quiz-studio-shell lms-quiz-builder">
+                    <div class="lms-quiz-studio-hero">
+                        <div class="lms-quiz-studio-kicker">My Quizzes</div>
+                        <div class="lms-quiz-studio-title">${escapeHtml(subjectLabel)}  -  ${escapeHtml(groupLabel)}</div>
+                        <div class="lms-quiz-studio-copy">Students can only answer and submit. Quiz opening and ending are controlled by the professor or teaching assistant.</div>
+                        <div class="lms-quiz-studio-hero-pills">
+                            <span class="lms-quiz-studio-hero-pill">
                                 <i class="fas fa-user"></i> ${escapeHtml(studentName)}
                             </span>
-                            <span style="display:inline-flex; align-items:center; gap:6px; padding:8px 12px; border-radius:999px; background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.18); font-size:12px; font-weight:800;">
+                            <span class="lms-quiz-studio-hero-pill">
                                 <i class="fas fa-id-badge"></i> ${escapeHtml(studentId)}
                             </span>
                         </div>
                     </div>
-                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:12px;">
-                        <div style="padding:14px 16px; border-radius:18px; background:var(--lux-surface); border:1px solid #dbe7f5;"><div style="font-size:11px; font-weight:800; color:var(--lux-text-muted); text-transform:uppercase;">Visible Quizzes</div><div style="font-size:24px; font-weight:900; color:var(--lux-text); margin-top:6px;">${quizzes.length}</div></div>
-                        <div style="padding:14px 16px; border-radius:18px; background:var(--lux-surface); border:1px solid #dbe7f5;"><div style="font-size:11px; font-weight:800; color:var(--lux-text-muted); text-transform:uppercase;">Submitted</div><div style="font-size:24px; font-weight:900; color:var(--lux-text); margin-top:6px;">${submittedCount}</div></div>
-                        <div style="padding:14px 16px; border-radius:18px; background:var(--lux-surface); border:1px solid #dbe7f5;"><div style="font-size:11px; font-weight:800; color:var(--lux-text-muted); text-transform:uppercase;">Graded</div><div style="font-size:24px; font-weight:900; color:var(--lux-text); margin-top:6px;">${gradedCount}</div></div>
+                    <div class="lms-quiz-studio-stat-grid">
+                        <div class="lms-quiz-studio-stat-card"><div class="lms-quiz-studio-stat-label">Visible Quizzes</div><div class="lms-quiz-studio-stat-value">${quizzes.length}</div></div>
+                        <div class="lms-quiz-studio-stat-card"><div class="lms-quiz-studio-stat-label">Submitted</div><div class="lms-quiz-studio-stat-value">${submittedCount}</div></div>
+                        <div class="lms-quiz-studio-stat-card"><div class="lms-quiz-studio-stat-label">Graded</div><div class="lms-quiz-studio-stat-value">${gradedCount}</div></div>
                     </div>
-                    <div style="display:grid; gap:14px;">${cards}</div>
+                    <div class="lms-student-quiz-card-list">${cards}</div>
                 </div>
             `);
             decorateLmsPostSubmitLockedQuizCards(contentArea, quizzes, resourceKey, studentMeta);
@@ -2434,11 +2560,11 @@ function renderStudentLmsQuizSection(courseId, subject = null, group = null) {
         const refreshedAvailability = getLmsQuizAvailabilityState(selectedQuiz, refreshedSubmission);
         if (!isProtectedQuizSessionAuthorized(resourceKey, selectedQuiz.id) && !['submitted', 'auto-submitted', 'graded'].includes(String(refreshedSubmission?.status || ''))) {
             contentArea.innerHTML = `
-                <div style="display:grid; gap:18px;">
-                    <div style="background:linear-gradient(135deg, rgba(15,23,42,0.96), rgba(37,99,235,0.9)); color:white; border-radius:22px; padding:20px 22px; box-shadow:0 18px 36px rgba(15,23,42,0.16);">
-                        <div style="font-size:12px; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; opacity:0.8;">Protected Quiz</div>
-                        <div style="font-size:24px; font-weight:900; margin-top:8px;">${escapeHtml(selectedQuiz.title || getLmsQuizDisplayLabel(selectedQuiz))}</div>
-                        <div style="font-size:13px; opacity:0.92; margin-top:6px;">${escapeHtml(subjectLabel)} / ${escapeHtml(groupLabel)}</div>
+                <div class="lms-quiz-studio-shell lms-quiz-builder">
+                    <div class="lms-quiz-studio-hero">
+                        <div class="lms-quiz-studio-kicker">Protected Quiz</div>
+                        <div class="lms-quiz-studio-title">${escapeHtml(selectedQuiz.title || getLmsQuizDisplayLabel(selectedQuiz))}</div>
+                        <div class="lms-quiz-studio-copy">${escapeHtml(subjectLabel)} / ${escapeHtml(groupLabel)}</div>
                     </div>
                     ${renderProtectedQuizLaunchShell(resourceKey, selectedQuiz, subjectLabel, groupLabel)}
                 </div>
@@ -2452,6 +2578,7 @@ function renderStudentLmsQuizSection(courseId, subject = null, group = null) {
         const warningCount = getLmsQuizProctorAlertCount(refreshedSubmission);
         const outsideActionCount = Number(refreshedSubmission.outsideActionCount || 0);
         const badge = getLmsQuizStatusBadge(refreshedAvailability);
+        const badgeToneClass = getLmsQuizStatusToneClass(refreshedAvailability);
         const effectiveEnd = getLmsQuizEffectiveEndAt(selectedQuiz, refreshedSubmission);
         const manualMax = getLmsQuizManualMax(variantScopedQuiz);
         const sessionGate = getLmsQuizExamSessionGateStatus(resourceKey, selectedQuiz, refreshedSubmission, studentId);
@@ -2465,22 +2592,22 @@ function renderStudentLmsQuizSection(courseId, subject = null, group = null) {
             const disabled = blueLockActive || sessionLockActive || ['submitted', 'auto-submitted', 'graded'].includes(String(refreshedSubmission?.status || '')) || refreshedAvailability === 'closed';
             if (String(question.type || 'mcq') === 'written') {
                 return `
-                    <div style="padding:18px; border:1px solid #dbe7f5; border-radius:18px; background:var(--lux-surface);">
-                        <div style="font-size:13px; font-weight:800; color:var(--kiu-navy);">Question ${index + 1}</div>
-                        <div style="font-size:14px; color:var(--lux-text); margin-top:10px; line-height:1.6;">${escapeHtml(question.text || '')}</div>
-                        <textarea ${disabled ? 'disabled' : ''} data-lms-input="updateLmsQuizDraftAnswer(${jsQuote(resourceKey)}, ${jsQuote(selectedQuiz.id)}, ${jsQuote(question.id)}, 'text', this.value)" placeholder="Write your answer here..." style="width:100%; min-height:140px; margin-top:14px; border:1px solid #dbe7f5; border-radius:14px; padding:12px; outline:none; resize:vertical; background:${disabled ? '#f8fafc' : 'white'};">${escapeHtml(answer.text || '')}</textarea>
+                    <div class="lms-student-quiz-question-card">
+                        <div class="lms-student-quiz-question-label">Question ${index + 1}</div>
+                        <div class="lms-student-quiz-question-text">${escapeHtml(question.text || '')}</div>
+                        <textarea ${disabled ? 'disabled' : ''} data-lms-input="updateLmsQuizDraftAnswer(${jsQuote(resourceKey)}, ${jsQuote(selectedQuiz.id)}, ${jsQuote(question.id)}, 'text', this.value)" placeholder="Write your answer here..." class="lms-quiz-answer-textarea${disabled ? ' is-disabled' : ''}">${escapeHtml(answer.text || '')}</textarea>
                     </div>
                 `;
             }
             return `
-                <div style="padding:18px; border:1px solid #dbe7f5; border-radius:18px; background:var(--lux-surface);">
-                    <div style="font-size:13px; font-weight:800; color:var(--kiu-navy);">Question ${index + 1}</div>
-                    <div style="font-size:14px; color:var(--lux-text); margin-top:10px; line-height:1.6;">${escapeHtml(question.text || '')}</div>
-                    <div style="display:grid; gap:10px; margin-top:14px;">
+                <div class="lms-student-quiz-question-card">
+                    <div class="lms-student-quiz-question-label">Question ${index + 1}</div>
+                    <div class="lms-student-quiz-question-text">${escapeHtml(question.text || '')}</div>
+                    <div class="lms-student-quiz-question-options">
                         ${(question.options || []).map((option, optionIndex) => `
-                            <label style="display:flex; gap:10px; align-items:flex-start; padding:12px 14px; border:1px solid #dbe7f5; border-radius:14px; background:${Number(answer.selectedOption) === optionIndex ? '#eff6ff' : '#ffffff'};">
+                            <label class="lms-quiz-option-row${Number(answer.selectedOption) === optionIndex ? ' is-selected' : ''}">
                                 <input type="radio" name="lms-quiz-${escapeHtml(selectedQuiz.id)}-${escapeHtml(question.id)}" value="${optionIndex}" ${Number(answer.selectedOption) === optionIndex ? 'checked' : ''} ${disabled ? 'disabled' : ''} data-lms-change="updateLmsQuizDraftAnswer(${jsQuote(resourceKey)}, ${jsQuote(selectedQuiz.id)}, ${jsQuote(question.id)}, 'selectedOption', this.value)">
-                                <span style="font-size:13px; color:var(--lux-text); line-height:1.5;">${escapeHtml(option)}</span>
+                                <span class="lms-student-quiz-option-copy">${escapeHtml(option)}</span>
                             </label>
                         `).join('')}
                     </div>
@@ -2491,75 +2618,75 @@ function renderStudentLmsQuizSection(courseId, subject = null, group = null) {
         const requiresCover = !revealActive && ['open', 'in-progress'].includes(refreshedAvailability) && !['submitted', 'auto-submitted', 'graded'].includes(String(refreshedSubmission?.status || ''));
         const showSubmit = revealActive && !blueLockActive && !sessionLockActive && ['open', 'in-progress'].includes(refreshedAvailability) && !['submitted', 'auto-submitted', 'graded'].includes(String(refreshedSubmission?.status || ''));
         const resultMarkup = refreshedSubmission?.status === 'graded'
-            ? `<div style="margin-top:16px; padding:16px 18px; border-radius:18px; background:rgba(var(--lux-accent-rgb),0.05); border:1px solid rgba(14,116,144,0.18); color:var(--lux-text);">
-                    <div style="font-size:12px; font-weight:900; color:var(--lux-accent); text-transform:uppercase; letter-spacing:0.06em;">Final result</div>
-                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:10px; margin-top:10px;">
-                        <div><div style="font-size:11px; color:var(--lux-text-muted); font-weight:800; text-transform:uppercase;">Objective</div><div style="font-size:20px; font-weight:900;">${Number(refreshedSubmission.autoScoreRaw || 0)}</div></div>
-                        <div><div style="font-size:11px; color:var(--lux-text-muted); font-weight:800; text-transform:uppercase;">Manual</div><div style="font-size:20px; font-weight:900;">${Number(refreshedSubmission.manualScoreRaw || 0)}</div></div>
-                        <div><div style="font-size:11px; color:var(--lux-text-muted); font-weight:800; text-transform:uppercase;">Total</div><div style="font-size:20px; font-weight:900;">${Number(refreshedSubmission.finalScoreRaw || 0)} / ${getAdminQuizTotalScore(variantScopedQuiz)}</div></div>
-                        <div><div style="font-size:11px; color:var(--lux-text-muted); font-weight:800; text-transform:uppercase;">Gradebook</div><div style="font-size:20px; font-weight:900;">${refreshedSubmission.gradebookScore === null || refreshedSubmission.gradebookScore === undefined ? '-' : Number(refreshedSubmission.gradebookScore)}</div></div>
+            ? `<div class="lms-student-quiz-result-card lms-quiz-result-shell">
+                    <div class="lms-student-quiz-result-title lms-quiz-result-title">Final result</div>
+                    <div class="lms-student-quiz-result-grid lms-quiz-result-grid">
+                        <div class="lms-quiz-result-item"><div class="lms-student-quiz-result-label lms-quiz-result-label">Objective</div><div class="lms-student-quiz-result-value lms-quiz-result-value">${Number(refreshedSubmission.autoScoreRaw || 0)}</div></div>
+                        <div class="lms-quiz-result-item"><div class="lms-student-quiz-result-label lms-quiz-result-label">Manual</div><div class="lms-student-quiz-result-value lms-quiz-result-value">${Number(refreshedSubmission.manualScoreRaw || 0)}</div></div>
+                        <div class="lms-quiz-result-item"><div class="lms-student-quiz-result-label lms-quiz-result-label">Total</div><div class="lms-student-quiz-result-value lms-quiz-result-value">${Number(refreshedSubmission.finalScoreRaw || 0)} / ${getAdminQuizTotalScore(variantScopedQuiz)}</div></div>
+                        <div class="lms-quiz-result-item"><div class="lms-student-quiz-result-label lms-quiz-result-label">Gradebook</div><div class="lms-student-quiz-result-value lms-quiz-result-value">${refreshedSubmission.gradebookScore === null || refreshedSubmission.gradebookScore === undefined ? '-' : Number(refreshedSubmission.gradebookScore)}</div></div>
                     </div>
-                    <div style="font-size:12px; color:var(--lux-text-muted); margin-top:10px;">Reviewed by ${escapeHtml(refreshedSubmission.reviewedBy || refreshedSubmission.gradedBy || 'Staff')}${refreshedSubmission.gradedAt ? ` on ${escapeHtml(formatLmsDateTime(refreshedSubmission.gradedAt))}` : ''}.</div>
+                    <div class="lms-student-quiz-result-meta lms-quiz-result-meta">Reviewed by ${escapeHtml(refreshedSubmission.reviewedBy || refreshedSubmission.gradedBy || 'Staff')}${refreshedSubmission.gradedAt ? ` on ${escapeHtml(formatLmsDateTime(refreshedSubmission.gradedAt))}` : ''}.</div>
                 </div>`
                 : ['submitted', 'auto-submitted'].includes(String(refreshedSubmission?.status || ''))
-                    ? `<div style="margin-top:16px; padding:16px 18px; border-radius:18px; background:rgba(var(--lux-accent-rgb),0.06); border:1px solid rgba(251,146,60,0.25); color:var(--lux-text-muted);">
-                            <div style="font-size:13px; font-weight:900; color:var(--kiu-navy);">Submitted. Final grade pending review.</div>
-                            <div style="font-size:12px; margin-top:6px;">Objective score recorded: <strong>${Number(refreshedSubmission.autoScoreRaw || 0)}</strong>. ${manualMax > 0 ? 'TA / professor manual grading is required before the gradebook score is published.' : getLmsQuizAutoSubmitNotice(refreshedSubmission, false, 'Staff')}</div>
+                    ? `<div class="lms-student-quiz-notice is-warning lms-quiz-state-notice lms-quiz-state-notice--pending-review">
+                            <div class="lms-student-quiz-notice-title lms-quiz-state-notice-title">Submitted. Final grade pending review.</div>
+                            <div class="lms-student-quiz-notice-copy lms-quiz-state-notice-copy">Objective score recorded: <strong>${Number(refreshedSubmission.autoScoreRaw || 0)}</strong>. ${manualMax > 0 ? 'TA / professor manual grading is required before the gradebook score is published.' : getLmsQuizAutoSubmitNotice(refreshedSubmission, false, 'Staff')}</div>
                         </div>`
                     : '';
 
         contentArea.innerHTML = `
-            <div style="display:grid; gap:18px;">
-                <div style="background:linear-gradient(135deg, rgba(15,23,42,0.96), rgba(37,99,235,0.9)); color:white; border-radius:22px; padding:20px 22px; box-shadow:0 18px 36px rgba(15,23,42,0.16);">
-                    <div style="display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; align-items:flex-start;">
+            <div class="lms-student-quiz-shell">
+                <div class="lms-quiz-studio-hero">
+                    <div class="lms-quiz-studio-hero-head">
                         <div>
-                            <button type="button" class="kiu-btn-outline" data-lms-click="backToStudentLmsQuizList(${jsQuote(resourceKey)})" style="border-color:rgba(255,255,255,0.32); color:white; background:rgba(255,255,255,0.08); padding:8px 12px; font-size:12px;"><i class="fas fa-arrow-left"></i> Back to Quizzes</button>
-                            <div style="font-size:12px; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; opacity:0.8; margin-top:12px;">${escapeHtml(getLmsQuizDisplayLabel(selectedQuiz))}</div>
-                            <div style="font-size:24px; font-weight:900; margin-top:8px;">${escapeHtml(selectedQuiz.title || getLmsQuizDisplayLabel(selectedQuiz))}</div>
-                            <div style="font-size:13px; opacity:0.92; margin-top:6px;">${escapeHtml(subjectLabel)}  -  ${escapeHtml(groupLabel)}${selectedQuiz.weekLabel ? `  -  ${escapeHtml(selectedQuiz.weekLabel)}` : ''}${refreshedSubmission.variantLabel ? `  -  ${escapeHtml(refreshedSubmission.variantLabel)}` : ''}</div>
+                            <button type="button" class="kiu-btn-outline lms-student-quiz-back-btn" data-lms-click="backToStudentLmsQuizList(${jsQuote(resourceKey)})"><i class="fas fa-arrow-left"></i> Back to Quizzes</button>
+                            <div class="lms-quiz-studio-kicker">${escapeHtml(getLmsQuizDisplayLabel(selectedQuiz))}</div>
+                            <div class="lms-quiz-studio-title">${escapeHtml(selectedQuiz.title || getLmsQuizDisplayLabel(selectedQuiz))}</div>
+                            <div class="lms-quiz-studio-copy">${escapeHtml(subjectLabel)}  -  ${escapeHtml(groupLabel)}${selectedQuiz.weekLabel ? `  -  ${escapeHtml(selectedQuiz.weekLabel)}` : ''}${refreshedSubmission.variantLabel ? `  -  ${escapeHtml(refreshedSubmission.variantLabel)}` : ''}</div>
                         </div>
-                        <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
-                            <span style="background:${badge.bg}; color:${badge.color}; padding:8px 12px; border-radius:999px; font-size:12px; font-weight:800;">${escapeHtml(badge.label)}</span>
-                            ${examSession ? `<span style="background:${sessionGate.status === 'live' ? 'rgba(16,185,129,0.18)' : 'rgba(255,255,255,0.12)'}; border:1px solid ${sessionGate.status === 'live' ? 'rgba(16,185,129,0.32)' : 'rgba(255,255,255,0.18)'}; color:${sessionGate.status === 'live' ? '#d1fae5' : '#dbeafe'}; padding:8px 12px; border-radius:999px; font-size:12px; font-weight:800;">${escapeHtml(`Lab session ${sessionGate.status}`)}</span>` : ''}
-                            ${blueGate.required ? `<span style="background:${blueGate.connected ? 'rgba(16,185,129,0.18)' : 'rgba(239,68,68,0.18)'}; border:1px solid ${blueGate.connected ? 'rgba(16,185,129,0.3)' : 'rgba(239,68,68,0.3)'}; color:${blueGate.connected ? '#d1fae5' : '#fee2e2'}; padding:8px 12px; border-radius:999px; font-size:12px; font-weight:800;">${blueGate.connected ? 'Verification connected' : 'Verification locked'}</span>` : ''}
-                            <span id="lms-student-quiz-countdown" style="background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.18); padding:8px 12px; border-radius:999px; font-size:12px; font-weight:800;">${effectiveEnd ? 'Calculating timer...' : `Duration: ${selectedQuiz.durationMinutes || 20} min`}</span>
+                        <div class="lms-quiz-studio-hero-pills">
+                            <span class="lms-student-quiz-status-pill ${badgeToneClass}">${escapeHtml(badge.label)}</span>
+                            ${examSession ? `<span class="lms-student-quiz-session-pill ${sessionGate.status === 'live' ? 'is-live' : 'is-pending'}">${escapeHtml(`Lab session ${sessionGate.status}`)}</span>` : ''}
+                            ${blueGate.required ? `<span class="lms-student-quiz-verification-pill ${blueGate.connected ? 'is-live' : 'is-locked'}">${blueGate.connected ? 'Verification connected' : 'Verification locked'}</span>` : ''}
+                            <span id="lms-student-quiz-countdown" class="lms-student-quiz-count-pill">${effectiveEnd ? 'Calculating timer...' : `Duration: ${selectedQuiz.durationMinutes || 20} min`}</span>
                         </div>
                     </div>
-                    ${selectedQuiz.instructions ? `<div style="margin-top:14px; font-size:13px; line-height:1.6; color:rgba(255,255,255,0.9);">${escapeHtml(selectedQuiz.instructions)}</div>` : ''}
+                    ${selectedQuiz.instructions ? `<div class="lms-quiz-studio-copy">${escapeHtml(selectedQuiz.instructions)}</div>` : ''}
                 </div>
-                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:12px;">
-                    <div style="padding:14px 16px; border-radius:18px; background:var(--lux-surface); border:1px solid #dbe7f5;"><div style="font-size:11px; font-weight:800; text-transform:uppercase; color:var(--lux-text-muted);">Questions</div><div style="font-size:24px; font-weight:900; color:var(--lux-text); margin-top:6px;">${activeQuestions.length}</div></div>
-                    <div style="padding:14px 16px; border-radius:18px; background:var(--lux-surface); border:1px solid #dbe7f5;"><div style="font-size:11px; font-weight:800; text-transform:uppercase; color:var(--lux-text-muted);">Total Points</div><div style="font-size:24px; font-weight:900; color:var(--lux-text); margin-top:6px;">${getAdminQuizTotalScore(variantScopedQuiz)}</div></div>
-                    <div style="padding:14px 16px; border-radius:18px; background:var(--lux-surface); border:1px solid #dbe7f5;"><div style="font-size:11px; font-weight:800; text-transform:uppercase; color:var(--lux-text-muted);">Manual Review</div><div style="font-size:24px; font-weight:900; color:var(--lux-text); margin-top:6px;">${manualMax > 0 ? `${manualMax} pts` : 'No'}</div></div>
-                    <div style="padding:14px 16px; border-radius:18px; background:var(--lux-surface); border:1px solid #dbe7f5;"><div style="font-size:11px; font-weight:800; text-transform:uppercase; color:var(--lux-text-muted);">Outside Actions</div><div style="font-size:24px; font-weight:900; color:var(--lux-text); margin-top:6px;">${outsideActionCount}</div><div style="font-size:11px; color:var(--lux-text-muted); margin-top:4px;">Warnings ${warningCount} / ${protectionConfig.maxWarnings}</div></div>
+                <div class="lms-quiz-studio-stat-grid">
+                    <div class="lms-quiz-studio-stat-card"><div class="lms-quiz-studio-stat-label">Questions</div><div class="lms-quiz-studio-stat-value">${activeQuestions.length}</div></div>
+                    <div class="lms-quiz-studio-stat-card"><div class="lms-quiz-studio-stat-label">Total Points</div><div class="lms-quiz-studio-stat-value">${getAdminQuizTotalScore(variantScopedQuiz)}</div></div>
+                    <div class="lms-quiz-studio-stat-card"><div class="lms-quiz-studio-stat-label">Manual Review</div><div class="lms-quiz-studio-stat-value">${manualMax > 0 ? `${manualMax} pts` : 'No'}</div></div>
+                    <div class="lms-quiz-studio-stat-card${warningCount > 0 || outsideActionCount > 0 ? ' is-alert' : ''}"><div class="lms-quiz-studio-stat-label">Outside Actions</div><div class="lms-quiz-studio-stat-value">${outsideActionCount}</div><div class="lms-quiz-studio-stat-copy">Warnings ${warningCount} / ${protectionConfig.maxWarnings}</div></div>
                 </div>
-                ${focusState.active && focusState.warningMessage ? `<div style="padding:16px 18px; border-radius:18px; background:rgba(var(--lux-accent-rgb),0.06); border:1px solid rgba(251,146,60,0.25); color:var(--lux-text-muted);"><strong>Warning recorded:</strong> ${escapeHtml(focusState.warningMessage)}. TA / professor can see this on their monitoring screen.</div>` : ''}
-                ${latestProctorEvent ? `<div style="padding:14px 16px; border-radius:18px; background:var(--lux-bg-soft); border:1px solid rgba(148,163,184,0.18); color:var(--lux-text-muted); font-size:12px;"><strong>Latest monitoring event:</strong> ${escapeHtml(latestProctorEvent.note || latestProctorEvent.type || 'Activity logged')}<div style="margin-top:4px; color:var(--lux-text-muted);">${escapeHtml(formatLmsDateTime(latestProctorEvent.createdAt))}</div></div>` : ''}
-                ${sessionGate.required ? `<div style="padding:16px 18px; border-radius:18px; background:${sessionGate.startUnlocked ? '#ecfdf5' : '#eff6ff'}; border:1px solid ${sessionGate.startUnlocked ? 'rgba(16,185,129,0.22)' : 'rgba(59,130,246,0.2)'}; color:${sessionGate.startUnlocked ? '#047857' : '#1d4ed8'};"><strong>KIU Wired Lab Exam Session:</strong> ${escapeHtml(sessionGate.startUnlocked ? 'Your account is approved on the exam list and staff already started the room session.' : sessionGate.message || 'Waiting for lab session start.')}${examSession?.endsAt ? `<div style="margin-top:8px; font-size:12px; color:inherit;">Session ends ${escapeHtml(formatLmsDateTime(examSession.endsAt))}</div>` : ''}</div>` : ''}
-                ${refreshedAvailability === 'upcoming' ? `<div style="padding:16px 18px; border-radius:18px; background:rgba(var(--lux-accent-rgb),0.06); border:1px solid rgba(59,130,246,0.2); color:var(--lux-accent);">This quiz is scheduled. It will open automatically at ${escapeHtml(formatLmsDateTime(selectedQuiz.availableFrom))}.</div>` : ''}
-                ${refreshedAvailability === 'closed' && !['submitted', 'auto-submitted', 'graded'].includes(String(refreshedSubmission?.status || '')) ? `<div style="padding:16px 18px; border-radius:18px; background:rgba(220,38,38,0.06); border:1px solid rgba(239,68,68,0.18); color:#dc2626;">This quiz is closed.</div>` : ''}
+                ${focusState.active && focusState.warningMessage ? `<div class="lms-student-quiz-notice is-warning lms-quiz-state-notice lms-quiz-state-notice--warning"><div class="lms-quiz-state-notice-title">Warning recorded</div><div class="lms-quiz-state-notice-copy">${escapeHtml(focusState.warningMessage)}. TA / professor can see this on their monitoring screen.</div></div>` : ''}
+                ${latestProctorEvent ? `<div class="lms-student-quiz-notice is-muted lms-quiz-state-notice lms-quiz-state-notice--latest-event"><div class="lms-quiz-state-notice-title">Latest monitoring event</div><div class="lms-quiz-state-notice-copy">${escapeHtml(latestProctorEvent.note || latestProctorEvent.type || 'Activity logged')}</div><div class="lms-student-quiz-notice-meta lms-quiz-state-notice-meta">${escapeHtml(formatLmsDateTime(latestProctorEvent.createdAt))}</div></div>` : ''}
+                ${sessionGate.required ? `<div class="lms-student-quiz-notice ${sessionGate.startUnlocked ? 'is-success' : 'is-info'} lms-quiz-state-notice lms-quiz-state-notice--session-gate"><div class="lms-quiz-state-notice-title">KIU Wired Lab Exam Session</div><div class="lms-quiz-state-notice-copy">${escapeHtml(sessionGate.startUnlocked ? 'Your account is approved on the exam list and staff already started the room session.' : sessionGate.message || 'Waiting for lab session start.')}</div>${examSession?.endsAt ? `<div class="lms-student-quiz-notice-meta lms-quiz-state-notice-meta">Session ends ${escapeHtml(formatLmsDateTime(examSession.endsAt))}</div>` : ''}</div>` : ''}
+                ${refreshedAvailability === 'upcoming' ? `<div class="lms-student-quiz-notice is-info lms-quiz-state-notice lms-quiz-state-notice--upcoming"><div class="lms-quiz-state-notice-title">Quiz scheduled</div><div class="lms-quiz-state-notice-copy">This quiz will open automatically at ${escapeHtml(formatLmsDateTime(selectedQuiz.availableFrom))}.</div></div>` : ''}
+                ${refreshedAvailability === 'closed' && !['submitted', 'auto-submitted', 'graded'].includes(String(refreshedSubmission?.status || '')) ? `<div class="lms-student-quiz-notice is-danger lms-quiz-state-notice lms-quiz-state-notice--closed"><div class="lms-quiz-state-notice-title">Quiz closed</div><div class="lms-quiz-state-notice-copy">This quiz is closed.</div></div>` : ''}
                 ${requiresCover ? `
-                    <div style="display:grid; place-items:center; min-height:420px; background:var(--lux-surface); border:1px solid #dbe7f5; border-radius:24px; box-shadow:0 18px 36px rgba(15,23,42,0.05);">
-                        <div style="max-width:520px; padding:32px; text-align:center;">
-                            <div style="width:72px; height:72px; border-radius:22px; background:rgba(var(--lux-accent-rgb),0.06); color:var(--lux-accent); display:grid; place-items:center; font-size:28px; margin:0 auto 18px;">
+                    <div class="lms-student-quiz-cover lms-quiz-gate-shell">
+                        <div class="lms-student-quiz-cover-inner is-compact lms-quiz-gate-shell-inner">
+                            <div class="lms-student-quiz-cover-icon is-accent lms-quiz-gate-shell-icon">
                                 <i class="fas fa-shield-alt"></i>
                             </div>
-                            <div style="font-size:26px; font-weight:900; color:var(--lux-text);">Quiz Protected View</div>
-                            <div style="font-size:13px; color:var(--lux-text-muted); line-height:1.7; margin-top:10px;">
+                            <div class="lms-student-quiz-cover-title lms-quiz-gate-shell-title">Quiz Protected View</div>
+                            <div class="lms-student-quiz-cover-copy lms-quiz-gate-shell-copy">
                                 The quiz body stays hidden until the student presses <strong>Start Quiz</strong>.
                                 After that, quiz focus mode will open, portal navigation will hide, suspicious actions will be reported to TA / professor, and the system will auto-submit after <strong>${protectionConfig.maxWarnings} warnings</strong>.
                             </div>
-                            ${sessionGate.required ? `<div style="margin-top:14px; padding:14px 16px; border-radius:16px; background:${sessionGate.startUnlocked ? '#ecfdf5' : '#eff6ff'}; border:1px solid ${sessionGate.startUnlocked ? 'rgba(16,185,129,0.22)' : 'rgba(59,130,246,0.18)'}; text-align:left;"><div style="font-size:11px; font-weight:900; letter-spacing:0.08em; text-transform:uppercase; color:var(--lux-text-muted);">Lab Session Gate</div><div style="font-size:13px; color:var(--lux-text-muted); margin-top:8px; line-height:1.7;">${escapeHtml(sessionGate.startUnlocked ? 'Staff started the lab exam session and your account is on the approved list.' : sessionGate.message || 'Waiting for lab session start.')}</div></div>` : ''}
-                            <div style="display:grid; gap:10px; margin-top:18px; text-align:left; padding:16px 18px; border-radius:18px; background:var(--lux-bg-soft); border:1px solid #dbe7f5;">
-                                <div style="font-size:11px; font-weight:900; letter-spacing:0.08em; text-transform:uppercase; color:var(--lux-text-muted);">Protection Rules</div>
-                                <div style="font-size:13px; color:var(--lux-text-muted); line-height:1.7;">
+                            ${sessionGate.required ? `<div class="lms-student-quiz-cover-panel lms-quiz-gate-panel ${sessionGate.startUnlocked ? 'is-success' : 'is-info'}"><div class="lms-student-quiz-cover-panel-title lms-quiz-gate-panel-title">Lab Session Gate</div><div class="lms-student-quiz-cover-panel-copy lms-quiz-gate-panel-copy">${escapeHtml(sessionGate.startUnlocked ? 'Staff started the lab exam session and your account is on the approved list.' : sessionGate.message || 'Waiting for lab session start.')}</div></div>` : ''}
+                            <div class="lms-student-quiz-cover-rules lms-quiz-gate-rules">
+                                <div class="lms-student-quiz-cover-panel-title lms-quiz-gate-panel-title">Protection Rules</div>
+                                <div class="lms-student-quiz-cover-rule-list lms-quiz-gate-rule-list">
                                     <div>Fullscreen is required while the quiz is open.</div>
                                     <div>Leaving the tab, refreshing, opening blocked shortcuts, copy/paste, right click, selection, and drag actions are monitored.</div>
                                     <div>Leaving the protected quiz view before finishing submits the attempt immediately.</div>
                                 </div>
                             </div>
-                            <div style="display:flex; justify-content:center; margin-top:22px;">
-                                <button type="button" class="kiu-btn-blue" data-lms-click="revealLmsStudentQuiz(${jsQuote(resourceKey)}, ${jsQuote(selectedQuiz.id)})" ${(blueGate.required && !blueGate.startUnlocked) || (sessionGate.required && !sessionGate.startUnlocked) ? 'disabled' : ''} style="padding:12px 18px; font-size:13px; ${(blueGate.required && !blueGate.startUnlocked) || (sessionGate.required && !sessionGate.startUnlocked) ? 'opacity:0.55; cursor:not-allowed;' : ''}">
+                            <div class="lms-student-quiz-cover-actions lms-quiz-gate-actions">
+                                <button type="button" class="kiu-btn-blue lms-student-quiz-cover-btn" data-lms-click="revealLmsStudentQuiz(${jsQuote(resourceKey)}, ${jsQuote(selectedQuiz.id)})" ${(blueGate.required && !blueGate.startUnlocked) || (sessionGate.required && !sessionGate.startUnlocked) ? 'disabled' : ''}>
                                     <i class="fas fa-play"></i> Start Quiz
                                 </button>
                             </div>
@@ -2568,31 +2695,31 @@ function renderStudentLmsQuizSection(courseId, subject = null, group = null) {
                 ` : ''}
                 ${!requiresCover && ['open', 'in-progress', 'submitted', 'auto-submitted', 'graded', 'closed'].includes(refreshedAvailability) ? (
                     sessionLockActive
-                        ? `<div style="display:grid; place-items:center; min-height:420px; background:var(--lux-surface); border:1px solid rgba(59,130,246,0.16); border-radius:24px; box-shadow:0 18px 36px rgba(15,23,42,0.05);">
-                            <div style="max-width:620px; padding:34px; text-align:center;">
-                                <div style="width:72px; height:72px; border-radius:22px; background:rgba(var(--lux-accent-rgb),0.10); color:var(--lux-accent); display:grid; place-items:center; font-size:28px; margin:0 auto 18px;">
+                        ? `<div class="lms-student-quiz-cover is-info lms-quiz-lock-shell">
+                            <div class="lms-student-quiz-cover-inner lms-quiz-lock-shell-inner">
+                                <div class="lms-student-quiz-cover-icon is-accent">
                                     <i class="fas fa-desktop"></i>
                                 </div>
-                                <div style="font-size:26px; font-weight:900; color:var(--lux-text);">Lab Exam Session Locked</div>
-                                <div style="font-size:13px; color:var(--lux-text-muted); line-height:1.8; margin-top:10px;">${escapeHtml(sessionGate.message || 'This lab exam session is locked for your account right now.')}</div>
-                                ${examSession?.endsAt ? `<div style="display:flex; justify-content:center; gap:12px; flex-wrap:wrap; margin-top:18px;"><span style="display:inline-flex; align-items:center; gap:8px; padding:10px 14px; border-radius:999px; background:rgba(var(--lux-accent-rgb),0.06); color:var(--lux-accent); font-size:12px; font-weight:900; border:1px solid rgba(59,130,246,0.18);"><i class="fas fa-stopwatch"></i> Session window ends ${escapeHtml(formatLmsDateTime(examSession.endsAt))}</span></div>` : ''}
+                                <div class="lms-student-quiz-cover-title lms-quiz-lock-shell-title">Lab Exam Session Locked</div>
+                                <div class="lms-student-quiz-cover-copy lms-quiz-lock-shell-copy">${escapeHtml(sessionGate.message || 'This lab exam session is locked for your account right now.')}</div>
+                                ${examSession?.endsAt ? `<div class="lms-student-quiz-cover-pill-row lms-quiz-lock-shell-pill-row"><span class="lms-student-quiz-cover-pill is-info"><i class="fas fa-stopwatch"></i> Session window ends ${escapeHtml(formatLmsDateTime(examSession.endsAt))}</span></div>` : ''}
                             </div>
                         </div>`
                         : blueLockActive
-                        ? `<div style="display:grid; place-items:center; min-height:420px; background:var(--lux-surface); border:1px solid rgba(239,68,68,0.16); border-radius:24px; box-shadow:0 18px 36px rgba(15,23,42,0.05);">
-                            <div style="max-width:620px; padding:34px; text-align:center;">
-                                <div style="width:72px; height:72px; border-radius:22px; background:rgba(220,38,38,0.08); color:#dc2626; display:grid; place-items:center; font-size:28px; margin:0 auto 18px;">
+                        ? `<div class="lms-student-quiz-cover is-danger lms-quiz-lock-shell">
+                            <div class="lms-student-quiz-cover-inner lms-quiz-lock-shell-inner">
+                                <div class="lms-student-quiz-cover-icon is-danger">
                                     <i class="fas fa-wifi"></i>
                                 </div>
-                                <div style="font-size:26px; font-weight:900; color:var(--lux-text);">Quiz Locked Until Verification Reconnects</div>
-                                <div style="font-size:13px; color:var(--lux-text-muted); line-height:1.8; margin-top:10px;">Your saved answers are preserved, but the quiz body stays blank while this account is disconnected from exam verification. Reconnect and this page will restore automatically.</div>
-                                <div style="display:flex; justify-content:center; gap:12px; flex-wrap:wrap; margin-top:18px;">
-                                    <span style="display:inline-flex; align-items:center; gap:8px; padding:10px 14px; border-radius:999px; background:rgba(220,38,38,0.06); color:#dc2626; font-size:12px; font-weight:900; border:1px solid rgba(239,68,68,0.18);"><i class="fas fa-stopwatch"></i> Disconnected for <span id="lms-blue-disconnect-timer">${escapeHtml(formatLmsDurationLabel(blueGate.disconnectElapsedMs))}</span></span>
-                                    <span style="display:inline-flex; align-items:center; gap:8px; padding:10px 14px; border-radius:999px; background:rgba(var(--lux-accent-rgb),0.06); color:var(--lux-text-muted); font-size:12px; font-weight:900; border:1px solid rgba(251,146,60,0.18);"><i class="fas fa-triangle-exclamation"></i> Submit stays locked while disconnected</span>
+                                <div class="lms-student-quiz-cover-title lms-quiz-lock-shell-title">Quiz Locked Until Verification Reconnects</div>
+                                <div class="lms-student-quiz-cover-copy lms-quiz-lock-shell-copy">Your saved answers are preserved, but the quiz body stays blank while this account is disconnected from exam verification. Reconnect and this page will restore automatically.</div>
+                                <div class="lms-student-quiz-cover-pill-row lms-quiz-lock-shell-pill-row">
+                                    <span class="lms-student-quiz-cover-pill is-danger"><i class="fas fa-stopwatch"></i> Disconnected for <span id="lms-blue-disconnect-timer">${escapeHtml(formatLmsDurationLabel(blueGate.disconnectElapsedMs))}</span></span>
+                                    <span class="lms-student-quiz-cover-pill is-warning"><i class="fas fa-triangle-exclamation"></i> Submit stays locked while disconnected</span>
                                 </div>
                             </div>
                         </div>`
-                        : `<div style="display:grid; gap:14px;">${answersMarkup}${showSubmit ? `<div style="display:flex; justify-content:flex-end;"><button type="button" class="kiu-btn-blue" data-lms-click="submitLmsStudentQuiz(${jsQuote(resourceKey)}, ${jsQuote(selectedQuiz.id)})" style="padding:10px 14px; font-size:12px;"><i class="fas fa-paper-plane"></i> Submit Answers</button></div>` : ''}</div>`
+                        : `<div class="lms-student-quiz-answer-shell">${answersMarkup}${showSubmit ? `<div class="lms-student-quiz-submit-row"><button type="button" class="kiu-btn-blue lms-student-quiz-submit-btn" data-lms-click="submitLmsStudentQuiz(${jsQuote(resourceKey)}, ${jsQuote(selectedQuiz.id)})"><i class="fas fa-paper-plane"></i> Submit Answers</button></div>` : ''}</div>`
                 ) : ''}
                 ${resultMarkup}
             </div>
@@ -2637,12 +2764,12 @@ function renderStudentLmsQuizSection(courseId, subject = null, group = null) {
         console.error('Student LMS quiz render failed', error);
         clearActiveLmsQuizCountdown();
         contentArea.innerHTML = `
-            <div style="display:grid; gap:16px;">
-                <div style="background:var(--lux-surface); border:1px solid #fca5a5; border-radius:22px; padding:24px; box-shadow:0 18px 36px rgba(15,23,42,0.08);">
-                    <div style="font-size:18px; font-weight:900; color:#991b1b;">My Quizzes could not load</div>
-                    <div style="font-size:13px; color:var(--lux-text-muted); margin-top:8px;">The student quiz view hit a runtime problem, so we stopped it before it could break the whole LMS page.</div>
-                    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:16px;">
-                        <button type="button" class="kiu-btn-blue" data-lms-click="renderLmsQuizSection(currentLmsQuizCourseKey || currentCourseId)" style="padding:10px 14px; font-size:12px;">
+            <div class="lms-quiz-error-shell">
+                <div class="lms-quiz-error-card">
+                    <div class="lms-quiz-error-title">My Quizzes could not load</div>
+                    <div class="lms-quiz-error-copy">The student quiz view hit a runtime problem, so we stopped it before it could break the whole LMS page.</div>
+                    <div class="lms-quiz-error-actions">
+                        <button type="button" class="kiu-btn-blue lms-student-quiz-error-btn" data-lms-click="renderLmsQuizSection(currentLmsQuizCourseKey || currentCourseId)">
                             <i class="fas fa-rotate-right"></i> Reload My Quizzes
                         </button>
                     </div>
@@ -2670,20 +2797,20 @@ function openLmsQuizReviewBoardModal(resourceKey, quizId) {
 
     const overlay = document.createElement('div');
     overlay.id = 'lms-quiz-review-board-modal';
-    overlay.style.cssText = 'position:fixed; inset:0; z-index:8350; background:rgba(15,23,42,0.76); backdrop-filter:blur(6px); display:flex; align-items:center; justify-content:center; padding:24px;';
+    overlay.className = 'lms-quiz-board-overlay lms-quiz-review-board-overlay';
     overlay.onclick = event => {
         if (event.target === overlay) closeLmsQuizReviewBoardModal();
     };
     overlay.innerHTML = `
-        <div style="width:min(1240px, 100%); max-height:92vh; overflow:auto; background:var(--lux-bg-soft); border-radius:24px; border:1px solid rgba(148,163,184,0.2); box-shadow:0 30px 90px rgba(15,23,42,0.38);">
-            <div style="padding:18px 22px; background:linear-gradient(135deg, var(--kiu-navy), var(--kiu-blue)); color:white; display:flex; justify-content:space-between; gap:14px; align-items:flex-start;">
-                <div>
-                    <div style="font-size:20px; font-weight:900;">View Submissions</div>
-                    <div style="font-size:12px; opacity:0.92; margin-top:4px;">${escapeHtml(getLmsQuizDisplayLabel(quiz))}  -  ${escapeHtml(quiz.title || 'Untitled Quiz')}</div>
+        <div class="lms-quiz-board-modal lms-quiz-review-board-modal">
+            <div class="lms-quiz-board-head">
+                <div class="lms-quiz-board-head-copy">
+                    <div class="lms-quiz-board-title">View Submissions</div>
+                    <div class="lms-quiz-board-copy">${escapeHtml(getLmsQuizDisplayLabel(quiz))}  -  ${escapeHtml(quiz.title || 'Untitled Quiz')}</div>
                 </div>
-                <button type="button" class="kiu-btn-outline" data-lms-click="closeLmsQuizReviewBoardModal()" style="border-color:rgba(255,255,255,0.35); color:white; background:rgba(255,255,255,0.08);"><i class="fas fa-times"></i> Close</button>
+                <button type="button" class="kiu-btn-outline lms-quiz-board-close-btn" data-lms-click="closeLmsQuizReviewBoardModal()"><i class="fas fa-times"></i> Close</button>
             </div>
-            <div style="padding:22px;">
+            <div class="lms-quiz-board-body">
                 ${renderLmsQuizReviewPanel(resourceKey, quiz)}
             </div>
         </div>
@@ -2745,13 +2872,37 @@ function renderLmsQuizReviewPanel(resourceKey, quiz) {
     const parsed = parseLmsCourseKey(resourceKey);
     const students = parsed.courseId && parsed.groupId ? getEnrolledStudentsForGroup(parsed.courseId, parsed.groupId) : [];
     if (!students.length) {
-        return `<div style="margin-top:14px; padding:16px; border-radius:16px; background:var(--lux-bg-soft); border:1px dashed #cbd5e1; color:var(--lux-text-muted);">No enrolled students were found for this group yet.</div>`;
+        return '<div class="lms-quiz-board-empty lms-quiz-review-empty">No enrolled students were found for this group yet.</div>';
     }
     if (isLmsQuizBlueExamRequired(quiz)) {
         ensureKiuBlueStatusSoon();
     }
     const quizStats = getLmsQuizSubmissionStats(resourceKey, quiz);
     const sessionStats = examSession ? getLmsExamSessionMonitorStats(examSession, resourceKey, quiz) : null;
+    const reviewSummaryCards = `
+        <div class="lms-quiz-review-summary-grid">
+            <div class="lms-route-card lms-route-panel-compact lms-quiz-review-summary-card">
+                <div class="lms-route-kv-label">Pending review</div>
+                <div class="lms-route-card-title lms-route-card-title-16 lms-route-copy-mt-6">${escapeHtml(String(quizStats.pendingReviewCount || 0))}</div>
+                <div class="lms-route-meta lms-route-meta-12 lms-route-copy-mt-6">Submitted or auto-submitted quiz papers waiting for TA or professor action.</div>
+            </div>
+            <div class="lms-route-card lms-route-panel-compact lms-quiz-review-summary-card">
+                <div class="lms-route-kv-label">Graded</div>
+                <div class="lms-route-card-title lms-route-card-title-16 lms-route-copy-mt-6">${escapeHtml(String(quizStats.gradedCount || 0))}</div>
+                <div class="lms-route-meta lms-route-meta-12 lms-route-copy-mt-6">Reviews already saved back into the LMS grade flow for this quiz.</div>
+            </div>
+            <div class="lms-route-card lms-route-panel-compact lms-quiz-review-summary-card">
+                <div class="lms-route-kv-label">Live alerts</div>
+                <div class="lms-route-card-title lms-route-card-title-16 lms-route-copy-mt-6">${escapeHtml(String(quizStats.alertCount || 0))}</div>
+                <div class="lms-route-meta lms-route-meta-12 lms-route-copy-mt-6">${quizStats.alertCount ? `${escapeHtml(String(quizStats.alertedStudents || 0))} student${Number(quizStats.alertedStudents || 0) === 1 ? '' : 's'} affected` : 'No monitoring warnings are currently open for this quiz.'}</div>
+            </div>
+            <div class="lms-route-card lms-route-panel-compact lms-quiz-review-summary-card">
+                <div class="lms-route-kv-label">${examSession ? 'Exam session' : 'Roster size'}</div>
+                <div class="lms-route-card-title lms-route-card-title-16 lms-route-copy-mt-6">${escapeHtml(String(examSession ? examSession.status : students.length))}</div>
+                <div class="lms-route-meta lms-route-meta-12 lms-route-copy-mt-6">${examSession ? `${sessionStats.allowedCount} approved  -  ${sessionStats.presentCount} present  -  ${sessionStats.blockedCount} blocked` : `${students.length} enrolled student${students.length === 1 ? '' : 's'} visible in this review board.`}</div>
+            </div>
+        </div>
+    `;
 
     const rows = students.map(student => {
         const submission = ensureLmsQuizSubmissionShell(resourceKey, quiz.id, student);
@@ -2760,40 +2911,41 @@ function renderLmsQuizReviewPanel(resourceKey, quiz) {
         syncLmsQuizBlueSubmissionState(resourceKey, quiz, submission, student);
         const status = submission.status && submission.status !== 'not-started' ? submission.status : 'draft';
         const badge = getLmsQuizStatusBadge(status);
+        const badgeToneClass = getLmsQuizStatusToneClass(status);
         const accessAllowed = isStudentAllowedForLmsQuiz(resourceKey, quiz, student.id);
         const latestProctorEvent = getLmsQuizLatestProctorEvent(submission);
         const alertCount = getLmsQuizProctorAlertCount(submission);
         const blocked = submission.sessionBlocked === true;
         return `
             <tr>
-                <td style="text-align:left;">${escapeHtml(student.id)}</td>
-                <td style="text-align:left; font-weight:700;">${escapeHtml(student.name)}</td>
-                <td>${submission.variantLabel ? `<span style="display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border-radius:999px; background:rgba(var(--lux-accent-rgb),0.06); color:var(--lux-accent); font-size:11px; font-weight:800;">${escapeHtml(submission.variantLabel)}</span>` : '<span style="font-size:11px; color:var(--lux-text-muted);">Standard</span>'}</td>
-                <td><span style="background:${accessAllowed ? '#ecfdf5' : '#fef2f2'}; color:${accessAllowed ? '#047857' : '#b91c1c'}; padding:6px 10px; border-radius:999px; font-size:11px; font-weight:800;">${accessAllowed ? 'Allowed' : 'Blocked'}</span></td>
+                <td class="lms-quiz-review-student-id">${escapeHtml(student.id)}</td>
+                <td class="lms-quiz-review-student-name">${escapeHtml(student.name)}</td>
+                <td>${submission.variantLabel ? `<span class="lms-quiz-review-variant-pill">${escapeHtml(submission.variantLabel)}</span>` : '<span class="lms-quiz-review-variant-empty">Standard</span>'}</td>
+                <td><span class="lms-quiz-review-access-pill ${accessAllowed ? 'is-allowed' : 'is-blocked'}">${accessAllowed ? 'Allowed' : 'Blocked'}</span></td>
                 <td>${examSession
-                    ? `<div style="display:grid; gap:4px;"><span style="display:inline-flex; align-items:center; gap:6px; width:max-content; padding:6px 10px; border-radius:999px; background:${blocked ? '#fef2f2' : '#ecfdf5'}; color:${blocked ? '#b91c1c' : '#047857'}; font-size:11px; font-weight:800;">${blocked ? 'Blocked by staff' : 'Approved roster'}</span><span style="font-size:10px; color:var(--lux-text-muted); margin-top:2px;">Handwritten room check is handled outside the portal.</span></div>`
-                    : `<select data-lms-change="setLmsQuizAttendanceStatus(${jsQuote(resourceKey)}, ${jsQuote(quiz.id)}, ${jsQuote(student.id)}, this.value)" style="padding:8px 10px; border:1px solid var(--kiu-border); border-radius:10px; outline:none;">
+                    ? `<div class="lms-quiz-review-approval-stack"><span class="lms-quiz-review-approval-pill ${blocked ? 'is-blocked' : 'is-approved'}">${blocked ? 'Blocked by staff' : 'Approved roster'}</span><span class="lms-quiz-review-attendance-meta">Handwritten room check is handled outside the portal.</span></div>`
+                    : `<select data-lms-change="setLmsQuizAttendanceStatus(${jsQuote(resourceKey)}, ${jsQuote(quiz.id)}, ${jsQuote(student.id)}, this.value)" class="lms-quiz-review-attendance-select">
                         <option value="" ${!submission.attendanceStatus ? 'selected' : ''}>Not checked</option>
                         <option value="Present" ${submission.attendanceStatus === 'Present' ? 'selected' : ''}>Present</option>
                         <option value="Late" ${submission.attendanceStatus === 'Late' ? 'selected' : ''}>Late</option>
                         <option value="Absent" ${submission.attendanceStatus === 'Absent' ? 'selected' : ''}>Absent</option>
                     </select>
-                    <div style="font-size:10px; color:var(--lux-text-muted); margin-top:6px;">${submission.attendanceVerifiedAt ? `Verified ${escapeHtml(formatLmsDateTime(submission.attendanceVerifiedAt))}` : 'Waiting for attendance check'}</div>`}
+                    <div class="lms-quiz-review-attendance-meta">${submission.attendanceVerifiedAt ? `Verified ${escapeHtml(formatLmsDateTime(submission.attendanceVerifiedAt))}` : 'Waiting for attendance check'}</div>`}
                 </td>
-                <td><span style="background:${badge.bg}; color:${badge.color}; padding:6px 10px; border-radius:999px; font-size:11px; font-weight:800;">${escapeHtml(badge.label)}</span></td>
-                <td style="text-align:left;">
-                    <div style="display:grid; gap:4px;">
-                        <span style="display:inline-flex; align-items:center; gap:6px; width:max-content; padding:6px 10px; border-radius:999px; background:${alertCount ? '#fff7ed' : '#ecfdf5'}; color:${alertCount ? '#c2410c' : '#047857'}; font-size:11px; font-weight:800;">${alertCount ? `${alertCount} warning${alertCount === 1 ? '' : 's'}` : 'Clean'}</span>
-                        <span style="font-size:11px; color:var(--lux-text-muted);">${latestProctorEvent ? `${latestProctorEvent.note}  -  ${formatLmsDateTime(latestProctorEvent.createdAt)}` : 'No suspicious events logged.'}</span>
-                        <span style="font-size:11px; color:var(--lux-text-muted);">Outside actions: ${Number(submission.outsideActionCount || 0)}</span>
+                <td><span class="lms-quiz-review-status-pill ${badgeToneClass}">${escapeHtml(badge.label)}</span></td>
+                <td class="lms-quiz-review-student-id">
+                    <div class="lms-quiz-review-monitor-stack">
+                        <span class="lms-quiz-review-monitor-pill ${alertCount ? 'is-warning' : 'is-clean'}">${alertCount ? `${alertCount} warning${alertCount === 1 ? '' : 's'}` : 'Clean'}</span>
+                        <span class="lms-quiz-review-monitor-meta">${latestProctorEvent ? `${latestProctorEvent.note}  -  ${formatLmsDateTime(latestProctorEvent.createdAt)}` : 'No suspicious events logged.'}</span>
+                        <span class="lms-quiz-review-monitor-meta">Outside actions: ${Number(submission.outsideActionCount || 0)}</span>
                     </div>
                 </td>
-                <td style="font-weight:800; color:var(--kiu-navy);">${Number(submission.finalScoreRaw ?? submission.autoScoreRaw ?? 0)} / ${getAdminQuizTotalScore({ ...quiz, questions: getLmsQuizQuestionsForStudent(quiz, student.id, submission) })}</td>
-                <td style="font-weight:800; color:var(--kiu-blue);">${submission.gradebookScore === null || submission.gradebookScore === undefined ? '-' : Number(submission.gradebookScore)}</td>
-                <td style="text-align:right;">
-                    <div style="display:flex; justify-content:flex-end; gap:8px; flex-wrap:wrap;">
-                        ${examSession ? `<button type="button" class="kiu-btn-outline" style="padding:7px 10px; font-size:11px; font-weight:800; ${blocked ? 'color:var(--lux-accent); border-color:#bbf7d0;' : 'color:#dc2626; border-color:#fecaca;'}" data-lms-click="toggleLmsExamSessionStudentBlock(${jsQuote(examSession.id)}, ${jsQuote(student.id)})"><i class="fas ${blocked ? 'fa-unlock' : 'fa-user-slash'}"></i> ${blocked ? 'Unblock' : 'Block'}</button>` : ''}
-                        <button type="button" class="kiu-btn-outline" style="padding:7px 10px; font-size:11px; font-weight:800;" data-lms-click="openLmsQuizReviewModal(${jsQuote(resourceKey)}, ${jsQuote(quiz.id)}, ${jsQuote(student.id)})"><i class="fas fa-eye"></i> View Quiz Paper</button>
+                <td class="lms-quiz-review-raw-score">${Number(submission.finalScoreRaw ?? submission.autoScoreRaw ?? 0)} / ${getAdminQuizTotalScore({ ...quiz, questions: getLmsQuizQuestionsForStudent(quiz, student.id, submission) })}</td>
+                <td class="lms-quiz-review-gradebook-score">${submission.gradebookScore === null || submission.gradebookScore === undefined ? '-' : Number(submission.gradebookScore)}</td>
+                <td class="lms-quiz-review-actions">
+                    <div class="lms-quiz-review-action-row">
+                        ${examSession ? `<button type="button" class="kiu-btn-outline lms-quiz-action-btn is-compact lms-quiz-review-action-btn ${blocked ? 'is-approved' : 'is-danger'}" data-lms-click="toggleLmsExamSessionStudentBlock(${jsQuote(examSession.id)}, ${jsQuote(student.id)})"><i class="fas ${blocked ? 'fa-unlock' : 'fa-user-slash'}"></i> ${blocked ? 'Unblock' : 'Block'}</button>` : ''}
+                        <button type="button" class="kiu-btn-outline lms-quiz-action-btn is-compact lms-quiz-review-action-btn" data-lms-click="openLmsQuizReviewModal(${jsQuote(resourceKey)}, ${jsQuote(quiz.id)}, ${jsQuote(student.id)})"><i class="fas fa-eye"></i> View Quiz Paper</button>
                     </div>
                 </td>
             </tr>
@@ -2801,27 +2953,28 @@ function renderLmsQuizReviewPanel(resourceKey, quiz) {
     }).join('');
 
     return `
-        ${quizStats.alertCount > 0 ? `<div style="margin-top:14px; padding:14px 16px; border-radius:16px; background:rgba(var(--lux-accent-rgb),0.06); border:1px solid rgba(249,115,22,0.22); color:var(--lux-text-muted);">
-            <div style="font-size:13px; font-weight:800;">${quizStats.alertCount} live warning${quizStats.alertCount === 1 ? '' : 's'} detected across ${quizStats.alertedStudents} student${quizStats.alertedStudents === 1 ? '' : 's'}.</div>
-            ${quizStats.latestAlert ? `<div style="font-size:12px; margin-top:6px; color:var(--lux-text-muted);">Latest: ${escapeHtml(quizStats.latestAlert.note || quizStats.latestAlert.type || 'Monitoring event')}  -  ${escapeHtml(formatLmsDateTime(quizStats.latestAlert.createdAt))}</div>` : ''}
+        ${reviewSummaryCards}
+        ${quizStats.alertCount > 0 ? `<div class="lms-quiz-review-summary-notice is-warning">
+            <div class="lms-quiz-review-summary-title">${quizStats.alertCount} live warning${quizStats.alertCount === 1 ? '' : 's'} detected across ${quizStats.alertedStudents} student${quizStats.alertedStudents === 1 ? '' : 's'}.</div>
+            ${quizStats.latestAlert ? `<div class="lms-quiz-review-summary-copy">Latest: ${escapeHtml(quizStats.latestAlert.note || quizStats.latestAlert.type || 'Monitoring event')}  -  ${escapeHtml(formatLmsDateTime(quizStats.latestAlert.createdAt))}</div>` : ''}
         </div>` : ''}
-        ${examSession ? `<div style="margin-top:14px; padding:14px 16px; border-radius:16px; background:${examSession.status === 'live' ? '#ecfdf5' : examSession.status === 'closed' ? '#fef2f2' : '#eff6ff'}; border:1px solid ${examSession.status === 'live' ? 'rgba(16,185,129,0.22)' : examSession.status === 'closed' ? 'rgba(239,68,68,0.18)' : 'rgba(59,130,246,0.18)'}; color:${examSession.status === 'live' ? '#047857' : examSession.status === 'closed' ? '#b91c1c' : '#1d4ed8'};">
-            <div style="font-size:13px; font-weight:800;">KIU Wired Lab Exam Session: ${escapeHtml(examSession.status)}</div>
-            <div style="font-size:12px; margin-top:6px; color:inherit;">${sessionStats.allowedCount} roster students  -  ${sessionStats.presentCount} approved accounts  -  ${sessionStats.blockedCount} blocked  -  ${sessionStats.inProgressCount} running  -  ${sessionStats.submittedCount} submitted</div>
+        ${examSession ? `<div class="lms-quiz-review-summary-notice ${examSession.status === 'live' ? 'is-success' : examSession.status === 'closed' ? 'is-danger' : 'is-info'}">
+            <div class="lms-quiz-review-summary-title">KIU Wired Lab Exam Session: ${escapeHtml(examSession.status)}</div>
+            <div class="lms-quiz-review-summary-copy">${sessionStats.allowedCount} roster students  -  ${sessionStats.presentCount} approved accounts  -  ${sessionStats.blockedCount} blocked  -  ${sessionStats.inProgressCount} running  -  ${sessionStats.submittedCount} submitted</div>
         </div>` : ''}
-        <div style="margin-top:14px; border:1px solid rgba(148,163,184,0.18); border-radius:18px; overflow:hidden; background:var(--lux-bg-soft);">
-            <div style="padding:14px 16px; background:white; border-bottom:1px solid rgba(148,163,184,0.16); font-size:12px; font-weight:800; color:var(--lux-text-muted);">Student submissions and attendance</div>
-            <div style="overflow:auto;">
-                <table class="kiu-table" style="font-size:12px; min-width:920px;">
+        <div class="lms-quiz-review-table-shell">
+            <div class="lms-quiz-review-table-head">Student submissions and attendance</div>
+            <div class="lms-quiz-review-table-wrap">
+                <table class="kiu-table lms-quiz-review-table">
                     <thead>
                         <tr>
-                            <th style="text-align:left;">ID</th>
-                            <th style="text-align:left;">Student</th>
+                            <th class="lms-quiz-review-th-left">ID</th>
+                            <th class="lms-quiz-review-th-left">Student</th>
                             <th>Variant</th>
                             <th>Access</th>
                             <th>${examSession ? 'Approval' : 'Attendance'}</th>
                             <th>Status</th>
-                            <th style="text-align:left;">Monitoring</th>
+                            <th class="lms-quiz-review-th-left">Monitoring</th>
                             <th>Raw Score</th>
                             <th>Gradebook</th>
                             <th></th>
@@ -2838,7 +2991,7 @@ function buildLmsQuizReviewPaperMarkup(resourceKey, quizId, studentId, options =
     resourceKey = resolveCanonicalLmsResourceKey(resourceKey);
     const quiz = getLmsQuizById(resourceKey, quizId);
     if (!quiz) {
-        return '<div style="padding:16px; border-radius:16px; background:var(--lux-surface); border:1px dashed #cbd5e1; color:var(--lux-text-muted);">Quiz paper could not be found.</div>';
+        return '<div class="lms-quiz-card-empty">Quiz paper could not be found.</div>';
     }
     const parsed = parseLmsCourseKey(resourceKey);
     const student = (parsed.courseId && parsed.groupId ? getEnrolledStudentsForGroup(parsed.courseId, parsed.groupId) : []).find(item => String(item.id) === String(studentId))
@@ -2855,7 +3008,7 @@ function buildLmsQuizReviewPaperMarkup(resourceKey, quizId, studentId, options =
     const blueGate = getLmsQuizBlueGateStatus(resourceKey, quiz, submission, student.id);
     const scopeToken = String(options.scopeToken || `${quizId}-${studentId}`);
     const attendanceId = options.attendanceId || `lms-quiz-attendance-${toDomToken(scopeToken)}`;
-        const answerRows = activeQuestions.map((question, index) => {
+    const answerRows = activeQuestions.map((question, index) => {
         const answer = submission.answers?.[question.id] || submission.draftAnswers?.[question.id] || {};
         const isWritten = String(question.type || 'mcq') === 'written';
         const questionManualMax = getLmsQuizQuestionManualMax(question);
@@ -2863,93 +3016,100 @@ function buildLmsQuizReviewPaperMarkup(resourceKey, quizId, studentId, options =
         const selectedOption = Number(answer.selectedOption);
         const correctOption = Number(question.correctOption);
         const mcqOptionsMarkup = !isWritten
-            ? `<div style="display:grid; gap:10px; margin-top:14px;">
+            ? `<div class="lms-quiz-review-option-list">
                 ${(question.options || []).map((option, optionIndex) => {
                     const isSelected = Number.isFinite(selectedOption) && selectedOption === optionIndex;
                     const isCorrect = Number.isFinite(correctOption) && correctOption === optionIndex;
-                    const palette = isSelected && isCorrect
-                        ? { bg: '#ecfdf5', border: '#10b981', text: '#065f46', badge: 'Selected  -  Correct' }
+                    const toneClass = isSelected && isCorrect
+                        ? ' is-selected-correct'
                         : isSelected && !isCorrect
-                            ? { bg: '#fef2f2', border: '#ef4444', text: '#991b1b', badge: 'Selected  -  Incorrect' }
+                            ? ' is-selected-wrong'
                             : !isSelected && isCorrect
-                                ? { bg: '#f0fdf4', border: '#22c55e', text: '#166534', badge: 'Correct answer' }
-                                : { bg: '#ffffff', border: '#dbe7f5', text: '#334155', badge: '' };
+                                ? ' is-correct'
+                                : '';
+                    const badgeText = isSelected && isCorrect
+                        ? 'Selected  -  Correct'
+                        : isSelected && !isCorrect
+                            ? 'Selected  -  Incorrect'
+                            : !isSelected && isCorrect
+                                ? 'Correct answer'
+                                : '';
                     return `
-                        <div style="display:flex; justify-content:space-between; gap:12px; align-items:flex-start; padding:12px 14px; border:2px solid ${palette.border}; border-radius:14px; background:${palette.bg};">
-                            <div style="display:flex; gap:10px; align-items:flex-start;">
-                                <span style="width:24px; height:24px; border-radius:999px; display:inline-flex; align-items:center; justify-content:center; background:${isSelected ? palette.border : '#e2e8f0'}; color:${isSelected ? '#fff' : '#475569'}; font-size:11px; font-weight:900;">${String.fromCharCode(65 + optionIndex)}</span>
-                                <div style="font-size:14px; color:${palette.text}; line-height:1.55; font-weight:${isSelected || isCorrect ? '800' : '600'};">${escapeHtml(option || `Option ${optionIndex + 1}`)}</div>
+                        <div class="lms-quiz-review-option${toneClass}">
+                            <div class="lms-quiz-review-option-main">
+                                <span class="lms-quiz-review-option-marker">${String.fromCharCode(65 + optionIndex)}</span>
+                                <div class="lms-quiz-review-option-copy">${escapeHtml(option || `Option ${optionIndex + 1}`)}</div>
                             </div>
-                            ${palette.badge ? `<span style="display:inline-flex; align-items:center; gap:6px; padding:6px 9px; border-radius:999px; background:rgba(255,255,255,0.76); font-size:10px; font-weight:900; color:${palette.text}; white-space:nowrap;">${escapeHtml(palette.badge)}</span>` : ''}
+                            ${badgeText ? `<span class="lms-quiz-review-option-badge">${escapeHtml(badgeText)}</span>` : ''}
                         </div>
                     `;
                 }).join('')}
-                ${!Number.isFinite(selectedOption) ? `<div style="font-size:12px; color:var(--lux-text-muted); padding:10px 12px; border-radius:12px; background:var(--lux-bg-soft); border:1px dashed #cbd5e1;">Student did not select an option.</div>` : ''}
+                ${!Number.isFinite(selectedOption) ? '<div class="lms-quiz-review-no-selection">Student did not select an option.</div>' : ''}
             </div>`
             : '';
         return `
-            <div style="padding:18px 20px; border:1px solid rgba(148,163,184,0.18); border-radius:18px; background:var(--lux-surface); box-shadow:0 12px 30px rgba(15,23,42,0.04);">
-                <div style="display:flex; justify-content:space-between; gap:12px; align-items:flex-start; flex-wrap:wrap;">
-                    <div style="font-size:12px; font-weight:800; color:var(--lux-text-muted);">Question ${index + 1}  -  ${isWritten ? 'Written' : 'Multiple Choice'}  -  ${Number(question.score || 0)} pts</div>
-                    ${!isWritten ? `<span style="display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border-radius:999px; background:rgba(var(--lux-accent-rgb),0.06); color:var(--lux-accent); font-size:11px; font-weight:900;">${Number.isFinite(selectedOption) ? `Selected ${String.fromCharCode(65 + selectedOption)}` : 'No selection'}</span>` : ''}
+            <div class="lms-quiz-review-question-card">
+                <div class="lms-quiz-review-question-head">
+                    <div class="lms-quiz-review-question-kicker">Question ${index + 1}  -  ${isWritten ? 'Written' : 'Multiple Choice'}  -  ${Number(question.score || 0)} pts</div>
+                    ${!isWritten ? `<span class="lms-quiz-review-question-pill">${Number.isFinite(selectedOption) ? `Selected ${String.fromCharCode(65 + selectedOption)}` : 'No selection'}</span>` : ''}
                 </div>
-                <div style="font-size:16px; font-weight:900; color:var(--lux-text); margin-top:10px; line-height:1.5;">${escapeHtml(question.text || '')}</div>
+                <div class="lms-quiz-review-question-title">${escapeHtml(question.text || '')}</div>
                 ${isWritten ? `
-                    <div style="margin-top:14px; padding:14px 16px; border-radius:16px; background:var(--lux-bg-soft); border:1px solid #dbe7f5;">
-                        <div style="font-size:11px; font-weight:800; text-transform:uppercase; color:var(--lux-text-muted); margin-bottom:8px;">Student answer</div>
-                        <div style="font-size:14px; color:var(--lux-text-muted); line-height:1.7; white-space:pre-wrap;">${escapeHtml(answer.text || 'No answer submitted')}</div>
+                    <div class="lms-quiz-review-written-answer">
+                        <div class="lms-quiz-review-written-answer-title">Student answer</div>
+                        <div class="lms-quiz-review-written-answer-copy">${escapeHtml(answer.text || 'No answer submitted')}</div>
                     </div>
                 ` : mcqOptionsMarkup}
                 ${isWritten ? `
-                    <div style="font-size:11px; color:var(--lux-text-muted); margin-top:10px;">Reference answer: ${escapeHtml(question.expectedAnswer || 'No key')}</div>
-                    <div style="display:flex; justify-content:flex-end; margin-top:12px;">
-                        <label style="display:grid; gap:6px; font-size:11px; font-weight:800; color:var(--lux-text-muted); text-transform:uppercase; min-width:180px;">
+                    <div class="lms-quiz-review-reference">Reference answer: ${escapeHtml(question.expectedAnswer || 'No key')}</div>
+                    <div class="lms-quiz-review-manual-row">
+                        <label class="lms-quiz-review-manual-field">
                             Written score
-                            <input id="${manualInputId}" data-lms-written-score="true" data-question-id="${escapeHtml(question.id)}" type="number" min="0" max="${questionManualMax}" value="${submission.manualScoresByQuestion?.[question.id] === null || submission.manualScoresByQuestion?.[question.id] === undefined ? '' : Number(submission.manualScoresByQuestion[question.id])}" placeholder="0 - ${questionManualMax}" style="min-height:42px; border:1px solid #dbe7f5; border-radius:12px; padding:0 12px; outline:none;">
+                            <input id="${manualInputId}" data-lms-written-score="true" data-question-id="${escapeHtml(question.id)}" type="number" min="0" max="${questionManualMax}" value="${submission.manualScoresByQuestion?.[question.id] === null || submission.manualScoresByQuestion?.[question.id] === undefined ? '' : Number(submission.manualScoresByQuestion[question.id])}" placeholder="0 - ${questionManualMax}" class="lms-quiz-review-manual-input">
                         </label>
                     </div>
-                ` : `<div style="margin-top:12px; display:inline-flex; align-items:center; gap:8px; padding:8px 10px; border-radius:999px; background:rgba(var(--lux-accent-rgb),0.05); color:var(--lux-accent); border:1px solid rgba(16,185,129,0.2); font-size:11px; font-weight:800;"><i class="fas fa-bolt"></i> Auto-scored by computer</div>`}
+                ` : '<div class="lms-quiz-review-auto-pill"><i class="fas fa-bolt"></i> Auto-scored by computer</div>'}
             </div>
         `;
     }).join('');
     const secondaryAction = options.hideAction
-        ? `<button type="button" class="kiu-btn-outline" data-lms-click="${options.hideAction}" style="padding:10px 14px; font-size:12px;">Hide quiz</button>`
-        : `<button type="button" class="kiu-btn-outline" data-lms-click="document.getElementById('lms-quiz-review-modal')?.remove()" style="padding:10px 14px; font-size:12px;">Close</button>`;
+        ? `<button type="button" class="kiu-btn-outline lms-quiz-action-btn lms-quiz-review-paper-secondary-action-btn" data-lms-click="${options.hideAction}">Hide quiz</button>`
+        : `<button type="button" class="kiu-btn-outline lms-quiz-action-btn lms-quiz-review-paper-secondary-action-btn" data-lms-click="document.getElementById('lms-quiz-review-modal')?.remove()">Close</button>`;
     return `
-        <div style="display:grid; gap:16px; padding:${options.embedded ? '16px' : '22px'}; border-radius:${options.embedded ? '18px' : '0'}; background:${options.embedded ? '#f8fbff' : 'transparent'}; border:${options.embedded ? '1px solid rgba(37,99,235,0.14)' : 'none'}; margin-top:${options.embedded ? '8px' : '0'};">
-            <div style="display:flex; justify-content:space-between; gap:12px; align-items:flex-start; flex-wrap:wrap;">
+        <div class="lms-quiz-review-paper-shell${options.embedded ? ' is-embedded' : ''}">
+            <div class="lms-quiz-review-paper-head">
                 <div>
-                    <div style="font-size:16px; font-weight:900; color:var(--kiu-navy);">${escapeHtml(student.name)}  -  ${escapeHtml(quiz.title || getLmsQuizDisplayLabel(quiz))}</div>
-                    <div style="font-size:12px; color:var(--lux-text-muted); margin-top:4px;">${escapeHtml(getLmsQuizDisplayLabel(quiz))}${quiz.weekLabel ? `  -  ${escapeHtml(quiz.weekLabel)}` : ''}${submission.variantLabel ? `  -  ${escapeHtml(submission.variantLabel)}` : ''}</div>
+                    <div class="lms-quiz-review-paper-title">${escapeHtml(student.name)}  -  ${escapeHtml(quiz.title || getLmsQuizDisplayLabel(quiz))}</div>
+                    <div class="lms-quiz-review-paper-meta">${escapeHtml(getLmsQuizDisplayLabel(quiz))}${quiz.weekLabel ? `  -  ${escapeHtml(quiz.weekLabel)}` : ''}${submission.variantLabel ? `  -  ${escapeHtml(submission.variantLabel)}` : ''}</div>
                 </div>
-                ${options.embedded ? `<span style="display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border-radius:999px; background:rgba(var(--lux-accent-rgb),0.06); color:var(--lux-accent); font-size:11px; font-weight:800;"><i class="fas fa-file-alt"></i> Gradebook review</span>` : ''}
+                ${options.embedded ? '<span class="lms-quiz-review-paper-badge"><i class="fas fa-file-alt"></i> Gradebook review</span>' : ''}
             </div>
-            <div style="display:flex; gap:12px; flex-wrap:wrap;">
-                <div style="padding:14px 16px; border-radius:18px; background:var(--lux-surface); border:1px solid #dbe7f5; min-width:180px;"><div style="font-size:11px; font-weight:800; text-transform:uppercase; color:var(--lux-text-muted);">Auto Score</div><div style="font-size:24px; font-weight:900; color:var(--lux-text); margin-top:6px;">${Number(submission.autoScoreRaw || 0)}</div></div>
-                <div style="padding:14px 16px; border-radius:18px; background:var(--lux-surface); border:1px solid #dbe7f5; min-width:180px;"><div style="font-size:11px; font-weight:800; text-transform:uppercase; color:var(--lux-text-muted);">Manual Remaining</div><div style="font-size:24px; font-weight:900; color:var(--lux-text); margin-top:6px;">${manualMax}</div></div>
-                <div style="padding:14px 16px; border-radius:18px; background:var(--lux-surface); border:1px solid #dbe7f5; min-width:180px;"><div style="font-size:11px; font-weight:800; text-transform:uppercase; color:var(--lux-text-muted);">Current Final</div><div style="font-size:24px; font-weight:900; color:var(--lux-text); margin-top:6px;">${submission.finalScoreRaw === null || submission.finalScoreRaw === undefined ? '-' : Number(submission.finalScoreRaw)}</div></div>
-                <div style="padding:14px 16px; border-radius:18px; background:var(--lux-surface); border:1px solid #dbe7f5; min-width:180px;"><div style="font-size:11px; font-weight:800; text-transform:uppercase; color:var(--lux-text-muted);">Warnings</div><div style="font-size:24px; font-weight:900; color:var(--lux-text); margin-top:6px;">${getLmsQuizProctorAlertCount(submission)}</div></div>
-                ${submission.variantLabel ? `<div style="padding:14px 16px; border-radius:18px; background:var(--lux-surface); border:1px solid #dbe7f5; min-width:180px;"><div style="font-size:11px; font-weight:800; text-transform:uppercase; color:var(--lux-text-muted);">Assigned Variant</div><div style="font-size:18px; font-weight:900; color:var(--lux-text); margin-top:6px;">${escapeHtml(submission.variantLabel)}</div></div>` : ''}
-                <div style="padding:14px 16px; border-radius:18px; background:var(--lux-surface); border:1px solid #dbe7f5; min-width:180px;"><div style="font-size:11px; font-weight:800; text-transform:uppercase; color:var(--lux-text-muted);">Outside Actions</div><div style="font-size:24px; font-weight:900; color:var(--lux-text); margin-top:6px;">${Number(submission.outsideActionCount || 0)}</div></div>
+            <div class="lms-quiz-review-paper-stat-row">
+                <div class="lms-quiz-review-paper-metric-card lms-quiz-review-paper-stat-card"><div class="lms-quiz-review-paper-metric-label">Auto Score</div><div class="lms-quiz-review-paper-metric-value">${Number(submission.autoScoreRaw || 0)}</div></div>
+                <div class="lms-quiz-review-paper-metric-card lms-quiz-review-paper-stat-card"><div class="lms-quiz-review-paper-metric-label">Manual Remaining</div><div class="lms-quiz-review-paper-metric-value">${manualMax}</div></div>
+                <div class="lms-quiz-review-paper-metric-card lms-quiz-review-paper-stat-card"><div class="lms-quiz-review-paper-metric-label">Current Final</div><div class="lms-quiz-review-paper-metric-value">${submission.finalScoreRaw === null || submission.finalScoreRaw === undefined ? '-' : Number(submission.finalScoreRaw)}</div></div>
+                <div class="lms-quiz-review-paper-metric-card lms-quiz-review-paper-stat-card"><div class="lms-quiz-review-paper-metric-label">Warnings</div><div class="lms-quiz-review-paper-metric-value">${getLmsQuizProctorAlertCount(submission)}</div></div>
+                ${submission.variantLabel ? `<div class="lms-quiz-review-paper-metric-card lms-quiz-review-paper-stat-card"><div class="lms-quiz-review-paper-metric-label">Assigned Variant</div><div class="lms-quiz-review-paper-metric-copy">${escapeHtml(submission.variantLabel)}</div></div>` : ''}
+                <div class="lms-quiz-review-paper-metric-card lms-quiz-review-paper-stat-card"><div class="lms-quiz-review-paper-metric-label">Outside Actions</div><div class="lms-quiz-review-paper-metric-value">${Number(submission.outsideActionCount || 0)}</div></div>
             </div>
-            <div style="padding:16px 18px; border-radius:18px; background:var(--lux-surface); border:1px solid #dbe7f5;">
-                <div style="font-size:12px; font-weight:800; text-transform:uppercase; color:var(--lux-text-muted); margin-bottom:10px;">Monitoring Timeline</div>
-                <div style="display:grid; gap:8px; max-height:180px; overflow:auto;">
+            <div class="lms-quiz-review-paper-timeline">
+                <div class="lms-quiz-review-paper-timeline-title">Monitoring Timeline</div>
+                <div class="lms-quiz-review-paper-timeline-list">
                     ${proctorEvents.length ? proctorEvents.map(event => `
-                        <div style="padding:10px 12px; border-radius:14px; background:var(--lux-bg-soft); border:1px solid rgba(148,163,184,0.18);">
-                            <div style="font-size:12px; font-weight:800; color:var(--lux-text);">${escapeHtml(event.note || event.type || 'Monitoring event')}</div>
-                            <div style="font-size:11px; color:var(--lux-text-muted); margin-top:4px;">${escapeHtml(formatLmsDateTime(event.createdAt))}</div>
+                        <div class="lms-quiz-review-paper-timeline-item">
+                            <div class="lms-quiz-review-paper-timeline-copy">${escapeHtml(event.note || event.type || 'Monitoring event')}</div>
+                            <div class="lms-quiz-review-paper-timeline-meta">${escapeHtml(formatLmsDateTime(event.createdAt))}</div>
                         </div>
-                    `).join('') : `<div style="font-size:12px; color:var(--lux-text-muted);">No monitoring warnings for this student.</div>`}
+                    `).join('') : '<div class="lms-quiz-review-paper-timeline-empty">No monitoring warnings for this student.</div>'}
                 </div>
             </div>
-            <div style="display:grid; grid-template-columns:minmax(0, 220px) minmax(0, 1fr); gap:12px; align-items:end;">
+            <div class="lms-quiz-review-paper-bottom">
                 ${examSession
-                    ? `<div style="display:grid; gap:6px; font-size:11px; font-weight:800; color:var(--lux-text-muted); text-transform:uppercase;"><span>Exam List</span><div style="min-height:44px; border:1px solid #dbe7f5; border-radius:12px; padding:0 12px; display:flex; align-items:center; background:var(--lux-bg-soft); color:var(--lux-text); font-size:12px; font-weight:800;">${submission.sessionBlocked ? 'Blocked by staff' : 'Approved by exam list'}</div><span style="font-size:10px; color:var(--lux-text-muted);">Handwritten room attendance is handled outside the portal.</span></div>`
-                    : `<label style="display:grid; gap:6px; font-size:11px; font-weight:800; color:var(--lux-text-muted); text-transform:uppercase;">Attendance<select id="${attendanceId}" style="min-height:44px; border:1px solid #dbe7f5; border-radius:12px; padding:0 12px; outline:none;"><option value="" ${!submission.attendanceStatus ? 'selected' : ''}>Not checked</option><option value="Present" ${submission.attendanceStatus === 'Present' ? 'selected' : ''}>Present</option><option value="Late" ${submission.attendanceStatus === 'Late' ? 'selected' : ''}>Late</option><option value="Absent" ${submission.attendanceStatus === 'Absent' ? 'selected' : ''}>Absent</option></select><span style="font-size:10px; color:var(--lux-text-muted);">${submission.attendanceVerifiedAt ? `Verified ${escapeHtml(formatLmsDateTime(submission.attendanceVerifiedAt))} by ${escapeHtml(submission.attendanceVerifiedBy || 'Staff')}` : 'Not verified yet'}</span></label>`}
-                <div style="display:flex; justify-content:flex-end; gap:10px; flex-wrap:wrap;">${secondaryAction}<button type="button" class="kiu-btn-blue" data-lms-click="saveLmsQuizManualGrade(${jsQuote(resourceKey)}, ${jsQuote(quiz.id)}, ${jsQuote(student.id)}, ${jsQuote(attendanceId)}, ${jsQuote(scopeToken)}, ${jsQuote(options.focusSectionKey || '')}, ${jsQuote(options.studentName || student.name || '')})" style="padding:10px 14px; font-size:12px;"><i class="fas fa-save"></i> Save Review</button></div>
+                    ? `<div class="lms-quiz-review-paper-attendance"><span class="lms-quiz-review-paper-attendance-title">Exam List</span><div class="lms-quiz-review-paper-attendance-value">${submission.sessionBlocked ? 'Blocked by staff' : 'Approved by exam list'}</div><span class="lms-quiz-review-paper-attendance-meta">Handwritten room attendance is handled outside the portal.</span></div>`
+                    : `<label class="lms-quiz-review-paper-attendance"><span class="lms-quiz-review-paper-attendance-title">Attendance</span><select id="${attendanceId}" class="lms-quiz-review-paper-attendance-select"><option value="" ${!submission.attendanceStatus ? 'selected' : ''}>Not checked</option><option value="Present" ${submission.attendanceStatus === 'Present' ? 'selected' : ''}>Present</option><option value="Late" ${submission.attendanceStatus === 'Late' ? 'selected' : ''}>Late</option><option value="Absent" ${submission.attendanceStatus === 'Absent' ? 'selected' : ''}>Absent</option></select><span class="lms-quiz-review-paper-attendance-meta">${submission.attendanceVerifiedAt ? `Verified ${escapeHtml(formatLmsDateTime(submission.attendanceVerifiedAt))} by ${escapeHtml(submission.attendanceVerifiedBy || 'Staff')}` : 'Not verified yet'}</span></label>`}
+                <div class="lms-quiz-review-paper-action-row">${secondaryAction}<button type="button" class="kiu-btn-blue lms-quiz-review-paper-save-btn" data-lms-click="saveLmsQuizManualGrade(${jsQuote(resourceKey)}, ${jsQuote(quiz.id)}, ${jsQuote(student.id)}, ${jsQuote(attendanceId)}, ${jsQuote(scopeToken)}, ${jsQuote(options.focusSectionKey || '')}, ${jsQuote(options.studentName || student.name || '')})"><i class="fas fa-save"></i> Save Review</button></div>
             </div>
-            <div style="display:grid; gap:12px;">${answerRows || '<div style="padding:20px; background:var(--lux-surface); border:1px dashed #cbd5e1; border-radius:16px; color:var(--lux-text-muted);">No answers recorded yet.</div>'}</div>
+            <div class="lms-quiz-review-paper-answer-list">${answerRows || '<div class="lms-quiz-review-paper-answer-empty">No answers recorded yet.</div>'}</div>
         </div>
     `;
 }
@@ -2959,7 +3119,7 @@ function toggleStudentQuizPaperInline(studentId, criterion, number, panelId, stu
     if (!panel) return;
     if (panel.dataset.expanded === 'true') {
         panel.dataset.expanded = 'false';
-        panel.style.display = 'none';
+        panel.hidden = true;
         panel.innerHTML = '';
         return;
     }
@@ -2974,9 +3134,9 @@ function toggleStudentQuizPaperInline(studentId, criterion, number, panelId, stu
             .find(item => normalizeAssessmentNumber(item.number, 1) === targetNumber);
     const source = resolveLmsQuizSourceFromAssessmentEntry(entry);
     if (!source) {
-        panel.style.display = 'block';
+        panel.hidden = false;
         panel.dataset.expanded = 'true';
-        panel.innerHTML = '<div style="padding:14px 16px; border-radius:14px; background:var(--lux-surface); border:1px dashed #cbd5e1; color:var(--lux-text-muted);">This grade entry is not linked to a saved LMS quiz paper yet.</div>';
+        panel.innerHTML = '<div class="lms-quiz-card-empty">This grade entry is not linked to a saved LMS quiz paper yet.</div>';
         return;
     }
     panel.innerHTML = buildLmsQuizReviewPaperMarkup(source.resourceKey, source.quizId, studentId, {
@@ -2987,7 +3147,7 @@ function toggleStudentQuizPaperInline(studentId, criterion, number, panelId, stu
         hideAction: `toggleStudentQuizPaperInline(${jsQuote(studentId)}, ${jsQuote(normalizedCriterion)}, ${targetNumber}, ${jsQuote(panelId)}, ${jsQuote(studentName)})`
     });
     panel.dataset.expanded = 'true';
-    panel.style.display = 'block';
+    panel.hidden = false;
 }
 
 function openLmsQuizReviewModal(resourceKey, quizId, studentId) {
@@ -3000,21 +3160,23 @@ function openLmsQuizReviewModal(resourceKey, quizId, studentId) {
         || { id: studentId, name: `Student ${studentId}` };
     const overlay = document.createElement('div');
     overlay.id = 'lms-quiz-review-modal';
-    overlay.style.cssText = 'position:fixed; inset:0; z-index:8450; background:rgba(15,23,42,0.72); backdrop-filter:blur(4px); display:flex; align-items:center; justify-content:center; padding:20px;';
+    overlay.className = 'lms-quiz-board-overlay lms-quiz-review-paper-overlay';
     overlay.onclick = event => {
         if (event.target === overlay) overlay.remove();
     };
     overlay.innerHTML = `
-        <div style="width:min(1220px, 100%); height:min(92vh, 1000px); overflow:auto; background:var(--lux-bg-soft); border-radius:24px; border:1px solid rgba(148,163,184,0.18); box-shadow:0 28px 80px rgba(15,23,42,0.35);">
-            <div style="padding:18px 22px; background:linear-gradient(135deg, var(--kiu-navy), var(--kiu-blue)); color:white; display:flex; justify-content:space-between; gap:12px; align-items:flex-start;">
-                <div>
-                    <div style="font-size:20px; font-weight:900;">${escapeHtml(student.name)}</div>
-                    <div style="font-size:12px; opacity:0.92; margin-top:4px;">${escapeHtml(getLmsQuizDisplayLabel(quiz))}  -  ${escapeHtml(quiz.title || '')}</div>
-                    <div style="font-size:11px; opacity:0.82; margin-top:6px;">Full submitted quiz view for TA / Professor review</div>
+        <div class="lms-quiz-board-modal lms-quiz-review-paper-modal">
+            <div class="lms-quiz-board-head">
+                <div class="lms-quiz-board-head-copy">
+                    <div class="lms-quiz-board-title">${escapeHtml(student.name)}</div>
+                    <div class="lms-quiz-board-copy">${escapeHtml(getLmsQuizDisplayLabel(quiz))}  -  ${escapeHtml(quiz.title || '')}</div>
+                    <div class="lms-quiz-board-kicker">Full submitted quiz view for TA / Professor review</div>
                 </div>
-                <button type="button" class="kiu-btn-outline" data-lms-click="document.getElementById('lms-quiz-review-modal')?.remove()" style="border-color:rgba(255,255,255,0.35); color:white; background:rgba(255,255,255,0.08);"><i class="fas fa-times"></i> Close</button>
+                <button type="button" class="kiu-btn-outline lms-quiz-board-close-btn" data-lms-click="document.getElementById('lms-quiz-review-modal')?.remove()"><i class="fas fa-times"></i> Close</button>
             </div>
-            ${buildLmsQuizReviewPaperMarkup(resourceKey, quizId, student.id, { studentName: student.name })}
+            <div class="lms-quiz-board-body">
+                ${buildLmsQuizReviewPaperMarkup(resourceKey, quizId, student.id, { studentName: student.name })}
+            </div>
         </div>
     `;
     document.body.appendChild(overlay);
@@ -3115,5 +3277,4 @@ function saveLmsQuizManualGrade(resourceKey, quizId, studentId, attendanceId, sc
     document.getElementById('lms-quiz-review-modal')?.remove();
     rerenderCurrentLmsQuizWorkspace();
 }
-
 

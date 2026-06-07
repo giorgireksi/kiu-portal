@@ -128,6 +128,17 @@
         const inviteFacultyOptions = isGroupThread
             ? ['all', ...new Set(Object.values(runtime.accountsById || {}).map((account) => text(account?.facultyCode || account?.faculty || '')).filter(Boolean).sort())]
             : ['all'];
+        const messageCardHeadClass = 'social-neo-inline social-neo-inline-between-gap-8-wrap social-neo-msg-card-head';
+        const messageCardMetaClass = 'social-neo-inline social-neo-inline-gap-8-wrap social-neo-msg-card-meta';
+        const messagePanelRowClass = 'social-neo-inline social-neo-inline-items-end social-neo-inline-gap-8-wrap social-neo-msg-panel-row';
+        const messagePanelFieldClass = 'social-neo-field-flex-1-220 social-neo-msg-panel-field';
+        const messagePanelFixedFieldClass = 'social-neo-field-fixed-220 social-neo-msg-panel-field social-neo-msg-panel-field-fixed';
+        const messageUploadTriggerClass = 'social-neo-btn social-neo-btn-ghost social-neo-btn-pointer social-neo-msg-upload-trigger';
+        const messageSettingsFooterClass = 'social-neo-inline social-neo-inline-gap-10-wrap social-neo-msg-settings-footer';
+        const messageSettingsCopyClass = 'social-neo-muted social-neo-flex-spacer social-neo-msg-settings-copy';
+        const messageComposeFormClass = 'social-neo-thread-compose social-neo-msg-compose-form';
+        const messageComposeRowClass = 'social-neo-comment-compose social-neo-msg-compose-row';
+        const messageComposeInputClass = 'social-neo-input social-neo-input-flex-1-180 social-neo-msg-compose-input';
         const renderChatAvatar = (entry) => {
             const entryGroup = groupForChat(entry);
             if (text(entry?.type || '') === 'group' && entryGroup) return groupAvatar(entryGroup, 'social-neo-avatar-sm');
@@ -140,8 +151,8 @@
             const seenByOthers = (Array.isArray(message?.seenBy) ? message.seenBy : []).filter((userId) => text(userId) !== text(message.senderId));
             return `
                 <article class="social-neo-message ${own ? 'is-own' : ''} ${jumpMessageId === text(message.id) ? 'is-highlighted' : ''}" id="${escape(messageAnchorId(chat.id, message.id))}">
-                    <div class="social-neo-inline" style="justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
-                        <div class="social-neo-inline" style="gap:8px;align-items:center">
+                    <div class="${messageCardHeadClass}">
+                        <div class="${messageCardMetaClass}">
                             <strong>${escape(displayName(sender))}</strong>
                             ${presencePill(sender)}
                         </div>
@@ -201,8 +212,8 @@
                             <div><strong>Search in conversation</strong><span>Messages, files, and links.</span></div>
                             <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="group-thread-panel-close" data-chat-id="${escape(text(chat.id))}"><i class="fas fa-times"></i></button>
                         </div>
-                        <div class="social-neo-inline" style="align-items:end;gap:8px;flex-wrap:wrap">
-                            <label style="flex:1 1 220px;display:grid;gap:6px">
+                        <div class="${messagePanelRowClass}">
+                            <label class="${messagePanelFieldClass}">
                                 <span class="social-neo-label">Search</span>
                                 <input class="social-neo-input" type="search" data-bind="group-thread-search" data-chat-id="${escape(text(chat.id))}" placeholder="Search this group..." value="${escape(searchQuery)}">
                             </label>
@@ -346,12 +357,12 @@
                             <div><strong>Invite people</strong><span>Grow the chat after creation.</span></div>
                             <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="group-thread-panel-close" data-chat-id="${escape(text(chat.id))}"><i class="fas fa-times"></i></button>
                         </div>
-                        <div class="social-neo-inline" style="align-items:end;gap:8px;flex-wrap:wrap">
-                            <label style="flex:1 1 220px;display:grid;gap:6px">
+                        <div class="${messagePanelRowClass}">
+                            <label class="${messagePanelFieldClass}">
                                 <span class="social-neo-label">Search people</span>
                                 <input class="social-neo-input" type="search" data-bind="group-thread-invite-search" data-chat-id="${escape(text(chat.id))}" placeholder="Search people to invite..." value="${escape(text(runtime.ui?.groupThreadInviteSearchByChat?.[chat.id] || ''))}">
                             </label>
-                            <label style="flex:0 0 180px;display:grid;gap:6px">
+                            <label class="${messagePanelFixedFieldClass}">
                                 <span class="social-neo-label">Faculty</span>
                                 <select class="social-neo-select" data-bind="group-thread-invite-faculty" data-chat-id="${escape(text(chat.id))}">
                                     ${inviteFacultyOptions.map((faculty) => `<option value="${escape(faculty)}" ${inviteFaculty === faculty ? 'selected' : ''}>${escape(faculty === 'all' ? 'All faculties' : facultyLabel(faculty))}</option>`).join('')}
@@ -380,7 +391,7 @@
                             <div><strong>Notification settings</strong><span>Local preference for this group.</span></div>
                             <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="group-thread-panel-close" data-chat-id="${escape(text(chat.id))}"><i class="fas fa-times"></i></button>
                         </div>
-                        <label style="display:grid;gap:6px">
+                        <label class="${messagePanelFieldClass}">
                             <span class="social-neo-label">Notifications</span>
                             <select class="social-neo-select" data-bind="group-thread-notify" data-group-id="${escape(text(group.id))}">
                                 <option value="all" ${groupNotificationPreference(group) === 'all' ? 'selected' : ''}>All messages</option>
@@ -404,13 +415,13 @@
                                 </select>
                                 <input class="social-neo-input" type="url" name="groupAvatarUrl" placeholder="Avatar image URL" value="${escape(text(runtime.ui?.groupThreadAvatarUrlByChat?.[chat.id] || group.avatarImage || ''))}">
                                 ${renderFileChip(runtime.ui?.groupThreadAvatarFileByChat?.[chat.id] || null, 'Avatar image ready')}
-                                <label class="social-neo-btn social-neo-btn-ghost" style="cursor:pointer">
+                                <label class="${messageUploadTriggerClass}">
                                     <i class="fas fa-image"></i> Upload avatar
                                     <input name="groupAvatarFile" data-chat-id="${escape(text(chat.id))}" type="file" accept="image/*" hidden>
                                 </label>
                                 <input class="social-neo-input" type="url" name="groupBannerUrl" placeholder="Banner image URL" value="${escape(text(runtime.ui?.groupThreadBannerUrlByChat?.[chat.id] || group.bannerImage || ''))}">
                                 ${renderFileChip(runtime.ui?.groupThreadBannerFileByChat?.[chat.id] || null, 'Banner image ready')}
-                                <label class="social-neo-btn social-neo-btn-ghost" style="cursor:pointer">
+                                <label class="${messageUploadTriggerClass}">
                                     <i class="fas fa-panorama"></i> Upload banner
                                     <input name="groupBannerFile" data-chat-id="${escape(text(chat.id))}" type="file" accept="image/*" hidden>
                                 </label>
@@ -419,8 +430,8 @@
                                 </div>
                             </form>
                             <div class="social-neo-divider"></div>
-                            <div class="social-neo-inline" style="justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
-                                <span class="social-neo-muted">Leaving keeps the group and its chat history available for the remaining members.</span>
+                            <div class="${messageSettingsFooterClass}">
+                                <span class="${messageSettingsCopyClass}">Leaving keeps the group and its chat history available for the remaining members.</span>
                                 <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="group-leave-open" data-group-id="${escape(text(group.id))}"><i class="fas fa-sign-out-alt"></i> Leave group</button>
                             </div>
                         </section>
@@ -429,11 +440,28 @@
             }
             return '';
         };
+        const totalUnread = visibleChats.reduce((total, entry) => total + unreadMessages(entry), 0);
+        const inboxSummary = messagesFilter === 'unread'
+            ? 'Showing conversations that still need attention.'
+            : 'Direct chats and group rooms in one controlled inbox.';
+
         return `
             <div class="social-neo-messages ${isGroupThread ? 'social-neo-messages-group' : ''} ${railOpen ? 'is-group-rail-open' : 'is-group-rail-closed'}">
-                <section class="social-neo-card social-neo-chat-list">
-                    <div class="social-neo-section-head">
-                        <div><strong>Inbox</strong></div>
+                <section class="social-neo-card social-neo-chat-list social-neo-messages__inbox">
+                    <div class="social-neo-section-head social-neo-messages__inbox-head">
+                        <div class="social-neo-messages__inbox-copy">
+                            <strong class="social-neo-messages__section-title">Inbox</strong>
+                            <span class="social-neo-messages__section-copy">${escape(inboxSummary)}</span>
+                        </div>
+                        <span class="social-neo-pill social-neo-messages__count-pill">${escape(totalUnread)} unread</span>
+                    </div>
+                    <div class="social-neo-badge-row social-neo-messages__status-strip">
+                        <span class="social-neo-pill">${escape(visibleChats.length)} threads</span>
+                        <span class="social-neo-pill">${escape(chats.length)} total conversations</span>
+                        ${call ? '<span class="social-neo-pill">Call active</span>' : ''}
+                    </div>
+                    <div class="social-neo-section-head social-neo-messages__inbox-toolbar">
+                        <div><strong>Inbox view</strong></div>
                         <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="panel-community" data-community-tab="people"><i class="fas fa-search"></i> Find</button>
                     </div>
                     <div class="social-neo-chat-items">
@@ -462,7 +490,7 @@
                     </div>
                 </section>
 
-                <section class="social-neo-card">
+                <section class="social-neo-card social-neo-messages__thread-shell">
                     ${chat ? `
                         ${isGroupThread ? `
                             <div class="social-neo-thread-group-hero">
@@ -477,7 +505,7 @@
                                 </div>
                             </div>
                         ` : ''}
-                        <div class="social-neo-thread-head">
+                        <div class="social-neo-thread-head social-neo-messages__thread-head">
                             <div class="social-neo-person">
                                 ${isGroupThread
                                     ? groupAvatar(group, 'social-neo-avatar-sm')
@@ -491,7 +519,7 @@
                                     })()}` : ''}
                                 </div>
                             </div>
-                            <div class="social-neo-inline">
+                            <div class="social-neo-inline social-neo-messages__thread-actions">
                                 ${activeMessages(chat).length > 8 ? `<button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="thread-jump-latest" data-chat-id="${escape(text(chat.id))}"><i class="fas fa-arrow-down"></i> Latest</button>` : ''}
                                 ${isGroupThread
                                     ? `<button class="social-neo-btn ${call && text(call.mode || '') === 'group' && call.active && !inCurrentCall ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'}" type="button" data-action="${call && text(call.mode || '') === 'group' && call.active && inCurrentCall ? 'group-call-leave' : 'group-call-join'}" data-chat-id="${escape(text(chat.id))}"><i class="fas fa-video"></i> ${call && text(call.mode || '') === 'group' && call.active ? (inCurrentCall ? 'Leave Call' : 'Join Call') : 'Start Call'}</button>
@@ -518,7 +546,7 @@
                             </div>
                             ${activeGroupPanel ? `<div class="social-neo-group-thread-panel">${renderGroupPanelBody()}</div>` : ''}
                         ` : ''}
-                        <div class="social-neo-thread-messages">
+                        <div class="social-neo-thread-messages social-neo-messages__thread-stream">
                             ${activeMessages(chat).length ? activeMessages(chat).map(renderMessageCard).join('') : `<div class="social-neo-empty">No messages yet.</div>`}
                         </div>
                         ${isGroupThread ? renderGroupCallCard() : ''}
@@ -553,11 +581,11 @@
                                 ` : ''}
                             </div>
                         ` : ''}
-                        <form class="social-neo-thread-compose" data-form="send-message" data-chat-id="${escape(text(chat.id))}">
+                        <form class="${messageComposeFormClass} social-neo-messages__composer" data-form="send-message" data-chat-id="${escape(text(chat.id))}">
                             ${renderFileChip(messageFile)}
-                            <div class="social-neo-comment-compose">
+                            <div class="${messageComposeRowClass}">
                                 <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="message-attach" data-chat-id="${escape(text(chat.id))}"><i class="fas fa-paperclip"></i></button>
-                                <input class="social-neo-input" id="${escape(messageBodyId)}" name="messageBody" placeholder="Aa" value="${escape(messageDraft)}" style="flex:1">
+                                <input class="${messageComposeInputClass}" id="${escape(messageBodyId)}" name="messageBody" placeholder="Aa" value="${escape(messageDraft)}">
                                 <button class="social-neo-btn social-neo-btn-primary social-neo-btn-sm" type="submit"><i class="fas fa-paper-plane"></i></button>
                             </div>
                             <input id="${escape(messageFileId)}" name="messageFile" type="file" hidden>

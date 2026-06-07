@@ -1,0 +1,204 @@
+- generic [active] [ref=e1]:
+  - text:  
+  - main [ref=e2]:
+    - generic [ref=e5]:
+      - generic [ref=e7]:
+        - generic [ref=e8]:
+          - generic [ref=e9]: Campus Social Network
+          - heading "People" [level=1] [ref=e10]
+          - paragraph [ref=e11]: Find classmates, staff, and manage your campus connections.
+          - generic [ref=e12]:
+            - generic [ref=e13]:
+              - strong
+              - generic [ref=e14]: People
+            - generic [ref=e15]:
+              - strong
+              - generic [ref=e16]: Connections
+            - generic [ref=e17]:
+              - strong
+              - generic [ref=e18]: Pending
+          - generic [ref=e19]:
+            - button "People" [pressed] [ref=e20] [cursor=pointer]
+            - button "Suggested" [ref=e21] [cursor=pointer]
+            - button "Requests" [ref=e22] [cursor=pointer]
+            - button "Connections" [ref=e23] [cursor=pointer]
+            - button "Staff" [ref=e24] [cursor=pointer]
+        - generic [ref=e25]:
+          - button "PA Portal Administrator Admin" [ref=e26] [cursor=pointer]:
+            - generic [ref=e27]: PA
+            - generic [ref=e28]:
+              - strong [ref=e29]: Portal Administrator
+              - generic [ref=e30]: Admin
+          - tablist "Social navigation" [ref=e31]:
+            - button " Home Live campus feed" [ref=e32] [cursor=pointer]:
+              - generic [ref=e34]: 
+              - generic [ref=e35]:
+                - strong [ref=e36]: Home
+                - generic [ref=e37]: Live campus feed
+            - button " People Directory & connections" [ref=e38] [cursor=pointer]:
+              - generic [ref=e40]: 
+              - generic [ref=e41]:
+                - strong [ref=e42]: People
+                - generic [ref=e43]: Directory & connections
+            - button " Groups Courses & clubs 2" [ref=e44] [cursor=pointer]:
+              - generic [ref=e46]: 
+              - generic [ref=e47]:
+                - strong [ref=e48]: Groups
+                - generic [ref=e49]: Courses & clubs
+              - emphasis [ref=e50]: "2"
+            - button " Portfolio Student showcase feed 2" [ref=e51] [cursor=pointer]:
+              - generic [ref=e53]: 
+              - generic [ref=e54]:
+                - strong [ref=e55]: Portfolio
+                - generic [ref=e56]: Student showcase feed
+              - emphasis [ref=e57]: "2"
+            - button " Pages Official & followed" [ref=e58] [cursor=pointer]:
+              - generic [ref=e60]: 
+              - generic [ref=e61]:
+                - strong [ref=e62]: Pages
+                - generic [ref=e63]: Official & followed
+            - button " Events What's happening" [ref=e64] [cursor=pointer]:
+              - generic [ref=e66]: 
+              - generic [ref=e67]:
+                - strong [ref=e68]: Events
+                - generic [ref=e69]: What's happening
+            - button " Lost & Found Campus items" [ref=e70] [cursor=pointer]:
+              - generic [ref=e72]: 
+              - generic [ref=e73]:
+                - strong [ref=e74]: Lost & Found
+                - generic [ref=e75]: Campus items
+            - button " Messages Direct and group chats" [ref=e76] [cursor=pointer]:
+              - generic [ref=e78]: 
+              - generic [ref=e79]:
+                - strong [ref=e80]: Messages
+                - generic [ref=e81]: Direct and group chats
+            - button " Alerts Mentions and notices" [ref=e82] [cursor=pointer]:
+              - generic [ref=e84]: 
+              - generic [ref=e85]:
+                - strong [ref=e86]: Alerts
+                - generic [ref=e87]: Mentions and notices
+          - generic [ref=e88]:
+            - button " Messages" [ref=e89] [cursor=pointer]:
+              - generic [ref=e90]: 
+              - text: Messages
+            - button " Profile" [ref=e91] [cursor=pointer]:
+              - generic [ref=e92]: 
+              - text: Profile
+      - region "Find classmates, staff, and useful campus contacts." [ref=e94]:
+        - generic [ref=e95]:
+          - generic [ref=e96]: People discovery
+          - heading "Find classmates, staff, and useful campus contacts." [level=2] [ref=e97]
+          - paragraph [ref=e98]: 0 people / 0 connections / 0 requests
+          - generic [ref=e99]:
+            - button " People" [ref=e100] [cursor=pointer]:
+              - generic [ref=e101]: 
+              - generic [ref=e102]: People
+            - button " Requests" [ref=e103] [cursor=pointer]:
+              - generic [ref=e104]: 
+              - generic [ref=e105]: Requests
+            - button " Staff" [ref=e106] [cursor=pointer]:
+              - generic [ref=e107]: 
+              - generic [ref=e108]: Staff
+        - generic [ref=e109]:
+          - generic [ref=e110]:
+            - article [ref=e111]:
+              - strong
+              - generic [ref=e112]: People
+            - article [ref=e113]:
+              - strong
+              - generic [ref=e114]: Connections
+            - article [ref=e115]:
+              - strong
+              - generic [ref=e116]: Pending
+          - generic [ref=e117]:
+            - article [ref=e118]:
+              - generic [ref=e120]: 
+              - generic [ref=e121]:
+                - strong [ref=e122]: Search by role
+                - generic [ref=e123]: Use filters to find students, professors, TAs, and staff faster.
+            - article [ref=e124]:
+              - generic [ref=e126]: 
+              - generic [ref=e127]:
+                - strong [ref=e128]: Manage requests
+                - generic [ref=e129]: Approve or decline connection requests from one clean area.
+            - article [ref=e130]:
+              - generic [ref=e132]: 
+              - generic [ref=e133]:
+                - strong [ref=e134]: Start a chat
+                - generic [ref=e135]: Open a direct message from every person card.
+      - generic [ref=e138]:
+        - generic [ref=e139]:
+          - generic [ref=e141]:
+            - strong [ref=e142]:
+              - generic [ref=e143]: 
+              - text: Community overview
+            - generic [ref=e144]: People suggestions, verified staff, and shared-context shortcuts in one place.
+          - generic [ref=e145]:
+            - generic [ref=e146]:
+              - strong [ref=e147]: ...
+              - generic [ref=e148]: Profiles
+            - generic [ref=e149]:
+              - strong [ref=e150]: ...
+              - generic [ref=e151]: Suggested
+            - generic [ref=e152]:
+              - strong [ref=e153]: ...
+              - generic [ref=e154]: Requests
+            - generic [ref=e155]:
+              - strong [ref=e156]: ...
+              - generic [ref=e157]: Connections
+        - generic [ref=e159]:
+          - generic [ref=e160]: 
+          - strong [ref=e161]: Loading Community
+          - generic [ref=e162]: Preparing people discovery, requests, and staff shortcuts.
+  - text:                         
+  - complementary:
+    - generic:
+      - generic: K
+      - generic:
+        - generic: KIU
+        - generic: Integrated Campus Portal
+    - generic:
+      - generic: Control
+      - button " Dashboard":
+        - generic: 
+        - generic: Dashboard
+      - button " Admin Tools":
+        - generic: 
+        - generic: Admin Tools
+      - button " Scheduler":
+        - generic: 
+        - generic: Scheduler
+      - button " Staff":
+        - generic: 
+        - generic: Staff
+      - button " Students":
+        - generic: 
+        - generic: Students
+      - generic: Systems
+      - button " News":
+        - generic: 
+        - generic: News
+      - button " Library":
+        - generic: 
+        - generic: Library
+      - button " Orders":
+        - generic: 
+        - generic: Orders
+      - button " Social":
+        - generic: 
+        - generic: Social
+      - button " Exams":
+        - generic: 
+        - generic: Exams
+      - button " Programs":
+        - generic: 
+        - generic: Programs
+      - button " Profile":
+        - generic: 
+        - generic: Profile
+    - generic:
+      - generic: PA
+      - generic:
+        - generic: Portal Administrator
+        - generic: Admin View - Business Management
+  - text:         

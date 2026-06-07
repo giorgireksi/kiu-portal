@@ -19,6 +19,81 @@ function collectConfiguredHostnames(...values) {
     }));
 }
 
+const DEFAULT_ANTI_CHEAT_BLOCKED_PROCESSES = [
+    'TeamViewer.exe',
+    'AnyDesk.exe',
+    'Discord.exe',
+    'obs64.exe',
+    'obs32.exe',
+    'Zoom.exe',
+    'Skype.exe',
+    'Cheat Engine.exe',
+    'x64dbg.exe',
+    'Wireshark.exe',
+    'SnippingTool.exe',
+    'ScreenClippingHost.exe',
+    'discord',
+    'obs',
+    'wireshark',
+    'anydesk',
+    'teamviewer',
+    'zoom',
+    'x64dbg',
+    'gdb'
+];
+
+const STRICT_ANTI_CHEAT_POLICY = {
+    processScanning: true,
+    clipboardClearing: true,
+    focusProtection: true,
+    inputBlocking: true,
+    kioskMode: true,
+    vmDetection: true,
+    devToolsProtection: true,
+    allowDebugTools: false,
+    navigationProtection: true,
+    securityDialogs: true,
+    violationScreen: true,
+    blockedProcesses: DEFAULT_ANTI_CHEAT_BLOCKED_PROCESSES,
+    allowedDomains: [],
+    heartbeatMs: 2000,
+    processScanMs: 1500
+};
+
+function clampPolicyInterval(value, fallback, min, max) {
+    const numeric = safeNumber(value, fallback);
+    return Math.min(max, Math.max(min, numeric));
+}
+
+function normalizeAntiCheatPolicy(policy = {}, existing = {}) {
+    const source = policy && typeof policy === 'object' ? policy : {};
+    const prior = existing && typeof existing === 'object' ? existing : {};
+    const withDefaults = {
+        ...STRICT_ANTI_CHEAT_POLICY,
+        ...prior,
+        ...source
+    };
+    return {
+        processScanning: withDefaults.processScanning !== false,
+        clipboardClearing: withDefaults.clipboardClearing !== false,
+        focusProtection: withDefaults.focusProtection !== false,
+        inputBlocking: withDefaults.inputBlocking !== false,
+        kioskMode: withDefaults.kioskMode !== false,
+        vmDetection: withDefaults.vmDetection !== false,
+        devToolsProtection: withDefaults.devToolsProtection !== false,
+        allowDebugTools: withDefaults.allowDebugTools === true,
+        navigationProtection: withDefaults.navigationProtection !== false,
+        securityDialogs: withDefaults.securityDialogs !== false,
+        violationScreen: withDefaults.violationScreen !== false,
+        blockedProcesses: uniqueStrings(asArray(withDefaults.blockedProcesses).map(value => String(value || '').trim())).length
+            ? uniqueStrings(asArray(withDefaults.blockedProcesses).map(value => String(value || '').trim()))
+            : [...DEFAULT_ANTI_CHEAT_BLOCKED_PROCESSES],
+        allowedDomains: uniqueStrings(asArray(withDefaults.allowedDomains).map(value => String(value || '').trim()).filter(Boolean)),
+        heartbeatMs: clampPolicyInterval(withDefaults.heartbeatMs, STRICT_ANTI_CHEAT_POLICY.heartbeatMs, 1000, 60000),
+        processScanMs: clampPolicyInterval(withDefaults.processScanMs, STRICT_ANTI_CHEAT_POLICY.processScanMs, 1000, 60000)
+    };
+}
+
 function ensureProtectedQuizLaunch(ticket) {
     const key = String(ticket || '').trim();
     if (!key) return null;
@@ -33,7 +108,8 @@ function ensureProtectedQuizLaunch(ticket) {
         studentId: '',
         studentName: '',
         clientType: 'desktop-app',
-        securityLevel: 'desktop-locked'
+        securityLevel: 'desktop-locked',
+        antiCheatPolicy: normalizeAntiCheatPolicy()
     };
     return this.state.protectedQuizLaunches[key];
 }
@@ -53,7 +129,8 @@ function ensureProtectedClientSession(token) {
         studentName: '',
         clientType: 'desktop-app',
         securityLevel: 'desktop-locked',
-        launchTicket: ''
+        launchTicket: '',
+        antiCheatPolicy: normalizeAntiCheatPolicy()
     };
     return this.state.protectedClientSessions[key];
 }
@@ -175,7 +252,8 @@ function normalizeExamSessionRecord(payload = {}, existing = {}) {
         publishedAt: String(payload.publishedAt || existing.publishedAt || '').trim(),
         publishedBy: String(payload.publishedBy || existing.publishedBy || '').trim(),
         protectedCourseId: String(payload.protectedCourseId || existing.protectedCourseId || buildExamSessionCourseKey(id)).trim(),
-        protectedQuizId: String(payload.protectedQuizId || existing.protectedQuizId || id).trim()
+        protectedQuizId: String(payload.protectedQuizId || existing.protectedQuizId || id).trim(),
+        antiCheatPolicy: normalizeAntiCheatPolicy(payload.antiCheatPolicy, existing.antiCheatPolicy)
     };
 }
 
@@ -203,7 +281,8 @@ function syncExamSession(payload = {}) {
         allowedStudents: session.allowedStudents,
         deliveryMode: 'exam-session',
         examSessionId: session.id,
-        templateSnapshotId: session.templateSnapshotId
+        templateSnapshotId: session.templateSnapshotId,
+        antiCheatPolicy: session.antiCheatPolicy
     });
     this.save();
     return clone(session);
@@ -413,6 +492,9 @@ function ensureProtectedQuizAttemptRecord(quiz, student = {}) {
         clientSessionToken: String(student.clientSessionToken || existing.clientSessionToken || '').trim(),
         reconnectApprovedAt: String(student.reconnectApprovedAt || existing.reconnectApprovedAt || '').trim(),
         overrideStatus: String(student.overrideStatus || existing.overrideStatus || '').trim(),
+        appliedAntiCheatPolicy: student.appliedAntiCheatPolicy
+            ? normalizeAntiCheatPolicy(student.appliedAntiCheatPolicy, existing.appliedAntiCheatPolicy)
+            : (existing.appliedAntiCheatPolicy ? normalizeAntiCheatPolicy(existing.appliedAntiCheatPolicy) : null),
         answers: clone(student.answers || existing.answers || {}),
         questionResults: Array.isArray(student.questionResults)
             ? clone(student.questionResults)
@@ -483,6 +565,7 @@ function syncProtectedQuiz(payload = {}) {
         requiresDesktopClient: payload.requiresDesktopClient !== false,
         installUrl: String(payload.installUrl || existing?.installUrl || `${this.backendUrl.replace(/\/$/, '')}/download`).trim(),
         allowedPlatforms: uniqueStrings(asArray(payload.allowedPlatforms || existing?.allowedPlatforms || ['windows', 'macos', 'linux'])),
+        antiCheatPolicy: normalizeAntiCheatPolicy(payload.antiCheatPolicy, existing?.antiCheatPolicy),
         allowedStudentIds,
         allowedStudents: allowedStudents.length ? allowedStudents : asArray(existing?.allowedStudents || []),
         createdAt: String(existing?.createdAt || payload.createdAt || nowIso()).trim(),
@@ -619,6 +702,7 @@ function createProtectedQuizLaunchTicket(payload = {}) {
     launch.studentName = String(payload.studentName || studentSnapshot.name || `Student ${studentId}`).trim();
     launch.clientType = String(payload.clientType || 'desktop-app').trim() || 'desktop-app';
     launch.securityLevel = String(payload.securityLevel || 'desktop-locked').trim() || 'desktop-locked';
+    launch.antiCheatPolicy = normalizeAntiCheatPolicy(record.quiz.antiCheatPolicy);
     launch.createdAt = nowIso();
     launch.expiresAt = new Date(Date.now() + (5 * 60 * 1000)).toISOString();
     launch.redeemedAt = '';
@@ -686,6 +770,7 @@ function redeemProtectedQuizLaunch(payload = {}) {
     session.clientType = launch.clientType || 'desktop-app';
     session.securityLevel = launch.securityLevel || 'desktop-locked';
     session.launchTicket = ticket;
+    session.antiCheatPolicy = normalizeAntiCheatPolicy(launch.antiCheatPolicy, record.quiz.antiCheatPolicy);
     session.createdAt = nowIso();
     session.lastSeenAt = session.createdAt;
     session.expiresAt = new Date(Date.now() + (12 * 60 * 60 * 1000)).toISOString();
@@ -698,6 +783,7 @@ function redeemProtectedQuizLaunch(payload = {}) {
         clientType: session.clientType,
         securityLevel: session.securityLevel,
         clientSessionToken,
+        appliedAntiCheatPolicy: session.antiCheatPolicy,
         antiCheatConnected: true,
         lastHeartbeatAt: session.createdAt,
         startedAt: session.createdAt,
@@ -720,16 +806,20 @@ function redeemProtectedQuizLaunch(payload = {}) {
     record.quiz.updatedAt = nowIso();
     record.lmsCourse.updatedAt = nowIso();
     this.save();
+    const antiCheatPolicy = normalizeAntiCheatPolicy(session.antiCheatPolicy, record.quiz.antiCheatPolicy);
     const allowedDomains = uniqueStrings([
         ...collectConfiguredHostnames(this.appUrl, this.backendUrl),
+        ...asArray(antiCheatPolicy.allowedDomains).map(item => String(item || '').trim()),
         ...uniqueStrings(String(process.env.KIU_PROTECTED_QUIZ_ALLOWED_DOMAINS || '').split(',').map(item => String(item || '').trim())),
         '127.0.0.1',
         'localhost'
     ]);
+    antiCheatPolicy.allowedDomains = allowedDomains;
     return {
         quizSessionUrl: buildProtectedQuizClientUrl.call(this, launch.courseId, launch.quizId),
         clientSessionToken,
         allowedDomains,
+        antiCheatPolicy,
         reportingUrl: `${this.backendUrl}/api/protected-quizzes/${encodeURIComponent(launch.quizId)}/events?courseId=${encodeURIComponent(launch.courseId)}`,
         heartbeatUrl: `${this.backendUrl}/api/protected-quizzes/${encodeURIComponent(launch.quizId)}/heartbeat?courseId=${encodeURIComponent(launch.courseId)}`,
         studentIdentity: {
@@ -756,6 +846,7 @@ function heartbeatProtectedQuiz(payload = {}) {
         clientType: current.session.clientType,
         securityLevel: current.session.securityLevel,
         clientSessionToken,
+        appliedAntiCheatPolicy: current.session.antiCheatPolicy,
         antiCheatConnected: true,
         lastHeartbeatAt: nowIso()
     });
@@ -791,6 +882,7 @@ function recordProtectedQuizEvent(payload = {}) {
         clientType: String(payload.clientType || session?.clientType || 'desktop-app').trim(),
         securityLevel: String(payload.securityLevel || session?.securityLevel || 'desktop-locked').trim(),
         clientSessionToken,
+        appliedAntiCheatPolicy: session?.antiCheatPolicy,
         antiCheatConnected: payload.event === 'heartbeat'
     });
     const eventType = String(payload.event || payload.type || 'notice').trim() || 'notice';
@@ -880,27 +972,58 @@ function updateProtectedQuizAttemptControl(payload = {}, action = '') {
         studentId,
         studentName: String(payload.studentName || '').trim()
     });
+    const sessionEntry = Object.values(this.state.protectedClientSessions || {}).find(session =>
+        String(session?.courseId || '').trim() === courseId
+        && String(session?.quizId || '').trim() === quizId
+        && String(session?.studentId || '').trim() === studentId
+    ) || null;
     const actor = String(payload.actorUserId || payload.actorName || '').trim();
     const createdAt = nowIso();
     if (action === 'block') {
         attempt.blocked = true;
         attempt.status = 'blocked';
         attempt.overrideStatus = 'blocked';
+        if (sessionEntry) {
+            sessionEntry.active = true;
+            sessionEntry.blocked = true;
+            sessionEntry.updatedAt = createdAt;
+            sessionEntry.lastSeenAt = createdAt;
+        }
     } else if (action === 'unblock') {
         attempt.blocked = false;
         attempt.overrideStatus = '';
         if (attempt.status === 'blocked') attempt.status = 'not-started';
+        if (sessionEntry) {
+            sessionEntry.blocked = false;
+            sessionEntry.active = true;
+            sessionEntry.updatedAt = createdAt;
+            sessionEntry.lastSeenAt = createdAt;
+        }
     } else if (action === 'force-submit') {
         attempt.blocked = false;
         attempt.status = 'auto-submitted';
         attempt.submitReason = 'Force submitted by course staff.';
         attempt.submittedAt = attempt.submittedAt || createdAt;
+        if (sessionEntry) {
+            sessionEntry.active = false;
+            sessionEntry.blocked = false;
+            sessionEntry.revokedAt = createdAt;
+            sessionEntry.revokeReason = 'force-submit';
+            sessionEntry.updatedAt = createdAt;
+        }
     } else if (action === 'reset-warnings') {
         attempt.warningCount = 0;
     } else if (action === 'approve-reconnect') {
         attempt.antiCheatConnected = true;
         attempt.reconnectApprovedAt = createdAt;
         attempt.overrideStatus = 'reconnect-approved';
+        if (sessionEntry) {
+            sessionEntry.active = true;
+            sessionEntry.blocked = false;
+            sessionEntry.reconnectApprovedAt = createdAt;
+            sessionEntry.updatedAt = createdAt;
+            sessionEntry.lastSeenAt = createdAt;
+        }
     } else if (action === 'override-status') {
         attempt.overrideStatus = String(payload.overrideStatus || '').trim();
     }
@@ -997,6 +1120,7 @@ function getProtectedQuizMonitor(courseId, quizId = '') {
             });
             return {
                 ...clone(quiz),
+                antiCheatPolicy: normalizeAntiCheatPolicy(quiz.antiCheatPolicy),
                 attempts,
                 monitoringSummary: {
                     totalStudents: allowedStudents.length,

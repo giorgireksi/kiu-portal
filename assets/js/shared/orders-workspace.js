@@ -100,9 +100,9 @@ function getOrderDisplayValue(value) {
 
 function renderOrderDetailEmptyStateMarkup(message) {
     return `
-        <div style="height:100%; min-height:420px; display:flex; align-items:center; justify-content:center; text-align:center; color:var(--lux-text-muted); padding:40px;">
-            <div>
-                <i class="fas fa-inbox" style="font-size:24px; margin-bottom:12px; display:block; opacity:0.5;"></i>
+        <div class="orders-detail-empty">
+            <div class="orders-detail-empty__inner">
+                <i class="fas fa-inbox orders-detail-empty__icon"></i>
                 ${escapeHtml(message || 'No orders are available for this account yet.')}
             </div>
         </div>
@@ -135,7 +135,7 @@ function ensureOrderDetailShell(container, scopeKey = 'order-detail') {
 
 function renderOrderDetailHeaderMarkup(selectedOrder, options = {}) {
     const titleClass = options.titleClass || 'page-hero-title';
-    const titleStyle = options.titleStyle || 'font-size:clamp(26px, 2.4vw, 38px); line-height:1.02;';
+    const titleVariantClass = options.titleVariantClass || 'orders-detail-title--hero';
     const rightBadges = [];
     if (selectedOrder?.status) {
         rightBadges.push(`<span class="lux-status-pill is-success">${escapeHtml(selectedOrder.status || 'Active')}</span>`);
@@ -147,12 +147,12 @@ function renderOrderDetailHeaderMarkup(selectedOrder, options = {}) {
         rightBadges.push(options.extraBadgesMarkup);
     }
     return `
-        <div style="display:flex; justify-content:space-between; gap:16px; align-items:flex-start; flex-wrap:wrap;">
-            <div>
-                <div class="${escapeHtml(titleClass)}" style="${escapeHtml(titleStyle)}">${escapeHtml(selectedOrder.title)}</div>
-                <div style="margin-top:8px; color:var(--lux-text-muted); font-size:13px;">${escapeHtml(selectedOrder.id)} &middot; ${escapeHtml(selectedOrder.type)} &middot; Effective ${escapeHtml(getOrderDisplayValue(selectedOrder.effectiveDate))}</div>
+        <div class="orders-detail-header">
+            <div class="orders-detail-header__copy">
+                <div class="${escapeHtml(`${titleClass} orders-detail-title ${titleVariantClass}`.trim())}">${escapeHtml(selectedOrder.title)}</div>
+                <div class="orders-detail-submeta">${escapeHtml(selectedOrder.id)} &middot; ${escapeHtml(selectedOrder.type)} &middot; Effective ${escapeHtml(getOrderDisplayValue(selectedOrder.effectiveDate))}</div>
             </div>
-            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <div class="orders-detail-badges">
                 ${rightBadges.join('')}
             </div>
         </div>
@@ -160,23 +160,23 @@ function renderOrderDetailHeaderMarkup(selectedOrder, options = {}) {
 }
 
 function renderOrderDetailDescriptionMarkup(selectedOrder) {
-    return `<div class="orders-detail-panel">${escapeHtml(selectedOrder.description || '')}</div>`;
+    return `<div class="orders-detail-panel lux-detail-panel">${escapeHtml(selectedOrder.description || '')}</div>`;
 }
 
 function renderOrderDetailMetricsMarkup(selectedOrder) {
     return `
         <div class="orders-metric-grid">
-            <div class="orders-metric-card">
+            <div class="orders-metric-card lux-stack-card">
                 <div class="orders-metric-label">Created Date</div>
                 <div class="orders-metric-value">${escapeHtml(getOrderDisplayValue(selectedOrder.createdDate))}</div>
             </div>
-            <div class="orders-metric-card">
+            <div class="orders-metric-card lux-stack-card">
                 <div class="orders-metric-label">Effective Date</div>
                 <div class="orders-metric-value">${escapeHtml(getOrderDisplayValue(selectedOrder.effectiveDate))}</div>
             </div>
-            <div class="orders-metric-card">
+            <div class="orders-metric-card lux-stack-card">
                 <div class="orders-metric-label">Faculty Context</div>
-                <div class="orders-metric-value" style="font-size:18px; line-height:1.25;">${escapeHtml(selectedOrder.facultyName || getFacultyLabel(selectedOrder.facultyCode || getCurrentFaculty()))}</div>
+                <div class="orders-metric-value orders-metric-value--context">${escapeHtml(selectedOrder.facultyName || getFacultyLabel(selectedOrder.facultyCode || getCurrentFaculty()))}</div>
             </div>
         </div>
     `;
@@ -209,13 +209,13 @@ function renderOrderDetailAttachmentsMarkup(selectedOrder) {
     const attachments = getOrderAttachmentEntries(selectedOrder);
     if (!attachments.length) return '';
     return `
-        <div style="margin-top:18px; font-size:13px; color:var(--lux-text-muted);">Attachments</div>
-        <div style="margin-top:10px; display:grid; gap:10px;">
+        <div class="orders-detail-section-label">Attachments</div>
+        <div class="orders-detail-attachments">
             ${attachments.map((attachment) => `
-                <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; padding:14px; border:1px solid rgba(255,255,255,0.08); border-radius:16px; background:rgba(255,255,255,0.03);">
-                    <div style="min-width:0;">
-                        <div style="font-weight:800; color:var(--lux-text);">${escapeHtml(attachment.name)}</div>
-                        <div style="margin-top:4px; color:var(--lux-text-muted); font-size:12px;">Attached order document</div>
+                <div class="orders-attachment-card lux-inline-card">
+                    <div class="orders-attachment-copy">
+                        <div class="orders-attachment-title">${escapeHtml(attachment.name)}</div>
+                        <div class="orders-attachment-meta">Attached order document</div>
                     </div>
                     ${attachment.url
                         ? `<a class="lux-secondary-btn" href="${escapeHtml(attachment.url)}" download="${escapeHtml(attachment.name)}"><i class="fas fa-file-download"></i> Download</a>`
@@ -228,13 +228,13 @@ function renderOrderDetailAttachmentsMarkup(selectedOrder) {
 
 function renderOrderDetailRecipientsMarkup(selectedOrder) {
     return `
-        <div style="margin-top:18px; font-size:13px; color:var(--lux-text-muted);">Recipients</div>
-        <div style="margin-top:10px; display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:12px;">
+        <div class="orders-detail-section-label">Recipients</div>
+        <div class="orders-recipient-grid">
             ${(selectedOrder.recipientSnapshots || []).map((recipient) => `
-                <div style="padding:14px; border:1px solid rgba(255,255,255,0.08); border-radius:16px; background:rgba(255,255,255,0.03);">
-                    <div style="font-weight:800; color:var(--lux-text);">${escapeHtml(recipient.name || recipient.id)}</div>
-                    <div style="margin-top:4px; color:var(--lux-text-muted); font-size:12px;">${escapeHtml(getOrderRoleLabel(recipient.role))}</div>
-                    <div style="margin-top:4px; color:var(--lux-text-soft); font-size:11px;">${escapeHtml(recipient.email || '')}</div>
+                <div class="orders-recipient-card lux-inline-card">
+                    <div class="orders-recipient-title">${escapeHtml(recipient.name || recipient.id)}</div>
+                    <div class="orders-recipient-meta">${escapeHtml(getOrderRoleLabel(recipient.role))}</div>
+                    <div class="orders-recipient-submeta">${escapeHtml(recipient.email || '')}</div>
                 </div>
             `).join('')}
         </div>
@@ -702,106 +702,25 @@ function renderAdminOrders() {
     return;
 }
 
-function ensureOrdersInboxFadeOverrides() {
-    if (document.getElementById('orders-inbox-fade-overrides')) return;
-    const style = document.createElement('style');
-    style.id = 'orders-inbox-fade-overrides';
-    style.textContent = `
-        body.lux-route-orders #page-orders .orders-inbox-hero,
-        body[data-lux-page="orders"] #page-orders .orders-inbox-hero,
-        #page-orders .orders-inbox-hero,
-        #orders-inbox-root .orders-inbox-hero,
-        #admin-orders-root .orders-inbox-hero {
-            background:
-                radial-gradient(circle at 8% 0%, rgba(255, 255, 255, calc(var(--lux-transparency-alpha, 0.92) * 0.075)), transparent 32%),
-                radial-gradient(circle at 72% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, 0.92) * 0.24)), transparent 38%),
-                radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-transparency-alpha, 0.92) * 0.14)), transparent 38%),
-                linear-gradient(135deg,
-                    rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, 0.92) * 0.10)),
-                    rgba(10, 15, 24, calc(var(--lux-transparency-alpha, 0.92) * 0.91)) 44%,
-                    rgba(7, 10, 18, calc(var(--lux-transparency-alpha, 0.92) * 0.84))) !important;
-            border-color: rgba(var(--lux-accent-rgb), 0.16) !important;
-            box-shadow:
-                0 24px 58px rgba(0, 0, 0, 0.24),
-                inset 0 1px 0 rgba(255, 255, 255, 0.07) !important;
-        }
-
-        body.lux-route-orders #page-orders :is(.orders-list-card, .orders-detail-card),
-        body[data-lux-page="orders"] #page-orders :is(.orders-list-card, .orders-detail-card),
-        #page-orders :is(.orders-list-card, .orders-detail-card),
-        #orders-inbox-root :is(.orders-list-card, .orders-detail-card),
-        #admin-orders-root :is(.orders-list-card, .orders-detail-card) {
-            background:
-                radial-gradient(circle at 8% 0%, rgba(255, 255, 255, calc(var(--lux-transparency-alpha, 0.92) * 0.075)), transparent 32%),
-                radial-gradient(circle at 72% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, 0.92) * 0.24)), transparent 38%),
-                radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-transparency-alpha, 0.92) * 0.14)), transparent 38%),
-                linear-gradient(135deg,
-                    rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, 0.92) * 0.10)),
-                    rgba(10, 15, 24, calc(var(--lux-transparency-alpha, 0.92) * 0.91)) 44%,
-                    rgba(7, 10, 18, calc(var(--lux-transparency-alpha, 0.92) * 0.84))) !important;
-            border-color: rgba(var(--lux-accent-rgb), 0.16) !important;
-        }
-
-        body.lux-route-orders #page-orders :is(.lux-stat-card, .orders-metric-card, .orders-detail-panel, .orders-list-wrap, .orders-status-filter, .orders-item.is-active),
-        body[data-lux-page="orders"] #page-orders :is(.lux-stat-card, .orders-metric-card, .orders-detail-panel, .orders-list-wrap, .orders-status-filter, .orders-item.is-active),
-        #page-orders :is(.lux-stat-card, .orders-metric-card, .orders-detail-panel, .orders-list-wrap, .orders-status-filter, .orders-item.is-active),
-        #orders-inbox-root :is(.lux-stat-card, .orders-metric-card, .orders-detail-panel, .orders-list-wrap, .orders-status-filter, .orders-item.is-active),
-        #admin-orders-root :is(.lux-stat-card, .orders-metric-card, .orders-detail-panel, .orders-list-wrap, .orders-status-filter, .orders-item.is-active) {
-            background:
-                radial-gradient(circle at 0% 0%, rgba(var(--lux-accent-rgb), 0.10), transparent 34%),
-                linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.018)) !important;
-            border-color: rgba(var(--lux-accent-rgb), 0.12) !important;
-        }
-
-        body.lux-light-mode #page-orders :is(.orders-inbox-hero, .orders-list-card, .orders-detail-card),
-        html.lux-light-mode body #page-orders :is(.orders-inbox-hero, .orders-list-card, .orders-detail-card),
-        body.lux-light-mode #orders-inbox-root :is(.orders-inbox-hero, .orders-list-card, .orders-detail-card),
-        body.lux-light-mode #admin-orders-root :is(.orders-inbox-hero, .orders-list-card, .orders-detail-card) {
-            background:
-                radial-gradient(circle at 8% 0%, rgba(255, 255, 255, calc(var(--lux-transparency-alpha, 0.88) * 0.88)), transparent 34%),
-                radial-gradient(circle at 72% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, 0.88) * 0.20)), transparent 38%),
-                radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-transparency-alpha, 0.88) * 0.13)), transparent 38%),
-                linear-gradient(135deg,
-                    rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, 0.88) * 0.075)),
-                    rgba(255, 255, 255, calc(var(--lux-transparency-alpha, 0.88) * 0.88)) 44%,
-                    rgba(247, 241, 232, calc(var(--lux-transparency-alpha, 0.88) * 0.72))) !important;
-            border-color: rgba(48, 34, 22, 0.10) !important;
-        }
-
-        body.lux-light-mode #page-orders :is(.lux-stat-card, .orders-metric-card, .orders-detail-panel, .orders-list-wrap, .orders-status-filter, .orders-item.is-active),
-        html.lux-light-mode body #page-orders :is(.lux-stat-card, .orders-metric-card, .orders-detail-panel, .orders-list-wrap, .orders-status-filter, .orders-item.is-active),
-        body.lux-light-mode #orders-inbox-root :is(.lux-stat-card, .orders-metric-card, .orders-detail-panel, .orders-list-wrap, .orders-status-filter, .orders-item.is-active),
-        body.lux-light-mode #admin-orders-root :is(.lux-stat-card, .orders-metric-card, .orders-detail-panel, .orders-list-wrap, .orders-status-filter, .orders-item.is-active) {
-            background:
-                radial-gradient(circle at 0% 0%, rgba(var(--lux-accent-rgb), 0.08), transparent 34%),
-                linear-gradient(180deg, rgba(255, 255, 255, 0.66), rgba(250, 246, 239, 0.44)) !important;
-            border-color: rgba(var(--lux-accent-rgb), 0.12) !important;
-        }
-    `;
-    document.head.appendChild(style);
-}
-
 function ensureRecipientOrdersShell(container) {
     if (!container.querySelector('[data-orders-inbox-shell="1"]')) {
         container.innerHTML = `
             <div class="lux-page-shell orders-inbox-shell" data-orders-inbox-shell="1">
-                <section class="lux-card orders-inbox-hero lux-summary-surface lux-summary-surface--hero">
-                    <div class="lux-card-body" style="display:grid; grid-template-columns:minmax(0,1.2fr) minmax(280px,0.8fr); gap:22px; align-items:start;">
-                        <div id="orders-inbox-hero-main"></div>
-                        <aside>
-                            <div class="lux-stat-grid" id="orders-inbox-hero-stats"></div>
-                        </aside>
+                <section class="lux-card surface-card orders-inbox-hero lux-summary-surface lux-summary-surface--hero">
+                    <div class="lux-card-body lux-hero-stage orders-inbox-hero-stage">
+                        <div id="orders-inbox-hero-main" class="lux-hero-main"></div>
+                        <aside id="orders-inbox-hero-stats" class="lux-hero-side orders-inbox-hero-side"></aside>
                     </div>
                 </section>
 
                 <div class="orders-inbox-grid">
-                    <div style="display:flex; flex-direction:column; gap:18px;">
-                        <section class="lux-card orders-list-card">
+                    <div class="orders-inbox-column">
+                        <section class="lux-card surface-card orders-list-card lux-summary-surface lux-summary-surface--panel">
                             <div class="lux-card-body" id="orders-inbox-list-panel"></div>
                         </section>
                     </div>
 
-                    <section class="lux-card orders-detail-card">
+                    <section class="lux-card surface-card orders-detail-card lux-summary-surface lux-summary-surface--panel">
                         <div class="lux-card-body" id="orders-inbox-detail-panel"></div>
                     </section>
                 </div>
@@ -832,7 +751,7 @@ function createOrdersNode(tagName, { className = '', text = '', html = '', attrs
 function createRecipientOrdersStatusButton(status, active) {
     const label = status.charAt(0).toUpperCase() + status.slice(1);
     return createOrdersNode('button', {
-        className: `orders-status-filter ${active ? 'is-active' : ''}`.trim(),
+        className: `orders-status-filter lux-filter-pill ${active ? 'is-active' : ''}`.trim(),
         text: label,
         attrs: {
             type: 'button',
@@ -846,7 +765,7 @@ function createRecipientOrdersListItem(order, currentUser, selectedOrder) {
     const isRead = isOrderReadByUser(order.id, currentUser.id);
     const isActive = selectedOrder?.id === order.id;
     const button = createOrdersNode('button', {
-        className: `orders-item ${isActive ? 'is-active' : ''}`.trim(),
+        className: `orders-item lux-select-card ${isActive ? 'is-active' : ''}`.trim(),
         attrs: {
             type: 'button',
             'data-recipient-order-open': order.id
@@ -854,12 +773,10 @@ function createRecipientOrdersListItem(order, currentUser, selectedOrder) {
     });
 
     const topRow = createOrdersNode('div', {
-        attrs: {
-            style: 'display:flex; justify-content:space-between; gap:12px; align-items:flex-start;'
-        }
+        className: 'orders-item__top'
     });
     const copyWrap = createOrdersNode('div', {
-        attrs: { style: 'min-width:0;' }
+        className: 'orders-item__copy'
     });
     copyWrap.appendChild(createOrdersNode('div', {
         className: 'orders-item__title',
@@ -871,11 +788,8 @@ function createRecipientOrdersListItem(order, currentUser, selectedOrder) {
     }));
     topRow.appendChild(copyWrap);
     topRow.appendChild(createOrdersNode('span', {
-        className: `orders-item__state ${isRead ? 'is-read' : 'is-unread'}`.trim(),
-        text: isRead ? 'Read' : 'Unread',
-        attrs: {
-            style: `background:${isRead ? 'rgba(255,255,255,0.06)' : 'rgba(var(--lux-accent-rgb),0.14)'}; color:${isRead ? 'var(--lux-text-muted)' : 'var(--lux-text)'};`
-        }
+        className: `orders-item__state lux-status-pill ${isRead ? 'is-muted' : 'is-info'}`.trim(),
+        text: isRead ? 'Read' : 'Unread'
     }));
 
     button.appendChild(topRow);
@@ -914,14 +828,14 @@ function renderRecipientOrdersListPanelRegions(container, uiState, allOrders, or
     }));
 
     const statusRow = createOrdersNode('div', {
-        attrs: { style: 'display:flex; gap:8px; flex-wrap:wrap; margin-top:14px;' }
+        className: 'orders-status-row'
     });
     ['all', 'unread', 'read'].forEach((status) => {
         statusRow.appendChild(createRecipientOrdersStatusButton(status, (uiState.status || 'all') === status));
     });
     fragment.appendChild(statusRow);
 
-    const listWrap = createOrdersNode('div', { className: 'orders-list-wrap' });
+    const listWrap = createOrdersNode('div', { className: 'orders-list-wrap lux-data-card' });
     const list = createOrdersNode('div', { className: 'orders-list' });
     if (orders.length) {
         const orderFragment = document.createDocumentFragment();
@@ -931,10 +845,8 @@ function renderRecipientOrdersListPanelRegions(container, uiState, allOrders, or
         list.appendChild(orderFragment);
     } else {
         list.appendChild(createOrdersNode('div', {
+            className: 'orders-list-empty',
             text: 'No orders matched your current search.',
-            attrs: {
-                style: 'padding:44px 18px; text-align:center; color:var(--lux-text-muted);'
-            }
         }));
     }
     listWrap.appendChild(list);
@@ -947,9 +859,9 @@ function renderRecipientOrdersListPanelRegions(container, uiState, allOrders, or
 function renderRecipientOrdersHeroMain(currentUser, unreadCount) {
     return `
         <div class="lux-page-kicker"><i class="fas fa-inbox"></i> Orders Inbox</div>
-        <div class="page-hero-title" style="margin-top:12px;">Official orders and decisions</div>
+        <div class="page-hero-title orders-hero-title">Official orders and decisions</div>
         <div class="lux-card-copy">Review official orders and institutional decisions sent to your portal account. Orders are shared by administrators and scoped to the groups or people they selected.</div>
-        <div class="lux-pill-row" style="margin-top:18px;">
+        <div class="lux-pill-row orders-hero-pills">
             <span class="lux-status-pill is-muted"><i class="fas fa-user-shield"></i> ${escapeHtml(getOrderRoleLabel(currentUser.role))}</span>
             <span class="lux-status-pill is-muted"><i class="fas fa-building"></i> ${escapeHtml(getFacultyLabel(currentUser.facultyCode || currentUser.faculty || getCurrentFaculty()))}</span>
             <span class="lux-status-pill is-muted"><i class="fas fa-bell"></i> ${unreadCount} unread</span>
@@ -960,34 +872,32 @@ function renderRecipientOrdersHeroMain(currentUser, unreadCount) {
 function ensureAdminOrdersShell(root) {
     if (!root.querySelector('[data-admin-orders-shell="1"]')) {
         root.innerHTML = `
-            <div class="lux-page-shell" data-admin-orders-shell="1" style="display:grid; gap:22px;">
-                <section class="lux-card">
-                    <div class="lux-card-body" style="display:grid; grid-template-columns:minmax(0,1.2fr) minmax(280px,0.8fr); gap:22px; align-items:start;">
-                        <div id="admin-orders-hero-main"></div>
-                        <aside>
-                            <div class="lux-stat-grid" id="admin-orders-hero-stats"></div>
-                        </aside>
+            <div class="lux-page-shell orders-admin-shell" data-admin-orders-shell="1">
+                <section class="lux-card surface-card orders-admin-hero lux-summary-surface lux-summary-surface--hero">
+                    <div class="lux-card-body lux-hero-stage orders-admin-hero-stage">
+                        <div id="admin-orders-hero-main" class="lux-hero-main orders-admin-hero-main"></div>
+                        <aside id="admin-orders-hero-stats" class="lux-hero-side orders-admin-hero-side"></aside>
                     </div>
                 </section>
 
-                <div style="display:grid; grid-template-columns:minmax(340px, 420px) minmax(0, 1fr); gap:22px; align-items:start;">
-                    <div style="display:flex; flex-direction:column; gap:18px;">
-                        <section class="lux-card">
-                            <div class="lux-card-body" id="admin-orders-recipients-panel"></div>
+                <div class="orders-admin-grid">
+                    <div class="orders-admin-column orders-admin-column--compose">
+                        <section class="lux-card surface-card orders-admin-panel orders-admin-recipients-card lux-summary-surface lux-summary-surface--panel">
+                            <div class="lux-card-body orders-admin-panel__body orders-admin-panel__body--recipients" id="admin-orders-recipients-panel"></div>
                         </section>
 
-                        <section class="lux-card">
-                            <div class="lux-card-body" id="admin-orders-compose-panel"></div>
+                        <section class="lux-card surface-card orders-admin-panel orders-admin-compose-card lux-summary-surface lux-summary-surface--panel">
+                            <div class="lux-card-body orders-admin-panel__body orders-admin-panel__body--compose" id="admin-orders-compose-panel"></div>
                         </section>
                     </div>
 
-                    <div style="display:flex; flex-direction:column; gap:18px;">
-                        <section class="lux-card">
-                            <div class="lux-card-body" id="admin-orders-table-panel"></div>
+                    <div class="orders-admin-column orders-admin-column--review">
+                        <section class="lux-card surface-card orders-admin-panel orders-admin-table-card lux-summary-surface lux-summary-surface--panel">
+                            <div class="lux-card-body orders-admin-panel__body orders-admin-panel__body--table" id="admin-orders-table-panel"></div>
                         </section>
 
-                        <section class="lux-card">
-                            <div class="lux-card-body" id="admin-orders-detail-panel"></div>
+                        <section class="lux-card surface-card orders-admin-panel orders-admin-detail-card orders-detail-card lux-summary-surface lux-summary-surface--panel">
+                            <div class="lux-card-body orders-admin-panel__body orders-admin-panel__body--detail" id="admin-orders-detail-panel"></div>
                         </section>
                     </div>
                 </div>
@@ -1008,15 +918,15 @@ function ensureAdminOrdersShell(root) {
 function renderAdminOrdersHeroMain(facultyLabel) {
     return `
         <div class="lux-page-kicker"><i class="fas fa-paper-plane"></i> Admin Orders</div>
-        <div class="page-hero-title" style="margin-top:12px;">Orders Command Center</div>
+        <div class="page-hero-title orders-hero-title">Orders Command Center</div>
         <div class="lux-card-copy">
             Search ${escapeHtml(facultyLabel)} students, professors, and teaching assistants, then issue orders in bulk from one place. Every recipient sees the final order in their own Orders inbox.
         </div>
-        <div class="lux-pill-row" style="margin-top:18px;">
+        <div class="lux-pill-row orders-hero-pills">
             <span class="lux-status-pill is-muted"><i class="fas fa-layer-group"></i> Admin workspace</span>
             <span class="lux-status-pill is-muted"><i class="fas fa-bolt"></i> Auto sync</span>
         </div>
-        <div style="display:flex; flex-wrap:wrap; gap:12px; margin-top:22px;">
+        <div class="orders-hero-actions">
             <button class="lux-primary-btn" type="button" data-admin-orders-nav-home="1"><i class="fas fa-arrow-left"></i> Back to CMS</button>
         </div>
     `;
@@ -1024,17 +934,26 @@ function renderAdminOrdersHeroMain(facultyLabel) {
 
 function renderAdminOrdersHeroStats(orderCount, recipientFootprint, ordersToday) {
     return `
-        <div class="lux-stat-card lux-summary-surface lux-summary-surface--panel">
-            <div class="lux-stat-label"><i class="fas fa-paper-plane"></i> Sent Orders</div>
-            <div class="lux-stat-value">${orderCount}</div>
+        <div class="lux-hero-side-head">
+            <strong>${orderCount}</strong>
+            <span>Admin-side distribution metrics in the same hero-side signal language used on the home dashboard.</span>
         </div>
-        <div class="lux-stat-card lux-summary-surface lux-summary-surface--panel">
-            <div class="lux-stat-label"><i class="fas fa-users"></i> Recipients Covered</div>
-            <div class="lux-stat-value">${recipientFootprint}</div>
-        </div>
-        <div class="lux-stat-card lux-summary-surface lux-summary-surface--panel">
-            <div class="lux-stat-label"><i class="fas fa-calendar-day"></i> Created Today</div>
-            <div class="lux-stat-value">${ordersToday}</div>
+        <div class="lux-hero-signal-list">
+            <div class="lux-hero-signal">
+                <span>Sent orders</span>
+                <strong>${orderCount}</strong>
+                <em>Total published orders visible inside this faculty command center.</em>
+            </div>
+            <div class="lux-hero-signal">
+                <span>Recipients covered</span>
+                <strong>${recipientFootprint}</strong>
+                <em>Students and staff touched by those orders.</em>
+            </div>
+            <div class="lux-hero-signal">
+                <span>Created today</span>
+                <strong>${ordersToday}</strong>
+                <em>Orders published during the current day.</em>
+            </div>
         </div>
     `;
 }
@@ -1047,7 +966,7 @@ function createAdminOrdersRoleFilterButton(role, active) {
         attrs: {
             type: 'button',
             'data-admin-orders-role-filter': role,
-            style: 'cursor:pointer;'
+            'data-orders-clickable-pill': '1'
         }
     });
 }
@@ -1055,27 +974,22 @@ function createAdminOrdersRoleFilterButton(role, active) {
 function createAdminRecipientRow(user, selectedRecipientSet) {
     const selected = selectedRecipientSet.has(String(user.id));
     const label = createOrdersNode('label', {
-        attrs: {
-            style: `display:flex; align-items:flex-start; gap:12px; padding:14px 16px; border-bottom:1px solid var(--lux-border); cursor:pointer; background:${selected ? 'rgba(var(--lux-accent-rgb),0.08)' : 'transparent'};`
-        }
+        className: `orders-recipient-row ${selected ? 'is-selected' : ''}`.trim()
     });
     label.appendChild(createOrdersNode('input', {
         attrs: {
             type: 'checkbox',
             ...(selected ? { checked: 'checked' } : {}),
-            'data-admin-order-recipient-toggle': String(user.id),
-            style: 'margin-top:3px;'
+            'data-admin-order-recipient-toggle': String(user.id)
         }
     }));
 
-    const copy = createOrdersNode('div', { attrs: { style: 'flex:1;' } });
+    const copy = createOrdersNode('div', { className: 'orders-recipient-row__copy' });
     const titleRow = createOrdersNode('div', {
-        attrs: {
-            style: 'display:flex; justify-content:space-between; gap:12px; align-items:center; flex-wrap:wrap;'
-        }
+        className: 'orders-recipient-row__title'
     });
     titleRow.appendChild(createOrdersNode('div', {
-        attrs: { style: 'font-weight:800; color:var(--lux-text);' },
+        className: 'orders-recipient-row__name',
         text: user.nameEn || user.name || user.id
     }));
     titleRow.appendChild(createOrdersNode('span', {
@@ -1084,7 +998,7 @@ function createAdminRecipientRow(user, selectedRecipientSet) {
     }));
     copy.appendChild(titleRow);
     copy.appendChild(createOrdersNode('div', {
-        attrs: { style: 'margin-top:4px; color:var(--lux-text-muted); font-size:12px;' },
+        className: 'orders-recipient-row__meta',
         text: user.email || 'No email recorded'
     }));
     const footerBits = [String(user.id)];
@@ -1092,7 +1006,7 @@ function createAdminRecipientRow(user, selectedRecipientSet) {
         footerBits.push(`Semester ${String(user.semester)}`);
     }
     copy.appendChild(createOrdersNode('div', {
-        attrs: { style: 'margin-top:4px; color:var(--lux-text-dim); font-size:11px;' },
+        className: 'orders-recipient-row__submeta',
         text: footerBits.join(' · ')
     }));
     label.appendChild(copy);
@@ -1128,7 +1042,7 @@ function renderAdminOrdersRecipientsPanelRegions(container, facultyLabel, uiStat
     }));
 
     const filterRow = createOrdersNode('div', {
-        attrs: { style: 'display:flex; gap:8px; flex-wrap:wrap; margin-top:12px;' }
+        className: 'orders-recipient-filter-row'
     });
     ['all', USER_ROLES.STUDENT, USER_ROLES.PROFESSOR, USER_ROLES.TA].forEach((role) => {
         filterRow.appendChild(createAdminOrdersRoleFilterButton(role, (uiState.roleFilter || 'all') === role));
@@ -1136,7 +1050,7 @@ function renderAdminOrdersRecipientsPanelRegions(container, facultyLabel, uiStat
     fragment.appendChild(filterRow);
 
     const actionRow = createOrdersNode('div', {
-        attrs: { style: 'display:flex; gap:10px; flex-wrap:wrap; margin-top:14px;' }
+        className: 'orders-recipient-action-row'
     });
     actionRow.appendChild(createOrdersNode('button', {
         className: 'lux-primary-btn',
@@ -1151,12 +1065,10 @@ function renderAdminOrdersRecipientsPanelRegions(container, facultyLabel, uiStat
     fragment.appendChild(actionRow);
 
     const listShell = createOrdersNode('div', {
-        attrs: {
-            style: 'margin-top:16px; border:1px solid var(--lux-border); border-radius:18px; overflow:hidden;'
-        }
+        className: 'orders-recipient-list-shell'
     });
     const scroll = createOrdersNode('div', {
-        attrs: { style: 'max-height:350px; overflow:auto;' }
+        className: 'orders-recipient-list-scroll'
     });
     if (filteredRecipients.length) {
         const recipientFragment = document.createDocumentFragment();
@@ -1166,10 +1078,8 @@ function renderAdminOrdersRecipientsPanelRegions(container, facultyLabel, uiStat
         scroll.appendChild(recipientFragment);
     } else {
         scroll.appendChild(createOrdersNode('div', {
+            className: 'orders-recipient-list-empty',
             text: 'No recipients matched the current search.',
-            attrs: {
-                style: 'padding:34px 18px; text-align:center; color:var(--lux-text-muted);'
-            }
         }));
     }
     listShell.appendChild(scroll);
@@ -1179,32 +1089,16 @@ function renderAdminOrdersRecipientsPanelRegions(container, facultyLabel, uiStat
 }
 
 function renderAdminOrdersRecipientsPanel(facultyLabel, uiState, filteredRecipients, selectedRecipientSet, selectedRecipients) {
-    return `
-        <div class="lux-card-head">
-            <div>
-                <div class="lux-card-title">Select Recipients</div>
-                <div class="lux-card-copy">Search one person or mark many at once inside ${escapeHtml(facultyLabel)}.</div>
-            </div>
-            <span class="lux-status-pill is-info">${selectedRecipients.length} selected</span>
-        </div>
-        <input type="text" class="lux-control" value="${escapeHtml(uiState.search || '')}" data-admin-orders-search="1" placeholder="Search by name, ID, email, or role">
-        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:12px;">
-            ${['all', USER_ROLES.STUDENT, USER_ROLES.PROFESSOR, USER_ROLES.TA].map(role => {
-                const active = (uiState.roleFilter || 'all') === role;
-                const label = role === 'all' ? 'All' : getOrderRoleShortLabel(role);
-                return '<button type="button" data-admin-orders-role-filter="' + escapeHtml(role) + '" class="lux-status-pill ' + (active ? 'is-info' : 'is-muted') + '" style="cursor:pointer;">' + label + '</button>';
-            }).join('')}
-        </div>
-        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:14px;">
-            <button class="lux-primary-btn" type="button" data-admin-orders-select-filtered="1"><i class="fas fa-check-double"></i> Select Filtered</button>
-            <button class="lux-secondary-btn" type="button" data-admin-orders-clear-recipients="1"><i class="fas fa-eraser"></i> Clear</button>
-        </div>
-        <div style="margin-top:16px; border:1px solid var(--lux-border); border-radius:18px; overflow:hidden;">
-            <div style="max-height:350px; overflow:auto;">
-                ${filteredRecipients.length ? filteredRecipients.map(user => '<label style="display:flex; align-items:flex-start; gap:12px; padding:14px 16px; border-bottom:1px solid var(--lux-border); cursor:pointer; background:' + (selectedRecipientSet.has(String(user.id)) ? 'rgba(var(--lux-accent-rgb),0.08)' : 'transparent') + ';"><input type="checkbox" ' + (selectedRecipientSet.has(String(user.id)) ? 'checked' : '') + ' data-admin-order-recipient-toggle="' + escapeHtml(String(user.id)) + '" style="margin-top:3px;"><div style="flex:1;"><div style="display:flex; justify-content:space-between; gap:12px; align-items:center; flex-wrap:wrap;"><div style="font-weight:800; color:var(--lux-text);">' + escapeHtml(user.nameEn || user.name || user.id) + '</div><span class="lux-status-pill is-muted">' + escapeHtml(getOrderRoleLabel(user.role)) + '</span></div><div style="margin-top:4px; color:var(--lux-text-muted); font-size:12px;">' + escapeHtml(user.email || 'No email recorded') + '</div><div style="margin-top:4px; color:var(--lux-text-dim); font-size:11px;">' + escapeHtml(user.id) + (user.role === USER_ROLES.STUDENT && user.semester ? ' \u00b7 Semester ' + escapeHtml(String(user.semester)) : '') + '</div></div></label>').join('') : '<div style="padding:34px 18px; text-align:center; color:var(--lux-text-muted);">No recipients matched the current search.</div>'}
-            </div>
-        </div>
-    `;
+    const legacyContainer = document.createElement('div');
+    renderAdminOrdersRecipientsPanelRegions(
+        legacyContainer,
+        facultyLabel,
+        uiState,
+        filteredRecipients,
+        selectedRecipientSet,
+        selectedRecipients
+    );
+    return legacyContainer.innerHTML;
 }
 
 function renderAdminOrdersComposePanel(uiState, roleCounts, today) {
@@ -1215,22 +1109,22 @@ function renderAdminOrdersComposePanel(uiState, roleCounts, today) {
                 <div class="lux-card-copy">This order will appear in the selected users' Orders page.</div>
             </div>
         </div>
-        <div style="display:grid; grid-template-columns:1fr 170px; gap:12px; margin-top:16px;">
+        <div class="orders-compose-head">
             <input type="text" class="lux-control" value="${escapeHtml(uiState.draft.title || '')}" data-admin-order-draft-input="title" placeholder="Order title">
             <select class="lux-control" data-admin-order-draft-change="type">
                 ${['General Order', 'Registration Order', 'Academic Order', 'Financial Order', 'Scholarship Order', 'HR Order'].map(type => '<option value="' + escapeHtml(type) + '" ' + ((uiState.draft.type || 'General Order') === type ? 'selected' : '') + '>' + escapeHtml(type) + '</option>').join('')}
             </select>
         </div>
-        <div style="display:grid; gap:12px; margin-top:12px;">
+        <div class="orders-compose-body">
             <input type="date" class="lux-control" value="${escapeHtml(uiState.draft.effectiveDate || today)}" data-admin-order-draft-change="effectiveDate">
-            <textarea class="lux-control" data-admin-order-draft-input="description" placeholder="Write the full order description that recipients should see." style="min-height:150px; resize:vertical;">${escapeHtml(uiState.draft.description || '')}</textarea>
+            <textarea class="lux-control orders-compose-textarea" data-admin-order-draft-input="description" placeholder="Write the full order description that recipients should see.">${escapeHtml(uiState.draft.description || '')}</textarea>
         </div>
-        <div style="margin-top:14px; display:flex; gap:8px; flex-wrap:wrap;">
+        <div class="orders-compose-pills">
             <span class="lux-status-pill is-info">${roleCounts[USER_ROLES.STUDENT] || 0} students</span>
             <span class="lux-status-pill is-success">${roleCounts[USER_ROLES.PROFESSOR] || 0} professors</span>
             <span class="lux-status-pill is-warning">${roleCounts[USER_ROLES.TA] || 0} TAs</span>
         </div>
-        <button class="lux-primary-btn" type="button" data-admin-orders-send="1" style="width:100%; margin-top:16px;"><i class="fas fa-paper-plane"></i> Send Order</button>
+        <button class="lux-primary-btn orders-compose-submit" type="button" data-admin-orders-send="1"><i class="fas fa-paper-plane"></i> Send Order</button>
     `;
 }
 
@@ -1243,19 +1137,19 @@ function renderAdminOrdersTablePanel(facultyLabel, orders, selectedOrder) {
             </div>
             <span class="lux-status-pill is-muted">${orders.length} total</span>
         </div>
-        <div style="overflow:auto;">
-            <table style="width:100%; border-collapse:separate; border-spacing:0; border-radius:20px; overflow:hidden; border:1px solid var(--lux-border); min-width:760px;">
+        <div class="orders-admin-table-wrap">
+            <table class="orders-admin-table">
                 <thead>
                     <tr>
-                        <th style="text-align:left; font-size:10px; text-transform:uppercase; letter-spacing:0.12em; color:var(--lux-text-muted); font-weight:800; padding:14px 12px; border-bottom:1px solid var(--lux-border); background:rgba(255,255,255,0.04);">Order</th>
-                        <th style="text-align:left; font-size:10px; text-transform:uppercase; letter-spacing:0.12em; color:var(--lux-text-muted); font-weight:800; padding:14px 12px; border-bottom:1px solid var(--lux-border); background:rgba(255,255,255,0.04);">Recipients</th>
-                        <th style="text-align:left; font-size:10px; text-transform:uppercase; letter-spacing:0.12em; color:var(--lux-text-muted); font-weight:800; padding:14px 12px; border-bottom:1px solid var(--lux-border); background:rgba(255,255,255,0.04);">Created</th>
-                        <th style="text-align:left; font-size:10px; text-transform:uppercase; letter-spacing:0.12em; color:var(--lux-text-muted); font-weight:800; padding:14px 12px; border-bottom:1px solid var(--lux-border); background:rgba(255,255,255,0.04);">Effective</th>
-                        <th style="text-align:left; font-size:10px; text-transform:uppercase; letter-spacing:0.12em; color:var(--lux-text-muted); font-weight:800; padding:14px 12px; border-bottom:1px solid var(--lux-border); background:rgba(255,255,255,0.04);">Actions</th>
+                        <th>Order</th>
+                        <th>Recipients</th>
+                        <th>Created</th>
+                        <th>Effective</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    ${orders.length ? orders.map(order => '<tr style="background:' + (selectedOrder && selectedOrder.id === order.id ? 'rgba(var(--lux-accent-rgb),0.06)' : 'transparent') + ';"><td style="padding:14px 12px; border-bottom:1px solid rgba(255,255,255,0.04); color:var(--lux-text);"><div style="font-weight:800;">' + escapeHtml(order.title) + '</div><div style="margin-top:4px; color:var(--lux-text-muted); font-size:12px;">' + escapeHtml(order.id) + ' \u00b7 ' + escapeHtml(order.type) + '</div></td><td style="padding:14px 12px; border-bottom:1px solid rgba(255,255,255,0.04); color:var(--lux-text); font-size:12px;">' + (order.recipientCount || (order.recipientIds ? order.recipientIds.length : 0)) + '</td><td style="padding:14px 12px; border-bottom:1px solid rgba(255,255,255,0.04); color:var(--lux-text); font-size:12px;">' + escapeHtml(order.createdDate || '\u2014') + '</td><td style="padding:14px 12px; border-bottom:1px solid rgba(255,255,255,0.04); color:var(--lux-text); font-size:12px;">' + escapeHtml(order.effectiveDate || '\u2014') + '</td><td style="padding:14px 12px; border-bottom:1px solid rgba(255,255,255,0.04);"><div style="display:flex; gap:8px; flex-wrap:wrap;"><button type="button" class="lux-secondary-btn" data-admin-order-view="' + escapeHtml(order.id) + '" style="padding:8px 12px;">View</button><button type="button" data-admin-order-delete="' + escapeHtml(order.id) + '" style="padding:8px 12px; border-radius:10px; border:1px solid var(--lux-border); background:rgba(248,113,113,0.12); color:#ffd2d2; font-weight:700; cursor:pointer;">Delete</button></div></td></tr>').join('') : '<tr><td colspan="5" style="padding:42px 14px; text-align:center; color:var(--lux-text-muted);">No orders have been sent for this faculty yet.</td></tr>'}
+                    ${orders.length ? orders.map(order => '<tr class="' + (selectedOrder && selectedOrder.id === order.id ? 'is-selected' : '') + '"><td><div class="orders-admin-table__title">' + escapeHtml(order.title) + '</div><div class="orders-admin-table__meta">' + escapeHtml(order.id) + ' \u00b7 ' + escapeHtml(order.type) + '</div></td><td class="orders-admin-table__cell orders-admin-table__cell--numeric">' + (order.recipientCount || (order.recipientIds ? order.recipientIds.length : 0)) + '</td><td class="orders-admin-table__cell">' + escapeHtml(order.createdDate || '\u2014') + '</td><td class="orders-admin-table__cell">' + escapeHtml(order.effectiveDate || '\u2014') + '</td><td><div class="orders-admin-table__actions"><button type="button" class="lux-secondary-btn orders-admin-table__view" data-admin-order-view="' + escapeHtml(order.id) + '">View</button><button type="button" class="orders-admin-table__delete" data-admin-order-delete="' + escapeHtml(order.id) + '">Delete</button></div></td></tr>').join('') : '<tr><td class="orders-admin-table__empty" colspan="5">No orders have been sent for this faculty yet.</td></tr>'}
                 </tbody>
             </table>
         </div>
@@ -1267,23 +1161,32 @@ function renderAdminOrdersDetailPanel(container, selectedOrder) {
         scopeKey: 'admin-order-detail',
         emptyMessage: 'Select an order to inspect its audience and full description.',
         titleClass: '',
-        titleStyle: 'font-size:22px; font-weight:800; color:var(--lux-text);'
+        titleVariantClass: 'orders-detail-title--compact'
     });
 }
 
 function renderRecipientOrdersHeroStats(ordersCount, unreadCount, ordersToday) {
     return `
-        <div class="lux-stat-card lux-summary-surface lux-summary-surface--panel">
-            <div class="lux-stat-label"><i class="fas fa-paper-plane"></i> Sent Orders</div>
-            <div class="lux-stat-value">${ordersCount}</div>
+        <div class="lux-hero-side-head">
+            <strong>${ordersCount}</strong>
+            <span>Tracked orders live in the same benchmark widget language used on the home dashboard.</span>
         </div>
-        <div class="lux-stat-card lux-summary-surface lux-summary-surface--panel">
-            <div class="lux-stat-label"><i class="fas fa-envelope-open-text"></i> Unread</div>
-            <div class="lux-stat-value">${unreadCount}</div>
-        </div>
-        <div class="lux-stat-card lux-summary-surface lux-summary-surface--panel">
-            <div class="lux-stat-label"><i class="fas fa-calendar-day"></i> Delivered Today</div>
-            <div class="lux-stat-value">${ordersToday}</div>
+        <div class="lux-hero-signal-list">
+            <div class="lux-hero-signal">
+                <span>Sent orders</span>
+                <strong>${ordersCount}</strong>
+                <em>All official decisions currently visible in your inbox.</em>
+            </div>
+            <div class="lux-hero-signal">
+                <span>Unread</span>
+                <strong>${unreadCount}</strong>
+                <em>Items that still need your attention.</em>
+            </div>
+            <div class="lux-hero-signal">
+                <span>Delivered today</span>
+                <strong>${ordersToday}</strong>
+                <em>Fresh orders published during the current day.</em>
+            </div>
         </div>
     `;
 }
@@ -1304,25 +1207,25 @@ function renderRecipientOrdersListPanelV2(uiState, allOrders, orders, selectedOr
     const statusButtons = ['all', 'unread', 'read'].map((status) => {
         const active = (uiState.status || 'all') === status;
         const label = status.charAt(0).toUpperCase() + status.slice(1);
-        return `<button type="button" data-recipient-order-status="${escapeHtml(status)}" class="orders-status-filter ${active ? 'is-active' : ''}" aria-pressed="${active ? 'true' : 'false'}">${label}</button>`;
+        return `<button type="button" data-recipient-order-status="${escapeHtml(status)}" class="orders-status-filter lux-filter-pill ${active ? 'is-active' : ''}" aria-pressed="${active ? 'true' : 'false'}">${label}</button>`;
     }).join('');
 
     const orderRows = orders.length ? orders.map((order) => {
         const isRead = isOrderReadByUser(order.id, currentUser.id);
         const isActive = selectedOrder?.id === order.id;
         return `
-            <button type="button" class="orders-item ${isActive ? 'is-active' : ''}" data-recipient-order-open="${escapeHtml(order.id)}">
-                <div style="display:flex; justify-content:space-between; gap:12px; align-items:flex-start;">
-                    <div style="min-width:0;">
+            <button type="button" class="orders-item lux-select-card ${isActive ? 'is-active' : ''}" data-recipient-order-open="${escapeHtml(order.id)}">
+                <div class="orders-item__top">
+                    <div class="orders-item__copy">
                         <div class="orders-item__title">${escapeHtml(order.title)}</div>
                         <div class="orders-item__meta">${escapeHtml(order.type)} &middot; Effective ${escapeHtml(getOrderDisplayValue(order.effectiveDate))}</div>
                     </div>
-                    <span class="orders-item__state ${isRead ? 'is-read' : 'is-unread'}" style="background:${isRead ? 'rgba(255,255,255,0.06)' : 'rgba(var(--lux-accent-rgb),0.14)'}; color:${isRead ? 'var(--lux-text-muted)' : 'var(--lux-text)'};">${isRead ? 'Read' : 'Unread'}</span>
+                    <span class="orders-item__state lux-status-pill ${isRead ? 'is-muted' : 'is-info'}">${isRead ? 'Read' : 'Unread'}</span>
                 </div>
                 <div class="orders-item__meta">${escapeHtml(order.id)} &middot; Sent ${escapeHtml(getOrderDisplayValue(order.createdDate))} by ${escapeHtml(order.createdByName || 'Administrator')}</div>
             </button>
         `;
-    }).join('') : `<div style="padding:44px 18px; text-align:center; color:var(--lux-text-muted);">No orders matched your current search.</div>`;
+    }).join('') : `<div class="orders-list-empty">No orders matched your current search.</div>`;
 
     return `
         <div class="lux-card-head">
@@ -1333,7 +1236,7 @@ function renderRecipientOrdersListPanelV2(uiState, allOrders, orders, selectedOr
             <span class="lux-status-pill is-info">${allOrders.length} total</span>
         </div>
         <input type="text" class="lux-control" value="${escapeHtml(uiState.search || '')}" data-recipient-order-search="1" placeholder="Search by order title, type, or date">
-        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:14px;">${statusButtons}</div>
+        <div class="orders-status-row">${statusButtons}</div>
         <div class="orders-list-wrap">
             <div class="orders-list">
                 ${orderRows}
@@ -1348,8 +1251,21 @@ function renderRecipientOrdersDetailRegions(container, selectedOrder) {
         emptyMessage: 'No orders are available for this account yet.',
         showSenderPill: true,
         titleClass: 'page-hero-title',
-        titleStyle: 'font-size:clamp(26px, 2.4vw, 38px); line-height:1.02;'
+        titleVariantClass: 'orders-detail-title--hero'
     });
+}
+
+function renderOrdersInboxAccessState(container, message) {
+    if (!container) return;
+    container.innerHTML = `
+        <section class="page-hero orders-detail-empty">
+            <div class="orders-detail-empty__inner">
+                <i class="fas fa-inbox orders-detail-empty__icon"></i>
+                <h1 class="page-hero-title">Orders workspace unavailable</h1>
+                <p class="page-hero-copy">${escapeHtml(message || 'Sign in to load your orders inbox.')}</p>
+            </div>
+        </section>
+    `;
 }
 
 function renderOrdersInboxPage() {
@@ -1358,11 +1274,17 @@ function renderOrdersInboxPage() {
         || (getEffectiveUserRole() !== USER_ROLES.ADMIN ? document.getElementById('admin-orders-root') : null);
     if (!container) return;
     bindOrdersWorkspaceDelegates();
-    ensureOrdersInboxFadeOverrides();
 
     const currentUser = getCurrentUser();
     const effectiveRole = getEffectiveUserRole();
-    if (!currentUser || effectiveRole === USER_ROLES.ADMIN) return;
+    if (!currentUser) {
+        renderOrdersInboxAccessState(container, 'Sign in with a student, professor, TA, or student service account to load this inbox.');
+        return;
+    }
+    if (effectiveRole === USER_ROLES.ADMIN) {
+        renderOrdersInboxAccessState(container, 'Admin orders are managed from the dedicated admin orders route.');
+        return;
+    }
 
     const uiState = ensureRecipientOrdersUiState(currentUser.id);
     const orders = getVisibleRecipientOrders();
@@ -1383,4 +1305,10 @@ function renderOrdersInboxPage() {
     renderRecipientOrdersListPanelRegions(shell.listPanel, uiState, allOrders, orders, selectedOrder, currentUser);
     renderRecipientOrdersDetailRegions(shell.detailPanel, selectedOrder);
 
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', renderOrdersInboxPage, { once: true });
+} else {
+    renderOrdersInboxPage();
 }

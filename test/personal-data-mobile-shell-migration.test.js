@@ -87,7 +87,7 @@ function bootPersonalDataMobileShell(options = {}) {
 describe('personal-data mobile shell migration', () => {
   it('migrates the page onto the shared standalone mobile shell contract and preserves toolbar binding', () => {
     const source = readSource('personal-data.html');
-    const guardrailSource = readSource('tools/check-architecture-guardrails.js');
+    const classificationModuleSource = readSource('tools/visual-route-classification.js');
     const classificationSource = readSource('PORTAL_VISUAL_ROUTE_CLASSIFICATION.md');
 
     expect(source).toContain('window.__KIU_STANDALONE_MOBILE_SHELL_CONFIG = {');
@@ -96,7 +96,7 @@ describe('personal-data mobile shell migration', () => {
     expect(source).not.toContain('(function initMobileExperience(){');
     expect(source).toContain('function setupToolbar(){');
 
-    expect(guardrailSource).toContain("'personal-data.html': { category: 'standard-shell', dedicatedCss: ['assets/css/personal-data-route.css'], mobileShell: 'shared-standalone' }");
+    expect(classificationModuleSource).toContain("'personal-data.html': { category: 'standard-shell', dedicatedCss: ['assets/css/personal-data-route.css'], mobileShell: 'shared-standalone' }");
     expect(classificationSource).toContain("| `personal-data.html` | `standard-shell` |");
   });
 

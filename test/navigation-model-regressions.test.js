@@ -15,6 +15,7 @@ describe('navigation model regressions', () => {
         expect(navigation).toContain("'programs'");
         expect(navigation).toContain("'student-service'");
         expect(navigation).toContain("'news'");
+        expect(navigation).toContain('function resolveAliasPageId(pageId, role = getEffectiveUserRole())');
         expect(navigation).toContain("'calendar': 'alias-redirect'");
         expect(navigation).toContain("'faculty-schedule': 'alias-redirect'");
         expect(navigation).toContain("'gradebook': 'alias-redirect'");

@@ -36,4 +36,11 @@ describe('admin impersonation regressions', () => {
     expect(utilitiesSource).toContain('fetchPortalBackendSession()');
     expect(utilitiesSource).toContain('storePortalBackendAuth(payload.account, payload.session);');
   });
+
+  it('warns when impersonation persona is missing and awaits backend sync before redirect', () => {
+    const utilitiesSource = readSource('assets/js/shared/utilities.js');
+    expect(utilitiesSource).toContain('function warnMissingImpersonationPersona(role)');
+    expect(utilitiesSource).toContain('async function syncPortalBackendImpersonationBeforeRedirect(role)');
+    expect(utilitiesSource).toContain('await syncPortalBackendImpersonationBeforeRedirect');
+  });
 });

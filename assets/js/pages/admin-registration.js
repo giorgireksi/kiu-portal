@@ -1,7 +1,92 @@
-/* Admin registration CMS logic extracted from core.js. Source of truth remains root core.js compatibility bundle. */
+/* Admin registration CMS logic extracted from the legacy core.js bundle. Active routes now load split files directly. */
 
 // --- ADMIN REGISTRATION CMS LOGIC ---
 
+const ADMIN_REGISTRATION_SAVE_DEBOUNCE_MS = 350;
+let adminRegistrationSaveTimer = 0;
+let boundRegistrationCmsFaculty = '';
+
+function resolveRegistrationCmsFaculty(faculty) {
+    return normalizeFacultyCode(
+        faculty
+        || (document.getElementById('admin-reg-content-container') && typeof getAdminRegistrationFaculty === 'function'
+            ? getAdminRegistrationFaculty()
+            : '')
+        || (typeof getCurrentFaculty === 'function' ? getCurrentFaculty() : '')
+        || 'ECON',
+        'ECON'
+    );
+}
+
+function persistRegistrationCmsGlobalsToFaculty(faculty) {
+    const fac = resolveRegistrationCmsFaculty(faculty);
+    if (!KIU_STATE.registrationCMSByFaculty || typeof KIU_STATE.registrationCMSByFaculty !== 'object') {
+        KIU_STATE.registrationCMSByFaculty = {};
+    }
+    if (!KIU_STATE.registrationCMSByFaculty[fac]) {
+        KIU_STATE.registrationCMSByFaculty[fac] = {
+            concCourseData: {},
+            minorProgramData: {},
+            trackData: {},
+            customTabs: [],
+            builtinTabOverrides: {},
+            hiddenBuiltinTabs: []
+        };
+    }
+    const bucket = KIU_STATE.registrationCMSByFaculty[fac];
+    if (typeof ensureAdminRegTrackBucket === 'function') {
+        ensureAdminRegTrackBucket(fac);
+    }
+    if (typeof concCourseData !== 'undefined') {
+        bucket.concCourseData = concCourseData;
+    }
+    if (typeof minorProgramData !== 'undefined') {
+        bucket.minorProgramData = minorProgramData;
+    }
+    if (typeof bucket.trackData === 'object' && bucket.trackData) {
+        if (typeof migrateAdminRegistrationCmsToTrackModel === 'function') {
+            migrateAdminRegistrationCmsToTrackModel(fac);
+        }
+        if (typeof syncAdminRegTrackLegacyMirrors === 'function') {
+            syncAdminRegTrackLegacyMirrors(bucket);
+        }
+    }
+    KIU_STATE.registrationCMS = {
+        concCourseData: bucket.concCourseData || {},
+        minorProgramData: bucket.minorProgramData || {},
+        faculty: fac
+    };
+    return bucket;
+}
+
+function flushAdminRegistrationStateSave(options = {}) {
+    if (adminRegistrationSaveTimer) {
+        clearTimeout(adminRegistrationSaveTimer);
+        adminRegistrationSaveTimer = 0;
+    }
+    if (options.syncFaculty !== false && typeof persistRegistrationCmsGlobalsToFaculty === 'function') {
+        persistRegistrationCmsGlobalsToFaculty(
+            options.faculty || boundRegistrationCmsFaculty || resolveRegistrationCmsFaculty()
+        );
+    }
+    if (typeof saveState !== 'function') return;
+    saveState();
+}
+
+function queueAdminRegistrationStateSave() {
+    if (typeof saveState !== 'function') return;
+    if (adminRegistrationSaveTimer) {
+        clearTimeout(adminRegistrationSaveTimer);
+    }
+    adminRegistrationSaveTimer = window.setTimeout(() => {
+        adminRegistrationSaveTimer = 0;
+        flushAdminRegistrationStateSave();
+    }, ADMIN_REGISTRATION_SAVE_DEBOUNCE_MS);
+}
+
+window.persistRegistrationCmsGlobalsToFaculty = persistRegistrationCmsGlobalsToFaculty;
+window.flushAdminRegistrationStateSave = flushAdminRegistrationStateSave;
+window.queueAdminRegistrationStateSave = queueAdminRegistrationStateSave;
 
 // Ensure authentication is enforced on page load
 document.addEventListener('DOMContentLoaded', () => {
@@ -42,19 +127,52 @@ window.addEventListener('load', () => {
     }
 });
 
-function bootAdminRegistrationCms(tabType = 'prog') {
+function getAdminRegistrationCmsRevision() {
+    return String((typeof KIU_STATE !== 'undefined' && KIU_STATE?.meta?.registrationCmsRevision) || 0);
+}
+
+function bootAdminRegistrationCms(tabType = 'prog', options = {}) {
     const container = document.getElementById('admin-reg-content-container');
     if (!container) return;
 
-    // PERFORMANCE: Only render if container is truly empty or forced.
-    // This prevents the "infinite render loop" when combined with the luxury shell.
-    if (hasVisibleAdminRegistrationCmsContent(container)) {
-        // If it's already rendered, we might still want to ensure the right tab is showing
-        // but avoid a full container wipe if possible.
+    const safeTab = tabType || adminRegActiveTab || 'prog';
+    const cmsRevision = getAdminRegistrationCmsRevision();
+    const forceRender = options.force === true
+        || container.dataset.cmsRevision !== cmsRevision
+        || container.dataset.cmsFaculty !== normalizeFacultyCode(getAdminRegistrationFaculty(), 'ECON');
+
+    if (hasVisibleAdminRegistrationCmsContent(container) && !forceRender) {
         return;
     }
 
-    renderAdminRegistrationModules(tabType);
+    if (typeof renderAdminRegTabBar === 'function') {
+        renderAdminRegTabBar(safeTab);
+    }
+    renderAdminRegistrationModules(safeTab);
+    container.dataset.cmsRevision = cmsRevision;
+}
+
+function handleAdminRegistrationCmsChanged() {
+    const container = document.getElementById('admin-reg-content-container');
+    if (!container) return;
+    const cmsRevision = getAdminRegistrationCmsRevision();
+    const faculty = normalizeFacultyCode(getAdminRegistrationFaculty(), 'ECON');
+    if (
+        hasVisibleAdminRegistrationCmsContent(container)
+        && container.dataset.cmsRevision === cmsRevision
+        && container.dataset.cmsFaculty === faculty
+    ) {
+        if (typeof bindFacultyRegistrationCmsData === 'function') {
+            bindFacultyRegistrationCmsData(faculty);
+        }
+        return;
+    }
+    bootAdminRegistrationCms(adminRegActiveTab || 'prog');
+}
+
+if (!window.__kiuAdminRegistrationCmsChangedBound) {
+    window.__kiuAdminRegistrationCmsChangedBound = true;
+    window.addEventListener('kiu:registration-cms-changed', handleAdminRegistrationCmsChanged);
 }
 
 function hasVisibleAdminRegistrationCmsContent(container) {
@@ -75,13 +193,14 @@ function updateEctsProgress() {
     progressBar.style.width = percentage + '%';
     ectsText.innerText = `${totalEcts} / 36`;
 
-    if (totalEcts > 36) {
-        ectsText.style.color = 'var(--kiu-red)';
-        progressBar.style.background = 'var(--kiu-red)';
-    } else {
-        ectsText.style.color = 'var(--kiu-orange)';
-        progressBar.style.background = 'var(--kiu-orange)';
-    }
+    const toneClasses = ['is-warning', 'is-over'];
+    toneClasses.forEach((className) => {
+        progressBar.classList.remove(className);
+        ectsText.classList.remove(className);
+    });
+    const toneClass = totalEcts > 36 ? 'is-over' : 'is-warning';
+    progressBar.classList.add(toneClass);
+    ectsText.classList.add(toneClass);
 }
 
 function getDefaultAdminRegistrationCmsStructures() {
@@ -95,8 +214,8 @@ function getDefaultAdminRegistrationCmsStructures() {
 
 function ensureAdminRegistrationCmsDefaults(faculty) {
     const fac = normalizeFacultyCode(
-        faculty || (document.getElementById('admin-reg-content-container') ? getAdminRegistrationFaculty() : getCurrentFaculty()) || 'CS',
-        'CS'
+        faculty || (document.getElementById('admin-reg-content-container') ? getAdminRegistrationFaculty() : getCurrentFaculty()) || 'ECON',
+        'ECON'
     );
     if (!KIU_STATE.adminProgramStructures) KIU_STATE.adminProgramStructures = {};
 
@@ -105,7 +224,7 @@ function ensureAdminRegistrationCmsDefaults(faculty) {
 
     if (!current) {
         KIU_STATE.adminProgramStructures[fac] = JSON.parse(JSON.stringify(defaults));
-        saveState();
+        queueAdminRegistrationStateSave();
         return;
     }
 
@@ -117,7 +236,7 @@ function ensureAdminRegistrationCmsDefaults(faculty) {
         }
     });
 
-    if (changed) saveState();
+    if (changed) queueAdminRegistrationStateSave();
 }
 
 function normalizeAssignedSeatLimit(value, fallback) {
@@ -197,65 +316,20 @@ function buildStudentCourseRefFromAssignment(assignment) {
 function buildStudentRegistrationDataFromAdmin(faculty) {
     const fac = normalizeFacultyCode(faculty || getCurrentFaculty() || 'CS', 'CS');
     ensureAdminRegistrationCmsDefaults(fac);
-    const cmsBucket = bindFacultyRegistrationCmsData(fac) || {};
-
-    const facultyStructures = KIU_STATE.adminProgramStructures?.[fac];
-    if (!facultyStructures) return null;
-
-    const normalizeArray = (value) => Array.isArray(value) ? value.filter(Boolean) : [];
-    const facultyConcCourseData = (cmsBucket.concCourseData && typeof cmsBucket.concCourseData === 'object')
-        ? cmsBucket.concCourseData
-        : {};
-    const facultyMinorProgramData = (cmsBucket.minorProgramData && typeof cmsBucket.minorProgramData === 'object')
-        ? cmsBucket.minorProgramData
-        : {};
-
-    const convertModule = (module) => ({
-        id: module?.id || '',
-        letter: module?.letter || '',
-        name: module?.name || 'Untitled Module',
-        maxEcts: module?.maxEcts || 0,
-        minEcts: module?.minEcts || 0,
-        courses: normalizeArray(module?.subModules).map(buildStudentCourseRefFromAssignment)
-    });
-
-    const convertTrackGroup = (groupName, group, index) => ({
-        id: `${groupName}-${index}`,
-        letter: String.fromCharCode(65 + (index % 26)),
-        name: groupName,
-        maxEcts: group?.maxEcts || parseEctsProgress(group?.ects || '0/0').max || 0,
-        minEcts: 0,
-        courses: normalizeArray(group?.courses).map(course => ({
-            courseId: getAssignedCourseId(course),
-            id: course?.n || '',
-            n: course?.n || '',
-            title: course?.title || '',
-            ects: course?.ects || '',
-            precondition: course?.precondition || '',
-            semesterRuleMode: course?.semesterRuleMode || 'all',
-            allowedSemesters: course?.allowedSemesters || '',
-            lectureCapacity: normalizeAssignedSeatLimit(course?.lectureCapacity, 40),
-            seminarCapacity: normalizeAssignedSeatLimit(course?.seminarCapacity, 20)
-        }))
-    });
-
-    return {
-        prog: normalizeArray(facultyStructures.prog).map(convertModule),
-        free: normalizeArray(facultyStructures.free).map(convertModule),
-        conc: Object.entries(facultyConcCourseData).map(([programName, groups]) => ({
-            id: programName,
-            name: programName,
-            modules: Object.entries(groups || {}).map(([groupName, group], index) => convertTrackGroup(groupName, group, index))
-        })),
-        minor: Object.entries(facultyMinorProgramData).map(([programName, program]) => ({
-            id: programName,
-            name: programName,
-            modules: Object.entries(program?.courseGroups || {}).map(([groupName, group], index) => convertTrackGroup(groupName, group, index))
-        }))
-    };
+    bindFacultyRegistrationCmsData(fac);
+    if (typeof migrateAdminRegistrationCmsToTrackModel === 'function') {
+        migrateAdminRegistrationCmsToTrackModel(fac);
+    }
+    if (typeof buildStudentRegistrationDataFromCms === 'function') {
+        return buildStudentRegistrationDataFromCms(fac);
+    }
+    return { prog: [], free: [], conc: [], minor: [] };
 }
 
 function getStudentRegistrationDataForTab(faculty, tabId) {
+    if (typeof getStudentRegistrationDataForTabFromCms === 'function') {
+        return getStudentRegistrationDataForTabFromCms(faculty, tabId);
+    }
     const derived = buildStudentRegistrationDataFromAdmin(faculty);
     const derivedData = derived?.[tabId];
     if (Array.isArray(derivedData)) {
@@ -272,614 +346,6 @@ function getStudentRegistrationDataForTab(faculty, tabId) {
 // Initialize program structures in state if not present - FACULTY SCOPED with NESTED STRUCTURE
 if (!KIU_STATE.adminProgramStructures) {
     KIU_STATE.adminProgramStructures = createEmptyAdminProgramStructures(KIU_STATE.facultyProfiles || KIU_EMPTY_STATE.facultyProfiles || {});
-}
-if (!KIU_STATE.adminProgramStructures) {
-    KIU_STATE.adminProgramStructures = {
-        'CS': {
-            'prog': [
-                { 
-                    id: 'M-CORE',
-                    name: 'Management Compulsory Courses',
-                    minEcts: 120,
-                    maxEcts: 72,
-                    letter: 'A',
-                    subModules: [],
-                    required: true
-                },
-                { 
-                    id: 'M-ELEC',
-                    name: 'Elective Courses',
-                    minEcts: 30,
-                    maxEcts: 0,
-                    letter: 'B',
-                    subModules: [],
-                    required: false
-                },
-                { 
-                    id: 'M-INTERN',
-                    name: 'Internship',
-                    minEcts: 6,
-                    maxEcts: 0,
-                    letter: 'C',
-                    subModules: [],
-                    required: false
-                },
-                { 
-                    id: 'M-THESIS',
-                    name: 'Bachelor Thesis',
-                    minEcts: 12,
-                    maxEcts: 0,
-                    letter: 'D',
-                    subModules: [],
-                    required: false
-                },
-                { 
-                    id: 'M-LANG',
-                    name: 'English Language 1,2 & Business English',
-                    minEcts: 18,
-                    maxEcts: 12,
-                    letter: 'E',
-                    subModules: [],
-                    required: false
-                },
-                { 
-                    id: 'M-COMM',
-                    name: 'Academic Writing & Communications Skills.',
-                    minEcts: 6,
-                    maxEcts: 0,
-                    letter: 'F',
-                    subModules: [],
-                    required: false
-                }
-            ],
-            'free': [
-                { 
-                    id: 'M-FREE',
-                    name: 'Free Credits',
-                    minEcts: 0,
-                    maxEcts: 12,
-                    letter: 'C',
-                    subModules: [
-                        {
-                            id: 'SM-CS-FREE1',
-                            number: '241',
-                            name: 'Introduction to Programming',
-                            ects: '6/72',
-                            courses: ['CS-S1-101'],
-                            prerequisites: 'None',
-                            approved: false,
-                            status: 'pending'
-                        }
-                    ],
-                    required: false
-                }
-            ],
-            'conc': [
-                { 
-                    id: 'CONC-WEB',
-                    name: 'Web Development Concentration',
-                    minEcts: 10,
-                    maxEcts: 15,
-                    letter: 'D',
-                    subModules: [
-                        {
-                            id: 'SM-CS-CONC1',
-                            number: '251',
-                            name: 'Mathematics for CS I',
-                            ects: '6/72',
-                            courses: ['CS-S1-102'],
-                            prerequisites: 'None',
-                            approved: false,
-                            status: 'pending'
-                        }
-                    ],
-                    required: false
-                }
-            ],
-            'minor': [
-                { 
-                    id: 'MINOR-MATH',
-                    name: 'Mathematics Minor',
-                    minEcts: 15,
-                    maxEcts: 20,
-                    letter: 'E',
-                    subModules: [
-                        {
-                            id: 'SM-CS-MINOR1',
-                            number: '261',
-                            name: 'Data Structures & Algorithms',
-                            ects: '6/72',
-                            courses: ['CS-S2-201'],
-                            prerequisites: '[REQ] CS-S1-101',
-                            approved: false,
-                            status: 'pending'
-                        }
-                    ],
-                    required: false
-                }
-            ]
-        },
-        'ECON': {
-            'prog': [
-                { 
-                    id: 'M-CORE',
-                    name: 'Management Compulsory Courses',
-                    minEcts: 120,
-                    maxEcts: 72,
-                    letter: 'A',
-                    subModules: [],
-                    required: true
-                },
-                { 
-                    id: 'M-ELEC',
-                    name: 'Elective Courses',
-                    minEcts: 30,
-                    maxEcts: 0,
-                    letter: 'B',
-                    subModules: [],
-                    required: false
-                },
-                { 
-                    id: 'M-INTERN',
-                    name: 'Internship',
-                    minEcts: 6,
-                    maxEcts: 0,
-                    letter: 'C',
-                    subModules: [],
-                    required: false
-                },
-                { 
-                    id: 'M-THESIS',
-                    name: 'Bachelor Thesis',
-                    minEcts: 12,
-                    maxEcts: 0,
-                    letter: 'D',
-                    subModules: [],
-                    required: false
-                },
-                { 
-                    id: 'M-LANG',
-                    name: 'English Language 1,2 & Business English',
-                    minEcts: 18,
-                    maxEcts: 12,
-                    letter: 'E',
-                    subModules: [],
-                    required: false
-                },
-                { 
-                    id: 'M-COMM',
-                    name: 'Academic Writing & Communications Skills.',
-                    minEcts: 6,
-                    maxEcts: 0,
-                    letter: 'F',
-                    subModules: [],
-                    required: false
-                }
-            ],
-            'free': [
-                { 
-                    id: 'M-FREE', 
-                    name: 'Free Credits', 
-                    minEcts: 0, 
-                    maxEcts: 12, 
-                    letter: 'C', 
-                    subModules: [
-                        {
-                            id: 'SM-ECON-FREE1',
-                            number: '241',
-                            name: 'Introduction to Economics',
-                            ects: '6/72',
-                            courses: ['ECON-S1-101'],
-                            prerequisites: 'None',
-                            approved: false,
-                            status: 'pending'
-                        }
-                    ],
-                    required: false 
-                }
-            ],
-            'conc': [
-                { 
-                    id: 'CONC-MARK', 
-                    name: 'Management Compulsory Courses', 
-                    minEcts: 120, 
-                    maxEcts: 72, 
-                    letter: 'A', 
-                    subModules: [],
-                    required: false 
-                },
-                { 
-                    id: 'CONC-ELEC', 
-                    name: 'Elective Courses', 
-                    minEcts: 30, 
-                    maxEcts: 0, 
-                    letter: 'B', 
-                    subModules: [],
-                    required: false 
-                },
-                { 
-                    id: 'CONC-INT', 
-                    name: 'Internship', 
-                    minEcts: 6, 
-                    maxEcts: 0, 
-                    letter: 'C', 
-                    subModules: [],
-                    required: false 
-                },
-                { 
-                    id: 'CONC-THESIS', 
-                    name: 'Bachelor Thesis', 
-                    minEcts: 12, 
-                    maxEcts: 0, 
-                    letter: 'D', 
-                    subModules: [],
-                    required: false 
-                },
-                { 
-                    id: 'CONC-LANG', 
-                    name: 'English Language 1,2 & Business English', 
-                    minEcts: 18, 
-                    maxEcts: 12, 
-                    letter: 'E', 
-                    subModules: [],
-                    required: false 
-                },
-                { 
-                    id: 'CONC-COMM', 
-                    name: 'Academic Writing & Communications Skills.', 
-                    minEcts: 6, 
-                    maxEcts: 0, 
-                    letter: 'F', 
-                    subModules: [],
-                    required: false 
-                }
-            ],
-            'minor': [
-                { 
-                    id: 'MINOR-ECON', 
-                    name: 'Management Compulsory Courses', 
-                    minEcts: 120, 
-                    maxEcts: 72, 
-                    letter: 'A', 
-                    subModules: [],
-                    required: false 
-                },
-                { 
-                    id: 'MINOR-ELEC', 
-                    name: 'Elective Courses', 
-                    minEcts: 30, 
-                    maxEcts: 0, 
-                    letter: 'B', 
-                    subModules: [],
-                    required: false 
-                },
-                { 
-                    id: 'MINOR-INT', 
-                    name: 'Internship', 
-                    minEcts: 6, 
-                    maxEcts: 0, 
-                    letter: 'C', 
-                    subModules: [],
-                    required: false 
-                },
-                { 
-                    id: 'MINOR-THESIS', 
-                    name: 'Bachelor Thesis', 
-                    minEcts: 12, 
-                    maxEcts: 0, 
-                    letter: 'D', 
-                    subModules: [],
-                    required: false 
-                },
-                { 
-                    id: 'MINOR-LANG', 
-                    name: 'English Language 1,2 & Business English', 
-                    minEcts: 18, 
-                    maxEcts: 12, 
-                    letter: 'E', 
-                    subModules: [],
-                    required: false 
-                },
-                { 
-                    id: 'MINOR-COMM', 
-                    name: 'Academic Writing & Communications Skills.', 
-                    minEcts: 6, 
-                    maxEcts: 0, 
-                    letter: 'F', 
-                    subModules: [],
-                    required: false 
-                }
-            ]
-        },
-        'LAW': {
-            'prog': [
-                { 
-                    id: 'M-CORE', 
-                    name: 'Management Compulsory Courses', 
-                    minEcts: 120, 
-                    maxEcts: 72, 
-                    letter: 'A', 
-                    subModules: [],
-                    required: true 
-                },
-                { 
-                    id: 'M-ELEC', 
-                    name: 'Elective Courses', 
-                    minEcts: 30, 
-                    maxEcts: 0, 
-                    letter: 'B', 
-                    subModules: [],
-                    required: false 
-                },
-                { 
-                    id: 'M-INTERN', 
-                    name: 'Internship', 
-                    minEcts: 6, 
-                    maxEcts: 0, 
-                    letter: 'C', 
-                    subModules: [],
-                    required: false 
-                },
-                { 
-                    id: 'M-THESIS', 
-                    name: 'Bachelor Thesis', 
-                    minEcts: 12, 
-                    maxEcts: 0, 
-                    letter: 'D', 
-                    subModules: [],
-                    required: false 
-                },
-                { 
-                    id: 'M-LANG', 
-                    name: 'English Language 1,2 & Business English', 
-                    minEcts: 18, 
-                    maxEcts: 12, 
-                    letter: 'E', 
-                    subModules: [],
-                    required: false 
-                },
-                { 
-                    id: 'M-COMM', 
-                    name: 'Academic Writing & Communications Skills.', 
-                    minEcts: 6, 
-                    maxEcts: 0, 
-                    letter: 'F', 
-                    subModules: [],
-                    required: false 
-                }
-            ],
-            'free': [
-                { 
-                    id: 'M-FREE', 
-                    name: 'Free Credits', 
-                    minEcts: 0, 
-                    maxEcts: 12, 
-                    letter: 'C', 
-                    subModules: [
-                        {
-                            id: 'SM-LAW-FREE1',
-                            number: '241',
-                            name: 'Philosophy of Law',
-                            ects: '5/60',
-                            courses: ['LAW-S2-201'],
-                            prerequisites: 'None',
-                            approved: false,
-                            status: 'pending'
-                        }
-                    ],
-                    required: false 
-                }
-            ],
-            'conc': [
-                { 
-                    id: 'CONC-BIZ', 
-                    name: 'Business Law Concentration', 
-                    minEcts: 10, 
-                    maxEcts: 15, 
-                    letter: 'D', 
-                    subModules: [
-                        {
-                            id: 'SM-LAW-CONC1',
-                            number: '251',
-                            name: 'Sociology of Law',
-                            ects: '5/60',
-                            courses: ['LAW-S2-202'],
-                            prerequisites: 'None',
-                            approved: false,
-                            status: 'pending'
-                        }
-                    ],
-                    required: false 
-                }
-            ],
-            'minor': [
-                { 
-                    id: 'MINOR-INT', 
-                    name: 'International Law Minor', 
-                    minEcts: 15, 
-                    maxEcts: 20, 
-                    letter: 'E', 
-                    subModules: [
-                        {
-                            id: 'SM-LAW-MINOR1',
-                            number: '261',
-                            name: 'Business Law',
-                            ects: '5/60',
-                            courses: ['LAW-S3-301'],
-                            prerequisites: '[REQ] LAW-S2-201',
-                            approved: false,
-                            status: 'pending'
-                        }
-                    ],
-                    required: false 
-                }
-            ]
-        },
-        'MED': {
-            'prog': [
-                { 
-                    id: 'M-CORE',
-                    name: 'Management Compulsory Courses',
-                    minEcts: 120,
-                    maxEcts: 72,
-                    letter: 'A',
-                    subModules: [],
-                    required: true
-                },
-                { 
-                    id: 'M-ELEC',
-                    name: 'Elective Courses',
-                    minEcts: 30,
-                    maxEcts: 0,
-                    letter: 'B',
-                    subModules: [],
-                    required: false
-                },
-                { 
-                    id: 'M-INTERN',
-                    name: 'Internship',
-                    minEcts: 6,
-                    maxEcts: 0,
-                    letter: 'C',
-                    subModules: [],
-                    required: false
-                },
-                { 
-                    id: 'M-THESIS',
-                    name: 'Bachelor Thesis',
-                    minEcts: 12,
-                    maxEcts: 0,
-                    letter: 'D',
-                    subModules: [],
-                    required: false
-                },
-                { 
-                    id: 'M-LANG',
-                    name: 'English Language 1,2 & Business English',
-                    minEcts: 18,
-                    maxEcts: 12,
-                    letter: 'E',
-                    subModules: [],
-                    required: false
-                },
-                { 
-                    id: 'M-COMM',
-                    name: 'Academic Writing & Communications Skills.',
-                    minEcts: 6,
-                    maxEcts: 0,
-                    letter: 'F',
-                    subModules: [],
-                    required: false
-                }
-            ],
-            'free': [
-                { 
-                    id: 'M-FREE', 
-                    name: 'Free Credits', 
-                    minEcts: 0, 
-                    maxEcts: 12, 
-                    letter: 'C', 
-                    subModules: [
-                        {
-                            id: 'SM-MED-FREE1',
-                            number: '241',
-                            name: 'Clinical Pathology',
-                            ects: '5/60',
-                            courses: ['MED-S2-202'],
-                            prerequisites: 'None',
-                            approved: false,
-                            status: 'pending'
-                        }
-                    ],
-                    required: false 
-                }
-            ],
-            'conc': [],
-            'minor': []
-        },
-        'ARTS': {
-            'prog': [
-                { 
-                    id: 'M-CORE',
-                    name: 'Management Compulsory Courses',
-                    minEcts: 120,
-                    maxEcts: 72,
-                    letter: 'A',
-                    subModules: [],
-                    required: true
-                },
-                { 
-                    id: 'M-ELEC',
-                    name: 'Elective Courses',
-                    minEcts: 30,
-                    maxEcts: 0,
-                    letter: 'B',
-                    subModules: [],
-                    required: false
-                },
-                { 
-                    id: 'M-INTERN',
-                    name: 'Internship',
-                    minEcts: 6,
-                    maxEcts: 0,
-                    letter: 'C',
-                    subModules: [],
-                    required: false
-                },
-                { 
-                    id: 'M-THESIS',
-                    name: 'Bachelor Thesis',
-                    minEcts: 12,
-                    maxEcts: 0,
-                    letter: 'D',
-                    subModules: [],
-                    required: false
-                },
-                { 
-                    id: 'M-LANG',
-                    name: 'English Language 1,2 & Business English',
-                    minEcts: 18,
-                    maxEcts: 12,
-                    letter: 'E',
-                    subModules: [],
-                    required: false
-                },
-                { 
-                    id: 'M-COMM',
-                    name: 'Academic Writing & Communications Skills.',
-                    minEcts: 6,
-                    maxEcts: 0,
-                    letter: 'F',
-                    subModules: [],
-                    required: false
-                }
-            ],
-            'free': [
-                { 
-                    id: 'M-FREE', 
-                    name: 'Free Credits', 
-                    minEcts: 0, 
-                    maxEcts: 12, 
-                    letter: 'C', 
-                    subModules: [
-                        {
-                            id: 'SM-ARTS-FREE1',
-                            number: '241',
-                            name: 'Art History & Aesthetics',
-                            ects: '5/60',
-                            courses: ['ARTS-S2-202'],
-                            prerequisites: 'None',
-                            approved: false,
-                            status: 'pending'
-                        }
-                    ],
-                    required: false 
-                }
-            ],
-            'conc': [],
-            'minor': []
-        }
-    };
 }
 
 function ensureProgTabStructure(faculty) {
@@ -925,7 +391,8 @@ let adminRegUiState = {
     selectedFreeModule: null,
     selectedConcProgram: null,
     selectedConcGroup: null,
-    selectedMinorProgram: null
+    selectedMinorProgram: null,
+    selectedTrack: {}
 };
 let curriculumLibraryUiState = {
     selectedModulesByFaculty: {}
@@ -934,15 +401,36 @@ let studentEducationalProgramUiState = {
     selectedModulesByFaculty: {}
 };
 
-let adminRegistrationCmsDelegatesBound = false;
+let adminRegistrationCmsDelegateRoot = null;
+let adminRegistrationCmsDelegateClickHandler = null;
+let adminRegistrationCmsDelegateChangeHandler = null;
+
+function resetAdminRegistrationCmsDelegates() {
+    if (adminRegistrationCmsDelegateRoot) {
+        if (adminRegistrationCmsDelegateClickHandler) {
+            adminRegistrationCmsDelegateRoot.removeEventListener('click', adminRegistrationCmsDelegateClickHandler);
+        }
+        if (adminRegistrationCmsDelegateChangeHandler) {
+            adminRegistrationCmsDelegateRoot.removeEventListener('change', adminRegistrationCmsDelegateChangeHandler);
+        }
+    }
+    adminRegistrationCmsDelegateRoot = null;
+    adminRegistrationCmsDelegateClickHandler = null;
+    adminRegistrationCmsDelegateChangeHandler = null;
+}
 
 function bindAdminRegistrationCmsDelegates() {
-    if (adminRegistrationCmsDelegatesBound) return;
     const root = document.getElementById('admin-reg-content-container');
     if (!root) return;
-    adminRegistrationCmsDelegatesBound = true;
+    if (adminRegistrationCmsDelegateRoot === root && adminRegistrationCmsDelegateClickHandler) return;
 
-    root.addEventListener('click', (event) => {
+    resetAdminRegistrationCmsDelegates();
+
+    adminRegistrationCmsDelegateClickHandler = (event) => {
+        if (typeof handleAdminRegTrackDelegateClick === 'function' && handleAdminRegTrackDelegateClick(event)) {
+            return;
+        }
+
         const addModuleTrigger = event.target.closest('[data-admin-reg-add-module]');
         if (addModuleTrigger) {
             event.preventDefault();
@@ -1150,9 +638,13 @@ function bindAdminRegistrationCmsDelegates() {
             );
             return;
         }
-    });
+    };
 
-    root.addEventListener('change', (event) => {
+    adminRegistrationCmsDelegateChangeHandler = (event) => {
+        if (typeof handleAdminRegTrackDelegateChange === 'function' && handleAdminRegTrackDelegateChange(event)) {
+            return;
+        }
+
         const moduleSelectTrigger = event.target.closest('[data-admin-reg-select-module]');
         if (moduleSelectTrigger) {
             const moduleId = moduleSelectTrigger.dataset.adminRegSelectModule || '';
@@ -1180,13 +672,23 @@ function bindAdminRegistrationCmsDelegates() {
             adminRegUiState.selectedMinorProgram = minorProgramTrigger.dataset.adminRegSelectMinorProgram || '';
             renderMinorProgramPane();
         }
-    });
+    };
+
+    root.addEventListener('click', adminRegistrationCmsDelegateClickHandler);
+    root.addEventListener('change', adminRegistrationCmsDelegateChangeHandler);
+    adminRegistrationCmsDelegateRoot = root;
 }
+
+window.resetAdminRegistrationCmsDelegates = resetAdminRegistrationCmsDelegates;
 
 // MAIN: Switch between registration tabs
 function switchAdminRegTab(tabTarget) {
-    const validTabs = ['prog', 'free', 'conc', 'minor'];
+    const validTabs = typeof getValidAdminRegTabIds === 'function'
+        ? getValidAdminRegTabIds(getAdminRegistrationFaculty())
+        : ['prog', 'free', 'conc', 'minor'];
     if (!validTabs.includes(tabTarget)) return;
+
+    flushAdminRegistrationStateSave();
     
     adminRegActiveTab = tabTarget;
     expandedModules.clear();
@@ -1200,6 +702,8 @@ function switchAdminRegTab(tabTarget) {
     // Update tab styling
     document.querySelectorAll('.admin-reg-tab').forEach(tab => {
         tab.classList.remove('active', 'is-active');
+        tab.setAttribute('aria-pressed', 'false');
+        tab.setAttribute('tabindex', '-1');
         const tabRouteTarget = String(
             tab.dataset?.target
             || tab.dataset?.adminToolsRegTab
@@ -1212,11 +716,27 @@ function switchAdminRegTab(tabTarget) {
             || (tab.getAttribute('onclick') && tab.getAttribute('onclick').includes(`'${tabTarget}'`))
         ) {
             tab.classList.add('active', 'is-active');
+            tab.setAttribute('aria-pressed', 'true');
+            tab.setAttribute('tabindex', '0');
         }
     });
     
     // Render content for this tab
     renderAdminRegistrationModules(tabTarget);
+    if (typeof renderAdminRegPanelHeadActions === 'function') {
+        renderAdminRegPanelHeadActions(tabTarget);
+    }
+}
+
+function getCourseEctsValue(course) {
+    const direct = Number(course?.ects);
+    if (Number.isFinite(direct) && direct > 0) return direct;
+    const parsed = parseInt(String(course?.ects || '').match(/\d+/)?.[0] || '0', 10);
+    return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function getAssignedCourseEctsTotal(courses) {
+    return (courses || []).reduce((sum, course) => sum + getCourseEctsValue(course), 0);
 }
 
 // RENDER: Display modules and courses for active tab - FACULTY SCOPED with TAB-SPECIFIC LAYOUTS
@@ -1224,83 +744,67 @@ function renderAdminRegistrationModules(tabType) {
     const container = document.getElementById('admin-reg-content-container');
     if (!container) return;
 
-    ensureRegistrationCmsFacultyIsolation();
-
-    const safeTab = ['prog', 'free', 'conc', 'minor'].includes(tabType) ? tabType : 'prog';
-
-    // Preserve currently selected concentration/minor choice before re-render.
-    if (safeTab === 'prog') {
-        const selectedProg = document.querySelector('input[name="prog-module"]:checked');
-        if (selectedProg) adminRegUiState.selectedProgModule = selectedProg.value;
-    } else if (safeTab === 'free') {
-        const selectedFree = document.querySelector('input[name="free-module"]:checked');
-        if (selectedFree) adminRegUiState.selectedFreeModule = selectedFree.value;
-    } else if (safeTab === 'conc') {
-        const selectedConcProgram = document.querySelector('input[name="conc-program"]:checked');
-        if (selectedConcProgram) adminRegUiState.selectedConcProgram = selectedConcProgram.value;
-        const selectedConc = document.querySelector('input[name="conc-group"]:checked');
-        if (selectedConc) adminRegUiState.selectedConcGroup = selectedConc.value;
-    } else if (safeTab === 'minor') {
-        const selectedMinor = document.querySelector('input[name="minor-program"]:checked');
-        if (selectedMinor) adminRegUiState.selectedMinorProgram = selectedMinor.value;
-    }
-    
     const currentFaculty = normalizeFacultyCode(getAdminRegistrationFaculty(), 'ECON');
+    const validTabs = typeof getValidAdminRegTabIds === 'function'
+        ? getValidAdminRegTabIds(currentFaculty)
+        : ['prog', 'free', 'conc', 'minor'];
+    const safeTab = validTabs.includes(tabType) ? tabType : 'prog';
+
+    const selectedProgramInput = document.querySelector(`input[name="admin-reg-program-${safeTab}"]:checked`);
+    if (selectedProgramInput && typeof setAdminRegSelectedProgram === 'function') {
+        const nextProgram = selectedProgramInput.value;
+        const currentProgram = typeof getAdminRegSelectedProgram === 'function'
+            ? getAdminRegSelectedProgram(safeTab)
+            : null;
+        setAdminRegSelectedProgram(safeTab, nextProgram, { preserveGroupKey: nextProgram === currentProgram });
+    }
+
     container.dataset.cmsFaculty = currentFaculty;
+    container.dataset.cmsRevision = getAdminRegistrationCmsRevision();
 
     ensureAdminRegistrationCmsDefaults(currentFaculty);
     bindFacultyRegistrationCmsData(currentFaculty);
-    
-    // ENSURE data is initialized for this faculty
-    if (!KIU_STATE.adminProgramStructures) {
-        KIU_STATE.adminProgramStructures = {};
-    }
-    if (!KIU_STATE.adminProgramStructures[currentFaculty]) {
-        KIU_STATE.adminProgramStructures[currentFaculty] = getDefaultAdminRegistrationCmsStructures();
-    }
-    if (!KIU_STATE.adminProgramStructures[currentFaculty]) {
-        // Initialize with basic structure if missing
-        KIU_STATE.adminProgramStructures[currentFaculty] = {
-            'prog': [{ id: 'M-CORE', letter: 'A', name: 'ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â«ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã¢â‚¬Â¹Ãƒâ€¦Ã¢â‚¬Å“ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã¢â‚¬Â¹Ãƒâ€¦Ã¢â‚¬Å“ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬Å“ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã¢â‚¬Â¹Ãƒâ€¦Ã¢â‚¬Å“ ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚ÂºÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬Å“ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â£ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã¢â‚¬Â¹Ãƒâ€¦Ã¢â‚¬Å“', minEcts: 24, maxEcts: 30, subModules: [], required: true }],
-            'free': [{ id: 'M-FREE', letter: 'B', name: 'ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã¢â‚¬Â¹Ãƒâ€¦Ã¢â‚¬Å“ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â£ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¤ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã¢â‚¬Â¹Ãƒâ€¦Ã¢â‚¬Å“ ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¾Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚ÂÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬Å“ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã¢â‚¬Â¹Ãƒâ€¦Ã¢â‚¬Å“ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã¢â‚¬Â¹Ãƒâ€¦Ã¢â‚¬Å“', minEcts: 0, maxEcts: 12, subModules: [], required: false }],
-            'conc': [],
-            'minor': []
-        };
-    }
-    
-    const facultyStructures = KIU_STATE.adminProgramStructures[currentFaculty] || {};
-    const modules = facultyStructures[safeTab] || [];
 
     const renderLegacyFallback = () => {
-        container.innerHTML = `
-            <div style="padding:24px; text-align:center; color:var(--lux-text-muted); background:var(--lux-surface); border:1px solid var(--lux-border); border-radius:12px;">
-                Registration Structure CMS could not load. Please refresh once.
-            </div>
-        `;
+        container.innerHTML = buildAdminRegEmptyStateMarkup({
+            icon: 'fas fa-triangle-exclamation',
+            title: 'Registration Structure CMS could not load',
+            copy: 'Please refresh once.',
+            classes: 'admin-reg-render-fallback'
+        });
     };
-    
-    // Different rendering for each tab
+
     try {
-        if (safeTab === 'prog') {
-            renderProgTab(container, modules, safeTab);
-        } else if (safeTab === 'free') {
-            renderFreeTab(container, modules, safeTab);
-        } else if (safeTab === 'conc') {
-            renderConcTab(container, modules, safeTab);
-        } else if (safeTab === 'minor') {
-            renderMinorTab(container, modules, safeTab);
+        const tabConfig = typeof resolveAdminRegTab === 'function'
+            ? resolveAdminRegTab(safeTab)
+            : null;
+        if (tabConfig && typeof renderAdminRegTrackTab === 'function') {
+            renderAdminRegTrackTab(container, tabConfig);
         }
 
-        // FINAL SAFETY: If after trying to render modern tabs we still have nothing, 
-        // use the legacy table structure as a fallback.
         if (!hasVisibleAdminRegistrationCmsContent(container)) {
-            console.log('[RegCMS] Modern render produced no content, using legacy fallback.');
+            console.log('[RegCMS] Track render produced no content, using legacy fallback.');
             renderLegacyFallback();
+        }
+        container.setAttribute('data-lux-transparency-exempt', '1');
+        if (typeof refreshAdminRegistrationCmsPresentation === 'function') {
+            refreshAdminRegistrationCmsPresentation();
         }
     } catch (err) {
         console.error('Registration CMS render failed, falling back to legacy layout:', err);
         renderLegacyFallback();
     }
+}
+
+function buildAdminRegEmptyStateMarkup({ icon = 'fas fa-circle-info', title = '', copy = '', classes = '' } = {}) {
+    const className = ['lux-empty-state', classes].filter(Boolean).join(' ');
+    return `
+        <div class="${className}">
+            <i class="${escapeHtml(icon)}"></i>
+            <strong>${escapeHtml(title || 'Nothing to show yet')}</strong>
+            ${copy ? `<span>${escapeHtml(copy)}</span>` : ''}
+        </div>
+    `;
 }
 
 // TAB 1: ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚ÂÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚ÂºÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã¢â‚¬Â¹Ãƒâ€¦Ã¢â‚¬Å“ ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¾ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚ÂºÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â (My Program) - Nested with prerequisites
@@ -1314,22 +818,22 @@ function renderProgTab(container, modules, tabType) {
     }
 
     const html = `
-        <div style="display:flex; justify-content:space-between; align-items:flex-end; gap:14px; margin-bottom:18px;">
-            <div>
-                <div style="font-size:16px; font-weight:700; color:var(--lux-text);">Program Modules</div>
-                <div style="font-size:11px; color:var(--lux-text-muted); margin-top:3px;">Organize your program into modules and assign courses.</div>
+        <div class="admin-reg-program-head">
+            <div class="admin-reg-program-head-main">
+                <div class="admin-reg-program-head-title">Program Modules</div>
+                <div class="admin-reg-program-head-copy">Organize your program into modules and assign courses.</div>
             </div>
-            <button type="button" data-admin-reg-add-module="prog" class="lux-primary-btn" style="padding:8px 16px; font-size:11px;"><i class="fas fa-plus"></i> Add Module</button>
+            <button type="button" data-admin-reg-add-module="prog" class="lux-primary-btn admin-reg-program-add-btn"><i class="fas fa-plus"></i> Add Module</button>
         </div>
-        <div style="display:grid; grid-template-columns:280px 1fr; gap:20px; align-items:start;">
-            <div class="lux-surface">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
-                    <div style="font-size:12px; font-weight:700; color:var(--lux-text-muted);">Modules</div>
-                    <span style="font-size:11px; color:var(--lux-text-muted);">${modules.length}</span>
+        <div class="admin-reg-program-layout">
+            <div class="lux-surface admin-reg-program-list-shell">
+                <div class="admin-reg-program-list-head">
+                    <div class="admin-reg-program-list-title">Modules</div>
+                    <span class="admin-reg-program-list-count">${modules.length}</span>
                 </div>
-                <div data-preserve-scroll-key="admin-reg-prog-modules" style="display:flex; flex-direction:column; gap:10px; max-height:260px; overflow:auto; padding-right:4px;">
+                <div data-preserve-scroll-key="admin-reg-prog-modules" class="admin-reg-program-list">
                     ${modules.length === 0 ? `
-                        <div class="lux-empty-state" style="padding:24px 12px;">
+                        <div class="lux-empty-state admin-reg-program-list-empty">
                             <i class="fas fa-folder-plus"></i>
                             <strong>No modules yet</strong>
                             <span>Create your first program module to get started.</span>
@@ -1339,12 +843,12 @@ function renderProgTab(container, modules, tabType) {
                         const completed = getAssignedCourseEctsTotal(module.subModules || []);
                         const progress = formatEctsProgress(module.maxEcts || 0, completed);
                         return `
-                            <label style="display:flex; flex-direction:column; gap:4px; padding:14px; background:${active ? 'rgba(var(--lux-accent-rgb),0.08)' : 'rgba(255,255,255,0.03)'}; border:1px solid ${active ? 'rgba(var(--lux-accent-rgb),0.25)' : 'rgba(255,255,255,0.06)'}; border-radius:12px; cursor:pointer;">
-                                <span style="display:flex; align-items:center; gap:10px;">
-                                    <input type="radio" name="prog-module" value="${escapeHtml(module.id)}" ${active ? 'checked' : ''} style="margin:0; accent-color:var(--lux-accent);" data-admin-reg-select-module="${escapeHtml(module.id)}" data-admin-reg-module-tab="prog">
-                                    <span style="font-weight:700; color:var(--lux-text); font-size:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(`${module.letter || ''}. ${module.name || 'Untitled'}`.trim())}</span>
+                            <label class="admin-reg-program-option${active ? ' is-active' : ''}">
+                                <span class="admin-reg-program-option-row">
+                                    <input type="radio" name="prog-module" value="${escapeHtml(module.id)}" ${active ? 'checked' : ''} class="admin-reg-program-option-input" data-admin-reg-select-module="${escapeHtml(module.id)}" data-admin-reg-module-tab="prog">
+                                    <span class="admin-reg-program-option-title">${escapeHtml(`${module.letter || ''}. ${module.name || 'Untitled'}`.trim())}</span>
                                 </span>
-                                <span style="font-size:10px; color:var(--lux-text-muted); padding-left:26px;">ECTS: ${escapeHtml(progress)}</span>
+                                <span class="admin-reg-program-option-progress">ECTS: ${escapeHtml(progress)}</span>
                             </label>
                         `;
                     }).join('')}
@@ -1367,13 +871,12 @@ function renderProgModulePane() {
     const module = modules.find(item => item.id === adminRegUiState.selectedProgModule) || modules[0] || null;
 
     if (!module) {
-        pane.innerHTML = `
-            <div class="lux-empty-state" style="min-height:300px;">
-                <i class="fas fa-arrow-left"></i>
-                <strong>Select a module</strong>
-                <span>Choose a module from the list to manage its subjects.</span>
-            </div>
-        `;
+        pane.innerHTML = buildAdminRegEmptyStateMarkup({
+            icon: 'fas fa-arrow-left',
+            title: 'Select a module',
+            copy: 'Choose a module from the list to manage its subjects.',
+            classes: 'admin-reg-program-pane-empty admin-reg-program-pane-empty--tall'
+        });
         return;
     }
 
@@ -1383,43 +886,44 @@ function renderProgModulePane() {
     const progressLabel = formatEctsProgress(module.maxEcts || 0, getAssignedCourseEctsTotal(subModules));
 
     pane.innerHTML = `
-        <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:14px; margin-bottom:16px;">
-            <div style="min-width:0;">
-                <div style="font-size:15px; font-weight:700; color:var(--lux-text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(module.name || 'Program')}</div>
-                <div style="font-size:11px; color:var(--lux-text-muted); margin-top:3px;">Module subjects</div>
+        <div class="admin-reg-program-pane-head">
+            <div class="admin-reg-program-pane-main">
+                <div class="admin-reg-program-pane-title">${escapeHtml(module.name || 'Program')}</div>
+                <div class="admin-reg-program-pane-copy">Module subjects</div>
             </div>
-            <div style="display:flex; flex-wrap:wrap; gap:8px; justify-content:flex-end; align-items:center;">
-                <button type="button" data-admin-reg-edit-module="${escapeHtml(module.id)}" class="lux-ghost-btn" style="padding:7px 12px; font-size:11px;"><i class="fas fa-edit"></i> Edit</button>
-                <button type="button" data-admin-reg-delete-module="${escapeHtml(module.id)}" data-admin-reg-tab="prog" class="lux-ghost-btn" style="padding:7px 12px; font-size:11px; color:#ef4444;"><i class="fas fa-trash"></i></button>
-                <button type="button" data-admin-reg-add-subject="${escapeHtml(module.id)}" data-admin-reg-tab="prog" class="lux-primary-btn" style="padding:7px 14px; font-size:11px;"><i class="fas fa-plus"></i> Add Subject</button>
+            <div class="admin-reg-program-pane-actions">
+                <button type="button" data-admin-reg-edit-module="${escapeHtml(module.id)}" class="lux-ghost-btn admin-reg-program-pane-btn"><i class="fas fa-edit"></i> Edit</button>
+                <button type="button" data-admin-reg-delete-module="${escapeHtml(module.id)}" data-admin-reg-tab="prog" class="lux-ghost-btn admin-reg-program-pane-btn admin-reg-program-pane-btn--danger"><i class="fas fa-trash"></i></button>
+                <button type="button" data-admin-reg-add-subject="${escapeHtml(module.id)}" data-admin-reg-tab="prog" class="lux-primary-btn admin-reg-program-pane-btn"><i class="fas fa-plus"></i> Add Subject</button>
             </div>
         </div>
-        <div style="display:flex; flex-direction:column; gap:8px;">
+        <div class="admin-reg-program-subject-list">
             ${(subModules.length === 0 ? `
-                <div class="lux-empty-state">
-                    <i class="fas fa-book-open"></i>
-                    <strong>No subjects assigned</strong>
-                    <span>Add subjects to this module using the button above.</span>
-                </div>
+                ${buildAdminRegEmptyStateMarkup({
+                    icon: 'fas fa-book-open',
+                    title: 'No subjects assigned',
+                    copy: 'Add subjects to this module using the button above.',
+                    classes: 'admin-reg-program-subject-empty'
+                })}
             ` : subModules.map((subMod, idx) => {
                 const details = getAssignedCourseCurriculumDetails(subMod, currentFaculty);
                 return `
-                <div style="display:flex; align-items:center; gap:10px; padding:12px 14px; background:var(--lux-surface); border:1px solid var(--lux-border); border-radius:16px; box-shadow:0 10px 24px rgba(0,0,0,0.12);">
-                    <div style="width:84px; text-align:center; font-weight:800; color:var(--lux-accent-2);">${escapeHtml(subMod.number || idx + 1)}</div>
-                    <div style="flex:3; min-width:0;">
-                        <div style="font-weight:700; color:var(--lux-text);">${escapeHtml(subMod.name || 'Untitled Subject')}</div>
-                        <div style="font-size:10px; color:var(--lux-text-soft); margin-top:2px;">${escapeHtml((subMod.courses || []).join(', ') || '')}</div>
+                <div class="admin-reg-program-subject-row">
+                    <div class="admin-reg-program-subject-number">${escapeHtml(subMod.number || idx + 1)}</div>
+                    <div class="admin-reg-program-subject-main">
+                        <div class="admin-reg-program-subject-title">${escapeHtml(subMod.name || 'Untitled Subject')}</div>
+                        <div class="admin-reg-program-subject-courses">${escapeHtml((subMod.courses || []).join(', ') || '')}</div>
                     </div>
-                    <div style="width:110px; text-align:center; font-weight:800; color:var(--lux-accent-2);">${escapeHtml(subMod.ects || '0')}</div>
-                    <div style="flex:2; font-size:11px; color:var(--lux-text-muted);">
+                    <div class="admin-reg-program-subject-ects">${escapeHtml(subMod.ects || '0')}</div>
+                    <div class="admin-reg-program-subject-details">
                         <div>${escapeHtml(`Prerequisite: ${details.prerequisite}`)}</div>
-                        ${details.antiRequisite ? `<div style="margin-top:4px;">${escapeHtml(`Anti-requisite: ${details.antiRequisite}`)}</div>` : ''}
-                        ${details.curriculumSemester ? `<div style="margin-top:4px; color:var(--lux-green); font-weight:700;">${escapeHtml(details.curriculumSemester)}</div>` : ''}
-                        ${details.studentAccess ? `<div style="margin-top:4px; color:var(--lux-accent-2); font-weight:700;">${escapeHtml(`Student access: ${details.studentAccess}`)}</div>` : ''}
+                        ${details.antiRequisite ? `<div class="admin-reg-program-subject-detail">${escapeHtml(`Anti-requisite: ${details.antiRequisite}`)}</div>` : ''}
+                        ${details.curriculumSemester ? `<div class="admin-reg-program-subject-detail admin-reg-program-subject-detail--semester">${escapeHtml(details.curriculumSemester)}</div>` : ''}
+                        ${details.studentAccess ? `<div class="admin-reg-program-subject-detail admin-reg-program-subject-detail--access">${escapeHtml(`Student access: ${details.studentAccess}`)}</div>` : ''}
                     </div>
-                    <div style="width:120px; display:flex; justify-content:flex-end; gap:8px;">
-                        <button type="button" data-admin-reg-edit-submodule="${escapeHtml(subMod.id)}" data-admin-reg-parent-module="${escapeHtml(module.id)}" data-admin-reg-tab="prog" class="kiu-btn-outline" style="padding:6px 9px; font-size:10px;"><i class="fas fa-edit"></i></button>
-                        <button type="button" data-admin-reg-delete-submodule="${escapeHtml(subMod.id)}" data-admin-reg-parent-module="${escapeHtml(module.id)}" data-admin-reg-tab="prog" class="kiu-btn-outline" style="padding:6px 9px; font-size:10px; color:var(--lux-red);"><i class="fas fa-trash"></i></button>
+                    <div class="admin-reg-program-subject-actions">
+                        <button type="button" data-admin-reg-edit-submodule="${escapeHtml(subMod.id)}" data-admin-reg-parent-module="${escapeHtml(module.id)}" data-admin-reg-tab="prog" class="lux-ghost-btn admin-reg-program-subject-btn"><i class="fas fa-edit"></i></button>
+                        <button type="button" data-admin-reg-delete-submodule="${escapeHtml(subMod.id)}" data-admin-reg-parent-module="${escapeHtml(module.id)}" data-admin-reg-tab="prog" class="lux-ghost-btn admin-reg-program-subject-btn admin-reg-program-subject-btn--danger"><i class="fas fa-trash"></i></button>
                     </div>
                 </div>
             `; }).join(''))}
@@ -1468,7 +972,7 @@ function editProgSubModule(moduleId, subModuleId) {
             subModule.semesterRuleMode = restriction.semesterRuleMode;
             subModule.allowedSemesters = restriction.allowedSemesters;
             applyAssignedCourseSeatDefaults(subModule, values);
-            saveState();
+            queueAdminRegistrationStateSave();
             close();
             renderAdminRegistrationModules('prog');
         }
@@ -1504,7 +1008,7 @@ function addConcGroup() {
                 return;
             }
             concCourseData[normalizedKey][groupName] = { maxEcts, completedEcts: 0, courses: [] };
-            saveState();
+            queueAdminRegistrationStateSave();
             close();
             alert(`Concentration group "${groupName}" added successfully.`);
             renderAdminRegistrationModules('conc');
@@ -1516,7 +1020,7 @@ function deleteConcGroup(concKey, groupName) {
     if (!confirm(`Delete concentration group "${groupName}"?`)) return;
     
     delete concCourseData[concKey][groupName];
-    saveState();
+    queueAdminRegistrationStateSave();
     alert('Concentration group deleted successfully.');
     renderAdminRegistrationModules('conc');
 }
@@ -1554,7 +1058,7 @@ function editConcGroup(concKey, groupName) {
                 completedEcts: Number(previous?.completedEcts || 0),
                 courses: previous?.courses || []
             };
-            saveState();
+            queueAdminRegistrationStateSave();
             close();
             renderAdminRegistrationModules('conc');
         }
@@ -1578,7 +1082,7 @@ function removeConcCourse(concKey, groupName, courseIdx) {
     if (!confirm(`Delete course "${courseName}"?`)) return;
     
     concCourseData[concKey][groupName].courses.splice(courseIdx, 1);
-    saveState();
+    queueAdminRegistrationStateSave();
     alert('Subject deleted successfully.');
     renderAdminRegistrationModules('conc');
 }
@@ -1609,7 +1113,7 @@ function editConcCourseName(concKey, groupName, courseIdx) {
             course.semesterRuleMode = restriction.semesterRuleMode;
             course.allowedSemesters = restriction.allowedSemesters;
             applyAssignedCourseSeatDefaults(course, values);
-            saveState();
+            queueAdminRegistrationStateSave();
             close();
             alert('Subject updated successfully.');
             renderAdminRegistrationModules('conc');
@@ -1664,12 +1168,35 @@ function ensureFacultyRegistrationCmsData(faculty) {
             && (legacy.concCourseData || legacy.minorProgramData);
         KIU_STATE.registrationCMSByFaculty[fac] = {
             concCourseData: cloneJson(canMigrateLegacy ? (legacy.concCourseData || DEFAULT_CONC_COURSE_DATA) : DEFAULT_CONC_COURSE_DATA),
-            minorProgramData: cloneJson(canMigrateLegacy ? (legacy.minorProgramData || DEFAULT_MINOR_PROGRAM_DATA) : DEFAULT_MINOR_PROGRAM_DATA)
+            minorProgramData: cloneJson(canMigrateLegacy ? (legacy.minorProgramData || DEFAULT_MINOR_PROGRAM_DATA) : DEFAULT_MINOR_PROGRAM_DATA),
+            trackData: {},
+            customTabs: [],
+            builtinTabOverrides: {},
+            hiddenBuiltinTabs: []
         };
         changed = true;
     }
 
     const bucket = KIU_STATE.registrationCMSByFaculty[fac];
+    if (!bucket.trackData || typeof bucket.trackData !== 'object') {
+        bucket.trackData = {};
+        changed = true;
+    }
+    if (!Array.isArray(bucket.customTabs)) {
+        bucket.customTabs = [];
+        changed = true;
+    }
+    if (!bucket.builtinTabOverrides || typeof bucket.builtinTabOverrides !== 'object') {
+        bucket.builtinTabOverrides = {};
+        changed = true;
+    }
+    if (!Array.isArray(bucket.hiddenBuiltinTabs)) {
+        bucket.hiddenBuiltinTabs = [];
+        changed = true;
+    }
+    if (typeof migrateAdminRegistrationCmsToTrackModel === 'function') {
+        migrateAdminRegistrationCmsToTrackModel(fac);
+    }
     if (!bucket.concCourseData || typeof bucket.concCourseData !== 'object') {
         bucket.concCourseData = cloneJson(DEFAULT_CONC_COURSE_DATA);
         changed = true;
@@ -1686,21 +1213,36 @@ function ensureFacultyRegistrationCmsData(faculty) {
         bucket.minorProgramData = {};
         changed = true;
     }
-    if (changed) saveState();
+    if (changed) queueAdminRegistrationStateSave();
     return bucket;
 }
 
 function bindFacultyRegistrationCmsData(faculty) {
-    ensureRegistrationCmsFacultyIsolation();
-    const fac = normalizeFacultyCode(
-        faculty || (document.getElementById('admin-reg-content-container') ? getAdminRegistrationFaculty() : getCurrentFaculty()) || 'ECON',
-        'ECON'
-    );
+    const fac = resolveRegistrationCmsFaculty(faculty);
+    const facultyChanged = Boolean(boundRegistrationCmsFaculty && boundRegistrationCmsFaculty !== fac);
+    if (facultyChanged) {
+        persistRegistrationCmsGlobalsToFaculty(boundRegistrationCmsFaculty);
+        flushAdminRegistrationStateSave({ syncFaculty: false });
+        ensureRegistrationCmsFacultyIsolation();
+    }
     const bucket = ensureFacultyRegistrationCmsData(fac);
-    concCourseData = bucket.concCourseData;
-    minorProgramData = bucket.minorProgramData;
+    if (typeof syncAdminRegTrackLegacyMirrors === 'function') {
+        syncAdminRegTrackLegacyMirrors(bucket);
+    } else {
+        concCourseData = bucket.concCourseData;
+        minorProgramData = bucket.minorProgramData;
+    }
     // Backward-compatible mirror key used by older code paths.
-    KIU_STATE.registrationCMS = { concCourseData, minorProgramData, faculty: fac };
+    KIU_STATE.registrationCMS = {
+        concCourseData: bucket.concCourseData,
+        minorProgramData: bucket.minorProgramData,
+        trackData: bucket.trackData || {},
+        customTabs: bucket.customTabs || [],
+        builtinTabOverrides: bucket.builtinTabOverrides || {},
+        hiddenBuiltinTabs: bucket.hiddenBuiltinTabs || [],
+        faculty: fac
+    };
+    boundRegistrationCmsFaculty = fac;
     return bucket;
 }
 
@@ -1714,6 +1256,15 @@ if (KIU_STATE.registrationCMSByFaculty) {
 }
 bindFacultyRegistrationCmsData(getAdminRegistrationFaculty());
 
+window.addEventListener('beforeunload', () => {
+    flushAdminRegistrationStateSave();
+});
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') {
+        flushAdminRegistrationStateSave();
+    }
+});
+
 // TAB 4: ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚ÂºÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã¢â‚¬Â¹Ãƒâ€¦Ã¢â‚¬Å“ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã¢â‚¬Â¦ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã¢â‚¬Â¹Ãƒâ€¦Ã¢â‚¬Å“ (Minor) - With dropdown and manage buttons
 function renderMinorTab(container, modules, tabType) {
     const minorPrograms = Object.keys(minorProgramData);
@@ -1726,29 +1277,29 @@ function renderMinorTab(container, modules, tabType) {
     }
 
     let html = `
-        <div style="display:flex; justify-content:space-between; align-items:flex-end; gap:14px; margin-bottom:18px;">
-            <div>
-                <div style="font-size:18px; font-weight:800; color:var(--lux-text);">Minor</div>
-                <div style="font-size:12px; color:var(--lux-text-muted); margin-top:4px;">Build minor programs with the same nested cards, editable ECTS targets, and grouped course lists.</div>
+        <div class="admin-reg-program-head admin-reg-program-head--large">
+            <div class="admin-reg-program-head-main">
+                <div class="admin-reg-program-head-title admin-reg-program-head-title--large">Minor</div>
+                <div class="admin-reg-program-head-copy admin-reg-program-head-copy--large">Build minor programs with the same nested cards, editable ECTS targets, and grouped course lists.</div>
             </div>
-            <button type="button" data-admin-reg-add-minor-program="1" class="kiu-btn-blue" style="padding:10px 16px; font-size:12px;"><i class="fas fa-plus"></i> Add Program</button>
+            <button type="button" data-admin-reg-add-minor-program="1" class="lux-primary-btn admin-reg-program-add-btn admin-reg-program-add-btn--large"><i class="fas fa-plus"></i> Add Program</button>
         </div>
-        <div style="display:grid; grid-template-columns:320px 1fr; gap:18px; align-items:start;">
-            <div style="background:var(--lux-surface); border:1px solid var(--lux-border); border-radius:18px; padding:16px; box-shadow:var(--lux-shadow);">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                    <div style="font-size:13px; font-weight:800; color:var(--lux-text-muted);">Minor Programs</div>
-                    <span style="font-size:11px; color:var(--lux-text-muted);">${minorPrograms.length}</span>
+        <div class="admin-reg-program-layout admin-reg-program-layout--wide">
+            <div class="admin-reg-program-list-shell">
+                <div class="admin-reg-program-list-head">
+                    <div class="admin-reg-program-list-title admin-reg-program-list-title--strong">Minor Programs</div>
+                    <span class="admin-reg-program-list-count">${minorPrograms.length}</span>
                 </div>
-                <div data-preserve-scroll-key="admin-reg-minor-programs" style="display:flex; flex-direction:column; gap:10px; max-height:220px; overflow:auto; padding-right:4px;">
-                    ${minorPrograms.length === 0 ? `<div style="padding:20px; text-align:center; color:var(--lux-text-muted); background:var(--lux-surface-2); border-radius:14px;">No minor programs yet</div>` : minorPrograms.map(program => {
+                <div data-preserve-scroll-key="admin-reg-minor-programs" class="admin-reg-program-list">
+                    ${minorPrograms.length === 0 ? `<div class="admin-reg-program-list-placeholder">No minor programs yet</div>` : minorPrograms.map(program => {
                         const checkedAttr = program === adminRegUiState.selectedMinorProgram ? 'checked' : '';
                         return `
-                            <label style="display:flex; align-items:center; justify-content:space-between; gap:10px; padding:12px 14px; background:${program === adminRegUiState.selectedMinorProgram ? 'linear-gradient(135deg, rgba(11,132,255,0.08), rgba(11,132,255,0.02))' : '#f8fafc'}; border:1px solid ${program === adminRegUiState.selectedMinorProgram ? 'rgba(11,132,255,0.2)' : '#e2e8f0'}; border-radius:14px; cursor:pointer;">
-                                <span style="display:flex; align-items:center; gap:10px; min-width:0;">
-                                    <input type="radio" name="minor-program" value="${program}" ${checkedAttr} data-admin-reg-select-minor-program="${escapeHtml(program)}" style="margin:0;">
-                                    <span style="font-weight:700; color:var(--lux-text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${program}</span>
+                            <label class="admin-reg-program-option admin-reg-program-option--wide${program === adminRegUiState.selectedMinorProgram ? ' is-active' : ''}">
+                                <span class="admin-reg-program-option-row">
+                                    <input type="radio" name="minor-program" value="${program}" ${checkedAttr} data-admin-reg-select-minor-program="${escapeHtml(program)}" class="admin-reg-program-option-input">
+                                    <span class="admin-reg-program-option-title">${program}</span>
                                 </span>
-                                <button type="button" data-admin-reg-delete-minor-program="${escapeHtml(program)}" class="kiu-btn-outline" style="padding:6px 10px; font-size:11px; color:var(--lux-red);"><i class="fas fa-trash"></i></button>
+                                <button type="button" data-admin-reg-delete-minor-program="${escapeHtml(program)}" class="lux-ghost-btn admin-reg-program-subject-btn admin-reg-program-subject-btn--danger"><i class="fas fa-trash"></i></button>
                             </label>
                         `;
                     }).join('')}
@@ -1768,7 +1319,12 @@ function renderMinorProgramPane() {
     const selected = adminRegUiState.selectedMinorProgram;
     if (!pane) return;
     if (!selected || !minorProgramData[selected]) {
-        pane.innerHTML = `<div style="padding:30px; text-align:center; color:var(--lux-text-muted); background:var(--lux-surface); border:1px dashed var(--lux-border); border-radius:18px;">Select a minor program to manage its subject groups.</div>`;
+        pane.innerHTML = buildAdminRegEmptyStateMarkup({
+            icon: 'fas fa-diagram-project',
+            title: 'Select a minor program',
+            copy: 'Choose a minor program to manage its subject groups.',
+            classes: 'admin-reg-program-pane-empty'
+        });
         return;
     }
 
@@ -1776,18 +1332,23 @@ function renderMinorProgramPane() {
     const courseGroups = program.courseGroups || {};
     const groupNames = Object.keys(courseGroups);
     let html = `
-        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
+        <div class="admin-reg-track-head">
             <div>
-                <div style="font-size:14px; font-weight:800; color:var(--lux-text);">${selected}</div>
-                <div style="font-size:12px; color:var(--lux-text-muted); margin-top:3px;">Minor Program Subjects</div>
+                <div class="admin-reg-track-head-title">${selected}</div>
+                <div class="admin-reg-track-head-copy">Minor Program Subjects</div>
             </div>
-            <button id="minor-add-course-btn" type="button" data-admin-reg-add-minor-group="${escapeHtml(selected)}" class="kiu-btn-blue" style="padding:8px 14px; font-size:12px;"><i class="fas fa-plus"></i> Add Group</button>
+            <button id="minor-add-course-btn" type="button" data-admin-reg-add-minor-group="${escapeHtml(selected)}" class="lux-primary-btn admin-reg-track-add-btn"><i class="fas fa-plus"></i> Add Group</button>
         </div>
-        <div style="display:flex; flex-direction:column; gap:14px;">
+        <div class="admin-reg-track-groups">
     `;
 
     if (groupNames.length === 0) {
-        html += `<div style="padding:24px; text-align:center; color:var(--lux-text-muted); background:var(--lux-surface); border:1px dashed var(--lux-border); border-radius:18px;">No subject groups added yet.</div>`;
+        html += buildAdminRegEmptyStateMarkup({
+            icon: 'fas fa-layer-group',
+            title: 'No subject groups added yet',
+            copy: 'Create the first group to start assigning subjects in this minor program.',
+            classes: 'admin-reg-track-empty'
+        });
     } else {
         groupNames.forEach((groupName, groupIdx) => {
             const group = courseGroups[groupName] || {};
@@ -1796,53 +1357,53 @@ function renderMinorProgramPane() {
             const progress = getTrackGroupProgress(group);
             const courses = group.courses || [];
             html += `
-                <div style="border:1px solid var(--lux-border); border-radius:18px; overflow:hidden; background:var(--lux-surface); box-shadow:var(--lux-shadow);">
-                    <div style="display:flex; align-items:center; gap:10px; padding:16px 18px; background:linear-gradient(180deg, #f8fbff 0%, #eef5fb 100%); cursor:pointer;" data-admin-reg-toggle-minor-group="${escapeHtml(groupKey)}">
-                        <i class="fas ${isExpanded ? 'fa-chevron-down' : 'fa-chevron-right'}" style="color:var(--lux-accent-2); width:18px;"></i>
-                        <div style="flex:1; min-width:0;">
-                            <div style="font-weight:800; color:var(--lux-text); font-size:14px;">${groupName}</div>
-                            <div style="font-size:11px; color:var(--lux-text-muted); margin-top:3px;">${selected}</div>
+                <div class="admin-reg-track-group-card">
+                    <div class="admin-reg-track-group-toggle" data-admin-reg-toggle-minor-group="${escapeHtml(groupKey)}">
+                        <i class="fas ${isExpanded ? 'fa-chevron-down' : 'fa-chevron-right'} admin-reg-track-group-chevron"></i>
+                        <div class="admin-reg-track-group-main">
+                            <div class="admin-reg-track-group-title">${groupName}</div>
+                            <div class="admin-reg-track-group-copy">${selected}</div>
                         </div>
-                        <div style="background:linear-gradient(135deg, #edf4ff, #dfeafe); color:#c2410c; padding:6px 12px; border-radius:999px; font-size:12px; font-weight:800;">ECTS: ${progress.label}</div>
-                        <div style="display:flex; gap:8px;">
-                            <button type="button" data-admin-reg-edit-minor-group="${escapeHtml(groupName)}" data-admin-reg-minor-program="${escapeHtml(selected)}" class="kiu-btn-outline" style="padding:6px 10px; font-size:11px;"><i class="fas fa-edit"></i></button>
-                            <button type="button" data-admin-reg-delete-minor-group="${escapeHtml(groupName)}" data-admin-reg-minor-program="${escapeHtml(selected)}" class="kiu-btn-outline" style="padding:6px 10px; font-size:11px; color:var(--lux-red);"><i class="fas fa-trash"></i></button>
+                        <div class="admin-reg-track-group-progress">ECTS: ${progress.label}</div>
+                        <div class="admin-reg-track-group-actions">
+                            <button type="button" data-admin-reg-edit-minor-group="${escapeHtml(groupName)}" data-admin-reg-minor-program="${escapeHtml(selected)}" class="lux-ghost-btn admin-reg-track-group-btn"><i class="fas fa-edit"></i></button>
+                            <button type="button" data-admin-reg-delete-minor-group="${escapeHtml(groupName)}" data-admin-reg-minor-program="${escapeHtml(selected)}" class="lux-ghost-btn admin-reg-track-group-btn admin-reg-track-group-btn--danger"><i class="fas fa-trash"></i></button>
                         </div>
                     </div>
                     ${isExpanded ? `
-                        <div style="padding:0 18px 18px;">
-                            <div style="display:flex; gap:8px; margin-top:12px; color:var(--lux-text-muted); font-size:11px; font-weight:800; text-transform:uppercase;">
-                                <div style="width:52px; text-align:center;">#</div>
-                                <div style="flex:3;">Subject Title / Module Title</div>
-                                <div style="width:110px; text-align:center;">ECTS</div>
-                                <div style="flex:2;">Precondition / Anti-condition</div>
-                                <div style="width:80px;"></div>
+                        <div class="admin-reg-track-group-body">
+                            <div class="admin-reg-track-subject-head">
+                                <div class="admin-reg-track-subject-head-number">#</div>
+                                <div class="admin-reg-track-subject-head-title">Subject Title / Module Title</div>
+                                <div class="admin-reg-track-subject-head-ects">ECTS</div>
+                                <div class="admin-reg-track-subject-head-meta">Precondition / Anti-condition</div>
+                                <div class="admin-reg-track-subject-head-actions"></div>
                             </div>
-                            <div style="display:flex; flex-direction:column; gap:8px; margin-top:10px;">
+                            <div class="admin-reg-track-subject-list">
                                 ${(courses.length === 0 ? `
-                                    <div style="padding:16px; text-align:center; color:var(--lux-text-muted); background:var(--lux-surface-2); border-radius:14px;">No subjects assigned</div>
+                                    <div class="admin-reg-track-subject-empty">No subjects assigned</div>
                                 ` : courses.map((course, idx) => `
-                                    <div style="display:flex; align-items:center; gap:8px; padding:12px 12px; background:var(--lux-surface); border:1px solid var(--lux-border); border-radius:14px;">
-                                        <div style="width:52px; text-align:center; font-weight:800; color:var(--lux-accent-2);">${course.n || idx + 1}</div>
-                                        <div style="flex:3; min-width:0;">
-                                            <div style="font-weight:700; color:var(--lux-text);">${course.title}</div>
-                                            <div style="font-size:10px; color:var(--lux-text-soft); margin-top:2px;">${course.n || ''}</div>
+                                    <div class="admin-reg-track-subject-row">
+                                        <div class="admin-reg-track-subject-number">${course.n || idx + 1}</div>
+                                        <div class="admin-reg-track-subject-main">
+                                            <div class="admin-reg-track-subject-title">${course.title}</div>
+                                            <div class="admin-reg-track-subject-code">${course.n || ''}</div>
                                         </div>
-                                        <div style="width:110px; text-align:center; font-weight:800; color:var(--lux-accent-2);">${course.ects || '0'}</div>
-                                        <div style="flex:2; font-size:11px; color:var(--lux-text-muted);">
+                                        <div class="admin-reg-track-subject-ects">${course.ects || '0'}</div>
+                                        <div class="admin-reg-track-subject-details">
                                             <div>${escapeHtml(`Prerequisite: ${getAssignedCourseCurriculumDetails(course, getAdminRegistrationFaculty()).prerequisite}`)}</div>
-                                            ${getAssignedCourseCurriculumDetails(course, getAdminRegistrationFaculty()).antiRequisite ? `<div style="margin-top:4px;">${escapeHtml(`Anti-requisite: ${getAssignedCourseCurriculumDetails(course, getAdminRegistrationFaculty()).antiRequisite}`)}</div>` : ''}
-                                            ${getAssignedCourseCurriculumDetails(course, getAdminRegistrationFaculty()).curriculumSemester ? `<div style="margin-top:4px; color:var(--lux-green); font-weight:700;">${escapeHtml(getAssignedCourseCurriculumDetails(course, getAdminRegistrationFaculty()).curriculumSemester)}</div>` : ''}
-                                            ${getAssignedCourseCurriculumDetails(course, getAdminRegistrationFaculty()).studentAccess ? `<div style="margin-top:4px; color:var(--lux-accent-2); font-weight:700;">${escapeHtml(`Student access: ${getAssignedCourseCurriculumDetails(course, getAdminRegistrationFaculty()).studentAccess}`)}</div>` : ''}
+                                            ${getAssignedCourseCurriculumDetails(course, getAdminRegistrationFaculty()).antiRequisite ? `<div class="admin-reg-track-subject-detail">${escapeHtml(`Anti-requisite: ${getAssignedCourseCurriculumDetails(course, getAdminRegistrationFaculty()).antiRequisite}`)}</div>` : ''}
+                                            ${getAssignedCourseCurriculumDetails(course, getAdminRegistrationFaculty()).curriculumSemester ? `<div class="admin-reg-track-subject-detail admin-reg-track-subject-detail--semester">${escapeHtml(getAssignedCourseCurriculumDetails(course, getAdminRegistrationFaculty()).curriculumSemester)}</div>` : ''}
+                                            ${getAssignedCourseCurriculumDetails(course, getAdminRegistrationFaculty()).studentAccess ? `<div class="admin-reg-track-subject-detail admin-reg-track-subject-detail--access">${escapeHtml(`Student access: ${getAssignedCourseCurriculumDetails(course, getAdminRegistrationFaculty()).studentAccess}`)}</div>` : ''}
                                         </div>
-                                        <div style="width:80px; text-align:right;">
-                                            <button type="button" data-admin-reg-edit-minor-course="${idx}" data-admin-reg-minor-program="${escapeHtml(selected)}" data-admin-reg-minor-group="${escapeHtml(groupName)}" class="kiu-btn-outline" style="padding:6px 9px; font-size:10px;"><i class="fas fa-edit"></i></button>
+                                        <div class="admin-reg-track-subject-actions">
+                                            <button type="button" data-admin-reg-edit-minor-course="${idx}" data-admin-reg-minor-program="${escapeHtml(selected)}" data-admin-reg-minor-group="${escapeHtml(groupName)}" class="lux-ghost-btn admin-reg-track-subject-btn"><i class="fas fa-edit"></i></button>
                                         </div>
                                     </div>
                                 `).join(''))}
                             </div>
-                            <div style="margin-top:12px;">
-                                <button type="button" data-admin-reg-add-minor-subject="${escapeHtml(groupName)}" data-admin-reg-minor-program="${escapeHtml(selected)}" class="kiu-btn-blue" style="width:100%; padding:10px 14px; font-size:12px;"><i class="fas fa-plus"></i> Add Subject</button>
+                            <div class="admin-reg-track-group-footer">
+                                <button type="button" data-admin-reg-add-minor-subject="${escapeHtml(groupName)}" data-admin-reg-minor-program="${escapeHtml(selected)}" class="lux-primary-btn admin-reg-track-group-add-subject"><i class="fas fa-plus"></i> Add Subject</button>
                             </div>
                         </div>
                     ` : ''}
@@ -1876,7 +1437,7 @@ function addMinorProgram() {
             }
 
             minorProgramData[newName] = { courseGroups: {} };
-            saveState();
+            queueAdminRegistrationStateSave();
             close();
             alert(`"${newName}" added successfully.`);
             renderAdminRegistrationModules('minor');
@@ -1888,7 +1449,7 @@ function deleteMinorProgram(programName) {
     if (!confirm(`Delete "${programName}"?`)) return;
     
     delete minorProgramData[programName];
-    saveState();
+    queueAdminRegistrationStateSave();
     alert(`"${programName}" deleted successfully.`);
     renderAdminRegistrationModules('minor');
 }
@@ -1932,7 +1493,7 @@ function addCourseGroupToMinor(programName) {
                 ects: `${maxEcts}/0`,
                 courses: []
             };
-            saveState();
+            queueAdminRegistrationStateSave();
             close();
             alert(`Subject group "${groupName}" added successfully.`);
             renderAdminRegistrationModules('minor');
@@ -1944,7 +1505,7 @@ function deleteMinorCourseGroup(programName, groupName) {
     if (!confirm(`Delete course group "${groupName}"?`)) return;
     
     delete minorProgramData[programName].courseGroups[groupName];
-    saveState();
+    queueAdminRegistrationStateSave();
     alert('Subject group deleted successfully.');
     renderAdminRegistrationModules('minor');
 }
@@ -1981,7 +1542,7 @@ function editMinorCourseGroup(programName, groupName) {
                 completedEcts: Number(previous?.completedEcts || 0),
                 ects: `${maxEcts}/${Number(previous?.completedEcts || 0)}`
             };
-            saveState();
+            queueAdminRegistrationStateSave();
             close();
             renderAdminRegistrationModules('minor');
         }
@@ -2038,7 +1599,7 @@ function editMinorCourse(programName, groupName, courseIdx) {
             course.semesterRuleMode = restriction.semesterRuleMode;
             course.allowedSemesters = restriction.allowedSemesters;
             applyAssignedCourseSeatDefaults(course, values);
-            saveState();
+            queueAdminRegistrationStateSave();
             close();
             alert('Subject updated successfully.');
             renderAdminRegistrationModules('minor');
@@ -2052,6 +1613,13 @@ function toggleAdminRegModule(moduleId) {
         expandedModules.delete(moduleId);
     } else {
         expandedModules.add(moduleId);
+    }
+    const tabConfig = typeof resolveAdminRegTab === 'function'
+        ? resolveAdminRegTab(adminRegActiveTab)
+        : null;
+    if (tabConfig && typeof renderAdminRegTrackProgramPane === 'function') {
+        renderAdminRegTrackProgramPane(adminRegActiveTab, tabConfig);
+        return;
     }
     renderAdminRegistrationModules(adminRegActiveTab);
 }
@@ -2084,7 +1652,7 @@ function editAdminRegModule(moduleId) {
             module.maxEcts = newMaxEcts;
             module.minEcts = Number.isFinite(Number(module.minEcts)) ? module.minEcts : 0;
 
-            saveState();
+            queueAdminRegistrationStateSave();
             close();
             renderAdminRegistrationModules(adminRegActiveTab);
             alert('Module updated.');
@@ -2102,7 +1670,7 @@ function deleteAdminRegModule(moduleId, tabType) {
     const idx = modules.findIndex(m => m.id === moduleId);
     if (idx !== -1) {
         modules.splice(idx, 1);
-        saveState();
+        flushAdminRegistrationStateSave();
         renderAdminRegistrationModules(tabType);
         alert('Module removed.');
     }
@@ -2110,6 +1678,11 @@ function deleteAdminRegModule(moduleId, tabType) {
 
 // ADD NEW: Create a new module/block
 function addNewAdminRegModule(tabType) {
+    const safeTab = String(tabType || 'prog').trim();
+    if (typeof addTrackProgram === 'function' && (safeTab === 'prog' || safeTab === 'free')) {
+        addTrackProgram(safeTab);
+        return;
+    }
     openStructuredFormModal({
         title: 'Create New Module',
         subtitle: 'Use this form to add a polished module card without the old browser popup.',
@@ -2145,9 +1718,13 @@ function addNewAdminRegModule(tabType) {
             };
 
             KIU_STATE.adminProgramStructures[currentFaculty][tabType].push(newModule);
-            saveState();
+            flushAdminRegistrationStateSave();
+            const syncPromise = typeof flushPortalStateSync === 'function'
+                ? flushPortalStateSync()
+                : Promise.resolve();
             close();
             renderAdminRegistrationModules(tabType);
+            syncPromise.catch(() => null);
             alert('New module created.');
         }
     });
@@ -2283,7 +1860,7 @@ function openCreateAndAssignSubjectModal(options = {}) {
             if (typeof attachSubjectToCurriculumLibraryModule === 'function') {
                 attachSubjectToCurriculumLibraryModule(subjectId, faculty);
             }
-            if (typeof saveState === 'function') saveState();
+            if (typeof saveState === 'function') queueAdminRegistrationStateSave();
             if (typeof renderCurriculumTable === 'function') renderCurriculumTable();
             if (typeof populateAntiReqDropdown === 'function') populateAntiReqDropdown();
 
@@ -2309,15 +1886,13 @@ function openCourseSelectionModal(moduleId, tabType, options = {}) {
     let assignedSubjectKeys = new Set();
 
     if (programType) {
-        if (programType === 'concentration') {
-            const existing = concCourseData?.[programContext?.programName]?.[programContext?.groupName]?.courses || [];
-            assignedCourses = new Set(existing.map(c => c.sourceCourseId || c.n).filter(Boolean));
-            assignedSubjectKeys = new Set(existing.map(c => normalizeSubjectTitleKey(c.title || c.name || c.n)).filter(Boolean));
-        } else {
-            const existing = minorProgramData?.[programContext?.programName]?.courseGroups?.[programContext?.groupName]?.courses || [];
-            assignedCourses = new Set(existing.map(c => c.sourceCourseId || c.n).filter(Boolean));
-            assignedSubjectKeys = new Set(existing.map(c => normalizeSubjectTitleKey(c.title || c.name || c.n)).filter(Boolean));
-        }
+        const tabId = programType === 'concentration' ? 'conc' : (programType === 'minor' ? 'minor' : String(programType));
+        const track = typeof getAdminRegTrackData === 'function'
+            ? getAdminRegTrackData(tabId)
+            : {};
+        const existing = track?.[programContext?.programName]?.[programContext?.groupName]?.courses || [];
+        assignedCourses = new Set(existing.map(c => c.sourceCourseId || c.n).filter(Boolean));
+        assignedSubjectKeys = new Set(existing.map(c => normalizeSubjectTitleKey(c.title || c.name || c.n)).filter(Boolean));
     } else {
         const facultyStructures = KIU_STATE.adminProgramStructures[currentFaculty] || {};
         const modules = facultyStructures[tabType] || [];
@@ -2374,90 +1949,85 @@ function openCourseSelectionModal(moduleId, tabType, options = {}) {
         : module.name;
 
     let html = `
-        <div id="course-selection-modal-bg" style="position:fixed; inset:0; z-index:7000; background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; backdrop-filter:blur(4px);">
-            <div style="background:var(--lux-surface); border-radius:16px; width:90%; max-width:800px; max-height:85vh; display:flex; flex-direction:column; box-shadow:0 24px 60px rgba(0,0,0,0.25);">
-                <div style="padding:20px 24px; border-bottom:1px solid var(--kiu-border); display:flex; justify-content:space-between; align-items:center; gap:12px;">
+        <div id="course-selection-modal-bg" class="admin-reg-course-modal-overlay">
+            <div class="admin-reg-course-modal-card">
+                <div class="admin-reg-course-modal-header">
                     <div>
-                        <div style="font-size:16px; font-weight:800; color:var(--lux-text);">Select Subject</div>
-                        <div style="font-size:11px; color:var(--lux-text-muted); margin-top:2px;">Target: <strong>${escapeHtml(modalTargetName)}</strong></div>
+                        <div class="admin-reg-course-modal-title">Select Subject</div>
+                        <div class="admin-reg-course-modal-subtitle">Target: <strong>${escapeHtml(modalTargetName)}</strong></div>
                     </div>
-                    <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; justify-content:flex-end;">
-                        <button id="modal-create-subject-btn" style="background:rgba(var(--lux-accent-rgb),0.12); border:1px solid rgba(var(--lux-accent-rgb),0.28); border-radius:8px; padding:8px 14px; font-size:12px; font-weight:700; color:var(--lux-accent-2); cursor:pointer;"><i class="fas fa-plus"></i> Create Subject</button>
-                        <button id="modal-close-btn" style="background:none; border:1px solid var(--kiu-border); border-radius:8px; padding:8px 16px; font-size:12px; font-weight:700; color:var(--lux-text-muted); cursor:pointer;"><i class="fas fa-times"></i> Close</button>
+                    <div class="admin-reg-course-modal-actions">
+                        <button id="modal-create-subject-btn" class="admin-reg-course-modal-create-btn"><i class="fas fa-plus"></i> Create Subject</button>
+                        <button id="modal-close-btn" class="admin-reg-course-modal-close-btn"><i class="fas fa-times"></i> Close</button>
                     </div>
                 </div>
                 
                 <!-- Search and Filter Section -->
-                <div style="padding:16px 24px; border-bottom:1px solid var(--kiu-border); background:var(--lux-surface-2);">
-                    <div style="display:grid; grid-template-columns:2fr 1fr; gap:12px; margin-bottom:12px;">
+                <div class="admin-reg-course-modal-filters">
+                    <div class="admin-reg-course-modal-filter-grid">
                         <div>
-                            <label style="font-size:10px; font-weight:700; color:var(--lux-text-muted); text-transform:uppercase;">Search</label>
-                            <input id="course-search-input" type="text" placeholder="Type a few words from the subject name or code..." autocomplete="off" style="width:100%; padding:10px 12px; border:1px solid var(--lux-border); border-radius:8px; font-size:13px; margin-top:6px; outline:none; box-sizing:border-box;">
+                            <label class="admin-reg-course-modal-field-label">Search</label>
+                            <input id="course-search-input" class="admin-reg-course-modal-search" type="text" placeholder="Type a few words from the subject name or code..." autocomplete="off">
                         </div>
                         <div>
-                            <label style="font-size:10px; font-weight:700; color:var(--lux-text-muted); text-transform:uppercase;">Faculty</label>
-                            <select id="course-faculty-filter" style="width:100%; padding:10px 12px; border:2px solid var(--kiu-blue); border-radius:8px; font-size:13px; margin-top:6px; background:var(--lux-surface); outline:none; box-sizing:border-box; font-weight:700; color:var(--lux-text);">
+                            <label class="admin-reg-course-modal-field-label">Faculty</label>
+                            <select id="course-faculty-filter" class="admin-reg-course-modal-select">
                                 <option value="all">All Faculties</option>
                                 ${allFacultyList.map(fac => `<option value="${fac}">${facultyLabels[fac] || fac}</option>`).join('')}
                             </select>
                         </div>
                     </div>
-                    <div id="subject-quick-matches" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px;"></div>
-                    <div style="font-size:11px; color:var(--lux-text-muted);">
+                    <div id="subject-quick-matches" class="admin-reg-subject-quick-matches"></div>
+                    <div class="admin-reg-course-modal-count">
                         <strong id="course-count">${availableCourses.length}</strong> subjects available from Curriculum Library
                     </div>
                 </div>
                 
                 <!-- Courses List -->
-                <div style="padding:0; overflow-y:auto; flex:1;">
-                    <div id="courses-list-container" style="display:flex; flex-direction:column; gap:0;">
+                <div class="admin-reg-course-modal-list-shell">
+                    <div id="courses-list-container" class="admin-reg-course-modal-list">
     `;
     
     availableCourses.forEach(course => {
         const facultyCode = course.faculty || 'OTHER';
-        const facultyColor = {
-            'CS': '#5b21b6',
-            'ECON': '#a4262c',
-            'LAW': '#107c41',
-            'MED': '#065f46',
-            'ARTS': '#b45309'
-        }[facultyCode] || '#666';
-        
+
         // Get detailed info from Curriculum Library
         const prerequisites = course.cond || 'None';
         const antiRequisites = course.antireq || 'None';
+        const semesterLabel = String(course.semester || 'TBD');
+        const accessibleCourseName = escapeHtml(course.name || 'Untitled Subject');
+        const accessibleCourseId = escapeHtml(course.id || 'Unknown');
         
         html += `
-            <div class="course-item" data-faculty="${facultyCode}" data-name="${escapeHtml(course.name || '')}" data-search="${escapeHtml(normalizeSubjectTitleKey(`${course.name || ''} ${course.id || ''} ${facultyLabels[facultyCode] || facultyCode}`))}" 
-                 style="padding:16px 24px; border-bottom:1px solid var(--lux-border); cursor:pointer; transition:all 0.2s; background:var(--lux-surface);" 
-                 data-module-id="${moduleId}" data-course-id="${course.id}" data-tab-type="${tabType}">
-                <div style="display:flex; align-items:flex-start; gap:12px;">
-                    <div style="flex:1;">
+            <div class="course-item admin-reg-course-item" data-faculty="${facultyCode}" data-name="${escapeHtml(course.name || '')}" data-search="${escapeHtml(normalizeSubjectTitleKey(`${course.name || ''} ${course.id || ''} ${facultyLabels[facultyCode] || facultyCode}`))}"
+                 data-module-id="${moduleId}" data-course-id="${course.id}" data-tab-type="${tabType}" role="button" tabindex="0" aria-label="Add ${accessibleCourseName} (${accessibleCourseId})">
+                <div class="admin-reg-course-item-row">
+                    <div class="admin-reg-course-item-main">
                         <!-- Subject Name & Code -->
-                        <div style="font-weight:700; color:var(--lux-text); font-size:13px; margin-bottom:6px;">${course.name}</div>
+                        <div class="admin-reg-course-item-title">${course.name}</div>
                         
                         <!-- Basic Info Row -->
-                        <div style="font-size:11px; color:var(--lux-text-muted); margin-bottom:8px; display:flex; gap:12px; flex-wrap:wrap;">
-                            <span style="background:${facultyColor}15; color:${facultyColor}; padding:2px 8px; border-radius:3px; font-weight:bold;">${course.id}</span>
-                            <span style="color:var(--lux-accent-2); font-weight:bold;">${course.ects} ECTS</span>
-                            <span style="color:#666;">Semester ${course.semester || 'ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â'}</span>
+                        <div class="admin-reg-course-item-meta">
+                            <span class="admin-reg-course-item-code">${course.id}</span>
+                            <span class="admin-reg-course-item-ects">${course.ects} ECTS</span>
+                            <span class="admin-reg-course-item-semester">Semester ${escapeHtml(semesterLabel)}</span>
                         </div>
                         
                         <!-- Prerequisites -->
                         ${prerequisites !== 'None' ? `
-                        <div style="font-size:10px; color:#059669; margin-bottom:4px; padding:4px 8px; background:#d1fae5; border-radius:3px; border-left:3px solid #10b981;">
+                        <div class="admin-reg-course-item-prereq">
                             <strong>Prerequisite:</strong> ${prerequisites}
                         </div>
                         ` : ''}
                         
                         <!-- Anti-requisites -->
                         ${antiRequisites !== 'None' ? `
-                        <div style="font-size:10px; color:var(--lux-red); margin-bottom:4px; padding:4px 8px; background:#fee2e2; border-radius:3px; border-left:3px solid #ef4444;">
+                        <div class="admin-reg-course-item-antireq">
                             <strong>Anti-requisite:</strong> ${antiRequisites}
                         </div>
                         ` : ''}
                     </div>
-                    <div style="background:var(--kiu-blue); color:white; padding:8px 12px; border-radius:6px; font-size:11px; font-weight:700; white-space:nowrap; cursor:pointer;">
+                    <div class="admin-reg-course-item-cta">
                         + Add Subject
                     </div>
                 </div>
@@ -2467,9 +2037,9 @@ function openCourseSelectionModal(moduleId, tabType, options = {}) {
     
     html += `
                     </div>
-                    <div id="no-results" style="display:none; padding:40px 24px; text-align:center; color:var(--lux-text-muted);">
-                        <i class="fas fa-inbox" style="font-size:32px; opacity:0.3; margin-bottom:12px; display:block;"></i>
-                        <div style="font-size:13px;">No matching subjects were found.</div>
+                    <div id="no-results" class="admin-reg-no-results" hidden>
+                        <i class="fas fa-inbox admin-reg-no-results-icon"></i>
+                        <div class="admin-reg-no-results-copy">No matching subjects were found.</div>
                     </div>
                 </div>
             </div>
@@ -2477,9 +2047,17 @@ function openCourseSelectionModal(moduleId, tabType, options = {}) {
     `;
     
     document.body.insertAdjacentHTML('beforeend', html);
-    
-    // Now set up event listeners
+
     const modal = document.getElementById('course-selection-modal-bg');
+    if (modal && document.body.classList.contains('lux-route-admin-tools')) {
+        modal.dataset.luxCourseModal = '1';
+        modal.querySelector('.admin-reg-course-modal-card')?.setAttribute('data-lux-glass-root', '1');
+        if (typeof window.queueLuxuryTransparencyRefresh === 'function') {
+            window.queueLuxuryTransparencyRefresh(undefined, { roots: [modal] });
+        }
+    }
+
+    // Now set up event listeners
     const createSubjectBtn = document.getElementById('modal-create-subject-btn');
     const closeBtn = document.getElementById('modal-close-btn');
     const searchInput = document.getElementById('course-search-input');
@@ -2521,7 +2099,7 @@ function openCourseSelectionModal(moduleId, tabType, options = {}) {
             const name = item.getAttribute('data-name') || item.getAttribute('data-course-id') || 'Subject';
             const code = item.getAttribute('data-course-id') || '';
             const faculty = facultyLabels[item.getAttribute('data-faculty')] || item.getAttribute('data-faculty') || '';
-            return `<button type="button" class="subject-quick-match" data-search-fill="${escapeHtml(name)}" style="border:1px solid #d6e2f0; background:var(--lux-surface); color:var(--lux-text); border-radius:999px; padding:6px 10px; font-size:11px; font-weight:700; cursor:pointer;">${escapeHtml(name)}${code ? ` ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â· ${escapeHtml(code)}` : ''}${faculty ? ` ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â· ${escapeHtml(faculty)}` : ''}</button>`;
+            return `<button type="button" class="subject-quick-match admin-reg-subject-quick-match" data-search-fill="${escapeHtml(name)}">${escapeHtml(name)}${code ? ` - ${escapeHtml(code)}` : ''}${faculty ? ` - ${escapeHtml(faculty)}` : ''}</button>`;
         }).join('');
 
         quickMatches.querySelectorAll('.subject-quick-match').forEach(btn => {
@@ -2549,15 +2127,15 @@ function openCourseSelectionModal(moduleId, tabType, options = {}) {
             const matchesFaculty = selectedFaculty === 'all' || itemFaculty === selectedFaculty;
             
             if (matchesSearch && matchesFaculty) {
-                item.style.display = 'block';
+                item.hidden = false;
                 visibleCount++;
                 visibleItems.push(item);
             } else {
-                item.style.display = 'none';
+                item.hidden = true;
             }
         });
         
-        noResults.style.display = visibleCount === 0 ? 'block' : 'none';
+        noResults.hidden = visibleCount !== 0;
         courseCount.textContent = visibleCount;
         updateQuickMatches(visibleItems, searchKey);
     };
@@ -2569,26 +2147,27 @@ function openCourseSelectionModal(moduleId, tabType, options = {}) {
     applyFilter();
     
     // Add subject click handler
+    const activateCourseItem = (item) => {
+        if (!item) return;
+        const cId = item.getAttribute('data-course-id');
+        if (programType) {
+            addCourseToProgramGroup(programType, programContext, cId);
+        } else {
+            const mId = item.getAttribute('data-module-id');
+            const tType = item.getAttribute('data-tab-type');
+            addCourseToModule(mId, cId, tType);
+        }
+        modal.remove();
+    };
+
     courseItems.forEach(item => {
         item.addEventListener('click', () => {
-            const cId = item.getAttribute('data-course-id');
-            if (programType) {
-                addCourseToProgramGroup(programType, programContext, cId);
-            } else {
-                const mId = item.getAttribute('data-module-id');
-                const tType = item.getAttribute('data-tab-type');
-                addCourseToModule(mId, cId, tType);
-            }
-            modal.remove();
+            activateCourseItem(item);
         });
-        
-        // Hover effect
-        item.addEventListener('mouseenter', () => {
-            item.style.background = '#eff6ff';
-        });
-        
-        item.addEventListener('mouseleave', () => {
-            item.style.background = 'white';
+        item.addEventListener('keydown', (event) => {
+            if (event.key !== 'Enter' && event.key !== ' ') return;
+            event.preventDefault();
+            activateCourseItem(item);
         });
     });
     
@@ -2602,44 +2181,35 @@ function findCourseAcrossFaculties(courseId) {
 
 function addCourseToProgramGroup(programType, context, courseId) {
     const course = findCourseAcrossFaculties(courseId) || { id: courseId, name: courseId, ects: 6, cond: '', antireq: 'None', faculty: '' };
+    const tabId = programType === 'concentration' ? 'conc' : (programType === 'minor' ? 'minor' : String(programType || adminRegActiveTab || 'conc'));
+    const group = typeof ensureTrackProgramGroup === 'function'
+        ? ensureTrackProgramGroup(tabId, context.programName, context.groupName)
+        : null;
 
-    if (programType === 'concentration') {
-        if (!concCourseData?.[context.programName]?.[context.groupName]) return;
-        concCourseData[context.programName][context.groupName].courses.push({
-            n: course.id,
-            title: course.name,
-            ects: String(course.ects),
-            ectsColor: '#ff9800',
-            precondition: course.cond || '',
-            antireq: course.antireq || 'None',
-            sourceCourseId: course.id,
-            sourceFaculty: course.faculty || '',
-            semesterRuleMode: 'all',
-            allowedSemesters: '',
-            lectureCapacity: 40,
-            seminarCapacity: 20
-        });
-        saveState();
-        renderAdminRegistrationModules('conc');
-    } else {
-        if (!minorProgramData?.[context.programName]?.courseGroups?.[context.groupName]) return;
-        minorProgramData[context.programName].courseGroups[context.groupName].courses.push({
-            n: course.id,
-            title: course.name,
-            ects: String(course.ects),
-            precondition: course.cond || '',
-            antireq: course.antireq || 'None',
-            sourceCourseId: course.id,
-            sourceFaculty: course.faculty || '',
-            semesterRuleMode: 'all',
-            allowedSemesters: '',
-            lectureCapacity: 40,
-            seminarCapacity: 20
-        });
-        saveState();
-        renderAdminRegistrationModules('minor');
+    if (!group) return;
+
+    group.courses.push({
+        n: course.id,
+        title: course.name,
+        ects: String(course.ects),
+        ectsColor: '#ff9800',
+        precondition: course.cond || '',
+        antireq: course.antireq || 'None',
+        sourceCourseId: course.id,
+        sourceFaculty: course.faculty || '',
+        semesterRuleMode: 'all',
+        allowedSemesters: '',
+        lectureCapacity: 40,
+        seminarCapacity: 20
+    });
+
+    const fac = normalizeFacultyCode(getAdminRegistrationFaculty(), 'ECON');
+    const bucket = KIU_STATE.registrationCMSByFaculty?.[fac];
+    if (bucket && typeof syncAdminRegTrackLegacyMirrors === 'function') {
+        syncAdminRegTrackLegacyMirrors(bucket);
     }
-
+    queueAdminRegistrationStateSave();
+    renderAdminRegistrationModules(tabId);
     alert('Subject added successfully.');
 }
 
@@ -2675,24 +2245,37 @@ function addCourseToModule(moduleId, courseId, tabType) {
     };
     
     module.subModules.push(newSubModule);
-    saveState();
+    queueAdminRegistrationStateSave();
     renderAdminRegistrationModules(tabType);
     alert('Subject added successfully.');
 }
 
 // REMOVE: sub-module/course from module
-function removeAdminRegSubModule(moduleId, subModuleId, tabType) {
+async function removeAdminRegSubModule(moduleId, subModuleId, tabType) {
     if (!confirm('Are you sure you want to remove this subject?')) return;
-    
+
     const currentFaculty = normalizeFacultyCode(getAdminRegistrationFaculty(), 'ECON');
     const facultyStructures = KIU_STATE.adminProgramStructures[currentFaculty] || {};
     const modules = facultyStructures[tabType] || [];
     const module = modules.find(m => m.id === moduleId);
-    
+
     if (module) {
         module.subModules = (module.subModules || []).filter(sm => sm.id !== subModuleId);
-        saveState();
+        if (typeof flushAdminRegistrationStateSave === 'function') {
+            flushAdminRegistrationStateSave();
+        } else {
+            queueAdminRegistrationStateSave();
+        }
+        if (typeof flushPortalStateSync === 'function') {
+            try {
+                await flushPortalStateSync();
+            } catch (error) {}
+        }
         renderAdminRegistrationModules(tabType);
+        const container = document.getElementById('admin-reg-content-container');
+        if (container) {
+            container.dataset.cmsRevision = getAdminRegistrationCmsRevision();
+        }
     }
 }
 
@@ -2708,7 +2291,7 @@ function approveAdminRegCourse(moduleId, subModuleId, tabType) {
         if (subMod) {
             subMod.status = 'approved';
             subMod.approved = true;
-            saveState();
+            queueAdminRegistrationStateSave();
             renderAdminRegistrationModules(tabType);
             alert('Subject approved.');
         }
@@ -2727,7 +2310,7 @@ function rejectAdminRegCourse(moduleId, subModuleId, tabType) {
         if (subMod) {
             subMod.status = 'rejected';
             subMod.approved = false;
-            saveState();
+            queueAdminRegistrationStateSave();
             renderAdminRegistrationModules(tabType);
             alert('Subject rejected.');
         }
@@ -2736,7 +2319,7 @@ function rejectAdminRegCourse(moduleId, subModuleId, tabType) {
 
 // SAVE: All changes are auto-saved to localStorage via saveState() calls above
 function saveAdminRegStructures() {
-    saveState();
+    queueAdminRegistrationStateSave();
     alert('All registration structure changes have been saved.');
 }
 
@@ -2756,7 +2339,12 @@ function renderFreeModulePane() {
     const module = modules.find(item => item.id === selectedId) || modules[0] || null;
 
     if (!module) {
-        pane.innerHTML = `<div style="padding:30px; text-align:center; color:var(--lux-text-muted); background:var(--lux-surface); border:1px dashed var(--lux-border); border-radius:18px;">No free credit modules yet.</div>`;
+        pane.innerHTML = buildAdminRegEmptyStateMarkup({
+            icon: 'fas fa-inbox',
+            title: 'No free credit modules yet',
+            copy: 'Add a free-credit module to start collecting optional subjects.',
+            classes: 'admin-reg-program-pane-empty'
+        });
         return;
     }
 
@@ -2766,47 +2354,52 @@ function renderFreeModulePane() {
     const subModules = module.subModules || [];
 
     pane.innerHTML = `
-        <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:14px; margin-bottom:14px;">
-            <div style="min-width:0;">
-                <div style="font-size:14px; font-weight:800; color:var(--lux-text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(module.name || 'Free Credits')}</div>
-                <div style="font-size:12px; color:var(--lux-text-muted); margin-top:3px;">Free Credit Subjects</div>
+        <div class="admin-reg-program-pane-head">
+            <div class="admin-reg-program-pane-main">
+                <div class="admin-reg-program-pane-title">${escapeHtml(module.name || 'Free Credits')}</div>
+                <div class="admin-reg-program-pane-copy">Free Credit Subjects</div>
             </div>
-            <div style="display:flex; flex-wrap:wrap; gap:8px; justify-content:flex-end; align-items:center;">
-                <div style="background:linear-gradient(135deg, #edf4ff, #dfeafe); color:#c2410c; padding:6px 12px; border-radius:999px; font-size:12px; font-weight:800;">ECTS: ${escapeHtml(progressLabel)}</div>
-                <button type="button" data-admin-reg-edit-module="${escapeHtml(module.id)}" class="kiu-btn-outline" style="padding:8px 11px; font-size:11px;"><i class="fas fa-edit"></i></button>
-                <button type="button" data-admin-reg-delete-module="${escapeHtml(module.id)}" data-admin-reg-tab="free" class="kiu-btn-outline" style="padding:8px 11px; font-size:11px; color:var(--lux-red);"><i class="fas fa-trash"></i></button>
-                <button type="button" data-admin-reg-add-subject="${escapeHtml(module.id)}" data-admin-reg-tab="free" class="kiu-btn-blue" style="padding:8px 14px; font-size:12px;"><i class="fas fa-plus"></i> Add Subject</button>
+            <div class="admin-reg-program-pane-actions">
+                <div class="admin-reg-program-pane-progress">ECTS: ${escapeHtml(progressLabel)}</div>
+                <button type="button" data-admin-reg-edit-module="${escapeHtml(module.id)}" class="lux-ghost-btn admin-reg-program-pane-btn"><i class="fas fa-edit"></i></button>
+                <button type="button" data-admin-reg-delete-module="${escapeHtml(module.id)}" data-admin-reg-tab="free" class="lux-ghost-btn admin-reg-program-pane-btn admin-reg-program-pane-btn--danger"><i class="fas fa-trash"></i></button>
+                <button type="button" data-admin-reg-add-subject="${escapeHtml(module.id)}" data-admin-reg-tab="free" class="lux-primary-btn admin-reg-program-pane-btn admin-reg-program-pane-btn--primary"><i class="fas fa-plus"></i> Add Subject</button>
             </div>
         </div>
-        <div style="display:flex; gap:8px; margin-top:12px; color:var(--lux-text-muted); font-size:11px; font-weight:800; text-transform:uppercase;">
-            <div style="width:84px; text-align:center;">#</div>
-            <div style="flex:3;">Subject Title / Module Title</div>
-            <div style="width:110px; text-align:center;">ECTS</div>
-            <div style="flex:2;">Prerequisite</div>
-            <div style="width:120px;"></div>
+        <div class="admin-reg-program-subject-head">
+            <div class="admin-reg-program-subject-head-number">#</div>
+            <div class="admin-reg-program-subject-head-title">Subject Title / Module Title</div>
+            <div class="admin-reg-program-subject-head-ects">ECTS</div>
+            <div class="admin-reg-program-subject-head-meta">Prerequisite</div>
+            <div class="admin-reg-program-subject-head-actions"></div>
         </div>
-        <div style="display:flex; flex-direction:column; gap:8px; margin-top:10px;">
+        <div class="admin-reg-program-subject-list">
             ${(subModules.length === 0 ? `
-                <div style="padding:18px; text-align:center; color:var(--lux-text-muted); background:var(--lux-surface-2); border:1px dashed var(--lux-border); border-radius:16px;">No subjects assigned</div>
+                ${buildAdminRegEmptyStateMarkup({
+                    icon: 'fas fa-book-open',
+                    title: 'No subjects assigned',
+                    copy: 'Add subjects to this free-credit module using the button above.',
+                    classes: 'admin-reg-program-subject-empty'
+                })}
             ` : subModules.map((subMod, idx) => {
                 const details = getAssignedCourseCurriculumDetails(subMod, currentFaculty);
                 return `
-                <div style="display:flex; align-items:center; gap:10px; padding:12px 14px; background:var(--lux-surface); border:1px solid var(--lux-border); border-radius:16px; box-shadow:0 10px 24px rgba(0,0,0,0.12);">
-                    <div style="width:84px; text-align:center; font-weight:800; color:var(--lux-accent-2);">${escapeHtml(subMod.number || idx + 1)}</div>
-                    <div style="flex:3; min-width:0;">
-                        <div style="font-weight:700; color:var(--lux-text);">${escapeHtml(subMod.name || 'Untitled Subject')}</div>
-                        <div style="font-size:10px; color:var(--lux-text-soft); margin-top:2px;">${escapeHtml((subMod.courses || []).join(', ') || '')}</div>
+                <div class="admin-reg-program-subject-row">
+                    <div class="admin-reg-program-subject-number">${escapeHtml(subMod.number || idx + 1)}</div>
+                    <div class="admin-reg-program-subject-main">
+                        <div class="admin-reg-program-subject-title">${escapeHtml(subMod.name || 'Untitled Subject')}</div>
+                        <div class="admin-reg-program-subject-courses">${escapeHtml((subMod.courses || []).join(', ') || '')}</div>
                     </div>
-                    <div style="width:110px; text-align:center; font-weight:800; color:var(--lux-accent-2);">${escapeHtml(subMod.ects || '0')}</div>
-                    <div style="flex:2; font-size:11px; color:var(--lux-text-muted);">
+                    <div class="admin-reg-program-subject-ects">${escapeHtml(subMod.ects || '0')}</div>
+                    <div class="admin-reg-program-subject-details">
                         <div>${escapeHtml(`Prerequisite: ${details.prerequisite}`)}</div>
-                        ${details.antiRequisite ? `<div style="margin-top:4px;">${escapeHtml(`Anti-requisite: ${details.antiRequisite}`)}</div>` : ''}
-                        ${details.curriculumSemester ? `<div style="margin-top:4px; color:var(--lux-green); font-weight:700;">${escapeHtml(details.curriculumSemester)}</div>` : ''}
-                        ${details.studentAccess ? `<div style="margin-top:4px; color:var(--lux-accent-2); font-weight:700;">${escapeHtml(`Student access: ${details.studentAccess}`)}</div>` : ''}
+                        ${details.antiRequisite ? `<div class="admin-reg-program-subject-detail">${escapeHtml(`Anti-requisite: ${details.antiRequisite}`)}</div>` : ''}
+                        ${details.curriculumSemester ? `<div class="admin-reg-program-subject-detail admin-reg-program-subject-detail--semester">${escapeHtml(details.curriculumSemester)}</div>` : ''}
+                        ${details.studentAccess ? `<div class="admin-reg-program-subject-detail admin-reg-program-subject-detail--access">${escapeHtml(`Student access: ${details.studentAccess}`)}</div>` : ''}
                     </div>
-                    <div style="width:120px; display:flex; justify-content:flex-end; gap:8px;">
-                        <button type="button" data-admin-reg-edit-submodule="${escapeHtml(subMod.id)}" data-admin-reg-parent-module="${escapeHtml(module.id)}" data-admin-reg-tab="free" class="kiu-btn-outline" style="padding:6px 9px; font-size:10px;"><i class="fas fa-edit"></i></button>
-                        <button type="button" data-admin-reg-delete-submodule="${escapeHtml(subMod.id)}" data-admin-reg-parent-module="${escapeHtml(module.id)}" data-admin-reg-tab="free" class="kiu-btn-outline" style="padding:6px 9px; font-size:10px; color:var(--lux-red);"><i class="fas fa-trash"></i></button>
+                    <div class="admin-reg-program-subject-actions">
+                        <button type="button" data-admin-reg-edit-submodule="${escapeHtml(subMod.id)}" data-admin-reg-parent-module="${escapeHtml(module.id)}" data-admin-reg-tab="free" class="lux-ghost-btn admin-reg-program-subject-btn"><i class="fas fa-edit"></i></button>
+                        <button type="button" data-admin-reg-delete-submodule="${escapeHtml(subMod.id)}" data-admin-reg-parent-module="${escapeHtml(module.id)}" data-admin-reg-tab="free" class="lux-ghost-btn admin-reg-program-subject-btn admin-reg-program-subject-btn--danger"><i class="fas fa-trash"></i></button>
                     </div>
                 </div>
             `; }).join(''))}
@@ -2824,31 +2417,31 @@ function renderFreeTab(container, modules, tabType) {
     }
 
     const html = `
-        <div style="display:flex; justify-content:space-between; align-items:flex-end; gap:14px; margin-bottom:18px;">
-            <div>
-                <div style="font-size:18px; font-weight:800; color:var(--lux-text);">Free Credits</div>
-                <div style="font-size:12px; color:var(--lux-text-muted); margin-top:4px;">Manage free credit modules with the same split-panel layout used in Minor.</div>
+        <div class="admin-reg-program-head admin-reg-program-head--large">
+            <div class="admin-reg-program-head-main">
+                <div class="admin-reg-program-head-title admin-reg-program-head-title--large">Free Credits</div>
+                <div class="admin-reg-program-head-copy admin-reg-program-head-copy--large">Manage free credit modules with the same split-panel layout used in Minor.</div>
             </div>
-            <button type="button" data-admin-reg-add-module="free" class="kiu-btn-blue" style="padding:10px 16px; font-size:12px;"><i class="fas fa-plus"></i> Add Program</button>
+            <button type="button" data-admin-reg-add-module="free" class="lux-primary-btn admin-reg-program-add-btn admin-reg-program-add-btn--large"><i class="fas fa-plus"></i> Add Program</button>
         </div>
-        <div style="display:grid; grid-template-columns:320px 1fr; gap:18px; align-items:start;">
-            <div style="background:var(--lux-surface); border:1px solid var(--lux-border); border-radius:18px; padding:16px; box-shadow:var(--lux-shadow);">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                    <div style="font-size:13px; font-weight:800; color:var(--lux-text-muted);">Free Credit Modules</div>
-                    <span style="font-size:11px; color:var(--lux-text-muted);">${modules.length}</span>
+        <div class="admin-reg-program-layout admin-reg-program-layout--wide">
+            <div class="admin-reg-program-list-shell">
+                <div class="admin-reg-program-list-head">
+                    <div class="admin-reg-program-list-title admin-reg-program-list-title--strong">Free Credit Modules</div>
+                    <span class="admin-reg-program-list-count">${modules.length}</span>
                 </div>
-                <div data-preserve-scroll-key="admin-reg-free-modules" style="display:flex; flex-direction:column; gap:10px; max-height:260px; overflow:auto; padding-right:4px;">
-                    ${modules.length === 0 ? `<div style="padding:20px; text-align:center; color:var(--lux-text-muted); background:var(--lux-surface-2); border-radius:14px;">No free credit modules yet</div>` : modules.map(module => {
+                <div data-preserve-scroll-key="admin-reg-free-modules" class="admin-reg-program-list">
+                    ${modules.length === 0 ? `<div class="admin-reg-program-list-placeholder">No free credit modules yet</div>` : modules.map(module => {
                         const active = module.id === adminRegUiState.selectedFreeModule;
                         const completed = getAssignedCourseEctsTotal(module.subModules || []);
                         const progress = formatEctsProgress(module.maxEcts || 0, completed);
                         return `
-                            <label style="display:flex; align-items:center; justify-content:space-between; gap:10px; padding:12px 14px; background:${active ? 'linear-gradient(135deg, rgba(11,132,255,0.08), rgba(11,132,255,0.02))' : '#f8fafc'}; border:1px solid ${active ? 'rgba(11,132,255,0.2)' : '#e2e8f0'}; border-radius:14px; cursor:pointer;">
-                                <span style="display:flex; align-items:center; gap:10px; min-width:0;">
-                                    <input type="radio" name="free-module" value="${escapeHtml(module.id)}" ${active ? 'checked' : ''} style="margin:0;" data-admin-reg-select-module="${escapeHtml(module.id)}" data-admin-reg-module-tab="free">
-                                    <span style="font-weight:700; color:var(--lux-text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(module.name)}</span>
+                            <label class="admin-reg-program-option admin-reg-program-option--wide${active ? ' is-active' : ''}">
+                                <span class="admin-reg-program-option-row">
+                                    <input type="radio" name="free-module" value="${escapeHtml(module.id)}" ${active ? 'checked' : ''} class="admin-reg-program-option-input" data-admin-reg-select-module="${escapeHtml(module.id)}" data-admin-reg-module-tab="free">
+                                    <span class="admin-reg-program-option-title">${escapeHtml(module.name)}</span>
                                 </span>
-                                <span style="font-size:11px; font-weight:800; color:#c2410a; background:#eef4fb; border:1px solid #dbe7f5; padding:5px 8px; border-radius:999px;">ECTS: ${escapeHtml(progress)}</span>
+                                <span class="admin-reg-program-option-progress admin-reg-program-option-progress--pill">ECTS: ${escapeHtml(progress)}</span>
                             </label>
                         `;
                     }).join('')}
@@ -2898,7 +2491,7 @@ function editFreeSubModule(moduleId, subModuleId) {
             subModule.semesterRuleMode = restriction.semesterRuleMode;
             subModule.allowedSemesters = restriction.allowedSemesters;
             applyAssignedCourseSeatDefaults(subModule, values);
-            saveState();
+            queueAdminRegistrationStateSave();
             close();
             renderAdminRegistrationModules('free');
         }
@@ -2932,7 +2525,7 @@ function addConcProgram() {
             concCourseData[newName] = {};
             adminRegUiState.selectedConcProgram = newName;
             adminRegUiState.selectedConcGroup = null;
-            saveState();
+            queueAdminRegistrationStateSave();
             close();
             renderAdminRegistrationModules('conc');
         }
@@ -2947,7 +2540,7 @@ function deleteConcProgram(programName) {
         adminRegUiState.selectedConcProgram = Object.keys(concCourseData)[0] || null;
         adminRegUiState.selectedConcGroup = null;
     }
-    saveState();
+    queueAdminRegistrationStateSave();
     renderAdminRegistrationModules('conc');
 }
 
@@ -2992,7 +2585,7 @@ function addCourseGroupToConcentration(programName) {
             };
             adminRegUiState.selectedConcProgram = programName;
             adminRegUiState.selectedConcGroup = `${programName}|${groupName}`;
-            saveState();
+            queueAdminRegistrationStateSave();
             close();
             renderAdminRegistrationModules('conc');
         }
@@ -3004,25 +2597,35 @@ function renderConcProgramPane() {
     const selected = adminRegUiState.selectedConcProgram;
     if (!pane) return;
     if (!selected || !concCourseData[selected]) {
-        pane.innerHTML = `<div style="padding:30px; text-align:center; color:var(--lux-text-muted); background:var(--lux-surface); border:1px dashed var(--lux-border); border-radius:18px;">Select a concentration program to manage its subject groups.</div>`;
+        pane.innerHTML = buildAdminRegEmptyStateMarkup({
+            icon: 'fas fa-sitemap',
+            title: 'Select a concentration program',
+            copy: 'Choose a concentration program to manage its subject groups.',
+            classes: 'admin-reg-program-pane-empty'
+        });
         return;
     }
 
     const courseGroups = concCourseData[selected] || {};
     const groupNames = Object.keys(courseGroups);
     let html = `
-        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
+        <div class="admin-reg-track-head">
             <div>
-                <div style="font-size:14px; font-weight:800; color:var(--lux-text);">${escapeHtml(selected)}</div>
-                <div style="font-size:12px; color:var(--lux-text-muted); margin-top:3px;">Concentration Program Subjects</div>
+                <div class="admin-reg-track-head-title">${escapeHtml(selected)}</div>
+                <div class="admin-reg-track-head-copy">Concentration Program Subjects</div>
             </div>
-            <button id="conc-add-group-btn" type="button" data-admin-reg-add-conc-group="${escapeHtml(selected)}" class="kiu-btn-blue" style="padding:8px 14px; font-size:12px;"><i class="fas fa-plus"></i> Add Group</button>
+            <button id="conc-add-group-btn" type="button" data-admin-reg-add-conc-group="${escapeHtml(selected)}" class="lux-primary-btn admin-reg-track-add-btn"><i class="fas fa-plus"></i> Add Group</button>
         </div>
-        <div style="display:flex; flex-direction:column; gap:14px;">
+        <div class="admin-reg-track-groups">
     `;
 
     if (groupNames.length === 0) {
-        html += `<div style="padding:24px; text-align:center; color:var(--lux-text-muted); background:var(--lux-surface); border:1px dashed var(--lux-border); border-radius:18px;">No subject groups added yet.</div>`;
+        html += buildAdminRegEmptyStateMarkup({
+            icon: 'fas fa-layer-group',
+            title: 'No subject groups added yet',
+            copy: 'Create the first concentration group to start assigning subjects.',
+            classes: 'admin-reg-track-empty'
+        });
     } else {
         groupNames.forEach((groupName) => {
             const group = courseGroups[groupName] || {};
@@ -3031,54 +2634,54 @@ function renderConcProgramPane() {
             const progress = getTrackGroupProgress(group, getAssignedCourseEctsTotal(group.courses || []));
             const courses = group.courses || [];
             html += `
-                <div style="border:1px solid var(--lux-border); border-radius:18px; overflow:hidden; background:var(--lux-surface); box-shadow:var(--lux-shadow);">
-                    <div style="display:flex; align-items:center; gap:10px; padding:16px 18px; background:linear-gradient(180deg, #f8fbff 0%, #eef5fb 100%); cursor:pointer;" data-admin-reg-toggle-conc-group="${escapeHtml(groupKey)}">
-                        <i class="fas ${isExpanded ? 'fa-chevron-down' : 'fa-chevron-right'}" style="color:var(--lux-accent-2); width:18px;"></i>
-                        <div style="flex:1; min-width:0;">
-                            <div style="font-weight:800; color:var(--lux-text); font-size:14px;">${escapeHtml(groupName)}</div>
-                            <div style="font-size:11px; color:var(--lux-text-muted); margin-top:3px;">${escapeHtml(selected)}</div>
+                <div class="admin-reg-track-group-card">
+                    <div class="admin-reg-track-group-toggle" data-admin-reg-toggle-conc-group="${escapeHtml(groupKey)}">
+                        <i class="fas ${isExpanded ? 'fa-chevron-down' : 'fa-chevron-right'} admin-reg-track-group-chevron"></i>
+                        <div class="admin-reg-track-group-main">
+                            <div class="admin-reg-track-group-title">${escapeHtml(groupName)}</div>
+                            <div class="admin-reg-track-group-copy">${escapeHtml(selected)}</div>
                         </div>
-                        <div style="background:linear-gradient(135deg, #edf4ff, #dfeafe); color:#c2410c; padding:6px 12px; border-radius:999px; font-size:12px; font-weight:800;">ECTS: ${escapeHtml(progress.label)}</div>
-                        <div style="display:flex; gap:8px;">
-                            <button type="button" data-admin-reg-edit-conc-group="${escapeHtml(groupName)}" data-admin-reg-conc-program="${escapeHtml(selected)}" class="kiu-btn-outline" style="padding:6px 10px; font-size:11px;"><i class="fas fa-edit"></i></button>
-                            <button type="button" data-admin-reg-delete-conc-group="${escapeHtml(groupName)}" data-admin-reg-conc-program="${escapeHtml(selected)}" class="kiu-btn-outline" style="padding:6px 10px; font-size:11px; color:var(--lux-red);"><i class="fas fa-trash"></i></button>
+                        <div class="admin-reg-track-group-progress">ECTS: ${escapeHtml(progress.label)}</div>
+                        <div class="admin-reg-track-group-actions">
+                            <button type="button" data-admin-reg-edit-conc-group="${escapeHtml(groupName)}" data-admin-reg-conc-program="${escapeHtml(selected)}" class="lux-ghost-btn admin-reg-track-group-btn"><i class="fas fa-edit"></i></button>
+                            <button type="button" data-admin-reg-delete-conc-group="${escapeHtml(groupName)}" data-admin-reg-conc-program="${escapeHtml(selected)}" class="lux-ghost-btn admin-reg-track-group-btn admin-reg-track-group-btn--danger"><i class="fas fa-trash"></i></button>
                         </div>
                     </div>
                     ${isExpanded ? `
-                        <div style="padding:0 18px 18px;">
-                            <div style="display:flex; gap:8px; margin-top:12px; color:var(--lux-text-muted); font-size:11px; font-weight:800; text-transform:uppercase;">
-                                <div style="width:52px; text-align:center;">#</div>
-                                <div style="flex:3;">Subject Title / Module Title</div>
-                                <div style="width:110px; text-align:center;">ECTS</div>
-                                <div style="flex:2;">Precondition / Anti-condition</div>
-                                <div style="width:120px;"></div>
+                        <div class="admin-reg-track-group-body">
+                            <div class="admin-reg-track-subject-head">
+                                <div class="admin-reg-track-subject-head-number">#</div>
+                                <div class="admin-reg-track-subject-head-title">Subject Title / Module Title</div>
+                                <div class="admin-reg-track-subject-head-ects">ECTS</div>
+                                <div class="admin-reg-track-subject-head-meta">Precondition / Anti-condition</div>
+                                <div class="admin-reg-track-subject-head-actions"></div>
                             </div>
-                            <div style="display:flex; flex-direction:column; gap:8px; margin-top:10px;">
+                            <div class="admin-reg-track-subject-list">
                                 ${(courses.length === 0 ? `
-                                    <div style="padding:16px; text-align:center; color:var(--lux-text-muted); background:var(--lux-surface-2); border-radius:14px;">No subjects assigned</div>
+                                    <div class="admin-reg-track-subject-empty">No subjects assigned</div>
                                 ` : courses.map((course, idx) => `
-                                    <div style="display:flex; align-items:center; gap:8px; padding:12px 12px; background:var(--lux-surface); border:1px solid var(--lux-border); border-radius:14px;">
-                                        <div style="width:52px; text-align:center; font-weight:800; color:var(--lux-accent-2);">${escapeHtml(course.n || idx + 1)}</div>
-                                        <div style="flex:3; min-width:0;">
-                                            <div style="font-weight:700; color:var(--lux-text);">${escapeHtml(course.title || 'Untitled Subject')}</div>
-                                            <div style="font-size:10px; color:var(--lux-text-soft); margin-top:2px;">${escapeHtml(course.n || '')}</div>
+                                    <div class="admin-reg-track-subject-row">
+                                        <div class="admin-reg-track-subject-number">${escapeHtml(course.n || idx + 1)}</div>
+                                        <div class="admin-reg-track-subject-main">
+                                            <div class="admin-reg-track-subject-title">${escapeHtml(course.title || 'Untitled Subject')}</div>
+                                            <div class="admin-reg-track-subject-code">${escapeHtml(course.n || '')}</div>
                                         </div>
-                                        <div style="width:110px; text-align:center; font-weight:800; color:var(--lux-accent-2);">${escapeHtml(course.ects || '0')}</div>
-                    <div style="flex:2; font-size:11px; color:var(--lux-text-muted);">
-                        <div>${escapeHtml(`Prerequisite: ${getAssignedCourseCurriculumDetails(course, getAdminRegistrationFaculty()).prerequisite}`)}</div>
-                        ${getAssignedCourseCurriculumDetails(course, getAdminRegistrationFaculty()).antiRequisite ? `<div style="margin-top:4px;">${escapeHtml(`Anti-requisite: ${getAssignedCourseCurriculumDetails(course, getAdminRegistrationFaculty()).antiRequisite}`)}</div>` : ''}
-                        ${getAssignedCourseCurriculumDetails(course, getAdminRegistrationFaculty()).curriculumSemester ? `<div style="margin-top:4px; color:var(--lux-green); font-weight:700;">${escapeHtml(getAssignedCourseCurriculumDetails(course, getAdminRegistrationFaculty()).curriculumSemester)}</div>` : ''}
-                        ${getAssignedCourseCurriculumDetails(course, getAdminRegistrationFaculty()).studentAccess ? `<div style="margin-top:4px; color:var(--lux-accent-2); font-weight:700;">${escapeHtml(`Student access: ${getAssignedCourseCurriculumDetails(course, getAdminRegistrationFaculty()).studentAccess}`)}</div>` : ''}
-                    </div>
-                                        <div style="width:120px; display:flex; justify-content:flex-end; gap:8px;">
-                                            <button type="button" data-admin-reg-edit-conc-course="${idx}" data-admin-reg-conc-program="${escapeHtml(selected)}" data-admin-reg-conc-group="${escapeHtml(groupName)}" class="kiu-btn-outline" style="padding:6px 9px; font-size:10px;"><i class="fas fa-edit"></i></button>
-                                            <button type="button" data-admin-reg-delete-conc-course="${idx}" data-admin-reg-conc-program="${escapeHtml(selected)}" data-admin-reg-conc-group="${escapeHtml(groupName)}" class="kiu-btn-outline" style="padding:6px 9px; font-size:10px; color:var(--lux-red);"><i class="fas fa-trash"></i></button>
+                                        <div class="admin-reg-track-subject-ects">${escapeHtml(course.ects || '0')}</div>
+                                        <div class="admin-reg-track-subject-details">
+                                            <div>${escapeHtml(`Prerequisite: ${getAssignedCourseCurriculumDetails(course, getAdminRegistrationFaculty()).prerequisite}`)}</div>
+                                            ${getAssignedCourseCurriculumDetails(course, getAdminRegistrationFaculty()).antiRequisite ? `<div class="admin-reg-track-subject-detail">${escapeHtml(`Anti-requisite: ${getAssignedCourseCurriculumDetails(course, getAdminRegistrationFaculty()).antiRequisite}`)}</div>` : ''}
+                                            ${getAssignedCourseCurriculumDetails(course, getAdminRegistrationFaculty()).curriculumSemester ? `<div class="admin-reg-track-subject-detail admin-reg-track-subject-detail--semester">${escapeHtml(getAssignedCourseCurriculumDetails(course, getAdminRegistrationFaculty()).curriculumSemester)}</div>` : ''}
+                                            ${getAssignedCourseCurriculumDetails(course, getAdminRegistrationFaculty()).studentAccess ? `<div class="admin-reg-track-subject-detail admin-reg-track-subject-detail--access">${escapeHtml(`Student access: ${getAssignedCourseCurriculumDetails(course, getAdminRegistrationFaculty()).studentAccess}`)}</div>` : ''}
+                                        </div>
+                                        <div class="admin-reg-track-subject-actions">
+                                            <button type="button" data-admin-reg-edit-conc-course="${idx}" data-admin-reg-conc-program="${escapeHtml(selected)}" data-admin-reg-conc-group="${escapeHtml(groupName)}" class="lux-ghost-btn admin-reg-track-subject-btn"><i class="fas fa-edit"></i></button>
+                                            <button type="button" data-admin-reg-delete-conc-course="${idx}" data-admin-reg-conc-program="${escapeHtml(selected)}" data-admin-reg-conc-group="${escapeHtml(groupName)}" class="lux-ghost-btn admin-reg-track-subject-btn admin-reg-track-subject-btn--danger"><i class="fas fa-trash"></i></button>
                                         </div>
                                     </div>
                                 `).join(''))}
                             </div>
-                            <div style="margin-top:12px;">
-                                <button type="button" data-admin-reg-add-conc-subject="${escapeHtml(groupName)}" data-admin-reg-conc-program="${escapeHtml(selected)}" class="kiu-btn-blue" style="width:100%; padding:10px 14px; font-size:12px;"><i class="fas fa-plus"></i> Add Subject</button>
+                            <div class="admin-reg-track-group-footer">
+                                <button type="button" data-admin-reg-add-conc-subject="${escapeHtml(groupName)}" data-admin-reg-conc-program="${escapeHtml(selected)}" class="lux-primary-btn admin-reg-track-group-add-subject"><i class="fas fa-plus"></i> Add Subject</button>
                             </div>
                         </div>
                     ` : ''}
@@ -3106,7 +2709,12 @@ function renderConcGroupPane() {
 
     const selected = entries.find(entry => `${entry.concKey}|${entry.groupName}` === adminRegUiState.selectedConcGroup) || entries[0] || null;
     if (!selected) {
-        pane.innerHTML = `<div style="padding:30px; text-align:center; color:var(--lux-text-muted); background:var(--lux-surface); border:1px dashed var(--lux-border); border-radius:18px;">Select a concentration group to manage its subjects.</div>`;
+        pane.innerHTML = buildAdminRegEmptyStateMarkup({
+            icon: 'fas fa-arrow-left',
+            title: 'Select a concentration group',
+            copy: 'Choose a concentration group to manage its subjects.',
+            classes: 'admin-reg-program-pane-empty'
+        });
         return;
     }
 
@@ -3116,45 +2724,50 @@ function renderConcGroupPane() {
     const courses = selected.group?.courses || [];
 
     pane.innerHTML = `
-        <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:14px; margin-bottom:14px;">
-            <div style="min-width:0;">
-                <div style="font-size:14px; font-weight:800; color:var(--lux-text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(selected.groupName)}</div>
-                <div style="font-size:12px; color:var(--lux-text-muted); margin-top:3px;">${escapeHtml(selected.concKey)}</div>
+        <div class="admin-reg-program-pane-head">
+            <div class="admin-reg-program-pane-main">
+                <div class="admin-reg-program-pane-title">${escapeHtml(selected.groupName)}</div>
+                <div class="admin-reg-program-pane-copy">${escapeHtml(selected.concKey)}</div>
             </div>
-            <div style="display:flex; flex-wrap:wrap; gap:8px; justify-content:flex-end; align-items:center;">
-                <div style="background:linear-gradient(135deg, #edf4ff, #dfeafe); color:#c2410a; padding:6px 12px; border-radius:999px; font-size:12px; font-weight:800;">ECTS: ${escapeHtml(progressLabel)}</div>
-                <button type="button" data-admin-reg-edit-conc-group="${escapeHtml(selected.groupName)}" data-admin-reg-conc-program="${escapeHtml(selected.concKey)}" class="kiu-btn-outline" style="padding:8px 11px; font-size:11px;"><i class="fas fa-edit"></i></button>
-                <button type="button" data-admin-reg-delete-conc-group="${escapeHtml(selected.groupName)}" data-admin-reg-conc-program="${escapeHtml(selected.concKey)}" class="kiu-btn-outline" style="padding:8px 11px; font-size:11px; color:var(--lux-red);"><i class="fas fa-trash"></i></button>
-                <button type="button" data-admin-reg-add-conc-subject="${escapeHtml(selected.groupName)}" data-admin-reg-conc-program="${escapeHtml(selected.concKey)}" class="kiu-btn-blue" style="padding:8px 14px; font-size:12px;"><i class="fas fa-plus"></i> Add Subject</button>
+            <div class="admin-reg-program-pane-actions">
+                <div class="admin-reg-program-pane-progress">ECTS: ${escapeHtml(progressLabel)}</div>
+                <button type="button" data-admin-reg-edit-conc-group="${escapeHtml(selected.groupName)}" data-admin-reg-conc-program="${escapeHtml(selected.concKey)}" class="lux-ghost-btn admin-reg-program-pane-btn"><i class="fas fa-edit"></i></button>
+                <button type="button" data-admin-reg-delete-conc-group="${escapeHtml(selected.groupName)}" data-admin-reg-conc-program="${escapeHtml(selected.concKey)}" class="lux-ghost-btn admin-reg-program-pane-btn admin-reg-program-pane-btn--danger"><i class="fas fa-trash"></i></button>
+                <button type="button" data-admin-reg-add-conc-subject="${escapeHtml(selected.groupName)}" data-admin-reg-conc-program="${escapeHtml(selected.concKey)}" class="lux-primary-btn admin-reg-program-pane-btn admin-reg-program-pane-btn--primary"><i class="fas fa-plus"></i> Add Subject</button>
             </div>
         </div>
-        <div style="display:flex; gap:8px; margin-top:12px; color:var(--lux-text-muted); font-size:11px; font-weight:800; text-transform:uppercase;">
-            <div style="width:84px; text-align:center;">#</div>
-            <div style="flex:3;">Subject Title / Module Title</div>
-            <div style="width:110px; text-align:center;">ECTS</div>
-            <div style="flex:2;">Precondition / Anti-condition</div>
-            <div style="width:120px;"></div>
+        <div class="admin-reg-program-subject-head">
+            <div class="admin-reg-program-subject-head-number">#</div>
+            <div class="admin-reg-program-subject-head-title">Subject Title / Module Title</div>
+            <div class="admin-reg-program-subject-head-ects">ECTS</div>
+            <div class="admin-reg-program-subject-head-meta">Precondition / Anti-condition</div>
+            <div class="admin-reg-program-subject-head-actions"></div>
         </div>
-        <div style="display:flex; flex-direction:column; gap:8px; margin-top:10px;">
+        <div class="admin-reg-program-subject-list">
             ${(courses.length === 0 ? `
-                <div style="padding:18px; text-align:center; color:var(--lux-text-muted); background:var(--lux-surface-2); border:1px dashed var(--lux-border); border-radius:16px;">No subjects assigned</div>
+                ${buildAdminRegEmptyStateMarkup({
+                    icon: 'fas fa-book-open',
+                    title: 'No subjects assigned',
+                    copy: 'Add subjects to this concentration group using the button above.',
+                    classes: 'admin-reg-program-subject-empty'
+                })}
             ` : courses.map((course, idx) => `
-                <div style="display:flex; align-items:center; gap:10px; padding:12px 14px; background:var(--lux-surface); border:1px solid var(--lux-border); border-radius:16px; box-shadow:0 10px 24px rgba(0,0,0,0.12);">
-                    <div style="width:84px; text-align:center; font-weight:800; color:var(--lux-accent-2);">${escapeHtml(course.n || idx + 1)}</div>
-                    <div style="flex:3; min-width:0;">
-                        <div style="font-weight:700; color:var(--lux-text);">${escapeHtml(course.title || 'Untitled Subject')}</div>
-                        <div style="font-size:10px; color:var(--lux-text-soft); margin-top:2px;">${escapeHtml(course.n || '')}</div>
+                <div class="admin-reg-program-subject-row">
+                    <div class="admin-reg-program-subject-number">${escapeHtml(course.n || idx + 1)}</div>
+                    <div class="admin-reg-program-subject-main">
+                        <div class="admin-reg-program-subject-title">${escapeHtml(course.title || 'Untitled Subject')}</div>
+                        <div class="admin-reg-program-subject-courses">${escapeHtml(course.n || '')}</div>
                     </div>
-                    <div style="width:110px; text-align:center; font-weight:800; color:var(--lux-accent-2);">${escapeHtml(course.ects || '0')}</div>
-                    <div style="flex:2; font-size:11px; color:var(--lux-text-muted);">
+                    <div class="admin-reg-program-subject-ects">${escapeHtml(course.ects || '0')}</div>
+                    <div class="admin-reg-program-subject-details">
                         <div>${escapeHtml(`Prerequisite: ${getAssignedCourseCurriculumDetails(course, getAdminRegistrationFaculty()).prerequisite}`)}</div>
-                        ${getAssignedCourseCurriculumDetails(course, getAdminRegistrationFaculty()).antiRequisite ? `<div style="margin-top:4px;">${escapeHtml(`Anti-requisite: ${getAssignedCourseCurriculumDetails(course, getAdminRegistrationFaculty()).antiRequisite}`)}</div>` : ''}
-                        ${getAssignedCourseCurriculumDetails(course, getAdminRegistrationFaculty()).curriculumSemester ? `<div style="margin-top:4px; color:var(--lux-green); font-weight:700;">${escapeHtml(getAssignedCourseCurriculumDetails(course, getAdminRegistrationFaculty()).curriculumSemester)}</div>` : ''}
-                        ${getAssignedCourseCurriculumDetails(course, getAdminRegistrationFaculty()).studentAccess ? `<div style="margin-top:4px; color:var(--lux-accent-2); font-weight:700;">${escapeHtml(`Student access: ${getAssignedCourseCurriculumDetails(course, getAdminRegistrationFaculty()).studentAccess}`)}</div>` : ''}
+                        ${getAssignedCourseCurriculumDetails(course, getAdminRegistrationFaculty()).antiRequisite ? `<div class="admin-reg-program-subject-detail">${escapeHtml(`Anti-requisite: ${getAssignedCourseCurriculumDetails(course, getAdminRegistrationFaculty()).antiRequisite}`)}</div>` : ''}
+                        ${getAssignedCourseCurriculumDetails(course, getAdminRegistrationFaculty()).curriculumSemester ? `<div class="admin-reg-program-subject-detail admin-reg-program-subject-detail--semester">${escapeHtml(getAssignedCourseCurriculumDetails(course, getAdminRegistrationFaculty()).curriculumSemester)}</div>` : ''}
+                        ${getAssignedCourseCurriculumDetails(course, getAdminRegistrationFaculty()).studentAccess ? `<div class="admin-reg-program-subject-detail admin-reg-program-subject-detail--access">${escapeHtml(`Student access: ${getAssignedCourseCurriculumDetails(course, getAdminRegistrationFaculty()).studentAccess}`)}</div>` : ''}
                     </div>
-                    <div style="width:120px; display:flex; justify-content:flex-end; gap:8px;">
-                        <button type="button" data-admin-reg-edit-conc-course="${idx}" data-admin-reg-conc-program="${escapeHtml(selected.concKey)}" data-admin-reg-conc-group="${escapeHtml(selected.groupName)}" class="kiu-btn-outline" style="padding:6px 9px; font-size:10px;"><i class="fas fa-edit"></i></button>
-                        <button type="button" data-admin-reg-delete-conc-course="${idx}" data-admin-reg-conc-program="${escapeHtml(selected.concKey)}" data-admin-reg-conc-group="${escapeHtml(selected.groupName)}" class="kiu-btn-outline" style="padding:6px 9px; font-size:10px; color:var(--lux-red);"><i class="fas fa-trash"></i></button>
+                    <div class="admin-reg-program-subject-actions">
+                        <button type="button" data-admin-reg-edit-conc-course="${idx}" data-admin-reg-conc-program="${escapeHtml(selected.concKey)}" data-admin-reg-conc-group="${escapeHtml(selected.groupName)}" class="lux-ghost-btn admin-reg-program-subject-btn"><i class="fas fa-edit"></i></button>
+                        <button type="button" data-admin-reg-delete-conc-course="${idx}" data-admin-reg-conc-program="${escapeHtml(selected.concKey)}" data-admin-reg-conc-group="${escapeHtml(selected.groupName)}" class="lux-ghost-btn admin-reg-program-subject-btn admin-reg-program-subject-btn--danger"><i class="fas fa-trash"></i></button>
                     </div>
                 </div>
             `).join(''))}
@@ -3174,29 +2787,29 @@ function renderConcTab(container, modules, tabType) {
     }
 
     const html = `
-        <div style="display:flex; justify-content:space-between; align-items:flex-end; gap:14px; margin-bottom:18px;">
-            <div>
-                <div style="font-size:18px; font-weight:800; color:var(--lux-text);">Concentration</div>
-                <div style="font-size:12px; color:var(--lux-text-muted); margin-top:4px;">Build concentration programs with the same nested cards, editable ECTS targets, and grouped course lists.</div>
+        <div class="admin-reg-program-head admin-reg-program-head--large">
+            <div class="admin-reg-program-head-main">
+                <div class="admin-reg-program-head-title admin-reg-program-head-title--large">Concentration</div>
+                <div class="admin-reg-program-head-copy admin-reg-program-head-copy--large">Build concentration programs with the same nested cards, editable ECTS targets, and grouped course lists.</div>
             </div>
-            <button type="button" data-admin-reg-add-conc-program="1" class="kiu-btn-blue" style="padding:10px 16px; font-size:12px;"><i class="fas fa-plus"></i> Add Program</button>
+            <button type="button" data-admin-reg-add-conc-program="1" class="lux-primary-btn admin-reg-program-add-btn admin-reg-program-add-btn--large"><i class="fas fa-plus"></i> Add Program</button>
         </div>
-        <div style="display:grid; grid-template-columns:320px 1fr; gap:18px; align-items:start;">
-            <div style="background:var(--lux-surface); border:1px solid var(--lux-border); border-radius:18px; padding:16px; box-shadow:var(--lux-shadow);">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                    <div style="font-size:13px; font-weight:800; color:var(--lux-text-muted);">Concentration Programs</div>
-                    <span style="font-size:11px; color:var(--lux-text-muted);">${concPrograms.length}</span>
+        <div class="admin-reg-program-layout admin-reg-program-layout--wide">
+            <div class="admin-reg-program-list-shell">
+                <div class="admin-reg-program-list-head">
+                    <div class="admin-reg-program-list-title admin-reg-program-list-title--strong">Concentration Programs</div>
+                    <span class="admin-reg-program-list-count">${concPrograms.length}</span>
                 </div>
-                <div data-preserve-scroll-key="admin-reg-conc-programs" style="display:flex; flex-direction:column; gap:10px; max-height:220px; overflow:auto; padding-right:4px;">
-                    ${concPrograms.length === 0 ? `<div style="padding:20px; text-align:center; color:var(--lux-text-muted); background:var(--lux-surface-2); border-radius:14px;">No concentration programs yet</div>` : concPrograms.map(program => {
+                <div data-preserve-scroll-key="admin-reg-conc-programs" class="admin-reg-program-list">
+                    ${concPrograms.length === 0 ? `<div class="admin-reg-program-list-placeholder">No concentration programs yet</div>` : concPrograms.map(program => {
                         const checkedAttr = program === adminRegUiState.selectedConcProgram ? 'checked' : '';
                         return `
-                            <label style="display:flex; align-items:center; justify-content:space-between; gap:10px; padding:12px 14px; background:${program === adminRegUiState.selectedConcProgram ? 'linear-gradient(135deg, rgba(11,132,255,0.08), rgba(11,132,255,0.02))' : '#f8fafc'}; border:1px solid ${program === adminRegUiState.selectedConcProgram ? 'rgba(11,132,255,0.2)' : '#e2e8f0'}; border-radius:14px; cursor:pointer;">
-                                <span style="display:flex; align-items:center; gap:10px; min-width:0;">
-                                    <input type="radio" name="conc-program" value="${escapeHtml(program)}" ${checkedAttr} data-admin-reg-select-conc-program="${escapeHtml(program)}" style="margin:0;">
-                                    <span style="font-weight:700; color:var(--lux-text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(program)}</span>
+                            <label class="admin-reg-program-option admin-reg-program-option--wide${program === adminRegUiState.selectedConcProgram ? ' is-active' : ''}">
+                                <span class="admin-reg-program-option-row">
+                                    <input type="radio" name="conc-program" value="${escapeHtml(program)}" ${checkedAttr} data-admin-reg-select-conc-program="${escapeHtml(program)}" class="admin-reg-program-option-input">
+                                    <span class="admin-reg-program-option-title">${escapeHtml(program)}</span>
                                 </span>
-                                <button type="button" data-admin-reg-delete-conc-program="${escapeHtml(program)}" class="kiu-btn-outline" style="padding:6px 10px; font-size:11px; color:var(--lux-red);"><i class="fas fa-trash"></i></button>
+                                <button type="button" data-admin-reg-delete-conc-program="${escapeHtml(program)}" class="lux-ghost-btn admin-reg-program-subject-btn admin-reg-program-subject-btn--danger"><i class="fas fa-trash"></i></button>
                             </label>
                         `;
                     }).join('')}
@@ -3361,7 +2974,7 @@ function ensurePublicSocialFileInput() {
         input.type = 'file';
         input.id = 'public-social-file-input';
         input.accept = 'image/*';
-        input.style.display = 'none';
+        input.hidden = true;
         document.body.appendChild(input);
     }
     return input;

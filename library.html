@@ -6,11 +6,15 @@
     <link rel="stylesheet" href="assets/vendor/fontawesome/css/all.min.css?v=1776604822079">
     <link rel="stylesheet" href="assets/css/kiu-fonts.css?v=20260515-fonts1">
     <link rel="stylesheet" href="assets/css/base.css?v=20260419-libsync1">
-    <link rel="stylesheet" href="assets/css/layout.css?v=1776604822079">
-    <link rel="stylesheet" href="assets/css/components.css?v=1776604822079">
-    <link rel="stylesheet" href="assets/css/index-luxury.css?v=20260513-programs-lightmode2">
+    <link rel="stylesheet" href="assets/css/layout.css?v=20260528-layoutfix2">
+    <link rel="stylesheet" href="assets/css/lux-tokens.css?v=20260606-luxscrollbar1">
+    <link rel="stylesheet" href="assets/css/lux-surfaces.css?v=20260527-profcss1">
+    <link rel="stylesheet" href="assets/css/lux-controls.css?v=20260606-pickerscroll1">
+    <link rel="stylesheet" href="assets/css/lux-layout-primitives.css?v=20260606-luxscrollbar1">
+    <link rel="stylesheet" href="assets/css/index-luxury.css?v=20260531-partbg4">
     <link rel="stylesheet" href="assets/css/mobile-responsive.css?v=20260419-libsync1">
-    <script src="assets/js/theme-primer.js?v=20260419-flat5"></script>
+    <link rel="stylesheet" href="assets/css/library-route.css?v=20260530-libglass3">
+    <script src="assets/js/theme-primer.js?v=20260604-styleguard2"></script>
 </head>
 <body class="lux-unified-shell kiu-shell-loading lux-nonhome-page lux-route-library">
 <nav id="prof-nav" aria-label="Professor navigation stub"></nav>
@@ -26,73 +30,43 @@
 <script defer src="assets/js/app/auth.js?v=20260429-authfix2"></script>
 <script defer src="assets/js/data/initial-state.js?v=1776604822079"></script>
 <script defer src="assets/js/app/state.js?v=20260429-statestackfix1"></script>
-<script defer src="assets/js/shared/utilities.js?v=20260510-programs-themefade1"></script>
+<script defer src="assets/js/shared/utilities.js?v=20260605-blurfix1"></script>
 <script defer src="assets/js/shared/faculty.js?v=20260429-peopleisolation1"></script>
-<script defer src="assets/js/features/navigation.js?v=20260429-shellinit1"></script>
+<script defer src="assets/js/features/navigation.js?v=20260604-standaloneboot2"></script>
 <script defer src="assets/js/features/ui.js?v=20260429-peopleisolation1"></script>
-<script defer src="assets/js/features/index-luxury.js?v=20260504-transparency-refresh1"></script>
-<script defer src="assets/js/features/luxury-shell-chrome.js?v=20260518-luxshell1"></script>
+<script defer src="assets/js/features/index-luxury.js?v=20260605-blurfix1"></script>
+<script type="module" src="assets/js/features/luxury-particle-background.js?v=20260531-partbg8"></script>
+<script defer src="assets/js/features/luxury-shell-chrome.js?v=20260606-pickerscroll1"></script>
 <script defer src="assets/js/features/luxury-home-model.js?v=20260518-luxhome1"></script>
-<script defer src="assets/js/pages/library.js?v=20260518-libraryshell1"></script>
+<script defer src="assets/js/pages/library.js?v=20260604-libraryrootfix1"></script>
 <script>
-(function bootStandaloneLibraryPage() {
-    function ensureLibraryRouteVisualState() {
-        var body = document.body;
-        if (!body) return;
-        body.classList.remove('kiu-shell-loading', 'lux-home-page');
-        body.classList.add('lux-unified-shell', 'lux-nonhome-page', 'lux-route-library', 'lux-site-modernized');
-        body.dataset.luxPage = 'library';
-        body.dataset.luxEntry = 'library';
-        body.dataset.luxFamily = 'support';
-        if (!body.dataset.luxBackgroundMode) {
-            body.dataset.luxBackgroundMode = localStorage.getItem('kiuLuxuryBackgroundMode') || 'constellation';
-        }
-        document.documentElement.dataset.luxPage = 'library';
-    }
-
-    function syncLibraryVisualShell() {
-        ensureLibraryRouteVisualState();
-        if (typeof window.updateTransparency === 'function') {
-            var savedTransparency = parseInt(localStorage.getItem('kiuLuxurySurfaceTransparency') || '70', 10);
-            if (!Number.isNaN(savedTransparency)) {
-                window.updateTransparency(savedTransparency);
+function initStandaloneLibraryRoute() {
+    if (typeof window.bootStandaloneDesktopRoute !== 'function') return;
+    window.bootStandaloneDesktopRoute({
+        entryId: 'library',
+        pageId: 'library',
+        family: 'support',
+        renderContent: function renderLibraryRouteContent() {
+            if (typeof window.renderLibraryPage === 'function') {
+                window.renderLibraryPage();
+            } else if (typeof window.renderLibraryPageShellContext === 'function') {
+                window.renderLibraryPageShellContext();
             }
-        } else if (typeof window.refreshLuxuryTransparencySurfaces === 'function') {
-            window.refreshLuxuryTransparencySurfaces();
+        },
+        routeRefresh: function refreshLibraryRoute() {
+            if (typeof window.renderLibraryPage === 'function') {
+                window.renderLibraryPage();
+            } else if (typeof window.renderLibraryPageShellContext === 'function') {
+                window.renderLibraryPageShellContext();
+            }
         }
-        var activeBackgroundMode = document.body && document.body.dataset.luxBackgroundMode
-            || localStorage.getItem('kiuLuxuryBackgroundMode')
-            || 'constellation';
-        if (typeof window.__kiuRefreshLuxuryBackground === 'function') {
-            window.__kiuRefreshLuxuryBackground(activeBackgroundMode);
-        }
-    }
-
-    function bootLibrary() {
-        ensureLibraryRouteVisualState();
-        if (typeof window.renderLibraryPage === 'function') {
-            window.renderLibraryPage();
-        } else if (typeof window.renderLibraryPageShellContext === 'function') {
-            window.renderLibraryPageShellContext();
-        }
-        syncLibraryVisualShell();
-        requestAnimationFrame(syncLibraryVisualShell);
-        window.setTimeout(syncLibraryVisualShell, 80);
-        window.setTimeout(syncLibraryVisualShell, 240);
-    }
-
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', bootLibrary);
-    } else {
-        bootLibrary();
-    }
-
-    window.addEventListener('pageshow', syncLibraryVisualShell);
-    window.addEventListener('focus', syncLibraryVisualShell);
-    document.addEventListener('visibilitychange', function () {
-        if (!document.hidden) syncLibraryVisualShell();
     });
-})();
+}
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initStandaloneLibraryRoute, { once: true });
+} else {
+    initStandaloneLibraryRoute();
+}
 </script>
 </body>
 </html>

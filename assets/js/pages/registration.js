@@ -1,4 +1,4 @@
-/* Study card, registration, profile, chancellery, and admin curriculum page logic extracted from core.js. Source of truth remains root core.js compatibility bundle. */
+/* Study card, registration, profile, chancellery, and admin curriculum page logic extracted from the legacy core.js bundle. Active routes now load split files directly. */
 
 // --- STUDY CARD ---
 function toggleGradeDetails(btn) {
@@ -17,11 +17,11 @@ function switchRegTab(tab, triggerElement = null) {
     if (activeTrigger) activeTrigger.classList.add('active');
     ['program', 'free', 'concentration', 'minor', 'history', 'selected'].forEach(t => {
         const el = document.getElementById(`reg-tab-${t}`);
-        if(el) el.style.display = 'none';
+        if (el) el.hidden = true;
     });
     
     const target = document.getElementById(`reg-tab-${tab}`);
-    if(target) target.style.display = 'block';
+    if (target) target.hidden = false;
 }
 
 function isRegistrationShellActive() {
@@ -362,7 +362,7 @@ function handleRegistrationLegacyChange(event) {
         return;
     }
 
-    if (target.id === 'new-subject-semester') {
+    if (target.id === 'new-subject-semesters' || target.id === 'new-subject-semester-lux-btn' || target.closest?.('#new-subject-semester-picker')) {
         ensureSubjectSemesterParityHint();
         if (typeof updateSubjectCodePreview === 'function') updateSubjectCodePreview();
         return;
@@ -465,20 +465,24 @@ function ensureProfileTabContent(tab) {
 function switchProfileTab(tab, element) {
     document.querySelectorAll('#page-profile .tab').forEach(el => {
         el.classList.remove('active');
-        el.style.borderLeftColor = 'transparent';
     });
     element.classList.add('active');
-    element.style.borderLeftColor = 'var(--kiu-blue)';
-    
-    document.getElementById('profile-tab-info').style.display = 'none';
-    document.getElementById('profile-tab-email').style.display = 'none';
-    document.getElementById('profile-tab-password').style.display = 'none';
+
+    const setProfilePanelShown = (panel, shown, displayValue = 'block') => {
+        if (!panel) return;
+        panel.hidden = !shown;
+        panel.style.display = shown ? displayValue : 'none';
+    };
+
+    setProfilePanelShown(document.getElementById('profile-tab-info'), false);
+    setProfilePanelShown(document.getElementById('profile-tab-email'), false);
+    setProfilePanelShown(document.getElementById('profile-tab-password'), false);
     const calendarTab = document.getElementById('profile-tab-calendar');
-    if (calendarTab) calendarTab.style.display = 'none';
+    setProfilePanelShown(calendarTab, false);
     const messengerTab = document.getElementById('profile-tab-messenger');
-    if (messengerTab) messengerTab.style.display = 'none';
+    setProfilePanelShown(messengerTab, false);
     const targetPanel = ensureProfileTabContent(tab) || document.getElementById(`profile-tab-${tab}`);
-    if (targetPanel) targetPanel.style.display = 'block';
+    setProfilePanelShown(targetPanel, true, 'block');
     
     // Render calendar when calendar tab is clicked
     if (tab === 'calendar') {
@@ -516,7 +520,7 @@ function renderRecentlyCreatedLegacy() {
     const list = document.getElementById('recently-created-list');
     if (!list) return;
     const recent = (KIU_STATE.users || []).slice(-8).reverse();
-    if (recent.length === 0) { list.innerHTML = '<div style="font-size:12px; color:var(--lux-text-muted); text-align:center; padding:40px;">No accounts created yet.</div>'; return; }
+    if (recent.length === 0) { list.innerHTML = '<div class="admin-recent-empty">No accounts created yet.</div>'; return; }
     const accentTone = getFacultyThemeTone(getCurrentFaculty(), {
         useCurrentPalette: true,
         softAlpha: 0.12,
@@ -546,22 +550,27 @@ function renderRecentlyCreatedLegacy() {
             : u.mustChangePassword || u.accountStatus === 'active-temp-password'
                 ? { bg: accentTone.softBg, border: accentTone.border, text: accentTone.accent, label: 'Initial password issued' }
             : { bg: '#ecfdf5', border: '#86efac', text: '#166534', label: 'Active account' };
+        const statusClass = u.activationRequired || u.accountStatus === 'pending-activation'
+            ? 'is-pending'
+            : u.mustChangePassword || u.accountStatus === 'active-temp-password'
+                ? 'is-issued'
+                : 'is-active';
         return `
-        <div style="display:flex; align-items:flex-start; gap:12px; padding:12px; background:#f8f9fa; border:1px solid var(--kiu-border); border-radius:12px; margin-bottom:10px;">
-            <img src="${escapeHtml(getRegistrationAvatarSrc(u, { background: c, size: 40 }))}" style="width:40px; height:40px; border-radius:10px; object-fit:cover; border:2px solid ${c}20;">
-            <div style="flex:1; min-width:0;">
-                <div style="font-weight:800; font-size:13px; color:var(--lux-text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${u.name}</div>
-                <div style="font-size:10px; color:${c}; font-weight:700; text-transform:uppercase;">${roleLabel} / ${u.faculty}</div>
-                <div style="font-size:11px; color:var(--lux-text-muted); margin-top:6px; line-height:1.45;">
+        <div class="admin-recent-card">
+            <img class="admin-recent-avatar-img" src="${escapeHtml(getRegistrationAvatarSrc(u, { background: c, size: 40 }))}" alt="${escapeHtml(u.name || 'Account')}">
+            <div class="admin-recent-card-main">
+                <div class="admin-recent-card-title">${u.name}</div>
+                <div class="admin-recent-card-role">${roleLabel} / ${u.faculty}</div>
+                <div class="admin-recent-card-copy">
                     <div><strong>Email:</strong> ${u.email || 'Not assigned'}</div>
                     <div><strong>Registration ID:</strong> ${u.id}</div>
                     ${u.temporaryPassword ? `<div><strong>Initial Password:</strong> ${u.temporaryPassword}</div>` : ''}
                 </div>
-                <div style="margin-top:8px; display:inline-flex; align-items:center; gap:6px; padding:4px 8px; border-radius:999px; font-size:10px; font-weight:800; background:${statusTone.bg}; border:1px solid ${statusTone.border}; color:${statusTone.text};">
+                <div class="admin-recent-status ${statusClass}">
                     <i class="fas ${u.activationRequired || u.accountStatus === 'pending-activation' ? 'fa-user-clock' : u.mustChangePassword || u.accountStatus === 'active-temp-password' ? 'fa-key' : 'fa-check-circle'}"></i> ${statusTone.label}
                 </div>
             </div>
-            <div style="font-family:monospace; font-size:11px; font-weight:700; background:var(--lux-surface); padding:4px 8px; border-radius:6px; border:1px solid var(--kiu-border); cursor:${profileRole ? 'pointer' : 'default'};" ${profileRole ? `data-provision-action="open-profile" data-profile-role="${profileRole}" data-profile-id="${escapeHtml(u.id)}" data-profile-faculty="${escapeHtml(u.faculty || '')}"` : ''}>${u.id}</div>
+            <div class="admin-recent-id-badge ${profileRole ? 'is-clickable' : ''}" ${profileRole ? `data-provision-action="open-profile" data-profile-role="${profileRole}" data-profile-id="${escapeHtml(u.id)}" data-profile-faculty="${escapeHtml(u.faculty || '')}"` : ''}>${u.id}</div>
         </div>`;
     }).join('');
 }
@@ -617,8 +626,8 @@ function renderRecentlyCreated() {
                 : 'Active';
 
         return `
-            <button type="button" class="lux-list-row" style="text-align:left; cursor:${profileRole ? 'pointer' : 'default'};" ${profileRole ? `data-provision-action="open-profile" data-profile-role="${profileRole}" data-profile-id="${escapeHtml(u.id)}" data-profile-faculty="${escapeHtml(u.faculty || '')}"` : ''}>
-                <div class="lux-avatar" style="background:linear-gradient(135deg, ${c}, rgba(255,255,255,0.12));">
+            <button type="button" class="lux-list-row admin-recent-row ${profileRole ? 'is-clickable' : ''}" ${profileRole ? `data-provision-action="open-profile" data-profile-role="${profileRole}" data-profile-id="${escapeHtml(u.id)}" data-profile-faculty="${escapeHtml(u.faculty || '')}"` : ''}>
+                <div class="lux-avatar admin-recent-avatar-initial">
                     ${escapeHtml(String(u.name || 'U').slice(0, 2).toUpperCase())}
                 </div>
                 <div>
@@ -680,39 +689,37 @@ function renderRegistrationButtons(pageType) {
 
     if (!hasAdminSession) {
         container.innerHTML = `
-        <div style="text-align:center; padding:40px; color:var(--lux-text-soft);">
-            <i class="fas fa-lock" style="font-size:32px; margin-bottom:12px; display:block; opacity:0.3;"></i>
-            <div style="font-size:13px; font-weight:700; color:var(--lux-text-muted);">Admin Access Required</div>
-            <div style="font-size:11px; margin-top:4px;">Only administrators can register new accounts.</div>
+        <div class="admin-provision-empty-state">
+            <i class="fas fa-lock admin-provision-empty-icon"></i>
+            <div class="admin-provision-empty-title">Admin Access Required</div>
+            <div class="admin-provision-empty-copy">Only administrators can register new accounts.</div>
         </div>`;
         return;
     }
-
-    const btnStyle = `display:flex; align-items:center; justify-content:flex-start; gap:12px; padding:18px 24px; border-radius:14px; font-weight:800; font-size:14px; cursor:pointer; transition:all 0.2s; width:100%;`;
     let btns = '';
 
     // Students page shows only the student registration action.
     if (pageType === 'students') {
         btns = `
-        <button type="button" class="lux-primary-btn" data-provision-action="open-student-registration" style="${btnStyle}">
-            <i class="fas fa-user-graduate" style="font-size:20px;"></i>
-            <div style="text-align:left;"><div>Register New Student</div><div style="font-size:10px; font-weight:400; opacity:0.8; margin-top:2px;">Full enrollment with academic & financial setup</div></div>
+        <button type="button" class="lux-primary-btn admin-provision-btn" data-provision-action="open-student-registration">
+            <i class="fas fa-user-graduate admin-provision-btn-icon"></i>
+            <div class="admin-provision-btn-copy"><div>Register New Student</div><div class="admin-provision-btn-subcopy">Full enrollment with academic & financial setup</div></div>
         </button>`;
     }
     // Staff page shows the professor, TA, and student service actions.
     else if (pageType === 'staff') {
         btns = `
-        <button type="button" class="lux-primary-btn" data-provision-action="open-prof-registration" data-profile-role="professor" style="${btnStyle}">
-            <i class="fas fa-chalkboard-teacher" style="font-size:20px;"></i>
-            <div style="text-align:left;"><div>Register New Professor</div><div style="font-size:10px; font-weight:400; opacity:0.8; margin-top:2px;">With subject assignment & schedule builder</div></div>
+        <button type="button" class="lux-primary-btn admin-provision-btn" data-provision-action="open-prof-registration" data-profile-role="professor">
+            <i class="fas fa-chalkboard-teacher admin-provision-btn-icon"></i>
+            <div class="admin-provision-btn-copy"><div>Register New Professor</div><div class="admin-provision-btn-subcopy">With subject assignment & schedule builder</div></div>
         </button>
-        <button type="button" class="lux-secondary-btn" data-provision-action="open-prof-registration" data-profile-role="ta" style="${btnStyle}">
-            <i class="fas fa-user-tie" style="font-size:20px;"></i>
-            <div style="text-align:left;"><div>Register New TA</div><div style="font-size:10px; font-weight:400; opacity:0.8; margin-top:2px;">Teaching assistant with schedule integration</div></div>
+        <button type="button" class="lux-secondary-btn admin-provision-btn" data-provision-action="open-prof-registration" data-profile-role="ta">
+            <i class="fas fa-user-tie admin-provision-btn-icon"></i>
+            <div class="admin-provision-btn-copy"><div>Register New TA</div><div class="admin-provision-btn-subcopy">Teaching assistant with schedule integration</div></div>
         </button>
-        <button type="button" class="lux-secondary-btn" data-provision-action="open-prof-registration" data-profile-role="${USER_ROLES.STUDENT_SERVICE}" style="${btnStyle}">
-            <i class="fas fa-headset" style="font-size:20px;"></i>
-            <div style="text-align:left;"><div>Register Student Service Staff</div><div style="font-size:10px; font-weight:400; opacity:0.8; margin-top:2px;">Support team account for tickets and knowledge base</div></div>
+        <button type="button" class="lux-secondary-btn admin-provision-btn" data-provision-action="open-prof-registration" data-profile-role="${USER_ROLES.STUDENT_SERVICE}">
+            <i class="fas fa-headset admin-provision-btn-icon"></i>
+            <div class="admin-provision-btn-copy"><div>Register Student Service Staff</div><div class="admin-provision-btn-subcopy">Support team account for tickets and knowledge base</div></div>
         </button>`;
     }
 
@@ -744,44 +751,44 @@ function openEditStaffModal(memberId, memberType) {
 
     const rowsHtml = sessions.length
         ? sessions.map((session, index) => renderEditStaffScheduleRow(session, index)).join('')
-        : '<div class="lux-empty-state" style="min-height:120px;"><i class="fas fa-calendar-plus"></i><strong>No schedule rows yet</strong><span>Add a lecture or seminar row for this staff member.</span></div>';
+        : '<div class="lux-empty-state admin-edit-staff-empty"><i class="fas fa-calendar-plus"></i><strong>No schedule rows yet</strong><span>Add a lecture or seminar row for this staff member.</span></div>';
 
     const modalHtml = `
-    <div id="edit-staff-modal-bg" data-edit-staff-overlay="1" style="position:fixed; inset:0; z-index:6000; background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; backdrop-filter:blur(4px);">
-        <div style="background:var(--lux-surface); border-radius:20px; width:90%; max-width:880px; max-height:90vh; overflow-y:auto; box-shadow:0 24px 60px rgba(0,0,0,0.25);">
-            <div style="padding:20px 24px; border-bottom:1px solid var(--lux-border); display:flex; justify-content:space-between; align-items:center;">
+    <div id="edit-staff-modal-bg" data-edit-staff-overlay="1" class="admin-edit-staff-overlay">
+        <div class="admin-edit-staff-card">
+            <div class="admin-edit-staff-head">
                 <div>
-                    <div style="font-size:16px; font-weight:800; color:var(--lux-text);">Edit Staff Member</div>
-                    <div style="font-size:11px; color:var(--lux-text-muted); margin-top:2px;">${escapeHtml(member.name || member.nameEn || memberId)} / ${escapeHtml(facultyLabel)}</div>
+                    <div class="admin-edit-staff-title">Edit Staff Member</div>
+                    <div class="admin-edit-staff-subtitle">${escapeHtml(member.name || member.nameEn || memberId)} / ${escapeHtml(facultyLabel)}</div>
                 </div>
-                <button type="button" data-edit-staff-action="close" style="background:none; border:1px solid var(--lux-border); border-radius:8px; padding:8px 16px; font-size:12px; font-weight:700; color:var(--lux-text-muted); cursor:pointer;"><i class="fas fa-times"></i> Close</button>
+                <button type="button" data-edit-staff-action="close" class="admin-edit-staff-btn is-neutral"><i class="fas fa-times"></i> Close</button>
             </div>
-            <div style="padding:24px;" id="edit-staff-form" data-member-id="${escapeHtml(memberId)}" data-member-type="${escapeHtml(memberType)}" data-fac="${escapeHtml(fac)}">
-                <div style="font-size:12px; font-weight:800; color:var(--lux-text); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:10px;"><i class="fas fa-user" style="color:var(--lux-accent-2); margin-right:6px;"></i>Personal Information</div>
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px;">
-                    <div><label style="font-size:10px; font-weight:700; color:var(--lux-text-soft); text-transform:uppercase;">Name (Georgian)</label><input id="es-name" value="${escapeHtml(member.name || '')}" style="width:100%; padding:10px; border:1px solid var(--lux-border); border-radius:10px; font-size:13px; margin-top:4px; outline:none;"></div>
-                    <div><label style="font-size:10px; font-weight:700; color:var(--lux-text-soft); text-transform:uppercase;">Name (English)</label><input id="es-name-en" value="${escapeHtml(member.nameEn || '')}" style="width:100%; padding:10px; border:1px solid var(--lux-border); border-radius:10px; font-size:13px; margin-top:4px; outline:none;"></div>
+            <div class="admin-edit-staff-form" id="edit-staff-form" data-member-id="${escapeHtml(memberId)}" data-member-type="${escapeHtml(memberType)}" data-fac="${escapeHtml(fac)}">
+                <div class="admin-edit-staff-section-title"><i class="fas fa-user admin-edit-staff-section-icon"></i>Personal Information</div>
+                <div class="admin-edit-staff-grid-2">
+                    <div class="admin-edit-staff-field"><label class="admin-edit-staff-label">Name (Georgian)</label><input id="es-name" value="${escapeHtml(member.name || '')}" class="admin-edit-staff-control"></div>
+                    <div class="admin-edit-staff-field"><label class="admin-edit-staff-label">Name (English)</label><input id="es-name-en" value="${escapeHtml(member.nameEn || '')}" class="admin-edit-staff-control"></div>
                 </div>
-                <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-bottom:20px;">
-                    <div><label style="font-size:10px; font-weight:700; color:var(--lux-text-soft); text-transform:uppercase;">Rank</label><select id="es-rank" style="width:100%; padding:10px; border:1px solid var(--lux-border); border-radius:10px; font-size:13px; margin-top:4px; background:var(--lux-surface);"><option ${member.title === 'Professor' ? 'selected' : ''}>Professor</option><option ${member.title === 'Associate Professor' ? 'selected' : ''}>Associate Professor</option><option ${member.title === 'Lecturer' ? 'selected' : ''}>Lecturer</option><option ${member.title === 'Visiting Professor' ? 'selected' : ''}>Visiting Professor</option><option ${member.title === 'Teaching Assistant' ? 'selected' : ''}>Teaching Assistant</option></select></div>
-                    <div><label style="font-size:10px; font-weight:700; color:var(--lux-text-soft); text-transform:uppercase;">Office</label><input id="es-office" value="${escapeHtml(member.office || '')}" style="width:100%; padding:10px; border:1px solid var(--lux-border); border-radius:10px; font-size:13px; margin-top:4px; outline:none;"></div>
-                    <div><label style="font-size:10px; font-weight:700; color:var(--lux-text-soft); text-transform:uppercase;">Since (Year)</label><input id="es-joinyear" type="number" value="${escapeHtml(String(member.joinYear || 2024))}" style="width:100%; padding:10px; border:1px solid var(--lux-border); border-radius:10px; font-size:13px; margin-top:4px; outline:none;"></div>
+                <div class="admin-edit-staff-grid-3 is-tight">
+                    <div class="admin-edit-staff-field"><label class="admin-edit-staff-label">Rank</label><select id="es-rank" class="admin-edit-staff-control"><option ${member.title === 'Professor' ? 'selected' : ''}>Professor</option><option ${member.title === 'Associate Professor' ? 'selected' : ''}>Associate Professor</option><option ${member.title === 'Lecturer' ? 'selected' : ''}>Lecturer</option><option ${member.title === 'Visiting Professor' ? 'selected' : ''}>Visiting Professor</option><option ${member.title === 'Teaching Assistant' ? 'selected' : ''}>Teaching Assistant</option></select></div>
+                    <div class="admin-edit-staff-field"><label class="admin-edit-staff-label">Office</label><input id="es-office" value="${escapeHtml(member.office || '')}" class="admin-edit-staff-control"></div>
+                    <div class="admin-edit-staff-field"><label class="admin-edit-staff-label">Since (Year)</label><input id="es-joinyear" type="number" value="${escapeHtml(String(member.joinYear || 2024))}" class="admin-edit-staff-control"></div>
                 </div>
-                <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-bottom:24px;">
-                    <div><label style="font-size:10px; font-weight:700; color:var(--lux-text-soft); text-transform:uppercase;">Email</label><input id="es-email" value="${escapeHtml(member.email || '')}" style="width:100%; padding:10px; border:1px solid var(--lux-border); border-radius:10px; font-size:13px; margin-top:4px; outline:none;"></div>
-                    <div><label style="font-size:10px; font-weight:700; color:var(--lux-text-soft); text-transform:uppercase;">Phone</label><input id="es-phone" value="${escapeHtml(member.phone || '')}" style="width:100%; padding:10px; border:1px solid var(--lux-border); border-radius:10px; font-size:13px; margin-top:4px; outline:none;"></div>
-                    <div><label style="font-size:10px; font-weight:700; color:var(--lux-text-soft); text-transform:uppercase;">Max Teaching Hours</label><input id="es-maxhours" type="number" value="${escapeHtml(String(member.maxHours || 12))}" style="width:100%; padding:10px; border:1px solid var(--lux-border); border-radius:10px; font-size:13px; margin-top:4px; outline:none;"></div>
+                <div class="admin-edit-staff-grid-3 is-spacious">
+                    <div class="admin-edit-staff-field"><label class="admin-edit-staff-label">Email</label><input id="es-email" value="${escapeHtml(member.email || '')}" class="admin-edit-staff-control"></div>
+                    <div class="admin-edit-staff-field"><label class="admin-edit-staff-label">Phone</label><input id="es-phone" value="${escapeHtml(member.phone || '')}" class="admin-edit-staff-control"></div>
+                    <div class="admin-edit-staff-field"><label class="admin-edit-staff-label">Max Teaching Hours</label><input id="es-maxhours" type="number" value="${escapeHtml(String(member.maxHours || 12))}" class="admin-edit-staff-control"></div>
                 </div>
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                    <div style="font-size:12px; font-weight:800; color:var(--lux-text); text-transform:uppercase; letter-spacing:0.5px;"><i class="fas fa-calendar-alt" style="color:#6366f1; margin-right:6px;"></i>Teaching Schedule</div>
-                    <button type="button" data-edit-staff-action="add-row" style="padding:6px 14px; background:#6366f1; color:white; border:none; border-radius:6px; font-size:11px; font-weight:700; cursor:pointer;"><i class="fas fa-plus"></i> Add Row</button>
+                <div class="admin-edit-staff-schedule-head">
+                    <div class="admin-edit-staff-section-title"><i class="fas fa-calendar-alt admin-edit-staff-schedule-icon"></i>Teaching Schedule</div>
+                    <button type="button" data-edit-staff-action="add-row" class="admin-edit-staff-btn is-compact"><i class="fas fa-plus"></i> Add Row</button>
                 </div>
-                <div id="edit-sched-rows" style="display:flex; flex-direction:column; gap:8px;">${rowsHtml}</div>
-                <div style="display:flex; justify-content:space-between; gap:12px; margin-top:24px;">
-                    <button type="button" data-edit-staff-action="delete" style="padding:10px 16px; border:1px solid #fecaca; background:#fff1f2; color:#b91c1c; border-radius:10px; font-size:12px; font-weight:700; cursor:pointer;"><i class="fas fa-trash"></i> Remove Staff</button>
-                    <div style="display:flex; gap:10px;">
-                        <button type="button" data-edit-staff-action="close" style="padding:10px 16px; border:1px solid var(--lux-border); background:transparent; color:var(--lux-text-muted); border-radius:10px; font-size:12px; font-weight:700; cursor:pointer;">Cancel</button>
-                        <button type="button" data-edit-staff-action="save" style="padding:10px 16px; border:none; background:linear-gradient(135deg, #0b84ff, #0a5fc4); color:#fff; border-radius:10px; font-size:12px; font-weight:700; cursor:pointer;"><i class="fas fa-save"></i> Save Changes</button>
+                <div id="edit-sched-rows" class="admin-edit-staff-rows">${rowsHtml}</div>
+                <div class="admin-edit-staff-footer">
+                    <button type="button" data-edit-staff-action="delete" class="admin-edit-staff-btn is-danger"><i class="fas fa-trash"></i> Remove Staff</button>
+                    <div class="admin-edit-staff-actions">
+                        <button type="button" data-edit-staff-action="close" class="admin-edit-staff-btn is-neutral">Cancel</button>
+                        <button type="button" data-edit-staff-action="save" class="admin-edit-staff-btn is-primary"><i class="fas fa-save"></i> Save Changes</button>
                     </div>
                 </div>
             </div>
@@ -831,16 +838,16 @@ function renderEditStaffScheduleRow(session = {}, index = 0) {
     const sessionType = getEditStaffSessionTypeValue(session);
     const dayOptions = days.map((day) => `<option value="${escapeHtml(day)}" ${day === session.day ? 'selected' : ''}>${escapeHtml(day)}</option>`).join('');
     return `
-    <div class="edit-sched-row" data-idx="${index}" style="display:grid; grid-template-columns:1fr 80px 96px 130px 100px 90px 90px 80px 36px; gap:6px; align-items:end; background:var(--lux-surface-2); padding:10px 12px; border-radius:10px; border:1px solid var(--lux-border);">
-        <div><label style="font-size:9px; font-weight:700; color:var(--lux-text-soft); text-transform:uppercase;">Subject</label><input type="text" value="${escapeHtml(session.courseId || '')}" class="es-course" data-edit-staff-sync-row="1" placeholder="e.g. ECON-01-101" style="width:100%; padding:6px 8px; border:1px solid var(--lux-border); border-radius:6px; font-size:11px;"></div>
-        <div><label style="font-size:9px; font-weight:700; color:var(--lux-text-soft); text-transform:uppercase;">Group</label><input type="text" value="${escapeHtml(session.name || session.id || 'G1')}" class="es-group" style="width:100%; padding:6px 8px; border:1px solid var(--lux-border); border-radius:6px; font-size:11px;"></div>
-        <div><label style="font-size:9px; font-weight:700; color:var(--lux-text-soft); text-transform:uppercase;">Type</label><select class="es-session-type" data-edit-staff-sync-row="1" style="width:100%; padding:6px 8px; border:1px solid var(--lux-border); border-radius:6px; font-size:11px; background:var(--lux-surface);"><option value="lecture" ${sessionType === 'lecture' ? 'selected' : ''}>Lecture</option><option value="seminar" ${sessionType === 'seminar' ? 'selected' : ''}>Seminar</option></select></div>
-        <div><label style="font-size:9px; font-weight:700; color:var(--lux-text-soft); text-transform:uppercase;">Day</label><select class="es-day" style="width:100%; padding:6px 8px; border:1px solid var(--lux-border); border-radius:6px; font-size:11px; background:var(--lux-surface);">${dayOptions}</select></div>
-        <div><label style="font-size:9px; font-weight:700; color:var(--lux-text-soft); text-transform:uppercase;">Room</label><input type="text" value="${escapeHtml(session.room || '')}" class="es-room" placeholder="A-301" style="width:100%; padding:6px 8px; border:1px solid var(--lux-border); border-radius:6px; font-size:11px;"></div>
-        <div><label style="font-size:9px; font-weight:700; color:var(--lux-text-soft); text-transform:uppercase;">Time</label><input type="time" value="${escapeHtml(session.time || '09:00')}" class="es-time" style="width:100%; padding:6px 8px; border:1px solid var(--lux-border); border-radius:6px; font-size:11px;"></div>
-        <div><label style="font-size:9px; font-weight:700; color:var(--lux-text-soft); text-transform:uppercase;">Duration</label><select class="es-dur" style="width:100%; padding:6px 8px; border:1px solid var(--lux-border); border-radius:6px; font-size:11px; background:var(--lux-surface);"><option value="50min" ${session.duration === '50min' ? 'selected' : ''}>50min</option><option value="80min" ${session.duration === '80min' ? 'selected' : ''}>80min</option><option value="110min" ${(session.duration || '110min') === '110min' ? 'selected' : ''}>110min</option><option value="170min" ${session.duration === '170min' ? 'selected' : ''}>170min</option></select></div>
-        <div><label style="font-size:9px; font-weight:700; color:var(--lux-text-soft); text-transform:uppercase;">Seats</label><input type="number" min="1" value="${escapeHtml(String(getRegistrationGroupCapacity(session, getSuggestedSessionSeatCapacity(session.courseId, sessionType))))}" class="es-capacity" style="width:100%; padding:6px 8px; border:1px solid var(--lux-border); border-radius:6px; font-size:11px;"></div>
-        <div><button type="button" data-edit-staff-action="remove-row" style="width:28px; height:28px; border:none; background:#fee2e2; color:var(--lux-red); border-radius:6px; cursor:pointer; font-size:11px;"><i class="fas fa-trash-alt"></i></button></div>
+    <div class="edit-sched-row admin-edit-staff-row" data-idx="${index}">
+        <div class="admin-edit-staff-field"><label class="admin-edit-staff-row-label">Subject</label><input type="text" value="${escapeHtml(session.courseId || '')}" class="es-course admin-edit-staff-row-control" data-edit-staff-sync-row="1" placeholder="e.g. ECON-01-101"></div>
+        <div class="admin-edit-staff-field"><label class="admin-edit-staff-row-label">Group</label><input type="text" value="${escapeHtml(session.name || session.id || 'G1')}" class="es-group admin-edit-staff-row-control"></div>
+        <div class="admin-edit-staff-field"><label class="admin-edit-staff-row-label">Type</label><select class="es-session-type admin-edit-staff-row-control" data-edit-staff-sync-row="1"><option value="lecture" ${sessionType === 'lecture' ? 'selected' : ''}>Lecture</option><option value="seminar" ${sessionType === 'seminar' ? 'selected' : ''}>Seminar</option></select></div>
+        <div class="admin-edit-staff-field"><label class="admin-edit-staff-row-label">Day</label><select class="es-day admin-edit-staff-row-control">${dayOptions}</select></div>
+        <div class="admin-edit-staff-field"><label class="admin-edit-staff-row-label">Room</label><input type="text" value="${escapeHtml(session.room || '')}" class="es-room admin-edit-staff-row-control" placeholder="A-301"></div>
+        <div class="admin-edit-staff-field"><label class="admin-edit-staff-row-label">Time</label><input type="time" value="${escapeHtml(session.time || '09:00')}" class="es-time admin-edit-staff-row-control"></div>
+        <div class="admin-edit-staff-field"><label class="admin-edit-staff-row-label">Duration</label><select class="es-dur admin-edit-staff-row-control"><option value="50min" ${session.duration === '50min' ? 'selected' : ''}>50min</option><option value="80min" ${session.duration === '80min' ? 'selected' : ''}>80min</option><option value="110min" ${(session.duration || '110min') === '110min' ? 'selected' : ''}>110min</option><option value="170min" ${session.duration === '170min' ? 'selected' : ''}>170min</option></select></div>
+        <div class="admin-edit-staff-field"><label class="admin-edit-staff-row-label">Seats</label><input type="number" min="1" value="${escapeHtml(String(getRegistrationGroupCapacity(session, getSuggestedSessionSeatCapacity(session.courseId, sessionType))))}" class="es-capacity admin-edit-staff-row-control"></div>
+        <div class="admin-edit-staff-row-action"><button type="button" data-edit-staff-action="remove-row" class="admin-edit-staff-row-remove"><i class="fas fa-trash-alt"></i></button></div>
     </div>`;
 }
 
@@ -958,247 +965,7 @@ function deleteStaffFromModal() {
     removeStaffMember(memberId, memberType);
 }
 
-function selectCourseGroup(courseId, courseName, groupId) {
-    const currentUser = getCurrentUser();
-    const effectiveRole = typeof getEffectiveUserRole === 'function'
-        ? getEffectiveUserRole()
-        : (currentUserRole || currentUser?.role || USER_ROLES.STUDENT);
-    const canManageRegistration = Boolean(
-        currentUser
-        && effectiveRole === USER_ROLES.STUDENT
-        && (typeof hasPermission !== 'function' || hasPermission('registration.manage'))
-    );
-    if (!canManageRegistration) {
-        alert('Only signed-in student portal accounts can manage course registration.');
-        return false;
-    }
-    const financialHold = parseFloat(getEffectiveTuitionBalance(currentUser.id) || 0);
-    if (financialHold > 0) {
-        if (typeof recordPortalSyncConflict === 'function') {
-            recordPortalSyncConflict('finance', 'enrollment', 'financialHold', {
-                localRecordId: String(currentUser.id || ''),
-                externalRecordKey: String(currentUser.id || ''),
-                localValue: { balance: financialHold, attemptedCourseId: courseId, attemptedGroupId: groupId },
-                externalValue: { holdActive: true }
-            });
-        }
-        alert(`Registration is blocked by an active financial hold (${financialHold} GEL).`);
-        return false;
-    }
-
-    const preferredFaculty = currentUser?.facultyCode || currentUser?.faculty || getCurrentFaculty();
-    const courseDef = getCourseByIdForRegistration(courseId, preferredFaculty) || { id: courseId, name: courseName, semester: null, cond: 'None' };
-    const passedCourseSet = getRegisteredOrPassedCourses(currentUser.id);
-    const studentSemester = getCurrentStudentSemesterNumber(currentUser);
-    const eligibility = evaluateStudentCourseEligibility(currentUser, courseDef, passedCourseSet, studentSemester);
-    if (!eligibility.allowed) {
-        alert(`Registration rule blocked this subject:\n- ${eligibility.reasons.join('\n- ')}`);
-        return false;
-    }
-
-    let currentSchedule = [...getCurrentStudentSchedule()];
-    let ects = parseInt(courseDef?.ects, 10);
-    if (!Number.isFinite(ects) || ects <= 0) ects = 6;
-
-    const savedRegistrationIds = typeof normalizeStudentRegistrationCourseIds === 'function'
-        ? normalizeStudentRegistrationCourseIds(KIU_STATE.studentRegistrations?.[currentUser.id])
-        : (Array.isArray(KIU_STATE.studentRegistrations?.[currentUser.id]) ? KIU_STATE.studentRegistrations[currentUser.id] : []);
-    const alreadyRegistered = savedRegistrationIds
-        .some(id => canonicalCourseKey(id) === canonicalCourseKey(courseId));
-    const currentTotal = getStudentRegisteredEctsTotal(currentUser.id, preferredFaculty);
-    const limit = KIU_STATE.probationStatus[currentUser.id] ? 24 : 36;
-    if (!alreadyRegistered && currentTotal + ects > limit) {
-        alert(`ECTS LIMIT EXCEEDED: ${KIU_STATE.probationStatus[currentUser.id] ? 'Due to Academic Probation, your limit is 24 credits.' : 'You cannot exceed 36 credits.'}`);
-        return false;
-    }
-
-    const resolvedGroupMatch = findAvailableGroupForAssignedSubject(courseId, courseName, groupId);
-    const resolvedCourseId = resolvedGroupMatch?.courseId || courseId;
-    const group = resolvedGroupMatch?.group || (KIU_STATE.availableGroups[courseId] || []).find(g => g.id === groupId);
-    if (!group) return false;
-    const resolvedCourseDef = getCourseByIdForRegistration(resolvedCourseId, preferredFaculty, courseName) || courseDef;
-    const resolvedEcts = parseInt(resolvedCourseDef?.ects, 10);
-    if (Number.isFinite(resolvedEcts) && resolvedEcts > 0) ects = resolvedEcts;
-    const normalizedGroup = normalizeScheduleGroup(resolvedCourseId, group) || group;
-    const normalizedPreferredFaculty = normalizeFacultyCode(preferredFaculty, 'ECON');
-    const groupFaculty = normalizeFacultyCode(
-        normalizedGroup.faculty || (typeof deriveFacultyFromSubjectId === 'function' ? deriveFacultyFromSubjectId(resolvedCourseId) : '') || normalizedPreferredFaculty,
-        normalizedPreferredFaculty
-    );
-    if (groupFaculty !== normalizedPreferredFaculty) {
-        alert('This section belongs to another faculty and cannot be selected from this account.');
-        return false;
-    }
-    const alreadyInTargetGroup = currentSchedule.some(item =>
-        canonicalCourseKey(item.courseId) === canonicalCourseKey(resolvedCourseId)
-        && String(item.groupId || '') === String(groupId || '')
-    );
-    const { capacity, freeSeats } = getRegistrationGroupStats(resolvedCourseId, normalizedGroup);
-    if (!alreadyInTargetGroup && freeSeats <= 0) {
-        if (typeof recordPortalAudit === 'function') {
-            recordPortalAudit('registration', 'seat-blocked', 'section', `${resolvedCourseId}:${groupId}`, {
-                afterState: {
-                    studentId: currentUser.id,
-                    courseId: resolvedCourseId,
-                    groupId,
-                    capacity
-                }
-            });
-        }
-        alert(`This group is already full. Capacity: ${capacity} students.`);
-        return false;
-    }
-    const targetSessionType = normalizedGroup.sessionType || 'lecture';
-    const conflict = currentSchedule.find(item => {
-        const sameSlot = item.day === normalizedGroup.day && item.time === normalizedGroup.time;
-        const sameSelectableBucket = canonicalCourseKey(item.courseId) === canonicalCourseKey(courseId)
-            && String(item.sessionType || 'lecture') === String(targetSessionType);
-        return sameSlot && !sameSelectableBucket;
-    });
-    if (conflict) {
-        if (typeof recordPortalAudit === 'function') {
-            recordPortalAudit('registration', 'schedule-conflict', 'enrollment', `${resolvedCourseId}:${groupId}`, {
-                afterState: {
-                    studentId: currentUser.id,
-                    attemptedCourseId: resolvedCourseId,
-                    attemptedGroupId: groupId,
-                    conflictingCourseId: conflict.courseId,
-                    conflictingGroupId: conflict.groupId
-                }
-            });
-        }
-        alert(`Schedule conflict detected with ${conflict.courseName} (${conflict.groupName}).`);
-        return false;
-    }
-    
-    currentSchedule = currentSchedule.filter(s => !(
-        canonicalCourseKey(s.courseId) === canonicalCourseKey(courseId)
-        && String(s.sessionType || 'lecture') === String(targetSessionType)
-    ));
-    currentSchedule.push({
-        courseId: resolvedCourseId,
-        courseName: courseName || normalizedGroup.courseName || resolvedCourseId,
-        groupId: groupId,
-        groupName: normalizedGroup.name,
-        day: normalizedGroup.day,
-        time: normalizedGroup.time,
-        prof: normalizedGroup.prof,
-        room: normalizedGroup.room,
-        duration: normalizedGroup.duration,
-        sessionType: normalizedGroup.sessionType || 'lecture',
-        faculty: normalizedPreferredFaculty,
-        ects: ects,
-        sourceCourseId: resolvedCourseId,
-        registeredAt: new Date().toISOString()
-    });
-    setCurrentStudentSchedule(currentSchedule);
-
-    const timetableSemesterFilter = document.getElementById('tt-filter-sem');
-    if (timetableSemesterFilter && normalizedGroup.semester && String(timetableSemesterFilter.value) !== String(normalizedGroup.semester)) {
-        timetableSemesterFilter.value = String(normalizedGroup.semester);
-    }
-
-    if (!KIU_STATE.studentRegistrations) KIU_STATE.studentRegistrations = {};
-    if (!Array.isArray(KIU_STATE.studentRegistrations[currentUser.id])) {
-        KIU_STATE.studentRegistrations[currentUser.id] = typeof normalizeStudentRegistrationCourseIds === 'function'
-            ? normalizeStudentRegistrationCourseIds(KIU_STATE.studentRegistrations[currentUser.id])
-            : [];
-    }
-    const currentRegistrations = KIU_STATE.studentRegistrations[currentUser.id];
-    if (!currentRegistrations.some(id => canonicalCourseKey(id) === canonicalCourseKey(resolvedCourseId))) {
-        currentRegistrations.push(resolvedCourseId);
-    }
-    if (typeof syncAvailableGroupEnrollmentCounts === 'function') {
-        syncAvailableGroupEnrollmentCounts();
-    }
-    
-    saveState();
-    refreshRegistrationUI();
-    
-        // Total system integration: ensure student portal state updates instantly
-    if (typeof renderTimetable === 'function') renderTimetable();
-    if (typeof renderProfileCalendar === 'function') renderProfileCalendar();
-    if (typeof renderStudentCalendarSchedule === 'function') renderStudentCalendarSchedule();
-    if (typeof renderStudyCard === 'function') renderStudyCard();
-    if (typeof renderLMSSubjects === 'function') renderLMSSubjects();
-    if (document.getElementById('student-reg-content-container')) {
-        renderStudentRegStructures(window.__studentRegActiveTab || 'prog');
-        updateEctsProgress();
-    }
-    if (typeof recordPortalAudit === 'function') {
-        recordPortalAudit('registration', 'enrolled', 'enrollment', `${currentUser.id}:${resolvedCourseId}:${groupId}`, {
-            afterState: {
-                studentId: currentUser.id,
-                courseId: resolvedCourseId,
-                courseName: courseName || normalizedGroup.courseName || resolvedCourseId,
-                groupId,
-                sessionType: normalizedGroup.sessionType || 'lecture',
-                ects
-            }
-        });
-    }
-    if (typeof recordPortalSyncRun === 'function') {
-        recordPortalSyncRun('sis', {
-            scope: 'enrollment',
-            status: 'queued',
-            recordsSeen: 1,
-            recordsChanged: 1,
-            notes: `Enrollment queued for ${currentUser.id} in ${resolvedCourseId} / ${groupId}.`
-        });
-    }
-    return true;
-}
-
-function unselectCourseGroup(courseId, groupId) {
-    const currentUser = getCurrentUser();
-    const effectiveRole = typeof getEffectiveUserRole === 'function'
-        ? getEffectiveUserRole()
-        : (currentUserRole || currentUser?.role || USER_ROLES.STUDENT);
-    if (!currentUser || effectiveRole !== USER_ROLES.STUDENT) return;
-    const updatedSchedule = getCurrentStudentSchedule().filter(s => !(s.courseId === courseId && s.groupId === groupId));
-    setCurrentStudentSchedule(updatedSchedule);
-
-    const hasSameCourseRemaining = updatedSchedule.some(item => canonicalCourseKey(item.courseId) === canonicalCourseKey(courseId));
-    if (!hasSameCourseRemaining && KIU_STATE.studentRegistrations?.[currentUser.id]) {
-        const currentRegistrations = typeof normalizeStudentRegistrationCourseIds === 'function'
-            ? normalizeStudentRegistrationCourseIds(KIU_STATE.studentRegistrations[currentUser.id])
-            : (Array.isArray(KIU_STATE.studentRegistrations[currentUser.id]) ? KIU_STATE.studentRegistrations[currentUser.id] : []);
-        KIU_STATE.studentRegistrations[currentUser.id] = currentRegistrations
-            .filter(id => canonicalCourseKey(id) !== canonicalCourseKey(courseId));
-    }
-    if (typeof syncAvailableGroupEnrollmentCounts === 'function') {
-        syncAvailableGroupEnrollmentCounts();
-    }
-    saveState();
-    refreshRegistrationUI();
-    if (typeof renderTimetable === 'function') renderTimetable();
-    if (typeof renderProfileCalendar === 'function') renderProfileCalendar();
-    if (typeof renderStudentCalendarSchedule === 'function') renderStudentCalendarSchedule();
-    if (typeof renderLMSSubjects === 'function') renderLMSSubjects();
-    if (typeof renderStudyCard === 'function') renderStudyCard();
-    if (document.getElementById('student-reg-content-container')) {
-        renderStudentRegStructures(window.__studentRegActiveTab || 'prog');
-        updateEctsProgress();
-    }
-    if (typeof recordPortalAudit === 'function') {
-        recordPortalAudit('registration', 'unenrolled', 'enrollment', `${currentUser.id}:${courseId}:${groupId}`, {
-            afterState: {
-                studentId: currentUser.id,
-                courseId,
-                groupId
-            }
-        });
-    }
-    if (typeof recordPortalSyncRun === 'function') {
-        recordPortalSyncRun('sis', {
-            scope: 'enrollment',
-            status: 'queued',
-            recordsSeen: 1,
-            recordsChanged: 1,
-            notes: `Unenrollment queued for ${currentUser.id} in ${courseId} / ${groupId}.`
-        });
-    }
-}
+/* Enrollment handlers are provided by registration-enrollment.js on all registration routes. */
 
 function refreshRegistrationUI() {
     if (!document.getElementById('page-registration')) return;
@@ -1214,13 +981,15 @@ function refreshRegistrationUI() {
         if (statStatus) {
             const hasStat = currentSchedule.some(s => s.courseId === 'STAT-2');
             statStatus.className = hasStat ? 'fas fa-check' : 'fas fa-thumbs-up';
-            statStatus.style.color = hasStat ? 'var(--kiu-green)' : 'var(--kiu-blue)';
+            statStatus.classList.add('registration-status-icon');
+            statStatus.dataset.registrationTone = hasStat ? 'success' : 'info';
         }
         
         if (econStatus) {
             const hasEcon = currentSchedule.some(s => s.courseId === 'ECON-4');
             econStatus.className = hasEcon ? 'fas fa-check' : 'fas fa-times';
-            econStatus.style.color = hasEcon ? 'var(--kiu-green)' : 'var(--kiu-red)';
+            econStatus.classList.add('registration-status-icon');
+            econStatus.dataset.registrationTone = hasEcon ? 'success' : 'danger';
         }
     }
     
@@ -1337,14 +1106,16 @@ function renderECTSBudget() {
         const percentage = Math.min((total / limit) * 100, 100);
         bar.style.width = percentage + '%';
         txt.innerText = `${total} / ${limit}`;
-        
-        if (total === limit) {
-            bar.style.background = 'var(--kiu-green)';
-            txt.style.color = 'var(--kiu-green)';
-        } else {
-            bar.style.background = 'var(--kiu-orange)';
-            txt.style.color = 'var(--kiu-orange)';
-        }
+
+        const toneClasses = ['is-warning', 'is-complete', 'is-over'];
+        toneClasses.forEach((className) => {
+            bar.classList.remove(className);
+            txt.classList.remove(className);
+        });
+
+        const toneClass = total > limit ? 'is-over' : (total === limit ? 'is-complete' : 'is-warning');
+        bar.classList.add(toneClass);
+        txt.classList.add(toneClass);
     }
     syncRegistrationWorkspaceSummary();
 }
@@ -1355,16 +1126,16 @@ function renderSelectedCoursesTab() {
     const currentSchedule = getCurrentStudentSchedule();
     
     if (!currentSchedule || currentSchedule.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="9" style="padding:20px;">No courses have been added to your schedule yet.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="9" class="registration-selected-empty">No courses have been added to your schedule yet.</td></tr>';
         return;
     }
     
     let html = '';
     currentSchedule.forEach(c => {
         html += `
-            <tr>
-                <td style="text-align:left;">${c.groupName}</td>
-                <td style="text-align:left; font-weight:600;">${c.courseName}</td>
+            <tr class="registration-selected-row">
+                <td class="registration-selected-cell registration-selected-cell--left">${c.groupName}</td>
+                <td class="registration-selected-cell registration-selected-cell--title">${c.courseName}</td>
                 <td>${c.day}</td>
                 <td>${c.time}</td>
                 <td>${c.room}</td>
@@ -1380,6 +1151,89 @@ function renderSelectedCoursesTab() {
 
 const MAX_SEMESTER_DROPDOWN = 12;
 const CUSTOM_SEMESTER_OPTION = '__custom_semester__';
+
+function normalizeSemesterList(value) {
+    const source = Array.isArray(value) ? value : [value];
+    return [...new Set(source
+        .map((entry) => toRegistrationPositiveInt(entry, 0))
+        .filter((entry) => entry > 0))]
+        .sort((left, right) => left - right);
+}
+
+function normalizeSubjectSemesters(subject) {
+    if (!subject) return [];
+    if (Array.isArray(subject.semesters) && subject.semesters.length) {
+        return normalizeSemesterList(subject.semesters);
+    }
+    return normalizeSemesterList(subject.semester);
+}
+
+function subjectMatchesSemesterFilter(subject, filter) {
+    if (!filter || filter === 'all') return true;
+    const target = toRegistrationPositiveInt(filter, 0);
+    if (!target) return true;
+    return normalizeSubjectSemesters(subject).includes(target);
+}
+
+function formatSubjectSemestersLabel(semesters) {
+    const list = normalizeSemesterList(semesters);
+    if (!list.length) return 'No semesters';
+    if (list.length === 1) return `Semester ${list[0]}`;
+    return `Semesters ${list.join(', ')}`;
+}
+
+function formatCurriculumSubjectDisplayName(subject) {
+    const name = String(subject?.name || '').trim();
+    const code = String(subject?.id || '').trim();
+    if (name && name.length > 2 && !/^\d+$/.test(name)) return name;
+    if (name && /^\d+$/.test(name)) return `Course ${name}`;
+    return code || name || 'Untitled Subject';
+}
+
+function formatCurriculumSubjectSubtitle(subject) {
+    const name = String(subject?.name || '').trim();
+    const code = String(subject?.id || '').trim();
+    if (!code) return '';
+    if (name && (/^\d+$/.test(name) || name.length <= 2)) return code;
+    return '';
+}
+
+function getBuilderSubjectSemesters() {
+    const hidden = document.getElementById('new-subject-semesters');
+    if (!hidden) return [1];
+    try {
+        const parsed = JSON.parse(hidden.value || '[]');
+        const list = normalizeSemesterList(parsed);
+        return list.length ? list : [1];
+    } catch (error) {
+        return [1];
+    }
+}
+
+function setBuilderSubjectSemesters(semesters) {
+    const hidden = document.getElementById('new-subject-semesters');
+    const list = normalizeSemesterList(semesters);
+    const resolved = list.length ? list : [1];
+    if (hidden) hidden.value = JSON.stringify(resolved);
+    return resolved;
+}
+
+function getPrimarySemesterFromBuilder() {
+    const semesters = getBuilderSubjectSemesters();
+    return semesters[0] || 1;
+}
+
+function getSemesterParityDescriptionForSemesters(semesters) {
+    const list = normalizeSemesterList(semesters);
+    if (!list.length) {
+        return 'Select at least one semester to see the availability rule.';
+    }
+    const parities = new Set(list.map((semester) => semester % 2));
+    if (parities.size > 1) {
+        return `Semesters ${list.join(', ')} span odd and even tracks. Use the override below if students in both tracks should see this subject.`;
+    }
+    return getSemesterParityDescription(list[0]);
+}
 
 function toRegistrationPositiveInt(value, fallback = 0) {
     const parsed = parseInt(String(value == null ? '' : value).trim(), 10);
@@ -1470,7 +1324,6 @@ function getSemesterParityDescription(semesterValue) {
 
 function refreshSemesterDropdowns() {
     [
-        { id: 'new-subject-semester', includeCustom: true, numberPrefix: 'Semester' },
         { id: 'filter-curriculum-semester', includeAll: true, includeCustom: true, numberPrefix: 'Sem' },
         { id: 'admin-active-semester', includeCustom: true, numberPrefix: 'Semester' },
         { id: 'admin-tt-semester', includeCustom: true, numberPrefix: 'Sem' },
@@ -1484,39 +1337,35 @@ function refreshSemesterDropdowns() {
 
 function ensureSubjectSemesterParityHint() {
     refreshSemesterDropdowns();
-    const semesterSelect = document.getElementById('new-subject-semester');
     const hint = document.getElementById('new-subject-semester-parity-hint');
-    if (!(semesterSelect instanceof HTMLSelectElement) || !hint) return;
+    const hiddenSemesters = document.getElementById('new-subject-semesters');
+    if (!hint) return;
+    hint.classList.add('lux-admin-tools-parity-callout');
 
     let exceptionWrap = document.getElementById('new-subject-semester-parity-exception-wrap');
     if (!exceptionWrap) {
         exceptionWrap = document.createElement('div');
         exceptionWrap.id = 'new-subject-semester-parity-exception-wrap';
-        exceptionWrap.style.marginTop = '8px';
-        exceptionWrap.style.display = 'flex';
-        exceptionWrap.style.alignItems = 'center';
-        exceptionWrap.style.gap = '8px';
-        exceptionWrap.style.fontSize = '11px';
-        exceptionWrap.style.color = '#334155';
+        exceptionWrap.className = 'registration-parity-exception lux-admin-tools-parity-exception';
         exceptionWrap.innerHTML = `
-            <input id="new-subject-parity-both-checkbox" type="checkbox" style="margin:0;">
-            <label for="new-subject-parity-both-checkbox" style="cursor:pointer;">Make this subject available in both odd and even semesters</label>
+            <input id="new-subject-parity-both-checkbox" class="registration-parity-exception-checkbox" type="checkbox">
+            <label for="new-subject-parity-both-checkbox" class="registration-parity-exception-label">Make this subject available in both odd and even semesters</label>
         `;
         hint.insertAdjacentElement('afterend', exceptionWrap);
     }
 
     const exceptionCheckbox = document.getElementById('new-subject-parity-both-checkbox');
     const updateHint = () => {
-        const semester = getSemesterNumberFromControl(semesterSelect, 1);
+        const semesters = getBuilderSubjectSemesters();
         const extra = exceptionCheckbox instanceof HTMLInputElement && exceptionCheckbox.checked
             ? ' Override enabled: students in both parity tracks can see this subject.'
             : '';
-        hint.textContent = `${getSemesterParityDescription(semester)}${extra}`;
+        hint.textContent = `${getSemesterParityDescriptionForSemesters(semesters)}${extra}`;
     };
 
-    if (!semesterSelect.dataset.parityHintBound) {
-        semesterSelect.addEventListener('change', updateHint);
-        semesterSelect.dataset.parityHintBound = '1';
+    if (hiddenSemesters && !hiddenSemesters.dataset.parityHintBound) {
+        hiddenSemesters.addEventListener('change', updateHint);
+        hiddenSemesters.dataset.parityHintBound = '1';
     }
     if (exceptionCheckbox instanceof HTMLInputElement && !exceptionCheckbox.dataset.parityHintBound) {
         exceptionCheckbox.addEventListener('change', updateHint);
@@ -1531,10 +1380,11 @@ function toggleConditionBox() {
     const container = document.getElementById('condition-box-container');
     if (!(checkbox instanceof HTMLInputElement) || !container) return;
     if (checkbox.checked) {
-        container.style.display = 'block';
+        container.hidden = false;
+        container.style.removeProperty('display');
         filterSubjects('');
     } else {
-        container.style.display = 'none';
+        container.hidden = true;
         clearConditionSelection();
     }
 }
@@ -1561,18 +1411,19 @@ function renderSelectedConditionEntries(entries) {
         .values()]
         .filter((entry) => entry.code);
 
+    badge.classList.add('registration-condition-badge');
     badge.dataset.conditions = JSON.stringify(normalized);
     badge.dataset.value = normalized.length > 0
         ? normalized.map((entry) => `[REQ] ${entry.code}`).join(', ')
         : 'None';
-    badge.style.display = normalized.length > 0 ? 'flex' : 'none';
+    badge.hidden = normalized.length === 0;
     text.innerHTML = normalized.map((entry) => `
-        <span style="display:inline-flex; align-items:center; gap:6px; margin:2px 6px 2px 0; padding:4px 8px; border-radius:999px; background:#dff2ff; color:#0f4c81; font-size:11px; font-weight:700;">
+        <span class="registration-condition-chip">
             <span>[${escapeHtml(entry.code)}] ${escapeHtml(entry.name)}</span>
-            <button type="button" data-condition-action="remove" data-subject-code="${escapeHtml(entry.code)}" style="border:none; background:none; color:#0f4c81; cursor:pointer; padding:0; line-height:1;">&times;</button>
+            <button type="button" class="registration-condition-chip-remove" data-condition-action="remove" data-subject-code="${escapeHtml(entry.code)}">&times;</button>
         </span>
     `).join('');
-    if (input) input.style.display = 'block';
+    if (input) input.hidden = false;
 }
 
 function addConditionSelection(code, name) {
@@ -1595,7 +1446,7 @@ function clearConditionSelection() {
     const input = document.getElementById('subject-search-input');
     if (input) input.value = '';
     const list = document.getElementById('subject-search-results');
-    if (list) list.style.display = 'none';
+    if (list) list.hidden = true;
 }
 
 function filterSubjects(query = '') {
@@ -1612,13 +1463,13 @@ function filterSubjects(query = '') {
         .slice(0, 40);
 
     list.innerHTML = subjects.length === 0
-        ? '<div style="padding:10px; font-size:12px; color:var(--lux-text-muted);">No subjects match this search.</div>'
+        ? '<div class="registration-condition-empty">No subjects match this search.</div>'
         : subjects.map((subject) => `
-            <button type="button" data-subject-condition-select="1" data-subject-code="${escapeHtml(subject.id)}" data-subject-name="${escapeHtml(subject.name || subject.id)}" style="display:block; width:100%; text-align:left; padding:10px; font-size:12px; border:none; border-bottom:1px solid #eef2f7; background:#fff; cursor:pointer;">
+            <button type="button" class="registration-condition-result" data-subject-condition-select="1" data-subject-code="${escapeHtml(subject.id)}" data-subject-name="${escapeHtml(subject.name || subject.id)}">
                 <strong>[${escapeHtml(subject.id)}]</strong> ${escapeHtml(subject.name || 'Untitled Subject')}
             </button>
         `).join('');
-    list.style.display = 'block';
+    list.hidden = false;
 }
 
 const debouncedFilterSubjects = (query) => filterSubjects(query);
@@ -1657,20 +1508,18 @@ function setSelectedAntiReqCodes(codes) {
     if (selectedRow) {
         selectedRow.innerHTML = normalized.length > 0
             ? normalized.map((code) => `
-                <span style="display:inline-flex; align-items:center; gap:6px; padding:5px 9px; border-radius:999px; background:#dff2ff; color:#0f4c81; font-size:11px; font-weight:700;">
+                <span class="registration-antireq-chip">
                     <span>${escapeHtml(code)}</span>
-                    <button type="button" data-antireq-action="toggle" data-anti-code="${escapeHtml(code)}" style="border:none; background:none; color:#0f4c81; cursor:pointer; padding:0; line-height:1;">&times;</button>
+                    <button type="button" class="registration-antireq-chip-remove" data-antireq-action="toggle" data-anti-code="${escapeHtml(code)}">&times;</button>
                 </span>
             `).join('')
-            : '<span style="font-size:11px; color:var(--lux-text-muted);">No anti-requisites selected</span>';
+            : '<span class="registration-antireq-empty">No anti-requisites selected</span>';
     }
 
     picker.querySelectorAll('[data-anti-code]').forEach((button) => {
         const active = normalized.includes(button.dataset.antiCode);
         button.setAttribute('aria-pressed', active ? 'true' : 'false');
-        button.style.background = active ? 'linear-gradient(135deg, #0b84ff, #0a5fc4)' : '#ffffff';
-        button.style.color = active ? '#ffffff' : '#1e293b';
-        button.style.borderColor = active ? '#0b84ff' : '#dbe5f1';
+        button.classList.toggle('is-active', active);
     });
 }
 
@@ -1693,27 +1542,32 @@ function populateAntiReqDropdown() {
         .slice()
         .sort((left, right) => String(left?.name || '').localeCompare(String(right?.name || '')));
 
+    picker.className = 'lux-admin-tools-antireq-picker';
     picker.innerHTML = `
-        <div data-role="selected-anti-row" style="display:flex; flex-wrap:wrap; gap:6px; min-height:24px;">
+        <div class="lux-admin-tools-antireq-head">
+            <span class="lux-admin-tools-antireq-head-title"><i class="fas fa-ban" aria-hidden="true"></i> Anti-requisites</span>
+            <span class="lux-admin-tools-antireq-head-meta">Block enrollment when another course is taken</span>
+        </div>
+        <div data-role="selected-anti-row" class="registration-antireq-selected-row lux-admin-tools-antireq-selected">
             ${selectedValues.length > 0
                 ? selectedValues.map((code) => `
-                    <span style="display:inline-flex; align-items:center; gap:6px; padding:5px 9px; border-radius:999px; background:#dff2ff; color:#0f4c81; font-size:11px; font-weight:700;">
+                    <span class="registration-antireq-chip">
                         <span>${escapeHtml(code)}</span>
-                        <button type="button" data-antireq-action="toggle" data-anti-code="${escapeHtml(code)}" style="border:none; background:none; color:#0f4c81; cursor:pointer; padding:0; line-height:1;">&times;</button>
+                        <button type="button" class="registration-antireq-chip-remove" data-antireq-action="toggle" data-anti-code="${escapeHtml(code)}">&times;</button>
                     </span>
                 `).join('')
-                : '<span style="font-size:11px; color:var(--lux-text-muted);">No anti-requisites selected</span>'}
+                : '<span class="registration-antireq-empty">No anti-requisites selected</span>'}
         </div>
-        <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:8px;">
-            <button type="button" data-antireq-action="clear" class="kiu-btn-outline" style="padding:6px 10px; font-size:11px;">Clear All</button>
+        <div class="registration-antireq-toolbar">
+            <button type="button" data-antireq-action="clear" class="lux-secondary-btn registration-antireq-clear-btn">Clear All</button>
         </div>
-        <div style="display:flex; flex-wrap:wrap; gap:8px; max-height:150px; overflow:auto; padding:4px 2px 2px; margin-top:8px;">
+        <div class="registration-antireq-options lux-admin-tools-antireq-options">
             ${subjects.length === 0
-                ? '<div style="padding:10px; font-size:12px; color:var(--lux-text-muted);">No subjects found</div>'
+                ? '<div class="registration-antireq-empty">No subjects found</div>'
                 : subjects.map((subject) => {
                     const active = selectedValues.includes(subject.id);
                     return `
-                        <button type="button" data-antireq-action="toggle" data-anti-code="${escapeHtml(subject.id)}" aria-pressed="${active ? 'true' : 'false'}" style="border:1px solid ${active ? '#0b84ff' : '#dbe5f1'}; background:${active ? 'linear-gradient(135deg, #0b84ff, #0a5fc4)' : '#ffffff'}; color:${active ? '#ffffff' : '#1e293b'}; border-radius:999px; padding:7px 10px; font-size:11px; font-weight:700; cursor:pointer;">
+                        <button type="button" class="registration-antireq-option${active ? ' is-active' : ''}" data-antireq-action="toggle" data-anti-code="${escapeHtml(subject.id)}" aria-pressed="${active ? 'true' : 'false'}">
                             [${escapeHtml(subject.id)}] ${escapeHtml(subject.name || subject.id)}
                         </button>
                     `;
@@ -1809,9 +1663,11 @@ function getCurriculumLibraryModuleSubjects(module, faculty = getCurrentFaculty(
     return (module.subjectIds || [])
         .map((subjectId) => subjectsById.get(subjectId))
         .filter(Boolean)
-        .filter((subject) => semesterFilter === 'all' || String(subject.semester) === String(semesterFilter))
+        .filter((subject) => subjectMatchesSemesterFilter(subject, semesterFilter))
         .sort((left, right) => {
-            const semesterDiff = toRegistrationPositiveInt(left.semester, 99) - toRegistrationPositiveInt(right.semester, 99);
+            const leftSemesters = normalizeSubjectSemesters(left);
+            const rightSemesters = normalizeSubjectSemesters(right);
+            const semesterDiff = (leftSemesters[0] || 99) - (rightSemesters[0] || 99);
             if (semesterDiff !== 0) return semesterDiff;
             return String(left.name || '').localeCompare(String(right.name || ''));
         });
@@ -1840,8 +1696,7 @@ function syncCurriculumSubjectBuilderTarget(faculty = getCurrentFaculty()) {
     }
     if (saveBtn) {
         saveBtn.disabled = !selectedModule;
-        saveBtn.style.opacity = selectedModule ? '1' : '0.6';
-        saveBtn.style.cursor = selectedModule ? 'pointer' : 'not-allowed';
+        saveBtn.classList.toggle('is-disabled-by-module', !selectedModule);
     }
 }
 
@@ -1864,26 +1719,36 @@ function renderCurriculumLibraryModuleRows(module, subjects, faculty, semesterFi
     return subjects.map((subject, index) => {
         const prerequisite = subject.cond && subject.cond !== 'None' ? subject.cond : 'None';
         const antiReq = subject.antireq && subject.antireq !== 'None' ? subject.antireq : '';
+        const semesters = normalizeSubjectSemesters(subject);
+        const facultyLabel = typeof getFacultyLabel === 'function'
+            ? getFacultyLabel(subject.faculty || faculty)
+            : String(subject.faculty || faculty || '');
+        const semesterChips = semesters.length
+            ? semesters.map((semester) => `<span class="lux-status-pill lux-curriculum-subject-card__semester">S${escapeHtml(String(semester))}</span>`).join('')
+            : '<span class="lux-status-pill lux-curriculum-subject-card__semester is-muted">No semester</span>';
+        const subtitle = formatCurriculumSubjectSubtitle(subject);
         return `
-            <article class="lux-subject-row ${prerequisite !== 'None' ? 'has-prerequisite' : 'is-open'}">
-                <div class="lux-subject-row__code">
-                    <div>${escapeHtml(subject.id)}</div>
-                    <div class="lux-subject-row__meta">#${index + 1}</div>
-                </div>
-                <div class="lux-subject-row__body">
-                    <div class="lux-subject-row__title">${escapeHtml(subject.name || 'Untitled Subject')}</div>
-                    <div class="lux-subject-row__meta">${escapeHtml(typeof getFacultyLabel === 'function' ? getFacultyLabel(subject.faculty || faculty) : String(subject.faculty || faculty || ''))}</div>
-                    <div class="lux-subject-row__chips">
-                        <span class="lux-status-pill">Semester ${escapeHtml(String(subject.semester || '-'))}</span>
-                        <span class="lux-status-pill">${escapeHtml(String(subject.ects || 0))} ECTS</span>
+            <article class="lux-curriculum-subject-card ${prerequisite !== 'None' ? 'has-prerequisite' : 'is-open'}">
+                <header class="lux-curriculum-subject-card__head">
+                    <div class="lux-curriculum-subject-card__code-wrap">
+                        <span class="lux-curriculum-subject-card__code">${escapeHtml(subject.id)}</span>
+                        <span class="lux-curriculum-subject-card__index">#${index + 1}</span>
                     </div>
-                    <div class="lux-subject-row__detail"><strong>Prerequisite:</strong> ${escapeHtml(prerequisite)}</div>
-                    ${antiReq ? `<div class="lux-subject-row__detail is-soft"><strong>Anti-requisite:</strong> ${escapeHtml(antiReq)}</div>` : ''}
+                    <button type="button" class="lux-secondary-btn curriculum-library-subject-delete-btn lux-curriculum-subject-card__delete" data-curriculum-delete-subject="${escapeHtml(subject.id)}" aria-label="Delete ${escapeHtml(subject.id)}"><i class="fas fa-trash"></i></button>
+                </header>
+                <div class="lux-curriculum-subject-card__body">
+                    <h3 class="lux-curriculum-subject-card__title">${escapeHtml(formatCurriculumSubjectDisplayName(subject))}</h3>
+                    ${subtitle ? `<p class="lux-curriculum-subject-card__subtitle">${escapeHtml(subtitle)}</p>` : ''}
+                    <p class="lux-curriculum-subject-card__faculty">${escapeHtml(facultyLabel)}</p>
+                    <div class="lux-curriculum-subject-card__chips">
+                        ${semesterChips}
+                        <span class="lux-status-pill lux-curriculum-subject-card__ects">${escapeHtml(String(subject.ects || 0))} ECTS</span>
+                    </div>
                 </div>
-                <div class="lux-subject-row__stats">
-                    <div class="lux-program-ects">${escapeHtml(String(subject.ects || 0))} ECTS</div>
-                    <button type="button" class="kiu-btn-outline" data-curriculum-delete-subject="${escapeHtml(subject.id)}" style="padding:6px 10px; font-size:10px; color:var(--lux-red);"><i class="fas fa-trash"></i></button>
-                </div>
+                <footer class="lux-curriculum-subject-card__footer">
+                    <div class="lux-curriculum-subject-card__detail"><strong>Prerequisite:</strong> ${escapeHtml(prerequisite)}</div>
+                    ${antiReq ? `<div class="lux-curriculum-subject-card__detail is-soft"><strong>Anti-requisite:</strong> ${escapeHtml(antiReq)}</div>` : ''}
+                </footer>
             </article>
         `;
     }).join('');
@@ -1905,77 +1770,95 @@ function renderCurriculumTable() {
 
     if (root) {
         root.innerHTML = `
-            <div style="display:grid; grid-template-columns:280px 1fr; gap:20px; align-items:start;">
-                <div class="lux-surface">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+            <div class="curriculum-library-layout">
+                <div class="lux-surface curriculum-library-panel">
+                    <div class="curriculum-library-head">
                         <div>
                             <div class="lux-card-title">Curriculum Modules</div>
                             <div class="lux-card-meta">${modules.length} module${modules.length === 1 ? '' : 's'} in ${escapeHtml(typeof getFacultyLabel === 'function' ? getFacultyLabel(faculty) : faculty)}</div>
                         </div>
-                        <button type="button" class="lux-ghost-btn" data-curriculum-add-module="1" style="padding:6px 10px; font-size:10px;"><i class="fas fa-layer-group"></i> Add Module</button>
+                        <button type="button" class="lux-ghost-btn curriculum-library-btn" data-curriculum-add-module="1"><i class="fas fa-layer-group"></i> Add Module</button>
                     </div>
-                    <div data-preserve-scroll-key="curriculum-library-modules" style="display:flex; flex-direction:column; gap:10px; max-height:420px; overflow:auto; padding-right:4px;">
+                    <div class="lux-scrollbar curriculum-library-list" data-preserve-scroll-key="curriculum-library-modules">
                         ${modules.length === 0 ? '<div class="lux-empty-block">No modules are available yet.</div>' : modules.map((module) => {
                             const active = selectedModule && module.id === selectedModule.id;
                             const subjectCount = getCurriculumLibraryModuleSubjects(module, faculty, 'all').length;
                             return `
-                                <label style="display:flex; flex-direction:column; gap:6px; padding:14px; background:${active ? 'rgba(var(--lux-accent-rgb),0.08)' : 'rgba(255,255,255,0.03)'}; border:1px solid ${active ? 'rgba(var(--lux-accent-rgb),0.25)' : 'rgba(255,255,255,0.06)'}; border-radius:12px; cursor:pointer;">
-                                    <span style="display:flex; align-items:center; gap:10px;">
-                                        <input type="radio" name="curriculum-library-module" value="${escapeHtml(module.id)}" ${active ? 'checked' : ''} data-curriculum-module-select="${escapeHtml(module.id)}" style="margin:0; accent-color:var(--lux-accent);">
-                                        <span style="font-weight:700; color:var(--lux-text); font-size:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(`${module.letter || ''}. ${module.name || 'Untitled Module'}`.trim())}</span>
+                                <label class="curriculum-library-module-option${active ? ' is-active' : ''}">
+                                    <span class="curriculum-library-module-option-head">
+                                        <input class="curriculum-library-module-option-radio" type="radio" name="curriculum-library-module" value="${escapeHtml(module.id)}" ${active ? 'checked' : ''} data-curriculum-module-select="${escapeHtml(module.id)}">
+                                        <span class="curriculum-library-module-option-title">${escapeHtml(`${module.letter || ''}. ${module.name || 'Untitled Module'}`.trim())}</span>
                                     </span>
-                                    <span style="font-size:10px; color:var(--lux-text-muted); padding-left:26px;">${subjectCount} subjects / ${getCurriculumModuleEctsTotal(module, faculty)} ECTS</span>
+                                    <span class="curriculum-library-module-option-meta">${subjectCount} subjects / ${getCurriculumModuleEctsTotal(module, faculty)} ECTS</span>
                                 </label>
                             `;
                         }).join('')}
                     </div>
                 </div>
-                <div class="lux-surface" style="min-height:420px;">
+                <div class="lux-surface curriculum-library-panel curriculum-library-panel--detail">
                     ${selectedModule ? `
-                        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:16px; flex-wrap:wrap; margin-bottom:16px;">
-                            <div>
-                                <div style="font-size:15px; font-weight:700; color:var(--lux-text);">${escapeHtml(selectedModule.name)}</div>
-                                <div style="font-size:11px; color:var(--lux-text-muted); margin-top:3px;">${getCurriculumLibraryModuleSubjects(selectedModule, faculty, 'all').length} subjects / ${getCurriculumModuleEctsTotal(selectedModule, faculty)} ECTS</div>
+                        <div class="curriculum-library-detail-head">
+                            <div class="curriculum-library-detail-summary">
+                                <div class="curriculum-library-detail-title">${escapeHtml(selectedModule.name)}</div>
+                                <div class="curriculum-library-detail-meta">${getCurriculumLibraryModuleSubjects(selectedModule, faculty, 'all').length} subjects / ${getCurriculumModuleEctsTotal(selectedModule, faculty)} ECTS</div>
                             </div>
-                            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-                                <button type="button" class="lux-ghost-btn" data-curriculum-add-module="1" style="padding:7px 12px; font-size:11px;"><i class="fas fa-layer-group"></i> Add Module</button>
-                                <button type="button" class="lux-ghost-btn" data-curriculum-edit-module="${escapeHtml(selectedModule.id)}" style="padding:7px 12px; font-size:11px;"><i class="fas fa-edit"></i> Edit</button>
-                                <button type="button" class="lux-ghost-btn" data-curriculum-delete-module="${escapeHtml(selectedModule.id)}" style="padding:7px 12px; font-size:11px; color:#ef4444;"><i class="fas fa-trash"></i></button>
-                                <button type="button" class="lux-primary-btn" data-curriculum-focus-builder="1" style="padding:7px 14px; font-size:11px;"><i class="fas fa-plus"></i> Add Subject</button>
+                            <div class="curriculum-library-detail-actions">
+                                <button type="button" class="lux-ghost-btn curriculum-library-btn curriculum-library-btn--compact" data-curriculum-add-module="1"><i class="fas fa-layer-group"></i> Add Module</button>
+                                <button type="button" class="lux-ghost-btn curriculum-library-btn curriculum-library-btn--compact" data-curriculum-edit-module="${escapeHtml(selectedModule.id)}"><i class="fas fa-edit"></i> Edit</button>
+                                <button type="button" class="lux-ghost-btn curriculum-library-btn curriculum-library-btn--compact curriculum-library-btn--danger" data-curriculum-delete-module="${escapeHtml(selectedModule.id)}"><i class="fas fa-trash"></i></button>
+                                <button type="button" class="lux-primary-btn curriculum-library-btn curriculum-library-btn--primary" data-curriculum-focus-builder="1"><i class="fas fa-plus"></i> Add Subject</button>
                             </div>
                         </div>
-                        <div style="display:flex; flex-direction:column; gap:8px;">
-                            ${renderCurriculumLibraryModuleRows(selectedModule, getCurriculumLibraryModuleSubjects(selectedModule, faculty, semesterFilter), faculty, semesterFilter)}
+                        <div class="lux-scroll-rail curriculum-library-row-scroll" data-lux-scroll-rail data-curriculum-subject-scroll>
+                            <div class="lux-scroll-rail__controls curriculum-library-scroll-controls" aria-hidden="true">
+                                <div class="lux-scroll-rail__dock" role="group" aria-label="Scroll subjects">
+                                    <button type="button" class="lux-scroll-rail__btn curriculum-library-scroll-btn" data-lux-scroll="up" data-curriculum-scroll="up" aria-label="Scroll subjects up"><i class="fas fa-chevron-up" aria-hidden="true"></i></button>
+                                    <span class="lux-scroll-rail__spine" aria-hidden="true"></span>
+                                    <button type="button" class="lux-scroll-rail__btn curriculum-library-scroll-btn" data-lux-scroll="down" data-curriculum-scroll="down" aria-label="Scroll subjects down"><i class="fas fa-chevron-down" aria-hidden="true"></i></button>
+                                </div>
+                            </div>
+                            <div class="lux-scrollbar lux-scroll-rail__viewport curriculum-library-row-list" id="curriculum-subject-row-list" aria-label="Module subjects">
+                                ${renderCurriculumLibraryModuleRows(selectedModule, getCurriculumLibraryModuleSubjects(selectedModule, faculty, semesterFilter), faculty, semesterFilter)}
+                            </div>
                         </div>
                     ` : `
-                        <div class="lux-empty-state" style="min-height:360px;">
+                        <div class="lux-empty-state curriculum-library-empty-state">
                             <i class="fas fa-arrow-left"></i>
                             <strong>Select or create a module</strong>
                             <span>Choose a module from the list or create one now to start organizing subjects.</span>
-                            <button type="button" class="lux-primary-btn" data-curriculum-add-module="1" style="margin-top:14px;"><i class="fas fa-plus"></i> Create Module</button>
+                            <button type="button" class="lux-primary-btn curriculum-library-empty-state-action" data-curriculum-add-module="1"><i class="fas fa-plus"></i> Create Module</button>
                         </div>
                     `}
                 </div>
             </div>
         `;
         populateAntiReqDropdown();
+        if (typeof initCurriculumLibraryRowScroll === 'function') initCurriculumLibraryRowScroll(root);
+        if (typeof initCurriculumSemesterPicker === 'function') {
+            initCurriculumSemesterPicker({
+                onChange: () => {
+                    if (typeof ensureSubjectSemesterParityHint === 'function') ensureSubjectSemesterParityHint();
+                    if (typeof updateSubjectCodePreview === 'function') updateSubjectCodePreview();
+                }
+            });
+        }
         return;
     }
 
     if (tbody) {
         const subjects = (typeof getActiveCurriculum === 'function' ? getActiveCurriculum(faculty) : [])
-            .filter((subject) => semesterFilter === 'all' || String(subject.semester) === String(semesterFilter));
+            .filter((subject) => subjectMatchesSemesterFilter(subject, semesterFilter));
         tbody.innerHTML = subjects.length === 0
-            ? '<tr><td colspan="7" style="text-align:center; padding:30px; color:var(--lux-text-muted);">No subjects found for this view.</td></tr>'
+            ? '<tr><td colspan="7" class="curriculum-library-table-empty">No subjects found for this view.</td></tr>'
             : subjects.map((subject) => `
                 <tr>
                     <td>${escapeHtml(subject.id)}</td>
-                    <td>${escapeHtml(subject.name || 'Untitled Subject')}</td>
+                    <td>${escapeHtml(formatCurriculumSubjectDisplayName(subject))}</td>
                     <td>${escapeHtml(String(subject.ects || 0))}</td>
-                    <td>${escapeHtml(String(subject.semester || '-'))}</td>
+                    <td>${escapeHtml(formatSubjectSemestersLabel(normalizeSubjectSemesters(subject)))}</td>
                     <td>${escapeHtml(subject.cond || 'None')}</td>
                     <td>${escapeHtml(subject.antireq || 'None')}</td>
-                    <td><button type="button" data-curriculum-delete-subject="${escapeHtml(subject.id)}" class="kiu-btn-outline" style="padding:6px 10px; font-size:10px; color:var(--lux-red);"><i class="fas fa-trash"></i></button></td>
+                    <td><button type="button" data-curriculum-delete-subject="${escapeHtml(subject.id)}" class="lux-secondary-btn curriculum-library-table-delete-btn"><i class="fas fa-trash"></i></button></td>
                 </tr>
             `).join('');
     }
@@ -2078,7 +1961,12 @@ function addSubjectToSystem() {
     const name = String(document.getElementById('new-subject-name')?.value || '').trim();
     const ects = toRegistrationPositiveInt(document.getElementById('new-subject-ects')?.value, 6) || 6;
     const faculty = getCurrentFaculty();
-    const semester = getSemesterNumberFromControl('new-subject-semester', 1);
+    const semesters = getBuilderSubjectSemesters();
+    if (!semesters.length) {
+        alert('Please select at least one semester for this subject.');
+        return;
+    }
+    const semester = semesters[0];
     const selectedModule = getSelectedCurriculumLibraryModule(faculty);
     const usePrerequisite = document.getElementById('has-condition-checkbox')?.checked === true;
     const prerequisiteEntries = getSelectedConditionEntries();
@@ -2123,6 +2011,7 @@ function addSubjectToSystem() {
         ects,
         faculty,
         semester,
+        semesters,
         icon: 'fas fa-book',
         code: generatedId.toLowerCase(),
         cond: usePrerequisite ? prerequisiteEntries.map((entry) => `[REQ] ${entry.code}`).join(', ') : 'None',
@@ -2152,9 +2041,21 @@ function addSubjectToSystem() {
     setSelectedAntiReqCodes([]);
     const parityCheckbox = document.getElementById('new-subject-parity-both-checkbox');
     if (parityCheckbox instanceof HTMLInputElement) parityCheckbox.checked = false;
+    setBuilderSubjectSemesters([1]);
+    if (typeof window.syncCurriculumSemesterPickerUi === 'function') {
+        window.syncCurriculumSemesterPickerUi();
+    }
     ensureSubjectSemesterParityHint();
     focusCurriculumSubjectBuilder();
 }
+
+window.normalizeSubjectSemesters = normalizeSubjectSemesters;
+window.subjectMatchesSemesterFilter = subjectMatchesSemesterFilter;
+window.formatSubjectSemestersLabel = formatSubjectSemestersLabel;
+window.getBuilderSubjectSemesters = getBuilderSubjectSemesters;
+window.setBuilderSubjectSemesters = setBuilderSubjectSemesters;
+window.getSemesterParityDescriptionForSemesters = getSemesterParityDescriptionForSemesters;
+window.MAX_SEMESTER_DROPDOWN = MAX_SEMESTER_DROPDOWN;
 
 // Ensure registration state is correctly drawn when the app starts
 window.addEventListener('DOMContentLoaded', () => {

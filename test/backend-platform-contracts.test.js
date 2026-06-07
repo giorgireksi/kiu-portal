@@ -20,6 +20,7 @@ describe('backend platform domain contracts', () => {
         const auditService = require('../backend/platform/domains/audit-service.js');
         const gradebookService = require('../backend/platform/domains/gradebook-service.js');
         const lmsCourseService = require('../backend/platform/domains/lms-course-service.js');
+        const lmsLiveQuizService = require('../backend/platform/domains/lms-live-quiz-service.js');
         const protectedExamService = require('../backend/platform/domains/protected-exam-service.js');
         const socialContentService = require('../backend/platform/domains/social-content-service.js');
         const socialProjectsService = require('../backend/platform/domains/social-projects-service.js');
@@ -33,6 +34,7 @@ describe('backend platform domain contracts', () => {
         expect(contracts).toContain('## `account-privileges-service.js`');
         expect(contracts).toContain('## `gradebook-service.js`');
         expect(contracts).toContain('## `lms-course-service.js`');
+        expect(contracts).toContain('## `lms-live-quiz-service.js`');
         expect(contracts).toContain('## `protected-exam-service.js`');
         expect(contracts).toContain('## `social-content-service.js`');
         expect(contracts).toContain('## `social-projects-service.js`');
@@ -51,6 +53,7 @@ describe('backend platform domain contracts', () => {
             'upsertAccount'
         ]);
         expect(Object.keys(authSessionService).sort()).toEqual([
+            'PORTAL_IMPERSONATION_ROLES',
             'activateAccount',
             'clearSessionImpersonation',
             'createSessionByCredentials',
@@ -60,6 +63,8 @@ describe('backend platform domain contracts', () => {
             'getRawAccountByEmail',
             'getRawAccountByMicrosoftOid',
             'getSession',
+            'isImpersonationPersonaEligible',
+            'isPortalImpersonationRole',
             'linkMicrosoftIdentityToAccount',
             'logoutSession',
             'requestPasswordReset',
@@ -94,6 +99,19 @@ describe('backend platform domain contracts', () => {
             'getSectionsByCourse',
             'getStudentEnrollmentsByCourse',
             'isCourseTeachingStaff'
+        ]);
+        expect(Object.keys(lmsLiveQuizService).sort()).toEqual([
+            'countLiveQuizAnswers',
+            'getLiveQuizCurrentQuestion',
+            'getLiveQuizQuestionTimeState',
+            'mergeLiveQuizParticipantAnswers',
+            'mergeStaffLiveQuizWorkspace',
+            'mergeStudentLiveQuizAnswer',
+            'mergeStudentLiveQuizJoin',
+            'recalculateLiveQuizParticipant',
+            'scoreLiveQuizAnswer',
+            'submitStudentLiveQuizAnswer',
+            'submitStudentLiveQuizJoin'
         ]);
         expect(Object.keys(protectedExamService).sort()).toEqual([
             'buildExamSessionCourseKey',
@@ -335,6 +353,8 @@ describe('backend platform domain contracts', () => {
         expect(contracts).toContain("DELETE /api/social/posts/:id");
         expect(contracts).toContain("GET /api/lms/live-quizzes/:resourceKey");
         expect(contracts).toContain("POST /api/lms/live-quizzes/:resourceKey");
+        expect(contracts).toContain("POST /api/lms/live-quizzes/:resourceKey/join");
+        expect(contracts).toContain("POST /api/lms/live-quizzes/:resourceKey/answers");
         expect(contracts).toContain("GET /api/catalog/courses");
         expect(contracts).toContain("POST /api/exam-sessions/sync");
         expect(contracts).toContain("GET /api/portal/microsoft/config");

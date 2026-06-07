@@ -1,4 +1,4 @@
-﻿(function initExamConsole() {
+(function initExamConsole() {
     const legacyRenderAdminExamSection = typeof window.renderAdminExamSection === 'function'
         ? window.renderAdminExamSection
         : null;
@@ -1145,17 +1145,17 @@
             <div class="ex2-command-bar">
                 <h1><i class="fas ${isAdmin ? 'fa-satellite-dish' : 'fa-wand-magic-sparkles'}"></i> ${isAdmin ? 'Exam Command Center' : 'Quiz Studio'}</h1>
             </div>
-            <div class="ex2-stats-row">
+            <div class="ex2-stats-row lux-strip-grid lux-strip-grid--adaptive">
                 ${isAdmin ? `
-                    <div class="ex2-stat-card is-pending"><strong>${reviewCount}</strong><span>Awaiting Review</span></div>
-                    <div class="ex2-stat-card is-approved"><strong>${sessions.length}</strong><span>Scheduled</span></div>
-                    <div class="ex2-stat-card${liveCount ? ' is-live' : ''}"><strong>${liveCount}</strong><span>Live Now</span></div>
-                    <div class="ex2-stat-card"><strong>${templates.length}</strong><span>All Templates</span></div>
+                    <div class="ex2-stat-card lux-strip-card surface-card is-pending"><strong>${reviewCount}</strong><span>Awaiting Review</span></div>
+                    <div class="ex2-stat-card lux-strip-card surface-card is-approved"><strong>${sessions.length}</strong><span>Scheduled</span></div>
+                    <div class="ex2-stat-card lux-strip-card surface-card${liveCount ? ' is-live' : ''}"><strong>${liveCount}</strong><span>Live Now</span></div>
+                    <div class="ex2-stat-card lux-strip-card surface-card"><strong>${templates.length}</strong><span>All Templates</span></div>
                 ` : `
-                    <div class="ex2-stat-card is-draft"><strong>${templates.length}</strong><span>My Quizzes</span></div>
-                    <div class="ex2-stat-card is-pending"><strong>${templates.filter(t => t.status === 'submitted').length}</strong><span>Pending Review</span></div>
-                    <div class="ex2-stat-card${returnedCount ? ' is-returned' : ''}"><strong>${returnedCount}</strong><span>Returned</span></div>
-                    <div class="ex2-stat-card is-approved"><strong>${approvedCount}</strong><span>Approved</span></div>
+                    <div class="ex2-stat-card lux-strip-card surface-card is-draft"><strong>${templates.length}</strong><span>My Quizzes</span></div>
+                    <div class="ex2-stat-card lux-strip-card surface-card is-pending"><strong>${templates.filter(t => t.status === 'submitted').length}</strong><span>Pending Review</span></div>
+                    <div class="ex2-stat-card lux-strip-card surface-card${returnedCount ? ' is-returned' : ''}"><strong>${returnedCount}</strong><span>Returned</span></div>
+                    <div class="ex2-stat-card lux-strip-card surface-card is-approved"><strong>${approvedCount}</strong><span>Approved</span></div>
                 `}
             </div>
         `;
@@ -1199,7 +1199,7 @@
             <section class="ex2-panel">
                 <div class="ex2-panel-head">
                     <div>
-                        <h2><i class="fas ${isAdmin ? 'fa-folder-open' : 'fa-wand-magic-sparkles'}" style="margin-right:8px;opacity:.5;"></i>${isAdmin ? 'All Templates' : 'Quiz Builder'}</h2>
+                        <h2><i class="fas ${isAdmin ? 'fa-folder-open' : 'fa-wand-magic-sparkles'} ex2-panel-title-icon"></i>${isAdmin ? 'All Templates' : 'Quiz Builder'}</h2>
                         <p>${isAdmin ? 'All faculty exam templates across the university.' : 'Create question banks, generate variants, and collaborate.'}</p>
                     </div>
                     <div class="ex2-inline-actions">
@@ -1211,9 +1211,9 @@
                         ${STAFF_SUB_TABS.map(tab => `<button type="button" class="ex2-sub-tab${runtime.staffSubTab === tab ? ' is-active' : ''}" data-exam-call="setExamStaffSubTab" data-exam-args='["${tab}"]'>${escapeHtml(tab === 'my_drafts' ? 'My Library' : tab === 'shared_with_me' ? 'Shared with Me' : 'Sent to Admin')}</button>`).join('')}
                     </div>
                 ` : ''}
-                <div class="ex2-inline-actions" style="margin-bottom:14px;">
-                    <input class="ex2-input" type="text" placeholder="Search quizzes..." value="${escapeHtml(runtime.templateSearch)}" data-exam-input-call="setExamTemplateSearch" data-exam-input-args='["$value"]' style="max-width:280px;">
-                    <select class="ex2-select" data-exam-change-call="setExamTemplateFilter" data-exam-change-args='["$value"]' style="max-width:160px;">
+                <div class="ex2-inline-actions ex2-inline-actions--mb-14">
+                    <input class="ex2-input ex2-input--search" type="text" placeholder="Search quizzes..." value="${escapeHtml(runtime.templateSearch)}" data-exam-input-call="setExamTemplateSearch" data-exam-input-args='["$value"]'>
+                    <select class="ex2-select ex2-select--filter" data-exam-change-call="setExamTemplateFilter" data-exam-change-args='["$value"]'>
                         <option value="all"${runtime.templateFilter==='all'?' selected':''}>All Status</option>
                         <option value="draft"${runtime.templateFilter==='draft'?' selected':''}>Drafts</option>
                         <option value="submitted"${runtime.templateFilter==='submitted'?' selected':''}>Submitted</option>
@@ -1224,20 +1224,20 @@
                 ${filtered.length ? `
                     <div class="ex2-card-grid">
                         ${filtered.map((template, idx) => `
-                            <article class="ex2-quiz-card" style="animation-delay:${idx * 0.04}s" data-exam-call="editExamTemplate" data-exam-args='["${escapeHtml(template.id)}"]'>
-                                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                            <article class="ex2-quiz-card ex2-quiz-card--delay-${idx % 12}" data-exam-call="editExamTemplate" data-exam-args='["${escapeHtml(template.id)}"]'>
+                                <div class="ex2-quiz-card-head">
                                     <span class="ex2-status-dot is-${escapeHtml(String(template.status||'draft').toLowerCase())}">${escapeHtml(String(template.status||'draft').replace(/_/g,' '))}</span>
-                                    <span style="font-size:11px;color:var(--lux-text-muted);">${escapeHtml(template.examType === 'paper' ? 'Paper' : 'Digital')}</span>
+                                    <span class="ex2-quiz-card-type">${escapeHtml(template.examType === 'paper' ? 'Paper' : 'Digital')}</span>
                                 </div>
-                                <h3 style="font-size:16px;font-weight:700;margin:0 0 6px;">${escapeHtml(template.title || 'Untitled')}</h3>
-                                <div style="font-size:13px;color:var(--lux-text-muted);margin-bottom:10px;">${escapeHtml(template.subjectName || template.subjectId || 'No subject')}${template.courseNumber ? ` - ${escapeHtml(formatCourseYearLabel(template.courseNumber))}` : ''}${template.courseCode ? ` - No. ${escapeHtml(template.courseCode)}` : ''}</div>
-                                <div class="ex2-mini-grid" style="margin-top:0;">
+                                <h3 class="ex2-quiz-card-title">${escapeHtml(template.title || 'Untitled')}</h3>
+                                <div class="ex2-quiz-card-meta">${escapeHtml(template.subjectName || template.subjectId || 'No subject')}${template.courseNumber ? ` - ${escapeHtml(formatCourseYearLabel(template.courseNumber))}` : ''}${template.courseCode ? ` - No. ${escapeHtml(template.courseCode)}` : ''}</div>
+                                <div class="ex2-mini-grid ex2-mini-grid--flush">
                                     <div><strong>${bankCount(template)}</strong><span>Questions</span></div>
                                     <div><strong>${varCount(template)}</strong><span>Variants</span></div>
                                     <div><strong>${template.gradingWeight || 30}</strong><span>Quiz pts</span></div>
                                 </div>
-                                ${String(template.status||'').toLowerCase() === 'returned' && template.revisionNote ? `<div class="ex2-revision-note" style="margin-top:12px;"><i class="fas fa-comment-dots"></i> ${escapeHtml(template.revisionNote)}</div>` : ''}
-                                <div class="ex2-inline-actions" style="margin-top:14px;">
+                                ${String(template.status||'').toLowerCase() === 'returned' && template.revisionNote ? `<div class="ex2-revision-note ex2-revision-note--spaced"><i class="fas fa-comment-dots"></i> ${escapeHtml(template.revisionNote)}</div>` : ''}
+                                <div class="ex2-inline-actions ex2-inline-actions--mt-14">
                                     <button type="button" class="ex2-btn is-ghost" data-exam-call="editExamTemplate" data-exam-args='["${escapeHtml(template.id)}"]'><i class="fas fa-pen"></i></button>
                                     <button type="button" class="ex2-btn is-ghost" data-exam-call="duplicateExamTemplate" data-exam-args='["${escapeHtml(template.id)}"]'><i class="fas fa-copy"></i></button>
                                     <button type="button" class="ex2-btn is-ghost" data-exam-call="openShareModal" data-exam-args='["${escapeHtml(template.id)}"]'><i class="fas fa-share-nodes"></i></button>
@@ -1377,13 +1377,13 @@
                         <h3>Multiple Choice</h3>
                     </div>
                     <div class="ex2-inline-actions">
-                        <label class="ex2-field" style="margin:0;min-width:80px;">
-                            <span style="font-size:11px;">Points</span>
-                            <input class="ex2-input" type="number" min="1" value="${escapeHtml(String(question.score || 1))}" style="width:70px;" data-exam-change-call="${updateFunc}" data-exam-change-args='["${escapeHtml(question.id)}","score","$value"]'>
+                        <label class="ex2-field ex2-field--compact ex2-field--points">
+                            <span class="ex2-field-label-11">Points</span>
+                            <input class="ex2-input ex2-input--points" type="number" min="1" value="${escapeHtml(String(question.score || 1))}" data-exam-change-call="${updateFunc}" data-exam-change-args='["${escapeHtml(question.id)}","score","$value"]'>
                         </label>
-                        <label class="ex2-field" style="margin:0;min-width:110px;">
-                            <span style="font-size:11px;">Options</span>
-                            <input class="ex2-input" type="number" min="2" max="8" value="${escapeHtml(String((question.options || []).length || question.optionCount || 4))}" style="width:86px;" data-exam-change-call="${updateFunc}" data-exam-change-args='["${escapeHtml(question.id)}","optionCount","$value"]'>
+                        <label class="ex2-field ex2-field--compact ex2-field--options">
+                            <span class="ex2-field-label-11">Options</span>
+                            <input class="ex2-input ex2-input--options" type="number" min="2" max="8" value="${escapeHtml(String((question.options || []).length || question.optionCount || 4))}" data-exam-change-call="${updateFunc}" data-exam-change-args='["${escapeHtml(question.id)}","optionCount","$value"]'>
                         </label>
                     </div>
                 </div>
@@ -1611,893 +1611,13 @@
     }
 
     function ensureStyles() {
-        if (document.getElementById(STYLE_ID)) return;
-        const style = document.createElement('style');
-        style.id = STYLE_ID;
-        style.textContent = `
-            #${ROOT_ID} {
-                color: var(--lux-text);
-            }
-            #${ROOT_ID} .ex2-shell,
-            #${ROOT_ID} .ex2-stack,
-            #${ROOT_ID} .ex2-list,
-            #${ROOT_ID} .ex2-attempt-list,
-            #${ROOT_ID} .ex2-options,
-            #${ROOT_ID} .ex2-mini-list {
-                display: grid;
-                gap: 16px;
-            }
-            #${ROOT_ID} .ex2-hero,
-            #${ROOT_ID} .ex2-panel,
-            #${ROOT_ID} .ex2-toolbar,
-            #${ROOT_ID} .ex2-card,
-            #${ROOT_ID} .ex2-cohort-card,
-            #${ROOT_ID} .ex2-session-card,
-            #${ROOT_ID} .ex2-list-card,
-            #${ROOT_ID} .ex2-question-card,
-            #${ROOT_ID} .ex2-review-card,
-            #${ROOT_ID} .ex2-side-card,
-            #${ROOT_ID} .ex2-select-card {
-                border: 1px solid var(--lux-border);
-                border-radius: 24px;
-                box-shadow: var(--lux-shadow);
-                backdrop-filter: blur(22px);
-            }
-            #${ROOT_ID} .ex2-panel,
-            #${ROOT_ID} .ex2-toolbar,
-            #${ROOT_ID} .ex2-card,
-            #${ROOT_ID} .ex2-cohort-card,
-            #${ROOT_ID} .ex2-session-card,
-            #${ROOT_ID} .ex2-list-card,
-            #${ROOT_ID} .ex2-question-card,
-            #${ROOT_ID} .ex2-review-card,
-            #${ROOT_ID} .ex2-side-card,
-            #${ROOT_ID} .ex2-select-card {
-                background: color-mix(in srgb, var(--lux-surface) 90%, transparent);
-            }
-            body:not(.lux-light-mode) #${ROOT_ID} .ex2-panel,
-            body:not(.lux-light-mode) #${ROOT_ID} .ex2-toolbar,
-            body:not(.lux-light-mode) #${ROOT_ID} .ex2-card,
-            body:not(.lux-light-mode) #${ROOT_ID} .ex2-cohort-card,
-            body:not(.lux-light-mode) #${ROOT_ID} .ex2-session-card,
-            body:not(.lux-light-mode) #${ROOT_ID} .ex2-list-card,
-            body:not(.lux-light-mode) #${ROOT_ID} .ex2-question-card,
-            body:not(.lux-light-mode) #${ROOT_ID} .ex2-review-card,
-            body:not(.lux-light-mode) #${ROOT_ID} .ex2-side-card,
-            body:not(.lux-light-mode) #${ROOT_ID} .ex2-select-card,
-            body:not(.lux-light-mode) #${ROOT_ID} .ex2-toolbar {
-                background: rgba(10, 16, 29, 0.78);
-            }
-            #${ROOT_ID} .ex2-hero {
-                display: grid;
-                grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
-                gap: 18px;
-                padding: 28px;
-                margin-top: 24px;
-                color: #fff;
-                background:
-                    radial-gradient(circle at top right, rgba(255,255,255,0.16), transparent 36%),
-                    linear-gradient(135deg, rgba(var(--lux-accent-rgb), 0.95), rgba(15, 27, 49, 0.98));
-            }
-            #${ROOT_ID} .ex2-kicker {
-                font-size: 11px;
-                font-weight: 900;
-                letter-spacing: 0.14em;
-                text-transform: uppercase;
-                opacity: 0.82;
-            }
-            #${ROOT_ID} .ex2-hero h1 {
-                margin: 8px 0 12px;
-                font-size: clamp(28px, 4vw, 40px);
-                line-height: 1.04;
-            }
-            #${ROOT_ID} .ex2-hero p,
-            #${ROOT_ID} .ex2-card-copy,
-            #${ROOT_ID} .ex2-list-copy,
-            #${ROOT_ID} .ex2-side-copy {
-                color: inherit;
-                line-height: 1.65;
-                font-size: 14px;
-            }
-            #${ROOT_ID} .ex2-chip-row,
-            #${ROOT_ID} .ex2-inline-actions,
-            #${ROOT_ID} .ex2-tag-row,
-            #${ROOT_ID} .ex2-step-row,
-            #${ROOT_ID} .ex2-tab-row,
-            #${ROOT_ID} .ex2-attempt-meta {
-                display: flex;
-                flex-wrap: wrap;
-                gap: 10px;
-            }
-            #${ROOT_ID} .ex2-manual-stack {
-                display: grid;
-                gap: 8px;
-                min-width: 220px;
-            }
-            #${ROOT_ID} .ex2-manual-score-row {
-                display: grid;
-                grid-template-columns: minmax(72px, 1fr) 88px;
-                align-items: center;
-                gap: 8px;
-                font-size: 11px;
-                font-weight: 800;
-                color: var(--lux-text-muted);
-            }
-            #${ROOT_ID} .ex2-chip,
-            #${ROOT_ID} .ex2-tag,
-            #${ROOT_ID} .ex2-faculty-badge {
-                display: inline-flex;
-                align-items: center;
-                gap: 8px;
-                padding: 8px 12px;
-                border-radius: 999px;
-                border: 1px solid color-mix(in srgb, var(--lux-border) 75%, transparent);
-                font-size: 12px;
-                font-weight: 700;
-                color: var(--lux-text-muted);
-                background: color-mix(in srgb, var(--lux-surface-2) 88%, transparent);
-            }
-            #${ROOT_ID} .ex2-chip {
-                border-color: rgba(255,255,255,0.2);
-                color: rgba(255,255,255,0.92);
-                background: rgba(255,255,255,0.1);
-            }
-            #${ROOT_ID} .ex2-hero-stats,
-            #${ROOT_ID} .ex2-mini-grid,
-            #${ROOT_ID} .ex2-summary-list,
-            #${ROOT_ID} .ex2-form-grid,
-            #${ROOT_ID} .ex2-card-grid,
-            #${ROOT_ID} .ex2-cohort-grid,
-            #${ROOT_ID} .ex2-schedule-board,
-            #${ROOT_ID} .ex2-two-col,
-            #${ROOT_ID} .ex2-three-col {
-                display: grid;
-                gap: 16px;
-            }
-            #${ROOT_ID} .ex2-hero-stats {
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-                align-self: start;
-            }
-            #${ROOT_ID} .ex2-stat {
-                border-radius: 18px;
-                padding: 16px;
-                background: rgba(255,255,255,0.12);
-            }
-            #${ROOT_ID} .ex2-stat strong {
-                display: block;
-                font-size: 28px;
-                line-height: 1;
-            }
-            #${ROOT_ID} .ex2-stat span {
-                display: block;
-                margin-top: 8px;
-                font-size: 12px;
-                text-transform: uppercase;
-                letter-spacing: 0.08em;
-                opacity: 0.8;
-            }
-            #${ROOT_ID} .ex2-toolbar,
-            #${ROOT_ID} .ex2-panel,
-            #${ROOT_ID} .ex2-card,
-            #${ROOT_ID} .ex2-cohort-card,
-            #${ROOT_ID} .ex2-session-card,
-            #${ROOT_ID} .ex2-list-card,
-            #${ROOT_ID} .ex2-question-card,
-            #${ROOT_ID} .ex2-review-card,
-            #${ROOT_ID} .ex2-side-card {
-                padding: 22px;
-            }
-            #${ROOT_ID} .ex2-toolbar {
-                position: sticky;
-                top: 16px;
-                z-index: 5;
-            }
-            #${ROOT_ID} .ex2-panel-head,
-            #${ROOT_ID} .ex2-card-top,
-            #${ROOT_ID} .ex2-question-head,
-            #${ROOT_ID} .ex2-session-head,
-            #${ROOT_ID} .ex2-attempt-main {
-                display: flex;
-                justify-content: space-between;
-                gap: 16px;
-                align-items: flex-start;
-                flex-wrap: wrap;
-            }
-            #${ROOT_ID} h2,
-            #${ROOT_ID} h3 {
-                margin: 0;
-            }
-            #${ROOT_ID} .ex2-panel-head p,
-            #${ROOT_ID} .ex2-meta,
-            #${ROOT_ID} .ex2-muted {
-                margin: 6px 0 0;
-                color: var(--lux-text-muted);
-                font-size: 13px;
-                line-height: 1.6;
-            }
-            #${ROOT_ID} .ex2-form-grid {
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-            }
-            #${ROOT_ID} .ex2-card-grid,
-            #${ROOT_ID} .ex2-cohort-grid,
-            #${ROOT_ID} .ex2-schedule-board {
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-            }
-            #${ROOT_ID} .ex2-two-col {
-                grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
-            }
-            #${ROOT_ID} .ex2-three-col {
-                grid-template-columns: minmax(0, 1fr) minmax(0, 1.12fr) minmax(320px, 0.86fr);
-                align-items: start;
-            }
-            #${ROOT_ID} .ex2-field {
-                display: grid;
-                gap: 8px;
-                color: var(--lux-text);
-                font-size: 13px;
-                font-weight: 700;
-            }
-            #${ROOT_ID} .ex2-field-span {
-                grid-column: 1 / -1;
-            }
-            #${ROOT_ID} .ex2-input,
-            #${ROOT_ID} .ex2-select,
-            #${ROOT_ID} .ex2-textarea {
-                width: 100%;
-                min-height: 46px;
-                padding: 12px 14px;
-                border-radius: 16px;
-                border: 1px solid var(--lux-border);
-                background: color-mix(in srgb, var(--lux-surface-2) 92%, transparent);
-                color: var(--lux-text);
-                font: inherit;
-                box-sizing: border-box;
-            }
-            #${ROOT_ID} .ex2-textarea {
-                resize: vertical;
-                min-height: 120px;
-            }
-            #${ROOT_ID} .ex2-input.is-small,
-            #${ROOT_ID} .ex2-select.is-small {
-                min-height: 40px;
-                padding: 8px 12px;
-                border-radius: 12px;
-            }
-            #${ROOT_ID} .ex2-btn,
-            #${ROOT_ID} .ex2-step,
-            #${ROOT_ID} .ex2-tab,
-            #${ROOT_ID} .ex2-select-card {
-                appearance: none;
-                cursor: pointer;
-                font: inherit;
-                transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
-            }
-            #${ROOT_ID} .ex2-btn,
-            #${ROOT_ID} .ex2-step,
-            #${ROOT_ID} .ex2-tab {
-                min-height: 42px;
-                padding: 0 16px;
-                border-radius: 14px;
-                border: 1px solid var(--lux-border);
-                color: var(--lux-text);
-                background: color-mix(in srgb, var(--lux-surface-2) 90%, transparent);
-                font-weight: 800;
-            }
-            #${ROOT_ID} .ex2-btn.is-primary {
-                color: #fff;
-                border-color: transparent;
-                background: linear-gradient(135deg, rgba(var(--lux-accent-rgb), 0.96), rgba(var(--lux-accent-rgb), 0.75));
-            }
-            #${ROOT_ID} .ex2-btn.is-secondary,
-            #${ROOT_ID} .ex2-step.is-active,
-            #${ROOT_ID} .ex2-tab.is-active,
-            #${ROOT_ID} .ex2-select-card.is-selected,
-            #${ROOT_ID} .ex2-cohort-card.is-selected {
-                border-color: rgba(var(--lux-accent-rgb), 0.5);
-                background: color-mix(in srgb, rgba(var(--lux-accent-rgb), 0.16) 84%, var(--lux-surface));
-            }
-            #${ROOT_ID} .ex2-btn.is-ghost {
-                background: transparent;
-            }
-            #${ROOT_ID} .ex2-step-row {
-                justify-content: flex-end;
-            }
-            #${ROOT_ID} .ex2-status {
-                display: inline-flex;
-                align-items: center;
-                gap: 6px;
-                padding: 6px 10px;
-                border-radius: 999px;
-                font-size: 11px;
-                font-weight: 900;
-                text-transform: uppercase;
-                letter-spacing: 0.08em;
-                background: rgba(var(--lux-accent-rgb), 0.14);
-                color: rgb(var(--lux-accent-rgb));
-            }
-            #${ROOT_ID} .ex2-status.is-approved,
-            #${ROOT_ID} .ex2-status.is-live,
-            #${ROOT_ID} .ex2-status.is-submitted {
-                background: rgba(42, 179, 122, 0.14);
-                color: #208b64;
-            }
-            #${ROOT_ID} .ex2-status.is-flagged,
-            #${ROOT_ID} .ex2-status.is-in_review {
-                background: rgba(214, 138, 17, 0.14);
-                color: #d68a11;
-            }
-            #${ROOT_ID} .ex2-status.is-archived,
-            #${ROOT_ID} .ex2-status.is-closed,
-            #${ROOT_ID} .ex2-status.is-blocked {
-                background: rgba(107, 114, 128, 0.18);
-                color: #6b7280;
-            }
-            #${ROOT_ID} .ex2-status.is-neutral {
-                background: rgba(var(--lux-accent-rgb), 0.14);
-                color: rgb(var(--lux-accent-rgb));
-            }
-            #${ROOT_ID} .ex2-mini-grid {
-                grid-template-columns: repeat(3, minmax(0, 1fr));
-            }
-            #${ROOT_ID} .ex2-mini-grid > div,
-            #${ROOT_ID} .ex2-summary-list > div {
-                padding: 14px;
-                border-radius: 18px;
-                border: 1px solid var(--lux-border);
-                background: color-mix(in srgb, var(--lux-surface-2) 90%, transparent);
-            }
-            #${ROOT_ID} .ex2-summary-list > div {
-                display: flex;
-                justify-content: space-between;
-                gap: 12px;
-            }
-            #${ROOT_ID} .ex2-mini-grid strong,
-            #${ROOT_ID} .ex2-summary-list strong {
-                display: block;
-                font-size: 20px;
-                line-height: 1;
-                margin-bottom: 6px;
-            }
-            #${ROOT_ID} .ex2-mini-grid span,
-            #${ROOT_ID} .ex2-summary-list span {
-                color: var(--lux-text-muted);
-                font-size: 12px;
-                text-transform: uppercase;
-                letter-spacing: 0.08em;
-                font-weight: 800;
-            }
-            #${ROOT_ID} .ex2-filter-row {
-                display: grid;
-                grid-template-columns: minmax(0, 1fr) 220px;
-                gap: 12px;
-                margin-bottom: 18px;
-            }
-            #${ROOT_ID} .ex2-options {
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-            }
-            #${ROOT_ID} .ex2-option {
-                display: grid;
-                grid-template-columns: 30px minmax(0, 1fr);
-                gap: 10px;
-                align-items: center;
-            }
-            #${ROOT_ID} .ex2-toggle {
-                display: flex;
-                gap: 12px;
-                align-items: center;
-                margin-top: 16px;
-                color: var(--lux-text);
-            }
-            #${ROOT_ID} .ex2-issue-list,
-            #${ROOT_ID} .ex2-warning {
-                margin-top: 16px;
-                padding: 14px 16px;
-                border-radius: 16px;
-                border: 1px solid rgba(214, 138, 17, 0.35);
-                background: rgba(214, 138, 17, 0.1);
-                color: #c47a0a;
-                display: grid;
-                gap: 8px;
-            }
-            #${ROOT_ID} .ex2-empty {
-                padding: 26px;
-                border-radius: 18px;
-                border: 1px dashed var(--lux-border-strong, var(--lux-border));
-                color: var(--lux-text-muted);
-                text-align: center;
-                background: color-mix(in srgb, var(--lux-surface-2) 72%, transparent);
-            }
-            #${ROOT_ID} .ex2-side-panel {
-                position: sticky;
-                top: 92px;
-                display: grid;
-                gap: 16px;
-                align-self: start;
-            }
-            #${ROOT_ID} .ex2-side-kicker {
-                text-transform: uppercase;
-                letter-spacing: 0.12em;
-                font-size: 11px;
-                font-weight: 900;
-                color: var(--lux-text-muted);
-                margin-bottom: 14px;
-            }
-            #${ROOT_ID} .ex2-summary-list {
-                gap: 10px;
-            }
-            #${ROOT_ID} .ex2-list-card,
-            #${ROOT_ID} .ex2-attempt-row {
-                display: grid;
-                gap: 14px;
-            }
-            #${ROOT_ID} .ex2-list-item {
-                display: flex;
-                justify-content: space-between;
-                gap: 16px;
-                align-items: center;
-                padding: 12px 14px;
-                border: 1px solid var(--lux-border);
-                border-radius: 16px;
-                background: color-mix(in srgb, var(--lux-surface-2) 90%, transparent);
-            }
-            #${ROOT_ID} .ex2-list.compact .ex2-list-item.compact {
-                padding: 10px 12px;
-            }
-            #${ROOT_ID} .ex2-select-card {
-                width: 100%;
-                padding: 16px 18px;
-                display: flex;
-                justify-content: space-between;
-                gap: 12px;
-                text-align: left;
-                color: var(--lux-text);
-            }
-            #${ROOT_ID} .ex2-cohort-card.is-selected,
-            #${ROOT_ID} .ex2-select-card.is-selected,
-            #${ROOT_ID} .ex2-btn:hover,
-            #${ROOT_ID} .ex2-tab:hover,
-            #${ROOT_ID} .ex2-step:hover {
-                transform: translateY(-1px);
-            }
-            #${ROOT_ID} .ex2-cohort-check {
-                display: flex;
-                align-items: center;
-                gap: 10px;
-                font-weight: 800;
-            }
-            #${ROOT_ID} .ex2-mini-list {
-                gap: 8px;
-                color: var(--lux-text-muted);
-                font-size: 13px;
-            }
-            #${ROOT_ID} .ex2-results-row,
-            #${ROOT_ID} .ex2-results-meta {
-                display: flex;
-                gap: 10px;
-                align-items: center;
-                flex-wrap: wrap;
-            }
-            #${ROOT_ID} .ex2-response-summary {
-                color: var(--lux-text-muted);
-                font-size: 12px;
-            }
-            /* â”€â”€ Modal â”€â”€ */
-            #${ROOT_ID} .ex2-modal-overlay {
-                position: fixed;
-                inset: 0;
-                z-index: 9999;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                padding: 24px;
-                background: var(--ex2-modal-overlay-bg, rgba(3, 8, 20, 0.52));
-                backdrop-filter: blur(var(--ex2-modal-overlay-blur, 4px));
-                -webkit-backdrop-filter: blur(var(--ex2-modal-overlay-blur, 4px));
-            }
-            #${ROOT_ID} .ex2-modal {
-                width: min(520px, calc(100vw - 28px));
-                max-height: min(720px, calc(100vh - 32px));
-                border-radius: 24px;
-                overflow: hidden;
-                border: 1px solid var(--lux-border);
-                background: var(--lux-surface);
-                box-shadow: 0 22px 52px rgba(0,0,0,0.32);
-            }
-            #${ROOT_ID} .ex2-modal-head {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                padding: 18px 22px;
-            }
-            #${ROOT_ID} .ex2-modal-head.is-accent {
-                background: linear-gradient(135deg, rgba(var(--lux-accent-rgb),0.95), rgba(var(--lux-accent-rgb),0.72));
-            }
-            #${ROOT_ID} .ex2-modal-head.is-warm {
-                background: linear-gradient(135deg, #d68a11, #c47a0a);
-            }
-            #${ROOT_ID} .ex2-modal-head h3 { margin: 0; color: #fff; font-size: 16px; }
-            #${ROOT_ID} .ex2-modal-close {
-                color: #fff !important;
-            }
-            #${ROOT_ID} .ex2-modal-body {
-                padding: 18px;
-                display: grid;
-                gap: 14px;
-            }
-            #${ROOT_ID} .ex2-modal-search {
-                margin-bottom: 0;
-            }
-            #${ROOT_ID} .ex2-modal-list {
-                max-height: 320px;
-                overflow: auto;
-            }
-            #${ROOT_ID} .ex2-modal-meta {
-                margin-left: 8px;
-                font-size: 12px;
-                color: var(--lux-text-muted);
-            }
-            #${ROOT_ID} .ex2-modal-actions {
-                margin-top: 4px;
-            }
-            /* â”€â”€ Revision Note â”€â”€ */
-            #${ROOT_ID} .ex2-revision-note {
-                margin-top: 10px;
-                padding: 12px 16px;
-                border-radius: 14px;
-                border: 1px solid rgba(214,138,17,0.4);
-                background: rgba(214,138,17,0.08);
-                color: #c47a0a;
-                font-size: 13px;
-                line-height: 1.6;
-            }
-            #${ROOT_ID} .ex2-card-returned {
-                border-color: rgba(214,138,17,0.35) !important;
-            }
-            /* â”€â”€ Auto-Gen Box â”€â”€ */
-            #${ROOT_ID} .ex2-auto-gen-box {
-                padding: 20px;
-                border-radius: 20px;
-                border: 1px dashed rgba(var(--lux-accent-rgb),0.4);
-                background: color-mix(in srgb, rgba(var(--lux-accent-rgb),0.06) 80%, var(--lux-surface));
-            }
-            /* â”€â”€ Step Numbers â”€â”€ */
-            #${ROOT_ID} .ex2-step-num {
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                width: 22px;
-                height: 22px;
-                border-radius: 50%;
-                background: rgba(var(--lux-accent-rgb),0.2);
-                font-size: 11px;
-                font-weight: 900;
-                margin-right: 4px;
-            }
-            #${ROOT_ID} .ex2-step.is-active .ex2-step-num {
-                background: rgba(var(--lux-accent-rgb),0.5);
-                color: #fff;
-            }
-            /* â”€â”€ Returned status â”€â”€ */
-            #${ROOT_ID} .ex2-status.is-returned {
-                background: rgba(214,138,17,0.14);
-                color: #d68a11;
-            }
-            @media (max-width: 1180px) {
-                #${ROOT_ID} .ex2-hero,
-                #${ROOT_ID} .ex2-two-col,
-                #${ROOT_ID} .ex2-three-col {
-                    grid-template-columns: 1fr;
-                }
-                #${ROOT_ID} .ex2-side-panel {
-                    position: static;
-                }
-            }
-            @media (max-width: 760px) {
-                #${ROOT_ID} .ex2-card-grid,
-                #${ROOT_ID} .ex2-cohort-grid,
-                #${ROOT_ID} .ex2-schedule-board,
-                #${ROOT_ID} .ex2-form-grid,
-                #${ROOT_ID} .ex2-options,
-                #${ROOT_ID} .ex2-filter-row,
-                #${ROOT_ID} .ex2-mini-grid,
-                #${ROOT_ID} .ex2-hero-stats {
-                    grid-template-columns: 1fr;
-                }
-                #${ROOT_ID} .ex2-hero,
-                #${ROOT_ID} .ex2-panel,
-                #${ROOT_ID} .ex2-card,
-                #${ROOT_ID} .ex2-cohort-card,
-                #${ROOT_ID} .ex2-session-card,
-                #${ROOT_ID} .ex2-list-card,
-                #${ROOT_ID} .ex2-question-card,
-                #${ROOT_ID} .ex2-review-card,
-                #${ROOT_ID} .ex2-side-card,
-                #${ROOT_ID} .ex2-toolbar {
-                    padding: 18px;
-                }
-            }
-
-            /* â”€â”€ Paginated Question Bank Nav â”€â”€ */
-            #${ROOT_ID} .ex2-qnav-bar {
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                gap: 14px;
-                flex-wrap: wrap;
-                padding: 16px 20px;
-                border-radius: 18px;
-                border: 1px solid var(--lux-border);
-                background: color-mix(in srgb, var(--lux-surface) 85%, transparent);
-                backdrop-filter: blur(16px);
-            }
-            body:not(.lux-light-mode) #${ROOT_ID} .ex2-qnav-bar {
-                background: rgba(10, 16, 29, 0.72);
-            }
-            #${ROOT_ID} .ex2-qnav-controls {
-                display: flex;
-                align-items: center;
-                gap: 10px;
-            }
-            #${ROOT_ID} .ex2-qnav-indicator {
-                display: flex;
-                align-items: center;
-                gap: 8px;
-                font-size: 13px;
-                color: var(--lux-text-muted);
-                font-weight: 600;
-            }
-            #${ROOT_ID} .ex2-qnav-indicator label {
-                font-size: 12px;
-                letter-spacing: 0.06em;
-                text-transform: uppercase;
-                opacity: 0.7;
-            }
-            #${ROOT_ID} .ex2-qnav-input {
-                width: 52px;
-                padding: 6px 8px;
-                border-radius: 10px;
-                border: 1px solid var(--lux-border);
-                background: rgba(var(--lux-accent-rgb), 0.08);
-                color: var(--lux-text);
-                font-size: 15px;
-                font-weight: 700;
-                text-align: center;
-                outline: none;
-                transition: border-color 0.2s, box-shadow 0.2s;
-                -moz-appearance: textfield;
-            }
-            #${ROOT_ID} .ex2-qnav-input::-webkit-inner-spin-button,
-            #${ROOT_ID} .ex2-qnav-input::-webkit-outer-spin-button {
-                -webkit-appearance: none;
-                margin: 0;
-            }
-            #${ROOT_ID} .ex2-qnav-input:focus {
-                border-color: var(--lux-accent);
-                box-shadow: 0 0 0 3px rgba(var(--lux-accent-rgb), 0.18);
-            }
-            #${ROOT_ID} .ex2-qnav-actions {
-                display: flex;
-                align-items: center;
-                gap: 8px;
-            }
-            #${ROOT_ID} .ex2-qnav-dots {
-                display: flex;
-                flex-wrap: wrap;
-                gap: 6px;
-                padding: 4px 0;
-            }
-            #${ROOT_ID} .ex2-qnav-dot {
-                width: 32px;
-                height: 32px;
-                border-radius: 10px;
-                border: 1px solid var(--lux-border);
-                background: transparent;
-                color: var(--lux-text-muted);
-                font-size: 12px;
-                font-weight: 700;
-                cursor: pointer;
-                transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            }
-            #${ROOT_ID} .ex2-qnav-dot:hover {
-                background: rgba(var(--lux-accent-rgb), 0.12);
-                border-color: rgba(var(--lux-accent-rgb), 0.3);
-            }
-            #${ROOT_ID} .ex2-qnav-dot.is-active {
-                background: linear-gradient(135deg, var(--lux-accent), var(--lux-accent-2, var(--lux-accent)));
-                color: #fff;
-                border-color: transparent;
-                box-shadow: 0 2px 10px rgba(var(--lux-accent-rgb), 0.35);
-            }
-            #${ROOT_ID} .ex2-qnav-dot.has-content:not(.is-active) {
-                background: rgba(var(--lux-accent-rgb), 0.1);
-                border-color: rgba(var(--lux-accent-rgb), 0.22);
-                color: var(--lux-text);
-            }
-            #${ROOT_ID} .ex2-panel,
-            #${ROOT_ID} .ex2-toolbar,
-            #${ROOT_ID} .ex2-card,
-            #${ROOT_ID} .ex2-cohort-card,
-            #${ROOT_ID} .ex2-session-card,
-            #${ROOT_ID} .ex2-list-card,
-            #${ROOT_ID} .ex2-question-card,
-            #${ROOT_ID} .ex2-review-card,
-            #${ROOT_ID} .ex2-side-card,
-            #${ROOT_ID} .ex2-select-card,
-            #${ROOT_ID} .ex2-live-sidebar,
-            #${ROOT_ID} .ex2-stat-card,
-            #${ROOT_ID} .ex2-qnav-bar,
-            #${ROOT_ID} .ex2-auto-gen-box {
-                background: rgba(var(--lux-surface-rgb, 12, 18, 31), calc(var(--lux-glass-alpha, 0.12) * 1.75)) !important;
-                border-color: rgba(var(--lux-border-rgb, 148, 163, 184), calc(var(--lux-glass-alpha, 0.12) * 2.25)) !important;
-                box-shadow: 0 18px 54px rgba(0,0,0, calc(var(--lux-glass-alpha, 0.12) * 1.4)), inset 0 1px 0 rgba(255,255,255, calc(var(--lux-glass-alpha, 0.12) * 1.2)) !important;
-                backdrop-filter: blur(22px) saturate(150%) !important;
-                -webkit-backdrop-filter: blur(22px) saturate(150%) !important;
-            }
-            body.lux-light-mode #${ROOT_ID} .ex2-panel,
-            body.lux-light-mode #${ROOT_ID} .ex2-toolbar,
-            body.lux-light-mode #${ROOT_ID} .ex2-card,
-            body.lux-light-mode #${ROOT_ID} .ex2-cohort-card,
-            body.lux-light-mode #${ROOT_ID} .ex2-session-card,
-            body.lux-light-mode #${ROOT_ID} .ex2-list-card,
-            body.lux-light-mode #${ROOT_ID} .ex2-question-card,
-            body.lux-light-mode #${ROOT_ID} .ex2-review-card,
-            body.lux-light-mode #${ROOT_ID} .ex2-side-card,
-            body.lux-light-mode #${ROOT_ID} .ex2-select-card,
-            body.lux-light-mode #${ROOT_ID} .ex2-live-sidebar,
-            body.lux-light-mode #${ROOT_ID} .ex2-stat-card,
-            body.lux-light-mode #${ROOT_ID} .ex2-qnav-bar,
-            body.lux-light-mode #${ROOT_ID} .ex2-auto-gen-box {
-                background: rgba(255, 252, 245, calc(var(--lux-glass-alpha, 0.12) * 1.45)) !important;
-                border-color: rgba(120, 88, 45, calc(var(--lux-glass-alpha, 0.12) * 1.35)) !important;
-                box-shadow: 0 18px 46px rgba(90, 62, 24, calc(var(--lux-glass-alpha, 0.12) * 0.85)), inset 0 1px 0 rgba(255,255,255, calc(var(--lux-glass-alpha, 0.12) * 2.6)) !important;
-            }
-            #${ROOT_ID} .ex2-progress-bar {
-                gap: 10px;
-                padding: 18px 0 20px;
-            }
-            #${ROOT_ID} .ex2-progress-step {
-                isolation: isolate;
-                min-height: 48px;
-                padding: 0 18px;
-                border: 1px solid rgba(var(--lux-border-rgb, 148, 163, 184), 0.45);
-                border-radius: 18px;
-                background: rgba(var(--lux-surface-rgb, 12, 18, 31), 0.34);
-                box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
-                transition: transform .18s ease, border-color .18s ease, background .18s ease, box-shadow .18s ease, color .18s ease;
-            }
-            #${ROOT_ID} .ex2-progress-step:not(:last-child)::after {
-                display: none;
-            }
-            #${ROOT_ID} .ex2-progress-step .step-label {
-                display: inline-flex;
-                align-items: center;
-                gap: 8px;
-            }
-            #${ROOT_ID} .ex2-progress-step.is-active {
-                color: rgb(var(--lux-accent-rgb));
-                border-color: rgba(var(--lux-accent-rgb), 0.72);
-                background: radial-gradient(circle at top left, rgba(var(--lux-accent-rgb),0.28), transparent 58%), rgba(var(--lux-accent-rgb),0.12);
-                box-shadow: 0 0 0 1px rgba(var(--lux-accent-rgb),0.18), 0 14px 34px rgba(var(--lux-accent-rgb),0.22), inset 0 1px 0 rgba(255,255,255,0.14);
-            }
-            #${ROOT_ID} .ex2-progress-step.is-active .step-num {
-                box-shadow: 0 0 18px rgba(var(--lux-accent-rgb),0.55);
-            }
-            #${ROOT_ID} .ex2-progress-step.is-done {
-                color: #20a875;
-                border-color: rgba(32,168,117,0.5);
-                background: rgba(32,168,117,0.1);
-            }
-            #${ROOT_ID} .ex2-question-card {
-                overflow: hidden;
-            }
-            #${ROOT_ID} .ex2-question-head {
-                align-items: center;
-                padding-bottom: 16px;
-                border-bottom: 1px solid rgba(var(--lux-border-rgb, 148, 163, 184), 0.28);
-            }
-            #${ROOT_ID} .ex2-options {
-                gap: 12px;
-            }
-            #${ROOT_ID} .ex2-option {
-                padding: 10px;
-                border: 1px solid rgba(var(--lux-border-rgb, 148, 163, 184), 0.32);
-                border-radius: 16px;
-                background: rgba(var(--lux-surface-2-rgb, 18, 26, 43), calc(var(--lux-glass-alpha, 0.12) * 1.1));
-            }
-            body.lux-light-mode #${ROOT_ID} .ex2-progress-step,
-            body.lux-light-mode #${ROOT_ID} .ex2-option {
-                background: rgba(255, 255, 255, 0.38);
-            }
-            body.lux-route-exams #${ROOT_ID} .ex2-hero,
-            body.lux-route-exams #${ROOT_ID} .ex2-panel,
-            body.lux-route-exams #${ROOT_ID} .ex2-toolbar,
-            body.lux-route-exams #${ROOT_ID} .ex2-card,
-            body.lux-route-exams #${ROOT_ID} .ex2-cohort-card,
-            body.lux-route-exams #${ROOT_ID} .ex2-session-card,
-            body.lux-route-exams #${ROOT_ID} .ex2-list-card,
-            body.lux-route-exams #${ROOT_ID} .ex2-question-card,
-            body.lux-route-exams #${ROOT_ID} .ex2-review-card,
-            body.lux-route-exams #${ROOT_ID} .ex2-side-card,
-            body.lux-route-exams #${ROOT_ID} .ex2-select-card,
-            body.lux-route-exams #${ROOT_ID} .ex2-live-sidebar,
-            body.lux-route-exams #${ROOT_ID} .ex2-auto-gen-box,
-            body.lux-route-exams #${ROOT_ID} .ex2-qnav-bar {
-                background:
-                    radial-gradient(circle at 8% 0%, rgba(255,255,255, calc(var(--lux-transparency-alpha, .92) * .075)), transparent 32%),
-                    radial-gradient(circle at 74% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, .92) * .24)), transparent 38%),
-                    radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-transparency-alpha, .92) * .14)), transparent 38%),
-                    linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, .92) * .10)), rgba(10,15,24, calc(var(--lux-transparency-alpha, .92) * .91)) 44%, rgba(7,10,18, calc(var(--lux-transparency-alpha, .92) * .84))) !important;
-                border-color: rgba(var(--lux-accent-rgb), .16) !important;
-                box-shadow: 0 24px 58px rgba(0,0,0,.24), inset 0 1px 0 rgba(255,255,255,.08) !important;
-                backdrop-filter: blur(var(--lux-transparency-blur, 18px)) saturate(var(--lux-transparency-saturate, 145%)) !important;
-                -webkit-backdrop-filter: blur(var(--lux-transparency-blur, 18px)) saturate(var(--lux-transparency-saturate, 145%)) !important;
-            }
-            body.lux-route-exams #${ROOT_ID} .ex2-stat-card,
-            body.lux-route-exams #${ROOT_ID} .ex2-quiz-card,
-            body.lux-route-exams #${ROOT_ID} .ex2-q-card,
-            body.lux-route-exams #${ROOT_ID} .ex2-q-card-head,
-            body.lux-route-exams #${ROOT_ID} .ex2-timeline-card,
-            body.lux-route-exams #${ROOT_ID} .ex2-split-box,
-            body.lux-route-exams #${ROOT_ID} .ex2-progress-step,
-            body.lux-route-exams #${ROOT_ID} .ex2-mini-grid > div {
-                background:
-                    radial-gradient(circle at 12% 0%, rgba(255,255,255, calc(var(--lux-transparency-alpha, .92) * .055)), transparent 30%),
-                    radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, .92) * .14)), transparent 34%),
-                    linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, .92) * .065)), rgba(10,15,24, calc(var(--lux-transparency-alpha, .92) * .88)) 46%, rgba(7,10,18, calc(var(--lux-transparency-alpha, .92) * .80))) !important;
-                border-color: rgba(var(--lux-accent-rgb), .12) !important;
-                box-shadow: 0 14px 32px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.06) !important;
-                backdrop-filter: blur(var(--lux-transparency-blur, 18px)) saturate(var(--lux-transparency-saturate, 145%)) !important;
-                -webkit-backdrop-filter: blur(var(--lux-transparency-blur, 18px)) saturate(var(--lux-transparency-saturate, 145%)) !important;
-            }
-            body.lux-light-mode.lux-route-exams #${ROOT_ID} .ex2-hero,
-            body.lux-light-mode.lux-route-exams #${ROOT_ID} .ex2-panel,
-            body.lux-light-mode.lux-route-exams #${ROOT_ID} .ex2-toolbar,
-            body.lux-light-mode.lux-route-exams #${ROOT_ID} .ex2-card,
-            body.lux-light-mode.lux-route-exams #${ROOT_ID} .ex2-cohort-card,
-            body.lux-light-mode.lux-route-exams #${ROOT_ID} .ex2-session-card,
-            body.lux-light-mode.lux-route-exams #${ROOT_ID} .ex2-list-card,
-            body.lux-light-mode.lux-route-exams #${ROOT_ID} .ex2-question-card,
-            body.lux-light-mode.lux-route-exams #${ROOT_ID} .ex2-review-card,
-            body.lux-light-mode.lux-route-exams #${ROOT_ID} .ex2-side-card,
-            body.lux-light-mode.lux-route-exams #${ROOT_ID} .ex2-select-card,
-            body.lux-light-mode.lux-route-exams #${ROOT_ID} .ex2-live-sidebar,
-            body.lux-light-mode.lux-route-exams #${ROOT_ID} .ex2-auto-gen-box,
-            body.lux-light-mode.lux-route-exams #${ROOT_ID} .ex2-qnav-bar {
-                background:
-                    radial-gradient(circle at 8% 0%, rgba(255,255,255, calc(var(--lux-transparency-alpha, .86) * .88)), transparent 34%),
-                    radial-gradient(circle at 74% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, .86) * .22)), transparent 38%),
-                    radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-transparency-alpha, .86) * .13)), transparent 38%),
-                    linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, .86) * .075)), rgba(255,255,255, calc(var(--lux-transparency-alpha, .86) * .88)) 44%, rgba(247,241,232, calc(var(--lux-transparency-alpha, .86) * .72))) !important;
-                border-color: rgba(var(--lux-accent-rgb), .14) !important;
-                box-shadow: 0 22px 48px rgba(var(--lux-glass-tint-rgb, 15, 23, 42), .12), inset 0 1px 0 rgba(255,255,255,.68) !important;
-            }
-            body.lux-light-mode.lux-route-exams #${ROOT_ID} .ex2-stat-card,
-            body.lux-light-mode.lux-route-exams #${ROOT_ID} .ex2-quiz-card,
-            body.lux-light-mode.lux-route-exams #${ROOT_ID} .ex2-q-card,
-            body.lux-light-mode.lux-route-exams #${ROOT_ID} .ex2-q-card-head,
-            body.lux-light-mode.lux-route-exams #${ROOT_ID} .ex2-timeline-card,
-            body.lux-light-mode.lux-route-exams #${ROOT_ID} .ex2-split-box,
-            body.lux-light-mode.lux-route-exams #${ROOT_ID} .ex2-progress-step,
-            body.lux-light-mode.lux-route-exams #${ROOT_ID} .ex2-mini-grid > div {
-                background:
-                    radial-gradient(circle at 10% 0%, rgba(255,255,255, calc(var(--lux-transparency-alpha, .86) * .78)), transparent 32%),
-                    radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, .86) * .14)), transparent 34%),
-                    linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, .86) * .055)), rgba(255,255,255, calc(var(--lux-transparency-alpha, .86) * .82)) 46%, rgba(247,241,232, calc(var(--lux-transparency-alpha, .86) * .66))) !important;
-                border-color: rgba(var(--lux-accent-rgb), .11) !important;
-                box-shadow: 0 14px 30px rgba(var(--lux-glass-tint-rgb, 15, 23, 42), .10), inset 0 1px 0 rgba(255,255,255,.62) !important;
-            }
+        /*
+            Route CSS ownership reference migrated to assets/css/exam-studio.css:
+            .ex2-modal-head.is-warm
             body[data-lux-performance='efficient'].lux-route-exams #${ROOT_ID} .ex2-modal-overlay {
-                --ex2-modal-overlay-bg: rgba(3, 8, 20, 0.44);
-                --ex2-modal-overlay-blur: 2px;
-            }
             body[data-lux-performance='efficient'].lux-route-exams #${ROOT_ID} .ex2-modal {
-                box-shadow: 0 18px 40px rgba(0,0,0,0.26);
-            }
-        `;
-        document.head.appendChild(style);
+        */
+        return;
     }
 
     window.renderExamsPageShellContext = function renderExamsPageShellContext() {
@@ -3228,13 +2348,26 @@
             createdAt: now.toISOString(),
             updatedAt: now.toISOString()
         };
+        const activeUser = getCurrentUserSafe();
+        const isDemoStudent = typeof isDemoOrTestingUserRecord === 'function'
+            ? (user) => isDemoOrTestingUserRecord(user)
+            : () => false;
+        const studentUser = String(activeUser?.role || '').trim().toLowerCase() === 'student' && activeUser?.id && !isDemoStudent(activeUser)
+            ? activeUser
+            : (Array.isArray(KIU_STATE?.users)
+                ? KIU_STATE.users.find((user) => String(user?.role || '').trim().toLowerCase() === 'student' && user?.id && !isDemoStudent(user))
+                : null);
+        if (!studentUser?.id) {
+            notify('Add a real student account before creating a local exam test session.');
+            return;
+        }
         const student = {
-            id: 'admin-testing-econ-student',
-            email: 'qa.student.alpha@student.kiu.edu.ge',
-            name: 'QA Student Alpha',
-            displayName: 'QA Student Alpha',
-            groupId: 'local-test-group',
-            groupName: 'Local Test Group'
+            id: String(studentUser.id),
+            email: String(studentUser.email || ''),
+            name: String(studentUser.displayName || studentUser.nameEn || studentUser.name || studentUser.id),
+            displayName: String(studentUser.displayName || studentUser.nameEn || studentUser.name || studentUser.id),
+            groupId: String(studentUser.groupId || studentUser.group || 'local-test-group'),
+            groupName: String(studentUser.groupName || studentUser.group || 'Assigned Group')
         };
         const session = {
             id: makeLocalId('exam_session'),
@@ -3402,21 +2535,7 @@
         renderConsole();
     };
 
-    /* â”€â”€ CSS: Collision & Split â”€â”€ */
-    (function addExtraStyles() {
-        const s = document.getElementById('ex2-extra-styles');
-        if (s) return;
-        const style = document.createElement('style');
-        style.id = 'ex2-extra-styles';
-        style.textContent = `
-            .ex2-collision-list { padding: 12px 16px; border-radius: 14px; margin-top: 10px; font-size: 13px; line-height: 1.6; }
-            .ex2-collision-list.hard { border: 1px solid rgba(220,38,38,0.4); background: rgba(220,38,38,0.08); color: #dc2626; }
-            .ex2-collision-list.soft { border: 1px solid rgba(214,138,17,0.4); background: rgba(214,138,17,0.08); color: #c47a0a; }
-            .ex2-collision-list div { margin-bottom: 4px; }
-            .ex2-split-box { margin-top: 12px; padding: 16px; border-radius: 16px; border: 1px dashed rgba(var(--lux-accent-rgb),0.4); background: color-mix(in srgb, rgba(var(--lux-accent-rgb),0.06) 80%, var(--lux-surface)); }
-        `;
-        document.head.appendChild(style);
-    })();
+    /* Collision and split visuals now live in assets/css/exam-studio.css. */
 
     /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
        QUIZ EXPORT â€” PDF & DOCX

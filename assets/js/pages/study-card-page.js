@@ -7,15 +7,15 @@ function getStudyCardSemesterLabel(semesterNumber) {
 
 function getStudyCardLetterGrade(score, hasAnyScore) {
     if (!hasAnyScore) {
-        return { label: '-', color: '#94a3b8' };
+        return { label: '-', toneToken: 'empty' };
     }
-    if (score >= 91) return { label: 'A', color: 'var(--lux-accent)' };
-    if (score >= 81) return { label: 'B', color: 'var(--lux-accent-2)' };
-    if (score >= 71) return { label: 'C', color: 'rgba(var(--lux-home-secondary-rgb, 110, 160, 255), 0.96)' };
-    if (score >= 61) return { label: 'D', color: '#d4a24d' };
-    if (score >= 51) return { label: 'E', color: '#c97b4b' };
-    if (score >= 41) return { label: 'FX', color: '#d46b6b' };
-    return { label: 'F', color: '#d46b6b' };
+    if (score >= 91) return { label: 'A', toneToken: 'grade-a' };
+    if (score >= 81) return { label: 'B', toneToken: 'grade-b' };
+    if (score >= 71) return { label: 'C', toneToken: 'grade-c' };
+    if (score >= 61) return { label: 'D', toneToken: 'grade-d' };
+    if (score >= 51) return { label: 'E', toneToken: 'grade-e' };
+    if (score >= 41) return { label: 'FX', toneToken: 'grade-fx' };
+    return { label: 'F', toneToken: 'grade-f' };
 }
 
 function ensureStudyCardAssessmentEntryDisplayContext() {
@@ -252,10 +252,7 @@ function resolveStudyCardGradeRecord(courseId, groupId, enrolledStudents, studen
 function closeStudyCardAssessmentWindow() {
     const existing = document.getElementById('study-card-assessment-window');
     if (existing) existing.remove();
-    if (document.body.dataset.studyCardAssessmentOverflow !== undefined) {
-        document.body.style.overflow = document.body.dataset.studyCardAssessmentOverflow;
-        delete document.body.dataset.studyCardAssessmentOverflow;
-    }
+    document.body.classList.remove('study-card-assessment-open');
 }
 
 function bindStudyCardAssessmentDelegates() {
@@ -278,19 +275,69 @@ function bindStudyCardAssessmentDelegates() {
     });
 }
 
+function renderStudyCardAssessmentMetricsStrip(subject = {}) {
+    const summary = subject.summary || null;
+    if (!summary) return '';
+
+    const scoreLabel = escapeHtml(String(summary.outcome?.scoreLabel ?? subject.overallScore ?? 0));
+    const letterLabel = escapeHtml(String(summary.outcome?.letterLabel ?? subject.letterMeta?.label ?? '-'));
+    const completedCount = Number(summary.completedCount || 0);
+    const pendingCount = Number(summary.pendingCount || 0);
+    const toneToken = escapeHtml(subject.letterMeta?.toneToken || 'grade-f');
+    const letterEmpty = letterLabel === '-' ? ' is-empty' : '';
+
+    return `
+        <div class="lux-strip-grid lux-strip-grid--adaptive study-card-overlay-metrics">
+            <article class="lux-strip-card surface-card">
+                <div class="lux-card-body lux-mini-panel">
+                    <div class="study-card-summary-card-kicker">Overall score</div>
+                    <h3>${scoreLabel}</h3>
+                    <p>Visible course score based on recorded assessments.</p>
+                </div>
+            </article>
+            <article class="lux-strip-card surface-card">
+                <div class="lux-card-body lux-mini-panel study-card-overlay-metrics-letter">
+                    <div class="study-card-summary-card-kicker">Letter grade</div>
+                    <div class="study-card-overlay-metrics-grade">
+                        <span class="grade-circle study-card-grade-circle study-card-grade-circle--${toneToken}${letterEmpty}">${letterLabel}</span>
+                    </div>
+                    <p>Letter outcome for this subject roster.</p>
+                </div>
+            </article>
+            <article class="lux-strip-card surface-card">
+                <div class="lux-card-body lux-mini-panel">
+                    <div class="study-card-summary-card-kicker">Completed</div>
+                    <h3>${completedCount}</h3>
+                    <p>Graded assessment items already on your transcript.</p>
+                </div>
+            </article>
+            <article class="lux-strip-card surface-card">
+                <div class="lux-card-body lux-mini-panel">
+                    <div class="study-card-summary-card-kicker">Pending review</div>
+                    <h3>${pendingCount}</h3>
+                    <p>Items waiting for faculty review or final recording.</p>
+                </div>
+            </article>
+        </div>
+    `;
+}
+
 function openStudyCardAssessmentWindow(cacheKey) {
     const cache = window.__studyCardAssessmentCache || {};
     const subject = cache[cacheKey];
     if (!subject) return;
 
     closeStudyCardAssessmentWindow();
+    document.body.classList.add('study-card-assessment-open');
 
-    document.body.dataset.studyCardAssessmentOverflow = document.body.style.overflow || '';
-    document.body.style.overflow = 'hidden';
+    const rosterId = String(subject.rosterId || '').trim();
+    if (rosterId && typeof currentRosterId !== 'undefined') {
+        currentRosterId = rosterId;
+    }
 
     const overlay = document.createElement('div');
     overlay.id = 'study-card-assessment-window';
-    overlay.style.cssText = 'position:fixed; inset:0; z-index:7200; background:rgba(15,23,42,0.72); backdrop-filter:blur(6px); display:flex; align-items:center; justify-content:center; padding:24px;';
+    overlay.className = 'study-card-assessment-overlay';
     overlay.onclick = (event) => {
         if (event.target === overlay) closeStudyCardAssessmentWindow();
     };
@@ -298,101 +345,133 @@ function openStudyCardAssessmentWindow(cacheKey) {
     overlay.innerHTML = `
         <div class="study-card-assessment-window">
             <div class="study-card-assessment-window__header">
-                <div style="min-width:0;">
-                    <div class="study-card-assessment-window__title">${escapeHtml(subject.courseName)}</div>
-                    <div class="study-card-assessment-window__meta">${escapeHtml(subject.courseId)} · ${escapeHtml(subject.professorLabel)}</div>
-                    <div class="study-card-assessment-window__meta">Group: ${escapeHtml(subject.groupName)} · Roster: ${escapeHtml(subject.rosterId || '-')}</div>
+                <div class="study-card-assessment-window__copy">
+                    <div class="study-card-summary-kicker">Subject assessment</div>
+                    <div class="study-card-summary-title study-card-assessment-window__title">${escapeHtml(subject.courseName)}</div>
+                    <div class="study-card-summary-copy study-card-assessment-window__meta">${escapeHtml(subject.courseId)} · ${escapeHtml(subject.professorLabel)}</div>
+                    <div class="study-card-summary-copy study-card-assessment-window__meta">Group: ${escapeHtml(subject.groupName)} · Roster: ${escapeHtml(subject.rosterId || '-')}</div>
                 </div>
-                <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end;">
-                    <span class="lms-route-pill"><i class="fas fa-chart-line"></i> Score ${escapeHtml(String(subject.overallScore || 0))}</span>
-                    <span class="lms-route-pill"><i class="fas fa-award"></i> ${escapeHtml(subject.letterMeta?.label || '-')}</span>
+                <div class="study-card-assessment-window__actions">
+                    <span class="grade-circle study-card-grade-circle study-card-grade-circle--${escapeHtml(subject.letterMeta?.toneToken || 'grade-f')}${subject.letterMeta?.label === '-' ? ' is-empty' : ''}">${escapeHtml(subject.letterMeta?.label || '-')}</span>
+                    <span class="lux-status-pill study-card-assessment-pill"><i class="fas fa-chart-line"></i> Score ${escapeHtml(String(subject.overallScore || 0))}</span>
                     <button type="button" class="lux-secondary-btn" data-study-card-assessment-close>
                         <i class="fas fa-window-minimize"></i> Minimize
                     </button>
                 </div>
             </div>
-            <div class="study-card-assessment-window__body">
-                <div style="display:grid; gap:12px; margin-bottom:16px;">
-                    <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                        ${(subject.weightChips || []).map((chip) => `
-                            <span class="lms-route-pill" style="background:rgba(var(--lux-accent-rgb),0.08); border-color:rgba(var(--lux-accent-rgb),0.14); color:var(--lux-text);">
-                                ${escapeHtml(chip)}
-                            </span>
-                        `).join('')}
-                    </div>
-                    <div class="lms-route-card-grid" style="grid-template-columns:repeat(auto-fit, minmax(160px, 1fr));">
-                        ${(subject.breakdown || []).map((item) => `
-                            <div class="lms-route-card" style="padding:16px;">
-                                <div class="lms-route-eyebrow">${escapeHtml(item.label)}</div>
-                                <div class="lms-route-title" style="font-size:26px; margin-top:8px;">${escapeHtml(String(item.value ?? 0))}</div>
-                                <div class="lms-route-copy" style="margin-top:8px;">${escapeHtml(String(item.count || 0))} saved entr${item.count === 1 ? 'y' : 'ies'}</div>
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
-                <div style="display:flex; justify-content:space-between; gap:12px; align-items:center; margin-bottom:14px; flex-wrap:wrap;">
+            <div class="study-card-assessment-window__body study-card-assessment-window__body--gradebook study-card-gradebook-overlay">
+                ${renderStudyCardAssessmentMetricsStrip(subject)}
+                ${subject.summary && typeof renderGradebookModernWeights === 'function'
+                    ? renderGradebookModernWeights(subject.scheme || {}, subject.summary, { studentView: true })
+                    : ''}
+                ${subject.summary && typeof renderGradebookModernTranscript === 'function'
+                    ? renderGradebookModernTranscript(subject.summary, { rosterId: subject.rosterId || '' })
+                    : ''}
+                ${subject.summary && typeof renderGradebookModernTimeline === 'function'
+                    ? renderGradebookModernTimeline(subject.summary)
+                    : ''}
+                <div class="study-card-assessment-window__history-head">
                     <div>
-                        <div style="font-size:12px; font-weight:800; text-transform:uppercase; color:rgba(var(--lux-accent-rgb),0.82);">Raw Assessment History</div>
-                        <div style="font-size:13px; color:var(--lux-text-muted); margin-top:4px;">Each saved attempt, score, and update is shown here without aggregate summary cards.</div>
+                        <div class="study-card-assessment-window__history-kicker">Detailed score history</div>
+                        <div class="study-card-assessment-window__history-copy">Every saved attempt and update for this subject. Use Details in the transcript above for a focused view.</div>
                     </div>
                 </div>
-                <div style="display:grid; gap:12px;">
-                    ${subject.historyHtml}
+                <div class="study-card-assessment-window__history-list">
+                    ${subject.historyHtml || '<div class="study-card-history-empty">No recorded scores yet.</div>'}
                 </div>
             </div>
         </div>
     `;
 
     document.body.appendChild(overlay);
+    const syncGradebookOverlayVisuals = () => {
+        if (typeof syncGradebookVisualCustomProperties === 'function') {
+            syncGradebookVisualCustomProperties(overlay);
+        }
+    };
+    syncGradebookOverlayVisuals();
+    const scheduleFrame = window.requestAnimationFrame || ((callback) => window.setTimeout(callback, 0));
+    scheduleFrame(syncGradebookOverlayVisuals);
 }
 
 function ensureStudyCardContentShell(container) {
     if (!container || container.dataset.studyCardContentShell === '1') return;
     container.dataset.studyCardContentShell = '1';
     container.innerHTML = `
-        <div class="study-card-shell" style="display:grid; gap:24px;">
-            <section id="study-card-summary-region" style="display:grid; gap:16px;"></section>
-            <section id="study-card-terms-region" style="display:grid; gap:24px;"></section>
+        <div class="study-card-shell">
+            <section id="study-card-summary-region" class="study-card-shell__summary"></section>
+            <section id="study-card-terms-region" class="study-card-shell__terms"></section>
         </div>
     `;
 }
 
 function renderStudyCardSummaryRegion(context) {
     return `
-        <div style="display:flex; justify-content:space-between; gap:18px; flex-wrap:wrap; align-items:flex-start;">
-            <div>
-                <div style="font-size:12px; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; color:var(--lux-text-muted);">Academic Record Snapshot</div>
-                <div style="font-size:28px; font-weight:900; color:var(--lux-text); margin-top:8px;">${escapeHtml(context.latestTermLabel || 'No active term')}</div>
-                <div style="font-size:13px; color:var(--lux-text-muted); margin-top:8px; max-width:640px;">Semester-by-semester grade signals and assessment history for the courses currently attached to your student record.</div>
+        <div class="lux-hero-stage study-card-summary-stage">
+            <div class="lux-hero-main">
+                <div class="study-card-summary-kicker">Academic Record Snapshot</div>
+                <div class="study-card-summary-title">${escapeHtml(context.latestTermLabel || 'No active term')}</div>
+                <div class="study-card-summary-copy">Semester-by-semester grade signals and assessment history for the courses currently attached to your student record.</div>
+                <div class="study-card-summary-chip-row">
+                    <span class="lux-status-pill"><i class="fas fa-layer-group"></i> ${context.totalSemesters} semester${context.totalSemesters === 1 ? '' : 's'}</span>
+                    <span class="lux-status-pill"><i class="fas fa-book"></i> ${context.totalSubjects} subject${context.totalSubjects === 1 ? '' : 's'}</span>
+                    <span class="lux-status-pill"><i class="fas fa-award"></i> ${context.totalEcts} ECTS tracked</span>
+                    <span class="lux-status-pill"><i class="fas fa-chart-line"></i> ${escapeHtml(context.averageScoreLabel)}</span>
+                </div>
             </div>
-            <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                <span class="lux-status-pill"><i class="fas fa-layer-group"></i> ${context.totalSemesters} semester${context.totalSemesters === 1 ? '' : 's'}</span>
-                <span class="lux-status-pill"><i class="fas fa-book"></i> ${context.totalSubjects} subject${context.totalSubjects === 1 ? '' : 's'}</span>
-                <span class="lux-status-pill"><i class="fas fa-award"></i> ${context.totalEcts} ECTS tracked</span>
-                <span class="lux-status-pill"><i class="fas fa-chart-line"></i> ${escapeHtml(context.averageScoreLabel)}</span>
-            </div>
+            <aside class="lux-hero-side">
+                <div class="lux-hero-side-head">
+                    <strong>${context.totalSubjects}</strong>
+                    <span>Subject coverage and assessment history in the same summary language used on the home dashboard.</span>
+                </div>
+                <div class="lux-hero-signal-list">
+                    <div class="lux-hero-signal">
+                        <span>Latest term</span>
+                        <strong>${escapeHtml(context.latestTermLabel || 'No term')}</strong>
+                        <em>Most recent semester represented in the study card.</em>
+                    </div>
+                    <div class="lux-hero-signal">
+                        <span>Average score</span>
+                        <strong>${escapeHtml(context.averageScoreLabel)}</strong>
+                        <em>Average across subjects that already have scores.</em>
+                    </div>
+                    <div class="lux-hero-signal">
+                        <span>Assessment history</span>
+                        <strong>${context.assessmentEntryTotal}</strong>
+                        <em>Saved entries available through the assessment detail window.</em>
+                    </div>
+                </div>
+            </aside>
         </div>
-        <div class="lms-route-card-grid" style="grid-template-columns:repeat(auto-fit,minmax(190px,1fr));">
-            <div class="lms-route-card" style="padding:18px;">
-                <div class="lms-route-eyebrow">Latest term</div>
-                <div class="lms-route-title" style="font-size:20px; margin-top:8px;">${escapeHtml(context.latestTermLabel || 'No term')}</div>
-                <div class="lms-route-copy" style="margin-top:8px;">Most recent semester represented in the study card.</div>
-            </div>
-            <div class="lms-route-card" style="padding:18px;">
-                <div class="lms-route-eyebrow">Subjects with scores</div>
-                <div class="lms-route-title" style="font-size:20px; margin-top:8px;">${context.scoredSubjects}</div>
-                <div class="lms-route-copy" style="margin-top:8px;">Courses already carrying visible assessment outcomes.</div>
-            </div>
-            <div class="lms-route-card" style="padding:18px;">
-                <div class="lms-route-eyebrow">Average score</div>
-                <div class="lms-route-title" style="font-size:20px; margin-top:8px;">${escapeHtml(context.averageScoreLabel)}</div>
-                <div class="lms-route-copy" style="margin-top:8px;">Average across the scored subjects currently on record.</div>
-            </div>
-            <div class="lms-route-card" style="padding:18px;">
-                <div class="lms-route-eyebrow">Assessment history</div>
-                <div class="lms-route-title" style="font-size:20px; margin-top:8px;">${context.assessmentEntryTotal}</div>
-                <div class="lms-route-copy" style="margin-top:8px;">Saved assessment entries available through the detail window.</div>
-            </div>
+        <div class="lux-strip-grid lux-strip-grid--adaptive">
+            <article class="lux-strip-card surface-card">
+                <div class="lux-card-body lux-mini-panel">
+                    <div class="study-card-summary-card-kicker">Latest term</div>
+                    <h3>${escapeHtml(context.latestTermLabel || 'No term')}</h3>
+                    <p>Most recent semester represented in the study card.</p>
+                </div>
+            </article>
+            <article class="lux-strip-card surface-card">
+                <div class="lux-card-body lux-mini-panel">
+                    <div class="study-card-summary-card-kicker">Subjects with scores</div>
+                    <h3>${context.scoredSubjects}</h3>
+                    <p>Courses already carrying visible assessment outcomes.</p>
+                </div>
+            </article>
+            <article class="lux-strip-card surface-card">
+                <div class="lux-card-body lux-mini-panel">
+                    <div class="study-card-summary-card-kicker">Average score</div>
+                    <h3>${escapeHtml(context.averageScoreLabel)}</h3>
+                    <p>Average across the scored subjects currently on record.</p>
+                </div>
+            </article>
+            <article class="lux-strip-card surface-card">
+                <div class="lux-card-body lux-mini-panel">
+                    <div class="study-card-summary-card-kicker">Assessment history</div>
+                    <h3>${context.assessmentEntryTotal}</h3>
+                    <p>Saved assessment entries available through the detail window.</p>
+                </div>
+            </article>
         </div>
     `;
 }
@@ -406,21 +485,21 @@ function renderStudyCardTermsRegion(context) {
                 const assessmentCacheKey = `study-card-${toDomToken(subject.courseId)}-${toDomToken(subject.groupName)}-${termNum}`;
                 assessmentWindowCache[assessmentCacheKey] = subject;
                 return `
-                <tr>
-                    <td style="width:28%; font-weight:700;">
+                <tr class="study-card-term-row">
+                    <td class="study-card-cell study-card-cell--subject">
                         <div>${escapeHtml(subject.courseName)}</div>
-                        <div class="study-card-subject-meta" style="font-size:11px; margin-top:6px;">${escapeHtml(subject.courseId)}</div>
+                        <div class="study-card-subject-meta study-card-cell-meta">${escapeHtml(subject.courseId)}</div>
                     </td>
-                    <td style="width:18%;">
+                    <td class="study-card-cell study-card-cell--professor">
                         <div>${escapeHtml(subject.professorLabel)}</div>
-                        <div class="study-card-prof-meta" style="font-size:11px; margin-top:6px;">${escapeHtml(subject.groupName)}</div>
+                        <div class="study-card-prof-meta study-card-cell-meta">${escapeHtml(subject.groupName)}</div>
                     </td>
-                    <td style="width:10%; text-align:center; font-weight:800;">${subject.ects}</td>
-                    <td style="width:10%; text-align:center; font-weight:900; color:var(--lux-text);">${subject.overallScore}</td>
-                    <td style="width:10%; text-align:center;">
-                        <div class="grade-circle study-card-grade-circle" style="border-color:${subject.letterMeta.color}; box-shadow:inset 0 1px 0 rgba(255,255,255,0.06), 0 0 0 1px ${subject.letterMeta.color}33; background:linear-gradient(180deg, ${subject.letterMeta.color}26, rgba(10,15,24,0.96)); ${subject.letterMeta.label === '-' ? 'color:transparent;' : ''}">${escapeHtml(subject.letterMeta.label)}</div>
+                    <td class="study-card-cell study-card-cell--ects">${subject.ects}</td>
+                    <td class="study-card-cell study-card-cell--score">${subject.overallScore}</td>
+                    <td class="study-card-cell study-card-cell--grade">
+                        <div class="grade-circle study-card-grade-circle study-card-grade-circle--${escapeHtml(subject.letterMeta.toneToken || 'grade-f')}${subject.letterMeta.label === '-' ? ' is-empty' : ''}">${escapeHtml(subject.letterMeta.label)}</div>
                     </td>
-                    <td style="width:24%; text-align:right;">
+                    <td class="study-card-cell study-card-cell--assessment">
                         <button type="button" class="lux-primary-btn study-card-assessment-btn" data-study-card-assessment-key="${escapeHtml(assessmentCacheKey)}"><i class="fas fa-up-right-and-down-left-from-center"></i> Assessment</button>
                     </td>
                 </tr>
@@ -428,19 +507,19 @@ function renderStudyCardTermsRegion(context) {
             }).join('');
 
         return `
-            <div style="margin-top:${index === 0 ? '0' : '30px'};">
-                <div class="semester-header">
+            <div class="study-card-term-block${index === 0 ? ' is-first' : ''}">
+                <div class="semester-header study-card-term-header">
                     <span>${escapeHtml(getStudyCardSemesterLabel(termNum))}</span>
                 </div>
                 <table class="kiu-table study-card-semester-table">
                     <thead>
                         <tr>
-                            <th style="text-align:left;">Subject</th>
-                            <th style="text-align:left;">Professor</th>
+                            <th class="study-card-heading study-card-heading--left">Subject</th>
+                            <th class="study-card-heading study-card-heading--left">Professor</th>
                             <th>ECTS</th>
                             <th>Score</th>
                             <th>Letter Grade</th>
-                            <th style="text-align:right;">Assessment</th>
+                            <th class="study-card-heading study-card-heading--right">Assessment</th>
                         </tr>
                     </thead>
                     <tbody>${rows}</tbody>
@@ -464,7 +543,7 @@ function renderStudyCard() {
         ? getEffectiveUserRole()
         : (currentUserRole || currentUser?.role || USER_ROLES.STUDENT);
     if (!currentUser || effectiveRole !== USER_ROLES.STUDENT) {
-        container.innerHTML = '<div style="padding:40px; text-align:center; color:var(--kiu-text-muted);">Study Card is only available in the student portal.</div>';
+        container.innerHTML = '<div class="study-card-empty">Study Card is only available in the student portal.</div>';
         return;
     }
 
@@ -481,10 +560,17 @@ function renderStudyCard() {
     });
 
     if (!currentSchedule.length) {
-        container.innerHTML = '<div style="padding:40px; text-align:center; color:var(--kiu-text-muted);">You have no registered subjects yet. Complete Academic Registration to populate your Study Card.</div>';
+        container.innerHTML = '<div class="study-card-empty">You have no registered subjects yet. Complete Academic Registration to populate your Study Card.</div>';
         return;
     }
 
+    const criteria = window.GRADEBOOK_CRITERIA;
+    if (!criteria) {
+        container.innerHTML = '<div class="study-card-empty">Gradebook criteria are not loaded. Refresh the page.</div>';
+        return;
+    }
+
+    try {
     const domain = typeof getDomain === 'function' ? getDomain() : {};
     const subjectsById = domain.subjectsById || {};
     const semesterBuckets = {};
@@ -508,29 +594,35 @@ function renderStudyCard() {
             id: currentUser.id,
             name: currentUser.name || currentUser.nameEn || 'Student'
         }));
-        const weightProfile = typeof getGradebookWeightProfileForRoster === 'function'
-            ? getGradebookWeightProfileForRoster(gradeRosterId)
-            : { q1: 0.10, qa: 0.10, mid: 0.30, fin: 0.50 };
+        const scheme = typeof getGradebookSchemeForRoster === 'function'
+            ? getGradebookSchemeForRoster(gradeRosterId, courseId)
+            : null;
+        const normalizedScheme = scheme && typeof normalizeGradebookGradingScheme === 'function'
+            ? normalizeGradebookGradingScheme(scheme)
+            : scheme;
 
-        const quizScore = Number(getAssessmentDisplayValue(record, GRADEBOOK_CRITERIA.quiz) || 0);
-        const oralQuizScore = Number(getAssessmentDisplayValue(record, GRADEBOOK_CRITERIA.oralQuiz) || 0);
-        const homeworkScore = Number(getAssessmentDisplayValue(record, GRADEBOOK_CRITERIA.homework) || 0);
-        const midtermScore = Number(getAssessmentDisplayValue(record, GRADEBOOK_CRITERIA.midterm) || 0);
+        const quizScore = Number(getAssessmentDisplayValue(record, criteria.quiz) || 0);
+        const oralQuizScore = Number(getAssessmentDisplayValue(record, criteria.oralQuiz) || 0);
+        const homeworkScore = Number(getAssessmentDisplayValue(record, criteria.homework) || 0);
+        const midtermScore = Number(getAssessmentDisplayValue(record, criteria.midterm) || 0);
         const examScore = Number(
             typeof getGradebookEffectiveExamScore === 'function'
                 ? getGradebookEffectiveExamScore(record)
                 : Math.max(
-                    Number(getAssessmentDisplayValue(record, GRADEBOOK_CRITERIA.final) || 0),
-                    Number(getAssessmentDisplayValue(record, GRADEBOOK_CRITERIA.retake) || 0)
+                    Number(getAssessmentDisplayValue(record, criteria.final) || 0),
+                    Number(getAssessmentDisplayValue(record, criteria.retake) || 0)
                 )
         ) || 0;
         const getScoredAssessmentCount = (criterionKey) => getAssessmentEntries(record, criterionKey)
             .filter((entry) => entry && entry.score !== null && entry.score !== undefined && entry.score !== '')
             .length;
-        const examScoreCount = getScoredAssessmentCount(GRADEBOOK_CRITERIA.final.key) + getScoredAssessmentCount(GRADEBOOK_CRITERIA.retake.key);
+        const examScoreCount = getScoredAssessmentCount(criteria.final.key) + getScoredAssessmentCount(criteria.retake.key);
         const visibleOutcome = typeof getGradebookVisibleOutcome === 'function'
-            ? getGradebookVisibleOutcome(record, weightProfile)
+            ? getGradebookVisibleOutcome(record, normalizedScheme || scheme)
             : { scoreLabel: String(Math.max(0, Math.min(100, Math.round((quizScore + oralQuizScore + homeworkScore + midtermScore + examScore) / 5)))) };
+        const summary = typeof getGradebookModernSummary === 'function'
+            ? getGradebookModernSummary(record, normalizedScheme || scheme, { rosterId: gradeRosterId })
+            : null;
         const overallScore = Math.max(0, Math.min(100, parseInt(visibleOutcome.scoreLabel, 10) || 0));
         const hasAnyScore = Object.values(record.assessments || {}).some((entries) => Array.isArray(entries) && entries.length > 0)
             || [quizScore, oralQuizScore, homeworkScore, midtermScore, examScore].some((score) => Number(score) > 0);
@@ -552,19 +644,20 @@ function renderStudyCard() {
             studentId: currentUser.id,
             studentName: currentUser.name || currentUser.nameEn || 'Student',
             breakdown: [
-                { label: 'Quiz', shortLabel: 'Quiz', value: quizScore, count: getScoredAssessmentCount(GRADEBOOK_CRITERIA.quiz.key) },
-                { label: 'Oral Quiz', shortLabel: 'Oral', value: oralQuizScore, count: getScoredAssessmentCount(GRADEBOOK_CRITERIA.oralQuiz.key) },
-                { label: 'Homework', shortLabel: 'HW', value: homeworkScore, count: getScoredAssessmentCount(GRADEBOOK_CRITERIA.homework.key) },
-                { label: 'Midterm', shortLabel: 'Mid', value: midtermScore, count: getScoredAssessmentCount(GRADEBOOK_CRITERIA.midterm.key) },
+                { label: 'Quiz', shortLabel: 'Quiz', value: quizScore, count: getScoredAssessmentCount(criteria.quiz.key) },
+                { label: 'Oral Quiz', shortLabel: 'Oral', value: oralQuizScore, count: getScoredAssessmentCount(criteria.oralQuiz.key) },
+                { label: 'Homework', shortLabel: 'HW', value: homeworkScore, count: getScoredAssessmentCount(criteria.homework.key) },
+                { label: 'Midterm', shortLabel: 'Mid', value: midtermScore, count: getScoredAssessmentCount(criteria.midterm.key) },
                 { label: 'Exam / Retake', shortLabel: 'Exam', value: examScore, count: examScoreCount }
             ],
-            weightChips: [
-                `Quiz ${Math.round(Number(weightProfile.q1 || 0) * 100)}%`,
-                `Homework ${Math.round(Number(weightProfile.qa || 0) * 100)}%`,
-                `Midterm ${Math.round(Number(weightProfile.mid || 0) * 100)}%`,
-                `Final / Retake ${Math.round(Number(weightProfile.fin || 0) * 100)}%`
-            ],
-            historyHtml: renderStudyCardHistorySections(record, currentUser.id, currentUser.name || currentUser.nameEn || 'Student')
+            scheme: normalizedScheme || scheme,
+            summary,
+            weightChips: normalizedScheme && typeof getGradebookSchemeTotalPoints === 'function'
+                ? [`Course total ${getGradebookSchemeTotalPoints(normalizedScheme)} pts`]
+                : [],
+            historyHtml: typeof renderStudyCardHistorySections === 'function'
+                ? renderStudyCardHistorySections(record, currentUser.id, currentUser.name || currentUser.nameEn || 'Student')
+                : ''
         });
     });
 
@@ -610,9 +703,16 @@ function renderStudyCard() {
     if (termsRegion) {
         termsRegion.innerHTML = typeof localizeHtmlMarkup === 'function' ? localizeHtmlMarkup(termsRender.html) : termsRender.html;
     }
+    } catch (error) {
+        console.error('Study Card render failed.', error);
+        container.innerHTML = '<div class="study-card-empty">Could not load your Study Card. Refresh the page or try again later.</div>';
+    }
 }
 
 function initStudyCardStandalonePage() {
+    if (typeof bindStandaloneGradebookShell === 'function') {
+        bindStandaloneGradebookShell();
+    }
     if (document.getElementById('study-card-container')) {
         renderStudyCard();
     }

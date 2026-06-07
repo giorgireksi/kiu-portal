@@ -32,9 +32,94 @@ function buildAntiCheatDesktopBridgeOrigins() {
 }
 
 const ANTI_CHEAT_DESKTOP_BRIDGE_ORIGINS = buildAntiCheatDesktopBridgeOrigins();
+const PROTECTED_QUIZ_MONITOR_REFRESH_MS = 5000;
 let activeProtectedQuizBootstrapTimer = null;
 let pendingProtectedQuizResumeScheduled = false;
 let protectedQuizMonitorRuntime = { pending: false, groupKey: '', data: null };
+let activeProtectedQuizMonitorInterval = null;
+let activeProtectedQuizMonitorCourseKey = '';
+let activeProtectedQuizMonitorRefreshPending = false;
+
+function getActiveLmsTabId() {
+    try {
+        return document.querySelector('#page-lms-inner [data-lms-tab].is-active')?.id?.replace(/^tab-/, '') || '';
+    } catch (error) {
+        return '';
+    }
+}
+
+function isProtectedQuizMonitoringVisible(courseKey = '') {
+    const normalizedCourseKey = String(courseKey || '').trim();
+    if (!normalizedCourseKey) return false;
+    return getActiveLmsTabId() === 'monitoring' && String(currentCourseId || '').trim() === normalizedCourseKey;
+}
+
+function stopProtectedQuizMonitorAutoRefresh() {
+    if (activeProtectedQuizMonitorInterval) {
+        clearInterval(activeProtectedQuizMonitorInterval);
+        activeProtectedQuizMonitorInterval = null;
+    }
+    activeProtectedQuizMonitorCourseKey = '';
+    activeProtectedQuizMonitorRefreshPending = false;
+}
+
+function armProtectedQuizMonitorAutoRefresh(courseKey) {
+    const normalizedCourseKey = String(courseKey || '').trim();
+    if (!normalizedCourseKey) {
+        stopProtectedQuizMonitorAutoRefresh();
+        return;
+    }
+    activeProtectedQuizMonitorCourseKey = normalizedCourseKey;
+    if (activeProtectedQuizMonitorInterval) return;
+    activeProtectedQuizMonitorInterval = setInterval(() => {
+        void refreshProtectedQuizMonitorLiveData();
+    }, PROTECTED_QUIZ_MONITOR_REFRESH_MS);
+}
+
+async function refreshProtectedQuizMonitorLiveData(force = false) {
+    const courseKey = String(activeProtectedQuizMonitorCourseKey || currentCourseId || '').trim();
+    if (!courseKey) return null;
+    if (!force && !isProtectedQuizMonitoringVisible(courseKey)) return null;
+    if (activeProtectedQuizMonitorRefreshPending) return null;
+    activeProtectedQuizMonitorRefreshPending = true;
+    try {
+        const context = resolveLmsQuizWorkspace(courseKey);
+        if (!context?.resourceKey) return null;
+        const monitor = await fetchProtectedQuizMonitor(context.resourceKey);
+        if (!monitor) return null;
+        protectedQuizMonitorRuntime = { pending: false, groupKey: context.resourceKey, data: monitor };
+        if (!force && !isProtectedQuizMonitoringVisible(courseKey)) return monitor;
+        await renderLmsMonitoringSection(courseKey, {
+            monitorOverride: monitor,
+            skipAutoRefreshArm: true
+        });
+        return monitor;
+    } catch (error) {
+        return null;
+    } finally {
+        activeProtectedQuizMonitorRefreshPending = false;
+    }
+}
+
+function renderProtectedAntiCheatPolicySummary(policy = {}) {
+    const normalized = typeof normalizeLmsAntiCheatPolicy === 'function'
+        ? normalizeLmsAntiCheatPolicy(policy)
+        : (policy || {});
+    const enabled = [
+        ['Kiosk', normalized.kioskMode],
+        ['Process scan', normalized.processScanning],
+        ['VM detection', normalized.vmDetection],
+        ['Navigation lock', normalized.navigationProtection],
+        ['Clipboard clear', normalized.clipboardClearing],
+        ['Input lock', normalized.inputBlocking]
+    ].filter(([, value]) => value !== false).map(([label]) => label);
+    return `
+        <div class="lms-protected-monitor-policy">
+            <div class="lms-protected-monitor-copy"><strong>Policy:</strong> ${escapeHtml(enabled.join(', ') || 'Default secure policy')}</div>
+            <div class="lms-protected-monitor-copy">Heartbeat ${Number(normalized.heartbeatMs || 2000)} ms  -  Scan ${Number(normalized.processScanMs || 1500)} ms  -  Blocked processes ${(normalized.blockedProcesses || []).length || 0}</div>
+        </div>
+    `;
+}
 
 function getProtectedQuizLaunchParams() {
     try {
@@ -110,6 +195,11 @@ function getProtectedQuizPreferredClientProfile() {
     return isMobile
         ? { clientType: 'mobile-app', securityLevel: 'mobile-limited' }
         : { clientType: 'desktop-app', securityLevel: 'desktop-locked' };
+}
+
+function isAndroidAntiCheatBrowserRuntime() {
+    const userAgent = String(window.navigator?.userAgent || '').toLowerCase();
+    return isAntiCheatBrowserRuntime() && /android/.test(userAgent);
 }
 
 function persistPendingProtectedQuizLaunch(resourceKey, quizId) {
@@ -206,7 +296,7 @@ function wakeAntiCheatDesktopApp(protocolUrl = 'anticheat://open?screen=settings
     if (!targetUrl) return;
     try {
         const frame = document.createElement('iframe');
-        frame.style.display = 'none';
+        frame.hidden = true;
         frame.setAttribute('aria-hidden', 'true');
         frame.src = targetUrl;
         document.body.appendChild(frame);
@@ -222,7 +312,7 @@ function wakeAntiCheatDesktopApp(protocolUrl = 'anticheat://open?screen=settings
         link.href = targetUrl;
         link.target = '_blank';
         link.rel = 'noopener noreferrer';
-        link.style.display = 'none';
+        link.hidden = true;
         document.body.appendChild(link);
         link.click();
         setTimeout(() => {
@@ -372,7 +462,19 @@ function openProtectedQuizLaunchPopup(params = {}) {
         if (!text) return;
         searchParams.set(key, text);
     });
+    searchParams.set('returnTo', String(window.location.href || ''));
+    if (isAndroidAntiCheatBrowserRuntime()) {
+        searchParams.set('inline', '1');
+    }
     const popupUrl = `protected-launch.html${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
+    if (isAndroidAntiCheatBrowserRuntime()) {
+        try {
+            window.location.href = popupUrl;
+        } catch (error) {
+            window.location.assign(popupUrl);
+        }
+        return { inline: true, url: popupUrl };
+    }
     const popupFeatures = [
         'popup=yes',
         'width=520',
@@ -452,6 +554,9 @@ async function syncProtectedQuizRecordToBackend(resourceKey, quiz, options = {})
             monitoringEnabled: true,
             requiresDesktopClient: true,
             allowedPlatforms: ['windows', 'macos', 'linux', 'ios', 'android'],
+            antiCheatPolicy: typeof normalizeLmsAntiCheatPolicy === 'function'
+                ? normalizeLmsAntiCheatPolicy(quiz.antiCheatPolicy)
+                : (quiz.antiCheatPolicy || {}),
             allowedStudentIds: getLmsQuizAllowedStudentIds(resourceKey, quiz),
             allowedStudents: getProtectedQuizAllowedStudentsSnapshot(resourceKey, quiz)
         });
@@ -516,7 +621,8 @@ async function launchProtectedQuizInAntiCheat(resourceKey, quizId) {
     const studentMeta = resolveLmsQuizStudentMeta(resourceKey, quiz);
     if (!quiz || !studentMeta?.id) return null;
     const runtime = getProtectedQuizClientRuntime();
-    runtime.courseKey = resolveCanonicalLmsResourceKey(resourceKey);
+    const canonicalKey = resolveCanonicalLmsResourceKey(resourceKey);
+    runtime.courseKey = canonicalKey;
     runtime.quizId = String(quiz.id || '').trim();
     runtime.loaded = true;
     runtime.authorized = isAntiCheatBrowserRuntime();
@@ -530,35 +636,82 @@ async function launchProtectedQuizInAntiCheat(resourceKey, quizId) {
         return { antiCheatBrowserActive: true };
     }
     const labels = resolveLmsProtectedQuizLaunchLabels(resourceKey);
-    openAntiCheatDesktopApp();
-    alert(`Protected quizzes only open inside the Anti-Cheat Browser. The app was opened separately. Sign in there, open ${labels.subjectLabel} / ${labels.groupLabel}, and start "${String(quiz.title || getLmsQuizDisplayLabel(quiz)).trim()}" from the LMS inside that browser.`);
-    return { appOpened: true };
+    const clientProfile = getProtectedQuizPreferredClientProfile();
+    const quizTitle = String(quiz.title || getLmsQuizDisplayLabel(quiz)).trim();
+    const popup = openProtectedQuizLaunchPopup({
+        mode: 'quiz',
+        resourceKey: canonicalKey,
+        courseId: canonicalKey,
+        quizId: runtime.quizId,
+        studentId: String(studentMeta.id || ''),
+        studentName: String(studentMeta.name || ''),
+        clientType: clientProfile.clientType,
+        securityLevel: clientProfile.securityLevel,
+        installUrl: getProtectedQuizInstallUrl(),
+        quizTitle,
+        subjectLabel: labels.subjectLabel,
+        groupLabel: labels.groupLabel
+    });
+    if (popup) {
+        return { launchPopupOpened: true };
+    }
+    if (typeof createProtectedQuizLaunchTicket !== 'function') {
+        alert('The anti-cheat launch window was blocked and the launch ticket API is unavailable.');
+        return null;
+    }
+    try {
+        const portalToken = typeof getPortalSessionToken === 'function' ? String(getPortalSessionToken() || '').trim() : '';
+        if (!portalToken) {
+            redirectToProtectedQuizLogin(canonicalKey, runtime.quizId, 'Please sign in again before the protected quiz can be launched.');
+            return null;
+        }
+        const result = await createProtectedQuizLaunchTicket(runtime.quizId, {
+            courseId: canonicalKey,
+            resourceKey: canonicalKey,
+            studentId: String(studentMeta.id || ''),
+            studentName: String(studentMeta.name || ''),
+            clientType: clientProfile.clientType,
+            securityLevel: clientProfile.securityLevel
+        });
+        const launchUrl = String(result?.launchUrl || '').trim();
+        if (!launchUrl) {
+            throw new Error('Protected launch URL was not returned.');
+        }
+        await attemptProtectedAppLaunch(launchUrl, {
+            wakeProtocolUrl: 'anticheat://open?screen=settings&source=kiu-lms-launch',
+            fallbackMessage: 'Could not reach the Anti-Cheat desktop app. Start the local stack with npm run start:local:lms, or start the app manually with cd anti-cheat && npm run start, then try again.'
+        });
+        return { bridgeHandoffAttempted: true };
+    } catch (error) {
+        alert(error?.message || 'Protected quiz launch failed.');
+        return null;
+    }
 }
 
 function renderProtectedQuizLaunchShell(resourceKey, quiz, subjectLabel, groupLabel) {
     const installUrl = getProtectedQuizInstallUrl();
     return `
-        <div style="display:grid; place-items:center; min-height:420px; background:var(--lux-surface); border:1px solid #dbe7f5; border-radius:24px; box-shadow:0 18px 36px rgba(15,23,42,0.05);">
-            <div style="max-width:620px; padding:34px; text-align:center;">
-                <div style="width:72px; height:72px; border-radius:22px; background:rgba(var(--lux-accent-rgb),0.06); color:var(--lux-accent); display:grid; place-items:center; font-size:28px; margin:0 auto 18px;">
+        <div class="lms-student-quiz-cover lms-protected-launch-shell">
+            <div class="lms-student-quiz-cover-inner lms-protected-launch-inner">
+                <div class="lms-student-quiz-cover-icon is-accent lms-protected-launch-icon">
                     <i class="fas fa-shield-alt"></i>
                 </div>
-                <div style="font-size:26px; font-weight:900; color:var(--lux-text);">Protected Quiz Launch Required</div>
-                <div style="font-size:13px; color:var(--lux-text-muted); line-height:1.8; margin-top:12px;">
+                <div class="lms-student-quiz-cover-title lms-protected-launch-title">Protected Quiz Launch Required</div>
+                <div class="lms-student-quiz-cover-copy lms-protected-launch-copy">
                     ${escapeHtml(quiz.title || getLmsQuizDisplayLabel(quiz))} for ${escapeHtml(subjectLabel)} / ${escapeHtml(groupLabel)} can only be opened inside the anti-cheat application.
                     The regular browser LMS page will not reveal the answerable quiz body.
                 </div>
-                <div style="font-size:12px; color:var(--lux-text-muted); line-height:1.7; margin-top:12px;">
+                <div class="lms-protected-launch-support-copy">
                     Open the Anti-Cheat Browser first, sign in there, then open this same LMS group and start the quiz from inside that protected browser. This page stays read-only in the regular browser.
                 </div>
-                <div style="display:flex; justify-content:center; gap:12px; flex-wrap:wrap; margin-top:20px;">
-                    <button type="button" class="kiu-btn-blue" data-lms-click="launchProtectedQuizInAntiCheat(${jsQuote(resourceKey)}, ${jsQuote(quiz.id)})" style="padding:12px 18px; font-size:13px;">
+                <div class="lms-student-quiz-cover-actions lms-protected-launch-actions">
+                    <button type="button" class="kiu-btn-blue lms-student-quiz-cover-btn lms-protected-launch-action-btn is-open-browser" data-lms-click="launchProtectedQuizInAntiCheat(${jsQuote(resourceKey)}, ${jsQuote(quiz.id)})">
                         <i class="fas fa-arrow-up-right-from-square"></i> Open Anti-Cheat Browser
                     </button>
-                    <button type="button" class="kiu-btn-outline" data-lms-click="openAntiCheatDesktopApp()" style="padding:12px 18px; font-size:13px;">
+                    <button type="button" class="kiu-btn-outline lms-student-quiz-cover-btn lms-protected-launch-action-btn is-open-app" data-lms-click="openAntiCheatDesktopApp()">
                         <i class="fas fa-desktop"></i> Open LMS In App
                     </button>
-                    ${installUrl && installUrl !== '#' ? `<a href="${escapeHtml(installUrl)}" target="_blank" rel="noopener" class="kiu-btn-outline" style="padding:12px 18px; font-size:13px; text-decoration:none; display:inline-flex; align-items:center; gap:8px;"><i class="fas fa-download"></i> Install App</a>` : ''}
+                    ${installUrl && installUrl !== '#' ? `<a href="${escapeHtml(installUrl)}" target="_blank" rel="noopener" class="kiu-btn-outline lms-student-quiz-cover-btn lms-protected-launch-link lms-protected-launch-action-btn is-install"><i class="fas fa-download"></i> Install App</a>` : ''}
                 </div>
             </div>
         </div>
@@ -631,7 +784,7 @@ async function performProtectedMonitoringAction(resourceKey, quizId, studentId, 
     }
 }
 
-async function renderLmsMonitoringSection(courseId) {
+async function renderLmsMonitoringSection(courseId, options = {}) {
     const contentArea = document.getElementById('lms-content-area');
     if (!contentArea) return;
     const renderToken = prepareLmsContentAreaForTab('monitoring', contentArea);
@@ -648,7 +801,7 @@ async function renderLmsMonitoringSection(courseId) {
     contentArea.innerHTML = `<div class="lms-route-panel"><div class="lms-route-copy">Loading protected quiz monitoring - </div></div>`;
     let monitor = null;
     try {
-        monitor = await fetchProtectedQuizMonitor(context.resourceKey);
+        monitor = options.monitorOverride || await fetchProtectedQuizMonitor(context.resourceKey);
         protectedQuizMonitorRuntime = { pending: false, groupKey: context.resourceKey, data: monitor };
     } catch (error) {
         protectedQuizMonitorRuntime = { pending: false, groupKey: context.resourceKey, data: null };
@@ -683,56 +836,65 @@ async function renderLmsMonitoringSection(courseId) {
             const disconnectLabel = formatLmsDurationLabel(attempt.disconnectAccumulatedMs || 0);
             const submitReason = String(attempt.submitReason || '').trim();
             const overrideStatus = String(attempt.overrideStatus || '').trim();
+            const attemptPolicy = attempt.appliedAntiCheatPolicy || quiz.antiCheatPolicy || {};
             const timeline = Array.isArray(attempt.auditTrail) && attempt.auditTrail.length
                 ? attempt.auditTrail.slice(0, 6).map(event => `
-                    <div style="padding:10px 12px; border-radius:14px; background:var(--lux-bg-soft); border:1px solid rgba(148,163,184,0.16);">
-                        <div style="font-size:12px; font-weight:800; color:var(--lux-text);">${escapeHtml(event.note || event.type || 'Event')}</div>
-                        <div style="font-size:11px; color:var(--lux-text-muted); margin-top:4px;">${escapeHtml(formatLmsDateTime(event.createdAt))}</div>
+                    <div class="lms-protected-monitor-audit-item">
+                        <div class="lms-protected-monitor-audit-copy">${escapeHtml(event.note || event.type || 'Event')}</div>
+                        <div class="lms-protected-monitor-audit-meta">${escapeHtml(formatLmsDateTime(event.createdAt))}</div>
                     </div>
                 `).join('')
-                : `<div style="font-size:12px; color:var(--lux-text-muted);">No audit trail yet.</div>`;
+                : '<div class="lms-protected-monitor-audit-empty">No audit trail yet.</div>';
             return `
-                <details style="background:var(--lux-surface); border:1px solid #dbe7f5; border-radius:18px; padding:16px 18px;">
-                    <summary style="cursor:pointer; list-style:none;">
-                        <div style="display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; align-items:flex-start;">
+                <details class="lms-protected-monitor-details">
+                    <summary class="lms-protected-monitor-summary">
+                        <div class="lms-protected-monitor-head">
                             <div>
-                                <div style="font-size:16px; font-weight:900; color:var(--lux-text);">${escapeHtml(student.name || attempt.studentName || `Student ${student.id || attempt.studentId || ''}`)}</div>
-                                <div style="font-size:12px; color:var(--lux-text-muted); margin-top:6px;">Status ${escapeHtml(status)}  -  Last heartbeat ${escapeHtml(heartbeat)}  -  Disconnect ${escapeHtml(disconnectLabel)}</div>
-                                <div style="font-size:12px; color:var(--lux-text-muted); margin-top:6px;">${escapeHtml(latestEvent?.note || latestEvent?.type || 'No violations yet')}</div>
+                                <div class="lms-protected-monitor-student">${escapeHtml(student.name || attempt.studentName || `Student ${student.id || attempt.studentId || ''}`)}</div>
+                                <div class="lms-protected-monitor-copy lms-protected-monitor-status-line">Status ${escapeHtml(status)}  -  Last heartbeat ${escapeHtml(heartbeat)}  -  Disconnect ${escapeHtml(disconnectLabel)}</div>
+                                <div class="lms-protected-monitor-copy lms-protected-monitor-latest-copy">${escapeHtml(latestEvent?.note || latestEvent?.type || 'No violations yet')}</div>
                             </div>
-                            <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                                <span class="lms-route-pill"><i class="fas fa-triangle-exclamation"></i> Warnings ${Number(attempt.warningCount || 0)}</span>
-                                <span class="lms-route-pill"><i class="fas fa-shield"></i> Violations ${Number(attempt.violationCount || 0)}</span>
-                                <span class="lms-route-pill"><i class="fas fa-plug"></i> ${attempt.antiCheatConnected ? 'Connected' : 'Disconnected'}</span>
-                                ${overrideStatus ? `<span class="lms-route-pill"><i class="fas fa-sliders"></i> Override ${escapeHtml(overrideStatus)}</span>` : ''}
+                            <div class="lms-protected-monitor-pills">
+                                <span class="lms-route-pill lms-protected-monitor-pill is-warning-count"><i class="fas fa-triangle-exclamation"></i> Warnings ${Number(attempt.warningCount || 0)}</span>
+                                <span class="lms-route-pill lms-protected-monitor-pill is-violation-count"><i class="fas fa-shield"></i> Violations ${Number(attempt.violationCount || 0)}</span>
+                                <span class="lms-route-pill lms-protected-monitor-pill ${attempt.antiCheatConnected ? 'is-connected' : 'is-disconnected'}"><i class="fas fa-plug"></i> ${attempt.antiCheatConnected ? 'Connected' : 'Disconnected'}</span>
+                                ${overrideStatus ? `<span class="lms-route-pill lms-protected-monitor-pill is-override"><i class="fas fa-sliders"></i> Override ${escapeHtml(overrideStatus)}</span>` : ''}
                             </div>
                         </div>
                     </summary>
-                    <div style="display:grid; gap:14px; margin-top:16px;">
-                        <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                            <button type="button" class="kiu-btn-outline" data-lms-click="performProtectedMonitoringAction(${jsQuote(context.resourceKey)}, ${jsQuote(quiz.id)}, ${jsQuote(student.id || attempt.studentId)}, 'block')" style="padding:8px 12px; font-size:12px;">Block</button>
-                            <button type="button" class="kiu-btn-outline" data-lms-click="performProtectedMonitoringAction(${jsQuote(context.resourceKey)}, ${jsQuote(quiz.id)}, ${jsQuote(student.id || attempt.studentId)}, 'unblock')" style="padding:8px 12px; font-size:12px;">Unblock</button>
-                            <button type="button" class="kiu-btn-outline" data-lms-click="performProtectedMonitoringAction(${jsQuote(context.resourceKey)}, ${jsQuote(quiz.id)}, ${jsQuote(student.id || attempt.studentId)}, 'force-submit')" style="padding:8px 12px; font-size:12px;">Force Submit</button>
-                            <button type="button" class="kiu-btn-outline" data-lms-click="performProtectedMonitoringAction(${jsQuote(context.resourceKey)}, ${jsQuote(quiz.id)}, ${jsQuote(student.id || attempt.studentId)}, 'reset-warnings')" style="padding:8px 12px; font-size:12px;">Reset Warnings</button>
-                            <button type="button" class="kiu-btn-outline" data-lms-click="performProtectedMonitoringAction(${jsQuote(context.resourceKey)}, ${jsQuote(quiz.id)}, ${jsQuote(student.id || attempt.studentId)}, 'approve-reconnect')" style="padding:8px 12px; font-size:12px;">Approve Reconnect</button>
-                            <button type="button" class="kiu-btn-outline" data-lms-click="performProtectedMonitoringAction(${jsQuote(context.resourceKey)}, ${jsQuote(quiz.id)}, ${jsQuote(student.id || attempt.studentId)}, 'override-status')" style="padding:8px 12px; font-size:12px;">Override Status</button>
+                    <div class="lms-protected-monitor-body">
+                        <div class="lms-protected-monitor-actions">
+                            <button type="button" class="kiu-btn-outline lms-quiz-action-btn is-compact lms-protected-monitor-action-btn is-block" data-lms-click="performProtectedMonitoringAction(${jsQuote(context.resourceKey)}, ${jsQuote(quiz.id)}, ${jsQuote(student.id || attempt.studentId)}, 'block')">Block</button>
+                            <button type="button" class="kiu-btn-outline lms-quiz-action-btn is-compact lms-protected-monitor-action-btn is-unblock" data-lms-click="performProtectedMonitoringAction(${jsQuote(context.resourceKey)}, ${jsQuote(quiz.id)}, ${jsQuote(student.id || attempt.studentId)}, 'unblock')">Unblock</button>
+                            <button type="button" class="kiu-btn-outline lms-quiz-action-btn is-compact lms-protected-monitor-action-btn is-force-submit" data-lms-click="performProtectedMonitoringAction(${jsQuote(context.resourceKey)}, ${jsQuote(quiz.id)}, ${jsQuote(student.id || attempt.studentId)}, 'force-submit')">Force Submit</button>
+                            <button type="button" class="kiu-btn-outline lms-quiz-action-btn is-compact lms-protected-monitor-action-btn is-reset-warnings" data-lms-click="performProtectedMonitoringAction(${jsQuote(context.resourceKey)}, ${jsQuote(quiz.id)}, ${jsQuote(student.id || attempt.studentId)}, 'reset-warnings')">Reset Warnings</button>
+                            <button type="button" class="kiu-btn-outline lms-quiz-action-btn is-compact lms-protected-monitor-action-btn is-approve-reconnect" data-lms-click="performProtectedMonitoringAction(${jsQuote(context.resourceKey)}, ${jsQuote(quiz.id)}, ${jsQuote(student.id || attempt.studentId)}, 'approve-reconnect')">Approve Reconnect</button>
+                            <button type="button" class="kiu-btn-outline lms-quiz-action-btn is-compact lms-protected-monitor-action-btn is-override-status" data-lms-click="performProtectedMonitoringAction(${jsQuote(context.resourceKey)}, ${jsQuote(quiz.id)}, ${jsQuote(student.id || attempt.studentId)}, 'override-status')">Override Status</button>
                         </div>
-                        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:10px;">
-                            <div style="padding:12px 14px; border-radius:14px; background:var(--lux-bg-soft); border:1px solid rgba(148,163,184,0.16);">
-                                <div style="font-size:11px; font-weight:900; color:var(--lux-text-muted); text-transform:uppercase; letter-spacing:0.08em;">Submit Reason</div>
-                                <div style="font-size:13px; color:var(--lux-text); margin-top:6px;">${escapeHtml(submitReason || 'None')}</div>
+                        <div class="lms-protected-monitor-metrics">
+                            <div class="lms-protected-monitor-metric">
+                                <div class="lms-protected-monitor-metric-title">Applied Policy</div>
+                                <div class="lms-protected-monitor-metric-copy">${escapeHtml([
+                                    attemptPolicy.kioskMode !== false ? 'Kiosk' : '',
+                                    attemptPolicy.processScanning !== false ? 'Process scan' : '',
+                                    attemptPolicy.vmDetection !== false ? 'VM detection' : ''
+                                ].filter(Boolean).join(', ') || 'Default secure policy')}</div>
                             </div>
-                            <div style="padding:12px 14px; border-radius:14px; background:var(--lux-bg-soft); border:1px solid rgba(148,163,184,0.16);">
-                                <div style="font-size:11px; font-weight:900; color:var(--lux-text-muted); text-transform:uppercase; letter-spacing:0.08em;">Review State</div>
-                                <div style="font-size:13px; color:var(--lux-text); margin-top:6px;">${escapeHtml(attempt.requiresManualReview ? 'Manual review required' : 'Auto-graded or not required')}</div>
+                            <div class="lms-protected-monitor-metric">
+                                <div class="lms-protected-monitor-metric-title">Submit Reason</div>
+                                <div class="lms-protected-monitor-metric-copy">${escapeHtml(submitReason || 'None')}</div>
                             </div>
-                            <div style="padding:12px 14px; border-radius:14px; background:var(--lux-bg-soft); border:1px solid rgba(148,163,184,0.16);">
-                                <div style="font-size:11px; font-weight:900; color:var(--lux-text-muted); text-transform:uppercase; letter-spacing:0.08em;">Score Snapshot</div>
-                                <div style="font-size:13px; color:var(--lux-text); margin-top:6px;">Auto ${Number(attempt.autoScoreRaw || 0)} | Manual ${Number(attempt.manualScoreRaw || 0)} | Final ${attempt.finalScoreRaw === null || attempt.finalScoreRaw === undefined ? 'Pending' : Number(attempt.finalScoreRaw)}</div>
+                            <div class="lms-protected-monitor-metric">
+                                <div class="lms-protected-monitor-metric-title">Review State</div>
+                                <div class="lms-protected-monitor-metric-copy">${escapeHtml(attempt.requiresManualReview ? 'Manual review required' : 'Auto-graded or not required')}</div>
+                            </div>
+                            <div class="lms-protected-monitor-metric">
+                                <div class="lms-protected-monitor-metric-title">Score Snapshot</div>
+                                <div class="lms-protected-monitor-metric-copy">Auto ${Number(attempt.autoScoreRaw || 0)} | Manual ${Number(attempt.manualScoreRaw || 0)} | Final ${attempt.finalScoreRaw === null || attempt.finalScoreRaw === undefined ? 'Pending' : Number(attempt.finalScoreRaw)}</div>
                             </div>
                         </div>
-                        <div style="display:grid; gap:10px;">
-                            <div style="font-size:11px; font-weight:900; color:var(--lux-text-muted); text-transform:uppercase; letter-spacing:0.08em;">Audit Trail</div>
+                        <div class="lms-protected-monitor-audit">
+                            <div class="lms-protected-monitor-audit-title">Audit Trail</div>
                             ${timeline}
                         </div>
                     </div>
@@ -740,38 +902,42 @@ async function renderLmsMonitoringSection(courseId) {
             `;
         }).join('');
         return `
-            <section class="lms-route-panel">
-                <div class="lms-route-card-head">
+            <section class="lms-route-panel lms-protected-monitor-shell">
+                <div class="lms-route-card-head lms-protected-monitor-shell-head">
                     <div>
-                        <div class="lms-route-card-title" style="font-size:22px;">${escapeHtml(quiz.title || getLmsQuizDisplayLabel(quiz))}</div>
-                        <div class="lms-route-copy" style="margin-top:6px;">${escapeHtml(getLmsQuizDisplayLabel(quiz))}  -  ${escapeHtml(String(quiz.status || 'published'))}</div>
+                        <div class="lms-route-card-title lms-protected-monitor-shell-title">${escapeHtml(quiz.title || getLmsQuizDisplayLabel(quiz))}</div>
+                        <div class="lms-route-copy lms-route-copy-mt-6 lms-protected-monitor-shell-copy">${escapeHtml(getLmsQuizDisplayLabel(quiz))}  -  ${escapeHtml(String(quiz.status || 'published'))}</div>
+                        ${renderProtectedAntiCheatPolicySummary(quiz.antiCheatPolicy)}
                     </div>
-                    <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                        <span class="lms-route-pill"><i class="fas fa-users"></i> ${(quiz.attempts || []).length} students</span>
-                        <span class="lms-route-pill"><i class="fas fa-play"></i> ${Number(quiz.monitoringSummary?.inProgress || 0)} live</span>
-                        <span class="lms-route-pill"><i class="fas fa-paper-plane"></i> ${Number(quiz.monitoringSummary?.submitted || 0)} submitted</span>
-                        <span class="lms-route-pill"><i class="fas fa-ban"></i> ${Number(quiz.monitoringSummary?.blocked || 0)} blocked</span>
+                    <div class="lms-route-actions lms-protected-monitor-shell-actions">
+                        <span class="lms-route-pill lms-protected-monitor-shell-pill is-students"><i class="fas fa-users"></i> ${(quiz.attempts || []).length} students</span>
+                        <span class="lms-route-pill lms-protected-monitor-shell-pill is-live"><i class="fas fa-play"></i> ${Number(quiz.monitoringSummary?.inProgress || 0)} live</span>
+                        <span class="lms-route-pill lms-protected-monitor-shell-pill is-submitted"><i class="fas fa-paper-plane"></i> ${Number(quiz.monitoringSummary?.submitted || 0)} submitted</span>
+                        <span class="lms-route-pill lms-protected-monitor-shell-pill is-blocked"><i class="fas fa-ban"></i> ${Number(quiz.monitoringSummary?.blocked || 0)} blocked</span>
                     </div>
                 </div>
-                <div style="display:grid; gap:12px; margin-top:14px;">${rows || `<div class="lms-route-copy">No students are assigned to this protected quiz yet.</div>`}</div>
+                <div class="lms-route-stack lms-route-stack-mt-16 lms-protected-monitor-shell-list">${rows || `<div class="lms-route-copy lms-protected-monitor-empty-note">No students are assigned to this protected quiz yet.</div>`}</div>
             </section>
         `;
     }).join('') : renderLmsRouteEmptyState('No protected quizzes', 'Publish a quiz in this group first. Monitoring data will appear here after launch and proctor events start coming in.', 'fa-shield-halved');
     contentArea.innerHTML = `
         <div class="lms-route-stack">
-            <div class="lms-route-panel">
-                <div class="lms-route-card-head">
+            <div class="lms-route-panel lms-protected-monitor-page-shell">
+                <div class="lms-route-card-head lms-protected-monitor-page-head">
                     <div>
-                        <div class="lms-route-eyebrow">Monitoring</div>
-                        <div class="lms-route-card-title">Quiz Monitoring</div>
-                        <div class="lms-route-copy" style="margin-top:4px;">Live anti-cheat, warnings, and proctor controls</div>
+                        <div class="lms-route-eyebrow lms-protected-monitor-page-eyebrow">Monitoring</div>
+                        <div class="lms-route-card-title lms-protected-monitor-page-title">Quiz Monitoring</div>
+                        <div class="lms-route-copy lms-route-copy-mt-4 lms-protected-monitor-page-copy">Live anti-cheat, warnings, and proctor controls. Auto-refresh updates every ${Math.round(PROTECTED_QUIZ_MONITOR_REFRESH_MS / 1000)} seconds.</div>
                     </div>
-                    <button type="button" class="kiu-btn-outline" data-lms-click="renderLmsMonitoringSection(currentCourseId)" style="padding:10px 14px; font-size:12px;"><i class="fas fa-rotate-right"></i> Refresh</button>
+                    <button type="button" class="kiu-btn-outline lms-quiz-action-btn lms-protected-monitor-page-refresh lms-protected-monitor-action-btn is-refresh" data-lms-click="refreshProtectedQuizMonitorLiveData(true)"><i class="fas fa-rotate-right"></i> Refresh</button>
                 </div>
             </div>
             ${quizBlocks}
         </div>
     `;
+    if (!options.skipAutoRefreshArm) {
+        armProtectedQuizMonitorAutoRefresh(context.resourceKey);
+    }
 }
 
 function deleteLmsExamSession(sessionId) {
@@ -800,5 +966,12 @@ function toggleLmsExamSessionStudentBlock(sessionId, studentId) {
     saveState();
 }
 
+window.launchProtectedQuizInAntiCheat = launchProtectedQuizInAntiCheat;
+window.openProtectedQuizLaunchPopup = openProtectedQuizLaunchPopup;
+window.attemptProtectedAppLaunch = attemptProtectedAppLaunch;
+window.openAntiCheatDesktopApp = openAntiCheatDesktopApp;
+window.refreshProtectedQuizMonitorLiveData = refreshProtectedQuizMonitorLiveData;
+
 bootstrapProtectedQuizRouteFromUrl();
 schedulePendingProtectedQuizLaunchResume();
+window.addEventListener('beforeunload', stopProtectedQuizMonitorAutoRefresh);

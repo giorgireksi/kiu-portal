@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kiu-portal-shell-v20260514-studentsadmin-clean2';
+const CACHE_NAME = 'kiu-portal-shell-v20260606-postactions6';
 const CACHE_PREFIX = 'kiu-portal-shell-';
 const SHELL_ASSETS = [
   '/',
@@ -7,11 +7,10 @@ const SHELL_ASSETS = [
   '/news.html',
   '/exams.html',
   '/login.html',
-  '/assets/css/base.css?v=20260514-studentsadmin-clean2',
+  '/assets/css/base.css?v=20260604-styleguard2',
   '/assets/css/layout.css?v=1776604822083',
-  '/assets/css/components.css?v=1776604822083',
-  '/assets/css/index-luxury.css?v=20260514-studentsadmin-clean2',
-  '/assets/css/students-admin-lms.css?v=20260514-studentsadmin-clean2',
+  '/assets/css/index-luxury.css?v=20260604-styleguard2',
+  '/assets/css/students-admin-lms.css?v=20260604-styleguard2',
   '/assets/css/mobile-responsive.css?v=20260419-libsync1'
 ];
 
@@ -25,16 +24,58 @@ async function deleteLegacyPortalCaches() {
 }
 
 function buildOfflineApiResponse(request) {
-  const acceptsJson = String(request.headers.get('accept') || '').toLowerCase().includes('application/json');
-  const payload = {
-    ok: false,
-    error: acceptsJson ? 'The portal API is offline right now.' : 'Offline',
+    const acceptsJson = String(request.headers.get('accept') || '').toLowerCase().includes('application/json');
+    const payload = {
+        ok: false,
+        error: acceptsJson ? 'The portal API is offline right now.' : 'Offline',
     code: 'offline'
   };
   return new Response(JSON.stringify(payload), {
     status: 503,
     headers: {
       'Content-Type': 'application/json',
+      'Cache-Control': 'no-store'
+    }
+  });
+}
+
+function buildOfflineNavigationResponse() {
+  return new Response(
+    '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>KIU Offline</title></head><body><main><h1>Portal offline</h1><p>The portal shell could not be loaded right now.</p></main></body></html>',
+    {
+      status: 503,
+      headers: {
+        'Content-Type': 'text/html; charset=utf-8',
+        'Cache-Control': 'no-store'
+      }
+    }
+  );
+}
+
+function buildOfflineAssetResponse(request) {
+  const destination = String(request.destination || '').trim().toLowerCase();
+  if (destination === 'script') {
+    return new Response('/* offline asset fallback */', {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/javascript; charset=utf-8',
+        'Cache-Control': 'no-store'
+      }
+    });
+  }
+  if (destination === 'style') {
+    return new Response('/* offline asset fallback */', {
+      status: 200,
+      headers: {
+        'Content-Type': 'text/css; charset=utf-8',
+        'Cache-Control': 'no-store'
+      }
+    });
+  }
+  return new Response('', {
+    status: 503,
+    headers: {
+      'Content-Type': 'text/plain; charset=utf-8',
       'Cache-Control': 'no-store'
     }
   });
@@ -60,6 +101,46 @@ function isStaticAssetRequest(url, request) {
   return ['script', 'style', 'font', 'image'].includes(request.destination);
 }
 
+function isRegistrationRuntimeScriptRequest(url, request) {
+  if (request.destination !== 'script') return false;
+  const pathname = String(url.pathname || '').toLowerCase();
+  return /\/assets\/js\/pages\/(student-registration|registration-enrollment|registration-shared|registration-student-route|registration)\.js$/.test(pathname);
+}
+
+async function handleRegistrationRuntimeScriptRequest(request, event) {
+  const cache = await caches.open(CACHE_NAME);
+  try {
+    const networkResponse = await fetch(request);
+    if (networkResponse && networkResponse.ok) {
+      event.waitUntil(cache.put(request, networkResponse.clone()));
+      return networkResponse;
+    }
+  } catch (error) {}
+  const cached = await cache.match(request);
+  if (cached) return cached;
+  return buildOfflineAssetResponse(request);
+}
+
+function isSocialRuntimeScriptRequest(url, request) {
+  if (request.destination !== 'script') return false;
+  const pathname = String(url.pathname || '').toLowerCase();
+  return /\/assets\/js\/(?:pages\/social-page|shared\/social-runtime-lite)\.js$/.test(pathname);
+}
+
+async function handleSocialRuntimeScriptRequest(request, event) {
+  const cache = await caches.open(CACHE_NAME);
+  try {
+    const networkResponse = await fetch(request);
+    if (networkResponse && networkResponse.ok) {
+      event.waitUntil(cache.put(request, networkResponse.clone()));
+      return networkResponse;
+    }
+  } catch (error) {}
+  const cached = await cache.match(request);
+  if (cached) return cached;
+  return buildOfflineAssetResponse(request);
+}
+
 async function handleNavigationRequest(request) {
   try {
     const networkResponse = await fetch(request);
@@ -67,7 +148,9 @@ async function handleNavigationRequest(request) {
   } catch (error) {
     const cached = await caches.match(request);
     if (cached) return cached;
-    return caches.match('/index.html');
+    const shell = await caches.match('/index.html');
+    if (shell) return shell;
+    return buildOfflineNavigationResponse();
   }
 }
 
@@ -85,7 +168,9 @@ async function handleStaticAssetRequest(request, event) {
 
   const networkResponse = await networkPromise;
   if (networkResponse) return networkResponse;
-  return caches.match(request);
+  const fallback = await caches.match(request);
+  if (fallback) return fallback;
+  return buildOfflineAssetResponse(request);
 }
 
 self.addEventListener('install', event => {
@@ -119,6 +204,14 @@ self.addEventListener('fetch', event => {
     event.respondWith(handleNavigationRequest(request));
     return;
   }
+  if (isRegistrationRuntimeScriptRequest(url, request)) {
+    event.respondWith(handleRegistrationRuntimeScriptRequest(request, event));
+    return;
+  }
+  if (isSocialRuntimeScriptRequest(url, request)) {
+    event.respondWith(handleSocialRuntimeScriptRequest(request, event));
+    return;
+  }
   if (isStaticAssetRequest(url, request)) {
     event.respondWith(handleStaticAssetRequest(request, event));
     return;
@@ -126,7 +219,11 @@ self.addEventListener('fetch', event => {
   event.respondWith(
     fetch(request)
       .then((networkResponse) => cacheResponse(request, networkResponse))
-      .catch(() => caches.match(request))
+      .catch(async () => {
+        const cached = await caches.match(request);
+        if (cached) return cached;
+        return buildOfflineAssetResponse(request);
+      })
   );
 });
 

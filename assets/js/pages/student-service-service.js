@@ -2,6 +2,21 @@
     if (window.__KIU_STUDENT_SERVICE_SERVICE_MODULE_LOADED) return;
     window.__KIU_STUDENT_SERVICE_SERVICE_MODULE_LOADED = true;
 
+    const STUDENT_SERVICE_ROUTE_STATUS_OWNER = Object.freeze({
+        ticket: Object.freeze([
+            'open',
+            'in-review',
+            'waiting-student',
+            'waiting-service',
+            'resolved',
+            'closed'
+        ]),
+        article: Object.freeze([
+            'draft',
+            'published'
+        ])
+    });
+
     function ensureStudentServiceMyTicketsShell(container) {
         if (!container) return null;
         let shell = container.querySelector('[data-student-service-my-tickets-shell="1"]');
@@ -24,6 +39,128 @@
             list: shell?.querySelector('[data-student-service-my-tickets-list="1"]') || null,
             detail: shell?.querySelector('[data-student-service-my-tickets-detail="1"]') || null
         };
+    }
+
+    function normalizeStudentServiceStatusKey(status, fallback = 'neutral') {
+        const normalized = String(status || '').trim().toLowerCase();
+        const known = {
+            open: 'open',
+            'in review': 'in-review',
+            'waiting for student': 'waiting-student',
+            'waiting for service': 'waiting-service',
+            resolved: 'resolved',
+            closed: 'closed',
+            published: 'published',
+            draft: 'draft'
+        };
+        return known[normalized] || fallback;
+    }
+
+    function normalizeStudentServiceStatusScope(scope) {
+        return String(scope || '').trim().toLowerCase() === 'article' ? 'article' : 'ticket';
+    }
+
+    function resolveStudentServiceStatusOwnerContract(scope, key) {
+        const resolvedScope = normalizeStudentServiceStatusScope(scope);
+        const normalizedKey = normalizeStudentServiceStatusKey(key, 'neutral');
+        const knownKeys = STUDENT_SERVICE_ROUTE_STATUS_OWNER[resolvedScope] || [];
+        return {
+            scope: resolvedScope,
+            key: knownKeys.includes(normalizedKey) ? normalizedKey : 'neutral'
+        };
+    }
+
+    function renderStudentServiceStatusBadge(label, options = {}) {
+        const statusContract = resolveStudentServiceStatusOwnerContract(options.scope || 'ticket', options.key || label);
+        const classes = [
+            'student-service-status',
+            `student-service-status--${statusContract.scope}`,
+            `student-service-status--${statusContract.key}`
+        ];
+        if (options.extraClasses) {
+            String(options.extraClasses)
+                .trim()
+                .split(/\s+/)
+                .filter(Boolean)
+                .forEach((className) => classes.push(className));
+        }
+        return `
+            <span
+                class="${classes.join(' ')}"
+                data-student-service-status-scope="${statusContract.scope}"
+                data-student-service-status-key="${statusContract.key}"
+            >${ssEscape(label)}</span>
+        `.replace(/\s+/g, ' ').trim();
+    }
+
+    function renderStudentServiceMetaRow(items, className = 'student-service-ticket-card-meta') {
+        const safeItems = (Array.isArray(items) ? items : [])
+            .map((item) => String(item == null ? '' : item).trim())
+            .filter(Boolean);
+        return `
+            <div class="${className}">
+                ${safeItems.map((item) => `<span class="${className}-item">${ssEscape(item)}</span>`).join('')}
+            </div>
+        `;
+    }
+
+    function renderStudentServiceEmptyState(message, extraClasses = '') {
+        const classes = ['student-service-empty-state'];
+        if (extraClasses) {
+            String(extraClasses)
+                .trim()
+                .split(/\s+/)
+                .filter(Boolean)
+                .forEach((className) => classes.push(className));
+        }
+        return `<div class="${classes.join(' ')}">${ssEscape(message)}</div>`;
+    }
+
+    function renderStudentServiceTicketCard({
+        id = '',
+        action = 'open-ticket',
+        title = '',
+        statusLabel = '',
+        statusKey = '',
+        statusScope = 'ticket',
+        metaItems = [],
+        copy = '',
+        selected = false,
+        variant = 'ticket'
+    } = {}) {
+        const cardClasses = ['student-service-ticket-card', `student-service-ticket-card--${variant}`];
+        if (selected) cardClasses.push('is-selected');
+        return `
+            <button type="button" class="${cardClasses.join(' ')}" data-student-service-${action}="${ssEscape(id)}">
+                <div class="student-service-ticket-card-head">
+                    <strong class="student-service-ticket-card-title">${ssEscape(title)}</strong>
+                    ${renderStudentServiceStatusBadge(statusLabel, {
+                        key: statusKey,
+                        scope: statusScope,
+                        extraClasses: 'student-service-ticket-card-status'
+                    })}
+                </div>
+                ${renderStudentServiceMetaRow(metaItems)}
+                <div class="student-service-ticket-card-copy">${ssEscape(copy)}</div>
+            </button>
+        `;
+    }
+
+    function renderStudentServiceThreadEntry(entry, selectedTicket) {
+        const isStudent = entry.authorRole === USER_ROLES.STUDENT;
+        const authorName = isStudent ? selectedTicket.studentName : entry.authorName;
+        return `
+            <div class="student-service-thread-entry ${isStudent ? 'is-student' : 'is-support'}">
+                <div class="student-service-thread-entry-top">
+                    <strong class="student-service-thread-entry-author">${ssEscape(authorName)}</strong>
+                    <span class="student-service-thread-entry-role">${ssEscape(ssRoleLabel(entry.authorRole))}</span>
+                </div>
+                <div class="student-service-thread-entry-time">${ssFormatDateTime(entry.createdAt)}</div>
+                <div class="student-service-thread-entry-copy">
+                    <div class="student-service-thread-entry-copy-body">${ssTextBlock(entry.message)}</div>
+                </div>
+            </div>
+        `;
     }
 
     function renderStudentServiceMyTicketsSummaryMarkup(statusCounts) {
@@ -65,20 +202,20 @@
                     <button type="button" class="student-service-mini-action" data-student-service-ticket-filter-field="ticketSearch" data-student-service-ticket-filter-value=""><i class="fas fa-eraser"></i> Clear</button>
                 </div>
                 <div class="student-service-ticket-list">
-                    ${ticketFeed.map(ticket => {
-                        const tone = getStudentServiceStatusTone(ticket.status);
-                        const isSelected = selectedTicket?.id === ticket.id;
-                        return `
-                            <button type="button" class="student-service-ticket-card${isSelected ? ' is-selected' : ''}" data-student-service-open-ticket="${ssEscape(ticket.id)}">
-                                <div class="student-service-ticket-card-top">
-                                    <strong>${ssEscape(ticket.title)}</strong>
-                                    <span class="student-service-status" style="--student-service-status-bg:${tone.bg}; --student-service-status-text:${tone.text};">${ssEscape(ticket.status)}</span>
-                                </div>
-                                <div class="student-service-ticket-card-meta">${ssEscape(getStudentServiceSupportArea(ticket.serviceArea).label)} | ${ssEscape(ssFormatDateTime(ticket.updatedAt || ticket.createdAt))}</div>
-                                <div class="student-service-ticket-card-copy">${ssEscape(ticket.latestPreview || ticket.message)}</div>
-                            </button>
-                        `;
-                    }).join('') || '<div class="student-service-empty-state">You have not opened any tickets yet.</div>'}
+                    ${ticketFeed.map((ticket) => renderStudentServiceTicketCard({
+                        id: ticket.id,
+                        action: 'open-ticket',
+                        title: ticket.title,
+                        statusLabel: ticket.status,
+                        statusKey: ticket.status,
+                        statusScope: 'ticket',
+                        metaItems: [
+                            getStudentServiceSupportArea(ticket.serviceArea).label,
+                            ssFormatDateTime(ticket.updatedAt || ticket.createdAt)
+                        ],
+                        copy: ticket.latestPreview || ticket.message,
+                        selected: selectedTicket?.id === ticket.id
+                    })).join('') || renderStudentServiceEmptyState('You have not opened any tickets yet.', 'student-service-empty-state--tickets')}
                 </div>
             </section>
         `;
@@ -92,7 +229,11 @@
                         <div class="student-service-kicker">Continue</div>
                         <div class="student-service-zone-title">${ssEscape(selectedTicket?.title || 'Pick a ticket to continue')}</div>
                     </div>
-                    ${selectedTicket ? `<span class="student-service-panel-chip">${ssEscape(selectedTicket.status)}</span>` : ''}
+                    ${selectedTicket ? renderStudentServiceStatusBadge(selectedTicket.status, {
+                        key: selectedTicket.status,
+                        scope: 'ticket',
+                        extraClasses: 'student-service-ticket-detail-status'
+                    }) : ''}
                 </div>
                 ${selectedTicket ? `
                     <div class="student-service-ticket-detail">
@@ -102,18 +243,9 @@
                             <span class="student-service-pill">Updated ${ssFormatDateTime(selectedTicket.updatedAt)}</span>
                             <span class="student-service-pill">Assignee ${ssEscape(selectedTicket.assignedToName || 'Unassigned')}</span>
                         </div>
-                        <div class="student-service-ticket-detail-copy">${ssEscape(selectedTicket.latestPreview || selectedTicket.message)}</div>
+                        <div class="student-service-ticket-detail-copy student-service-ticket-detail-copy--summary">${ssEscape(selectedTicket.latestPreview || selectedTicket.message)}</div>
                         <div class="student-service-thread-list">
-                            ${selectedTicket.thread.map(entry => `
-                                <div class="student-service-thread-entry ${entry.authorRole === USER_ROLES.STUDENT ? 'is-student' : 'is-support'}">
-                                    <div class="student-service-thread-entry-top">
-                                        <strong>${entry.authorRole === USER_ROLES.STUDENT ? ssEscape(selectedTicket.studentName) : ssEscape(entry.authorName)}</strong>
-                                        <span>${ssEscape(ssRoleLabel(entry.authorRole))}</span>
-                                    </div>
-                                    <div class="student-service-thread-entry-time">${ssFormatDateTime(entry.createdAt)}</div>
-                                    <div class="student-service-thread-entry-copy">${ssTextBlock(entry.message)}</div>
-                                </div>
-                            `).join('')}
+                            ${selectedTicket.thread.map((entry) => renderStudentServiceThreadEntry(entry, selectedTicket)).join('')}
                         </div>
                         ${selectedTicket.status !== 'Closed' ? `
                             <div class="student-service-thread-reply">
@@ -123,9 +255,7 @@
                         ` : '<div class="student-service-empty-state">This ticket is closed. Open a new request if you need a new issue reviewed.</div>'}
                     </div>
                 ` : `
-                    <div class="student-service-empty-state student-service-empty-state-large">
-                        Select a ticket on the left to open the full thread.
-                    </div>
+                    ${renderStudentServiceEmptyState('Select a ticket on the left to open the full thread.', 'student-service-empty-state-large student-service-empty-state--detail')}
                 `}
             </section>
         `;
@@ -194,7 +324,11 @@
                             <div class="student-service-kicker">Featured guidance</div>
                             <div class="student-service-panel-title">${ssEscape(selectedArticle?.title || selectedArea.label)}</div>
                         </div>
-                        <span class="student-service-panel-chip">${ssEscape(selectedArticle?.published ? 'Published' : 'Draft')}</span>
+                        ${renderStudentServiceStatusBadge(selectedArticle?.published ? 'Published' : 'Draft', {
+                            key: selectedArticle?.published ? 'published' : 'draft',
+                            scope: 'article',
+                            extraClasses: 'student-service-article-preview-status'
+                        })}
                     </div>
                     <div class="student-service-article-preview-copy">${ssEscape(selectedArticle?.summary || selectedArea.nextStep)}</div>
                     <div class="student-service-article-preview-body">${ssTextBlock(selectedArticle?.content || selectedArea.nextStep)}</div>
@@ -287,7 +421,11 @@
                                 <div class="student-service-kicker">Latest case</div>
                                 <div class="student-service-panel-title">${ssEscape(latestTicket.title)}</div>
                             </div>
-                            <span class="student-service-status" style="--student-service-status-bg:${getStudentServiceStatusTone(latestTicket.status).bg}; --student-service-status-text:${getStudentServiceStatusTone(latestTicket.status).text};">${ssEscape(latestTicket.status)}</span>
+                            ${renderStudentServiceStatusBadge(latestTicket.status, {
+                                key: latestTicket.status,
+                                scope: 'ticket',
+                                extraClasses: 'student-service-track-panel-status'
+                            })}
                         </div>
                         <div class="student-service-track-panel-copy">${ssEscape(latestTicket.latestPreview || latestTicket.message)}</div>
                         <div class="student-service-track-panel-meta">
@@ -296,25 +434,24 @@
                         </div>
                         <button type="button" class="lux-secondary-btn" data-student-service-open-ticket="${ssEscape(latestTicket.id)}"><i class="fas fa-arrow-right"></i> Open thread</button>
                     ` : `
-                        <div class="student-service-empty-state">
-                            No ticket yet. Your first request will appear here with the next reply and status change.
-                        </div>
+                        ${renderStudentServiceEmptyState('No ticket yet. Your first request will appear here with the next reply and status change.', 'student-service-empty-state--tickets')}
                     `}
                 </div>
                 <div class="student-service-track-list">
-                    ${myTickets.length ? myTickets.map(ticket => {
-                        const tone = getStudentServiceStatusTone(ticket.status);
-                        return `
-                            <button type="button" class="student-service-ticket-card${ticket.id === latestTicket?.id ? ' is-selected' : ''}" data-student-service-open-ticket="${ssEscape(ticket.id)}">
-                                <div class="student-service-ticket-card-top">
-                                    <strong>${ssEscape(ticket.title)}</strong>
-                                    <span class="student-service-status" style="--student-service-status-bg:${tone.bg}; --student-service-status-text:${tone.text};">${ssEscape(ticket.status)}</span>
-                                </div>
-                                <div class="student-service-ticket-card-meta">${ssEscape(getStudentServiceSupportArea(ticket.serviceArea).label)} | ${ssEscape(ssFormatDateTime(ticket.updatedAt || ticket.createdAt))}</div>
-                                <div class="student-service-ticket-card-copy">${ssEscape(ticket.latestPreview || ticket.message)}</div>
-                            </button>
-                        `;
-                    }).join('') : '<div class="student-service-empty-state">No cases yet. Submit a request and it will show up here.</div>'}
+                    ${myTickets.length ? myTickets.map((ticket) => renderStudentServiceTicketCard({
+                        id: ticket.id,
+                        action: 'open-ticket',
+                        title: ticket.title,
+                        statusLabel: ticket.status,
+                        statusKey: ticket.status,
+                        statusScope: 'ticket',
+                        metaItems: [
+                            getStudentServiceSupportArea(ticket.serviceArea).label,
+                            ssFormatDateTime(ticket.updatedAt || ticket.createdAt)
+                        ],
+                        copy: ticket.latestPreview || ticket.message,
+                        selected: ticket.id === latestTicket?.id
+                    })).join('') : renderStudentServiceEmptyState('No cases yet. Submit a request and it will show up here.', 'student-service-empty-state--tickets')}
                 </div>
             </section>
         `;
@@ -381,19 +518,21 @@
                     </div>
                 </div>
                 <div class="student-service-inbox-list">
-                    ${filteredArticles.map(article => {
-                        const isSelected = selectedArticle?.id === article.id;
-                        return `
-                            <button type="button" class="student-service-ticket-card${isSelected ? ' is-selected' : ''}" data-student-service-open-article="${ssEscape(article.id)}">
-                                <div class="student-service-ticket-card-top">
-                                    <strong>${ssEscape(article.title)}</strong>
-                                    <span class="student-service-status" style="--student-service-status-bg:${article.published ? 'rgba(var(--lux-home-secondary-rgb),0.14)' : 'rgba(var(--lux-home-secondary-rgb),0.10)'}; --student-service-status-text:var(--lux-home-secondary);">${article.published ? 'Published' : 'Draft'}</span>
-                                </div>
-                                <div class="student-service-ticket-card-meta">${ssEscape(getStudentServiceSupportArea(article.serviceArea).label)} | Audience: ${ssEscape(article.audience)}</div>
-                                <div class="student-service-ticket-card-copy">${ssEscape(article.summary)}</div>
-                            </button>
-                        `;
-                    }).join('') || '<div class="student-service-empty-state">No guidance articles match the current filters.</div>'}
+                    ${filteredArticles.map((article) => renderStudentServiceTicketCard({
+                        id: article.id,
+                        action: 'open-article',
+                        title: article.title,
+                        statusLabel: article.published ? 'Published' : 'Draft',
+                        statusKey: article.published ? 'published' : 'draft',
+                        statusScope: 'article',
+                        metaItems: [
+                            getStudentServiceSupportArea(article.serviceArea).label,
+                            `Audience: ${article.audience}`
+                        ],
+                        copy: article.summary,
+                        selected: selectedArticle?.id === article.id,
+                        variant: 'article'
+                    })).join('') || renderStudentServiceEmptyState('No guidance articles match the current filters.', 'student-service-empty-state--tickets')}
                 </div>
             </section>
         `;
@@ -413,11 +552,15 @@
                         <div class="student-service-ticket-detail-meta">
                             <span class="student-service-pill">${ssEscape(getStudentServiceSupportArea(selectedArticle.serviceArea).label)}</span>
                             <span class="student-service-pill">${ssEscape(selectedArticle.audience || 'students')}</span>
-                            <span class="student-service-pill">${selectedArticle.published ? 'Published' : 'Draft'}</span>
+                            ${renderStudentServiceStatusBadge(selectedArticle.published ? 'Published' : 'Draft', {
+                                key: selectedArticle.published ? 'published' : 'draft',
+                                scope: 'article',
+                                extraClasses: 'student-service-ticket-detail-status'
+                            })}
                         </div>
-                        <div class="student-service-ticket-detail-copy">${ssEscape(selectedArticle.summary || '')}</div>
+                        <div class="student-service-ticket-detail-copy student-service-ticket-detail-copy--summary">${ssEscape(selectedArticle.summary || '')}</div>
                         <div class="student-service-article-preview-body">${ssTextBlock(selectedArticle.content || '')}</div>
-                    ` : '<div class="student-service-empty-state student-service-empty-state-large">Select a guidance article to review the official answer and scope.</div>'}
+                    ` : renderStudentServiceEmptyState('Select a guidance article to review the official answer and scope.', 'student-service-empty-state-large student-service-empty-state--detail')}
                 </div>
             </section>
         `;
@@ -646,21 +789,21 @@
                         ` : ''}
                     </div>
                     <div class="student-service-inbox-list">
-                        ${focusTicketList.map(ticket => {
-                            const tone = getStudentServiceStatusTone(ticket.status);
-                            const isSelected = selectedTicket?.id === ticket.id;
-                            const area = getStudentServiceSupportArea(ticket.serviceArea);
-                            return `
-                                <button type="button" class="student-service-ticket-card${isSelected ? ' is-selected' : ''}" data-student-service-open-ticket="${ssEscape(ticket.id)}">
-                                    <div class="student-service-ticket-card-top">
-                                        <strong>${ssEscape(ticket.title)}</strong>
-                                        <span class="student-service-status" style="--student-service-status-bg:${tone.bg}; --student-service-status-text:${tone.text};">${ssEscape(ticket.status)}</span>
-                                    </div>
-                                    <div class="student-service-ticket-card-meta">${ssEscape(ticket.studentName)} | ${ssEscape(area.label)} | ${ssEscape(ssFormatDateTime(ticket.updatedAt || ticket.createdAt))}</div>
-                                    <div class="student-service-ticket-card-copy">${ssEscape(ticket.latestPreview || ticket.message)}</div>
-                                </button>
-                            `;
-                        }).join('') || '<div class="student-service-empty-state">No tickets match the current filters.</div>'}
+                        ${focusTicketList.map((ticket) => renderStudentServiceTicketCard({
+                            id: ticket.id,
+                            action: 'open-ticket',
+                            title: ticket.title,
+                            statusLabel: ticket.status,
+                            statusKey: ticket.status,
+                            statusScope: 'ticket',
+                            metaItems: [
+                                ticket.studentName,
+                                getStudentServiceSupportArea(ticket.serviceArea).label,
+                                ssFormatDateTime(ticket.updatedAt || ticket.createdAt)
+                            ],
+                            copy: ticket.latestPreview || ticket.message,
+                            selected: selectedTicket?.id === ticket.id
+                        })).join('') || renderStudentServiceEmptyState('No tickets match the current filters.', 'student-service-empty-state--tickets')}
                     </div>
                 ` : panel === 'qa' ? `
                     <div class="student-service-staff-search">
@@ -702,19 +845,21 @@
                         </div>
                     </div>
                     <div class="student-service-inbox-list">
-                        ${filteredArticles.map(article => {
-                            const isSelected = (editorArticle?.id || ui.articleEditorId || ui.selectedArticleId) === article.id;
-                            return `
-                                <button type="button" class="student-service-ticket-card${isSelected ? ' is-selected' : ''}" data-student-service-edit-article="${ssEscape(article.id)}">
-                                    <div class="student-service-ticket-card-top">
-                                        <strong>${ssEscape(article.title)}</strong>
-                                        <span class="student-service-status" style="--student-service-status-bg:${article.published ? 'rgba(var(--lux-home-secondary-rgb),0.14)' : 'rgba(var(--lux-home-secondary-rgb),0.10)'}; --student-service-status-text:var(--lux-home-secondary);">${article.published ? 'Published' : 'Draft'}</span>
-                                    </div>
-                                    <div class="student-service-ticket-card-meta">${ssEscape(getStudentServiceSupportArea(article.serviceArea).label)} | Audience: ${ssEscape(article.audience)}</div>
-                                    <div class="student-service-ticket-card-copy">${ssEscape(article.summary)}</div>
-                                </button>
-                            `;
-                        }).join('') || '<div class="student-service-empty-state">No articles match the current filters.</div>'}
+                        ${filteredArticles.map((article) => renderStudentServiceTicketCard({
+                            id: article.id,
+                            action: 'edit-article',
+                            title: article.title,
+                            statusLabel: article.published ? 'Published' : 'Draft',
+                            statusKey: article.published ? 'published' : 'draft',
+                            statusScope: 'article',
+                            metaItems: [
+                                getStudentServiceSupportArea(article.serviceArea).label,
+                                `Audience: ${article.audience}`
+                            ],
+                            copy: article.summary,
+                            selected: (editorArticle?.id || ui.articleEditorId || ui.selectedArticleId) === article.id,
+                            variant: 'article'
+                        })).join('') || renderStudentServiceEmptyState('No articles match the current filters.', 'student-service-empty-state--tickets')}
                     </div>
                 `}
             </section>
@@ -732,7 +877,11 @@
                                     <div class="student-service-kicker">Selected ticket</div>
                                     <div class="student-service-zone-title">${ssEscape(selectedTicket.title)}</div>
                                 </div>
-                                <span class="student-service-status" style="--student-service-status-bg:${getStudentServiceStatusTone(selectedTicket.status).bg}; --student-service-status-text:${getStudentServiceStatusTone(selectedTicket.status).text};">${ssEscape(selectedTicket.status)}</span>
+                                ${renderStudentServiceStatusBadge(selectedTicket.status, {
+                                    key: selectedTicket.status,
+                                    scope: 'ticket',
+                                    extraClasses: 'student-service-ticket-detail-status'
+                                })}
                             </div>
                             <div class="student-service-ticket-detail-meta">
                                 <span class="student-service-pill">${ssEscape(getStudentServiceSupportArea(selectedTicket.serviceArea).label)}</span>
@@ -740,7 +889,7 @@
                                 <span class="student-service-pill">Updated ${ssFormatDateTime(selectedTicket.updatedAt || selectedTicket.createdAt)}</span>
                                 <span class="student-service-pill">Assignee ${ssEscape(selectedTicket.assignedToName || 'Unassigned')}</span>
                             </div>
-                            <div class="student-service-ticket-detail-copy">${ssEscape(selectedTicket.latestPreview || selectedTicket.message)}</div>
+                            <div class="student-service-ticket-detail-copy student-service-ticket-detail-copy--summary">${ssEscape(selectedTicket.latestPreview || selectedTicket.message)}</div>
                             <div class="student-service-ticket-detail-actions">
                                 <button type="button" class="lux-secondary-btn" data-student-service-assign-ticket="true"><i class="fas fa-user-check"></i> Assign to Me</button>
                                 <select data-student-service-ticket-status-select="true">
@@ -748,23 +897,14 @@
                                 </select>
                             </div>
                             <div class="student-service-thread-list">
-                                ${selectedTicket.thread.map(entry => `
-                                    <div class="student-service-thread-entry ${entry.authorRole === USER_ROLES.STUDENT ? 'is-student' : 'is-support'}">
-                                        <div class="student-service-thread-entry-top">
-                                            <strong>${entry.authorRole === USER_ROLES.STUDENT ? ssEscape(selectedTicket.studentName) : ssEscape(entry.authorName)}</strong>
-                                            <span>${ssEscape(ssRoleLabel(entry.authorRole))}</span>
-                                        </div>
-                                        <div class="student-service-thread-entry-time">${ssFormatDateTime(entry.createdAt)}</div>
-                                        <div class="student-service-thread-entry-copy">${ssTextBlock(entry.message)}</div>
-                                    </div>
-                                `).join('')}
+                                ${selectedTicket.thread.map((entry) => renderStudentServiceThreadEntry(entry, selectedTicket)).join('')}
                             </div>
                             <div class="student-service-thread-reply">
                                 <textarea id="student-service-staff-reply" rows="5" placeholder="Reply to the student here..."></textarea>
                                 <button class="lux-primary-btn" type="button" data-student-service-reply-ticket="true"><i class="fas fa-reply"></i> Send Reply</button>
                             </div>
                         </div>
-                    ` : '<div class="student-service-empty-state student-service-empty-state-large">Select a ticket from the inbox to review the detail and reply.</div>'}
+                    ` : renderStudentServiceEmptyState('Select a ticket from the inbox to review the detail and reply.', 'student-service-empty-state-large student-service-empty-state--detail')}
                 ` : panel === 'qa' ? `
                     ${renderStudentServiceQuestionDetail(selectedQuestion, { mode: 'staff' })}
                 ` : `
@@ -778,7 +918,11 @@
                         <div class="student-service-ticket-detail-meta">
                             <span class="student-service-pill">${ssEscape(getStudentServiceSupportArea(editorArticle?.serviceArea || 'general').label)}</span>
                             <span class="student-service-pill">${ssEscape(editorArticle?.audience || 'students')}</span>
-                            <span class="student-service-pill">${editorArticle?.published ? 'Published' : 'Draft'}</span>
+                            ${renderStudentServiceStatusBadge(editorArticle?.published ? 'Published' : 'Draft', {
+                                key: editorArticle?.published ? 'published' : 'draft',
+                                scope: 'article',
+                                extraClasses: 'student-service-ticket-detail-status'
+                            })}
                         </div>
                         <div class="student-service-request-form">
                             <input id="student-service-article-title" type="text" value="${ssEscape(editorArticle?.title || '')}" placeholder="Article title">

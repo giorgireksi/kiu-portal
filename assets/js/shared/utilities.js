@@ -1,4 +1,4 @@
-/* General utilities extracted from core.js. Source of truth remains root core.js compatibility bundle. */
+/* General utilities extracted from the legacy core.js bundle. Active routes now load split files directly. */
 
 // --- GLOBAL HTML ESCAPE UTILITY (used by messenger.js and others) ---
 function escapeHtml(value) {
@@ -94,6 +94,7 @@ function _isElementVisible(el) {
     // Check if element or any parent has display:none
     let current = el;
     while (current && current !== document.body) {
+        if (current.hidden) return false;
         if (current.style && current.style.display === 'none') return false;
         current = current.parentElement;
     }
@@ -124,15 +125,10 @@ function switchAdminPanelTab(tab) {
         const tabEl = document.getElementById('apt-' + t);
         const contentEl = document.getElementById('apc-' + t);
         if (!tabEl || !contentEl) return;
-        if (t === tab) {
-            tabEl.style.borderBottomColor = 'var(--kiu-blue)';
-            tabEl.style.color = 'var(--kiu-blue)';
-            contentEl.style.display = 'block';
-        } else {
-            tabEl.style.borderBottomColor = 'transparent';
-            tabEl.style.color = 'var(--kiu-text-muted)';
-            contentEl.style.display = 'none';
-        }
+        const active = t === tab;
+        tabEl.classList.toggle('active', active);
+        tabEl.setAttribute('aria-selected', active ? 'true' : 'false');
+        contentEl.hidden = !active;
     });
 }
 
@@ -146,7 +142,7 @@ function updateSubjectCodePreview() {
     const facBadge = document.getElementById('add-subject-faculty-badge');
     if (facBadge) {
         facBadge.textContent = getFacultyLabel(fac);
-        facBadge.style.background = getFacultyColor(fac);
+        facBadge.dataset.faculty = normalizeFacultyCode(fac, getCurrentFaculty());
     }
     syncCurriculumFacultyBadge(fac);
     if (typeof populateAntiReqDropdown === 'function') populateAntiReqDropdown();
@@ -158,9 +154,7 @@ function syncCurriculumFacultyBadge(faculty = getCurrentFaculty()) {
     const badge = document.getElementById('curriculum-active-faculty-badge');
     if (badge) {
         badge.innerHTML = `<i class="fas fa-university"></i><span>Active Faculty: ${escapeHtml(getFacultyLabel(normalizedFaculty))}</span>`;
-        badge.style.borderColor = `${getFacultyColor(normalizedFaculty)}33`;
-        badge.style.color = getFacultyColor(normalizedFaculty);
-        badge.style.background = `${getFacultyColor(normalizedFaculty)}12`;
+        badge.dataset.faculty = normalizedFaculty;
     }
     const hiddenFilter = document.getElementById('filter-curriculum-faculty');
     if (hiddenFilter) hiddenFilter.value = normalizedFaculty;
@@ -215,6 +209,11 @@ function kiuBlendRgbTriplets(a, b, ratio = 0.5) {
 function applyFacultyLuxuryTheme(faculty, profile) {
     const normalizedFaculty = normalizeFacultyCode(faculty, 'ECON');
     const fp = profile || getFacultyProfile(normalizedFaculty) || {};
+    if (typeof window.__kiuApplyResolvedPalette === 'function') {
+        window.__kiuApplyResolvedPalette();
+        document.body?.setAttribute('data-lux-faculty', normalizedFaculty);
+        return;
+    }
     const root = document.documentElement;
     const useUnifiedShellColors = document.body?.classList.contains('lux-unified-shell');
     const forceStudentShellVisuals = (() => {
@@ -277,6 +276,9 @@ function applyFacultyLuxuryTheme(faculty, profile) {
         root.style.setProperty('--kiu-gradient-blue', `linear-gradient(135deg, ${primary} 0%, ${nav} 100%)`);
         root.style.setProperty('--kiu-shadow-blue', `0 14px 34px rgba(${primaryRgb}, ${isLightMode ? '0.16' : '0.32'})`);
         root.style.setProperty('--kiu-shell-gradient', shellGradient);
+        if (typeof window.__kiuApplyLmsParticleTheme === 'function') {
+            window.__kiuApplyLmsParticleTheme();
+        }
         return;
     }
 
@@ -298,6 +300,9 @@ function applyFacultyLuxuryTheme(faculty, profile) {
             root.style.setProperty('--kiu-gradient-blue', `linear-gradient(135deg, ${primary} 0%, ${nav} 100%)`);
             root.style.setProperty('--kiu-shadow-blue', `0 14px 34px rgba(${primaryRgb}, 0.16)`);
             root.style.setProperty('--kiu-shell-gradient', shellGradient);
+            if (typeof window.__kiuApplyLmsParticleTheme === 'function') {
+                window.__kiuApplyLmsParticleTheme();
+            }
         } else {
             // Dark mode admin - original dark theme
             const shellGradient = `radial-gradient(circle at 16% 10%, rgba(${primaryRgb}, 0.16), transparent 30%), radial-gradient(circle at 84% 84%, rgba(${secondaryRgb}, 0.10), transparent 24%), linear-gradient(180deg, rgba(10, 15, 24, 0.96), rgba(5, 8, 14, 0.99))`;
@@ -314,9 +319,237 @@ function applyFacultyLuxuryTheme(faculty, profile) {
             root.style.setProperty('--kiu-gradient-blue', `linear-gradient(135deg, ${primary} 0%, ${nav} 100%)`);
             root.style.setProperty('--kiu-shadow-blue', `0 14px 34px rgba(${primaryRgb}, 0.32)`);
             root.style.setProperty('--kiu-shell-gradient', shellGradient);
+            if (typeof window.__kiuApplyLmsParticleTheme === 'function') {
+                window.__kiuApplyLmsParticleTheme();
+            }
         }
+        return;
+    }
+
+    if (typeof window.__kiuApplyLmsParticleTheme === 'function') {
+        window.__kiuApplyLmsParticleTheme();
     }
 }
+
+function warnMissingImpersonationPersona(role) {
+    const normalizedRole = String(role || '').trim().toLowerCase();
+    if (!normalizedRole || normalizedRole === USER_ROLES.ADMIN) return true;
+    if (typeof getPreferredImpersonationUserForRole !== 'function') return true;
+    let preferredFaculty = '';
+    try {
+        preferredFaculty = localStorage.getItem('currentFaculty') || currentUser?.facultyCode || currentUser?.faculty || 'ECON';
+    } catch (error) {
+        preferredFaculty = currentUser?.facultyCode || currentUser?.faculty || 'ECON';
+    }
+    const persona = getPreferredImpersonationUserForRole(normalizedRole, preferredFaculty);
+    if (persona?.id) return true;
+    const roleLabel = normalizedRole.replace(/_/g, ' ');
+    const facultyLabel = typeof normalizeFacultyCode === 'function'
+        ? normalizeFacultyCode(preferredFaculty || 'ECON', 'ECON')
+        : String(preferredFaculty || 'ECON').trim().toUpperCase() || 'ECON';
+    alert(`No active ${roleLabel} account is available in ${facultyLabel}. Switch faculty or create or activate one in Staff, then try again.`);
+    return false;
+}
+
+async function syncPortalBackendImpersonationBeforeRedirect(role) {
+    if (typeof syncPortalBackendImpersonation !== 'function') return;
+    try {
+        await syncPortalBackendImpersonation(role);
+    } catch (error) {
+        console.warn('Could not sync impersonated role to backend before redirect.', error);
+    }
+}
+
+const KIU_LMS_RETURN_CONTEXT_KEY = 'KIU_LMS_RETURN_CONTEXT';
+
+function getStandaloneEntryPageIdForRoleSwitch() {
+    if (typeof getStandaloneEntryPageId === 'function') {
+        return getStandaloneEntryPageId();
+    }
+    const path = (window.location.pathname || '').replace(/\\/g, '/').toLowerCase();
+    const fileName = path.split('/').filter(Boolean).pop() || '';
+    return fileName.replace(/\.html$/i, '');
+}
+
+function isLmsCourseWorkspaceVisible() {
+    const inner = document.getElementById('page-lms-inner');
+    if (!inner || inner.hidden) return false;
+    const courseKey = typeof currentCourseId !== 'undefined' ? String(currentCourseId || '').trim() : '';
+    return Boolean(courseKey);
+}
+
+function canApplyInPlaceAdminRoleSwitchOnStandaloneLms() {
+    return getStandaloneEntryPageIdForRoleSwitch() === 'lms';
+}
+
+function persistLmsReturnContextForRoleSwitch() {
+    if (!isLmsCourseWorkspaceVisible()) return false;
+    const activeTabEl = document.querySelector('#page-lms-inner [data-lms-tab].is-active');
+    const tab = activeTabEl
+        ? String(activeTabEl.dataset.lmsTab || activeTabEl.id || '').replace(/^tab-/, '')
+        : 'sessions';
+    const sectionType = typeof getCurrentLmsSectionType === 'function'
+        ? getCurrentLmsSectionType()
+        : (typeof currentLmsSectionType !== 'undefined' ? currentLmsSectionType : 'lecture');
+    try {
+        sessionStorage.setItem(KIU_LMS_RETURN_CONTEXT_KEY, JSON.stringify({
+            courseKey: String(currentCourseId || ''),
+            tab,
+            sectionType: String(sectionType || 'lecture'),
+            title: document.getElementById('lms-course-title')?.innerText || ''
+        }));
+        return true;
+    } catch (error) {
+        console.warn('Could not persist LMS return context for role switch.', error);
+        return false;
+    }
+}
+
+function resolveRoleSwitchRedirectUrl(requestedRole) {
+    let hasLmsReturn = false;
+    try {
+        hasLmsReturn = Boolean(sessionStorage.getItem(KIU_LMS_RETURN_CONTEXT_KEY));
+    } catch (error) {
+        hasLmsReturn = false;
+    }
+    if (hasLmsReturn && typeof resolvePortalRouteUrl === 'function') {
+        return resolvePortalRouteUrl('lms', requestedRole);
+    }
+    if (typeof resolvePortalRouteUrl === 'function') {
+        return resolvePortalRouteUrl('home', requestedRole);
+    }
+    return typeof getRoleHomePage === 'function'
+        ? getRoleHomePage(requestedRole)
+        : `index.html?view=${encodeURIComponent(requestedRole)}#home`;
+}
+
+function persistAdminImpersonationRoleState(requestedRole, impersonatedSessionUser = null) {
+    const normalizedRole = String(requestedRole || USER_ROLES.STUDENT).trim().toLowerCase() || USER_ROLES.STUDENT;
+    currentUserRole = normalizedRole;
+    try {
+        localStorage.setItem('currentUserRole', normalizedRole);
+        if (normalizedRole === USER_ROLES.ADMIN) {
+            localStorage.removeItem(PENDING_ROLE_SWITCH_KEY);
+            sessionStorage.removeItem(ACTIVE_ROLE_IMPERSONATION_KEY);
+        } else {
+            localStorage.setItem(PENDING_ROLE_SWITCH_KEY, normalizedRole);
+            sessionStorage.setItem(ACTIVE_ROLE_IMPERSONATION_KEY, '1');
+        }
+    } catch (error) {
+        console.warn('Could not persist admin impersonation role state.', error);
+    }
+    const persona = impersonatedSessionUser
+        || (typeof setActiveSessionUserByRole === 'function' ? setActiveSessionUserByRole(normalizedRole) : null);
+    if (persona && (persona.facultyCode || persona.faculty) && normalizedRole !== USER_ROLES.ADMIN) {
+        try {
+            localStorage.setItem('currentFaculty', persona.facultyCode || persona.faculty);
+        } catch (error) {}
+    }
+    const facultySelect = document.getElementById('faculty-select');
+    if (facultySelect) {
+        const targetFaculty = normalizedRole === USER_ROLES.ADMIN
+            ? normalizeFacultyCode(localStorage.getItem('currentFaculty') || persona?.facultyCode || persona?.faculty || 'ECON', 'ECON')
+            : normalizeFacultyCode(persona?.facultyCode || persona?.faculty || localStorage.getItem('currentFaculty') || 'ECON', 'ECON');
+        facultySelect.value = targetFaculty;
+    }
+    if (typeof window.invalidatePageAccessCache === 'function') window.invalidatePageAccessCache();
+    if (typeof window.invalidateDomCache === 'function') window.invalidateDomCache();
+    if (typeof switchFacultyTheme === 'function') {
+        switchFacultyTheme(
+            facultySelect?.value || persona?.facultyCode || persona?.faculty || getCurrentFaculty(),
+            { refreshDependentViews: false }
+        );
+    }
+    if (typeof resetRoleSwitchViewState === 'function') resetRoleSwitchViewState();
+    if (typeof refreshShellIdentity === 'function') refreshShellIdentity();
+    if (typeof populateRoleSwitcher === 'function') populateRoleSwitcher();
+    return persona;
+}
+
+async function refreshLmsUiAfterInPlaceRoleSwitch() {
+    try {
+        localStorage.removeItem('KIU_FORCE_HOME_ON_ROLE_SWITCH');
+    } catch (error) {}
+    window.__kiuRoleSwitchRedirectPending = false;
+    if (typeof window.clearLmsTabRenderCache === 'function') {
+        window.clearLmsTabRenderCache();
+    }
+    if (typeof refreshLmsQuizTabPresentation === 'function') {
+        refreshLmsQuizTabPresentation();
+    }
+    if (isLmsCourseWorkspaceVisible()) {
+        const activeTabEl = document.querySelector('#page-lms-inner [data-lms-tab].is-active');
+        const tab = activeTabEl
+            ? String(activeTabEl.dataset.lmsTab || activeTabEl.id || '').replace(/^tab-/, '')
+            : 'sessions';
+        if (typeof window.switchLMSTab === 'function') {
+            window.switchLMSTab(tab, { force: true });
+        }
+        if (typeof window.refreshStandaloneLmsShellContext === 'function') {
+            window.refreshStandaloneLmsShellContext({ refreshSubjectDeck: false });
+        }
+        return;
+    }
+    if (typeof window.renderLmsSubjectDeck === 'function') {
+        window.renderLmsSubjectDeck({ force: true });
+    }
+    if (typeof window.refreshStandaloneLmsShellContext === 'function') {
+        window.refreshStandaloneLmsShellContext({ refreshSubjectDeck: true, forceSubjectDeck: true });
+    }
+}
+
+async function applyInPlaceAdminRoleSwitchOnStandaloneLms(requestedRole) {
+    if (!canApplyInPlaceAdminRoleSwitchOnStandaloneLms()) return false;
+    const persona = persistAdminImpersonationRoleState(requestedRole);
+    await refreshLmsUiAfterInPlaceRoleSwitch();
+    return Boolean(persona || requestedRole);
+}
+
+async function restoreLmsReturnContextIfPresent() {
+    let raw = '';
+    try {
+        raw = sessionStorage.getItem(KIU_LMS_RETURN_CONTEXT_KEY) || '';
+        if (raw) sessionStorage.removeItem(KIU_LMS_RETURN_CONTEXT_KEY);
+    } catch (error) {
+        return false;
+    }
+    if (!raw) return false;
+
+    let payload = null;
+    try {
+        payload = JSON.parse(raw);
+    } catch (error) {
+        return false;
+    }
+
+    const courseKey = String(payload?.courseKey || '').trim();
+    if (!courseKey) return false;
+
+    const sectionType = String(payload?.sectionType || 'lecture').trim() || 'lecture';
+    if (typeof setLmsActiveSection === 'function') {
+        setLmsActiveSection(sectionType);
+    } else if (typeof currentLmsSectionType !== 'undefined') {
+        currentLmsSectionType = sectionType;
+    }
+
+    const tab = String(payload?.tab || 'quiz').trim() || 'quiz';
+    if (typeof window.ensureLmsExtendedRuntimeForTab === 'function') {
+        await window.ensureLmsExtendedRuntimeForTab(tab);
+    }
+
+    if (typeof openLMSCourse === 'function') {
+        openLMSCourse(courseKey, String(payload?.title || courseKey));
+    }
+
+    if (tab !== 'sessions' && typeof window.switchLMSTab === 'function') {
+        window.switchLMSTab(tab, { force: true });
+    }
+    return true;
+}
+
+window.persistLmsReturnContextForRoleSwitch = persistLmsReturnContextForRoleSwitch;
+window.restoreLmsReturnContextIfPresent = restoreLmsReturnContextIfPresent;
+window.KIU_LMS_RETURN_CONTEXT_KEY = KIU_LMS_RETURN_CONTEXT_KEY;
 
 function switchRole(newRole) {
     if (!currentUser && typeof loadAuthState === 'function') {
@@ -377,9 +610,43 @@ function switchRole(newRole) {
         alert('Unknown workspace view.');
         return;
     }
-    if (typeof fastRedirectRoleSwitch === 'function' && fastRedirectRoleSwitch(requestedRole)) {
-        return;
+    if (typeof window.isStandaloneAdminWorkspaceEntry === 'function' && window.isStandaloneAdminWorkspaceEntry()) {
+        const requestedStandaloneRole = String(newRole || currentUser.role || USER_ROLES.STUDENT).trim().toLowerCase() || USER_ROLES.STUDENT;
+        if (requestedStandaloneRole !== USER_ROLES.ADMIN && !canApplyInPlaceAdminRoleSwitchOnStandaloneLms()) {
+            alert('Open the main portal (Home) to switch to another role view. Faculty changes stay on this page.');
+            return;
+        }
     }
+    void (async () => {
+        let preferredFaculty = 'ECON';
+        try {
+            preferredFaculty = localStorage.getItem('currentFaculty') || currentUser?.facultyCode || currentUser?.faculty || 'ECON';
+        } catch (error) {
+            preferredFaculty = currentUser?.facultyCode || currentUser?.faculty || 'ECON';
+        }
+        if (typeof refreshImpersonationDirectoryFromBackend === 'function') {
+            await refreshImpersonationDirectoryFromBackend(requestedRole, preferredFaculty);
+        }
+        if (!warnMissingImpersonationPersona(requestedRole)) return;
+        if (canApplyInPlaceAdminRoleSwitchOnStandaloneLms()) {
+            await syncPortalBackendImpersonationBeforeRedirect(requestedRole);
+            if (await applyInPlaceAdminRoleSwitchOnStandaloneLms(requestedRole)) {
+                return;
+            }
+        }
+        if (typeof fastRedirectRoleSwitch === 'function' && await fastRedirectRoleSwitch(requestedRole)) {
+            return;
+        }
+        await continueAdminRoleSwitch(requestedRole);
+    })();
+}
+
+async function continueAdminRoleSwitch(requestedRole) {
+    if (!currentUser || currentUser.role !== USER_ROLES.ADMIN) return;
+    const activeUser = {
+        ...currentUser,
+        role: requestedRole
+    };
     if (typeof closeLmsQuizOverlays === 'function') {
         try {
             closeLmsQuizOverlays();
@@ -387,10 +654,6 @@ function switchRole(newRole) {
             console.warn('Could not close LMS quiz overlays before switching role.', error);
         }
     }
-    const activeUser = {
-        ...currentUser,
-        role: requestedRole
-    };
     try {
         if (requestedRole === USER_ROLES.ADMIN) {
             localStorage.removeItem(PENDING_ROLE_SWITCH_KEY);
@@ -411,90 +674,66 @@ function switchRole(newRole) {
     const impersonatedSessionUser = typeof setActiveSessionUserByRole === 'function'
         ? (setActiveSessionUserByRole(activeUser.role) || activeUser)
         : activeUser;
-    const finalizeRoleSwitch = () => {
-        currentUserRole = activeUser.role;
-        localStorage.setItem('currentUserRole', activeUser.role);
-        if (activeUser.role === USER_ROLES.ADMIN) {
-            localStorage.removeItem(PENDING_ROLE_SWITCH_KEY);
-            try { sessionStorage.removeItem(ACTIVE_ROLE_IMPERSONATION_KEY); } catch (error) {}
-        } else {
-            localStorage.setItem(PENDING_ROLE_SWITCH_KEY, activeUser.role);
-            try { sessionStorage.setItem(ACTIVE_ROLE_IMPERSONATION_KEY, '1'); } catch (error) {}
+    await syncPortalBackendImpersonationBeforeRedirect(activeUser.role);
+    const finalizeRoleSwitch = async () => {
+        if (canApplyInPlaceAdminRoleSwitchOnStandaloneLms()) {
+            await applyInPlaceAdminRoleSwitchOnStandaloneLms(activeUser.role);
+            return;
         }
-        resetRoleSwitchViewState();
-        if ((impersonatedSessionUser.facultyCode || impersonatedSessionUser.faculty) && activeUser.role !== USER_ROLES.ADMIN) {
-            localStorage.setItem('currentFaculty', impersonatedSessionUser.facultyCode || impersonatedSessionUser.faculty);
-        }
-
-        const facultySelect = document.getElementById('faculty-select');
-        if (facultySelect) {
-            const targetFaculty = activeUser.role === USER_ROLES.ADMIN
-                ? normalizeFacultyCode(localStorage.getItem('currentFaculty') || impersonatedSessionUser.facultyCode || impersonatedSessionUser.faculty || 'ECON', 'ECON')
-                : normalizeFacultyCode(impersonatedSessionUser.facultyCode || impersonatedSessionUser.faculty || localStorage.getItem('currentFaculty') || 'ECON', 'ECON');
-            facultySelect.value = targetFaculty;
-        }
-
-        if (typeof window.invalidatePageAccessCache === 'function') window.invalidatePageAccessCache();
-        if (typeof window.invalidateDomCache === 'function') window.invalidateDomCache();
-        switchFacultyTheme(
-            facultySelect?.value || impersonatedSessionUser.facultyCode || impersonatedSessionUser.faculty || getCurrentFaculty(),
-            { refreshDependentViews: false }
-        );
-
-        const targetHomeUrl = typeof resolvePortalRouteUrl === 'function'
-            ? resolvePortalRouteUrl('home', activeUser.role)
-            : (typeof getRoleHomePage === 'function' ? getRoleHomePage(activeUser.role) : `index.html?view=${encodeURIComponent(activeUser.role)}#home`);
-        localStorage.setItem('KIU_FORCE_HOME_ON_ROLE_SWITCH', '1');
+        persistLmsReturnContextForRoleSwitch();
+        persistAdminImpersonationRoleState(activeUser.role, impersonatedSessionUser);
+        const targetUrl = resolveRoleSwitchRedirectUrl(activeUser.role);
+        try {
+            if (activeUser.role === USER_ROLES.ADMIN) {
+                localStorage.removeItem('KIU_FORCE_HOME_ON_ROLE_SWITCH');
+            } else {
+                localStorage.setItem('KIU_FORCE_HOME_ON_ROLE_SWITCH', '1');
+            }
+        } catch (error) {}
         window.__kiuRoleSwitchRedirectPending = true;
-        window.location.assign(targetHomeUrl);
+        window.location.assign(targetUrl);
     };
-
-    if (typeof syncPortalBackendImpersonation === 'function') {
-        Promise.resolve(syncPortalBackendImpersonation(activeUser.role)).catch((error) => {
-            console.warn('Could not sync impersonated role to backend before redirect.', error);
-        });
-    }
-    finalizeRoleSwitch();
+    await finalizeRoleSwitch();
 }
 
-function fastRedirectRoleSwitch(requestedRole) {
+async function fastRedirectRoleSwitch(requestedRole) {
     if (!currentUser || currentUser.role !== USER_ROLES.ADMIN) return false;
     const normalizedRole = String(requestedRole || USER_ROLES.STUDENT).trim().toLowerCase() || USER_ROLES.STUDENT;
     if (!Object.values(USER_ROLES).includes(normalizedRole)) return false;
 
+    if (typeof teardownKiuRealtimeEventStream === 'function') {
+        teardownKiuRealtimeEventStream();
+    }
+
+    if (typeof setActiveSessionUserByRole === 'function') {
+        setActiveSessionUserByRole(normalizedRole);
+    }
+    await syncPortalBackendImpersonationBeforeRedirect(normalizedRole);
+
+    if (canApplyInPlaceAdminRoleSwitchOnStandaloneLms()) {
+        return applyInPlaceAdminRoleSwitchOnStandaloneLms(normalizedRole);
+    }
+
     window.__kiuRoleSwitchRedirectPending = true;
-    currentUserRole = normalizedRole;
+    persistLmsReturnContextForRoleSwitch();
+    persistAdminImpersonationRoleState(normalizedRole);
     try {
-        localStorage.setItem('currentUserRole', normalizedRole);
-        localStorage.setItem('KIU_FORCE_HOME_ON_ROLE_SWITCH', '1');
         if (normalizedRole === USER_ROLES.ADMIN) {
-            localStorage.removeItem(PENDING_ROLE_SWITCH_KEY);
-            sessionStorage.removeItem(ACTIVE_ROLE_IMPERSONATION_KEY);
+            localStorage.removeItem('KIU_FORCE_HOME_ON_ROLE_SWITCH');
         } else {
-            localStorage.setItem(PENDING_ROLE_SWITCH_KEY, normalizedRole);
-            sessionStorage.setItem(ACTIVE_ROLE_IMPERSONATION_KEY, '1');
+            localStorage.setItem('KIU_FORCE_HOME_ON_ROLE_SWITCH', '1');
         }
     } catch (error) {
         console.warn('Could not persist fast role switch state.', error);
     }
 
-    if (typeof syncPortalBackendImpersonation === 'function') {
-        Promise.resolve(syncPortalBackendImpersonation(normalizedRole)).catch((error) => {
-            console.warn('Could not sync impersonated role after fast redirect.', error);
-        });
-    }
-
-    const targetHomeUrl = typeof resolvePortalRouteUrl === 'function'
-        ? resolvePortalRouteUrl('home', normalizedRole)
-        : (typeof getRoleHomePage === 'function' ? getRoleHomePage(normalizedRole) : `index.html?view=${encodeURIComponent(normalizedRole)}#home`);
-    window.location.assign(targetHomeUrl);
+    window.location.assign(resolveRoleSwitchRedirectUrl(normalizedRole));
     return true;
 }
 
 if (typeof window.refreshSemesterDropdowns !== 'function') {
     window.refreshSemesterDropdowns = function refreshSemesterDropdownsFallback() {
         const configs = [
-            { id: 'new-subject-semester', includeCustom: true, numberPrefix: 'Semester' },
             { id: 'filter-curriculum-semester', includeAll: true, includeCustom: true, numberPrefix: 'Sem' },
             { id: 'admin-active-semester', includeCustom: true, numberPrefix: 'Semester' },
             { id: 'admin-tt-semester', includeCustom: true, numberPrefix: 'Sem' },
@@ -513,7 +752,10 @@ if (typeof window.refreshSemesterDropdowns !== 'function') {
 }
 
 function switchFacultyTheme(faculty, options = {}) {
-    const forceReload = options.forceReload === true || options.hardReload === true;
+    const onStandaloneAdminWorkspace = typeof window.isStandaloneAdminWorkspaceEntry === 'function'
+        && window.isStandaloneAdminWorkspaceEntry();
+    const forceReloadRequested = options.forceReload === true || options.hardReload === true;
+    const forceReload = forceReloadRequested && !onStandaloneAdminWorkspace;
     const refreshDependentViews = !forceReload && options.refreshDependentViews !== false;
     const normalizedFaculty = normalizeFacultyCode(faculty, getCurrentFaculty());
     adminRegScopedFaculty = normalizedFaculty;
@@ -538,27 +780,32 @@ function switchFacultyTheme(faculty, options = {}) {
         facultySelectEl.value = normalizedFaculty;
     }
     const fp = getFacultyProfile(normalizedFaculty);
-    let root = document.documentElement;
     const primary = fp.color || getFacultyColor(normalizedFaculty);
     const nav = fp.navColor || primary;
+    const hasCanonicalLuxuryPaletteOwner = typeof window.__kiuApplyResolvedPalette === 'function';
 
-    // Apply faculty colors from profiles
-    root.style.setProperty('--kiu-blue', primary);
-    root.style.setProperty('--kiu-navy', nav);
+    // Keep legacy non-luxury pages working, but avoid duplicate palette writes
+    // once the canonical luxury runtime is active.
+    if (!hasCanonicalLuxuryPaletteOwner) {
+        const root = document.documentElement;
+        root.style.setProperty('--kiu-blue', primary);
+        root.style.setProperty('--kiu-navy', nav);
+    }
     applyFacultyLuxuryTheme(normalizedFaculty, fp);
 
     // Update the faculty context badge in admin header if present
     const ctxBadge = document.getElementById('admin-faculty-context');
     if (ctxBadge) {
         ctxBadge.textContent = getFacultyLabel(normalizedFaculty);
-        ctxBadge.style.background = primary;
+        ctxBadge.dataset.faculty = normalizedFaculty;
     }
     syncCurriculumFacultyBadge(normalizedFaculty);
 
     // Refresh add-subject faculty context even though the old faculty input was removed.
     if (
         document.getElementById('add-subject-faculty-badge') ||
-        document.getElementById('new-subject-semester') ||
+        document.getElementById('new-subject-semesters') ||
+        document.getElementById('new-subject-semester-lux-btn') ||
         document.getElementById('new-subject-code-preview')
     ) {
         updateSubjectCodePreview();
@@ -582,7 +829,9 @@ function switchFacultyTheme(faculty, options = {}) {
         // Re-render Admin Registration Structure CMS if on the page (faculty-scoped)
         if (document.getElementById('admin-reg-content-container') &&
             _isElementVisible(document.getElementById('page-admin-tools'))) {
-            ensureRegistrationCmsFacultyIsolation();
+            if (typeof flushAdminRegistrationStateSave === 'function') {
+                flushAdminRegistrationStateSave();
+            }
             if (typeof bindFacultyRegistrationCmsData === 'function') {
                 bindFacultyRegistrationCmsData(normalizedFaculty);
             }
@@ -603,7 +852,7 @@ function switchFacultyTheme(faculty, options = {}) {
         }
         if (document.getElementById('admin-master-grid-container') &&
             typeof renderAdminMasterGrid === 'function' &&
-            _isElementVisible(document.getElementById('page-admin-scheduler') || document.getElementById('page-home'))) {
+            _isElementVisible(document.getElementById('page-admin-scheduler'))) {
             renderAdminMasterGrid();
         }
         if ((document.getElementById('page-orders') || document.getElementById('orders-inbox-root')) &&
@@ -619,11 +868,6 @@ function switchFacultyTheme(faculty, options = {}) {
     const schedulerFacultyFilter = document.getElementById('admin-tt-faculty');
     if (schedulerFacultyFilter && schedulerFacultyFilter.value !== normalizedFaculty) {
         schedulerFacultyFilter.value = normalizedFaculty;
-    }
-
-    const schedulerGridFilter = document.getElementById('grid-view-fac');
-    if (schedulerGridFilter && schedulerGridFilter.value !== normalizedFaculty) {
-        schedulerGridFilter.value = normalizedFaculty;
     }
 
     const timetableFacultyFilter = document.getElementById('tt-filter-fac');
@@ -657,7 +901,7 @@ function switchFacultyTheme(faculty, options = {}) {
 
     refreshShellIdentity();
 
-    if (refreshDependentViews && typeof populateProfList === 'function' && document.getElementById('sch-profs-list') &&
+    if (refreshDependentViews && typeof populateProfList === 'function' && document.getElementById('admin-tt-prof') &&
         _isElementVisible(document.getElementById('page-admin-scheduler'))) {
         populateProfList();
     }
@@ -679,7 +923,11 @@ function switchFacultyTheme(faculty, options = {}) {
         (document.getElementById('page-admin-tools') || document.getElementById('page-home')) &&
         (_isElementVisible(document.getElementById('page-admin-tools')) || _isElementVisible(document.getElementById('page-home')))
     ) {
-        if (typeof renderLuxuryAdminToolsPage === 'function') {
+        const cmsContainer = document.getElementById('admin-reg-content-container');
+        const skipFullAdminToolsRender = onStandaloneAdminWorkspace
+            && cmsContainer
+            && _isElementVisible(cmsContainer);
+        if (!skipFullAdminToolsRender && typeof renderLuxuryAdminToolsPage === 'function') {
             renderLuxuryAdminToolsPage();
         }
         if (typeof onAdminDashboardLoad === 'function') {
@@ -759,15 +1007,7 @@ function refreshShellIdentity() {
             .slice(0, 2)
             .map(part => part[0]?.toUpperCase() || '')
             .join('') || 'UP';
-        avatarEl.style.backgroundImage = 'none';
         avatarEl.textContent = initialsSource;
-        avatarEl.style.display = 'flex';
-        avatarEl.style.alignItems = 'center';
-        avatarEl.style.justifyContent = 'center';
-        avatarEl.style.fontWeight = '800';
-        avatarEl.style.fontSize = '13px';
-        avatarEl.style.color = 'white';
-        avatarEl.style.background = 'linear-gradient(135deg, var(--kiu-navy), var(--kiu-blue))';
     }
 
     if (roleSelect && roleSelect.value !== effectiveRole) {
@@ -810,9 +1050,16 @@ function refreshShellIdentity() {
                 : 'Professor';
     }
 
-    refreshFacultyScheduleUI();
-    refreshStandalonePageContext();
-    if (typeof renderHomeShell === 'function') {
+    if (typeof refreshFacultyScheduleUI === 'function') {
+        refreshFacultyScheduleUI();
+    }
+    if (typeof refreshStandalonePageContext === 'function') {
+        refreshStandalonePageContext();
+    }
+    const shouldRenderHomeShell = typeof getActivePageId === 'function'
+        ? getActivePageId() === 'home'
+        : document.body?.classList?.contains('lux-route-home');
+    if (shouldRenderHomeShell && typeof renderHomeShell === 'function') {
         renderHomeShell();
     } else if (typeof renderSharedQaRoleTestingCard === 'function') {
         renderSharedQaRoleTestingCard();
@@ -851,7 +1098,6 @@ function openStudio() {
         const modalStudio = document.getElementById('modal-studio');
         if (modalOverlay && modalStudio) {
             modalOverlay.classList.add('active');
-            modalOverlay.style.display = 'flex';
             modalStudio.style.display = 'flex';
             if (typeof queueLuxuryTransparencyRefresh === 'function') {
                 const scheduleRefresh = typeof window.requestAnimationFrame === 'function'
@@ -888,9 +1134,6 @@ function applyPalette(palette) {
     paletteList.forEach(p => {
         document.body.classList.remove(`palette-${p}`);
     });
-
-    // Clear inline background style
-    document.body.style.background = '';
 
     // Add new palette class - CSS handles background now
     if (palette && palette.trim() && paletteList.includes(palette)) {
@@ -934,7 +1177,7 @@ function setInterfaceMode(mode) {
     }
 
     // Re-apply transparency so inline backgrounds recalculate for the new mode
-    const saved = localStorage.getItem('kiuLuxurySurfaceTransparency') || '70';
+    const saved = localStorage.getItem('kiuLuxurySurfaceTransparency') || '13';
     refreshLuxuryTransparencySurfaces(parseInt(saved, 10));
     return nextMode;
 }
@@ -1141,6 +1384,178 @@ const SOCIAL_NEO_SMALL_TRANSPARENCY_SURFACE_CLASSES = [
     'social-portfolio-link'
 ];
 
+const STAFF_ROUTE_TRANSPARENCY_SURFACE_SELECTORS = [
+    '.staff-hub-hero',
+    '.staff-hub-command-panel',
+    '.staff-hub-command-card',
+    '.staff-hub-focus-card',
+    '.staff-hub-mini-card',
+    '.staff-hub-metric-card',
+    '.staff-hub-controls',
+    '.staff-hub-directory-panel',
+    '.staff-hub-profile',
+    '.staff-hub-info-card',
+    '.staff-hub-warning',
+    '.staff-hub-modal',
+    '.staff-hub-list-item',
+    '.admin-directory-hero',
+    '.admin-directory-controls',
+    '.admin-directory-card'
+];
+
+const STAFF_ROUTE_SMALL_TRANSPARENCY_SURFACE_CLASSES = [
+    'staff-hub-metric-card',
+    'staff-hub-command-card',
+    'staff-hub-info-card',
+    'staff-hub-warning',
+    'staff-hub-list-item',
+    'staff-hub-mini-card',
+    'staff-hub-focus-card',
+    'lux-data-card',
+    'lux-subcard',
+    'lux-person-head',
+    'lux-inline-meta'
+];
+
+const STUDENTS_ADMIN_ROUTE_TRANSPARENCY_SURFACE_SELECTORS = [
+    '.students-lms-hero',
+    '.students-lms-profile-header',
+    '.students-lms-panel',
+    '.students-lms-stat-card',
+    '.students-lms-profile-card',
+    '.students-lms-table-shell',
+    '.students-lms-list-item',
+    '.students-lms-modal-card'
+];
+
+const STUDENTS_ADMIN_ROUTE_SMALL_TRANSPARENCY_SURFACE_CLASSES = [
+    'students-lms-stat-card',
+    'students-lms-profile-card',
+    'students-lms-list-item'
+];
+
+const SOCIAL_BLUR_HOST_CLASSES = new Set([
+    'social-neo-card',
+    'social-neo-post-card',
+    'social-neo-topbar-card',
+    'social-neo-community-panel',
+    'social-neo-group-card',
+    'social-neo-group-thread-panel',
+    'social-neo-page-card-rich',
+    'social-neo-events-lane',
+    'social-neo-events-support-card',
+    'social-neo-event-feature',
+    'social-neo-dialog-card',
+    'social-neo-shell-drawer',
+    'social-neo-story-composer-card',
+    'social-neo-call-card',
+    'social-neo-empty',
+    'social-card',
+    'social-post-card',
+    'social-detail-card',
+    'social-hero',
+    'social-project-detail-hero-rich',
+    'social-project-tab-shell',
+    'social-project-rich-panel',
+    'social-project-card',
+    'social-portfolio-card'
+]);
+
+function isSocialBlurHost(el) {
+    if (!el?.classList) return false;
+    for (const className of el.classList) {
+        if (SOCIAL_BLUR_HOST_CLASSES.has(className)) return true;
+    }
+    return false;
+}
+
+// A "paint surface" is a real social card/panel/box (from the curated surface
+// list) — as opposed to a layout wrapper (social-neo-shell / -center / region
+// containers / stat grids). Only paint surfaces receive the admin-tools glass
+// recipe + blur; wrappers stay on their flat CSS background so glass never stacks.
+function isSocialPaintSurface(el) {
+    if (!el?.classList) return false;
+    if (SOCIAL_NEO_TRANSPARENCY_SURFACE_CLASSES.some((className) => el.classList.contains(className))) {
+        return true;
+    }
+    return (
+        el.classList.contains('social-hero') ||
+        el.classList.contains('social-card') ||
+        el.classList.contains('social-post-card') ||
+        el.classList.contains('social-mini-card') ||
+        el.classList.contains('social-detail-card') ||
+        el.classList.contains('social-neo-card')
+    );
+}
+
+function shouldKeepSocialFadeCssBackground(el) {
+    if (!document.body.classList.contains('lux-route-social')) return false;
+    if (!el?.classList) return false;
+    // Curated social surfaces are painted with the admin-tools glass recipe;
+    // everything else inside the shell (layout wrappers) keeps its flat CSS bg.
+    if (isSocialPaintSurface(el)) return false;
+    return Boolean(el.closest?.('#page-social'));
+}
+
+function shouldKeepAdminLibraryFadeCssBackground(_el) {
+    return false;
+}
+
+function buildHomeStyleSurfaceBackground(lightMode, amount) {
+    if (lightMode) {
+        return `radial-gradient(circle at 6% 0%, rgba(255,255,255, ${(amount * 0.88).toFixed(2)}), transparent 34%), radial-gradient(circle at 74% 0%, rgba(var(--lux-accent-rgb), ${(amount * 0.24).toFixed(2)}), transparent 42%), radial-gradient(circle at 100% 96%, rgba(var(--lux-home-secondary-rgb), ${(amount * 0.14).toFixed(2)}), transparent 40%), linear-gradient(135deg, rgba(var(--lux-accent-rgb), ${(amount * 0.065).toFixed(2)}), rgba(255,255,255, ${(amount * 0.84).toFixed(2)}) 44%, rgba(247,241,232, ${(amount * 0.70).toFixed(2)}))`;
+    }
+    return `radial-gradient(circle at 6% 0%, rgba(255,255,255, ${(amount * 0.08).toFixed(2)}), transparent 32%), radial-gradient(circle at 74% 0%, rgba(var(--lux-accent-rgb), ${(amount * 0.28).toFixed(2)}), transparent 42%), radial-gradient(circle at 100% 96%, rgba(var(--lux-home-secondary-rgb), ${(amount * 0.18).toFixed(2)}), transparent 40%), linear-gradient(135deg, rgba(var(--lux-accent-rgb), ${(amount * 0.10).toFixed(2)}), rgba(10,15,24, ${(amount * 0.89).toFixed(2)}) 44%, rgba(7,10,18, ${(amount * 0.80).toFixed(2)}))`;
+}
+
+function buildLuxuryRoutePanelGradient(lightMode, isSmallSurface) {
+    if (lightMode) {
+        if (isSmallSurface) {
+            return 'radial-gradient(circle at 8% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .88) * .88)), transparent 34%), ' +
+                'radial-gradient(circle at 72% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .88) * .16)), transparent 38%), ' +
+                'radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .88) * .13)), transparent 38%), ' +
+                'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .88) * .075)), rgba(255,255,255, calc(var(--lux-transparency-alpha, .88) * .88)) 44%, rgba(247,241,232, calc(var(--lux-transparency-alpha, .88) * .72)))';
+        }
+        return 'radial-gradient(circle at 8% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .88) * .88)), transparent 34%), ' +
+            'radial-gradient(circle at 72% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .88) * .20)), transparent 38%), ' +
+            'radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .88) * .13)), transparent 38%), ' +
+            'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .88) * .075)), rgba(255,255,255, calc(var(--lux-transparency-alpha, .88) * .88)) 44%, rgba(247,241,232, calc(var(--lux-transparency-alpha, .88) * .72)))';
+    }
+    if (isSmallSurface) {
+        return 'radial-gradient(circle at 8% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .92) * .075)), transparent 32%), ' +
+            'radial-gradient(circle at 72% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .16)), transparent 38%), ' +
+            'radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .92) * .14)), transparent 38%), ' +
+            'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .10)), rgba(10,15,24, calc(var(--lux-transparency-alpha, .92) * .91)) 44%, rgba(7,10,18, calc(var(--lux-transparency-alpha, .92) * .84)))';
+    }
+    return 'radial-gradient(circle at 8% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .92) * .075)), transparent 32%), ' +
+        'radial-gradient(circle at 72% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .24)), transparent 38%), ' +
+        'radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .92) * .14)), transparent 38%), ' +
+        'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .10)), rgba(10,15,24, calc(var(--lux-transparency-alpha, .92) * .91)) 44%, rgba(7,10,18, calc(var(--lux-transparency-alpha, .92) * .84)))';
+}
+
+// Mirrors --staff-fade-control token in staff-command-center.css.
+// Panels and cards now share the students-admin painter (buildLuxuryRoutePanelGradient).
+function buildStaffFadeBackground(lightMode, tier) {
+    if (tier === 'control') {
+        if (lightMode) {
+            return 'linear-gradient(180deg, rgba(255,255,255, 0.82), rgba(248,244,237, 0.62)), ' +
+                'radial-gradient(circle at top right, rgba(var(--lux-accent-rgb), 0.10), transparent 32%)';
+        }
+        return 'linear-gradient(180deg, rgba(255,255,255, calc(0.04 + var(--lux-glass-alpha, .06))), rgba(255,255,255, 0.02)), ' +
+            'radial-gradient(circle at top right, rgba(var(--lux-accent-rgb), 0.10), transparent 32%)';
+    }
+    return buildLuxuryRoutePanelGradient(lightMode, false);
+}
+
+const STAFF_ROUTE_CONTROL_TRANSPARENCY_SURFACE_CLASSES = [
+    'staff-hub-control',
+    'lux-control',
+    'staff-hub-tab',
+    'lux-tab-btn',
+    'lux-picker-btn',
+    'staff-hub-command-badge'
+];
+
 const SHARED_TRANSPARENCY_OBSERVER_SELECTORS = [
     '.lux-card', '.lux-panel', '.lux-person-card', '.lux-subcard',
     '.lux-hero', '.lux-stack', '.lux-dashboard-section',
@@ -1153,22 +1568,18 @@ const SHARED_TRANSPARENCY_OBSERVER_SELECTORS = [
     '.lux-card-body', '.lux-panel-body',
     '.lux-page-shell', '.lux-stat-card', '.lux-stat',
     '.lux-page-kicker', '.lux-status-pill', '.lux-control',
-    '.lux-timetable-filters', '.filter-shell', '.lux-timetable-hero-focus',
-    '.lux-timetable-command-head', '.lux-timetable-command-grid',
-    '.lux-timetable-insight-grid', '.lux-timetable-insight-label',
-    '.lux-timetable-insight-value', '.lux-timetable-insight-list',
-    '.lux-timetable-stage-head', '.lux-timetable-hero-main',
+    '.lux-faculty-command', '.lux-faculty-command-head', '.lux-faculty-command-grid',
+    '.lux-faculty-insight', '.lux-faculty-insight-grid', '.lux-faculty-insight-label',
+    '.lux-faculty-insight-value', '.lux-faculty-insight-list',
+    '.lux-faculty-stage', '.lux-faculty-stage-head', '.lux-faculty-hero-focus',
+    '.lux-faculty-hero-main', '.lux-faculty-hero-top', '.lux-faculty-filters',
+    '.lux-faculty-controls', '.lux-faculty-controls-row', '.lux-faculty-overview-row',
+    '.lux-faculty-filter-title',
     '.schedule-chip', '.schedule-view-switcher', '.schedule-week-arrow',
     '.schedule-toolbar-host', '.schedule-toolbar', '.schedule-week-nav',
     '.schedule-overview-row', '.schedule-view-row',
     '.lms-clean-stat', '.lms-clean-signal-panel', '.lms-clean-mini',
     '.lms-clean-metric-card', '.lms-clean-subject-card',
-    '.sch-sidebar', '.sch-main', '.sch-rail-hero', '.sch-rail-section',
-    '.sch-board-hero', '.sch-board-legend', '.sch-grid-shell', '.sch-modal',
-    '.palette-card', '.sch-stat-card', '.sch-grid-tag', '.sch-legend-pill',
-    '.sch-action-btn', '.sch-week-current-btn', '.sch-week-arrow',
-    '.sch-create-btn', '.sch-empty-state', '.sch-grid-empty',
-    '.sch-header-row', '.sch-time-col', '.sch-day-col', '.sch-time-slot span',
     ...LUX_MODERN_TRANSPARENCY_SURFACE_SELECTORS,
     ...SOCIAL_NEO_TRANSPARENCY_SURFACE_SELECTORS
 ];
@@ -1315,13 +1726,6 @@ const HIGH_TRANSPARENCY_TEXT_RESET_SELECTORS = [
     '.lux-page-kicker',
     '.lux-person-head',
     '.lux-admin-ops-head',
-    '.lux-timetable-command-head',
-    '.lux-timetable-insight-grid',
-    '.lux-timetable-insight-label',
-    '.lux-timetable-insight-value',
-    '.lux-timetable-insight-list',
-    '.lux-timetable-stage-head',
-    '.lux-timetable-hero-main',
     '[class*="-head"]',
     '[class*="-meta"]',
     '[class*="-title"]',
@@ -1372,21 +1776,16 @@ const HIGH_TRANSPARENCY_SURFACE_SELECTORS = [
     '.registration-course-row',
     '.registration-module-choice',
     '.registration-track-group',
-    '.reg-tabs',
-    '.sch-sidebar',
-    '.sch-main',
-    '.sch-rail-hero',
-    '.sch-rail-section',
-    '.sch-board-hero',
-    '.sch-board-legend',
-    '.sch-grid-shell',
-    '.sch-modal',
-    '.palette-card',
-    '.sch-stat-card',
-    '.sch-grid-tag',
-    '.sch-legend-pill',
-    '.sch-empty-state',
-    '.sch-grid-empty',
+    '#page-admin-scheduler .sch-rail-hero',
+    '#page-admin-scheduler .sch-rail-section',
+    '#page-admin-scheduler .sch-grid-shell',
+    '#page-admin-scheduler .sch-modal',
+    '#page-admin-scheduler .palette-card',
+    '#page-admin-scheduler .sch-stat-card',
+    '#page-admin-scheduler .sch-grid-tag',
+    '#page-admin-scheduler .sch-legend-pill',
+    '#page-admin-scheduler .sch-empty-state',
+    '#page-admin-scheduler .sch-grid-empty',
     '.lms-clean-stat',
     '.lms-clean-signal-panel',
     '.lms-clean-mini',
@@ -1400,30 +1799,6 @@ const HIGH_TRANSPARENCY_SURFACE_SELECTORS = [
     '.lms-route-hero',
     '.lms-clean-hero',
     '.lms-clean-subview-hero',
-    '.lux-faculty-command',
-    '.lux-faculty-insight',
-    '.lux-faculty-stage',
-    '.lux-faculty-hero-focus',
-    '.lux-timetable-command',
-    '.lux-timetable-insight',
-    '.lux-timetable-stage',
-    '.lux-timetable-canvas',
-    '.lux-timetable-controls',
-    '.lux-timetable-filters',
-    '.filter-shell',
-    '.lux-timetable-hero-focus',
-    '.social-card',
-    '.social-post-card',
-    '.social-mini-card',
-    '.social-comment-card',
-    '.social-notif-item',
-    '.social-story-card',
-    '.social-detail-card',
-    '.social-file-preview',
-    '.social-poll-option',
-    '.social-empty',
-    '.social-shared-card',
-    ...SOCIAL_NEO_TRANSPARENCY_SURFACE_SELECTORS,
     '.portal-msg-page-top',
     '.portal-msg-panel',
     '.portal-msg-group-modal',
@@ -1473,14 +1848,19 @@ function clampLuxuryTransparencyPercentage(value, fallback = 70) {
     return Math.max(0, Math.min(100, parsed));
 }
 
+function mapLuxuryTransparencyFillRatio(value) {
+    const percentage = clampLuxuryTransparencyPercentage(value, 0);
+    return (percentage + 1) / 101;
+}
+
 function buildLuxuryTransparencyModel(value, lightMode = false) {
+    if (typeof window.__kiuBuildLuxuryTransparencyModel === 'function') {
+        return window.__kiuBuildLuxuryTransparencyModel(value, lightMode);
+    }
     const percentage = clampLuxuryTransparencyPercentage(value);
-    const fillRatio = percentage / 100;
+    const fillRatio = mapLuxuryTransparencyFillRatio(percentage);
     const transparencyRatio = fillRatio;
-    const colorFadeRatio = Math.max(
-        lightMode ? 0.46 : 0.42,
-        Math.min(1, 0.34 + (fillRatio * 0.68))
-    );
+    const colorFadeRatio = Math.max(0.01, Math.min(1, fillRatio * 0.92));
     return {
         percentage,
         transparencyRatio,
@@ -1519,9 +1899,9 @@ function buildLuxuryTransparencyModel(value, lightMode = false) {
 }
 
 function updateTransparency(value, options = {}) {
-    const forceRefresh = Boolean(options && options.force);
     const scopedRoots = normalizeTransparencyRoots(options?.roots);
     const percentage = clampLuxuryTransparencyPercentage(value);
+    const forceRefresh = options?.force === true;
 
     // Update display
     const display = document.getElementById('transparency-display') || document.getElementById('lux-transparency-value');
@@ -1536,9 +1916,8 @@ function updateTransparency(value, options = {}) {
     }
 
     const isLightTheme = document.documentElement.dataset.luxThemeMode === 'light';
+    const fillRatio = mapLuxuryTransparencyFillRatio(percentage);
     const transparencyModel = buildLuxuryTransparencyModel(percentage, isLightTheme);
-    const alpha = transparencyModel.transparencyRatio;
-    const surfaceFillAmount = transparencyModel.fillRatio;
 
     if (options?.persist !== false && typeof window.setDashboardVisuals === 'function') {
         try {
@@ -1547,17 +1926,22 @@ function updateTransparency(value, options = {}) {
     }
 
 
-    // Store in localStorage
-    localStorage.setItem('kiuLuxurySurfaceTransparency', percentage.toString());
-    localStorage.setItem('kiuLuxurySurfaceTransparencyValue', alpha.toFixed(2));
+    if (typeof window.__kiuApplyTransparencyPreferenceState === 'function') {
+        window.__kiuApplyTransparencyPreferenceState(percentage, transparencyModel.transparencyRatio);
+    } else {
+        // Store in localStorage
+        localStorage.setItem('kiuLuxurySurfaceTransparency', percentage.toString());
+        localStorage.setItem('kiuLuxurySurfaceTransparencyValue', transparencyModel.transparencyRatio.toFixed(2));
 
-    // Sync CSS data attribute for CSS-only high-opacity overrides
-    document.documentElement.dataset.luxTransparency = percentage.toString();
+        // Sync CSS data attribute for CSS-only high-opacity overrides
+        document.documentElement.dataset.luxTransparency = percentage.toString();
+    }
+
+    document.documentElement.classList.toggle('lux-fully-opaque', percentage >= 99);
 
     // CSS-ONLY FIX: Toggle lux-high-transparency class and injected primer CSS.
     // At >= 80%, CSS rules suppress accent radial gradients on ALL surfaces.
     if (transparencyModel.highTransparency) {
-        document.documentElement.classList.add('lux-high-transparency');
         // Update or create the primer style with current panel alpha
         var _isLight = isLightTheme;
         var _panelA = transparencyModel.panelAlpha;
@@ -1573,43 +1957,76 @@ function updateTransparency(value, options = {}) {
             ? 'linear-gradient(180deg,rgba(248,244,237,' + _pa + '),rgba(242,237,228,' + _pa + '))'
             : 'linear-gradient(180deg,rgba(10,14,22,' + _pa + '),rgba(6,9,15,' + _pa + '))';
 
-        var existingStyle = document.getElementById('lux-high-trans-primer');
-        if (!existingStyle) {
-            existingStyle = document.createElement('style');
-            existingStyle.id = 'lux-high-trans-primer';
-            document.head.appendChild(existingStyle);
-        }
-        existingStyle.textContent =
+        var highTransparencyCss =
             'html.lux-high-transparency.lux-high-transparency.lux-high-transparency{--lux-hero-glow:0!important;--lux-glow-scale:0!important;--lux-card-glow-alpha:0!important;--lux-panel-glow:0!important}' +
             buildHighTransparencySurfaceCss(_bodySelector, _bg) +
             buildStudentsAdminHighTransparencyCss(_bodySelector, _isLight, _panelA) +
             buildHighTransparencyTextResetCss(_bodySelector) +
             'html.lux-high-transparency.lux-high-transparency.lux-high-transparency ' + _bodySelector + '::before{background:' + _bodyBg + '!important}' +
             'html.lux-high-transparency.lux-high-transparency.lux-high-transparency ' + _bodySelector + ' .lux-sidebar{background:' + _sidebarBg + '!important}';
+        if (typeof window.__kiuApplyHighTransparencyState === 'function') {
+            window.__kiuApplyHighTransparencyState(true, highTransparencyCss);
+        } else {
+            document.documentElement.classList.add('lux-high-transparency');
+            var existingStyle = document.getElementById('lux-high-trans-primer');
+            if (!existingStyle) {
+                existingStyle = document.createElement('style');
+                existingStyle.id = 'lux-high-trans-primer';
+                existingStyle.textContent = ':root{}';
+                document.head.appendChild(existingStyle);
+            }
+            existingStyle.media = 'all';
+            existingStyle.textContent = highTransparencyCss || ':root{}';
+        }
     } else {
-        document.documentElement.classList.remove('lux-high-transparency');
-        var primerStyle = document.getElementById('lux-high-trans-primer');
-        if (primerStyle) primerStyle.remove();
+        if (typeof window.__kiuApplyHighTransparencyState === 'function') {
+            window.__kiuApplyHighTransparencyState(false);
+        } else {
+            document.documentElement.classList.remove('lux-high-transparency');
+            var primerStyle = document.getElementById('lux-high-trans-primer');
+            if (primerStyle) {
+                primerStyle.textContent = ':root{}';
+                primerStyle.media = 'all';
+            }
+        }
     }
 
-    const root = document.documentElement;
-    root.style.setProperty('--lux-panel-alpha', transparencyModel.panelAlpha.toFixed(3));
-    root.style.setProperty('--lux-transparency-alpha', transparencyModel.fillRatio.toFixed(3));
-    root.style.setProperty('--lux-color-fade-alpha', transparencyModel.colorFadeRatio.toFixed(3));
-    root.style.setProperty('--lux-raised-alpha', transparencyModel.raisedAlpha.toFixed(3));
-    root.style.setProperty('--lux-glass-alpha', transparencyModel.glassAlpha.toFixed(3));
-    root.style.setProperty('--lux-panel-fill-alpha', transparencyModel.panelFillAlpha.toFixed(3));
-    root.style.setProperty('--lux-raised-fill-alpha', transparencyModel.raisedFillAlpha.toFixed(3));
-    root.style.setProperty('--lux-utility-fill-alpha', transparencyModel.utilityFillAlpha.toFixed(3));
-    root.style.setProperty('--lux-utility-alpha', transparencyModel.utilityAlpha.toFixed(3));
-    root.style.setProperty('--lux-topbar-fill-alpha', transparencyModel.topbarFillAlpha.toFixed(3));
-    root.style.setProperty('--lux-topbar-raised-alpha', transparencyModel.topbarRaisedAlpha.toFixed(3));
-    root.style.setProperty('--lux-glass-highlight-alpha', transparencyModel.glassHighlightAlpha.toFixed(3));
+    if (typeof window.__kiuApplyTransparencyTokenState === 'function') {
+        window.__kiuApplyTransparencyTokenState({
+            panelAlpha: transparencyModel.panelAlpha.toFixed(3),
+            fillRatio: transparencyModel.fillRatio.toFixed(3),
+            colorFadeRatio: transparencyModel.colorFadeRatio.toFixed(3),
+            raisedAlpha: transparencyModel.raisedAlpha.toFixed(3),
+            glassAlpha: transparencyModel.glassAlpha.toFixed(3),
+            panelFillAlpha: transparencyModel.panelFillAlpha.toFixed(3),
+            raisedFillAlpha: transparencyModel.raisedFillAlpha.toFixed(3),
+            utilityFillAlpha: transparencyModel.utilityFillAlpha.toFixed(3),
+            utilityAlpha: transparencyModel.utilityAlpha.toFixed(3),
+            topbarFillAlpha: transparencyModel.topbarFillAlpha.toFixed(3),
+            topbarRaisedAlpha: transparencyModel.topbarRaisedAlpha.toFixed(3),
+            glassHighlightAlpha: transparencyModel.glassHighlightAlpha.toFixed(3)
+        });
+    } else {
+        const root = document.documentElement;
+        root.style.setProperty('--lux-panel-alpha', transparencyModel.panelAlpha.toFixed(3));
+        root.style.setProperty('--lux-transparency-alpha', transparencyModel.fillRatio.toFixed(3));
+        root.style.setProperty('--lux-color-fade-alpha', transparencyModel.colorFadeRatio.toFixed(3));
+        root.style.setProperty('--lux-raised-alpha', transparencyModel.raisedAlpha.toFixed(3));
+        root.style.setProperty('--lux-glass-alpha', transparencyModel.glassAlpha.toFixed(3));
+        root.style.setProperty('--lux-panel-fill-alpha', transparencyModel.panelFillAlpha.toFixed(3));
+        root.style.setProperty('--lux-raised-fill-alpha', transparencyModel.raisedFillAlpha.toFixed(3));
+        root.style.setProperty('--lux-utility-fill-alpha', transparencyModel.utilityFillAlpha.toFixed(3));
+        root.style.setProperty('--lux-utility-alpha', transparencyModel.utilityAlpha.toFixed(3));
+        root.style.setProperty('--lux-topbar-fill-alpha', transparencyModel.topbarFillAlpha.toFixed(3));
+        root.style.setProperty('--lux-topbar-raised-alpha', transparencyModel.topbarRaisedAlpha.toFixed(3));
+        root.style.setProperty('--lux-glass-highlight-alpha', transparencyModel.glassHighlightAlpha.toFixed(3));
+    }
 
 
-    // Calculate effects
-    const blurAmount = (percentage / 100) * 24;
-    const saturateAmount = 100 + ((percentage / 100) * 45);
+    // Calculate effects (remapped fill ratio: slider 0% = former 1% behavior)
+    const blurAmount = fillRatio * 24;
+    const saturateAmount = 100 + (fillRatio * 45);
+    const surfaceFillAmount = transparencyModel.panelFillAlpha;
     const registrationGlassSelectors = [
         '.registration-hero', '.registration-workspace', '.registration-insight-card',
         '.registration-focus-card', '.registration-state-card',
@@ -1624,36 +2041,56 @@ function updateTransparency(value, options = {}) {
         'registration-module-list-card', 'registration-module-pane-card',
         'registration-track-card', 'registration-footer-bar',
         'registration-mini-metric', 'registration-course-row',
-        'registration-module-choice', 'registration-track-group',
-        'reg-tabs'
+        'registration-module-choice', 'registration-track-group'
     ];
     const schedulerGlassSelectors = [
-        '.sch-sidebar', '.sch-main', '.sch-rail-hero', '.sch-rail-section',
-        '.sch-board-hero', '.sch-board-legend', '.sch-grid-shell', '.sch-modal',
-        '.palette-card', '.sch-stat-card', '.sch-grid-tag', '.sch-legend-pill',
-        '.sch-action-btn', '.sch-week-current-btn', '.sch-week-arrow',
-        '.sch-create-btn', '.sch-empty-state', '.sch-grid-empty',
-        '.sch-header-row', '.sch-time-col', '.sch-day-col', '.sch-time-slot span'
+        '#page-admin-scheduler .sch-rail-hero', '#page-admin-scheduler .sch-rail-section',
+        '#page-admin-scheduler .sch-grid-shell', '#page-admin-scheduler .sch-modal',
+        '#page-admin-scheduler .palette-card', '#page-admin-scheduler .sch-stat-card',
+        '#page-admin-scheduler .sch-grid-tag', '#page-admin-scheduler .sch-legend-pill',
+        '#page-admin-scheduler .sch-action-btn', '#page-admin-scheduler .sch-week-arrow',
+        '#page-admin-scheduler .sch-empty-state', '#page-admin-scheduler .sch-grid-empty',
+        '#page-admin-scheduler .lux-strip-card',
+        '#page-admin-scheduler .sch-control-group select',
+        '#page-admin-scheduler .sch-board-toolbar-row select',
+        '#page-admin-scheduler .sch-search-shell input',
+        '#page-admin-scheduler .sch-modal input',
+        '#page-admin-scheduler .sch-modal select'
     ];
     const schedulerGlassClasses = [
-        'sch-sidebar', 'sch-main', 'sch-rail-hero', 'sch-rail-section',
-        'sch-board-hero', 'sch-board-legend', 'sch-grid-shell', 'sch-modal',
+        'sch-rail-hero', 'sch-rail-section',
+        'sch-grid-shell', 'sch-modal',
         'palette-card', 'sch-stat-card', 'sch-grid-tag', 'sch-legend-pill',
-        'sch-action-btn', 'sch-week-current-btn', 'sch-week-arrow',
-        'sch-create-btn', 'sch-empty-state', 'sch-grid-empty',
-        'sch-header-row', 'sch-time-col', 'sch-day-col'
+        'sch-action-btn', 'sch-week-arrow',
+        'sch-empty-state', 'sch-grid-empty', 'lux-strip-card'
     ];
     const lmsGlassSelectors = [
         '.lms-clean-stat', '.lms-clean-signal-panel', '.lms-clean-mini',
         '.lms-clean-metric-card', '.lms-clean-subject-card',
         '.lms-clean-action-secondary', '.lms-clean-signal-pill',
-        '.lms-clean-empty', '.lms-banner', '.lux-lms-group-card'
+        '.lms-clean-empty', '.lms-banner', '.lux-lms-group-card',
+        '#lms-content-area .lms-quiz-builder .lms-quiz-studio-hero',
+        '#lms-content-area .lms-quiz-builder .lms-quiz-studio-main-card',
+        '#lms-content-area .lms-quiz-builder .lms-quiz-tool-panel',
+        '#lms-content-area .lms-quiz-builder .lms-quiz-saved-card',
+        '#lms-content-area .lms-quiz-builder .lms-quiz-studio-stat-card',
+        '#lms-content-area .lms-quiz-builder .lms-quiz-rules-card',
+        '#lms-content-area .lms-quiz-builder .lms-quiz-question-nav-card',
+        '#lms-content-area .lms-quiz-builder .lms-quiz-question-editor-card'
     ];
     const lmsGlassClasses = [
         'lms-clean-stat', 'lms-clean-signal-panel', 'lms-clean-mini',
         'lms-clean-metric-card', 'lms-clean-subject-card',
         'lms-clean-action-secondary', 'lms-clean-signal-pill',
         'lms-clean-empty', 'lms-banner', 'lux-lms-group-card'
+    ];
+    const lmsQuizBuilderGlassClasses = [
+        'lms-quiz-studio-hero', 'lms-quiz-studio-main-card', 'lms-quiz-tool-panel',
+        'lms-quiz-saved-card', 'lms-quiz-studio-stat-card', 'lms-quiz-rules-card',
+        'lms-quiz-question-nav-card', 'lms-quiz-question-editor-card',
+        'lms-quiz-variant-question-card', 'lms-quiz-variant-workspace', 'lms-quiz-card',
+        'lms-live-monitor-card', 'lms-quiz-board-empty', 'lms-quiz-card-empty',
+        'lms-quiz-empty-state', 'lms-quiz-policy-card'
     ];
     const isLmsRoute = document.body.classList.contains('lux-route-lms');
     const structuralClasses = [
@@ -1669,33 +2106,236 @@ function updateTransparency(value, options = {}) {
         'lux-card-actions',
         'lux-page-kicker',
         'lux-person-head',
-        'lux-admin-ops-head',
-        'lux-timetable-command-head',
-        'lux-timetable-insight-grid',
-        'lux-timetable-insight-label',
-        'lux-timetable-insight-value',
-        'lux-timetable-insight-list',
-        'lux-timetable-stage-head',
-        'lux-timetable-hero-main'
+        'lux-admin-ops-head'
     ];
-    const isStructuralSurface = (el) => structuralClasses.some((className) => el.classList.contains(className));
+    const TIMETABLE_GRID_CELL_CLASS_NAMES = [
+        'sch-header-row',
+        'sch-time-col',
+        'sch-time-labels',
+        'sch-day-col',
+        'sch-time-slot',
+        'sch-body',
+        'sch-lane',
+        'sch-slot-bg',
+        'sch-event',
+        'sch-day-lanes',
+        'schedule-grid-shell'
+    ];
+    const isTimetableGridCell = (el) => {
+        if (!document.body.classList.contains('lux-route-timetable') || !el?.classList) return false;
+        if (!el.closest?.('.lux-timetable-grid-shell, .schedule-grid-shell[data-tt-grid="1"]')) return false;
+        return TIMETABLE_GRID_CELL_CLASS_NAMES.some((className) => el.classList.contains(className));
+    };
+    const isStructuralSurface = (el) => (
+        isTimetableGridCell(el) ||
+        structuralClasses.some((className) => el.classList.contains(className)) ||
+        (document.body.classList.contains('lux-route-admin-scheduler') && (
+            el.classList.contains('sch-sidebar') ||
+            el.classList.contains('sch-main') ||
+            el.classList.contains('sch-grid-root') ||
+            el.classList.contains('sch-header-row') ||
+            el.classList.contains('sch-time-col') ||
+            el.classList.contains('sch-day-col') ||
+            el.classList.contains('sch-time-labels') ||
+            el.classList.contains('sch-time-slot') ||
+            el.classList.contains('sch-body') ||
+            el.classList.contains('sch-lane') ||
+            el.classList.contains('sch-slot-bg') ||
+            el.classList.contains('sch-event') ||
+            el.classList.contains('sch-day-lanes')
+        )) ||
+        (document.body.classList.contains('lux-route-admin-library') && (
+            el.classList.contains('admin-library-modal') ||
+            el.classList.contains('admin-library-modal-overlay') ||
+            el.classList.contains('admin-library-catalog-row') ||
+            el.classList.contains('admin-library-catalog-cell') ||
+            el.classList.contains('admin-library-empty-row') ||
+            el.classList.contains('admin-library-empty-cell')
+        )) ||
+        (document.body.classList.contains('lux-route-admin-orders') && (
+            // Keep only true layout/structural chrome transparent; panels, cards,
+            // controls and the studio modal are painted as glass by the engine
+            // so they match the admin-tools recipe exactly.
+            el.classList.contains('admin-orders-studio-header') ||
+            el.classList.contains('admin-orders-studio-body') ||
+            el.classList.contains('admin-orders-studio-close') ||
+            el.classList.contains('orders-admin-shell') ||
+            el.classList.contains('orders-admin-table__delete') ||
+            (Boolean(el.closest?.('.orders-admin-table')) && (
+                el.tagName === 'TR' ||
+                el.tagName === 'TH' ||
+                el.tagName === 'TD'
+            ))
+        )) ||
+        (Boolean(el.closest?.('#page-orders, #orders-inbox-root')) &&
+            !document.body.classList.contains('lux-route-admin-orders') && (
+            el.classList.contains('orders-inbox-shell') ||
+            el.classList.contains('orders-inbox-hero') ||
+            el.classList.contains('orders-list-card') ||
+            el.classList.contains('orders-detail-card') ||
+            el.classList.contains('orders-inbox-hero-side') ||
+            el.classList.contains('lux-hero-signal') ||
+            el.classList.contains('lux-hero-side-head') ||
+            el.classList.contains('orders-list-wrap') ||
+            el.classList.contains('orders-status-filter') ||
+            el.classList.contains('orders-item') ||
+            el.classList.contains('orders-metric-card') ||
+            el.classList.contains('orders-attachment-card') ||
+            el.classList.contains('orders-recipient-card') ||
+            el.classList.contains('orders-detail-panel') ||
+            el.classList.contains('orders-detail-empty') ||
+            el.classList.contains('lux-control') ||
+            el.classList.contains('lux-status-pill')
+        )) ||
+        (document.body.classList.contains('lux-route-faculty-gradebook') && (
+            Boolean(el.closest?.('.lux-faculty-gradebook-page')) && (
+                el.classList.contains('lux-faculty-hero') ||
+                el.classList.contains('lux-faculty-hero-focus') ||
+                el.classList.contains('lux-faculty-command') ||
+                el.classList.contains('lux-faculty-stage') ||
+                el.classList.contains('lux-faculty-insight') ||
+                el.classList.contains('lux-faculty-filters') ||
+                el.classList.contains('lux-faculty-controls') ||
+                el.classList.contains('lux-status-pill') ||
+                el.classList.contains('lux-primary-btn') ||
+                el.classList.contains('lux-secondary-btn')
+            )
+        )) ||
+        (document.body.classList.contains('lux-route-faculty-gradebook') && (
+            [...el.classList].some((className) => className.startsWith('gb-')) ||
+            (Boolean(el.closest?.('#gradebook-table')) && (
+                el.tagName === 'TD' || el.tagName === 'TH' || el.tagName === 'TR'
+            ))
+        )) ||
+        (document.body.classList.contains('lux-route-timetable') && (
+            el.classList.contains('lux-timetable-hero') ||
+            el.classList.contains('lux-timetable-command') ||
+            el.classList.contains('lux-timetable-stage') ||
+            el.classList.contains('lux-timetable-hero-focus') ||
+            el.classList.contains('lux-timetable-filters') ||
+            el.classList.contains('lux-timetable-view-switcher') ||
+            el.classList.contains('lux-timetable-week-nav') ||
+            el.classList.contains('lux-timetable-overview-row') ||
+            el.classList.contains('lux-timetable-insight') ||
+            el.classList.contains('lux-timetable-grid-shell') ||
+            el.classList.contains('lux-timetable-canvas') ||
+            el.classList.contains('lux-timetable-day-section') ||
+            el.classList.contains('lux-timetable-session-card') ||
+            el.classList.contains('schedule-day-section') ||
+            el.classList.contains('schedule-session-card') ||
+            el.classList.contains('schedule-view-switcher') ||
+            el.classList.contains('schedule-week-nav') ||
+            el.classList.contains('schedule-overview-row') ||
+            el.classList.contains('schedule-chip') ||
+            el.classList.contains('lux-status-pill')
+        )) ||
+        (document.body.classList.contains('lux-route-chancellery') && Boolean(el.closest?.('#page-chancellery')) && (
+            el.classList.contains('page-hero') ||
+            el.classList.contains('lux-chancellery-hero') ||
+            el.classList.contains('lux-chancellery-focus-card') ||
+            el.classList.contains('lux-chancellery-snapshot-card') ||
+            el.classList.contains('lux-chancellery-subcard') ||
+            el.classList.contains('lux-chancellery-queue-item') ||
+            el.classList.contains('lux-chancellery-thread-entry') ||
+            el.classList.contains('lux-chancellery-focus-row') ||
+            el.classList.contains('lux-card') ||
+            el.classList.contains('lux-subcard') ||
+            el.classList.contains('lux-stat-card') ||
+            el.classList.contains('lux-queue-item') ||
+            el.classList.contains('lux-thread-entry') ||
+            el.classList.contains('lux-control') ||
+            el.classList.contains('lux-chancellery-control') ||
+            el.classList.contains('lux-status-pill') ||
+            el.classList.contains('lux-strip-card') ||
+            el.classList.contains('surface-card') ||
+            el.classList.contains('content-box')
+        )) ||
+        (document.body.classList.contains('lux-route-profile') && Boolean(el.closest?.('#page-profile')) && (
+            el.classList.contains('page-hero') ||
+            el.classList.contains('profile-shell-nav-card') ||
+            el.classList.contains('profile-shell-card') ||
+            el.classList.contains('profile-shell-messenger') ||
+            el.classList.contains('profile-shell-messenger-shell') ||
+            el.classList.contains('profile-summary-strip') ||
+            el.classList.contains('lux-strip-card') ||
+            el.classList.contains('lux-hero-side') ||
+            el.classList.contains('lux-hero-signal') ||
+            el.classList.contains('lux-mini-panel') ||
+            el.classList.contains('surface-card') ||
+            el.classList.contains('content-box') ||
+            el.classList.contains('lux-card') ||
+            el.classList.contains('profile-shell-tab') ||
+            el.classList.contains('lux-rail-tab') ||
+            el.classList.contains('lux-control') ||
+            el.classList.contains('profile-shell-input') ||
+            el.classList.contains('profile-shell-action') ||
+            el.classList.contains('profile-password-toggle') ||
+            el.classList.contains('lux-status-pill') ||
+            el.classList.contains('portal-msg-panel') ||
+            el.classList.contains('portal-msg-page-shell') ||
+            el.classList.contains('portal-msg-shell') ||
+            el.classList.contains('portal-msg-chip') ||
+            el.classList.contains('sch-header-row') ||
+            el.classList.contains('sch-time-col') ||
+            el.classList.contains('sch-time-labels') ||
+            el.classList.contains('sch-day-col') ||
+            el.classList.contains('sch-time-slot') ||
+            el.classList.contains('sch-lane') ||
+            el.classList.contains('sch-slot-bg') ||
+            el.classList.contains('sch-event')
+        )) ||
+        (document.body.classList.contains('lux-route-profile-view') && (
+            el.classList.contains('pv-hero') ||
+            el.classList.contains('pv-meta') ||
+            el.classList.contains('pv-left') ||
+            el.classList.contains('pv-right') ||
+            el.classList.contains('pv-stat-card') ||
+            el.classList.contains('pv-tab') ||
+            el.classList.contains('pv-modal-card') ||
+            el.classList.contains('pv-profile-edit-card') ||
+            el.classList.contains('pv-session-list-row') ||
+            el.classList.contains('pv-document-card') ||
+            el.classList.contains('pv-course-row') ||
+            el.classList.contains('pv-financial-status-card') ||
+            el.classList.contains('upload-zone') ||
+            el.classList.contains('surface-card') ||
+            el.classList.contains('lux-summary-surface') ||
+            el.classList.contains('lux-strip-card') ||
+            el.classList.contains('lux-inline-card') ||
+            el.classList.contains('lux-data-card') ||
+            el.classList.contains('lux-info-card') ||
+            el.classList.contains('lux-status-pill') ||
+            el.classList.contains('lux-control') ||
+            el.classList.contains('lux-select-card')
+        )) ||
+        (document.body.classList.contains('lux-route-profile-view') && (
+            [...el.classList].some((className) => className.startsWith('pv-')) ||
+            (Boolean(el.closest?.('.pv-financial-table')) && (
+                el.tagName === 'TD' || el.tagName === 'TH' || el.tagName === 'TR'
+            ))
+        ))
+    );
     const buildDynamicSurfaceBackground = (el, lightMode, amount) => {
         // FIX: At high transparency (>=80%), NEVER add accent radial gradients.
         // These inline !important styles were overriding ALL CSS overrides.
         var _isHighTransBg = percentage >= 80;
-        const isTimetableRoute = document.body.classList.contains('lux-route-timetable');
-        const isTimetableLargeSurface = isTimetableRoute && (
-            el.classList.contains('lux-timetable-hero') ||
-            el.classList.contains('lux-timetable-command') ||
-            el.classList.contains('lux-timetable-stage') ||
-            el.classList.contains('lux-timetable-hero-focus')
-        );
         const isRegistrationRoute = document.body.classList.contains('lux-route-registration');
         const isRegistrationLargeSurface = isRegistrationRoute && (
             el.classList.contains('registration-hero') ||
             el.classList.contains('registration-workspace') ||
             el.classList.contains('registration-module-list-card') ||
             el.classList.contains('registration-module-pane-card')
+        );
+        const isRegistrationSoftSurface = isRegistrationRoute && !isRegistrationLargeSurface && (
+            el.classList.contains('registration-insight-card') ||
+            el.classList.contains('registration-focus-card') ||
+            el.classList.contains('registration-state-card') ||
+            el.classList.contains('registration-track-card') ||
+            el.classList.contains('registration-track-group') ||
+            el.classList.contains('registration-footer-bar') ||
+            el.classList.contains('registration-mini-metric') ||
+            el.classList.contains('registration-course-row') ||
+            el.classList.contains('registration-module-choice')
         );
         const isProgramsRoute = document.body.classList.contains('lux-route-programs');
         const isProgramsLargeSurface = isProgramsRoute && (
@@ -1704,19 +2344,43 @@ function updateTransparency(value, options = {}) {
             el.classList.contains('lux-program-stage') ||
             el.classList.contains('lux-program-overview-card') ||
             el.classList.contains('lux-program-focus-panel') ||
+            el.classList.contains('lux-program-shell-section--module-rail') ||
+            el.classList.contains('lux-program-shell-section--subject-panel')
+        );
+        const isProgramsSoftSurface = isProgramsRoute && !isProgramsLargeSurface && (
             el.classList.contains('lux-program-publish-pill') ||
             el.classList.contains('lux-program-metric') ||
             el.classList.contains('lux-program-focus-stat') ||
             el.classList.contains('lux-program-semester-chip') ||
+            el.classList.contains('lux-program-semester-timeline__chip') ||
             el.classList.contains('lux-module-option') ||
-            el.classList.contains('lux-subject-row')
+            el.classList.contains('lux-program-module-option') ||
+            el.classList.contains('lux-subject-row') ||
+            el.classList.contains('lux-program-subject-card') ||
+            el.classList.contains('lux-program-summary-card') ||
+            el.classList.contains('lux-status-pill') ||
+            el.classList.contains('page-hero-badge')
         );
         const isStudyCardRoute = document.body.classList.contains('lux-route-study-card');
         const isStudyCardLargeSurface = isStudyCardRoute && (
             el.classList.contains('page-hero') ||
             el.classList.contains('filter-shell') ||
             el.id === 'study-card-container' ||
-            el.classList.contains('study-card-semester-table')
+            el.classList.contains('study-card-semester-table') ||
+            el.classList.contains('study-card-summary-stage')
+        );
+        const isStudyCardSoftSurface = isStudyCardRoute && !isStudyCardLargeSurface && (
+            el.classList.contains('lux-strip-card') ||
+            el.classList.contains('study-card-grade-circle') ||
+            el.classList.contains('study-card-assessment-window__chip') ||
+            el.classList.contains('study-card-assessment-window__card') ||
+            el.classList.contains('study-card-assessment-pill') ||
+            el.classList.contains('study-card-term-header') ||
+            el.classList.contains('study-card-term-row') ||
+            el.classList.contains('study-card-history-section') ||
+            el.classList.contains('study-card-history-entry') ||
+            el.classList.contains('study-card-history-row') ||
+            (el.classList.contains('lux-status-pill') && el.closest?.('#study-card-container, #page-study-card'))
         );
         const isPersonalDataRoute = document.body.classList.contains('lux-route-personal-data');
         const isPersonalDataLargeSurface = isPersonalDataRoute && (
@@ -1726,6 +2390,16 @@ function updateTransparency(value, options = {}) {
             el.classList.contains('personal-data-stats-card') ||
             el.classList.contains('personal-data-facts-card') ||
             el.classList.contains('personal-data-record-card')
+        );
+        const isPersonalDataSoftSurface = isPersonalDataRoute && !isPersonalDataLargeSurface && (
+            el.classList.contains('personal-data-kpi-card') ||
+            el.classList.contains('personal-data-mini') ||
+            el.classList.contains('personal-data-record-item') ||
+            el.classList.contains('personal-data-card-meta') ||
+            el.classList.contains('lux-meta-pair-card') ||
+            el.classList.contains('personal-data-hero-panel') ||
+            (el.classList.contains('lux-strip-card') && el.closest?.('#page-personal-data')) ||
+            (el.classList.contains('lux-status-pill') && el.closest?.('#page-personal-data'))
         );
         const isNewsRoute = document.body.classList.contains('lux-route-news');
         const isNewsSurface = isNewsRoute && (
@@ -1742,17 +2416,6 @@ function updateTransparency(value, options = {}) {
             el.classList.contains('newsx-account-card') ||
             el.classList.contains('newsx-section-btn') ||
             el.classList.contains('newsx-pane-btn')
-        );
-        const isChancelleryRoute = document.body.classList.contains('lux-route-chancellery');
-        const isChancelleryLargeSurface = isChancelleryRoute && (
-            el.classList.contains('lux-chancellery-hero') ||
-            el.classList.contains('lux-chancellery-focus-card') ||
-            el.classList.contains('lux-chancellery-snapshot-card') ||
-            el.classList.contains('lux-card') ||
-            el.classList.contains('lux-stat-card') ||
-            el.classList.contains('lux-subcard') ||
-            el.classList.contains('lux-queue-item') ||
-            el.classList.contains('lux-thread-entry')
         );
         const isStudentServiceRoute = document.body.classList.contains('lux-route-student-service');
         const isStudentServiceLargeSurface = isStudentServiceRoute && (
@@ -1785,17 +2448,8 @@ function updateTransparency(value, options = {}) {
             el.classList.contains('student-service-home-topic') ||
             el.classList.contains('student-service-lane-choice-card')
         );
-        const isLibraryRoute = document.body.classList.contains('lux-route-library');
-        const isLibraryLargeSurface = isLibraryRoute && (
-            el.classList.contains('library-page-hero') ||
-            el.classList.contains('library-filter-shell') ||
-            el.classList.contains('library-catalog-card') ||
-            el.classList.contains('library-tabs') ||
-            el.classList.contains('library-picker-panel') ||
-            el.classList.contains('library-catalog-foot')
-        );
         const isSocialRoute = document.body.classList.contains('lux-route-social');
-        const isSocialSurface = isSocialRoute && (
+        const isSocialLargeSurface = isSocialRoute && (
             el.classList.contains('social-hero') ||
             el.classList.contains('social-entity-cover') ||
             el.classList.contains('social-app-shell') ||
@@ -1810,9 +2464,79 @@ function updateTransparency(value, options = {}) {
             el.classList.contains('social-notif-item') ||
             el.classList.contains('social-story-card') ||
             el.classList.contains('social-file-preview') ||
+            el.classList.contains('social-poll-option') ||
             el.classList.contains('social-neo-card') ||
             SOCIAL_NEO_TRANSPARENCY_SURFACE_CLASSES.some((className) => el.classList.contains(className)) ||
-            el.parentElement?.classList?.contains('social-neo-stat-grid')
+            el.parentElement?.classList?.contains('social-neo-stat-grid') ||
+            [...el.classList].some((className) =>
+                className.startsWith('social-neo-') ||
+                className.startsWith('social-project') ||
+                className.startsWith('social-portfolio')
+            )
+        );
+        const isStaffRoute = document.body.classList.contains('lux-route-staff');
+        const isStaffInContent = isStaffRoute && Boolean(el.closest?.('#staff-content'));
+        const isStaffLargeSurface = isStaffInContent && (
+            el.classList.contains('page-hero') ||
+            el.classList.contains('staff-hub-hero') ||
+            el.classList.contains('staff-hub-command-panel') ||
+            el.classList.contains('staff-hub-command-card') ||
+            el.classList.contains('staff-hub-focus-card') ||
+            el.classList.contains('staff-hub-mini-card') ||
+            el.classList.contains('staff-hub-metric-card') ||
+            el.classList.contains('staff-hub-controls') ||
+            el.classList.contains('staff-hub-directory-panel') ||
+            el.classList.contains('staff-hub-profile') ||
+            el.classList.contains('staff-hub-info-card') ||
+            el.classList.contains('staff-hub-warning') ||
+            el.classList.contains('staff-hub-modal') ||
+            el.classList.contains('staff-hub-list-item') ||
+            el.classList.contains('admin-directory-hero') ||
+            el.classList.contains('admin-directory-controls') ||
+            el.classList.contains('admin-directory-card') ||
+            el.classList.contains('lux-card') ||
+            el.classList.contains('lux-person-card') ||
+            el.classList.contains('lux-subcard') ||
+            el.classList.contains('surface-card') ||
+            el.classList.contains('content-box')
+        );
+        const isStudentsAdminRoute = document.body.classList.contains('lux-route-students-admin');
+        const isStudentsAdminInContent = isStudentsAdminRoute &&
+            Boolean(el.closest?.('#students-content')) &&
+            !el.closest?.('#students-admin-lms-modal');
+        const isStudentsAdminLargeSurface = isStudentsAdminInContent && (
+            el.classList.contains('students-lms-hero') ||
+            el.classList.contains('students-lms-profile-header') ||
+            el.classList.contains('students-lms-panel') ||
+            el.classList.contains('students-lms-stat-card') ||
+            el.classList.contains('students-lms-profile-card') ||
+            el.classList.contains('students-lms-table-shell') ||
+            el.classList.contains('students-lms-list-item') ||
+            el.classList.contains('students-lms-modal-card')
+        );
+        const isLibraryRoute = document.body.classList.contains('lux-route-library');
+        const isLibraryLargeSurface = isLibraryRoute && (
+            el.classList.contains('library-page-hero') ||
+            el.classList.contains('library-filter-shell') ||
+            el.classList.contains('library-catalog-card') ||
+            el.classList.contains('library-tabs') ||
+            el.classList.contains('library-picker-panel') ||
+            el.classList.contains('library-catalog-foot') ||
+            el.classList.contains('alib-panel')
+        );
+        const isLibrarySoftSurface = isLibraryRoute && !isLibraryLargeSurface && (
+            el.classList.contains('library-overview-card') ||
+            el.classList.contains('library-hero-metric') ||
+            el.classList.contains('library-hero-summary-card') ||
+            el.classList.contains('library-hero-signal-card') ||
+            el.classList.contains('admin-library-metric-card') ||
+            el.classList.contains('admin-library-hero-summary-card') ||
+            el.classList.contains('admin-library-param-group') ||
+            el.classList.contains('admin-library-chip') ||
+            (el.classList.contains('lux-strip-card') && el.closest?.('#page-library')) ||
+            (el.classList.contains('lux-hero-signal') && el.closest?.('#page-library')) ||
+            (el.classList.contains('lux-picker-btn') && el.closest?.('.library-filter-shell')) ||
+            (el.classList.contains('lux-control') && el.closest?.('.library-filter-shell'))
         );
         const isExamsRoute = document.body.classList.contains('lux-route-exams');
         const isExamsSurface = isExamsRoute && (
@@ -1840,32 +2564,91 @@ function updateTransparency(value, options = {}) {
             el.parentElement?.classList?.contains('ex2-mini-grid')
         );
         const isAdminToolsRoute = document.body.classList.contains('lux-route-admin-tools');
-        const isAdminToolsSurface = isAdminToolsRoute && (
+        const isAdminToolsInShell = isAdminToolsRoute && Boolean(el.closest?.('#lux-admin-tools-shell'));
+        const isAdminToolsLargeSurface = isAdminToolsInShell && (
+            el.classList.contains('lux-admin-tools-index-hero') ||
+            el.classList.contains('lux-admin-tools-index-panel') ||
             el.classList.contains('lux-admin-tools-hero') ||
             el.classList.contains('lux-admin-op-card') ||
             el.classList.contains('lux-admin-ops-panel') ||
             el.classList.contains('lux-admin-provision-card') ||
             el.classList.contains('lux-panel') ||
             el.classList.contains('lux-card') ||
-            el.classList.contains('lux-subcard') ||
-            el.classList.contains('lux-stat-card') ||
-            el.classList.contains('lux-grid-widget') ||
-            el.classList.contains('admin-reg-tab') ||
             el.id === 'admin-reg-content-container' ||
             el.id === 'curriculum-library-modules-root'
         );
-        const isStaffRoute = document.body.classList.contains('lux-route-staff');
-        const isStaffSurface = isStaffRoute && (
-            el.classList.contains('page-hero') ||
-            el.classList.contains('lux-card') ||
-            el.classList.contains('lux-person-card') ||
+        const isAdminToolsSoftSurface = isAdminToolsInShell && !isAdminToolsLargeSurface && (
+            el.classList.contains('lux-admin-tools-index-summary') ||
+            el.classList.contains('lux-admin-tools-index-command') ||
+            el.classList.contains('lux-admin-tools-index-command-card') ||
+            el.classList.contains('lux-admin-tools-index-subpanel') ||
             el.classList.contains('lux-subcard') ||
-            el.classList.contains('lux-person-head') ||
-            el.classList.contains('lux-empty-state') ||
-            el.classList.contains('lux-picker-btn') ||
-            el.classList.contains('lux-inline-meta') ||
-            el.classList.contains('prof-reg-info-box')
+            el.classList.contains('lux-stat-card') ||
+            el.classList.contains('lux-grid-widget') ||
+            (el.classList.contains('admin-reg-tab') && !el.classList.contains('is-active') && el.getAttribute('aria-pressed') !== 'true') ||
+            (el.classList.contains('lux-strip-card') && el.classList.contains('surface-card'))
         );
+        const isAdminToolsControlSurface = isAdminToolsInShell && (
+            el.classList.contains('lux-control') ||
+            el.classList.contains('lux-picker-btn')
+        );
+        const isAdminToolsSurface = isAdminToolsLargeSurface || isAdminToolsSoftSurface || isAdminToolsControlSurface;
+        const isAdminLibraryRoute = document.body.classList.contains('lux-route-admin-library') ||
+            document.body.classList.contains('lux-entry-admin-library');
+        const isAdminLibraryInPage = isAdminLibraryRoute && Boolean(el.closest?.('#page-library') || el.classList.contains('admin-library-modal'));
+        const isAdminLibraryLargeSurface = isAdminLibraryInPage && (
+            el.classList.contains('lux-panel') ||
+            (el.classList.contains('lux-strip-card') && Boolean(el.closest?.('#page-library'))) ||
+            el.classList.contains('admin-library-modal')
+        );
+        const isAdminLibrarySoftSurface = isAdminLibraryInPage && !isAdminLibraryLargeSurface && (
+            el.classList.contains('lux-stat-card') ||
+            el.classList.contains('lux-pill') ||
+            el.classList.contains('admin-library-chip') ||
+            el.classList.contains('admin-library-param-group')
+        );
+        const isAdminLibrarySurface = isAdminLibraryLargeSurface || isAdminLibrarySoftSurface;
+        const isAdminOrdersRoute = document.body.classList.contains('lux-route-admin-orders');
+        // Scope to the admin-orders workspace + the Colour & Motion Studio modal
+        // only, so the shared non-admin orders.html (lux-route-orders, its own
+        // inbox shell) is never touched here.
+        const isAdminOrdersInScope = isAdminOrdersRoute &&
+            Boolean(el.closest?.('#admin-orders-root, #modal-studio'));
+        const isAdminOrdersLargeSurface = isAdminOrdersInScope && (
+            el.classList.contains('orders-admin-shell') ||
+            el.classList.contains('orders-admin-hero') ||
+            el.classList.contains('orders-admin-panel') ||
+            el.classList.contains('orders-admin-hero-side') ||
+            el.classList.contains('orders-detail-panel') ||
+            el.classList.contains('orders-admin-table-wrap') ||
+            el.classList.contains('admin-orders-studio')
+        );
+        const isAdminOrdersSoftSurface = isAdminOrdersInScope && !isAdminOrdersLargeSurface && (
+            el.classList.contains('orders-metric-card') ||
+            el.classList.contains('orders-recipient-row') ||
+            el.classList.contains('orders-recipient-card') ||
+            el.classList.contains('orders-attachment-card') ||
+            el.classList.contains('orders-detail-empty') ||
+            el.classList.contains('orders-detail-card') ||
+            el.classList.contains('orders-recipient-list-shell') ||
+            el.classList.contains('orders-recipient-list-empty') ||
+            el.classList.contains('lux-hero-side-head') ||
+            el.classList.contains('lux-hero-signal') ||
+            el.classList.contains('lux-stat-card') ||
+            el.classList.contains('admin-orders-studio-card') ||
+            el.classList.contains('admin-orders-palette-option') ||
+            el.classList.contains('admin-orders-mode-btn') ||
+            el.classList.contains('admin-orders-background-btn')
+        );
+        const isAdminOrdersControlSurface = isAdminOrdersInScope && (
+            el.classList.contains('lux-control') ||
+            el.classList.contains('lux-status-pill') ||
+            el.classList.contains('lux-primary-btn') ||
+            el.classList.contains('lux-secondary-btn') ||
+            el.classList.contains('admin-orders-apply-btn')
+        );
+        const isOrdersSurface = isAdminOrdersLargeSurface || isAdminOrdersSoftSurface ||
+            isAdminOrdersControlSurface;
         const isHomeDashboardSurface = Boolean(el.matches?.(
             '#page-home #lux-home-shell .lux-home-toolbar, ' +
             '#page-home #lux-home-shell .lux-home-grid > .lux-panel, ' +
@@ -1877,41 +2660,154 @@ function updateTransparency(value, options = {}) {
             '#page-home #lux-home-shell .lux-grid-widget > .lux-grid-widget-body > .lux-card, ' +
             '#page-home #lux-home-shell .lux-grid-widget > .lux-grid-widget-body > .lux-hero'
         ));
+        const isSchedulerRoute = document.body.classList.contains('lux-route-admin-scheduler');
+        const isSchedulerInPage = isSchedulerRoute && Boolean(el.closest?.('#page-admin-scheduler'));
+        const isSchedulerHeroSurface = isSchedulerInPage && el.classList.contains('sch-rail-hero');
+        const isSchedulerLargeSurface = isSchedulerInPage && !isSchedulerHeroSurface && (
+            el.classList.contains('sch-rail-section') ||
+            el.classList.contains('sch-grid-shell') ||
+            el.classList.contains('sch-modal')
+        );
+        const isSchedulerSoftSurface = isSchedulerInPage && !isSchedulerHeroSurface && !isSchedulerLargeSurface && (
+            el.classList.contains('sch-stat-card') ||
+            el.classList.contains('palette-card') ||
+            el.classList.contains('sch-grid-tag') ||
+            el.classList.contains('sch-empty-state') ||
+            el.classList.contains('sch-grid-empty') ||
+            el.classList.contains('sch-week-arrow') ||
+            (el.classList.contains('lux-strip-card') && el.classList.contains('surface-card'))
+        );
+        const isSchedulerControlSurface = isSchedulerInPage && (
+            (el.tagName === 'SELECT' || el.tagName === 'INPUT') &&
+            el.closest?.('.sch-control-group, .sch-search-shell, .sch-modal')
+        );
+        const isSchedulerSurface = isSchedulerHeroSurface || isSchedulerLargeSurface ||
+            isSchedulerSoftSurface || isSchedulerControlSurface;
         if (isHomeDashboardSurface) {
-            if (lightMode) {
-                return `radial-gradient(circle at 6% 0%, rgba(255,255,255, ${(amount * 0.88).toFixed(2)}), transparent 34%), radial-gradient(circle at 74% 0%, rgba(var(--lux-accent-rgb), ${(amount * 0.24).toFixed(2)}), transparent 42%), radial-gradient(circle at 100% 96%, rgba(var(--lux-home-secondary-rgb), ${(amount * 0.14).toFixed(2)}), transparent 40%), linear-gradient(135deg, rgba(var(--lux-accent-rgb), ${(amount * 0.065).toFixed(2)}), rgba(255,255,255, ${(amount * 0.84).toFixed(2)}) 44%, rgba(247,241,232, ${(amount * 0.70).toFixed(2)}))`;
-            }
-            return `radial-gradient(circle at 6% 0%, rgba(255,255,255, ${(amount * 0.08).toFixed(2)}), transparent 32%), radial-gradient(circle at 74% 0%, rgba(var(--lux-accent-rgb), ${(amount * 0.28).toFixed(2)}), transparent 42%), radial-gradient(circle at 100% 96%, rgba(var(--lux-home-secondary-rgb), ${(amount * 0.18).toFixed(2)}), transparent 40%), linear-gradient(135deg, rgba(var(--lux-accent-rgb), ${(amount * 0.10).toFixed(2)}), rgba(10,15,24, ${(amount * 0.89).toFixed(2)}) 44%, rgba(7,10,18, ${(amount * 0.80).toFixed(2)}))`;
+            return buildHomeStyleSurfaceBackground(lightMode, amount);
         }
-        if (isTimetableLargeSurface) {
+        if (isSchedulerSurface) {
+            const isSmallSchedulerSurface = isSchedulerSoftSurface || isSchedulerControlSurface;
             if (lightMode) {
-                return `radial-gradient(circle at 8% 0%, rgba(255,255,255, ${(amount * 0.88).toFixed(2)}), transparent 32%), radial-gradient(circle at 64% 0%, rgba(var(--lux-accent-rgb), ${(amount * 0.20).toFixed(2)}), transparent 36%), radial-gradient(circle at 100% 96%, rgba(var(--lux-home-secondary-rgb), ${(amount * 0.13).toFixed(2)}), transparent 38%), linear-gradient(135deg, rgba(var(--lux-accent-rgb), ${(amount * 0.085).toFixed(2)}), rgba(255,255,255, ${(amount * 0.88).toFixed(2)}) 42%, rgba(246,240,231, ${(amount * 0.72).toFixed(2)}))`;
+                if (isSmallSchedulerSurface) {
+                    return 'radial-gradient(circle at 12% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .86) * .62)), transparent 30%), ' +
+                        'radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .14)), transparent 34%), ' +
+                        'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .045)), rgba(255,255,255, calc(var(--lux-transparency-alpha, .86) * .84)) 46%, rgba(247,241,232, calc(var(--lux-transparency-alpha, .86) * .72)))';
+                }
+                if (isSchedulerHeroSurface) {
+                    return 'radial-gradient(circle at 6% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .86) * .88)), transparent 34%), ' +
+                        'radial-gradient(circle at 74% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .24)), transparent 42%), ' +
+                        'radial-gradient(circle at 100% 96%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .86) * .14)), transparent 40%), ' +
+                        'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .065)), rgba(255,255,255, calc(var(--lux-transparency-alpha, .86) * .84)) 44%, rgba(247,241,232, calc(var(--lux-transparency-alpha, .86) * .70)))';
+                }
+                return 'radial-gradient(circle at 8% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .86) * .88)), transparent 34%), ' +
+                    'radial-gradient(circle at 72% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .22)), transparent 38%), ' +
+                    'radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .86) * .13)), transparent 38%), ' +
+                    'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .075)), rgba(255,255,255, calc(var(--lux-transparency-alpha, .86) * .88)) 44%, rgba(247,241,232, calc(var(--lux-transparency-alpha, .86) * .72)))';
             }
-            return `radial-gradient(circle at 8% 0%, rgba(255,255,255, ${(amount * 0.08).toFixed(2)}), transparent 30%), radial-gradient(circle at 68% 0%, rgba(var(--lux-accent-rgb), ${(amount * 0.22).toFixed(2)}), transparent 36%), radial-gradient(circle at 100% 96%, rgba(var(--lux-home-secondary-rgb), ${(amount * 0.16).toFixed(2)}), transparent 38%), linear-gradient(135deg, rgba(var(--lux-accent-rgb), ${(amount * 0.11).toFixed(2)}), rgba(9,14,24, ${(amount * 0.91).toFixed(2)}) 42%, rgba(7,10,18, ${(amount * 0.84).toFixed(2)}))`;
+            if (isSmallSchedulerSurface) {
+                return 'radial-gradient(circle at 12% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .92) * .055)), transparent 30%), ' +
+                    'radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .14)), transparent 34%), ' +
+                    'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .065)), rgba(10,15,24, calc(var(--lux-transparency-alpha, .92) * .88)) 46%, rgba(7,10,18, calc(var(--lux-transparency-alpha, .92) * .80)))';
+            }
+            if (isSchedulerHeroSurface) {
+                return 'radial-gradient(circle at 6% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .92) * .08)), transparent 32%), ' +
+                    'radial-gradient(circle at 74% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .28)), transparent 42%), ' +
+                    'radial-gradient(circle at 100% 96%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .92) * .18)), transparent 40%), ' +
+                    'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .10)), rgba(10,15,24, calc(var(--lux-transparency-alpha, .92) * .89)) 44%, rgba(7,10,18, calc(var(--lux-transparency-alpha, .92) * .80)))';
+            }
+            return 'radial-gradient(circle at 8% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .92) * .075)), transparent 32%), ' +
+                'radial-gradient(circle at 72% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .24)), transparent 38%), ' +
+                'radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .92) * .14)), transparent 38%), ' +
+                'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .10)), rgba(10,15,24, calc(var(--lux-transparency-alpha, .92) * .91)) 44%, rgba(7,10,18, calc(var(--lux-transparency-alpha, .92) * .84)))';
         }
         if (isRegistrationLargeSurface) {
             if (lightMode) {
-                return `radial-gradient(circle at 12% 0%, rgba(255,255,255, ${(amount * 0.86).toFixed(2)}), transparent 34%), radial-gradient(circle at 74% 0%, rgba(var(--lux-accent-rgb), ${(amount * 0.20).toFixed(2)}), transparent 36%), radial-gradient(circle at 100% 90%, rgba(var(--lux-home-secondary-rgb), ${(amount * 0.12).toFixed(2)}), transparent 38%), linear-gradient(135deg, rgba(var(--lux-accent-rgb), ${(amount * 0.08).toFixed(2)}), rgba(255,255,255, ${(amount * 0.88).toFixed(2)}) 42%, rgba(247,241,232, ${(amount * 0.72).toFixed(2)}))`;
+                return 'radial-gradient(circle at 12% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .86) * .86)), transparent 34%), ' +
+                    'radial-gradient(circle at 74% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .20)), transparent 36%), ' +
+                    'radial-gradient(circle at 100% 90%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .86) * .12)), transparent 38%), ' +
+                    'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .08)), rgba(255,255,255, calc(var(--lux-transparency-alpha, .86) * .88)) 42%, rgba(247,241,232, calc(var(--lux-transparency-alpha, .86) * .72)))';
             }
-            return `radial-gradient(circle at 12% 0%, rgba(255,255,255, ${(amount * 0.075).toFixed(2)}), transparent 32%), radial-gradient(circle at 74% 0%, rgba(var(--lux-accent-rgb), ${(amount * 0.24).toFixed(2)}), transparent 38%), radial-gradient(circle at 100% 90%, rgba(var(--lux-home-secondary-rgb), ${(amount * 0.14).toFixed(2)}), transparent 38%), linear-gradient(135deg, rgba(var(--lux-accent-rgb), ${(amount * 0.11).toFixed(2)}), rgba(12,17,26, ${(amount * 0.91).toFixed(2)}) 42%, rgba(8,12,19, ${(amount * 0.84).toFixed(2)}))`;
+            return 'radial-gradient(circle at 12% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .92) * .075)), transparent 32%), ' +
+                'radial-gradient(circle at 74% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .24)), transparent 38%), ' +
+                'radial-gradient(circle at 100% 90%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .92) * .14)), transparent 38%), ' +
+                'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .11)), rgba(12,17,26, calc(var(--lux-transparency-alpha, .92) * .91)) 42%, rgba(8,12,19, calc(var(--lux-transparency-alpha, .92) * .84)))';
+        }
+        if (isRegistrationSoftSurface) {
+            if (lightMode) {
+                return 'radial-gradient(circle at 12% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .86) * .72)), transparent 32%), ' +
+                    'radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .14)), transparent 36%), ' +
+                    'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .05)), rgba(255,255,255, calc(var(--lux-transparency-alpha, .86) * .82)) 46%, rgba(247,241,232, calc(var(--lux-transparency-alpha, .86) * .66)))';
+            }
+            return 'radial-gradient(circle at 12% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .92) * .06)), transparent 30%), ' +
+                'radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .16)), transparent 36%), ' +
+                'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .07)), rgba(12,18,30, calc(var(--lux-transparency-alpha, .92) * .82)) 46%, rgba(8,12,21, calc(var(--lux-transparency-alpha, .92) * .72)))';
         }
         if (isProgramsLargeSurface) {
             if (lightMode) {
-                return `radial-gradient(circle at 8% 0%, rgba(255,255,255, ${(amount * 0.88).toFixed(2)}), transparent 34%), radial-gradient(circle at 74% 0%, rgba(var(--lux-accent-rgb), ${(amount * 0.22).toFixed(2)}), transparent 42%), radial-gradient(circle at 100% 96%, rgba(var(--lux-home-secondary-rgb), ${(amount * 0.14).toFixed(2)}), transparent 40%), linear-gradient(135deg, rgba(var(--lux-accent-rgb), ${(amount * 0.065).toFixed(2)}), rgba(255,255,255, ${(amount * 0.84).toFixed(2)}) 44%, rgba(247,241,232, ${(amount * 0.70).toFixed(2)}))`;
+                return 'radial-gradient(circle at 8% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .86) * .86)), transparent 34%), ' +
+                    'radial-gradient(circle at 74% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .20)), transparent 36%), ' +
+                    'radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .86) * .12)), transparent 38%), ' +
+                    'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .08)), rgba(255,255,255, calc(var(--lux-transparency-alpha, .86) * .88)) 42%, rgba(247,241,232, calc(var(--lux-transparency-alpha, .86) * .72)))';
             }
-            return `radial-gradient(circle at 8% 0%, rgba(255,255,255, ${(amount * 0.075).toFixed(2)}), transparent 32%), radial-gradient(circle at 74% 0%, rgba(var(--lux-accent-rgb), ${(amount * 0.26).toFixed(2)}), transparent 42%), radial-gradient(circle at 100% 96%, rgba(var(--lux-home-secondary-rgb), ${(amount * 0.16).toFixed(2)}), transparent 40%), linear-gradient(135deg, rgba(var(--lux-accent-rgb), ${(amount * 0.095).toFixed(2)}), rgba(10,15,24, ${(amount * 0.90).toFixed(2)}) 44%, rgba(7,10,18, ${(amount * 0.80).toFixed(2)}))`;
+            return 'radial-gradient(circle at 8% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .92) * .075)), transparent 32%), ' +
+                'radial-gradient(circle at 74% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .26)), transparent 42%), ' +
+                'radial-gradient(circle at 100% 96%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .92) * .16)), transparent 40%), ' +
+                'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .095)), rgba(10,15,24, calc(var(--lux-transparency-alpha, .92) * .90)) 44%, rgba(7,10,18, calc(var(--lux-transparency-alpha, .92) * .80)))';
+        }
+        if (isProgramsSoftSurface) {
+            if (lightMode) {
+                return 'radial-gradient(circle at 12% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .86) * .72)), transparent 32%), ' +
+                    'radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .14)), transparent 36%), ' +
+                    'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .05)), rgba(255,255,255, calc(var(--lux-transparency-alpha, .86) * .82)) 46%, rgba(247,241,232, calc(var(--lux-transparency-alpha, .86) * .66)))';
+            }
+            return 'radial-gradient(circle at 12% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .92) * .06)), transparent 30%), ' +
+                'radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .16)), transparent 36%), ' +
+                'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .07)), rgba(12,18,30, calc(var(--lux-transparency-alpha, .92) * .82)) 46%, rgba(8,12,21, calc(var(--lux-transparency-alpha, .92) * .72)))';
         }
         if (isStudyCardLargeSurface) {
             if (lightMode) {
-                return `radial-gradient(circle at 8% 0%, rgba(255,255,255, ${(amount * 0.88).toFixed(2)}), transparent 34%), radial-gradient(circle at 72% 4%, rgba(var(--lux-accent-rgb), ${(amount * 0.19).toFixed(2)}), transparent 38%), radial-gradient(circle at 100% 92%, rgba(var(--lux-home-secondary-rgb), ${(amount * 0.13).toFixed(2)}), transparent 38%), linear-gradient(135deg, rgba(var(--lux-accent-rgb), ${(amount * 0.075).toFixed(2)}), rgba(255,255,255, ${(amount * 0.88).toFixed(2)}) 44%, rgba(247,241,232, ${(amount * 0.72).toFixed(2)}))`;
+                return 'radial-gradient(circle at 8% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .86) * .88)), transparent 34%), ' +
+                    'radial-gradient(circle at 72% 4%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .19)), transparent 38%), ' +
+                    'radial-gradient(circle at 100% 92%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .86) * .13)), transparent 38%), ' +
+                    'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .075)), rgba(255,255,255, calc(var(--lux-transparency-alpha, .86) * .88)) 44%, rgba(247,241,232, calc(var(--lux-transparency-alpha, .86) * .72)))';
             }
-            return `radial-gradient(circle at 8% 0%, rgba(255,255,255, ${(amount * 0.075).toFixed(2)}), transparent 32%), radial-gradient(circle at 72% 4%, rgba(var(--lux-accent-rgb), ${(amount * 0.23).toFixed(2)}), transparent 38%), radial-gradient(circle at 100% 92%, rgba(var(--lux-home-secondary-rgb), ${(amount * 0.15).toFixed(2)}), transparent 38%), linear-gradient(135deg, rgba(var(--lux-accent-rgb), ${(amount * 0.10).toFixed(2)}), rgba(10,15,24, ${(amount * 0.91).toFixed(2)}) 44%, rgba(7,10,18, ${(amount * 0.84).toFixed(2)}))`;
+            return 'radial-gradient(circle at 8% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .92) * .075)), transparent 32%), ' +
+                'radial-gradient(circle at 72% 4%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .23)), transparent 38%), ' +
+                'radial-gradient(circle at 100% 92%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .92) * .15)), transparent 38%), ' +
+                'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .10)), rgba(10,15,24, calc(var(--lux-transparency-alpha, .92) * .91)) 44%, rgba(7,10,18, calc(var(--lux-transparency-alpha, .92) * .84)))';
+        }
+        if (isStudyCardSoftSurface) {
+            if (lightMode) {
+                return 'radial-gradient(circle at 12% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .86) * .72)), transparent 32%), ' +
+                    'radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .14)), transparent 36%), ' +
+                    'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .05)), rgba(255,255,255, calc(var(--lux-transparency-alpha, .86) * .82)) 46%, rgba(247,241,232, calc(var(--lux-transparency-alpha, .86) * .66)))';
+            }
+            return 'radial-gradient(circle at 12% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .92) * .06)), transparent 30%), ' +
+                'radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .16)), transparent 36%), ' +
+                'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .07)), rgba(12,18,30, calc(var(--lux-transparency-alpha, .92) * .82)) 46%, rgba(8,12,21, calc(var(--lux-transparency-alpha, .92) * .72)))';
         }
         if (isPersonalDataLargeSurface) {
             if (lightMode) {
-                return `radial-gradient(circle at 8% 0%, rgba(255,255,255, ${(amount * 0.88).toFixed(2)}), transparent 34%), radial-gradient(circle at 76% 2%, rgba(var(--lux-accent-rgb), ${(amount * 0.18).toFixed(2)}), transparent 38%), radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), ${(amount * 0.13).toFixed(2)}), transparent 38%), linear-gradient(135deg, rgba(var(--lux-accent-rgb), ${(amount * 0.075).toFixed(2)}), rgba(255,255,255, ${(amount * 0.88).toFixed(2)}) 44%, rgba(247,241,232, ${(amount * 0.72).toFixed(2)}))`;
+                return 'radial-gradient(circle at 8% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .86) * .88)), transparent 34%), ' +
+                    'radial-gradient(circle at 76% 2%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .18)), transparent 38%), ' +
+                    'radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .86) * .13)), transparent 38%), ' +
+                    'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .075)), rgba(255,255,255, calc(var(--lux-transparency-alpha, .86) * .88)) 44%, rgba(247,241,232, calc(var(--lux-transparency-alpha, .86) * .72)))';
             }
-            return `radial-gradient(circle at 8% 0%, rgba(255,255,255, ${(amount * 0.075).toFixed(2)}), transparent 32%), radial-gradient(circle at 76% 2%, rgba(var(--lux-accent-rgb), ${(amount * 0.22).toFixed(2)}), transparent 38%), radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), ${(amount * 0.14).toFixed(2)}), transparent 38%), linear-gradient(135deg, rgba(var(--lux-accent-rgb), ${(amount * 0.10).toFixed(2)}), rgba(10,15,24, ${(amount * 0.91).toFixed(2)}) 44%, rgba(7,10,18, ${(amount * 0.84).toFixed(2)}))`;
+            return 'radial-gradient(circle at 8% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .92) * .075)), transparent 32%), ' +
+                'radial-gradient(circle at 76% 2%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .22)), transparent 38%), ' +
+                'radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .92) * .14)), transparent 38%), ' +
+                'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .10)), rgba(10,15,24, calc(var(--lux-transparency-alpha, .92) * .91)) 44%, rgba(7,10,18, calc(var(--lux-transparency-alpha, .92) * .84)))';
+        }
+        if (isPersonalDataSoftSurface) {
+            if (lightMode) {
+                return 'radial-gradient(circle at 12% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .86) * .72)), transparent 32%), ' +
+                    'radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .14)), transparent 36%), ' +
+                    'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .05)), rgba(255,255,255, calc(var(--lux-transparency-alpha, .86) * .82)) 46%, rgba(247,241,232, calc(var(--lux-transparency-alpha, .86) * .66)))';
+            }
+            return 'radial-gradient(circle at 12% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .92) * .06)), transparent 30%), ' +
+                'radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .16)), transparent 36%), ' +
+                'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .07)), rgba(12,18,30, calc(var(--lux-transparency-alpha, .92) * .82)) 46%, rgba(8,12,21, calc(var(--lux-transparency-alpha, .92) * .72)))';
         }
         if (isNewsSurface) {
             const isSmallNewsControl = (
@@ -1922,17 +2818,26 @@ function updateTransparency(value, options = {}) {
                 el.classList.contains('newsx-section-btn') ||
                 el.classList.contains('newsx-pane-btn')
             );
-            const colorStrength = isSmallNewsControl ? 0.13 : 0.22;
             if (lightMode) {
-                return `radial-gradient(circle at 8% 0%, rgba(255,255,255, ${(amount * 0.88).toFixed(2)}), transparent 34%), radial-gradient(circle at 74% 0%, rgba(var(--lux-accent-rgb), ${(amount * colorStrength).toFixed(2)}), transparent 38%), radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), ${(amount * 0.12).toFixed(2)}), transparent 38%), linear-gradient(135deg, rgba(var(--lux-accent-rgb), ${(amount * 0.07).toFixed(2)}), rgba(255,255,255, ${(amount * 0.86).toFixed(2)}) 44%, rgba(247,241,232, ${(amount * 0.70).toFixed(2)}))`;
+                if (isSmallNewsControl) {
+                    return 'radial-gradient(circle at 12% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .86) * .62)), transparent 30%), ' +
+                        'radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .14)), transparent 34%), ' +
+                        'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .045)), rgba(255,255,255, calc(var(--lux-transparency-alpha, .86) * .84)) 46%, rgba(247,241,232, calc(var(--lux-transparency-alpha, .86) * .72)))';
+                }
+                return 'radial-gradient(circle at 8% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .86) * .88)), transparent 34%), ' +
+                    'radial-gradient(circle at 74% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .22)), transparent 38%), ' +
+                    'radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .86) * .13)), transparent 38%), ' +
+                    'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .075)), rgba(255,255,255, calc(var(--lux-transparency-alpha, .86) * .88)) 44%, rgba(247,241,232, calc(var(--lux-transparency-alpha, .86) * .72)))';
             }
-            return `radial-gradient(circle at 8% 0%, rgba(255,255,255, ${(amount * 0.07).toFixed(2)}), transparent 32%), radial-gradient(circle at 74% 0%, rgba(var(--lux-accent-rgb), ${(amount * colorStrength).toFixed(2)}), transparent 38%), radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), ${(amount * 0.14).toFixed(2)}), transparent 38%), linear-gradient(135deg, rgba(var(--lux-accent-rgb), ${(amount * 0.09).toFixed(2)}), rgba(10,15,24, ${(amount * 0.90).toFixed(2)}) 44%, rgba(7,10,18, ${(amount * 0.82).toFixed(2)}))`;
-        }
-        if (isChancelleryLargeSurface) {
-            if (lightMode) {
-                return `radial-gradient(circle at 8% 0%, rgba(255,255,255, ${(amount * 0.88).toFixed(2)}), transparent 34%), radial-gradient(circle at 70% 0%, rgba(var(--lux-accent-rgb), ${(amount * 0.20).toFixed(2)}), transparent 38%), radial-gradient(circle at 100% 92%, rgba(var(--lux-home-secondary-rgb), ${(amount * 0.13).toFixed(2)}), transparent 38%), linear-gradient(135deg, rgba(var(--lux-accent-rgb), ${(amount * 0.075).toFixed(2)}), rgba(255,255,255, ${(amount * 0.88).toFixed(2)}) 44%, rgba(247,241,232, ${(amount * 0.72).toFixed(2)}))`;
+            if (isSmallNewsControl) {
+                return 'radial-gradient(circle at 12% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .92) * .055)), transparent 30%), ' +
+                    'radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .14)), transparent 34%), ' +
+                    'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .065)), rgba(10,15,24, calc(var(--lux-transparency-alpha, .92) * .88)) 46%, rgba(7,10,18, calc(var(--lux-transparency-alpha, .92) * .80)))';
             }
-            return `radial-gradient(circle at 8% 0%, rgba(255,255,255, ${(amount * 0.075).toFixed(2)}), transparent 32%), radial-gradient(circle at 70% 0%, rgba(var(--lux-accent-rgb), ${(amount * 0.24).toFixed(2)}), transparent 38%), radial-gradient(circle at 100% 92%, rgba(var(--lux-home-secondary-rgb), ${(amount * 0.14).toFixed(2)}), transparent 38%), linear-gradient(135deg, rgba(var(--lux-accent-rgb), ${(amount * 0.10).toFixed(2)}), rgba(10,15,24, ${(amount * 0.91).toFixed(2)}) 44%, rgba(7,10,18, ${(amount * 0.84).toFixed(2)}))`;
+            return 'radial-gradient(circle at 8% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .92) * .075)), transparent 32%), ' +
+                'radial-gradient(circle at 74% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .24)), transparent 38%), ' +
+                'radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .92) * .14)), transparent 38%), ' +
+                'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .10)), rgba(10,15,24, calc(var(--lux-transparency-alpha, .92) * .91)) 44%, rgba(7,10,18, calc(var(--lux-transparency-alpha, .92) * .84)))';
         }
         if (isStudentServiceLargeSurface) {
             const isSmallServiceSurface = (
@@ -1945,89 +2850,212 @@ function updateTransparency(value, options = {}) {
                 el.classList.contains('student-service-lane-card') ||
                 el.classList.contains('student-service-ticket-card')
             );
-            const serviceStrength = isSmallServiceSurface ? 0.16 : 0.24;
             if (lightMode) {
-                return `radial-gradient(circle at 8% 0%, rgba(255,255,255, ${(amount * 0.88).toFixed(2)}), transparent 34%), radial-gradient(circle at 72% 0%, rgba(var(--lux-accent-rgb), ${(amount * serviceStrength).toFixed(2)}), transparent 38%), radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), ${(amount * 0.13).toFixed(2)}), transparent 38%), linear-gradient(135deg, rgba(var(--lux-accent-rgb), ${(amount * 0.075).toFixed(2)}), rgba(255,255,255, ${(amount * 0.88).toFixed(2)}) 44%, rgba(247,241,232, ${(amount * 0.72).toFixed(2)}))`;
+                if (isSmallServiceSurface) {
+                    return 'radial-gradient(circle at 8% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .88) * .88)), transparent 34%), ' +
+                        'radial-gradient(circle at 72% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .88) * .16)), transparent 38%), ' +
+                        'radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .88) * .13)), transparent 38%), ' +
+                        'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .88) * .075)), rgba(255,255,255, calc(var(--lux-transparency-alpha, .88) * .88)) 44%, rgba(247,241,232, calc(var(--lux-transparency-alpha, .88) * .72)))';
+                }
+                return 'radial-gradient(circle at 8% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .88) * .88)), transparent 34%), ' +
+                    'radial-gradient(circle at 72% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .88) * .20)), transparent 38%), ' +
+                    'radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .88) * .13)), transparent 38%), ' +
+                    'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .88) * .075)), rgba(255,255,255, calc(var(--lux-transparency-alpha, .88) * .88)) 44%, rgba(247,241,232, calc(var(--lux-transparency-alpha, .88) * .72)))';
             }
-            return `radial-gradient(circle at 8% 0%, rgba(255,255,255, ${(amount * 0.075).toFixed(2)}), transparent 32%), radial-gradient(circle at 72% 0%, rgba(var(--lux-accent-rgb), ${(amount * serviceStrength).toFixed(2)}), transparent 38%), radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), ${(amount * 0.14).toFixed(2)}), transparent 38%), linear-gradient(135deg, rgba(var(--lux-accent-rgb), ${(amount * 0.10).toFixed(2)}), rgba(10,15,24, ${(amount * 0.91).toFixed(2)}) 44%, rgba(7,10,18, ${(amount * 0.84).toFixed(2)}))`;
-        }
-        if (isLibraryLargeSurface) {
-            const libraryStrength = el.classList.contains('library-tabs') || el.classList.contains('library-catalog-foot') ? 0.14 : 0.24;
-            if (lightMode) {
-                return `radial-gradient(circle at 8% 0%, rgba(255,255,255, ${(amount * 0.88).toFixed(2)}), transparent 34%), radial-gradient(circle at 72% 0%, rgba(var(--lux-accent-rgb), ${(amount * libraryStrength).toFixed(2)}), transparent 38%), radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), ${(amount * 0.13).toFixed(2)}), transparent 38%), linear-gradient(135deg, rgba(var(--lux-accent-rgb), ${(amount * 0.075).toFixed(2)}), rgba(255,255,255, ${(amount * 0.88).toFixed(2)}) 44%, rgba(247,241,232, ${(amount * 0.72).toFixed(2)}))`;
+            if (isSmallServiceSurface) {
+                return 'radial-gradient(circle at 8% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .92) * .075)), transparent 32%), ' +
+                    'radial-gradient(circle at 72% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .16)), transparent 38%), ' +
+                    'radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .92) * .14)), transparent 38%), ' +
+                    'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .10)), rgba(10,15,24, calc(var(--lux-transparency-alpha, .92) * .91)) 44%, rgba(7,10,18, calc(var(--lux-transparency-alpha, .92) * .84)))';
             }
-            return `radial-gradient(circle at 8% 0%, rgba(255,255,255, ${(amount * 0.075).toFixed(2)}), transparent 32%), radial-gradient(circle at 72% 0%, rgba(var(--lux-accent-rgb), ${(amount * libraryStrength).toFixed(2)}), transparent 38%), radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), ${(amount * 0.14).toFixed(2)}), transparent 38%), linear-gradient(135deg, rgba(var(--lux-accent-rgb), ${(amount * 0.10).toFixed(2)}), rgba(10,15,24, ${(amount * 0.91).toFixed(2)}) 44%, rgba(7,10,18, ${(amount * 0.84).toFixed(2)}))`;
+            return 'radial-gradient(circle at 8% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .92) * .075)), transparent 32%), ' +
+                'radial-gradient(circle at 72% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .24)), transparent 38%), ' +
+                'radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .92) * .14)), transparent 38%), ' +
+                'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .10)), rgba(10,15,24, calc(var(--lux-transparency-alpha, .92) * .91)) 44%, rgba(7,10,18, calc(var(--lux-transparency-alpha, .92) * .84)))';
         }
-        if (isSocialSurface) {
-            const isSmallSocialSurface = (
+        if (isSocialLargeSurface) {
+            const isSmallSocialSurface =
+                SOCIAL_NEO_SMALL_TRANSPARENCY_SURFACE_CLASSES.some((className) => el.classList.contains(className)) ||
                 el.classList.contains('social-mini-card') ||
                 el.classList.contains('social-comment-card') ||
                 el.classList.contains('social-notif-item') ||
                 el.classList.contains('social-story-card') ||
                 el.classList.contains('social-file-preview') ||
-                SOCIAL_NEO_SMALL_TRANSPARENCY_SURFACE_CLASSES.some((className) => el.classList.contains(className)) ||
-                el.parentElement?.classList?.contains('social-neo-stat-grid')
-            );
-            const socialStrength = isSmallSocialSurface ? 0.14 : 0.24;
-            if (lightMode) {
-                return `radial-gradient(circle at 8% 0%, rgba(255,255,255, ${(amount * 0.88).toFixed(2)}), transparent 34%), radial-gradient(circle at 76% 0%, rgba(var(--lux-accent-rgb), ${(amount * socialStrength).toFixed(2)}), transparent 38%), radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), ${(amount * 0.13).toFixed(2)}), transparent 38%), linear-gradient(135deg, rgba(var(--lux-accent-rgb), ${(amount * 0.075).toFixed(2)}), rgba(255,255,255, ${(amount * 0.88).toFixed(2)}) 44%, rgba(247,241,232, ${(amount * 0.72).toFixed(2)}))`;
+                Boolean(el.parentElement?.classList?.contains('social-neo-stat-grid'));
+            return buildLuxuryRoutePanelGradient(lightMode, isSmallSocialSurface);
+        }
+        if (isStaffLargeSurface) {
+            if (el.classList.contains('staff-hub-metric-card')) {
+                return buildLuxuryRoutePanelGradient(lightMode, true);
             }
-            return `radial-gradient(circle at 8% 0%, rgba(255,255,255, ${(amount * 0.075).toFixed(2)}), transparent 32%), radial-gradient(circle at 76% 0%, rgba(var(--lux-accent-rgb), ${(amount * socialStrength).toFixed(2)}), transparent 38%), radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), ${(amount * 0.14).toFixed(2)}), transparent 38%), linear-gradient(135deg, rgba(var(--lux-accent-rgb), ${(amount * 0.10).toFixed(2)}), rgba(10,15,24, ${(amount * 0.91).toFixed(2)}) 44%, rgba(7,10,18, ${(amount * 0.84).toFixed(2)}))`;
+            if (STAFF_ROUTE_CONTROL_TRANSPARENCY_SURFACE_CLASSES.some(
+                (className) => el.classList.contains(className)
+            )) {
+                return buildStaffFadeBackground(lightMode, 'control');
+            }
+            const isSmallStaffSurface = STAFF_ROUTE_SMALL_TRANSPARENCY_SURFACE_CLASSES.some(
+                (className) => el.classList.contains(className)
+            );
+            return buildLuxuryRoutePanelGradient(lightMode, isSmallStaffSurface);
+        }
+        if (isStudentsAdminLargeSurface) {
+            const isSmallStudentsAdminSurface = STUDENTS_ADMIN_ROUTE_SMALL_TRANSPARENCY_SURFACE_CLASSES.some(
+                (className) => el.classList.contains(className)
+            );
+            return buildLuxuryRoutePanelGradient(lightMode, isSmallStudentsAdminSurface);
+        }
+        if (isLibraryLargeSurface || isLibrarySoftSurface) {
+            const libraryStrength = (
+                isLibrarySoftSurface ||
+                el.classList.contains('library-tabs') ||
+                el.classList.contains('library-catalog-foot')
+            ) ? 0.14 : 0.24;
+            if (lightMode) {
+                if (libraryStrength < 0.2) {
+                    return 'radial-gradient(circle at 12% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .86) * .62)), transparent 30%), ' +
+                        'radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .14)), transparent 34%), ' +
+                        'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .045)), rgba(255,255,255, calc(var(--lux-transparency-alpha, .86) * .84)) 46%, rgba(247,241,232, calc(var(--lux-transparency-alpha, .86) * .72)))';
+                }
+                return 'radial-gradient(circle at 8% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .86) * .88)), transparent 34%), ' +
+                    'radial-gradient(circle at 72% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .22)), transparent 38%), ' +
+                    'radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .86) * .13)), transparent 38%), ' +
+                    'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .075)), rgba(255,255,255, calc(var(--lux-transparency-alpha, .86) * .88)) 44%, rgba(247,241,232, calc(var(--lux-transparency-alpha, .86) * .72)))';
+            }
+            if (libraryStrength < 0.2) {
+                return 'radial-gradient(circle at 12% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .92) * .055)), transparent 30%), ' +
+                    'radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .14)), transparent 34%), ' +
+                    'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .065)), rgba(10,15,24, calc(var(--lux-transparency-alpha, .92) * .88)) 46%, rgba(7,10,18, calc(var(--lux-transparency-alpha, .92) * .80)))';
+            }
+            return 'radial-gradient(circle at 8% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .92) * .075)), transparent 32%), ' +
+                'radial-gradient(circle at 72% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .24)), transparent 38%), ' +
+                'radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .92) * .14)), transparent 38%), ' +
+                'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .10)), rgba(10,15,24, calc(var(--lux-transparency-alpha, .92) * .91)) 44%, rgba(7,10,18, calc(var(--lux-transparency-alpha, .92) * .84)))';
         }
         if (isExamsSurface) {
             const isSmallExamSurface = (
                 el.classList.contains('ex2-stat-card') ||
-                el.classList.contains('ex2-select-card') ||
+                el.classList.contains('ex2-q-card') ||
                 el.classList.contains('ex2-q-card-head') ||
                 el.classList.contains('ex2-timeline-card') ||
                 el.classList.contains('ex2-split-box') ||
                 el.classList.contains('ex2-progress-step') ||
                 el.parentElement?.classList?.contains('ex2-mini-grid')
             );
-            const examStrength = isSmallExamSurface ? 0.14 : 0.24;
             if (lightMode) {
-                return `radial-gradient(circle at 8% 0%, rgba(255,255,255, ${(amount * 0.88).toFixed(2)}), transparent 34%), radial-gradient(circle at 74% 0%, rgba(var(--lux-accent-rgb), ${(amount * examStrength).toFixed(2)}), transparent 38%), radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), ${(amount * 0.13).toFixed(2)}), transparent 38%), linear-gradient(135deg, rgba(var(--lux-accent-rgb), ${(amount * 0.075).toFixed(2)}), rgba(255,255,255, ${(amount * 0.88).toFixed(2)}) 44%, rgba(247,241,232, ${(amount * 0.72).toFixed(2)}))`;
+                if (isSmallExamSurface) {
+                    return 'radial-gradient(circle at 10% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .86) * .78)), transparent 32%), ' +
+                        'radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .14)), transparent 34%), ' +
+                        'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .055)), rgba(255,255,255, calc(var(--lux-transparency-alpha, .86) * .82)) 46%, rgba(247,241,232, calc(var(--lux-transparency-alpha, .86) * .66)))';
+                }
+                return 'radial-gradient(circle at 8% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .86) * .88)), transparent 34%), ' +
+                    'radial-gradient(circle at 74% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .22)), transparent 38%), ' +
+                    'radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .86) * .13)), transparent 38%), ' +
+                    'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .075)), rgba(255,255,255, calc(var(--lux-transparency-alpha, .86) * .88)) 44%, rgba(247,241,232, calc(var(--lux-transparency-alpha, .86) * .72)))';
             }
-            return `radial-gradient(circle at 8% 0%, rgba(255,255,255, ${(amount * 0.075).toFixed(2)}), transparent 32%), radial-gradient(circle at 74% 0%, rgba(var(--lux-accent-rgb), ${(amount * examStrength).toFixed(2)}), transparent 38%), radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), ${(amount * 0.14).toFixed(2)}), transparent 38%), linear-gradient(135deg, rgba(var(--lux-accent-rgb), ${(amount * 0.10).toFixed(2)}), rgba(10,15,24, ${(amount * 0.91).toFixed(2)}) 44%, rgba(7,10,18, ${(amount * 0.84).toFixed(2)}))`;
+            if (isSmallExamSurface) {
+                return 'radial-gradient(circle at 12% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .92) * .055)), transparent 30%), ' +
+                    'radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .14)), transparent 34%), ' +
+                    'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .065)), rgba(10,15,24, calc(var(--lux-transparency-alpha, .92) * .88)) 46%, rgba(7,10,18, calc(var(--lux-transparency-alpha, .92) * .80)))';
+            }
+            return 'radial-gradient(circle at 8% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .92) * .075)), transparent 32%), ' +
+                'radial-gradient(circle at 74% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .24)), transparent 38%), ' +
+                'radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .92) * .14)), transparent 38%), ' +
+                'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .10)), rgba(10,15,24, calc(var(--lux-transparency-alpha, .92) * .91)) 44%, rgba(7,10,18, calc(var(--lux-transparency-alpha, .92) * .84)))';
         }
-        if (isAdminToolsSurface) {
-            const isSmallAdminToolsSurface = (
+        if (isAdminToolsSurface || isAdminLibrarySurface) {
+            const isSmallAdminToolsSurface = isAdminToolsSoftSurface || isAdminToolsControlSurface || isAdminLibrarySoftSurface || (
+                el.classList.contains('lux-admin-tools-index-summary') ||
+                el.classList.contains('lux-admin-tools-index-command') ||
+                el.classList.contains('lux-admin-tools-index-command-card') ||
+                el.classList.contains('lux-admin-tools-index-subpanel') ||
                 el.classList.contains('lux-subcard') ||
                 el.classList.contains('lux-stat-card') ||
                 el.classList.contains('lux-grid-widget') ||
-                el.classList.contains('admin-reg-tab')
+                (el.classList.contains('admin-reg-tab') && !el.classList.contains('is-active') && el.getAttribute('aria-pressed') !== 'true') ||
+                (el.classList.contains('lux-strip-card') && el.closest?.('#lux-admin-tools-shell'))
             );
-            const adminToolsStrength = isSmallAdminToolsSurface ? 0.14 : 0.24;
             if (lightMode) {
-                return `radial-gradient(circle at 8% 0%, rgba(255,255,255, ${(amount * 0.88).toFixed(2)}), transparent 34%), radial-gradient(circle at 72% 0%, rgba(var(--lux-accent-rgb), ${(amount * adminToolsStrength).toFixed(2)}), transparent 38%), radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), ${(amount * 0.13).toFixed(2)}), transparent 38%), linear-gradient(135deg, rgba(var(--lux-accent-rgb), ${(amount * 0.075).toFixed(2)}), rgba(255,255,255, ${(amount * 0.88).toFixed(2)}) 44%, rgba(247,241,232, ${(amount * 0.72).toFixed(2)}))`;
+                if (isSmallAdminToolsSurface) {
+                    return 'radial-gradient(circle at 12% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .86) * .62)), transparent 30%), ' +
+                        'radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .14)), transparent 34%), ' +
+                        'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .045)), rgba(255,255,255, calc(var(--lux-transparency-alpha, .86) * .84)) 46%, rgba(247,241,232, calc(var(--lux-transparency-alpha, .86) * .72)))';
+                }
+                return 'radial-gradient(circle at 8% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .86) * .88)), transparent 34%), ' +
+                    'radial-gradient(circle at 72% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .22)), transparent 38%), ' +
+                    'radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .86) * .13)), transparent 38%), ' +
+                    'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .075)), rgba(255,255,255, calc(var(--lux-transparency-alpha, .86) * .88)) 44%, rgba(247,241,232, calc(var(--lux-transparency-alpha, .86) * .72)))';
             }
-            return `radial-gradient(circle at 8% 0%, rgba(255,255,255, ${(amount * 0.075).toFixed(2)}), transparent 32%), radial-gradient(circle at 72% 0%, rgba(var(--lux-accent-rgb), ${(amount * adminToolsStrength).toFixed(2)}), transparent 38%), radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), ${(amount * 0.14).toFixed(2)}), transparent 38%), linear-gradient(135deg, rgba(var(--lux-accent-rgb), ${(amount * 0.10).toFixed(2)}), rgba(10,15,24, ${(amount * 0.91).toFixed(2)}) 44%, rgba(7,10,18, ${(amount * 0.84).toFixed(2)}))`;
+            if (isSmallAdminToolsSurface) {
+                return 'radial-gradient(circle at 12% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .92) * .055)), transparent 30%), ' +
+                    'radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .14)), transparent 34%), ' +
+                    'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .065)), rgba(10,15,24, calc(var(--lux-transparency-alpha, .92) * .88)) 46%, rgba(7,10,18, calc(var(--lux-transparency-alpha, .92) * .80)))';
+            }
+            return 'radial-gradient(circle at 8% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .92) * .075)), transparent 32%), ' +
+                'radial-gradient(circle at 72% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .24)), transparent 38%), ' +
+                'radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .92) * .14)), transparent 38%), ' +
+                'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .10)), rgba(10,15,24, calc(var(--lux-transparency-alpha, .92) * .91)) 44%, rgba(7,10,18, calc(var(--lux-transparency-alpha, .92) * .84)))';
         }
-        if (isStaffSurface) {
-            const isSmallStaffSurface = (
-                el.classList.contains('lux-subcard') ||
-                el.classList.contains('lux-person-head') ||
-                el.classList.contains('lux-picker-btn') ||
-                el.classList.contains('lux-inline-meta') ||
-                el.classList.contains('prof-reg-info-box')
-            );
-            const staffStrength = isSmallStaffSurface ? 0.14 : 0.24;
+        if (isOrdersSurface) {
+            const isOrdersSoftSurface = isAdminOrdersSoftSurface || isAdminOrdersControlSurface;
             if (lightMode) {
-                return `radial-gradient(circle at 8% 0%, rgba(255,255,255, ${(amount * 0.88).toFixed(2)}), transparent 34%), radial-gradient(circle at 72% 0%, rgba(var(--lux-accent-rgb), ${(amount * staffStrength).toFixed(2)}), transparent 38%), radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), ${(amount * 0.13).toFixed(2)}), transparent 38%), linear-gradient(135deg, rgba(var(--lux-accent-rgb), ${(amount * 0.075).toFixed(2)}), rgba(255,255,255, ${(amount * 0.88).toFixed(2)}) 44%, rgba(247,241,232, ${(amount * 0.72).toFixed(2)}))`;
+                if (isOrdersSoftSurface) {
+                    return 'radial-gradient(circle at 12% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .86) * .62)), transparent 30%), ' +
+                        'radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .14)), transparent 34%), ' +
+                        'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .045)), rgba(255,255,255, calc(var(--lux-transparency-alpha, .86) * .84)) 46%, rgba(247,241,232, calc(var(--lux-transparency-alpha, .86) * .72)))';
+                }
+                return 'radial-gradient(circle at 8% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .86) * .88)), transparent 34%), ' +
+                    'radial-gradient(circle at 72% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .22)), transparent 38%), ' +
+                    'radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .86) * .13)), transparent 38%), ' +
+                    'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .075)), rgba(255,255,255, calc(var(--lux-transparency-alpha, .86) * .88)) 44%, rgba(247,241,232, calc(var(--lux-transparency-alpha, .86) * .72)))';
             }
-            return `radial-gradient(circle at 8% 0%, rgba(255,255,255, ${(amount * 0.075).toFixed(2)}), transparent 32%), radial-gradient(circle at 72% 0%, rgba(var(--lux-accent-rgb), ${(amount * staffStrength).toFixed(2)}), transparent 38%), radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), ${(amount * 0.14).toFixed(2)}), transparent 38%), linear-gradient(135deg, rgba(var(--lux-accent-rgb), ${(amount * 0.10).toFixed(2)}), rgba(10,15,24, ${(amount * 0.91).toFixed(2)}) 44%, rgba(7,10,18, ${(amount * 0.84).toFixed(2)}))`;
+            if (isOrdersSoftSurface) {
+                return 'radial-gradient(circle at 12% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .92) * .055)), transparent 30%), ' +
+                    'radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .14)), transparent 34%), ' +
+                    'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .065)), rgba(10,15,24, calc(var(--lux-transparency-alpha, .92) * .88)) 46%, rgba(7,10,18, calc(var(--lux-transparency-alpha, .92) * .80)))';
+            }
+            return 'radial-gradient(circle at 8% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .92) * .075)), transparent 32%), ' +
+                'radial-gradient(circle at 72% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .24)), transparent 38%), ' +
+                'radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .92) * .14)), transparent 38%), ' +
+                'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .10)), rgba(10,15,24, calc(var(--lux-transparency-alpha, .92) * .91)) 44%, rgba(7,10,18, calc(var(--lux-transparency-alpha, .92) * .84)))';
         }
         if (!_isHighTransBg && isLmsRoute && (
             el.classList.contains('page-hero') ||
             el.classList.contains('lux-card') ||
             el.classList.contains('lux-status-pill') ||
             el.classList.contains('lux-lms-group-card') ||
-            lmsGlassClasses.some((className) => el.classList.contains(className))
+            lmsGlassClasses.some((className) => el.classList.contains(className)) ||
+            (Boolean(el.closest?.('.lms-quiz-builder')) &&
+                lmsQuizBuilderGlassClasses.some((className) => el.classList.contains(className)))
         )) {
+            // Match the dashboard color-fade/glow: white highlight radial + accent glow
+            // radial + secondary glow radial + linear depth. Smaller LMS chrome (status
+            // pills / signal pills) uses a lighter "soft" fade so it does not overpower.
+            const isSmallLmsSurface = (
+                el.classList.contains('lux-status-pill') ||
+                el.classList.contains('lms-clean-signal-pill') ||
+                el.classList.contains('lms-clean-mini') ||
+                el.classList.contains('lms-clean-action-secondary')
+            );
             if (lightMode) {
-                return `radial-gradient(circle at top right, rgba(var(--lux-accent-rgb), ${(0.06 + amount * 0.10).toFixed(2)}), transparent 34%), linear-gradient(180deg, rgba(255,255,255, ${(0.08 + amount * 0.48).toFixed(2)}), rgba(245,239,229, ${(0.03 + amount * 0.34).toFixed(2)}))`;
+                if (isSmallLmsSurface) {
+                    return 'radial-gradient(circle at 12% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .86) * .62)), transparent 30%), ' +
+                        'radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .14)), transparent 34%), ' +
+                        'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .045)), rgba(255,255,255, calc(var(--lux-transparency-alpha, .86) * .84)) 46%, rgba(247,241,232, calc(var(--lux-transparency-alpha, .86) * .72)))';
+                }
+                return 'radial-gradient(circle at 6% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .86) * .88)), transparent 34%), ' +
+                    'radial-gradient(circle at 74% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .24)), transparent 42%), ' +
+                    'radial-gradient(circle at 100% 96%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .86) * .14)), transparent 40%), ' +
+                    'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .065)), rgba(255,255,255, calc(var(--lux-transparency-alpha, .86) * .84)) 44%, rgba(247,241,232, calc(var(--lux-transparency-alpha, .86) * .70)))';
             }
-            return `radial-gradient(circle at top right, rgba(var(--lux-accent-rgb), ${(0.05 + amount * 0.09).toFixed(2)}), transparent 34%), linear-gradient(180deg, rgba(14,20,33, ${(amount * 0.94).toFixed(2)}), rgba(8,12,21, ${(amount * 0.72).toFixed(2)}))`;
+            if (isSmallLmsSurface) {
+                return 'radial-gradient(circle at 12% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .92) * .055)), transparent 30%), ' +
+                    'radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .16)), transparent 36%), ' +
+                    'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .07)), rgba(12,18,30, calc(var(--lux-transparency-alpha, .92) * .82)) 46%, rgba(8,12,21, calc(var(--lux-transparency-alpha, .92) * .72)))';
+            }
+            return 'radial-gradient(circle at 6% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .92) * .08)), transparent 32%), ' +
+                'radial-gradient(circle at 74% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .28)), transparent 42%), ' +
+                'radial-gradient(circle at 100% 96%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .92) * .18)), transparent 40%), ' +
+                'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .10)), rgba(10,15,24, calc(var(--lux-transparency-alpha, .92) * .91)) 44%, rgba(7,10,18, calc(var(--lux-transparency-alpha, .92) * .84)))';
         }
         if (lightMode) {
             return `linear-gradient(180deg, rgba(255,255,255, ${(0.08 + amount * 0.48).toFixed(2)}), rgba(245,239,229, ${(0.03 + amount * 0.34).toFixed(2)}))`;
@@ -2042,29 +3070,8 @@ function updateTransparency(value, options = {}) {
         el.classList.contains('content-box') ||
         el.classList.contains('kiu-card') ||
         el.classList.contains('page-hero') ||
-        el.classList.contains('lux-timetable-command') ||
-        el.classList.contains('lux-timetable-insight') ||
-        el.classList.contains('lux-timetable-stage') ||
-        el.classList.contains('lux-timetable-filters') ||
-        el.classList.contains('filter-shell') ||
-        el.classList.contains('lux-timetable-hero-focus') ||
-        el.classList.contains('lux-timetable-canvas') ||
         el.classList.contains('schedule-toolbar-host') ||
         el.classList.contains('schedule-toolbar') ||
-        el.classList.contains('social-hero') ||
-        el.classList.contains('social-entity-cover') ||
-        el.classList.contains('social-app-shell') ||
-        el.classList.contains('social-rail') ||
-        el.classList.contains('social-card') ||
-        el.classList.contains('social-post-card') ||
-        el.classList.contains('social-mini-card') ||
-        el.classList.contains('social-detail-card') ||
-        el.classList.contains('social-empty') ||
-        el.classList.contains('social-shared-card') ||
-        el.classList.contains('social-comment-card') ||
-        el.classList.contains('social-notif-item') ||
-        el.classList.contains('social-story-card') ||
-        el.classList.contains('social-file-preview') ||
         el.classList.contains('lux-modern-surface') ||
         el.classList.contains('lux-modern-table') ||
         el.classList.contains('lux-program-hero') ||
@@ -2080,11 +3087,28 @@ function updateTransparency(value, options = {}) {
         el.classList.contains('lux-subject-row') ||
         el.id === 'study-card-container' ||
         el.classList.contains('study-card-semester-table') ||
+        el.classList.contains('study-card-summary-stage') ||
+        el.classList.contains('lux-strip-card') ||
+        el.classList.contains('study-card-grade-circle') ||
+        el.classList.contains('study-card-assessment-window__chip') ||
+        el.classList.contains('study-card-assessment-window__card') ||
+        el.classList.contains('study-card-assessment-pill') ||
+        el.classList.contains('study-card-term-header') ||
+        el.classList.contains('study-card-term-row') ||
+        el.classList.contains('study-card-history-section') ||
+        el.classList.contains('study-card-history-entry') ||
+        el.classList.contains('study-card-history-row') ||
         el.classList.contains('personal-data-toolbar') ||
         el.classList.contains('profile-card') ||
         el.classList.contains('personal-data-stats-card') ||
         el.classList.contains('personal-data-facts-card') ||
         el.classList.contains('personal-data-record-card') ||
+        el.classList.contains('personal-data-kpi-card') ||
+        el.classList.contains('personal-data-mini') ||
+        el.classList.contains('personal-data-record-item') ||
+        el.classList.contains('personal-data-card-meta') ||
+        el.classList.contains('lux-meta-pair-card') ||
+        el.classList.contains('personal-data-hero-panel') ||
         el.classList.contains('newsx-panel') ||
         el.classList.contains('newsx-hero') ||
         el.classList.contains('newsx-feed-card') ||
@@ -2098,16 +3122,6 @@ function updateTransparency(value, options = {}) {
         el.classList.contains('newsx-account-card') ||
         el.classList.contains('newsx-section-btn') ||
         el.classList.contains('newsx-pane-btn') ||
-        el.classList.contains('lux-chancellery-hero') ||
-        el.classList.contains('lux-chancellery-focus-card') ||
-        el.classList.contains('lux-chancellery-snapshot-card') ||
-        (document.body.classList.contains('lux-route-chancellery') && (
-            el.classList.contains('lux-card') ||
-            el.classList.contains('lux-stat-card') ||
-            el.classList.contains('lux-subcard') ||
-            el.classList.contains('lux-queue-item') ||
-            el.classList.contains('lux-thread-entry')
-        )) ||
         el.classList.contains('student-service-hero') ||
         el.classList.contains('student-service-hero-aside') ||
         el.classList.contains('student-service-workflow-strip') ||
@@ -2142,6 +3156,21 @@ function updateTransparency(value, options = {}) {
         el.classList.contains('library-tabs') ||
         el.classList.contains('library-picker-panel') ||
         el.classList.contains('library-catalog-foot') ||
+        el.classList.contains('alib-panel') ||
+        el.classList.contains('library-overview-card') ||
+        el.classList.contains('library-hero-metric') ||
+        el.classList.contains('library-hero-summary-card') ||
+        el.classList.contains('library-hero-signal-card') ||
+        el.classList.contains('admin-library-metric-card') ||
+        el.classList.contains('admin-library-hero-summary-card') ||
+        el.classList.contains('admin-library-param-group') ||
+        el.classList.contains('admin-library-chip') ||
+        (document.body.classList.contains('lux-route-library') && (
+            (el.classList.contains('lux-strip-card') && el.closest?.('#page-library')) ||
+            (el.classList.contains('lux-hero-signal') && el.closest?.('#page-library')) ||
+            (el.classList.contains('lux-picker-btn') && el.closest?.('.library-filter-shell')) ||
+            (el.classList.contains('lux-control') && el.closest?.('.library-filter-shell'))
+        )) ||
         el.classList.contains('ex2-hero') ||
         el.classList.contains('ex2-panel') ||
         el.classList.contains('ex2-toolbar') ||
@@ -2167,38 +3196,140 @@ function updateTransparency(value, options = {}) {
         el.classList.contains('lux-admin-op-card') ||
         el.classList.contains('lux-admin-ops-panel') ||
         el.classList.contains('lux-admin-provision-card') ||
+        el.classList.contains('lux-admin-tools-index-hero') ||
+        el.classList.contains('lux-admin-tools-index-panel') ||
+        el.classList.contains('lux-admin-tools-index-summary') ||
+        el.classList.contains('lux-admin-tools-index-command') ||
+        el.classList.contains('lux-admin-tools-index-command-card') ||
+        el.classList.contains('lux-admin-tools-index-subpanel') ||
         (document.body.classList.contains('lux-route-admin-tools') && (
-            el.classList.contains('lux-panel') ||
-            el.classList.contains('lux-card') ||
-            el.classList.contains('lux-subcard') ||
-            el.classList.contains('lux-stat-card') ||
-            el.classList.contains('lux-grid-widget') ||
-            el.classList.contains('admin-reg-tab') ||
-            el.id === 'admin-reg-content-container' ||
-            el.id === 'curriculum-library-modules-root'
+            (el.classList.contains('lux-panel') && el.closest?.('#lux-admin-tools-shell')) ||
+            (el.classList.contains('lux-card') && el.closest?.('#lux-admin-tools-shell')) ||
+            (el.classList.contains('lux-subcard') && el.closest?.('#lux-admin-tools-shell')) ||
+            (el.classList.contains('lux-stat-card') && el.closest?.('#lux-admin-tools-shell')) ||
+            (el.classList.contains('lux-grid-widget') && el.closest?.('#lux-admin-tools-shell')) ||
+            (el.classList.contains('lux-strip-card') && el.closest?.('#lux-admin-tools-shell')) ||
+            (el.classList.contains('admin-reg-tab') && el.closest?.('#lux-admin-tools-shell')) ||
+            (el.classList.contains('lux-control') && el.closest?.('#lux-admin-tools-shell')) ||
+            (el.classList.contains('lux-picker-btn') && el.closest?.('#lux-admin-tools-shell')) ||
+            (el.id === 'admin-reg-content-container' && el.closest?.('#lux-admin-tools-shell')) ||
+            (el.id === 'curriculum-library-modules-root' && el.closest?.('#lux-admin-tools-shell'))
         )) ||
-        (document.body.classList.contains('lux-route-staff') && (
-            el.classList.contains('page-hero') ||
+        (document.body.classList.contains('lux-route-admin-orders') &&
+            Boolean(el.closest?.('#admin-orders-root, #modal-studio')) && (
+            el.classList.contains('orders-admin-shell') ||
+            el.classList.contains('orders-admin-hero') ||
+            el.classList.contains('orders-admin-panel') ||
+            el.classList.contains('orders-admin-hero-side') ||
+            el.classList.contains('orders-detail-panel') ||
+            el.classList.contains('orders-admin-table-wrap') ||
+            el.classList.contains('admin-orders-studio') ||
+            el.classList.contains('orders-metric-card') ||
+            el.classList.contains('orders-recipient-row') ||
+            el.classList.contains('orders-recipient-card') ||
+            el.classList.contains('orders-attachment-card') ||
+            el.classList.contains('orders-detail-empty') ||
+            el.classList.contains('orders-detail-card') ||
+            el.classList.contains('orders-recipient-list-shell') ||
+            el.classList.contains('orders-recipient-list-empty') ||
+            el.classList.contains('lux-hero-side-head') ||
+            el.classList.contains('lux-hero-signal') ||
+            el.classList.contains('lux-stat-card') ||
+            el.classList.contains('lux-card') ||
+            el.classList.contains('lux-control') ||
+            el.classList.contains('lux-status-pill') ||
+            el.classList.contains('lux-primary-btn') ||
+            el.classList.contains('lux-secondary-btn') ||
+            el.classList.contains('admin-orders-studio-card') ||
+            el.classList.contains('admin-orders-palette-option') ||
+            el.classList.contains('admin-orders-mode-btn') ||
+            el.classList.contains('admin-orders-background-btn') ||
+            el.classList.contains('admin-orders-apply-btn')
+        )) ||
+        (document.body.classList.contains('lux-route-social') && (
+            el.classList.contains('social-hero') ||
+            el.classList.contains('social-card') ||
+            el.classList.contains('social-post-card') ||
+            el.classList.contains('social-mini-card') ||
+            el.classList.contains('social-detail-card') ||
+            el.classList.contains('social-neo-card') ||
+            SOCIAL_NEO_TRANSPARENCY_SURFACE_CLASSES.some((className) => el.classList.contains(className)) ||
+            el.parentElement?.classList?.contains('social-neo-stat-grid') ||
+            [...el.classList].some((className) =>
+                className.startsWith('social-neo-') ||
+                className.startsWith('social-project') ||
+                className.startsWith('social-portfolio')
+            )
+        )) ||
+        (document.body.classList.contains('lux-route-staff') && Boolean(el.closest?.('#staff-content')) && (
+            el.classList.contains('staff-hub-hero') ||
+            el.classList.contains('staff-hub-command-panel') ||
+            el.classList.contains('staff-hub-command-card') ||
+            el.classList.contains('staff-hub-focus-card') ||
+            el.classList.contains('staff-hub-mini-card') ||
+            el.classList.contains('staff-hub-metric-card') ||
+            el.classList.contains('staff-hub-controls') ||
+            el.classList.contains('staff-hub-directory-panel') ||
+            el.classList.contains('staff-hub-profile') ||
+            el.classList.contains('staff-hub-info-card') ||
+            el.classList.contains('staff-hub-warning') ||
+            el.classList.contains('staff-hub-modal') ||
+            el.classList.contains('staff-hub-list-item') ||
+            el.classList.contains('admin-directory-hero') ||
+            el.classList.contains('admin-directory-controls') ||
+            el.classList.contains('admin-directory-card') ||
             el.classList.contains('lux-card') ||
             el.classList.contains('lux-person-card') ||
             el.classList.contains('lux-subcard') ||
-            el.classList.contains('lux-person-head') ||
-            el.classList.contains('lux-empty-state') ||
-            el.classList.contains('lux-picker-btn') ||
-            el.classList.contains('lux-inline-meta') ||
-            el.classList.contains('prof-reg-info-box')
+            el.classList.contains('surface-card') ||
+            el.classList.contains('content-box')
         )) ||
-        SOCIAL_NEO_TRANSPARENCY_SURFACE_CLASSES.some((className) => el.classList.contains(className)) ||
-        el.parentElement?.classList?.contains('social-neo-stat-grid') ||
+        (document.body.classList.contains('lux-route-students-admin') &&
+            Boolean(el.closest?.('#students-content')) &&
+            !el.closest?.('#students-admin-lms-modal') && (
+            el.classList.contains('students-lms-hero') ||
+            el.classList.contains('students-lms-profile-header') ||
+            el.classList.contains('students-lms-panel') ||
+            el.classList.contains('students-lms-stat-card') ||
+            el.classList.contains('students-lms-profile-card') ||
+            el.classList.contains('students-lms-table-shell') ||
+            el.classList.contains('students-lms-list-item') ||
+            el.classList.contains('students-lms-modal-card')
+        )) ||
         registrationGlassClasses.some((className) => el.classList.contains(className)) ||
-        schedulerGlassClasses.some((className) => el.classList.contains(className)) ||
-        lmsGlassClasses.some((className) => el.classList.contains(className));
+        (document.body.classList.contains('lux-route-admin-scheduler') && Boolean(el.closest?.('#page-admin-scheduler')) && (
+            schedulerGlassClasses.some((className) => el.classList.contains(className)) ||
+            ((el.tagName === 'SELECT' || el.tagName === 'INPUT') &&
+                el.closest?.('.sch-control-group, .sch-board-toolbar-row, .sch-search-shell, .sch-modal'))
+        )) ||
+        lmsGlassClasses.some((className) => el.classList.contains(className)) ||
+        (isLmsRoute && Boolean(el.closest?.('.lms-quiz-builder')) &&
+            lmsQuizBuilderGlassClasses.some((className) => el.classList.contains(className)));
+
+    const isStudyCardGradebookProgressSegment = (el) => (
+        document.body.classList.contains('lux-route-study-card') &&
+        el.tagName === 'SPAN' &&
+        Boolean(el.closest?.(
+            '.study-card-assessment-window__body--gradebook .gb-composition-bar, ' +
+            '.study-card-assessment-window__body--gradebook .gb-weight-track'
+        ))
+    );
+
+    const isTimetableLayoutWrapper = (el) => document.body.classList.contains('lux-route-timetable') && (
+        el.classList.contains('lux-timetable-controls') ||
+        el.classList.contains('schedule-toolbar-host') ||
+        el.classList.contains('schedule-toolbar') ||
+        el.classList.contains('lux-timetable-view-row') ||
+        el.classList.contains('schedule-view-row') ||
+        el.classList.contains('lux-timetable-command-grid') ||
+        el.classList.contains('lux-timetable-grid-shell') ||
+        (el.classList.contains('schedule-grid-shell') && el.dataset?.ttGrid === '1')
+    );
 
     // KEY FIX: Use CSS custom properties to override !important rules
     // CSS variables can be set via JavaScript and will work with !important in CSS
     document.documentElement.style.setProperty('--lux-transparency-blur', `${blurAmount}px`);
     document.documentElement.style.setProperty('--lux-transparency-saturate', `${saturateAmount}%`);
-    document.documentElement.style.setProperty('--lux-transparency-alpha', surfaceFillAmount.toFixed(3));
     document.documentElement.style.setProperty('--lux-transparency-percentage', `${percentage}%`);
     const rootComputedStyle = window.getComputedStyle(document.documentElement);
     const transparencySignature = [
@@ -2222,22 +3353,10 @@ function updateTransparency(value, options = {}) {
         // Generic surface/card elements
         '.surface-card', '.content-box', '.kiu-card', '.page-card',
         '.section-card', '.panel-card', '.dashboard-card',
-        '.tabs-container', '.modal-content', '.page-hero', '.reg-tabs',
+        '.tabs-container', '.modal-content', '.page-hero',
         ...registrationGlassSelectors,
         ...schedulerGlassSelectors,
         ...lmsGlassSelectors,
-
-        // Timetable elements
-        '.lux-timetable-command', '.lux-timetable-insight', '.lux-timetable-stage',
-        '.lux-timetable-canvas', '.lux-timetable-controls',
-        '.lux-timetable-filters', '.filter-shell', '.lux-timetable-hero-focus',
-        '.lux-timetable-command-head', '.lux-timetable-command-grid',
-        '.lux-timetable-insight-grid', '.lux-timetable-insight-label',
-        '.lux-timetable-insight-value', '.lux-timetable-insight-list',
-        '.lux-timetable-stage-head', '.lux-timetable-hero-main',
-
-        // Faculty/Gradebook elements
-        '.lux-faculty-command', '.lux-faculty-insight', '.lux-faculty-stage',
 
         // Programs page large surfaces
         '.lux-program-hero', '.lux-program-filter-shell', '.lux-program-stage',
@@ -2246,22 +3365,26 @@ function updateTransparency(value, options = {}) {
         '.lux-program-focus-stat', '.lux-program-semester-chip',
         '.lux-module-option', '.lux-subject-row',
 
-        // Study Card large surfaces
-        '#study-card-container', '.study-card-semester-table',
+        // Study Card surfaces
+        '#study-card-container', '.study-card-semester-table', '.study-card-summary-stage',
+        '.study-card-grade-circle', '.study-card-assessment-window__chip',
+        '.study-card-assessment-window__card', '.study-card-assessment-pill',
+        '.study-card-term-header', '.study-card-term-row',
+        '.study-card-history-section', '.study-card-history-entry', '.study-card-history-row',
+        '#study-card-container .lux-strip-card',
 
-        // Personal Data large surfaces
+        // Personal Data surfaces
         '.personal-data-toolbar', '.profile-card', '.personal-data-stats-card',
         '.personal-data-facts-card', '.personal-data-record-card',
+        '.personal-data-kpi-card', '.personal-data-mini', '.personal-data-record-item',
+        '.personal-data-card-meta', '.lux-meta-pair-card', '.personal-data-hero-panel',
+        '#page-personal-data .lux-strip-card',
 
         // News workspace surfaces
         '.newsx-panel', '.newsx-hero', '.newsx-feed-card', '.newsx-filter',
         '.newsx-sidebar', '.newsx-rail', '.newsx-section', '.newsx-stat',
         '.newsx-private-item', '.newsx-check', '.newsx-account-card',
         '.newsx-section-btn', '.newsx-pane-btn',
-
-        // Chancellery large surfaces
-        '.lux-chancellery-hero', '.lux-chancellery-focus-card',
-        '.lux-chancellery-snapshot-card',
 
         // Student Service large surfaces
         '.student-service-hero', '.student-service-hero-aside',
@@ -2277,11 +3400,32 @@ function updateTransparency(value, options = {}) {
         '.student-service-ops-lane', '.student-service-ticket-focus',
         '.student-service-ticket-thread', '.student-service-home-panel',
         '.student-service-home-card', '.student-service-home-ticket',
-        '.student-service-home-topic', '.student-service-lane-choice-card',
+        '.student-service-home-topic',         '.student-service-lane-choice-card',
+
+        // Social large surfaces
+        '.social-hero', '.social-card', '.social-post-card', '.social-mini-card',
+        '.social-detail-card', '.social-neo-card',
+        ...SOCIAL_NEO_TRANSPARENCY_SURFACE_SELECTORS,
+
+        // Staff command center surfaces
+        ...STAFF_ROUTE_TRANSPARENCY_SURFACE_SELECTORS,
+        '#staff-content .lux-card', '#staff-content .lux-person-card',
+        '#staff-content .lux-subcard', '#staff-content .surface-card',
+        '#staff-content .content-box', '#staff-content .lux-strip-card',
+        '#staff-content .lux-data-card',
+
+        // Students admin LMS surfaces
+        ...STUDENTS_ADMIN_ROUTE_TRANSPARENCY_SURFACE_SELECTORS,
 
         // Library large surfaces
         '.library-page-hero', '.library-filter-shell', '.library-catalog-card',
         '.library-tabs', '.library-picker-panel', '.library-catalog-foot',
+        '.alib-panel',
+        '#page-library .alib-panel', '#page-library .lux-strip-card', '.library-overview-card',
+        '.library-hero-metric', '.library-hero-summary-card', '.library-hero-signal-card',
+        '.admin-library-metric-card', '.admin-library-hero-summary-card',
+        '.admin-library-param-group', '.admin-library-chip',
+        '.library-filter-shell .lux-picker-btn', '.library-filter-shell .lux-control',
 
         // Exams large surfaces
         '.ex2-hero', '.ex2-panel', '.ex2-toolbar', '.ex2-card',
@@ -2294,25 +3438,21 @@ function updateTransparency(value, options = {}) {
 
         // Admin Tools large surfaces
         '.lux-admin-tools-hero', '.lux-admin-op-card', '.lux-admin-ops-panel',
-        '.lux-admin-provision-card',
-        'body.lux-route-admin-tools .lux-panel',
-        'body.lux-route-admin-tools .lux-card',
-        'body.lux-route-admin-tools .lux-subcard',
-        'body.lux-route-admin-tools .lux-stat-card',
-        'body.lux-route-admin-tools .lux-grid-widget',
-        'body.lux-route-admin-tools .admin-reg-tab',
-        '#admin-reg-content-container', '#curriculum-library-modules-root',
-
-        // Staff large surfaces
-        'body.lux-route-staff .page-hero',
-        'body.lux-route-staff .lux-card',
-        'body.lux-route-staff .lux-person-card',
-        'body.lux-route-staff .lux-subcard',
-        'body.lux-route-staff .lux-person-head',
-        'body.lux-route-staff .lux-empty-state',
-        'body.lux-route-staff .lux-picker-btn',
-        'body.lux-route-staff .lux-inline-meta',
-        'body.lux-route-staff .prof-reg-info-box',
+        '.lux-admin-provision-card', '.lux-admin-tools-index-hero',
+        '.lux-admin-tools-index-panel', '.lux-admin-tools-index-command',
+        '#lux-admin-tools-shell .lux-panel',
+        '#lux-admin-tools-shell .lux-card',
+        '#lux-admin-tools-shell .lux-subcard',
+        '#lux-admin-tools-shell .lux-stat-card',
+        '#lux-admin-tools-shell .lux-grid-widget',
+        '#lux-admin-tools-shell .lux-strip-card',
+        '#lux-admin-tools-shell .admin-reg-tab',
+        '#lux-admin-tools-shell .lux-control',
+        '#lux-admin-tools-shell .lux-picker-btn',
+        '#lux-admin-tools-shell #admin-reg-content-container',
+        '#lux-admin-tools-shell #curriculum-library-modules-root',
+        '.lux-admin-tools-index-summary', '.lux-admin-tools-index-command-card',
+        '.lux-admin-tools-index-subpanel',
 
         // Staff directory elements
         '.lux-person-card', '.lux-subcard', '.lux-stack', '.lux-person-head',
@@ -2324,6 +3464,21 @@ function updateTransparency(value, options = {}) {
 
         // Admin Orders specific elements
         '.lux-page-kicker', '.lux-status-pill',
+        '#admin-orders-root .orders-admin-shell', '#admin-orders-root .orders-admin-hero',
+        '#admin-orders-root .orders-admin-panel', '#admin-orders-root .orders-admin-hero-side',
+        '#admin-orders-root .orders-detail-panel', '#admin-orders-root .orders-admin-table-wrap',
+        '#admin-orders-root .orders-metric-card', '#admin-orders-root .orders-recipient-row',
+        '#admin-orders-root .orders-recipient-card', '#admin-orders-root .orders-attachment-card',
+        '#admin-orders-root .orders-detail-empty', '#admin-orders-root .orders-detail-card',
+        '#admin-orders-root .orders-recipient-list-shell', '#admin-orders-root .orders-recipient-list-empty',
+        '#admin-orders-root .lux-hero-side-head', '#admin-orders-root .lux-hero-signal',
+        '#admin-orders-root .lux-stat-card', '#admin-orders-root .lux-card',
+        '#admin-orders-root .lux-control', '#admin-orders-root .lux-primary-btn',
+        '#admin-orders-root .lux-secondary-btn',
+        '#modal-studio.admin-orders-studio', '#modal-studio .admin-orders-studio-card',
+        '#modal-studio .admin-orders-palette-option', '#modal-studio .admin-orders-mode-btn',
+        '#modal-studio .admin-orders-background-btn', '#modal-studio .admin-orders-apply-btn',
+        '#modal-studio .lux-control',
 
         // Schedule/Timetable specific elements
         '.schedule-chip', '.schedule-view-switcher', '.schedule-week-arrow',
@@ -2333,17 +3488,7 @@ function updateTransparency(value, options = {}) {
         // Form controls that need transparency
         '.lux-control',
 
-        // Social page elements
-        '.social-card', '.social-post-card', '.social-mini-card',
-        '.social-comment-card', '.social-notif-item', '.social-story-card',
-        '.social-detail-card', '.social-file-preview', '.social-poll-option',
-        '.social-empty', '.social-shared-card', '.social-hero',
-        '.social-entity-cover', '.social-app-shell', '.social-rail',
-        '.social-neo-post-card', '.social-neo-composer-card',
-        '.social-neo-filter-card', '.social-neo-story-card',
-        '.social-neo-community-panel', '.social-neo-comment-bubble',
-        ...LUX_MODERN_TRANSPARENCY_SURFACE_SELECTORS,
-        ...SOCIAL_NEO_TRANSPARENCY_SURFACE_SELECTORS
+        ...LUX_MODERN_TRANSPARENCY_SURFACE_SELECTORS
     ]);
 
     const surfaceElements = getCachedTransparencySurfaceElements(allSelectors, scopedRoots);
@@ -2371,19 +3516,81 @@ function updateTransparency(value, options = {}) {
             delete el.dataset.luxTransparencySignature;
             return;
         }
+        if (isTimetableLayoutWrapper(el)) {
+            el.style.removeProperty('background-color');
+            el.style.removeProperty('background');
+            el.style.removeProperty('backdrop-filter');
+            el.style.removeProperty('-webkit-backdrop-filter');
+            delete el.dataset.luxTransparencySignature;
+            return;
+        }
+        if (isStudyCardGradebookProgressSegment(el)) {
+            el.style.removeProperty('background-color');
+            el.style.removeProperty('background');
+            el.style.removeProperty('backdrop-filter');
+            el.style.removeProperty('-webkit-backdrop-filter');
+            delete el.dataset.luxTransparencySignature;
+            return;
+        }
+        if (el.closest?.('#kiu-structured-form-modal')) {
+            el.style.removeProperty('background-color');
+            el.style.removeProperty('background');
+            el.style.removeProperty('backdrop-filter');
+            el.style.removeProperty('-webkit-backdrop-filter');
+            delete el.dataset.luxTransparencySignature;
+            return;
+        }
+        if (el.closest?.('#course-selection-modal-bg')) {
+            el.style.removeProperty('background-color');
+            el.style.removeProperty('background');
+            el.style.removeProperty('backdrop-filter');
+            el.style.removeProperty('-webkit-backdrop-filter');
+            delete el.dataset.luxTransparencySignature;
+            return;
+        }
+        if (el.closest?.('#schModalOverlay') || el.closest?.('#schPresetManagerOverlay')) {
+            el.style.removeProperty('background-color');
+            el.style.removeProperty('background');
+            el.style.removeProperty('backdrop-filter');
+            el.style.removeProperty('-webkit-backdrop-filter');
+            delete el.dataset.luxTransparencySignature;
+            return;
+        }
         if (
-            document.body.classList.contains('lux-route-students-admin') &&
-            (el.id === 'students-content' || el.closest?.('#students-content, #students-admin-lms-modal'))
+            document.body.classList.contains('lux-route-admin-tools') &&
+            Boolean(el.closest?.('#lux-admin-tools-shell')) &&
+            (
+                (el.closest?.('.lux-admin-tools-index-panel') && !el.classList.contains('lux-admin-tools-index-panel') && (
+                    el.classList.contains('lux-admin-tools-index-panel-shell') ||
+                    el.classList.contains('lux-admin-tools-index-subpanel') ||
+                    el.classList.contains('curriculum-library-module-option') ||
+                    el.id === 'curriculum-library-modules-root' ||
+                    el.id === 'admin-reg-content-container'
+                )) ||
+                (el.closest?.('.lux-curriculum-subject-card') && !el.classList.contains('lux-curriculum-subject-card')) ||
+                el.classList.contains('lux-curriculum-subject-card__head') ||
+                el.classList.contains('lux-curriculum-subject-card__body') ||
+                el.classList.contains('lux-curriculum-subject-card__footer') ||
+                el.classList.contains('lux-curriculum-subject-card__chips') ||
+                el.closest?.('.lux-curriculum-subject-card__chips') ||
+                el.classList.contains('curriculum-library-panel--detail') ||
+                el.classList.contains('curriculum-library-panel') ||
+                el.classList.contains('curriculum-library-row-list')
+            )
         ) {
+            el.style.removeProperty('background-color');
+            el.style.removeProperty('background');
+            el.style.removeProperty('backdrop-filter');
+            el.style.removeProperty('-webkit-backdrop-filter');
+            delete el.dataset.luxTransparencySignature;
             return;
         }
 
         // Detect current mode
         const isLightMode = document.body.classList.contains('lux-light-mode');
 
-        if (percentage > 0) {
-            // Calculate effects
-            const alpha = percentage / 100;
+        if (fillRatio > 0) {
+            const alpha = fillRatio;
             if (applyStudentsAdminManagedSurface(el, percentage, transparencySignature)) {
                 return;
             }
@@ -2407,14 +3614,27 @@ function updateTransparency(value, options = {}) {
                     existingBackground.includes('radial') ||
                     existingBackground.includes('linear'));
 
+            const isSocialRouteSurface = document.body.classList.contains('lux-route-social');
+            const keepSocialFadeCss = shouldKeepSocialFadeCssBackground(el);
+            const keepAdminLibraryFadeCss = shouldKeepAdminLibraryFadeCssBackground(el);
+            // Real social surfaces now frost like admin-tools; only layout
+            // wrappers (non-paint surfaces) keep blur suppressed.
+            const suppressBlur = isSocialRouteSurface &&
+                shouldApplyDynamicBackground(el) &&
+                !isSocialPaintSurface(el) &&
+                !isSocialBlurHost(el);
+            const backdropValue = (suppressBlur || keepSocialFadeCss || keepAdminLibraryFadeCss)
+                ? 'none'
+                : `blur(${blurAmount}px) saturate(${saturateAmount}%)`;
+
             if (hasComplexBackground) {
                 // For elements with CSS gradients: apply backdrop-filter AND override background with dynamic alpha
-                el.style.setProperty('backdrop-filter', `blur(${blurAmount}px) saturate(${saturateAmount}%)`, 'important');
-                el.style.setProperty('-webkit-backdrop-filter', `blur(${blurAmount}px) saturate(${saturateAmount}%)`, 'important');
+                el.style.setProperty('backdrop-filter', backdropValue, 'important');
+                el.style.setProperty('-webkit-backdrop-filter', backdropValue, 'important');
 
                 // CRITICAL FIX: Override hardcoded gradient backgrounds with dynamic alpha
                 // This handles .lux-card and similar elements that use hardcoded alpha values
-                if (shouldApplyDynamicBackground(el)) {
+                if (shouldApplyDynamicBackground(el) && !keepSocialFadeCss && !keepAdminLibraryFadeCss) {
                     if (isLightMode) {
                         // Light mode: warm cream gradient with dynamic alpha
                         el.style.setProperty('background',
@@ -2429,13 +3649,21 @@ function updateTransparency(value, options = {}) {
                 }
             } else {
                 // For simple elements: apply blur only, let CSS handle backgrounds
-                el.style.setProperty('backdrop-filter', `blur(${blurAmount}px) saturate(${saturateAmount}%)`, 'important');
-                el.style.setProperty('-webkit-backdrop-filter', `blur(${blurAmount}px) saturate(${saturateAmount}%)`, 'important');
+                el.style.setProperty('backdrop-filter', backdropValue, 'important');
+                el.style.setProperty('-webkit-backdrop-filter', backdropValue, 'important');
                 if (
-                    registrationGlassClasses.some(className => el.classList.contains(className)) ||
-                    schedulerGlassClasses.some(className => el.classList.contains(className)) ||
-                    lmsGlassClasses.some(className => el.classList.contains(className)) ||
-                    shouldApplyDynamicBackground(el)
+                    !keepSocialFadeCss &&
+                    !keepAdminLibraryFadeCss &&
+                    (
+                        registrationGlassClasses.some(className => el.classList.contains(className)) ||
+                        (document.body.classList.contains('lux-route-admin-scheduler') && Boolean(el.closest?.('#page-admin-scheduler')) && (
+                            schedulerGlassClasses.some(className => el.classList.contains(className)) ||
+                            ((el.tagName === 'SELECT' || el.tagName === 'INPUT') &&
+                                el.closest?.('.sch-control-group, .sch-board-toolbar-row, .sch-search-shell, .sch-modal'))
+                        )) ||
+                        lmsGlassClasses.some(className => el.classList.contains(className)) ||
+                        shouldApplyDynamicBackground(el)
+                    )
                 ) {
                     if (isLightMode) {
                         el.style.setProperty('background',
@@ -2462,14 +3690,23 @@ function updateTransparency(value, options = {}) {
     // Store current percentage for MutationObserver
     window.__currentTransparency = percentage;
 
-    // FOUC PREVENTION: Now that all inline backgrounds are applied correctly,
-    // remove the pending class so cards become visible with correct backgrounds.
-    document.documentElement.classList.remove('lux-transparency-pending');
+    // FOUC PREVENTION: Only remove the pending class if surfaces were actually styled.
+    // If no surfaces exist yet, keep the class — the MutationObserver will catch
+    // newly added surfaces and trigger updateTransparency() again.
+    if (surfaceElements.length > 0) {
+        document.documentElement.classList.remove('lux-transparency-pending');
+    }
 }
 
 /**
  * Set up MutationObserver to apply transparency to dynamically added elements
  */
+function isLuxTransparencyExemptSubtree(node) {
+    if (!node || node.nodeType !== Node.ELEMENT_NODE) return false;
+    if (node.closest && node.closest('[data-lux-transparency-exempt="1"]')) return true;
+    return false;
+}
+
 function setupTransparencyObserver() {
     if (window.__transparencyObserver) return; // Already set up
 
@@ -2483,6 +3720,7 @@ function setupTransparencyObserver() {
         for (const mutation of mutations) {
             for (const node of mutation.addedNodes) {
                 if (node.nodeType !== Node.ELEMENT_NODE) continue;
+                if (isLuxTransparencyExemptSubtree(node)) continue;
                 if (
                     (node.matches && node.matches(SHARED_TRANSPARENCY_OBSERVER_SELECTOR)) ||
                     (node.querySelector && node.querySelector(SHARED_TRANSPARENCY_OBSERVER_SELECTOR))
@@ -2534,14 +3772,14 @@ function setupTransparencyObserver() {
  */
 function setTransparency(mode) {
     if (mode === 'on') {
-        updateTransparency(70); // Default to 70%
+        updateTransparency(13); // Default to 13%
     } else {
         updateTransparency(0);
     }
 }
 
 function refreshLuxuryTransparencySurfaces(value, options = {}) {
-    const savedValue = value ?? localStorage.getItem('kiuLuxurySurfaceTransparency') ?? window.__currentTransparency ?? 70;
+    const savedValue = value ?? localStorage.getItem('kiuLuxurySurfaceTransparency') ?? window.__currentTransparency ?? 13;
     const percentage = parseInt(savedValue, 10);
     if (!Number.isFinite(percentage)) return;
     const scopedRoots = normalizeTransparencyRoots(options?.roots);
@@ -2551,14 +3789,18 @@ function refreshLuxuryTransparencySurfaces(value, options = {}) {
     collectTransparencySurfaceElements(['[data-lux-transparency-signature]'], scopedRoots).forEach((el) => {
         delete el.dataset.luxTransparencySignature;
     });
-    updateTransparency(percentage, { force: true, roots: scopedRoots });
+    updateTransparency(percentage, { force: true, persist: false, roots: scopedRoots });
 }
 
 function queueLuxuryTransparencyRefresh(value, options = {}) {
+    const run = () => refreshLuxuryTransparencySurfaces(value, options);
+    if (typeof window.__kiuQueueLuxuryRefreshOperation === 'function') {
+        window.__kiuQueueLuxuryRefreshOperation(run);
+        return;
+    }
     window.clearTimeout(window.__luxTransparencyPaletteRefreshTimer);
     window.__luxTransparencyPaletteRefreshTimer = window.setTimeout(() => {
         window.__luxTransparencyPaletteRefreshTimer = null;
-        const run = () => refreshLuxuryTransparencySurfaces(value, options);
         if (typeof window.requestAnimationFrame === 'function') {
             window.requestAnimationFrame(run);
         } else {
@@ -2567,10 +3809,23 @@ function queueLuxuryTransparencyRefresh(value, options = {}) {
     }, 0);
 }
 
+function scheduleLuxuryTransparencyBootRefresh(value) {
+    const refresh = () => queueLuxuryTransparencyRefresh(value, { persist: false });
+    refresh();
+    window.clearTimeout(window.__luxTransparencyBootRefreshTimer);
+    window.__luxTransparencyBootRefreshTimer = window.setTimeout(() => {
+        window.__luxTransparencyBootRefreshTimer = null;
+        refresh();
+    }, 240);
+}
+
 window.updateTransparency = updateTransparency;
 window.refreshLuxuryTransparencySurfaces = refreshLuxuryTransparencySurfaces;
 window.queueLuxuryTransparencyRefresh = queueLuxuryTransparencyRefresh;
+window.scheduleLuxuryTransparencyBootRefresh = scheduleLuxuryTransparencyBootRefresh;
 window.buildLuxuryTransparencyModel = buildLuxuryTransparencyModel;
+window.mapLuxuryTransparencyFillRatio = mapLuxuryTransparencyFillRatio;
+window.clampLuxuryTransparencyPercentage = clampLuxuryTransparencyPercentage;
 
 /**
  * Initialize palette on page load
@@ -2594,10 +3849,14 @@ function initPalette() {
             }
             window.syncAll();
             setupTransparencyObserver();
+            // Safety: ensure lux-transparency-pending is removed even if observer never fires
+            setTimeout(() => {
+                document.documentElement.classList.remove('lux-transparency-pending');
+            }, 2000);
             const syncedTransparency = localStorage.getItem('kiuLuxurySurfaceTransparency');
-            if (syncedTransparency && typeof window.updateTransparency === 'function') {
+            if (syncedTransparency && typeof window.scheduleLuxuryTransparencyBootRefresh === 'function') {
                 const percentage = parseInt(syncedTransparency, 10);
-                window.updateTransparency(percentage);
+                window.scheduleLuxuryTransparencyBootRefresh(percentage);
                 const slider = document.getElementById('transparency-slider');
                 if (slider) {
                     slider.value = percentage;
@@ -2614,12 +3873,16 @@ function initPalette() {
 
         // Set up MutationObserver for dynamic content
         setupTransparencyObserver();
+        // Safety: ensure lux-transparency-pending is removed even if observer never fires
+        setTimeout(() => {
+            document.documentElement.classList.remove('lux-transparency-pending');
+        }, 2000);
 
         // Restore transparency mode
         const savedTransparency = localStorage.getItem('kiuLuxurySurfaceTransparency');
         if (savedTransparency) {
             const percentage = parseInt(savedTransparency);
-            updateTransparency(percentage);
+            scheduleLuxuryTransparencyBootRefresh(percentage);
 
             // Update slider position if it exists
             const slider = document.getElementById('transparency-slider');
@@ -2648,9 +3911,17 @@ window.addEventListener('load', function() {
         var _pct = parseInt(_saved, 10);
         if (_pct > 0) {
             setTimeout(function() {
-                updateTransparency(_pct);
+                scheduleLuxuryTransparencyBootRefresh(_pct);
             }, 50);
         }
+    }
+});
+
+window.addEventListener('pageshow', function() {
+    var _saved = localStorage.getItem('kiuLuxurySurfaceTransparency');
+    var _pct = parseInt(_saved || window.__currentTransparency || '13', 10);
+    if (_pct > 0) {
+        scheduleLuxuryTransparencyBootRefresh(_pct);
     }
 });
 
@@ -2665,5 +3936,3 @@ function formatLmsDateTime(value) {
     const normalized = String(value).replace('T', ' ');
     return normalized.length > 16 ? normalized.slice(0, 16) : normalized;
 }
-
-

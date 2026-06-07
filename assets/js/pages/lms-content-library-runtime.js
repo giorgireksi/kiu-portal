@@ -178,13 +178,15 @@ function renderLmsWeekManager(resourceKey) {
     const weeks = ensureLmsWeeksForKey(resourceKey);
     if (!canManageLmsGroupContent()) {
         return upgradeLmsLegacyMarkup(`
-            <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:18px; padding:16px 18px; background:var(--lux-surface); border:1px solid var(--kiu-border); border-radius:18px; box-shadow:0 14px 32px rgba(15,23,42,0.05);">
+            <div class="lms-route-panel lms-week-manager-shell">
+                <div class="lms-route-card-head lms-week-manager-shell-head">
                 <div>
-                    <div style="font-size:15px; font-weight:800; color:var(--kiu-navy);">Manage Weeks</div>
-                    <div style="font-size:12px; color:var(--kiu-text-muted); margin-top:4px;">This group follows ${weeks.length} teaching week${weeks.length === 1 ? '' : 's'} for materials, concepts, and assignments.</div>
+                    <div class="lms-route-card-title">Manage Weeks</div>
+                    <div class="lms-route-copy lms-route-copy-mt-4 lms-week-manager-shell-copy">This group follows ${weeks.length} teaching week${weeks.length === 1 ? '' : 's'} for materials, concepts, and assignments.</div>
                 </div>
-                <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                <div class="lms-route-actions lms-week-manager-shell-actions">
                     ${weeks.map(week => `<span class="portal-msg-mini-badge">${escapeHtml(week)}</span>`).join('')}
+                </div>
                 </div>
             </div>
         `);
@@ -192,25 +194,25 @@ function renderLmsWeekManager(resourceKey) {
     const token = toDomToken(resourceKey);
     const inputId = `lms-week-manager-input-${token}`;
     return upgradeLmsLegacyMarkup(`
-        <div style="margin-bottom:18px; padding:18px; background:var(--lux-surface); border:1px solid var(--kiu-border); border-radius:18px; box-shadow:0 14px 32px rgba(15,23,42,0.05);">
-            <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:14px; flex-wrap:wrap; margin-bottom:12px;">
+        <div class="lms-route-panel lms-week-manager-shell">
+            <div class="lms-route-card-head lms-week-manager-shell-head">
                 <div>
-                    <div style="font-size:16px; font-weight:800; color:var(--kiu-navy);"><i class="fas fa-calendar-week"></i> Manage Weeks</div>
-                    <div style="font-size:12px; color:var(--kiu-text-muted); margin-top:4px;">Every group starts with 14 default weeks. Professors, TAs, and admins can add extra weeks or remove weeks when the course format changes.</div>
+                    <div class="lms-route-card-title"><i class="fas fa-calendar-week"></i> Manage Weeks</div>
+                    <div class="lms-route-copy lms-route-copy-mt-4 lms-week-manager-shell-copy">Every group starts with 14 default weeks. Professors, TAs, and admins can add extra weeks or remove weeks when the course format changes.</div>
                 </div>
-                <div style="font-size:12px; color:var(--kiu-text-muted);">${weeks.length} configured week${weeks.length === 1 ? '' : 's'}</div>
+                <div class="lms-route-copy lms-week-manager-shell-count">${weeks.length} configured week${weeks.length === 1 ? '' : 's'}</div>
             </div>
-            <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px;">
+            <div class="lms-week-manager-chip-row">
                 ${weeks.map(week => `
-                    <button type="button" class="kiu-btn-outline" style="padding:8px 10px; display:inline-flex; align-items:center; gap:8px;" data-lms-click="removeLmsWeek('${resourceKey}', '${String(week).replace(/\\/g, '\\\\').replace(/'/g, "\\'")}')">
-                        <span>${escapeHtml(week)}</span>
-                        <i class="fas fa-times" style="color:var(--kiu-red);"></i>
+                    <button type="button" class="kiu-btn-outline lms-week-manager-chip-btn" data-lms-click="removeLmsWeek('${resourceKey}', '${String(week).replace(/\\/g, '\\\\').replace(/'/g, "\\'")}')">
+                        <span class="lms-week-manager-chip-label">${escapeHtml(week)}</span>
+                        <i class="fas fa-times lms-week-manager-chip-remove"></i>
                     </button>
                 `).join('')}
             </div>
-            <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                <input id="${inputId}" type="text" placeholder="Add custom week label (e.g. Week 15, Exam Review Week)" style="flex:1; min-width:260px; border:1px solid var(--kiu-border); padding:10px 12px; border-radius:12px; outline:none;">
-                <button class="kiu-btn-blue" data-lms-click="addLmsWeek('${resourceKey}', '${inputId}')"><i class="fas fa-plus"></i> Add Week</button>
+            <div class="lms-week-manager-input-row">
+                <input id="${inputId}" type="text" placeholder="Add custom week label (e.g. Week 15, Exam Review Week)" class="lms-week-manager-control">
+                <button class="kiu-btn-blue lms-week-manager-input-action" data-lms-click="addLmsWeek('${resourceKey}', '${inputId}')"><i class="fas fa-plus"></i> Add Week</button>
             </div>
         </div>
     `);
@@ -227,21 +229,21 @@ function openLmsWeekManagerModal(resourceKey) {
 
     const overlay = document.createElement('div');
     overlay.id = 'lms-week-manager-modal';
-    overlay.style.cssText = 'position:fixed; inset:0; z-index:7100; background:rgba(15,23,42,0.72); backdrop-filter:blur(6px); display:flex; align-items:center; justify-content:center; padding:24px;';
+    overlay.className = 'lms-quiz-board-overlay lms-week-manager-overlay';
     overlay.onclick = (event) => {
         if (event.target === overlay) closeLmsWeekManagerModal();
     };
 
     overlay.innerHTML = upgradeLmsLegacyMarkup(`
-        <div style="width:min(980px, 100%); max-height:90vh; overflow:auto; background:var(--lux-bg-soft); border:1px solid rgba(255,255,255,0.2); border-radius:24px; box-shadow:0 28px 80px rgba(15,23,42,0.35);">
-            <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:16px; padding:22px 24px; background:linear-gradient(135deg, var(--kiu-navy), var(--kiu-blue)); color:#fff;">
-                <div>
-                    <div style="font-size:20px; font-weight:900;">Week Manager</div>
-                    <div style="font-size:12px; opacity:0.9; margin-top:4px;">Add, remove, and reorder weeks for the active teaching group.</div>
+        <div class="lms-quiz-board-modal lms-week-manager-modal lms-week-manager-modal-shell">
+            <div class="lms-quiz-board-head lms-week-manager-modal-head">
+                <div class="lms-quiz-board-head-copy lms-week-manager-modal-head-copy">
+                    <div class="lms-quiz-board-title lms-week-manager-modal-title">Week Manager</div>
+                    <div class="lms-quiz-board-copy lms-week-manager-modal-copy">Add, remove, and reorder weeks for the active teaching group.</div>
                 </div>
-                <button class="kiu-btn-outline" data-lms-click="closeLmsWeekManagerModal()" style="border-color:rgba(255,255,255,0.35); color:#fff; background:rgba(255,255,255,0.08);"><i class="fas fa-times"></i> Close</button>
+                <button class="kiu-btn-outline lms-quiz-board-close-btn lms-week-manager-modal-close-btn" data-lms-click="closeLmsWeekManagerModal()"><i class="fas fa-times"></i> Close</button>
             </div>
-            <div id="lms-week-manager-modal-body" style="padding:24px;">${renderLmsWeekManager(resourceKey)}</div>
+            <div id="lms-week-manager-modal-body" class="lms-quiz-board-body lms-week-manager-modal-body">${renderLmsWeekManager(resourceKey)}</div>
         </div>
     `);
     document.body.appendChild(overlay);
@@ -316,6 +318,13 @@ function computeLmsConceptScoreSummary(resourceKey, conceptId) {
     };
 }
 
+function getLmsConceptReviewPillClass(reviewStatus = '') {
+    const normalized = String(reviewStatus || '').trim().toLowerCase();
+    if (normalized === 'approved') return 'is-approved';
+    if (normalized === 'revision') return 'is-revision';
+    return 'is-pending';
+}
+
 function canUploadLmsConcepts() {
     return Boolean(getCurrentUser());
 }
@@ -346,35 +355,35 @@ function renderLmsConceptsLibrary(courseId) {
     let html = `
         <div class="lms-route-stack">
 
-            <div class="lms-route-panel" style="padding:16px 20px;">
+            <div class="lms-route-panel">
                 <div class="lms-route-card-head">
-                    <div style="display:flex;align-items:center;gap:12px;">
-                        <i class="fas fa-lightbulb" style="font-size:18px;color:var(--lux-accent-2);"></i>
+                    <div class="lms-concepts-head-main">
+                        <i class="fas fa-lightbulb lms-concepts-head-icon"></i>
                         <div>
                             <div class="lms-route-card-title">Concepts</div>
-                            <div class="lms-route-copy" style="margin-top:4px;">${concepts.length} notes &middot; ${ensureLmsWeeksForKey(resourceKey).length} weeks</div>
+                            <div class="lms-route-copy lms-route-copy-mt-4">${concepts.length} notes &middot; ${ensureLmsWeeksForKey(resourceKey).length} weeks</div>
                         </div>
                     </div>
-                    <div style="display:flex;gap:8px;flex-wrap:wrap;">
-                        ${canManage ? '<button class="kiu-btn-outline" data-lms-click="openLmsWeekManagerModal(&#39;' + resourceKey + '&#39;)" style="padding:8px 14px;font-size:12px;"><i class="fas fa-calendar-week"></i> Manage Weeks</button>' : ''}
+                    <div class="lms-concepts-head-actions">
+                        ${canManage ? '<button class="kiu-btn-outline lms-concepts-action-btn" data-lms-click="openLmsWeekManagerModal(&#39;' + resourceKey + '&#39;)"><i class="fas fa-calendar-week"></i> Manage Weeks</button>' : ''}
                     </div>
                 </div>
             </div>
             <div class="lms-route-card-grid">
                 <div class="lms-route-panel">
                     <div class="lms-route-card-title">Concept Leaderboard</div>
-                    <div class="lms-route-copy" style="margin-top:6px;">Peer scoring stays between 5 and 10 so the clearest concepts rise to the top.</div>
-                    <div class="lms-route-stack" style="margin-top:16px; gap:12px;">
+                    <div class="lms-route-copy lms-route-copy-mt-6">Peer scoring stays between 5 and 10 so the clearest concepts rise to the top.</div>
+                    <div class="lms-concept-leader-list">
                         ${leaderboard.length ? leaderboard.slice(0, 3).map((entry, index) => `
-                            <div class="lms-route-kv" style="${index === 0 ? 'background:rgba(var(--lux-accent-rgb),0.12);' : ''}">
-                                <div style="display:flex; justify-content:space-between; gap:12px; align-items:flex-start;">
+                            <div class="lms-route-card lms-route-panel-compact lms-concept-leader-item${index === 0 ? ' is-featured' : ''}">
+                                <div class="lms-concept-leader-head">
                                     <div>
-                                        <div class="lms-route-card-title" style="font-size:15px;">${escapeHtml(entry.concept.title || 'Untitled concept')}</div>
-                                        <div class="lms-route-meta" style="font-size:12px; margin-top:6px;">${joinLmsMeta([getLmsConceptAuthorDisplay(entry.concept, currentUserId), getLmsWeekLabel(entry.concept.weekLabel)])}</div>
+                                        <div class="lms-route-card-title lms-concept-leader-title">${escapeHtml(entry.concept.title || 'Untitled concept')}</div>
+                                        <div class="lms-route-meta lms-concept-leader-meta">${joinLmsMeta([getLmsConceptAuthorDisplay(entry.concept, currentUserId), getLmsWeekLabel(entry.concept.weekLabel)])}</div>
                                     </div>
-                                    <div style="text-align:right;">
-                                        <div class="lms-route-card-title" style="font-size:20px; color:var(--lux-accent);">${entry.count ? entry.average.toFixed(1) : 'No ratings'}</div>
-                                        <div class="lms-route-meta" style="font-size:11px;">${entry.count} vote${entry.count === 1 ? '' : 's'}</div>
+                                    <div class="lms-concept-leader-score">
+                                        <div class="lms-route-card-title lms-concept-leader-score-value">${entry.count ? entry.average.toFixed(1) : 'No ratings'}</div>
+                                        <div class="lms-route-meta lms-concept-leader-score-meta">${entry.count} vote${entry.count === 1 ? '' : 's'}</div>
                                     </div>
                                 </div>
                             </div>
@@ -383,11 +392,11 @@ function renderLmsConceptsLibrary(courseId) {
                 </div>
                 <div class="lms-route-panel">
                     <div class="lms-route-card-title">How Concepts Work</div>
-                    <div class="lms-route-copy" style="margin-top:6px;">This tab uses the same transparent route surfaces as the rest of LMS instead of the old white boxes.</div>
-                    <div class="lms-route-stack" style="margin-top:16px; gap:10px;">
-                        <div class="lms-route-kv"><div class="lms-route-kv-label">Week-linked or general</div><div class="lms-route-copy" style="margin-top:6px;">Attach concepts to a week or leave them under the general section.</div></div>
-                        <div class="lms-route-kv"><div class="lms-route-kv-label">Anonymous mode</div><div class="lms-route-copy" style="margin-top:6px;">Students can hide their name from classmates while staff still sees the correct author.</div></div>
-                        <div class="lms-route-kv"><div class="lms-route-kv-label">Peer scoring</div><div class="lms-route-copy" style="margin-top:6px;">Members rate concepts from 5 to 10 to surface the strongest explanations.</div></div>
+                    <div class="lms-route-copy lms-route-copy-mt-6">This tab uses the same transparent route surfaces as the rest of LMS instead of the old white boxes.</div>
+                    <div class="lms-route-card-grid lms-route-stack-mt-16">
+                        <div class="lms-route-card lms-route-panel-compact lms-concept-guidance-card"><div class="lms-route-kv-label">Week-linked or general</div><div class="lms-route-copy lms-route-copy-mt-6">Attach concepts to a week or leave them under the general section.</div></div>
+                        <div class="lms-route-card lms-route-panel-compact lms-concept-guidance-card"><div class="lms-route-kv-label">Anonymous mode</div><div class="lms-route-copy lms-route-copy-mt-6">Students can hide their name from classmates while staff still sees the correct author.</div></div>
+                        <div class="lms-route-card lms-route-panel-compact lms-concept-guidance-card"><div class="lms-route-kv-label">Peer scoring</div><div class="lms-route-copy lms-route-copy-mt-6">Members rate concepts from 5 to 10 to surface the strongest explanations.</div></div>
                     </div>
                 </div>
             </div>
@@ -395,10 +404,10 @@ function renderLmsConceptsLibrary(courseId) {
     if (canUpload) {
         html += `
             <div class="lms-route-panel">
-                <div class="lms-route-card-head" style="margin-bottom:16px;">
+                <div class="lms-route-card-head lms-route-card-head-mb-16">
                     <div>
                         <div class="lms-route-card-title"><i class="fas fa-lightbulb"></i> Share a Concept</div>
-                        <div class="lms-route-copy" style="margin-top:6px;">Upload a simplified explanation, staff note, weekly summary, or helpful concept file for this group.</div>
+                        <div class="lms-route-copy lms-route-copy-mt-6">Upload a simplified explanation, staff note, weekly summary, or helpful concept file for this group.</div>
                     </div>
                     <div id="${fileLabelId}" class="lms-route-pill">No concept file selected</div>
                 </div>
@@ -414,17 +423,17 @@ function renderLmsConceptsLibrary(courseId) {
                         </select>
                     </div>
                 </div>
-                <div class="lms-route-field" style="margin-top:14px;">
+                <div class="lms-route-field lms-route-field-mt-14">
                     <label class="lms-route-field-label" for="new-concept-summary">Summary</label>
                     <textarea id="new-concept-summary" class="lms-route-textarea" placeholder="Explain the concept in an easier way, add solved examples, shortcuts, or learning tips..."></textarea>
                 </div>
                 ${getEffectiveUserRole() === USER_ROLES.STUDENT ? `
-                    <label style="display:flex; align-items:center; gap:8px; font-size:13px; color:var(--lux-text); margin-top:14px;">
+                    <label class="lms-concept-form-toggle">
                         <input type="checkbox" id="new-concept-anonymous">
                         Hide my name from other students in this group
                     </label>
                 ` : ''}
-                <div class="lms-route-actions" style="margin-top:16px;">
+                <div class="lms-route-actions lms-route-actions-mt-16">
                     <button class="kiu-btn-outline" data-lms-click="pickLocalLmsFile('concept', '${resourceKey}', '${fileLabelId}')"><i class="fas fa-paperclip"></i> Attach File</button>
                     <button class="kiu-btn-blue" data-lms-click="createLmsConcept('${resourceKey}')"><i class="fas fa-plus"></i> Publish Concept</button>
                 </div>
@@ -435,7 +444,7 @@ function renderLmsConceptsLibrary(courseId) {
     const groupedConcepts = groupLmsItemsByWeek(resourceKey, concepts, concept => concept.weekLabel, true);
     html += groupedConcepts.length ? groupedConcepts.map(([weekLabel, weekConcepts], index) => {
         const body = weekConcepts.length ? `
-            <div class="lms-route-stack" style="gap:16px;">
+            <div class="lms-route-stack lms-route-stack-gap-16">
                 ${weekConcepts.map(concept => {
                     const score = computeLmsConceptScoreSummary(resourceKey, concept.id);
                     const ratings = getLmsConceptRatings(resourceKey, concept.id);
@@ -444,45 +453,40 @@ function renderLmsConceptsLibrary(courseId) {
                     const canDelete = canManage || String(concept.authorId || '') === currentUserId;
                     const canRate = currentUserId && String(concept.authorId || '') !== currentUserId;
                     const reviewLabel = concept.reviewStatus === 'approved' ? 'Reviewed' : concept.reviewStatus === 'revision' ? 'Needs correction' : 'Pending review';
-                    const reviewTone = concept.reviewStatus === 'approved'
-                        ? 'rgba(16,185,129,0.12); color:#34d399; border-color:rgba(16,185,129,0.22);'
-                        : concept.reviewStatus === 'revision'
-                            ? 'rgba(245,158,11,0.12); color:#fbbf24; border-color:rgba(245,158,11,0.22);'
-                            : 'rgba(var(--lux-accent-rgb),0.08); color:var(--lux-accent); border-color:rgba(var(--lux-accent-rgb),0.16);';
                     return `
-                        <div class="lms-route-card">
-                            <div class="lms-route-card-head">
+                        <div class="lms-route-card lms-route-panel-compact lms-concept-card">
+                            <div class="lms-route-card-head lms-concept-card-head">
                                 <div>
                                     <div class="lms-route-card-title">${escapeHtml(concept.title || 'Untitled concept')}</div>
-                                    <div class="lms-route-meta" style="font-size:12px; margin-top:6px;">${joinLmsMeta([`Shared by ${showAuthor}`, formatLmsDateTime(concept.createdAt)])}</div>
+                                    <div class="lms-route-meta lms-route-meta-12 lms-route-copy-mt-6">${joinLmsMeta([`Shared by ${showAuthor}`, formatLmsDateTime(concept.createdAt)])}</div>
                                 </div>
-                                <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                                <div class="lms-concept-status-row">
                                     ${concept.pinned ? '<span class="lms-route-pill"><i class="fas fa-thumbtack"></i> Pinned</span>' : ''}
-                                    <span class="lms-route-pill" style="background:${reviewTone}">${escapeHtml(reviewLabel)}</span>
-                                    <span class="lms-route-pill" style="background:rgba(var(--lux-accent-rgb),0.12); color:var(--lux-accent); border-color:rgba(var(--lux-accent-rgb),0.18);">${score.count ? `${score.average.toFixed(1)} / 10` : 'Not rated yet'}</span>
-                                    <span class="lms-route-meta" style="font-size:12px;">${score.count} vote${score.count === 1 ? '' : 's'}</span>
-                                    ${canDelete ? `<button class="kiu-btn-outline" style="padding:7px 10px; color:var(--lux-red); border-color:rgba(220,38,38,0.18);" data-lms-click="deleteLmsConcept('${resourceKey}', '${concept.id}')"><i class="fas fa-trash"></i></button>` : ''}
+                                    <span class="lms-route-pill lms-concept-review-pill ${getLmsConceptReviewPillClass(concept.reviewStatus)}">${escapeHtml(reviewLabel)}</span>
+                                    <span class="lms-route-pill is-positive">${score.count ? `${score.average.toFixed(1)} / 10` : 'Not rated yet'}</span>
+                                    <span class="lms-route-meta lms-route-meta-12">${score.count} vote${score.count === 1 ? '' : 's'}</span>
+                                    ${canDelete ? `<button class="kiu-btn-outline lms-route-btn-compact lms-route-btn-compact-square lms-route-btn-danger" data-lms-click="deleteLmsConcept('${resourceKey}', '${concept.id}')"><i class="fas fa-trash"></i></button>` : ''}
                                 </div>
                             </div>
-                            <div class="lms-route-copy" style="margin-top:14px; white-space:pre-wrap;">${escapeHtml(concept.summary || 'No summary added.')}</div>
-                            ${concept.file ? `
-                                <div class="lms-route-kv" style="margin-top:14px;">
-                                    <div class="lms-route-kv-label">Attached File</div>
-                                    <div class="lms-route-card-title" style="font-size:15px; margin-top:6px;">${escapeHtml(concept.file.name || 'Concept file')}</div>
-                                    <div class="lms-route-actions" style="margin-top:12px;">${getStoredFileDownloadHtml(concept.file, 'Download concept file')}</div>
-                                </div>
-                            ` : ''}
-                            <div style="display:flex; justify-content:space-between; gap:14px; flex-wrap:wrap; margin-top:16px; align-items:flex-start;">
-                                <div class="lms-route-meta" style="font-size:12px;">This concept is ranked inside this LMS group only.</div>
-                                <div class="lms-route-actions">
+                            <div class="lms-route-copy lms-route-copy-mt-14 lms-route-copy-prewrap">${escapeHtml(concept.summary || 'No summary added.')}</div>
+                            ${concept.file ? renderLmsStoredFileAttachmentShell(concept.file, {
+                                label: 'Attached File',
+                                title: concept.file.name || 'Concept file',
+                                downloadLabel: 'Download concept file'
+                            }) : ''}
+                            <div class="lms-concept-card-footer">
+                                <div class="lms-concept-card-footer-copy lms-route-meta lms-route-meta-12">This concept is ranked inside this LMS group only.</div>
+                                <div class="lms-concept-card-footer-actions">
                                     ${canManage ? `
-                                        <button class="kiu-btn-outline" data-lms-click="updateLmsConceptReview('${resourceKey}', '${concept.id}', 'approved')"><i class="fas fa-check"></i> Approve</button>
-                                        <button class="kiu-btn-outline" data-lms-click="updateLmsConceptReview('${resourceKey}', '${concept.id}', 'revision')"><i class="fas fa-rotate"></i> Revision</button>
-                                        <button class="kiu-btn-outline" data-lms-click="toggleLmsConceptPinned('${resourceKey}', '${concept.id}')"><i class="fas fa-thumbtack"></i> ${concept.pinned ? 'Unpin' : 'Pin'}</button>
+                                        <div class="lms-concept-review-actions">
+                                            <button class="kiu-btn-outline" data-lms-click="updateLmsConceptReview('${resourceKey}', '${concept.id}', 'approved')"><i class="fas fa-check"></i> Approve</button>
+                                            <button class="kiu-btn-outline" data-lms-click="updateLmsConceptReview('${resourceKey}', '${concept.id}', 'revision')"><i class="fas fa-rotate"></i> Revision</button>
+                                            <button class="kiu-btn-outline" data-lms-click="toggleLmsConceptPinned('${resourceKey}', '${concept.id}')"><i class="fas fa-thumbtack"></i> ${concept.pinned ? 'Unpin' : 'Pin'}</button>
+                                        </div>
                                     ` : ''}
                                     ${canRate ? [5, 6, 7, 8, 9, 10].map(value => `
-                                        <button class="${currentVote === value ? 'kiu-btn-blue' : 'kiu-btn-outline'}" style="padding:7px 10px; min-width:42px;" data-lms-click="rateLmsConcept('${resourceKey}', '${concept.id}', ${value})">${value}</button>
-                                    `).join('') : `<span class="lms-route-meta" style="font-size:12px;">${String(concept.authorId || '') === currentUserId ? 'You cannot rate your own concept.' : 'Login required to rate.'}</span>`}
+                                        <button class="${currentVote === value ? 'kiu-btn-blue' : 'kiu-btn-outline'} lms-concept-rate-btn" data-lms-click="rateLmsConcept('${resourceKey}', '${concept.id}', ${value})">${value}</button>
+                                    `).join('') : `<span class="lms-concept-rating-note lms-route-meta lms-route-meta-12">${String(concept.authorId || '') === currentUserId ? 'You cannot rate your own concept.' : 'Login required to rate.'}</span>`}
                                 </div>
                             </div>
                         </div>

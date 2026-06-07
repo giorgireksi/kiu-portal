@@ -11,15 +11,17 @@ describe('students admin LMS route replacement', () => {
     const html = readSource('students-admin.html');
     const source = readSource('assets/js/pages/students-admin-lms.js');
 
-    expect(html).toContain('assets/css/students-admin-lms.css?v=20260514-studentsadmin-clean2');
-    expect(html).toContain('assets/js/pages/students-admin-lms.js?v=20260514-students-lms-clean2');
+    expect(html).toContain('assets/css/students-admin-lms.css?v=20260531-sadminglass1');
+    expect(html).toContain('assets/js/pages/students-admin-lms.js?v=20260604-studentsboot1');
     expect(html).toContain('<section id="students-content" aria-live="polite"></section>');
     expect(html).toContain('assets/js/shared/messenger.js?v=20260429-peopleisolation1');
-    expect(html).toContain('assets/js/shared/utilities.js?v=20260514-studentsadmin-clean2');
-    expect(html).toContain('assets/js/features/index-luxury.js?v=20260514-studentsadmin-clean2');
+    expect(html).toContain('assets/js/shared/utilities.js?v=20260531-sadminglass1');
+    expect(html).toContain('assets/js/features/index-luxury.js?v=20260527-studentsadmin-redesign1');
+    expect(html).toContain('window.__KIU_STANDALONE_MOBILE_SHELL_CONFIG = {');
+    expect(html).toContain("activeTarget: 'students-admin'");
+    expect(html).toContain('assets/js/pages/standalone-mobile-shell.js?v=20260520-students-admin-mobile1');
     expect(html).not.toContain('assets/js/pages/directories.js');
     expect(html).not.toContain('assets/js/pages/lms.js');
-    expect(html).not.toContain('mobile-action-sheet');
     expect(html).not.toContain('student-register-overlay');
     expect(html).not.toContain('prof-register-overlay');
     expect(source).not.toContain('students-admin-fades');
@@ -67,10 +69,13 @@ describe('students admin LMS route replacement', () => {
 
     expect(html).toContain('<script defer src="assets/js/features/index-luxury.js');
     expect(html).toContain('<script defer src="assets/js/pages/students-admin-lms.js');
+    expect(html).toContain('<nav id="mobile-bottom-nav" aria-label="Mobile navigation" hidden>');
+    expect(html).toContain('<div id="mobile-action-sheet" class="mob-sheet" hidden role="dialog" aria-modal="true">');
+    expect(css).toContain('--sadmin-fade-surface-fill');
     expect(css).toContain('var(--lux-transparency-alpha');
     expect(css).toContain('var(--lux-panel-alpha');
-    expect(css).toContain('var(--lux-transparency-blur');
     expect(css).toContain('html.lux-light-mode body.lux-route-students-admin');
+    expect(css).not.toContain('--students-lms-');
     expect(css).toContain('.students-lms-hero::before');
     expect(css).toContain('.students-lms-hero::after');
     expect(css).not.toContain('backdrop-filter: none');

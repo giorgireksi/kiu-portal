@@ -1,4 +1,7 @@
-/* Public social runtime extracted from faculty.js. */
+/* Public social runtime extracted from faculty.js.
+ * Kept as a compatibility/shared source module while tests and split-runtime
+ * contracts still verify this file directly outside the live HTML route stack.
+ */
 
 window.PUBLIC_SOCIAL_FACULTIES = window.PUBLIC_SOCIAL_FACULTIES || ['all', 'ECON', 'CS', 'LAW', 'MED', 'ARTS'];
 
@@ -354,7 +357,7 @@ function renderPublicSocialPage() {
     if (!root || !isPublicSocialRootRenderable()) return;
     const currentUser = getCurrentUser();
     if (!currentUser) {
-        root.innerHTML = `<div class="surface-card" style="padding:24px; text-align:center; color:var(--kiu-text-muted);">Sign in to use the campus social workspace.</div>`;
+        root.innerHTML = '<div class="social-empty public-social-empty"><div class="social-empty-title public-social-empty-title">Sign in to use the campus social workspace.</div></div>';
         return;
     }
 
@@ -385,14 +388,14 @@ function renderPublicSocialPage() {
                 ? KIU_STATE.publicSocialFollowers[getPublicSocialScopeKey('page', page.id)].length
                 : (Array.isArray(page.followers) ? page.followers.length : 0);
             return `
-                <button type="button" data-legacy-click="openPublicSocialEntity('page', '${escapeHtml(page.id)}')" style="text-align:left; border:1px solid ${uiState.view === 'entity' && activeEntityType === 'page' && activeEntityId === String(page.id) ? 'rgba(10,132,255,0.35)' : '#dbe5f0'}; background:${uiState.view === 'entity' && activeEntityType === 'page' && activeEntityId === String(page.id) ? 'rgba(239,246,255,0.96)' : '#ffffff'}; border-radius:18px; padding:14px; cursor:pointer;">
-                    <div style="font-size:14px; font-weight:800; color:var(--kiu-navy);">${escapeHtml(page.name)}</div>
-                    <div style="font-size:12px; color:var(--kiu-text-muted); margin-top:6px;">${escapeHtml(page.description || page.facultyName || 'Page')}</div>
-                    <div style="font-size:11px; color:var(--kiu-text-muted); margin-top:8px;">${followerCount} follower${followerCount === 1 ? '' : 's'}</div>
+                <button type="button" class="social-card public-social-page-card${uiState.view === 'entity' && activeEntityType === 'page' && activeEntityId === String(page.id) ? ' is-active' : ''}" data-legacy-click="openPublicSocialEntity('page', '${escapeHtml(page.id)}')">
+                    <div class="public-social-page-title">${escapeHtml(page.name)}</div>
+                    <div class="public-social-page-copy">${escapeHtml(page.description || page.facultyName || 'Page')}</div>
+                    <div class="public-social-page-meta">${followerCount} follower${followerCount === 1 ? '' : 's'}</div>
                 </button>
             `;
         }).join('')
-        : `<div style="padding:14px; border:1px dashed #dbe5f0; border-radius:18px; color:var(--kiu-text-muted); font-size:12px;">No pages yet. Create the first real page when you need one.</div>`;
+        : '<div class="social-empty public-social-empty"><div class="social-empty-copy public-social-empty-copy">No pages yet. Create the first real page when you need one.</div></div>';
 
     const postMarkup = visiblePosts.length
         ? visiblePosts.map(post => {
@@ -409,130 +412,130 @@ function renderPublicSocialPage() {
                 || String(post.postedById || post.authorId || '') === String(currentUser.id);
             const following = isPublicSocialFollowingTarget(scopeType, scopeId, currentUser.id);
             return `
-                <article style="background:#ffffff; border:1px solid #dbe5f0; border-radius:24px; padding:20px; box-shadow:0 16px 32px rgba(15,23,42,0.06); display:grid; gap:14px;">
-                    <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:12px; flex-wrap:wrap;">
-                        <div>
-                            <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
-                                <button type="button" data-legacy-click="openPublicSocialEntity('${scopeType}', '${escapeHtml(scopeId)}')" style="border:none; background:none; padding:0; cursor:pointer; font-size:16px; font-weight:900; color:var(--kiu-navy);">${escapeHtml(post.scopeName || post.authorName || 'Portal post')}</button>
-                                <span style="font-size:11px; color:var(--kiu-text-muted);">${escapeHtml(formatLmsDateTime(post.createdAt))}</span>
+                <article class="social-post-card public-social-post-card">
+                    <div class="public-social-post-head">
+                        <div class="public-social-post-head-main">
+                            <div class="public-social-post-title-row">
+                                <button type="button" class="public-social-scope-btn social-post-author-name" data-legacy-click="openPublicSocialEntity('${scopeType}', '${escapeHtml(scopeId)}')">${escapeHtml(post.scopeName || post.authorName || 'Portal post')}</button>
+                                <span class="social-post-meta">${escapeHtml(formatLmsDateTime(post.createdAt))}</span>
                             </div>
-                            <div style="font-size:12px; color:var(--kiu-text-muted); margin-top:4px;">
+                            <div class="public-social-post-byline">
                                 Posted by ${escapeHtml(post.postedByName || post.authorName || 'Portal user')}
                                 ${post.audienceFacultyCode && String(post.audienceFacultyCode).toLowerCase() !== 'all' ? ` for ${escapeHtml(getFacultyLabel(post.audienceFacultyCode))}` : ' for all faculties'}
                             </div>
                         </div>
-                        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-                            ${ownScope ? '' : `<button type="button" class="kiu-btn-outline" data-legacy-click="togglePublicSocialTargetFollow('${scopeType}', '${escapeHtml(scopeId)}')" style="padding:8px 12px; font-size:12px;">${following ? 'Following' : 'Follow'}</button>`}
-                            ${canDelete ? `<button type="button" class="kiu-btn-outline" data-legacy-click="deletePublicSocialPost('${escapeHtml(post.id)}')" style="padding:8px 12px; font-size:12px;"><i class="fas fa-trash"></i> Delete</button>` : ''}
+                        <div class="public-social-post-actions">
+                            ${ownScope ? '' : `<button type="button" class="kiu-btn-outline" data-legacy-click="togglePublicSocialTargetFollow('${scopeType}', '${escapeHtml(scopeId)}')">${following ? 'Following' : 'Follow'}</button>`}
+                            ${canDelete ? `<button type="button" class="kiu-btn-outline" data-legacy-click="deletePublicSocialPost('${escapeHtml(post.id)}')"><i class="fas fa-trash"></i> Delete</button>` : ''}
                         </div>
                     </div>
-                    ${post.text ? `<div style="white-space:pre-wrap; font-size:14px; line-height:1.65; color:var(--kiu-text-main);">${escapeHtml(post.text)}</div>` : ''}
-                    ${post.image?.dataUrl ? `<div><img src="${post.image.dataUrl}" alt="Post image" style="width:100%; max-height:420px; object-fit:cover; border-radius:20px; border:1px solid #dbe5f0;"></div>` : ''}
-                    <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
-                        <button type="button" class="${isLiked ? 'kiu-btn-blue' : 'kiu-btn-outline'}" data-legacy-click="togglePublicSocialLike('${escapeHtml(post.id)}')" style="padding:9px 14px; font-size:12px;"><i class="fas fa-heart"></i> ${likeCount} Like${likeCount === 1 ? '' : 's'}</button>
-                        <span style="font-size:12px; color:var(--kiu-text-muted);">${commentCount} comment${commentCount === 1 ? '' : 's'}</span>
+                    ${post.text ? `<div class="social-post-text public-social-post-text">${escapeHtml(post.text)}</div>` : ''}
+                    ${post.image?.dataUrl ? `<div class="social-post-media public-social-post-media"><img src="${post.image.dataUrl}" alt="Post image"></div>` : ''}
+                    <div class="public-social-reaction-row">
+                        <button type="button" class="${isLiked ? 'kiu-btn-blue' : 'kiu-btn-outline'}" data-legacy-click="togglePublicSocialLike('${escapeHtml(post.id)}')"><i class="fas fa-heart"></i> ${likeCount} Like${likeCount === 1 ? '' : 's'}</button>
+                        <span class="public-social-comment-count">${commentCount} comment${commentCount === 1 ? '' : 's'}</span>
                     </div>
-                    <div style="display:grid; gap:10px;">
+                    <div class="public-social-comment-list">
                         ${(post.comments || []).map(comment => `
-                            <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:16px; padding:12px 14px;">
-                                <div style="font-size:12px; font-weight:800; color:var(--kiu-navy);">${escapeHtml(comment.authorName || 'Portal user')}</div>
-                                <div style="font-size:13px; color:var(--kiu-text-main); margin-top:6px; white-space:pre-wrap;">${escapeHtml(comment.text || '')}</div>
+                            <div class="social-comment-card public-social-comment-card">
+                                <div class="social-comment-author public-social-comment-author">${escapeHtml(comment.authorName || 'Portal user')}</div>
+                                <div class="social-comment-text public-social-comment-text">${escapeHtml(comment.text || '')}</div>
                             </div>
                         `).join('')}
-                        <div style="display:flex; gap:10px; align-items:flex-start; flex-wrap:wrap;">
-                            <input id="public-social-comment-${toDomToken(post.id)}" type="text" placeholder="Add a real comment..." style="flex:1; min-width:220px; border:1px solid var(--kiu-border); border-radius:14px; padding:11px 12px; outline:none;">
-                            <button type="button" class="kiu-btn-outline" data-legacy-click="addPublicSocialComment('${escapeHtml(post.id)}')" style="padding:10px 14px; font-size:12px;">Comment</button>
+                        <div class="public-social-comment-compose">
+                            <input id="public-social-comment-${toDomToken(post.id)}" class="social-input public-social-comment-input" type="text" placeholder="Add a real comment...">
+                            <button type="button" class="kiu-btn-outline" data-legacy-click="addPublicSocialComment('${escapeHtml(post.id)}')">Comment</button>
                         </div>
                     </div>
                 </article>
             `;
         }).join('')
         : `
-            <div style="background:#ffffff; border:1px dashed #dbe5f0; border-radius:24px; padding:32px; text-align:center; color:var(--kiu-text-muted);">
-                <div style="font-size:20px; font-weight:900; color:var(--kiu-navy);">No social posts yet</div>
-                <div style="font-size:13px; margin-top:8px;">This is the real empty state. Create a page or publish the first real update when you're ready.</div>
+            <div class="social-empty public-social-empty">
+                <div class="social-empty-title public-social-empty-title">No social posts yet</div>
+                <div class="social-empty-copy public-social-empty-copy">This is the real empty state. Create a page or publish the first real update when you're ready.</div>
             </div>
         `;
 
     root.innerHTML = `
-        <div style="display:grid; grid-template-columns:minmax(0, 1.8fr) minmax(280px, 0.95fr); gap:24px;">
-            <div style="display:grid; gap:20px;">
-                <div class="surface-card" style="padding:24px;">
-                    <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:16px; flex-wrap:wrap;">
+        <div class="public-social-shell">
+            <div class="public-social-main">
+                <div class="surface-card public-social-card public-social-hero">
+                    <div class="public-social-hero-head">
                         <div>
-                            <div style="font-size:28px; font-weight:900; color:var(--kiu-navy);">${uiState.view === 'entity' && activeEntity ? escapeHtml(activeEntity.name) : 'Campus Social'}</div>
-                            <div style="font-size:13px; color:var(--kiu-text-muted); margin-top:6px;">${uiState.view === 'entity' && activeEntity ? escapeHtml(activeEntity.description || 'Real page view') : 'A real social workspace with no seeded demo content.'}</div>
+                            <div class="public-social-hero-title">${uiState.view === 'entity' && activeEntity ? escapeHtml(activeEntity.name) : 'Campus Social'}</div>
+                            <div class="public-social-hero-copy">${uiState.view === 'entity' && activeEntity ? escapeHtml(activeEntity.description || 'Real page view') : 'A real social workspace with no seeded demo content.'}</div>
                         </div>
-                        <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                            <button type="button" class="${uiState.view === 'feed' ? 'kiu-btn-blue' : 'kiu-btn-outline'}" data-legacy-click="setPublicSocialView('feed')" style="padding:10px 14px; font-size:12px;">Feed</button>
-                            <button type="button" class="${uiState.view === 'following' ? 'kiu-btn-blue' : 'kiu-btn-outline'}" data-legacy-click="setPublicSocialView('following')" style="padding:10px 14px; font-size:12px;">Following</button>
-                            ${uiState.view === 'entity' ? `<button type="button" class="kiu-btn-outline" data-legacy-click="setPublicSocialView('feed')" style="padding:10px 14px; font-size:12px;">Back to Feed</button>` : ''}
+                        <div class="public-social-hero-actions">
+                            <button type="button" class="${uiState.view === 'feed' ? 'kiu-btn-blue' : 'kiu-btn-outline'}" data-legacy-click="setPublicSocialView('feed')">Feed</button>
+                            <button type="button" class="${uiState.view === 'following' ? 'kiu-btn-blue' : 'kiu-btn-outline'}" data-legacy-click="setPublicSocialView('following')">Following</button>
+                            ${uiState.view === 'entity' ? `<button type="button" class="kiu-btn-outline" data-legacy-click="setPublicSocialView('feed')">Back to Feed</button>` : ''}
                         </div>
                     </div>
-                    <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-top:18px;">
+                    <div class="public-social-stats">
                         <div class="schedule-chip"><i class="fas fa-file-alt"></i> ${KIU_STATE.publicSocialPosts.length} post${KIU_STATE.publicSocialPosts.length === 1 ? '' : 's'}</div>
                         <div class="schedule-chip"><i class="fas fa-flag"></i> ${KIU_STATE.publicSocialPages.length} page${KIU_STATE.publicSocialPages.length === 1 ? '' : 's'}</div>
-                        <label style="display:inline-flex; align-items:center; gap:8px; font-size:12px; color:var(--kiu-text-muted); font-weight:700;">
+                        <label class="public-social-filter-label">
                             Faculty
-                            <select data-legacy-change="KIU_STATE.publicSocialUi.facultyFilter=this.value; saveState(); renderPublicSocialPage();" style="min-width:180px;">
+                            <select class="social-select" data-legacy-change="KIU_STATE.publicSocialUi.facultyFilter=this.value; saveState(); renderPublicSocialPage();">
                                 ${facultyOptions}
                             </select>
                         </label>
                     </div>
                 </div>
 
-                <div class="surface-card" style="padding:24px; display:grid; gap:14px;">
-                    <div style="font-size:18px; font-weight:900; color:var(--kiu-navy);">Create Post</div>
-                    <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
-                        <label style="display:grid; gap:6px; font-size:12px; font-weight:700; color:var(--kiu-text-muted);">
+                <div class="surface-card public-social-card">
+                    <div class="social-panel-title">Create Post</div>
+                    <div class="public-social-field-row">
+                        <label class="public-social-field">
                             Post As
-                            <select data-legacy-change="KIU_STATE.publicSocialUi.composeAs=this.value; saveState(); renderPublicSocialPage();">
+                            <select class="social-select" data-legacy-change="KIU_STATE.publicSocialUi.composeAs=this.value; saveState(); renderPublicSocialPage();">
                                 ${composeOptions}
                             </select>
                         </label>
-                        <label style="display:grid; gap:6px; font-size:12px; font-weight:700; color:var(--kiu-text-muted);">
+                        <label class="public-social-field">
                             Audience
-                            <select id="public-social-audience">
+                            <select id="public-social-audience" class="social-select">
                                 ${facultyOptions}
                             </select>
                         </label>
                     </div>
-                    <textarea id="public-social-text" placeholder="Share a real update..." style="width:100%; min-height:120px; border:1px solid var(--kiu-border); border-radius:16px; padding:14px; outline:none; resize:vertical;"></textarea>
-                    <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
-                        <div id="public-social-file-label" style="font-size:12px; color:var(--kiu-blue); font-weight:700;">${getPublicSocialDraftFile()?.name ? `<i class="fas fa-image"></i> ${escapeHtml(getPublicSocialDraftFile().name)}` : 'No image selected'}</div>
-                        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                    <textarea id="public-social-text" class="social-textarea" placeholder="Share a real update..."></textarea>
+                    <div class="public-social-file-row">
+                        <div id="public-social-file-label" class="social-file-label">${getPublicSocialDraftFile()?.name ? `<i class="fas fa-image"></i> ${escapeHtml(getPublicSocialDraftFile().name)}` : 'No image selected'}</div>
+                        <div class="public-social-post-actions">
                             <button type="button" class="kiu-btn-outline" data-legacy-click="pickPublicSocialFile()"><i class="fas fa-image"></i> Add Image</button>
                             <button type="button" class="kiu-btn-blue" data-legacy-click="createPublicSocialPost()"><i class="fas fa-paper-plane"></i> Publish</button>
                         </div>
                     </div>
                 </div>
 
-                <div style="display:grid; gap:16px;">
+                <div class="public-social-post-list">
                     ${postMarkup}
                 </div>
             </div>
 
-            <aside style="display:grid; gap:20px; align-content:start;">
-                <div class="surface-card" style="padding:24px; display:grid; gap:14px;">
+            <aside class="public-social-sidebar">
+                <div class="surface-card public-social-card">
                     <div>
-                        <div style="font-size:18px; font-weight:900; color:var(--kiu-navy);">${escapeHtml(getPublicSocialDisplayName(currentUser))}</div>
-                        <div style="font-size:12px; color:var(--kiu-text-muted); margin-top:6px;">${escapeHtml(getPortalMessengerRoleLabel(currentUser.role))} · ${escapeHtml(getFacultyLabel(normalizeFacultyCode(currentUser.facultyCode || currentUser.faculty || getCurrentFaculty(), getCurrentFaculty())))}</div>
+                        <div class="social-panel-title">${escapeHtml(getPublicSocialDisplayName(currentUser))}</div>
+                        <div class="social-panel-copy">${escapeHtml(getPortalMessengerRoleLabel(currentUser.role))} · ${escapeHtml(getFacultyLabel(normalizeFacultyCode(currentUser.facultyCode || currentUser.faculty || getCurrentFaculty(), getCurrentFaculty())))}</div>
                     </div>
-                    <button type="button" class="${uiState.view === 'entity' && activeEntityType === 'profile' && activeEntityId === currentProfileScopeId ? 'kiu-btn-blue' : 'kiu-btn-outline'}" data-legacy-click="openPublicSocialEntity('profile', '${currentProfileScopeId}')" style="padding:10px 14px; font-size:12px;">Open My Profile Feed</button>
+                    <button type="button" class="${uiState.view === 'entity' && activeEntityType === 'profile' && activeEntityId === currentProfileScopeId ? 'kiu-btn-blue' : 'kiu-btn-outline'}" data-legacy-click="openPublicSocialEntity('profile', '${currentProfileScopeId}')">Open My Profile Feed</button>
                 </div>
 
-                <div class="surface-card" style="padding:24px; display:grid; gap:14px;">
-                    <div style="font-size:18px; font-weight:900; color:var(--kiu-navy);">My Pages</div>
-                    ${pageCards}
+                <div class="surface-card public-social-card">
+                    <div class="social-panel-title">My Pages</div>
+                    <div class="public-social-page-list">${pageCards}</div>
                 </div>
 
-                <div class="surface-card" style="padding:24px; display:grid; gap:12px;">
-                    <div style="font-size:18px; font-weight:900; color:var(--kiu-navy);">Create Page</div>
-                    <input id="public-social-page-name" type="text" placeholder="Page name" style="width:100%; border:1px solid var(--kiu-border); border-radius:14px; padding:11px 12px; outline:none;">
-                    <select id="public-social-page-faculty">
+                <div class="surface-card public-social-card">
+                    <div class="social-panel-title">Create Page</div>
+                    <input id="public-social-page-name" type="text" class="social-input" placeholder="Page name">
+                    <select id="public-social-page-faculty" class="social-select">
                         ${facultyOptions}
                     </select>
-                    <textarea id="public-social-page-description" placeholder="What is this page for?" style="width:100%; min-height:96px; border:1px solid var(--kiu-border); border-radius:16px; padding:12px 14px; outline:none; resize:vertical;"></textarea>
+                    <textarea id="public-social-page-description" class="social-textarea" placeholder="What is this page for?"></textarea>
                     <button type="button" class="kiu-btn-blue" data-legacy-click="createPublicSocialPage()"><i class="fas fa-plus"></i> Create Page</button>
                 </div>
             </aside>

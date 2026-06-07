@@ -1,0 +1,21 @@
+- generic [active] [ref=e1]:
+  - text:  
+  - main [ref=e2]:
+    - generic [ref=e4]:
+      - generic [ref=e5]: 
+      - strong [ref=e6]: No profile selected.
+      - generic [ref=e7]: Open a student or staff record from the directory first.
+      - button "Go back" [ref=e9] [cursor=pointer]
+  - text:                   
+  - complementary:
+    - generic:
+      - generic: K
+      - generic:
+        - generic: KIU
+        - generic: Integrated Campus Portal
+    - generic:
+      - generic: KI
+      - generic:
+        - generic: Portal User
+        - generic: University Portal
+  - text:         

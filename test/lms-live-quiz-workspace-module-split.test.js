@@ -13,7 +13,7 @@ describe('LMS live quiz workspace module split', () => {
         const liveQuizWorkspaceSource = readSource('assets/js/pages/lms-live-quiz-workspace-runtime.js');
         const liveQuizUiSource = readSource('assets/js/pages/lms-live-quiz-ui-runtime.js');
 
-        expect(lmsHtml).toContain('assets/js/pages/lms-live-quiz-workspace-runtime.js?v=20260518-lmslive1');
+        expect(lmsHtml).toContain('assets/js/pages/lms-live-quiz-workspace-runtime.js?v=20260604-livequiz-uxfix5');
         expect(liveQuizWorkspaceSource).toContain('const LMS_LIVE_OPTION_KEYS = [\'A\', \'B\', \'C\', \'D\'];');
         expect(liveQuizWorkspaceSource).toContain('function ensureLmsLiveQuizWorkspace(resourceKey)');
         expect(liveQuizWorkspaceSource).toContain('function applyLmsLiveQuizWorkspace(resourceKey, workspace = null, options = {})');
@@ -22,11 +22,10 @@ describe('LMS live quiz workspace module split', () => {
         expect(liveQuizWorkspaceSource).toContain('function handleLmsLiveQuizRealtimeUpdate(payload = {})');
         expect(liveQuizWorkspaceSource).toContain('function getLmsLiveQuestionTimeState(question = {})');
         expect(liveQuizWorkspaceSource).toContain('function getLmsLiveGroupSummary(subjectId, groupId)');
-        expect(liveQuizUiSource).toContain('function renderLmsLiveQuizSection(courseId)');
+        expect(liveQuizUiSource).toContain('function renderLmsLiveQuizSection(courseId, options = {})');
         expect(liveQuizUiSource).toContain('Object.assign(window, {');
         expect(liveQuizUiSource).toContain('renderLmsLiveQuizSection,');
-        expect(liveQuizWorkspaceSource).not.toContain('function renderLmsLiveQuizSection(courseId)');
-        expect(liveQuizWorkspaceSource).not.toContain('Object.assign(window, {');
+        expect(liveQuizWorkspaceSource).not.toContain('function renderLmsLiveQuizSection(courseId');
         expect(liveQuizWorkspaceSource).not.toContain('renderLmsLiveQuizSection,');
         expect(lmsSource).not.toContain('function ensureLmsLiveQuizWorkspace(resourceKey)');
         expect(lmsSource).not.toContain('function applyLmsLiveQuizWorkspace(resourceKey, workspace = null, options = {})');

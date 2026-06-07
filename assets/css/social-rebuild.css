@@ -29,6 +29,8 @@
 #public-social-root textarea { cursor: text; }
 
 
+/* Social route-owned styling — single source of truth: --social-fade-* tokens */
+
 body.lux-route-social {
     --sn-r: 14px;
     --sn-r-lg: 20px;
@@ -38,38 +40,121 @@ body.lux-route-social {
     --sn-ease: .22s cubic-bezier(.4,0,.2,1);
     --sn-ease-spring: .35s cubic-bezier(.34,1.56,.64,1);
 
-    --sn-bg: rgba(var(--lux-glass-tint-rgb,16,23,38), calc(var(--lux-panel-alpha, 0.74) * 1.08));
-    --sn-bg2: rgba(var(--lux-glass-tint-rgb,16,23,38), calc(var(--lux-panel-alpha, 0.74) * 1.18));
-    --sn-bg3: rgba(var(--lux-glass-tint-rgb,16,23,38), calc(var(--lux-panel-alpha, 0.74) * 1.28));
-    --sn-hover: rgba(var(--lux-accent-rgb,200,130,42), calc(0.02 + var(--lux-panel-alpha, 0.74) * 0.06));
-    --sn-bdr: rgba(255,255,255, calc(0.03 + var(--lux-glass-alpha, 0.06) * 0.4));
-    --sn-bdr-a: rgba(var(--lux-accent-rgb,200,130,42), .22);
-    --sn-sh: 0 4px 24px rgba(0,0,0, calc(0.06 + var(--lux-panel-alpha, 0.74) * 0.16));
-    --sn-sh-lg: 0 12px 40px rgba(0,0,0, calc(0.08 + var(--lux-panel-alpha, 0.74) * 0.22));
+    --social-fade-surface:
+        radial-gradient(circle at 6% 0%, rgba(255, 255, 255, calc(var(--lux-color-fade-alpha, .92) * .08)), transparent 32%),
+        radial-gradient(circle at 74% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .28)), transparent 42%),
+        radial-gradient(circle at 100% 96%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .92) * .18)), transparent 40%),
+        linear-gradient(135deg,
+            rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .10)),
+            rgba(10, 15, 24, calc(var(--lux-transparency-alpha, .92) * .89)) 44%,
+            rgba(7, 10, 18, calc(var(--lux-transparency-alpha, .92) * .80)));
+    --social-fade-surface-soft:
+        radial-gradient(circle at 12% 0%, rgba(255, 255, 255, calc(var(--lux-color-fade-alpha, .92) * .055)), transparent 30%),
+        radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .14)), transparent 34%),
+        linear-gradient(135deg,
+            rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .065)),
+            rgba(10, 15, 24, calc(var(--lux-transparency-alpha, .92) * .88)) 46%,
+            rgba(7, 10, 18, calc(var(--lux-transparency-alpha, .92) * .80)));
+    --social-fade-control:
+        linear-gradient(180deg, rgba(255, 255, 255, calc(0.04 + var(--lux-glass-alpha, .06))), rgba(255, 255, 255, 0.02)),
+        radial-gradient(circle at top right, rgba(var(--lux-accent-rgb), 0.10), transparent 32%);
+    --social-fade-chip: var(--social-fade-surface-soft);
+    --social-fade-border: rgba(var(--lux-accent-rgb), 0.22);
+    --social-fade-border-soft: rgba(255, 255, 255, 0.10);
+    --social-fade-shadow:
+        0 24px 58px rgba(0, 0, 0, 0.24),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08),
+        0 0 0 1px rgba(var(--lux-accent-rgb), 0.04);
+    --social-fade-shadow-soft:
+        0 20px 44px rgba(0, 0, 0, 0.20),
+        inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    --social-fade-blur: blur(var(--lux-transparency-blur, 18px)) saturate(var(--lux-transparency-saturate, 145%));
+    --social-fade-modal:
+        radial-gradient(circle at 12% 0%, rgba(255, 255, 255, calc(var(--lux-color-fade-alpha, .92) * .08)), transparent 34%),
+        radial-gradient(circle at 88% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .16)), transparent 36%),
+        linear-gradient(155deg, rgba(10, 16, 24, calc(var(--lux-transparency-alpha, .92) * .96)), rgba(8, 12, 18, calc(var(--lux-transparency-alpha, .92) * .96)));
+    --social-fade-row: rgba(var(--lux-glass-tint-rgb, 16, 23, 38), calc(var(--lux-raised-fill-alpha, 0.045) + 0.04));
+    --social-fade-row-hover: rgba(var(--lux-accent-rgb), calc(0.04 + var(--lux-transparency-alpha, 0.92) * 0.06));
+    --social-fade-danger:
+        linear-gradient(180deg, rgba(220, 116, 116, 0.18), rgba(220, 116, 116, 0.08)),
+        rgba(120, 22, 22, 0.22);
+    --social-fade-danger-border: rgba(248, 113, 113, 0.26);
+
+    --sn-bg: var(--social-fade-surface);
+    --sn-bg2: var(--social-fade-surface-soft);
+    --sn-bg3: var(--social-fade-surface-soft);
+    --sn-hover: var(--social-fade-row-hover);
+    --sn-bdr: var(--social-fade-border-soft);
+    --sn-bdr-a: var(--social-fade-border);
+    --sn-sh: var(--social-fade-shadow-soft);
+    --sn-sh-lg: var(--social-fade-shadow);
     --sn-txt: var(--lux-text, #fbfaf6);
     --sn-txt2: var(--lux-text-muted, rgba(251,250,246,.62));
     --sn-txt3: var(--lux-text-soft, rgba(251,250,246,.34));
-    --sn-inp: rgba(255,255,255, calc(0.02 + var(--lux-panel-alpha, 0.74) * 0.05));
-    --sn-blur: var(--lux-transparency-blur, 12px);
+    --sn-inp: var(--social-fade-control);
+    --sn-blur: var(--lux-transparency-blur, 0px);
     --sn-accent: var(--lux-accent, #c8822a);
     --sn-accent-rgb: var(--lux-accent-rgb, 200,130,42);
     --sn-success: #34d399;
     --sn-danger: #f87171;
     --sn-info: #60a5fa;
     --sn-warning: #fbbf24;
+
+    --social-bg: var(--social-fade-surface);
+    --social-surface: var(--social-fade-surface-soft);
+    --social-surface-strong: var(--social-fade-surface);
+    --social-border: var(--social-fade-border-soft);
+    --social-border-strong: var(--social-fade-border);
+    --social-shadow: var(--social-fade-shadow);
+    --social-shadow-soft: var(--social-fade-shadow-soft);
+    --social-text: var(--lux-text);
+    --social-muted: var(--lux-text-muted);
+    --social-soft: var(--lux-text-soft);
+    --social-blue: var(--lux-accent);
+    --social-blue-strong: var(--lux-accent-2);
+    --social-blue-soft: rgba(var(--lux-accent-rgb), 0.14);
+    --social-green-soft: rgba(var(--lux-home-secondary-rgb), 0.14);
+    --social-green: var(--lux-home-secondary);
+    --social-warm: rgba(var(--lux-accent-rgb), 0.16);
+    --social-warm-text: var(--lux-accent);
+    --social-danger-soft: rgba(255, 82, 120, 0.12);
+    --social-danger: #ff7e9f;
 }
 
-body.lux-light-mode.lux-route-social {
-    --sn-bg: rgba(255,255,255, calc(var(--lux-panel-alpha, 0.74) * 1.18));
-    --sn-bg2: rgba(255,255,255, calc(var(--lux-panel-alpha, 0.74) * 1.28));
-    --sn-bg3: rgba(255,255,255, calc(var(--lux-panel-alpha, 0.74) * 1.35));
-    --sn-hover: rgba(var(--lux-accent-rgb,200,130,42), calc(0.02 + var(--lux-panel-alpha, 0.74) * 0.05));
-    --sn-bdr: rgba(48,34,22, calc(0.04 + var(--lux-glass-alpha, 0.06) * 0.5));
-    --sn-bdr-a: rgba(var(--lux-accent-rgb,200,130,42), .22);
-    --sn-sh: 0 2px 12px rgba(73,48,25, calc(0.03 + var(--lux-panel-alpha, 0.74) * 0.08));
-    --sn-sh-lg: 0 8px 32px rgba(73,48,25, calc(0.04 + var(--lux-panel-alpha, 0.74) * 0.12));
-    --sn-inp: rgba(0,0,0, calc(0.01 + var(--lux-panel-alpha, 0.74) * 0.04));
-    --sn-blur: var(--lux-transparency-blur, 10px);
+body.lux-light-mode.lux-route-social,
+html.lux-light-mode body.lux-route-social {
+    --lux-text: #201912;
+    --lux-text-muted: rgba(32, 25, 18, 0.66);
+    --lux-text-soft: rgba(32, 25, 18, 0.36);
+    --social-fade-surface:
+        radial-gradient(circle at 6% 0%, rgba(255, 255, 255, calc(var(--lux-color-fade-alpha, .86) * .88)), transparent 34%),
+        radial-gradient(circle at 74% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .24)), transparent 42%),
+        radial-gradient(circle at 100% 96%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .86) * .14)), transparent 40%),
+        linear-gradient(135deg,
+            rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .065)),
+            rgba(255, 255, 255, calc(var(--lux-transparency-alpha, .86) * .84)) 44%,
+            rgba(247, 241, 232, calc(var(--lux-transparency-alpha, .86) * .70)));
+    --social-fade-surface-soft:
+        radial-gradient(circle at 12% 0%, rgba(255, 255, 255, calc(var(--lux-color-fade-alpha, .86) * .62)), transparent 30%),
+        radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .14)), transparent 34%),
+        linear-gradient(135deg,
+            rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .045)),
+            rgba(255, 255, 255, calc(var(--lux-transparency-alpha, .86) * .84)) 46%,
+            rgba(247, 241, 232, calc(var(--lux-transparency-alpha, .86) * .72)));
+    --social-fade-control:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(248, 244, 237, 0.62)),
+        radial-gradient(circle at top right, rgba(var(--lux-accent-rgb), 0.10), transparent 32%);
+    --social-fade-border: rgba(var(--lux-accent-rgb), 0.16);
+    --social-fade-border-soft: rgba(77, 52, 31, 0.12);
+    --social-fade-shadow:
+        0 18px 42px rgba(73, 48, 25, 0.10),
+        inset 0 1px 0 rgba(255, 255, 255, 0.74);
+    --social-fade-shadow-soft:
+        0 14px 30px rgba(73, 48, 25, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.62);
+    --social-fade-modal: var(--social-fade-surface);
+    --social-fade-row: rgba(255, 255, 255, calc(var(--lux-raised-fill-alpha, 0.06) + 0.48));
+    --social-fade-row-hover: rgba(var(--lux-accent-rgb), calc(0.03 + var(--lux-transparency-alpha, 0.86) * 0.05));
 }
 
 body[data-lux-performance='efficient'].lux-route-social {
@@ -84,11 +169,208 @@ body[data-lux-performance='efficient'].lux-light-mode.lux-route-social {
     --sn-blur: 7px;
 }
 
+/* Panel shells — CSS-owned (wins over index-luxury + JS painter) */
+body.lux-route-social :is(
+    .social-neo-topbar-card,
+    .social-neo-section-command,
+    .social-neo-workspace-nav-card,
+    .social-neo-events-hero,
+    .social-neo-pages-hero,
+    .social-neo-messages,
+    .social-neo-messages__inbox,
+    .social-neo-messages__thread-shell,
+    .social-projects-hero,
+    .social-projects-hero-rich,
+    .social-portfolio-hero,
+    .social-neo-profile-cover,
+    .social-hero,
+    .social-app-shell,
+    .social-rail
+) {
+    background: var(--social-fade-surface) !important;
+    border: 1px solid var(--social-fade-border) !important;
+    box-shadow: var(--social-fade-shadow) !important;
+    backdrop-filter: var(--social-fade-blur) !important;
+    -webkit-backdrop-filter: var(--social-fade-blur) !important;
+    color: var(--lux-text) !important;
+}
 
+body.lux-route-social :is(
+    .social-neo-card,
+    .social-neo-post-card,
+    .social-neo-composer-card,
+    .social-neo-filter-card,
+    .social-neo-story-card,
+    .social-neo-sidebar-card,
+    .social-neo-rail-card,
+    .social-neo-community-panel,
+    .social-neo-group-card,
+    .social-neo-page-card,
+    .social-neo-page-card-rich,
+    .social-neo-event-card,
+    .social-neo-event-feature,
+    .social-neo-events-list-card,
+    .social-neo-events-create-card,
+    .social-neo-events-manage-card,
+    .social-neo-events-support-card,
+    .social-neo-lf-card,
+    .social-neo-empty,
+    .social-neo-empty-hero,
+    .social-card,
+    .social-post-card,
+    .social-detail-card,
+    .social-mini-card,
+    .social-comment-card,
+    .social-shared-card,
+    .social-notif-item,
+    .social-story-card,
+    .social-file-preview,
+    .social-empty,
+    .social-project-card,
+    .social-project-create-card,
+    .social-project-metric-card,
+    .social-project-chart-card,
+    .social-project-rich-panel,
+    .social-project-inline-panel,
+    .social-project-tab-shell,
+    .social-project-detail-hero,
+    .social-project-detail-hero-rich,
+    .social-project-team-card,
+    .social-project-task-card,
+    .social-project-deliverable-card,
+    .social-project-meeting-card,
+    .social-project-checkin-card,
+    .social-project-mini-card,
+    .social-project-ring-card,
+    .social-portfolio-card,
+    .social-portfolio-mini-card,
+    .social-portfolio-compose-shell,
+    .social-portfolio-compose-preview-card,
+    .social-portfolio-audience-panel,
+    .upload-zone
+) {
+    background: var(--social-fade-surface-soft) !important;
+    border-color: var(--social-fade-border-soft) !important;
+    box-shadow: var(--social-fade-shadow-soft) !important;
+    backdrop-filter: var(--social-fade-blur) !important;
+    -webkit-backdrop-filter: var(--social-fade-blur) !important;
+}
+
+body.lux-route-social .social-neo-pill,
+body.lux-route-social .social-neo-presence-pill,
+body.lux-route-social .social-neo-post-scope-badge,
+body.lux-route-social .social-neo-topbar-pill,
+body.lux-route-social .social-neo-messages__count-pill {
+    background: var(--social-fade-chip) !important;
+    border: 1px solid var(--social-fade-border-soft) !important;
+    backdrop-filter: var(--social-fade-blur);
+    -webkit-backdrop-filter: var(--social-fade-blur);
+}
+
+body.lux-route-social :is(
+    #public-social-root .social-neo-input,
+    #public-social-root .social-neo-textarea,
+    #public-social-root .social-neo-select,
+    .social-neo-composer-textarea,
+    .social-neo-composer-scope-select,
+    .social-neo-composer-audience-select,
+    .social-neo-msg-compose-input
+) {
+    background: var(--social-fade-control) !important;
+    border-color: var(--social-fade-border-soft) !important;
+    color: var(--lux-text) !important;
+}
+
+body.lux-route-social :is(
+    .social-neo-dialog-card,
+    .social-neo-story-composer-card,
+    .social-neo-shell-drawer,
+    .social-neo-toast
+) {
+    background: var(--social-fade-modal) !important;
+    border-color: var(--social-fade-border-soft) !important;
+    box-shadow: var(--social-fade-shadow) !important;
+    backdrop-filter: var(--social-fade-blur) !important;
+    -webkit-backdrop-filter: var(--social-fade-blur) !important;
+}
+
+body.lux-route-social .social-neo-dialog-backdrop,
+body.lux-route-social .social-neo-shell-drawer-backdrop,
+body.lux-route-social .social-neo-story-viewer {
+    background: rgba(0, 0, 0, 0.6) !important;
+    backdrop-filter: blur(8px);
+}
+
+body.lux-route-social :is(
+    .social-neo-chat-item,
+    .social-neo-directory-item,
+    .social-neo-message,
+    .social-neo-alert,
+    .social-neo-item-line,
+    .social-neo-comment-bubble,
+    .social-neo-entity-card,
+    .social-neo-events-manage-item,
+    .social-neo-group-member-row,
+    .social-project-activity-item,
+    .social-project-milestone-item
+) {
+    background: var(--social-fade-row) !important;
+    border-color: var(--social-fade-border-soft) !important;
+}
+
+body.lux-route-social :is(
+    .social-neo-chat-item:hover,
+    .social-neo-directory-item:hover,
+    .social-neo-message:hover,
+    .social-neo-item-line:hover
+) {
+    background: var(--social-fade-row-hover) !important;
+}
+
+body.lux-route-social .social-neo-stat-grid > div {
+    background: var(--social-fade-surface-soft) !important;
+    border-color: var(--social-fade-border-soft) !important;
+    box-shadow: var(--social-fade-shadow-soft) !important;
+    backdrop-filter: var(--social-fade-blur) !important;
+    -webkit-backdrop-filter: var(--social-fade-blur) !important;
+}
+
+html.lux-high-transparency body.lux-route-social:not(.lux-light-mode) .social-neo-card,
+html.lux-high-transparency body.lux-route-social:not(.lux-light-mode) .social-neo-topbar-card,
+html.lux-high-transparency body.lux-route-social:not(.lux-light-mode) .social-neo-section-command {
+    background: var(--social-fade-surface) !important;
+    border-color: var(--social-fade-border) !important;
+    box-shadow: var(--social-fade-shadow) !important;
+    backdrop-filter: var(--social-fade-blur) !important;
+    -webkit-backdrop-filter: var(--social-fade-blur) !important;
+}
+
+
+/* Use the full viewport width on the social route instead of the shared
+   1480px page cap + 200px sidebar gutter, so the workspace fills the empty
+   left/right space. The social route has no global left sidebar, so the
+   reserved sidebar margin is dead space we reclaim here. */
+body.lux-route-social #app-content {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    padding-left: 24px !important;
+    padding-right: 24px !important;
+    max-width: none !important;
+    width: 100% !important;
+}
+body.lux-route-social #page-social.page-section,
+body.lux-route-social #page-social,
+body.lux-route-social .social-route-standalone-shell,
+body.lux-route-social #public-social-root {
+    max-width: none !important;
+    width: 100% !important;
+    margin: 0 !important;
+}
 body.lux-route-social .social-neo {
     display: grid; gap: var(--sn-gap); padding-top: 4px;
     font-family: 'Inter','Noto Sans Georgian',system-ui,sans-serif;
     color: var(--sn-txt); line-height: 1.5; contain: layout style;
+    width: 100%;
 }
 body.lux-route-social .social-neo-facebook {
     background:
@@ -173,12 +455,12 @@ body.lux-route-social .social-neo-topbar-card {
     position: relative; overflow: hidden;
 }
 body.lux-route-social .social-neo-topbar-copy { position: relative; z-index: 1; }
-body.lux-route-social .social-neo-topbar-copy h1 {
+body.lux-route-social .social-neo-topbar-title {
     font-family: 'Inter','Noto Sans Georgian',system-ui,sans-serif;
     font-size: clamp(20px,2.2vw,26px); font-weight: 800;
     letter-spacing: -.03em; color: var(--sn-txt); margin: 0; line-height: 1.2;
 }
-body.lux-route-social .social-neo-topbar-copy p {
+body.lux-route-social .social-neo-topbar-description {
     margin: 4px 0 0; max-width: 560px;
     font-size: 13px; line-height: 1.5; color: var(--sn-txt2);
 }
@@ -231,9 +513,10 @@ body.lux-route-social .social-neo-sidebar-nav { display: grid; gap: 2px; }
     display: flex !important; align-items: center !important;
     justify-content: space-between !important; gap: 10px !important;
     width: 100% !important; padding: 10px 12px !important;
-    border-radius: 12px !important; border: 1px solid transparent !important;
+    border-radius: 12px !important;
+    border: 1px solid rgba(var(--lux-accent-rgb, 200, 130, 42), calc(var(--lux-transparency-alpha, 1) * 0.16)) !important;
     border-left: 3px solid transparent !important;
-    background: transparent !important;
+    background: rgba(var(--lux-glass-tint-rgb, 12, 18, 30), calc(var(--lux-transparency-alpha, 1) * 0.19)) !important;
     color: var(--sn-txt2) !important; font-size: 13px !important;
     font-weight: 500 !important; text-align: left !important;
     transition: all var(--sn-ease); box-shadow: none !important;
@@ -345,6 +628,12 @@ body.lux-route-social .social-neo-sidebar-nav { display: grid; gap: 2px; }
 #public-social-root .social-neo-btn-sm {
     padding: 5px 10px !important; font-size: 11px !important;
 }
+#public-social-root .social-neo-btn-block {
+    justify-content: center !important;
+}
+#public-social-root .social-neo-btn-pointer {
+    cursor: pointer !important;
+}
 
 
 #public-social-root .social-neo-input,
@@ -402,6 +691,7 @@ body.lux-route-social .social-neo-form-grid  { display: grid; gap: 12px; }
 body.lux-route-social .social-neo-form-grid-2 { grid-template-columns: 1fr 1fr; }
 body.lux-route-social .social-neo-form-grid-3 { grid-template-columns: 1fr 1fr 1fr; }
 body.lux-route-social .social-neo-grid-2     { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sn-gap); }
+body.lux-route-social .social-neo-grid-3     { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--sn-gap); }
 body.lux-route-social .social-neo-grid-tight { gap: 8px; }
 body.lux-route-social .social-neo-form-actions,
 body.lux-route-social .social-neo-inline,
@@ -532,7 +822,7 @@ body.lux-route-social .social-neo-presence-pill.is-offline {
 
 
 body.lux-route-social .social-neo-stat-grid {
-    display: grid; grid-template-columns: repeat(3,1fr); gap: 6px;
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); gap: 6px;
 }
 body.lux-route-social .social-neo-stat-grid div {
     padding: 10px 6px; border-radius: 12px;
@@ -560,22 +850,50 @@ body.lux-route-social .social-neo-post-head {
 body.lux-route-social .social-neo-post-author {
     display: flex; gap: 10px; align-items: flex-start; flex: 1; min-width: 0;
 }
-body.lux-route-social .social-neo-post-author > div { display: grid; gap: 2px; }
-body.lux-route-social .social-neo-post-author strong {
+body.lux-route-social .social-neo-post-author-copy { display: grid; gap: 2px; }
+body.lux-route-social .social-neo-post-author-name {
     font-size: 13.5px; font-weight: 700; color: var(--sn-txt);
 }
-body.lux-route-social .social-neo-post-author span {
+body.lux-route-social .social-neo-post-author-meta {
     display: block; font-size: 11px; color: var(--sn-txt3); margin-top: 0;
+}
+body.lux-route-social .social-neo-post-head-actions {
+    align-items: flex-start;
+}
+body.lux-route-social .social-neo-post-scope-badge,
+body.lux-route-social .social-neo-post-page-label,
+body.lux-route-social .social-neo-post-pinned-pill {
+    flex: 0 0 auto;
+}
+body.lux-route-social .social-neo-post-head-action-btn {
+    justify-content: center;
 }
 body.lux-route-social .social-neo-post-meta {
     display: flex; gap: 6px; align-items: center; flex-shrink: 0;
 }
 body.lux-route-social .social-neo-post-body {
     font-size: 14px; line-height: 1.65; color: var(--sn-txt); white-space: pre-wrap;
+    word-break: break-word; overflow-wrap: anywhere;
+}
+body.lux-route-social .social-neo-post-metrics {
+    align-items: center;
+}
+body.lux-route-social .social-neo-post-metric {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
 }
 body.lux-route-social .social-neo-post-actions {
     display: flex; gap: 4px; align-items: center;
     padding-top: 8px; border-top: 1px solid var(--sn-bdr);
+}
+body.lux-route-social .social-neo-post-action-row {
+    align-items: center;
+}
+body.lux-route-social .social-neo-post-action-btn,
+body.lux-route-social .social-neo-post-reaction-btn,
+body.lux-route-social .social-neo-post-save-btn {
+    justify-content: center;
 }
 body.lux-route-social .social-neo-media img {
     width: 100%; max-height: 380px; object-fit: cover;
@@ -592,15 +910,492 @@ body.lux-route-social .social-neo-shared strong { font-size: 11.5px; color: var(
 body.lux-route-social .social-neo-inline-metrics {
     display: flex; gap: 14px; font-size: 11px; color: var(--sn-txt3);
 }
+body.lux-route-social .social-neo-inline-end {
+    justify-content: flex-end;
+}
+body.lux-route-social .social-neo-inline-between-start-wrap {
+    justify-content: space-between;
+    gap: 12px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+}
+body.lux-route-social .social-neo-inline-gap-8-wrap {
+    gap: 8px;
+    flex-wrap: wrap;
+}
+body.lux-route-social .social-neo-inline-end-gap-8-wrap {
+    justify-content: flex-end;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+body.lux-route-social .social-neo-inline-items-start {
+    align-items: flex-start;
+}
+body.lux-route-social .social-neo-inline-items-end {
+    align-items: flex-end;
+}
+body.lux-route-social .social-neo-inline-between-gap-12-wrap {
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+body.lux-route-social .social-neo-inline-mt-12 {
+    margin-top: 12px;
+}
+body.lux-route-social .social-neo-inline-gap-14-wrap {
+    gap: 14px;
+    flex-wrap: wrap;
+}
+body.lux-route-social .social-neo-inline-gap-10-wrap {
+    gap: 10px;
+    flex-wrap: wrap;
+}
+body.lux-route-social .social-neo-inline-end-gap-10-wrap {
+    justify-content: flex-end;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+body.lux-route-social .social-neo-inline-between-gap-4-wrap {
+    justify-content: space-between;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+body.lux-route-social .social-neo-inline-between-gap-8-wrap {
+    justify-content: space-between;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+body.lux-route-social .social-neo-inline-column-end {
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+}
+body.lux-route-social .social-neo-person-gap-10 {
+    gap: 10px;
+}
+body.lux-route-social .social-neo-person-start-gap-10 {
+    align-items: flex-start;
+    gap: 10px;
+}
+body.lux-route-social .social-neo-person-start-gap-12 {
+    align-items: flex-start;
+    gap: 12px;
+}
+body.lux-route-social .social-neo-card-pad-16 {
+    padding: 16px;
+}
+body.lux-route-social .social-neo-card-pad-12 {
+    padding: 12px;
+}
+body.lux-route-social .social-neo-badge-row-mt-8 {
+    margin-top: 8px;
+}
+body.lux-route-social .social-neo-badge-row-10-14 {
+    margin: 10px 0 14px;
+}
+body.lux-route-social .social-neo-badge-row-mt-4 {
+    margin-top: 4px;
+}
+body.lux-route-social .social-neo-badge-row-mt-10 {
+    margin-top: 10px;
+}
+body.lux-route-social .social-neo-stack-mt-14 {
+    margin-top: 14px;
+}
+body.lux-route-social .social-neo-stack-mt-10 {
+    margin-top: 10px;
+}
+body.lux-route-social .social-neo-mb-14 {
+    margin-bottom: 14px;
+}
+body.lux-route-social .social-neo-stack-w-100 {
+    width: 100%;
+}
+body.lux-route-social .social-neo-grid-mt-10 {
+    margin-top: 10px;
+}
+body.lux-route-social .social-neo-grid-mt-12 {
+    margin-top: 12px;
+}
+body.lux-route-social .social-neo-copy {
+    margin: 0;
+}
+body.lux-route-social .social-neo-copy-mt-8 {
+    margin-top: 8px;
+}
+body.lux-route-social .social-neo-stack-end-260 {
+    align-items: flex-end;
+    min-width: min(260px, 100%);
+}
+body.lux-route-social .social-neo-field-flex-1-220 {
+    display: flex;
+    flex: 1;
+    min-width: min(220px, 100%);
+    flex-direction: column;
+    gap: 6px;
+}
+body.lux-route-social .social-neo-field-flex-1-260 {
+    display: flex;
+    flex: 1;
+    min-width: min(260px, 100%);
+    flex-direction: column;
+    gap: 6px;
+}
+body.lux-route-social .social-neo-field-fixed-220 {
+    display: grid;
+    flex: 0 0 220px;
+    min-width: 180px;
+    gap: 6px;
+}
+body.lux-route-social .social-neo-input-flex-1-160 {
+    flex: 1;
+    min-width: 160px;
+}
+body.lux-route-social .social-neo-input-flex-1-180 {
+    flex: 1;
+    min-width: 180px;
+}
+body.lux-route-social .social-neo-inline-gap-4 {
+    gap: 4px;
+}
+body.lux-route-social .social-neo-inline-post-actions-head {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+body.lux-route-social .social-neo-metric-heart {
+    color: var(--sn-danger);
+}
+body.lux-route-social .social-neo-post-reaction-metric {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+body.lux-route-social .social-neo-reaction-metric-emoji {
+    font-size: 14px;
+    line-height: 1;
+}
+body.lux-route-social .social-neo-flex-spacer {
+    flex: 1;
+}
+body.lux-route-social .social-neo-pill-pinned {
+    background: rgba(245,158,11,.12);
+    color: #f59e0b;
+}
 body.lux-route-social .social-neo-clickable {
     background: transparent !important; border: none !important;
     padding: 0 !important; text-align: left !important; width: auto !important;
+}
+
+/* Pack 09 reserved social route utility families */
+body.lux-route-social .social-neo-msg-card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    min-width: 0;
+}
+body.lux-route-social .social-neo-msg-card-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    flex-wrap: wrap;
+}
+body.lux-route-social .social-neo-msg-panel-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    flex-wrap: wrap;
+    min-width: 0;
+}
+body.lux-route-social .social-neo-msg-settings-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    min-width: 0;
+}
+body.lux-route-social .social-neo-msg-panel-field {
+    display: grid;
+    gap: 6px;
+    min-width: 0;
+}
+body.lux-route-social .social-neo-msg-panel-field:not(.social-neo-msg-panel-field-fixed) {
+    flex: 1 1 220px;
+}
+body.lux-route-social .social-neo-msg-panel-field-fixed {
+    flex: 0 0 180px;
+}
+body.lux-route-social .social-neo-msg-settings-copy {
+    min-width: 0;
+}
+body.lux-route-social .social-neo-msg-compose-form {
+    display: grid;
+    gap: 8px;
+    min-width: 0;
+}
+body.lux-route-social .social-neo-msg-compose-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+body.lux-route-social .social-neo-msg-compose-input {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+body.lux-route-social .social-neo-msg-upload-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+#public-social-root .social-neo-msg-compose-row .social-neo-input,
+#public-social-root .social-neo-msg-compose-input,
+#public-social-root .social-neo-msg-panel-field .social-neo-input,
+#public-social-root .social-neo-msg-panel-field .social-neo-select,
+#public-social-root .social-neo-msg-panel-field .social-neo-textarea {
+    min-width: 0;
+    width: 100%;
+}
+
+body.lux-route-social .social-neo-community-card {
+    padding: 16px !important;
+    display: grid;
+    grid-template-columns: minmax(220px, 1fr) auto;
+    gap: 14px;
+}
+body.lux-route-social .social-neo-community-person {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    flex: 1 1 260px;
+    min-width: min(260px, 100%);
+}
+body.lux-route-social .social-neo-community-copy {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+body.lux-route-social .social-neo-community-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+    min-width: 0;
+}
+body.lux-route-social .social-neo-community-heading {
+    min-width: 0;
+}
+body.lux-route-social .social-neo-community-subtitle,
+body.lux-route-social .social-neo-community-context {
+    font-size: 13px;
+    line-height: 1.45;
+    color: var(--sn-txt3);
+}
+body.lux-route-social .social-neo-community-bio {
+    margin: 0;
+    color: var(--sn-txt2);
+    line-height: 1.55;
+}
+body.lux-route-social .social-neo-community-suggestion {
+    color: var(--sn-accent);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+}
+body.lux-route-social .social-neo-community-completeness {
+    flex-shrink: 0;
+}
+body.lux-route-social .social-neo-community-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 250px;
+}
+body.lux-route-social .social-neo-community-action-row {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    flex-wrap: wrap;
+    min-width: 0;
+}
+body.lux-route-social .social-neo-community-overview-icon {
+    color: #8b5cf6;
+}
+
+body.lux-route-social .social-neo-lf-card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    flex-wrap: wrap;
+    min-width: 0;
+}
+body.lux-route-social .social-neo-lf-card-person {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    min-width: 0;
+}
+body.lux-route-social .social-neo-lf-card-title-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    min-width: 0;
+}
+body.lux-route-social .social-neo-lf-card-meta {
+    margin-top: 4px;
+    font-size: 12px;
+    line-height: 1.45;
+    color: var(--sn-txt3);
+}
+body.lux-route-social .social-neo-lf-card-summary {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    flex-wrap: wrap;
+    min-width: 0;
+}
+body.lux-route-social .social-neo-lf-card-media-grid {
+    display: grid;
+    gap: 12px;
+    align-items: start;
+    margin-top: 12px;
+}
+body.lux-route-social .social-neo-lf-card-media-grid-has-media {
+    grid-template-columns: minmax(148px, .72fr) minmax(0, 1fr);
+}
+body.lux-route-social .social-neo-lf-card-media-grid-no-media {
+    grid-template-columns: 1fr;
+}
+body.lux-route-social .social-neo-lf-card-media-frame {
+    min-width: 0;
+}
+body.lux-route-social .social-neo-lf-card-media-grid-has-media .social-neo-lf-card-media-frame {
+    grid-column: auto;
+}
+body.lux-route-social .social-neo-lf-card-media-image {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: 160px;
+    min-height: 100px;
+    object-fit: cover;
+    border-radius: 18px;
+    border: 1px solid rgba(255,255,255,.08);
+}
+body.lux-route-social .social-neo-lf-card-content {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
+}
+body.lux-route-social .social-neo-lf-card-content-full {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
+    grid-column: 1 / -1;
+}
+body.lux-route-social .social-neo-lf-card-content-has-media {
+    grid-column: auto;
+}
+body.lux-route-social .social-neo-lf-card-actions {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    flex-wrap: wrap;
+    min-width: 0;
+}
+body.lux-route-social .social-neo-lf-card-actions-main,
+body.lux-route-social .social-neo-lf-card-actions-side,
+body.lux-route-social .social-neo-lf-metric-row,
+body.lux-route-social .social-neo-lf-composer-head-actions,
+body.lux-route-social .social-neo-lf-filter-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    min-width: 0;
+}
+body.lux-route-social .social-neo-lf-card-actions-side {
+    justify-content: flex-end;
+}
+body.lux-route-social .social-neo-lf-filter-row {
+    margin-top: 10px;
+}
+body.lux-route-social .social-neo-lf-search-grid,
+body.lux-route-social .social-neo-lf-composer-form {
+    margin-top: 14px;
+}
+body.lux-route-social .social-neo-lf-upload-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    min-width: 0;
+}
+body.lux-route-social .social-neo-lf-upload-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+body.lux-route-social .social-neo-lf-upload-spacer {
+    flex: 1 1 auto;
+}
+body.lux-route-social .social-neo-lf-suggestions {
+    margin-top: 16px;
+}
+body.lux-route-social .social-neo-lf-suggestions-list {
+    display: grid;
+    gap: 12px;
+}
+body.lux-route-social .social-neo-lf-compose-note {
+    margin-top: 14px;
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--sn-txt3);
+}
+
+@media (max-width: 760px) {
+    body.lux-route-social .social-neo-msg-panel-field,
+    body.lux-route-social .social-neo-community-person,
+    body.lux-route-social .social-neo-community-actions {
+        flex: 1 1 100%;
+        min-width: 0;
+    }
+
+    body.lux-route-social .social-neo-community-head,
+    body.lux-route-social .social-neo-msg-settings-footer,
+    body.lux-route-social .social-neo-lf-card-actions {
+        align-items: stretch;
+    }
+
+    body.lux-route-social .social-neo-lf-card-media-grid-has-media {
+        grid-template-columns: 1fr;
+    }
 }
 
 /* Comments */
 body.lux-route-social .social-neo-comment-list { display: grid; gap: 6px; }
 body.lux-route-social .social-neo-comment {
     display: flex; gap: 8px; align-items: flex-start;
+}
+body.lux-route-social .social-neo-comment.is-reply.social-neo-comment-depth-1 {
+    margin-left: min(16px, 4vw);
+}
+body.lux-route-social .social-neo-comment.is-reply.social-neo-comment-depth-2 {
+    margin-left: min(32px, 8vw);
+}
+body.lux-route-social .social-neo-comment.is-reply.social-neo-comment-depth-3 {
+    margin-left: min(48px, 12vw);
 }
 body.lux-route-social .social-neo-comment-bubble {
     background: rgba(var(--sn-accent-rgb),.04);
@@ -612,6 +1407,27 @@ body.lux-route-social .social-neo-comment p { font-size: 12.5px; line-height: 1.
 body.lux-route-social .social-neo-comment span { font-size: 9.5px; color: var(--sn-txt3); }
 body.lux-route-social .social-neo-comment-compose {
     display: flex; gap: 8px; align-items: center;
+}
+body.lux-route-social .social-neo-comment-compose-main {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 8px;
+}
+body.lux-route-social .social-neo-reply-target {
+    justify-content: space-between;
+    gap: 8px;
+    padding: 8px 10px;
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 12px;
+    background: rgba(255,255,255,.03);
+}
+body.lux-route-social .social-neo-reply-target-label {
+    margin: 0;
+}
+body.lux-route-social .social-neo-comment-compose-row {
+    gap: 8px;
+    align-items: center;
 }
 #public-social-root .social-neo-comment-compose .social-neo-input {
     flex: 1; padding: 8px 14px !important; font-size: 12px !important;
@@ -677,6 +1493,44 @@ body.lux-route-social .social-neo-event-card:hover {
 }
 body.lux-route-social .social-neo-event-card strong { font-size: 12.5px; font-weight: 700; color: var(--sn-txt); }
 body.lux-route-social .social-neo-event-card span { font-size: 11px; color: var(--sn-txt3); display: block; margin-top: 1px; }
+body.lux-route-social .social-neo-event-card.is-academic { border-left: 3px solid #6366f1; }
+body.lux-route-social .social-neo-event-card.is-social { border-left: 3px solid #ec4899; }
+body.lux-route-social .social-neo-event-card.is-career { border-left: 3px solid #f59e0b; }
+body.lux-route-social .social-neo-event-card.is-club { border-left: 3px solid #10b981; }
+body.lux-route-social .social-neo-event-card.is-university { border-left: 3px solid #3b82f6; }
+body.lux-route-social .social-neo-event-card.is-study { border-left: 3px solid #8b5cf6; }
+body.lux-route-social .social-neo-event-card.is-default { border-left: 3px solid var(--sn-accent); }
+body.lux-route-social .social-neo-event-feature--academic { --event-accent: #6366f1; }
+body.lux-route-social .social-neo-event-feature--social { --event-accent: #ec4899; }
+body.lux-route-social .social-neo-event-feature--career { --event-accent: #f59e0b; }
+body.lux-route-social .social-neo-event-feature--club { --event-accent: #10b981; }
+body.lux-route-social .social-neo-event-feature--university { --event-accent: #3b82f6; }
+body.lux-route-social .social-neo-event-feature--study { --event-accent: #8b5cf6; }
+body.lux-route-social .social-neo-event-feature--default { --event-accent: var(--sn-accent); }
+body.lux-route-social .social-neo-event-category-pill.is-academic { border-color: #6366f1; color: #6366f1; }
+body.lux-route-social .social-neo-event-category-pill.is-social { border-color: #ec4899; color: #ec4899; }
+body.lux-route-social .social-neo-event-category-pill.is-career { border-color: #f59e0b; color: #f59e0b; }
+body.lux-route-social .social-neo-event-category-pill.is-club { border-color: #10b981; color: #10b981; }
+body.lux-route-social .social-neo-event-category-pill.is-university { border-color: #3b82f6; color: #3b82f6; }
+body.lux-route-social .social-neo-event-category-pill.is-study { border-color: #8b5cf6; color: #8b5cf6; }
+body.lux-route-social .social-neo-event-category-pill.is-default { border-color: var(--sn-accent); color: var(--sn-accent); }
+body.lux-route-social .social-neo-event-copy {
+    font-size: 11px;
+    line-height: 1.45;
+    color: var(--sn-txt2);
+}
+body.lux-route-social .social-neo-pill-icon {
+    font-size: 8px;
+}
+body.lux-route-social .social-neo-time-group-icon {
+    margin-right: 5px;
+    font-size: 10px;
+    opacity: 0.6;
+}
+body.lux-route-social .social-neo-attendee-summary {
+    font-size: 10.5px;
+    color: var(--sn-txt3);
+}
 body.lux-route-social .social-neo-event-img { border-radius: 10px; overflow: hidden; margin-bottom: 4px; }
 body.lux-route-social .social-neo-event-img img {
     width: 100%; max-height: 160px; object-fit: cover; display: block;
@@ -712,10 +1566,6 @@ body.lux-route-social .social-neo-time-group-body .social-neo-event-card:last-ch
 body.lux-route-social .social-neo-events-shell { gap: 18px; }
 body.lux-route-social .social-neo-events-hero {
     padding: 22px;
-    background:
-        radial-gradient(circle at top right, rgba(96,165,250,.16), transparent 34%),
-        radial-gradient(circle at bottom left, rgba(251,113,133,.12), transparent 28%),
-        linear-gradient(180deg, rgba(var(--lux-glass-tint-rgb,15,23,42), calc(var(--lux-panel-alpha, 0.74) * 1.22)), rgba(var(--lux-glass-tint-rgb,15,23,42), calc(var(--lux-panel-alpha, 0.74) * 1.08)));
     border: 1px solid rgba(var(--lux-accent-rgb,148,163,184), calc(0.02 + var(--lux-glass-alpha, 0.06) * 3));
 }
 body.lux-route-social .social-neo-events-hero-copy { display: grid; gap: 10px; }
@@ -1088,6 +1938,120 @@ body.lux-route-social .social-neo-events-support-grid { align-items: start; }
     }
 }
 
+/* Theme normalization: keep Social on the active luxury palette instead of panel-specific blue/purple/green/orange overrides. */
+body.lux-route-social {
+    --sn-accent-2: var(--lux-home-secondary, var(--lux-accent));
+    --sn-accent-2-rgb: var(--lux-home-secondary-rgb, var(--lux-accent-rgb, 200, 130, 42));
+    --sn-blue-rgb: var(--lux-accent-rgb, 200, 130, 42);
+    --sn-green-rgb: var(--lux-accent-rgb, 200, 130, 42);
+    --sn-purple-rgb: var(--lux-accent-rgb, 200, 130, 42);
+    --sn-rose-rgb: var(--lux-accent-rgb, 200, 130, 42);
+    --sn-info: var(--sn-accent);
+    --sn-success: var(--sn-accent);
+    --sn-warning: var(--sn-accent);
+    --sn-danger: var(--sn-accent);
+}
+
+body.lux-route-social .social-neo-event-feature--academic,
+body.lux-route-social .social-neo-event-feature--social,
+body.lux-route-social .social-neo-event-feature--career,
+body.lux-route-social .social-neo-event-feature--club,
+body.lux-route-social .social-neo-event-feature--university,
+body.lux-route-social .social-neo-event-feature--study,
+body.lux-route-social .social-neo-event-feature--default {
+    --event-accent: var(--sn-accent) !important;
+}
+
+body.lux-route-social .social-neo-event-card.is-academic,
+body.lux-route-social .social-neo-event-card.is-social,
+body.lux-route-social .social-neo-event-card.is-career,
+body.lux-route-social .social-neo-event-card.is-club,
+body.lux-route-social .social-neo-event-card.is-university,
+body.lux-route-social .social-neo-event-card.is-study,
+body.lux-route-social .social-neo-event-card.is-default,
+body.lux-route-social .social-neo-community-panel--directory,
+body.lux-route-social .social-neo-community-panel--suggested,
+body.lux-route-social .social-neo-community-panel--staff,
+body.lux-route-social .social-neo-community-panel--connections,
+body.lux-route-social .social-neo-section-card--official {
+    border-left-color: var(--sn-accent) !important;
+}
+
+body.lux-route-social .social-neo-event-category-pill.is-academic,
+body.lux-route-social .social-neo-event-category-pill.is-social,
+body.lux-route-social .social-neo-event-category-pill.is-career,
+body.lux-route-social .social-neo-event-category-pill.is-club,
+body.lux-route-social .social-neo-event-category-pill.is-university,
+body.lux-route-social .social-neo-event-category-pill.is-study,
+body.lux-route-social .social-neo-event-category-pill.is-default,
+body.lux-route-social .social-neo-pill.is-blue {
+    border-color: rgba(var(--lux-accent-rgb), .28) !important;
+    color: var(--sn-accent) !important;
+    background: rgba(var(--lux-accent-rgb), .07) !important;
+}
+
+body.lux-route-social .social-neo-community-panel--directory .social-neo-section-head,
+body.lux-route-social .social-neo-community-panel--suggested .social-neo-section-head,
+body.lux-route-social .social-neo-community-panel--staff .social-neo-section-head,
+body.lux-route-social .social-neo-community-panel--connections .social-neo-section-head,
+body.lux-route-social .social-neo-page-card-header {
+    background: linear-gradient(135deg, rgba(var(--lux-accent-rgb), .13), rgba(var(--lux-accent-rgb), .035)) !important;
+}
+
+body.lux-route-social .social-neo-shell-nav-icon,
+body.lux-route-social .social-neo-mobile-tab-icon,
+body.lux-route-social .social-neo-side-icon,
+body.lux-route-social .social-neo-mobile-tab-count,
+body.lux-route-social .social-neo-btn-primary.is-blue {
+    background: linear-gradient(135deg, rgba(var(--lux-accent-rgb), .92), rgba(var(--sn-accent-2-rgb), .72)) !important;
+    color: var(--lux-accent-contrast, #fff) !important;
+}
+
+body.lux-route-social .social-neo-community-overview-icon,
+body.lux-route-social .social-neo-section-accent-icon.is-green,
+body.lux-route-social .social-neo-section-accent-icon.is-blue,
+body.lux-route-social .social-neo-section-accent-icon.is-purple,
+body.lux-route-social .social-neo-page-card-icon,
+body.lux-route-social .social-neo-pill-pinned {
+    color: var(--sn-accent) !important;
+}
+
+body.lux-route-social .social-neo-pill-pinned,
+body.lux-route-social .social-neo-page-card-icon {
+    background: rgba(var(--lux-accent-rgb), .10) !important;
+}
+
+body.lux-route-social .social-project-metric-card,
+body.lux-route-social .social-project-ring-card {
+    --project-accent: var(--sn-accent) !important;
+}
+
+body.lux-route-social .public-social-hero-title,
+body.lux-route-social .public-social-page-title,
+body.lux-route-social .public-social-comment-author {
+    color: var(--sn-txt) !important;
+}
+
+body.lux-route-social .public-social-hero-copy,
+body.lux-route-social .public-social-post-byline,
+body.lux-route-social .public-social-comment-count,
+body.lux-route-social .public-social-file-help,
+body.lux-route-social .public-social-filter-label,
+body.lux-route-social .public-social-field,
+body.lux-route-social .public-social-page-copy,
+body.lux-route-social .public-social-page-meta {
+    color: var(--sn-txt2) !important;
+}
+
+body.lux-route-social .public-social-page-card.is-active {
+    border-color: rgba(var(--lux-accent-rgb), .28) !important;
+    background: rgba(var(--lux-accent-rgb), .08) !important;
+}
+
+body.lux-route-social .public-social-post-media img {
+    border-color: var(--sn-bdr) !important;
+}
+
 /* Events layout safety overrides */
 body.lux-route-social .social-neo-center,
 body.lux-route-social .social-neo-events-shell,
@@ -1296,6 +2260,14 @@ body.lux-route-social .social-neo-muted {
     font-size: 12px; color: var(--sn-txt3); font-style: italic;
 }
 
+body.lux-route-social .social-neo-muted-mt-8 {
+    margin-top: 8px;
+}
+
+body.lux-route-social .social-neo-muted-mt-6 {
+    margin-top: 6px;
+}
+
 body.lux-route-social .social-neo-profile {
     display: grid; gap: var(--sn-gap); align-content: start;
 }
@@ -1413,7 +2385,7 @@ body.lux-route-social .social-neo-profile-tabs {
 /* Profile Content */
 body.lux-route-social .social-neo-profile-posts { display: grid; gap: var(--sn-gap); }
 body.lux-route-social .social-neo-profile-friends {
-    display: grid; grid-template-columns: repeat(4,1fr); gap: 10px;
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px;
 }
 body.lux-route-social .social-neo-friend-chip {
     display: grid; gap: 6px; padding: 12px;
@@ -1550,9 +2522,55 @@ body.lux-route-social .social-neo-dialog-card {
     box-shadow: 0 24px 80px rgba(0,0,0,.4) !important;
     animation: snDialogIn .3s cubic-bezier(.34,1.56,.64,1);
 }
+body.lux-route-social .social-neo-dialog-head {
+    align-items: flex-start;
+}
+body.lux-route-social .social-neo-dialog-heading {
+    display: grid;
+    gap: 4px;
+}
+body.lux-route-social .social-neo-dialog-title {
+    line-height: 1.25;
+}
+body.lux-route-social .social-neo-dialog-subtitle {
+    line-height: 1.5;
+}
+body.lux-route-social .social-neo-dialog-actions {
+    justify-content: flex-end;
+}
+body.lux-route-social .social-neo-dialog-close-btn,
+body.lux-route-social .social-neo-dialog-cancel-btn,
+body.lux-route-social .social-neo-dialog-submit-btn {
+    justify-content: center;
+}
 @keyframes snDialogIn {
     from { transform: scale(.9) translateY(20px); opacity: 0; }
     to { transform: scale(1) translateY(0); opacity: 1; }
+}
+body.lux-route-social .social-neo-dialog-head {
+    align-items: flex-start;
+    gap: 12px;
+}
+body.lux-route-social .social-neo-dialog-heading {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+}
+body.lux-route-social .social-neo-dialog-title {
+    font-size: 16px;
+    letter-spacing: 0;
+}
+body.lux-route-social .social-neo-dialog-subtitle {
+    font-size: 12.5px;
+    line-height: 1.55;
+}
+body.lux-route-social .social-neo-dialog-close-btn,
+body.lux-route-social .social-neo-dialog-cancel-btn,
+body.lux-route-social .social-neo-dialog-submit-btn {
+    justify-content: center;
+}
+body.lux-route-social .social-neo-dialog-actions {
+    justify-content: flex-end;
 }
 body.lux-route-social .social-neo-dialog-preview {
     padding: 12px; border-radius: var(--sn-r);
@@ -1560,9 +2578,21 @@ body.lux-route-social .social-neo-dialog-preview {
     border: 1px solid var(--sn-bdr);
     font-size: 12.5px; color: var(--sn-txt2); line-height: 1.5;
 }
+body.lux-route-social .social-neo-dialog-preview-title {
+    display: block;
+    font-size: 13px;
+    color: var(--sn-txt);
+}
 body.lux-route-social .social-neo-dialog-preview-danger {
     background: rgba(248,113,113,.08);
     border-color: rgba(248,113,113,.22);
+}
+body.lux-route-social .social-neo-dialog-checkbox-line {
+    align-items: flex-start;
+}
+body.lux-route-social .social-neo-dialog-checkbox-copy {
+    font-size: 12px;
+    color: var(--sn-txt);
 }
 
 
@@ -1590,8 +2620,22 @@ body.lux-route-social .social-neo-story-header {
     display: flex; align-items: center; gap: 10px;
 }
 body.lux-route-social .social-neo-story-header .social-neo-avatar { width: 36px; height: 36px; }
+body.lux-route-social .social-neo-story-header-copy { display: grid; gap: 2px; }
 body.lux-route-social .social-neo-story-author { font-size: 14px; font-weight: 700; color: #fff; }
 body.lux-route-social .social-neo-story-time { font-size: 12px; color: rgba(255,255,255,.7); }
+body.lux-route-social .social-neo-story-close-btn { margin-left: auto; }
+body.lux-route-social .social-neo-story-caption {
+    position: absolute;
+    left: 12px;
+    right: 12px;
+    bottom: 60px;
+    padding: 8px;
+    border-radius: 8px;
+    background: rgba(0,0,0,.5);
+    color: #fff;
+    font-size: 14px;
+    text-align: center;
+}
 body.lux-route-social .social-neo-story-nav {
     position: absolute; top: 0; bottom: 0; width: 30%; cursor: pointer;
 }
@@ -1608,11 +2652,25 @@ body.lux-route-social .social-neo-story-composer-card {
     border: 1px solid var(--sn-bdr);
     border-radius: var(--sn-r-xl); padding: 24px; text-align: center;
 }
+body.lux-route-social .social-neo-story-composer-title { line-height: 1.2; }
+body.lux-route-social .social-neo-story-compose-copy {
+    margin: 8px 0;
+    color: var(--sn-txt2);
+    font-size: 13px;
+}
 body.lux-route-social .social-neo-story-composer-input {
     width: 100%; margin: 14px 0; padding: 12px 16px;
     background: var(--sn-bg); border: 1px solid var(--sn-bdr);
     border-radius: var(--sn-r); color: var(--sn-txt); font-size: 14px;
 }
+body.lux-route-social .social-neo-story-upload-btn {
+    cursor: pointer;
+    justify-content: center;
+}
+body.lux-route-social .social-neo-story-upload-shell { justify-content: center; }
+body.lux-route-social .social-neo-story-composer-actions { justify-content: flex-end; }
+body.lux-route-social .social-neo-story-composer-cancel-btn,
+body.lux-route-social .social-neo-story-composer-submit-btn { justify-content: center; }
 body.lux-route-social .social-neo-story-expiry {
     font-size: 11px; color: var(--sn-txt3); margin-top: 10px;
 }
@@ -1661,7 +2719,7 @@ body.lux-route-social .social-neo-thread-messages::-webkit-scrollbar-thumb {
 @media (max-width: 768px) {
     body.lux-route-social .social-neo-card,
     body.lux-route-social .social-neo-post-card { padding: 12px !important; border-radius: 14px !important; }
-    body.lux-route-social .social-neo-topbar-copy h1 { font-size: 18px; }
+    body.lux-route-social .social-neo-topbar-title { font-size: 18px; }
     body.lux-route-social .social-neo-stat-grid { grid-template-columns: repeat(2,1fr); }
     body.lux-route-social .social-neo-call-stage { grid-template-columns: 1fr; }
     body.lux-route-social .social-neo-profile-cover { height: 140px; }
@@ -1680,6 +2738,143 @@ body.lux-route-social .social-neo-thread-messages::-webkit-scrollbar-thumb {
     }
 }
 
+@media (max-width: 640px) {
+    body.lux-route-social .social-neo-card,
+    body.lux-route-social .social-neo-post-card {
+        padding: 10px !important;
+        border-radius: 12px !important;
+    }
+    body.lux-route-social .social-neo-topbar-card {
+        padding: 14px !important;
+    }
+    body.lux-route-social .social-neo-topbar-title {
+        font-size: 17px !important;
+    }
+    body.lux-route-social .social-neo-stat-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    body.lux-route-social .social-neo-profile-cover {
+        height: 120px;
+    }
+    body.lux-route-social .social-neo-profile-avatar {
+        width: 72px !important; height: 72px !important; font-size: 20px !important;
+    }
+    body.lux-route-social .social-neo-profile-header {
+        margin-top: -32px;
+    }
+    body.lux-route-social .social-neo-profile-name {
+        font-size: 18px;
+    }
+    body.lux-route-social .social-neo-person strong {
+        font-size: 12px;
+    }
+    body.lux-route-social .social-neo-story {
+        min-width: 56px; max-width: 56px;
+    }
+    body.lux-route-social .social-neo-story-ring {
+        width: 48px; height: 48px;
+    }
+    body.lux-route-social .social-neo-story-ring .social-neo-avatar {
+        width: 42px !important; height: 42px !important;
+    }
+    body.lux-route-social .social-neo-events-hero {
+        padding: 14px;
+    }
+    body.lux-route-social .social-neo-events-hero-copy h2 {
+        font-size: 20px;
+    }
+    body.lux-route-social .social-neo-events-hero-stat {
+        padding: 10px 12px;
+    }
+    body.lux-route-social .social-neo-events-hero-stat strong {
+        font-size: 20px;
+    }
+    body.lux-route-social .social-neo-events-lane {
+        padding: 12px;
+    }
+    body.lux-route-social .social-neo-dialog-card,
+    body.lux-route-social .social-neo-story-composer-card {
+        width: min(100vw - 16px, 680px);
+    }
+    body.lux-route-social .social-neo-messages {
+        gap: 10px;
+    }
+    body.lux-route-social .social-neo {
+        gap: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    body.lux-route-social .social-neo-card,
+    body.lux-route-social .social-neo-post-card {
+        padding: 8px !important;
+        border-radius: 10px !important;
+    }
+    body.lux-route-social .social-neo-topbar-card {
+        padding: 10px 12px !important;
+        gap: 10px;
+    }
+    body.lux-route-social .social-neo-topbar-title {
+        font-size: 15px !important;
+    }
+    body.lux-route-social .social-neo-stat-grid {
+        grid-template-columns: 1fr;
+    }
+    body.lux-route-social .social-neo-profile-friends {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    body.lux-route-social .social-neo-profile-cover {
+        height: 100px;
+    }
+    body.lux-route-social .social-neo-profile-avatar {
+        width: 60px !important; height: 60px !important; font-size: 16px !important;
+    }
+    body.lux-route-social .social-neo-profile-header {
+        margin-top: -26px;
+    }
+    body.lux-route-social .social-neo-profile-name {
+        font-size: 16px;
+    }
+    body.lux-route-social .social-neo-friend-chip {
+        padding: 8px;
+    }
+    body.lux-route-social .social-neo-friend-chip .social-neo-avatar {
+        width: 40px !important; height: 40px !important; font-size: 13px !important;
+    }
+    body.lux-route-social .social-neo-story {
+        min-width: 48px; max-width: 48px;
+    }
+    body.lux-route-social .social-neo-story-ring {
+        width: 40px; height: 40px;
+    }
+    body.lux-route-social .social-neo-story-ring .social-neo-avatar {
+        width: 34px !important; height: 34px !important;
+    }
+    body.lux-route-social .social-neo-story span {
+        font-size: 8px;
+    }
+    body.lux-route-social .social-neo {
+        gap: 10px;
+    }
+    body.lux-route-social .social-neo-sidebar-card {
+        padding: 10px !important;
+    }
+    #public-social-root .social-neo-btn {
+        padding: 6px 10px !important;
+        font-size: 11px !important;
+    }
+    body.lux-route-social .social-neo-dialog-card,
+    body.lux-route-social .social-neo-story-composer-card {
+        width: min(100vw - 12px, 680px);
+    }
+    body.lux-route-social .social-neo-events-hero-copy h2 {
+        font-size: 18px;
+    }
+    body.lux-route-social .social-neo-composer-card {
+        gap: 10px;
+    }
+}
+
 /* Stories - Instagram ring strip */
 body.lux-route-social .social-neo-stories {
     display: flex; gap: 14px; overflow-x: auto; padding: 4px 2px;
@@ -1692,6 +2887,7 @@ body.lux-route-social .social-neo-story {
     transition: transform .15s ease;
 }
 body.lux-route-social .social-neo-story:hover { transform: scale(1.06); }
+body.lux-route-social .social-neo-feed-story-item:hover { transform: scale(1.06); }
 body.lux-route-social .social-neo-story > span {
     font-size: 11px; font-weight: 500; color: var(--sn-txt2);
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
@@ -1702,8 +2898,18 @@ body.lux-route-social .social-neo-story .social-neo-story-ring {
     background: linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
     display: flex; align-items: center; justify-content: center;
 }
+body.lux-route-social .social-neo-feed-story-item .social-neo-feed-story-ring {
+    padding: 3px; border-radius: 50%;
+    background: linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+    display: flex; align-items: center; justify-content: center;
+}
 body.lux-route-social .social-neo-story .social-neo-story-ring .social-neo-avatar,
 body.lux-route-social .social-neo-story .social-neo-story-ring img {
+    width: 56px !important; height: 56px !important; border-radius: 50%;
+    border: 3px solid var(--sn-bg); box-sizing: border-box;
+}
+body.lux-route-social .social-neo-feed-story-item .social-neo-feed-story-ring .social-neo-avatar,
+body.lux-route-social .social-neo-feed-story-item .social-neo-feed-story-ring img {
     width: 56px !important; height: 56px !important; border-radius: 50%;
     border: 3px solid var(--sn-bg); box-sizing: border-box;
 }
@@ -1711,7 +2917,18 @@ body.lux-route-social .social-neo-story[data-action="story-add"] .social-neo-sto
     background: linear-gradient(135deg, rgba(var(--sn-accent-rgb),.4), rgba(var(--sn-accent-rgb),.15));
     position: relative;
 }
+body.lux-route-social .social-neo-feed-story-item[data-action="story-add"] .social-neo-feed-story-ring {
+    background: linear-gradient(135deg, rgba(var(--sn-accent-rgb),.4), rgba(var(--sn-accent-rgb),.15));
+    position: relative;
+}
 body.lux-route-social .social-neo-story[data-action="story-add"] .social-neo-story-ring::after {
+    content: '+'; position: absolute; bottom: -2px; right: -2px;
+    width: 20px; height: 20px; border-radius: 50%;
+    background: var(--sn-accent); color: #fff; font-size: 14px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    border: 2px solid var(--sn-bg);
+}
+body.lux-route-social .social-neo-feed-story-item[data-action="story-add"] .social-neo-feed-story-ring::after {
     content: '+'; position: absolute; bottom: -2px; right: -2px;
     width: 20px; height: 20px; border-radius: 50%;
     background: var(--sn-accent); color: #fff; font-size: 14px; font-weight: 700;
@@ -1936,14 +3153,14 @@ body.lux-route-social .social-neo-topbar-card {
 body.lux-route-social .social-neo-topbar-copy {
     display: grid; gap: 4px;
 }
-body.lux-route-social .social-neo-topbar-copy h1 {
+body.lux-route-social .social-neo-topbar-title {
     font-size: 22px !important; font-weight: 700 !important;
     letter-spacing: -.02em; line-height: 1.2;
     background: linear-gradient(135deg, var(--sn-txt), rgba(var(--sn-accent-rgb),.8));
     -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     background-clip: text;
 }
-body.lux-route-social .social-neo-topbar-copy p {
+body.lux-route-social .social-neo-topbar-description {
     font-size: 13px; color: var(--sn-txt2); line-height: 1.4;
     margin: 0 !important;
 }
@@ -2043,10 +3260,14 @@ body.lux-route-social .social-neo-group-card:hover {
     transform: translateY(-2px);
     box-shadow: var(--sn-sh-lg) !important;
 }
+body.lux-route-social .social-neo-entity-card--study {
+    border-left: 3px solid #8b5cf6;
+}
 body.lux-route-social .social-neo-group-card-header {
     display: flex; align-items: center; gap: 12px;
     padding: 16px 18px !important;
     border-bottom: 1px solid var(--sn-bdr);
+    background: linear-gradient(135deg,rgba(16,185,129,.15),rgba(16,185,129,.03));
 }
 body.lux-route-social .social-neo-group-card-icon {
     width: 42px; height: 42px; min-width: 42px;
@@ -2085,6 +3306,39 @@ body.lux-route-social .social-neo-page-card-header {
     display: flex; align-items: center; gap: 12px;
     padding: 16px 18px !important;
     border-bottom: 1px solid var(--sn-bdr);
+    background: linear-gradient(135deg,rgba(59,130,246,.15),rgba(59,130,246,.03));
+}
+body.lux-route-social .social-neo-section-accent-icon.is-green { color: #10b981; }
+body.lux-route-social .social-neo-section-accent-icon.is-blue { color: #3b82f6; }
+body.lux-route-social .social-neo-section-accent-icon.is-purple { color: #8b5cf6; }
+body.lux-route-social .social-neo-section-card--official {
+    border-left: 3px solid #3b82f6;
+}
+body.lux-route-social .social-neo-pill.is-blue {
+    border-color: #3b82f6;
+    color: #3b82f6;
+}
+body.lux-route-social .social-neo-btn-primary.is-blue {
+    background: rgba(59,130,246,.8) !important;
+}
+body.lux-route-social .social-neo-empty-left {
+    padding: 12px;
+    text-align: left;
+}
+body.lux-route-social .social-neo-empty-left-icon {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 18px;
+    opacity: .3;
+}
+body.lux-route-social .social-neo-empty-left-title {
+    color: var(--sn-txt);
+    font-size: 12px;
+}
+body.lux-route-social .social-neo-empty-left-copy {
+    margin: 4px 0 0;
+    font-size: 11px;
+    color: var(--sn-txt3);
 }
 body.lux-route-social .social-neo-page-card-icon {
     width: 42px; height: 42px; min-width: 42px;
@@ -2229,6 +3483,12 @@ body.lux-route-social .social-neo-events-compose-shell {
     display: grid;
     gap: 12px;
 }
+body.lux-route-social .social-neo-form-actions-mt-14 {
+    margin-top: 14px;
+}
+body.lux-route-social .social-neo-grid-col-span-all {
+    grid-column: 1 / -1;
+}
 body.lux-route-social .social-neo-events-create-card--study {
     border-color: rgba(139,92,246,.22);
     box-shadow: inset 0 1px 0 rgba(139,92,246,.08);
@@ -2337,6 +3597,12 @@ body.lux-light-mode.lux-route-social .social-neo-stat-grid div:hover {
 /* Story ring inner border */
 body.lux-light-mode.lux-route-social .social-neo-story-ring .social-neo-avatar {
     border-color: #fff !important;
+}
+
+/* Workspace / drawer nav rows: slider-scaled idle fill (fades out at 0% opacity) */
+body.lux-light-mode.lux-route-social #public-social-root .social-neo-side-link:not(:hover):not(.is-active) {
+    background: rgba(255, 255, 255, calc(var(--lux-transparency-alpha, 1) * 0.20)) !important;
+    border-color: rgba(0, 0, 0, calc(var(--lux-transparency-alpha, 1) * 0.06)) !important;
 }
 
 /* Sidebar count badge */
@@ -2489,12 +3755,9 @@ body.lux-light-mode.lux-route-social #public-social-root .social-neo-btn:hover {
 }
 
 /* Pages hero */
-body.lux-light-mode.lux-route-social .social-neo-pages-hero {
-    background: linear-gradient(135deg, rgba(59,130,246,.08), rgba(255,255,255,.92));
-}
 body.lux-light-mode.lux-route-social .social-neo-pages-hero-stats article {
-    background: rgba(255,255,255,.82);
-    border-color: rgba(0,0,0,.06);
+    background: var(--social-fade-surface-soft);
+    border-color: var(--social-fade-border-soft);
 }
 
 /* Pages wizard steps */
@@ -2868,12 +4131,12 @@ body.lux-route-social .social-neo-shell-profile-copy {
     display: grid;
     min-width: 0;
 }
-body.lux-route-social .social-neo-shell-profile-copy strong {
+body.lux-route-social .social-neo-shell-profile-name {
     font-size: 13px;
     line-height: 1.3;
     color: var(--sn-txt);
 }
-body.lux-route-social .social-neo-shell-profile-copy small {
+body.lux-route-social .social-neo-shell-profile-subtitle {
     font-size: 11px;
     line-height: 1.35;
     color: var(--sn-txt2);
@@ -2924,12 +4187,12 @@ body.lux-route-social .social-neo-shell-nav-copy {
     display: grid;
     min-width: 0;
 }
-body.lux-route-social .social-neo-shell-nav-copy strong {
+body.lux-route-social .social-neo-shell-nav-title {
     font-size: 12.5px;
     line-height: 1.3;
     color: var(--sn-txt);
 }
-body.lux-route-social .social-neo-shell-nav-copy small {
+body.lux-route-social .social-neo-shell-nav-helper {
     font-size: 10px;
     line-height: 1.35;
     color: var(--sn-txt3);
@@ -2951,6 +4214,9 @@ body.lux-route-social .social-neo-shell-nav-count {
     color: var(--sn-accent);
     background: rgba(var(--sn-accent-rgb),.12);
     border: 1px solid rgba(var(--sn-accent-rgb),.14);
+}
+body.lux-route-social .social-neo-shell-nav-count-label {
+    flex: 0 0 auto;
 }
 body.lux-route-social .social-neo-shell-topbar-actions {
     display: flex;
@@ -2993,8 +4259,60 @@ body.lux-route-social .social-neo-shell-drawer-profile,
 body.lux-route-social .social-neo-shell-drawer-nav-card {
     padding: 16px !important;
 }
+body.lux-route-social .social-neo-shell-drawer-profile-card {
+    display: grid;
+    gap: 12px;
+}
+body.lux-route-social .social-neo-shell-drawer-profile {
+    background: linear-gradient(135deg, rgba(var(--sn-accent-rgb), .10), transparent 60%), var(--sn-bg) !important;
+}
+body.lux-route-social .social-neo-shell-drawer-profile-chip {
+    width: 100%;
+    justify-content: flex-start;
+}
+body.lux-route-social .social-neo-shell-drawer-profile-copy {
+    display: grid;
+    gap: 4px;
+    min-width: 0;
+}
+body.lux-route-social .social-neo-shell-drawer-profile-name {
+    line-height: 1.3;
+}
+body.lux-route-social .social-neo-shell-drawer-profile-subtitle {
+    line-height: 1.35;
+}
+body.lux-route-social .social-neo-shell-drawer-actions {
+    align-items: center;
+}
+body.lux-route-social .social-neo-shell-drawer-action-btn {
+    justify-content: center;
+}
 body.lux-route-social .social-neo-shell-drawer .social-neo-sidebar-nav {
     gap: 6px;
+}
+body.lux-route-social .social-neo-shell-drawer-nav {
+    gap: 6px;
+}
+body.lux-route-social .social-neo-shell-drawer-nav-btn {
+    width: 100%;
+}
+body.lux-route-social .social-neo-shell-drawer-nav-main {
+    min-width: 0;
+}
+body.lux-route-social .social-neo-shell-drawer-nav-icon {
+    flex: 0 0 auto;
+}
+body.lux-route-social .social-neo-shell-drawer-nav-copy {
+    min-width: 0;
+}
+body.lux-route-social .social-neo-shell-drawer-nav-title {
+    line-height: 1.3;
+}
+body.lux-route-social .social-neo-shell-drawer-nav-helper {
+    line-height: 1.35;
+}
+body.lux-route-social .social-neo-shell-drawer-nav-count {
+    flex: 0 0 auto;
 }
 body.lux-light-mode.lux-route-social .social-neo-shell-profile-chip,
 body.lux-light-mode.lux-route-social .social-neo-shell-nav-btn {
@@ -3005,21 +4323,21 @@ body.lux-light-mode.lux-route-social .social-neo-topbar-card {
     background: linear-gradient(135deg, rgba(var(--sn-accent-rgb),.10), rgba(255,255,255,.96) 58%) !important;
     border-color: rgba(var(--lux-accent-rgb,148,163,184), calc(0.02 + var(--lux-glass-alpha, 0.06) * 3)) !important;
 }
-body.lux-light-mode.lux-route-social .social-neo-topbar-copy h1 {
+body.lux-light-mode.lux-route-social .social-neo-topbar-title {
     background: none;
     -webkit-text-fill-color: initial;
     color: #172033;
 }
-body.lux-light-mode.lux-route-social .social-neo-topbar-copy p,
-body.lux-light-mode.lux-route-social .social-neo-shell-profile-copy small,
-body.lux-light-mode.lux-route-social .social-neo-shell-nav-copy small {
+body.lux-light-mode.lux-route-social .social-neo-topbar-description,
+body.lux-light-mode.lux-route-social .social-neo-shell-profile-subtitle,
+body.lux-light-mode.lux-route-social .social-neo-shell-nav-helper {
     color: rgba(23,32,51,.62);
 }
 body.lux-light-mode.lux-route-social .social-neo-shell-nav-btn.is-active {
     background: linear-gradient(135deg, rgba(var(--sn-accent-rgb),.14), rgba(255,255,255,.96)) !important;
     border-color: rgba(var(--sn-accent-rgb),.20) !important;
 }
-body.lux-light-mode.lux-route-social .social-neo-shell-nav-copy strong {
+body.lux-light-mode.lux-route-social .social-neo-shell-nav-title {
     color: #172033;
 }
 body.lux-light-mode.lux-route-social .social-neo-shell-nav-count {
@@ -3042,7 +4360,6 @@ body.lux-route-social .social-neo-pages-hero {
     grid-template-columns: minmax(0,1.6fr) minmax(260px,.9fr);
     gap: 18px;
     padding: 22px !important;
-    background: linear-gradient(135deg, rgba(59,130,246,.12), rgba(var(--lux-glass-tint-rgb,15,23,42), calc(var(--lux-panel-alpha, 0.74) * 0.19)));
 }
 body.lux-route-social .social-neo-pages-hero-copy h2 {
     margin: 10px 0 8px;
@@ -3063,8 +4380,10 @@ body.lux-route-social .social-neo-pages-hero-stats {
 body.lux-route-social .social-neo-pages-hero-stats article {
     padding: 14px 16px;
     border-radius: 18px;
-    border: 1px solid var(--sn-bdr);
-    background: rgba(var(--lux-glass-tint-rgb,7,12,28), calc(var(--lux-panel-alpha, 0.74) * 0.65));
+    border: 1px solid var(--social-fade-border-soft);
+    background: var(--social-fade-surface-soft);
+    backdrop-filter: var(--social-fade-blur);
+    -webkit-backdrop-filter: var(--social-fade-blur);
 }
 body.lux-route-social .social-neo-pages-hero-stats strong {
     display: block;
@@ -3138,7 +4457,7 @@ body.lux-route-social .social-neo-page-cover {
     overflow: hidden;
     border-radius: 18px;
     min-height: 190px;
-    background: linear-gradient(135deg, rgba(59,130,246,.18), rgba(var(--lux-glass-tint-rgb,15,23,42), calc(var(--lux-panel-alpha, 0.74) * 0.92)));
+    background: linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .14)), rgba(var(--lux-glass-tint-rgb,15,23,42), calc(var(--lux-transparency-alpha, .92) * .88)));
     border: 1px solid var(--sn-bdr);
 }
 body.lux-route-social .social-neo-page-preview-cover img,
@@ -3153,9 +4472,9 @@ body.lux-route-social .social-neo-page-card-cover-fallback {
     width: 100%;
     min-height: 190px;
     background:
-        radial-gradient(circle at 15% 20%, rgba(96,165,250,.45), transparent 34%),
-        radial-gradient(circle at 85% 25%, rgba(14,165,233,.32), transparent 38%),
-        linear-gradient(135deg, rgba(30,41,59,.96), rgba(var(--lux-glass-tint-rgb,15,23,42), calc(var(--lux-panel-alpha, 0.74) * 1.16)));
+        radial-gradient(circle at 15% 20%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .22)), transparent 34%),
+        radial-gradient(circle at 85% 25%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .92) * .14)), transparent 38%),
+        linear-gradient(135deg, rgba(var(--lux-glass-tint-rgb,15,23,42), calc(var(--lux-transparency-alpha, .92) * .94)), rgba(var(--lux-glass-tint-rgb,15,23,42), calc(var(--lux-transparency-alpha, .92) * .72)));
 }
 body.lux-route-social .social-neo-page-card-rich {
     overflow: hidden;
@@ -3204,8 +4523,8 @@ body.lux-route-social .social-neo-page-profile-avatar {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, rgba(59,130,246,.22), rgba(96,165,250,.16));
-    color: #dbeafe;
+    background: linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .18)), rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .92) * .10)));
+    color: var(--sn-txt);
     font-size: 22px;
     font-weight: 800;
     border: 1px solid var(--sn-bdr);
@@ -3276,11 +4595,8 @@ body.lux-light-mode.lux-route-social .social-neo-page-card,
 body.lux-light-mode.lux-route-social .social-neo-pages-wizard-step,
 body.lux-light-mode.lux-route-social .social-neo-page-profile-tab,
 body.lux-light-mode.lux-route-social .social-neo-pages-hero-stats article {
-    background: rgba(255,255,255,.88) !important;
-    border-color: rgba(var(--lux-accent-rgb,148,163,184), calc(0.02 + var(--lux-glass-alpha, 0.06) * 3.3)) !important;
-}
-body.lux-light-mode.lux-route-social .social-neo-pages-hero {
-    background: linear-gradient(135deg, rgba(59,130,246,.10), rgba(255,255,255,.92)) !important;
+    background: var(--social-fade-surface-soft) !important;
+    border-color: var(--social-fade-border-soft) !important;
 }
 body.lux-light-mode.lux-route-social .social-neo-page-profile-tab.is-active,
 body.lux-light-mode.lux-route-social .social-neo-pages-wizard-step.is-active {
@@ -3288,9 +4604,9 @@ body.lux-light-mode.lux-route-social .social-neo-pages-wizard-step.is-active {
 }
 body.lux-light-mode.lux-route-social .social-neo-page-card-cover-fallback {
     background:
-        radial-gradient(circle at 15% 20%, rgba(96,165,250,.24), transparent 34%),
-        radial-gradient(circle at 85% 25%, rgba(14,165,233,.16), transparent 38%),
-        linear-gradient(135deg, rgba(241,245,249,.94), rgba(226,232,240,.90));
+        radial-gradient(circle at 15% 20%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .14)), transparent 34%),
+        radial-gradient(circle at 85% 25%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .92) * .10)), transparent 38%),
+        linear-gradient(135deg, rgba(255,255,255, calc(var(--lux-transparency-alpha, .92) * .94)), rgba(247,241,232, calc(var(--lux-transparency-alpha, .92) * .88)));
 }
 @media (max-width: 1400px) {
     body.lux-route-social .social-neo-shell-topbar-main {
@@ -3493,11 +4809,17 @@ body.lux-route-social .social-project-detail-copy h2 {
     line-height: 1.02;
     letter-spacing: -.03em;
 }
+body.lux-route-social .social-project-detail-title {
+    margin: 0 !important;
+}
 body.lux-route-social .social-projects-hero-rich p,
 body.lux-route-social .social-project-detail-copy p,
 body.lux-route-social .social-project-body-copy {
     color: var(--sn-txt2);
     line-height: 1.7;
+}
+body.lux-route-social .social-project-detail-summary {
+    margin: 0 !important;
 }
 body.lux-route-social .social-project-hero-grid,
 body.lux-route-social .social-project-dashboard-grid,
@@ -3521,7 +4843,9 @@ body.lux-route-social .social-project-deliverable-grid,
 body.lux-route-social .social-project-outcome-grid {
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 }
-body.lux-route-social .social-project-index-grid,
+body.lux-route-social .social-project-index-grid {
+    grid-template-columns: 1fr;
+}
 body.lux-route-social .social-project-detail-top,
 body.lux-route-social .social-project-overview-columns {
     grid-template-columns: minmax(0,1.1fr) minmax(320px,.9fr);
@@ -3550,6 +4874,22 @@ body.lux-route-social .social-project-mini-card {
     padding: 18px;
     min-width: 0;
     box-shadow: 0 18px 44px rgba(2,6,23,.18);
+}
+body.lux-route-social .social-project-metric-card[data-project-tone='orange'],
+body.lux-route-social .social-project-ring-card[data-project-tone='orange'] {
+    --project-accent: #f97316;
+}
+body.lux-route-social .social-project-metric-card[data-project-tone='blue'],
+body.lux-route-social .social-project-ring-card[data-project-tone='blue'] {
+    --project-accent: #3b82f6;
+}
+body.lux-route-social .social-project-metric-card[data-project-tone='purple'],
+body.lux-route-social .social-project-ring-card[data-project-tone='purple'] {
+    --project-accent: #8b5cf6;
+}
+body.lux-route-social .social-project-metric-card[data-project-tone='teal'],
+body.lux-route-social .social-project-ring-card[data-project-tone='teal'] {
+    --project-accent: #14b8a6;
 }
 body.lux-route-social .social-project-metric-card,
 body.lux-route-social .social-project-metric-card-wide {
@@ -3731,6 +5071,54 @@ body.lux-route-social .social-project-status-dot.is-emerald,
 body.lux-route-social .social-project-status-segment.is-emerald {
     background: #34d399;
 }
+body.lux-route-social .social-project-donut-wrap {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    flex-wrap: wrap;
+}
+body.lux-route-social .social-project-donut {
+    width: 132px;
+    height: 132px;
+    flex: 0 0 auto;
+}
+body.lux-route-social .social-project-donut-seg {
+    transition: stroke-dashoffset 0.4s ease, stroke-dasharray 0.4s ease;
+}
+body.lux-route-social .social-project-donut-value {
+    font-size: 30px;
+    font-weight: 800;
+    fill: var(--lux-text, #f8fafc);
+}
+body.lux-route-social .social-project-donut-label {
+    font-size: 13px;
+    fill: var(--lux-text-soft, rgba(226,232,240,0.7));
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+body.lux-route-social .social-project-donut-legend {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1 1 130px;
+    min-width: 120px;
+}
+body.lux-route-social .social-project-donut-key {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--lux-text-soft, rgba(226,232,240,0.78));
+}
+body.lux-route-social .social-project-donut-key em {
+    margin-left: auto;
+    font-style: normal;
+    font-weight: 700;
+    color: var(--lux-text, #f8fafc);
+}
+body.lux-route-social .social-project-donut-key .social-project-status-dot {
+    margin-right: 0;
+}
 body.lux-route-social .social-project-workload-bar {
     height: 10px;
     border-radius: 999px;
@@ -3771,43 +5159,6 @@ body.lux-route-social .social-project-mini-card:hover {
 }
 body.lux-route-social .social-project-tab-shell {
     padding: 14px;
-}
-body.lux-route-social .social-project-tab-row-rich {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 10px;
-}
-body.lux-route-social .social-project-tab-pill {
-    border: 1px solid var(--sn-bdr);
-    background: rgba(var(--lux-glass-tint-rgb,8,14,30), calc(var(--lux-panel-alpha, 0.74) * 0.62));
-    color: var(--sn-txt);
-    border-radius: 20px;
-    padding: 14px 16px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    text-align: left;
-    cursor: pointer;
-    min-width: 0;
-}
-body.lux-route-social .social-project-tab-pill span {
-    display: grid;
-    gap: 4px;
-    min-width: 0;
-}
-body.lux-route-social .social-project-tab-pill strong {
-    font-size: 14px;
-}
-body.lux-route-social .social-project-tab-pill small {
-    color: var(--sn-txt2);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-body.lux-route-social .social-project-tab-pill.is-active {
-    border-color: rgba(249,115,22,.28);
-    background: linear-gradient(135deg, rgba(249,115,22,.20), rgba(var(--lux-glass-tint-rgb,8,14,30), calc(var(--lux-panel-alpha, 0.74) * 0.97)));
-    box-shadow: inset 0 0 0 1px rgba(249,115,22,.18);
 }
 body.lux-route-social .social-project-card-analytics {
     margin-top: 14px;
@@ -4011,9 +5362,6 @@ body.lux-light-mode.lux-route-social .social-project-workload-bar {
     }
 }
 @media (max-width: 1120px) {
-    body.lux-route-social .social-project-tab-row-rich {
-        grid-template-columns: repeat(2, minmax(0,1fr));
-    }
     body.lux-route-social .social-project-dashboard-strip,
     body.lux-route-social .social-project-dashboard-grid,
     body.lux-route-social .social-project-overview-grid,
@@ -4039,8 +5387,7 @@ body.lux-light-mode.lux-route-social .social-project-workload-bar {
     body.lux-route-social .social-project-dashboard-grid,
     body.lux-route-social .social-project-overview-grid,
     body.lux-route-social .social-project-deliverable-grid,
-    body.lux-route-social .social-project-outcome-grid,
-    body.lux-route-social .social-project-tab-row-rich {
+    body.lux-route-social .social-project-outcome-grid {
         grid-template-columns: 1fr;
     }
     body.lux-route-social .social-project-people-grid {
@@ -4070,9 +5417,6 @@ body.lux-route-social .social-portfolio-hero {
     grid-template-columns: minmax(0,1fr) auto;
     align-items: end;
     gap: 18px;
-    background:
-        radial-gradient(circle at top right, rgba(var(--sn-accent-rgb), .14), transparent 34%),
-        linear-gradient(135deg, rgba(255,255,255,.02), rgba(255,255,255,.00)) !important;
 }
 body.lux-route-social .social-portfolio-hero h2 {
     margin: 0;
@@ -4207,11 +5551,6 @@ body.lux-route-social .social-portfolio-hero {
     position: relative;
     padding: 26px !important;
     border-color: rgba(var(--sn-accent-rgb), .18) !important;
-    background:
-        radial-gradient(circle at 12% 10%, rgba(var(--sn-accent-rgb), .18), transparent 34%),
-        radial-gradient(circle at 100% 0%, rgba(255,255,255,.08), transparent 28%),
-        linear-gradient(135deg, rgba(255,255,255,.04), rgba(255,255,255,.01)) !important;
-    box-shadow: 0 26px 70px rgba(0,0,0,.24) !important;
 }
 body.lux-route-social .social-portfolio-hero::before {
     content: '';
@@ -4220,6 +5559,7 @@ body.lux-route-social .social-portfolio-hero::before {
     background:
         linear-gradient(120deg, rgba(255,255,255,.03), transparent 42%),
         radial-gradient(circle at 85% 18%, rgba(var(--sn-accent-rgb), .12), transparent 22%);
+    opacity: var(--lux-transparency-alpha, 1);
     pointer-events: none;
 }
 body.lux-route-social .social-portfolio-hero-main,
@@ -4278,11 +5618,11 @@ body.lux-route-social .social-portfolio-stat-tile {
     padding: 18px;
     min-height: 132px;
     border-radius: 20px;
-    border: 1px solid rgba(255,255,255,.08);
-    background:
-        linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.02)),
-        rgba(7, 11, 18, .34);
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
+    border: 1px solid var(--social-fade-border-soft);
+    background: var(--social-fade-surface-soft);
+    box-shadow: var(--social-fade-shadow-soft);
+    backdrop-filter: var(--social-fade-blur);
+    -webkit-backdrop-filter: var(--social-fade-blur);
 }
 body.lux-route-social .social-portfolio-stat-tile strong {
     font-size: clamp(26px, 3vw, 34px);
@@ -4293,11 +5633,30 @@ body.lux-route-social .social-portfolio-stat-tile span {
     color: var(--sn-txt2);
     line-height: 1.5;
 }
+body.lux-route-social .social-portfolio-hero .social-portfolio-stat-tile,
+body.lux-route-social .social-portfolio-hero .social-portfolio-stat-tile.lux-strip-card,
+body.lux-route-social .social-portfolio-hero .social-portfolio-stat-tile.surface-card {
+    background: rgba(var(--sn-accent-rgb), calc(0.03 + var(--lux-transparency-alpha, .92) * 0.05)) !important;
+    border: 1px solid rgba(var(--sn-accent-rgb), calc(0.06 + var(--lux-transparency-alpha, .92) * 0.08));
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+/* Portfolio hero stat column — transparent wrapper (wins over index-luxury .lux-hero-side) */
+body.lux-route-social .social-portfolio-hero .lux-hero-side,
+body.lux-route-social .social-portfolio-hero-side.lux-hero-side {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+}
 body.lux-route-social .social-portfolio-toolbar {
     gap: 16px;
     padding: 20px !important;
-    background:
-        linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015)) !important;
 }
 body.lux-route-social .social-portfolio-toolbar-head {
     display: flex;
@@ -4465,13 +5824,10 @@ body.lux-route-social .social-portfolio-card::before {
 body.lux-route-social .social-portfolio-card:hover::before,
 body.lux-route-social .social-portfolio-card.is-open::before,
 body.lux-route-social .social-portfolio-card.is-featured::before {
-    opacity: 1;
+    opacity: var(--lux-transparency-alpha, 1);
 }
 body.lux-route-social .social-portfolio-card.is-featured {
     border-color: rgba(var(--sn-accent-rgb), .18) !important;
-    background:
-        radial-gradient(circle at top left, rgba(var(--sn-accent-rgb), .12), transparent 26%),
-        linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.015)) !important;
 }
 body.lux-route-social .social-portfolio-card-head,
 body.lux-route-social .social-portfolio-body,
@@ -4544,8 +5900,11 @@ body.lux-light-mode.lux-route-social .social-portfolio-mini-card,
 body.lux-light-mode.lux-route-social .social-portfolio-stat-tile,
 body.lux-light-mode.lux-route-social .social-portfolio-compose-preview-card,
 body.lux-light-mode.lux-route-social .social-portfolio-audience-panel {
-    background:
-        linear-gradient(180deg, rgba(255,255,255,.96), rgba(249,247,243,.94)) !important;
+    background: var(--social-fade-surface) !important;
+    border-color: var(--social-fade-border-soft);
+    box-shadow: var(--social-fade-shadow-soft);
+    backdrop-filter: var(--social-fade-blur);
+    -webkit-backdrop-filter: var(--social-fade-blur);
 }
 body.lux-light-mode.lux-route-social .social-portfolio-search,
 body.lux-light-mode.lux-route-social .social-portfolio-link {
@@ -4587,7 +5946,7 @@ body.lux-light-mode.lux-route-social .social-portfolio-link {
     }
 }
 
-/* Luxury theme fade pass: keep Social surfaces in sync with palette + opacity controls. */
+/* Luxury theme fade pass — token-driven (SSoT: --social-fade-*) */
 body.lux-route-social #page-social .social-hero,
 body.lux-route-social #page-social .social-entity-cover,
 body.lux-route-social #page-social .social-app-shell,
@@ -4599,15 +5958,11 @@ body.lux-route-social #page-social .social-empty,
 body.lux-route-social #page-social .social-neo-card,
 body.lux-route-social #page-social .social-neo-alert,
 body.lux-route-social #page-social .social-neo-empty {
-    background:
-        radial-gradient(circle at 8% 0%, rgba(255, 255, 255, calc(var(--lux-transparency-alpha, .92) * .075)), transparent 32%),
-        radial-gradient(circle at 76% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, .92) * .24)), transparent 38%),
-        radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-transparency-alpha, .92) * .14)), transparent 38%),
-        linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, .92) * .10)), rgba(10, 15, 24, calc(var(--lux-transparency-alpha, .92) * .91)) 44%, rgba(7, 10, 18, calc(var(--lux-transparency-alpha, .92) * .84))) !important;
-    border-color: rgba(var(--lux-accent-rgb), .16) !important;
-    box-shadow: 0 24px 58px rgba(0, 0, 0, .24), inset 0 1px 0 rgba(255, 255, 255, .08) !important;
-    backdrop-filter: blur(var(--lux-transparency-blur, 18px)) saturate(var(--lux-transparency-saturate, 145%)) !important;
-    -webkit-backdrop-filter: blur(var(--lux-transparency-blur, 18px)) saturate(var(--lux-transparency-saturate, 145%)) !important;
+    background: var(--social-fade-surface) !important;
+    border-color: var(--social-fade-border) !important;
+    box-shadow: var(--social-fade-shadow) !important;
+    backdrop-filter: var(--social-fade-blur) !important;
+    -webkit-backdrop-filter: var(--social-fade-blur) !important;
 }
 
 body.lux-route-social #page-social .social-mini-card,
@@ -4621,53 +5976,11 @@ body.lux-route-social #page-social .social-neo-directory-item,
 body.lux-route-social #page-social .social-neo-message,
 body.lux-route-social #page-social .social-neo-comment-bubble,
 body.lux-route-social #page-social .social-neo-stat-grid > div {
-    background:
-        radial-gradient(circle at 12% 0%, rgba(255, 255, 255, calc(var(--lux-transparency-alpha, .92) * .055)), transparent 30%),
-        radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, .92) * .14)), transparent 34%),
-        linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, .92) * .065)), rgba(10, 15, 24, calc(var(--lux-transparency-alpha, .92) * .88)) 46%, rgba(7, 10, 18, calc(var(--lux-transparency-alpha, .92) * .80))) !important;
-    border-color: rgba(var(--lux-accent-rgb), .12) !important;
-    box-shadow: 0 14px 32px rgba(0, 0, 0, .18), inset 0 1px 0 rgba(255, 255, 255, .06) !important;
-    backdrop-filter: blur(var(--lux-transparency-blur, 18px)) saturate(var(--lux-transparency-saturate, 145%)) !important;
-    -webkit-backdrop-filter: blur(var(--lux-transparency-blur, 18px)) saturate(var(--lux-transparency-saturate, 145%)) !important;
-}
-
-body.lux-light-mode.lux-route-social #page-social .social-hero,
-body.lux-light-mode.lux-route-social #page-social .social-entity-cover,
-body.lux-light-mode.lux-route-social #page-social .social-app-shell,
-body.lux-light-mode.lux-route-social #page-social .social-rail,
-body.lux-light-mode.lux-route-social #page-social .social-card,
-body.lux-light-mode.lux-route-social #page-social .social-post-card,
-body.lux-light-mode.lux-route-social #page-social .social-detail-card,
-body.lux-light-mode.lux-route-social #page-social .social-empty,
-body.lux-light-mode.lux-route-social #page-social .social-neo-card,
-body.lux-light-mode.lux-route-social #page-social .social-neo-alert,
-body.lux-light-mode.lux-route-social #page-social .social-neo-empty {
-    background:
-        radial-gradient(circle at 8% 0%, rgba(255, 255, 255, calc(var(--lux-transparency-alpha, .86) * .88)), transparent 34%),
-        radial-gradient(circle at 76% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, .86) * .22)), transparent 38%),
-        radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-transparency-alpha, .86) * .13)), transparent 38%),
-        linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, .86) * .075)), rgba(255, 255, 255, calc(var(--lux-transparency-alpha, .86) * .88)) 44%, rgba(247, 241, 232, calc(var(--lux-transparency-alpha, .86) * .72))) !important;
-    border-color: rgba(var(--lux-accent-rgb), .14) !important;
-    box-shadow: 0 22px 48px rgba(var(--lux-glass-tint-rgb, 15, 23, 42), .12), inset 0 1px 0 rgba(255, 255, 255, .68) !important;
-}
-
-body.lux-light-mode.lux-route-social #page-social .social-mini-card,
-body.lux-light-mode.lux-route-social #page-social .social-comment-card,
-body.lux-light-mode.lux-route-social #page-social .social-shared-card,
-body.lux-light-mode.lux-route-social #page-social .social-notif-item,
-body.lux-light-mode.lux-route-social #page-social .social-story-card,
-body.lux-light-mode.lux-route-social #page-social .social-file-preview,
-body.lux-light-mode.lux-route-social #page-social .social-neo-chat-item,
-body.lux-light-mode.lux-route-social #page-social .social-neo-directory-item,
-body.lux-light-mode.lux-route-social #page-social .social-neo-message,
-body.lux-light-mode.lux-route-social #page-social .social-neo-comment-bubble,
-body.lux-light-mode.lux-route-social #page-social .social-neo-stat-grid > div {
-    background:
-        radial-gradient(circle at 10% 0%, rgba(255, 255, 255, calc(var(--lux-transparency-alpha, .86) * .78)), transparent 32%),
-        radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, .86) * .14)), transparent 34%),
-        linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, .86) * .055)), rgba(255, 255, 255, calc(var(--lux-transparency-alpha, .86) * .82)) 46%, rgba(247, 241, 232, calc(var(--lux-transparency-alpha, .86) * .66))) !important;
-    border-color: rgba(var(--lux-accent-rgb), .11) !important;
-    box-shadow: 0 14px 30px rgba(var(--lux-glass-tint-rgb, 15, 23, 42), .10), inset 0 1px 0 rgba(255, 255, 255, .62) !important;
+    background: var(--social-fade-surface-soft) !important;
+    border-color: var(--social-fade-border-soft) !important;
+    box-shadow: var(--social-fade-shadow-soft) !important;
+    backdrop-filter: var(--social-fade-blur) !important;
+    -webkit-backdrop-filter: var(--social-fade-blur) !important;
 }
 
 /* Final professional social workspace pass. Keep this last so legacy Social rules cannot win. */
@@ -4738,14 +6051,11 @@ body.lux-route-social #page-social .social-portfolio-card {
     position: relative;
     overflow: hidden;
     border-radius: var(--sn-card-radius) !important;
-    border: 1px solid var(--sn-card-border) !important;
-    background:
-        radial-gradient(circle at 0% 0%, rgba(255, 255, 255, .07), transparent 28%),
-        radial-gradient(circle at 92% 0%, rgba(var(--lux-accent-rgb, 200, 130, 42), calc(var(--lux-transparency-alpha, .90) * .18)), transparent 34%),
-        linear-gradient(135deg, rgba(var(--lux-accent-rgb, 200, 130, 42), .065), var(--sn-card-base) 42%, var(--sn-card-deep)) !important;
-    box-shadow: var(--sn-ink-shadow) !important;
-    backdrop-filter: blur(var(--lux-transparency-blur, 18px)) saturate(var(--lux-transparency-saturate, 145%)) !important;
-    -webkit-backdrop-filter: blur(var(--lux-transparency-blur, 18px)) saturate(var(--lux-transparency-saturate, 145%)) !important;
+    border: 1px solid var(--social-fade-border-soft) !important;
+    background: var(--social-fade-surface) !important;
+    box-shadow: var(--social-fade-shadow-soft) !important;
+    backdrop-filter: var(--social-fade-blur) !important;
+    -webkit-backdrop-filter: var(--social-fade-blur) !important;
 }
 
 body.lux-route-social #page-social .social-neo-card::before,
@@ -4757,10 +6067,8 @@ body.lux-route-social #page-social .social-portfolio-card::before {
     position: absolute;
     inset: 0;
     pointer-events: none;
-    background:
-        linear-gradient(90deg, rgba(255, 255, 255, .11), transparent 24%, transparent 76%, rgba(255, 255, 255, .04)),
-        radial-gradient(circle at 50% 0%, rgba(var(--sn-accent-2-rgb), .09), transparent 38%);
-    opacity: .72;
+    background: none;
+    opacity: 0;
 }
 
 body.lux-route-social #page-social .social-neo-card > *,
@@ -4799,16 +6107,58 @@ body.lux-route-social .social-neo-topbar-copy {
     max-width: 680px;
 }
 
-body.lux-route-social .social-neo-topbar-copy h1 {
+body.lux-route-social .social-neo-topbar-title {
     font-size: clamp(32px, 4vw, 58px);
     line-height: .98;
     letter-spacing: 0;
 }
 
-body.lux-route-social .social-neo-topbar-copy p {
+body.lux-route-social .social-neo-topbar-description {
     max-width: 620px;
     font-size: clamp(13px, 1.2vw, 16px);
     line-height: 1.65;
+}
+
+body.lux-route-social .social-neo-topbar-pills {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
+    gap: 8px;
+    width: 100%;
+}
+
+body.lux-route-social .social-neo-topbar-pill {
+    min-height: 42px;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 8px 12px;
+    border-radius: 14px;
+    background:
+        linear-gradient(135deg, rgba(var(--sn-accent-rgb), .12), rgba(var(--sn-accent-2-rgb), .055)) !important;
+    border-color: rgba(var(--sn-accent-rgb), .18) !important;
+}
+
+body.lux-route-social .social-neo-topbar-pill-value {
+    font-size: 17px;
+}
+
+body.lux-route-social .social-neo-topbar-pill-label {
+    font-size: 11px;
+    line-height: 1.35;
+    color: var(--sn-txt3);
+}
+
+body.lux-route-social .social-neo-topbar-tabs {
+    width: fit-content;
+    max-width: 100%;
+}
+
+body.lux-route-social .social-neo-topbar-tab {
+    min-height: 34px;
+    padding-inline: 13px !important;
+}
+
+body.lux-route-social .social-neo-topbar-tab.is-active {
+    box-shadow: 0 10px 24px rgba(var(--lux-accent-rgb), .15) !important;
 }
 
 body.lux-route-social .social-neo-panel-meta {
@@ -4839,6 +6189,10 @@ body.lux-route-social .social-neo-shell-topbar-main {
 body.lux-route-social .social-neo-shell-topbar-actions {
     grid-column: 1 / -1;
     justify-content: flex-start;
+}
+
+body.lux-route-social .social-neo-shell-topbar-action-btn {
+    justify-content: center;
 }
 
 body.lux-route-social .social-neo-shell-profile-chip {
@@ -4886,12 +6240,11 @@ body.lux-route-social .social-neo-section-command {
     gap: clamp(16px, 1.6vw, 24px);
     padding: clamp(18px, 2vw, 26px);
     border-radius: 26px;
-    border: 1px solid rgba(var(--section-rgb), .24);
-    background:
-        radial-gradient(circle at 0% 0%, rgba(255, 255, 255, .10), transparent 28%),
-        radial-gradient(circle at 84% 0%, rgba(var(--section-rgb), .20), transparent 36%),
-        linear-gradient(135deg, rgba(var(--section-rgb), .10), rgba(255, 255, 255, .026) 42%, rgba(0, 0, 0, .12));
-    box-shadow: 0 24px 62px rgba(0, 0, 0, .22), inset 0 1px 0 rgba(255, 255, 255, .08);
+    border: 1px solid var(--social-fade-border-soft);
+    background: var(--social-fade-surface);
+    box-shadow: var(--social-fade-shadow-soft);
+    backdrop-filter: var(--social-fade-blur);
+    -webkit-backdrop-filter: var(--social-fade-blur);
     position: relative;
     overflow: hidden;
 }
@@ -4904,6 +6257,7 @@ body.lux-route-social .social-neo-section-command::before {
     background:
         linear-gradient(90deg, rgba(255, 255, 255, .10), transparent 20%, transparent 80%, rgba(255, 255, 255, .04)),
         radial-gradient(circle at 100% 100%, rgba(var(--section-rgb), .12), transparent 34%);
+    opacity: var(--lux-transparency-alpha, 1);
 }
 
 body.lux-route-social .social-neo-section-command > * {
@@ -5012,6 +6366,15 @@ body.lux-route-social .social-neo-section-actions {
     box-shadow: 0 18px 34px rgba(var(--section-rgb), .28) !important;
 }
 
+#public-social-root .social-neo-section-action.is-active {
+    background:
+        linear-gradient(135deg, rgba(var(--section-rgb), .92), rgba(var(--section-rgb), .72)) !important;
+    border-color: rgba(var(--section-rgb), .50) !important;
+    color: #fff !important;
+    box-shadow: 0 8px 24px rgba(var(--section-rgb), .32) !important;
+    transform: translateY(-1px);
+}
+
 body.lux-route-social .social-neo-section-command-side {
     display: grid;
     grid-template-columns: minmax(0, .72fr) minmax(0, 1.28fr);
@@ -5096,7 +6459,7 @@ body.lux-route-social .social-neo-section-task small {
 }
 
 body.lux-route-social .social-neo[data-panel="feed"] .social-neo-composer-card,
-body.lux-route-social .social-neo[data-panel="community"] .social-neo-directory-item,
+body.lux-route-social .social-neo[data-panel="community"] .social-neo-community-card,
 body.lux-route-social .social-neo[data-panel="groups"] .social-neo-community-panel,
 body.lux-route-social .social-neo[data-panel="projects"] .social-projects-hero-rich,
 body.lux-route-social .social-neo[data-panel="pages"] .social-neo-pages-hero,
@@ -5123,13 +6486,29 @@ body.lux-route-social .social-neo-rail .social-neo-card {
     padding: 16px !important;
     border-radius: 18px !important;
 }
+body.lux-route-social .social-neo-rail-card {
+    padding: 16px !important;
+    border-radius: 18px !important;
+}
 
 body.lux-route-social .social-neo-section-head {
     align-items: center;
     gap: 14px;
 }
+body.lux-route-social .social-neo-rail-head {
+    align-items: center;
+    gap: 14px;
+}
+body.lux-route-social .social-neo-rail-head-copy {
+    display: grid;
+    gap: 2px;
+}
 
 body.lux-route-social .social-neo-section-head strong {
+    font-size: 16px;
+    letter-spacing: 0;
+}
+body.lux-route-social .social-neo-rail-title {
     font-size: 16px;
     letter-spacing: 0;
 }
@@ -5138,12 +6517,26 @@ body.lux-route-social .social-neo-section-head span {
     font-size: 12.5px;
     line-height: 1.55;
 }
+body.lux-route-social .social-neo-rail-copy {
+    font-size: 12.5px;
+    line-height: 1.55;
+}
 
 body.lux-route-social .social-neo-story-card {
     padding: 14px 16px !important;
 }
+body.lux-route-social .social-neo-story-card-compact {
+    padding: 12px 16px !important;
+}
+body.lux-route-social .social-neo-feed-story-card {
+    padding: 12px 16px !important;
+}
 
 body.lux-route-social .social-neo-stories {
+    gap: 14px;
+    padding: 4px 2px 2px;
+}
+body.lux-route-social .social-neo-feed-story-strip {
     gap: 14px;
     padding: 4px 2px 2px;
 }
@@ -5151,11 +6544,29 @@ body.lux-route-social .social-neo-stories {
 body.lux-route-social .social-neo-story {
     width: 78px;
 }
+body.lux-route-social .social-neo-feed-story-item {
+    width: 78px;
+}
 
 body.lux-route-social .social-neo-story-ring {
     width: 64px;
     height: 64px;
     box-shadow: 0 14px 34px rgba(var(--sn-accent-rgb), .22);
+}
+body.lux-route-social .social-neo-feed-story-ring {
+    width: 64px;
+    height: 64px;
+    box-shadow: 0 14px 34px rgba(var(--sn-accent-rgb), .22);
+}
+body.lux-route-social .social-neo-feed-story-label {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--sn-txt2);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 68px;
+    text-align: center;
 }
 
 body.lux-route-social .social-neo-composer-card {
@@ -5165,16 +6576,36 @@ body.lux-route-social .social-neo-composer-card {
 body.lux-route-social .social-neo-composer-card .social-neo-person {
     align-items: stretch;
 }
+body.lux-route-social .social-neo-composer-person {
+    gap: 12px;
+}
 
 body.lux-route-social .social-neo-composer-card .social-neo-textarea {
     border-radius: 18px !important;
     min-height: 74px !important;
+}
+body.lux-route-social .social-neo-composer-textarea {
+    border-radius: var(--sn-pill);
+    min-height: 44px !important;
+    padding: 12px 18px !important;
 }
 
 body.lux-route-social .social-neo-composer-row {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 12px;
+}
+body.lux-route-social .social-neo-composer-scope-field,
+body.lux-route-social .social-neo-composer-audience-field {
+    gap: 6px;
+}
+body.lux-route-social .social-neo-composer-scope-label,
+body.lux-route-social .social-neo-composer-audience-label {
+    display: block;
+}
+body.lux-route-social .social-neo-composer-scope-select,
+body.lux-route-social .social-neo-composer-audience-select {
+    width: 100%;
 }
 
 body.lux-route-social .social-neo-post-card {
@@ -5192,11 +6623,16 @@ body.lux-route-social .social-neo-event-card {
     contain-intrinsic-size: auto 120px;
 }
 
-body.lux-route-social .social-neo-message,
-body.lux-route-social .social-neo-comment-bubble {
+body.lux-route-social .social-neo-message {
     content-visibility: auto;
     contain: layout style paint;
     contain-intrinsic-size: auto 88px;
+}
+
+body.lux-route-social .social-neo-comment-bubble {
+    content-visibility: visible;
+    contain: layout style;
+    contain-intrinsic-size: auto 180px;
 }
 
 body.lux-route-social .social-neo-post-card.is-pinned {
@@ -5207,7 +6643,7 @@ body.lux-route-social .social-neo-post-head {
     align-items: flex-start;
 }
 
-body.lux-route-social .social-neo-post-author strong {
+body.lux-route-social .social-neo-post-author-name {
     font-size: 14.5px;
 }
 
@@ -5219,6 +6655,45 @@ body.lux-route-social .social-neo-post-body {
 body.lux-route-social .social-neo-post-actions {
     gap: 8px;
     padding-top: 12px;
+}
+body.lux-route-social .social-neo-composer-actions {
+    border-top: 1px solid var(--sn-bdr);
+    padding-top: 10px;
+}
+body.lux-route-social .social-neo-composer-attach-btn,
+body.lux-route-social .social-neo-composer-story-btn,
+body.lux-route-social .social-neo-composer-event-btn,
+body.lux-route-social .social-neo-composer-submit-btn {
+    justify-content: center;
+}
+body.lux-route-social .social-neo-feed-filter-copy {
+    display: grid;
+    gap: 4px;
+}
+body.lux-route-social .social-neo-feed-filter-title {
+    font-size: 16px;
+    letter-spacing: 0;
+}
+body.lux-route-social .social-neo-feed-filter-description {
+    font-size: 12.5px;
+    line-height: 1.55;
+}
+body.lux-route-social .social-neo-feed-filter-stat {
+    min-height: 82px;
+    display: grid;
+    align-content: center;
+}
+body.lux-route-social .social-neo-feed-filter-stat-value {
+    font-size: 24px;
+}
+body.lux-route-social .social-neo-action-icon-photo {
+    color: var(--sn-success);
+}
+body.lux-route-social .social-neo-action-icon-story {
+    color: var(--sn-info);
+}
+body.lux-route-social .social-neo-action-icon-event {
+    color: var(--sn-warning);
 }
 
 #public-social-root .social-neo-btn,
@@ -5278,9 +6753,24 @@ body.lux-route-social .social-neo-stat-grid div {
 body.lux-route-social .social-neo-stat-grid div strong {
     font-size: 24px;
 }
+body.lux-route-social .social-neo-rail-overview-stat {
+    min-height: 82px;
+    display: grid;
+    align-content: center;
+}
+body.lux-route-social .social-neo-rail-overview-value {
+    font-size: 24px;
+}
+body.lux-route-social .social-neo-rail-overview-label {
+    line-height: 1.4;
+}
 
 body.lux-route-social .social-neo-directory,
 body.lux-route-social .social-neo-list {
+    display: grid;
+    gap: 10px;
+}
+body.lux-route-social .social-neo-rail-list {
     display: grid;
     gap: 10px;
 }
@@ -5323,6 +6813,47 @@ body.lux-route-social .social-portfolio-link:hover {
         radial-gradient(circle at 20% 0%, rgba(255, 255, 255, .09), transparent 32%),
         linear-gradient(135deg, rgba(var(--lux-accent-rgb), .12), rgba(var(--sn-accent-2-rgb), .05)) !important;
 }
+body.lux-route-social .social-neo-rail-directory-item,
+body.lux-route-social .social-neo-rail-item {
+    align-items: center;
+}
+body.lux-route-social .social-neo-rail-person {
+    gap: 10px;
+    align-items: flex-start;
+}
+body.lux-route-social .social-neo-rail-item-copy,
+body.lux-route-social .social-neo-rail-person-copy {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+}
+body.lux-route-social .social-neo-rail-item-title,
+body.lux-route-social .social-neo-rail-person-name {
+    font-size: 13px;
+    color: var(--sn-txt);
+}
+body.lux-route-social .social-neo-rail-item-meta,
+body.lux-route-social .social-neo-rail-person-meta {
+    font-size: 11px;
+    color: var(--sn-txt3);
+}
+body.lux-route-social .social-neo-rail-item-action,
+body.lux-route-social .social-neo-rail-person-action,
+body.lux-route-social .social-neo-rail-call-open,
+body.lux-route-social .social-neo-rail-call-end {
+    justify-content: center;
+}
+body.lux-route-social .social-neo-rail-call-copy { gap: 2px; }
+body.lux-route-social .social-neo-rail-call-title { line-height: 1.3; }
+body.lux-route-social .social-neo-rail-call-status { line-height: 1.55; }
+body.lux-route-social .social-neo-rail-call-open-btn,
+body.lux-route-social .social-neo-rail-call-end-btn { justify-content: center; }
+body.lux-route-social .social-neo-rail-call-actions {
+    gap: 8px;
+}
+body.lux-route-social .social-neo-rail-empty {
+    text-align: left;
+}
 
 body.lux-route-social .social-neo-directory-filters {
     display: grid;
@@ -5360,8 +6891,7 @@ body.lux-route-social .social-portfolio-stat-grid {
 
 body.lux-route-social .social-neo-events-hero-stat,
 body.lux-route-social .social-project-metric-card,
-body.lux-route-social .social-project-ring-card,
-body.lux-route-social .social-portfolio-stat-tile {
+body.lux-route-social .social-project-ring-card {
     min-height: 118px;
     border-radius: 18px;
     background:
@@ -5482,10 +7012,11 @@ body.lux-light-mode.lux-route-social #page-social .social-project-inline-panel,
 body.lux-light-mode.lux-route-social #page-social .social-portfolio-hero,
 body.lux-light-mode.lux-route-social #page-social .social-portfolio-toolbar,
 body.lux-light-mode.lux-route-social #page-social .social-portfolio-card {
-    background:
-        radial-gradient(circle at 0% 0%, rgba(255, 255, 255, .82), transparent 30%),
-        radial-gradient(circle at 92% 0%, rgba(var(--lux-accent-rgb, 200, 130, 42), .14), transparent 36%),
-        linear-gradient(135deg, rgba(var(--lux-accent-rgb, 200, 130, 42), .055), var(--sn-card-base) 44%, rgba(247, 242, 234, calc(var(--lux-panel-alpha, .74) * .94))) !important;
+    background: var(--social-fade-surface) !important;
+    border-color: var(--social-fade-border-soft) !important;
+    box-shadow: var(--social-fade-shadow-soft) !important;
+    backdrop-filter: var(--social-fade-blur) !important;
+    -webkit-backdrop-filter: var(--social-fade-blur) !important;
 }
 
 body.lux-light-mode.lux-route-social .social-neo-directory-item,
@@ -5512,18 +7043,20 @@ body.lux-light-mode.lux-route-social .social-neo-group-thread-section {
 }
 
 body.lux-light-mode.lux-route-social .social-neo-section-command {
-    background:
-        radial-gradient(circle at 0% 0%, rgba(255, 255, 255, .88), transparent 30%),
-        radial-gradient(circle at 84% 0%, rgba(var(--section-rgb), .14), transparent 36%),
-        linear-gradient(135deg, rgba(var(--section-rgb), .075), rgba(255, 255, 255, .88) 42%, rgba(247, 242, 234, .76));
-    box-shadow: 0 22px 54px rgba(var(--lux-glass-tint-rgb, 15, 23, 42), .13), inset 0 1px 0 rgba(255, 255, 255, .74);
+    background: var(--social-fade-surface);
+    box-shadow: var(--social-fade-shadow-soft);
+    backdrop-filter: var(--social-fade-blur);
+    -webkit-backdrop-filter: var(--social-fade-blur);
 }
 
 body.lux-light-mode.lux-route-social .social-neo-section-metric,
-body.lux-light-mode.lux-route-social .social-neo-section-task,
+body.lux-light-mode.lux-route-social .social-neo-section-task {
+    background: var(--social-fade-surface-soft);
+    backdrop-filter: var(--social-fade-blur);
+    -webkit-backdrop-filter: var(--social-fade-blur);
+}
+
 body.lux-light-mode.lux-route-social #public-social-root .social-neo-section-action {
-    background:
-        linear-gradient(180deg, rgba(255, 255, 255, .90), rgba(251, 248, 242, .82)) !important;
     color: #172033 !important;
 }
 
@@ -5671,7 +7204,7 @@ body.lux-route-social .social-neo-pages-shell::before {
     border-radius: 28px;
     pointer-events: none;
     background: radial-gradient(circle at 50% 0%, rgba(var(--lux-accent-rgb), .055), transparent 40%);
-    opacity: .75;
+    opacity: calc(.75 * var(--lux-transparency-alpha, 1));
 }
 
 body.lux-route-social .social-neo-center > .social-neo-stack > *,
@@ -5688,29 +7221,22 @@ body.lux-route-social .social-neo[data-panel="feed"] .social-neo-filter-card {
     align-items: end;
 }
 
-body.lux-route-social .social-neo[data-panel="feed"] .social-neo-filter-card .social-neo-section-head {
+body.lux-route-social .social-neo[data-panel="feed"] .social-neo-feed-filter-head {
     grid-column: 1 / -1;
 }
 
-body.lux-route-social .social-neo[data-panel="feed"] .social-neo-filter-card .social-neo-stat-grid {
+body.lux-route-social .social-neo[data-panel="feed"] .social-neo-feed-filter-stats {
     grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
-body.lux-route-social .social-neo[data-panel="community"] .social-neo-directory-item {
-    display: grid;
-    grid-template-columns: minmax(220px, 1fr) auto;
-    gap: 14px;
-}
-
-body.lux-route-social .social-neo[data-panel="community"] .social-neo-directory-item .social-neo-inline,
 body.lux-route-social .social-neo[data-panel="groups"] .social-neo-entity-card .social-neo-inline,
 body.lux-route-social .social-neo[data-panel="pages"] .social-neo-entity-card .social-neo-inline {
     justify-content: flex-end;
 }
 
+body.lux-route-social .social-neo-lf-composer-form,
 body.lux-route-social .social-neo[data-panel="groups"] .social-neo-community-panel,
 body.lux-route-social .social-neo[data-panel="pages"] .social-neo-pages-wizard,
-body.lux-route-social .social-neo[data-panel="lost-and-found"] form[data-form="lost-found-item"],
 body.lux-route-social .social-neo[data-panel="profile"] form[data-form="edit-profile"] {
     border-radius: 22px;
     border: 1px solid rgba(var(--lux-accent-rgb), .16);
@@ -5768,7 +7294,7 @@ body.lux-route-social .social-neo[data-panel="events"] .social-neo-event-feature
     border-color: rgba(var(--lux-accent-rgb), .30) !important;
 }
 
-body.lux-route-social .social-neo[data-panel="lost-and-found"] .social-neo-card:has(form[data-form="lost-found-item"]) {
+body.lux-route-social .social-neo[data-panel="lost-and-found"] .social-neo-card:has(.social-neo-lf-composer-form) {
     border-style: solid !important;
     border-color: rgba(var(--sn-purple-rgb), .22) !important;
 }
@@ -5846,13 +7372,16 @@ body.lux-route-social #public-social-root [aria-busy="true"] {
 
 @media (max-width: 900px) {
     body.lux-route-social .social-neo[data-panel="feed"] .social-neo-filter-card,
-    body.lux-route-social .social-neo[data-panel="community"] .social-neo-directory-item {
+    body.lux-route-social .social-neo[data-panel="community"] .social-neo-community-card {
         grid-template-columns: 1fr;
     }
 
-    body.lux-route-social .social-neo[data-panel="community"] .social-neo-directory-item .social-neo-inline,
     body.lux-route-social .social-neo[data-panel="groups"] .social-neo-entity-card .social-neo-inline,
     body.lux-route-social .social-neo[data-panel="pages"] .social-neo-entity-card .social-neo-inline {
+        justify-content: flex-start;
+    }
+
+    body.lux-route-social .social-neo-community-action-row {
         justify-content: flex-start;
     }
 
@@ -5909,12 +7438,12 @@ body.lux-route-social .social-neo-topbar-card::after {
     pointer-events: none;
 }
 
-body.lux-route-social .social-neo-topbar-copy h1 {
+body.lux-route-social .social-neo-topbar-title {
     max-width: 760px;
     letter-spacing: 0;
 }
 
-body.lux-route-social .social-neo-topbar-copy p {
+body.lux-route-social .social-neo-topbar-description {
     max-width: 720px;
 }
 
@@ -6258,6 +7787,225 @@ body.lux-route-social .social-neo-alert.is-unread {
     border-color: rgba(var(--sn-rose-rgb), .36) !important;
 }
 
+/* ---- Alerts Panel: Category Filter System ---- */
+body.lux-route-social .sn-alerts-panel {
+    display: flex; flex-direction: column; gap: 16px;
+}
+body.lux-route-social .sn-alerts-pill-bar {
+    display: flex; flex-wrap: nowrap; gap: 6px;
+    overflow-x: auto; scrollbar-width: thin;
+    padding: 6px; margin: 0;
+    background: var(--sn-lane, rgba(var(--sn-accent-rgb,200,130,42), 0.06));
+    border: 1px solid var(--sn-bdr);
+    border-radius: var(--sn-pill, 999px);
+    -webkit-mask-image: linear-gradient(to right, transparent, black 12px, black 100%);
+    mask-image: linear-gradient(to right, transparent, black 12px, black 100%);
+}
+body.lux-route-social .sn-alerts-pill-bar::-webkit-scrollbar { height: 6px; }
+body.lux-route-social .sn-alerts-pill {
+    flex: 0 0 auto; display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 14px; border-radius: var(--sn-pill, 999px);
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--lux-text-muted, rgba(226,232,240,0.62));
+    font-size: 12.5px; font-weight: 700; white-space: nowrap;
+    cursor: pointer; transition: all var(--sn-ease, 0.18s ease);
+}
+body.lux-route-social .sn-alerts-pill i { font-size: 13px; opacity: 0.8; }
+body.lux-route-social .sn-alerts-pill:hover {
+    background: rgba(var(--sn-accent-rgb,200,130,42), 0.10);
+    color: var(--sn-txt, #e2e8f0);
+    transform: translateY(-1px);
+}
+body.lux-route-social .sn-alerts-pill.is-active {
+    background: var(--sn-accent, #c8822a);
+    color: #fff; border-color: transparent;
+    box-shadow: 0 4px 14px rgba(var(--sn-accent-rgb,200,130,42), 0.35);
+}
+body.lux-route-social .sn-alerts-pill.is-active i { opacity: 1; }
+body.lux-route-social .sn-alerts-pill-count {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 20px; height: 20px; padding: 0 6px;
+    border-radius: 999px; font-size: 10.5px; font-weight: 800;
+    background: rgba(var(--sn-accent-rgb,200,130,42), 0.15);
+    color: var(--sn-accent, #c8822a);
+}
+body.lux-route-social .sn-alerts-pill.is-active .sn-alerts-pill-count {
+    background: rgba(255,255,255,0.25); color: #fff;
+}
+
+/* Mark-all button */
+body.lux-route-social .sn-alerts-actions {
+    display: flex; justify-content: flex-end;
+}
+body.lux-route-social .sn-alerts-mark-read {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 14px; border-radius: var(--sn-pill, 999px);
+    border: 1px solid var(--sn-bdr);
+    background: transparent;
+    color: var(--lux-text-muted, rgba(226,232,240,0.62));
+    font-size: 11.5px; font-weight: 600;
+    cursor: pointer; transition: all var(--sn-ease, 0.18s ease);
+}
+body.lux-route-social .sn-alerts-mark-read:hover {
+    background: rgba(var(--sn-accent-rgb,200,130,42), 0.10);
+    color: var(--sn-txt, #e2e8f0);
+    border-color: var(--sn-accent, #c8822a);
+}
+body.lux-route-social .sn-alerts-mark-read i { font-size: 12px; }
+
+/* Notification list */
+body.lux-route-social .sn-alerts-list {
+    display: flex; flex-direction: column; gap: 6px;
+}
+
+/* Notification card */
+body.lux-route-social .sn-alert-card {
+    display: grid; grid-template-columns: 36px 1fr auto;
+    gap: 10px; padding: 12px; border-radius: 12px;
+    background: transparent; border: 1px solid var(--sn-bdr);
+    border-left: 3px solid var(--sn-bdr);
+    transition: all var(--sn-ease, 0.18s ease);
+    position: relative;
+}
+body.lux-route-social .sn-alert-card.is-unread {
+    border-left-color: var(--sn-card-accent, var(--sn-accent, #c8822a));
+    background: rgba(var(--sn-card-accent-rgb, var(--sn-accent-rgb,200,130,42)), 0.04);
+}
+body.lux-route-social .sn-alert-card:hover {
+    background: var(--sn-hover, rgba(var(--sn-accent-rgb,200,130,42), 0.06));
+    border-color: var(--sn-bdr-a, rgba(var(--sn-accent-rgb,200,130,42), 0.2));
+}
+body.lux-route-social .sn-alert-card-icon {
+    display: flex; align-items: center; justify-content: center;
+    width: 36px; height: 36px; border-radius: 10px;
+    background: rgba(var(--sn-card-accent-rgb, var(--sn-accent-rgb,200,130,42)), 0.12);
+    color: var(--sn-card-accent, var(--sn-accent, #c8822a));
+    font-size: 15px; flex-shrink: 0;
+}
+body.lux-route-social .sn-alert-card-body {
+    display: flex; flex-direction: column; gap: 4px; min-width: 0;
+}
+body.lux-route-social .sn-alert-card-head {
+    display: flex; align-items: baseline; gap: 8px;
+}
+body.lux-route-social .sn-alert-card-head strong {
+    font-size: 12.5px; color: var(--sn-txt, #e2e8f0);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+body.lux-route-social .sn-alert-card-time {
+    font-size: 10.5px; color: var(--sn-txt3, rgba(226,232,240,0.4));
+    white-space: nowrap; margin-left: auto; flex-shrink: 0;
+}
+body.lux-route-social .sn-alert-card p {
+    font-size: 12px; color: var(--sn-txt2, rgba(226,232,240,0.7));
+    margin: 0; line-height: 1.45;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+body.lux-route-social .sn-alert-card-actions {
+    display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px;
+}
+body.lux-route-social .sn-alert-card-dot {
+    position: absolute; top: 12px; right: 12px;
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--sn-card-accent, var(--sn-accent, #c8822a));
+}
+body.lux-route-social .sn-alert-card--report {
+    border-left-color: #f43f5e;
+    grid-template-columns: 36px 1fr;
+}
+body.lux-route-social .sn-alert-card--report .sn-alert-card-actions {
+    margin-top: 8px;
+}
+
+/* Empty state */
+body.lux-route-social .sn-alerts-empty {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 40px 20px; text-align: center;
+    border: 1px dashed var(--sn-bdr);
+    border-radius: 12px; background: rgba(var(--sn-accent-rgb,200,130,42), 0.02);
+}
+body.lux-route-social .sn-alerts-empty-icon {
+    font-size: 32px; margin-bottom: 12px; opacity: 0.6;
+}
+body.lux-route-social .sn-alerts-empty p {
+    font-size: 12.5px; color: var(--sn-txt3, rgba(226,232,240,0.4));
+    margin: 0; max-width: 280px;
+}
+
+/* Moderation section */
+body.lux-route-social .sn-alerts-moderation {
+    border-top: 1px solid var(--sn-bdr);
+    padding-top: 12px;
+}
+body.lux-route-social .sn-alerts-mod-toggle {
+    display: flex; align-items: center; gap: 8px; width: 100%;
+    padding: 10px 14px; border-radius: 10px;
+    border: 1px solid var(--sn-bdr); background: transparent;
+    color: var(--sn-txt, #e2e8f0); font-size: 12.5px; font-weight: 700;
+    cursor: pointer; transition: all var(--sn-ease, 0.18s ease);
+}
+body.lux-route-social .sn-alerts-mod-toggle:hover {
+    background: var(--sn-hover, rgba(var(--sn-accent-rgb,200,130,42), 0.06));
+}
+body.lux-route-social .sn-alerts-mod-toggle i:first-child {
+    color: #f43f5e; font-size: 14px;
+}
+body.lux-route-social .sn-alerts-mod-count {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 22px; height: 22px; padding: 0 6px;
+    border-radius: 999px; font-size: 11px; font-weight: 800;
+    background: rgba(244,63,94,0.12); color: #f43f5e;
+    margin-left: auto;
+}
+body.lux-route-social .sn-alerts-mod-chevron {
+    font-size: 11px; color: var(--sn-txt3, rgba(226,232,240,0.4));
+    transition: transform 0.2s ease;
+}
+body.lux-route-social .sn-alerts-mod-body {
+    display: none; flex-direction: column; gap: 6px; margin-top: 10px;
+}
+body.lux-route-social .sn-alerts-mod-body.is-open {
+    display: flex;
+}
+
+/* Light mode overrides */
+body.lux-light-mode.lux-route-social .sn-alerts-pill {
+    color: rgba(30,30,30,0.55);
+}
+body.lux-light-mode.lux-route-social .sn-alerts-pill:hover {
+    color: rgba(30,30,30,0.85);
+}
+body.lux-light-mode.lux-route-social .sn-alert-card {
+    background: rgba(0,0,0,0.02);
+}
+body.lux-light-mode.lux-route-social .sn-alert-card.is-unread {
+    background: rgba(var(--sn-card-accent-rgb, var(--sn-accent-rgb,200,130,42)), 0.06);
+}
+body.lux-light-mode.lux-route-social .sn-alerts-mark-read {
+    color: rgba(30,30,30,0.55);
+}
+body.lux-light-mode.lux-route-social .sn-alerts-mark-read:hover {
+    color: rgba(30,30,30,0.85);
+}
+
+/* Responsive: mobile */
+@media (max-width: 760px) {
+    body.lux-route-social .sn-alerts-pill-bar {
+        padding: 4px;
+    }
+    body.lux-route-social .sn-alerts-pill {
+        padding: 7px 10px; font-size: 11.5px;
+    }
+    body.lux-route-social .sn-alert-card {
+        grid-template-columns: 32px 1fr auto;
+        padding: 10px; gap: 8px;
+    }
+    body.lux-route-social .sn-alert-card-icon {
+        width: 32px; height: 32px; font-size: 13px;
+    }
+}
+
 body.lux-route-social .social-neo-profile-cover,
 body.lux-route-social .social-neo-page-cover {
     min-height: 260px;
@@ -6354,28 +8102,28 @@ body.lux-light-mode.lux-route-social .social-neo-profile-tabs {
         justify-content: stretch;
     }
 
-    body.lux-route-social .social-neo-shell-topbar-actions .social-neo-btn {
+    body.lux-route-social .social-neo-shell-topbar-actions .social-neo-shell-topbar-action-btn {
         flex: 1 1 0;
         justify-content: center !important;
     }
 
-    body.lux-route-social .social-neo-panel-meta {
+    body.lux-route-social .social-neo-topbar-pills {
         display: grid !important;
         grid-template-columns: repeat(2, minmax(0, 1fr));
         width: 100%;
     }
 
-    body.lux-route-social .social-neo-panel-meta .social-neo-pill {
+    body.lux-route-social .social-neo-topbar-pill {
         justify-content: flex-start;
     }
 
-    body.lux-route-social .social-neo-tabs {
+    body.lux-route-social .social-neo-topbar-tabs {
         width: 100%;
         overflow-x: auto;
         scrollbar-width: none;
     }
 
-    body.lux-route-social .social-neo-tabs::-webkit-scrollbar {
+    body.lux-route-social .social-neo-topbar-tabs::-webkit-scrollbar {
         display: none;
     }
 
@@ -6448,19 +8196,83 @@ body.lux-light-mode.lux-route-social .social-neo-profile-tabs {
         font-weight: 800 !important;
     }
 
-    body.lux-route-social .social-neo-mobile-tab-icon {
-        position: relative;
-        width: 28px;
+body.lux-route-social .social-neo-mobile-tab-label {
+    display: block;
+}
+
+body.lux-route-social .social-neo-mobile-tab-icon {
+    position: relative;
+    width: 28px;
         height: 28px;
         border-radius: 11px;
         display: inline-grid;
         place-items: center;
         color: #fff;
         background: var(--tab-color, var(--sn-accent));
-        box-shadow: 0 10px 18px rgba(0, 0, 0, .24);
-    }
+    box-shadow: 0 10px 18px rgba(0, 0, 0, .24);
+}
 
-    body.lux-route-social .social-neo-mobile-tab-icon em {
+body.lux-route-social .social-neo-shell-nav-icon[data-panel-tone='feed'],
+body.lux-route-social .social-neo-mobile-tab-icon[data-panel-tone='feed'],
+body.lux-route-social .social-neo-side-icon[data-panel-tone='feed'] {
+    background: #3b82f6;
+}
+
+body.lux-route-social .social-neo-shell-nav-icon[data-panel-tone='community'],
+body.lux-route-social .social-neo-mobile-tab-icon[data-panel-tone='community'],
+body.lux-route-social .social-neo-side-icon[data-panel-tone='community'] {
+    background: #8b5cf6;
+}
+
+body.lux-route-social .social-neo-shell-nav-icon[data-panel-tone='groups'],
+body.lux-route-social .social-neo-mobile-tab-icon[data-panel-tone='groups'],
+body.lux-route-social .social-neo-side-icon[data-panel-tone='groups'],
+body.lux-route-social .social-neo-shell-nav-icon[data-panel-tone='calls'],
+body.lux-route-social .social-neo-mobile-tab-icon[data-panel-tone='calls'],
+body.lux-route-social .social-neo-side-icon[data-panel-tone='calls'] {
+    background: #10b981;
+}
+
+body.lux-route-social .social-neo-shell-nav-icon[data-panel-tone='projects'],
+body.lux-route-social .social-neo-mobile-tab-icon[data-panel-tone='projects'],
+body.lux-route-social .social-neo-side-icon[data-panel-tone='projects'] {
+    background: #f97316;
+}
+
+body.lux-route-social .social-neo-shell-nav-icon[data-panel-tone='pages'],
+body.lux-route-social .social-neo-mobile-tab-icon[data-panel-tone='pages'],
+body.lux-route-social .social-neo-side-icon[data-panel-tone='pages'],
+body.lux-route-social .social-neo-shell-nav-icon[data-panel-tone='profile'],
+body.lux-route-social .social-neo-mobile-tab-icon[data-panel-tone='profile'],
+body.lux-route-social .social-neo-side-icon[data-panel-tone='profile'] {
+    background: #6366f1;
+}
+
+body.lux-route-social .social-neo-shell-nav-icon[data-panel-tone='events'],
+body.lux-route-social .social-neo-mobile-tab-icon[data-panel-tone='events'],
+body.lux-route-social .social-neo-side-icon[data-panel-tone='events'] {
+    background: #f59e0b;
+}
+
+body.lux-route-social .social-neo-shell-nav-icon[data-panel-tone='lost-and-found'],
+body.lux-route-social .social-neo-mobile-tab-icon[data-panel-tone='lost-and-found'],
+body.lux-route-social .social-neo-side-icon[data-panel-tone='lost-and-found'] {
+    background: #a855f7;
+}
+
+body.lux-route-social .social-neo-shell-nav-icon[data-panel-tone='messages'],
+body.lux-route-social .social-neo-mobile-tab-icon[data-panel-tone='messages'],
+body.lux-route-social .social-neo-side-icon[data-panel-tone='messages'] {
+    background: #14b8a6;
+}
+
+body.lux-route-social .social-neo-shell-nav-icon[data-panel-tone='alerts'],
+body.lux-route-social .social-neo-mobile-tab-icon[data-panel-tone='alerts'],
+body.lux-route-social .social-neo-side-icon[data-panel-tone='alerts'] {
+    background: #f43f5e;
+}
+
+    body.lux-route-social .social-neo-mobile-tab-count {
         position: absolute;
         right: -8px;
         top: -7px;
@@ -6489,19 +8301,23 @@ body.lux-light-mode.lux-route-social .social-neo-profile-tabs {
         box-shadow: 0 18px 44px rgba(72, 48, 22, .16), inset 0 1px 0 rgba(255, 255, 255, .9);
     }
 
-    body.lux-light-mode.lux-route-social .social-neo-mobile-tab-icon em {
+    body.lux-light-mode.lux-route-social .social-neo-mobile-tab-count {
         border-color: rgba(255, 255, 255, .95);
     }
 }
 
 @media (max-width: 560px) {
+    body.lux-route-social .public-social-shell {
+        grid-template-columns: 1fr !important;
+    }
+
     body.lux-route-social .social-neo-card,
     body.lux-route-social .social-neo-post-card,
     body.lux-route-social .social-neo-section-command {
         border-radius: 18px !important;
     }
 
-    body.lux-route-social .social-neo-topbar-copy h1,
+    body.lux-route-social .social-neo-topbar-title,
     body.lux-route-social .social-neo-section-command h2,
     body.lux-route-social .social-neo-events-hero-copy h2,
     body.lux-route-social .social-projects-hero-rich h2,
@@ -6528,4 +8344,1697 @@ body.lux-light-mode.lux-route-social .social-neo-profile-tabs {
     body.lux-route-social .social-project-task-board {
         grid-template-columns: 1fr;
     }
+}
+
+body.lux-route-social .public-social-shell {
+    display: grid;
+    grid-template-columns: minmax(0, 1.8fr) minmax(280px, 0.95fr);
+    gap: 24px;
+}
+
+body.lux-route-social .public-social-main,
+body.lux-route-social .public-social-sidebar,
+body.lux-route-social .public-social-page-list,
+body.lux-route-social .public-social-post-list {
+    display: grid;
+}
+
+body.lux-route-social .public-social-main,
+body.lux-route-social .public-social-sidebar {
+    gap: 20px;
+}
+
+body.lux-route-social .public-social-sidebar {
+    align-content: start;
+}
+
+body.lux-route-social .public-social-card {
+    padding: 24px;
+    display: grid;
+    gap: 14px;
+}
+
+body.lux-route-social .public-social-hero {
+    gap: 18px;
+}
+
+body.lux-route-social .public-social-hero-head,
+body.lux-route-social .public-social-post-head,
+body.lux-route-social .public-social-post-actions,
+body.lux-route-social .public-social-reaction-row,
+body.lux-route-social .public-social-file-row,
+body.lux-route-social .public-social-comment-compose,
+body.lux-route-social .public-social-field-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+body.lux-route-social .public-social-hero-head,
+body.lux-route-social .public-social-post-head,
+body.lux-route-social .public-social-file-row {
+    align-items: flex-start;
+    justify-content: space-between;
+}
+
+body.lux-route-social .public-social-hero-actions,
+body.lux-route-social .public-social-post-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+body.lux-route-social .public-social-hero-title {
+    font-size: 28px;
+    font-weight: 900;
+    color: var(--kiu-navy);
+}
+
+body.lux-route-social .public-social-hero-copy,
+body.lux-route-social .public-social-post-byline,
+body.lux-route-social .public-social-comment-count,
+body.lux-route-social .public-social-file-help {
+    font-size: 13px;
+    color: var(--kiu-text-muted);
+}
+
+body.lux-route-social .public-social-hero-copy,
+body.lux-route-social .public-social-post-byline {
+    margin-top: 6px;
+}
+
+body.lux-route-social .public-social-stats {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-top: 18px;
+}
+
+body.lux-route-social .public-social-filter-label,
+body.lux-route-social .public-social-field {
+    display: grid;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--kiu-text-muted);
+}
+
+body.lux-route-social .public-social-filter-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+body.lux-route-social .public-social-field-row {
+    align-items: center;
+}
+
+body.lux-route-social .public-social-field .social-select,
+body.lux-route-social .public-social-field .social-input,
+body.lux-route-social .public-social-field .social-textarea {
+    width: 100%;
+}
+
+body.lux-route-social .public-social-post-list {
+    gap: 16px;
+}
+
+body.lux-route-social .public-social-page-card {
+    width: 100%;
+    text-align: left;
+    padding: 14px;
+    cursor: pointer;
+}
+
+body.lux-route-social .public-social-page-card.is-active {
+    border-color: rgba(10, 132, 255, 0.35) !important;
+    background: rgba(239, 246, 255, 0.96) !important;
+}
+
+body.lux-route-social .public-social-page-title {
+    font-size: 14px;
+    font-weight: 800;
+    color: var(--kiu-navy);
+}
+
+body.lux-route-social .public-social-page-copy {
+    margin-top: 6px;
+    font-size: 12px;
+    color: var(--kiu-text-muted);
+}
+
+body.lux-route-social .public-social-page-meta {
+    margin-top: 8px;
+    font-size: 11px;
+    color: var(--kiu-text-muted);
+}
+
+body.lux-route-social .public-social-post-card {
+    display: grid;
+    gap: 14px;
+    padding: 20px;
+}
+
+body.lux-route-social .public-social-post-head-main {
+    display: grid;
+    gap: 4px;
+}
+
+body.lux-route-social .public-social-post-title-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+body.lux-route-social .public-social-scope-btn {
+    border: none;
+    background: none;
+    padding: 0;
+    cursor: pointer;
+}
+
+body.lux-route-social .public-social-post-media img {
+    width: 100%;
+    max-height: 420px;
+    object-fit: cover;
+    border-radius: 20px;
+    border: 1px solid #dbe5f0;
+}
+
+body.lux-route-social .public-social-reaction-row {
+    align-items: center;
+    gap: 10px;
+}
+
+body.lux-route-social .public-social-comment-list {
+    display: grid;
+    gap: 10px;
+}
+
+body.lux-route-social .public-social-comment-card {
+    padding: 12px 14px;
+}
+
+body.lux-route-social .public-social-comment-author {
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--kiu-navy);
+}
+
+body.lux-route-social .public-social-comment-text {
+    margin-top: 6px;
+    white-space: pre-wrap;
+}
+
+body.lux-route-social .public-social-comment-input {
+    flex: 1;
+    min-width: 220px;
+}
+
+body.lux-route-social .public-social-empty {
+    padding: 32px;
+    text-align: center;
+}
+
+body.lux-route-social .public-social-empty-title {
+    font-size: 20px;
+    font-weight: 900;
+    color: var(--kiu-navy);
+}
+
+body.lux-route-social .public-social-empty-copy {
+    margin-top: 8px;
+    font-size: 13px;
+    color: var(--kiu-text-muted);
+}
+
+/* 2026-05-27 social redesign overrides
+   Keep this block last so it wins over earlier iterative social styles.
+*/
+body.lux-route-social #page-social,
+body.lux-route-social #public-social-root,
+body.lux-route-social #social-neo-root {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    max-width: min(1560px, calc(100vw - 36px));
+    margin: 0 auto;
+}
+
+/* index-luxury.css applies blur(16px) to #public-social-root > *; drop wrapper blur so cards keep a single layer */
+body.lux-route-social #public-social-root > #social-neo-root {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+body.lux-route-social .social-neo {
+    gap: 22px;
+    padding: 6px 0 40px;
+}
+
+body.lux-route-social .social-neo-topbar-card {
+    display: grid;
+    grid-template-columns: minmax(0, 1.08fr) minmax(560px, 0.92fr);
+    gap: 22px;
+    min-height: 0;
+    padding: 24px 26px !important;
+    border-radius: 28px !important;
+    background:
+        radial-gradient(circle at 8% 0%, rgba(255, 255, 255, 0.08), transparent 34%),
+        radial-gradient(circle at 86% 18%, rgba(var(--lux-accent-rgb), 0.18), transparent 30%),
+        linear-gradient(135deg, rgba(var(--lux-accent-rgb), 0.10), rgba(9, 14, 24, 0.92) 42%, rgba(7, 10, 18, 0.86)) !important;
+}
+
+body.lux-route-social .social-neo-topbar-copy {
+    display: grid;
+    align-content: start;
+    gap: 12px;
+    min-width: 0;
+}
+
+body.lux-route-social .social-neo-topbar-eyebrow {
+    margin-bottom: 0;
+}
+
+body.lux-route-social .social-neo-topbar-title {
+    font-size: clamp(30px, 3.2vw, 44px);
+    line-height: 1.02;
+    max-width: 14ch;
+}
+
+body.lux-route-social .social-neo-topbar-description {
+    font-size: 14px;
+    line-height: 1.65;
+    max-width: 68ch;
+}
+
+body.lux-route-social .social-neo-topbar-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+body.lux-route-social .social-neo-topbar-pill {
+    min-height: 42px;
+    padding: 10px 14px !important;
+    border-radius: 16px !important;
+    border-color: rgba(var(--lux-accent-rgb), 0.18) !important;
+    background: rgba(255, 255, 255, 0.045) !important;
+}
+
+body.lux-route-social .social-neo-shell-topbar-main {
+    display: grid;
+    grid-template-columns: minmax(260px, 320px) auto;
+    align-items: start;
+    gap: 18px;
+    justify-content: end;
+}
+
+body.lux-route-social .social-neo-shell-profile-chip {
+    min-height: 84px;
+    padding: 14px 16px !important;
+    border-radius: 22px !important;
+    border: 1px solid rgba(var(--lux-accent-rgb), 0.16) !important;
+    background: rgba(255, 255, 255, 0.045) !important;
+    align-items: start !important;
+}
+
+body.lux-route-social .social-neo-shell-primary-nav {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+}
+
+body.lux-route-social .social-neo-shell-nav-btn {
+    min-height: 72px;
+    padding: 12px 14px !important;
+    border-radius: 18px !important;
+    align-items: start !important;
+    gap: 12px !important;
+    background: rgba(255, 255, 255, 0.03) !important;
+    border-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+body.lux-route-social .social-neo-shell-nav-btn.is-active {
+    background: rgba(var(--lux-accent-rgb), 0.13) !important;
+    border-color: rgba(var(--lux-accent-rgb), 0.24) !important;
+    box-shadow: 0 14px 28px rgba(var(--lux-accent-rgb), 0.12) !important;
+}
+
+body.lux-route-social .social-neo-shell-topbar-actions {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+body.lux-route-social .social-neo-shell-topbar-action-btn {
+    justify-content: center !important;
+}
+
+body.lux-route-social .social-neo-section-command {
+    min-height: 0;
+    padding: 24px 26px !important;
+    grid-template-columns: minmax(0, 1.16fr) minmax(320px, 0.84fr);
+    gap: 20px;
+    border-radius: 28px !important;
+}
+
+body.lux-route-social .social-neo-section-command-main {
+    display: grid;
+    align-content: start;
+    gap: 12px;
+}
+
+body.lux-route-social .social-neo-section-command h2 {
+    font-size: clamp(26px, 2.4vw, 36px);
+    line-height: 1.06;
+    max-width: 18ch;
+}
+
+body.lux-route-social .social-neo-section-command p {
+    max-width: 60ch;
+    line-height: 1.62;
+}
+
+body.lux-route-social .social-neo-section-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+body.lux-route-social .social-neo-section-metrics {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+}
+
+body.lux-route-social .social-neo-section-tasks {
+    display: grid;
+    gap: 10px;
+}
+
+body.lux-route-social .social-neo-shell {
+    grid-template-columns: minmax(248px, 272px) minmax(0, 1fr) minmax(292px, 320px);
+    gap: 22px;
+    align-items: start;
+}
+
+body.lux-route-social .social-neo-workspace-nav {
+    position: sticky;
+    top: 20px;
+    display: grid;
+    gap: 14px;
+    align-content: start;
+}
+
+body.lux-route-social .social-neo-workspace-nav-card {
+    padding: 16px !important;
+    border-radius: 24px !important;
+}
+
+body.lux-route-social .social-neo-workspace-nav-list {
+    display: grid;
+    gap: 6px;
+}
+
+body.lux-route-social .social-neo-workspace-nav-btn {
+    padding: 12px 13px !important;
+    min-height: 62px;
+}
+
+body.lux-route-social .social-neo-workspace-nav-card--actions {
+    background: var(--social-fade-surface-soft) !important;
+}
+
+body.lux-route-social .social-neo-workspace-nav-actions {
+    display: grid;
+    gap: 10px;
+}
+
+body.lux-route-social .social-neo-center {
+    min-width: 0;
+    gap: 18px;
+}
+
+body.lux-route-social .social-neo-rail {
+    top: 20px;
+    gap: 14px;
+}
+
+body.lux-route-social .social-neo-rail .social-neo-card {
+    padding: 16px !important;
+    border-radius: 22px !important;
+}
+
+body.lux-route-social .social-neo-story-card,
+body.lux-route-social .social-neo-feed-story-card {
+    padding: 16px 18px !important;
+}
+
+body.lux-route-social .social-neo-stories,
+body.lux-route-social .social-neo-feed-story-strip {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 88px;
+    gap: 12px;
+    overflow-x: auto;
+    padding-bottom: 2px;
+    scrollbar-width: none;
+}
+
+body.lux-route-social .social-neo-stories::-webkit-scrollbar,
+body.lux-route-social .social-neo-feed-story-strip::-webkit-scrollbar {
+    display: none;
+}
+
+body.lux-route-social .social-neo-feed-story-item {
+    justify-items: center;
+    text-align: center;
+    gap: 8px;
+}
+
+body.lux-route-social .social-neo-composer-card {
+    padding: 22px !important;
+    gap: 16px;
+    border-color: rgba(var(--lux-accent-rgb), 0.28) !important;
+}
+
+body.lux-route-social .social-neo-composer-person {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: start;
+    gap: 14px;
+}
+
+body.lux-route-social .social-neo-composer-textarea {
+    min-height: 112px;
+    padding: 16px 18px !important;
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+body.lux-route-social .social-neo-composer-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+body.lux-route-social .social-neo-composer-actions,
+body.lux-route-social .social-neo-post-actions,
+body.lux-route-social .social-neo-comment-actions,
+body.lux-route-social .social-neo-page-card-actions,
+body.lux-route-social .social-neo-group-card-actions,
+body.lux-route-social .social-project-detail-actions,
+body.lux-route-social .social-project-task-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+}
+
+body.lux-route-social .social-neo-comment-actions {
+    position: relative;
+    z-index: 2;
+    pointer-events: auto;
+    isolation: isolate;
+}
+
+body.lux-route-social .social-neo-comment-actions .social-neo-btn {
+    position: relative;
+    pointer-events: auto;
+}
+
+body.lux-route-social .social-neo-feed-filter-card {
+    padding: 18px 20px !important;
+    gap: 14px;
+}
+
+body.lux-route-social .social-neo-feed-filter-head,
+body.lux-route-social .social-neo-section-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 14px;
+    align-items: start;
+    flex-wrap: wrap;
+}
+
+body.lux-route-social .social-neo-feed-filter-stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+}
+
+body.lux-route-social .social-neo-post-card {
+    padding: 22px !important;
+    gap: 16px;
+}
+
+body.lux-route-social .social-neo-post-head {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 14px;
+    align-items: start;
+}
+
+body.lux-route-social .social-neo-post-author {
+    min-width: 0;
+}
+
+body.lux-route-social .social-neo-post-author-copy {
+    min-width: 0;
+}
+
+body.lux-route-social .social-neo-post-author-meta,
+body.lux-route-social .social-neo-post-body,
+body.lux-route-social .social-neo-comment-bubble p,
+body.lux-route-social .social-neo-page-card-desc,
+body.lux-route-social .social-project-body-copy,
+body.lux-route-social .social-neo-muted,
+body.lux-route-social .social-neo-empty,
+body.lux-route-social .social-neo-empty-hero span,
+body.lux-route-social .social-neo-dialog-preview {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+body.lux-route-social .social-neo-post-body {
+    font-size: 15px;
+    line-height: 1.72;
+}
+
+body.lux-route-social .social-neo-inline-metrics {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 14px;
+    align-items: center;
+}
+
+body.lux-route-social .social-neo-post-metric {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--sn-txt2);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+body.lux-route-social .social-neo-post-action-row {
+    padding-top: 12px;
+    border-top: 1px solid rgba(var(--lux-accent-rgb), 0.10);
+}
+
+body.lux-route-social .social-neo-reaction-picker {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+body.lux-route-social .social-neo-comment-list {
+    display: grid;
+    gap: 12px;
+}
+
+body.lux-route-social .social-neo-comment {
+    align-items: start;
+}
+
+body.lux-route-social .social-neo-comment-bubble {
+    background: rgba(255, 255, 255, 0.028);
+    border: 1px solid rgba(var(--lux-accent-rgb), 0.10);
+    padding: 14px 16px;
+}
+
+body.lux-route-social .social-neo-comment-compose {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 12px;
+    align-items: start;
+}
+
+body.lux-route-social .social-neo-comment-compose-main {
+    display: grid;
+    gap: 10px;
+}
+
+body.lux-route-social .social-neo-comment-compose-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 10px;
+}
+
+body.lux-route-social .social-neo-directory-item,
+body.lux-route-social .social-neo-community-card {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(220px, 260px);
+    gap: 16px;
+    align-items: start;
+    padding: 18px !important;
+}
+
+body.lux-route-social .social-neo-community-actions {
+    justify-items: end;
+    gap: 10px;
+}
+
+body.lux-route-social .social-neo-page-card,
+body.lux-route-social .social-project-card,
+body.lux-route-social .social-neo-event-feature,
+body.lux-route-social .social-neo-lf-card,
+body.lux-route-social .social-neo-alert,
+body.lux-route-social .social-neo-chat-item,
+body.lux-route-social .social-project-task-card,
+body.lux-route-social .social-project-team-card,
+body.lux-route-social .social-project-deliverable-card,
+body.lux-route-social .social-project-meeting-card,
+body.lux-route-social .social-project-checkin-card {
+    padding: 18px !important;
+}
+
+body.lux-route-social .social-neo-page-card-cover,
+body.lux-route-social .social-neo-profile-cover,
+body.lux-route-social .social-neo-page-cover {
+    overflow: hidden;
+    border-radius: 22px;
+}
+
+body.lux-route-social .social-neo-events-hero,
+body.lux-route-social .social-neo-pages-hero,
+body.lux-route-social .social-projects-hero-rich,
+body.lux-route-social .social-portfolio-hero {
+    padding: 24px !important;
+    min-height: 0;
+}
+
+body.lux-route-social .social-neo-events-hero-grid,
+body.lux-route-social .social-neo-pages-hero-stats,
+body.lux-route-social .social-project-dashboard-grid {
+    gap: 12px;
+}
+
+body.lux-route-social .social-project-task-board {
+    grid-template-columns: repeat(3, minmax(260px, 1fr));
+    gap: 16px;
+}
+
+body.lux-route-social .social-neo-messages {
+    display: grid;
+    grid-template-columns: minmax(300px, 340px) minmax(0, 1fr);
+    gap: 18px;
+    min-height: 720px;
+    align-items: start;
+}
+
+body.lux-route-social .social-neo-messages.is-group-rail-open {
+    grid-template-columns: minmax(300px, 340px) minmax(0, 1fr) minmax(300px, 340px);
+}
+
+body.lux-route-social .social-neo-messages__inbox,
+body.lux-route-social .social-neo-messages__thread-shell,
+body.lux-route-social .social-neo-group-thread-panel {
+    background:
+        radial-gradient(circle at 10% 0%, rgba(255, 255, 255, .07), transparent 32%),
+        linear-gradient(180deg, rgba(255, 255, 255, .035), rgba(255, 255, 255, .016)) !important;
+    border-color: rgba(var(--lux-accent-rgb), .14) !important;
+}
+
+body.lux-route-social .social-neo-messages__inbox {
+    padding: 18px !important;
+    gap: 14px;
+}
+
+body.lux-route-social .social-neo-messages__inbox-copy {
+    display: grid;
+    gap: 4px;
+}
+
+body.lux-route-social .social-neo-messages__section-title {
+    font-size: 18px;
+    line-height: 1.1;
+    color: var(--sn-txt);
+}
+
+body.lux-route-social .social-neo-messages__section-copy {
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--sn-txt2);
+}
+
+body.lux-route-social .social-neo-messages__status-strip {
+    gap: 8px;
+}
+
+body.lux-route-social .social-neo-messages__inbox-toolbar {
+    padding-top: 8px;
+    border-top: 1px solid rgba(var(--lux-accent-rgb), .10);
+}
+
+body.lux-route-social .social-neo-thread-head,
+body.lux-route-social .social-neo-thread-compose,
+body.lux-route-social .social-neo-group-thread-panel {
+    padding: 18px !important;
+    border-radius: 22px !important;
+}
+
+body.lux-route-social .social-neo-messages__thread-shell {
+    display: grid;
+    gap: 14px;
+    padding: 18px !important;
+}
+
+body.lux-route-social .social-neo-messages__thread-head {
+    background:
+        radial-gradient(circle at 12% 0%, rgba(var(--lux-accent-rgb), .10), transparent 36%),
+        rgba(255, 255, 255, .02);
+}
+
+body.lux-route-social .social-neo-messages__thread-actions {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+body.lux-route-social .social-neo-thread-messages {
+    min-height: 420px;
+    padding: 14px;
+    border-radius: 22px;
+    border: 1px solid rgba(var(--lux-accent-rgb), .10);
+    background:
+        linear-gradient(180deg, rgba(0, 0, 0, .16), rgba(0, 0, 0, .08));
+}
+
+body.lux-route-social .social-neo-dialog-card,
+body.lux-route-social .social-neo-story-composer-card {
+    width: min(680px, calc(100vw - 32px));
+    padding: 22px !important;
+    border-radius: 26px !important;
+}
+
+body.lux-route-social .social-neo-dialog-head {
+    align-items: start;
+}
+
+body.lux-route-social .social-neo-dialog-heading {
+    min-width: 0;
+}
+
+body.lux-route-social .social-neo-dialog-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+body.lux-route-social .social-neo-story-viewer {
+    padding: 24px;
+}
+
+body.lux-route-social .social-neo-story-caption {
+    max-width: 68ch;
+    margin: 0 auto;
+}
+
+body.lux-route-social .social-neo-empty-hero {
+    padding: 26px;
+}
+
+body.lux-route-social .social-neo-messages__composer {
+    padding-top: 6px;
+    border-top: 1px solid rgba(var(--lux-accent-rgb), .10);
+}
+
+body.lux-route-social .social-neo-mobile-tabbar {
+    backdrop-filter: blur(20px) saturate(150%);
+    -webkit-backdrop-filter: blur(20px) saturate(150%);
+}
+
+@media (max-width: 1320px) {
+    body.lux-route-social .social-neo-topbar-card {
+        grid-template-columns: 1fr;
+    }
+
+    body.lux-route-social .social-neo-shell-topbar-main {
+        grid-template-columns: 1fr;
+        justify-content: stretch;
+    }
+}
+
+@media (max-width: 1180px) {
+    body.lux-route-social .social-neo-shell {
+        grid-template-columns: 1fr;
+    }
+
+    body.lux-route-social .social-neo-workspace-nav {
+        display: none;
+    }
+
+    body.lux-route-social .social-neo-rail {
+        display: none;
+    }
+
+    body.lux-route-social .social-neo-section-command {
+        grid-template-columns: 1fr;
+    }
+
+    body.lux-route-social .social-neo-section-command-side {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-rows: none;
+    }
+
+    body.lux-route-social .social-neo-community-card,
+    body.lux-route-social .social-neo-directory-item {
+        grid-template-columns: 1fr;
+    }
+
+    body.lux-route-social .social-neo-community-actions {
+        justify-items: start;
+    }
+
+    body.lux-route-social .social-neo-messages,
+    body.lux-route-social .social-neo-messages.is-group-rail-open {
+        grid-template-columns: 1fr;
+    }
+
+    body.lux-route-social .social-project-task-board {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 900px) {
+    body.lux-route-social #page-social,
+    body.lux-route-social #public-social-root,
+    body.lux-route-social #social-neo-root {
+        max-width: calc(100vw - 20px);
+    }
+
+    body.lux-route-social .social-neo-topbar-card,
+    body.lux-route-social .social-neo-section-command,
+    body.lux-route-social .social-neo-card,
+    body.lux-route-social .social-neo-post-card {
+        padding: 16px !important;
+        border-radius: 20px !important;
+    }
+
+    body.lux-route-social .social-neo-section-command {
+        gap: 16px;
+    }
+
+    body.lux-route-social .social-neo-section-command-side {
+        grid-template-columns: 1fr;
+    }
+
+    body.lux-route-social .social-neo-section-metrics {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    body.lux-route-social .social-neo-topbar-pills,
+    body.lux-route-social .social-neo-feed-filter-stats,
+    body.lux-route-social .social-neo-section-metrics {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    body.lux-route-social .social-neo-shell-topbar-actions {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: stretch;
+    }
+
+    body.lux-route-social .social-neo-composer-row,
+    body.lux-route-social .social-neo-comment-compose-row,
+    body.lux-route-social .social-neo-feed-filter-stats,
+    body.lux-route-social .social-neo-events-hero-grid,
+    body.lux-route-social .social-project-dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+
+    body.lux-route-social .social-project-task-board {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 640px) {
+    body.lux-route-social .social-neo-topbar-title,
+    body.lux-route-social .social-neo-section-command h2 {
+        font-size: 22px !important;
+    }
+
+    body.lux-route-social .social-neo-section-command p {
+        font-size: 12px;
+    }
+
+    body.lux-route-social .social-neo-section-command {
+        padding: 14px !important;
+        gap: 12px;
+        border-radius: 16px !important;
+    }
+
+    body.lux-route-social .social-neo-section-metrics,
+    body.lux-route-social .social-neo-section-tasks {
+        grid-template-columns: 1fr;
+    }
+
+    body.lux-route-social .social-neo-section-metric,
+    body.lux-route-social .social-neo-section-task {
+        padding: 10px 12px;
+        border-radius: 12px;
+    }
+
+    body.lux-route-social .social-neo-section-actions {
+        gap: 6px;
+    }
+
+    #public-social-root .social-neo-section-action {
+        min-height: 36px;
+        padding: 8px 10px !important;
+        border-radius: 10px !important;
+        font-size: 11px !important;
+    }
+
+    body.lux-route-social .social-neo-shell-primary-nav {
+        display: none;
+    }
+
+    body.lux-route-social .social-neo-topbar-pills,
+    body.lux-route-social .social-neo-section-metrics {
+        grid-template-columns: 1fr;
+    }
+
+    body.lux-route-social .social-neo-post-head {
+        grid-template-columns: 1fr;
+    }
+
+    body.lux-route-social .social-neo-comment-compose,
+    body.lux-route-social .social-neo-composer-person {
+        grid-template-columns: 1fr;
+    }
+
+    body.lux-route-social .social-neo-dialog-card,
+    body.lux-route-social .social-neo-story-composer-card {
+        width: min(100vw - 20px, 680px);
+    }
+
+    body.lux-route-social .social-neo-messages {
+        min-height: auto;
+    }
+
+    body.lux-route-social .social-neo[data-panel="feed"] .social-neo-filter-card {
+        grid-template-columns: 1fr;
+    }
+
+    body.lux-route-social .social-neo-lf-card-media-image {
+        min-height: 80px;
+    }
+
+    body.lux-route-social .social-neo-toast-container {
+        right: 10px;
+        left: 10px;
+        max-width: none;
+    }
+
+    body.lux-route-social .social-neo-story-viewer {
+        padding: 8px;
+    }
+
+    body.lux-route-social .social-neo-story-caption {
+        left: 8px;
+        right: 8px;
+        bottom: 48px;
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    body.lux-route-social .social-neo-topbar-card,
+    body.lux-route-social .social-neo-section-command {
+        padding: 10px !important;
+        border-radius: 14px !important;
+    }
+
+    body.lux-route-social .social-neo-card,
+    body.lux-route-social .social-neo-post-card {
+        padding: 8px !important;
+        border-radius: 12px !important;
+    }
+
+    body.lux-route-social .social-neo-topbar-title,
+    body.lux-route-social .social-neo-section-command h2 {
+        font-size: 20px !important;
+    }
+
+    body.lux-route-social .social-neo-section-command-copy p {
+        font-size: 12px;
+    }
+
+    body.lux-route-social .social-neo-section-command {
+        gap: 8px;
+    }
+
+    body.lux-route-social .social-neo-section-command-main {
+        gap: 8px;
+    }
+
+    body.lux-route-social .social-neo-section-kicker {
+        padding: 4px 8px;
+        font-size: 9px;
+    }
+
+    body.lux-route-social .social-neo-section-kicker::before {
+        width: 5px;
+        height: 5px;
+    }
+
+    body.lux-route-social .social-neo-section-command p {
+        font-size: 11px;
+        line-height: 1.5;
+    }
+
+    body.lux-route-social .social-neo-section-metric {
+        min-height: 56px;
+        padding: 10px;
+    }
+
+    body.lux-route-social .social-neo-section-metric strong {
+        font-size: 18px;
+    }
+
+    body.lux-route-social .social-neo-section-metric span {
+        font-size: 9px;
+        margin-top: 2px;
+    }
+
+    body.lux-route-social .social-neo-section-task {
+        min-height: 54px;
+        padding: 10px;
+        grid-template-columns: 30px minmax(0, 1fr);
+        gap: 8px;
+    }
+
+    body.lux-route-social .social-neo-section-task-icon {
+        width: 30px;
+        height: 30px;
+        border-radius: 10px;
+        font-size: 12px;
+    }
+
+    body.lux-route-social .social-neo-section-task strong {
+        font-size: 12px;
+    }
+
+    body.lux-route-social .social-neo-section-task small {
+        font-size: 10.5px;
+    }
+
+    body.lux-route-social .social-neo-section-actions {
+        gap: 6px;
+    }
+
+    #public-social-root .social-neo-section-action {
+        min-height: 34px;
+        padding: 7px 10px !important;
+        font-size: 11px !important;
+        border-radius: 10px !important;
+        flex: 1 1 auto;
+    }
+
+    body.lux-route-social .social-neo-community-card {
+        padding: 10px !important;
+    }
+
+    body.lux-route-social .social-neo-community-person {
+        min-width: 0;
+        flex-basis: 100%;
+    }
+
+    body.lux-route-social .social-neo-profile-about-row span:first-of-type {
+        min-width: 65px;
+        font-size: 11px;
+    }
+
+    body.lux-route-social .social-neo-dialog-card,
+    body.lux-route-social .social-neo-story-composer-card {
+        width: min(100vw - 12px, 680px);
+        padding: 14px !important;
+        border-radius: 18px !important;
+    }
+
+    body.lux-route-social .social-neo-dialog-title {
+        font-size: 14px;
+    }
+
+    body.lux-route-social .social-neo-toast {
+        padding: 10px 12px;
+        border-radius: 12px;
+    }
+
+    body.lux-route-social .social-neo-toast-icon {
+        width: 28px;
+        height: 28px;
+        font-size: 12px;
+    }
+
+    body.lux-route-social .social-neo-events-hero,
+    body.lux-route-social .social-neo-events-lane,
+    body.lux-route-social .social-neo-events-support-card {
+        padding: 10px;
+        border-radius: 14px;
+    }
+
+    body.lux-route-social .social-neo-events-hero-stat {
+        padding: 8px 10px;
+        border-radius: 12px;
+    }
+
+    body.lux-route-social .social-neo-events-hero-stat strong {
+        font-size: 18px;
+    }
+
+    body.lux-route-social .social-neo-event-feature-datebox {
+        width: 64px;
+    }
+
+    body.lux-route-social .social-neo-event-feature-cover img {
+        height: 140px;
+    }
+
+    body.lux-route-social .social-portfolio-hero,
+    body.lux-route-social .social-portfolio-toolbar,
+    body.lux-route-social .social-portfolio-compose-shell,
+    body.lux-route-social .social-portfolio-card {
+        padding: 12px !important;
+        border-radius: 16px !important;
+    }
+
+    body.lux-route-social .social-portfolio-hero h2 {
+        font-size: clamp(20px, 5vw, 28px);
+    }
+
+    body.lux-route-social .social-projects-hero-rich,
+    body.lux-route-social .social-project-detail-hero-rich,
+    body.lux-route-social .social-project-chart-card,
+    body.lux-route-social .social-project-rich-panel {
+        padding: 12px;
+        border-radius: 16px;
+    }
+
+    body.lux-route-social .social-neo-messages__inbox,
+    body.lux-route-social .social-neo-messages__thread-shell {
+        padding: 10px !important;
+        border-radius: 14px !important;
+    }
+
+    body.lux-route-social .social-neo-thread-messages {
+        padding: 8px !important;
+        border-radius: 14px;
+        min-height: 200px;
+    }
+
+    body.lux-route-social .social-neo-thread-head,
+    body.lux-route-social .social-neo-thread-compose {
+        padding: 10px !important;
+        border-radius: 14px !important;
+    }
+
+    body.lux-route-social .social-neo-message {
+        padding: 8px 10px;
+        border-radius: 12px 12px 12px 3px;
+        font-size: 12px;
+    }
+
+    body.lux-route-social .social-neo-message.is-own {
+        border-radius: 12px 12px 3px 12px;
+    }
+
+    body.lux-route-social .social-neo-lf-card-media-image {
+        min-height: 70px;
+        border-radius: 12px;
+    }
+
+    body.lux-route-social .social-neo {
+        gap: 10px;
+    }
+
+    body.lux-route-social .social-neo-mobile-tabbar {
+        left: 6px;
+        right: 6px;
+        bottom: 6px;
+        padding: 6px;
+        border-radius: 18px;
+    }
+
+    body.lux-route-social .social-neo-mobile-tab {
+        min-width: 56px;
+        min-height: 48px;
+        padding: 5px 6px !important;
+        border-radius: 14px !important;
+        font-size: 9px !important;
+    }
+
+    body.lux-route-social .social-neo-mobile-tab i {
+        font-size: 16px;
+    }
+}
+
+/* Pages and Messages panel repair pass. Keep this at the end so older social
+   experiments cannot reintroduce transparent headings or over-nested shells. */
+body.lux-route-social .social-neo-topbar-title {
+    background: none !important;
+    -webkit-background-clip: initial !important;
+    background-clip: initial !important;
+    -webkit-text-fill-color: var(--sn-txt) !important;
+    color: var(--sn-txt) !important;
+}
+
+body.lux-route-social .social-neo[data-panel="pages"] .social-neo-pages-shell,
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-messages {
+    gap: 16px;
+}
+
+body.lux-route-social .social-neo[data-panel="pages"] > .social-neo-section-command,
+body.lux-route-social .social-neo[data-panel="messages"] > .social-neo-section-command,
+body.lux-route-social .social-neo[data-panel="pages"] #social-neo-command-region .social-neo-section-command,
+body.lux-route-social .social-neo[data-panel="messages"] #social-neo-command-region .social-neo-section-command {
+    display: none;
+}
+
+body.lux-route-social .social-neo[data-panel="pages"] .social-neo-topbar-card,
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-topbar-card {
+    grid-template-columns: minmax(0, 1fr) minmax(240px, 320px);
+    align-items: start;
+    gap: 14px;
+    min-height: 0;
+    padding: 18px !important;
+    border-radius: 22px !important;
+}
+
+body.lux-route-social .social-neo[data-panel="pages"] .social-neo-topbar-copy,
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-topbar-copy {
+    gap: 10px;
+}
+
+body.lux-route-social .social-neo[data-panel="pages"] .social-neo-topbar-title,
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-topbar-title {
+    font-size: clamp(24px, 2.4vw, 34px);
+    line-height: 1.08;
+}
+
+body.lux-route-social .social-neo[data-panel="pages"] .social-neo-topbar-pills,
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-topbar-pills {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+}
+
+body.lux-route-social .social-neo[data-panel="pages"] .social-neo-topbar-pill,
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-topbar-pill {
+    display: grid;
+    align-content: center;
+    gap: 2px;
+    min-height: 40px;
+    padding: 8px 10px !important;
+}
+
+body.lux-route-social .social-neo[data-panel="pages"] .social-neo-topbar-pill-value,
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-topbar-pill-value {
+    display: block;
+    color: var(--sn-txt);
+    font-size: 16px;
+    line-height: 1;
+}
+
+body.lux-route-social .social-neo[data-panel="pages"] .social-neo-topbar-pill-label,
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-topbar-pill-label {
+    display: block;
+    color: var(--sn-txt3);
+    font-size: 9.5px;
+    line-height: 1.2;
+}
+
+body.lux-route-social .social-neo[data-panel="pages"] .social-neo-shell-topbar-main,
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-shell-topbar-main {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    justify-content: stretch;
+}
+
+body.lux-route-social .social-neo[data-panel="pages"] .social-neo-shell-profile-chip,
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-shell-profile-chip {
+    min-height: 62px;
+    padding: 10px 12px !important;
+    border-radius: 16px !important;
+    align-items: center !important;
+}
+
+body.lux-route-social .social-neo[data-panel="pages"] .social-neo-shell-topbar-actions,
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-shell-topbar-actions {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    justify-content: stretch;
+}
+
+body.lux-route-social .social-neo[data-panel="pages"] .social-neo-shell-topbar-action-btn,
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-shell-topbar-action-btn {
+    min-width: 0;
+    padding-inline: 10px !important;
+}
+
+body.lux-route-social .social-neo[data-panel="pages"] .social-neo-pages-hero {
+    min-height: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(230px, .65fr);
+    align-items: stretch;
+    gap: 18px;
+    padding: 20px !important;
+    border-radius: 22px !important;
+}
+
+body.lux-route-social .social-neo[data-panel="pages"] .social-neo-pages-hero-copy {
+    align-content: start;
+    gap: 10px;
+}
+
+body.lux-route-social .social-neo[data-panel="pages"] .social-neo-pages-hero-copy h2 {
+    max-width: 24ch;
+    font-size: clamp(24px, 2.4vw, 34px);
+    line-height: 1.06;
+}
+
+body.lux-route-social .social-neo[data-panel="pages"] .social-neo-pages-hero-copy p {
+    max-width: 66ch;
+    font-size: 14px;
+    line-height: 1.55;
+}
+
+body.lux-route-social .social-neo[data-panel="pages"] .social-neo-pages-hero-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+
+body.lux-route-social .social-neo[data-panel="pages"] .social-neo-pages-hero-stats article {
+    min-height: 82px;
+    border-radius: 16px;
+}
+
+body.lux-route-social .social-neo[data-panel="pages"] .social-neo-pages-create-trigger {
+    grid-column: 1 / -1;
+    min-height: 46px;
+}
+
+body.lux-route-social .social-neo[data-panel="pages"] .social-neo-pages-toolbar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+}
+
+body.lux-route-social .social-neo[data-panel="pages"] .social-neo-pages-grid {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
+    gap: 16px;
+}
+
+body.lux-route-social .social-neo[data-panel="pages"] .social-neo-page-card {
+    overflow: hidden;
+}
+
+body.lux-route-social .social-neo[data-panel="pages"] .social-neo-page-card-cover {
+    min-height: 150px;
+    max-height: 190px;
+}
+
+body.lux-route-social .social-neo[data-panel="pages"] .social-neo-page-card-body {
+    gap: 12px;
+}
+
+body.lux-route-social .social-neo[data-panel="pages"] .social-neo-page-card-brand {
+    grid-template-columns: auto minmax(0, 1fr);
+}
+
+body.lux-route-social .social-neo[data-panel="pages"] .social-neo-page-card-brand > div,
+body.lux-route-social .social-neo[data-panel="pages"] .social-neo-page-card-desc,
+body.lux-route-social .social-neo[data-panel="pages"] .social-neo-page-card-support {
+    min-width: 0;
+}
+
+body.lux-route-social .social-neo[data-panel="pages"] .social-neo-page-card-support {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+}
+
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-messages {
+    display: grid;
+    grid-template-columns: minmax(300px, 360px) minmax(0, 1fr);
+    align-items: stretch;
+    min-height: 620px;
+}
+
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-messages__inbox,
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-messages__thread-shell {
+    min-width: 0;
+    padding: 16px !important;
+    border-radius: 22px !important;
+}
+
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-messages__inbox {
+    display: grid;
+    grid-template-rows: auto auto auto minmax(0, 1fr);
+    max-height: none;
+}
+
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-chat-items {
+    gap: 8px;
+    min-height: 0;
+    overflow-y: auto;
+    padding-right: 2px;
+}
+
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-chat-item {
+    min-height: 76px;
+    border: 1px solid rgba(var(--lux-accent-rgb), .10) !important;
+    border-radius: 16px !important;
+    padding: 10px 12px !important;
+}
+
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-chat-item.is-active {
+    border-left-width: 1px !important;
+    border-color: rgba(var(--lux-accent-rgb), .24) !important;
+}
+
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-messages__thread-shell {
+    display: grid;
+    grid-template-rows: auto minmax(260px, 1fr) auto;
+    gap: 12px;
+}
+
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-thread-head,
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-thread-compose {
+    position: static !important;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+}
+
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-thread-head {
+    padding: 12px !important;
+    align-items: center;
+}
+
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-messages__thread-actions {
+    justify-content: flex-end;
+}
+
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-thread-messages {
+    min-height: 280px;
+    max-height: none;
+    overflow-y: auto;
+    padding: 14px !important;
+}
+
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-messages__composer {
+    padding-top: 0;
+    border-top: 0;
+}
+
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-thread-compose-row {
+    align-items: center;
+}
+
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-msg-compose-row {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center;
+    gap: 8px;
+}
+
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-msg-compose-input {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+body.lux-route-social .social-neo[data-panel="messages"] .social-neo-msg-compose-row .social-neo-btn {
+    flex: 0 0 auto;
+}
+
+@media (max-width: 1180px) {
+    body.lux-route-social .social-neo[data-panel="pages"] .social-neo-pages-hero,
+    body.lux-route-social .social-neo[data-panel="messages"] .social-neo-messages {
+        grid-template-columns: 1fr;
+    }
+
+    body.lux-route-social .social-neo[data-panel="messages"] .social-neo-messages {
+        min-height: 0;
+    }
+}
+
+@media (max-width: 720px) {
+    body.lux-route-social .social-neo[data-panel="pages"] .social-neo-topbar-card,
+    body.lux-route-social .social-neo[data-panel="messages"] .social-neo-topbar-card {
+        grid-template-columns: 1fr;
+    }
+
+    body.lux-route-social .social-neo[data-panel="pages"] .social-neo-topbar-pills,
+    body.lux-route-social .social-neo[data-panel="messages"] .social-neo-topbar-pills {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    body.lux-route-social .social-neo[data-panel="pages"] .social-neo-pages-hero-stats {
+        grid-template-columns: 1fr;
+    }
+
+    body.lux-route-social .social-neo[data-panel="pages"] .social-neo-shell-topbar-main,
+    body.lux-route-social .social-neo[data-panel="messages"] .social-neo-shell-topbar-main {
+        display: none;
+    }
+
+    body.lux-route-social .social-neo[data-panel="pages"] .social-neo-pages-toolbar {
+        grid-template-columns: 1fr;
+    }
+
+    body.lux-route-social .social-neo[data-panel="messages"] .social-neo-thread-head,
+    body.lux-route-social .social-neo[data-panel="messages"] .social-neo-messages__thread-actions {
+        align-items: stretch;
+        justify-content: stretch;
+    }
+}
+
+/* Final Social theme lock: this must remain after every route section. */
+body.lux-route-social {
+    --sn-blue-rgb: var(--lux-accent-rgb, 200, 130, 42);
+    --sn-green-rgb: var(--lux-accent-rgb, 200, 130, 42);
+    --sn-purple-rgb: var(--lux-accent-rgb, 200, 130, 42);
+    --sn-rose-rgb: var(--lux-accent-rgb, 200, 130, 42);
+    --sn-info: var(--sn-accent);
+    --sn-success: var(--sn-accent);
+    --sn-warning: var(--sn-accent);
+    --sn-danger: var(--sn-accent);
+}
+
+body.lux-route-social .social-neo-section-command--blue,
+body.lux-route-social .social-neo-section-command--purple,
+body.lux-route-social .social-neo-section-command--green,
+body.lux-route-social .social-neo-section-command--orange,
+body.lux-route-social .social-neo-section-command--gold,
+body.lux-route-social .social-neo-section-command--violet,
+body.lux-route-social .social-neo-section-command--teal,
+body.lux-route-social .social-neo-section-command--rose,
+body.lux-route-social .social-neo-section-command--indigo {
+    --section-rgb: var(--lux-accent-rgb, 200, 130, 42) !important;
+}
+
+body.lux-route-social .social-project-metric-card,
+body.lux-route-social .social-project-ring-card {
+    --project-accent: var(--sn-accent) !important;
+}
+
+body.lux-route-social .social-neo-shell-nav-icon,
+body.lux-route-social .social-neo-mobile-tab-icon,
+body.lux-route-social .social-neo-side-icon,
+body.lux-route-social .social-neo-mobile-tab-count,
+body.lux-route-social .social-neo-btn-primary.is-blue {
+    background: linear-gradient(135deg, rgba(var(--lux-accent-rgb), .92), rgba(var(--sn-accent-2-rgb), .72)) !important;
+    color: var(--lux-accent-contrast, #fff) !important;
+}
+
+body.lux-route-social .social-neo-event-feature--academic,
+body.lux-route-social .social-neo-event-feature--social,
+body.lux-route-social .social-neo-event-feature--career,
+body.lux-route-social .social-neo-event-feature--club,
+body.lux-route-social .social-neo-event-feature--university,
+body.lux-route-social .social-neo-event-feature--study,
+body.lux-route-social .social-neo-event-feature--default {
+    --event-accent: var(--sn-accent) !important;
+}
+
+body.lux-route-social .social-neo-event-card,
+body.lux-route-social .social-neo-community-panel--directory,
+body.lux-route-social .social-neo-community-panel--suggested,
+body.lux-route-social .social-neo-community-panel--staff,
+body.lux-route-social .social-neo-community-panel--connections,
+body.lux-route-social .social-neo-section-card--official {
+    border-left-color: var(--sn-accent) !important;
+}
+
+body.lux-route-social .social-neo-event-category-pill,
+body.lux-route-social .social-neo-pill.is-blue {
+    border-color: rgba(var(--lux-accent-rgb), .28) !important;
+    color: var(--sn-accent) !important;
+    background: rgba(var(--lux-accent-rgb), .07) !important;
+}
+
+body.lux-route-social .social-neo-community-panel--directory .social-neo-section-head,
+body.lux-route-social .social-neo-community-panel--suggested .social-neo-section-head,
+body.lux-route-social .social-neo-community-panel--staff .social-neo-section-head,
+body.lux-route-social .social-neo-community-panel--connections .social-neo-section-head,
+body.lux-route-social .social-neo-page-card-header {
+    background: linear-gradient(135deg, rgba(var(--lux-accent-rgb), .13), rgba(var(--lux-accent-rgb), .035)) !important;
+}
+
+body.lux-route-social .social-neo-community-overview-icon,
+body.lux-route-social .social-neo-section-accent-icon.is-green,
+body.lux-route-social .social-neo-section-accent-icon.is-blue,
+body.lux-route-social .social-neo-section-accent-icon.is-purple,
+body.lux-route-social .social-neo-page-card-icon,
+body.lux-route-social .social-neo-pill-pinned {
+    color: var(--sn-accent) !important;
+}
+
+body.lux-route-social .social-neo-pill-pinned,
+body.lux-route-social .social-neo-page-card-icon {
+    background: rgba(var(--lux-accent-rgb), .10) !important;
+}
+
+body.lux-route-social .public-social-hero-title,
+body.lux-route-social .public-social-page-title,
+body.lux-route-social .public-social-comment-author {
+    color: var(--sn-txt) !important;
+}
+
+body.lux-route-social .public-social-hero-copy,
+body.lux-route-social .public-social-post-byline,
+body.lux-route-social .public-social-comment-count,
+body.lux-route-social .public-social-file-help,
+body.lux-route-social .public-social-filter-label,
+body.lux-route-social .public-social-field,
+body.lux-route-social .public-social-page-copy,
+body.lux-route-social .public-social-page-meta {
+    color: var(--sn-txt2) !important;
+}
+
+body.lux-route-social .public-social-page-card.is-active {
+    border-color: rgba(var(--lux-accent-rgb), .28) !important;
+    background: rgba(var(--lux-accent-rgb), .08) !important;
+}
+
+body.lux-route-social .public-social-post-media img {
+    border-color: var(--sn-bdr) !important;
+}
+
+/* Sticky social topbar: sticks below the 78px platform topbar */
+body.lux-route-social #social-neo-topbar-region {
+    position: sticky;
+    top: 78px;
+    z-index: 50;
 }

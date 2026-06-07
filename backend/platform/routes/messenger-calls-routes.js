@@ -84,6 +84,20 @@ function registerMessengerCallsRoutes(app, deps = {}) {
         response.json({ ok: true, chat });
     });
 
+    app.post('/api/messenger/chats/:chatId/read', (request, response) => {
+        const sessionAccount = request.kiuSessionAccount || requireSessionAccount(request, response);
+        if (!sessionAccount) return;
+        const store = getStore();
+        const actorUserId = getActorUserId(sessionAccount);
+        const chat = store.markChatMessagesRead(request.params.chatId, actorUserId);
+        if (!chat) {
+            sendError(response, 400, 'Chat could not be marked read.');
+            return;
+        }
+        pushEvent(chat.members, { type: 'chat:upsert', chat });
+        response.json({ ok: true, chat });
+    });
+
     app.post('/api/calls/start', (request, response) => {
         const sessionAccount = request.kiuSessionAccount || requireSessionAccount(request, response);
         if (!sessionAccount) return;

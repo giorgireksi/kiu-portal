@@ -49,12 +49,12 @@ describe('global interaction performance guardrails', () => {
   it('scopes transparency surface refreshes to active shell roots instead of querying the whole document', () => {
     const utilities = readSource('assets/js/shared/utilities.js');
 
-    expect(utilities).toContain('const INDEX_TRANSPARENCY_GLOBAL_ROOT_SELECTORS = [');
-    expect(utilities).toContain('function collectTransparencySurfaceElements(selectorList, rootsOverride)');
-    expect(utilities).toContain("const activePage = document.querySelector('.page-section.active-page');");
-    expect(utilities).toContain('const surfaceElements = collectTransparencySurfaceElements(allSelectors, scopedRoots);');
-    expect(utilities).not.toContain("const surfaceElements = document.querySelectorAll(allSelectors.join(', '));");
-  });
+        expect(utilities).toContain('const INDEX_TRANSPARENCY_GLOBAL_ROOT_SELECTORS = [');
+        expect(utilities).toContain('function collectTransparencySurfaceElements(selectorList, rootsOverride)');
+        expect(utilities).toContain("const activePage = document.querySelector('.page-section.active-page');");
+        expect(utilities).toContain('const surfaceElements = getCachedTransparencySurfaceElements(allSelectors, scopedRoots);');
+        expect(utilities).not.toContain("const surfaceElements = document.querySelectorAll(allSelectors.join(', '));");
+    });
 
   it('keeps saveState from scanning every node on the page', () => {
     const state = readSource('assets/js/app/state.js');
@@ -71,22 +71,48 @@ describe('global interaction performance guardrails', () => {
     expect(utilities).toContain('window.__kiuRoleSwitchRedirectPending = true;');
     expect(utilities).toContain('window.__kiuFacultySwitchRedirectPending = true;');
     expect(utilities).toContain('function fastRedirectRoleSwitch(requestedRole)');
-    expect(utilities).toContain("if (typeof fastRedirectRoleSwitch === 'function' && fastRedirectRoleSwitch(requestedRole))");
+    expect(utilities).toContain("if (typeof fastRedirectRoleSwitch === 'function' && await fastRedirectRoleSwitch(requestedRole))");
     expect(luxury).toContain('if (window.__kiuRoleSwitchRedirectPending || window.__kiuFacultySwitchRedirectPending) return;');
     expect(luxury).toContain('frameInterval: reducedMotion ? 80 : 42');
   });
 
-  it('renders a static luxury background on the efficient performance tier', () => {
+  it('uses lightweight navigate sync instead of full syncAll after navigation', () => {
     const luxury = readSource('assets/js/features/index-luxury.js');
-    const homeLuxury = readRegisteredHomeChunk();
 
-    expect(luxury).toContain('function ensureLuxuryHomeDashboardBundle() {');
-    expect(homeLuxury).not.toContain('function startBackground() {');
-    expect(homeLuxury).toContain('startBackground = function () {');
-    expect(homeLuxury).toContain("const staticBackgroundOnly = getLuxuryBackgroundRenderProfile(reducedMotion).tier === 'efficient';");
-    expect(homeLuxury).toContain('function renderCurrentFrame(time = 0)');
-    expect(homeLuxury).toContain('if (staticBackgroundOnly) {');
-    expect(homeLuxury).toContain('renderCurrentFrame(window.performance?.now?.() || Date.now());');
+    expect(luxury).toContain('function syncAfterNavigate(pageId) {');
+    expect(luxury).toContain('function queueNavigateSync(args, result) {');
+    expect(luxury).toContain('syncAfterNavigate(targetPageId);');
+    expect(luxury).toContain('__luxPendingNavigateSyncPageId = pageId');
+    expect(luxury).toContain("wrapFunction('navigate', queueNavigateSync);");
+    expect(luxury).toContain("wrapFunction('switchRole', queueShellSync);");
+    expect(luxury).toMatch(/function queueNavigateSync[\s\S]*?syncAfterNavigate\(targetPageId\)/);
+    expect(luxury).toContain('function isStandaloneLmsRouteActive() {');
+    expect(luxury).toContain("window.refreshStandaloneDesktopRouteShellContext({ rerender: true, refreshActiveRoute: true });");
+    expect(luxury).toContain("window.refreshStandaloneDesktopShellChrome()");
+    expect(luxury).toMatch(/function queueShellSync[\s\S]*?(refreshStandaloneDesktopRouteShellContext|refreshStandaloneDesktopShellChrome|syncAll\(\))/);
+  });
+
+  it('marks the portal shell interactive before deferred route renders finish', () => {
+    const navigation = readSource('assets/js/features/navigation.js');
+
+    expect(navigation).toContain('function tryMarkPortalShellInteractive() {');
+    expect(navigation).toContain('function scheduleRouteContentRender(renderFn) {');
+    expect(navigation).toContain('window.scheduleRouteContentRender = scheduleRouteContentRender;');
+    expect(navigation).toContain('tryMarkPortalShellInteractive();');
+    expect(navigation).toContain('const PORTAL_STARTUP_MAX_ATTEMPTS = 48;');
+  });
+
+  it('renders a static particle frame only when background animation is off', () => {
+    const luxury = readSource('assets/js/features/index-luxury.js');
+    const particle = readSource('assets/js/features/luxury-particle-background.js');
+
+    expect(luxury).toContain('window.__kiuInitLuxuryParticleBackground');
+    expect(particle).toContain('staticBackgroundOnly = !animationsEnabled');
+    expect(particle).not.toContain("staticBackgroundOnly = getPerformanceTier() === 'efficient'");
+    expect(particle).toContain('targetMotion = animationsEnabled ? readPortalMotion() / 100 : 0');
+    expect(particle).toContain('function renderCurrentFrame(time = 0)');
+    expect(particle).toContain('if (staticBackgroundOnly && renderer)');
+    expect(particle).toContain('renderCurrentFrame(window.performance?.now?.() || Date.now());');
   });
 
   it('does not promote unknown-memory laptops into the high background tier by default', () => {
@@ -193,9 +219,11 @@ describe('global interaction performance guardrails', () => {
     const indexHtml = readSource('index.html');
     const app = readSource('assets/js/app/app.js');
 
-    expect(indexHtml).not.toContain('assets/js/pages/student-registration.js?v=20260430-lmsgrades1');
+    expect(indexHtml).not.toContain('assets/js/pages/student-registration.js?v=20260527-studentreg2');
     expect(indexHtml).not.toContain('assets/js/pages/news.js?v=20260516-newsroute3');
-    expect(app).toContain("'assets/js/pages/student-registration.js?v=20260430-lmsgrades1'");
+    expect(app).toContain('REGISTRATION_PICKER_ASSET_TOKEN');
+    expect(app).toContain("registrationRuntimeAsset('assets/js/pages/student-registration.js')");
+    expect(app).not.toContain("'assets/js/pages/student-registration.js?v=20260527-studentreg2'");
     expect(app).toContain('window.ensurePortalRegistrationRuntimeLoaded = function ensurePortalRegistrationRuntimeLoaded()');
     expect(app).toContain("const NEWS_RUNTIME_SCRIPT = 'assets/js/pages/news.js?v=20260516-newsroute3';");
     expect(app).toContain('window.ensurePortalNewsRuntimeLoaded = function ensurePortalNewsRuntimeLoaded()');
@@ -269,8 +297,9 @@ describe('global interaction performance guardrails', () => {
   it('skips rebuilding nav and picker panels when the shell state is unchanged', () => {
     const shellChrome = readSource('assets/js/features/luxury-shell-chrome.js');
 
-    expect(shellChrome).toContain("const signature = `${role}|${activePage}`;");
-    expect(shellChrome).toContain("if (navRoot.dataset.renderSignature === signature) return;");
+    expect(shellChrome).toContain("const itemSignature = groups");
+    expect(shellChrome).toContain("const signature = `${role}|${activePage}|${itemSignature}`;");
+    expect(shellChrome).toContain("if (navRoot.dataset.renderSignature === signature && navRoot.children.length) return;");
     expect(shellChrome).toContain("navRoot.dataset.renderSignature = signature;");
     expect(shellChrome).toContain("const optionSignature = optionsList.map((opt) => `${opt.value}:${opt.label}`).join('|');");
     expect(shellChrome).toContain("if (panel.dataset.renderSignature !== signature) {");
@@ -466,7 +495,7 @@ describe('global interaction performance guardrails', () => {
   it('does not apply flat surface primer overrides immediately on the home route', () => {
     const primer = readSource('assets/js/theme-primer.js');
 
-    expect(primer).toContain("if (!b.classList.contains('lux-route-home')) {");
+    expect(primer).toContain("if (!b.classList.contains('lux-route-home') && !shouldSkipFlatSurfaceOverrides()) {");
     expect(primer).toContain('setTimeout(applyFlatSurfaceOverrides, 0);');
     expect(primer).toContain("if (document.body && document.body.classList.contains('lux-route-home')) return;");
   });
@@ -483,12 +512,16 @@ describe('global interaction performance guardrails', () => {
     expect(fontsCss).toContain("@font-face {\n    font-family: 'DM Mono';");
   });
 
-  it('does not request the placeholder components stylesheet on the index home entry', () => {
+  it('does not request the deleted placeholder components stylesheet anywhere in the live shell', () => {
     const indexHtml = readSource('index.html');
-    const componentsCss = readSource('assets/css/components.css');
+    const lmsHtml = readSource('lms.html');
+    const socialHtml = readSource('social.html');
+    const serviceWorker = readSource('service-worker.js');
 
-    expect(componentsCss.trim()).toBe('/* Shared component styles placeholder for compatibility-first refactor. */');
     expect(indexHtml).not.toContain('assets/css/components.css');
+    expect(lmsHtml).not.toContain('assets/css/components.css');
+    expect(socialHtml).not.toContain('assets/css/components.css');
+    expect(serviceWorker).not.toContain('assets/css/components.css');
   });
 
   it('gates expensive structural English overrides by page-root presence', () => {

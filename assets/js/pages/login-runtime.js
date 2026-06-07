@@ -13,7 +13,7 @@ function getKiuPortalBackendDefaultUrl() {
             const host = window.location.hostname || LOGIN_PORTAL_LOCAL_BACKEND_HOST;
             const isLocalHost = /^(127\.0\.0\.1|localhost)$/i.test(host);
             if (isLocalHost) {
-                return `${window.location.protocol}//${host}:${LOGIN_PORTAL_BACKEND_PORT}`;
+                return window.location.origin;
             }
             return window.location.origin;
         }
@@ -352,21 +352,31 @@ window.authActivate = window.authActivate || authActivate;
 window.getPortalRoleLanding = window.getPortalRoleLanding || getPortalRoleLanding;
 
 function switchTab(tab) {
-    document.querySelectorAll('.login-tab').forEach((node) => node.classList.remove('active'));
-    document.querySelectorAll('.tab-content').forEach((node) => node.classList.remove('active'));
+    document.querySelectorAll('.login-tab').forEach((node) => {
+        node.classList.remove('active');
+        node.setAttribute('aria-pressed', 'false');
+    });
+    document.querySelectorAll('.tab-content').forEach((node) => {
+        node.classList.remove('active');
+        node.hidden = true;
+    });
     document.getElementById('error-msg').textContent = '';
     document.getElementById('success-msg').textContent = '';
 
     if (tab === 'login') {
         document.querySelectorAll('.login-tab')[0].classList.add('active');
+        document.querySelectorAll('.login-tab')[0].setAttribute('aria-pressed', 'true');
         document.getElementById('form-login').classList.add('active');
+        document.getElementById('form-login').hidden = false;
         document.querySelector('.login-title').textContent = 'Welcome back';
         document.querySelector('.login-subtitle').textContent = 'Sign in to access your KIU Portal';
         return;
     }
 
     document.querySelectorAll('.login-tab')[1].classList.add('active');
+    document.querySelectorAll('.login-tab')[1].setAttribute('aria-pressed', 'true');
     document.getElementById('form-activate').classList.add('active');
+    document.getElementById('form-activate').hidden = false;
     document.querySelector('.login-title').textContent = 'Account Setup';
     document.querySelector('.login-subtitle').textContent = 'Activate your pre-registered KIU account';
 }
@@ -413,22 +423,19 @@ async function refreshMicrosoftLoginState() {
         config = await fetchConfig();
     } catch (error) {
         button.disabled = true;
-        button.style.opacity = '0.6';
-        button.style.cursor = 'not-allowed';
+        button.classList.add('is-disabled');
         note.textContent = error?.message || 'Portal backend is unavailable. Start the backend service and refresh the page.';
         showError(note.textContent);
         return;
     }
     if (!config?.enabled) {
         button.disabled = true;
-        button.style.opacity = '0.6';
-        button.style.cursor = 'not-allowed';
+        button.classList.add('is-disabled');
         note.textContent = config?.error || 'Microsoft sign-in is not configured on the portal backend yet.';
         return;
     }
     button.disabled = false;
-    button.style.opacity = '1';
-    button.style.cursor = 'pointer';
+    button.classList.remove('is-disabled');
     note.textContent = 'Use your university Microsoft account to load your linked KIU portal profile and permissions.';
 }
 

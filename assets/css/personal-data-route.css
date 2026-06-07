@@ -1,17 +1,25 @@
+        body.lux-route-personal-data {
+            --lux-data-card-bg: var(--pd-row);
+            --lux-data-card-border: var(--pd-border-soft);
+            --lux-data-card-hover-bg: var(--pd-row-hover);
+        }
+
+        body.lux-route-personal-data .personal-data-command,
         body.lux-route-personal-data .personal-data-toolbar {
             padding: 18px;
-        }
-
-        body.lux-route-personal-data .personal-data-toolbar-row {
             display: grid;
-            grid-template-columns: minmax(220px, 0.78fr) minmax(260px, 1fr) auto;
             gap: 14px;
-            align-items: center;
         }
 
-        body.lux-route-personal-data .personal-data-toolbar-copy {
+        body.lux-route-personal-data .personal-data-command-context {
             display: grid;
-            gap: 3px;
+            gap: 10px;
+        }
+
+        body.lux-route-personal-data .personal-data-command-context select {
+            width: 100%;
+            max-width: 420px;
+            min-height: 46px;
         }
 
         body.lux-route-personal-data .personal-data-card-kicker {
@@ -25,7 +33,7 @@
             font-size: 0.82rem;
         }
 
-        body.lux-route-personal-data .personal-data-toolbar-copy p,
+        body.lux-route-personal-data .personal-data-command-context p,
         body.lux-route-personal-data .personal-data-card-copy,
         body.lux-route-personal-data .personal-data-level-heading {
             margin: 0;
@@ -34,44 +42,36 @@
             line-height: 1.5;
         }
 
-        body.lux-route-personal-data .personal-data-toolbar-row select {
-            width: 100%;
-            min-width: 0;
-            border-radius: 8px;
-            background: var(--pd-row);
-            color: var(--lux-text);
-            border: 1px solid var(--pd-border);
-            min-height: 46px;
-        }
-
+        body.lux-route-personal-data .personal-data-command-actions,
         body.lux-route-personal-data .personal-data-toolbar-actions {
             display: flex;
             gap: 10px;
             flex-wrap: wrap;
-            justify-content: flex-end;
+            align-items: center;
         }
 
+        body.lux-route-personal-data .personal-data-workspace,
         body.lux-route-personal-data .personal-data-layout {
             display: grid !important;
-            grid-template-columns: minmax(280px, 320px) minmax(0, 1.05fr) minmax(280px, 0.95fr);
-            grid-template-areas:
-                "identity stats facts"
-                "identity record facts"
-                "identity social social";
+            grid-template-columns: minmax(280px, 300px) minmax(0, 1fr);
             gap: 16px;
             align-items: start;
         }
 
-        body.lux-route-personal-data .personal-data-stack {
-            display: contents;
+        body.lux-route-personal-data .personal-data-main {
+            display: grid;
+            gap: 16px;
+            min-width: 0;
         }
 
-        body.lux-route-personal-data .personal-data-identity-card { grid-area: identity; }
-        body.lux-route-personal-data .personal-data-stats-card { grid-area: stats; }
-        body.lux-route-personal-data .personal-data-facts-card { grid-area: facts; }
-        body.lux-route-personal-data .personal-data-record-card { grid-area: record; }
+        body.lux-route-personal-data .personal-data-detail-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 16px;
+            align-items: start;
+        }
 
-        body.lux-route-personal-data .profile-card {
+        body.lux-route-personal-data .personal-data-rail .profile-card {
             width: auto;
             position: sticky;
             top: 22px;
@@ -113,6 +113,8 @@
 
         body.lux-route-personal-data .profile-card [data-personal-data-avatar-fallback="true"] {
             background: linear-gradient(135deg, rgba(var(--lux-accent-rgb), 0.96), rgba(35, 95, 147, 0.92)) !important;
+            display: grid;
+            place-items: center;
             font-size: 1.45rem !important;
             letter-spacing: 0 !important;
         }
@@ -126,36 +128,9 @@
             color: var(--lux-text);
         }
 
-        body.lux-route-personal-data .status-badge {
+        body.lux-route-personal-data #personal-data-status {
             width: fit-content;
             margin-top: 8px;
-            position: relative;
-            padding: 6px 10px 6px 24px;
-            border-radius: 999px;
-            background: rgba(16, 185, 129, 0.14) !important;
-            color: #34d399 !important;
-            border: 1px solid rgba(16, 185, 129, 0.28);
-            box-shadow: none !important;
-            font-size: 0.78rem;
-            font-weight: 800;
-        }
-
-        body.lux-light-mode.lux-route-personal-data .status-badge,
-        html.lux-light-mode body.lux-route-personal-data .status-badge {
-            color: #047857 !important;
-            background: rgba(16, 185, 129, 0.11) !important;
-        }
-
-        body.lux-route-personal-data .status-badge::before {
-            content: "";
-            position: absolute;
-            left: 10px;
-            top: 50%;
-            width: 7px;
-            height: 7px;
-            border-radius: 999px;
-            transform: translateY(-50%);
-            background: currentColor;
         }
 
         body.lux-route-personal-data .personal-data-id-grid {
@@ -163,33 +138,11 @@
             gap: 10px;
         }
 
-        body.lux-route-personal-data .personal-data-card-meta {
-            display: flex;
-            justify-content: space-between;
-            gap: 14px;
-            padding: 12px;
-            border-radius: 8px;
-            border: 1px solid var(--pd-border-soft);
-            background: var(--pd-row);
-        }
-
-        body.lux-route-personal-data .personal-data-card-meta span {
-            color: var(--lux-text-soft);
-            font-size: 0.68rem;
-            font-weight: 800;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-        }
-
-        body.lux-route-personal-data .personal-data-card-meta strong {
-            color: var(--lux-text);
-            text-align: right;
-            font-size: 0.9rem;
-            line-height: 1.35;
-        }
-
+        body.lux-route-personal-data .personal-data-overview,
         body.lux-route-personal-data .personal-data-stats-card,
+        body.lux-route-personal-data .personal-data-enrollment,
         body.lux-route-personal-data .personal-data-facts-card,
+        body.lux-route-personal-data .personal-data-university-record,
         body.lux-route-personal-data .personal-data-record-card {
             padding: 20px;
             display: grid;
@@ -201,45 +154,33 @@
             gap: 6px;
         }
 
+        body.lux-route-personal-data .personal-data-kpi-row,
         body.lux-route-personal-data .kpi-row {
             display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
+            grid-template-columns: repeat(4, minmax(0, 1fr));
             gap: 12px;
         }
 
-        body.lux-route-personal-data .kpi-box {
-            min-width: 0;
-            min-height: 96px;
+        body.lux-route-personal-data .personal-data-enrollment-group {
             display: grid;
-            grid-template-columns: 42px minmax(0, 1fr);
-            align-items: center;
-            gap: 12px;
-            padding: 14px;
-            border-radius: 8px !important;
-            background: var(--pd-row) !important;
-            border: 1px solid var(--pd-border-soft);
-            box-shadow: none !important;
-            transition: background 0.18s ease, border-color 0.18s ease;
+            gap: 10px;
         }
 
-        body.lux-route-personal-data .kpi-box:hover,
-        body.lux-route-personal-data .personal-data-mini:hover,
-        body.lux-route-personal-data .personal-data-record-item:hover {
-            background: var(--pd-row-hover) !important;
-            border-color: rgba(var(--lux-accent-rgb), 0.24);
+        body.lux-route-personal-data .personal-data-enrollment-group + .personal-data-enrollment-group {
+            margin-top: 4px;
+            padding-top: 14px;
+            border-top: 1px solid var(--pd-border-soft, rgba(255, 255, 255, 0.08));
         }
 
-        body.lux-route-personal-data .personal-data-metric-icon {
-            width: 42px;
-            height: 42px;
-            border-radius: 8px;
-            display: grid;
-            place-items: center;
-            color: rgb(var(--lux-accent-rgb));
-            background: rgba(var(--lux-accent-rgb), 0.12);
+        body.lux-route-personal-data .personal-data-enrollment-group-title {
+            font-size: 0.72rem;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--lux-text-muted);
         }
 
-        body.lux-route-personal-data .kpi-value {
+        body.lux-route-personal-data .personal-data-kpi-value {
             margin-top: 5px;
             color: var(--lux-text);
             font-size: 1.3rem !important;
@@ -248,39 +189,10 @@
             overflow-wrap: anywhere;
         }
 
-        body.lux-route-personal-data .kpi-star,
-        body.lux-route-personal-data .kpi-circle svg {
-            display: none !important;
-        }
-
         body.lux-route-personal-data .personal-data-record-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+            grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 10px;
-        }
-
-        body.lux-route-personal-data .personal-data-mini,
-        body.lux-route-personal-data .personal-data-record-item {
-            border-radius: 8px;
-            border: 1px solid var(--pd-border-soft);
-            background: var(--pd-row);
-            box-shadow: none;
-            transition: background 0.18s ease, border-color 0.18s ease;
-        }
-
-        body.lux-route-personal-data .personal-data-mini {
-            min-height: 82px;
-            padding: 13px;
-            display: grid;
-            align-content: start;
-            gap: 7px;
-        }
-
-        body.lux-route-personal-data .personal-data-mini strong {
-            color: var(--lux-text);
-            font-size: 0.93rem;
-            line-height: 1.35;
-            overflow-wrap: anywhere;
         }
 
         body.lux-route-personal-data .personal-data-record-list {
@@ -289,49 +201,47 @@
             gap: 10px;
         }
 
-        body.lux-route-personal-data .personal-data-record-item {
-            padding: 13px;
-            display: grid;
-            gap: 7px;
+        body.lux-route-personal-data .personal-data-kpi-card {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 12px;
+            justify-content: flex-start;
+            padding: 16px 14px;
         }
 
-        body.lux-route-personal-data .personal-data-record-value {
-            color: var(--lux-text);
-            font-size: 0.93rem;
-            line-height: 1.4;
-            overflow-wrap: anywhere;
-        }
-
-        body.lux-route-personal-data .personal-data-social-container {
-            min-height: 260px;
-            padding: 0;
-            border-radius: 8px;
-            background: transparent !important;
-            border: 0;
-            box-shadow: none;
+        body.lux-route-personal-data .personal-data-kpi-label {
+            font-size: 12px;
+            color: var(--kiu-text-main);
+            font-weight: 700;
         }
 
         @media (max-width: 1180px) {
-            body.lux-route-personal-data .personal-data-toolbar-row {
+            body.lux-route-personal-data .personal-data-workspace,
+            body.lux-route-personal-data .personal-data-layout {
                 grid-template-columns: 1fr;
             }
 
-            body.lux-route-personal-data .personal-data-toolbar-actions {
-                justify-content: flex-start;
-            }
-
-            body.lux-route-personal-data .personal-data-layout {
-                grid-template-columns: minmax(270px, 320px) minmax(0, 1fr);
-                grid-template-areas:
-                    "identity stats"
-                    "facts facts"
-                    "record record"
-                    "social social";
-            }
-
-            body.lux-route-personal-data .profile-card {
+            body.lux-route-personal-data .personal-data-rail .profile-card {
                 position: static;
             }
+
+            body.lux-route-personal-data .personal-data-detail-grid {
+                grid-template-columns: 1fr;
+            }
+
+            body.lux-route-personal-data .personal-data-kpi-row,
+            body.lux-route-personal-data .kpi-row {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        body.lux-route-personal-data .personal-data-mobility-muted {
+            margin: 0 0 0.75rem;
+            font-size: 0.92rem;
+            color: var(--lux-text-muted, rgba(255, 255, 255, 0.62));
         }
 
         @media (max-width: 760px) {
@@ -339,21 +249,15 @@
                 font-size: 1.6rem;
             }
 
-            body.lux-route-personal-data .personal-data-layout {
-                grid-template-columns: 1fr;
-                grid-template-areas:
-                    "identity"
-                    "stats"
-                    "facts"
-                    "record"
-                    "social";
-            }
-
             body.lux-route-personal-data .personal-data-profile-row,
+            body.lux-route-personal-data .personal-data-kpi-row,
             body.lux-route-personal-data .kpi-row,
             body.lux-route-personal-data .personal-data-record-grid,
             body.lux-route-personal-data .personal-data-record-list {
                 grid-template-columns: 1fr;
             }
 
+            body.lux-route-personal-data .personal-data-kpi-card {
+                flex-direction: row;
+            }
         }

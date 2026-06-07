@@ -1,4 +1,4 @@
-﻿/* Shared UI interactions extracted from core.js. Source of truth remains root core.js compatibility bundle. */
+﻿/* Shared UI interactions extracted from the legacy core.js bundle. Active routes now load split files directly. */
 
 // --- PROFILE MENU ---
 function toggleProfileMenu(event) {
@@ -30,7 +30,7 @@ function switchCalendarTab(tab) {
         const tabEl = document.getElementById(`cal-tab-${t}`);
         const contentEl = document.getElementById(`cal-content-${t}`);
         if (tabEl)     { tabEl.classList.toggle('active', t === tab); }
-        if (contentEl) { contentEl.style.display = (t === tab) ? 'block' : 'none'; }
+        if (contentEl) { contentEl.hidden = t !== tab; }
     });
     if (tab === 'cal') {
         setTimeout(renderBroadCalendar, 0);
@@ -117,41 +117,41 @@ function renderCalendarPage() {
         const isCurrentMonth = (viewYear === today.getFullYear() && viewMonth === today.getMonth());
 
         let html = `
-        <div style="background:var(--kiu-white); border-radius:16px; border:1px solid var(--kiu-border); overflow:hidden; box-shadow:var(--kiu-shadow-sm);">
-            <!-- Header -->
-            <div style="display:flex; justify-content:space-between; align-items:center; padding:18px 24px; background:var(--kiu-gradient-blue); color:white;">
-                <button type="button" data-cal-nav="-1" style="background:rgba(255,255,255,0.2); border:none; color:white; width:34px; height:34px; border-radius:50%; cursor:pointer; font-size:16px;"><i class="fas fa-chevron-left"></i></button>
-                <div style="text-align:center;">
-                    <div style="font-size:18px; font-weight:700;">${monthNames[viewMonth]} ${viewYear}</div>
-                    <div style="font-size:11px; opacity:0.8;">Academic Calendar</div>
+        <div class="lux-calendar-board">
+            <div class="lux-calendar-header">
+                <button type="button" data-cal-nav="-1" class="lux-calendar-nav" aria-label="Previous month"><i class="fas fa-chevron-left"></i></button>
+                <div class="lux-calendar-heading">
+                    <div class="lux-calendar-title">${monthNames[viewMonth]} ${viewYear}</div>
+                    <div class="lux-calendar-subtitle">Academic Calendar</div>
                 </div>
-                <button type="button" data-cal-nav="1" style="background:rgba(255,255,255,0.2); border:none; color:white; width:34px; height:34px; border-radius:50%; cursor:pointer; font-size:16px;"><i class="fas fa-chevron-right"></i></button>
+                <button type="button" data-cal-nav="1" class="lux-calendar-nav" aria-label="Next month"><i class="fas fa-chevron-right"></i></button>
             </div>
-            <!-- Day headers -->
-            <div style="display:grid; grid-template-columns:repeat(7,1fr); background:#f8f9fa; border-bottom:1px solid var(--kiu-border);">
-                ${dayNames.map(d => `<div style="text-align:center; padding:8px; font-size:11px; font-weight:700; color:var(--kiu-text-muted);">${d}</div>`).join('')}
+            <div class="lux-calendar-days">
+                ${dayNames.map(d => `<div>${d}</div>`).join('')}
             </div>
-            <!-- Days grid -->
-            <div style="display:grid; grid-template-columns:repeat(7,1fr);">`;
+            <div class="lux-calendar-grid">`;
 
         for (let i = 0; i < firstDay; i++) {
-            html += `<div style="padding:8px; min-height:80px; background:#fafafa; border:1px solid #f0f0f0;"></div>`;
+            html += '<div class="lux-calendar-cell is-empty"></div>';
         }
 
         for (let d = 1; d <= daysInMonth; d++) {
             const isToday = (d === today.getDate() && isCurrentMonth);
             const dateStr = `${viewYear}-${String(viewMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
             const dayEvts = calEvents.filter(e => e.date === dateStr);
-            html += `<div style="padding:6px 8px; min-height:80px; border:1px solid #f0f0f0; background:${isToday ? '#eff6ff' : 'white'}; vertical-align:top;">
-                <div style="font-size:13px; font-weight:700; color:${isToday ? 'var(--kiu-blue)' : 'var(--kiu-text-main)'}; ${isToday ? 'background:var(--kiu-blue); color:white; width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center;' : ''}">${d}</div>
-                ${dayEvts.map(ev => `<div style="margin-top:3px; padding:2px 5px; background:${ev.color||'#dbeafe'}; color:${ev.textColor||'#1e40af'}; border-radius:4px; font-size:10px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${ev.title}">${ev.title}</div>`).join('')}
+            html += `<div class="lux-calendar-cell${isToday ? ' is-today' : ''}">
+                <div class="lux-calendar-date">${d}</div>
+                ${dayEvts.map(ev => {
+                    const eventTitle = escapeHtml(String(ev?.title || 'Event'));
+                    return `<div class="lux-calendar-event" title="${eventTitle}">${eventTitle}</div>`;
+                }).join('')}
             </div>`;
         }
 
         const totalCells = firstDay + daysInMonth;
         const remaining = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7);
         for (let i = 0; i < remaining; i++) {
-            html += `<div style="padding:8px; min-height:80px; background:#fafafa; border:1px solid #f0f0f0;"></div>`;
+            html += '<div class="lux-calendar-cell is-empty"></div>';
         }
 
         html += `</div></div>`;
@@ -172,148 +172,159 @@ function renderCalendarPage() {
         renderCalendarMonth();
     };
 
+    const appointmentSlots = [
+        { label: 'Tomorrow', value: '14:00', state: 'selected' },
+        { label: 'Tomorrow', value: '14:30', state: 'available' },
+        { label: 'Tomorrow', value: '15:00', state: 'available' },
+        { label: 'Friday', value: 'Booked', state: 'booked' },
+        { label: 'Friday', value: 'Booked', state: 'booked' }
+    ];
+
     // Build professor office hours rows
     const officeHoursRows = profList.map(p => {
         const availSlots = ['Mon 10:00','Tue 14:00','Wed 11:00','Thu 15:00'];
         return `<tr>
-            <td style="text-align:left; font-weight:600;">${p.name}</td>
-            <td style="font-size:11px; color:var(--kiu-text-muted);">${p.faculty || 'All'}</td>
-            <td style="font-size:11px;">${availSlots.slice(0,2).join(', ')}</td>
-            <td><button class="kiu-btn-outline" style="padding:4px 10px; font-size:11px;">Book</button></td>
+            <td>${p.name}</td>
+            <td class="calendar-table-meta">${p.faculty || 'All'}</td>
+            <td class="calendar-table-meta">${availSlots.slice(0,2).join(', ')}</td>
+            <td><button class="kiu-btn-outline calendar-action-btn">Book</button></td>
         </tr>`;
     }).join('');
 
     root.innerHTML = `
-    <div style="max-width:1280px; margin:0 auto; padding:24px;">
-        <!-- Hero -->
-        <div style="position:relative; overflow:hidden; border-radius:24px; padding:28px 30px; background:linear-gradient(135deg,rgba(7,17,29,.98) 0%,rgba(15,23,42,.98) 50%,rgba(29,78,216,.95) 100%); color:#fff; box-shadow:0 24px 60px rgba(15,23,42,.22); margin-bottom:24px;">
-            <div style="position:relative; z-index:1;">
-                <div style="font-size:10px; letter-spacing:0.18em; text-transform:uppercase; color:rgba(226,232,240,.6); font-weight:800;">Academic workspace</div>
-                <h1 style="font-family:'Playfair Display',Georgia,serif; font-size:32px; font-weight:600; margin:10px 0 8px; letter-spacing:-0.02em;">Academic Calendar</h1>
-                <p style="font-size:14px; line-height:1.6; color:rgba(226,232,240,.85); max-width:600px; margin:0 0 14px;">Follow the official academic calendar, announcements, events, and office hours from one organized workspace.</p>
-                <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                    <span style="display:inline-flex; align-items:center; gap:6px; padding:6px 14px; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.16); border-radius:999px; font-size:12px; font-weight:600; color:rgba(226,232,240,.8);"><i class="far fa-calendar-alt"></i> Official calendar</span>
-                    <span style="display:inline-flex; align-items:center; gap:6px; padding:6px 14px; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.16); border-radius:999px; font-size:12px; font-weight:600; color:rgba(226,232,240,.8);"><i class="fas fa-bullhorn"></i> Announcements</span>
-                    <span style="display:inline-flex; align-items:center; gap:6px; padding:6px 14px; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.16); border-radius:999px; font-size:12px; font-weight:600; color:rgba(226,232,240,.8);"><i class="far fa-clock"></i> Office hours</span>
+    <div class="lux-standalone-page">
+        <div class="lux-page-shell">
+            <div class="page-hero">
+                <div class="page-hero-badge">Academic workspace</div>
+                <h1 class="page-hero-title">Academic Calendar</h1>
+                <p class="page-hero-copy">Follow the official academic calendar, announcements, events, and office hours from one organized workspace.</p>
+                <div class="page-hero-meta">
+                    <span class="page-hero-badge"><i class="far fa-calendar-alt"></i> Official calendar</span>
+                    <span class="page-hero-badge"><i class="fas fa-bullhorn"></i> Announcements</span>
+                    <span class="page-hero-badge"><i class="far fa-clock"></i> Office hours</span>
                 </div>
             </div>
-        </div>
 
-        <!-- Tabs -->
-        <div style="display:flex; gap:8px; margin-bottom:24px; overflow-x:auto; padding-bottom:4px;">
-            <button type="button" class="cal-tab active" role="tab" data-cal-tab="cal" id="cal-tab-cal"><i class="far fa-calendar-alt"></i> Calendar</button>
-            <button type="button" class="cal-tab" role="tab" data-cal-tab="announcements" id="cal-tab-announcements"><i class="fas fa-bullhorn"></i> Announcements</button>
-            <button type="button" class="cal-tab" role="tab" data-cal-tab="events" id="cal-tab-events"><i class="fas fa-list-ul"></i> Events</button>
-            <button type="button" class="cal-tab" role="tab" data-cal-tab="officehours" id="cal-tab-officehours"><i class="far fa-clock"></i> Office Hours</button>
-        </div>
+            <div class="tabs-container">
+                <button type="button" class="tab active" role="tab" data-cal-tab="cal" id="cal-tab-cal"><i class="far fa-calendar-alt"></i> Calendar</button>
+                <button type="button" class="tab" role="tab" data-cal-tab="announcements" id="cal-tab-announcements"><i class="fas fa-bullhorn"></i> Announcements</button>
+                <button type="button" class="tab" role="tab" data-cal-tab="events" id="cal-tab-events"><i class="fas fa-list-ul"></i> Events</button>
+                <button type="button" class="tab" role="tab" data-cal-tab="officehours" id="cal-tab-officehours"><i class="far fa-clock"></i> Office Hours</button>
+            </div>
 
-        <!-- Tab: Calendar -->
-        <div id="cal-content-cal">
-            ${isStudent && myClasses.length === 0 ? `<div style="background:var(--kiu-white); border:1px solid var(--kiu-border); border-radius:16px; padding:20px; margin-bottom:16px; box-shadow:var(--kiu-shadow-sm);">
-                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px; flex-wrap:wrap; gap:12px;">
-                    <div><h3 style="font-size:16px; font-weight:700; color:var(--kiu-text-main); margin:0 0 4px;">My Selected Classes</h3>
-                    <p style="font-size:12px; color:var(--kiu-text-muted); margin:0;">Your registered lectures and seminars appear here.</p></div>
-                    <span style="display:inline-flex; align-items:center; gap:6px; padding:6px 14px; background:var(--kiu-white); border:1px solid var(--kiu-border); border-radius:999px; font-size:12px; font-weight:600; color:var(--kiu-text-muted);"><i class="fas fa-calendar-week"></i> Weekly Sync</span>
+            <div id="cal-content-cal">
+                ${isStudent && myClasses.length === 0 ? `<div class="content-box surface-card calendar-panel-card">
+                <div class="calendar-panel-head">
+                    <div>
+                        <h3 class="calendar-panel-title">My Selected Classes</h3>
+                        <p class="calendar-panel-copy">Your registered lectures and seminars appear here.</p>
+                    </div>
+                    <span class="calendar-panel-pill"><i class="fas fa-calendar-week"></i> Weekly Sync</span>
                 </div>
-                <div style="text-align:center; padding:40px 20px; color:var(--kiu-text-muted);">
-                    <i class="fas fa-calendar-check" style="font-size:36px; opacity:0.25; display:block; margin-bottom:12px;"></i>
-                    <strong style="display:block; font-size:15px; font-weight:700; color:var(--kiu-text-secondary); margin-bottom:4px;">No classes yet</strong>
-                    <span style="font-size:12px;">Registered classes will appear here automatically.</span>
+                <div class="calendar-empty-state calendar-empty-state--lg">
+                    <i class="fas fa-calendar-check calendar-empty-state-icon"></i>
+                    <strong class="calendar-empty-state-heading">No classes yet</strong>
+                    <span class="calendar-empty-state-copy">Registered classes will appear here automatically.</span>
                 </div>
             </div>` : ''}
-            <div id="cal-month-grid"></div>
-        </div>
-
-        <!-- Tab: Announcements -->
-        <div id="cal-content-announcements" style="display:none;">
-            <div style="background:var(--kiu-white); border:1px solid var(--kiu-border); border-radius:16px; padding:20px; margin-bottom:16px; box-shadow:var(--kiu-shadow-sm);">
-                <table style="width:100%; border-collapse:collapse; font-size:13px;">
-                    <thead><tr style="background:#f8f9fa; color:var(--kiu-text-muted); font-weight:700; font-size:11px; text-transform:uppercase; letter-spacing:0.4px;">
-                        <th style="text-align:left; padding:11px 14px; border-bottom:1px solid var(--kiu-border);">ID</th>
-                        <th style="text-align:left; padding:11px 14px; border-bottom:1px solid var(--kiu-border);">Title</th>
-                        <th style="text-align:left; padding:11px 14px; border-bottom:1px solid var(--kiu-border);">Date</th>
-                        <th style="width:44px; padding:11px 14px; border-bottom:1px solid var(--kiu-border);"></th>
-                    </tr></thead>
-                    <tbody>
-                        ${announcements.length ? announcements.map(a => `<tr style="border-bottom:1px solid #ece6dd;">
-                            <td style="padding:11px 14px; color:var(--kiu-text-main);">${a.id || '—'}</td>
-                            <td style="padding:11px 14px; color:var(--kiu-text-main);">${a.title || 'Announcement'}</td>
-                            <td style="padding:11px 14px; color:var(--kiu-text-muted); font-size:12px;">${a.date || '—'}</td>
-                            <td style="padding:11px 14px;"><button type="button" class="kiu-btn-outline" data-cal-modal-kind="announcement" data-cal-modal-title="${encodeCalendarModalPayload(a.title||'')}" data-cal-modal-body="${encodeCalendarModalPayload(a.body||a.message||'No details.')}" style="padding:4px 10px; font-size:11px; border-radius:6px;"><i class="fas fa-eye"></i></button></td>
-                        </tr>`).join('') : `<tr><td colspan="4" style="padding:40px; text-align:center; color:var(--kiu-text-muted);"><i class="fas fa-bullhorn" style="font-size:28px; opacity:0.2; display:block; margin-bottom:8px;"></i><strong style="display:block; color:var(--kiu-text-secondary);">No announcements</strong><span style="font-size:12px;">Check back later for updates.</span></td></tr>`}
-                    </tbody>
-                </table>
+                <div id="cal-month-grid"></div>
             </div>
-        </div>
 
-        <!-- Tab: Events -->
-        <div id="cal-content-events" style="display:none;">
-            <div style="background:var(--kiu-white); border:1px solid var(--kiu-border); border-radius:16px; padding:20px; margin-bottom:16px; box-shadow:var(--kiu-shadow-sm);">
-                <table style="width:100%; border-collapse:collapse; font-size:13px;">
-                    <thead><tr style="background:#f8f9fa; color:var(--kiu-text-muted); font-weight:700; font-size:11px; text-transform:uppercase; letter-spacing:0.4px;">
-                        <th style="text-align:left; padding:11px 14px; border-bottom:1px solid var(--kiu-border);">ID</th>
-                        <th style="text-align:left; padding:11px 14px; border-bottom:1px solid var(--kiu-border);">Event</th>
-                        <th style="text-align:left; padding:11px 14px; border-bottom:1px solid var(--kiu-border);">Date</th>
-                        <th style="width:44px; padding:11px 14px; border-bottom:1px solid var(--kiu-border);"></th>
-                    </tr></thead>
+            <div id="cal-content-announcements" hidden>
+                <div class="content-box">
+                    <table class="kiu-table">
+                        <thead><tr>
+                            <th>ID</th>
+                            <th>Title</th>
+                            <th>Date</th>
+                            <th></th>
+                        </tr></thead>
                     <tbody>
-                        ${events.length ? events.map(e => `<tr style="border-bottom:1px solid #ece6dd;">
-                            <td style="padding:11px 14px; color:var(--kiu-text-main);">${e.id || '—'}</td>
-                            <td style="padding:11px 14px; color:var(--kiu-text-main);">${e.title || e.name || 'Event'}</td>
-                            <td style="padding:11px 14px; color:var(--kiu-text-muted); font-size:12px;">${e.date || '—'}</td>
-                            <td style="padding:11px 14px;"><button type="button" class="kiu-btn-outline" data-cal-modal-kind="event" data-cal-modal-title="${encodeCalendarModalPayload(e.title||e.name||'Event')}" data-cal-modal-body="${encodeCalendarModalPayload(e.description||e.body||'No details.')}" style="padding:4px 10px; font-size:11px; border-radius:6px;"><i class="fas fa-eye"></i></button></td>
-                        </tr>`).join('') : `<tr><td colspan="4" style="padding:40px; text-align:center; color:var(--kiu-text-muted);"><i class="fas fa-calendar-day" style="font-size:28px; opacity:0.2; display:block; margin-bottom:8px;"></i><strong style="display:block; color:var(--kiu-text-secondary);">No events</strong><span style="font-size:12px;">Campus events will appear here.</span></td></tr>`}
+                        ${announcements.length ? announcements.map(a => `<tr>
+                            <td>${a.id || '—'}</td>
+                            <td>${a.title || 'Announcement'}</td>
+                            <td class="calendar-table-meta">${a.date || '—'}</td>
+                            <td><button type="button" class="kiu-btn-outline calendar-action-btn" data-cal-modal-kind="announcement" data-cal-modal-title="${encodeCalendarModalPayload(a.title||'')}" data-cal-modal-body="${encodeCalendarModalPayload(a.body||a.message||'No details.')}"><i class="fas fa-eye"></i></button></td>
+                        </tr>`).join('') : `<tr><td colspan="4" class="calendar-empty-cell"><i class="fas fa-bullhorn calendar-empty-icon"></i><strong class="calendar-empty-title">No announcements</strong><span>Check back later for updates.</span></td></tr>`}
                     </tbody>
-                </table>
+                    </table>
+                </div>
             </div>
-        </div>
 
-        <!-- Tab: Office Hours -->
-        <div id="cal-content-officehours" style="display:none;">
-            ${isProf ? `<div style="background:var(--kiu-white); border:1px solid var(--kiu-border); border-radius:16px; padding:20px; margin-bottom:16px; box-shadow:var(--kiu-shadow-sm);">
-                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px; flex-wrap:wrap; gap:12px;">
-                    <div><h3 style="font-size:16px; font-weight:700; color:var(--kiu-text-main); margin:0 0 4px;"><i class="fab fa-microsoft" style="color:#00a4ef;"></i> Outlook Integration</h3>
-                    <p style="font-size:12px; color:var(--kiu-text-muted); margin:0;">Sync your Outlook calendar to generate booking slots for students.</p></div>
+            <div id="cal-content-events" hidden>
+                <div class="content-box">
+                    <table class="kiu-table">
+                        <thead><tr>
+                            <th>ID</th>
+                            <th>Event</th>
+                            <th>Date</th>
+                            <th></th>
+                        </tr></thead>
+                    <tbody>
+                        ${events.length ? events.map(e => `<tr>
+                            <td>${e.id || '—'}</td>
+                            <td>${e.title || e.name || 'Event'}</td>
+                            <td class="calendar-table-meta">${e.date || '—'}</td>
+                            <td><button type="button" class="kiu-btn-outline calendar-action-btn" data-cal-modal-kind="event" data-cal-modal-title="${encodeCalendarModalPayload(e.title||e.name||'Event')}" data-cal-modal-body="${encodeCalendarModalPayload(e.description||e.body||'No details.')}"><i class="fas fa-eye"></i></button></td>
+                        </tr>`).join('') : `<tr><td colspan="4" class="calendar-empty-cell"><i class="fas fa-calendar-day calendar-empty-icon"></i><strong class="calendar-empty-title">No events</strong><span>Campus events will appear here.</span></td></tr>`}
+                    </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="cal-content-officehours" hidden>
+            ${isProf ? `<div class="content-box surface-card calendar-panel-card calendar-office-panel">
+                <div class="calendar-panel-head">
+                    <div>
+                        <h3 class="calendar-panel-title"><i class="fab fa-microsoft calendar-inline-icon-microsoft"></i> Outlook Integration</h3>
+                        <p class="calendar-panel-copy">Sync your Outlook calendar to generate booking slots for students.</p>
+                    </div>
                 </div>
                 <button class="kiu-btn-outline">Connect Outlook Calendar</button>
-                <hr style="border:none; border-top:1px solid var(--kiu-border); margin:20px 0;">
-                <h4 style="margin:0 0 12px; font-size:14px; font-weight:700; color:var(--kiu-text-main);">Upcoming Appointments</h4>
-                <div style="text-align:center; padding:32px 20px; color:var(--kiu-text-muted);">
-                    <i class="far fa-calendar-check" style="font-size:32px; opacity:0.2; display:block; margin-bottom:8px;"></i>
-                    <strong style="display:block; color:var(--kiu-text-secondary);">No appointments scheduled</strong>
+                <hr class="calendar-divider">
+                <h4 class="calendar-section-title">Upcoming Appointments</h4>
+                <div class="calendar-empty-state calendar-empty-state--md">
+                    <i class="far fa-calendar-check calendar-empty-state-icon calendar-empty-state-icon--md"></i>
+                    <strong class="calendar-empty-state-heading calendar-empty-state-heading--compact">No appointments scheduled</strong>
                 </div>
             </div>` : ''}
-            ${isStudent ? `<div style="background:var(--kiu-white); border:1px solid var(--kiu-border); border-radius:16px; padding:20px; margin-bottom:16px; box-shadow:var(--kiu-shadow-sm);">
-                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px; flex-wrap:wrap; gap:12px;">
-                    <div><h3 style="font-size:16px; font-weight:700; color:var(--kiu-text-main); margin:0 0 4px;"><i class="far fa-calendar-check"></i> Book an Appointment</h3>
-                    <p style="font-size:12px; color:var(--kiu-text-muted); margin:0;">Select a professor and choose an available time slot.</p></div>
+            ${isStudent ? `<div class="content-box surface-card calendar-panel-card calendar-booking-panel">
+                <div class="calendar-panel-head">
+                    <div>
+                        <h3 class="calendar-panel-title"><i class="far fa-calendar-check"></i> Book an Appointment</h3>
+                        <p class="calendar-panel-copy">Select a professor and choose an available time slot.</p>
+                    </div>
                 </div>
-                <select style="width:100%; max-width:320px; padding:10px 14px; background:var(--kiu-white); border:1px solid var(--kiu-border); border-radius:8px; font-size:13px; font-family:inherit; color:var(--kiu-text-main); outline:none; margin-bottom:16px;">
+                <div class="calendar-booking-form">
+                <select class="calendar-select-control">
                     <option>Select Professor...</option>
                     ${profList.map(p => `<option>${p.name} — ${p.faculty || 'All'}</option>`).join('')}
                 </select>
-                <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(100px, 1fr)); gap:10px; margin-bottom:16px; max-width:500px;">
-                    <div style="padding:10px; text-align:center; border:1px solid var(--cal-accent,var(--kiu-blue)); border-radius:8px; cursor:pointer; font-size:12px; font-weight:600; background:rgba(10,132,255,0.08); color:var(--kiu-blue);">Tomorrow<br><strong>14:00</strong></div>
-                    <div style="padding:10px; text-align:center; border:1px solid var(--kiu-border); border-radius:8px; cursor:pointer; font-size:12px; font-weight:600; color:var(--kiu-text-secondary); background:var(--kiu-white);">Tomorrow<br><strong>14:30</strong></div>
-                    <div style="padding:10px; text-align:center; border:1px solid var(--kiu-border); border-radius:8px; cursor:pointer; font-size:12px; font-weight:600; color:var(--kiu-text-secondary); background:var(--kiu-white);">Tomorrow<br><strong>15:00</strong></div>
-                    <div style="padding:10px; text-align:center; border:1px dashed var(--kiu-border); border-radius:8px; cursor:not-allowed; font-size:12px; font-weight:600; color:var(--kiu-text-muted); background:#f8f9fa;">Friday<br><strong>Booked</strong></div>
-                    <div style="padding:10px; text-align:center; border:1px dashed var(--kiu-border); border-radius:8px; cursor:not-allowed; font-size:12px; font-weight:600; color:var(--kiu-text-muted); background:#f8f9fa;">Friday<br><strong>Booked</strong></div>
+                <div class="calendar-slot-grid">
+                    ${appointmentSlots.map(slot => `<div class="calendar-slot-card is-${slot.state}">
+                        <span class="calendar-slot-label">${slot.label}</span>
+                        <strong class="calendar-slot-value">${slot.value}</strong>
+                    </div>`).join('')}
                 </div>
-                <textarea placeholder="Reason for meeting (optional)..." style="width:100%; max-width:500px; padding:10px 14px; background:var(--kiu-white); border:1px solid var(--kiu-border); border-radius:8px; font-size:13px; font-family:inherit; color:var(--kiu-text-main); outline:none; resize:vertical; min-height:60px; margin-bottom:16px;"></textarea>
-                <br><button class="kiu-btn-blue" style="padding:8px 16px; border-radius:8px; font-size:12px; font-weight:700;"><i class="fas fa-calendar-plus"></i> Confirm Booking</button>
+                <textarea class="calendar-textarea-control" placeholder="Reason for meeting (optional)..."></textarea>
+                <div class="calendar-booking-actions">
+                    <button class="kiu-btn-blue calendar-confirm-btn"><i class="fas fa-calendar-plus"></i> Confirm Booking</button>
+                </div>
+                </div>
             </div>` : ''}
             <!-- All professors table -->
-            <div style="background:var(--kiu-white); border:1px solid var(--kiu-border); border-radius:16px; padding:20px; box-shadow:var(--kiu-shadow-sm);">
-                <h4 style="margin:0 0 12px; font-size:14px; font-weight:700; color:var(--kiu-text-main);">All Professors & Office Hours</h4>
-                <table style="width:100%; border-collapse:collapse; font-size:13px;">
-                    <thead><tr style="background:#f8f9fa; color:var(--kiu-text-muted); font-weight:700; font-size:11px; text-transform:uppercase; letter-spacing:0.4px;">
-                        <th style="text-align:left; padding:11px 14px; border-bottom:1px solid var(--kiu-border);">Professor</th>
-                        <th style="text-align:left; padding:11px 14px; border-bottom:1px solid var(--kiu-border);">Faculty</th>
-                        <th style="text-align:left; padding:11px 14px; border-bottom:1px solid var(--kiu-border);">Hours</th>
-                        <th style="padding:11px 14px; border-bottom:1px solid var(--kiu-border);">Action</th>
+            <div class="content-box surface-card calendar-panel-card calendar-professors-panel">
+                <h4 class="calendar-section-title">All Professors & Office Hours</h4>
+                <table class="kiu-table">
+                    <thead><tr>
+                        <th>Professor</th>
+                        <th>Faculty</th>
+                        <th>Hours</th>
+                        <th>Action</th>
                     </tr></thead>
                     <tbody>${officeHoursRows}</tbody>
                 </table>
+            </div>
             </div>
         </div>
     </div>`;
@@ -358,6 +369,12 @@ function ensureModalOverlayBindings() {
     return overlay;
 }
 
+function setModalVisibility(modal, shown, displayValue = 'block') {
+    if (!modal) return;
+    modal.hidden = !shown;
+    modal.style.display = shown ? displayValue : 'none';
+}
+
 function ensureModalScaffold(type) {
     const overlay = ensureModalOverlayBindings();
     if (!overlay) return null;
@@ -393,7 +410,7 @@ function ensureModalScaffold(type) {
             `;
         modal = wrapper.firstElementChild;
         if (modal) {
-            modal.style.display = 'none';
+            setModalVisibility(modal, false);
             overlay.appendChild(modal);
         }
     }
@@ -406,7 +423,7 @@ function ensureSyllabusModal() {
     let modal = document.getElementById('modal-syllabus');
     if (!modal) {
         const fileRows = INDEX_SYLLABUS_FILE_ROWS.map((label, index) => `
-            <div style="padding: 15px;${index < INDEX_SYLLABUS_FILE_ROWS.length - 1 ? ' border-bottom: 1px solid var(--kiu-border);' : ''} display: flex; justify-content: space-between; align-items: center;">
+            <div class="modal-helper-row${index < INDEX_SYLLABUS_FILE_ROWS.length - 1 ? ' modal-helper-row--divided' : ''}">
                 <span>${label}</span>
                 <button type="button" class="kiu-btn-blue" aria-label="Download syllabus file">
                     <i class="fas fa-cloud-download-alt" aria-hidden="true"></i>
@@ -422,14 +439,14 @@ function ensureSyllabusModal() {
                         <i class="fas fa-times" aria-hidden="true"></i>
                     </button>
                 </div>
-                <div class="modal-body modal-syllabus-body" style="padding: 0;">
+                <div class="modal-body modal-syllabus-body">
                     ${fileRows}
                 </div>
             </div>
         `;
         modal = wrapper.firstElementChild;
         if (modal) {
-            modal.style.display = 'none';
+            setModalVisibility(modal, false);
             overlay.appendChild(modal);
         }
     }
@@ -471,7 +488,7 @@ function ensureProgramsModal() {
                     <div id="modal-program-courses" class="modal-surface-card">
                         <table class="kiu-table modal-programs-table">
                             <thead>
-                                <tr><th>N</th><th style="text-align:left;">Subject Title / Module Title</th><th>ECTS</th><th>Prerequisite / Anti-requisite</th></tr>
+                                <tr><th>N</th><th class="modal-programs-heading-start">Subject Title / Module Title</th><th>ECTS</th><th>Prerequisite / Anti-requisite</th></tr>
                             </thead>
                             <tbody>${courseRows}</tbody>
                         </table>
@@ -482,7 +499,7 @@ function ensureProgramsModal() {
         `;
         modal = wrapper.firstElementChild;
         if (modal) {
-            modal.style.display = 'none';
+            setModalVisibility(modal, false);
             overlay.appendChild(modal);
         }
     }
@@ -528,35 +545,35 @@ function openModal(type, title, body) {
     const overlay = ensureModalOverlayBindings();
     if (!overlay) return;
     if (type === 'programs') ensureProgramsModal();
-    document.querySelectorAll('#modal-overlay .modal-content').forEach(el => el.style.display = 'none');
+    document.querySelectorAll('#modal-overlay .modal-content').forEach((el) => setModalVisibility(el, false));
     let opened = false;
 
     if (type === 'announcement') {
         ensureModalScaffold('announcement');
         document.getElementById('modal-ann-title').innerText = title;
         document.getElementById('modal-ann-body').innerText = body;
-        document.getElementById('modal-announcement').style.display = 'block';
+        setModalVisibility(document.getElementById('modal-announcement'), true, 'block');
         opened = true;
     } else if (type === 'event') {
         ensureModalScaffold('event');
         document.getElementById('modal-evt-title').innerText = title;
         document.getElementById('modal-evt-body').innerText = body;
-        document.getElementById('modal-event').style.display = 'block';
+        setModalVisibility(document.getElementById('modal-event'), true, 'block');
         opened = true;
     } else if (type === 'syllabus') {
         const modal = ensureSyllabusModal();
         if (modal) {
-            modal.style.display = 'block';
+            setModalVisibility(modal, true, 'block');
             opened = true;
         }
     } else if (type === 'programs') {
-        document.getElementById('modal-program-courses').style.display = 'none';
-        document.getElementById('modal-programs').style.display = 'flex';
+        setModalVisibility(document.getElementById('modal-program-courses'), false);
+        setModalVisibility(document.getElementById('modal-programs'), true, 'flex');
         opened = true;
     }
 
     if (!opened) return;
-    overlay.style.display = 'flex';
+    overlay.hidden = false;
     overlay.classList.add('active');
     if (typeof window.queueLuxuryTransparencyRefresh === 'function') {
         const scheduleRefresh = typeof window.requestAnimationFrame === 'function'
@@ -580,13 +597,13 @@ function closeAllModals(event) {
     if (!shouldClose) return;
 
     overlay.classList.remove('active');
-    overlay.style.display = 'none';
-    document.querySelectorAll('#modal-overlay .modal-content').forEach(el => el.style.display = 'none');
+    overlay.hidden = true;
+    document.querySelectorAll('#modal-overlay .modal-content').forEach((el) => setModalVisibility(el, false));
 }
 
 function showProgramCourses() {
     ensureProgramsModal();
-    document.getElementById('modal-program-courses').style.display = 'block';
+    setModalVisibility(document.getElementById('modal-program-courses'), true, 'block');
     if (typeof window.queueLuxuryTransparencyRefresh === 'function') {
         const scheduleRefresh = typeof window.requestAnimationFrame === 'function'
             ? window.requestAnimationFrame.bind(window)
@@ -627,14 +644,14 @@ function calculateMatrix() {
     display.innerText = `${total} / 100`;
     
     if (total !== 100) {
-        display.style.color = 'var(--kiu-red)';
-        btn.style.opacity = '0.5';
-        btn.style.pointerEvents = 'none';
+        display.dataset.matrixStatus = 'invalid';
+        btn.disabled = true;
+        btn.setAttribute('aria-disabled', 'true');
         btn.innerText = 'Errors Detected (Must = 100)';
     } else {
-        display.style.color = 'var(--kiu-green)';
-        btn.style.opacity = '1';
-        btn.style.pointerEvents = 'auto';
+        delete display.dataset.matrixStatus;
+        btn.disabled = false;
+        btn.setAttribute('aria-disabled', 'false');
         btn.innerHTML = '<i class="fas fa-satellite-dish"></i> Publish Syllabus Formula';
     }
 }
@@ -645,7 +662,7 @@ function openBatchComm(studentName) {
     
     // We can reuse the announcement modal but prefill an editable textarea
     const modalBody = `
-        <textarea style="width: 100%; height: 120px; padding: 10px; border: 1px solid var(--kiu-border); border-radius: 4px; outline: none; resize: none; font-family: inherit;">${body}</textarea>
+        <textarea class="modal-inline-textarea">${body}</textarea>
         <button class="kiu-btn-blue modal-inline-close" type="button" data-modal-close="1">Close Draft</button>
     `;
     openModal('announcement', title, modalBody);

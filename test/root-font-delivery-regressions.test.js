@@ -18,7 +18,7 @@ describe('root font delivery regressions', () => {
         const rootHtmlFiles = getRootHtmlFiles();
         const sharedFontsCss = readSource('assets/css/kiu-fonts.css');
         const pagesWithSharedFontLink = [];
-        const redirectWrappersWithoutFonts = ['calendar.html', 'faculty-schedule.html', 'gradebook.html', 'library.html', 'news.html', 'orders.html', 'student-service.html'];
+        const redirectWrappersWithoutFonts = ['calendar.html', 'faculty-schedule.html', 'gradebook.html'];
 
         for (const file of rootHtmlFiles) {
             const html = readSource(file);

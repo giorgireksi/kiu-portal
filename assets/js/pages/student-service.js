@@ -1352,12 +1352,11 @@ function ensureSelectedStudentServiceArticle(articles) {
     return articles.find(article => article.id === ui.selectedArticleId) || articles[0] || null;
 }
 
-function getStudentServiceStatusTone(status) {
-    if (status === 'Resolved' || status === 'Closed') return { bg: 'rgba(var(--lux-home-secondary-rgb),0.14)', text: 'var(--lux-home-secondary)' };
-    if (status === 'Waiting for Student') return { bg: 'rgba(var(--lux-accent-rgb),0.12)', text: 'var(--lux-accent)' };
-    if (status === 'Waiting for Service') return { bg: 'rgba(var(--lux-home-secondary-rgb),0.12)', text: 'var(--lux-home-secondary)' };
-    if (status === 'In Review') return { bg: 'rgba(var(--lux-accent-rgb),0.10)', text: 'rgba(var(--lux-accent-rgb),0.92)' };
-    return { bg: 'var(--lux-bg-soft)', text: 'var(--lux-text-muted)' };
+function getStudentServiceStatusClass(status) {
+    if (status === 'Resolved' || status === 'Closed' || status === 'Waiting for Service') return 'is-positive';
+    if (status === 'Waiting for Student') return 'is-warning';
+    if (status === 'In Review') return 'is-review';
+    return 'is-neutral';
 }
 
 function getStudentServiceFilteredStaffTickets(tickets, currentUser) {
@@ -1505,7 +1504,7 @@ function renderStudentServiceOperationsQueueMarkup(urgentQueue) {
                     <button type="button" class="student-service-ops-ticket" data-student-service-open-ticket="${ssEscape(ticket.id)}" data-student-service-open-ticket-panel="tickets">
                         <div class="student-service-ops-ticket-top">
                             <strong>${ssEscape(ticket.title)}</strong>
-                            <span class="student-service-status" style="--student-service-status-bg:${getStudentServiceStatusTone(ticket.status).bg}; --student-service-status-text:${getStudentServiceStatusTone(ticket.status).text};">${ssEscape(ticket.status)}</span>
+                            <span class="student-service-status ${ssEscape(getStudentServiceStatusClass(ticket.status))}">${ssEscape(ticket.status)}</span>
                         </div>
                         <div class="student-service-ops-ticket-copy">${ssEscape(ticket.studentName)} | ${ssEscape(getStudentServiceSupportArea(ticket.serviceArea).label)}</div>
                         <div class="student-service-ops-ticket-copy">Updated ${ssFormatDateTime(ticket.updatedAt || ticket.createdAt)} | Assignee ${ssEscape(ticket.assignedToName || 'Unassigned')}</div>
@@ -1620,24 +1619,12 @@ function getStudentServiceQuestionStatusLabel(question) {
     return String(question.status || 'Published');
 }
 
-function getStudentServiceQuestionStatusTone(question) {
+function getStudentServiceQuestionStatusClass(question) {
     const status = String(question?.status || '').toLowerCase();
-    if (status === 'published') {
-        return {
-            bg: 'rgba(var(--lux-home-secondary-rgb),0.14)',
-            text: 'var(--lux-home-secondary)'
-        };
-    }
-    if (status === 'pending_review') {
-        return {
-            bg: 'rgba(var(--lux-accent-rgb),0.16)',
-            text: 'var(--lux-accent)'
-        };
-    }
-    return {
-        bg: 'rgba(255,255,255,0.08)',
-        text: 'var(--lux-text-muted)'
-    };
+    if (status === 'published') return 'is-positive';
+    if (status === 'pending_review') return 'is-warning';
+    if (status === 'archived' || status === 'merged') return 'is-neutral';
+    return 'is-neutral';
 }
 
 function getStudentServiceQuestionAnswerCount(question) {
@@ -1663,10 +1650,10 @@ function renderStudentServiceQuestionComposer(currentUser, options = {}) {
                 <div class="student-service-qa-composer-collapsed">
                     <div class="student-service-qa-avatar">${ssEscape(ssInitials(authorName, '?'))}</div>
                     <button type="button" class="student-service-qa-composer-prompt" data-student-service-question-composer-toggle="open">
-                        <strong>Ask a question that could help other students</strong>
-                        <span>Public answers reduce repeated messages to staff. Expand the composer only when you are ready to post.</span>
+                        <strong class="student-service-qa-composer-prompt-title">Ask a question that could help other students</strong>
+                        <span class="student-service-qa-composer-prompt-copy">Public answers reduce repeated messages to staff. Expand the composer only when you are ready to post.</span>
                     </button>
-                    <button type="button" class="lux-primary-btn" data-student-service-question-composer-toggle="open"><i class="fas fa-pen"></i> Ask</button>
+                    <button type="button" class="lux-primary-btn student-service-qa-composer-open-btn" data-student-service-question-composer-toggle="open"><i class="fas fa-pen"></i> Ask</button>
                 </div>
             </section>
         `;
@@ -1679,16 +1666,16 @@ function renderStudentServiceQuestionComposer(currentUser, options = {}) {
                     <div class="student-service-zone-title">Post in the Q&A feed</div>
                     <div class="student-service-zone-copy">${ssEscape(prompt)}</div>
                 </div>
-                <button type="button" class="student-service-mini-action" data-student-service-question-composer-toggle="close"><i class="fas fa-chevron-up"></i> Collapse</button>
+                <button type="button" class="student-service-mini-action student-service-qa-composer-collapse-btn" data-student-service-question-composer-toggle="close"><i class="fas fa-chevron-up"></i> Collapse</button>
             </div>
-            <div class="student-service-request-form">
-                <div class="student-service-qa-mode-row">
-                    <button type="button" class="${draftQuestion.askMode === 'public' ? 'lux-primary-btn' : 'lux-secondary-btn'}" data-student-service-draft-question-mode="public"><i class="fas fa-globe"></i> Public</button>
-                    <button type="button" class="${draftQuestion.askMode === 'private' ? 'lux-primary-btn' : 'lux-secondary-btn'}" data-student-service-draft-question-mode="private"><i class="fas fa-lock"></i> Private</button>
+            <div class="student-service-request-form student-service-qa-compose-form">
+                <div class="student-service-qa-mode-row student-service-qa-mode-switch">
+                    <button type="button" class="student-service-qa-mode-btn ${draftQuestion.askMode === 'public' ? 'lux-primary-btn' : 'lux-secondary-btn'}" data-student-service-draft-question-mode="public"><i class="fas fa-globe"></i> Public</button>
+                    <button type="button" class="student-service-qa-mode-btn ${draftQuestion.askMode === 'private' ? 'lux-primary-btn' : 'lux-secondary-btn'}" data-student-service-draft-question-mode="private"><i class="fas fa-lock"></i> Private</button>
                 </div>
                 <input id="student-service-question-title" type="text" value="${ssEscape(draftQuestion.title || '')}" data-student-service-draft-question-field="title" placeholder="Question title">
                 <textarea id="student-service-question-body" rows="5" data-student-service-draft-question-field="body" placeholder="Explain the question clearly so the answer can be reused by other students.">${ssEscape(draftQuestion.body || '')}</textarea>
-                <div class="student-service-staff-filter-row">
+                <div class="student-service-staff-filter-row student-service-qa-field-row">
                     <select id="student-service-question-category" data-student-service-draft-question-field="category">
                         ${STUDENT_SERVICE_CATEGORIES.map(category => `<option value="${ssEscape(category)}"${draftQuestion.category === category ? ' selected' : ''}>${ssEscape(category)}</option>`).join('')}
                     </select>
@@ -1697,7 +1684,7 @@ function renderStudentServiceQuestionComposer(currentUser, options = {}) {
                         <option value="ALL"${draftQuestion.facultyCode === 'ALL' ? ' selected' : ''}>All faculties</option>
                     </select>
                 </div>
-                <label class="student-service-pill student-service-pill-toggle">
+                <label class="student-service-pill student-service-pill-toggle student-service-qa-anonymous-toggle">
                     <input id="student-service-question-anonymous" type="checkbox" ${draftQuestion.anonymousMode !== false ? 'checked' : ''} data-student-service-draft-question-field="anonymousMode">
                     Post anonymously to other students
                 </label>
@@ -1707,15 +1694,15 @@ function renderStudentServiceQuestionComposer(currentUser, options = {}) {
                 </div>
                 ${similarQuestions.length ? `
                     <div class="student-service-qa-similar-strip">
-                        <div class="student-service-kicker">Similar questions</div>
+                        <div class="student-service-kicker student-service-qa-similar-title">Similar questions</div>
                         <div class="student-service-qa-similar-list">
                             ${similarQuestions.map(question => `<button type="button" class="student-service-mini-action" data-student-service-open-question="${ssEscape(question.id)}">${ssEscape(question.title)}</button>`).join('')}
                         </div>
                     </div>
                 ` : ''}
-                <div class="student-service-action-row">
+                <div class="student-service-action-row student-service-qa-compose-actions">
                     <button class="lux-primary-btn" type="button" data-student-service-submit-question="true"><i class="fas fa-paper-plane"></i> ${draftQuestion.askMode === 'private' ? 'Create private ticket' : 'Post question'}</button>
-                    <button type="button" class="lux-secondary-btn" data-student-service-question-composer-toggle="close"><i class="fas fa-minus"></i> Minimize</button>
+                    <button type="button" class="lux-secondary-btn student-service-qa-composer-minimize-btn" data-student-service-question-composer-toggle="close"><i class="fas fa-minus"></i> Minimize</button>
                 </div>
             </div>
         </section>
@@ -1767,7 +1754,6 @@ function renderStudentServiceQuestionFeed(questions = [], options = {}) {
     return `
         <div class="student-service-qa-feed">
             ${(questions || []).map(question => {
-                const statusTone = getStudentServiceQuestionStatusTone(question);
                 const accepted = question.acceptedAnswerId
                     ? (question.answers || []).find(answer => answer.id === question.acceptedAnswerId) || null
                     : (question.answers || []).find(answer => answer.isAccepted) || null;
@@ -1781,11 +1767,11 @@ function renderStudentServiceQuestionFeed(questions = [], options = {}) {
                             <div class="student-service-qa-card-author">
                                 <div class="student-service-qa-avatar">${ssEscape(ssInitials(authorLabel, '?'))}</div>
                                 <div class="student-service-qa-card-author-copy">
-                                    <strong>${ssEscape(mode === 'staff' ? `Asked by ${authorLabel}` : authorLabel)}</strong>
-                                    <span>${ssEscape(ssFormatDateTime(question.updatedAt || question.createdAt))}</span>
+                                    <strong class="student-service-qa-card-author-name">${ssEscape(mode === 'staff' ? `Asked by ${authorLabel}` : authorLabel)}</strong>
+                                    <span class="student-service-qa-card-author-date">${ssEscape(ssFormatDateTime(question.updatedAt || question.createdAt))}</span>
                                 </div>
                             </div>
-                            <span class="student-service-status" style="--student-service-status-bg:${statusTone.bg}; --student-service-status-text:${statusTone.text};">${ssEscape(getStudentServiceQuestionStatusLabel(question))}</span>
+                            <span class="student-service-status ${ssEscape(getStudentServiceQuestionStatusClass(question))}">${ssEscape(getStudentServiceQuestionStatusLabel(question))}</span>
                         </div>
                         <button type="button" class="student-service-qa-card-main" data-student-service-open-question="${ssEscape(question.id)}">
                             <div class="student-service-qa-chip-row">
@@ -1801,11 +1787,11 @@ function renderStudentServiceQuestionFeed(questions = [], options = {}) {
                         </button>
                         <div class="student-service-qa-card-footer">
                             <div class="student-service-qa-card-stats">
-                                <span><i class="fas fa-comments"></i> ${answerCount} answer${answerCount === 1 ? '' : 's'}</span>
-                                <span><i class="far fa-thumbs-up"></i> ${Number(question.helpfulCount || 0)} helpful</span>
-                                <span><i class="fas fa-user-check"></i> ${hasStaffAnswer ? 'Answered' : 'Waiting for answer'}</span>
+                                <span class="student-service-qa-card-stat"><i class="fas fa-comments"></i> ${answerCount} answer${answerCount === 1 ? '' : 's'}</span>
+                                <span class="student-service-qa-card-stat"><i class="far fa-thumbs-up"></i> ${Number(question.helpfulCount || 0)} helpful</span>
+                                <span class="student-service-qa-card-stat"><i class="fas fa-user-check"></i> ${hasStaffAnswer ? 'Answered' : 'Waiting for answer'}</span>
                             </div>
-                            <button type="button" class="student-service-mini-action" data-student-service-open-question="${ssEscape(question.id)}"><i class="fas ${isOpen ? 'fa-chevron-up' : 'fa-chevron-down'}"></i> ${isOpen ? 'Hide thread' : 'Open thread'}</button>
+                            <button type="button" class="student-service-mini-action student-service-qa-card-toggle-btn" data-student-service-open-question="${ssEscape(question.id)}"><i class="fas ${isOpen ? 'fa-chevron-up' : 'fa-chevron-down'}"></i> ${isOpen ? 'Hide thread' : 'Open thread'}</button>
                         </div>
                         ${isOpen ? `<div class="student-service-qa-card-detail">${renderStudentServiceQuestionDetail(question, options)}</div>` : ''}
                     </article>
@@ -1817,7 +1803,7 @@ function renderStudentServiceQuestionFeed(questions = [], options = {}) {
 
 function renderStudentServiceQuestionDetail(question, options = {}) {
     if (!question) {
-        return '<div class="student-service-empty-state student-service-empty-state-large">Select a public question to review the answers and moderation options.</div>';
+        return '<div class="student-service-empty-state student-service-empty-state-large student-service-qa-empty-state">Select a public question to review the answers and moderation options.</div>';
     }
     const role = getEffectiveUserRole();
     const currentUser = getStudentServiceCurrentUser();
@@ -1839,27 +1825,27 @@ function renderStudentServiceQuestionDetail(question, options = {}) {
     const notHelpful = Number(question.notHelpfulCount || 0);
     return `
         <div class="student-service-qa-detail">
-            <div class="student-service-ticket-detail-meta">
+            <div class="student-service-ticket-detail-meta student-service-qa-detail-meta">
                 <span class="student-service-pill">Asked by ${ssEscape(authorLabel)}</span>
                 <span class="student-service-pill">Updated ${ssEscape(ssFormatDateTime(question.updatedAt || question.createdAt))}</span>
                 ${question.lastReviewedAt ? `<span class="student-service-pill">Reviewed ${ssEscape(ssFormatDate(question.lastReviewedAt))}</span>` : ''}
                 ${question.staleReviewRequested ? '<span class="student-service-pill">Stale review requested</span>' : ''}
             </div>
             <div class="student-service-qa-detail-body">${ssTextBlock(question.body)}</div>
-            ${question.relatedQuestionIds?.length ? `<div class="student-service-ticket-detail-copy">Related questions: ${ssEscape(question.relatedQuestionIds.join(', '))}</div>` : ''}
-            <div class="student-service-action-row">
-                <button type="button" class="lux-secondary-btn" data-student-service-question-id="${ssEscape(question.id)}" data-student-service-question-feedback="helpful"><i class="far fa-thumbs-up"></i> Helpful (${helpful})</button>
-                <button type="button" class="lux-secondary-btn" data-student-service-question-id="${ssEscape(question.id)}" data-student-service-question-feedback="not_helpful"><i class="far fa-thumbs-down"></i> Not helpful (${notHelpful})</button>
-                ${canModerate ? `<button type="button" class="lux-secondary-btn" data-student-service-question-id="${ssEscape(question.id)}" data-student-service-question-flag-field="pinned" data-student-service-question-flag-value="${question.pinned ? 'false' : 'true'}"><i class="fas fa-thumbtack"></i> ${question.pinned ? 'Unpin' : 'Pin'}</button>` : ''}
-                ${canModerate ? `<button type="button" class="lux-secondary-btn" data-student-service-question-id="${ssEscape(question.id)}" data-student-service-question-flag-field="featured" data-student-service-question-flag-value="${question.featured ? 'false' : 'true'}"><i class="fas fa-star"></i> ${question.featured ? 'Unfeature' : 'Feature'}</button>` : ''}
+            ${question.relatedQuestionIds?.length ? `<div class="student-service-ticket-detail-copy student-service-qa-related-copy">Related questions: ${ssEscape(question.relatedQuestionIds.join(', '))}</div>` : ''}
+            <div class="student-service-action-row student-service-qa-detail-actions">
+                <button type="button" class="lux-secondary-btn student-service-qa-detail-action-btn student-service-qa-detail-action-btn--feedback" data-student-service-question-id="${ssEscape(question.id)}" data-student-service-question-feedback="helpful"><i class="far fa-thumbs-up"></i> Helpful (${helpful})</button>
+                <button type="button" class="lux-secondary-btn student-service-qa-detail-action-btn student-service-qa-detail-action-btn--feedback" data-student-service-question-id="${ssEscape(question.id)}" data-student-service-question-feedback="not_helpful"><i class="far fa-thumbs-down"></i> Not helpful (${notHelpful})</button>
+                ${canModerate ? `<button type="button" class="lux-secondary-btn student-service-qa-detail-action-btn student-service-qa-detail-action-btn--flag" data-student-service-question-id="${ssEscape(question.id)}" data-student-service-question-flag-field="pinned" data-student-service-question-flag-value="${question.pinned ? 'false' : 'true'}"><i class="fas fa-thumbtack"></i> ${question.pinned ? 'Unpin' : 'Pin'}</button>` : ''}
+                ${canModerate ? `<button type="button" class="lux-secondary-btn student-service-qa-detail-action-btn student-service-qa-detail-action-btn--flag" data-student-service-question-id="${ssEscape(question.id)}" data-student-service-question-flag-field="featured" data-student-service-question-flag-value="${question.featured ? 'false' : 'true'}"><i class="fas fa-star"></i> ${question.featured ? 'Unfeature' : 'Feature'}</button>` : ''}
             </div>
             ${canModerate ? `
-                <div class="student-service-action-row">
-                    <button type="button" class="lux-secondary-btn" data-student-service-question-id="${ssEscape(question.id)}" data-student-service-question-publish="true"><i class="fas fa-check-circle"></i> Publish</button>
-                    <button type="button" class="lux-secondary-btn" data-student-service-question-id="${ssEscape(question.id)}" data-student-service-question-flag-field="staleReviewRequested" data-student-service-question-flag-value="${question.staleReviewRequested ? 'false' : 'true'}"><i class="fas fa-clock"></i> ${question.staleReviewRequested ? 'Clear stale flag' : 'Flag stale review'}</button>
-                    <button type="button" class="lux-secondary-btn" data-student-service-question-id="${ssEscape(question.id)}" data-student-service-question-convert="ticket"><i class="fas fa-lock"></i> Convert to private ticket</button>
-                    <button type="button" class="lux-secondary-btn" data-student-service-question-id="${ssEscape(question.id)}" data-student-service-question-convert="article"><i class="fas fa-book-open"></i> Convert to article</button>
-                    <button type="button" class="lux-secondary-btn" data-student-service-question-id="${ssEscape(question.id)}" data-student-service-question-merge="true"><i class="fas fa-code-branch"></i> Merge duplicate</button>
+                <div class="student-service-action-row student-service-qa-detail-actions student-service-qa-detail-actions--moderation">
+                    <button type="button" class="lux-secondary-btn student-service-qa-detail-action-btn student-service-qa-detail-action-btn--moderation" data-student-service-question-id="${ssEscape(question.id)}" data-student-service-question-publish="true"><i class="fas fa-check-circle"></i> Publish</button>
+                    <button type="button" class="lux-secondary-btn student-service-qa-detail-action-btn student-service-qa-detail-action-btn--moderation" data-student-service-question-id="${ssEscape(question.id)}" data-student-service-question-flag-field="staleReviewRequested" data-student-service-question-flag-value="${question.staleReviewRequested ? 'false' : 'true'}"><i class="fas fa-clock"></i> ${question.staleReviewRequested ? 'Clear stale flag' : 'Flag stale review'}</button>
+                    <button type="button" class="lux-secondary-btn student-service-qa-detail-action-btn student-service-qa-detail-action-btn--moderation" data-student-service-question-id="${ssEscape(question.id)}" data-student-service-question-convert="ticket"><i class="fas fa-lock"></i> Convert to private ticket</button>
+                    <button type="button" class="lux-secondary-btn student-service-qa-detail-action-btn student-service-qa-detail-action-btn--moderation" data-student-service-question-id="${ssEscape(question.id)}" data-student-service-question-convert="article"><i class="fas fa-book-open"></i> Convert to article</button>
+                    <button type="button" class="lux-secondary-btn student-service-qa-detail-action-btn student-service-qa-detail-action-btn--moderation" data-student-service-question-id="${ssEscape(question.id)}" data-student-service-question-merge="true"><i class="fas fa-code-branch"></i> Merge duplicate</button>
                 </div>
             ` : ''}
             <div class="student-service-qa-answer-list">
@@ -1868,33 +1854,33 @@ function renderStudentServiceQuestionDetail(question, options = {}) {
                         <div class="student-service-qa-answer-head">
                             <div class="student-service-qa-answer-author">
                                 <div class="student-service-qa-avatar student-service-qa-avatar-sm">${ssEscape(ssInitials(answer.responderName || 'Responder', 'R'))}</div>
-                                <div class="student-service-qa-card-author-copy">
-                                    <strong>${ssEscape(answer.responderName || 'Responder')}</strong>
-                                    <span>${ssEscape(ssRoleLabel(answer.responderRole))}</span>
+                                <div class="student-service-qa-answer-author-copy">
+                                    <strong class="student-service-qa-answer-author-name">${ssEscape(answer.responderName || 'Responder')}</strong>
+                                    <span class="student-service-qa-answer-author-role">${ssEscape(ssRoleLabel(answer.responderRole))}</span>
                                 </div>
                             </div>
                             <div class="student-service-qa-answer-meta">
                                 ${acceptedAnswerId === answer.id ? '<span class="student-service-pill">Accepted answer</span>' : ''}
-                                <span>${ssEscape(ssFormatDateTime(answer.updatedAt || answer.createdAt))}</span>
+                                <span class="student-service-qa-answer-time">${ssEscape(ssFormatDateTime(answer.updatedAt || answer.createdAt))}</span>
                             </div>
                         </div>
                         <div class="student-service-qa-answer-copy">${ssTextBlock(answer.body)}</div>
                         ${(canAccept && answer.status === 'published') ? `
-                            <div class="student-service-action-row">
-                                <button type="button" class="lux-secondary-btn" data-student-service-question-id="${ssEscape(question.id)}" data-student-service-answer-id="${ssEscape(answer.id)}" data-student-service-answer-accept="true"><i class="fas fa-check"></i> ${acceptedAnswerId === answer.id ? 'Accepted' : 'Mark accepted'}</button>
+                            <div class="student-service-action-row student-service-qa-answer-actions">
+                                <button type="button" class="lux-secondary-btn student-service-qa-answer-accept-btn" data-student-service-question-id="${ssEscape(question.id)}" data-student-service-answer-id="${ssEscape(answer.id)}" data-student-service-answer-accept="true"><i class="fas fa-check"></i> ${acceptedAnswerId === answer.id ? 'Accepted' : 'Mark accepted'}</button>
                             </div>
                         ` : ''}
                     </div>
-                `).join('') : '<div class="student-service-empty-state">No published answers yet. Staff will respond here after moderation.</div>'}
+                `).join('') : '<div class="student-service-empty-state student-service-qa-empty-note">No published answers yet. Staff will respond here after moderation.</div>'}
             </div>
             ${(canRespond && role !== USER_ROLES.STUDENT) ? `
-                <div class="student-service-thread-reply student-service-qa-thread-reply">
-                    <textarea id="student-service-question-reply" rows="4" placeholder="Write a reusable answer for this public question."></textarea>
-                    <button class="lux-primary-btn" type="button" data-student-service-submit-answer="${ssEscape(question.id)}"><i class="fas fa-reply"></i> Submit answer</button>
+                <div class="student-service-thread-reply student-service-qa-thread-reply student-service-qa-reply-shell">
+                    <textarea id="student-service-question-reply" class="student-service-qa-reply-input" rows="4" placeholder="Write a reusable answer for this public question."></textarea>
+                    <button class="lux-primary-btn student-service-qa-reply-submit-btn" type="button" data-student-service-submit-answer="${ssEscape(question.id)}"><i class="fas fa-reply"></i> Submit answer</button>
                 </div>
             ` : ''}
             ${(isOwner && question.status !== 'published') ? `
-                <div class="student-service-empty-state">This question is visible to you and staff now. It becomes public after Student Service publishes it.</div>
+                <div class="student-service-empty-state student-service-qa-owner-note">This question is visible to you and staff now. It becomes public after Student Service publishes it.</div>
             ` : ''}
         </div>
     `;
@@ -2391,12 +2377,12 @@ function renderStudentServiceCollapsibleSection(sectionKey, title, content) {
     const ui = ensureStudentServiceUiState();
     const isOpen = Boolean(ui.detailSections?.[sectionKey]);
     return `
-        <div class="content-box surface-card" style="padding:0;">
-            <button type="button" data-student-service-detail-section="${ssEscape(sectionKey)}" style="width:100%; display:flex; align-items:center; justify-content:space-between; gap:12px; padding:16px 18px; border:none; background:transparent; cursor:pointer; text-align:left;">
-                <span style="font-size:13px; font-weight:800; color:var(--lux-text);">${ssEscape(title)}</span>
-                <span style="font-size:18px; color:var(--lux-text-muted);">${isOpen ? '&minus;' : '+'}</span>
+        <div class="content-box surface-card student-service-detail-card">
+            <button type="button" class="student-service-detail-toggle" data-student-service-detail-section="${ssEscape(sectionKey)}">
+                <span class="student-service-detail-title">${ssEscape(title)}</span>
+                <span class="student-service-detail-icon">${isOpen ? '&minus;' : '+'}</span>
             </button>
-            ${isOpen ? `<div style="padding:0 18px 18px;">${content}</div>` : ''}
+            ${isOpen ? `<div class="student-service-detail-body">${content}</div>` : ''}
         </div>
     `;
 }
@@ -2521,10 +2507,10 @@ function renderStudentServiceLaneSwitcher(selectedLane) {
                 <div class="student-service-kicker">Workspace lanes</div>
                 <div class="student-service-zone-copy">Switch between public Q&A and private Student Service without leaving the page.</div>
             </div>
-            <div class="student-service-lane-switcher">
-                <button type="button" class="${selectedLane === 'service' ? 'is-active lux-primary-btn' : 'lux-secondary-btn'}" data-student-service-lane="service"><i class="fas fa-headset"></i> Student Service</button>
-                <button type="button" class="${selectedLane === 'qa' ? 'is-active lux-primary-btn' : 'lux-secondary-btn'}" data-student-service-lane="qa"><i class="fas fa-comments"></i> Q&A</button>
-                <button type="button" class="student-service-mini-action" data-student-service-clear-lane="true"><i class="fas fa-border-all"></i> Choose again</button>
+            <div class="student-service-lane-switcher" role="group" aria-label="Workspace lanes">
+                <button type="button" class="student-service-lane-switcher-btn ${selectedLane === 'service' ? 'is-active lux-primary-btn' : 'lux-secondary-btn'}" data-student-service-lane="service" aria-pressed="${selectedLane === 'service' ? 'true' : 'false'}"><i class="fas fa-headset"></i> Student Service</button>
+                <button type="button" class="student-service-lane-switcher-btn ${selectedLane === 'qa' ? 'is-active lux-primary-btn' : 'lux-secondary-btn'}" data-student-service-lane="qa" aria-pressed="${selectedLane === 'qa' ? 'true' : 'false'}"><i class="fas fa-comments"></i> Q&A</button>
+                <button type="button" class="student-service-lane-switcher-reset student-service-mini-action" data-student-service-clear-lane="true"><i class="fas fa-border-all"></i> Choose again</button>
             </div>
         </section>
     `;
@@ -2555,7 +2541,7 @@ function renderStudentServiceLaneChooser(role, currentUser, visibleArticles, vis
                         <div class="student-service-zone-copy">This page is now split into two focused sections so public Q&A and private Student Service work no longer compete in the same first screen.</div>
                     </div>
                 </div>
-                <div class="student-service-lane-choice-grid">
+                <div class="student-service-lane-choice-grid" role="group" aria-label="Choose Student Service lane">
                     <button type="button" class="student-service-lane-choice-card student-service-lane-choice-card--service" data-student-service-lane="service">
                         <div class="student-service-lane-choice-kicker">Private support</div>
                         <div class="student-service-lane-choice-title">Student Service</div>
@@ -2596,8 +2582,8 @@ function ensureStudentServicePageShell(container) {
                 <div data-student-service-page-summary="1"></div>
                 <div data-student-service-page-overview="1"></div>
                 <section id="student-service-page-body" class="student-service-canvas">
-                    <div style="text-align:center; padding:80px 20px; color:var(--lux-text-muted);">
-                        <i class="fas fa-spinner fa-spin" style="font-size:32px; margin-bottom:16px; display:block;"></i>
+                    <div class="student-service-loading-state">
+                        <i class="fas fa-spinner fa-spin student-service-loading-icon"></i>
                         Loading Student Service Center...
                     </div>
                 </section>
@@ -2639,41 +2625,49 @@ function renderStudentServiceHeroMarkup(role, roleLabel, titleByRole, copyByRole
         ];
 
     return `
-        <section class="admin-hero student-service-hero">
-            <div class="student-service-hero-main">
-                <div class="page-hero-kicker"><i class="fas fa-headset"></i> Split support workspace</div>
-                <div class="page-hero-title admin-hero-title">${ssEscape(titleByRole[role] || 'Student Service Center')}</div>
-                <div class="page-hero-copy admin-hero-subtitle">${ssEscape(copyByRole[role] || 'Track service requests and publish guidance from one organized workspace.')}</div>
-                <div class="page-hero-meta">
-                    <span class="page-hero-badge admin-chip"><i class="fas fa-user-shield"></i> ${ssEscape(roleLabel)}</span>
-                    <span class="page-hero-badge admin-chip"><i class="fas ${selectedLane === 'qa' ? 'fa-comments' : 'fa-inbox'}"></i> ${ssEscape(badgePrimary)}</span>
-                    <span class="page-hero-badge admin-chip"><i class="fas fa-book-open"></i> ${ssEscape(badgeSecondary)}</span>
-                </div>
-                <div class="admin-hero-actions student-service-hero-actions">
-                    ${heroActions.map(item => `
-                        <button type="button" class="lux-primary-btn student-service-hero-action"
-                            ${item.actionType === 'lane' ? `data-student-service-lane="${ssEscape(item.actionValue || '')}"` : ''}
-                            ${item.actionType === 'question-filter' ? `data-student-service-question-filter-field="${ssEscape(item.actionField || '')}" data-student-service-question-filter-value="${ssEscape(item.actionValue || '')}"` : ''}
-                            ${item.actionType === 'student-tab' ? `data-student-service-student-tab="${ssEscape(item.actionValue || '')}"` : ''}
-                            ${item.actionType === 'focus-area' ? `data-student-service-focus-area="${ssEscape(item.actionValue || '')}"` : ''}
-                            ${item.actionType === 'panel-switch' ? `data-student-service-panel-switch="${ssEscape(item.actionValue || '')}"` : ''}>
-                            <i class="${ssEscape(item.icon)}"></i>
-                            <span>${ssEscape(item.label)}</span>
-                        </button>
-                    `).join('')}
-                </div>
-            </div>
-            <div class="student-service-hero-aside">
-                <div class="student-service-hero-aside-kicker">Workspace lens</div>
-                <div class="student-service-hero-aside-title">${ssEscape(asideTitle)}</div>
-                <div class="student-service-hero-aside-copy">${ssEscape(asideCopy)}</div>
-                <div class="student-service-hero-aside-grid">
-                    ${asideStats.map(stat => `
-                        <div class="student-service-hero-aside-stat">
-                            <span>${ssEscape(stat.label)}</span>
-                            <strong>${ssEscape(String(stat.value))}</strong>
+        <section class="student-service-hero-shell">
+            <div class="admin-hero student-service-hero lux-hero-stage">
+                <div class="student-service-hero-main-shell">
+                    <div class="student-service-hero-main lux-hero-main">
+                        <div class="student-service-hero-kicker"><i class="fas fa-headset"></i> Split support workspace</div>
+                        <div class="student-service-hero-title">${ssEscape(titleByRole[role] || 'Student Service Center')}</div>
+                        <div class="student-service-hero-copy">${ssEscape(copyByRole[role] || 'Track service requests and publish guidance from one organized workspace.')}</div>
+                        <div class="student-service-hero-meta">
+                            <span class="student-service-hero-badge student-service-hero-badge--role"><i class="fas fa-user-shield"></i> ${ssEscape(roleLabel)}</span>
+                            <span class="student-service-hero-badge student-service-hero-badge--lane"><i class="fas ${selectedLane === 'qa' ? 'fa-comments' : 'fa-inbox'}"></i> ${ssEscape(badgePrimary)}</span>
+                            <span class="student-service-hero-badge student-service-hero-badge--knowledge"><i class="fas fa-book-open"></i> ${ssEscape(badgeSecondary)}</span>
                         </div>
-                    `).join('')}
+                        <div class="student-service-hero-actions student-service-hero-action-cluster">
+                            ${heroActions.map(item => `
+                                <button type="button" class="student-service-hero-action ${ssEscape(item.buttonClass || 'lux-secondary-btn student-service-hero-action--secondary')}"
+                                    ${item.actionType === 'lane' ? `data-student-service-lane="${ssEscape(item.actionValue || '')}"` : ''}
+                                    ${item.actionType === 'question-filter' ? `data-student-service-question-filter-field="${ssEscape(item.actionField || '')}" data-student-service-question-filter-value="${ssEscape(item.actionValue || '')}"` : ''}
+                                    ${item.actionType === 'student-tab' ? `data-student-service-student-tab="${ssEscape(item.actionValue || '')}"` : ''}
+                                    ${item.actionType === 'focus-area' ? `data-student-service-focus-area="${ssEscape(item.actionValue || '')}"` : ''}
+                                    ${item.actionType === 'panel-switch' ? `data-student-service-panel-switch="${ssEscape(item.actionValue || '')}"` : ''}>
+                                    <i class="${ssEscape(item.icon)}"></i>
+                                    <span>${ssEscape(item.label)}</span>
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+                <div class="student-service-hero-aside-shell">
+                    <div class="student-service-hero-aside lux-hero-side">
+                        <div class="student-service-hero-aside-head">
+                            <span class="student-service-hero-aside-kicker">Workspace lens</span>
+                            <strong class="student-service-hero-aside-title">${ssEscape(asideTitle)}</strong>
+                            <span class="student-service-hero-aside-copy">${ssEscape(asideCopy)}</span>
+                        </div>
+                        <div class="student-service-hero-aside-grid lux-hero-signal-list">
+                            ${asideStats.map(stat => `
+                                <div class="student-service-hero-aside-stat lux-hero-signal">
+                                    <span class="student-service-hero-aside-stat-label">${ssEscape(stat.label)}</span>
+                                    <strong class="student-service-hero-aside-stat-value">${ssEscape(String(stat.value))}</strong>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -2682,31 +2676,35 @@ function renderStudentServiceHeroMarkup(role, roleLabel, titleByRole, copyByRole
 
 function renderStudentServiceWorkflowMarkup(workflowSteps) {
     return workflowSteps.length ? `
-        <section class="student-service-workflow-strip">
+        <section class="student-service-workflow-section">
+            <div class="student-service-workflow-strip">
             ${workflowSteps.map((step, index) => `
                 <article class="student-service-workflow-step">
                     <div class="student-service-workflow-step-index">${index + 1}</div>
                     <div class="student-service-workflow-step-icon"><i class="${ssEscape(step.icon)}"></i></div>
                     <div class="student-service-workflow-step-copy">
-                        <strong>${ssEscape(step.title)}</strong>
-                        <span>${ssEscape(step.copy)}</span>
+                        <strong class="student-service-workflow-step-title">${ssEscape(step.title)}</strong>
+                        <span class="student-service-workflow-step-description">${ssEscape(step.copy)}</span>
                     </div>
                 </article>
             `).join('')}
+            </div>
         </section>
     ` : '';
 }
 
 function renderStudentServiceSummaryMarkup(summaryCards) {
     return summaryCards.length ? `
-        <section class="student-service-summary-grid">
+        <section class="student-service-summary-section">
+            <div class="student-service-summary-grid lux-strip-grid lux-strip-grid--adaptive">
             ${summaryCards.map(card => `
-                <article class="student-service-summary-card">
+                <article class="student-service-summary-card lux-strip-card surface-card ${ssEscape(card.toneClass || 'student-service-summary-card--signal-a')}">
                     <div class="student-service-summary-label">${ssEscape(card.label)}</div>
                     <div class="student-service-summary-value">${ssEscape(String(card.value))}</div>
                     <div class="student-service-summary-copy">${ssEscape(card.copy)}</div>
                 </article>
             `).join('')}
+            </div>
         </section>
     ` : '';
 }
@@ -2757,36 +2755,36 @@ function renderStudentServicePageChromeRebuilt(role, currentUser, visibleArticle
         : `${metrics.totalArticles.length} articles`;
     const heroActions = !selectedLane
         ? [
-            { icon: 'fas fa-headset', label: 'Open Student Service', actionType: 'lane', actionValue: 'service' },
-            { icon: 'fas fa-comments', label: 'Open Q&A', actionType: 'lane', actionValue: 'qa' }
+            { icon: 'fas fa-headset', label: 'Open Student Service', actionType: 'lane', actionValue: 'service', buttonClass: 'lux-primary-btn student-service-hero-action--primary' },
+            { icon: 'fas fa-comments', label: 'Open Q&A', actionType: 'lane', actionValue: 'qa', buttonClass: 'lux-secondary-btn student-service-hero-action--secondary' }
         ]
         : selectedLane === 'qa'
             ? (role === USER_ROLES.STUDENT
                 ? [
-                    { icon: 'fas fa-search', label: 'Browse Q&A', actionType: 'question-filter', actionField: 'qaStatus', actionValue: 'published' },
-                    { icon: 'fas fa-pen', label: 'Ask question', actionType: 'lane', actionValue: 'qa' },
-                    { icon: 'fas fa-lock', label: 'Need private help', actionType: 'lane', actionValue: 'service' }
+                    { icon: 'fas fa-pen', label: 'Ask question', actionType: 'lane', actionValue: 'qa', buttonClass: 'lux-primary-btn student-service-hero-action--primary' },
+                    { icon: 'fas fa-search', label: 'Browse Q&A', actionType: 'question-filter', actionField: 'qaStatus', actionValue: 'published', buttonClass: 'lux-secondary-btn student-service-hero-action--secondary' },
+                    { icon: 'fas fa-lock', label: 'Need private help', actionType: 'lane', actionValue: 'service', buttonClass: 'lux-secondary-btn student-service-hero-action--secondary' }
                 ]
                 : [
-                    { icon: 'fas fa-comments', label: responderOnly ? 'Answer questions' : 'Review Q&A', actionType: 'lane', actionValue: 'qa' },
-                    { icon: 'fas fa-filter', label: 'Reset filters', actionType: 'question-filter', actionField: 'qaStatus', actionValue: responderOnly ? 'pending_review' : 'all' },
-                    { icon: 'fas fa-headset', label: 'Student Service', actionType: 'lane', actionValue: 'service' }
+                    { icon: 'fas fa-comments', label: responderOnly ? 'Answer questions' : 'Review Q&A', actionType: 'lane', actionValue: 'qa', buttonClass: 'lux-primary-btn student-service-hero-action--primary' },
+                    { icon: 'fas fa-filter', label: 'Reset filters', actionType: 'question-filter', actionField: 'qaStatus', actionValue: responderOnly ? 'pending_review' : 'all', buttonClass: 'lux-secondary-btn student-service-hero-action--secondary' },
+                    { icon: 'fas fa-headset', label: 'Student Service', actionType: 'lane', actionValue: 'service', buttonClass: 'lux-secondary-btn student-service-hero-action--secondary' }
                 ])
             : (role === USER_ROLES.STUDENT
                 ? [
-                    { icon: 'fas fa-headset', label: 'Contact Student Service', actionType: 'student-tab', actionValue: 'get_help' },
-                    { icon: 'fas fa-comments', label: 'My tickets', actionType: 'student-tab', actionValue: 'my_tickets' },
-                    { icon: 'fas fa-book-open', label: 'Rules & guidance', actionType: 'focus-area', actionValue: 'general' }
+                    { icon: 'fas fa-headset', label: 'Contact Student Service', actionType: 'student-tab', actionValue: 'get_help', buttonClass: 'lux-primary-btn student-service-hero-action--primary' },
+                    { icon: 'fas fa-comments', label: 'My tickets', actionType: 'student-tab', actionValue: 'my_tickets', buttonClass: 'lux-secondary-btn student-service-hero-action--secondary' },
+                    { icon: 'fas fa-book-open', label: 'Rules & guidance', actionType: 'focus-area', actionValue: 'general', buttonClass: 'lux-secondary-btn student-service-hero-action--secondary' }
                 ]
                 : responderOnly
                     ? [
-                        { icon: 'fas fa-book-open', label: 'Guidance', actionType: 'lane', actionValue: 'service' },
-                        { icon: 'fas fa-comments', label: 'Open Q&A', actionType: 'lane', actionValue: 'qa' }
+                        { icon: 'fas fa-comments', label: 'Open Q&A', actionType: 'lane', actionValue: 'qa', buttonClass: 'lux-primary-btn student-service-hero-action--primary' },
+                        { icon: 'fas fa-book-open', label: 'Guidance', actionType: 'lane', actionValue: 'service', buttonClass: 'lux-secondary-btn student-service-hero-action--secondary' }
                     ]
                     : [
-                        { icon: 'fas fa-inbox', label: 'Open inbox', actionType: 'panel-switch', actionValue: 'tickets' },
-                        { icon: 'fas fa-book-open', label: 'Knowledge base', actionType: 'panel-switch', actionValue: 'articles' },
-                        { icon: 'fas fa-comments', label: 'Q&A lane', actionType: 'lane', actionValue: 'qa' }
+                        { icon: 'fas fa-inbox', label: 'Open inbox', actionType: 'panel-switch', actionValue: 'tickets', buttonClass: 'lux-primary-btn student-service-hero-action--primary' },
+                        { icon: 'fas fa-book-open', label: 'Knowledge base', actionType: 'panel-switch', actionValue: 'articles', buttonClass: 'lux-secondary-btn student-service-hero-action--secondary' },
+                        { icon: 'fas fa-comments', label: 'Q&A lane', actionType: 'lane', actionValue: 'qa', buttonClass: 'lux-secondary-btn student-service-hero-action--secondary' }
                     ]);
     const workflowSteps = !selectedLane
         ? [
@@ -2806,14 +2804,14 @@ function renderStudentServicePageChromeRebuilt(role, currentUser, visibleArticle
             ];
     const summaryCards = selectedLane === 'qa'
         ? [
-            { label: role === USER_ROLES.STUDENT ? 'My questions' : 'Pending review', value: role === USER_ROLES.STUDENT ? metrics.myQuestions : metrics.pendingQuestions, copy: role === USER_ROLES.STUDENT ? 'Questions you asked in the public lane.' : 'Questions still waiting for publication review.' },
-            { label: 'Published answers', value: metrics.publishedQuestions, copy: 'Visible public answers already reusable across the campus.' },
-            { label: 'Unanswered', value: metrics.unansweredQuestions, copy: 'Questions that still need a first useful reply.' }
+            { label: role === USER_ROLES.STUDENT ? 'My questions' : 'Pending review', value: role === USER_ROLES.STUDENT ? metrics.myQuestions : metrics.pendingQuestions, copy: role === USER_ROLES.STUDENT ? 'Questions you asked in the public lane.' : 'Questions still waiting for publication review.', toneClass: 'student-service-summary-card--signal-a' },
+            { label: 'Published answers', value: metrics.publishedQuestions, copy: 'Visible public answers already reusable across the campus.', toneClass: 'student-service-summary-card--signal-b' },
+            { label: 'Unanswered', value: metrics.unansweredQuestions, copy: 'Questions that still need a first useful reply.', toneClass: 'student-service-summary-card--signal-c' }
         ]
         : [
-            { label: role === USER_ROLES.STUDENT ? 'My tickets' : 'Open queue', value: metrics.servicePrimaryCount, copy: role === USER_ROLES.STUDENT ? 'Private Student Service threads linked to your account.' : 'Private tickets currently needing action.' },
-            { label: 'Waiting', value: metrics.waitingForService + metrics.waitingForStudent, copy: 'Cases paused for the desk or the student.' },
-            { label: 'Guidance articles', value: metrics.totalArticles.length, copy: 'Official rules and reusable guidance available in this lane.' }
+            { label: role === USER_ROLES.STUDENT ? 'My tickets' : 'Open queue', value: metrics.servicePrimaryCount, copy: role === USER_ROLES.STUDENT ? 'Private Student Service threads linked to your account.' : 'Private tickets currently needing action.', toneClass: 'student-service-summary-card--signal-a' },
+            { label: 'Waiting', value: metrics.waitingForService + metrics.waitingForStudent, copy: 'Cases paused for the desk or the student.', toneClass: 'student-service-summary-card--signal-b' },
+            { label: 'Guidance articles', value: metrics.totalArticles.length, copy: 'Official rules and reusable guidance available in this lane.', toneClass: 'student-service-summary-card--signal-c' }
         ];
 
     const shell = ensureStudentServicePageShell(container);

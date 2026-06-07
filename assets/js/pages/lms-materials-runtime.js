@@ -9,27 +9,27 @@ function renderLmsMaterialsLibrary(resourceKey) {
     const fileLabelId = `lms-material-file-label-${token}`;
 
     const weekBanner = `
-        <div class="lms-route-panel" style="padding:16px 20px;">
+        <div class="lms-route-panel lms-route-panel-pad-16-20">
             <div class="lms-route-card-head">
-                <div style="display:flex;align-items:center;gap:12px;">
-                    <i class="fas fa-folder-open" style="font-size:18px;color:var(--lux-accent-2);"></i>
+                <div class="lms-route-inline lms-route-inline-center lms-route-inline-gap-12">
+                    <i class="fas fa-folder-open lms-route-lead-icon"></i>
                     <div>
                         <div class="lms-route-card-title">Materials</div>
-                            <div class="lms-route-copy" style="margin-top:4px;">${activeItems.length} active files &middot; ${items.filter(item => item.pinned).length} pinned &middot; ${archivedItems.length} archived</div>
+                            <div class="lms-route-copy lms-route-copy-mt-4">${activeItems.length} active files &middot; ${items.filter(item => item.pinned).length} pinned &middot; ${archivedItems.length} archived</div>
                     </div>
                 </div>
-                <div style="display:flex;gap:8px;flex-wrap:wrap;">
-                    ${canManage ? '<button class="kiu-btn-outline" data-lms-click="openLmsWeekManagerModal(&#39;' + resourceKey + '&#39;)" style="padding:8px 14px;font-size:12px;"><i class="fas fa-calendar-week"></i> Manage Weeks</button>' : ''}
+                <div class="lms-route-inline lms-route-inline-gap-8">
+                    ${canManage ? '<button class="kiu-btn-outline lms-route-btn-compact" data-lms-click="openLmsWeekManagerModal(&#39;' + resourceKey + '&#39;)"><i class="fas fa-calendar-week"></i> Manage Weeks</button>' : ''}
                 </div>
             </div>
         </div>
     `;
     const createBox = canManage ? `
-        <div class="lms-route-panel">
-            <div class="lms-route-card-head" style="margin-bottom:16px;">
+        <div class="lms-route-panel lms-route-panel-compact">
+            <div class="lms-route-card-head lms-route-card-head-mb-16">
                 <div>
                     <div class="lms-route-card-title">Upload Material</div>
-                    <div class="lms-route-copy" style="margin-top:6px;">Add lecture notes, slides, PDFs, or reference files for this teaching group.</div>
+                    <div class="lms-route-copy lms-route-copy-mt-6">Add lecture notes, slides, PDFs, or reference files for this teaching group.</div>
                 </div>
                 <div id="${fileLabelId}" class="lms-route-pill">No file selected yet</div>
             </div>
@@ -49,7 +49,7 @@ function renderLmsMaterialsLibrary(resourceKey) {
                     </select>
                 </div>
             </div>
-            <div class="lms-route-actions" style="margin-top:16px;">
+            <div class="lms-route-actions lms-route-actions-mt-16">
                 <button class="kiu-btn-outline" data-lms-click="pickLocalLmsFile('material', '${resourceKey}', '${fileLabelId}')"><i class="fas fa-paperclip"></i> Upload File</button>
                 <button class="kiu-btn-blue" data-lms-click="createLmsMaterial('${resourceKey}')"><i class="fas fa-cloud-upload-alt"></i> Save Material</button>
             </div>
@@ -59,33 +59,32 @@ function renderLmsMaterialsLibrary(resourceKey) {
     const cards = groupedMaterials.length ? groupedMaterials.map(([weekLabel, weekItems], index) => {
         const body = weekItems.length
             ? `
-                <div class="lms-route-card-grid">
+                <div class="lms-route-card-grid lms-material-card-grid">
                     ${weekItems.map(item => `
-                        <div class="lms-route-card">
-                            <div class="lms-route-card-head">
+                        <div class="lms-route-card lms-route-panel-compact lms-material-card">
+                            <div class="lms-route-card-head lms-material-card-head">
                                 <div>
                                     <div class="lms-route-card-title">${escapeHtml(item.title || 'Untitled material')}</div>
-                                    <div class="lms-route-card-copy" style="margin-top:6px;">${escapeHtml(item.description || 'Shared course material')}</div>
+                                    <div class="lms-route-card-copy lms-route-copy-mt-6">${escapeHtml(item.description || 'Shared course material')}</div>
                                 </div>
-                                <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                                <div class="lms-route-inline lms-route-inline-center lms-route-inline-gap-8 lms-material-card-actions">
                                     ${item.pinned ? '<span class="lms-route-pill"><i class="fas fa-thumbtack"></i> Pinned</span>' : ''}
                                     ${canManage ? `
-                                        <button class="kiu-btn-outline" style="padding:7px 10px;" data-lms-click="toggleLmsMaterialPinned('${resourceKey}', '${item.id}')"><i class="fas fa-thumbtack"></i></button>
-                                        <button class="kiu-btn-outline" style="padding:7px 10px;" data-lms-click="moveLmsMaterial('${resourceKey}', '${item.id}', -1)"><i class="fas fa-arrow-up"></i></button>
-                                        <button class="kiu-btn-outline" style="padding:7px 10px;" data-lms-click="moveLmsMaterial('${resourceKey}', '${item.id}', 1)"><i class="fas fa-arrow-down"></i></button>
-                                        <button class="kiu-btn-outline" style="padding:7px 10px;" data-lms-click="toggleLmsMaterialArchived('${resourceKey}', '${item.id}')"><i class="fas fa-box-archive"></i></button>
-                                        <button class="kiu-btn-outline" style="padding:7px 10px; color:var(--lux-red); border-color:rgba(220,38,38,0.18);" data-lms-click="deleteLmsMaterial('${resourceKey}', '${item.id}')"><i class="fas fa-trash"></i></button>
+                                        <button class="kiu-btn-outline lms-route-btn-compact lms-route-btn-compact-square" data-lms-click="toggleLmsMaterialPinned('${resourceKey}', '${item.id}')"><i class="fas fa-thumbtack"></i></button>
+                                        <button class="kiu-btn-outline lms-route-btn-compact lms-route-btn-compact-square" data-lms-click="moveLmsMaterial('${resourceKey}', '${item.id}', -1)"><i class="fas fa-arrow-up"></i></button>
+                                        <button class="kiu-btn-outline lms-route-btn-compact lms-route-btn-compact-square" data-lms-click="moveLmsMaterial('${resourceKey}', '${item.id}', 1)"><i class="fas fa-arrow-down"></i></button>
+                                        <button class="kiu-btn-outline lms-route-btn-compact lms-route-btn-compact-square" data-lms-click="toggleLmsMaterialArchived('${resourceKey}', '${item.id}')"><i class="fas fa-box-archive"></i></button>
+                                        <button class="kiu-btn-outline lms-route-btn-compact lms-route-btn-compact-square lms-route-btn-danger" data-lms-click="deleteLmsMaterial('${resourceKey}', '${item.id}')"><i class="fas fa-trash"></i></button>
                                     ` : ''}
                                 </div>
                             </div>
-                            <div class="lms-route-meta" style="font-size:12px; margin-top:12px;">${joinLmsMeta([`Uploaded by ${item.uploadedBy || 'Course staff'}`, formatLmsDateTime(item.uploadedAt)])}</div>
-                            <div class="lms-route-kv" style="margin-top:14px;">
-                                <div class="lms-route-kv-label">Attachment</div>
-                                <div class="lms-route-card-title" style="font-size:15px; margin-top:6px;">${escapeHtml(item.file?.name || 'Attachment')}</div>
-                            </div>
-                            <div class="lms-route-actions" style="margin-top:14px;">
-                                ${getStoredFileDownloadHtml(item.file, 'Download')}
-                            </div>
+                            <div class="lms-route-meta lms-route-meta-12 lms-route-copy-mt-12 lms-material-card-meta">${joinLmsMeta([`Uploaded by ${item.uploadedBy || 'Course staff'}`, formatLmsDateTime(item.uploadedAt)])}</div>
+                            ${renderLmsStoredFileAttachmentShell(item.file, {
+                                label: 'Attachment',
+                                title: item.file?.name || 'Attachment',
+                                downloadLabel: 'Download',
+                                shellClass: 'lms-route-file-shell lms-material-card-attachment'
+                            })}
                         </div>
                     `).join('')}
                 </div>
@@ -100,14 +99,19 @@ function renderLmsMaterialsLibrary(resourceKey) {
     }).join('') : renderLmsRouteEmptyState('No Materials Yet', 'This LMS group does not have any published materials yet.', 'fa-folder-open');
 
     const archivedPanel = canManage && archivedItems.length ? `
-        <div class="lms-route-panel">
-            <div class="lms-route-card-title"><i class="fas fa-box-archive"></i> Archived materials</div>
-            <div class="lms-route-stack" style="margin-top:12px; gap:10px;">
-                ${archivedItems.map(item => `
-                    <div class="lms-route-kv" style="display:flex; justify-content:space-between; gap:12px; align-items:center;">
+        <div class="lms-route-panel lms-route-panel-compact">
+            <div class="lms-route-card-head lms-route-card-head-mb-16">
+                <div>
+                    <div class="lms-route-card-title"><i class="fas fa-box-archive"></i> Archived materials</div>
+                    <div class="lms-route-copy lms-route-copy-mt-6">Restore archived items back into the active weekly materials list.</div>
+                </div>
+            </div>
+                <div class="lms-route-stack lms-route-copy-mt-12 lms-route-stack-gap-10">
+                    ${archivedItems.map(item => `
+                    <div class="lms-route-card lms-route-panel-compact lms-route-inline lms-route-inline-between lms-route-inline-gap-12 lms-route-inline-center lms-material-archive-item">
                         <div>
-                            <div class="lms-route-card-title" style="font-size:14px;">${escapeHtml(item.title || item.file?.name || 'Archived material')}</div>
-                            <div class="lms-route-meta" style="font-size:11px; margin-top:4px;">${joinLmsMeta([item.weekLabel || 'General', item.file?.name || 'Attachment'])}</div>
+                            <div class="lms-route-card-title lms-route-card-title-14">${escapeHtml(item.title || item.file?.name || 'Archived material')}</div>
+                            <div class="lms-route-meta lms-route-meta-11 lms-route-copy-mt-4">${joinLmsMeta([item.weekLabel || 'General', item.file?.name || 'Attachment'])}</div>
                         </div>
                         <button class="kiu-btn-outline" data-lms-click="toggleLmsMaterialArchived('${resourceKey}', '${item.id}')"><i class="fas fa-rotate-left"></i> Restore</button>
                     </div>

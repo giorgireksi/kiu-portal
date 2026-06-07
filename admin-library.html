@@ -12,14 +12,35 @@
     <link rel="stylesheet" href="assets/vendor/fontawesome/css/all.min.css?v=1776604821637">
     <link rel="stylesheet" href="assets/css/kiu-fonts.css?v=20260515-fonts1">
     <link rel="stylesheet" href="assets/css/base.css?v=20260419-libsync1">
-    <link rel="stylesheet" href="assets/css/layout.css?v=1776604821637">
-    <link rel="stylesheet" href="assets/css/components.css?v=1776604821637">
-    <link rel="stylesheet" href="assets/css/index-luxury.css?v=20260419-libsync1">
-<link rel="stylesheet" href="assets/css/mobile-responsive.css?v=20260419-libsync1">
-    <link rel="stylesheet" href="assets/css/admin-library-route.css?v=20260515-inlinecss1">
-    <script src="assets/js/theme-primer.js?v=20260419-flat5"></script>
+    <link rel="stylesheet" href="assets/css/layout.css?v=20260528-layoutfix2">
+    <link rel="stylesheet" href="assets/css/lux-tokens.css?v=20260606-luxscrollbar1">
+    <link rel="stylesheet" href="assets/css/lux-surfaces.css?v=20260527-profcss1">
+    <link rel="stylesheet" href="assets/css/lux-controls.css?v=20260606-pickerscroll1">
+    <link rel="stylesheet" href="assets/css/lux-layout-primitives.css?v=20260606-luxscrollbar1">
+    <link rel="stylesheet" href="assets/css/index-luxury.css?v=20260531-partbg4">
+    <link rel="stylesheet" href="assets/css/mobile-responsive.css?v=20260419-libsync1">
+    <link rel="stylesheet" href="assets/css/admin-library-route.css?v=20260602-alibrebuild18">
+    <style id="admin-library-critical-layout">
+        body.lux-route-admin-library #page-library .alib-workspace,
+        body.lux-entry-admin-library #page-library .alib-workspace {
+            display: grid !important;
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+            align-items: stretch;
+            gap: 24px;
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+        @media (max-width: 520px) {
+            body.lux-route-admin-library #page-library .alib-workspace,
+            body.lux-entry-admin-library #page-library .alib-workspace {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+    <script src="assets/js/theme-primer.js?v=20260605-initvisual2"></script>
 </head>
-<body class="kiu-shell-loading lux-nonhome-page lux-route-library lux-route-admin-library lux-unified-shell role-admin" data-faculty="ECON">
+<body class="kiu-shell-loading lux-nonhome-page lux-route-admin-library lux-entry-admin-library lux-unified-shell role-admin" data-faculty="ECON">
 <!-- Navigation stubs (hidden, for JS compatibility) -->
 <nav id="prof-nav" aria-label="Professor navigation stub"></nav>
 <nav id="top-nav" aria-label="Top navigation stub"></nav>
@@ -27,124 +48,159 @@
 
 
 <main id="app-content">
-    <div id="page-library" class="page-section active-page admin-library-page">
-        <div class="page-hero library-page-hero admin-library-hero">
-            <div class="page-hero-title">Research and Reference Library</div>
-            <div class="page-hero-copy">Manage the same shared catalog used by students, professors, and TAs. Add entries, tune catalog parameters, and keep the reference workspace aligned with the TA library view.</div>
-            <div class="page-hero-meta">
-                <span class="page-hero-badge"><i class="fas fa-book-open"></i> Shared catalog</span>
-                <span class="page-hero-badge"><i class="fas fa-sliders-h"></i> Parameter controls</span>
-                <span class="page-hero-badge"><i class="fas fa-user-shield"></i> Admin editing enabled</span>
-                <span class="page-hero-badge"><i class="fas fa-database"></i> <strong id="stat-books">0</strong> total books</span>
+    <div id="page-library" class="page-section active-page">
+        <div class="lux-home-grid is-admin admin-library-page">
+        <section class="lux-hero admin-library-hero" aria-label="Admin library overview">
+            <div class="lux-hero-stage admin-library-hero-stage">
+                <div class="lux-hero-main admin-library-hero-main">
+                    <h1 class="page-hero-title">Research and Reference Library</h1>
+                    <p class="page-hero-copy">Manage the same shared catalog used by students, professors, and TAs. Add entries, tune catalog parameters, and keep the reference workspace aligned with the TA library view.</p>
+                    <div class="page-hero-meta admin-library-hero-meta">
+                        <span class="page-hero-badge lux-pill"><i class="fas fa-book-open"></i> Shared catalog</span>
+                        <span class="page-hero-badge lux-pill"><i class="fas fa-sliders-h"></i> Parameter controls</span>
+                        <span class="page-hero-badge lux-pill"><i class="fas fa-user-shield"></i> Admin editing enabled</span>
+                        <span class="page-hero-badge lux-pill"><i class="fas fa-database"></i> <strong id="stat-books">0</strong> total books</span>
+                    </div>
+                    <div class="lux-hero-actions admin-library-hero-actions">
+                        <button class="lux-primary-btn" type="button" data-admin-library-nav-home="true"><i class="fas fa-arrow-left"></i> Back to CMS</button>
+                        <button class="lux-secondary-btn" type="button" data-admin-library-open-params="true"><i class="fas fa-sliders-h"></i> Parameters</button>
+                    </div>
+                </div>
+                <aside class="lux-hero-side admin-library-hero-summary">
+                    <div class="lux-stat-card admin-library-hero-summary-card">
+                        <strong id="admin-library-hero-total" class="admin-library-hero-summary-value">0 books</strong>
+                        <span class="admin-library-hero-summary-copy">Shared catalog visibility, parameter coverage, and admin editing status stay aligned here while you manage the library.</span>
+                    </div>
+                    <div class="lux-hero-signal-list admin-library-hero-signal-grid">
+                        <div class="lux-stat-card admin-library-hero-signal-card admin-library-hero-signal-card--visible">
+                            <span class="admin-library-hero-signal-label">Visible now</span>
+                            <strong id="admin-library-hero-visible" class="admin-library-hero-signal-value">0</strong>
+                            <em class="admin-library-hero-signal-copy">Entries matching the current admin filters.</em>
+                        </div>
+                        <div class="lux-stat-card admin-library-hero-signal-card admin-library-hero-signal-card--parameters">
+                            <span class="admin-library-hero-signal-label">Parameters</span>
+                            <strong id="admin-library-hero-parameters" class="admin-library-hero-signal-value">0</strong>
+                            <em class="admin-library-hero-signal-copy">Subject, language, and status options currently published.</em>
+                        </div>
+                    </div>
+                </aside>
             </div>
-            <div class="lux-hero-actions admin-library-hero-actions">
-                <button class="lux-primary-btn" type="button" data-admin-library-nav-home="true"><i class="fas fa-arrow-left"></i> Back to CMS</button>
-                <button class="lux-secondary-btn" type="button" data-admin-library-open-params="true"><i class="fas fa-sliders-h"></i> Parameters</button>
-            </div>
-        </div>
+        </section>
 
-        <div class="filter-shell library-filter-shell admin-library-entry-shell">
-            <div class="filter-shell-title">Add New Book</div>
-            <div class="admin-library-shell-copy">Create a shared catalog record with the same visual language, tags, and metadata conventions used in the TA library view.</div>
-            <div class="admin-library-metric-row">
-                <div class="admin-library-metric-card">
-                    <span class="admin-library-metric-label">Catalog Entries</span>
-                    <strong id="admin-library-total-metric">0</strong>
+        <section class="alib-workspace" aria-label="Admin library workspace">
+            <section class="lux-panel alib-panel alib-panel--entry">
+                <div class="lux-card-head">
+                    <div>
+                        <div class="lux-card-title">Add New Book</div>
+                        <div class="lux-card-meta">Create a shared catalog record with the same metadata conventions used in the TA library view.</div>
+                    </div>
+                    <span class="lux-pill"><i class="fas fa-pen-to-square"></i> Editor</span>
                 </div>
-                <div class="admin-library-metric-card">
-                    <span class="admin-library-metric-label">Visible In Current View</span>
-                    <strong id="admin-library-filtered-metric">0</strong>
+                <div class="alib-form-grid">
+                    <label class="lux-picker-field">
+                        <span class="lux-picker-label">Title</span>
+                        <input id="book-title" name="book_title" type="text" class="lux-control" placeholder="Book title">
+                    </label>
+                    <label class="lux-picker-field">
+                        <span class="lux-picker-label">Sub Title</span>
+                        <input id="book-subtitle" name="book_subtitle" type="text" class="lux-control" placeholder="Sub title">
+                    </label>
+                    <label class="lux-picker-field">
+                        <span class="lux-picker-label">Year</span>
+                        <input id="book-year" name="book_year" type="number" class="lux-control" placeholder="2026">
+                    </label>
+                    <label class="lux-picker-field">
+                        <span class="lux-picker-label">Author</span>
+                        <input id="book-author" name="book_author" type="text" class="lux-control" placeholder="Author name">
+                    </label>
+                    <label class="lux-picker-field">
+                        <span class="lux-picker-label">Subject (Topic)</span>
+                        <select id="book-thematic" name="book_thematic" class="lux-control"></select>
+                    </label>
+                    <label class="lux-picker-field">
+                        <span class="lux-picker-label">Language</span>
+                        <select id="book-language" name="book_language" class="lux-control"></select>
+                    </label>
+                    <label class="lux-picker-field">
+                        <span class="lux-picker-label">Status</span>
+                        <select id="book-status" name="book_status" class="lux-control"></select>
+                    </label>
+                    <label class="lux-picker-field alib-field-wide">
+                        <span class="lux-picker-label">PDF Link (Optional)</span>
+                        <input id="book-pdf-link" name="book_pdf_link" type="url" class="lux-control" placeholder="https://example.com/book.pdf">
+                    </label>
                 </div>
-            </div>
-            <div class="lib-search-bar library-search-grid admin-library-form-grid">
-                <label class="lux-picker-field library-picker-field">
-                    <span class="lux-picker-label library-picker-label">Title</span>
-                    <input id="book-title" name="book_title" type="text" class="lib-input" placeholder="Book title">
-                </label>
-                <label class="lux-picker-field library-picker-field">
-                    <span class="lux-picker-label library-picker-label">Sub Title</span>
-                    <input id="book-subtitle" name="book_subtitle" type="text" class="lib-input" placeholder="Sub title">
-                </label>
-                <label class="lux-picker-field library-picker-field">
-                    <span class="lux-picker-label library-picker-label">Year</span>
-                    <input id="book-year" name="book_year" type="number" class="lib-input" placeholder="2026">
-                </label>
-                <label class="lux-picker-field library-picker-field">
-                    <span class="lux-picker-label library-picker-label">Author</span>
-                    <input id="book-author" name="book_author" type="text" class="lib-input" placeholder="Author name">
-                </label>
-                <label class="lux-picker-field library-picker-field">
-                    <span class="lux-picker-label library-picker-label">Subject (Topic)</span>
-                    <select id="book-thematic" name="book_thematic" class="lib-input"></select>
-                </label>
-                <label class="lux-picker-field library-picker-field">
-                    <span class="lux-picker-label library-picker-label">Language</span>
-                    <select id="book-language" name="book_language" class="lib-input"></select>
-                </label>
-                <label class="lux-picker-field library-picker-field">
-                    <span class="lux-picker-label library-picker-label">Status</span>
-                    <select id="book-status" name="book_status" class="lib-input"></select>
-                </label>
-                <label class="lux-picker-field library-picker-field library-field-wide">
-                    <span class="lux-picker-label library-picker-label">PDF Link (Optional)</span>
-                    <input id="book-pdf-link" name="book_pdf_link" type="url" class="lib-input" placeholder="https://example.com/book.pdf">
-                </label>
-            </div>
-            <div class="admin-library-actions">
-                <button class="lux-primary-btn" type="button" data-admin-library-add-book="true"><i class="fas fa-plus"></i> Add Book</button>
-            </div>
-        </div>
+                <div class="alib-panel-actions">
+                    <button class="lux-primary-btn" type="button" data-admin-library-add-book="true"><i class="fas fa-plus"></i> Add Book</button>
+                </div>
+            </section>
 
-        <div class="filter-shell library-filter-shell admin-library-filter-shell">
-            <div class="filter-shell-title">Browse Catalog</div>
-            <div class="lib-search-bar library-search-grid">
-                <label class="lux-picker-field library-picker-field">
-                    <span class="lux-picker-label library-picker-label">Search</span>
-                    <input id="library-filter-search" name="library_filter_search" type="text" class="lib-input" placeholder="Search by code, title, subtitle, author, year..." data-admin-library-search="query">
-                </label>
-                <div class="lux-picker-field library-picker-field">
-                    <span class="lux-picker-label library-picker-label">Topic</span>
-                    <button type="button" class="lux-picker-btn library-picker-btn" id="library-filter-topic-btn" aria-haspopup="listbox" aria-expanded="false" data-admin-library-picker-field="topic">
-                        <span class="library-picker-btn-copy">
-                            <strong id="library-filter-topic-value">All Topics</strong>
-                        </span>
-                        <i class="fas fa-chevron-down"></i>
-                    </button>
-                    <div class="lux-picker-panel library-picker-panel" id="library-filter-topic-panel"></div>
-                    <select id="library-filter-topic" name="library_filter_topic" class="library-hidden-select" data-admin-library-select-field="topic"></select>
+            <section class="lux-panel alib-panel alib-panel--filters">
+                <div class="lux-card-head">
+                    <div>
+                        <div class="lux-card-title">Catalog Controls</div>
+                        <div class="lux-card-meta">Search the shared shelf and keep quick counts visible while editing.</div>
+                    </div>
                 </div>
-                <div class="lux-picker-field library-picker-field">
-                    <span class="lux-picker-label library-picker-label">Language</span>
-                    <button type="button" class="lux-picker-btn library-picker-btn" id="library-filter-language-btn" aria-haspopup="listbox" aria-expanded="false" data-admin-library-picker-field="language">
-                        <span class="library-picker-btn-copy">
-                            <strong id="library-filter-language-value">All Languages</strong>
-                        </span>
-                        <i class="fas fa-chevron-down"></i>
-                    </button>
-                    <div class="lux-picker-panel library-picker-panel" id="library-filter-language-panel"></div>
-                    <select id="library-filter-language" name="library_filter_language" class="library-hidden-select" data-admin-library-select-field="language"></select>
+                <div class="admin-library-metric-row admin-library-metric-row--compact">
+                    <div class="lux-stat-card admin-library-metric-card">
+                        <span class="admin-library-metric-label">Catalog Entries</span>
+                        <strong id="admin-library-total-metric" class="admin-library-metric-value">0</strong>
+                    </div>
+                    <div class="lux-stat-card admin-library-metric-card">
+                        <span class="admin-library-metric-label">Visible View</span>
+                        <strong id="admin-library-filtered-metric" class="admin-library-metric-value">0</strong>
+                    </div>
                 </div>
-                <div class="lux-picker-field library-picker-field">
-                    <span class="lux-picker-label library-picker-label">Status</span>
-                    <button type="button" class="lux-picker-btn library-picker-btn" id="library-filter-status-btn" aria-haspopup="listbox" aria-expanded="false" data-admin-library-picker-field="status">
-                        <span class="library-picker-btn-copy">
-                            <strong id="library-filter-status-value">All Statuses</strong>
-                        </span>
-                        <i class="fas fa-chevron-down"></i>
-                    </button>
-                    <div class="lux-picker-panel library-picker-panel" id="library-filter-status-panel"></div>
-                    <select id="library-filter-status" name="library_filter_status" class="library-hidden-select" data-admin-library-select-field="status"></select>
+                <div class="alib-filter-stack">
+                    <label class="lux-picker-field">
+                        <span class="lux-picker-label">Search</span>
+                        <input id="library-filter-search" name="library_filter_search" type="text" class="lux-control" placeholder="Title, author, year..." data-admin-library-search="query">
+                    </label>
+                    <div class="lux-picker-field">
+                        <span class="lux-picker-label">Topic</span>
+                        <button type="button" class="lux-picker-btn" id="library-filter-topic-btn" aria-haspopup="listbox" aria-expanded="false" data-admin-library-picker-field="topic">
+                            <span class="lux-picker-copy">
+                                <strong id="library-filter-topic-value">All Topics</strong>
+                            </span>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="lux-picker-panel lux-picker-panel-scroll" id="library-filter-topic-panel"></div>
+                        <select id="library-filter-topic" name="library_filter_topic" class="lux-filter-hidden-select" data-admin-library-select-field="topic"></select>
+                    </div>
+                    <div class="lux-picker-field">
+                        <span class="lux-picker-label">Language</span>
+                        <button type="button" class="lux-picker-btn" id="library-filter-language-btn" aria-haspopup="listbox" aria-expanded="false" data-admin-library-picker-field="language">
+                            <span class="lux-picker-copy">
+                                <strong id="library-filter-language-value">All Languages</strong>
+                            </span>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="lux-picker-panel lux-picker-panel-scroll" id="library-filter-language-panel"></div>
+                        <select id="library-filter-language" name="library_filter_language" class="lux-filter-hidden-select" data-admin-library-select-field="language"></select>
+                    </div>
+                    <div class="lux-picker-field">
+                        <span class="lux-picker-label">Status</span>
+                        <button type="button" class="lux-picker-btn" id="library-filter-status-btn" aria-haspopup="listbox" aria-expanded="false" data-admin-library-picker-field="status">
+                            <span class="lux-picker-copy">
+                                <strong id="library-filter-status-value">All Statuses</strong>
+                            </span>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="lux-picker-panel lux-picker-panel-scroll" id="library-filter-status-panel"></div>
+                        <select id="library-filter-status" name="library_filter_status" class="lux-filter-hidden-select" data-admin-library-select-field="status"></select>
+                    </div>
                 </div>
-            </div>
-        </div>
+            </section>
+        </section>
 
-        <div class="content-box surface-card library-catalog-card admin-library-catalog-card">
-            <div class="tabs-container library-tabs">
-                <div class="tab active library-tab-fill">Books</div>
-                <div class="tab library-tab-fill">Admin editing enabled for the shared library</div>
+        <section class="lux-strip-card admin-library-catalog-card" aria-label="Shared catalog">
+            <div class="lux-tab-strip admin-library-tabs">
+                <button type="button" class="lux-tab-fill lux-select-card lux-tab-btn active" aria-pressed="true">Books</button>
+                <span class="lux-pill admin-library-status-pill"><i class="fas fa-user-shield"></i> Admin editing enabled</span>
             </div>
-            <div class="library-scroll-wrap">
-                <table class="kiu-table library-catalog-table admin-library-catalog-table library-table-min-1080">
+            <div class="admin-library-scroll-wrap">
+                <table class="kiu-table admin-library-catalog-table">
                     <thead>
                         <tr>
                             <th>Code</th>
@@ -162,34 +218,35 @@
                     <tbody id="book-catalog-body"></tbody>
                 </table>
             </div>
-            <div class="library-catalog-foot admin-library-catalog-foot">
+            <div class="admin-library-catalog-foot">
                 <span id="shared-library-count">0 books</span>
                 <span id="admin-library-filtered-summary">0 visible in current view</span>
             </div>
+        </section>
         </div>
     </div>
 </main>
 
-<div id="library-param-overlay" class="modal-overlay admin-library-modal-overlay" data-admin-library-modal-overlay="true">
-    <div class="modal-content admin-library-modal">
-        <div class="modal-header">
+<div id="library-param-overlay" class="modal-overlay admin-library-modal-overlay" data-admin-library-modal-overlay="true" aria-hidden="true">
+    <div class="modal-content lux-panel admin-library-modal">
+        <div class="modal-header admin-library-modal-head">
             <h3><i class="fas fa-list-check"></i> Dropdown Parameters</h3>
             <button class="lux-secondary-btn close-btn" type="button" data-admin-library-close-param-modal="true"><i class="fas fa-times"></i> Close</button>
         </div>
-        <div class="modal-body">
+        <div class="modal-body admin-library-modal-body">
             <div class="admin-library-modal-copy">Create option lists first, then use them inside the shared Subject (Topic), Language, and Status controls across the admin and TA library views.</div>
             <div class="admin-library-param-row">
-                <label class="lux-picker-field library-picker-field">
-                    <span class="lux-picker-label library-picker-label">Target Field</span>
-                    <select id="param-target" name="param_target" class="lib-input">
+                <label class="lux-picker-field">
+                    <span class="lux-picker-label">Target Field</span>
+                    <select id="param-target" name="param_target" class="lux-control admin-library-modal-input">
                         <option value="thematic">Thematic Rubric</option>
                         <option value="language">Language</option>
                         <option value="status">Status</option>
                     </select>
                 </label>
-                <label class="lux-picker-field library-picker-field">
-                    <span class="lux-picker-label library-picker-label">New Option</span>
-                    <input id="param-value" name="param_value" type="text" class="lib-input" placeholder="e.g. Mathematics">
+                <label class="lux-picker-field">
+                    <span class="lux-picker-label">New Option</span>
+                    <input id="param-value" name="param_value" type="text" class="lux-control admin-library-modal-input" placeholder="e.g. Mathematics">
                 </label>
                 <button class="lux-primary-btn" type="button" data-admin-library-add-param="true"><i class="fas fa-plus"></i> Add</button>
             </div>
@@ -208,7 +265,7 @@
                 </div>
             </div>
         </div>
-        <div class="modal-footer">
+        <div class="modal-footer admin-library-modal-foot">
             <span class="admin-library-modal-copy">Changes are saved to the shared library state immediately.</span>
             <button class="lux-secondary-btn close-btn" type="button" data-admin-library-close-param-modal="true">Close</button>
         </div>
@@ -221,11 +278,12 @@
 <script defer src="assets/js/data/initial-state.js?v=1776604821637"></script>
 <script defer src="assets/js/app/state.js?v=20260429-statestackfix1"></script>
     <script defer src="assets/js/shared/faculty.js?v=20260429-peopleisolation1"></script>
-<script defer src="assets/js/shared/utilities.js?v=20260504-transparency-refresh1"></script>
+<script defer src="assets/js/shared/utilities.js?v=20260605-initvisual2"></script>
     <script defer src="assets/js/features/navigation.js?v=20260429-shellinit1"></script>
 <script defer src="assets/js/features/ui.js?v=20260429-peopleisolation1"></script>
-<script defer src="assets/js/features/index-luxury.js?v=20260504-transparency-refresh1"></script>
-<script defer src="assets/js/features/luxury-shell-chrome.js?v=20260518-luxshell1"></script>
+<script defer src="assets/js/features/index-luxury.js?v=20260605-initvisual2"></script>
+<script type="module" src="assets/js/features/luxury-particle-background.js?v=20260531-partbg8"></script>
+<script defer src="assets/js/features/luxury-shell-chrome.js?v=20260606-pickerscroll1"></script>
 <script defer src="assets/js/features/luxury-home-model.js?v=20260518-luxhome1"></script>
 <script>
 function ensureAdminLibraryState() {
@@ -261,6 +319,36 @@ function getAdminLibraryPickerMeta(field) {
         language: { label: 'Language', subtitle: 'Choose a catalog language' },
         status: { label: 'Status', subtitle: 'Filter active or archived books' }
     }[field] || { label: field, subtitle: 'Filter the library catalog' };
+}
+
+function createAdminLibraryPickerOption(field, option, currentValue) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'lux-picker-option';
+    button.dataset.adminLibraryFilter = field;
+    button.dataset.adminLibraryValue = option.value;
+    if (String(option.value) === String(currentValue)) {
+        button.classList.add('is-active');
+    }
+
+    const title = document.createElement('strong');
+    title.textContent = option.label;
+    button.appendChild(title);
+
+    const subtitle = document.createElement('span');
+    subtitle.textContent = String(option.value) === String(currentValue)
+        ? 'Current filter'
+        : getAdminLibraryPickerMeta(field).subtitle;
+    button.appendChild(subtitle);
+
+    return button;
+}
+
+function createAdminLibrarySelectOption(value, label) {
+    const option = document.createElement('option');
+    option.value = value;
+    option.textContent = label;
+    return option;
 }
 
 function syncAdminLibraryPickerValue(field) {
@@ -350,7 +438,7 @@ function bindAdminLibraryInteractions() {
             return;
         }
 
-        if (event.target.closest('.library-picker-field, #lux-topbar, .lux-picker-panel, .lux-utility-panel, .lux-user-menu, #lux-studio-backdrop')) return;
+        if (event.target.closest('.lux-picker-field, #lux-topbar, .lux-picker-panel, .lux-utility-panel, .lux-user-menu, #lux-studio-backdrop')) return;
         if (typeof closePickerPanels === 'function') closePickerPanels();
     });
 }
@@ -358,17 +446,11 @@ function bindAdminLibraryInteractions() {
 function renderAdminLibraryPickerPanel(field, options, currentValue) {
     const panel = document.getElementById(`library-filter-${field}-panel`);
     if (!panel) return;
-    const meta = getAdminLibraryPickerMeta(field);
-    panel.innerHTML = options.map((option) => {
-        const active = String(option.value) === String(currentValue);
-        const subtitle = active ? 'Current filter' : meta.subtitle;
-        return `
-            <button class="lux-picker-option${active ? ' is-active' : ''}" type="button" data-admin-library-filter="${escapeAdminLibraryHtml(field)}" data-admin-library-value="${escapeAdminLibraryHtml(option.value)}">
-                <strong>${escapeAdminLibraryHtml(option.label)}</strong>
-                <span>${escapeAdminLibraryHtml(subtitle)}</span>
-            </button>
-        `;
-    }).join('');
+    const fragment = document.createDocumentFragment();
+    options.forEach((option) => {
+        fragment.appendChild(createAdminLibraryPickerOption(field, option, currentValue));
+    });
+    panel.replaceChildren(fragment);
     panel.querySelectorAll('[data-admin-library-filter]').forEach((optionButton) => {
         optionButton.addEventListener('click', () => {
             const select = document.getElementById(`library-filter-${field}`);
@@ -397,8 +479,12 @@ function renderAdminLibraryFilters() {
         const el = document.getElementById(id);
         if (!el) return;
         const current = el.value || 'all';
-        const options = Array.isArray(items) ? items : [];
-        el.innerHTML = `<option value="all">${label}</option>${options.map((item) => `<option value="${escapeAdminLibraryHtml(item)}">${escapeAdminLibraryHtml(item)}</option>`).join('')}`;
+        const fragment = document.createDocumentFragment();
+        fragment.appendChild(createAdminLibrarySelectOption('all', label));
+        (Array.isArray(items) ? items : []).forEach((item) => {
+            fragment.appendChild(createAdminLibrarySelectOption(String(item), String(item)));
+        });
+        el.replaceChildren(fragment);
         el.value = Array.from(el.options).some((option) => option.value === current) ? current : 'all';
     };
     renderFilterSelect('library-filter-topic', 'All Topics', params.thematic);
@@ -416,7 +502,11 @@ function renderAdminLibraryFormSelects() {
         const el = document.getElementById(id);
         if (!el) return;
         const current = el.value;
-        el.innerHTML = items.map((item) => `<option value="${escapeAdminLibraryHtml(item)}">${escapeAdminLibraryHtml(item)}</option>`).join('');
+        const fragment = document.createDocumentFragment();
+        (Array.isArray(items) ? items : []).forEach((item) => {
+            fragment.appendChild(createAdminLibrarySelectOption(String(item), String(item)));
+        });
+        el.replaceChildren(fragment);
         if (current && Array.from(el.options).some((option) => option.value === current)) {
             el.value = current;
         }
@@ -428,7 +518,7 @@ function renderAdminLibraryFormSelects() {
 
 function createAdminLibraryParamChip(key, value, index) {
     const chip = document.createElement('span');
-    chip.className = 'admin-library-chip';
+    chip.className = 'lux-pill admin-library-chip';
 
     const label = document.createElement('span');
     label.textContent = value;
@@ -473,20 +563,22 @@ function renderAdminLibraryParameters() {
     renderAdminLibraryParameterGroups();
 }
 
-function openLibraryParamModal() {
-    renderAdminLibraryParameters();
+function setAdminLibraryParamModalOpen(isOpen) {
     const overlay = document.getElementById('library-param-overlay');
     if (!overlay) return;
-    overlay.style.display = 'flex';
-    document.body.style.overflow = 'hidden';
+    overlay.classList.toggle('active', Boolean(isOpen));
+    overlay.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
+    document.body.classList.toggle('admin-library-modal-open', Boolean(isOpen));
+}
+
+function openLibraryParamModal() {
+    renderAdminLibraryParameters();
+    setAdminLibraryParamModalOpen(true);
 }
 
 function closeLibraryParamModal(event) {
     if (event && event.target.id !== 'library-param-overlay' && !event.target.closest('.close-btn')) return;
-    const overlay = document.getElementById('library-param-overlay');
-    if (!overlay) return;
-    overlay.style.display = 'none';
-    document.body.style.overflow = '';
+    setAdminLibraryParamModalOpen(false);
 }
 
 function addLibraryParameterOption() {
@@ -572,12 +664,14 @@ function removeAdminLibraryBook(bookId) {
 
 function createAdminLibraryCell(text) {
     const cell = document.createElement('td');
+    cell.className = 'admin-library-catalog-cell';
     cell.textContent = text;
     return cell;
 }
 
 function createAdminLibraryPdfCell(pdfLink) {
     const cell = document.createElement('td');
+    cell.className = 'admin-library-catalog-cell admin-library-pdf-cell';
     if (!pdfLink) {
         cell.textContent = '-';
         return cell;
@@ -586,7 +680,7 @@ function createAdminLibraryPdfCell(pdfLink) {
     link.href = pdfLink;
     link.target = '_blank';
     link.rel = 'noopener noreferrer';
-    link.className = 'library-pdf-link';
+    link.className = 'admin-library-pdf-link';
     const icon = document.createElement('i');
     icon.className = 'fas fa-file-pdf';
     link.appendChild(icon);
@@ -596,8 +690,9 @@ function createAdminLibraryPdfCell(pdfLink) {
 
 function createAdminLibraryActionCell(bookId) {
     const cell = document.createElement('td');
+    cell.className = 'admin-library-catalog-cell admin-library-action-cell';
     const button = document.createElement('button');
-    button.className = 'admin-library-remove-btn';
+    button.className = 'admin-library-remove-btn lux-secondary-btn';
     button.type = 'button';
     button.dataset.removeBook = '1';
     button.dataset.bookId = bookId;
@@ -616,6 +711,7 @@ function createAdminLibraryActionCell(bookId) {
 
 function createAdminLibraryCatalogRow(book, index) {
     const row = document.createElement('tr');
+    row.className = 'admin-library-catalog-row';
     const code = book.id ? String(book.id) : `BK-${index + 1}`;
     const title = book.title || '-';
     const subtitle = book.subtitle || '-';
@@ -644,14 +740,17 @@ function createAdminLibraryCatalogRow(book, index) {
 
 function renderAdminLibraryEmptyStateRow(tbody) {
     const row = document.createElement('tr');
-    row.className = 'library-empty-row';
+    row.className = 'admin-library-empty-row';
     const cell = document.createElement('td');
-    cell.className = 'library-empty-cell';
+    cell.className = 'admin-library-empty-cell admin-library-catalog-cell';
     cell.colSpan = 10;
-    cell.style.textAlign = 'center';
-    cell.style.color = 'var(--lux-text-muted)';
-    cell.style.padding = '28px';
-    cell.textContent = 'No books found for the current filters.';
+    cell.innerHTML = `
+        <div class="admin-library-empty-state">
+            <i class="fas fa-book-open"></i>
+            <strong class="admin-library-empty-state-title">No books found</strong>
+            <span class="admin-library-empty-state-copy">No catalog entries match the current admin filters.</span>
+        </div>
+    `;
     row.appendChild(cell);
     tbody.replaceChildren(row);
 }
@@ -683,12 +782,20 @@ function renderAdminBookCatalog() {
 
     const totalBooks = books.length;
     const visibleBooks = filteredBooks.length;
+    const adminParams = KIU_STATE.adminLibrary.params || {};
+    const parameterCount = ['thematic', 'language', 'status'].reduce((sum, key) => sum + (Array.isArray(adminParams[key]) ? adminParams[key].length : 0), 0);
     const statBooks = document.getElementById('stat-books');
+    const heroTotal = document.getElementById('admin-library-hero-total');
+    const heroVisible = document.getElementById('admin-library-hero-visible');
+    const heroParameters = document.getElementById('admin-library-hero-parameters');
     const totalMetric = document.getElementById('admin-library-total-metric');
     const filteredMetric = document.getElementById('admin-library-filtered-metric');
     const totalCount = document.getElementById('shared-library-count');
     const filteredSummary = document.getElementById('admin-library-filtered-summary');
     if (statBooks) statBooks.textContent = String(totalBooks);
+    if (heroTotal) heroTotal.textContent = `${totalBooks} book${totalBooks === 1 ? '' : 's'}`;
+    if (heroVisible) heroVisible.textContent = String(visibleBooks);
+    if (heroParameters) heroParameters.textContent = String(parameterCount);
     if (totalMetric) totalMetric.textContent = String(totalBooks);
     if (filteredMetric) filteredMetric.textContent = String(visibleBooks);
     if (totalCount) totalCount.textContent = `${totalBooks} book${totalBooks === 1 ? '' : 's'}`;
@@ -708,50 +815,68 @@ function renderAdminBookCatalog() {
 }
 
 function renderAdminLibrary() {
+    document.title = 'KIU - Admin Library';
     if (!document.getElementById('book-catalog-body')) return;
     renderAdminLibraryFormSelects();
     renderAdminLibraryFilters();
     renderAdminBookCatalog();
 }
 
+function ensureAdminLibraryRouteVisualState() {
+    const body = document.body;
+    if (!body || !document.getElementById('page-library')?.querySelector('.alib-workspace')) return;
+    body.classList.add('lux-route-admin-library');
+    body.classList.remove('lux-route-library');
+    if (!body.dataset.luxPage) body.dataset.luxPage = 'library';
+    if (!body.dataset.luxEntry) body.dataset.luxEntry = 'admin-library';
+}
+window.ensureAdminLibraryRouteVisualState = ensureAdminLibraryRouteVisualState;
+
 document.addEventListener('DOMContentLoaded', () => {
     bindAdminLibraryInteractions();
     document.body.classList.remove('role-student');
     document.body.classList.add('role-admin');
+    document.title = 'KIU - Admin Library';
 
     const fac = localStorage.getItem('currentFaculty') || 'ECON';
     if (typeof switchFacultyTheme === 'function') {
-        switchFacultyTheme(fac);
+        switchFacultyTheme(fac, { refreshDependentViews: false });
     }
-    if (typeof initPalette === 'function') {
+    if (typeof window.refreshStandaloneDesktopRouteShellContext === 'function') {
+        window.refreshStandaloneDesktopRouteShellContext({ rerender: false, refreshActiveRoute: false });
+    } else if (typeof window.refreshStandaloneDesktopShellChrome === 'function') {
+        window.refreshStandaloneDesktopShellChrome();
+    } else if (typeof initPalette === 'function') {
         initPalette();
     }
 
     ensureAdminLibraryState();
     renderAdminLibrary();
+    ensureAdminLibraryRouteVisualState();
     if (typeof syncTopbar === 'function') {
         syncTopbar();
     }
 
     setTimeout(() => {
         if (typeof updateTransparency === 'function') {
-            const saved = localStorage.getItem('kiuLuxurySurfaceTransparency') || '70';
+            const saved = localStorage.getItem('kiuLuxurySurfaceTransparency') || '13';
             updateTransparency(Number.parseInt(saved, 10));
         }
+        ensureAdminLibraryRouteVisualState();
     }, 300);
 });
 </script>
 <!-- MOBILE BOTTOM NAVIGATION (v2) -->
-<nav id="mobile-bottom-nav" aria-label="Mobile navigation" style="display:none;">
+<nav id="mobile-bottom-nav" aria-label="Mobile navigation" hidden>
     <div class="mobile-nav-row">
         <button class="mobile-nav-btn is-active" data-nav-target="home" type="button" id="mob-nav-home"><i class="fas fa-th-large"></i><span>Home</span></button>
-        <button class="mobile-nav-btn" type="button" id="mob-nav-messages" data-action="messages"><i class="fas fa-comment-dots"></i><span>Chat</span><em class="mob-badge" id="mob-badge-msg" style="display:none;">0</em></button>
-        <button class="mobile-nav-btn" type="button" id="mob-nav-notif" data-action="notifications"><i class="fas fa-bell"></i><span>Alerts</span><em class="mob-badge" id="mob-badge-notif" style="display:none;">0</em></button>
+        <button class="mobile-nav-btn" type="button" id="mob-nav-messages" data-action="messages"><i class="fas fa-comment-dots"></i><span>Chat</span><em class="mob-badge" id="mob-badge-msg" hidden>0</em></button>
+        <button class="mobile-nav-btn" type="button" id="mob-nav-notif" data-action="notifications"><i class="fas fa-bell"></i><span>Alerts</span><em class="mob-badge" id="mob-badge-notif" hidden>0</em></button>
         <button class="mobile-nav-btn" type="button" id="mob-nav-theme" data-action="theme"><i class="fas fa-palette"></i><span>Theme</span></button>
         <button class="mobile-nav-btn" type="button" id="mob-nav-more" data-action="more"><i class="fas fa-grip-horizontal"></i><span>More</span></button>
     </div>
 </nav>
-<div id="mobile-action-sheet" class="mob-sheet" style="display:none;" role="dialog" aria-modal="true">
+<div id="mobile-action-sheet" class="mob-sheet" hidden role="dialog" aria-modal="true">
     <div class="mob-sheet-backdrop" id="mob-sheet-backdrop"></div>
     <div class="mob-sheet-panel">
         <div class="mob-sheet-handle"><span></span></div>
@@ -831,10 +956,6 @@ window.__KIU_STANDALONE_MOBILE_SHELL_CONFIG = {
 <script defer src="assets/js/pages/standalone-mobile-shell.js?v=20260520-admin-library-mobile1"></script>
 </body>
 </html>
-
-
-
-
 
 
 

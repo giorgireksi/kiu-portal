@@ -48,6 +48,32 @@
         lastAutosaveAt: 0
     };
 
+    function readStoredToken(key) {
+        try {
+            return String(sessionStorage.getItem(key) || localStorage.getItem(key) || '').trim();
+        } catch (error) {
+            return '';
+        }
+    }
+
+    function getAutoExamPortalToken() {
+        return String(runtime.token || readStoredToken(TOKEN_KEY)).trim();
+    }
+
+    function getAutoProtectedClientSessionToken() {
+        const runtimeToken = String(runtime.protected?.payload?.session?.token || '').trim();
+        if (runtimeToken) return runtimeToken;
+        return readStoredToken('KIU_PROTECTED_CLIENT_SESSION_TOKEN');
+    }
+
+    function shouldAttachExamPortalToken(path) {
+        return /^\/api\/exam-portal\//i.test(String(path || '').split('?')[0]);
+    }
+
+    function shouldAttachProtectedClientToken(path) {
+        return /^\/api\/protected-(client|quizzes)\//i.test(String(path || '').split('?')[0]);
+    }
+
     function q(id) {
         return document.getElementById(id);
     }
@@ -116,13 +142,115 @@
         } catch (error) {}
         try {
             const protocol = window.location?.protocol === 'https:' ? 'https:' : 'http:';
-            const host = /^(127\.0\.0\.1|localhost)$/i.test(window.location?.hostname || '')
-                ? window.location.hostname
-                : '127.0.0.1';
-            return `${protocol}//${host}:48933`;
+            const host = String(window.location?.hostname || '').trim();
+            if (/^(127\.0\.0\.1|localhost)$/i.test(host)) {
+                return `${protocol}//${host}${window.location?.port ? `:${window.location.port}` : ''}`;
+            }
+            return `${protocol}//127.0.0.1:48933`;
         } catch (error) {
             return 'http://127.0.0.1:48933';
         }
+    }
+
+    const ANTI_CHEAT_DESKTOP_BRIDGE_ORIGINS = ['http://127.0.0.1:47835', 'http://localhost:47835'];
+
+    async function fetchAntiCheatDesktopBridgeJson(origin, path, options = {}) {
+        const controller = typeof AbortController === 'function' ? new AbortController() : null;
+        const timeoutMs = Number(options.timeoutMs || 1200);
+        let timeoutId = null;
+        if (controller && timeoutMs > 0) {
+            timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+        }
+        try {
+            const response = await fetch(`${String(origin || '').replace(/\/$/, '')}${path}`, {
+                method: options.method || 'GET',
+                headers: options.headers || {},
+                body: options.body,
+                signal: controller?.signal
+            });
+            const payload = await response.json().catch(() => ({}));
+            return {
+                ok: response.ok && payload?.ok !== false,
+                status: response.status,
+                payload
+            };
+        } catch (error) {
+            return { ok: false, status: 0, payload: null };
+        } finally {
+            if (timeoutId) clearTimeout(timeoutId);
+        }
+    }
+
+    function wakeAntiCheatDesktopApp(protocolUrl = 'anticheat://open?screen=settings&source=kiu-exam-portal') {
+        const targetUrl = String(protocolUrl || '').trim();
+        if (!targetUrl) return;
+        try {
+            const frame = document.createElement('iframe');
+            frame.hidden = true;
+            frame.setAttribute('aria-hidden', 'true');
+            frame.src = targetUrl;
+            document.body.appendChild(frame);
+            setTimeout(() => {
+                try {
+                    frame.remove();
+                } catch (error) {}
+            }, 1200);
+        } catch (error) {}
+        try {
+            const link = document.createElement('a');
+            link.href = targetUrl;
+            link.hidden = true;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+        } catch (error) {}
+    }
+
+    async function findActiveAntiCheatDesktopBridge() {
+        for (const origin of ANTI_CHEAT_DESKTOP_BRIDGE_ORIGINS) {
+            const health = await fetchAntiCheatDesktopBridgeJson(origin, '/health', { timeoutMs: 900 });
+            if (health.ok) return origin;
+        }
+        return '';
+    }
+
+    async function handoffExamLaunchToAntiCheatBridge(launchUrl, options = {}) {
+        const targetUrl = String(launchUrl || '').trim();
+        if (!targetUrl) return false;
+        const timeoutMs = Number(options.timeoutMs || 10000);
+        const intervalMs = Number(options.intervalMs || 350);
+        const wakeProtocolUrl = String(options.wakeProtocolUrl || 'anticheat://open?screen=settings&source=kiu-exam-portal').trim();
+        const startedAt = Date.now();
+        let wakeIssued = false;
+        while ((Date.now() - startedAt) <= timeoutMs) {
+            const origin = await findActiveAntiCheatDesktopBridge();
+            if (origin) {
+                const launch = await fetchAntiCheatDesktopBridgeJson(origin, '/launch', {
+                    method: 'POST',
+                    timeoutMs: 2500,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ launchUrl: targetUrl, source: 'kiu-exam-portal' })
+                });
+                return launch.ok;
+            }
+            if (!wakeIssued && wakeProtocolUrl) {
+                wakeIssued = true;
+                wakeAntiCheatDesktopApp(wakeProtocolUrl);
+            }
+            await new Promise((resolve) => setTimeout(resolve, intervalMs));
+        }
+        return false;
+    }
+
+    async function attemptExamPortalAntiCheatLaunch(launchUrl) {
+        const targetUrl = String(launchUrl || '').trim();
+        if (!targetUrl) return false;
+        const bridgeAccepted = await handoffExamLaunchToAntiCheatBridge(targetUrl, {
+            wakeProtocolUrl: 'anticheat://open?screen=settings&source=kiu-exam-portal-launch'
+        });
+        if (bridgeAccepted) return true;
+        wakeAntiCheatDesktopApp(targetUrl);
+        return false;
     }
 
     function buildExamPortalApiUrl(path) {
@@ -141,12 +269,12 @@
         if (!root) return;
         root.innerHTML = `
             <main class="exam-blocked-shell">
-                <section class="exam-blocked-card">
+                <section class="exam-blocked-card lms-route-panel lms-route-panel-pad-16-20">
                     <div class="exam-blocked-icon"><i class="fas fa-shield-halved"></i></div>
-                    <div class="exam-kicker" style="color:var(--exam-danger); opacity:1;">Secure Browser Required</div>
-                    <h1 style="margin:0; font-family:Fraunces, Georgia, serif; font-size:clamp(30px, 5vw, 46px);">Open this page in KIU Anti-Cheat Browser</h1>
-                    <p class="exam-panel-copy" style="max-width:620px; margin:0 auto;">Exam schedules, launch controls, and protected attempts are only available inside the anti-cheat environment. This prevents students from opening exam pages in a normal browser.</p>
-                    <div class="exam-chip-row" style="justify-content:center;">
+                    <div class="lms-route-eyebrow exam-kicker-danger">Secure Browser Required</div>
+                    <h1 class="exam-blocked-title">Open this page in KIU Anti-Cheat Browser</h1>
+                    <p class="lms-route-copy exam-panel-copy-centered exam-panel-copy-wide">Exam schedules, launch controls, and protected attempts are only available inside the anti-cheat environment. This prevents students from opening exam pages in a normal browser.</p>
+                    <div class="exam-chip-row exam-chip-row-centered">
                         <span class="exam-chip"><i class="fas fa-lock"></i> Normal browser blocked</span>
                         <span class="exam-chip"><i class="fas fa-user-shield"></i> Invigilated session only</span>
                     </div>
@@ -227,12 +355,22 @@
     async function fetchJson(path, options = {}) {
         let response;
         try {
+            const normalizedPath = String(path || '').split('?')[0];
+            const headers = {
+                'Content-Type': 'application/json',
+                ...(options.headers || {})
+            };
+            if (shouldAttachExamPortalToken(normalizedPath) && !headers['X-Exam-Portal-Token']) {
+                const token = getAutoExamPortalToken();
+                if (token) headers['X-Exam-Portal-Token'] = token;
+            }
+            if (shouldAttachProtectedClientToken(normalizedPath) && !headers['X-Protected-Client-Session']) {
+                const token = getAutoProtectedClientSessionToken();
+                if (token) headers['X-Protected-Client-Session'] = token;
+            }
             response = await fetch(buildExamPortalApiUrl(path), {
                 method: options.method || 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    ...(options.headers || {})
-                },
+                headers,
                 body: options.body ? JSON.stringify(options.body) : undefined,
                 cache: 'no-store'
             });
@@ -315,6 +453,10 @@
     }
 
     function clearPortalSession() {
+        try {
+            sessionStorage.removeItem('KIU_PROTECTED_CLIENT_SESSION_TOKEN');
+            localStorage.removeItem('KIU_PROTECTED_CLIENT_SESSION_TOKEN');
+        } catch (error) {}
         setToken('', null);
         runtime.sessions = [];
         clearNotice();
@@ -395,14 +537,14 @@
         const status = deriveSessionStatus(session);
         const sessionKey = getSessionDomKey(session.id);
         return `
-            <section class="exam-session-hero" data-session-spotlight="${sessionKey}">
-                <div class="exam-kicker" style="color:var(--exam-muted); opacity:1;">Priority Session</div>
-                <div style="display:flex; justify-content:space-between; gap:14px; align-items:flex-start; flex-wrap:wrap;">
+            <section class="exam-session-hero lms-route-panel lms-route-panel-compact" data-session-spotlight="${sessionKey}">
+                <div class="lms-route-eyebrow">Priority Session</div>
+                <div class="exam-session-hero-head">
                     <div>
-                        <h3 style="margin:0; font-size:22px;">${escapeHtml(session.title || session.subjectName || 'Scheduled exam')}</h3>
-                        <div class="exam-panel-copy">${escapeHtml(session.subjectName || session.subjectId || '')} | ${escapeHtml(session.variantLabel || 'Variant')} | ${escapeHtml(getSessionGroupLabel(session))}</div>
+                        <h3 class="exam-session-hero-title">${escapeHtml(session.title || session.subjectName || 'Scheduled exam')}</h3>
+                        <div class="lms-route-copy">${escapeHtml(session.subjectName || session.subjectId || '')} | ${escapeHtml(session.variantLabel || 'Variant')} | ${escapeHtml(getSessionGroupLabel(session))}</div>
                     </div>
-                    <span class="exam-status exam-status-${escapeHtml(status)}" data-session-spotlight-status>${escapeHtml(status)}</span>
+                    <span class="exam-status lux-status-pill lux-status-pill--soft exam-status-${escapeHtml(status)}" data-session-spotlight-status>${escapeHtml(status)}</span>
                 </div>
                 <div class="exam-card-meta">
                     <div><strong>Window</strong><span>${escapeHtml(formatDateTime(session.startAt))} to ${escapeHtml(formatDateTime(session.endAt))}</span></div>
@@ -420,13 +562,13 @@
         const status = deriveSessionStatus(session);
         const sessionKey = getSessionDomKey(session.id);
         return `
-            <article class="exam-card is-${escapeHtml(status)}" data-session-card="${sessionKey}">
+            <article class="exam-card lms-route-card is-${escapeHtml(status)}" data-session-card="${sessionKey}">
                 <div class="exam-card-head">
                     <div>
                         <div class="exam-card-title">${escapeHtml(session.title || session.subjectName || 'Scheduled exam')}</div>
                         <div class="exam-card-copy">${escapeHtml(session.subjectName || session.subjectId || '')} | ${escapeHtml(session.variantLabel || 'Variant')} | ${escapeHtml(getSessionGroupLabel(session))}</div>
                     </div>
-                    <span class="exam-status exam-status-${escapeHtml(status)}" data-session-status>${escapeHtml(status)}</span>
+                    <span class="exam-status lux-status-pill lux-status-pill--soft exam-status-${escapeHtml(status)}" data-session-status>${escapeHtml(status)}</span>
                 </div>
                 <div class="exam-card-meta">
                     <div><strong>Start</strong><span>${escapeHtml(formatDateTime(session.startAt))}</span></div>
@@ -443,7 +585,7 @@
                 </div>
                 <div class="exam-action-row">
                     <span class="exam-launch-reason" data-session-launch-reason>${escapeHtml(getLaunchReason(session))}</span>
-                    <button type="button" class="exam-primary-btn" ${!canLaunchSession(session) ? 'disabled' : ''} data-exam-launch-session="${escapeHtml(session.id)}">
+                    <button type="button" class="kiu-btn-blue" ${!canLaunchSession(session) ? 'disabled' : ''} data-exam-launch-session="${escapeHtml(session.id)}">
                         <i class="fas fa-shield-halved"></i> Start In Anti-Cheat
                     </button>
                 </div>
@@ -459,7 +601,7 @@
 
         const statusNode = card.querySelector('[data-session-status]');
         if (statusNode) {
-            statusNode.className = `exam-status exam-status-${status}`;
+            statusNode.className = `exam-status lux-status-pill lux-status-pill--soft exam-status-${status}`;
             statusNode.textContent = status;
         }
 
@@ -479,7 +621,7 @@
 
         const statusNode = node.querySelector('[data-session-spotlight-status]');
         if (statusNode) {
-            statusNode.className = `exam-status exam-status-${status}`;
+            statusNode.className = `exam-status lux-status-pill lux-status-pill--soft exam-status-${status}`;
             statusNode.textContent = status;
         }
 
@@ -583,13 +725,20 @@
         const authPane = q('exam-auth-pane');
         const dashboard = q('exam-dashboard');
         const banner = q('exam-student-banner');
-        if (!authPane || !dashboard || !banner) return;
+        if (!authPane || !dashboard) return;
         const loggedIn = Boolean(runtime.token && runtime.student);
         authPane.style.display = loggedIn ? 'none' : '';
         dashboard.style.display = loggedIn ? '' : 'none';
-        banner.innerHTML = loggedIn
-            ? `<strong>${escapeHtml(runtime.student.displayName || runtime.student.nameEn || runtime.student.name || runtime.student.email || runtime.student.id || 'Student')}</strong><span>${escapeHtml(runtime.student.email || '')} | ID ${escapeHtml(runtime.student.id || '')}</span>`
-            : '<strong>Identity Check Required</strong><span>Sign in to view your exam windows, countdowns, and secure launch actions.</span>';
+        if (banner) {
+            if (loggedIn) {
+                banner.hidden = false;
+                const name = runtime.student.displayName || runtime.student.nameEn || runtime.student.name || runtime.student.email || runtime.student.id || 'Student';
+                banner.innerHTML = `<strong>${escapeHtml(name)}</strong> · ${escapeHtml(runtime.student.email || '')} · ID ${escapeHtml(runtime.student.id || '')}`;
+            } else {
+                banner.hidden = true;
+                banner.textContent = '';
+            }
+        }
     }
 
     async function handlePortalLogin(event) {
@@ -650,7 +799,10 @@
             });
             const launchUrl = String(payload.launchUrl || '').trim();
             if (!launchUrl) throw new Error('The anti-cheat launch URL was not returned.');
-            window.location.href = launchUrl;
+            const handedOff = await attemptExamPortalAntiCheatLaunch(launchUrl);
+            if (!handedOff) {
+                alert('The exam launch was sent to the Anti-Cheat app. If nothing opened, start the desktop app (cd asd/anti-cheat && npm run start) and try again.');
+            }
         } catch (error) {
             alert(error.message || 'Exam could not be launched.');
         }
@@ -863,7 +1015,7 @@
         return `
             <div class="exam-option-list">
                 ${(question.options || []).map((option, optionIndex) => `
-                    <label class="exam-option">
+                    <label class="exam-option lux-select-card">
                         <input type="radio" name="question-${escapeHtml(question.id)}" value="${escapeHtml(String(optionIndex))}" ${String(answerValue) === String(optionIndex) ? 'checked' : ''}>
                         <span>${escapeHtml(option)}</span>
                     </label>
@@ -875,10 +1027,10 @@
     function buildProtectedQuestionCardMarkup(question, index) {
         const answerValue = runtime.protected.answers[question.id] ?? '';
         return `
-            <article class="exam-question-card" id="question-${escapeHtml(question.id)}" data-question-id="${escapeHtml(question.id)}">
+            <article class="exam-question-card lms-route-card" id="question-${escapeHtml(question.id)}" data-question-id="${escapeHtml(question.id)}">
                 <div class="exam-question-toolbar">
                     <div class="exam-question-title">Question ${index + 1} | ${escapeHtml(getQuestionTypeLabel(question.type))}</div>
-                    <button type="button" class="exam-flag-btn ${runtime.protected.flagged[question.id] ? 'is-active' : ''}" data-question-flag="${escapeHtml(question.id)}">
+                    <button type="button" class="exam-flag-btn lux-secondary-btn ${runtime.protected.flagged[question.id] ? 'is-active' : ''}" data-question-flag="${escapeHtml(question.id)}">
                         <i class="fas fa-flag"></i> ${runtime.protected.flagged[question.id] ? 'Flagged' : 'Flag'}
                     </button>
                 </div>
@@ -899,7 +1051,7 @@
                     <div class="exam-protected-title">${escapeHtml(quiz.title || 'Exam submitted')}</div>
                     <p class="exam-protected-copy">Your submission is recorded. Objective scoring is visible immediately, while manual grading remains hidden until the reviewer finalizes it.</p>
                 </section>
-                <section class="exam-receipt-card">
+                <section class="exam-receipt-card lms-route-panel lms-route-panel-compact">
                     <div class="exam-card-meta">
                         <div><strong>Objective Score</strong><span>${escapeHtml(String(scoreSummary.objectiveScore))}/${escapeHtml(String(scoreSummary.objectiveMax || scoreSummary.maxScore))}</span></div>
                         <div><strong>Final Score</strong><span>${scoreSummary.finalScore === null ? 'Pending' : `${escapeHtml(String(scoreSummary.finalScore))}/${escapeHtml(String(scoreSummary.maxScore))}`}</span></div>
@@ -909,7 +1061,7 @@
                         <div><strong>Variant</strong><span>${escapeHtml(session.variantLabel || 'Variant')}</span></div>
                         <div><strong>Room</strong><span>${escapeHtml(getSessionLocationLabel(session))}</span></div>
                     </div>
-                    <div class="exam-panel-copy">${needsManual ? 'Written or short-answer responses are pending manual review. Final score will update after grading.' : 'This exam did not require manual review.'}</div>
+                    <div class="lms-route-copy">${needsManual ? 'Written or short-answer responses are pending manual review. Final score will update after grading.' : 'This exam did not require manual review.'}</div>
                 </section>
             </main>
         `;
@@ -917,17 +1069,17 @@
 
     function buildProtectedReadyMarkup(session) {
         return `
-            <section class="exam-ready-panel">
-                <div class="exam-kicker" style="color:var(--exam-muted); opacity:1;">Ready Check</div>
-                <h2 style="margin:0;">Start only when your invigilator confirms the live session</h2>
-                <div class="exam-panel-copy">The question body stays hidden until you explicitly begin in the protected environment. Once started, leaving this secure session may auto-submit your exam.</div>
+            <section class="exam-ready-panel lms-route-panel lms-route-panel-compact">
+                <div class="lms-route-eyebrow">Ready Check</div>
+                <h2 class="exam-heading-reset">Start only when your invigilator confirms the live session</h2>
+                <div class="lms-route-copy">The question body stays hidden until you explicitly begin in the protected environment. Once started, leaving this secure session may auto-submit your exam.</div>
                 <div class="exam-chip-row">
                     <span class="exam-chip"><i class="fas fa-eye-slash"></i> Questions hidden</span>
                     <span class="exam-chip"><i class="fas fa-shield-halved"></i> Anti-cheat active</span>
                     <span class="exam-chip"><i class="fas fa-file-signature"></i> ${escapeHtml(session.variantLabel || 'Variant')}</span>
                 </div>
                 <div class="exam-action-row">
-                    <button type="button" class="exam-primary-btn" id="protected-start-btn"><i class="fas fa-play"></i> Start Exam</button>
+                    <button type="button" class="kiu-btn-blue" id="protected-start-btn"><i class="fas fa-play"></i> Start Exam</button>
                 </div>
             </section>
         `;
@@ -951,22 +1103,22 @@
                 </section>
                 ${runtime.protected.revealed ? `
                     <section class="exam-sticky-timer" aria-label="Exam timing">
-                        <div>
+                        <div class="exam-sticky-box">
                             <strong>Time Left</strong>
                             <span id="protected-exam-left">--:--:--</span>
                         </div>
-                        <div>
+                        <div class="exam-sticky-box">
                             <strong>Time Passed</strong>
                             <span id="protected-exam-elapsed">00:00:00</span>
                         </div>
-                        <div>
+                        <div class="exam-sticky-box">
                             <strong>Exam Ends</strong>
                             <span id="protected-exam-ends">No deadline</span>
                         </div>
                     </section>
                     <div class="exam-protected-layout">
-                        <aside class="exam-protected-card">
-                            <h3 style="margin:0;">Exam Progress</h3>
+                        <aside class="exam-protected-card lms-route-panel lms-route-panel-compact">
+                            <h3 class="exam-heading-reset">Exam Progress</h3>
                             <div class="exam-progress-grid">
                                 <div class="exam-progress-box">
                                     <strong>Answered</strong>
@@ -983,18 +1135,18 @@
                             </div>
                             <div class="exam-nav-list">
                                 ${questions.map((question, index) => `
-                                    <button type="button" class="exam-nav-btn ${String(runtime.protected.answers[question.id] ?? '').trim() ? 'is-answered' : ''}" data-question-nav="${escapeHtml(question.id)}">
+                                    <button type="button" class="exam-nav-btn lux-secondary-btn ${String(runtime.protected.answers[question.id] ?? '').trim() ? 'is-answered' : ''}" data-question-nav="${escapeHtml(question.id)}">
                                         <span>Question ${index + 1}</span>
                                         <span data-question-state>${runtime.protected.flagged[question.id] ? 'Flagged' : String(runtime.protected.answers[question.id] ?? '').trim() ? 'Answered' : 'Pending'}</span>
                                     </button>
                                 `).join('')}
                             </div>
                         </aside>
-                        <section class="exam-protected-card">
+                        <section class="exam-protected-card lms-route-panel lms-route-panel-compact">
                             <form id="protected-exam-form" class="exam-question-list">
                                 ${questions.map(buildProtectedQuestionCardMarkup).join('')}
                                 <div class="exam-action-row">
-                                    <button type="submit" class="exam-primary-btn"><i class="fas fa-paper-plane"></i> Submit Exam</button>
+                                    <button type="submit" class="kiu-btn-blue"><i class="fas fa-paper-plane"></i> Submit Exam</button>
                                 </div>
                             </form>
                         </section>
@@ -1224,6 +1376,13 @@
         try {
             const payload = await fetchJson(`/api/protected-quizzes/${encodeURIComponent(quizId)}/attempt?courseId=${encodeURIComponent(courseId)}`);
             runtime.protected.payload = payload || null;
+            const protectedClientSessionToken = String(payload?.session?.token || '').trim();
+            if (protectedClientSessionToken) {
+                try {
+                    sessionStorage.setItem('KIU_PROTECTED_CLIENT_SESSION_TOKEN', protectedClientSessionToken);
+                    localStorage.setItem('KIU_PROTECTED_CLIENT_SESSION_TOKEN', protectedClientSessionToken);
+                } catch (error) {}
+            }
             runtime.protected.deadlineAt = computeProtectedDeadline(payload);
             restoreProtectedDraft();
             startProtectedHeartbeat();
@@ -1234,10 +1393,10 @@
             if (root) {
                 root.innerHTML = `
                     <main class="exam-protected-shell">
-                        <section class="exam-receipt-card">
-                            <div class="exam-kicker" style="color:var(--exam-muted); opacity:1;">Launch Error</div>
-                            <h2 style="margin:0;">Protected exam session could not be loaded</h2>
-                            <div class="exam-panel-copy">${escapeHtml(error.message || 'The exam session is invalid or expired.')}</div>
+                        <section class="exam-receipt-card lms-route-panel lms-route-panel-compact">
+                            <div class="lms-route-eyebrow">Launch Error</div>
+                            <h2 class="exam-heading-reset">Protected exam session could not be loaded</h2>
+                            <div class="lms-route-copy">${escapeHtml(error.message || 'The exam session is invalid or expired.')}</div>
                         </section>
                     </main>
                 `;

@@ -1,0 +1,153 @@
+- generic [active] [ref=e1]:
+  - text:  
+  - main [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e5]:
+        - generic [ref=e6]:
+          - generic [ref=e7]: Research and Reference Library
+          - generic [ref=e8]: Browse official books, topical references, and PDF resources in the same luxury shell used across the portal.
+          - generic [ref=e9]:
+            - generic [ref=e10]:
+              - generic [ref=e11]: 
+              - text: Shared catalog
+            - generic [ref=e12]:
+              - generic [ref=e13]: 
+              - text: Topic and language filters
+            - generic [ref=e14]:
+              - generic [ref=e15]: 
+              - text: PDF access
+        - complementary [ref=e16]:
+          - generic [ref=e17]:
+            - strong [ref=e18]: 0 books
+            - generic [ref=e19]: Index-style summary signals for the catalog and the current filtered shelf.
+          - generic [ref=e20]:
+            - generic [ref=e21]:
+              - generic [ref=e22]: Visible now
+              - strong [ref=e23]: "0"
+              - emphasis [ref=e24]: Books matching the active filters.
+            - generic [ref=e25]:
+              - generic [ref=e26]: PDF ready
+              - strong [ref=e27]: "0"
+              - emphasis [ref=e28]: Filtered entries with downloadable PDFs.
+            - generic [ref=e29]:
+              - generic [ref=e30]: Active shelf
+              - strong [ref=e31]: "0"
+              - emphasis [ref=e32]: Filtered entries currently marked active.
+      - generic [ref=e33]:
+        - article [ref=e34]:
+          - generic [ref=e35]:
+            - generic [ref=e36]: Visible shelf
+            - heading "0" [level=3] [ref=e37]
+            - paragraph [ref=e38]: Books matching the current search and picker state.
+        - article [ref=e39]:
+          - generic [ref=e40]:
+            - generic [ref=e41]: Topic lanes
+            - heading "0" [level=3] [ref=e42]
+            - paragraph [ref=e43]: Distinct catalog topics available in the current shelf.
+        - article [ref=e44]:
+          - generic [ref=e45]:
+            - generic [ref=e46]: Language lanes
+            - heading "0" [level=3] [ref=e47]
+            - paragraph [ref=e48]: Languages still represented after filtering the shelf.
+      - generic [ref=e49]:
+        - generic [ref=e50]: Browse Catalog
+        - generic [ref=e51]:
+          - generic [ref=e52]:
+            - generic [ref=e53]: Search
+            - textbox "Search" [ref=e54]:
+              - /placeholder: Search by title, subtitle, author, year...
+          - generic [ref=e55]:
+            - generic [ref=e56]: Topic
+            - button "All Topics " [ref=e57] [cursor=pointer]:
+              - strong [ref=e59]: All Topics
+              - generic [ref=e60]: 
+            - combobox [ref=e61]:
+              - option "All Topics" [selected]
+              - option "General"
+          - generic [ref=e62]:
+            - generic [ref=e63]: Language
+            - button "All Languages " [ref=e64] [cursor=pointer]:
+              - strong [ref=e66]: All Languages
+              - generic [ref=e67]: 
+            - combobox [ref=e68]:
+              - option "All Languages" [selected]
+              - option "English"
+          - generic [ref=e69]:
+            - generic [ref=e70]: Status
+            - button "All Statuses " [ref=e71] [cursor=pointer]:
+              - strong [ref=e73]: All Statuses
+              - generic [ref=e74]: 
+            - combobox [ref=e75]:
+              - option "All Statuses" [selected]
+              - option "Active"
+      - generic [ref=e76]:
+        - generic [ref=e77]:
+          - button "Books" [pressed] [ref=e78] [cursor=pointer]
+          - button "Read-only for students, professors, and TAs" [ref=e79] [cursor=pointer]
+        - table [ref=e81]:
+          - rowgroup [ref=e82]:
+            - row "Code Title Sub Title Author Year Subject (Topic) Language Status PDF" [ref=e83]:
+              - columnheader "Code" [ref=e84]
+              - columnheader "Title" [ref=e85]
+              - columnheader "Sub Title" [ref=e86]
+              - columnheader "Author" [ref=e87]
+              - columnheader "Year" [ref=e88]
+              - columnheader "Subject (Topic)" [ref=e89]
+              - columnheader "Language" [ref=e90]
+              - columnheader "Status" [ref=e91]
+              - columnheader "PDF" [ref=e92]
+          - rowgroup [ref=e93]:
+            - row "No books found.":
+              - cell "No books found."
+        - generic [ref=e95]: 0 books
+  - complementary:
+    - generic:
+      - generic: K
+      - generic:
+        - generic: KIU
+        - generic: Integrated Campus Portal
+    - generic:
+      - generic: Control
+      - button " Dashboard":
+        - generic: 
+        - generic: Dashboard
+      - button " Admin Tools":
+        - generic: 
+        - generic: Admin Tools
+      - button " Scheduler":
+        - generic: 
+        - generic: Scheduler
+      - button " Staff":
+        - generic: 
+        - generic: Staff
+      - button " Students":
+        - generic: 
+        - generic: Students
+      - generic: Systems
+      - button " News":
+        - generic: 
+        - generic: News
+      - button " Library":
+        - generic: 
+        - generic: Library
+      - button " Orders":
+        - generic: 
+        - generic: Orders
+      - button " Social":
+        - generic: 
+        - generic: Social
+      - button " Exams":
+        - generic: 
+        - generic: Exams
+      - button " Programs":
+        - generic: 
+        - generic: Programs
+      - button " Profile":
+        - generic: 
+        - generic: Profile
+    - generic:
+      - generic: PA
+      - generic:
+        - generic: Portal Administrator
+        - generic: Admin View - Business Management
+  - text:         

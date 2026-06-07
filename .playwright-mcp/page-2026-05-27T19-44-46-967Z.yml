@@ -1,0 +1,90 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e4]:
+    - generic [ref=e6]:
+      - generic [ref=e7]:
+        - generic [ref=e8]: Campus Social Network
+        - heading "Messages" [level=1] [ref=e9]
+        - paragraph [ref=e10]: Keep direct threads and group rooms moving without losing sight of the wider social inbox.
+        - generic [ref=e11]:
+          - generic [ref=e12]:
+            - strong [ref=e13]: "0"
+            - generic [ref=e14]: Chats
+          - generic [ref=e15]:
+            - strong [ref=e16]: "0"
+            - generic [ref=e17]: Unread
+          - generic [ref=e18]:
+            - strong [ref=e19]: Idle
+            - generic [ref=e20]: Active call
+        - generic [ref=e21]:
+          - button "Chats" [pressed] [ref=e22] [cursor=pointer]
+          - button "Unread" [ref=e23] [cursor=pointer]
+          - button "Alerts" [ref=e24] [cursor=pointer]
+      - generic [ref=e25]:
+        - button "PA Portal Administrator Admin" [ref=e26] [cursor=pointer]:
+          - generic [ref=e27]: PA
+          - generic [ref=e28]:
+            - strong [ref=e29]: Portal Administrator
+            - generic [ref=e30]: Admin
+        - generic [ref=e31]:
+          - button " Profile" [ref=e32] [cursor=pointer]:
+            - generic [ref=e33]: 
+            - text: Profile
+          - button " Menu" [ref=e34] [cursor=pointer]:
+            - generic [ref=e35]: 
+            - text: Menu
+    - generic:      
+    - generic [ref=e36]:
+      - generic:            
+      - generic [ref=e39]:
+        - generic [ref=e40]: 
+        - strong [ref=e41]: Loading Messages
+        - generic [ref=e42]: Preparing threads, group rails, and call controls.
+    - navigation "Social mobile navigation" [ref=e43]:
+      - button " Home" [ref=e44] [cursor=pointer]:
+        - generic [ref=e46]: 
+        - generic [ref=e47]: Home
+      - button " People" [ref=e48] [cursor=pointer]:
+        - generic [ref=e50]: 
+        - generic [ref=e51]: People
+      - button " Groups" [ref=e52] [cursor=pointer]:
+        - generic [ref=e54]: 
+        - generic [ref=e55]: Groups
+      - button " Portfolio" [ref=e56] [cursor=pointer]:
+        - generic [ref=e58]: 
+        - generic [ref=e59]: Portfolio
+      - button " Pages" [ref=e60] [cursor=pointer]:
+        - generic [ref=e62]: 
+        - generic [ref=e63]: Pages
+      - button " Events" [ref=e64] [cursor=pointer]:
+        - generic [ref=e66]: 
+        - generic [ref=e67]: Events
+      - button " Lost & Found" [ref=e68] [cursor=pointer]:
+        - generic [ref=e70]: 
+        - generic [ref=e71]: Lost & Found
+      - button " Messages" [ref=e72] [cursor=pointer]:
+        - generic [ref=e74]: 
+        - generic [ref=e75]: Messages
+      - button " Alerts" [ref=e76] [cursor=pointer]:
+        - generic [ref=e78]: 
+        - generic [ref=e79]: Alerts
+  - navigation "Mobile navigation" [ref=e80]:
+    - generic [ref=e81]:
+      - button " Home" [ref=e82] [cursor=pointer]:
+        - generic [ref=e83]: 
+        - generic [ref=e84]: Home
+      - button " Community" [ref=e85] [cursor=pointer]:
+        - generic [ref=e86]: 
+        - generic [ref=e87]: Community
+      - button " Events" [ref=e88] [cursor=pointer]:
+        - generic [ref=e89]: 
+        - generic [ref=e90]: Events
+      - button " Lost & Found" [ref=e91] [cursor=pointer]:
+        - generic [ref=e92]: 
+        - generic [ref=e93]: Lost & Found
+      - button " Inbox" [ref=e94] [cursor=pointer]:
+        - generic [ref=e95]: 
+        - generic [ref=e96]: Inbox
+      - button " More" [ref=e97] [cursor=pointer]:
+        - generic [ref=e98]: 
+        - generic [ref=e99]: More
+  - text:                   

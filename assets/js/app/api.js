@@ -7,7 +7,7 @@ function getKiuPortalBackendDefaultUrl() {
             const host = window.location.hostname || KIU_PORTAL_LOCAL_BACKEND_HOST;
             const isLocalHost = /^(127\.0\.0\.1|localhost)$/i.test(host);
             if (isLocalHost) {
-                return `${window.location.protocol}//${host}:${KIU_PORTAL_BACKEND_PORT}`;
+                return window.location.origin;
             }
             return window.location.origin;
         }
@@ -89,7 +89,8 @@ async function kiuPortalFetch(path, options = {}) {
         throw failure;
     }
     const controller = typeof AbortController === 'function' ? new AbortController() : null;
-    const timeout = controller ? setTimeout(() => controller.abort(), KIU_PORTAL_BACKEND_TIMEOUT_MS) : null;
+    const timeoutMs = Number(options.timeoutMs) > 0 ? Number(options.timeoutMs) : KIU_PORTAL_BACKEND_TIMEOUT_MS;
+    const timeout = controller ? setTimeout(() => controller.abort(), timeoutMs) : null;
     let response;
     const portalSessionToken = getPortalSessionToken();
     const protectedRequest = doesPortalEndpointRequireSession(path);
@@ -124,7 +125,7 @@ async function kiuPortalFetch(path, options = {}) {
     } catch (error) {
         runtime.online = false;
         runtime.lastBackendError = error?.name === 'AbortError'
-            ? `Portal backend timed out after ${Math.round(KIU_PORTAL_BACKEND_TIMEOUT_MS / 1000)}s.`
+            ? `Portal backend timed out after ${Math.round(timeoutMs / 1000)}s.`
             : (error?.message || 'Portal backend is unavailable.');
         runtime.backendUnavailableUntil = Date.now() + KIU_PORTAL_BACKEND_COOLDOWN_MS;
         const failure = new Error(runtime.lastBackendError);
@@ -180,6 +181,7 @@ function ensurePortalBackendRuntime() {
         online: false,
         bootstrapPromise: null,
         syncTimer: null,
+        syncPromise: null,
         lastSyncReason: '',
         syncing: false,
         platformConfig: null,
@@ -257,31 +259,17 @@ function renderPortalRuntimeDiagnostic(detail = null) {
     const copy = getPortalRuntimeDiagnosticCopy(detail);
     const banner = existing || document.createElement('div');
     banner.id = 'kiu-portal-runtime-diagnostic';
+    banner.className = 'kiu-portal-runtime-diagnostic';
     banner.setAttribute('data-diagnostic-kind', String(detail.kind || 'backend-unavailable'));
-    banner.style.cssText = [
-        'position:fixed',
-        'top:16px',
-        'left:50%',
-        'transform:translateX(-50%)',
-        'z-index:1000000',
-        'width:min(960px, calc(100vw - 32px))',
-        'padding:14px 16px',
-        'border-radius:16px',
-        'border:1px solid rgba(245,158,11,0.38)',
-        'background:rgba(17,24,39,0.94)',
-        'box-shadow:0 20px 50px rgba(0,0,0,0.28)',
-        'color:#f8fafc',
-        'font:600 13px/1.45 system-ui, sans-serif'
-    ].join(';');
     const routePath = String(detail.path || '').trim();
     banner.innerHTML = `
-        <div style="display:flex; justify-content:space-between; gap:12px; align-items:flex-start;">
-            <div style="min-width:0;">
-                <div style="font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:0.08em; color:#fbbf24;">${copy.title}</div>
-                <div style="margin-top:6px;">${copy.message}</div>
-                ${routePath ? `<div style="margin-top:6px; font-size:11px; color:rgba(255,255,255,0.72);">Route: ${escapeHtml(routePath)}</div>` : ''}
+        <div class="kiu-portal-runtime-diagnostic__row">
+            <div class="kiu-portal-runtime-diagnostic__copy">
+                <div class="kiu-portal-runtime-diagnostic__title">${copy.title}</div>
+                <div class="kiu-portal-runtime-diagnostic__message">${copy.message}</div>
+                ${routePath ? `<div class="kiu-portal-runtime-diagnostic__route">Route: ${escapeHtml(routePath)}</div>` : ''}
             </div>
-            <button type="button" data-close-portal-diagnostic="1" style="border:0; background:transparent; color:#f8fafc; font-size:18px; line-height:1; cursor:pointer;">x</button>
+            <button type="button" class="kiu-portal-runtime-diagnostic__close" data-close-portal-diagnostic="1">×</button>
         </div>
     `;
     banner.querySelector('[data-close-portal-diagnostic="1"]')?.addEventListener('click', () => {
@@ -372,27 +360,15 @@ function buildPortalPersistableState(source = (typeof KIU_STATE !== 'undefined' 
     const snapshot = clonePortalState(source);
     delete snapshot.domain;
     delete snapshot.auth;
+    delete snapshot.lmsLiveQuizzes;
     return snapshot;
 }
 
 function buildPortalBackendPersistableState(source = (typeof KIU_STATE !== 'undefined' ? KIU_STATE : {})) {
-    const snapshot = buildPortalPersistableState(source);
-    const allowedTopLevelKeys = [
-        'calendarEvents',
-        'gradebookWeights',
-        'homeDashboardPreferencesByUser',
-        'orderReadsByUser',
-        'portalMessengerFavorites',
-        'portalMessengerHiddenChats',
-        'portalMessengerPinnedChats',
-        'publicSocialUi'
-    ];
-    return allowedTopLevelKeys.reduce((result, key) => {
-        if (Object.prototype.hasOwnProperty.call(snapshot, key)) {
-            result[key] = clonePortalState(snapshot[key]);
-        }
-        return result;
-    }, {});
+    // The platform bootstrap depends on the canonical portal state, including
+    // curriculum, groups, LMS data, and role-scoped records. Persist the same
+    // sanitized snapshot we cache locally so backend bootstrap stays complete.
+    return buildPortalPersistableState(source);
 }
 
 function getPortalSessionToken() {
@@ -554,14 +530,13 @@ function storePortalBackendAuth(account, session) {
     setPortalSessionToken(session.token || getPortalSessionToken());
 
     const activeSessionUserId = (() => {
+        const impersonatedUserId = String(session.impersonatedUserId || '').trim();
+        if (impersonatedUserId) return impersonatedUserId;
         if (actualRole !== USER_ROLES.ADMIN || effectiveRole === actualRole) {
             return normalizedAuth.id;
         }
         try {
             const preferredFaculty = normalizedAuth.faculty || localStorage.getItem('currentFaculty') || 'ECON';
-            if (typeof ensureAdminTestingPersonas === 'function') {
-                ensureAdminTestingPersonas(preferredFaculty);
-            }
             if (typeof getPreferredImpersonationUserForRole === 'function') {
                 const persona = getPreferredImpersonationUserForRole(effectiveRole, preferredFaculty);
                 if (persona?.id) return String(persona.id);
@@ -654,9 +629,12 @@ async function syncPortalBackendImpersonation(role) {
                 body: JSON.stringify({ token })
             });
         }
+        const persona = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
+        const userId = String(persona?.id || '').trim();
+        if (!userId) return null;
         return await kiuPortalFetch('/api/session/impersonate-role', {
             method: 'POST',
-            body: JSON.stringify({ token, role: normalizedRole })
+            body: JSON.stringify({ token, role: normalizedRole, userId })
         });
     } catch (error) {
         return null;
@@ -780,6 +758,37 @@ async function syncLmsLiveQuizWorkspace(resourceKey, workspace = {}, reason = 'l
         method: 'POST',
         body: JSON.stringify({
             workspace: workspace && typeof workspace === 'object' ? workspace : {},
+            reason
+        })
+    });
+    return payload?.workspace || null;
+}
+
+async function submitLmsLiveQuizAnswer(resourceKey, answer = {}, reason = 'live-quiz-answer') {
+    const safeResourceKey = encodeURIComponent(String(resourceKey || '').trim());
+    if (!safeResourceKey) return null;
+    const payload = await kiuPortalFetch(`/api/lms/live-quizzes/${safeResourceKey}/answers`, {
+        method: 'POST',
+        body: JSON.stringify({
+            sessionId: String(answer?.sessionId || '').trim(),
+            questionId: String(answer?.questionId || '').trim(),
+            selectedOption: Number.parseInt(answer?.selectedOption, 10),
+            reason
+        })
+    });
+    return payload?.workspace || null;
+}
+
+async function submitLmsLiveQuizJoin(resourceKey, join = {}, reason = 'live-quiz-join') {
+    const safeResourceKey = encodeURIComponent(String(resourceKey || '').trim());
+    if (!safeResourceKey) return null;
+    const payload = await kiuPortalFetch(`/api/lms/live-quizzes/${safeResourceKey}/join`, {
+        method: 'POST',
+        body: JSON.stringify({
+            sessionId: String(join?.sessionId || '').trim(),
+            nickname: String(join?.nickname || '').trim(),
+            joinedAt: String(join?.joinedAt || '').trim(),
+            lastSeenAt: String(join?.lastSeenAt || '').trim(),
             reason
         })
     });
@@ -1125,6 +1134,11 @@ function schedulePortalSocialBootstrap(force = false) {
     }, 0);
 }
 
+function isStandaloneSocialRoute(pathname = window.location.pathname) {
+    const normalizedPath = String(pathname || '').replace(/\\/g, '/').toLowerCase();
+    return normalizedPath.endsWith('/social.html') || normalizedPath.endsWith('social.html');
+}
+
 async function ensurePortalSocialGroupChatRecord(group) {
     if (!group?.id) return null;
     const activeUser = typeof getCurrentUser === 'function' ? getCurrentUser() : currentUser;
@@ -1324,10 +1338,317 @@ async function syncPortalMail(payload = {}) {
     return result || null;
 }
 
+function countAdminRegistrationStructureModules(structures, faculty) {
+    const bucket = structures?.[faculty];
+    if (!bucket || typeof bucket !== 'object') return 0;
+    return ['prog', 'free', 'conc', 'minor'].reduce((sum, tabId) => {
+        const modules = bucket[tabId];
+        return sum + (Array.isArray(modules) ? modules.length : 0);
+    }, 0);
+}
+
+function countRegistrationTrackBucketEntries(bucket) {
+    if (!bucket || typeof bucket !== 'object') return 0;
+    const trackData = bucket.trackData && typeof bucket.trackData === 'object' ? bucket.trackData : {};
+    return Object.values(trackData).reduce((sum, tabTrack) => {
+        if (!tabTrack || typeof tabTrack !== 'object') return sum;
+        return sum + Object.keys(tabTrack).length;
+    }, 0);
+}
+
+function countRegistrationCmsBucketEntries(cmsByFaculty, faculty) {
+    const bucket = cmsByFaculty?.[faculty];
+    if (!bucket || typeof bucket !== 'object') return 0;
+    const trackCount = countRegistrationTrackBucketEntries(bucket);
+    const concKeys = Object.keys(bucket.concCourseData && typeof bucket.concCourseData === 'object' ? bucket.concCourseData : {}).length;
+    const minorKeys = Object.keys(bucket.minorProgramData && typeof bucket.minorProgramData === 'object' ? bucket.minorProgramData : {}).length;
+    return Math.max(trackCount, concKeys + minorKeys);
+}
+
+function isEmptyAdminProgramFacultyBucket(bucket) {
+    if (!bucket || typeof bucket !== 'object') return true;
+    return ['prog', 'free', 'conc', 'minor'].every((tabId) => {
+        const modules = bucket[tabId];
+        return !Array.isArray(modules) || modules.length === 0;
+    });
+}
+
+function isEmptyRegistrationCmsFacultyBucket(bucket) {
+    if (!bucket || typeof bucket !== 'object') return true;
+    if (countRegistrationTrackBucketEntries(bucket) > 0) return false;
+    const concData = bucket.concCourseData && typeof bucket.concCourseData === 'object' ? bucket.concCourseData : {};
+    const minorData = bucket.minorProgramData && typeof bucket.minorProgramData === 'object' ? bucket.minorProgramData : {};
+    return Object.keys(concData).length === 0 && Object.keys(minorData).length === 0;
+}
+
+function getRegistrationCmsRevisionMs(stateOrMeta = {}) {
+    const meta = stateOrMeta?.meta && typeof stateOrMeta.meta === 'object' ? stateOrMeta.meta : {};
+    const revision = Number(meta.registrationCmsRevision || 0);
+    return Number.isFinite(revision) && revision > 0 ? revision : 0;
+}
+
+function getRegistrationCmsSavedAtMs(stateOrMeta = {}) {
+    const source = stateOrMeta && typeof stateOrMeta === 'object' ? stateOrMeta : {};
+    const meta = source.meta && typeof source.meta === 'object' ? source.meta : {};
+    const cmsSavedAt = meta.registrationCmsSavedAt;
+    if (cmsSavedAt != null && cmsSavedAt !== '') {
+        if (typeof cmsSavedAt === 'number' && Number.isFinite(cmsSavedAt)) return cmsSavedAt;
+        const parsed = Date.parse(String(cmsSavedAt));
+        if (Number.isFinite(parsed)) return parsed;
+    }
+    return getRegistrationCmsRevisionMs(source);
+}
+
+function countAdminRegistrationStructureModulesWithTrack(state, faculty) {
+    const structureCount = countAdminRegistrationStructureModules(state?.adminProgramStructures, faculty);
+    const trackCount = countRegistrationTrackBucketEntries(state?.registrationCMSByFaculty?.[faculty]);
+    return Math.max(structureCount, trackCount);
+}
+
+function shouldCopyLocalAdminProgramFacultyBucket(localState, remoteState, faculty) {
+    const localBucket = localState?.adminProgramStructures?.[faculty];
+    const remoteBucket = remoteState?.adminProgramStructures?.[faculty];
+    const localCount = countAdminRegistrationStructureModulesWithTrack(localState, faculty);
+    const remoteCount = countAdminRegistrationStructureModulesWithTrack(remoteState, faculty);
+    if (remoteCount > localCount) return false;
+    if (localCount > remoteCount) return Boolean(localBucket);
+    const localEmpty = isEmptyAdminProgramFacultyBucket(localBucket);
+    const remoteEmpty = isEmptyAdminProgramFacultyBucket(remoteBucket);
+    if (!localEmpty && remoteEmpty) return Boolean(localBucket);
+    if (localEmpty && !remoteEmpty) return false;
+    if (!localBucket) return false;
+    if (!remoteBucket) return true;
+    const localRev = getRegistrationCmsRevisionMs(localState);
+    const remoteRev = getRegistrationCmsRevisionMs(remoteState);
+    if (localRev !== remoteRev) return localRev > remoteRev;
+    return getRegistrationCmsSavedAtMs(localState) >= getRegistrationCmsSavedAtMs(remoteState);
+}
+
+function shouldCopyLocalRegistrationCmsConcMinorBucket(localState, remoteState, faculty) {
+    const localBucket = localState?.registrationCMSByFaculty?.[faculty];
+    const remoteBucket = remoteState?.registrationCMSByFaculty?.[faculty];
+    const localCount = countRegistrationCmsBucketEntries(localState?.registrationCMSByFaculty, faculty);
+    const remoteCount = countRegistrationCmsBucketEntries(remoteState?.registrationCMSByFaculty, faculty);
+    if (remoteCount > localCount) return false;
+    if (localCount > remoteCount) return Boolean(localBucket);
+    const localEmpty = isEmptyRegistrationCmsFacultyBucket(localBucket);
+    const remoteEmpty = isEmptyRegistrationCmsFacultyBucket(remoteBucket);
+    if (!localEmpty && remoteEmpty) return Boolean(localBucket);
+    if (localEmpty && !remoteEmpty) return false;
+    if (!localBucket) return false;
+    if (!remoteBucket) return true;
+    const localRev = getRegistrationCmsRevisionMs(localState);
+    const remoteRev = getRegistrationCmsRevisionMs(remoteState);
+    if (localRev !== remoteRev) return localRev > remoteRev;
+    return getRegistrationCmsSavedAtMs(localState) >= getRegistrationCmsSavedAtMs(remoteState);
+}
+
+function restoreRemoteRegistrationCmsAfterBootstrapLoss(state, remoteBackup) {
+    if (!state || typeof state !== 'object' || !remoteBackup || typeof remoteBackup !== 'object') return;
+    if (isRegistrationCmsEmptyAcrossFaculties(remoteBackup)) return;
+    if (!isRegistrationCmsEmptyAcrossFaculties(state)) return;
+    state.adminProgramStructures = clonePortalState(
+        remoteBackup.adminProgramStructures && typeof remoteBackup.adminProgramStructures === 'object'
+            ? remoteBackup.adminProgramStructures
+            : {}
+    );
+    state.registrationCMSByFaculty = clonePortalState(
+        remoteBackup.registrationCMSByFaculty && typeof remoteBackup.registrationCMSByFaculty === 'object'
+            ? remoteBackup.registrationCMSByFaculty
+            : {}
+    );
+}
+
+function isRegistrationCmsEmptyAcrossFaculties(state = {}) {
+    const structures = state.adminProgramStructures && typeof state.adminProgramStructures === 'object'
+        ? state.adminProgramStructures
+        : {};
+    const cmsByFaculty = state.registrationCMSByFaculty && typeof state.registrationCMSByFaculty === 'object'
+        ? state.registrationCMSByFaculty
+        : {};
+    const faculties = new Set([
+        ...Object.keys(structures),
+        ...Object.keys(cmsByFaculty)
+    ]);
+    if (!faculties.size) return true;
+    return Array.from(faculties).every((faculty) => (
+        isEmptyAdminProgramFacultyBucket(structures[faculty])
+        && isEmptyRegistrationCmsFacultyBucket(cmsByFaculty[faculty])
+    ));
+}
+
+const PORTAL_NEVER_MERGE_FROM_LOCAL_KEYS = new Set(['auth', 'domain', 'lmsLiveQuizzes']);
+const PORTAL_STUDENT_KEYED_STATE_KEYS = new Set([
+    'studentSchedulesByStudent',
+    'tuitionBalances',
+    'homeDashboardPreferencesByUser',
+    'portalMessengerFavorites'
+]);
+
+function getPortalStateSavedAtMs(stateOrMeta = {}) {
+    const source = stateOrMeta && typeof stateOrMeta === 'object' ? stateOrMeta : {};
+    const raw = source.meta && typeof source.meta === 'object'
+        ? source.meta.portalStateSavedAt
+        : source.portalStateSavedAt;
+    if (raw == null || raw === '') return 0;
+    if (typeof raw === 'number' && Number.isFinite(raw)) return raw;
+    const parsed = Date.parse(String(raw));
+    return Number.isFinite(parsed) ? parsed : Number(raw) || 0;
+}
+
+function getJsonFootprint(value) {
+    try {
+        return JSON.stringify(value || {}).length;
+    } catch (error) {
+        return 0;
+    }
+}
+
+function getBestLocalPortalSnapshot(inMemoryState = null) {
+    let persisted = null;
+    try {
+        persisted = JSON.parse(localStorage.getItem('KIU_PERSISTENT_STATE') || 'null');
+    } catch (error) {
+        persisted = null;
+    }
+    const memory = inMemoryState && typeof inMemoryState === 'object' ? inMemoryState : {};
+    const memoryAt = getPortalStateSavedAtMs(memory);
+    const persistedAt = getPortalStateSavedAtMs(persisted);
+    if (persisted && typeof persisted === 'object' && persistedAt >= memoryAt) return persisted;
+    return memory;
+}
+
+function mergeStudentKeyedPortalMaps(localMap, remoteMap) {
+    const result = clonePortalState(remoteMap && typeof remoteMap === 'object' ? remoteMap : {});
+    const local = localMap && typeof localMap === 'object' ? localMap : {};
+    Object.entries(local).forEach(([key, value]) => {
+        if (value !== undefined) result[key] = clonePortalState(value);
+    });
+    return result;
+}
+
+function mergeRicherPortalValue(localValue, remoteValue) {
+    const localFootprint = getJsonFootprint(localValue);
+    const remoteFootprint = getJsonFootprint(remoteValue);
+    if (localFootprint > remoteFootprint) return clonePortalState(localValue);
+    if (remoteFootprint > localFootprint && remoteValue !== undefined) return remoteValue;
+    return remoteValue !== undefined ? remoteValue : clonePortalState(localValue);
+}
+
+function mergePortalStateFromLocal(localState, remoteState, options = {}) {
+    if (!remoteState || typeof remoteState !== 'object') return;
+    const local = localState && typeof localState === 'object' ? localState : {};
+    if (!Object.keys(local).length) return;
+
+    mergeRegistrationCmsStateFromLocal(local, remoteState);
+
+    const localSavedAt = getPortalStateSavedAtMs(local);
+    const remoteSavedAt = getPortalStateSavedAtMs(remoteState);
+    const serverSavedAt = getPortalStateSavedAtMs(options.serverMeta || {});
+    const preferLocal = options.forcePreferLocal === true
+        || localSavedAt > remoteSavedAt
+        || localSavedAt > serverSavedAt;
+
+    Object.keys(local).forEach((key) => {
+        if (PORTAL_NEVER_MERGE_FROM_LOCAL_KEYS.has(key)) return;
+        if (key === 'meta') return;
+        if (key === 'adminProgramStructures' || key === 'registrationCMSByFaculty') return;
+        if (local[key] === undefined) return;
+
+        if (PORTAL_STUDENT_KEYED_STATE_KEYS.has(key)) {
+            remoteState[key] = mergeStudentKeyedPortalMaps(local[key], remoteState[key]);
+            return;
+        }
+
+        if (preferLocal) {
+            remoteState[key] = clonePortalState(local[key]);
+            return;
+        }
+
+        if (local[key] !== null && typeof local[key] === 'object') {
+            remoteState[key] = mergeRicherPortalValue(local[key], remoteState[key]);
+        } else if (local[key] != null && remoteState[key] == null) {
+            remoteState[key] = clonePortalState(local[key]);
+        }
+    });
+
+    remoteState.meta = remoteState.meta && typeof remoteState.meta === 'object' ? remoteState.meta : {};
+    const localMeta = local.meta && typeof local.meta === 'object' ? local.meta : {};
+    const mergedSavedAt = Math.max(localSavedAt, remoteSavedAt, serverSavedAt);
+    if (mergedSavedAt > 0) {
+        remoteState.meta.portalStateSavedAt = mergedSavedAt;
+    }
+    remoteState.meta.registrationCmsRevision = Math.max(
+        Number(remoteState.meta.registrationCmsRevision || 0),
+        Number(localMeta.registrationCmsRevision || 0)
+    );
+}
+
+function mergeRegistrationCmsStateFromLocal(localState, remoteState) {
+    if (!remoteState || typeof remoteState !== 'object') return;
+    const local = localState && typeof localState === 'object' ? localState : {};
+
+    remoteState.adminProgramStructures = remoteState.adminProgramStructures && typeof remoteState.adminProgramStructures === 'object'
+        ? remoteState.adminProgramStructures
+        : {};
+    const structureFaculties = new Set([
+        ...Object.keys(local.adminProgramStructures || {}),
+        ...Object.keys(remoteState.adminProgramStructures || {})
+    ]);
+    structureFaculties.forEach((faculty) => {
+        const localBucket = local.adminProgramStructures?.[faculty];
+        if (shouldCopyLocalAdminProgramFacultyBucket(local, remoteState, faculty) && localBucket) {
+            remoteState.adminProgramStructures[faculty] = clonePortalState(localBucket);
+        }
+    });
+
+    remoteState.registrationCMSByFaculty = remoteState.registrationCMSByFaculty && typeof remoteState.registrationCMSByFaculty === 'object'
+        ? remoteState.registrationCMSByFaculty
+        : {};
+    const cmsFaculties = new Set([
+        ...Object.keys(local.registrationCMSByFaculty || {}),
+        ...Object.keys(remoteState.registrationCMSByFaculty || {})
+    ]);
+    cmsFaculties.forEach((faculty) => {
+        const localBucket = local.registrationCMSByFaculty?.[faculty];
+        if (shouldCopyLocalRegistrationCmsConcMinorBucket(local, remoteState, faculty) && localBucket) {
+            remoteState.registrationCMSByFaculty[faculty] = clonePortalState(localBucket);
+        }
+    });
+
+    remoteState.meta = remoteState.meta && typeof remoteState.meta === 'object' ? remoteState.meta : {};
+    const localMeta = local.meta && typeof local.meta === 'object' ? local.meta : {};
+    remoteState.meta.registrationCmsRevision = Math.max(
+        Number(remoteState.meta.registrationCmsRevision || 0),
+        Number(localMeta.registrationCmsRevision || 0)
+    );
+    remoteState.meta.registrationCmsSavedAt = Math.max(
+        Number(remoteState.meta.registrationCmsSavedAt || 0),
+        Number(localMeta.registrationCmsSavedAt || 0),
+        getRegistrationCmsRevisionMs(remoteState),
+        getRegistrationCmsRevisionMs(local)
+    );
+}
+
 function applyPortalBootstrapState(remoteState, options = {}) {
     if (!remoteState || typeof remoteState !== 'object') return false;
     const render = options.render !== false;
     const nextState = clonePortalState(remoteState);
+    const remoteCmsBackup = {
+        adminProgramStructures: clonePortalState(remoteState.adminProgramStructures || {}),
+        registrationCMSByFaculty: clonePortalState(remoteState.registrationCMSByFaculty || {})
+    };
+    const localSnapshot = getBestLocalPortalSnapshot(
+        (typeof KIU_STATE !== 'undefined' && KIU_STATE) ? KIU_STATE : null
+    );
+    const serverMeta = options.serverMeta && typeof options.serverMeta === 'object' ? options.serverMeta : {};
+    const localSnapshotSavedAt = getPortalStateSavedAtMs(localSnapshot);
+    const forcePreferLocal = localSnapshotSavedAt > getPortalStateSavedAtMs(serverMeta);
+    const freshLocalClient = localSnapshotSavedAt === 0;
+    const localHadRegistrationCms = !isRegistrationCmsEmptyAcrossFaculties(localSnapshot);
+    const remoteHadRegistrationCms = !isRegistrationCmsEmptyAcrossFaculties(remoteState);
+    mergePortalStateFromLocal(localSnapshot, nextState, { serverMeta, forcePreferLocal });
+
     const storedRole = (() => {
         try {
             return String(localStorage.getItem(PENDING_ROLE_SWITCH_KEY) || localStorage.getItem('currentUserRole') || '').trim().toLowerCase();
@@ -1339,6 +1660,8 @@ function applyPortalBootstrapState(remoteState, options = {}) {
         ? (currentUserRole || storedRole)
         : (currentUser?.role || USER_ROLES.STUDENT);
     const activeUserId = (() => {
+        const bootstrapImpersonatedUserId = String(options?.session?.impersonatedUserId || '').trim();
+        if (bootstrapImpersonatedUserId) return bootstrapImpersonatedUserId;
         try {
             const sessionUserId = sessionStorage.getItem(ACTIVE_SESSION_KEY);
             if (sessionUserId) return String(sessionUserId);
@@ -1354,9 +1677,6 @@ function applyPortalBootstrapState(remoteState, options = {}) {
                     localStorage.getItem('currentFaculty') || currentUser?.facultyCode || currentUser?.faculty || 'ECON',
                     'ECON'
                 );
-                if (typeof ensureAdminTestingPersonas === 'function') {
-                    ensureAdminTestingPersonas(preferredFaculty);
-                }
                 if (typeof getPreferredImpersonationUserForRole === 'function') {
                     const persona = getPreferredImpersonationUserForRole(effectiveRole, preferredFaculty);
                     if (persona?.id) return String(persona.id);
@@ -1365,15 +1685,16 @@ function applyPortalBootstrapState(remoteState, options = {}) {
         }
         return String(currentUser?.id || '');
     })();
-    const requiredCleanupVersion = typeof MANUAL_TESTING_STATE_VERSION === 'number' ? MANUAL_TESTING_STATE_VERSION : 4;
+    const requiredCleanupVersion = typeof MANUAL_TESTING_STATE_VERSION === 'number' ? MANUAL_TESTING_STATE_VERSION : 7;
     let sanitizedBootstrapState = false;
 
-    if (
-        typeof sanitizeStateForManualTesting === 'function'
-        && Number(nextState?.meta?.manualTestingSanitizedVersion || 0) !== requiredCleanupVersion
-    ) {
-        sanitizeStateForManualTesting(nextState);
-        sanitizedBootstrapState = true;
+    if (typeof sanitizeStateForManualTesting === 'function') {
+        sanitizeStateForManualTesting(nextState, {
+            retainAdminTestingPersonas: currentUser?.role === USER_ROLES.ADMIN
+        });
+        if (Number(nextState?.meta?.manualTestingSanitizedVersion || 0) !== requiredCleanupVersion) {
+            sanitizedBootstrapState = true;
+        }
         try {
             localStorage.setItem(REAL_TESTING_CLEANUP_FLAG, String(requiredCleanupVersion));
         } catch (error) {
@@ -1381,7 +1702,16 @@ function applyPortalBootstrapState(remoteState, options = {}) {
         }
     }
 
+    if (remoteHadRegistrationCms) {
+        restoreRemoteRegistrationCmsAfterBootstrapLoss(nextState, remoteCmsBackup);
+    }
+
     KIU_STATE = nextState;
+    if (KIU_STATE && typeof KIU_STATE === 'object') {
+        KIU_STATE.lmsLiveQuizzes = KIU_STATE.lmsLiveQuizzes && typeof KIU_STATE.lmsLiveQuizzes === 'object'
+            ? KIU_STATE.lmsLiveQuizzes
+            : {};
+    }
     KIU_STATE.auth = KIU_STATE.auth || {};
     if (activeUserId) KIU_STATE.auth.activeUserId = activeUserId;
     try {
@@ -1424,12 +1754,25 @@ function applyPortalBootstrapState(remoteState, options = {}) {
     if (sanitizedBootstrapState && typeof queuePortalStateSync === 'function') {
         setTimeout(() => queuePortalStateSync('manual-testing-cleanup'), 0);
     }
+    if (
+        freshLocalClient
+        && isRegistrationCmsEmptyAcrossFaculties(KIU_STATE)
+        && !localHadRegistrationCms
+        && !remoteHadRegistrationCms
+        && typeof queuePortalStateSync === 'function'
+    ) {
+        setTimeout(() => queuePortalStateSync('registration-cms-reset'), 0);
+    }
+    if (typeof reloadActiveLmsLiveQuizFromServer === 'function') {
+        reloadActiveLmsLiveQuizFromServer('portal-bootstrap');
+    }
     return true;
 }
 
 async function persistPortalStateToBackend(reason = 'saveState') {
     const runtime = ensurePortalBackendRuntime();
-    if (runtime.syncing || typeof KIU_STATE === 'undefined') return null;
+    if (typeof KIU_STATE === 'undefined') return null;
+    if (runtime.syncPromise) return runtime.syncPromise;
     const token = getPortalSessionToken();
     if (!token) return null;
     const activeUser = typeof getCurrentUser === 'function' ? getCurrentUser() : currentUser;
@@ -1437,25 +1780,98 @@ async function persistPortalStateToBackend(reason = 'saveState') {
         ? getEffectiveUserRole()
         : (activeUser?.role || currentUserRole || '');
     runtime.syncing = true;
+    runtime.syncPromise = (async () => {
+        try {
+            const payload = await kiuPortalFetch('/api/portal/state', {
+                method: 'POST',
+                body: JSON.stringify({
+                    reason,
+                    token,
+                    actorId: activeUser?.id || '',
+                    actorRole,
+                    state: buildPortalBackendPersistableState(KIU_STATE)
+                })
+            });
+            runtime.online = true;
+            return payload;
+        } catch (error) {
+            runtime.online = false;
+            return null;
+        } finally {
+            runtime.syncing = false;
+        }
+    })();
     try {
-        const payload = await kiuPortalFetch('/api/portal/state', {
+        return await runtime.syncPromise;
+    } finally {
+        runtime.syncPromise = null;
+    }
+}
+
+function flushPortalStateSync() {
+    const runtime = ensurePortalBackendRuntime();
+    runtime.lastSyncReason = runtime.lastSyncReason || 'saveState';
+    if (runtime.syncTimer) {
+        clearTimeout(runtime.syncTimer);
+        runtime.syncTimer = null;
+    }
+    if (!runtime.syncPromise) {
+        runtime.syncPromise = persistPortalStateToBackend(runtime.lastSyncReason || 'saveState');
+    }
+    return runtime.syncPromise;
+}
+
+function sendPortalStateKeepalive() {
+    const token = getPortalSessionToken();
+    if (!token || typeof KIU_STATE === 'undefined' || shouldBypassPortalBackendFetch()) return;
+    const activeUser = typeof getCurrentUser === 'function' ? getCurrentUser() : currentUser;
+    const actorRole = typeof getEffectiveUserRole === 'function'
+        ? getEffectiveUserRole()
+        : (activeUser?.role || currentUserRole || '');
+    try {
+        fetch(`${getKiuPortalBackendUrl()}/api/portal/state`, {
             method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Portal-Session': token
+            },
             body: JSON.stringify({
-                reason,
+                reason: 'beforeunload',
                 token,
                 actorId: activeUser?.id || '',
                 actorRole,
                 state: buildPortalBackendPersistableState(KIU_STATE)
-            })
-        });
-        runtime.online = true;
-        return payload;
-    } catch (error) {
-        runtime.online = false;
-        return null;
-    } finally {
-        runtime.syncing = false;
+            }),
+            keepalive: true
+        }).catch(() => null);
+    } catch (error) {}
+}
+
+function flushPortalStateBeforeNavigation(options = {}) {
+    if (typeof flushAdminRegistrationStateSave === 'function') {
+        try {
+            flushAdminRegistrationStateSave(options);
+        } catch (error) {}
     }
+    if (typeof saveState === 'function') {
+        try {
+            saveState();
+        } catch (error) {}
+    }
+    const liveQuizFlush = typeof window.flushLmsLiveQuizSync === 'function'
+        ? window.flushLmsLiveQuizSync()
+        : Promise.resolve();
+    if (options.keepalive) {
+        return liveQuizFlush.then(() => {
+            sendPortalStateKeepalive();
+        });
+    }
+    return liveQuizFlush.then(() => {
+        if (typeof flushPortalStateSync === 'function') {
+            return flushPortalStateSync();
+        }
+        return null;
+    });
 }
 
 function queuePortalStateSync(reason = 'saveState') {
@@ -1469,9 +1885,13 @@ function queuePortalStateSync(reason = 'saveState') {
 }
 
 async function bootstrapPortalBackendState(force = false) {
+    if (isStandaloneSocialRoute()) return null;
     const runtime = ensurePortalBackendRuntime();
     if (runtime.bootstrapPromise && !force) return runtime.bootstrapPromise;
     runtime.bootstrapPromise = (async () => {
+        if (runtime.syncPromise) {
+            await runtime.syncPromise.catch(() => null);
+        }
         const token = getPortalSessionToken();
         if (!token) {
             runtime.online = false;
@@ -1499,10 +1919,42 @@ async function bootstrapPortalBackendState(force = false) {
         }
         setPortalMailSummary(payload?.mailSummary || null);
 
+        const bootstrapAccounts = Array.isArray(payload?.accounts) ? payload.accounts : [];
+        let bootstrapEffectiveRole = '';
+        if (payload?.account && payload?.session) {
+            bootstrapEffectiveRole = payload.account.role === USER_ROLES.ADMIN
+                ? (payload.session.impersonatedRole || payload.account.role)
+                : payload.account.role;
+        }
+
         if (payload?.state) {
-            applyPortalBootstrapState(payload.state, { render: true });
+            applyPortalBootstrapState(payload.state, {
+                render: true,
+                session: payload.session || null,
+                serverMeta: payload.meta || {}
+            });
         } else if (typeof KIU_STATE !== 'undefined' && KIU_STATE) {
             queuePortalStateSync('initial-bootstrap');
+        }
+
+        if (bootstrapAccounts.length && typeof hydratePortalUsersFromAccounts === 'function') {
+            hydratePortalUsersFromAccounts(bootstrapAccounts, { persist: false });
+        }
+        const bootstrapImpersonatedUserId = String(payload?.session?.impersonatedUserId || '').trim();
+        if (bootstrapImpersonatedUserId) {
+            KIU_STATE.auth = KIU_STATE.auth || {};
+            KIU_STATE.auth.activeUserId = bootstrapImpersonatedUserId;
+            try {
+                sessionStorage.setItem(ACTIVE_SESSION_KEY, bootstrapImpersonatedUserId);
+            } catch (error) {}
+        }
+        if (
+            bootstrapEffectiveRole
+            && currentUser?.role === USER_ROLES.ADMIN
+            && bootstrapEffectiveRole !== USER_ROLES.ADMIN
+            && typeof setActiveSessionUserByRole === 'function'
+        ) {
+            setActiveSessionUserByRole(bootstrapEffectiveRole);
         }
         if (payload?.social) {
             applyPortalSocialState(payload.social, { render: false });
@@ -1526,6 +1978,7 @@ async function bootstrapPortalBackendState(force = false) {
 }
 
 function schedulePortalBackendBootstrap(force = false) {
+    if (isStandaloneSocialRoute()) return;
     if (!getPortalSessionToken()) return;
     setTimeout(() => {
         bootstrapPortalBackendState(force).catch(() => null);

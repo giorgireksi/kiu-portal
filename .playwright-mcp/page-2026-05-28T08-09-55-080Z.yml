@@ -1,0 +1,175 @@
+- generic [active] [ref=e1]:
+  - text:  
+  - main [ref=e2]:
+    - generic [ref=e4]:
+      - generic [ref=e5]:
+        - generic [ref=e6]:
+          - generic [ref=e7]:
+            - generic [ref=e8]:
+              - generic [ref=e9]: 
+              - text: Learning Management System
+            - generic [ref=e10]: Learning Workspace
+            - generic [ref=e11]: Open the right faculty subject, choose your group, and continue work in a focused LMS built for students, teaching staff, and administrators.
+          - generic [ref=e12]:
+            - generic [ref=e13]:
+              - generic [ref=e14]:
+                - generic [ref=e16]: 
+                - generic [ref=e17]:
+                  - generic [ref=e18]: Business Management
+                  - generic [ref=e19]: Active Faculty
+              - generic [ref=e20]:
+                - generic [ref=e22]: 
+                - generic [ref=e23]:
+                  - generic [ref=e24]: "0"
+                  - generic [ref=e25]: Subjects
+              - generic [ref=e26]:
+                - generic [ref=e28]: 
+                - generic [ref=e29]:
+                  - generic [ref=e30]: "0"
+                  - generic [ref=e31]: Groups
+            - generic [ref=e33]:
+              - generic [ref=e34]: 
+              - text: "Faculty: Business Management"
+        - text: 
+      - generic [ref=e36]:
+        - generic [ref=e37]:
+          - generic [ref=e38]:
+            - generic [ref=e39]:
+              - generic [ref=e40]: 
+              - text: Subjects
+            - generic [ref=e41]: Published faculty subjects
+            - generic [ref=e42]: Published subjects for the selected faculty, ready to open by group.
+          - generic [ref=e43]:
+            - generic [ref=e44]: 
+            - text: Business Management LMS
+        - generic [ref=e46]: No subjects are published for Business Management yet. Use the admin workspace to publish courses.
+        - generic [ref=e48]:
+          - generic [ref=e50]: 
+          - generic [ref=e51]: No subjects yet
+          - generic [ref=e52]: Publish subjects for the Business Management faculty from the admin workspace, then they appear here automatically.
+    - generic [ref=e54]:
+      - generic [ref=e56]:
+        - generic [ref=e57]:
+          - generic [ref=e58]:
+            - generic [ref=e59]: 
+            - text: Group view
+          - generic [ref=e60]: Subject
+          - generic [ref=e61]: Choose a published group workspace.
+        - button " Back to subjects" [ref=e62] [cursor=pointer]:
+          - generic [ref=e63]: 
+          - text: Back to subjects
+      - generic [ref=e66]:
+        - generic [ref=e67]:
+          - generic [ref=e68]: 
+          - text: Published sections
+        - generic [ref=e69]: Compact group cards with schedule, room, and seats.
+    - generic [ref=e72]:
+      - generic [ref=e73]:
+        - generic [ref=e74]:
+          - generic [ref=e75]:
+            - generic [ref=e76]: 
+            - text: Course workspace
+          - generic [ref=e77]: Course title
+          - group "Class type" [ref=e78]:
+            - button " Lecture" [ref=e79] [cursor=pointer]:
+              - generic [ref=e80]: 
+              - generic [ref=e81]: Lecture
+            - button " Workshop" [ref=e82] [cursor=pointer]:
+              - generic [ref=e83]: 
+              - generic [ref=e84]: Workshop
+        - button " Back to groups" [ref=e85] [cursor=pointer]:
+          - generic [ref=e86]: 
+          - text: Back to groups
+      - group "Course workspace navigation" [ref=e87]:
+        - button " Sessions" [ref=e88] [cursor=pointer]:
+          - generic [ref=e89]: 
+          - text: Sessions
+        - button " Live Quiz" [ref=e90] [cursor=pointer]:
+          - generic [ref=e91]: 
+          - text: Live Quiz
+        - button " Interaction" [pressed] [ref=e92] [cursor=pointer]:
+          - generic [ref=e93]: 
+          - text: Interaction
+        - button " Calls" [ref=e94] [cursor=pointer]:
+          - generic [ref=e95]: 
+          - text: Calls
+        - button " Members" [ref=e96] [cursor=pointer]:
+          - generic [ref=e97]: 
+          - text: Members
+        - button " Assignments" [ref=e98] [cursor=pointer]:
+          - generic [ref=e99]: 
+          - text: Assignments
+        - button " Materials" [ref=e100] [cursor=pointer]:
+          - generic [ref=e101]: 
+          - text: Materials
+        - button " Concepts" [ref=e102] [cursor=pointer]:
+          - generic [ref=e103]: 
+          - text: Concepts
+        - button " Quiz" [ref=e104] [cursor=pointer]:
+          - generic [ref=e105]: 
+          - text: Quiz
+        - button " Monitoring" [ref=e106] [cursor=pointer]:
+          - generic [ref=e107]: 
+          - text: Monitoring
+        - button " Grades" [ref=e108] [cursor=pointer]:
+          - generic [ref=e109]: 
+          - text: Grades
+  - text:                      
+  - generic:   
+  - generic:   
+  - generic [ref=e112]:
+    - generic [ref=e113]:
+      - generic [ref=e114]: Notification Center
+      - generic [ref=e115]: Track real grades, service replies, schedule changes, official orders, and selected social activity in one place.
+    - generic [ref=e116]:
+      - button " Minimize" [ref=e117] [cursor=pointer]:
+        - generic [ref=e118]: 
+        - text: Minimize
+      - button "" [ref=e119]:
+        - generic [ref=e120]: 
+  - complementary:
+    - generic:
+      - generic: K
+      - generic:
+        - generic: KIU
+        - generic: Integrated Campus Portal
+    - generic:
+      - generic: KI
+      - generic:
+        - generic: Portal User
+        - generic: University Portal
+  - generic [ref=e121]:
+    - generic [ref=e122]:
+      - button "Show nav" [pressed] [ref=e123] [cursor=pointer]:
+        - generic [ref=e124]: Show nav
+      - generic [ref=e125]:
+        - text: KIU
+        - generic [ref=e126]: 
+        - strong [ref=e127]: Dashboard
+      - generic [ref=e128]:
+        - generic [ref=e129]: 
+        - textbox "Search modules, staff, documents, requests..." [ref=e130]
+    - generic [ref=e131]:
+      - button "Faculty Faculty " [ref=e133] [cursor=pointer]:
+        - generic [ref=e134]: Faculty
+        - strong [ref=e135]: Faculty
+        - generic [ref=e136]: 
+      - button "View Portal View " [ref=e138] [cursor=pointer]:
+        - generic [ref=e139]: View
+        - strong [ref=e140]: Portal View
+        - generic [ref=e141]: 
+      - text: 
+      - button "" [ref=e142] [cursor=pointer]:
+        - generic [ref=e143]: 
+      - button " 0" [ref=e145] [cursor=pointer]:
+        - generic [ref=e146]: 
+        - generic [ref=e147]: "0"
+      - button " 0" [ref=e149] [cursor=pointer]:
+        - generic [ref=e150]: 
+        - generic [ref=e151]: "0"
+      - button "KI Portal Dashboard" [ref=e152] [cursor=pointer]:
+        - generic [ref=e153]: KI
+        - generic [ref=e154]:
+          - generic [ref=e155]: Portal
+          - generic [ref=e156]: Dashboard
+        - generic [ref=e157]: 

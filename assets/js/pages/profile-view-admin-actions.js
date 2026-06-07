@@ -1,5 +1,23 @@
 /* Profile-view-only admin bursar/transcript actions extracted from directories.js. */
 
+function escapeProfileViewAdminHtml(value) {
+    return String(value ?? '').replace(/[&<>"']/g, (character) => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        '\'': '&#39;'
+    })[character]);
+}
+
+function resolveProfileViewAdminAssetUrl(relativePath) {
+    try {
+        return new URL(String(relativePath || '').trim(), window.location.href).toString();
+    } catch (error) {
+        return String(relativePath || '').trim();
+    }
+}
+
 function toggleProbationForUser(userId) {
     if (getCurrentUser()?.role !== USER_ROLES.ADMIN) return;
     if (!KIU_STATE.probationStatus) KIU_STATE.probationStatus = {};
@@ -71,35 +89,86 @@ function generateTranscriptForUser(userId) {
         return;
     }
 
-    let html = `
-        <html><head><title>Official Transcript - ${userId}</title>
-        <style>body{font-family:Arial; padding:40px; color:#333;} table{width:100%; border-collapse:collapse; margin-top:20px;} th,td{border:1px solid #ddd; padding:10px; text-align:left;} th{background:#f4f4f4;} .header{text-align:center; margin-bottom:40px;} .stamp{color:red; border:3px solid red; display:inline-block; padding:10px; font-weight:bold; transform:rotate(-15deg); margin-top:30px;}</style>
-        </head><body>
-        <div class="header">
-            <h2>KUTAISI INTERNATIONAL UNIVERSITY</h2>
-            <h3>OFFICIAL ACADEMIC TRANSCRIPT</h3>
-            <p>Generated on: ${new Date().toISOString().split('T')[0]}</p>
-        </div>
-        <div style="margin-bottom:20px;">
-            <strong>Student ID:</strong> ${userId}<br>
-            <strong>Full Name:</strong> ${studentName}<br>
-            <strong>Status:</strong> Active
-        </div>
-        <table>
-            <tr><th>Course Code</th><th>Final Score (/100)</th><th>Letter Grade</th></tr>
-    `;
-
     let totalScore = 0;
-    transcriptData.forEach((record) => {
+    const transcriptRows = transcriptData.map((record) => {
         totalScore += record.final;
-        html += `<tr><td>${record.course}</td><td>${record.final}</td><td><strong>${record.letter}</strong></td></tr>`;
-    });
-
-    html += `</table>
-        <div style="margin-top:20px;"><strong>Cumulative GPA Average:</strong> ${(totalScore / transcriptData.length).toFixed(2)} / 100.00</div>
-        <div style="text-align:center;"><div class="stamp">OFFICIAL KIU REGISTRAR<br>VERIFIED COPY</div></div>
-        <script>window.print();<\/script>
-        </body></html>
+        return `
+            <tr class="pv-transcript-record">
+                <td class="pv-transcript-cell">${escapeProfileViewAdminHtml(record.course)}</td>
+                <td class="pv-transcript-cell pv-transcript-cell--numeric">${escapeProfileViewAdminHtml(record.final)}</td>
+                <td class="pv-transcript-cell pv-transcript-cell--grade"><strong>${escapeProfileViewAdminHtml(record.letter)}</strong></td>
+            </tr>
+        `;
+    }).join('');
+    const transcriptAverage = (totalScore / transcriptData.length).toFixed(2);
+    const transcriptDate = escapeProfileViewAdminHtml(new Date().toISOString().split('T')[0]);
+    const transcriptStylesheetUrl = escapeProfileViewAdminHtml(
+        resolveProfileViewAdminAssetUrl('assets/css/profile-view-route.css?v=20260526-profileview-transcriptprint1')
+    );
+    const safeUserId = escapeProfileViewAdminHtml(userId);
+    const safeStudentName = escapeProfileViewAdminHtml(studentName);
+    const html = `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Official Transcript - ${safeUserId}</title>
+            <link rel="stylesheet" href="${transcriptStylesheetUrl}">
+        </head>
+        <body class="pv-transcript-export">
+            <main class="pv-transcript-sheet">
+                <header class="pv-transcript-header">
+                    <p class="pv-transcript-eyebrow">Kutaisi International University</p>
+                    <h1 class="pv-transcript-title">OFFICIAL ACADEMIC TRANSCRIPT</h1>
+                    <p class="pv-transcript-generated">Generated on: ${transcriptDate}</p>
+                </header>
+                <section class="pv-transcript-student-card" aria-label="Student transcript summary">
+                    <dl class="pv-transcript-student-grid">
+                        <div class="pv-transcript-student-row">
+                            <dt class="pv-transcript-label">Student ID</dt>
+                            <dd class="pv-transcript-value">${safeUserId}</dd>
+                        </div>
+                        <div class="pv-transcript-student-row">
+                            <dt class="pv-transcript-label">Full Name</dt>
+                            <dd class="pv-transcript-value">${safeStudentName}</dd>
+                        </div>
+                        <div class="pv-transcript-student-row">
+                            <dt class="pv-transcript-label">Status</dt>
+                            <dd class="pv-transcript-value">Active</dd>
+                        </div>
+                    </dl>
+                </section>
+                <section class="pv-transcript-table-shell" aria-label="Transcript course records">
+                    <table class="pv-transcript-table">
+                        <thead>
+                            <tr class="pv-transcript-head-row">
+                                <th class="pv-transcript-head" scope="col">Course Code</th>
+                                <th class="pv-transcript-head pv-transcript-head--numeric" scope="col">Final Score (/100)</th>
+                                <th class="pv-transcript-head pv-transcript-head--grade" scope="col">Letter Grade</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${transcriptRows}
+                        </tbody>
+                    </table>
+                </section>
+                <section class="pv-transcript-summary" aria-label="Transcript summary">
+                    <div class="pv-transcript-summary-card">
+                        <span class="pv-transcript-summary-label">Cumulative GPA Average</span>
+                        <strong class="pv-transcript-summary-value">${escapeProfileViewAdminHtml(transcriptAverage)} / 100.00</strong>
+                    </div>
+                </section>
+                <footer class="pv-transcript-stamp-shell">
+                    <div class="pv-transcript-stamp" aria-label="Registrar verification stamp">
+                        <span class="pv-transcript-stamp-line">OFFICIAL KIU REGISTRAR</span>
+                        <span class="pv-transcript-stamp-line">VERIFIED COPY</span>
+                    </div>
+                </footer>
+            </main>
+            <script>window.print();<\/script>
+        </body>
+        </html>
     `;
 
     const blob = new Blob([html], { type: 'text/html' });

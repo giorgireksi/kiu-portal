@@ -1,4 +1,4 @@
-/* Messenger, notifications, and social shared logic extracted from core.js. Source of truth remains root core.js compatibility bundle. */
+/* Messenger, notifications, and social shared logic extracted from the legacy core.js bundle. Active routes now load split files directly. */
 
 // Portal Messenger V2
 function ensurePortalMessengerUiState() {
@@ -77,7 +77,7 @@ function ensurePortalMessengerFileInput() {
         input = document.createElement('input');
         input.type = 'file';
         input.id = 'portal-messenger-file-input';
-        input.style.display = 'none';
+        input.hidden = true;
         document.body.appendChild(input);
     }
     return input;
@@ -616,10 +616,6 @@ function rememberSocialPortalContext() {
 function clearTemporarySocialNavGlow() {
     document.querySelectorAll('[data-social-return-glow="true"]').forEach(item => {
         item.removeAttribute('data-social-return-glow');
-        item.style.boxShadow = '';
-        item.style.background = '';
-        item.style.color = '';
-        item.style.border = '';
         item.classList.remove('active');
     });
 }
@@ -636,10 +632,6 @@ function applyTemporarySocialNavGlow(role = getEffectiveUserRole()) {
     if (!navItem) return;
     navItem.dataset.socialReturnGlow = 'true';
     navItem.classList.add('active');
-    navItem.style.color = '#ffffff';
-    navItem.style.background = 'rgba(255,255,255,0.15)';
-    navItem.style.border = '1px solid rgba(255,255,255,0.3)';
-    navItem.style.boxShadow = '0 12px 28px rgba(37,99,235,0.18)';
 }
 
 function consumePendingSocialReturn() {
@@ -669,6 +661,7 @@ function resetRoleSwitchViewState() {
     currentCourseId = '';
     currentLmsQuizCourseKey = '';
     clearTemporarySocialNavGlow();
+    if (typeof resetLmsLiveQuizRuntimeState === 'function') resetLmsLiveQuizRuntimeState();
     localStorage.removeItem('KIU_FORCE_HOME_ON_ROLE_SWITCH');
     localStorage.removeItem('KIU_PENDING_SOCIAL_RETURN');
     localStorage.removeItem('KIU_PENDING_ADMIN_PAGE');
@@ -1120,7 +1113,7 @@ function buildPortalMessengerMessageList(activeChat, currentUserId) {
             <div class="portal-msg-bubble-row ${mine ? 'is-mine' : ''}">
                 <div class="portal-msg-bubble-meta-row">
                     <div class="portal-msg-bubble-meta">${escapeHtml(message.senderName || message.senderId)} &middot; ${escapeHtml(getPortalMessengerRoleLabel(message.senderRole))} &middot; ${escapeHtml(formatLmsDateTime(message.sentAt))}</div>
-                    <div style="display:flex; gap:8px; align-items:center;">
+                    <div class="portal-msg-bubble-meta-actions">
                         <button type="button" class="portal-msg-message-remove" data-portal-msg-click="set-reply-target" data-portal-msg-chat-id="${activeChat.id}" data-portal-msg-message-id="${message.id}" title="Reply to this message">
                             <i class="fas fa-reply"></i>
                         </button>
@@ -1190,7 +1183,7 @@ function buildPortalMessengerThread(activeChat, currentUserId, activeDraft, inpu
                 ${compact ? `<button type="button" class="lux-secondary-btn portal-msg-inline-btn" data-portal-msg-click="set-compact-tab" data-portal-msg-value="chats"><i class="fas fa-arrow-left"></i> Back</button>` : `<div class="portal-msg-thread-badge">${threadBadge}</div>`}
             </div>
         </div>
-        ${pendingRequest ? `<div class="portal-msg-request-banner"><div>This conversation is waiting for your approval.</div><div style="display:flex; gap:8px; flex-wrap:wrap;"><button type="button" class="lux-primary-btn portal-msg-inline-btn" data-portal-msg-click="respond-request" data-portal-msg-chat-id="${activeChat.id}" data-portal-msg-accept="true">Accept</button><button type="button" class="lux-secondary-btn portal-msg-inline-btn" data-portal-msg-click="respond-request" data-portal-msg-chat-id="${activeChat.id}" data-portal-msg-accept="false">Decline</button></div></div>` : ''}
+        ${pendingRequest ? `<div class="portal-msg-request-banner"><div>This conversation is waiting for your approval.</div><div class="portal-msg-request-actions"><button type="button" class="lux-primary-btn portal-msg-inline-btn" data-portal-msg-click="respond-request" data-portal-msg-chat-id="${activeChat.id}" data-portal-msg-accept="true">Accept</button><button type="button" class="lux-secondary-btn portal-msg-inline-btn" data-portal-msg-click="respond-request" data-portal-msg-chat-id="${activeChat.id}" data-portal-msg-accept="false">Decline</button></div></div>` : ''}
         <div class="portal-msg-chat-log">
             ${buildPortalMessengerMessageList(activeChat, currentUserId)}
         </div>
@@ -1387,7 +1380,7 @@ function buildPortalCallWindow(summary) {
                 <div class="portal-call-stage">
                     <div class="portal-call-remote">
                         <video id="portal-call-remote-video" class="portal-call-remote-video" autoplay playsinline></video>
-                        <div class="portal-call-remote-avatar" style="${hasRemoteVideo ? 'display:none;' : ''}">${escapeHtml((otherUser?.displayName || 'U').slice(0, 1).toUpperCase())}</div>
+                        <div class="portal-call-remote-avatar${hasRemoteVideo ? ' is-hidden' : ''}">${escapeHtml((otherUser?.displayName || 'U').slice(0, 1).toUpperCase())}</div>
                         <div class="portal-call-remote-name">${escapeHtml(otherUser?.displayName || 'Remote participant')}</div>
                         <div class="portal-call-remote-role">${escapeHtml(otherUser?.roleLabel || 'Portal User')} &middot; ${escapeHtml(otherUser?.facultyName || '')}</div>
                         <div class="portal-call-remote-note">${escapeHtml(statusText)}</div>
@@ -1480,36 +1473,8 @@ function ensurePortalMessengerChrome() {
     return { dockRoot, modalRoot, callRoot };
 }
 
-function ensurePortalNotificationStyles() {
-    if (document.getElementById('portal-notification-style')) return;
-    const style = document.createElement('style');
-    style.id = 'portal-notification-style';
-    style.textContent = `
-        .portal-notif-fab-stack { position: fixed; left: 24px; bottom: 24px; z-index: 4300; display: flex; flex-direction: column; align-items: flex-start; gap: 14px; }
-        .portal-notif-dock { display: none; width: min(360px, calc(100vw - 32px)); max-height: min(428px, calc(100vh - 170px)); background: rgba(255,255,255,0.98); border: 1px solid rgba(148,163,184,0.25); border-radius: 26px; box-shadow: 0 28px 60px rgba(15,23,42,0.18); overflow: hidden; opacity: 0; pointer-events: none; transition: opacity 0.12s ease; backdrop-filter: blur(10px); }
-        .portal-notif-dock.is-open { display: block; opacity: 1; pointer-events: auto; }
-        .portal-notif-fab { display: inline-flex; align-items: center; gap: 10px; border: 0; border-radius: 22px; padding: 14px 16px; background: linear-gradient(135deg,#0f172a,#2563eb); color: white; font-weight: 900; cursor: pointer; box-shadow: 0 18px 36px rgba(37,99,235,0.25); }
-        .portal-notif-fab-count { min-width: 28px; height: 28px; border-radius: 999px; background: rgba(255,255,255,0.16); display: inline-flex; align-items: center; justify-content: center; font-size: 12px; padding: 0 8px; }
-        .portal-notif-modal-overlay { position: fixed; inset: 0; z-index: 4400; display: none; pointer-events: none; }
-        .portal-notif-modal-overlay.is-open { display: block; pointer-events: auto; }
-        .portal-notif-modal-backdrop { position: absolute; inset: 0; background: rgba(15,23,42,0.64); backdrop-filter: blur(4px); }
-        .portal-notif-modal-window { position: absolute; inset: min(32px, 4vw); background: #f8fbff; border-radius: 30px; border: 1px solid rgba(148,163,184,0.18); box-shadow: 0 36px 90px rgba(15,23,42,0.28); overflow: hidden; display: flex; flex-direction: column; }
-        .portal-notif-modal-head { display: flex; justify-content: space-between; gap: 16px; align-items: flex-start; padding: 22px 24px; background: linear-gradient(135deg,var(--kiu-navy),var(--kiu-blue)); color: white; }
-        .portal-notif-modal-title { font-size: 24px; font-weight: 900; }
-        .portal-notif-modal-copy { font-size: 13px; opacity: 0.92; margin-top: 6px; }
-        .portal-notif-modal-body { padding: 22px 24px; overflow: auto; flex: 1; }
-        .portal-notif-ghost-btn { width: 40px; height: 40px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.08); color: white; cursor: pointer; }
-        @media (max-width: 900px) {
-            .portal-notif-fab-stack { left: 16px; bottom: 102px; }
-            .portal-notif-modal-window { inset: 16px; border-radius: 24px; }
-        }
-    `;
-    document.head.appendChild(style);
-}
-
 function ensurePortalNotificationChrome() {
     if (!document.body) return null;
-    ensurePortalNotificationStyles();
     let dockRoot = document.getElementById('portal-notification-chrome');
     if (!dockRoot) {
         dockRoot = document.createElement('div');
@@ -1527,9 +1492,9 @@ function ensurePortalNotificationChrome() {
         dockRoot.innerHTML = `
             <div class="portal-notif-fab-stack">
                 <div class="portal-notif-dock">
-                    <div id="portal-notification-dock-content" style="padding:16px 16px 14px; border-bottom:1px solid #eef2f7;"></div>
-                    <div style="padding:12px 16px 16px; border-top:1px solid #eef2f7; display:flex; justify-content:flex-end;">
-                        <button type="button" id="portal-notification-maximize" class="lux-primary-btn" style="padding:10px 14px; font-size:12px;"><i class="fas fa-expand"></i> Maximize</button>
+                    <div id="portal-notification-dock-content" class="portal-notif-dock-content"></div>
+                    <div class="portal-notif-dock-footer">
+                        <button type="button" id="portal-notification-maximize" class="lux-primary-btn portal-notif-dock-maximize"><i class="fas fa-expand"></i> Maximize</button>
                     </div>
                 </div>
                 <button type="button" id="portal-notification-fab" class="portal-notif-fab">
@@ -1550,7 +1515,7 @@ function ensurePortalNotificationChrome() {
                         <div class="portal-notif-modal-title">Notification Center</div>
                         <div class="portal-notif-modal-copy">Track real grades, service replies, schedule changes, official orders, and selected social activity in one place.</div>
                     </div>
-                    <div style="display:flex; gap:10px; align-items:center;">
+                    <div class="portal-notif-modal-actions">
                         <button type="button" id="portal-notification-minimize" class="lux-secondary-btn"><i class="fas fa-window-restore"></i> Minimize</button>
                         <button type="button" id="portal-notification-close" class="portal-notif-ghost-btn"><i class="fas fa-times"></i></button>
                     </div>
@@ -1683,7 +1648,7 @@ function renderPortalNotificationChrome() {
     const summary = getPortalNotificationSummary();
     if (!summary) {
         if (!renderState.hidden) {
-            dockRoot.style.display = 'none';
+            dockRoot.hidden = true;
             modalRoot.querySelector('#portal-notification-modal-body')?.replaceChildren();
             modalRoot.className = 'portal-notif-modal-overlay';
             renderState.hidden = true;
@@ -1696,7 +1661,7 @@ function renderPortalNotificationChrome() {
         return;
     }
     if (renderState.hidden) {
-        dockRoot.style.display = '';
+        dockRoot.hidden = false;
         renderState.hidden = false;
     }
     const { uiState, unreadCount } = summary;
@@ -1836,18 +1801,12 @@ function refreshStandalonePageContext() {
     ensureOrdersNavLinks();
     ensureFacultyExamsNavLink();
 
-    const adminNav = document.getElementById('admin-nav');
-    if (adminNav) {
-        adminNav.style.display = effectiveRole === USER_ROLES.ADMIN ? 'flex' : 'none';
-    }
-
-    const profNav = document.getElementById('prof-nav');
-    if (profNav) {
-        profNav.style.display = (effectiveRole === USER_ROLES.PROFESSOR || effectiveRole === USER_ROLES.TA) ? 'flex' : 'none';
+    if (typeof window.syncShellNavVisibility === 'function') {
+        window.syncShellNavVisibility(getCurrentPortalPageId(), effectiveRole);
     }
 
     document.querySelectorAll('.admin-nav-link').forEach(item => {
-        item.style.display = effectiveRole === USER_ROLES.ADMIN ? '' : 'none';
+        item.hidden = effectiveRole !== USER_ROLES.ADMIN;
     });
 
     if (typeof populateProgramContextControls === 'function') {
@@ -1888,7 +1847,7 @@ function ensureFacultyExamsNavLink() {
         navItem.dataset.navExams = 'true';
         navItem.id = 'nav-exams-faculty';
         navItem.setAttribute('onclick', "navigate('exams')");
-        navItem.innerHTML = '<i class="fas fa-file-signature" style="display:block; margin-bottom:5px; font-size:16px;"></i> Exams';
+        navItem.innerHTML = '<i class="fas fa-file-signature portal-nav-icon portal-nav-icon--stacked"></i> Exams';
         profNav.appendChild(navItem);
     }
     const examsNav = profNav?.querySelector('[data-nav-exams]');
@@ -1987,11 +1946,11 @@ function renderExamsPageShellContext() {
         if (!button) return;
         const action = roleShell.actions[index];
         if (!action) {
-            button.style.display = 'none';
+            button.hidden = true;
             button.onclick = null;
             return;
         }
-        button.style.display = '';
+        button.hidden = false;
         button.innerHTML = `<i class="${action.icon}"></i> ${escapeHtml(action.label)}`;
         button.onclick = () => navigate(action.page);
     });
@@ -2102,28 +2061,22 @@ function consumePendingLmsGroupOpen(items = null) {
 }
 
 function buildFacultyScheduleCardHtml(item, compact = false) {
-    const badgeStyle = compact
-        ? 'padding:4px 8px; font-size:10px;'
-        : 'padding:5px 10px; font-size:11px;';
-    const titleSize = compact ? '13px' : '15px';
-    const subtitleSize = compact ? '11px' : '12px';
-    const metaGap = compact ? '10px' : '14px';
-    const padding = compact ? '12px 14px' : '16px 18px';
+    const sizeClass = compact ? 'faculty-schedule-card--compact' : 'faculty-schedule-card--full';
     return `
-        <div class="surface-card" style="padding:${padding}; border-radius:14px; display:flex; justify-content:space-between; gap:18px; align-items:flex-start; box-shadow:0 12px 24px rgba(15,23,42,0.06);">
-            <div style="flex:1;">
-                <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:8px;">
-                    <div style="font-size:${titleSize}; font-weight:800; color:var(--kiu-navy);">${item.subjectName}</div>
-                    <span style="background:#e0f2fe; color:#075985; border-radius:999px; ${badgeStyle} font-weight:800;">${item.roleLabel}</span>
+        <div class="surface-card faculty-schedule-card ${sizeClass}">
+            <div class="faculty-schedule-card__body">
+                <div class="faculty-schedule-card__head">
+                    <div class="faculty-schedule-card__title">${item.subjectName}</div>
+                    <span class="faculty-schedule-card__badge">${item.roleLabel}</span>
                 </div>
-                <div style="font-size:${subtitleSize}; color:#64748b; margin-bottom:10px;">Group ${item.name || item.id} &middot; ${item.faculty}</div>
-                <div style="display:flex; gap:${metaGap}; flex-wrap:wrap; font-size:${subtitleSize}; color:var(--kiu-text-main);">
-                    <span><i class="fas fa-calendar-day" style="color:var(--kiu-blue); margin-right:6px;"></i>${item.day || 'Day TBD'}</span>
-                    <span><i class="far fa-clock" style="color:var(--kiu-blue); margin-right:6px;"></i>${item.startTime} - ${item.endTime}</span>
-                    <span><i class="fas fa-location-dot" style="color:var(--kiu-blue); margin-right:6px;"></i>${item.room || 'Room TBD'}</span>
+                <div class="faculty-schedule-card__subtitle">Group ${item.name || item.id} &middot; ${item.faculty}</div>
+                <div class="faculty-schedule-card__meta">
+                    <span class="faculty-schedule-card__meta-item"><i class="fas fa-calendar-day faculty-schedule-card__meta-icon"></i><span>${item.day || 'Day TBD'}</span></span>
+                    <span class="faculty-schedule-card__meta-item"><i class="far fa-clock faculty-schedule-card__meta-icon"></i><span>${item.startTime} - ${item.endTime}</span></span>
+                    <span class="faculty-schedule-card__meta-item"><i class="fas fa-location-dot faculty-schedule-card__meta-icon"></i><span>${item.room || 'Room TBD'}</span></span>
                 </div>
             </div>
-            <button class="kiu-btn-outline" style="white-space:nowrap; border-color:var(--kiu-blue); color:var(--kiu-blue);" data-portal-msg-click="queue-lms-session" data-portal-msg-course-id="${item.courseId}" data-portal-msg-group-id="${item.id}">
+            <button class="kiu-btn-outline faculty-schedule-card__action" data-portal-msg-click="queue-lms-session" data-portal-msg-course-id="${item.courseId}" data-portal-msg-group-id="${item.id}">
                 <i class="fas fa-book-reader"></i> Open in LMS
             </button>
         </div>
@@ -2142,7 +2095,7 @@ function renderFacultyScheduleWidgets() {
         preview.innerHTML = items.slice(0, 4).map(item => buildFacultyScheduleCardHtml(item, true)).join('');
     }
     if (empty) {
-        empty.style.display = items.length ? 'none' : 'block';
+        empty.hidden = items.length > 0;
         empty.textContent = 'No sessions scheduled for today.';
     }
     if (helper) {
@@ -2193,7 +2146,7 @@ function renderFacultySchedulePage() {
             list.innerHTML = items.map(item => buildFacultyScheduleCardHtml(item, false)).join('');
         }
     }
-    if (empty) empty.style.display = 'none';
+    if (empty) empty.hidden = true;
 }
 
 function refreshFacultyScheduleUI() {
@@ -2206,6 +2159,10 @@ function normalizeIdentifier(value) {
         .trim()
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, '');
+}
+
+function normalizeGradebookRosterKey(value) {
+    return normalizeIdentifier(value);
 }
 
 function getEnrolledStudentsForGroup(courseId, groupId) {
@@ -2270,39 +2227,67 @@ function syncAvailableGroupEnrollmentCounts() {
 function resolveGradebookRosterKey(courseId, groupId, enrolledStudents = []) {
     const keys = Object.keys(KIU_STATE.studentGrades || {});
     const subject = getDomain().subjectsById?.[courseId] || KIU_STATE.curriculum.find(item => item.id === courseId);
+    const rawCourseId = String(courseId || '').trim();
+    const rawGroupId = String(groupId || '').trim();
     const groupNorm = normalizeIdentifier(groupId);
     const courseNorm = normalizeIdentifier(courseId);
     const subjectCodeNorm = normalizeIdentifier(subject?.code || '');
     const firstSegmentNorm = normalizeIdentifier(String(courseId || '').split('-')[0]);
     const exactCandidates = [
-        `${String(courseId || '').toLowerCase()}_${String(groupId || '').toLowerCase()}`,
+        `${rawCourseId}::${rawGroupId}`,
+        `${courseNorm}::${groupNorm}`,
+        `${subjectCodeNorm}::${groupNorm}`,
+        `${firstSegmentNorm}::${groupNorm}`,
+        `${rawCourseId}_${rawGroupId}`.toLowerCase(),
         `${courseNorm}_${groupNorm}`,
         `${subjectCodeNorm}_${groupNorm}`,
-        `${firstSegmentNorm}_${groupNorm}`
+        `${firstSegmentNorm}_${groupNorm}`,
+        rawCourseId,
+        subject?.code || '',
+        courseNorm,
+        subjectCodeNorm,
+        firstSegmentNorm
     ].filter(Boolean);
+    const normalizedKeyMap = new Map();
+    keys.forEach(key => {
+        const normalizedKey = normalizeGradebookRosterKey(key);
+        if (normalizedKey && !normalizedKeyMap.has(normalizedKey)) {
+            normalizedKeyMap.set(normalizedKey, key);
+        }
+    });
 
     for (const candidate of exactCandidates) {
-        if (keys.includes(candidate)) return candidate;
+        const resolvedKey = normalizedKeyMap.get(normalizeGradebookRosterKey(candidate));
+        if (resolvedKey) return resolvedKey;
     }
 
-    const enrolledIds = new Set((enrolledStudents || []).map(student => student.id));
+    const enrolledIds = new Set((enrolledStudents || []).map(student => String(student?.id || '').trim()).filter(Boolean));
     let bestKey = null;
     let bestScore = -1;
+    let bestRosterSize = -1;
 
     keys.forEach(key => {
-        let score = 0;
-        if (normalizeIdentifier(key).endsWith(groupNorm)) score += 2;
-        const roster = KIU_STATE.studentGrades[key] || [];
+        const roster = Array.isArray(KIU_STATE.studentGrades[key]) ? KIU_STATE.studentGrades[key] : [];
+        const normalizedKey = normalizeGradebookRosterKey(key);
+        let score = roster.length > 0 ? 1 : 0;
+        if (groupNorm && normalizedKey.endsWith(groupNorm)) score += 2;
+        if (courseNorm && normalizedKey === courseNorm) score += 4;
+        if (subjectCodeNorm && normalizedKey === subjectCodeNorm) score += 4;
+        if (firstSegmentNorm && normalizedKey === firstSegmentNorm) score += 2;
+        if (courseNorm && groupNorm && normalizedKey === `${courseNorm}${groupNorm}`) score += 8;
+        if (subjectCodeNorm && groupNorm && normalizedKey === `${subjectCodeNorm}${groupNorm}`) score += 8;
+        if (firstSegmentNorm && groupNorm && normalizedKey === `${firstSegmentNorm}${groupNorm}`) score += 8;
         roster.forEach(student => {
-            if (enrolledIds.has(student.id)) score += 4;
+            if (enrolledIds.has(String(student?.id || '').trim())) score += 4;
         });
-        if (score > bestScore) {
+        if (score > bestScore || (score === bestScore && roster.length > bestRosterSize)) {
             bestScore = score;
+            bestRosterSize = roster.length;
             bestKey = key;
         }
     });
 
-    return bestKey || `${courseNorm || 'course'}_${groupNorm || 'group'}`;
+    return bestKey || exactCandidates[0] || `${courseNorm || 'course'}_${groupNorm || 'group'}`;
 }
 
 function buildGradebookStudents(courseId, groupId) {
@@ -2337,21 +2322,62 @@ function buildGradebookStudents(courseId, groupId) {
     };
 }
 
-function getGradebookGroupsForCurrentUser() {
+function getGradebookGroupsForCurrentUser(filterOverrides = null) {
     const currentUser = getCurrentUser();
     const currentFaculty = getCurrentFaculty();
-    const currentName = currentUser?.name || currentUser?.nameEn || '';
-    const semesterFilter = String(document.getElementById('fs-filter-sem')?.value || '').trim();
-    const facultyFilter = String(document.getElementById('fs-filter-fac')?.value || currentFaculty || '').trim();
+    const currentIdentityKeys = (() => {
+        if (typeof getUserNameVariants === 'function') {
+            return getUserNameVariants(currentUser);
+        }
+        const fallback = new Set();
+        [currentUser?.name, currentUser?.nameEn, currentUser?.email].forEach(value => {
+            const normalized = typeof normalizePersonNameKey === 'function'
+                ? normalizePersonNameKey(value)
+                : String(value || '').trim().toLowerCase();
+            if (normalized) fallback.add(normalized);
+        });
+        return fallback;
+    })();
+    const semesterFilter = String(
+        filterOverrides?.semester ?? document.getElementById('fs-filter-sem')?.value ?? ''
+    ).trim();
+    const facultyFilter = String(
+        filterOverrides?.faculty ?? document.getElementById('fs-filter-fac')?.value ?? currentFaculty ?? ''
+    ).trim();
     const groups = [];
 
     Object.entries(KIU_STATE.availableGroups || {}).forEach(([courseId, courseGroups]) => {
         (courseGroups || []).forEach(group => {
             if (semesterFilter && semesterFilter !== 'all' && String(group?.semester || KIU_STATE.activeSemester || '').trim() !== semesterFilter) return;
-            if (facultyFilter && facultyFilter !== 'all' && String(group?.faculty || '').trim() && String(group.faculty).trim() !== facultyFilter) return;
+            if (facultyFilter && facultyFilter !== 'all' && String(group?.faculty || '').trim()) {
+                const groupFaculty = typeof normalizeFacultyCode === 'function'
+                    ? normalizeFacultyCode(group.faculty, '')
+                    : String(group.faculty || '').trim().toUpperCase();
+                const selectedFaculty = typeof normalizeFacultyCode === 'function'
+                    ? normalizeFacultyCode(facultyFilter, '')
+                    : String(facultyFilter || '').trim().toUpperCase();
+                if (groupFaculty && selectedFaculty && groupFaculty !== selectedFaculty) return;
+            }
             const isAssigned = currentUser?.role === USER_ROLES.ADMIN
-                ? (!currentFaculty || currentFaculty === 'all' || group.faculty === currentFaculty)
-                : (group.prof === currentName || group.ta === currentName);
+                ? (() => {
+                    if (!currentFaculty || currentFaculty === 'all') return true;
+                    const groupFaculty = typeof normalizeFacultyCode === 'function'
+                        ? normalizeFacultyCode(group.faculty, '')
+                        : String(group.faculty || '').trim().toUpperCase();
+                    const selectedFaculty = typeof normalizeFacultyCode === 'function'
+                        ? normalizeFacultyCode(currentFaculty, '')
+                        : String(currentFaculty || '').trim().toUpperCase();
+                    return !selectedFaculty || groupFaculty === selectedFaculty;
+                })()
+                : (() => {
+                    const profKey = typeof normalizePersonNameKey === 'function'
+                        ? normalizePersonNameKey(group.prof)
+                        : String(group.prof || '').trim().toLowerCase();
+                    const taKey = typeof normalizePersonNameKey === 'function'
+                        ? normalizePersonNameKey(group.ta)
+                        : String(group.ta || '').trim().toLowerCase();
+                    return currentIdentityKeys.has(profKey) || currentIdentityKeys.has(taKey);
+                })();
             if (!isAssigned) return;
 
             const subject = getDomain().subjectsById?.[courseId] || KIU_STATE.curriculum.find(item => item.id === courseId);
@@ -2375,6 +2401,5 @@ function getGradebookGroupsForCurrentUser() {
 
     return groups.sort((a, b) => String(a.subjectName).localeCompare(String(b.subjectName)) || String(a.groupName).localeCompare(String(b.groupName)));
 }
-
 
 

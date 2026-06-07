@@ -7,7 +7,7 @@ const require = createRequire(import.meta.url);
 const { PlatformStore } = require('../backend/platform/store.js');
 
 describe('portal state persistence safety', () => {
-    it('posts only the narrowed client-owned portal state slice back to the backend', () => {
+    it('posts the full sanitized portal persistable snapshot to the backend', () => {
         const source = readFileSync(join(process.cwd(), 'assets/js/app/api.js'), 'utf8');
 
         expect(source).toContain('function buildPortalBackendPersistableState');
@@ -17,7 +17,7 @@ describe('portal state persistence safety', () => {
         expect(source).not.toContain('state: buildPortalPersistableState(KIU_STATE)');
     });
 
-    it('merges incoming portal state updates without replacing server-owned live quiz state', () => {
+    it('merges full incoming portal state while keeping live quiz workspaces server-owned', () => {
         const store = new PlatformStore();
         store.state.portal.state = {
             registrationOpen: false,
@@ -42,7 +42,8 @@ describe('portal state persistence safety', () => {
         });
 
         expect(saved.state.registrationOpen).toBe(false);
-        expect(saved.state.tuitionBalances['student-1']).toBe(400);
+        expect(saved.state.tuitionBalances['student-1']).toBe(0);
+        expect(saved.state.homeDashboardPreferencesByUser['student-1']).toEqual({ version: 1 });
         expect(saved.state.lmsLiveQuizzes['COURSE::GROUP']).toEqual({ title: 'Server-owned live quiz workspace' });
         expect(saved.state.lmsLiveQuizzes.overwritten).toBeUndefined();
         expect(store.state.portal.liveQuizWorkspaces['COURSE::GROUP']).toEqual({ title: 'Server-owned live quiz workspace' });

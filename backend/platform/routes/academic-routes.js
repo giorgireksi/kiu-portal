@@ -2,9 +2,10 @@ function registerAcademicRoutes(app, deps = {}) {
     const {
         canAccessStudentAcademicRecord,
         getActorUserId,
-        getActualSessionRole,
+        getSessionRole,
         getStore,
         isActualAdminSession,
+        isSessionImpersonating,
         requireCourseStaffAccess,
         requireSessionAccount,
         sendError
@@ -50,11 +51,17 @@ function registerAcademicRoutes(app, deps = {}) {
         const sessionAccount = requireSessionAccount(request, response);
         if (!sessionAccount) return;
         const store = getStore();
-        const actualRole = getActualSessionRole(sessionAccount);
+        const effectiveRole = getSessionRole(sessionAccount);
         const actorUserId = getActorUserId(sessionAccount);
         const requestedStudentId = String(request.body?.studentId || '').trim();
-        const studentId = actualRole === 'student' ? actorUserId : (requestedStudentId || actorUserId);
-        if (!isActualAdminSession(sessionAccount) && !['student', 'student_service'].includes(actualRole)) {
+        const studentId = effectiveRole === 'student'
+            ? actorUserId
+            : ((isActualAdminSession(sessionAccount) && !isSessionImpersonating(sessionAccount))
+                ? (requestedStudentId || actorUserId)
+                : (requestedStudentId || actorUserId));
+        const canModifyRegistration = ['student', 'student_service'].includes(effectiveRole)
+            || (isActualAdminSession(sessionAccount) && !isSessionImpersonating(sessionAccount));
+        if (!canModifyRegistration) {
             sendError(response, 403, 'You are not allowed to modify registration.');
             return;
         }
@@ -73,11 +80,17 @@ function registerAcademicRoutes(app, deps = {}) {
         const sessionAccount = requireSessionAccount(request, response);
         if (!sessionAccount) return;
         const store = getStore();
-        const actualRole = getActualSessionRole(sessionAccount);
+        const effectiveRole = getSessionRole(sessionAccount);
         const actorUserId = getActorUserId(sessionAccount);
         const requestedStudentId = String(request.body?.studentId || '').trim();
-        const studentId = actualRole === 'student' ? actorUserId : (requestedStudentId || actorUserId);
-        if (!isActualAdminSession(sessionAccount) && !['student', 'student_service'].includes(actualRole)) {
+        const studentId = effectiveRole === 'student'
+            ? actorUserId
+            : ((isActualAdminSession(sessionAccount) && !isSessionImpersonating(sessionAccount))
+                ? (requestedStudentId || actorUserId)
+                : (requestedStudentId || actorUserId));
+        const canModifyRegistration = ['student', 'student_service'].includes(effectiveRole)
+            || (isActualAdminSession(sessionAccount) && !isSessionImpersonating(sessionAccount));
+        if (!canModifyRegistration) {
             sendError(response, 403, 'You are not allowed to modify registration.');
             return;
         }

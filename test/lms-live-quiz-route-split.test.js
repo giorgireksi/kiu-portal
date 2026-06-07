@@ -15,6 +15,10 @@ describe('lms live quiz route split', () => {
         expect(server).toContain('registerLmsLiveQuizRoutes(app, {');
         expect(routeModule).toContain("app.get('/api/lms/live-quizzes/:resourceKey'");
         expect(routeModule).toContain("app.post('/api/lms/live-quizzes/:resourceKey'");
+        expect(routeModule).toContain("app.post('/api/lms/live-quizzes/:resourceKey/join'");
+        expect(routeModule).toContain("app.post('/api/lms/live-quizzes/:resourceKey/answers'");
+        expect(routeModule).toContain('mergeStaffLiveQuizWorkspace(existingWorkspace, workspace)');
+        expect(routeModule).toContain('mergeStudentLiveQuizJoin(existingWorkspace, request.body || {}, sessionAccount)');
         expect(routeModule).toContain("const merged = mergeStudentLiveQuizAnswer(existingWorkspace, workspace, sessionAccount);");
         expect(routeModule).toContain("type: 'lms-live-quiz:updated'");
     });

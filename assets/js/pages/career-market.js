@@ -162,7 +162,7 @@
         var placeholder = escapeCareerHtml(cfg.placeholder || '');
         var wide = cfg.wide === false ? '' : ' is-wide';
         if (cfg.type === 'select') {
-            return '<div class="career-field' + wide + '"><label>' + safeLabel + '</label><select data-career-field="' + safeName + '">' +
+            return '<div class="career-field' + wide + '"><label class="career-field-label">' + safeLabel + '</label><select class="career-field-select" data-career-field="' + safeName + '">' +
                 (cfg.choices || []).map(function(choice) {
                     var selected = choice === value ? ' selected' : '';
                     return '<option value="' + escapeCareerHtml(choice) + '"' + selected + '>' + escapeCareerHtml(choice) + '</option>';
@@ -171,9 +171,9 @@
         }
         if (cfg.type === 'input') {
             var readonly = cfg.readonly ? ' readonly' : '';
-            return '<div class="career-field' + wide + '"><label>' + safeLabel + '</label><input data-career-field="' + safeName + '" type="text" value="' + escapeCareerHtml(value) + '" placeholder="' + placeholder + '"' + readonly + '></div>';
+            return '<div class="career-field' + wide + '"><label class="career-field-label">' + safeLabel + '</label><input class="career-field-input" data-career-field="' + safeName + '" type="text" value="' + escapeCareerHtml(value) + '" placeholder="' + placeholder + '"' + readonly + '></div>';
         }
-        return '<div class="career-field' + wide + '"><label>' + safeLabel + '</label><textarea data-career-field="' + safeName + '" placeholder="' + placeholder + '">' + escapeCareerHtml(value) + '</textarea></div>';
+        return '<div class="career-field' + wide + '"><label class="career-field-label">' + safeLabel + '</label><textarea class="career-field-textarea" data-career-field="' + safeName + '" placeholder="' + placeholder + '">' + escapeCareerHtml(value) + '</textarea></div>';
     }
     function persistCareerDraft() {
         try {
@@ -520,13 +520,17 @@
         document.getElementById('career-tool-close')?.addEventListener('click', closeToolInfo);
         document.getElementById('career-tool-backdrop')?.addEventListener('click', closeToolInfo);
     }
+    function setCareerOverlayBodyState(isOpen, stateClass) {
+        if (!document.body) return;
+        document.body.classList.toggle(stateClass, Boolean(isOpen));
+    }
     function openProviderSettings() {
         var modal = ensureCareerTemplateContent('career-provider-modal-template', 'career-provider-modal');
         if (!modal) return;
         bindProviderModalControls();
         populateProviderForm();
         modal.classList.add('is-open');
-        document.body.style.overflow = 'hidden';
+        setCareerOverlayBodyState(true, 'career-modal-open');
         setTimeout(function() {
             document.getElementById('career-provider-select')?.focus();
         }, 0);
@@ -535,20 +539,20 @@
         var modal = document.getElementById('career-provider-modal');
         if (!modal) return;
         modal.classList.remove('is-open');
-        document.body.style.overflow = '';
+        setCareerOverlayBodyState(false, 'career-modal-open');
     }
     function openToolInfo() {
         var modal = ensureCareerTemplateContent('career-tool-modal-template', 'career-tool-modal');
         if (!modal) return;
         bindToolModalControls();
         modal.classList.add('is-open');
-        document.body.style.overflow = 'hidden';
+        setCareerOverlayBodyState(true, 'career-modal-open');
     }
     function closeToolInfo() {
         var modal = document.getElementById('career-tool-modal');
         if (!modal) return;
         modal.classList.remove('is-open');
-        document.body.style.overflow = '';
+        setCareerOverlayBodyState(false, 'career-modal-open');
     }
     function readProviderInstructionFile(file) {
         return new Promise(function(resolve) {
@@ -636,8 +640,8 @@
         editor.innerHTML = providerData.sections.map(function(section, sectionIndex) {
             return '<section class="career-instruction-section" data-section-index="' + sectionIndex + '">' +
                 '<div class="career-instruction-section-head">' +
-                    '<input type="text" data-section-title="' + sectionIndex + '" value="' + escapeCareerHtml(section.title || '') + '" placeholder="Instruction section title">' +
-                    '<button class="career-instruction-mini-btn" type="button" data-remove-section="' + sectionIndex + '"><i class="fas fa-trash"></i> Remove</button>' +
+                    '<input class="career-instruction-section-title-input" type="text" data-section-title="' + sectionIndex + '" value="' + escapeCareerHtml(section.title || '') + '" placeholder="Instruction section title">' +
+                    '<button class="career-instruction-mini-btn career-instruction-section-remove-btn" type="button" data-remove-section="' + sectionIndex + '"><i class="fas fa-trash"></i> Remove</button>' +
                 '</div>' +
                 '<div class="career-instruction-blocks">' +
                     (section.blocks || []).map(function(block, blockIndex) {
@@ -646,7 +650,7 @@
                             ? '<img class="career-instruction-image" src="' + escapeCareerHtml(block.src || '') + '" alt="' + escapeCareerHtml(block.name || 'Instruction image') + '">'
                             : '<textarea class="career-instruction-textarea" data-block-text="' + sectionIndex + ':' + blockIndex + '">' + escapeCareerHtml(block.content || '') + '</textarea>';
                         return '<div class="career-instruction-block" draggable="true" data-drag-block="' + sectionIndex + ':' + blockIndex + '" data-block-index="' + blockIndex + '">' +
-                            '<div class="career-instruction-block-head"><span>' + label + '</span><div class="career-instruction-block-actions">' +
+                            '<div class="career-instruction-block-head"><span class="career-instruction-block-label">' + label + '</span><div class="career-instruction-block-actions">' +
                                 '<button class="career-instruction-mini-btn" type="button" data-move-block="' + sectionIndex + ':' + blockIndex + ':up"><i class="fas fa-arrow-up"></i></button>' +
                                 '<button class="career-instruction-mini-btn" type="button" data-move-block="' + sectionIndex + ':' + blockIndex + ':down"><i class="fas fa-arrow-down"></i></button>' +
                                 '<button class="career-instruction-mini-btn" type="button" data-remove-block="' + sectionIndex + ':' + blockIndex + '"><i class="fas fa-times"></i></button>' +
@@ -655,8 +659,8 @@
                     }).join('') +
                 '</div>' +
                 '<div class="career-instruction-toolbar">' +
-                    '<button class="career-instruction-mini-btn" type="button" data-add-text="' + sectionIndex + '"><i class="fas fa-align-left"></i> Add text</button>' +
-                    '<label class="career-instruction-mini-btn"><i class="fas fa-image"></i> Add image<input type="file" accept="image/*" data-add-image="' + sectionIndex + '" style="display:none;"></label>' +
+                    '<button class="career-instruction-mini-btn career-instruction-add-text-btn" type="button" data-add-text="' + sectionIndex + '"><i class="fas fa-align-left"></i> Add text</button>' +
+                    '<label class="career-instruction-mini-btn career-instruction-add-image-btn"><i class="fas fa-image"></i> Add image<input type="file" accept="image/*" data-add-image="' + sectionIndex + '" hidden></label>' +
                 '</div>' +
             '</section>';
         }).join('') +
@@ -785,14 +789,14 @@
         var modal = document.getElementById('career-instructions-modal');
         if (!modal) return;
         modal.classList.add('is-open');
-        document.body.style.overflow = 'hidden';
+        setCareerOverlayBodyState(true, 'career-modal-open');
     }
     function closeInstructionsStudio() {
         collectInstructionStudio();
         var modal = document.getElementById('career-instructions-modal');
         if (!modal) return;
         modal.classList.remove('is-open');
-        document.body.style.overflow = '';
+        setCareerOverlayBodyState(false, 'career-modal-open');
     }
     function getRole() {
         var role = '';
@@ -830,25 +834,32 @@
             if (button) button.classList.remove('is-active');
         });
     }
+    function isElementShown(element) {
+        return Boolean(element) && !element.hidden;
+    }
+    function setElementShown(element, shown, displayValue) {
+        if (!element) return;
+        element.hidden = !shown;
+    }
     function closeSheet() {
         var sheet = document.getElementById('mobile-action-sheet');
         if (!sheet) return;
         sheet.classList.remove('is-open');
-        document.body.style.overflow = '';
-        setTimeout(function() { sheet.style.display = 'none'; }, 300);
+        setCareerOverlayBodyState(false, 'career-sheet-open');
+        setTimeout(function() { setElementShown(sheet, false); }, 300);
     }
     function openSheet() {
         var sheet = document.getElementById('mobile-action-sheet');
         if (!sheet) return;
         buildRoleNav();
-        sheet.style.display = '';
-        document.body.style.overflow = 'hidden';
+        setElementShown(sheet, true);
+        setCareerOverlayBodyState(true, 'career-sheet-open');
         requestAnimationFrame(function() { sheet.classList.add('is-open'); });
     }
     function toggleSheet() {
         var sheet = document.getElementById('mobile-action-sheet');
         if (!sheet) return;
-        sheet.style.display === 'none' ? openSheet() : closeSheet();
+        isElementShown(sheet) ? closeSheet() : openSheet();
     }
     function buildRoleNav() {
         var container = document.getElementById('mob-sheet-dynamic-nav');
@@ -944,7 +955,7 @@
     function onResize() {
         var nav = document.getElementById('mobile-bottom-nav');
         if (!nav) return;
-        nav.style.display = isMob() ? '' : 'none';
+        setElementShown(nav, isMob());
         if (!isMob()) closeSheet();
     }
     function appendMessage(text, author) {
@@ -952,7 +963,7 @@
         var empty = document.getElementById('career-empty-state');
         if (!list || !text) return;
         list.classList.add('has-messages');
-        if (empty) empty.style.display = 'none';
+        setElementShown(empty, false);
         var isUser = author === 'user';
         list.insertAdjacentHTML('beforeend',
             '<article class="career-message' + (isUser ? ' is-user' : '') + '">' +
@@ -1059,7 +1070,7 @@
         var quality = analyzeCareerIntakeQuality();
         return '<div class="career-intake-gate">' +
             '<div class="career-intake-gate-head">' +
-                '<div><strong>Intake quality</strong><span>' + escapeCareerHtml(quality.level) + ' context for agent reasoning</span></div>' +
+                '<div><strong class="career-intake-gate-title">Intake quality</strong><span class="career-intake-gate-copy">' + escapeCareerHtml(quality.level) + ' context for agent reasoning</span></div>' +
                 '<em>' + String(quality.score) + '%</em>' +
             '</div>' +
             '<div class="career-intake-checks">' + quality.checks.map(function(check) {
@@ -1068,7 +1079,7 @@
                     '<span>' + escapeCareerHtml(check.label) + '</span>' +
                 '</div>';
             }).join('') + '</div>' +
-            (quality.missing.length ? '<p>Needed next: ' + escapeCareerHtml(quality.missing.slice(0, 3).map(function(check) { return check.fix; }).join(' ')) + '</p>' : '<p>Enough context for the agents to produce a specific report.</p>') +
+            (quality.missing.length ? '<p class="career-intake-gate-note">Needed next: ' + escapeCareerHtml(quality.missing.slice(0, 3).map(function(check) { return check.fix; }).join(' ')) + '</p>' : '<p class="career-intake-gate-note">Enough context for the agents to produce a specific report.</p>') +
         '</div>';
     }
     function createAgentRunState(settings) {
@@ -1105,7 +1116,7 @@
             var generated = String(run.generating?.[agent.id] || '').trim();
             var health = run.providerHealth?.[agent.id] || 'queued';
             var attempt = run.attempts?.[agent.id] ? ('attempt ' + run.attempts[agent.id] + '/5') : 'not sent';
-            return '<div class="career-agent-node' + roleClass + ' is-' + escapeCareerHtml(state) + '" style="--career-agent-rgb:' + agent.color + '">' +
+            return '<div class="career-agent-node' + roleClass + ' is-' + escapeCareerHtml(state) + '" data-agent-id="' + escapeCareerHtml(agent.id) + '">' +
                 '<b>' + String(agent.order || '') + '</b>' +
                 '<i class="' + agent.icon + '"></i>' +
                 '<strong>' + escapeCareerHtml(agent.shortName || agent.name) + '</strong>' +
@@ -1124,12 +1135,12 @@
         var logs = run.logs.length ? run.logs.map(function(log) {
             return '<article class="career-agent-log">' +
                 '<div class="career-agent-log-head">' +
-                    '<strong>' + escapeCareerHtml(log.agent) + '</strong>' +
-                    '<span>' + escapeCareerHtml(log.status) + '</span>' +
+                    '<strong class="career-agent-log-title">' + escapeCareerHtml(log.agent) + '</strong>' +
+                    '<span class="career-agent-log-status">' + escapeCareerHtml(log.status) + '</span>' +
                 '</div>' +
                 '<pre class="career-agent-output">' + escapeCareerHtml(log.text || '') + '</pre>' +
             '</article>';
-        }).join('') : '<article class="career-agent-log"><strong>Execution queue</strong><span>Waiting for the first agent handoff.</span></article>';
+        }).join('') : '<article class="career-agent-log career-agent-log--empty"><strong class="career-agent-log-title">Execution queue</strong><span class="career-agent-log-status">Waiting for the first agent handoff.</span></article>';
         var findings = CAREER_AGENT_PIPELINE.map(function(agent) {
             var item = run.structured?.[agent.id];
             if (!item) return '';
@@ -1137,8 +1148,8 @@
                 .concat(item.keyFindings.map(function(value) { return 'Finding: ' + value; }))
                 .concat(item.evidenceMissing.map(function(value) { return 'Missing: ' + value; }))
                 .concat(item.recommendations.map(function(value) { return 'Next: ' + value; }));
-            return '<article><strong>' + escapeCareerHtml(agent.name) + '</strong><span>' + escapeCareerHtml(item.confidence + ' confidence') + '</span>' +
-                '<ul>' + rows.map(function(value) { return '<li>' + escapeCareerHtml(value) + '</li>'; }).join('') + '</ul></article>';
+            return '<article class="career-agent-finding-card"><div class="career-agent-finding-head"><strong class="career-agent-finding-title">' + escapeCareerHtml(agent.name) + '</strong><span class="career-agent-finding-confidence">' + escapeCareerHtml(item.confidence + ' confidence') + '</span></div>' +
+                '<ul class="career-agent-finding-points">' + rows.map(function(value) { return '<li>' + escapeCareerHtml(value) + '</li>'; }).join('') + '</ul></article>';
         }).filter(Boolean).join('');
         var reportPreview = careerWizardState.report
             ? renderReportDocument(careerWizardState.report)
@@ -1783,7 +1794,7 @@
         stepper.innerHTML = WIZARD_STEPS.map(function(step, index) {
             var state = index === careerWizardState.step ? ' is-active' : (index < careerWizardState.step ? ' is-done' : '');
             var icon = index < careerWizardState.step ? 'fas fa-check' : 'fas fa-circle';
-            return '<button class="career-step-dot' + state + '" type="button" data-step-index="' + index + '"><i class="' + icon + '"></i><span>' + escapeCareerHtml(step.label) + '</span></button>';
+            return '<button class="career-step-dot' + state + '" type="button" data-step-index="' + index + '"><i class="career-step-icon ' + icon + '"></i><span class="career-step-label">' + escapeCareerHtml(step.label) + '</span></button>';
         }).join('');
         stepper.querySelectorAll('[data-step-index]').forEach(function(button) {
             button.addEventListener('click', function() {
@@ -1808,28 +1819,28 @@
             ['Goals and constraints', [data.goals, data.constraints, data.concerns].filter(Boolean).join('\n')]
         ];
         return '<div class="career-review-grid">' + items.map(function(item) {
-            return '<div class="career-review-item"><strong>' + escapeCareerHtml(item[0]) + '</strong><span>' + escapeCareerHtml(item[1] || 'Not provided yet') + '</span></div>';
+            return '<div class="career-review-item"><strong class="career-review-item-label">' + escapeCareerHtml(item[0]) + '</strong><span class="career-review-item-value">' + escapeCareerHtml(item[1] || 'Not provided yet') + '</span></div>';
         }).join('') + '</div>' +
         '<div class="career-agent-mini">' +
-            '<div><strong>Coordinator</strong><br>Splits work and checks missing factors.</div>' +
-            '<div><strong>Fit analyst</strong><br>Ranks realistic paths from evidence.</div>' +
-            '<div><strong>Market analyst</strong><br>Checks trends, demand, and AI risk.</div>' +
-            '<div><strong>Roadmap analyst</strong><br>Finds gaps and next actions.</div>' +
+            '<div class="career-agent-mini-card"><strong class="career-agent-mini-title">Coordinator</strong><span class="career-agent-mini-copy">Splits work and checks missing factors.</span></div>' +
+            '<div class="career-agent-mini-card"><strong class="career-agent-mini-title">Fit analyst</strong><span class="career-agent-mini-copy">Ranks realistic paths from evidence.</span></div>' +
+            '<div class="career-agent-mini-card"><strong class="career-agent-mini-title">Market analyst</strong><span class="career-agent-mini-copy">Checks trends, demand, and AI risk.</span></div>' +
+            '<div class="career-agent-mini-card"><strong class="career-agent-mini-title">Roadmap analyst</strong><span class="career-agent-mini-copy">Finds gaps and next actions.</span></div>' +
         '</div>';
     }
     function renderReport() {
         if (!careerWizardState.report && careerWizardState.agentRun?.running) {
             return renderAgentConsoleHtml() +
-                '<div class="career-section-note">The agents are running now. Their planning, writing, and handoffs will appear here as each step completes.</div>';
+                '<div class="career-section-note career-report-status-note career-report-status-note--running">The agents are running now. Their planning, writing, and handoffs will appear here as each step completes.</div>';
         }
         if (!careerWizardState.report && careerWizardState.agentRun?.error) {
             return renderAgentConsoleHtml() +
-                '<div class="career-section-note">' + escapeCareerHtml(careerWizardState.agentRun.error) + '</div>' +
-                '<button class="career-primary-action" type="button" id="career-report-provider-open"><i class="fas fa-key"></i> Open provider settings</button>';
+                '<div class="career-section-note career-report-status-note career-report-status-note--error">' + escapeCareerHtml(careerWizardState.agentRun.error) + '</div>' +
+                '<button class="career-primary-action career-report-provider-open-btn" type="button" id="career-report-provider-open"><i class="fas fa-key"></i> Open provider settings</button>';
         }
         if (!careerWizardState.report) {
-            return '<div class="career-section-note">Connect a provider, complete the intake, and generate the report. The page will not create a report without a real model response.</div>' +
-                '<button class="career-primary-action" type="button" id="career-report-provider-open"><i class="fas fa-key"></i> Open provider settings</button>';
+            return '<div class="career-section-note career-report-status-note career-report-status-note--empty">Connect a provider, complete the intake, and generate the report. The page will not create a report without a real model response.</div>' +
+                '<button class="career-primary-action career-report-provider-open-btn" type="button" id="career-report-provider-open"><i class="fas fa-key"></i> Open provider settings</button>';
         }
         var report = careerWizardState.report;
         return renderAgentConsoleHtml() + renderReportDocument(report);
@@ -1837,10 +1848,10 @@
     function renderReportDocument(report) {
         report = report || {};
         var qualityNotes = (report.qualityNotes || []).length
-            ? '<section class="career-report-section"><h3>Quality Gate</h3><p>' + escapeCareerHtml((report.qualityNotes || []).join('\n')) + '</p></section>'
+            ? '<section class="career-report-section career-report-section--quality"><h3 class="career-report-section-title">Quality Gate</h3><p class="career-report-section-copy">' + escapeCareerHtml((report.qualityNotes || []).join('\n')) + '</p></section>'
             : '';
         var audit = report.audit
-            ? '<section class="career-report-section"><h3>Audit Trail</h3><p>' + escapeCareerHtml([
+            ? '<section class="career-report-section career-report-section--audit"><h3 class="career-report-section-title">Audit Trail</h3><p class="career-report-section-copy">' + escapeCareerHtml([
                 'Provider: ' + (report.audit.provider || 'not recorded'),
                 'Model: ' + (report.audit.model || 'not recorded'),
                 'Generated: ' + (report.audit.generatedAt || 'not recorded'),
@@ -1850,34 +1861,34 @@
             : '';
         var sectionHtml = (report.sections || []).map(function(section) {
             var body = section.table
-                ? '<div class="career-report-table-wrap"><table class="career-report-table"><thead><tr>' +
+                ? '<div class="career-report-table-wrap"><table class="career-report-table"><thead><tr class="career-report-table-row career-report-table-row--head">' +
                     (section.tableHeaders || ['Career path', 'Fit', 'Demand', 'Entry difficulty', 'AI risk', 'Time to employability']).map(function(header) {
-                        return '<th>' + escapeCareerHtml(header) + '</th>';
+                        return '<th class="career-report-table-head-cell">' + escapeCareerHtml(header) + '</th>';
                     }).join('') +
                   '</tr></thead><tbody>' +
                     section.table.map(function(row) {
-                        return '<tr>' + row.map(function(cell) { return '<td>' + escapeCareerHtml(cell) + '</td>'; }).join('') + '</tr>';
+                        return '<tr class="career-report-table-row">' + row.map(function(cell) { return '<td class="career-report-table-cell">' + escapeCareerHtml(cell) + '</td>'; }).join('') + '</tr>';
                     }).join('') +
                   '</tbody></table></div>'
-                : '<p>' + escapeCareerHtml(section.body || '') + '</p>';
-            return '<section class="career-report-section"><h3>' + escapeCareerHtml(section.title || '') + '</h3>' + body + '</section>';
+                : '<p class="career-report-section-copy">' + escapeCareerHtml(section.body || '') + '</p>';
+            return '<section class="career-report-section"><h3 class="career-report-section-title">' + escapeCareerHtml(section.title || '') + '</h3>' + body + '</section>';
         }).join('') + qualityNotes + audit;
-        return '<div class="career-section-note">' + escapeCareerHtml(report.summary || '') + '</div>' +
-            '<div class="career-report-grid">' + (report.scores || []).map(function(score) {
-                return '<div class="career-score-box"><strong>' + escapeCareerHtml(score[0]) + '</strong><span>' + escapeCareerHtml(score[1]) + '</span></div>';
+        return '<div class="career-section-note career-report-status-note career-report-summary-note">' + escapeCareerHtml(report.summary || '') + '</div>' +
+            '<div class="career-report-grid career-report-score-grid">' + (report.scores || []).map(function(score) {
+                return '<div class="career-score-box career-report-score-card"><strong class="career-score-box-label">' + escapeCareerHtml(score[0]) + '</strong><span class="career-score-box-value">' + escapeCareerHtml(score[1]) + '</span></div>';
             }).join('') + '</div>' +
             '<div class="career-report-document">' + sectionHtml + '</div>';
     }
     function renderChatWorkspace() {
         var showAgentPreview = !careerWizardState.agentRun && !careerWizardState.report && (WIZARD_STEPS[careerWizardState.step] || {}).key !== 'report';
         return '<div class="career-report-workspace">' +
-            '<div class="career-workspace-hero">' +
-                '<div>' +
+            '<div class="career-workspace-hero lux-hero-stage">' +
+                '<div class="lux-hero-main career-workspace-hero-main">' +
                     '<div class="career-kicker">Agentic career system</div>' +
                     '<div class="career-workspace-title">Six agents inspect the same student profile from different angles.</div>' +
                     '<div class="career-workspace-copy">The Coordinator routes work first. Evidence, Market, AI Risk, Roadmap, and Writer agents then expose what they check, what they found, and what they hand off.</div>' +
                 '</div>' +
-                '<div class="career-workspace-badge"><i class="fas fa-users-gear"></i> 6-agent workflow</div>' +
+                '<div class="career-workspace-badge career-workspace-badge-card lux-strip-card surface-card"><i class="fas fa-users-gear"></i> 6-agent workflow</div>' +
             '</div>' +
             renderIntakeQualityPanel() +
             (showAgentPreview ? '<div class="career-agent-console" id="career-agent-preview">' + renderAgentConsoleInner() + '</div>' : '') +
@@ -1891,35 +1902,35 @@
         var reports = readCareerArray(CAREER_REPORTS_KEY);
         var cards = reports.length ? reports.map(function(report, index) {
             return '<button class="career-history-item career-report-saved-item" type="button" data-career-report-index="' + index + '">' +
-                '<div class="career-history-title">' + escapeCareerHtml(report.summary || 'Career report') + '</div>' +
-                '<div class="career-history-date">' + escapeCareerHtml(formatCareerDate(report.createdAt)) + '</div>' +
+                '<div class="career-report-saved-title">' + escapeCareerHtml(report.summary || 'Career report') + '</div>' +
+                '<div class="career-report-saved-date">' + escapeCareerHtml(formatCareerDate(report.createdAt)) + '</div>' +
             '</button>';
-        }).join('') : '<div class="career-section-note">No provider-generated reports are saved yet.</div>';
+        }).join('') : '<div class="career-section-note career-report-empty-note">No provider-generated reports are saved yet.</div>';
         return '<div class="career-report-workspace">' +
-            '<div class="career-workspace-hero">' +
-                '<div>' +
+            '<div class="career-workspace-hero lux-hero-stage">' +
+                '<div class="lux-hero-main career-workspace-hero-main">' +
                     '<div class="career-kicker">Reports</div>' +
                     '<div class="career-workspace-title">Saved AI career reports</div>' +
                     '<div class="career-workspace-copy">Only reports generated by a configured provider are listed here.</div>' +
                 '</div>' +
-                '<button class="career-primary-action" type="button" id="career-reports-new"><i class="fas fa-file-circle-plus"></i> New report</button>' +
+                '<button class="career-primary-action career-reports-new-btn" type="button" id="career-reports-new"><i class="fas fa-file-circle-plus"></i> New report</button>' +
             '</div>' +
-            '<div class="career-agent-stream">' + cards + '</div>' +
+            '<div class="career-report-saved-stream">' + cards + '</div>' +
         '</div>';
     }
     function renderVacanciesWorkspace() {
         var latest = readCareerArray(CAREER_VACANCIES_KEY)[0];
         return '<div class="career-report-workspace">' +
-            '<div class="career-workspace-hero">' +
-                '<div>' +
+            '<div class="career-workspace-hero lux-hero-stage">' +
+                '<div class="lux-hero-main career-workspace-hero-main">' +
                     '<div class="career-kicker">Vacancy intelligence</div>' +
                     '<div class="career-workspace-title">Match the intake against real hiring language.</div>' +
                     '<div class="career-workspace-copy">The selected provider reads the current intake and returns job titles, search keywords, weak points, and application priorities.</div>' +
                 '</div>' +
-                '<button class="career-primary-action" type="button" id="career-run-vacancy-intel"><i class="fas fa-radar"></i> Analyze vacancies</button>' +
+                '<button class="career-primary-action career-vacancy-run-btn" type="button" id="career-run-vacancy-intel"><i class="fas fa-radar"></i> Analyze vacancies</button>' +
             '</div>' +
-            '<div class="career-report-document" id="career-vacancy-output">' +
-                (latest ? '<section class="career-report-section"><h3>Latest vacancy intelligence</h3><p>' + escapeCareerHtml(latest.text || '') + '</p></section>' : '<div class="career-section-note">Run vacancy intelligence with a configured provider to generate this view.</div>') +
+            '<div class="career-report-document career-vacancy-output-shell" id="career-vacancy-output">' +
+                (latest ? '<section class="career-report-section career-vacancy-section"><h3 class="career-report-section-title">Latest vacancy intelligence</h3><p class="career-report-section-copy">' + escapeCareerHtml(latest.text || '') + '</p></section>' : '<div class="career-section-note career-vacancy-empty-note">Run vacancy intelligence with a configured provider to generate this view.</div>') +
             '</div>' +
         '</div>';
     }
@@ -1951,7 +1962,7 @@
         var button = document.getElementById('career-run-vacancy-intel');
         var settings = readProviderSettings();
         if (!settings.apiKey || !settings.model) {
-            if (output) output.innerHTML = '<div class="career-section-note">Provider settings are required before vacancy intelligence can run.</div><button class="career-primary-action" type="button" id="career-vacancy-provider-open"><i class="fas fa-key"></i> Open provider settings</button>';
+            if (output) output.innerHTML = '<div class="career-section-note career-vacancy-empty-note career-vacancy-status-note career-vacancy-status-note--settings">Provider settings are required before vacancy intelligence can run.</div><button class="career-primary-action career-vacancy-provider-open-btn" type="button" id="career-vacancy-provider-open"><i class="fas fa-key"></i> Open provider settings</button>';
             document.getElementById('career-vacancy-provider-open')?.addEventListener('click', openProviderSettings);
             openProviderSettings();
             return;
@@ -1960,7 +1971,7 @@
             button.disabled = true;
             button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyzing';
         }
-        if (output) output.innerHTML = '<div class="career-section-note">Provider is analyzing roles, keywords, application filters, and risk signals from the current intake.</div>';
+        if (output) output.innerHTML = '<div class="career-section-note career-vacancy-empty-note career-vacancy-status-note career-vacancy-status-note--running">Provider is analyzing roles, keywords, application filters, and risk signals from the current intake.</div>';
         try {
             var text = await callCareerProvider(
                 'You are KIU Vacancy Intelligence. Return a professional hiring-market analysis from the provided student intake. Do not invent live job postings. Produce job titles to search, keywords, filters, portfolio requirements, rejection risks, and a first application plan.',
@@ -1972,9 +1983,9 @@
             items.unshift(item);
             writeCareerArray(CAREER_VACANCIES_KEY, items, 5);
             saveCareerHistory('Vacancy intelligence: ' + (careerWizardState.data.targets || careerWizardState.data.profession || 'career market'), 'vacancies', item);
-            if (output) output.innerHTML = '<section class="career-report-section"><h3>Vacancy intelligence</h3><p>' + escapeCareerHtml(text) + '</p></section>';
+            if (output) output.innerHTML = '<section class="career-report-section career-vacancy-section"><h3 class="career-report-section-title">Vacancy intelligence</h3><p class="career-report-section-copy">' + escapeCareerHtml(text) + '</p></section>';
         } catch (error) {
-            if (output) output.innerHTML = '<div class="career-section-note">' + escapeCareerHtml(providerErrorMessage(settings.provider, error)) + '</div>';
+            if (output) output.innerHTML = '<div class="career-section-note career-vacancy-empty-note career-vacancy-status-note career-vacancy-status-note--error">' + escapeCareerHtml(providerErrorMessage(settings.provider, error)) + '</div>';
         } finally {
             if (button) {
                 button.disabled = false;
@@ -1998,15 +2009,15 @@
         var list = document.getElementById('career-message-list');
         if (!empty || !list) return;
         if (nextView === 'chat') {
-            list.style.display = '';
+            setElementShown(list, true);
             empty.innerHTML = renderChatWorkspace();
             var forceWorkspace = Boolean(careerWizardState.report || careerWizardState.agentRun || (WIZARD_STEPS[careerWizardState.step] || {}).key === 'review' || (WIZARD_STEPS[careerWizardState.step] || {}).key === 'report');
-            empty.style.display = !forceWorkspace && list.classList.contains('has-messages') ? 'none' : '';
+            setElementShown(empty, forceWorkspace || !list.classList.contains('has-messages'));
             renderWizardStep();
             return;
         }
-        list.style.display = 'none';
-        empty.style.display = '';
+        setElementShown(list, false);
+        setElementShown(empty, true);
         empty.innerHTML = nextView === 'reports' ? renderReportsWorkspace() : renderVacanciesWorkspace();
         if (nextView === 'reports') wireReportsWorkspace();
         if (nextView === 'vacancies') wireVacanciesWorkspace();
@@ -2067,10 +2078,10 @@
             '</div>' +
             stepFields(step.key) +
             '<div class="career-wizard-actions">' +
-                '<button class="career-secondary-action" type="button" id="career-save-draft"><i class="fas fa-floppy-disk"></i> Save draft</button>' +
-                '<div>' +
-                    '<button class="career-secondary-action" type="button" id="career-step-back"' + (isFirst ? ' disabled' : '') + '><i class="fas fa-arrow-left"></i> Back</button>' +
-                    '<button class="career-primary-action" type="button" id="career-step-next"><i class="fas ' + (isReview ? 'fa-wand-magic-sparkles' : (isReport ? 'fa-pen-to-square' : 'fa-arrow-right')) + '"></i> ' + (isReview ? 'Generate report' : (isReport ? 'Edit intake' : 'Continue')) + '</button>' +
+                '<button class="career-secondary-action career-wizard-save-draft-btn" type="button" id="career-save-draft"><i class="fas fa-floppy-disk"></i> Save draft</button>' +
+                '<div class="career-wizard-actions-main">' +
+                    '<button class="career-secondary-action career-wizard-back-btn" type="button" id="career-step-back"' + (isFirst ? ' disabled' : '') + '><i class="fas fa-arrow-left"></i> Back</button>' +
+                    '<button class="career-primary-action career-wizard-next-btn" type="button" id="career-step-next"><i class="fas ' + (isReview ? 'fa-wand-magic-sparkles' : (isReport ? 'fa-pen-to-square' : 'fa-arrow-right')) + '"></i> ' + (isReview ? 'Generate report' : (isReport ? 'Edit intake' : 'Continue')) + '</button>' +
                 '</div>' +
             '</div>';
         wireAgentConsoleTabs(card);
@@ -2198,7 +2209,7 @@
             careerWizardState.step = 0;
             careerWizardState.report = null;
             renderWizardStep();
-            if (empty) empty.style.display = '';
+            setElementShown(empty, true);
             if (input) input.value = '';
         });
         document.getElementById('career-attach-evidence')?.addEventListener('click', function() {

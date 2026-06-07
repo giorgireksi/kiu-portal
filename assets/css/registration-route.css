@@ -1,0 +1,2313 @@
+body.lux-route-registration {
+    --lux-topbar-tint-rgb: 11, 31, 51;
+    --lux-bg: #050912;
+    --lux-bg-soft: #0a1220;
+    --lux-surface: #0d1625;
+    --lux-surface-2: #101a2a;
+    --lux-surface-3: #162133;
+    --lux-border: rgba(255, 255, 255, 0.08);
+    --lux-border-strong: rgba(255, 255, 255, 0.14);
+    --lux-text: #f4ede0;
+    --lux-text-muted: rgba(214, 224, 243, 0.74);
+    --lux-text-soft: rgba(214, 224, 243, 0.56);
+
+    /* ===== Single source of truth: color-fade / glow / glass recipe =====
+       Every registration surface references these tokens. Retune the look
+       here once and it propagates across the whole page (and matches the
+       dashboard / LMS). Glow radials follow --lux-color-fade-alpha; the dark
+       base follows --lux-transparency-alpha. */
+    --reg-fade-surface:
+        radial-gradient(circle at 12% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .92) * .075)), transparent 32%),
+        radial-gradient(circle at 74% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .28)), transparent 38%),
+        radial-gradient(circle at 100% 90%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .92) * .18)), transparent 38%),
+        linear-gradient(135deg,
+            rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .11)),
+            rgba(12,17,26, calc(var(--lux-transparency-alpha, .92) * .89)) 42%,
+            rgba(8,12,19, calc(var(--lux-transparency-alpha, .92) * .80)));
+    --reg-fade-surface-soft:
+        radial-gradient(circle at 12% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .92) * .06)), transparent 30%),
+        radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .16)), transparent 36%),
+        linear-gradient(135deg,
+            rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .07)),
+            rgba(12,18,30, calc(var(--lux-transparency-alpha, .92) * .82)) 46%,
+            rgba(8,12,21, calc(var(--lux-transparency-alpha, .92) * .72)));
+    --reg-fade-control:
+        linear-gradient(180deg, rgba(255,255,255, calc(0.04 + var(--lux-glass-alpha, .06))), rgba(255,255,255, 0.02)),
+        radial-gradient(circle at top right, rgba(var(--lux-accent-rgb), 0.10), transparent 32%);
+    --reg-fade-border: rgba(var(--lux-accent-rgb), 0.22);
+    --reg-fade-border-soft: rgba(255,255,255, 0.11);
+    --reg-fade-shadow:
+        0 24px 58px rgba(0,0,0,0.24),
+        inset 0 1px 0 rgba(255,255,255,0.08),
+        0 0 0 1px rgba(var(--lux-accent-rgb),0.04);
+    --reg-fade-shadow-soft:
+        0 18px 40px rgba(0,0,0,0.20),
+        inset 0 1px 0 rgba(255,255,255,0.06);
+    --reg-fade-glow-ring: 0 0 0 1px rgba(var(--lux-accent-rgb),0.30), 0 18px 40px rgba(var(--lux-accent-rgb), var(--lux-panel-glow, 0.22));
+    --reg-fade-blur: blur(var(--lux-transparency-blur, 18px)) saturate(var(--lux-transparency-saturate, 138%));
+
+    background:
+        radial-gradient(circle at 20% 0%, rgba(var(--lux-accent-rgb), 0.12), transparent 32%),
+        radial-gradient(circle at 85% 12%, rgba(var(--lux-accent-rgb), 0.10), transparent 26%),
+        linear-gradient(180deg, #050912 0%, #060b13 100%);
+    color: var(--lux-text);
+}
+
+/* Light-mode variants of the shared color-fade recipe */
+html.lux-light-mode body.lux-route-registration,
+body.lux-light-mode.lux-route-registration {
+    --reg-fade-surface:
+        radial-gradient(circle at 12% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .86) * .86)), transparent 34%),
+        radial-gradient(circle at 74% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .20)), transparent 36%),
+        radial-gradient(circle at 100% 90%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .86) * .12)), transparent 38%),
+        linear-gradient(135deg,
+            rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .08)),
+            rgba(255,255,255, calc(var(--lux-transparency-alpha, .86) * .88)) 42%,
+            rgba(247,241,232, calc(var(--lux-transparency-alpha, .86) * .72)));
+    --reg-fade-surface-soft:
+        radial-gradient(circle at 12% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .86) * .72)), transparent 32%),
+        radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .14)), transparent 36%),
+        linear-gradient(135deg,
+            rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .05)),
+            rgba(255,255,255, calc(var(--lux-transparency-alpha, .86) * .82)) 46%,
+            rgba(247,241,232, calc(var(--lux-transparency-alpha, .86) * .66)));
+    --reg-fade-control:
+        linear-gradient(180deg, rgba(255,255,255, 0.82), rgba(248,244,237, 0.62)),
+        radial-gradient(circle at top right, rgba(var(--lux-accent-rgb), 0.10), transparent 32%);
+    --reg-fade-border: rgba(var(--lux-accent-rgb), 0.18);
+    --reg-fade-border-soft: rgba(48,34,22, 0.12);
+    --reg-fade-shadow:
+        0 24px 58px rgba(70,50,30,0.11),
+        inset 0 1px 0 rgba(255,255,255,0.84);
+    --reg-fade-shadow-soft:
+        0 16px 34px rgba(107,91,62,0.10),
+        inset 0 1px 0 rgba(255,255,255,0.66);
+    --reg-fade-glow-ring: 0 0 0 1px rgba(var(--lux-accent-rgb),0.22), 0 16px 34px rgba(var(--lux-accent-rgb), 0.16);
+    --reg-fade-blur: blur(var(--lux-transparency-blur, 18px)) saturate(var(--lux-transparency-saturate, 140%));
+
+    /* The route hardcodes a cream --lux-text for dark mode; in light mode
+       it would otherwise win over the global dark value (equal specificity,
+       later source order). Restore dark, legible text on light surfaces. */
+    --lux-text: #201912;
+    --lux-text-muted: rgba(32, 25, 18, 0.66);
+    --lux-text-soft: rgba(32, 25, 18, 0.36);
+    --lux-border: rgba(48, 34, 22, 0.12);
+    --lux-border-strong: rgba(48, 34, 22, 0.20);
+}
+
+body.lux-route-registration header,
+body.lux-route-registration #top-nav,
+body.lux-route-registration #prof-nav,
+body.lux-route-registration #admin-nav {
+    background: rgba(8, 12, 20, 0.88) !important;
+    color: var(--lux-text) !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.18) !important;
+}
+
+body.lux-route-registration header .header-left,
+body.lux-route-registration header .header-right,
+body.lux-route-registration header .user-info,
+body.lux-route-registration header .user-dropdown-trigger,
+body.lux-route-registration header .faculty-switcher select,
+body.lux-route-registration header .role-switcher select,
+body.lux-route-registration header .lang-switcher,
+body.lux-route-registration #top-nav .nav-item,
+body.lux-route-registration #prof-nav .nav-item,
+body.lux-route-registration #admin-nav .nav-item {
+    color: var(--lux-text) !important;
+}
+
+body.lux-route-registration header .faculty-switcher select,
+body.lux-route-registration header .role-switcher select {
+    background: linear-gradient(180deg, rgba(15, 19, 27, 0.98), rgba(8, 11, 16, 0.94)) !important;
+    border: 1px solid rgba(var(--lux-accent-rgb), 0.16) !important;
+    color: var(--lux-text) !important;
+}
+
+body.lux-route-registration #app-content {
+    background: transparent !important;
+}
+
+body.lux-route-registration #page-registration {
+    padding-bottom: 120px;
+    display: grid;
+    gap: 18px;
+    --registration-shell-radius: 28px;
+    --registration-card-radius: 20px;
+    --registration-pill-radius: 999px;
+    --registration-panel-padding: 20px;
+    --registration-panel-border-dark: rgba(255, 255, 255, 0.08);
+    --registration-panel-border-light: rgba(20, 30, 48, 0.08);
+    --registration-soft-shadow-dark: 0 20px 48px rgba(0, 0, 0, 0.24);
+    --registration-soft-shadow-light: 0 20px 48px rgba(16, 24, 40, 0.12);
+}
+
+body.lux-route-registration .registration-hero,
+body.lux-route-registration .registration-workspace,
+body.lux-route-registration .registration-insight-card,
+body.lux-route-registration .registration-module-list-card,
+body.lux-route-registration .registration-module-pane-card,
+body.lux-route-registration .registration-state-card,
+body.lux-route-registration .registration-track-card,
+body.lux-route-registration .registration-focus-card,
+body.lux-route-registration .registration-footer-bar,
+body.lux-route-registration .filter-shell,
+body.lux-route-registration .reg-tabs,
+body.lux-route-registration .content-box.surface-card {
+    background: var(--reg-fade-surface) !important;
+    color: var(--lux-text) !important;
+    border: 1px solid var(--reg-fade-border) !important;
+    box-shadow: var(--reg-fade-shadow) !important;
+    -webkit-backdrop-filter: var(--reg-fade-blur) !important;
+    backdrop-filter: var(--reg-fade-blur) !important;
+}
+
+body.lux-route-registration .registration-hero,
+body.lux-route-registration .registration-workspace,
+body.lux-route-registration .registration-insight-card,
+body.lux-route-registration .registration-module-list-card,
+body.lux-route-registration .registration-module-pane-card,
+body.lux-route-registration .registration-state-card,
+body.lux-route-registration .registration-track-card,
+body.lux-route-registration .registration-focus-card,
+body.lux-route-registration .registration-footer-bar,
+body.lux-route-registration .filter-shell,
+body.lux-route-registration .reg-tabs,
+body.lux-route-registration .content-box.surface-card,
+body.lux-route-registration .registration-mini-metric,
+body.lux-route-registration .registration-course-row,
+body.lux-route-registration .registration-module-choice,
+body.lux-route-registration .registration-track-group {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+}
+
+body.lux-route-registration .registration-hero::before,
+body.lux-route-registration .registration-workspace::before,
+body.lux-route-registration .registration-insight-card::before,
+body.lux-route-registration .registration-module-list-card::before,
+body.lux-route-registration .registration-module-pane-card::before,
+body.lux-route-registration .registration-state-card::before,
+body.lux-route-registration .registration-track-card::before,
+body.lux-route-registration .registration-focus-card::before,
+body.lux-route-registration .registration-footer-bar::before,
+body.lux-route-registration .filter-shell::before,
+body.lux-route-registration .reg-tabs::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(120deg, rgba(255, 255, 255, 0.08), transparent 34%);
+    opacity: 0.46;
+    pointer-events: none;
+    z-index: 0;
+}
+
+body.lux-route-registration .registration-hero > *,
+body.lux-route-registration .registration-workspace > *,
+body.lux-route-registration .registration-insight-card > *,
+body.lux-route-registration .registration-module-list-card > *,
+body.lux-route-registration .registration-module-pane-card > *,
+body.lux-route-registration .registration-state-card > *,
+body.lux-route-registration .registration-track-card > *,
+body.lux-route-registration .registration-focus-card > *,
+body.lux-route-registration .registration-footer-bar > *,
+body.lux-route-registration .filter-shell > *,
+body.lux-route-registration .reg-tabs > * {
+    position: relative;
+    z-index: 1;
+}
+
+body.lux-route-registration .modal-content {
+    background: var(--reg-fade-surface) !important;
+    border: 1px solid var(--reg-fade-border) !important;
+    color: var(--lux-text) !important;
+    box-shadow: var(--reg-fade-shadow) !important;
+    -webkit-backdrop-filter: var(--reg-fade-blur) !important;
+    backdrop-filter: var(--reg-fade-blur) !important;
+}
+
+body.lux-route-registration .modal-header,
+body.lux-route-registration .modal-footer {
+    background: var(--reg-fade-control) !important;
+    border-color: var(--reg-fade-border-soft) !important;
+}
+
+body.lux-route-registration .modal-body {
+    color: var(--lux-text) !important;
+}
+
+body.lux-route-registration #kiu-structured-form-modal,
+body.lux-route-registration #admin-quiz-copy-overlay {
+    backdrop-filter: blur(var(--lux-transparency-blur, 12px)) saturate(var(--lux-transparency-saturate, 115%));
+    -webkit-backdrop-filter: blur(var(--lux-transparency-blur, 12px)) saturate(var(--lux-transparency-saturate, 115%));
+}
+
+body.lux-route-registration #kiu-structured-form-modal > div,
+body.lux-route-registration #admin-quiz-copy-overlay > div,
+body.lux-route-registration #modal-programs .modal-body > div,
+body.lux-route-registration #modal-program-courses,
+body.lux-route-registration #modal-syllabus .modal-body > div {
+    background: var(--reg-fade-surface) !important;
+    border: 1px solid var(--reg-fade-border) !important;
+    color: var(--lux-text) !important;
+    box-shadow: var(--reg-fade-shadow) !important;
+}
+
+body.lux-route-registration #kiu-structured-form-modal label,
+body.lux-route-registration #admin-quiz-copy-overlay label {
+    color: var(--lux-text-muted) !important;
+}
+
+body.lux-route-registration #kiu-structured-form-modal input,
+body.lux-route-registration #kiu-structured-form-modal select,
+body.lux-route-registration #kiu-structured-form-modal textarea,
+body.lux-route-registration #admin-quiz-copy-overlay select {
+    background: rgba(7, 10, 16, 0.90) !important;
+    color: var(--lux-text) !important;
+    border-color: rgba(255, 255, 255, 0.10) !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04) !important;
+}
+
+body.lux-route-registration #kiu-structured-form-modal .lux-secondary-btn,
+body.lux-route-registration #admin-quiz-copy-overlay .lux-secondary-btn {
+    background: var(--reg-fade-control) !important;
+    border-color: var(--reg-fade-border) !important;
+    color: var(--lux-text) !important;
+}
+
+body.lux-route-registration #kiu-structured-form-modal .lux-primary-btn,
+body.lux-route-registration #admin-quiz-copy-overlay .lux-primary-btn {
+    box-shadow: 0 16px 32px rgba(var(--lux-accent-rgb), 0.20) !important;
+}
+
+body.lux-route-registration .registration-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(320px, 0.9fr);
+    gap: 22px;
+    align-items: stretch;
+    border-radius: 32px;
+    padding: 30px;
+    background: var(--reg-fade-surface) !important;
+    box-shadow: var(--reg-fade-shadow) !important;
+}
+
+body.lux-route-registration .registration-hero-copy,
+body.lux-route-registration .registration-hero-focus {
+    min-width: 0;
+}
+
+body.lux-route-registration .registration-hero .admin-page-kicker {
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: var(--lux-accent-2) !important;
+}
+
+body.lux-route-registration .registration-hero .admin-hero-title {
+    margin-top: 12px;
+    max-width: 680px;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: clamp(34px, 4vw, 44px);
+    line-height: 1.06;
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    color: var(--lux-text) !important;
+    text-shadow: 0 16px 32px rgba(0, 0, 0, 0.20);
+}
+
+body.lux-route-registration .registration-hero .admin-hero-subtitle {
+    margin-top: 12px;
+    max-width: 620px;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--lux-text-muted) !important;
+}
+
+body.lux-route-registration .registration-hero .wave2-chip--hero {
+    display: inline-flex;
+    align-items: center;
+    min-height: 34px;
+    padding: 7px 12px;
+    border-radius: var(--registration-pill-radius) !important;
+    border: 1px solid var(--reg-fade-border) !important;
+    background: var(--reg-fade-control) !important;
+    color: var(--lux-text-muted) !important;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    -webkit-backdrop-filter: var(--reg-fade-blur);
+    backdrop-filter: var(--reg-fade-blur);
+}
+
+body.lux-route-registration .registration-hero-actions,
+body.lux-route-registration .registration-mini-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+body.lux-route-registration .registration-hero-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+body.lux-route-registration .registration-focus-card,
+body.lux-route-registration .registration-insight-card,
+body.lux-route-registration .registration-module-list-card,
+body.lux-route-registration .registration-module-pane-card,
+body.lux-route-registration .registration-workspace,
+body.lux-route-registration .registration-track-card {
+    border-radius: var(--registration-card-radius);
+}
+
+body.lux-route-registration .registration-focus-card {
+    padding: 20px;
+    display: grid;
+    gap: 14px;
+    background: var(--reg-fade-surface-soft) !important;
+    border: 1px solid var(--reg-fade-border-soft) !important;
+    box-shadow: var(--reg-fade-shadow-soft) !important;
+    -webkit-backdrop-filter: var(--reg-fade-blur) !important;
+    backdrop-filter: var(--reg-fade-blur) !important;
+}
+
+body.lux-route-registration .registration-summary-label,
+body.lux-route-registration .registration-module-list-title,
+body.lux-route-registration .registration-workspace-kicker,
+body.lux-route-registration .registration-track-copy,
+body.lux-route-registration .registration-module-pane-copy,
+body.lux-route-registration .registration-course-subtitle {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--lux-text-muted) !important;
+}
+
+body.lux-route-registration .registration-summary-value,
+body.lux-route-registration .registration-workspace-title,
+body.lux-route-registration .registration-module-pane-title,
+body.lux-route-registration .registration-track-title,
+body.lux-route-registration .registration-course-title {
+    color: var(--lux-text) !important;
+}
+
+body.lux-route-registration .registration-summary-value,
+body.lux-route-registration .registration-signal-card strong {
+    font-family: 'DM Mono', monospace;
+    letter-spacing: -0.02em;
+}
+
+body.lux-route-registration .registration-summary-card--hero .registration-summary-value {
+    font-size: clamp(24px, 2.2vw, 30px);
+    color: var(--lux-accent-2) !important;
+}
+
+body.lux-route-registration .registration-summary-copy {
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+body.lux-route-registration .registration-hero-focus-grid,
+body.lux-route-registration .registration-insight-grid,
+body.lux-route-registration .registration-shell-grid,
+body.lux-route-registration .registration-course-list,
+body.lux-route-registration .registration-track-list {
+    display: grid;
+    gap: 16px;
+}
+
+body.lux-route-registration .registration-hero-focus-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+body.lux-route-registration .registration-insight-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    margin: 0;
+}
+
+body.lux-route-registration .registration-summary-card {
+    padding: 20px;
+    display: grid;
+    gap: 12px;
+}
+
+body.lux-route-registration .registration-insight-card .registration-summary-value {
+    font-size: clamp(22px, 2vw, 28px);
+    font-weight: 900;
+    color: var(--lux-accent-2) !important;
+}
+
+body.lux-route-registration .registration-control-row {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    justify-content: space-between;
+    margin: 0;
+}
+
+body.lux-route-registration .registration-term-shell {
+    min-width: min(360px, 100%);
+    padding: 18px 20px;
+    border-radius: var(--registration-card-radius);
+}
+
+body.lux-route-registration .filter-shell-title {
+    color: var(--lux-text-muted) !important;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+}
+
+body.lux-route-registration .reg-tab {
+    min-height: 60px;
+    padding: 12px 14px;
+    background: var(--reg-fade-control) !important;
+    color: var(--lux-text) !important;
+    border: 1px solid var(--reg-fade-border-soft) !important;
+    border-radius: 16px !important;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    line-height: 1.35;
+}
+
+body.lux-route-registration .reg-tab.active {
+    background: linear-gradient(135deg, rgba(var(--lux-accent-rgb), 0.94), var(--lux-accent-2)) !important;
+    color: #fff8ef !important;
+    border-color: transparent !important;
+    box-shadow: var(--reg-fade-glow-ring) !important;
+}
+
+body.lux-route-registration .registration-workspace {
+    padding: 22px 24px 24px;
+}
+
+body.lux-route-registration .registration-workspace-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+body.lux-route-registration .registration-helper-note {
+    color: var(--lux-text-muted);
+    max-width: 360px;
+    text-align: right;
+    font-size: 12px;
+    line-height: 1.55;
+}
+
+body.lux-route-registration .registration-workspace-title {
+    margin-top: 8px;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: clamp(24px, 2.3vw, 30px);
+    line-height: 1.08;
+    font-weight: 600;
+}
+
+body.lux-route-registration .registration-empty-state {
+    padding: 24px;
+    text-align: center;
+    border-radius: 18px;
+    border: 1px dashed var(--reg-fade-border-soft);
+    background: var(--reg-fade-surface-soft) !important;
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-registration .registration-state-card,
+body.lux-route-registration .registration-module-list-card,
+body.lux-route-registration .registration-module-pane-card {
+    padding: 18px 20px;
+    border: 1px solid var(--reg-fade-border-soft);
+    background: var(--reg-fade-surface-soft) !important;
+    box-shadow: var(--reg-fade-shadow-soft);
+}
+
+body.lux-route-registration .registration-module-pane-shell {
+    display: grid;
+    gap: 14px;
+}
+
+body.lux-route-registration .registration-module-pane-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 14px;
+}
+
+body.lux-route-registration .registration-module-pane-heading {
+    min-width: 0;
+}
+
+body.lux-route-registration .registration-module-pane-title {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 24px;
+    line-height: 1.08;
+    font-weight: 600;
+    color: var(--lux-text) !important;
+}
+
+body.lux-route-registration .registration-module-pane-copy {
+    margin-top: 4px;
+    color: var(--lux-text-muted) !important;
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+body.lux-route-registration .registration-module-pane-chip,
+body.lux-route-registration .registration-track-group-chip {
+    display: inline-flex;
+    align-items: center;
+    min-height: 34px;
+    padding: 0 12px;
+    border-radius: 999px;
+    border: 1px solid rgba(var(--lux-accent-rgb), 0.18);
+    background: linear-gradient(135deg, rgba(var(--lux-accent-rgb), 0.18), rgba(255, 255, 255, 0.04));
+    color: var(--lux-text) !important;
+    font-size: 11px;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+body.lux-route-registration .registration-module-grid-head {
+    display: grid;
+    grid-template-columns: 84px minmax(0, 1.6fr) 110px minmax(0, 2.2fr) 120px;
+    gap: 10px;
+    margin-top: 2px;
+    padding: 0 2px;
+    color: rgba(214, 224, 243, 0.72);
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+}
+
+body.lux-route-registration .registration-course-row {
+    display: grid;
+    grid-template-columns: 84px minmax(0, 1.6fr) 110px minmax(0, 2.2fr) 120px;
+    gap: 12px;
+    align-items: center;
+    padding: 14px 16px;
+    border-radius: 18px;
+    border: 1px solid var(--reg-fade-border-soft);
+    background: var(--reg-fade-surface-soft) !important;
+    box-shadow: var(--reg-fade-shadow-soft);
+    transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+}
+
+body.lux-route-registration .registration-course-row:hover {
+    border-color: rgba(var(--lux-accent-rgb), 0.22);
+    transform: translateY(-2px);
+}
+
+body.lux-route-registration .registration-course-row-main,
+body.lux-route-registration .registration-course-meta,
+body.lux-route-registration .registration-track-group-copy {
+    min-width: 0;
+}
+
+body.lux-route-registration .registration-course-index,
+body.lux-route-registration .registration-course-ects {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 42px;
+    padding: 0 12px;
+    border-radius: 14px;
+    background: var(--reg-fade-control);
+    border: 1px solid var(--reg-fade-border-soft);
+    font-family: 'DM Mono', monospace;
+    font-weight: 800;
+    color: var(--lux-text) !important;
+    text-align: center;
+}
+
+body.lux-route-registration .registration-course-title {
+    font-weight: 800;
+    color: var(--lux-text) !important;
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+body.lux-route-registration .registration-course-meta {
+    color: var(--lux-text-muted);
+    font-size: 10px;
+    letter-spacing: 0.02em;
+    line-height: 1.55;
+}
+
+body.lux-route-registration .registration-course-head {
+    display: grid;
+    grid-template-columns: 84px minmax(0, 1.6fr) 110px minmax(0, 2.2fr) 120px;
+    gap: 10px;
+    margin: 4px 0 10px;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--lux-text-soft);
+}
+
+body.lux-route-registration .registration-course-list {
+    gap: 10px;
+}
+
+body.lux-route-registration .registration-render-error {
+    padding: 28px;
+    background: #ffffff;
+    border: 1px dashed #dbe5f1;
+    border-radius: 18px;
+    color: #475569;
+}
+
+body.lux-route-registration .registration-render-error-title {
+    margin-bottom: 8px;
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--kiu-navy);
+}
+
+body.lux-route-registration .registration-render-error-copy {
+    font-size: 12px;
+    color: #64748b;
+}
+
+body.lux-route-registration .registration-module-choice-radio {
+    margin: 0;
+}
+
+body.lux-route-registration .registration-state-list {
+    display: grid;
+    gap: 14px;
+}
+
+body.lux-route-registration .registration-state-title {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--kiu-navy);
+}
+
+body.lux-route-registration .registration-state-title--compact {
+    font-size: 17px;
+}
+
+body.lux-route-registration .registration-state-meta {
+    margin-top: 6px;
+    font-size: 12px;
+    color: #64748b;
+}
+
+body.lux-route-registration .registration-state-summary {
+    margin-top: 12px;
+    font-size: 13px;
+    color: #0f172a;
+    line-height: 1.7;
+}
+
+body.lux-route-registration .registration-history-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+body.lux-route-registration .registration-history-meta {
+    font-size: 12px;
+    color: #475569;
+    text-align: right;
+}
+
+body.lux-route-registration .registration-course-action-state {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 96px;
+    padding: 8px 12px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+body.lux-route-registration .registration-course-action-state.is-locked {
+    background: #f8fafc;
+    color: #94a3b8;
+    border: 1px solid #e2e8f0;
+}
+
+body.lux-route-registration .registration-course-action-state.is-empty {
+    background: #fff7ed;
+    color: #c2410c;
+    border: 1px solid #fdba74;
+}
+
+body.lux-route-registration .registration-course-picker-btn {
+    min-width: 96px;
+    padding: 8px 12px;
+    font-size: 11px;
+}
+
+body.lux-route-registration .registration-course-meta-line.is-spaced {
+    margin-top: 4px;
+}
+
+body.lux-route-registration .registration-course-meta-line.is-accent {
+    color: #0f766e;
+    font-weight: 700;
+}
+
+body.lux-route-registration .registration-course-meta-line.is-info {
+    color: #2563eb;
+    font-weight: 700;
+}
+
+body.lux-route-registration .registration-course-meta-line.is-success {
+    color: #047857;
+    font-weight: 700;
+}
+
+body.lux-route-registration .registration-course-meta-line.is-danger {
+    color: #dc2626;
+    font-weight: 700;
+}
+
+body.lux-route-registration .registration-course-meta-line.is-small {
+    font-size: 10px;
+}
+
+body.lux-route-registration .registration-course-empty {
+    padding: 18px;
+    text-align: center;
+    color: var(--kiu-text-muted);
+    background: #f8fafc;
+    border: 1px dashed #dbe5f1;
+    border-radius: 16px;
+}
+
+body.lux-route-registration .registration-structured-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+body.lux-route-registration .registration-structured-label {
+    font-size: 11px;
+    font-weight: 800;
+    color: #60728d;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+body.lux-route-registration .registration-structured-control {
+    width: 100%;
+    min-height: 50px;
+    padding: 14px 15px;
+    border: 1px solid rgba(16, 32, 56, 0.1);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.9);
+    color: #102038;
+    font: inherit;
+    outline: none;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+body.lux-route-registration .registration-structured-control.is-muted {
+    background: rgba(241, 245, 249, 0.95);
+}
+
+body.lux-route-registration .registration-structured-control--textarea {
+    resize: vertical;
+    min-height: 96px;
+}
+
+body.lux-route-registration .registration-structured-help {
+    margin-top: 6px;
+    font-size: 11px;
+    color: #8aa0bc;
+}
+
+body.lux-route-registration .registration-structured-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 8000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(8, 15, 28, 0.62);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+}
+
+body.lux-route-registration .registration-structured-modal-card {
+    width: min(94vw, 720px);
+    max-height: 92vh;
+    overflow: hidden;
+    border-radius: 30px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(244,247,252,0.98));
+    border: 1px solid rgba(255,255,255,0.7);
+    box-shadow: 0 34px 90px rgba(2,6,23,0.35);
+    display: flex;
+    flex-direction: column;
+}
+
+body.lux-route-registration .registration-structured-modal-head {
+    padding: 24px 26px;
+    background: linear-gradient(135deg, #0f1e33 0%, #16375d 52%, #0b84ff 100%);
+    color: #ffffff;
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    align-items: flex-start;
+}
+
+body.lux-route-registration .registration-structured-modal-title {
+    font-size: 18px;
+    font-weight: 900;
+    letter-spacing: -0.03em;
+}
+
+body.lux-route-registration .registration-structured-modal-subtitle {
+    margin-top: 4px;
+    font-size: 12px;
+    color: rgba(255,255,255,0.76);
+}
+
+body.lux-route-registration .registration-structured-modal-close {
+    width: 40px;
+    height: 40px;
+    border-radius: 14px;
+    border: 1px solid rgba(255,255,255,0.18);
+    background: rgba(255,255,255,0.08);
+    color: #ffffff;
+    cursor: pointer;
+    font-size: 20px;
+    line-height: 1;
+}
+
+body.lux-route-registration .registration-structured-form {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+body.lux-route-registration .registration-structured-modal-body {
+    padding: 24px 26px;
+    overflow: auto;
+}
+
+body.lux-route-registration .registration-structured-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 14px;
+}
+
+body.lux-route-registration .registration-structured-modal-footer {
+    padding: 18px 26px 26px;
+    border-top: 1px solid rgba(16,32,56,0.06);
+    background: rgba(248,250,253,0.92);
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+body.lux-route-registration .registration-structured-modal-action {
+    padding: 12px 18px;
+    font-size: 13px;
+}
+
+body.lux-route-registration .registration-selected-empty {
+    padding: 20px;
+}
+
+body.lux-route-registration .registration-selected-cell--left {
+    text-align: left;
+}
+
+body.lux-route-registration .registration-selected-cell--title {
+    text-align: left;
+    font-weight: 600;
+}
+
+body.lux-route-registration .registration-course-action .lux-primary-btn,
+body.lux-route-registration .registration-course-action .lux-secondary-btn {
+    min-width: 96px;
+}
+
+body.lux-route-registration .registration-module-list-card,
+body.lux-route-registration .registration-module-pane-card {
+    min-height: 100%;
+}
+
+body.lux-route-registration .registration-module-list {
+    display: grid;
+    gap: 10px;
+    max-height: 260px;
+    overflow: auto;
+    padding-right: 4px;
+}
+
+body.lux-route-registration .registration-module-choice {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 16px;
+    border-radius: 18px;
+    cursor: pointer;
+    border: 1px solid var(--reg-fade-border-soft);
+    background: var(--reg-fade-surface-soft) !important;
+    transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+}
+
+body.lux-route-registration .registration-module-choice.is-active {
+    border-color: var(--reg-fade-border);
+    background: linear-gradient(135deg, rgba(var(--lux-accent-rgb), 0.12), rgba(255, 255, 255, 0.04)) !important;
+    box-shadow: var(--reg-fade-glow-ring);
+}
+
+body.lux-route-registration .registration-module-choice:hover {
+    transform: translateY(-1px);
+    border-color: rgba(var(--lux-accent-rgb), 0.22);
+}
+
+body.lux-route-registration .registration-module-choice-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+}
+
+body.lux-route-registration .registration-module-choice-title {
+    font-weight: 700;
+    color: var(--lux-text) !important;
+    font-size: 12px;
+    line-height: 1.4;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+body.lux-route-registration .registration-module-choice-ects,
+body.lux-route-registration .registration-module-ects {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 800;
+    background: rgba(var(--lux-accent-rgb), 0.12) !important;
+    border: 1px solid rgba(var(--lux-accent-rgb), 0.18);
+    color: var(--lux-text) !important;
+}
+
+body.lux-route-registration .registration-track-head,
+body.lux-route-registration .registration-module-pane-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 14px;
+    margin-bottom: 14px;
+}
+
+body.lux-route-registration .registration-track-list {
+    display: grid;
+    gap: 14px;
+}
+
+body.lux-route-registration .registration-track-card {
+    overflow: hidden;
+    border: 1px solid var(--reg-fade-border-soft);
+    background: var(--reg-fade-surface-soft) !important;
+}
+
+body.lux-route-registration .registration-track-card-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 18px 20px;
+    cursor: pointer;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.02));
+}
+
+body.lux-route-registration .registration-track-card-body {
+    padding: 0 20px 20px;
+}
+
+body.lux-route-registration .registration-track-group {
+    border: 1px solid var(--reg-fade-border-soft);
+    border-radius: 18px;
+    overflow: hidden;
+    background: var(--reg-fade-surface-soft);
+}
+
+body.lux-route-registration .registration-track-group+.registration-track-group {
+    margin-top: 12px;
+}
+
+body.lux-route-registration .registration-track-group-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 18px 20px;
+    border: 0;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.03));
+    color: var(--lux-text);
+    cursor: pointer;
+    text-align: left;
+}
+
+body.lux-route-registration .registration-track-group-head i {
+    color: var(--lux-accent-2);
+    width: 18px;
+    flex-shrink: 0;
+}
+
+body.lux-route-registration .registration-track-group-copy {
+    flex: 1;
+    min-width: 0;
+}
+
+body.lux-route-registration .registration-track-group-title {
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.01em;
+    color: var(--lux-text) !important;
+}
+
+body.lux-route-registration .registration-track-group-subtitle {
+    margin-top: 3px;
+    color: var(--lux-text-muted) !important;
+    font-size: 10px;
+    line-height: 1.55;
+}
+
+body.lux-route-registration .registration-hero,
+body.lux-route-registration .filter-shell,
+body.lux-route-registration .content-box.surface-card,
+body.lux-route-registration .reg-tabs {
+    border-radius: var(--registration-shell-radius);
+}
+
+body.lux-route-registration .reg-tabs {
+    gap: 10px;
+    padding: 12px;
+    margin-top: 0;
+}
+
+body.lux-route-registration .reg-tab {
+    background: var(--reg-fade-control) !important;
+    color: var(--lux-text) !important;
+    border: 1px solid var(--reg-fade-border-soft) !important;
+    box-shadow: none !important;
+}
+
+body.lux-route-registration .reg-tab.active {
+    background: linear-gradient(135deg, var(--lux-accent), var(--lux-accent-2)) !important;
+    color: #fff8ef !important;
+    border-color: transparent !important;
+    box-shadow: var(--reg-fade-glow-ring) !important;
+}
+
+body.lux-route-registration .lux-primary-btn {
+    background: linear-gradient(135deg, var(--lux-accent), color-mix(in srgb, var(--lux-accent) 70%, black)) !important;
+    color: #f8fbff !important;
+    border: 1px solid var(--reg-fade-border) !important;
+    min-height: 46px;
+    padding: 0 16px !important;
+    box-shadow: var(--reg-fade-glow-ring) !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+}
+
+body.lux-route-registration .lux-secondary-btn {
+    background: var(--reg-fade-control) !important;
+    border: 1px solid var(--reg-fade-border) !important;
+    color: var(--lux-text) !important;
+    min-height: 46px;
+    padding: 0 16px !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+}
+
+body.lux-route-registration .lux-secondary-btn:hover,
+body.lux-route-registration .lux-primary-btn:hover {
+    border-color: rgba(var(--lux-accent-rgb), 0.30) !important;
+    transform: translateY(-1px);
+}
+
+body.lux-route-registration #page-registration input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='color']),
+body.lux-route-registration #page-registration select,
+body.lux-route-registration #page-registration textarea {
+    background: rgba(7, 10, 16, 0.88) !important;
+    color: var(--lux-text) !important;
+    border-color: rgba(255, 255, 255, 0.10) !important;
+}
+
+html.lux-light-mode body.lux-route-registration #page-registration input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='color']),
+html.lux-light-mode body.lux-route-registration #page-registration select,
+html.lux-light-mode body.lux-route-registration #page-registration textarea,
+body.lux-light-mode.lux-route-registration #page-registration input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='color']),
+body.lux-light-mode.lux-route-registration #page-registration select,
+body.lux-light-mode.lux-route-registration #page-registration textarea,
+html.lux-light-mode body.lux-route-registration #kiu-structured-form-modal input,
+html.lux-light-mode body.lux-route-registration #kiu-structured-form-modal select,
+html.lux-light-mode body.lux-route-registration #kiu-structured-form-modal textarea,
+html.lux-light-mode body.lux-route-registration #admin-quiz-copy-overlay select,
+body.lux-light-mode.lux-route-registration #kiu-structured-form-modal input,
+body.lux-light-mode.lux-route-registration #kiu-structured-form-modal select,
+body.lux-light-mode.lux-route-registration #kiu-structured-form-modal textarea,
+body.lux-light-mode.lux-route-registration #admin-quiz-copy-overlay select {
+    background: rgba(255, 255, 255, 0.92) !important;
+    color: var(--lux-text) !important;
+    border-color: var(--reg-fade-border-soft) !important;
+}
+
+body.lux-route-registration #page-registration input::placeholder,
+body.lux-route-registration #page-registration textarea::placeholder {
+    color: rgba(214, 224, 243, 0.45) !important;
+}
+
+body.lux-route-registration footer {
+    display: none !important;
+}
+
+body.lux-route-registration .registration-progress-shell {
+    background: var(--reg-fade-surface) !important;
+    border: 1px solid var(--reg-fade-border) !important;
+    color: var(--lux-text) !important;
+    box-shadow: var(--reg-fade-shadow) !important;
+    -webkit-backdrop-filter: var(--reg-fade-blur) !important;
+    backdrop-filter: var(--reg-fade-blur) !important;
+}
+
+body.lux-route-registration .registration-progress-value {
+    font-size: 14px;
+    color: var(--lux-accent-2) !important;
+}
+
+body.lux-route-registration .registration-progress-bar {
+    background: linear-gradient(90deg, var(--lux-accent), var(--lux-accent-2)) !important;
+}
+
+body.lux-route-registration .registration-helper-note,
+body.lux-route-registration .registration-signal-card span,
+body.lux-route-registration .registration-summary-copy {
+    color: var(--lux-text-muted) !important;
+}
+
+body.lux-route-registration .registration-signal-card {
+    display: grid;
+    gap: 8px;
+    min-height: 92px;
+    padding: 16px 18px;
+    border-radius: 18px;
+    border: 1px solid var(--reg-fade-border-soft);
+    background: var(--reg-fade-surface-soft) !important;
+    -webkit-backdrop-filter: var(--reg-fade-blur);
+    backdrop-filter: var(--reg-fade-blur);
+}
+
+body.lux-route-registration .registration-signal-card strong {
+    color: var(--lux-text) !important;
+    font-size: 18px;
+}
+
+body.lux-route-registration .registration-signal-card span {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+}
+
+body.lux-route-registration .registration-control-row {
+    margin-top: 18px;
+}
+
+body.lux-route-registration .registration-hero-copy,
+body.lux-route-registration .registration-workspace-head {
+    min-width: 0;
+}
+
+body.lux-route-registration .registration-hero-focus-grid {
+    grid-template-columns: 1fr;
+}
+
+body.lux-route-registration .registration-hero-focus {
+    display: grid;
+    gap: 12px;
+}
+
+
+
+body.lux-route-registration .registration-shell-grid {
+    grid-template-columns: minmax(320px, 0.92fr) minmax(0, 1.08fr);
+    align-items: start;
+}
+
+body.lux-route-registration .registration-course-row .lux-primary-btn,
+body.lux-route-registration .registration-course-row .lux-secondary-btn {
+    min-width: 96px;
+}
+
+body.lux-route-registration .registration-course-head,
+body.lux-route-registration .registration-section-copy,
+body.lux-route-registration .registration-track-copy,
+body.lux-route-registration .registration-module-pane-copy {
+    color: var(--lux-text-muted) !important;
+}
+
+body.lux-route-registration .registration-course-row input[type='radio'] {
+    accent-color: #5caaff;
+}
+
+body.lux-route-registration .registration-advanced-map-empty {
+    padding: 30px;
+    text-align: center;
+    color: #94a3b8;
+}
+
+body.lux-route-registration .registration-advanced-module-row {
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+    color: #334155;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+body.lux-route-registration .registration-advanced-module-cell,
+body.lux-route-registration .registration-advanced-course-cell {
+    padding: 10px 8px;
+    text-align: center;
+    vertical-align: middle;
+}
+
+body.lux-route-registration .registration-advanced-module-cell:not(.registration-advanced-module-cell--action),
+body.lux-route-registration .registration-advanced-course-cell:not(.registration-advanced-course-cell--action) {
+    border-right: 1px solid #e2e8f0;
+}
+
+body.lux-route-registration .registration-advanced-module-cell--letter,
+body.lux-route-registration .registration-advanced-module-cell--ects {
+    font-weight: 700;
+}
+
+body.lux-route-registration .registration-advanced-module-cell--name,
+body.lux-route-registration .registration-advanced-module-cell--spacer,
+body.lux-route-registration .registration-advanced-course-cell--name,
+body.lux-route-registration .registration-advanced-course-cell--meta {
+    padding: 10px 15px;
+    text-align: left;
+}
+
+body.lux-route-registration .registration-advanced-module-cell--ects {
+    color: #ea580c;
+}
+
+body.lux-route-registration .registration-advanced-module-icon,
+body.lux-route-registration .registration-advanced-module-letter-meta,
+body.lux-route-registration .registration-advanced-course-cell--index {
+    color: #64748b;
+}
+
+body.lux-route-registration .registration-advanced-module-letter-meta {
+    font-weight: 400;
+}
+
+body.lux-route-registration .registration-advanced-module-empty-row {
+    border-bottom: 1px solid #e2e8f0;
+    font-size: 12px;
+}
+
+body.lux-route-registration .registration-advanced-module-empty-cell {
+    padding: 15px;
+    text-align: center;
+    color: #94a3b8;
+    font-style: italic;
+}
+
+body.lux-route-registration .registration-advanced-course-row {
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 12px;
+    background: #ffffff;
+}
+
+body.lux-route-registration .registration-advanced-course-row .registration-advanced-course-cell:not(.registration-advanced-course-cell--action) {
+    border-right-color: #f1f5f9;
+}
+
+body.lux-route-registration .registration-advanced-course-cell--meta {
+    color: #64748b;
+    font-size: 11px;
+}
+
+body.lux-route-registration .registration-advanced-course-note {
+    margin-top: 4px;
+    font-size: 10px;
+}
+
+body.lux-route-registration .registration-advanced-course-note--semester {
+    color: #2563eb;
+    font-weight: 700;
+}
+
+body.lux-route-registration .registration-advanced-course-note--blocked {
+    color: #dc2626;
+    font-weight: 600;
+}
+
+body.lux-route-registration .registration-advanced-status {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    font-size: 18px;
+}
+
+body.lux-route-registration .registration-advanced-status--blocked {
+    color: #ef4444;
+}
+
+body.lux-route-registration .registration-advanced-status--selected {
+    color: #10b981;
+}
+
+body.lux-route-registration .registration-advanced-status--open {
+    border: 2px solid #cbd5e1;
+    border-radius: 3px;
+    font-size: 0;
+}
+
+body.lux-route-registration .registration-advanced-action-btn {
+    min-width: 96px;
+}
+
+body.lux-route-registration .registration-advanced-action-btn--locked {
+    color: #94a3b8;
+    border-color: #e2e8f0;
+    cursor: not-allowed;
+}
+
+body.lux-route-registration .registration-section-picker-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 100000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 22px;
+    background: rgba(15, 23, 42, 0.56);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+}
+
+body.lux-route-registration .registration-section-picker-dialog {
+    width: min(980px, 100%);
+    max-height: min(760px, 92vh);
+    overflow: auto;
+    background: var(--kiu-solid-white, #fff);
+    border-radius: 24px;
+    box-shadow: 0 30px 80px rgba(15, 23, 42, 0.28);
+    border: 1px solid rgba(226, 232, 240, 0.9);
+}
+
+body.lux-route-registration .registration-section-picker-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 22px 24px;
+    border-bottom: 1px solid #e5edf6;
+}
+
+body.lux-route-registration .registration-section-picker-kicker {
+    font-size: 12px;
+    font-weight: 900;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: .12em;
+}
+
+body.lux-route-registration .registration-section-picker-title {
+    margin: 6px 0 0;
+    font-size: 22px;
+    line-height: 1.2;
+    color: var(--kiu-navy, #0f172a);
+}
+
+body.lux-route-registration .registration-section-picker-copy {
+    margin: 8px 0 0;
+    font-size: 13px;
+    color: #64748b;
+}
+
+body.lux-route-registration .registration-section-picker-close {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border-radius: 14px;
+}
+
+body.lux-route-registration .registration-section-picker-content {
+    padding: 22px 24px;
+}
+
+body.lux-route-registration .registration-section-picker-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+body.lux-route-registration .registration-section-picker-toolbar-title {
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--kiu-navy);
+}
+
+body.lux-route-registration .registration-section-picker-toolbar-meta {
+    margin-top: 4px;
+    font-size: 12px;
+    color: #64748b;
+}
+
+body.lux-route-registration .registration-section-picker-type-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+body.lux-route-registration .registration-section-picker-type-btn,
+body.lux-route-registration .registration-section-picker-action-btn {
+    padding: 8px 12px;
+    font-size: 11px;
+}
+
+body.lux-route-registration .registration-section-picker-type-btn {
+    min-width: 84px;
+}
+
+body.lux-route-registration .registration-section-picker-type-btn.is-active {
+    box-shadow: 0 14px 28px rgba(var(--lux-accent-rgb), 0.18);
+}
+
+body.lux-route-registration .registration-section-picker-type-btn.is-empty:not(.is-active) {
+    opacity: 0.72;
+}
+
+body.lux-route-registration .registration-course-action-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+body.lux-route-registration .registration-course-remove-btn {
+    padding: 8px 12px;
+    font-size: 11px;
+}
+
+body.lux-route-registration .registration-section-picker-action-btn {
+    min-width: 88px;
+}
+
+body.lux-route-registration .registration-section-picker-action-btn.is-selected {
+    color: #047857;
+    border-color: #86efac;
+}
+
+body.lux-route-registration .registration-section-picker-action-btn.is-full {
+    color: #94a3b8;
+    border-color: #cbd5e1;
+    cursor: not-allowed;
+}
+
+body.lux-route-registration .registration-section-picker-empty {
+    padding: 26px;
+    text-align: center;
+    color: #64748b;
+    background: #f8fafc;
+    border: 1px dashed #dbe5f1;
+    border-radius: 16px;
+}
+
+body.lux-route-registration .registration-section-picker-foot {
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid #dbe5f1;
+}
+
+body.lux-route-registration .registration-section-picker-foot-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+body.lux-route-registration .registration-section-picker-remove-subject-btn {
+    color: #b91c1c;
+    border-color: #fecaca;
+}
+
+body.lux-route-registration .registration-section-picker-foot-close-btn {
+    min-width: 96px;
+}
+
+body.lux-route-registration .registration-runtime-stale-banner {
+    margin: 0 0 16px;
+    padding: 12px 16px;
+    border-radius: 12px;
+    border: 1px solid #fecaca;
+    background: #fef2f2;
+    color: #991b1b;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+body.lux-route-registration .registration-section-picker-table-wrap {
+    overflow: auto;
+    border: 1px solid #dbe5f1;
+    border-radius: 16px;
+    background: #ffffff;
+    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+}
+
+body.lux-route-registration .registration-section-picker-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+}
+
+body.lux-route-registration .registration-section-picker-table-head {
+    background: #f8fbff;
+    color: #334155;
+}
+
+body.lux-route-registration .registration-section-picker-head-cell,
+body.lux-route-registration .registration-section-picker-cell {
+    padding: 12px 10px;
+}
+
+body.lux-route-registration .registration-section-picker-head-cell--left,
+body.lux-route-registration .registration-section-picker-cell--left {
+    text-align: left;
+}
+
+body.lux-route-registration .registration-section-picker-head-cell--right,
+body.lux-route-registration .registration-section-picker-cell--action {
+    text-align: right;
+}
+
+body.lux-route-registration .registration-section-picker-cell--center {
+    text-align: center;
+}
+
+body.lux-route-registration .registration-section-picker-row {
+    border-bottom: 1px solid #e5edf6;
+}
+
+body.lux-route-registration .registration-workspace-body {
+    display: grid;
+    gap: 16px;
+}
+
+body.lux-route-registration .registration-term-shell select {
+    min-width: 100%;
+}
+
+body.lux-route-registration .registration-progress-shell {
+    display: flex !important;
+    gap: 14px;
+    align-items: center;
+    justify-content: space-between;
+    border-radius: 24px;
+}
+
+body.lux-route-registration .registration-progress-shell {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 15px 30px;
+    z-index: 100;
+}
+
+body.lux-route-registration .registration-progress-metrics {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+body.lux-route-registration .registration-progress-label,
+body.lux-route-registration .registration-progress-value {
+    font-weight: 700;
+}
+
+body.lux-route-registration .registration-progress-label {
+    color: var(--lux-text);
+}
+
+body.lux-route-registration .registration-progress-track {
+    width: 200px;
+    height: 10px;
+    position: relative;
+    overflow: hidden;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+body.lux-route-registration .registration-progress-bar {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: var(--registration-ects-progress, 0%);
+    border-radius: 999px;
+    transition: width 0.3s ease;
+}
+
+body.lux-route-registration .registration-progress-bar.is-complete {
+    background: var(--kiu-green) !important;
+}
+
+body.lux-route-registration .registration-progress-value.is-complete {
+    color: var(--kiu-green) !important;
+}
+
+body.lux-route-registration .registration-progress-bar.is-warning {
+    background: var(--kiu-orange) !important;
+}
+
+body.lux-route-registration .registration-progress-value.is-warning {
+    color: var(--kiu-orange) !important;
+}
+
+body.lux-route-registration .registration-progress-bar.is-over {
+    background: var(--kiu-red) !important;
+}
+
+body.lux-route-registration .registration-progress-value.is-over {
+    color: var(--kiu-red) !important;
+}
+
+body.lux-route-registration .registration-status-icon[data-registration-tone='success'] {
+    color: var(--kiu-green);
+}
+
+body.lux-route-registration .registration-status-icon[data-registration-tone='info'] {
+    color: var(--kiu-blue);
+}
+
+body.lux-route-registration .registration-status-icon[data-registration-tone='danger'] {
+    color: var(--kiu-red);
+}
+
+@media (max-width:1180px) {
+    body.lux-route-admin-scheduler .scheduler-wrap {
+        grid-template-columns: 1fr;
+    }
+
+    body.lux-nonhome-page:not(.lux-route-students-admin) .page-section,
+body.lux-family-admin main,
+body.lux-entry-profile-view main {
+        width: 100%;
+    }
+
+    body.lux-route-registration .registration-hero,
+body.lux-route-registration .registration-shell-grid,
+body.lux-route-registration .registration-insight-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    body.lux-route-registration .registration-control-row,
+body.lux-route-registration .registration-workspace-head {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    body.lux-route-registration .registration-helper-note {
+        text-align: left;
+        max-width: none;
+    }
+
+    body.lux-route-registration .registration-progress-shell {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    body.lux-route-registration .registration-hero-focus-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width:760px) {
+
+    body.lux-route-registration .registration-cms-container {
+        border-radius: 14px !important;
+        padding: 14px !important;
+    }
+
+    body.lux-route-registration .registration-hero-focus-grid,
+body.lux-route-registration .registration-insight-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    body.lux-route-registration .registration-course-row {
+        grid-template-columns: 64px minmax(0, 1fr);
+        align-items: start;
+    }
+
+    body.lux-route-registration .registration-course-ects,
+body.lux-route-registration .registration-course-action {
+        grid-column: 2;
+        justify-content: flex-start;
+    }
+
+    body.lux-route-registration .registration-course-meta {
+        grid-column: 2;
+    }
+}
+
+body.lux-route-registration #page-registration .registration-hero,
+body.lux-route-registration #page-registration .registration-workspace,
+body.lux-route-registration #page-registration .registration-module-list-card,
+body.lux-route-registration #page-registration .registration-module-pane-card {
+    background: var(--reg-fade-surface) !important;
+    border-color: var(--reg-fade-border) !important;
+    box-shadow: var(--reg-fade-shadow) !important;
+    -webkit-backdrop-filter: var(--reg-fade-blur) !important;
+    backdrop-filter: var(--reg-fade-blur) !important;
+}
+
+html.lux-high-transparency.lux-high-transparency.lux-high-transparency body.lux-route-registration:not(.lux-light-mode) #page-registration .registration-hero,
+html.lux-high-transparency.lux-high-transparency.lux-high-transparency body.lux-route-registration:not(.lux-light-mode) #page-registration .registration-workspace,
+html.lux-high-transparency.lux-high-transparency.lux-high-transparency body.lux-route-registration:not(.lux-light-mode) #page-registration .registration-module-list-card,
+html.lux-high-transparency.lux-high-transparency.lux-high-transparency body.lux-route-registration:not(.lux-light-mode) #page-registration .registration-module-pane-card,
+html[data-lux-transparency="100"] body.lux-route-registration:not(.lux-light-mode) #page-registration .registration-hero,
+html[data-lux-transparency="100"] body.lux-route-registration:not(.lux-light-mode) #page-registration .registration-workspace,
+html[data-lux-transparency="100"] body.lux-route-registration:not(.lux-light-mode) #page-registration .registration-module-list-card,
+html[data-lux-transparency="100"] body.lux-route-registration:not(.lux-light-mode) #page-registration .registration-module-pane-card,
+html[data-lux-transparency="99"] body.lux-route-registration:not(.lux-light-mode) #page-registration .registration-hero,
+html[data-lux-transparency="99"] body.lux-route-registration:not(.lux-light-mode) #page-registration .registration-workspace,
+html[data-lux-transparency="99"] body.lux-route-registration:not(.lux-light-mode) #page-registration .registration-module-list-card,
+html[data-lux-transparency="99"] body.lux-route-registration:not(.lux-light-mode) #page-registration .registration-module-pane-card {
+    background: var(--reg-fade-surface) !important;
+    border-color: color-mix(in srgb, var(--reg-fade-border) 70%, rgba(var(--lux-accent-rgb),0.46)) !important;
+}
+
+body.lux-light-mode.lux-route-registration #page-registration .registration-hero,
+body.lux-light-mode.lux-route-registration #page-registration .registration-workspace,
+body.lux-light-mode.lux-route-registration #page-registration .registration-module-list-card,
+body.lux-light-mode.lux-route-registration #page-registration .registration-module-pane-card,
+html.lux-light-mode body.lux-route-registration #page-registration .registration-hero,
+html.lux-light-mode body.lux-route-registration #page-registration .registration-workspace,
+html.lux-light-mode body.lux-route-registration #page-registration .registration-module-list-card,
+html.lux-light-mode body.lux-route-registration #page-registration .registration-module-pane-card {
+    background: var(--reg-fade-surface) !important;
+    border-color: var(--reg-fade-border) !important;
+    box-shadow: var(--reg-fade-shadow) !important;
+}
+
+body[data-lux-performance='efficient'].lux-route-registration #page-registration .registration-hero,
+body[data-lux-performance='efficient'].lux-route-registration #page-registration .registration-workspace,
+body[data-lux-performance='efficient'].lux-route-registration #page-registration .registration-module-list-card,
+body[data-lux-performance='efficient'].lux-route-registration #page-registration .registration-module-pane-card,
+body[data-lux-performance='efficient'].lux-route-registration #page-registration .registration-insight-card,
+body[data-lux-performance='efficient'].lux-route-registration #page-registration .registration-focus-card,
+body[data-lux-performance='efficient'].lux-route-registration #page-registration .registration-track-card,
+body[data-lux-performance='efficient'].lux-route-registration #page-registration .registration-footer-bar,
+body[data-lux-performance='efficient'].lux-route-registration #page-registration .reg-tabs {
+    box-shadow:
+        0 16px 36px rgba(0,0,0,calc(var(--lux-transparency-alpha,0.70) * 0.16)),
+        0 0 0 1px rgba(var(--lux-accent-rgb),calc(var(--lux-transparency-alpha,0.70) * 0.04)),
+        inset 0 1px 0 rgba(255,255,255,calc(var(--lux-transparency-alpha,0.70) * 0.09)) !important;
+    -webkit-backdrop-filter: blur(10px) saturate(118%) !important;
+    backdrop-filter: blur(10px) saturate(118%) !important;
+}
+
+body[data-lux-performance='efficient'].lux-route-registration #page-registration .filter-shell,
+body[data-lux-performance='efficient'].lux-route-registration #page-registration .registration-signal-card,
+body[data-lux-performance='efficient'].lux-route-registration #page-registration .registration-course-row,
+body[data-lux-performance='efficient'].lux-route-registration #page-registration .registration-module-choice,
+body[data-lux-performance='efficient'].lux-route-registration #page-registration .registration-track-group,
+body[data-lux-performance='efficient'].lux-route-registration #page-registration #modal-program-courses {
+    box-shadow: 0 10px 24px rgba(0,0,0,0.16) !important;
+}
+
+body[data-lux-performance='efficient'].lux-light-mode.lux-route-registration #page-registration .registration-hero,
+body[data-lux-performance='efficient'].lux-light-mode.lux-route-registration #page-registration .registration-workspace,
+body[data-lux-performance='efficient'].lux-light-mode.lux-route-registration #page-registration .registration-module-list-card,
+body[data-lux-performance='efficient'].lux-light-mode.lux-route-registration #page-registration .registration-module-pane-card,
+body[data-lux-performance='efficient'].lux-light-mode.lux-route-registration #page-registration .registration-insight-card,
+body[data-lux-performance='efficient'].lux-light-mode.lux-route-registration #page-registration .registration-focus-card,
+body[data-lux-performance='efficient'].lux-light-mode.lux-route-registration #page-registration .registration-track-card,
+body[data-lux-performance='efficient'].lux-light-mode.lux-route-registration #page-registration .registration-footer-bar,
+body[data-lux-performance='efficient'].lux-light-mode.lux-route-registration #page-registration .reg-tabs {
+    box-shadow:
+        0 16px 36px rgba(70,50,30,calc(var(--lux-transparency-alpha,0.70) * 0.08)),
+        0 0 0 1px rgba(var(--lux-accent-rgb),calc(var(--lux-transparency-alpha,0.70) * 0.03)),
+        inset 0 1px 0 rgba(255,255,255,calc(var(--lux-transparency-alpha,0.70) * 0.86)) !important;
+}
+
+body[data-lux-performance='efficient'].lux-light-mode.lux-route-registration #page-registration .filter-shell,
+body[data-lux-performance='efficient'].lux-light-mode.lux-route-registration #page-registration .registration-signal-card,
+body[data-lux-performance='efficient'].lux-light-mode.lux-route-registration #page-registration .registration-course-row,
+body[data-lux-performance='efficient'].lux-light-mode.lux-route-registration #page-registration .registration-module-choice,
+body[data-lux-performance='efficient'].lux-light-mode.lux-route-registration #page-registration .registration-track-group,
+body[data-lux-performance='efficient'].lux-light-mode.lux-route-registration #page-registration #modal-program-courses {
+    box-shadow: 0 10px 22px rgba(62,42,20,0.08) !important;
+}
+
+body.lux-route-registration .registration-condition-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin: 2px 6px 2px 0;
+    padding: 4px 8px;
+    border-radius: 999px;
+    background: #dff2ff;
+    color: #0f4c81;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+body.lux-route-registration .registration-condition-badge {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+body.lux-route-registration .registration-condition-chip-remove {
+    border: none;
+    background: none;
+    color: #0f4c81;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+}
+
+body.lux-route-registration .registration-condition-empty {
+    padding: 10px;
+    font-size: 12px;
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-registration .registration-condition-result {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 10px;
+    font-size: 12px;
+    border: none;
+    border-bottom: 1px solid #eef2f7;
+    background: #fff;
+    cursor: pointer;
+}
+
+body.lux-route-registration .registration-parity-exception {
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    color: #334155;
+}
+
+body.lux-route-registration .registration-parity-exception-checkbox {
+    margin: 0;
+}
+
+body.lux-route-registration .registration-parity-exception-label {
+    cursor: pointer;
+}
+
+body.lux-route-registration .registration-antireq-selected-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    min-height: 24px;
+}
+
+body.lux-route-registration .registration-antireq-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 9px;
+    border-radius: 999px;
+    background: #dff2ff;
+    color: #0f4c81;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+body.lux-route-registration .registration-antireq-chip-remove {
+    border: none;
+    background: none;
+    color: #0f4c81;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+}
+
+body.lux-route-registration .registration-antireq-empty {
+    padding: 10px;
+    font-size: 12px;
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-registration .registration-antireq-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+body.lux-route-registration .registration-antireq-clear-btn {
+    padding: 6px 10px;
+    font-size: 11px;
+}
+
+body.lux-route-registration .registration-antireq-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    max-height: 150px;
+    overflow: auto;
+    padding: 4px 2px 2px;
+    margin-top: 8px;
+}
+
+body.lux-route-registration .registration-antireq-option {
+    border: 1px solid #dbe5f1;
+    background: #ffffff;
+    color: #1e293b;
+    border-radius: 999px;
+    padding: 7px 10px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+body.lux-route-registration .registration-antireq-option.is-active {
+    border-color: #0b84ff;
+    background: linear-gradient(135deg, #0b84ff, #0a5fc4);
+    color: #ffffff;
+}
+
+/* Legacy registration shell families moved from base.css. */
+body.lux-route-registration .reg-header-info {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    font-size: 13px;
+    margin-bottom: 20px;
+}
+
+body.lux-route-registration .reg-header-info div {
+    display: flex;
+    border-bottom: 1px solid var(--kiu-border);
+    padding-bottom: 5px;
+}
+
+body.lux-route-registration .reg-header-info span:first-child {
+    width: 300px;
+    color: var(--kiu-text-muted);
+}
+
+body.lux-route-registration .reg-header-info span:last-child {
+    font-weight: 600;
+}
+
+body.lux-route-registration .reg-table-row-group {
+    background: #f1f1f1;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+body.lux-route-registration .reg-table-row-group td {
+    padding: 10px 15px;
+    border-bottom: 1px solid var(--kiu-border);
+}
+
+body.lux-route-registration .reg-table-content {
+    display: table-row-group;
+}
+
+body.lux-route-registration .reg-table-content.hidden {
+    display: none;
+}
+
+body.lux-route-registration .admin-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 12px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.32);
+    background: rgba(255, 255, 255, 0.14);
+    font-size: 11px;
+    font-weight: 700;
+}
+
+/* ============================================================
+   Legacy inner workspace -> dark color-fade glass (token-based)
+   Converts the old light-themed structured form, advanced map,
+   section picker, condition/antireq, render-error and empty-state
+   surfaces to match the registration glass shell. Everything is
+   token-driven so dark + light modes both resolve correctly.
+   Appended last so it wins source-order ties over the legacy rules.
+   ============================================================ */
+
+/* Light panels / cards / table rows -> soft glass */
+body.lux-route-registration .registration-render-error,
+body.lux-route-registration .registration-course-empty,
+body.lux-route-registration .registration-section-picker-empty,
+body.lux-route-registration .registration-advanced-module-row,
+body.lux-route-registration .reg-table-row-group {
+    background: var(--reg-fade-surface-soft) !important;
+    border-color: var(--reg-fade-border-soft) !important;
+    color: var(--lux-text) !important;
+}
+
+/* Modal / dialog / table shells -> full glass + blur */
+body.lux-route-registration .registration-structured-modal-card,
+body.lux-route-registration .registration-section-picker-dialog,
+body.lux-route-registration .registration-section-picker-table-wrap {
+    background: var(--reg-fade-surface) !important;
+    border: 1px solid var(--reg-fade-border) !important;
+    box-shadow: var(--reg-fade-shadow) !important;
+    -webkit-backdrop-filter: var(--reg-fade-blur) !important;
+    backdrop-filter: var(--reg-fade-blur) !important;
+    color: var(--lux-text) !important;
+}
+
+/* Branded modal head -> accent gradient (palette-aware) */
+body.lux-route-registration .registration-structured-modal-head {
+    background: linear-gradient(135deg, var(--lux-accent), var(--lux-accent-2)) !important;
+    color: #fff8ef !important;
+}
+body.lux-route-registration .registration-structured-modal-subtitle {
+    color: rgba(255, 248, 239, 0.82) !important;
+}
+body.lux-route-registration .registration-structured-modal-close {
+    border: 1px solid rgba(255, 255, 255, 0.28) !important;
+    background: rgba(255, 255, 255, 0.12) !important;
+    color: #fff8ef !important;
+}
+
+/* Modal sub-zones / table head -> control chrome */
+body.lux-route-registration .registration-structured-modal-footer,
+body.lux-route-registration .registration-section-picker-table-head {
+    background: var(--reg-fade-control) !important;
+    border-color: var(--reg-fade-border-soft) !important;
+    color: var(--lux-text) !important;
+}
+
+/* Form controls -> glass field that flips in light mode */
+body.lux-route-registration .registration-structured-control {
+    background: rgba(7, 10, 16, 0.55) !important;
+    border: 1px solid var(--reg-fade-border-soft) !important;
+    color: var(--lux-text) !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+}
+body.lux-route-registration .registration-structured-control.is-muted {
+    background: rgba(7, 10, 16, 0.38) !important;
+}
+html.lux-light-mode body.lux-route-registration .registration-structured-control,
+body.lux-light-mode.lux-route-registration .registration-structured-control {
+    background: rgba(255, 255, 255, 0.92) !important;
+}
+
+/* Chips (condition / antireq / advanced options) -> translucent accent */
+body.lux-route-registration .registration-condition-chip,
+body.lux-route-registration .registration-antireq-chip,
+body.lux-route-registration .registration-antireq-option {
+    background: linear-gradient(135deg, rgba(var(--lux-accent-rgb), 0.20), rgba(255, 255, 255, 0.04)) !important;
+    border: 1px solid var(--reg-fade-border) !important;
+    color: var(--lux-text) !important;
+}
+body.lux-route-registration .registration-condition-chip-remove,
+body.lux-route-registration .registration-antireq-chip-remove {
+    color: var(--lux-accent-2) !important;
+}
+body.lux-route-registration .registration-antireq-option.is-active {
+    background: linear-gradient(135deg, var(--lux-accent), var(--lux-accent-2)) !important;
+    border-color: transparent !important;
+    color: #fff8ef !important;
+}
+body.lux-route-registration .registration-condition-result {
+    background: transparent !important;
+    border-bottom: 1px solid var(--reg-fade-border-soft) !important;
+    color: var(--lux-text) !important;
+}
+
+/* Borders that used light hex -> token soft border */
+body.lux-route-registration .registration-advanced-module-cell:not(.registration-advanced-module-cell--action),
+body.lux-route-registration .registration-advanced-course-cell:not(.registration-advanced-course-cell--action),
+body.lux-route-registration .registration-advanced-module-empty-row,
+body.lux-route-registration .registration-advanced-course-row,
+body.lux-route-registration .registration-advanced-course-row .registration-advanced-course-cell:not(.registration-advanced-course-cell--action),
+body.lux-route-registration .registration-section-picker-head,
+body.lux-route-registration .registration-section-picker-row {
+    border-color: var(--reg-fade-border-soft) !important;
+}
+body.lux-route-registration .registration-advanced-course-row {
+    background: transparent !important;
+}
+
+/* Text normalization: dark slate/navy -> readable headings */
+body.lux-route-registration .registration-render-error-title,
+body.lux-route-registration .registration-state-title,
+body.lux-route-registration .registration-state-summary,
+body.lux-route-registration .registration-section-picker-title,
+body.lux-route-registration .registration-section-picker-toolbar-title {
+    color: var(--lux-text) !important;
+}
+
+/* Text normalization: muted body / meta */
+body.lux-route-registration .registration-render-error-copy,
+body.lux-route-registration .registration-state-meta,
+body.lux-route-registration .registration-history-meta,
+body.lux-route-registration .registration-structured-label,
+body.lux-route-registration .registration-structured-help,
+body.lux-route-registration .registration-advanced-module-row,
+body.lux-route-registration .registration-advanced-module-icon,
+body.lux-route-registration .registration-advanced-module-letter-meta,
+body.lux-route-registration .registration-advanced-course-cell--index,
+body.lux-route-registration .registration-advanced-course-cell--meta,
+body.lux-route-registration .registration-advanced-module-empty-cell,
+body.lux-route-registration .registration-advanced-map-empty,
+body.lux-route-registration .registration-section-picker-kicker,
+body.lux-route-registration .registration-section-picker-copy,
+body.lux-route-registration .registration-section-picker-toolbar-meta,
+body.lux-route-registration .registration-section-picker-empty,
+body.lux-route-registration .registration-section-picker-table-head,
+body.lux-route-registration .registration-parity-exception {
+    color: var(--lux-text-muted) !important;
+}
+
+/* Semantic status text -> brightened so it reads on dark glass */
+body.lux-route-registration .registration-course-meta-line.is-accent { color: #2dd4bf !important; }
+body.lux-route-registration .registration-course-meta-line.is-info,
+body.lux-route-registration .registration-advanced-course-note--semester { color: #60a5fa !important; }
+body.lux-route-registration .registration-course-meta-line.is-success,
+body.lux-route-registration .registration-advanced-status--selected { color: #34d399 !important; }
+body.lux-route-registration .registration-course-meta-line.is-danger,
+body.lux-route-registration .registration-advanced-course-note--blocked,
+body.lux-route-registration .registration-advanced-status--blocked { color: #f87171 !important; }
+body.lux-route-registration .registration-advanced-module-cell--ects { color: #fb923c !important; }
+
+/* Status action chips */
+body.lux-route-registration .registration-course-action-state.is-locked,
+body.lux-route-registration .registration-advanced-action-btn--locked,
+body.lux-route-registration .registration-section-picker-action-btn.is-full {
+    background: var(--reg-fade-control) !important;
+    color: var(--lux-text-soft) !important;
+    border-color: var(--reg-fade-border-soft) !important;
+}
+body.lux-route-registration .registration-course-action-state.is-empty {
+    background: linear-gradient(135deg, rgba(251, 146, 60, 0.18), rgba(255, 255, 255, 0.04)) !important;
+    color: #fb923c !important;
+    border: 1px solid rgba(251, 146, 60, 0.34) !important;
+}
+body.lux-route-registration .registration-section-picker-action-btn.is-selected {
+    color: #34d399 !important;
+    border-color: rgba(52, 211, 153, 0.5) !important;
+}
+
+/* Plain registration lane tabs — segmented buttons, not a glass panel */
+body.lux-route-registration #page-registration .reg-tabs.reg-tabs--plain,
+body.lux-route-registration #page-registration .reg-tabs.reg-tabs--plain.lux-modern-surface {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    overflow: visible;
+    isolation: auto;
+}
+
+body.lux-route-registration #page-registration .reg-tabs.reg-tabs--plain::before {
+    content: none;
+    display: none;
+}
+
+body.lux-route-registration #page-registration .reg-tabs.reg-tabs--plain .reg-tab,
+body.lux-route-registration #page-registration .reg-tabs.reg-tabs--plain .reg-tab.lux-modern-tab {
+    appearance: none;
+    -webkit-appearance: none;
+    font: inherit;
+    cursor: pointer;
+    margin: 0;
+    min-height: 42px;
+    min-width: 0;
+    padding: 10px 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    flex: 1 1 120px;
+    max-width: 100%;
+    border-radius: 999px !important;
+    border: 1px solid var(--reg-fade-border-soft) !important;
+    background: rgba(255, 255, 255, 0.06) !important;
+    color: var(--lux-text-muted) !important;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    line-height: 1.35;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    transition: background 150ms ease, border-color 150ms ease, color 150ms ease, box-shadow 150ms ease;
+}
+
+body.lux-route-registration #page-registration .reg-tabs.reg-tabs--plain .reg-tab:hover,
+body.lux-route-registration #page-registration .reg-tabs.reg-tabs--plain .reg-tab:focus-visible {
+    color: var(--lux-text) !important;
+    border-color: rgba(var(--lux-accent-rgb), 0.28) !important;
+    background: rgba(var(--lux-accent-rgb), 0.12) !important;
+    outline: none;
+    box-shadow: 0 10px 22px rgba(var(--lux-accent-rgb), 0.14) !important;
+}
+
+body.lux-route-registration #page-registration .reg-tabs.reg-tabs--plain .reg-tab.active,
+body.lux-route-registration #page-registration .reg-tabs.reg-tabs--plain .reg-tab.lux-modern-tab.active {
+    color: #fff8ef !important;
+    border-color: rgba(var(--lux-accent-rgb), 0.42) !important;
+    background: linear-gradient(135deg, rgba(var(--lux-accent-rgb), 0.94), var(--lux-accent-2, rgba(var(--lux-accent-rgb), 0.78))) !important;
+    box-shadow: 0 14px 28px rgba(var(--lux-accent-rgb), 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
+}
+
+body.lux-light-mode.lux-route-registration #page-registration .reg-tabs.reg-tabs--plain .reg-tab,
+body.lux-light-mode.lux-route-registration #page-registration .reg-tabs.reg-tabs--plain .reg-tab.lux-modern-tab {
+    background: rgba(255, 255, 255, 0.88) !important;
+    color: rgba(48, 34, 22, 0.68) !important;
+    border-color: rgba(48, 34, 22, 0.12) !important;
+}
+
+body.lux-light-mode.lux-route-registration #page-registration .reg-tabs.reg-tabs--plain .reg-tab.active,
+body.lux-light-mode.lux-route-registration #page-registration .reg-tabs.reg-tabs--plain .reg-tab.lux-modern-tab.active {
+    color: #fff8ef !important;
+    border-color: transparent !important;
+}

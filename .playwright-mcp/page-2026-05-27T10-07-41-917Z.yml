@@ -1,0 +1,169 @@
+- generic [active] [ref=e1]:
+  - text:  
+  - main [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e4]:
+        - generic [ref=e5]:
+          - generic [ref=e6]:
+            - generic [ref=e7]: 
+            - text: Personal Data
+          - generic [ref=e8]: Official Student Record
+          - generic [ref=e9]: A clean view of identity, enrollment, academic standing, and university record details used across the LMS.
+          - generic [ref=e10]:
+            - generic [ref=e11]:
+              - generic [ref=e12]: 
+              - text: Identity
+            - generic [ref=e13]:
+              - generic [ref=e14]: 
+              - text: Academic status
+            - generic [ref=e15]:
+              - generic [ref=e16]: 
+              - text: Enrollment record
+        - generic [ref=e17]:
+          - generic [ref=e18]: Record source
+          - strong [ref=e19]: University profile center
+          - emphasis [ref=e20]: Synced with study card, registration, timetable, and academic history.
+      - generic [ref=e22]:
+        - generic [ref=e23]:
+          - generic [ref=e24]:
+            - generic [ref=e25]: 
+            - text: Program Context
+          - paragraph [ref=e26]: Current academic program used for this record.
+        - combobox "Program context" [ref=e27]:
+          - option "Business Management Administration" [selected]
+        - generic [ref=e28]:
+          - button " Study Card" [ref=e29] [cursor=pointer]:
+            - generic [ref=e30]: 
+            - text: Study Card
+          - button " Registration" [ref=e31] [cursor=pointer]:
+            - generic [ref=e32]: 
+            - text: Registration
+          - button " Timetable" [ref=e33] [cursor=pointer]:
+            - generic [ref=e34]: 
+            - text: Timetable
+      - generic [ref=e35]:
+        - generic [ref=e36]:
+          - generic [ref=e37]:
+            - generic [ref=e38]: 
+            - text: Identity
+          - generic [ref=e39]:
+            - generic [ref=e41]: PA
+            - generic [ref=e42]:
+              - generic [ref=e43]:
+                - text: Portal
+                - text: Administrator
+              - generic [ref=e44]: Active
+          - generic [ref=e45]: Business Management Administration
+          - generic [ref=e46]:
+            - generic [ref=e47]:
+              - generic [ref=e48]: Student ID
+              - strong [ref=e49]: admin-root
+            - generic [ref=e50]:
+              - generic [ref=e51]: Record state
+              - strong [ref=e52]: Active student record
+        - generic [ref=e53]:
+          - generic [ref=e54]:
+            - generic [ref=e55]:
+              - generic [ref=e56]: 
+              - text: Academic Snapshot
+            - generic [ref=e57]: Administrator
+            - paragraph [ref=e58]: Current academic progress and standing at a glance.
+          - generic [ref=e59]:
+            - generic [ref=e60]:
+              - generic [ref=e62]: 
+              - generic [ref=e63]:
+                - generic [ref=e64]: Semester
+                - generic [ref=e65]: "0"
+            - generic [ref=e66]:
+              - generic [ref=e68]: 
+              - generic [ref=e69]:
+                - generic [ref=e70]: GPA
+                - generic [ref=e71]: 0h
+            - generic [ref=e72]:
+              - generic [ref=e74]: 
+              - generic [ref=e75]:
+                - generic [ref=e76]: ECTS
+                - generic [ref=e77]: "0"
+            - generic [ref=e78]:
+              - generic [ref=e80]: 
+              - generic [ref=e81]:
+                - generic [ref=e82]: Standing
+                - generic [ref=e83]: Active
+        - generic [ref=e84]:
+          - generic [ref=e85]:
+            - generic [ref=e86]:
+              - generic [ref=e87]: 
+              - generic [ref=e88]: Employment Information
+            - paragraph [ref=e89]: Enrollment facts used by registration and student services.
+          - generic [ref=e90]:
+            - article [ref=e91]:
+              - generic [ref=e92]: Faculty
+              - strong [ref=e93]: School of Business Management & Economics
+            - article [ref=e94]:
+              - generic [ref=e95]: Program
+              - strong [ref=e96]: Business Management Administration
+            - article [ref=e97]:
+              - generic [ref=e98]: Entry date
+              - strong [ref=e99]: 2025-09-01
+            - article [ref=e100]:
+              - generic [ref=e101]: Current term
+              - strong [ref=e102]: 2025/2026 Spring Semester
+            - article [ref=e103]:
+              - generic [ref=e104]: Tuition hold
+              - strong [ref=e105]: N/A
+            - article [ref=e106]:
+              - generic [ref=e107]: Probation
+              - strong [ref=e108]: N/A
+            - article [ref=e109]:
+              - generic [ref=e110]: Course load
+              - strong [ref=e111]: 0h
+        - generic [ref=e112]:
+          - generic [ref=e113]:
+            - generic [ref=e114]:
+              - generic [ref=e115]: 
+              - text: Academic Record
+            - paragraph [ref=e116]: Detailed profile fields from the active university record.
+          - generic [ref=e117]:
+            - generic [ref=e118]:
+              - generic [ref=e119]: Faculty
+              - generic [ref=e120]: School of Business Management & Economics
+            - generic [ref=e121]:
+              - generic [ref=e122]: Program
+              - generic [ref=e123]: Business Management Administration
+            - generic [ref=e124]:
+              - generic [ref=e125]: Level
+              - generic [ref=e126]: Administrator
+            - generic [ref=e127]:
+              - generic [ref=e128]: Status
+              - generic [ref=e129]: Active
+            - generic [ref=e130]:
+              - generic [ref=e131]: Record state
+              - generic [ref=e132]: Active student record
+            - generic [ref=e133]:
+              - generic [ref=e134]: Entry date
+              - generic [ref=e135]: 2025-09-01
+            - generic [ref=e136]:
+              - generic [ref=e137]: Current term
+              - generic [ref=e138]: 2025/2026 Spring Semester
+            - generic [ref=e139]:
+              - generic [ref=e140]: Appointment
+              - generic [ref=e141]: Faculty appointment
+            - generic [ref=e142]:
+              - generic [ref=e143]: Teaching load
+              - generic [ref=e144]: 0h
+            - generic [ref=e145]:
+              - generic [ref=e146]: Assigned subjects
+              - generic [ref=e147]: "0"
+  - text:                  
+  - complementary:
+    - generic:
+      - generic: K
+      - generic:
+        - generic: KIU
+        - generic: Integrated Campus Portal
+    - generic:
+      - generic: KI
+      - generic:
+        - generic: Portal User
+        - generic: University Portal
+  - text:         

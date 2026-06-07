@@ -87,7 +87,7 @@
         `;
 
         const renderHeader = () => `
-            <div class="social-neo-profile-cover ${isOwn ? 'is-own' : ''}" ${!isOwn ? '' : `data-action="profile-edit-cover" style="cursor:pointer"`}>
+            <div class="social-neo-profile-cover ${isOwn ? 'is-own' : ''}" ${!isOwn ? '' : 'data-action="profile-edit-cover"'}>
                 ${coverUrl ? `<img class="social-neo-profile-cover-img" src="${escape(coverUrl)}" alt="Cover">` : ''}
                 <div class="social-neo-profile-cover-overlay"></div>
                 ${isOwn ? `<div class="social-neo-profile-cover-hint"><i class="fas fa-camera"></i> Update cover photo</div>` : ''}
@@ -344,7 +344,7 @@
                 ${renderHeader()}
                 ${renderPortfolioProfileBlock(userId, { isOwn })}
                 ${renderTabs()}
-                <div class="social-neo-stack" style="margin-top:12px">
+                <div class="social-neo-stack social-neo-grid-mt-12">
                 ${profileTab === 'posts' ? renderPostsTab() : profileTab === 'friends' ? renderFriendsTab() : profileTab === 'following' ? renderFollowingTab() : profileTab === 'saved' ? renderSavedTab() : renderAboutTab()}
                 </div>
             </div>

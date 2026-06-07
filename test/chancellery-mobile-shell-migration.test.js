@@ -70,7 +70,7 @@ function bootChancelleryMobileShell(options = {}) {
 describe('chancellery mobile shell migration', () => {
   it('migrates the page onto the shared standalone mobile shell contract', () => {
     const source = readSource('chancellery.html');
-    const guardrailSource = readSource('tools/check-architecture-guardrails.js');
+    const classificationModuleSource = readSource('tools/visual-route-classification.js');
     const classificationSource = readSource('PORTAL_VISUAL_ROUTE_CLASSIFICATION.md');
 
     expect(source).toContain('window.__KIU_STANDALONE_MOBILE_SHELL_CONFIG = {');
@@ -78,7 +78,7 @@ describe('chancellery mobile shell migration', () => {
     expect(source).toContain('assets/js/pages/standalone-mobile-shell.js');
     expect(source).not.toContain('(function initMobileExperience(){');
 
-    expect(guardrailSource).toContain("'chancellery.html': { category: 'standard-shell', dedicatedCss: [], mobileShell: 'shared-standalone' }");
+    expect(classificationModuleSource).toContain("'chancellery.html': { category: 'standard-shell', dedicatedCss: ['assets/css/chancellery-route.css'], mobileShell: 'shared-standalone' }");
     expect(classificationSource).toContain("| `chancellery.html` | `standard-shell` |");
   });
 

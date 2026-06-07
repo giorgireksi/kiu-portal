@@ -101,6 +101,7 @@ function createSessionForAccount(accountId, options = {}) {
         userId: account.id,
         actualRole: account.role,
         impersonatedRole: '',
+        impersonatedUserId: '',
         faculty: account.facultyCode || account.faculty || '',
         identityProvider: String(options.identityProvider || 'portal').trim().toLowerCase() || 'portal',
         createdAt: nowIso(),
@@ -248,6 +249,7 @@ function logoutSession(token) {
     if (!normalized || !this.state.sessions[normalized]) return false;
     this.state.sessions[normalized].active = false;
     this.state.sessions[normalized].impersonatedRole = '';
+    this.state.sessions[normalized].impersonatedUserId = '';
     this.state.sessions[normalized].updatedAt = nowIso();
     this.state.sessions[normalized].lastSeenAt = nowIso();
     this.save();
@@ -263,6 +265,7 @@ function revokeSessionsForUser(userId, reason = 'revoked') {
         if (String(session.userId || '').trim() !== normalizedUserId) return;
         session.active = false;
         session.impersonatedRole = '';
+        session.impersonatedUserId = '';
         session.revokedAt = nowIso();
         session.revocationReason = String(reason || 'revoked').trim() || 'revoked';
         session.updatedAt = session.revokedAt;
@@ -271,12 +274,44 @@ function revokeSessionsForUser(userId, reason = 'revoked') {
     return revokedCount;
 }
 
-function updateSessionImpersonation(token, impersonatedRole) {
+const PORTAL_IMPERSONATION_ROLES = new Set(['student', 'professor', 'ta', 'student_service']);
+
+function isPortalImpersonationRole(role) {
+    const normalized = String(role || '').trim().toLowerCase();
+    return PORTAL_IMPERSONATION_ROLES.has(normalized);
+}
+
+function isImpersonationPersonaEligible(account, impersonatedRole) {
+    if (!account || typeof account !== 'object') return false;
+    const personaRole = String(account.role || '').trim().toLowerCase();
+    const targetRole = String(impersonatedRole || '').trim().toLowerCase();
+    if (!targetRole || personaRole === targetRole) return true;
+    const accountId = String(account.id || '').trim().toLowerCase();
+    return accountId.startsWith('admin-testing-');
+}
+
+function updateSessionImpersonation(token, impersonatedRole, impersonatedUserId = '') {
     const normalized = String(token || '').trim();
     const session = this.state.sessions[normalized];
     if (!session || session.active === false) return null;
     if (String(session.actualRole || '').trim().toLowerCase() !== 'admin') return null;
-    session.impersonatedRole = String(impersonatedRole || '').trim().toLowerCase();
+    const nextRole = String(impersonatedRole || '').trim().toLowerCase();
+    if (!nextRole) {
+        session.impersonatedRole = '';
+        session.impersonatedUserId = '';
+        session.updatedAt = nowIso();
+        session.lastSeenAt = nowIso();
+        this.save();
+        return clone(session);
+    }
+    if (!isPortalImpersonationRole(nextRole)) return null;
+    const nextUserId = String(impersonatedUserId || '').trim();
+    if (!nextUserId) return null;
+    const persona = this.state.accounts[nextUserId];
+    if (!persona) return null;
+    if (!isImpersonationPersonaEligible(persona, nextRole)) return null;
+    session.impersonatedRole = nextRole;
+    session.impersonatedUserId = nextUserId;
     session.updatedAt = nowIso();
     session.lastSeenAt = nowIso();
     this.save();
@@ -284,10 +319,11 @@ function updateSessionImpersonation(token, impersonatedRole) {
 }
 
 function clearSessionImpersonation(token) {
-    return updateSessionImpersonation.call(this, token, '');
+    return updateSessionImpersonation.call(this, token, '', '');
 }
 
 module.exports = {
+    PORTAL_IMPERSONATION_ROLES,
     activateAccount,
     clearSessionImpersonation,
     createSessionByCredentials,
@@ -297,6 +333,8 @@ module.exports = {
     getRawAccountByEmail,
     getRawAccountByMicrosoftOid,
     getSession,
+    isImpersonationPersonaEligible,
+    isPortalImpersonationRole,
     linkMicrosoftIdentityToAccount,
     logoutSession,
     requestPasswordReset,

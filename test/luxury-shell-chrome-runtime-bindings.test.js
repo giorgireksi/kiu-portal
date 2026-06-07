@@ -72,6 +72,19 @@ function bootShellChromeRuntime() {
 }
 
 describe('luxury shell chrome runtime bindings', () => {
+  it('keeps one shared topbar visual contract for picker, utility, and user-chip states on standard routes', () => {
+    const css = readSource('assets/css/index-luxury.css');
+
+    expect(css).toContain("body.lux-nonhome-page:not(.lux-route-students-admin) #lux-topbar .lux-picker-btn,");
+    expect(css).toContain("body.lux-nonhome-page:not(.lux-route-students-admin) #lux-topbar .lux-topbar-editor-btn,");
+    expect(css).toContain("body.lux-nonhome-page:not(.lux-route-students-admin) #lux-topbar .lux-icon-btn,");
+    expect(css).toContain("body.lux-nonhome-page:not(.lux-route-students-admin) #lux-topbar .lux-user-chip {");
+    expect(css).toContain("body.lux-nonhome-page:not(.lux-route-students-admin) #lux-topbar .lux-picker-btn:hover,");
+    expect(css).toContain("body.lux-nonhome-page:not(.lux-route-students-admin) #lux-topbar .lux-icon-btn.is-active,");
+    expect(css).toContain("body.lux-light-mode.lux-nonhome-page:not(.lux-route-students-admin) #lux-topbar .lux-picker-btn,");
+    expect(css).toContain("body.lux-light-mode.lux-nonhome-page:not(.lux-route-students-admin) #lux-topbar .lux-icon-btn.is-active {");
+  });
+
   it('self-initializes topbar and user-menu bindings when the shell already exists', () => {
     const dom = bootShellChromeRuntime();
     const doc = dom.window.document;
@@ -111,5 +124,11 @@ describe('luxury shell chrome runtime bindings', () => {
     expect(doc.getElementById('lux-chat-btn')?.getAttribute('aria-expanded')).toBe('false');
     expect(doc.getElementById('lux-user-chip')?.getAttribute('aria-expanded')).toBe('true');
     expect(doc.getElementById('lux-user-menu')?.classList.contains('is-open')).toBe(true);
+  });
+
+  it('does not throw when syncTopbar runs before every topbar text node exists', () => {
+    const dom = bootShellChromeRuntime();
+
+    expect(() => dom.window.syncTopbar()).not.toThrow();
   });
 });

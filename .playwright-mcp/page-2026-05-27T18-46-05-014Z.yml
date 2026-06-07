@@ -1,0 +1,342 @@
+- generic [active] [ref=e1]:
+  - text:  
+  - main [ref=e2]:
+    - generic [ref=e47]:
+      - generic [ref=e48]:
+        - generic [ref=e49]:
+          - generic [ref=e50]: Home Dashboard
+          - strong [ref=e51]: Personal workspace layout
+          - paragraph [ref=e52]: This homepage can be customized per role and faculty without changing the underlying portal logic.
+        - button "Customize dashboard" [ref=e54] [cursor=pointer]
+      - generic [ref=e56]:
+        - article [ref=e57]:
+          - generic [ref=e59]:
+            - generic [ref=e61]: 
+            - generic [ref=e62]:
+              - strong [ref=e63]: Faculty systems are in sync
+              - generic [ref=e64]: Curriculum, users, and exams are available from the current faculty dashboard.
+            - button "Open exams" [ref=e65] [cursor=pointer]
+        - article [ref=e66]:
+          - generic [ref=e68]:
+            - generic [ref=e69]:
+              - generic [ref=e70]:
+                - generic [ref=e71]: Administration
+                - heading "Business Management administration at a glance." [level=1] [ref=e72]
+                - paragraph [ref=e73]: 2025/2026 Spring Semester. Curriculum, staffing, exams, and student administration.
+                - generic [ref=e74]:
+                  - generic [ref=e75]: Business Management
+                  - generic [ref=e76]: 2025/2026 Spring Semester
+                  - generic [ref=e77]: 0 curriculum items
+                  - generic [ref=e78]: 1 students
+                  - generic [ref=e79]: 3 staff
+                  - generic [ref=e80]: 0 exams
+                  - generic [ref=e81]: 0 unread updates
+                - generic [ref=e82]:
+                  - button "Open admin tools" [ref=e83] [cursor=pointer]
+                  - button "Open scheduler" [ref=e84] [cursor=pointer]
+                  - button "Clear cache" [ref=e85] [cursor=pointer]
+              - complementary [ref=e86]:
+                - generic [ref=e87]:
+                  - strong [ref=e88]: Faculty Overview
+                  - generic [ref=e89]: Faculty systems and resource overview.
+                - generic [ref=e90]:
+                  - generic [ref=e91]:
+                    - generic [ref=e92]: Curriculum
+                    - strong [ref=e93]: "0"
+                    - emphasis [ref=e94]: Curriculum items available in the active faculty profile.
+                  - generic [ref=e95]:
+                    - generic [ref=e96]: Students
+                    - strong [ref=e97]: "1"
+                    - emphasis [ref=e98]: Students linked to this faculty environment.
+                  - generic [ref=e99]:
+                    - generic [ref=e100]: Exams
+                    - strong [ref=e101]: "0"
+                    - emphasis [ref=e102]: Assessment packages and exam records in scope.
+            - generic [ref=e103]:
+              - generic [ref=e104]:
+                - strong [ref=e105]: "0"
+                - generic [ref=e106]: Modules
+              - generic [ref=e107]:
+                - strong [ref=e108]: "0"
+                - generic [ref=e109]: Exams
+              - generic [ref=e110]:
+                - strong [ref=e111]: "3"
+                - generic [ref=e112]: Staff
+              - generic [ref=e113]:
+                - strong [ref=e114]: Business Management
+                - generic [ref=e115]: Faculty
+        - article [ref=e116]:
+          - generic [ref=e118]:
+            - generic [ref=e119]:
+              - generic [ref=e120]:
+                - generic [ref=e121]: Curriculum health
+                - generic [ref=e122]: Subjects and curriculum records attached to the selected faculty profile.
+              - generic [ref=e123]: 0 items
+            - generic [ref=e125]:
+              - generic [ref=e126]: 
+              - generic [ref=e127]:
+                - strong [ref=e128]: No curriculum items
+                - generic [ref=e129]: Open Admin Tools to start building subjects, structures, and module records.
+            - button "Open Admin Tools" [ref=e131] [cursor=pointer]
+        - article [ref=e132]:
+          - generic [ref=e134]:
+            - generic [ref=e135]:
+              - generic [ref=e136]:
+                - generic [ref=e137]: Student registry
+                - generic [ref=e138]: A quick pulse on the students currently scoped to this faculty.
+              - generic [ref=e139]: 1 students
+            - generic [ref=e141]:
+              - generic [ref=e142]: 
+              - generic [ref=e143]:
+                - strong [ref=e144]: QA Student Alpha
+                - generic [ref=e145]: ECON
+            - button "Open Students" [ref=e147] [cursor=pointer]
+        - article [ref=e148]:
+          - generic [ref=e150]:
+            - generic [ref=e151]:
+              - generic [ref=e152]:
+                - generic [ref=e153]: Admin operations
+                - generic [ref=e154]: Access curriculum, accounts, and registration tools.
+              - button "Open full tools page" [ref=e155] [cursor=pointer]
+            - generic [ref=e156]:
+              - generic [ref=e157]:
+                - generic [ref=e158]:
+                  - strong [ref=e159]: Account provisioning
+                  - generic [ref=e160]: Create linked student, professor, TA, and Student Service accounts with the original admin workflow.
+                - generic [ref=e161]:
+                  - button " Create Student" [ref=e162] [cursor=pointer]:
+                    - generic [ref=e163]: 
+                    - generic [ref=e164]: Create Student
+                  - button " Create Professor" [ref=e165] [cursor=pointer]:
+                    - generic [ref=e166]: 
+                    - generic [ref=e167]: Create Professor
+                  - button " Create TA" [ref=e168] [cursor=pointer]:
+                    - generic [ref=e169]: 
+                    - generic [ref=e170]: Create TA
+                  - button " Create Service Staff" [ref=e171] [cursor=pointer]:
+                    - generic [ref=e172]: 
+                    - generic [ref=e173]: Create Service Staff
+              - generic [ref=e174]:
+                - generic [ref=e175]:
+                  - strong [ref=e176]: Academic builders
+                  - generic [ref=e177]: Open the original curriculum library, subject builder, and registration-structure controls from one admin tools page.
+                - generic [ref=e178]:
+                  - button " Open Admin Tools" [ref=e179] [cursor=pointer]:
+                    - generic [ref=e180]: 
+                    - generic [ref=e181]: Open Admin Tools
+                  - button " Curriculum Library" [ref=e182] [cursor=pointer]:
+                    - generic [ref=e183]: 
+                    - generic [ref=e184]: Curriculum Library
+                  - button " Registration CMS" [ref=e185] [cursor=pointer]:
+                    - generic [ref=e186]: 
+                    - generic [ref=e187]: Registration CMS
+              - generic [ref=e188]:
+                - generic [ref=e189]:
+                  - strong [ref=e190]: Operations shortcuts
+                  - generic [ref=e191]: Keep scheduler, staff, students, and exams one click away from the main admin desk.
+                - generic [ref=e192]:
+                  - button " Open Scheduler" [ref=e193] [cursor=pointer]:
+                    - generic [ref=e194]: 
+                    - generic [ref=e195]: Open Scheduler
+                  - button " Manage Staff" [ref=e196] [cursor=pointer]:
+                    - generic [ref=e197]: 
+                    - generic [ref=e198]: Manage Staff
+                  - button " Open Students" [ref=e199] [cursor=pointer]:
+                    - generic [ref=e200]: 
+                    - generic [ref=e201]: Open Students
+                  - button " Open Exams" [ref=e202] [cursor=pointer]:
+                    - generic [ref=e203]: 
+                    - generic [ref=e204]: Open Exams
+        - article [ref=e205]:
+          - generic [ref=e207]:
+            - generic [ref=e208]:
+              - generic [ref=e209]:
+                - generic [ref=e210]: Systems lane
+                - generic [ref=e211]: One-click operational surfaces for the main administrative workflows.
+              - generic [ref=e212]: Control
+            - generic [ref=e213]:
+              - generic [ref=e214]:
+                - generic [ref=e215]: 
+                - generic [ref=e216]:
+                  - strong [ref=e217]: 1 students in scheduler scope
+                  - generic [ref=e218]: Open the master scheduler to coordinate rooms, weeks, and section timing.
+              - generic [ref=e219]:
+                - generic [ref=e220]: 
+                - generic [ref=e221]:
+                  - strong [ref=e222]: 3 faculty-side staff
+                  - generic [ref=e223]: Provision professors, TAs, and service users from the selected faculty lens.
+              - generic [ref=e224]:
+                - generic [ref=e225]: 
+                - generic [ref=e226]:
+                  - strong [ref=e227]: 0 exam packages
+                  - generic [ref=e228]: Exam records available for review, publishing, or follow-up.
+            - button "Open Scheduler" [ref=e230] [cursor=pointer]
+        - article [ref=e231]:
+          - generic [ref=e233]:
+            - generic [ref=e234]:
+              - generic [ref=e235]:
+                - generic [ref=e236]: Faculty orders
+                - generic [ref=e237]: Operational notices and orders tied to the active faculty dashboard.
+              - generic [ref=e238]: 0 orders
+            - generic [ref=e240]:
+              - generic [ref=e241]: 
+              - generic [ref=e242]:
+                - strong [ref=e243]: No orders yet
+                - generic [ref=e244]: Faculty orders and operational notices will appear here.
+            - button "Open Orders" [ref=e246] [cursor=pointer]
+        - article [ref=e247]:
+          - generic [ref=e249]:
+            - generic [ref=e250]:
+              - generic [ref=e251]:
+                - generic [ref=e252]: Recent changes
+                - generic [ref=e253]: System-level changes and signals moving through the portal.
+              - generic [ref=e254]: Portal
+            - generic [ref=e256]:
+              - generic [ref=e257]: 
+              - generic [ref=e258]:
+                - strong [ref=e259]: No new updates
+                - generic [ref=e260]: Fresh orders, notifications, and tracked changes will appear here.
+            - button "Open Orders" [ref=e262] [cursor=pointer]
+        - article [ref=e263]:
+          - generic [ref=e265]:
+            - generic [ref=e266]:
+              - generic [ref=e267]:
+                - generic [ref=e268]: Workspace hub
+                - generic [ref=e269]: The quickest path into the systems tied to this view.
+              - generic [ref=e270]: Admin View
+            - generic [ref=e271]:
+              - button " 1 students Scheduler Coordinate rooms, weeks, and course distribution from the master schedule. Master schedule" [ref=e272] [cursor=pointer]:
+                - generic [ref=e273]:
+                  - generic [ref=e275]: 
+                  - generic [ref=e276]: 1 students
+                - strong [ref=e277]: Scheduler
+                - generic [ref=e278]: Coordinate rooms, weeks, and course distribution from the master schedule.
+                - emphasis [ref=e282]: Master schedule
+              - button " 3 staff Staff 3 staff accounts in the current faculty network. Staff records" [ref=e283] [cursor=pointer]:
+                - generic [ref=e284]:
+                  - generic [ref=e286]: 
+                  - generic [ref=e287]: 3 staff
+                - strong [ref=e288]: Staff
+                - generic [ref=e289]: 3 staff accounts in the current faculty network.
+                - emphasis [ref=e293]: Staff records
+              - button " 1 students Students 1 student in the active faculty profile. Student records" [ref=e294] [cursor=pointer]:
+                - generic [ref=e295]:
+                  - generic [ref=e297]: 
+                  - generic [ref=e298]: 1 students
+                - strong [ref=e299]: Students
+                - generic [ref=e300]: 1 student in the active faculty profile.
+                - emphasis [ref=e304]: Student records
+              - button " 0 exams Exams 0 exams and assessment package available for review. Assessments" [ref=e305] [cursor=pointer]:
+                - generic [ref=e306]:
+                  - generic [ref=e308]: 
+                  - generic [ref=e309]: 0 exams
+                - strong [ref=e310]: Exams
+                - generic [ref=e311]: 0 exams and assessment package available for review.
+                - emphasis [ref=e315]: Assessments
+              - button " Admin tools Admin Tools Curriculum, accounts, and registration management. Open builders" [ref=e316] [cursor=pointer]:
+                - generic [ref=e317]:
+                  - generic [ref=e319]: 
+                  - generic [ref=e320]: Admin tools
+                - strong [ref=e321]: Admin Tools
+                - generic [ref=e322]: Curriculum, accounts, and registration management.
+                - emphasis [ref=e326]: Open builders
+              - button " 0 orders Orders 0 faculty orders ready for operational follow-up. Orders" [ref=e327] [cursor=pointer]:
+                - generic [ref=e328]:
+                  - generic [ref=e330]: 
+                  - generic [ref=e331]: 0 orders
+                - strong [ref=e332]: Orders
+                - generic [ref=e333]: 0 faculty orders ready for operational follow-up.
+                - emphasis [ref=e337]: Orders
+  - complementary:
+    - generic:
+      - generic: K
+      - generic:
+        - generic: KIU
+        - generic: Integrated Campus Portal
+    - generic:
+      - generic: Control
+      - button " Dashboard":
+        - generic: 
+        - generic: Dashboard
+      - button " Admin Tools":
+        - generic: 
+        - generic: Admin Tools
+      - button " Scheduler":
+        - generic: 
+        - generic: Scheduler
+      - button " Staff":
+        - generic: 
+        - generic: Staff
+      - button " Students":
+        - generic: 
+        - generic: Students
+      - generic: Systems
+      - button " News":
+        - generic: 
+        - generic: News
+      - button " Library":
+        - generic: 
+        - generic: Library
+      - button " Orders":
+        - generic: 
+        - generic: Orders
+      - button " Social":
+        - generic: 
+        - generic: Social
+      - button " Exams":
+        - generic: 
+        - generic: Exams
+      - button " Programs":
+        - generic: 
+        - generic: Programs
+      - button " Profile":
+        - generic: 
+        - generic: Profile
+    - generic:
+      - generic: PA
+      - generic:
+        - generic: Portal Administrator
+        - generic: Admin View - Business Management
+  - generic [ref=e6]:
+    - generic [ref=e7]:
+      - button "Show nav" [pressed] [ref=e8] [cursor=pointer]:
+        - generic [ref=e9]: Show nav
+      - generic [ref=e10]:
+        - text: KIU
+        - generic [ref=e11]: 
+        - strong [ref=e12]: Dashboard
+      - generic [ref=e13]:
+        - generic [ref=e14]: 
+        - textbox "Search modules, staff, documents, requests..." [ref=e15]
+    - generic [ref=e16]:
+      - button "Faculty Management " [ref=e338] [cursor=pointer]:
+        - generic [ref=e19]: Faculty
+        - strong [ref=e20]: Management
+        - generic [ref=e21]: 
+      - button "View Admin View " [ref=e339] [cursor=pointer]:
+        - generic [ref=e24]: View
+        - strong [ref=e25]: Admin View
+        - generic [ref=e26]: 
+      - button " Customize" [ref=e27] [cursor=pointer]:
+        - generic [ref=e28]: 
+        - generic [ref=e29]: Customize
+      - button "" [ref=e30] [cursor=pointer]:
+        - generic [ref=e31]: 
+      - button " 0" [ref=e33] [cursor=pointer]:
+        - generic [ref=e34]: 
+        - generic: "0"
+      - button " 0" [ref=e37] [cursor=pointer]:
+        - generic [ref=e38]: 
+        - generic: "0"
+      - button "PA Portal Dashboard / Admin View" [ref=e340] [cursor=pointer]:
+        - generic [ref=e41]: PA
+        - generic [ref=e42]:
+          - generic [ref=e43]: Portal
+          - generic [ref=e44]: Dashboard / Admin View
+        - generic [ref=e45]: 
+  - generic [ref=e342]:
+    - generic [ref=e343]:
+      - generic [ref=e344]: Backend unavailable
+      - generic [ref=e345]: Failed to fetch
+      - generic [ref=e346]: "Route: /api/portal/state"
+    - button "×" [ref=e347] [cursor=pointer]

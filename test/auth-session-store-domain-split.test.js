@@ -37,6 +37,7 @@ describe('auth session store domain split', () => {
         const source = readSource('backend/platform/store.js');
 
         expect(Object.keys(authSessionService).sort()).toEqual([
+            'PORTAL_IMPERSONATION_ROLES',
             'activateAccount',
             'clearSessionImpersonation',
             'createSessionByCredentials',
@@ -46,6 +47,7 @@ describe('auth session store domain split', () => {
             'getRawAccountByEmail',
             'getRawAccountByMicrosoftOid',
             'getSession',
+            'isPortalImpersonationRole',
             'linkMicrosoftIdentityToAccount',
             'logoutSession',
             'requestPasswordReset',
@@ -84,6 +86,7 @@ describe('auth session store domain split', () => {
         store.ensureCredential('admin').activationRequired = false;
         const adminSession = store.createSessionForAccount('admin', { identityProvider: 'portal' }).session;
         expect(store.updateSessionImpersonation(adminSession.token, 'student')?.impersonatedRole).toBe('student');
+        expect(store.updateSessionImpersonation(adminSession.token, 'invalid-role')).toBeNull();
         expect(store.clearSessionImpersonation(adminSession.token)?.impersonatedRole).toBe('');
     });
 });

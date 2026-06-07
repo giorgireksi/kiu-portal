@@ -653,20 +653,66 @@
 
     function renderStatusChip(value) {
         if (!value) return '';
-        return `<span class="staff-hub-chip ${statusTone(value)}">${escapeHtml(value)}</span>`;
+        return `<span class="staff-hub-chip lux-status-pill ${statusTone(value)}">${escapeHtml(value)}</span>`;
+    }
+
+    function clampProgressPercent(value) {
+        const percent = Number(value);
+        if (!Number.isFinite(percent)) return 0;
+        return Math.max(0, Math.min(100, Math.round(percent)));
+    }
+
+    function renderProgress(percent, copy) {
+        const safePercent = clampProgressPercent(percent);
+        return `
+            <div class="staff-hub-progress">
+                <div class="staff-hub-progress-track">
+                    <span class="staff-hub-progress-fill" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${safePercent}" data-staff-hub-progress="${safePercent}"></span>
+                </div>
+                <small class="staff-hub-text-muted">${copy}</small>
+            </div>
+        `;
+    }
+
+    function applyStaffHubProgressBars(scope = document) {
+        if (!scope || typeof scope.querySelectorAll !== 'function') return;
+        scope.querySelectorAll('[data-staff-hub-progress]').forEach((element) => {
+            const fill = clampProgressPercent(element.getAttribute('data-staff-hub-progress'));
+            element.style.setProperty('--staff-hub-progress', `${fill}%`);
+        });
+    }
+
+    function renderHeroStatCard(label, value, copy) {
+        return `
+            <article class="staff-hub-metric-card lux-strip-card surface-card">
+                <span>${escapeHtml(label)}</span>
+                <strong>${escapeHtml(value)}</strong>
+                <small>${escapeHtml(copy)}</small>
+            </article>
+        `;
+    }
+
+    function renderCommandCard(label, value, copy) {
+        return `
+            <article class="staff-hub-command-card">
+                <span>${escapeHtml(label)}</span>
+                <strong>${escapeHtml(value)}</strong>
+                <em>${escapeHtml(copy)}</em>
+            </article>
+        `;
     }
 
     function infoCard(label, value, full = false) {
         if (full) {
-            return `<article class="staff-hub-info-card is-full"><span>${escapeHtml(label)}</span><p>${escapeHtml(value || '—')}</p></article>`;
+            return `<article class="staff-hub-info-card is-full lux-data-card"><span>${escapeHtml(label)}</span><p>${escapeHtml(value || '—')}</p></article>`;
         }
-        return `<article class="staff-hub-info-card"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value || '—')}</strong></article>`;
+        return `<article class="staff-hub-info-card lux-data-card"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value || '—')}</strong></article>`;
     }
 
     function renderOverview(record) {
         const completion = profileCompleteness(record);
         return `
-            ${completion.missing.length ? `<div class="staff-hub-warning"><strong>Missing profile data</strong><div>${completion.missing.map(escapeHtml).join(', ')}</div></div>` : ''}
+            ${completion.missing.length ? `<div class="staff-hub-warning lux-data-card"><strong>Missing profile data</strong><div>${completion.missing.map(escapeHtml).join(', ')}</div></div>` : ''}
             <div class="staff-hub-info-grid">
                 ${infoCard('Staff ID', record.staffId)}
                 ${infoCard('Role', record.role)}
@@ -678,13 +724,13 @@
                 ${infoCard('Office', record.office || 'No office assigned')}
                 ${infoCard('Biography', record.bio || 'No biography yet.', true)}
             </div>
-            <section class="staff-hub-info-card is-full">
+            <section class="staff-hub-info-card is-full lux-data-card">
                 <span>Expertise</span>
-                <div class="staff-hub-chips" style="margin-top:10px;">${(record.expertise || []).length ? record.expertise.map((item) => `<span class="staff-hub-chip">${escapeHtml(item)}</span>`).join('') : '<span class="staff-hub-chip is-warning">No expertise listed</span>'}</div>
+                <div class="staff-hub-chips staff-hub-chips--spaced">${(record.expertise || []).length ? record.expertise.map((item) => `<span class="staff-hub-chip lux-status-pill">${escapeHtml(item)}</span>`).join('') : '<span class="staff-hub-chip is-warning lux-status-pill">No expertise listed</span>'}</div>
             </section>
-            <section class="staff-hub-info-card is-full">
+            <section class="staff-hub-info-card is-full lux-data-card">
                 <span>Languages</span>
-                <div class="staff-hub-chips" style="margin-top:10px;">${(record.languages || []).length ? record.languages.map((item) => `<span class="staff-hub-chip">${escapeHtml(item)}</span>`).join('') : '<span class="staff-hub-chip is-warning">No languages listed</span>'}</div>
+                <div class="staff-hub-chips staff-hub-chips--spaced">${(record.languages || []).length ? record.languages.map((item) => `<span class="staff-hub-chip lux-status-pill">${escapeHtml(item)}</span>`).join('') : '<span class="staff-hub-chip is-warning lux-status-pill">No languages listed</span>'}</div>
             </section>
         `;
     }
@@ -703,11 +749,11 @@
                         <strong>${escapeHtml(course.code)} · ${escapeHtml(course.name)}</strong>
                         <small>${escapeHtml(course.role)} · ${escapeHtml(course.semester)} · ${escapeHtml(course.section)} · ${escapeHtml(course.hours)}h/week</small>
                     </article>
-                `).join('') : `<div class="staff-hub-warning"><strong>No course assignment</strong><div>${isTeachingRole(record) ? 'This staff member appears to be teaching staff. Assign a course before publishing the profile.' : 'Course assignments are not required for this role.'}</div></div>`}
+                `).join('') : `<div class="staff-hub-warning lux-data-card"><strong>No course assignment</strong><div>${isTeachingRole(record) ? 'This staff member appears to be teaching staff. Assign a course before publishing the profile.' : 'Course assignments are not required for this role.'}</div></div>`}
             </div>
-            <section class="staff-hub-info-card is-full">
+            <section class="staff-hub-info-card is-full lux-data-card">
                 <span>Scheduler Sync</span>
-                <div class="staff-hub-list" style="margin-top:10px;">
+                <div class="staff-hub-list staff-hub-list--spaced">
                     ${(record.scheduleSessions || []).length ? record.scheduleSessions.map((session) => `
                         <article class="staff-hub-list-item">
                             <strong>${escapeHtml(session.courseId)} · ${escapeHtml(session.group)}</strong>
@@ -731,7 +777,7 @@
                         <strong>${escapeHtml(slot.day)} · ${escapeHtml(slot.start)}-${escapeHtml(slot.end)}</strong>
                         <small>${escapeHtml(slot.location)} · ${escapeHtml(slot.mode)} · ${escapeHtml(slot.booking)}</small>
                     </article>
-                `).join('') : '<div class="staff-hub-warning"><strong>No office hours</strong><div>Add office hours so students know when and how to contact this staff member.</div></div>'}
+                `).join('') : '<div class="staff-hub-warning lux-data-card"><strong>No office hours</strong><div>Add office hours so students know when and how to contact this staff member.</div></div>'}
             </div>
         `;
     }
@@ -744,9 +790,9 @@
                 ${infoCard('Office', record.office || 'No office listed')}
                 ${infoCard('Visibility', record.visibility)}
             </div>
-            <section class="staff-hub-info-card is-full">
+            <section class="staff-hub-info-card is-full lux-data-card">
                 <span>Professional links</span>
-                <div class="staff-hub-list" style="margin-top:10px;">
+                <div class="staff-hub-list staff-hub-list--spaced">
                     ${(record.links || []).length ? record.links.map((link) => `<article class="staff-hub-list-item"><strong>${escapeHtml(link.label)}</strong><small>${escapeHtml(link.url)}</small></article>`).join('') : '<article class="staff-hub-list-item"><strong>No links listed</strong><small>Add website, ORCID, scholar profile, or department profile links.</small></article>'}
                 </div>
             </section>
@@ -755,7 +801,7 @@
 
     function renderDocuments(record) {
         return `
-            <section class="staff-hub-info-card is-full">
+            <section class="staff-hub-info-card is-full lux-data-card">
                 <span>Profile documents</span>
                 <p>Document metadata placeholder. In a live LMS, these records would connect to secure file storage, retention rules, and permissions.</p>
             </section>
@@ -785,9 +831,9 @@
                 ${infoCard('Completion', `${completion.percent}%`)}
                 ${infoCard('Internal notes', record.notes || 'No admin notes.', true)}
             </div>
-            <section class="staff-hub-info-card is-full">
+            <section class="staff-hub-info-card is-full lux-data-card">
                 <span>Admin actions</span>
-                <div class="staff-hub-inline-actions" style="margin-top:12px;">
+                <div class="staff-hub-inline-actions staff-hub-inline-actions--spaced">
                     <button class="lux-secondary-btn" type="button" data-staff-action="invite" data-staff-id="${escapeHtml(record.id)}" ${canManage ? '' : 'disabled'}><i class="fas fa-paper-plane"></i> Send invitation</button>
                     <button class="lux-secondary-btn" type="button" data-staff-action="toggle-login" data-staff-id="${escapeHtml(record.id)}" ${canManage ? '' : 'disabled'}><i class="fas fa-power-off"></i> Toggle login</button>
                     <button class="lux-secondary-btn" type="button" data-staff-action="mark-reviewed" data-staff-id="${escapeHtml(record.id)}" ${canManage ? '' : 'disabled'}><i class="fas fa-clipboard-check"></i> Mark reviewed</button>
@@ -797,7 +843,7 @@
                     <button class="lux-secondary-btn lux-danger-btn" type="button" data-staff-action="delete" data-staff-id="${escapeHtml(record.id)}" ${canManage ? '' : 'disabled'}><i class="fas fa-user-slash"></i> Delete</button>
                     <button class="lux-secondary-btn" type="button" data-staff-action="open-platform-profile" data-staff-id="${escapeHtml(record.id)}"><i class="fas fa-id-card"></i> Open canonical profile</button>
                 </div>
-                ${!canManage ? '<p class="staff-hub-section-copy" style="margin-top:12px;">Switch to Admin preview with an active administrator session to use admin-only actions.</p>' : ''}
+                ${!canManage ? '<p class="staff-hub-section-copy staff-hub-section-copy--spaced">Switch to Admin preview with an active administrator session to use admin-only actions.</p>' : ''}
             </section>
         `;
     }
@@ -842,13 +888,10 @@
                                 <div class="staff-hub-kicker">${escapeHtml(record.role)} · ${escapeHtml(record.staffId)}</div>
                                 <h2>${escapeHtml(record.name)}</h2>
                                 <p>${escapeHtml(record.title)} · ${escapeHtml(record.department)} · ${escapeHtml(record.faculty)}</p>
-                                <div class="staff-hub-chips" style="margin-top:12px;">${renderStatusChip(record.status)}${renderStatusChip(record.accountStatus)}${renderStatusChip(record.lmsRole)}</div>
+                                <div class="staff-hub-chips staff-hub-chips--spaced">${renderStatusChip(record.status)}${renderStatusChip(record.accountStatus)}${renderStatusChip(record.lmsRole)}</div>
                             </div>
                         </div>
-                        <div class="staff-hub-progress">
-                            <div class="staff-hub-progress-track"><span class="staff-hub-progress-fill" style="width:${completion.percent}%"></span></div>
-                            <small class="staff-hub-text-muted">${completion.percent}% complete · updated ${escapeHtml(record.updatedAt || 'unknown')}</small>
-                        </div>
+                        ${renderProgress(completion.percent, `${completion.percent}% complete · updated ${escapeHtml(record.updatedAt || 'unknown')}`)}
                         <div class="staff-hub-toolbar-actions">
                             ${record.status === 'Archived'
                                 ? `<button class="lux-primary-btn" type="button" data-staff-action="restore" data-staff-id="${escapeHtml(record.id)}"><i class="fas fa-box-open"></i> Restore</button>`
@@ -856,8 +899,8 @@
                         </div>
                     </div>
                 </div>
-                <div class="staff-hub-tabs">
-                    ${tabs.map(([key, label]) => `<button class="staff-hub-tab ${state.profileTab === key ? 'is-active' : ''}" type="button" data-staff-action="tab" data-staff-tab="${key}">${label}</button>`).join('')}
+                <div class="staff-hub-tabs lux-tab-strip">
+                    ${tabs.map(([key, label]) => `<button class="staff-hub-tab lux-tab-btn ${state.profileTab === key ? 'is-active' : ''}" type="button" aria-pressed="${state.profileTab === key ? 'true' : 'false'}" data-staff-action="tab" data-staff-tab="${key}">${label}</button>`).join('')}
                 </div>
                 <div class="staff-hub-profile-body">
                     ${renderProfileTab(record)}
@@ -871,6 +914,7 @@
         const dictionaries = getStaffDictionaries(records, facultyCode);
         const visible = getFilteredStaff(records);
         const facultyLabel = facultyName(facultyCode);
+        const facultyDeckLabel = facultyLabel.replace(/^School of\s+/i, '').trim() || facultyLabel;
         const currentUserRole = normalizeSearch(getCurrentUser?.()?.role || '');
         const isAdminSession = currentUserRole === 'admin';
         const viewRoleOptions = VIEW_ROLES.map((value) => `<option value="${value}" ${state.viewRole === value ? 'selected' : ''}>${value === 'admin' ? 'Admin Preview' : value === 'faculty' ? 'Faculty Preview' : 'Viewer Preview'}</option>`).join('');
@@ -887,7 +931,7 @@
         ].filter(Boolean);
 
         const rows = visible.length ? visible.map((record) => {
-            const completion = profileCompleteness(record);
+                const completion = profileCompleteness(record);
             const selected = state.selectedId === record.id;
             const courseLabel = (record.courses || []).length
                 ? `${record.courses.length} course${record.courses.length === 1 ? '' : 's'} · ${record.scheduledHours}h/week`
@@ -895,7 +939,7 @@
             return `
                 <tr class="${selected ? 'is-selected' : ''}">
                     <td>
-                        <button class="lux-secondary-btn" style="padding:0; border:0; background:none; box-shadow:none; width:100%; justify-content:flex-start;" type="button" data-staff-action="select" data-staff-id="${escapeHtml(record.id)}">
+                        <button class="staff-hub-row-button" type="button" data-staff-action="select" data-staff-id="${escapeHtml(record.id)}">
                             <div class="staff-hub-person">
                                 <div class="staff-hub-avatar">${record.photo ? `<img alt="" src="${escapeHtml(record.photo)}">` : escapeHtml(initials(record.name))}</div>
                                 <div>
@@ -911,10 +955,7 @@
                     <td><strong>${escapeHtml(record.office || 'No office')}</strong><div class="staff-hub-meta">${(record.officeHours || []).length ? `${record.officeHours.length} availability entry` : 'No office hours'}</div></td>
                     <td>${renderStatusChip(record.status)}<div class="staff-hub-meta">${escapeHtml(record.accountStatus)}</div></td>
                     <td>
-                        <div class="staff-hub-progress">
-                            <div class="staff-hub-progress-track"><span class="staff-hub-progress-fill" style="width:${completion.percent}%"></span></div>
-                            <small class="staff-hub-text-muted">${completion.percent}% · ${completion.missing.length ? `${completion.missing.length} missing` : 'complete'}</small>
-                        </div>
+                        ${renderProgress(completion.percent, `${completion.percent}% · ${completion.missing.length ? `${completion.missing.length} missing` : 'complete'}`)}
                     </td>
                     <td>
                         <div class="staff-hub-inline-actions">
@@ -928,8 +969,8 @@
                 </tr>
             `;
         }).join('') : `
-            <div class="staff-hub-empty">
-                <i class="fas fa-users-slash" style="font-size:32px;"></i>
+            <div class="staff-hub-empty lux-empty-state">
+                <i class="fas fa-users-slash fa-2x" aria-hidden="true"></i>
                 <strong>${records.length ? 'No staff match these filters.' : 'No staff records yet.'}</strong>
                 <span>${records.length ? 'Try clearing filters, searching another role, or including archived records.' : 'Start by registering your first staff account.'}</span>
                 <div class="staff-hub-inline-actions">
@@ -943,98 +984,95 @@
         return `
             <div class="staff-hub-shell">
                 <section class="page-hero staff-hub-hero">
-                    <div>
-                        <div class="staff-hub-kicker"><i class="fas fa-users-cog"></i> Staff Administration · Profile Governance · Teaching Operations</div>
-                        <h1 class="staff-hub-title">Staff Command Center</h1>
-                        <p class="staff-hub-hero-copy">Operate the university staff directory with one KIU-native workspace for profile completeness, account readiness, teaching assignments, availability, documents, and lifecycle actions.</p>
-                        <div class="staff-hub-hero-meta" style="margin-top:16px;">
-                            <span class="staff-hub-pill"><i class="fas fa-building"></i> ${escapeHtml(facultyLabel)}</span>
-                            <span class="staff-hub-pill"><i class="fas fa-users"></i> ${stats.total} active and archived staff</span>
-                            <span class="staff-hub-pill"><i class="fas fa-user-graduate"></i> ${typeof getAllStudents === 'function' ? getAllStudents(facultyCode).length : 0} students in scope</span>
-                            <span class="staff-hub-pill"><i class="fas fa-triangle-exclamation"></i> ${unassignedSections} sections need staffing review</span>
+                    <div class="lux-hero-main">
+                        <div class="staff-hub-kicker"><i class="fas fa-users-cog"></i> Faculty Operations Deck</div>
+                        <h1 class="staff-hub-title">Run staff operations for ${escapeHtml(facultyDeckLabel)}.</h1>
+                        <p class="staff-hub-hero-copy">Govern profile quality, teaching load, staffing risk, and account lifecycle from one operations surface instead of splitting work across directory cleanup, access review, and scheduler triage.</p>
+                        <div class="staff-hub-hero-meta page-hero-meta">
+                            <span class="staff-hub-pill lux-filter-pill"><i class="fas fa-building"></i> ${escapeHtml(facultyLabel)}</span>
+                            <span class="staff-hub-pill lux-filter-pill"><i class="fas fa-users"></i> ${stats.total} staff records</span>
+                            <span class="staff-hub-pill lux-filter-pill"><i class="fas fa-book-open-reader"></i> ${stats.teaching} teaching-active profiles</span>
+                            <span class="staff-hub-pill lux-filter-pill"><i class="fas fa-user-graduate"></i> ${typeof getAllStudents === 'function' ? getAllStudents(facultyCode).length : 0} students in scope</span>
+                            <span class="staff-hub-pill lux-filter-pill"><i class="fas fa-triangle-exclamation"></i> ${stats.incomplete + stats.pending + unassignedSections} issues in queue</span>
                         </div>
-                        <div class="staff-hub-action-row" style="margin-top:20px;">
-                            <div class="staff-hub-field" style="min-width:280px; flex:1 1 280px;">
+                        <div class="lux-field-grid staff-hub-hero-search-grid staff-hub-inline-actions--spaced">
+                            <div class="staff-hub-field">
                                 <label for="staff-global-search">Search command center</label>
-                                <input class="staff-hub-control" id="staff-global-search" type="search" value="${escapeHtml(state.filters.query)}" placeholder="Search staff, course, department, office..." />
+                                <input class="staff-hub-control lux-control" id="staff-global-search" type="search" value="${escapeHtml(state.filters.query)}" placeholder="Search staff, course, department, office..." />
                             </div>
-                            <div class="staff-hub-field" style="min-width:170px;">
+                            <div class="staff-hub-field">
                                 <label for="staff-view-role">View role</label>
-                                <select class="staff-hub-control" id="staff-view-role">${viewRoleOptions}</select>
+                                <select class="staff-hub-control lux-control" id="staff-view-role">${viewRoleOptions}</select>
                             </div>
-                            <div class="staff-hub-inline-actions">
-                                <button class="lux-secondary-btn" type="button" data-staff-action="import"><i class="fas fa-file-import"></i> Import JSON</button>
-                                <button class="lux-secondary-btn" type="button" data-staff-action="export"><i class="fas fa-file-export"></i> Export JSON</button>
-                                ${isAdminSession ? `<button class="lux-primary-btn" type="button" data-staff-action="open-create" data-staff-role="professor"><i class="fas fa-user-plus"></i> Add Staff</button>` : ''}
-                            </div>
+                        </div>
+                        <div class="staff-hub-action-row staff-hub-inline-actions--spaced">
+                            <button class="lux-secondary-btn" type="button" data-staff-action="import"><i class="fas fa-file-import"></i> Import Roster</button>
+                            <button class="lux-secondary-btn" type="button" data-staff-action="export"><i class="fas fa-file-export"></i> Export Roster</button>
+                            ${isAdminSession ? `<button class="lux-primary-btn" type="button" data-staff-action="open-create" data-staff-role="professor"><i class="fas fa-user-plus"></i> Add Staff Profile</button>` : ''}
                         </div>
                         <input id="staff-import-file" type="file" accept="application/json" hidden>
                     </div>
-                    <div class="staff-hub-hero-panel">
-                        <article class="staff-hub-focus-card">
-                            <div class="staff-hub-overline">Operational Pulse</div>
-                            <h2>Profile health and access readiness</h2>
-                            <p>${stats.incomplete} incomplete profiles, ${stats.pending} account actions, and ${stats.overloaded} overloaded teaching records are visible in one review loop.</p>
-                        </article>
-                        <div class="staff-hub-hero-grid">
-                            <article class="staff-hub-mini-card">
-                                <div class="staff-hub-overline">Coverage</div>
-                                <strong style="display:block; margin-top:10px; color:var(--lux-text); font-size:24px;">${stats.teaching}</strong>
-                                <div class="staff-hub-mini-copy">Teaching-active staff</div>
-                            </article>
-                            <article class="staff-hub-mini-card">
-                                <div class="staff-hub-overline">Service</div>
-                                <strong style="display:block; margin-top:10px; color:var(--lux-text); font-size:24px;">${records.filter((record) => record.platformRole === 'student_service').length}</strong>
-                                <div class="staff-hub-mini-copy">Student service staff</div>
-                            </article>
+                    <div class="staff-hub-hero-panel staff-hub-command-panel lux-hero-side">
+                        <div class="staff-hub-command-head">
+                            <strong>Command Map</strong>
+                            <span>Keep directory quality, staffing risk, and access actions moving in one review lane.</span>
+                        </div>
+                        <div class="staff-hub-command-grid">
+                            ${renderCommandCard('Directory health', `${stats.incomplete} incomplete`, 'Profiles missing publish-ready data')}
+                            ${renderCommandCard('Account review', `${stats.pending} pending`, 'Invitation, review, or login recovery')}
+                            ${renderCommandCard('Scheduler risk', `${unassignedSections} unassigned`, `${stats.overloaded} overloaded teaching records`)}
+                        </div>
+                        <div class="staff-hub-command-note">
+                            <span class="staff-hub-command-badge"><i class="fas fa-user-shield"></i>${stats.total - stats.archived} active profiles</span>
+                            <p>Use the staff directory and scheduler together to close course ownership gaps before the term goes live.</p>
                         </div>
                     </div>
                 </section>
 
-                <section class="staff-hub-metrics">
-                    <article class="staff-hub-surface staff-hub-metric-card">
-                        <div class="staff-hub-overline">Total staff</div>
+                <section class="staff-hub-metrics lux-strip-grid lux-strip-grid--adaptive">
+                    <article class="staff-hub-metric-card lux-strip-card surface-card">
+                        <span>Total staff</span>
                         <strong>${stats.total}</strong>
-                        <span>${stats.total - stats.archived} active visible records by default</span>
+                        <small>${stats.total - stats.archived} active visible records by default</small>
                     </article>
-                    <article class="staff-hub-surface staff-hub-metric-card">
-                        <div class="staff-hub-overline">Teaching staff</div>
+                    <article class="staff-hub-metric-card lux-strip-card surface-card">
+                        <span>Teaching staff</span>
                         <strong>${stats.teaching}</strong>
-                        <span>Professors and teaching assistants with academic assignments</span>
+                        <small>Professors and teaching assistants with academic assignments</small>
                     </article>
-                    <article class="staff-hub-surface staff-hub-metric-card">
-                        <div class="staff-hub-overline">Incomplete</div>
+                    <article class="staff-hub-metric-card lux-strip-card surface-card">
+                        <span>Incomplete</span>
                         <strong>${stats.incomplete}</strong>
-                        <span>Profiles below the publishing threshold</span>
+                        <small>Profiles below the publishing threshold</small>
                     </article>
-                    <article class="staff-hub-surface staff-hub-metric-card">
-                        <div class="staff-hub-overline">Account review</div>
+                    <article class="staff-hub-metric-card lux-strip-card surface-card">
+                        <span>Account review</span>
                         <strong>${stats.pending}</strong>
-                        <span>Needs invitation, review, or login recovery</span>
+                        <small>Needs invitation, review, or login recovery</small>
                     </article>
-                    <article class="staff-hub-surface staff-hub-metric-card">
-                        <div class="staff-hub-overline">No office hours</div>
+                    <article class="staff-hub-metric-card lux-strip-card surface-card">
+                        <span>No office hours</span>
                         <strong>${stats.noOfficeHours}</strong>
-                        <span>Availability is missing for student contact</span>
+                        <small>Availability is missing for student contact</small>
                     </article>
-                    <article class="staff-hub-surface staff-hub-metric-card">
-                        <div class="staff-hub-overline">Overloaded</div>
+                    <article class="staff-hub-metric-card lux-strip-card surface-card">
+                        <span>Overloaded</span>
                         <strong>${stats.overloaded}</strong>
-                        <span>Weekly teaching load is at or above threshold</span>
+                        <small>Weekly teaching load is at or above threshold</small>
                     </article>
-                    <article class="staff-hub-surface staff-hub-metric-card">
-                        <div class="staff-hub-overline">Unassigned sections</div>
+                    <article class="staff-hub-metric-card lux-strip-card surface-card">
+                        <span>Unassigned sections</span>
                         <strong>${unassignedSections}</strong>
-                        <span>Groups missing a professor or TA in scheduler scope</span>
+                        <small>Groups missing a professor or TA in scheduler scope</small>
                     </article>
-                    <article class="staff-hub-surface staff-hub-metric-card">
-                        <div class="staff-hub-overline">Archived</div>
+                    <article class="staff-hub-metric-card lux-strip-card surface-card">
+                        <span>Archived</span>
                         <strong>${stats.archived}</strong>
-                        <span>Records hidden from default staff operations</span>
+                        <small>Records hidden from default staff operations</small>
                     </article>
                 </section>
 
-                <section class="staff-hub-surface staff-hub-controls staff-admin-controls">
+                <section class="staff-hub-controls staff-admin-controls">
                     <div class="staff-hub-controls-head">
                         <div>
                             <div class="staff-hub-overline">Directory controls</div>
@@ -1049,7 +1087,7 @@
                         </div>` : ''}
                     </div>
 
-                    <div class="staff-hub-inline-actions" style="margin-top:18px;">
+                    <div class="staff-hub-inline-actions staff-hub-inline-actions--spaced">
                         <button class="lux-secondary-btn" type="button" data-staff-action="saved-view" data-staff-view="all"><i class="fas fa-layer-group"></i> All staff</button>
                         <button class="lux-secondary-btn" type="button" data-staff-action="saved-view" data-staff-view="account-review"><i class="fab fa-microsoft"></i> Needs account</button>
                         <button class="lux-secondary-btn" type="button" data-staff-action="saved-view" data-staff-view="overloaded"><i class="fas fa-triangle-exclamation"></i> Overloaded</button>
@@ -1059,32 +1097,32 @@
                     <div class="staff-hub-filter-grid">
                         <div class="staff-hub-field">
                             <label for="staff-search">Search directory</label>
-                            <input class="staff-hub-control" id="staff-search" type="search" value="${escapeHtml(state.filters.query)}" placeholder="Name, email, staff ID, course, office..." />
+                            <input class="staff-hub-control lux-control" id="staff-search" type="search" value="${escapeHtml(state.filters.query)}" placeholder="Name, email, staff ID, course, office..." />
                         </div>
                         <div class="staff-hub-field">
                             <label for="staff-role-filter">Role</label>
-                            <select class="staff-hub-control" id="staff-role-filter">
+                            <select class="staff-hub-control lux-control" id="staff-role-filter">
                                 <option value="all">All roles</option>
                                 ${dictionaries.roles.map((role) => `<option value="${escapeHtml(role)}" ${state.filters.role === role ? 'selected' : ''}>${escapeHtml(role)}</option>`).join('')}
                             </select>
                         </div>
                         <div class="staff-hub-field">
                             <label for="staff-department-filter">Department</label>
-                            <select class="staff-hub-control" id="staff-department-filter">
+                            <select class="staff-hub-control lux-control" id="staff-department-filter">
                                 <option value="all">All departments</option>
                                 ${dictionaries.departments.map((department) => `<option value="${escapeHtml(department)}" ${state.filters.department === department ? 'selected' : ''}>${escapeHtml(department)}</option>`).join('')}
                             </select>
                         </div>
                         <div class="staff-hub-field">
                             <label for="staff-status-filter">Status</label>
-                            <select class="staff-hub-control" id="staff-status-filter">
+                            <select class="staff-hub-control lux-control" id="staff-status-filter">
                                 <option value="all">All statuses</option>
                                 ${dictionaries.statuses.map((status) => `<option value="${escapeHtml(status)}" ${state.filters.status === status ? 'selected' : ''}>${escapeHtml(status)}</option>`).join('')}
                             </select>
                         </div>
                         <div class="staff-hub-field">
                             <label for="staff-sort-filter">Sort</label>
-                            <select class="staff-hub-control" id="staff-sort-filter">
+                            <select class="staff-hub-control lux-control" id="staff-sort-filter">
                                 <option value="name" ${state.filters.sort === 'name' ? 'selected' : ''}>Name</option>
                                 <option value="department" ${state.filters.sort === 'department' ? 'selected' : ''}>Department</option>
                                 <option value="role" ${state.filters.sort === 'role' ? 'selected' : ''}>Role</option>
@@ -1098,14 +1136,14 @@
                     <div class="staff-hub-filter-grid-secondary">
                         <div class="staff-hub-field">
                             <label for="staff-account-filter">Account</label>
-                            <select class="staff-hub-control" id="staff-account-filter">
+                            <select class="staff-hub-control lux-control" id="staff-account-filter">
                                 <option value="all">All accounts</option>
                                 ${dictionaries.accountStatuses.map((status) => `<option value="${escapeHtml(status)}" ${state.filters.account === status ? 'selected' : ''}>${escapeHtml(status)}</option>`).join('')}
                             </select>
                         </div>
                         <div class="staff-hub-field">
                             <label for="staff-profile-filter">Profile status</label>
-                            <select class="staff-hub-control" id="staff-profile-filter">
+                            <select class="staff-hub-control lux-control" id="staff-profile-filter">
                                 <option value="all" ${state.filters.profile === 'all' ? 'selected' : ''}>All profiles</option>
                                 <option value="complete" ${state.filters.profile === 'complete' ? 'selected' : ''}>Complete profiles</option>
                                 <option value="incomplete" ${state.filters.profile === 'incomplete' ? 'selected' : ''}>Incomplete profiles</option>
@@ -1116,7 +1154,7 @@
                         </div>
                         <div class="staff-hub-field">
                             <label for="staff-teaching-filter">Teaching</label>
-                            <select class="staff-hub-control" id="staff-teaching-filter">
+                            <select class="staff-hub-control lux-control" id="staff-teaching-filter">
                                 <option value="all" ${state.filters.teaching === 'all' ? 'selected' : ''}>All staff</option>
                                 <option value="teaching" ${state.filters.teaching === 'teaching' ? 'selected' : ''}>Teaching this semester</option>
                                 <option value="not-teaching" ${state.filters.teaching === 'not-teaching' ? 'selected' : ''}>Not teaching this semester</option>
@@ -1125,7 +1163,7 @@
                         </div>
                         <div class="staff-hub-field">
                             <label for="staff-archive-filter">Archive</label>
-                            <select class="staff-hub-control" id="staff-archive-filter">
+                            <select class="staff-hub-control lux-control" id="staff-archive-filter">
                                 <option value="active" ${state.filters.archive === 'active' ? 'selected' : ''}>Active records</option>
                                 <option value="archived" ${state.filters.archive === 'archived' ? 'selected' : ''}>Archived only</option>
                                 <option value="all" ${state.filters.archive === 'all' ? 'selected' : ''}>All records</option>
@@ -1134,12 +1172,12 @@
                         <button class="lux-secondary-btn" type="button" data-staff-action="review-missing"><i class="fas fa-clipboard-list"></i> Review missing data</button>
                     </div>
 
-                    <div class="staff-hub-chips" style="margin-top:14px;">
-                        ${activeChips.length ? activeChips.map(([label, value]) => `<span class="staff-hub-chip">${escapeHtml(label)}: ${escapeHtml(value)}</span>`).join('') : '<span class="staff-hub-chip">No active filters</span>'}
+                    <div class="staff-hub-chips staff-hub-chips--spaced">
+                        ${activeChips.length ? activeChips.map(([label, value]) => `<span class="staff-hub-chip lux-status-pill">${escapeHtml(label)}: ${escapeHtml(value)}</span>`).join('') : '<span class="staff-hub-chip lux-status-pill">No active filters</span>'}
                     </div>
                 </section>
 
-                <section class="staff-hub-surface staff-hub-directory-panel">
+                <section class="staff-hub-directory-panel">
                     <div class="staff-hub-directory-head">
                         <div>
                             <div class="staff-hub-overline">Staff directory</div>
@@ -1151,7 +1189,7 @@
                         </div>
                     </div>
                     <div class="staff-hub-workspace">
-                        <div class="staff-hub-table-wrap">
+                        <div class="staff-hub-table-wrap lux-data-card">
                             ${visible.length ? `
                                 <table class="staff-hub-table" aria-label="Staff directory">
                                     <thead>
@@ -1203,14 +1241,14 @@
                         <button class="lux-secondary-btn" type="button" data-staff-action="close-modal"><i class="fas fa-times"></i> Close</button>
                     </div>
                     <div class="staff-hub-modal-body">
-                        <section class="staff-hub-form-section">
+                        <section class="staff-hub-form-section lux-data-card">
                             <div class="staff-hub-form-section-head">
                                 <div>
                                     <span class="staff-hub-overline">Step 1</span>
                                     <strong>Basic information</strong>
                                     <p>Identity details used across the staff directory and profile pages.</p>
                                 </div>
-                                <span class="staff-hub-chip">Required</span>
+                                <span class="staff-hub-chip lux-status-pill">Required</span>
                             </div>
                             <div class="staff-hub-form-grid">
                                 ${renderField('Full name *', 'formName', 'text', profile.name, 'Nino Beridze', true)}
@@ -1223,7 +1261,7 @@
                             </div>
                         </section>
 
-                        <section class="staff-hub-form-section">
+                        <section class="staff-hub-form-section lux-data-card">
                             <div class="staff-hub-form-section-head">
                                 <div>
                                     <span class="staff-hub-overline">Step 2</span>
@@ -1252,7 +1290,7 @@
                             </div>
                         </section>
 
-                        <section class="staff-hub-form-section">
+                        <section class="staff-hub-form-section lux-data-card">
                             <div class="staff-hub-form-section-head">
                                 <div>
                                     <span class="staff-hub-overline">Step 3</span>
@@ -1268,7 +1306,7 @@
                             </div>
                         </section>
 
-                        <section class="staff-hub-form-section">
+                        <section class="staff-hub-form-section lux-data-card">
                             <div class="staff-hub-form-section-head">
                                 <div>
                                     <span class="staff-hub-overline">Step 4</span>
@@ -1281,7 +1319,7 @@
                             </div>
                         </section>
 
-                        <section class="staff-hub-form-section">
+                        <section class="staff-hub-form-section lux-data-card">
                             <div class="staff-hub-form-section-head">
                                 <div>
                                     <span class="staff-hub-overline">Step 5</span>
@@ -1294,7 +1332,7 @@
                             </div>
                         </section>
 
-                        <section class="staff-hub-form-section">
+                        <section class="staff-hub-form-section lux-data-card">
                             <div class="staff-hub-form-section-head">
                                 <div>
                                     <span class="staff-hub-overline">Step 6</span>
@@ -1307,7 +1345,7 @@
                             </div>
                         </section>
 
-                        <section class="staff-hub-form-section">
+                        <section class="staff-hub-form-section lux-data-card">
                             <div class="staff-hub-form-section-head">
                                 <div>
                                     <span class="staff-hub-overline">Step 7</span>
@@ -1327,8 +1365,8 @@
                     </div>
                     <div class="staff-hub-modal-foot">
                         <div class="staff-hub-chips">
-                            <span class="staff-hub-chip ${completionTone(completion.percent)}">${completion.percent}% complete</span>
-                            ${completion.missing.slice(0, 3).map((item) => `<span class="staff-hub-chip is-warning">Missing ${escapeHtml(item)}</span>`).join('')}
+                            <span class="staff-hub-chip lux-status-pill ${completionTone(completion.percent)}">${completion.percent}% complete</span>
+                            ${completion.missing.slice(0, 3).map((item) => `<span class="staff-hub-chip is-warning lux-status-pill">Missing ${escapeHtml(item)}</span>`).join('')}
                         </div>
                         <div class="staff-hub-modal-actions">
                             <button class="lux-secondary-btn" type="button" data-staff-action="close-modal">Cancel</button>
@@ -1345,7 +1383,7 @@
         return `
             <div class="staff-hub-field" data-field="${escapeHtml(id)}">
                 <label for="${escapeHtml(id)}">${escapeHtml(label)}</label>
-                <input class="staff-hub-control" id="${escapeHtml(id)}" type="${escapeHtml(type)}" value="${escapeHtml(value ?? '')}" placeholder="${escapeHtml(placeholder || '')}" ${required ? 'required' : ''}>
+                <input class="staff-hub-control lux-control" id="${escapeHtml(id)}" type="${escapeHtml(type)}" value="${escapeHtml(value ?? '')}" placeholder="${escapeHtml(placeholder || '')}" ${required ? 'required' : ''}>
                 ${help ? `<div class="staff-hub-help">${escapeHtml(help)}</div>` : ''}
                 <div class="staff-hub-error">This field is required.</div>
             </div>
@@ -1356,7 +1394,7 @@
         return `
             <div class="staff-hub-field" data-field="${escapeHtml(id)}">
                 <label for="${escapeHtml(id)}">${escapeHtml(label)}</label>
-                <textarea class="staff-hub-control" id="${escapeHtml(id)}" placeholder="${escapeHtml(placeholder || '')}">${escapeHtml(value ?? '')}</textarea>
+                <textarea class="staff-hub-control lux-control" id="${escapeHtml(id)}" placeholder="${escapeHtml(placeholder || '')}">${escapeHtml(value ?? '')}</textarea>
                 ${help ? `<div class="staff-hub-help">${escapeHtml(help)}</div>` : ''}
             </div>
         `;
@@ -1367,7 +1405,7 @@
         return `
             <div class="staff-hub-field" data-field="${escapeHtml(id)}">
                 <label for="${escapeHtml(id)}">${escapeHtml(label)}</label>
-                <select class="staff-hub-control" id="${escapeHtml(id)}">
+                <select class="staff-hub-control lux-control" id="${escapeHtml(id)}">
                     ${options.map((option) => {
                         const normalized = String(option);
                         const display = labels[normalized] || option;
@@ -1864,8 +1902,8 @@
         const chips = document.querySelector('#staff-command-modal-root .staff-hub-modal-foot .staff-hub-chips');
         if (chips) {
             chips.innerHTML = `
-                <span class="staff-hub-chip ${completionTone(completion.percent)}">${completion.percent}% complete</span>
-                ${completion.missing.slice(0, 3).map((item) => `<span class="staff-hub-chip is-warning">Missing ${escapeHtml(item)}</span>`).join('')}
+                <span class="staff-hub-chip lux-status-pill ${completionTone(completion.percent)}">${completion.percent}% complete</span>
+                ${completion.missing.slice(0, 3).map((item) => `<span class="staff-hub-chip is-warning lux-status-pill">Missing ${escapeHtml(item)}</span>`).join('')}
             `;
         }
     }
@@ -2120,6 +2158,7 @@
         const state = getStaffState();
         const selected = activeSelection(records);
         container.innerHTML = selected ? renderProfile(selected) : renderDirectory(records, facultyCode, stats, unassignedSections);
+        applyStaffHubProgressBars(container);
         renderModal(records, facultyCode);
         if (typeof queueEnglishLocalization === 'function') {
             queueEnglishLocalization(container);
@@ -2173,8 +2212,10 @@
             if (window.location.hash.startsWith('#profile/')) {
                 applyHashRoute();
             }
+            renderStaffPage();
         }, { once: true });
     } else {
         consumePendingAdminAccountFlow();
+        renderStaffPage();
     }
 })();

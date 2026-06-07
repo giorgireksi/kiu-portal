@@ -70,7 +70,7 @@
     function renderReturnModal() {
         const body = `
             <label class="ex2-field">
-                <span>Feedback for the Professor/TA (required)</span>
+                <span class="ex2-field-label">Feedback for the Professor/TA (required)</span>
                 <textarea class="ex2-textarea" rows="4" placeholder="Explain what needs to be fixed..." data-exam-input="return-note">${escapeHtml(runtime.returnNote)}</textarea>
             </label>
             <div class="ex2-inline-actions ex2-modal-actions">
@@ -95,10 +95,10 @@
             <article class="ex2-cohort-card${selected ? ' is-selected' : ''}">
                 <label class="ex2-cohort-check">
                     <input id="exam-cohort-${escapeHtml(toFieldToken(cohort.key))}" name="exam_cohort_${escapeHtml(toFieldToken(cohort.key))}" type="checkbox" ${selected ? 'checked' : ''} data-exam-change-call="toggleExamCohort" data-exam-change-args='["${escapeHtml(cohort.key)}","$checked"]'>
-                    <span>${escapeHtml(cohort.label)}</span>
+                    <span class="ex2-cohort-check-label">${escapeHtml(cohort.label)}</span>
                 </label>
-                <div class="ex2-meta">${escapeHtml(String(studentCount))} students Â· ${escapeHtml(String(cohort.groupNames.length))} teaching groups</div>
-                <div class="ex2-card-copy">${escapeHtml(cohort.subjectSummary)}</div>
+                <div class="ex2-meta ex2-cohort-card-meta">${escapeHtml(String(studentCount))} students Â· ${escapeHtml(String(cohort.groupNames.length))} teaching groups</div>
+                <div class="ex2-card-copy ex2-cohort-card-copy">${escapeHtml(cohort.subjectSummary)}</div>
                 <div class="ex2-tag-row">
                     ${cohort.facultyLabels.map((label) => `<span class="ex2-tag">${escapeHtml(label)}</span>`).join('')}
                     ${cohort.courseLabels.slice(0, 3).map((label) => `<span class="ex2-tag">${escapeHtml(label)}</span>`).join('')}
@@ -106,27 +106,27 @@
                 ${showSplit ? `
                     <div class="ex2-split-box">
                         <div class="ex2-side-kicker"><i class="fas fa-scissors"></i> Room Split Required</div>
-                        <p style="font-size:12px;color:var(--lux-text-muted);margin:6px 0;">${studentCount} students exceed room capacity (${draft.roomCapacity}). Split into sub-groups:</p>
-                        <div class="ex2-form-grid" style="margin-top:8px;">
+                        <p class="ex2-copy-muted ex2-copy-muted--mt-6">${studentCount} students exceed room capacity (${draft.roomCapacity}). Split into sub-groups:</p>
+                        <div class="ex2-form-grid ex2-form-grid--mt-8">
                             <label class="ex2-field">
-                                <span>Students for this room</span>
+                                <span class="ex2-field-label">Students for this room</span>
                                 <input class="ex2-input" type="number" min="1" max="${studentCount}" value="${runtime.splitStudentCount || draft.roomCapacity || Math.ceil(studentCount / 2)}" data-exam-change-call="setExamSplitStudentCount" data-exam-change-args='["$value"]'>
                             </label>
                             <label class="ex2-field">
-                                <span>Overflow room</span>
+                                <span class="ex2-field-label">Overflow room</span>
                                 <input class="ex2-input" type="text" placeholder="e.g. Lab 302" value="${escapeHtml(runtime.splitRoomLabel)}" data-exam-input-call="setExamSplitRoomLabel" data-exam-input-args='["$value"]'>
                             </label>
                             <label class="ex2-field">
-                                <span>Overflow time (optional)</span>
+                                <span class="ex2-field-label">Overflow time (optional)</span>
                                 <input class="ex2-input" type="datetime-local" value="${escapeHtml(runtime.splitTimeSlot)}" data-exam-change-call="setExamSplitTimeSlot" data-exam-change-args='["$value"]'>
                             </label>
                         </div>
-                        <button type="button" class="ex2-btn is-secondary" style="margin-top:10px;" data-exam-call="splitCohort" data-exam-args='["${escapeHtml(cohort.key)}"]'><i class="fas fa-scissors"></i> Split: first ${runtime.splitStudentCount || draft.roomCapacity} stay, rest â†’ overflow</button>
+                        <button type="button" class="ex2-btn is-secondary ex2-btn--mt-10" data-exam-call="splitCohort" data-exam-args='["${escapeHtml(cohort.key)}"]'><i class="fas fa-scissors"></i> Split: first ${runtime.splitStudentCount || draft.roomCapacity} stay, rest â†’ overflow</button>
                     </div>
                 ` : ''}
                 <div class="ex2-mini-list">
-                    ${(cohort.students || []).slice(0, 5).map((student) => `<div>${escapeHtml(student.name || student.id)}</div>`).join('')}
-                    ${studentCount > 5 ? `<div>+${studentCount - 5} more</div>` : ''}
+                    ${(cohort.students || []).slice(0, 5).map((student) => `<div class="ex2-mini-list-item">${escapeHtml(student.name || student.id)}</div>`).join('')}
+                    ${studentCount > 5 ? `<div class="ex2-mini-list-item ex2-mini-list-item--muted">+${studentCount - 5} more</div>` : ''}
                 </div>
             </article>
         `;
@@ -139,23 +139,23 @@
         return `
             <article class="ex2-session-card">
                 <div class="ex2-session-head">
-                    <div>
-                        <div class="ex2-status is-${escapeHtml(status)}">${escapeHtml(status)}</div>
-                        ${isPublished ? `<span class="ex2-status is-approved" style="margin-left:6px;">Published</span>` : ''}
-                        <h3>${escapeHtml(session.title || template?.title || session.subjectName || 'Scheduled exam')}</h3>
-                        <div class="ex2-meta">${escapeHtml(session.subjectName || session.subjectId || 'Subject')} Â· ${escapeHtml(session.variantLabel || template?.variantLabel || 'Variant')}</div>
+                    <div class="ex2-session-head-main">
+                        <div class="ex2-status ex2-session-status-chip is-${escapeHtml(status)}">${escapeHtml(status)}</div>
+                        ${isPublished ? `<span class="ex2-status ex2-session-published-pill is-approved ex2-status--ml-6">Published</span>` : ''}
+                        <h3 class="ex2-session-card-title">${escapeHtml(session.title || template?.title || session.subjectName || 'Scheduled exam')}</h3>
+                        <div class="ex2-meta ex2-session-card-meta">${escapeHtml(session.subjectName || session.subjectId || 'Subject')} Â· ${escapeHtml(session.variantLabel || template?.variantLabel || 'Variant')}</div>
                     </div>
-                    <div class="ex2-inline-actions">
+                    <div class="ex2-inline-actions ex2-session-action-row">
                         <button type="button" class="ex2-btn is-ghost" data-exam-call="editExamSession" data-exam-args='["${escapeHtml(session.id)}"]'><i class="fas fa-pen"></i> Edit</button>
                         ${!isPublished ? `<button type="button" class="ex2-btn is-primary" data-exam-call="publishExamSession" data-exam-args='["${escapeHtml(session.id)}"]'><i class="fas fa-bullhorn"></i> Publish</button>` : `<button type="button" class="ex2-btn is-ghost" data-exam-call="unpublishExamSession" data-exam-args='["${escapeHtml(session.id)}"]'><i class="fas fa-eye-slash"></i> Unpublish</button>`}
                     </div>
                 </div>
                 <div class="ex2-mini-grid">
-                    <div><strong>${escapeHtml(formatShortDate(session.startAt))}</strong><span>Date</span></div>
-                    <div><strong>${escapeHtml(String(getAssignedStudentIds(session).length))}</strong><span>Students</span></div>
-                    <div><strong>${escapeHtml(String(getSessionObserverNames(session).length))}</strong><span>Proctors</span></div>
+                    <div class="ex2-session-stat-card"><strong class="ex2-session-stat-value">${escapeHtml(formatShortDate(session.startAt))}</strong><span class="ex2-session-stat-label">Date</span></div>
+                    <div class="ex2-session-stat-card"><strong class="ex2-session-stat-value">${escapeHtml(String(getAssignedStudentIds(session).length))}</strong><span class="ex2-session-stat-label">Students</span></div>
+                    <div class="ex2-session-stat-card"><strong class="ex2-session-stat-value">${escapeHtml(String(getSessionObserverNames(session).length))}</strong><span class="ex2-session-stat-label">Proctors</span></div>
                 </div>
-                <div class="ex2-card-copy">${escapeHtml(getSessionRoomLabel(session))} Â· ${escapeHtml(formatDateTime(session.startAt))} - ${escapeHtml(formatDateTime(session.endAt))}</div>
+                <div class="ex2-card-copy ex2-session-card-copy">${escapeHtml(getSessionRoomLabel(session))} Â· ${escapeHtml(formatDateTime(session.startAt))} - ${escapeHtml(formatDateTime(session.endAt))}</div>
             </article>
         `;
     }
@@ -168,31 +168,31 @@
             <section class="ex2-panel">
                 <div class="ex2-panel-head">
                     <div>
-                        <h2><i class="fas fa-clipboard-check" style="margin-right:8px;opacity:.5;"></i>Review Queue</h2>
-                        <p>Approve or return quizzes submitted by teaching staff.</p>
+                        <h2 class="ex2-panel-title"><i class="fas fa-clipboard-check ex2-heading-icon"></i>Review Queue</h2>
+                        <p class="ex2-panel-copy">Approve or return quizzes submitted by teaching staff.</p>
                     </div>
                 </div>
                 ${queue.length ? `
-                    <div style="display:grid;gap:14px;">
+                    <div class="ex2-review-grid">
                         ${queue.map((template) => `
-                            <article class="ex2-quiz-card" style="cursor:default;">
-                                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
-                                    <div style="display:flex;align-items:center;gap:10px;">
+                            <article class="ex2-quiz-card ex2-quiz-card--static ex2-review-queue-card">
+                                <div class="ex2-quiz-card-head ex2-quiz-card-head--mb-12 ex2-review-queue-head">
+                                    <div class="ex2-inline-actions ex2-inline-actions--gap-10 ex2-review-queue-status-row">
                                         <span class="ex2-status-dot is-${escapeHtml(String(template.status || 'submitted').toLowerCase())}">${escapeHtml(template.status || 'submitted')}</span>
-                                        <span style="font-size:13px;color:var(--lux-text-muted);">by ${escapeHtml(template.createdByName || 'Unknown')}</span>
+                                        <span class="ex2-copy-muted ex2-review-queue-author-copy">by ${escapeHtml(template.createdByName || 'Unknown')}</span>
                                     </div>
-                                    <span class="ex2-tag">${escapeHtml(template.faculty || 'N/A')}</span>
+                                    <span class="ex2-tag ex2-review-queue-faculty-tag">${escapeHtml(template.faculty || 'N/A')}</span>
                                 </div>
-                                <h3 style="font-size:17px;font-weight:700;margin:0 0 6px;">${escapeHtml(template.title || 'Untitled')}</h3>
-                                <div style="font-size:13px;color:var(--lux-text-muted);margin-bottom:12px;">${escapeHtml(template.subjectName || template.subjectId || 'No subject')}</div>
+                                <h3 class="ex2-quiz-card-title ex2-quiz-card-title--lg">${escapeHtml(template.title || 'Untitled')}</h3>
+                                <div class="ex2-quiz-card-meta ex2-quiz-card-meta--mb-12">${escapeHtml(template.subjectName || template.subjectId || 'No subject')}</div>
                                 <div class="ex2-mini-grid">
-                                    <div><strong>${bankCount(template)}</strong><span>Questions</span></div>
-                                    <div><strong>${varCount(template)}</strong><span>Variants</span></div>
-                                    <div><strong>${template.durationMinutes || 90}m</strong><span>Duration</span></div>
-                                    <div><strong>${template.passingScore || 50}</strong><span>Pass pts</span></div>
-                                    <div><strong>${template.gradingWeight || 30}</strong><span>Quiz pts</span></div>
+                                    <div class="ex2-review-summary-card"><strong class="ex2-review-summary-value">${bankCount(template)}</strong><span class="ex2-review-summary-label">Questions</span></div>
+                                    <div class="ex2-review-summary-card"><strong class="ex2-review-summary-value">${varCount(template)}</strong><span class="ex2-review-summary-label">Variants</span></div>
+                                    <div class="ex2-review-summary-card"><strong class="ex2-review-summary-value">${template.durationMinutes || 90}m</strong><span class="ex2-review-summary-label">Duration</span></div>
+                                    <div class="ex2-review-summary-card"><strong class="ex2-review-summary-value">${template.passingScore || 50}</strong><span class="ex2-review-summary-label">Pass pts</span></div>
+                                    <div class="ex2-review-summary-card"><strong class="ex2-review-summary-value">${template.gradingWeight || 30}</strong><span class="ex2-review-summary-label">Quiz pts</span></div>
                                 </div>
-                                <div class="ex2-inline-actions" style="margin-top:16px;">
+                                <div class="ex2-inline-actions ex2-inline-actions--mt-16 ex2-review-queue-action-row">
                                     <button type="button" class="ex2-btn is-primary" data-exam-call="saveAndApproveExamTemplate" data-exam-args='["${escapeHtml(template.id)}"]'><i class="fas fa-check-circle"></i> Approve</button>
                                     <button type="button" class="ex2-btn is-danger" data-exam-call="openReturnModal" data-exam-args='["${escapeHtml(template.id)}"]'><i class="fas fa-rotate-left"></i> Return for Revision</button>
                                     <button type="button" class="ex2-btn is-ghost" data-exam-call="editExamTemplate" data-exam-args='["${escapeHtml(template.id)}"]'><i class="fas fa-eye"></i> Preview</button>
@@ -201,9 +201,9 @@
                         `).join('')}
                     </div>
                 ` : `
-                    <div class="ex2-empty-state">
+                    <div class="ex2-empty-state ex2-review-queue-empty">
                         <i class="fas fa-inbox"></i>
-                        <p>No quizzes awaiting review. All clear!</p>
+                        <p class="ex2-empty-state-copy">No quizzes awaiting review. All clear!</p>
                     </div>
                 `}
             </section>
@@ -225,8 +225,8 @@
                 <section class="ex2-panel">
                     <div class="ex2-panel-head">
                         <div>
-                            <h2><i class="fas fa-calendar-plus" style="margin-right:8px;opacity:.5;"></i>Schedule Builder</h2>
-                            <p>Select a template, set time and room, then pick student groups.</p>
+                            <h2 class="ex2-panel-title"><i class="fas fa-calendar-plus ex2-heading-icon"></i>Schedule Builder</h2>
+                            <p class="ex2-panel-copy">Select a template, set time and room, then pick student groups.</p>
                         </div>
                         <div class="ex2-inline-actions">
                             <button type="button" class="ex2-btn is-primary" data-exam-call="createLocalExamTestSession"><i class="fas fa-vial"></i> Create Test Session</button>
@@ -235,57 +235,57 @@
                     </div>
                     <div class="ex2-form-grid">
                         <label class="ex2-field ex2-field-span">
-                            <span>Approved Template</span>
+                            <span class="ex2-field-label">Approved Template</span>
                             <select class="ex2-select" data-exam-change-call="updateExamScheduleField" data-exam-change-args='["templateId","$value"]'>
                                 <option value="">Choose template</option>
                                 ${approvedTemplates.map((item) => '<option value="' + escapeHtml(item.id) + '"' + (draft.templateId === item.id ? ' selected' : '') + '>' + escapeHtml(item.subjectName || item.subjectId) + ' - ' + escapeHtml(item.title || 'Variant') + ' (' + (item.variants || []).length + ' var)</option>').join('')}
                             </select>
                         </label>
-                        <label class="ex2-field"><span>Start</span><input class="ex2-input" type="datetime-local" value="${escapeHtml(draft.startAt)}" data-exam-change-call="updateExamScheduleField" data-exam-change-args='["startAt","$value"]'></label>
-                        <label class="ex2-field"><span>End</span><input class="ex2-input" type="datetime-local" value="${escapeHtml(draft.endAt)}" data-exam-change-call="updateExamScheduleField" data-exam-change-args='["endAt","$value"]'></label>
-                        <label class="ex2-field"><span>Room</span><input class="ex2-input" type="text" value="${escapeHtml(draft.roomLabel)}" placeholder="Lab 301" data-exam-change-call="updateExamScheduleField" data-exam-change-args='["roomLabel","$value"]'></label>
-                        <label class="ex2-field"><span>Capacity</span><input class="ex2-input" type="number" min="1" value="${escapeHtml(String(draft.roomCapacity || ''))}" placeholder="50" data-exam-change-call="updateExamScheduleField" data-exam-change-args='["roomCapacity","$value"]'></label>
-                        <label class="ex2-field ex2-field-span"><span>Proctors</span><input class="ex2-input" type="text" value="${escapeHtml(draft.observerNamesText)}" placeholder="N. Beridze, L. Kapanadze" data-exam-change-call="updateExamScheduleField" data-exam-change-args='["observerNamesText","$value"]'></label>
+                        <label class="ex2-field"><span class="ex2-field-label">Start</span><input class="ex2-input" type="datetime-local" value="${escapeHtml(draft.startAt)}" data-exam-change-call="updateExamScheduleField" data-exam-change-args='["startAt","$value"]'></label>
+                        <label class="ex2-field"><span class="ex2-field-label">End</span><input class="ex2-input" type="datetime-local" value="${escapeHtml(draft.endAt)}" data-exam-change-call="updateExamScheduleField" data-exam-change-args='["endAt","$value"]'></label>
+                        <label class="ex2-field"><span class="ex2-field-label">Room</span><input class="ex2-input" type="text" value="${escapeHtml(draft.roomLabel)}" placeholder="Lab 301" data-exam-change-call="updateExamScheduleField" data-exam-change-args='["roomLabel","$value"]'></label>
+                        <label class="ex2-field"><span class="ex2-field-label">Capacity</span><input class="ex2-input" type="number" min="1" value="${escapeHtml(String(draft.roomCapacity || ''))}" placeholder="50" data-exam-change-call="updateExamScheduleField" data-exam-change-args='["roomCapacity","$value"]'></label>
+                        <label class="ex2-field ex2-field-span"><span class="ex2-field-label">Proctors</span><input class="ex2-input" type="text" value="${escapeHtml(draft.observerNamesText)}" placeholder="N. Beridze, L. Kapanadze" data-exam-change-call="updateExamScheduleField" data-exam-change-args='["observerNamesText","$value"]'></label>
                     </div>
-                    ${issues.length ? '<div class="ex2-collision-list soft">' + issues.map((item) => '<div><i class="fas fa-triangle-exclamation"></i> ' + escapeHtml(item) + '</div>').join('') + '</div>' : ''}
-                    ${collisions.hard.length ? '<div class="ex2-collision-list hard">' + collisions.hard.map((item) => '<div><i class="fas fa-ban"></i> ' + escapeHtml(item) + '</div>').join('') + '</div>' : ''}
-                    ${collisions.soft.length ? '<div class="ex2-collision-list soft">' + collisions.soft.map((item) => '<div><i class="fas fa-exclamation-circle"></i> ' + escapeHtml(item) + '</div>').join('') + '</div>' : ''}
-                    ${draft.roomCapacity && selectedStudents.length > draft.roomCapacity ? '<div class="ex2-collision-list soft"><div><i class="fas fa-door-open"></i> Room overflow: ' + selectedStudents.length + ' students but capacity is ' + draft.roomCapacity + '. Use Split below.</div></div>' : ''}
-                    <div class="ex2-inline-actions" style="margin-top:16px;">
+                    ${issues.length ? '<div class="ex2-collision-list soft">' + issues.map((item) => '<div class="ex2-collision-item"><i class="fas fa-triangle-exclamation"></i> ' + escapeHtml(item) + '</div>').join('') + '</div>' : ''}
+                    ${collisions.hard.length ? '<div class="ex2-collision-list hard">' + collisions.hard.map((item) => '<div class="ex2-collision-item"><i class="fas fa-ban"></i> ' + escapeHtml(item) + '</div>').join('') + '</div>' : ''}
+                    ${collisions.soft.length ? '<div class="ex2-collision-list soft">' + collisions.soft.map((item) => '<div class="ex2-collision-item"><i class="fas fa-exclamation-circle"></i> ' + escapeHtml(item) + '</div>').join('') + '</div>' : ''}
+                    ${draft.roomCapacity && selectedStudents.length > draft.roomCapacity ? '<div class="ex2-collision-list soft"><div class="ex2-collision-item ex2-collision-item--overflow"><i class="fas fa-door-open"></i> Room overflow: ' + selectedStudents.length + ' students but capacity is ' + draft.roomCapacity + '. Use Split below.</div></div>' : ''}
+                    <div class="ex2-inline-actions ex2-inline-actions--mt-16">
                         <button type="button" class="ex2-btn is-primary" data-exam-call="saveExamSchedule"><i class="fas fa-calendar-check"></i> Save Session</button>
                         <button type="button" class="ex2-btn is-ghost" data-exam-call="clearExamScheduleDraft"><i class="fas fa-rotate-left"></i> Reset</button>
                     </div>
-                    <div style="border-top:1px solid var(--lux-border);margin:20px 0;"></div>
-                    <h3 style="font-size:15px;font-weight:700;margin-bottom:6px;">Session Summary</h3>
+                    <div class="ex2-divider ex2-divider--20"></div>
+                    <h3 class="ex2-summary-title">Session Summary</h3>
                     <div class="ex2-mini-grid">
-                        <div><strong>${uniqueStrings(draft.selectedCohortKeys || []).length}</strong><span>Groups</span></div>
-                        <div><strong>${selectedStudents.length}</strong><span>Students</span></div>
-                        <div><strong>${draft.roomCapacity || 'âˆž'}</strong><span>Capacity</span></div>
-                        <div><strong>${escapeHtml(formatCountdown(draft.startAt))}</strong><span>Countdown</span></div>
+                        <div class="ex2-session-summary-card"><strong class="ex2-session-summary-value">${uniqueStrings(draft.selectedCohortKeys || []).length}</strong><span class="ex2-session-summary-label">Groups</span></div>
+                        <div class="ex2-session-summary-card"><strong class="ex2-session-summary-value">${selectedStudents.length}</strong><span class="ex2-session-summary-label">Students</span></div>
+                        <div class="ex2-session-summary-card"><strong class="ex2-session-summary-value">${draft.roomCapacity || 'âˆž'}</strong><span class="ex2-session-summary-label">Capacity</span></div>
+                        <div class="ex2-session-summary-card"><strong class="ex2-session-summary-value">${escapeHtml(formatCountdown(draft.startAt))}</strong><span class="ex2-session-summary-label">Countdown</span></div>
                     </div>
-                    ${template && template.examType === 'digital' ? '<div style="margin-top:16px;padding:14px;border-radius:14px;border:1px solid var(--lux-border);text-align:center;"><div style="font-size:11px;font-weight:700;color:var(--lux-text-muted);text-transform:uppercase;letter-spacing:.5px;">Digital Exam PIN</div><div style="font-size:28px;font-weight:900;letter-spacing:6px;margin-top:6px;">' + generateExamPIN(draft) + '</div></div>' : ''}
+                    ${template && template.examType === 'digital' ? '<div class="ex2-digital-pin"><div class="ex2-digital-pin-label">Digital Exam PIN</div><div class="ex2-digital-pin-value">' + generateExamPIN(draft) + '</div></div>' : ''}
                 </section>
                 <section class="ex2-panel">
                     <div class="ex2-panel-head">
                         <div>
-                            <h2><i class="fas fa-users-rectangle" style="margin-right:8px;opacity:.5;"></i>Student Groups</h2>
-                            <p>${template ? 'Cohorts for ' + escapeHtml(template.subjectName || template.subjectId) : 'Choose a template first.'}</p>
+                            <h2 class="ex2-panel-title"><i class="fas fa-users-rectangle ex2-heading-icon"></i>Student Groups</h2>
+                            <p class="ex2-panel-copy">${template ? 'Cohorts for ' + escapeHtml(template.subjectName || template.subjectId) : 'Choose a template first.'}</p>
                         </div>
                         ${template ? '<div class="ex2-inline-actions"><button type="button" class="ex2-btn is-ghost" data-exam-call="selectAllExamCohorts"><i class="fas fa-check-double"></i> All</button><button type="button" class="ex2-btn is-ghost" data-exam-call="clearExamCohorts"><i class="fas fa-eraser"></i> Clear</button></div>' : ''}
                     </div>
                     <div class="ex2-cohort-grid">
-                        ${cohorts.length ? cohorts.map((cohort) => renderCohortCard(cohort, draft)).join('') : '<div class="ex2-empty-state"><i class="fas fa-users-slash"></i><p>No groups available for this subject.</p></div>'}
+                        ${cohorts.length ? cohorts.map((cohort) => renderCohortCard(cohort, draft)).join('') : '<div class="ex2-empty-state ex2-schedule-groups-empty"><i class="fas fa-users-slash"></i><p class="ex2-empty-state-copy">No groups available for this subject.</p></div>'}
                     </div>
                 </section>
             </div>
             <section class="ex2-panel">
                 <div class="ex2-panel-head">
                     <div>
-                        <h2><i class="fas fa-list-check" style="margin-right:8px;opacity:.5;"></i>Scheduled Sessions</h2>
-                        <p>Published sessions are visible to students on their timetable.</p>
+                        <h2 class="ex2-panel-title"><i class="fas fa-list-check ex2-heading-icon"></i>Scheduled Sessions</h2>
+                        <p class="ex2-panel-copy">Published sessions are visible to students on their timetable.</p>
                     </div>
                 </div>
-                ${todaySessions.length ? '<div class="ex2-timeline">' + todaySessions.map((session) => renderSessionBoardCard(session)).join('') + '</div>' : '<div class="ex2-empty-state"><i class="fas fa-calendar-xmark"></i><p>No sessions scheduled yet.</p></div>'}
+                ${todaySessions.length ? '<div class="ex2-timeline">' + todaySessions.map((session) => renderSessionBoardCard(session)).join('') + '</div>' : '<div class="ex2-empty-state ex2-schedule-sessions-empty"><i class="fas fa-calendar-xmark"></i><p class="ex2-empty-state-copy">No sessions scheduled yet.</p></div>'}
             </section>
         `;
     };

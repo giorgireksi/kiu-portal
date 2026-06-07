@@ -847,8 +847,7 @@ html, body {
     .lux-card,
     .content-box,
     .surface-card,
-    .admin-card,
-    .registration-cms-container {
+    .admin-card {
         border-radius: 14px !important;
         padding: 14px !important;
     }
@@ -1000,10 +999,7 @@ html, body {
     }
 
     /* Modal grid layouts → single column */
-    .modal-body .admin-grid-main,
-    .modal-body [style*="grid-template-columns: 2fr"],
-    .modal-body [style*="grid-template-columns: 1fr 1fr 1fr"],
-    .modal-body [style*="grid-template-columns: 1fr 1fr"] {
+    .modal-body .admin-grid-main {
         grid-template-columns: 1fr !important;
     }
 
@@ -1294,6 +1290,28 @@ html, body {
 
     body.lux-light-mode .mobile-nav-btn.is-active {
         color: var(--lux-accent, #c87830) !important;
+    }
+
+    body.mob-sheet-open {
+        overflow: hidden !important;
+    }
+
+    #mobile-bottom-nav[hidden],
+    #mobile-bottom-nav[data-mob-visible='false'],
+    .mob-sheet[hidden],
+    .mob-sheet[data-mob-visible='false'],
+    .mob-badge[hidden],
+    .mob-sheet-btn[hidden],
+    .mob-sheet-nav-btn[hidden] {
+        display: none !important;
+    }
+
+    #mobile-bottom-nav[data-mob-visible='true'] {
+        display: flex !important;
+    }
+
+    .mob-sheet[data-mob-visible='true'] {
+        display: block !important;
     }
 
     /* Badge (new v2 style) */
@@ -1588,17 +1606,6 @@ html, body {
     .lux-pill {
         backdrop-filter: none !important;
         -webkit-backdrop-filter: none !important;
-    }
-
-    /* Reduce complex backdrop filters on low-end mobile */
-    .lux-panel,
-    .content-box,
-    .registration-cms-container,
-    .admin-hero,
-    .dashboard-admin > .content-box,
-    .dashboard-admin .admin-card {
-        backdrop-filter: blur(8px) !important;
-        -webkit-backdrop-filter: blur(8px) !important;
     }
 
     /* Hide heavy background canvas elements on mobile for perf */
@@ -1917,30 +1924,10 @@ html, body {
         max-width: 100% !important;
     }
 
-    /* Fix: all grids that might have min-width forcing horizontal overflow */
-    [style*="grid-template-columns"],
-    [style*="grid-template-columns: 1fr 1fr 1fr"],
-    [style*="grid-template-columns: 2fr"],
-    [style*="grid-template-columns: repeat"] {
-        grid-template-columns: 1fr !important;
-    }
-
-    /* Fix: inline style grids from JS-rendered content */
-    [style*="grid-template-columns: 1fr 1fr"] {
-        grid-template-columns: 1fr !important;
-    }
-
-    /* Fix: min-width values that cause horizontal overflow */
-    .sch-body,
-    .sch-header-row {
-        min-width: 0 !important;
-    }
-
     /* Fix: tabs container horizontal scroll */
     .tabs-container,
     .tab-row,
-    .lux-tab-row,
-    .social-tab-row {
+    .lux-tab-row {
         display: flex !important;
         overflow-x: auto !important;
         -webkit-overflow-scrolling: touch !important;
@@ -1973,641 +1960,6 @@ html, body {
         flex-direction: column !important;
         gap: 10px !important;
         align-items: flex-start !important;
-    }
-
-    /* ═══════════════════════════════════════════════════════
-       ADMIN SCHEDULER
-       ═══════════════════════════════════════════════════════ */
-
-    .scheduler-wrap {
-        display: flex !important;
-        flex-direction: column !important;
-        gap: 16px !important;
-    }
-
-    .sch-sidebar {
-        position: static !important;
-        width: 100% !important;
-        max-width: 100% !important;
-        height: auto !important;
-        max-height: none !important;
-        overflow: visible !important;
-        border-right: none !important;
-        border-bottom: 1px solid var(--lux-border, rgba(255,255,255,0.1)) !important;
-    }
-
-    .sch-main {
-        width: 100% !important;
-        margin: 0 !important;
-    }
-
-    .sch-grid-shell {
-        overflow-x: auto !important;
-        -webkit-overflow-scrolling: touch !important;
-    }
-
-    .sch-stat-grid {
-        grid-template-columns: repeat(2, 1fr) !important;
-    }
-
-    .sch-stat-card-wide {
-        grid-column: 1 / -1 !important;
-    }
-
-    .sch-action-grid {
-        grid-template-columns: 1fr 1fr !important;
-    }
-
-    .sch-control-grid {
-        grid-template-columns: 1fr !important;
-    }
-
-    .sch-board-tools,
-    .sch-board-hero {
-        flex-direction: column !important;
-        gap: 10px !important;
-        align-items: stretch !important;
-    }
-
-    .sch-board-legend {
-        flex-wrap: wrap !important;
-        gap: 6px !important;
-    }
-
-    .sch-board-toolbar-row {
-        flex-direction: column !important;
-        align-items: stretch !important;
-    }
-
-    .sch-board-toolbar-row select {
-        width: 100% !important;
-        min-width: 0 !important;
-    }
-
-    .sch-modal {
-        width: 100vw !important;
-        max-width: 100% !important;
-        max-height: 90vh !important;
-        border-radius: 20px 20px 0 0 !important;
-        position: fixed !important;
-        bottom: 0 !important;
-        left: 0 !important;
-        right: 0 !important;
-        top: auto !important;
-        transform: none !important;
-    }
-
-    .sch-input-row,
-    .sch-input-group {
-        grid-template-columns: 1fr !important;
-    }
-
-    .sch-rail-hero,
-    .sch-rail-section {
-        padding: 16px !important;
-    }
-
-    /* ═══════════════════════════════════════════════════════
-       ADMIN LIBRARY
-       ═══════════════════════════════════════════════════════ */
-
-    .adlib-table {
-        display: block !important;
-        overflow-x: auto !important;
-    }
-
-    .adlib-table thead th:nth-child(n+5),
-    .adlib-table tbody td:nth-child(n+5) {
-        display: none !important;
-    }
-
-    .adlib-form-grid,
-    .adlib-filter-row {
-        grid-template-columns: 1fr !important;
-    }
-
-    .adlib-hero .lux-card-body {
-        grid-template-columns: 1fr !important;
-    }
-
-    .adlib-stat-grid {
-        grid-template-columns: repeat(2, 1fr) !important;
-    }
-
-    /* ═══════════════════════════════════════════════════════
-       ADMIN TOOLS
-       ═══════════════════════════════════════════════════════ */
-
-    .lux-admin-tools-hero {
-        padding: 16px !important;
-        grid-template-columns: 1fr !important;
-        flex-direction: column !important;
-        align-items: stretch !important;
-    }
-
-    .lux-admin-tools-hero h1 {
-        font-size: 22px !important;
-    }
-
-    .lux-subcards {
-        grid-template-columns: 1fr !important;
-    }
-
-    .lux-field-grid {
-        grid-template-columns: 1fr !important;
-    }
-
-    .lux-hero-signal-list {
-        grid-template-columns: 1fr !important;
-    }
-
-    .lux-admin-ops-grid {
-        grid-template-columns: 1fr !important;
-    }
-
-    #curriculum-library-modules-root > div {
-        grid-template-columns: 1fr !important;
-    }
-
-    /* ═══════════════════════════════════════════════════════
-       ADMIN ORDERS
-       ═══════════════════════════════════════════════════════ */
-
-    .order-form-grid,
-    .admin-orders-grid {
-        grid-template-columns: 1fr !important;
-    }
-
-    .admin-orders-filter-row {
-        flex-direction: column !important;
-        align-items: stretch !important;
-    }
-
-    /* ═══════════════════════════════════════════════════════
-       PROFILE VIEW
-       ═══════════════════════════════════════════════════════ */
-
-    .pv-body {
-        display: flex !important;
-        flex-direction: column !important;
-        max-height: none !important;
-        overflow: visible !important;
-    }
-
-    .pv-left {
-        border-right: none !important;
-        border-bottom: 1px solid var(--lux-border, rgba(255,255,255,0.1)) !important;
-        width: 100% !important;
-    }
-
-    .pv-right {
-        width: 100% !important;
-    }
-
-    .pv-avatar-wrap {
-        left: 50% !important;
-        transform: translateX(-50%) !important;
-    }
-
-    .pv-meta {
-        text-align: center !important;
-        padding: 68px 16px 24px !important;
-    }
-
-    .pv-meta-pills {
-        justify-content: center !important;
-    }
-
-    .pv-header-actions {
-        top: 10px !important;
-        right: 10px !important;
-    }
-
-    .pv-tabs {
-        overflow-x: auto !important;
-        -webkit-overflow-scrolling: touch !important;
-        flex-wrap: nowrap !important;
-    }
-
-    .pv-tab {
-        white-space: nowrap !important;
-        min-height: 44px !important;
-        flex-shrink: 0 !important;
-    }
-
-    .pv-detail-grid {
-        grid-template-columns: 1fr !important;
-    }
-
-    /* ═══════════════════════════════════════════════════════
-       PROFILE (own profile page)
-       ═══════════════════════════════════════════════════════ */
-
-    .profile-grid,
-    .profile-layout {
-        grid-template-columns: 1fr !important;
-    }
-
-    .profile-sidebar {
-        position: static !important;
-        width: 100% !important;
-    }
-
-    /* ═══════════════════════════════════════════════════════
-       LMS
-       ═══════════════════════════════════════════════════════ */
-
-    .lms-clean-hero-grid {
-        grid-template-columns: 1fr !important;
-    }
-
-    .lms-clean-summary,
-    .lms-clean-scope-grid {
-        grid-template-columns: 1fr !important;
-    }
-
-    .lms-clean-subject-grid,
-    .lms-clean-group-grid,
-    .lms-clean-metric-grid,
-    .lms-clean-signal-grid,
-    .lms-clean-ribbon-grid {
-        grid-template-columns: 1fr !important;
-    }
-
-    .lms-tabs .tab,
-    .lms-tabs .tabs-container .tab {
-        min-height: 44px !important;
-        padding: 10px 12px !important;
-        font-size: 12px !important;
-        white-space: nowrap !important;
-        flex-shrink: 0 !important;
-    }
-
-    .lms-clean-subject-card {
-        width: 100% !important;
-    }
-
-    .lms-clean-stat-value {
-        font-size: 22px !important;
-    }
-
-    .lms-clean-signal-value {
-        font-size: 20px !important;
-    }
-
-    /* ═══════════════════════════════════════════════════════
-       TIMETABLE
-       ═══════════════════════════════════════════════════════ */
-
-    .lux-timetable-hero {
-        grid-template-columns: 1fr !important;
-    }
-
-    .lux-timetable-command-grid,
-    .lux-timetable-insight-grid {
-        grid-template-columns: 1fr !important;
-    }
-
-    .lux-timetable-stage-head,
-    .lux-timetable-command-head {
-        flex-direction: column !important;
-        align-items: stretch !important;
-    }
-
-    .schedule-overview-row {
-        grid-template-columns: 1fr !important;
-    }
-
-    .timetable-grid,
-    .tt-grid,
-    #timetable-grid,
-    .schedule-session-rail {
-        overflow-x: auto !important;
-        -webkit-overflow-scrolling: touch !important;
-        width: 100% !important;
-    }
-
-    /* The schedule body has min-width:760px — let it scroll */
-    body.lux-route-timetable .sch-body {
-        min-width: 760px !important;
-    }
-
-    .lux-timetable-command,
-    .lux-timetable-stage,
-    .lux-timetable-insight {
-        padding: 16px !important;
-    }
-
-    /* ═══════════════════════════════════════════════════════
-       SOCIAL
-       ═══════════════════════════════════════════════════════ */
-
-    .social-app-shell {
-        grid-template-columns: 1fr !important;
-    }
-
-    .social-student-grid {
-        grid-template-columns: 1fr !important;
-    }
-
-    .social-rail.is-left,
-    .social-rail.is-sticky {
-        position: static !important;
-        grid-column: 1 / -1 !important;
-    }
-
-    .social-reel-layout,
-    .social-reel-card.is-compact .social-reel-layout {
-        grid-template-columns: 1fr !important;
-    }
-
-    .social-hero,
-    .social-entity-cover {
-        padding: 16px !important;
-        border-radius: 18px !important;
-    }
-
-    .social-hero-title,
-    .social-entity-title {
-        font-size: clamp(18px, 5vw, 24px) !important;
-    }
-
-    .social-card-body,
-    .social-post-body {
-        padding: 14px !important;
-    }
-
-    .social-avatar {
-        width: 36px !important;
-        height: 36px !important;
-        border-radius: 12px !important;
-    }
-
-    .social-composer-top,
-    .social-comment-composer,
-    .social-actions-row,
-    .social-composer-footer {
-        flex-direction: column !important;
-        align-items: stretch !important;
-    }
-
-    .social-story-rail {
-        grid-template-columns: repeat(2, 1fr) !important;
-    }
-
-    .social-story-viewer {
-        width: min(96vw, 520px) !important;
-    }
-
-    .social-media-grid,
-    .social-student-people,
-    .social-detail-grid,
-    .social-search-grid {
-        grid-template-columns: 1fr !important;
-    }
-
-    .social-feed-grid {
-        grid-template-columns: 1fr !important;
-    }
-
-    .social-compose-area textarea,
-    .social-textarea {
-        min-height: 80px !important;
-    }
-
-    /* ═══════════════════════════════════════════════════════
-       PERSONAL DATA
-       ═══════════════════════════════════════════════════════ */
-
-    .personal-data-layout {
-        grid-template-columns: 1fr !important;
-    }
-
-    .profile-card {
-        position: static !important;
-    }
-
-    .kpi-row,
-    .personal-data-record-grid,
-    .personal-data-record-list {
-        grid-template-columns: 1fr !important;
-    }
-
-    .personal-data-toolbar-row {
-        flex-direction: column !important;
-        align-items: stretch !important;
-    }
-
-    .personal-data-toolbar-row select {
-        min-width: 0 !important;
-        width: 100% !important;
-    }
-
-    .personal-data-toolbar-actions {
-        width: 100% !important;
-        justify-content: stretch !important;
-    }
-
-    .personal-data-toolbar-actions > * {
-        flex: 1 1 auto !important;
-    }
-
-    /* ═══════════════════════════════════════════════════════
-       REGISTRATION
-       ═══════════════════════════════════════════════════════ */
-
-    .registration-hero,
-    .registration-shell-grid,
-    .registration-insight-grid,
-    .registration-hero-focus-grid {
-        grid-template-columns: 1fr !important;
-    }
-
-    .registration-control-row,
-    .registration-workspace-head,
-    .registration-footer-bar {
-        flex-direction: column !important;
-        align-items: stretch !important;
-    }
-
-    .registration-workspace-note {
-        text-align: left !important;
-        max-width: none !important;
-    }
-
-    .registration-course-row {
-        grid-template-columns: 1fr !important;
-    }
-
-    .registration-course-ects,
-    .registration-course-action,
-    .registration-course-meta {
-        grid-column: auto !important;
-    }
-
-    .reg-step-grid,
-    .reg-course-grid {
-        grid-template-columns: 1fr !important;
-    }
-
-    /* ═══════════════════════════════════════════════════════
-       STUDENT SERVICE
-       ═══════════════════════════════════════════════════════ */
-
-    .student-service-hero {
-        grid-template-columns: 1fr !important;
-    }
-
-    .student-service-student-grid,
-    .student-service-ticket-grid,
-    .student-service-staff-grid,
-    .student-service-track-grid,
-    .student-service-ops-grid,
-    .student-service-home-rail,
-    .student-service-request-extra {
-        grid-template-columns: 1fr !important;
-    }
-
-    .student-service-zone-head,
-    .student-service-find-bar {
-        flex-direction: column !important;
-        align-items: stretch !important;
-    }
-
-    .student-service-lane-switcher-shell,
-    .student-service-lane-switcher {
-        flex-direction: column !important;
-        align-items: stretch !important;
-    }
-
-    .student-service-lane-choice-grid {
-        grid-template-columns: 1fr !important;
-    }
-
-    .student-service-qa-composer-collapsed,
-    .student-service-qa-card-head,
-    .student-service-qa-card-footer,
-    .student-service-qa-answer-head {
-        grid-template-columns: 1fr !important;
-        flex-direction: column !important;
-        align-items: stretch !important;
-    }
-
-    .student-service-qa-filter-row,
-    .student-service-qa-similar-list,
-    .student-service-qa-card-stats,
-    .student-service-qa-activity-row {
-        flex-direction: column !important;
-        align-items: stretch !important;
-    }
-
-    .student-service-mini-action {
-        width: 100% !important;
-        justify-content: center !important;
-    }
-
-    .student-service-student-columns,
-    .student-service-staff-columns {
-        grid-template-columns: 1fr !important;
-    }
-
-    /* ═══════════════════════════════════════════════════════
-       LIBRARY
-       ═══════════════════════════════════════════════════════ */
-
-    .library-grid,
-    .library-search-grid {
-        grid-template-columns: 1fr !important;
-    }
-
-    /* ═══════════════════════════════════════════════════════
-       STAFF & STUDENTS ADMIN
-       ═══════════════════════════════════════════════════════ */
-
-    .staff-table-wrapper,
-    .students-table-wrapper {
-        overflow-x: auto !important;
-        -webkit-overflow-scrolling: touch !important;
-    }
-
-    .staff-hero,
-    .students-hero {
-        grid-template-columns: 1fr !important;
-    }
-
-    .staff-filter-row,
-    .students-filter-row {
-        flex-direction: column !important;
-        align-items: stretch !important;
-    }
-
-    /* ═══════════════════════════════════════════════════════
-       ORDERS
-       ═══════════════════════════════════════════════════════ */
-
-    .order-form-grid,
-    .orders-grid {
-        grid-template-columns: 1fr !important;
-    }
-
-    .orders-filter-row {
-        flex-direction: column !important;
-        align-items: stretch !important;
-    }
-
-    /* ═══════════════════════════════════════════════════════
-       PROGRAMS
-       ═══════════════════════════════════════════════════════ */
-
-    .programs-grid,
-    .program-detail-grid {
-        grid-template-columns: 1fr !important;
-    }
-
-    /* ═══════════════════════════════════════════════════════
-       STUDY CARD
-       ═══════════════════════════════════════════════════════ */
-
-    .study-card-grid,
-    .study-card-summary {
-        grid-template-columns: 1fr !important;
-    }
-
-    /* ═══════════════════════════════════════════════════════
-       GRADEBOOK
-       ═══════════════════════════════════════════════════════ */
-
-    .gradebook-grid {
-        grid-template-columns: 1fr !important;
-    }
-
-    .gradebook-table-wrapper {
-        overflow-x: auto !important;
-        -webkit-overflow-scrolling: touch !important;
-    }
-
-    /* ═══════════════════════════════════════════════════════
-       CHANCELLERY
-       ═══════════════════════════════════════════════════════ */
-
-    .chancellery-grid,
-    .chancellery-form-grid {
-        grid-template-columns: 1fr !important;
-    }
-
-    /* ═══════════════════════════════════════════════════════
-       FACULTY GRADEBOOK / SCHEDULE
-       ═══════════════════════════════════════════════════════ */
-
-    .faculty-gradebook-grid,
-    .faculty-schedule-grid {
-        grid-template-columns: 1fr !important;
-    }
-
-    .faculty-gradebook-table-wrapper,
-    .faculty-schedule-table-wrapper {
-        overflow-x: auto !important;
-        -webkit-overflow-scrolling: touch !important;
     }
 
     /* ═══════════════════════════════════════════════════════
@@ -2761,8 +2113,7 @@ html, body {
     /* Prevent text overflow on long words */
     h1, h2, h3, h4, h5, h6,
     .lux-card-title,
-    .page-hero-title,
-    .lux-admin-tools-hero h1 {
+    .page-hero-title {
         overflow-wrap: break-word !important;
         word-wrap: break-word !important;
         hyphens: auto !important;
@@ -2794,19 +2145,6 @@ html, body {
     }
 
     .dashboard-grid {
-        grid-template-columns: 1fr !important;
-    }
-
-    .sch-stat-grid,
-    .sch-action-grid {
-        grid-template-columns: 1fr !important;
-    }
-
-    .social-story-rail {
-        grid-template-columns: 1fr !important;
-    }
-
-    .adlib-stat-grid {
         grid-template-columns: 1fr !important;
     }
 

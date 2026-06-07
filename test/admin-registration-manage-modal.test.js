@@ -1,0 +1,146 @@
+import { describe, expect, it } from 'vitest';
+import { readFileSync } from 'fs';
+import { join } from 'path';
+import { createRequire } from 'module';
+
+const require = createRequire(import.meta.url);
+
+function readSource(relativePath) {
+    return readFileSync(join(process.cwd(), relativePath), 'utf8');
+}
+
+function readBundleSource() {
+    return readSource('assets/js/features/index-admin-tools.bundle-source.js');
+}
+
+function createManageModalVmContext() {
+    const vm = require('vm');
+    const sharedSource = readSource('assets/js/pages/registration-shared.js');
+    const blockStart = sharedSource.indexOf('function runRegistrationRemoveConfirmation');
+    const blockEnd = sharedSource.indexOf('function purgeStudentRegistrationTrackSelectionForTab');
+    const block = sharedSource.slice(blockStart, blockEnd);
+
+    const context = {
+        console,
+        window: {
+            confirm: () => true
+        },
+        getAdminRegTrackData() {
+            return {
+                'Module A': {
+                    Main: { courses: [{ title: 'Economics 101' }] },
+                    Electives: { courses: [] }
+                }
+            };
+        }
+    };
+
+    context.window.getAdminRegTrackData = context.getAdminRegTrackData;
+
+    vm.createContext(context);
+    vm.runInContext(block, context);
+    return context;
+}
+
+describe('admin registration manage modal', () => {
+    it('exposes manage modal helpers on registration-shared.js', () => {
+        const shared = readSource('assets/js/pages/registration-shared.js');
+
+        expect(shared).toContain('function openAdminRegManageModal');
+        expect(shared).toContain('function closeAdminRegManageModal');
+        expect(shared).toContain('function runRegistrationRemoveConfirmation');
+        expect(shared).toContain('function buildAdminRegProgramRemoveVerification');
+        expect(shared).toContain("window.openAdminRegManageModal = openAdminRegManageModal");
+        expect(shared).toContain("window.runRegistrationRemoveConfirmation = runRegistrationRemoveConfirmation");
+        expect(shared).toContain("window.buildAdminRegProgramRemoveVerification = buildAdminRegProgramRemoveVerification");
+        expect(shared).toContain("modal.id = 'kiu-admin-reg-manage-modal'");
+        expect(shared).toContain('admin-reg-manage-modal-actions');
+    });
+
+    it('uses gear manage triggers instead of overflow menus in track source', () => {
+        const track = readSource('assets/js/pages/admin-registration-track.js');
+        const css = readSource('assets/css/admin-tools-luxury.css');
+
+        expect(track).toContain('function buildAdminRegManageGearMarkup');
+        expect(track).toContain('data-admin-reg-manage-program=');
+        expect(track).toContain('data-admin-reg-manage-group=');
+        expect(track).toContain('data-admin-reg-manage-course=');
+        expect(track).toContain('function openAdminRegProgramManage');
+        expect(track).toContain('runRegistrationRemoveConfirmation(buildAdminRegProgramRemoveVerification');
+        expect(track).not.toContain('admin-reg-overflow-menu');
+        expect(track).not.toContain('buildAdminRegOverflowMenuMarkup');
+        expect(track).not.toContain('data-admin-reg-overflow-menu');
+        expect(css).toContain('.admin-reg-manage-gear-btn');
+        expect(css).toContain('#kiu-admin-reg-manage-modal');
+        expect(css).toContain('#kiu-admin-reg-manage-modal.registration-structured-modal-backdrop');
+        expect(css).toContain('#kiu-admin-reg-manage-modal .registration-structured-modal-card');
+    });
+
+    it('exposes tab manage popup helpers in track source', () => {
+        const track = readSource('assets/js/pages/admin-registration-track.js');
+
+        expect(track).toContain('function openAdminRegTabManage');
+        expect(track).toContain('function openEditAdminRegTabModal');
+        expect(track).toContain('function hideBuiltinAdminRegTab');
+        expect(track).toContain('function saveBuiltinAdminRegTabOverrides');
+        expect(track).toContain('openAdminRegManageModal({');
+        expect(track).toContain('deleteLabel: \'Remove tab\'');
+        expect(track).toContain('data-admin-reg-manage-tab=');
+        expect(track).toContain('admin-reg-panel-manage-tab-btn');
+    });
+
+    it('mounts custom tab manage actions in the registration panel head bundle markup', () => {
+        const bundle = readBundleSource();
+
+        expect(bundle).toContain('data-admin-reg-panel-head-actions');
+        expect(bundle).toContain('lux-admin-tools-registration-panel-head');
+        expect(bundle).toContain('lux-admin-tools-registration-head-actions');
+    });
+
+    it('runRegistrationRemoveConfirmation requires two confirm dialogs', () => {
+        const ctx = createManageModalVmContext();
+        let confirmCount = 0;
+        ctx.window.confirm = () => {
+            confirmCount += 1;
+            return true;
+        };
+
+        const verified = ctx.runRegistrationRemoveConfirmation({
+            step1Text: 'Delete program "Module A" from Prog?',
+            step2Text: 'This permanently removes 2 groups and all subjects under "Module A".'
+        });
+
+        expect(verified).toBe(true);
+        expect(confirmCount).toBe(2);
+    });
+
+    it('runRegistrationRemoveConfirmation aborts when either confirm is rejected', () => {
+        const ctx = createManageModalVmContext();
+
+        ctx.window.confirm = () => false;
+        expect(ctx.runRegistrationRemoveConfirmation({
+            step1Text: 'Delete program "Module A"?',
+            step2Text: 'This permanently removes all groups.'
+        })).toBe(false);
+
+        let confirmCount = 0;
+        ctx.window.confirm = () => {
+            confirmCount += 1;
+            return confirmCount === 1;
+        };
+        expect(ctx.runRegistrationRemoveConfirmation({
+            step1Text: 'Delete program "Module A"?',
+            step2Text: 'This permanently removes all groups.'
+        })).toBe(false);
+        expect(confirmCount).toBe(2);
+    });
+
+    it('buildAdminRegProgramRemoveVerification summarizes group impact', () => {
+        const ctx = createManageModalVmContext();
+        const verify = ctx.buildAdminRegProgramRemoveVerification('prog', 'Module A', { label: 'Prog' });
+
+        expect(verify.step1Text).toContain('Delete program "Module A" from Prog?');
+        expect(verify.step2Text).toContain('2 groups');
+        expect(verify.step2Text).toContain('Module A');
+    });
+});

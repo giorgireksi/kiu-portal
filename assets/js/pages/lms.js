@@ -1,18 +1,6 @@
-﻿/* LMS page logic extracted from core.js. Source of truth remains root core.js compatibility bundle. */
+/* LMS page logic extracted from the legacy core.js bundle. Active routes now load split files directly. */
 
 // --- LMS LOGIC ---
-
-const subjectGroups = {
-    law: [
-        { id: 'law_g1', title: 'Law - Group 1', group: 'Group 1', timeDay: 'Monday 10:00 - 11:50', stdCount: 34 },
-        { id: 'law_g2', title: 'Law - Group 2', group: 'Group 2', timeDay: 'Wednesday 12:00 - 13:50', stdCount: 28 }
-    ],
-    project_management: [
-        { id: 'pm_g1', title: 'Project Management - Group 1', group: 'Group 1', timeDay: 'Tuesday 09:00 - 10:50', stdCount: 42 },
-        { id: 'pm_g2', title: 'Project Management - Group 2', group: 'Group 2', timeDay: 'Thursday 11:00 - 12:50', stdCount: 45 },
-        { id: 'pm_g3', title: 'Project Management - Group 3', group: 'Group 3', timeDay: 'Friday 14:00 - 15:50', stdCount: 38 }
-    ]
-};
 
 let currentCourseId = '';
 let currentLmsSectionType = '';
@@ -108,6 +96,151 @@ function findCurriculumSubjectByIdOrTitle(subjectId, subjectTitle = '', preferre
     return allSubjects.find(subject => normalizeSubjectTitleKey(subject?.name || subject?.title) === titleKey) || null;
 }
 
+const LMS_STUDENT_SEMESTER_STORAGE_KEY = 'kiuLmsStudentSemester';
+
+function normalizeLmsStudentScheduleEntries(scheduleValue) {
+    if (Array.isArray(scheduleValue)) return scheduleValue.filter(Boolean);
+    if (scheduleValue && typeof scheduleValue === 'object') {
+        if (Array.isArray(scheduleValue.entries)) return scheduleValue.entries.filter(Boolean);
+        return Object.entries(scheduleValue)
+            .filter(([, groupId]) => groupId != null && groupId !== '')
+            .map(([courseId, groupId]) => ({ courseId, groupId }));
+    }
+    return [];
+}
+
+function isLmsStudentViewer() {
+    return typeof getEffectiveUserRole === 'function'
+        && getEffectiveUserRole() === USER_ROLES.STUDENT;
+}
+
+function resolveLmsStudentSemesterNumber(student) {
+    if (typeof getCurrentStudentSemesterNumber === 'function') {
+        return getCurrentStudentSemesterNumber(student);
+    }
+    const explicitSemester = parseInt(student?.semester, 10);
+    if (Number.isFinite(explicitSemester) && explicitSemester > 0) return explicitSemester;
+    const activeSemester = parseInt(KIU_STATE?.activeSemester, 10);
+    if (Number.isFinite(activeSemester) && activeSemester > 0) return activeSemester;
+    return 1;
+}
+
+function getLmsStudentSelectedSemester() {
+    try {
+        const stored = parseInt(localStorage.getItem(LMS_STUDENT_SEMESTER_STORAGE_KEY), 10);
+        if (Number.isFinite(stored) && stored > 0) return stored;
+    } catch (error) {}
+    return resolveLmsStudentSemesterNumber(typeof getCurrentUser === 'function' ? getCurrentUser() : null);
+}
+
+function setLmsStudentSelectedSemester(semester) {
+    const normalized = parseInt(semester, 10);
+    if (!Number.isFinite(normalized) || normalized <= 0) return;
+    try {
+        localStorage.setItem(LMS_STUDENT_SEMESTER_STORAGE_KEY, String(normalized));
+    } catch (error) {}
+    if (document.body) {
+        document.body.classList.toggle('lms-student-mode', isLmsStudentViewer());
+    }
+    if (typeof window.renderLmsSubjectDeck === 'function') {
+        window.renderLmsSubjectDeck();
+    }
+}
+
+function resolveScheduleEntrySemester(entry, preferredFaculty = null) {
+    const fromEntry = parseInt(entry?.enrollmentSemester ?? entry?.semester, 10);
+    if (Number.isFinite(fromEntry) && fromEntry > 0) return fromEntry;
+    const faculty = preferredFaculty || entry?.faculty || (typeof getCurrentFaculty === 'function' ? getCurrentFaculty() : '');
+    const courseId = String(entry?.courseId || entry?.sourceCourseId || '').trim();
+    if (!courseId) return resolveLmsStudentSemesterNumber(typeof getCurrentUser === 'function' ? getCurrentUser() : null);
+    const courseDef = typeof getCourseByIdForRegistration === 'function'
+        ? getCourseByIdForRegistration(courseId, faculty, entry?.courseName || '')
+        : findCurriculumSubjectByIdOrTitle(courseId, entry?.courseName || '', faculty);
+    const fromCourse = parseInt(courseDef?.semester, 10);
+    if (Number.isFinite(fromCourse) && fromCourse > 0) return fromCourse;
+    const groups = KIU_STATE?.availableGroups?.[courseId] || [];
+    const group = (groups || []).find(item => String(item?.id || '') === String(entry?.groupId || '')) || groups[0];
+    const fromGroup = parseInt(group?.semester, 10);
+    if (Number.isFinite(fromGroup) && fromGroup > 0) return fromGroup;
+    return resolveLmsStudentSemesterNumber(typeof getCurrentUser === 'function' ? getCurrentUser() : null);
+}
+
+function getStudentLmsScheduleEntries(semester = null) {
+    const schedule = typeof getCurrentStudentSchedule === 'function'
+        ? getCurrentStudentSchedule()
+        : normalizeLmsStudentScheduleEntries(
+            KIU_STATE?.studentSchedulesByStudent?.[(typeof getCurrentUserId === 'function' ? getCurrentUserId() : '')]
+        );
+    const targetSemester = semester != null ? parseInt(semester, 10) : getLmsStudentSelectedSemester();
+    if (!Number.isFinite(targetSemester) || targetSemester <= 0) return schedule;
+    const faculty = typeof getCurrentFaculty === 'function' ? getCurrentFaculty() : '';
+    return schedule.filter(entry => resolveScheduleEntrySemester(entry, faculty) === targetSemester);
+}
+
+function getStudentLmsSemesterOptions() {
+    const schedule = typeof getCurrentStudentSchedule === 'function'
+        ? getCurrentStudentSchedule()
+        : [];
+    const faculty = typeof getCurrentFaculty === 'function' ? getCurrentFaculty() : '';
+    const semesters = new Set();
+    schedule.forEach((entry) => {
+        const semesterValue = resolveScheduleEntrySemester(entry, faculty);
+        if (Number.isFinite(semesterValue) && semesterValue > 0) semesters.add(semesterValue);
+    });
+    const selected = getLmsStudentSelectedSemester();
+    if (Number.isFinite(selected) && selected > 0) semesters.add(selected);
+    return [...semesters].sort((a, b) => a - b);
+}
+
+function getStudentLmsEnrolledSubjects(semester = null) {
+    const entries = getStudentLmsScheduleEntries(semester);
+    const faculty = typeof getCurrentFaculty === 'function' ? getCurrentFaculty() : '';
+    const seen = new Set();
+    const subjects = [];
+    entries.forEach((entry) => {
+        const courseId = String(entry?.courseId || entry?.sourceCourseId || '').trim();
+        if (!courseId) return;
+        const dedupeKey = canonicalCourseKey(courseId);
+        if (!dedupeKey || seen.has(dedupeKey)) return;
+        seen.add(dedupeKey);
+        const curriculum = findCurriculumSubjectByIdOrTitle(courseId, entry?.courseName || '', faculty);
+        const groupId = String(entry?.groupId || '').trim();
+        const semesterValue = resolveScheduleEntrySemester(entry, faculty);
+        const title = entry?.courseName || curriculum?.name || curriculum?.title || courseId;
+        subjects.push({
+            id: curriculum?.id || courseId,
+            courseId,
+            name: title,
+            title,
+            groupId,
+            groupName: entry?.groupName || '',
+            semester: semesterValue,
+            courseKey: groupId ? `${courseId}::${groupId}` : courseId,
+            icon: curriculum?.icon || 'fas fa-book-reader',
+            faculty: entry?.faculty || curriculum?.faculty || faculty,
+            isStudentEnrollment: true
+        });
+    });
+    return subjects;
+}
+
+function openLmsStudentEnrolledSubject(card) {
+    if (!card) return;
+    const courseKey = card.getAttribute('data-course-key') || '';
+    const subjectTitle = card.getAttribute('data-subject-title') || courseKey;
+    if (courseKey && typeof openLMSCourse === 'function') {
+        openLMSCourse(courseKey, subjectTitle);
+        return;
+    }
+    const subjectId = card.getAttribute('data-subject-id') || '';
+    const groupId = card.getAttribute('data-group-id') || '';
+    if (subjectId && groupId && typeof openLMSCourse === 'function') {
+        openLMSCourse(`${subjectId}::${groupId}`, subjectTitle);
+        return;
+    }
+    if (typeof openLMSGroupsFromCard === 'function') openLMSGroupsFromCard(card);
+}
+
 const LMS_DEFAULT_WEEKS = Array.from({ length: 14 }, (_, index) => `Week ${index + 1}`);
 const LMS_SESSION_MARKER_TYPES = {
     quiz: { label: 'Quiz', icon: 'fa-pen-to-square', tone: 'warning' },
@@ -197,6 +330,14 @@ function resolveLmsDelegatedExpression(expression, event, element) {
     if (normalized === 'event') return event;
     if (normalized === 'this.value') return element?.value;
     if (normalized === 'this.checked') return Boolean(element?.checked);
+    const datasetMatch = normalized.match(/^this\.dataset\.([A-Za-z0-9_]+)$/);
+    if (datasetMatch) {
+        return element?.dataset?.[datasetMatch[1]] ?? '';
+    }
+    const attrMatch = normalized.match(/^this\.getAttribute\((['"])(.*?)\1\)$/);
+    if (attrMatch) {
+        return element?.getAttribute(attrMatch[2]) ?? '';
+    }
     if (normalized === 'true') return true;
     if (normalized === 'false') return false;
     if (normalized === 'null') return null;
@@ -272,6 +413,7 @@ function runLmsDelegatedMarkupAction(code, event, element) {
             element,
             error
         });
+        alert('This LMS action could not run. Check the browser console for details.');
         return undefined;
     }
 }
@@ -368,150 +510,86 @@ function getLmsRoleLabel(role = getEffectiveUserRole()) {
     return labels[role] || 'Student';
 }
 
-function syncLmsCourseContext(title = '') {
+function syncLmsCourseContext(title = '', courseKey = '') {
     const context = document.getElementById('lms-course-context');
     if (!context) return;
-    context.innerHTML = title
+    const titlePill = title
         ? `<span class="lux-status-pill is-muted"><i class="fas fa-location-dot"></i> ${escapeHtml(title)}</span>`
         : '';
+    const resolvedKey = courseKey
+        || (typeof window !== 'undefined' ? window.currentCourseId : '')
+        || currentCourseId
+        || '';
+    const nextSessionPill = resolvedKey && typeof renderLmsNextSessionHtml === 'function' && typeof getLmsNextSessionForGroup === 'function'
+        ? renderLmsNextSessionHtml(getLmsNextSessionForGroup(resolvedKey), 'inline')
+        : '';
+    context.innerHTML = [titlePill, nextSessionPill].filter(Boolean).join('');
+}
+
+function syncLmsNextSessionContext(courseKey = '') {
+    const resolvedKey = courseKey
+        || (typeof window !== 'undefined' ? window.currentCourseId : '')
+        || currentCourseId
+        || '';
+    const titleNode = document.getElementById('lms-course-title');
+    const title = titleNode?.innerText || '';
+    syncLmsCourseContext(title, resolvedKey);
 }
 
 function getLmsRouteThemeMode() {
     return document.body?.classList.contains('lux-light-mode') ? 'light' : 'dark';
 }
 
-function normalizeLegacyLmsBorderValue(value = '', fallback = '1px solid var(--lux-border)') {
-    const raw = String(value || '').trim();
-    if (!raw) return fallback;
-    return raw.replace(
-        /(#[0-9a-f]{3,8}|rgba?\([^)]+\)|var\(--kiu-border\)|var\(--kiu-blue\)|var\(--kiu-navy\)|var\(--kiu-text-main\)|var\(--kiu-text-muted\)|white)\b/gi,
-        'var(--lux-border)'
-    );
+function hasLegacyLmsLayoutStyle(styleText = '') {
+    return /(display|grid-template-columns|grid-template-rows|grid-auto-|gap|padding|margin|min-|max-|width|height|flex|justify-content|align-items|position|inset|top|right|bottom|left|overflow|aspect-ratio|white-space|text-align)\s*:/i.test(String(styleText || ''));
 }
 
-function sanitizeLegacyLmsInlineStyle(styleText = '', options = {}) {
+function collectLegacyLmsStyleContracts(styleText = '', options = {}) {
     const style = String(styleText || '').trim();
-    if (!style) return '';
+    if (!style) return [];
 
+    const contracts = new Set();
     const isPrimaryButton = options.isPrimaryButton === true;
     const isSecondaryButton = options.isSecondaryButton === true;
     const isInputField = options.isInputField === true;
     const isBadge = options.isBadge === true;
     const isHero = options.isHero === true;
 
-    const declarations = style
-        .split(';')
-        .map(part => part.trim())
-        .filter(Boolean)
-        .map(part => {
-            const colonIndex = part.indexOf(':');
-            if (colonIndex === -1) return null;
-            return {
-                property: part.slice(0, colonIndex).trim(),
-                value: part.slice(colonIndex + 1).trim()
-            };
-        })
-        .filter(Boolean);
+    if (/(background|background-color)\s*:\s*(white|#ffffff|#f8fafc|#f8fbff|#f4f7f6|var\(--lux-surface\)|var\(--lux-bg-soft\)|rgba\(255,\s*255,\s*255,\s*0\.(?:05|06|08|12)\))/i.test(style)) {
+        contracts.add('lms-legacy-surface-soft');
+    }
+    if (/(border|border-top|border-right|border-bottom|border-left|border-color)\s*:\s*(?:1px\s+(?:solid|dashed)\s+)?(?:#dbe7f5|#e2e8f0|#cbd5e1|var\(--kiu-border\)|var\(--lux-border\))/i.test(style)) {
+        contracts.add('lms-legacy-border');
+    }
+    if (/color\s*:\s*(var\(--kiu-navy\)|var\(--kiu-text-main\)|#0f172a|#102038|#111827|#1e293b|white|#fff(?:fff)?|rgba\(255,\s*255,\s*255)/i.test(style)) {
+        contracts.add('lms-legacy-text');
+    }
+    if (/color\s*:\s*(var\(--kiu-text-muted\)|var\(--lux-text-muted\)|#64748b|#475569|#6b7280|#94a3b8|#999)/i.test(style)) {
+        contracts.add('lms-legacy-text-muted');
+    }
+    if (/color\s*:\s*(var\(--kiu-blue\)|#0f4c81|#1d4ed8|#3730a3|#4338ca)/i.test(style)) {
+        contracts.add('lms-legacy-text-accent');
+    }
+    if (/letter-spacing\s*:\s*0\.08em/i.test(style)) {
+        contracts.add('lms-legacy-kicker');
+    }
+    if (/grid-template-columns\s*:\s*(repeat\((?:2|3|4)|minmax\(220px,\s*260px\)|minmax\(0,\s*1fr\)\s*minmax\(0,\s*1fr\)\s*minmax\(120px,\s*160px\))/i.test(style)) {
+        contracts.add('lms-legacy-grid-collapse');
+    }
+    if (isBadge || /border-radius\s*:\s*999px/i.test(style)) {
+        contracts.add('lms-legacy-pill');
+    }
+    if (isHero) {
+        contracts.add('lms-legacy-hero-surface');
+    }
+    if (isPrimaryButton || isSecondaryButton) {
+        contracts.add('lms-legacy-button-reset');
+    }
+    if (isInputField) {
+        contracts.add('lms-legacy-field-reset');
+    }
 
-    const normalized = declarations.map(({ property, value }) => {
-        const lowerProperty = property.toLowerCase();
-        const lowerValue = value.toLowerCase();
-
-        if (lowerProperty === 'background' || lowerProperty === 'background-color') {
-            if (isPrimaryButton || isSecondaryButton || lowerValue === 'none' || lowerValue === 'transparent') {
-                return null;
-            }
-            if (isHero || /linear-gradient\(135deg,\s*(rgba\(15,\s*23,\s*42|var\(--kiu-navy\))/.test(lowerValue)) {
-                return `${property}:var(--lux-surface)`;
-            }
-            if (/#fecaca|#fee2e2|#fef2f2|#fff1f2|#991b1b|#b91c1c/.test(lowerValue)) {
-                return `${property}:rgba(239,68,68,0.12)`;
-            }
-            if (/#fff3cd|#fff7ed|#fdba74|#9a3412|#c2410c|#856404/.test(lowerValue)) {
-                return `${property}:rgba(245,158,11,0.12)`;
-            }
-            if (/#d4edda|#bbf7d0|#ecfdf5|#166534|#155724|var\(--lux-green\)/.test(lowerValue)) {
-                return `${property}:rgba(var(--lux-accent-rgb),0.14)`;
-            }
-            if (isBadge) {
-                return `${property}:var(--lux-bg-soft)`;
-            }
-            return `${property}:var(--lux-surface)`;
-        }
-
-        if (lowerProperty === 'color') {
-            if (isPrimaryButton || isSecondaryButton) {
-                return null;
-            }
-            if (/#991b1b|#b91c1c|#dc2626|var\(--lux-red\)/.test(lowerValue)) {
-                return `${property}:var(--lux-red)`;
-            }
-            if (/#856404|#9a3412|#c2410c/.test(lowerValue)) {
-                return `${property}:var(--lux-warn)`;
-            }
-            if (/#166534|#155724|var\(--lux-green\)/.test(lowerValue)) {
-                return `${property}:var(--lux-accent)`;
-            }
-            if (/#0f4c81|#1d4ed8|#3730a3|#4338ca|var\(--kiu-blue\)/.test(lowerValue)) {
-                return `${property}:var(--lux-accent)`;
-            }
-            if (/rgba\(255,\s*255,\s*255|white\b|#fff\b|#ffffff\b|var\(--kiu-navy\)|var\(--kiu-text-main\)|#0f172a|#102038|#1e293b/.test(lowerValue)) {
-                return `${property}:var(--lux-text)`;
-            }
-            if (/var\(--kiu-text-muted\)|#64748b|#475569|#6b7280|#999/.test(lowerValue)) {
-                return `${property}:var(--lux-text-muted)`;
-            }
-        }
-
-        if (lowerProperty === 'border' || lowerProperty === 'border-top' || lowerProperty === 'border-right' || lowerProperty === 'border-bottom' || lowerProperty === 'border-left') {
-            if (isPrimaryButton || isSecondaryButton) {
-                return null;
-            }
-            if (/#fecaca|#fee2e2|#fca5a5|#dc3545/.test(lowerValue)) {
-                return `${property}:${String(value).replace(/(#[0-9a-f]{3,8}|rgba?\([^)]+\)|var\(--kiu-border\))/gi, 'rgba(239,68,68,0.24)')}`;
-            }
-            if (/#fdba74|#fff3cd|#c7d2fe/.test(lowerValue)) {
-                return `${property}:${String(value).replace(/(#[0-9a-f]{3,8}|rgba?\([^)]+\)|var\(--kiu-border\))/gi, 'rgba(var(--lux-accent-rgb),0.24)')}`;
-            }
-            return `${property}:${normalizeLegacyLmsBorderValue(value)}`;
-        }
-
-        if (lowerProperty === 'border-color') {
-            if (isPrimaryButton || isSecondaryButton) {
-                return null;
-            }
-            if (/#fecaca|#fee2e2|#fca5a5|#dc3545/.test(lowerValue)) {
-                return `${property}:rgba(239,68,68,0.24)`;
-            }
-            if (/#fdba74|#fff3cd|#c7d2fe/.test(lowerValue)) {
-                return `${property}:rgba(var(--lux-accent-rgb),0.24)`;
-            }
-            return `${property}:var(--lux-border)`;
-        }
-
-        if (lowerProperty === 'box-shadow') {
-            if (isPrimaryButton || isSecondaryButton) {
-                return null;
-            }
-            return `${property}:0 14px 30px rgba(0,0,0,0.14)`;
-        }
-
-        if (lowerProperty === 'outline' && lowerValue === 'none') {
-            return `${property}:${value}`;
-        }
-
-        if (lowerProperty === 'backdrop-filter' || lowerProperty === '-webkit-backdrop-filter') {
-            return null;
-        }
-
-        if (isInputField && (lowerProperty === 'background' || lowerProperty === 'color' || lowerProperty.startsWith('border'))) {
-            return null;
-        }
-
-        return `${property}:${value}`;
-    }).filter(Boolean);
-
-    return normalized.join('; ');
+    return [...contracts];
 }
 
 function sanitizeLegacyLmsMarkup(markup = '') {
@@ -544,15 +622,18 @@ function sanitizeLegacyLmsMarkup(markup = '') {
         }
 
         if (style) {
-            const nextStyle = sanitizeLegacyLmsInlineStyle(style, {
+            collectLegacyLmsStyleContracts(style, {
                 isPrimaryButton,
                 isSecondaryButton,
                 isInputField,
                 isBadge,
                 isHero
-            });
-            if (nextStyle) node.setAttribute('style', nextStyle);
-            else node.removeAttribute('style');
+            }).forEach((contract) => node.classList.add(contract));
+
+            const canStripPresentationOnlyStyle = !hasLegacyLmsLayoutStyle(style);
+            if ((canStripPresentationOnlyStyle && !isBadge && !isHero) || isPrimaryButton || isSecondaryButton || isInputField) {
+                node.removeAttribute('style');
+            }
         }
     });
 
@@ -756,7 +837,8 @@ function resolveCanonicalLmsResourceKey(resourceKey) {
         ...(Object.keys(KIU_STATE.groupConcepts || {})),
         ...(Object.keys(KIU_STATE.groupConceptRatings || {})),
         ...(Object.keys(KIU_STATE.groupWeekConfigs || {})),
-        ...(Object.keys(KIU_STATE.lmsClassSessions || {}))
+        ...(Object.keys(KIU_STATE.lmsClassSessions || {})),
+        ...(Object.keys(KIU_STATE.lmsLiveQuizzes || {}))
     ]);
     for (const candidate of candidates) {
         const p = parseLmsCourseKey(candidate);
@@ -821,15 +903,15 @@ function setLmsActiveSection(sectionType) {
     if (currentLmsSectionType === normalized) return;
     currentLmsSectionType = normalized;
     syncLmsSectionSwitchPresentation();
-    const activeTab = document.querySelector('#page-lms-inner .tab.active')?.id?.replace(/^tab-/, '') || 'interaction';
-    switchLMSTab(activeTab);
+    const activeTab = document.querySelector('#page-lms-inner [data-lms-tab].is-active')?.id?.replace(/^tab-/, '') || 'interaction';
+    switchLMSTab(activeTab, { force: true });
 }
 
 function renderLmsRouteEmptyState(title, copy, icon = 'fa-inbox') {
     return `
         <div class="lms-route-empty">
-            <div><i class="fas ${escapeHtml(icon)}" style="font-size:30px; opacity:0.36; color:var(--lux-accent);"></i></div>
-            <div class="lms-route-empty-title" style="margin-top:12px;">${escapeHtml(title)}</div>
+            <div class="lms-route-empty-icon"><i class="fas ${escapeHtml(icon)}"></i></div>
+            <div class="lms-route-empty-title lms-route-copy-mt-12">${escapeHtml(title)}</div>
             <div class="lms-route-empty-copy">${escapeHtml(copy)}</div>
         </div>
     `;
@@ -843,7 +925,7 @@ function renderLmsRouteStats(stats = []) {
                 <div class="lms-route-stat">
                     <div class="lms-route-stat-label">${escapeHtml(stat.label || '')}</div>
                     <div class="lms-route-stat-value">${escapeHtml(stat.value ?? '')}</div>
-                    ${stat.copy ? `<div class="lms-route-copy" style="margin-top:6px; font-size:12px;">${escapeHtml(stat.copy)}</div>` : ''}
+                    ${stat.copy ? `<div class="lms-route-copy lms-route-copy-mt-6 lms-route-meta-12">${escapeHtml(stat.copy)}</div>` : ''}
                 </div>
             `).join('')}
         </div>
@@ -863,13 +945,13 @@ function renderLmsRouteWeekAccordion(title, subtitle, body, isOpen = false) {
     return `
         <div class="accordion-item">
             <div class="accordion-header" data-lms-click="toggleAccordion(this)">
-                <div style="display:grid; gap:4px;">
-                    <div class="lms-route-card-title" style="font-size:16px;">${escapeHtml(title || 'No Week / General')}</div>
-                    ${subtitle ? `<div class="lms-route-meta" style="font-size:12px;">${escapeHtml(subtitle)}</div>` : ''}
+                <div class="lms-route-card-stack lms-route-card-stack-tight">
+                    <div class="lms-route-card-title lms-route-card-title-16">${escapeHtml(title || 'No Week / General')}</div>
+                    ${subtitle ? `<div class="lms-route-meta lms-route-meta-12">${escapeHtml(subtitle)}</div>` : ''}
                 </div>
                 <i class="fas fa-chevron-down"></i>
             </div>
-            <div class="accordion-content ${isOpen ? 'active' : ''}" style="display:${isOpen ? 'block' : 'none'};">
+            <div class="accordion-content ${isOpen ? 'active' : ''}"${isOpen ? '' : ' hidden'}>
                 ${body}
             </div>
         </div>
@@ -878,24 +960,41 @@ function renderLmsRouteWeekAccordion(title, subtitle, body, isOpen = false) {
 
 function ensureLmsGradebookShell() {
     const wrapper = document.getElementById('lms-gradebook-wrapper');
-    if (!wrapper || wrapper.dataset.shellReady === '1') return wrapper;
+    if (!wrapper) return null;
+    if (wrapper.dataset.shellReady === '1') {
+        const spreadsheet = document.getElementById('gradebook-spreadsheet-view');
+        if (spreadsheet && !document.getElementById('gradebook-staff-lms-workspace')) {
+            const studentView = document.getElementById('gradebook-student-view');
+            const staffWorkspace = document.createElement('div');
+            staffWorkspace.id = 'gradebook-staff-lms-workspace';
+            staffWorkspace.className = 'gb-lms-staff-workspace lms-route-stack lms-route-stack-mb-16';
+            staffWorkspace.hidden = true;
+            if (studentView) {
+                studentView.parentNode?.insertBefore(staffWorkspace, studentView);
+            } else {
+                spreadsheet.appendChild(staffWorkspace);
+            }
+        }
+        return wrapper;
+    }
     wrapper.innerHTML = `
         <div id="gradebook-roster-selection" class="lms-route-stack"></div>
-        <div id="gradebook-spreadsheet-view" class="lms-route-stack" style="display:none;">
+        <div id="gradebook-spreadsheet-view" class="lms-route-stack" hidden>
             <div class="lms-route-panel lms-route-table-shell">
-                <div class="lms-route-card-head" style="margin-bottom:18px;">
+                <div class="lms-route-card-head lms-route-card-head-mb-18">
                     <div>
-                        <div class="lms-route-eyebrow" style="display:inline-flex;align-items:center;gap:8px;"><i class="fas fa-chart-line"></i> Grades</div>
-                        <div id="dynamic-gb-title" class="lms-route-title" style="font-size:26px; margin-top:8px;">Open a roster to begin</div>
-                        <div class="lms-route-copy" style="margin-top:6px;">Quiz scores, assessments, and combined grades for this group</div>
+                        <div class="lms-route-eyebrow lms-route-inline lms-route-inline-gap-8"><i class="fas fa-chart-line"></i> Grades</div>
+                        <div id="dynamic-gb-title" class="lms-route-title lms-route-title-26 lms-route-copy-mt-8">Open a roster to begin</div>
+                        <div class="lms-route-copy lms-route-copy-mt-6">Quiz scores, assessments, and combined grades for this group</div>
                     </div>
-                    <button type="button" class="kiu-btn-outline" style="padding:10px 14px; font-size:12px;" data-lms-click="closeGradebookSpreadsheet()">
+                    <button type="button" class="kiu-btn-outline lms-route-btn-compact" data-lms-click="closeGradebookSpreadsheet()">
                         <i class="fas fa-arrow-left"></i> Back
                     </button>
                 </div>
-                <div id="gradebook-assessment-controls" class="lms-route-panel" style="padding:16px; margin-bottom:16px;"></div>
-                <div id="gradebook-student-view" class="lms-route-stack" style="display:none; margin-bottom:16px;"></div>
-                <div style="overflow:auto;">
+                <div id="gradebook-assessment-controls" class="lms-route-panel lms-route-panel-compact lms-route-stack-mb-16"></div>
+                <div id="gradebook-staff-lms-workspace" class="gb-lms-staff-workspace lms-route-stack lms-route-stack-mb-16" hidden></div>
+                <div id="gradebook-student-view" class="lms-route-stack lms-route-stack-mb-16" hidden></div>
+                <div class="lms-route-table-wrap">
                     <table id="gradebook-table">
                         <thead><tr></tr></thead>
                         <tbody id="gradebook-body"></tbody>
@@ -2247,7 +2346,8 @@ function getLmsQuizAutoSubmitNotice(submission, needsManualReview, reviewerLabel
     return `${baseMessage} Time expired, so the system submitted the quiz automatically.`;
 }
 
-function getLmsQuizEligibleStudents(resourceKey) {
+function getLmsQuizEligibleStudents(resourceKey, options = {}) {
+    const strictRoster = options?.strictRoster === true;
     resourceKey = resolveCanonicalLmsResourceKey(resourceKey);
     const parsed = parseLmsCourseKey(resourceKey);
     let students = [];
@@ -2274,10 +2374,11 @@ function getLmsQuizEligibleStudents(resourceKey) {
                 }
             }
         }
-        const domain = typeof getDomain === 'function' ? getDomain() : {};
-        const allStudents = typeof getAllStudents === 'function' ? getAllStudents() : [];
-        if (allStudents.length > 0) {
-            return allStudents.slice(0, 30).map(s => ({ id: String(s.id), name: s.nameEn || s.name || ('Student ' + s.id) }));
+        if (!strictRoster) {
+            const allStudents = typeof getAllStudents === 'function' ? getAllStudents() : [];
+            if (allStudents.length > 0) {
+                return allStudents.slice(0, 30).map(s => ({ id: String(s.id), name: s.nameEn || s.name || ('Student ' + s.id) }));
+            }
         }
     }
     return students;
@@ -2354,10 +2455,17 @@ function resolveLmsQuizStudentMeta(resourceKey, quiz = null) {
                 name: fallbackStudent.name || `Student ${fallbackStudent.id}`
             };
         }
+        if (currentId) {
+            return {
+                id: currentId,
+                name: currentName || `Student ${currentId}`
+            };
+        }
     }
 
+    const normalizedId = String(currentId || '').trim();
     return {
-        id: currentId || 'student',
+        id: normalizedId,
         name: currentName
     };
 }
@@ -2882,5 +2990,14 @@ function syncLmsExamSessionLifecycle(quiz) {
 
 bindLmsDelegatedMarkupActions();
 
+window.isLmsStudentViewer = isLmsStudentViewer;
+window.getLmsStudentSelectedSemester = getLmsStudentSelectedSemester;
+window.setLmsStudentSelectedSemester = setLmsStudentSelectedSemester;
+window.getStudentLmsEnrolledSubjects = getStudentLmsEnrolledSubjects;
+window.getStudentLmsSemesterOptions = getStudentLmsSemesterOptions;
+window.openLmsStudentEnrolledSubject = openLmsStudentEnrolledSubject;
+window.resolveScheduleEntrySemester = resolveScheduleEntrySemester;
+window.syncLmsNextSessionContext = syncLmsNextSessionContext;
+window.syncLmsCourseContext = syncLmsCourseContext;
 
 

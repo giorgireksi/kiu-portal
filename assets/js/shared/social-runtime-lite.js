@@ -4,6 +4,7 @@
     const PANEL_KEY = 'KIU_SOCIAL_ACTIVE_PANEL';
     const CHAT_KEY = 'KIU_SOCIAL_ACTIVE_CHAT';
     const EVENT_NAME = 'kiu:social-runtime-update';
+    const SOCIAL_MUTATION_TIMEOUT_MS = 12000;
     const runtime = window.__kiuSocialLiteRuntime = window.__kiuSocialLiteRuntime || {
         hydrated: false,
         loading: false,
@@ -35,6 +36,7 @@
         feedPromise: null,
         directoryPromise: null,
         renderQueued: false,
+        pendingRenderReason: '',
         bootstrapTimer: null,
         ui: {
             activePanel: '',
@@ -181,7 +183,7 @@
     };
 
     function text(value) {
-        return String(value || '').trim();
+        return String(value == null ? '' : value).trim();
     }
 
     function readStore(key, fallback = '') {
@@ -470,13 +472,130 @@
         return peerConnection;
     }
 
+    function isFeedRenderReason(reason = '') {
+        const normalized = text(reason || '');
+        return normalized === 'feed' || normalized === 'feed-error';
+    }
+
+    function invalidateSocialFeedRenderCache() {
+        const host = document.getElementById('public-social-root');
+        if (host) host.__kiuLastRenderSignature = '';
+        const center = document.getElementById('social-neo-center-region');
+        if (center) delete center.__kiuLastMarkup;
+    }
+
+    function mergeFeedPost(post) {
+        const postId = text(post?.id);
+        if (!postId) return;
+        const feed = Array.isArray(runtime.feed) ? runtime.feed : [];
+        const index = feed.findIndex((entry) => text(entry?.id) === postId);
+        if (index >= 0) feed[index] = post;
+        else feed.unshift(post);
+        runtime.feed = feed;
+        invalidateSocialFeedRenderCache();
+    }
+
+    function cloneFeedPost(post) {
+        try {
+            return JSON.parse(JSON.stringify(post));
+        } catch (error) {
+            return null;
+        }
+    }
+
+    function findFeedCommentRecord(comments = [], commentId = '') {
+        const normalizedId = text(commentId);
+        if (!normalizedId) return null;
+        const stack = [...(Array.isArray(comments) ? comments : [])];
+        while (stack.length) {
+            const comment = stack.shift();
+            if (!comment || typeof comment !== 'object') continue;
+            if (text(comment.id) === normalizedId) return comment;
+            if (Array.isArray(comment.replies) && comment.replies.length) {
+                stack.push(...comment.replies);
+            }
+        }
+        return null;
+    }
+
+    function applyOptimisticCommentReaction(post, commentId, userId, reactionType = 'like') {
+        const optimisticPost = cloneFeedPost(post);
+        if (!optimisticPost) return null;
+        const comment = findFeedCommentRecord(optimisticPost.comments, commentId);
+        const normalizedUserId = text(userId);
+        const normalizedReactionType = text(reactionType || 'like') || 'like';
+        if (!comment || !normalizedUserId) return null;
+        comment.reactions = comment.reactions && typeof comment.reactions === 'object' ? comment.reactions : {};
+        const reactionTypes = new Set([...Object.keys(comment.reactions), 'like']);
+        let existingReactionType = '';
+        reactionTypes.forEach((type) => {
+            comment.reactions[type] = Array.isArray(comment.reactions[type]) ? [...comment.reactions[type]] : [];
+            if (comment.reactions[type].some((id) => text(id) === normalizedUserId)) existingReactionType = type;
+        });
+        Object.keys(comment.reactions).forEach((type) => {
+            comment.reactions[type] = comment.reactions[type].filter((id) => text(id) !== normalizedUserId);
+        });
+        if (existingReactionType !== normalizedReactionType) {
+            comment.reactions[normalizedReactionType] = Array.isArray(comment.reactions[normalizedReactionType])
+                ? [...comment.reactions[normalizedReactionType]]
+                : [];
+            comment.reactions[normalizedReactionType].push(normalizedUserId);
+        }
+        comment.likes = Array.isArray(comment.reactions.like) ? [...comment.reactions.like] : [];
+        comment.reactionCounts = Object.keys(comment.reactions).reduce((accumulator, key) => {
+            accumulator[key] = (comment.reactions[key] || []).length;
+            return accumulator;
+        }, {});
+        return optimisticPost;
+    }
+
+    function applyOptimisticPostReaction(post, userId, reactionType = 'like') {
+        const optimisticPost = cloneFeedPost(post);
+        const normalizedUserId = text(userId);
+        const normalizedReactionType = text(reactionType || 'like') || 'like';
+        if (!optimisticPost || !normalizedUserId) return null;
+        optimisticPost.reactions = optimisticPost.reactions && typeof optimisticPost.reactions === 'object' ? optimisticPost.reactions : {};
+        const existingReactionType = Object.keys(optimisticPost.reactions).find((type) =>
+            (Array.isArray(optimisticPost.reactions[type]) ? optimisticPost.reactions[type] : [])
+                .some((id) => text(id) === normalizedUserId)
+        ) || '';
+        Object.keys(optimisticPost.reactions).forEach((type) => {
+            optimisticPost.reactions[type] = (Array.isArray(optimisticPost.reactions[type]) ? optimisticPost.reactions[type] : [])
+                .filter((id) => text(id) !== normalizedUserId);
+        });
+        if (existingReactionType !== normalizedReactionType) {
+            optimisticPost.reactions[normalizedReactionType] = Array.isArray(optimisticPost.reactions[normalizedReactionType])
+                ? [...optimisticPost.reactions[normalizedReactionType]]
+                : [];
+            optimisticPost.reactions[normalizedReactionType].push(normalizedUserId);
+        }
+        optimisticPost.likes = Array.isArray(optimisticPost.reactions.like) ? [...optimisticPost.reactions.like] : [];
+        optimisticPost.reactionCounts = Object.keys(optimisticPost.reactions).reduce((accumulator, key) => {
+            accumulator[key] = (optimisticPost.reactions[key] || []).length;
+            return accumulator;
+        }, {});
+        optimisticPost.viewerReaction = existingReactionType === normalizedReactionType ? '' : normalizedReactionType;
+        return optimisticPost;
+    }
+
+    function mutationRequest(path, options = {}) {
+        return portalRequest(path, { ...options, timeoutMs: SOCIAL_MUTATION_TIMEOUT_MS });
+    }
+
     function queueRender(reason = 'refresh') {
+        const normalized = text(reason || 'refresh') || 'refresh';
+        const pendingReason = text(runtime.pendingRenderReason || '');
+        if (isFeedRenderReason(normalized) || !isFeedRenderReason(pendingReason)) {
+            runtime.pendingRenderReason = normalized;
+        }
         if (runtime.renderQueued) return;
         runtime.renderQueued = true;
         window.requestAnimationFrame(() => {
             runtime.renderQueued = false;
-            if (typeof window.__kiuSocialLiteRenderPage === 'function') window.__kiuSocialLiteRenderPage(reason);
-            window.dispatchEvent(new CustomEvent(EVENT_NAME, { detail: { reason } }));
+            const queuedReason = text(runtime.pendingRenderReason || 'refresh') || 'refresh';
+            runtime.pendingRenderReason = '';
+            if (typeof window.__kiuSocialLiteRenderPage === 'function') window.__kiuSocialLiteRenderPage(queuedReason);
+            window.dispatchEvent(new CustomEvent(EVENT_NAME, { detail: { reason: queuedReason } }));
         });
     }
 
@@ -662,11 +781,13 @@
                     ...runtime.feed.flatMap((post) => (Array.isArray(post?.comments) ? post.comments.map((comment) => comment?.authorUserId) : []))
                 ]);
                 await fetchAccountsByIds(relatedIds);
+                invalidateSocialFeedRenderCache();
                 queueRender('feed');
                 return runtime.feed;
             })
             .catch((error) => {
                 runtime.error = text(error?.message || 'Feed could not be loaded.');
+                invalidateSocialFeedRenderCache();
                 queueRender('feed-error');
                 return runtime.feed;
             })
@@ -767,7 +888,7 @@
         runtime.refreshPromise = Promise.all([
             loadSocialState(force),
             refreshFeed(force),
-            portalRequest(`/api/notifications?userId=${encodeURIComponent(text(user.id))}&limit=12`),
+            portalRequest(`/api/notifications?userId=${encodeURIComponent(text(user.id))}&limit=50`),
             portalRequest(`/api/messenger/snapshot?userId=${encodeURIComponent(text(user.id))}`)
         ])
             .then(([socialPayload, feedPayload, notificationPayload, messengerPayload]) => {
@@ -814,6 +935,7 @@
                 key: text(item.id),
                 id: text(item.id),
                 source: text(item.sourceDomain || 'portal'),
+                type: text(item.type || 'general'),
                 title: text(item.title || 'Notification'),
                 text: text(item.body),
                 read: Boolean(item.isRead),
@@ -1000,9 +1122,47 @@
         queueRender('panel');
     }
 
+    async function markChatMessagesRead(chatId) {
+        const actorId = currentUserId();
+        const normalizedChatId = text(chatId);
+        if (!actorId || !normalizedChatId) return null;
+        const chat = runtime.chats.find((entry) => text(entry.id) === normalizedChatId);
+        if (chat) {
+            let changed = false;
+            const now = new Date().toISOString();
+            chat.messages = (Array.isArray(chat.messages) ? chat.messages : []).map((message) => {
+                if (text(message?.senderId) === actorId) return message;
+                const seenBy = Array.isArray(message?.seenBy) ? message.seenBy.map((item) => text(item)) : [];
+                if (seenBy.includes(actorId)) return message;
+                changed = true;
+                return {
+                    ...message,
+                    seenBy: [...seenBy, actorId],
+                    seenAtByUser: { ...(message?.seenAtByUser || {}), [actorId]: now }
+                };
+            });
+            if (chat.hiddenByUser && typeof chat.hiddenByUser === 'object' && chat.hiddenByUser[actorId]) {
+                delete chat.hiddenByUser[actorId];
+                changed = true;
+            }
+            if (changed) queueRender('chat-read');
+        }
+        try {
+            const payload = await portalRequest(`/api/messenger/chats/${encodeURIComponent(normalizedChatId)}/read`, {
+                method: 'POST',
+                body: JSON.stringify({ actorId })
+            });
+            if (payload?.chat) upsertChat(payload.chat, true);
+            return payload?.chat || null;
+        } catch (error) {
+            return null;
+        }
+    }
+
     function setActiveChat(chatId) {
         runtime.ui.activeChatId = text(chatId);
         writeStore(CHAT_KEY, runtime.ui.activeChatId);
+        markChatMessagesRead(runtime.ui.activeChatId).catch(() => null);
         queueRender('chat');
     }
 
@@ -1179,8 +1339,13 @@
                 reportReason: text(reason || 'Inappropriate content')
             })
         });
+        const report = payload?.report || null;
+        if (report) {
+            runtime.social.reports = [report, ...(Array.isArray(runtime.social.reports) ? runtime.social.reports : [])];
+            queueRender('report-created');
+        }
         setFlash('Report submitted.', 'success');
-        return payload?.report || null;
+        return report;
     }
 
     async function reportPost(postId, reason) {
@@ -1636,6 +1801,57 @@
         return payload?.chat || null;
     }
 
+    function unhideChatForUser(chatId, userId = currentUserId()) {
+        const normalizedChatId = text(chatId);
+        const normalizedUserId = text(userId);
+        if (!normalizedChatId || !normalizedUserId) return null;
+        const chat = runtime.chats.find((entry) => text(entry.id) === normalizedChatId);
+        if (!chat || !Array.isArray(chat.members) || !chat.members.some((memberId) => text(memberId) === normalizedUserId)) {
+            return null;
+        }
+        if (chat.hiddenByUser && typeof chat.hiddenByUser === 'object' && chat.hiddenByUser[normalizedUserId]) {
+            delete chat.hiddenByUser[normalizedUserId];
+            queueRender('chat-unhide');
+        }
+        return chat;
+    }
+
+    async function persistSocialStatePatch(patch = {}, reason = 'social-save') {
+        const userId = currentUserId();
+        if (!userId) throw new Error('Session required.');
+        const payload = await portalRequest('/api/social/state', {
+            method: 'POST',
+            body: JSON.stringify({
+                reason: text(reason || 'social-save') || 'social-save',
+                social: patch && typeof patch === 'object' ? patch : {}
+            })
+        });
+        const social = payload?.social && typeof payload.social === 'object' ? payload.social : null;
+        if (social) {
+            if (Array.isArray(social.lostFoundItems)) runtime.social.lostFoundItems = social.lostFoundItems;
+            queueRender('social-state-persist');
+        }
+        return social;
+    }
+
+    async function refreshNotifications(force = false) {
+        const user = currentUser();
+        if (!user?.id) return [];
+        if (runtime.notificationsPromise && !force) return runtime.notificationsPromise;
+        runtime.notificationsPromise = portalRequest(`/api/notifications?userId=${encodeURIComponent(text(user.id))}&limit=50`)
+            .then((payload) => {
+                runtime.notifications = Array.isArray(payload?.items) ? payload.items : [];
+                runtime.stories = Array.isArray(payload?.stories) ? payload.stories : runtime.stories || [];
+                queueRender('notifications-refresh');
+                return runtime.notifications;
+            })
+            .catch(() => runtime.notifications || [])
+            .finally(() => {
+                runtime.notificationsPromise = null;
+            });
+        return runtime.notificationsPromise;
+    }
+
     async function toggleFollow(targetType, targetId) {
         const userId = currentUserId();
         if (!userId || !text(targetType) || !text(targetId)) throw new Error('Follow state could not be updated.');
@@ -1698,39 +1914,81 @@
     async function reactToPost(postId, reactionType = 'like') {
         const userId = currentUserId();
         if (!userId || !text(postId)) throw new Error('Reaction could not be updated.');
-        const post = feedItems().find((p) => text(p.id) === text(postId));
-        const payload = await portalRequest(`/api/social/posts/${encodeURIComponent(text(postId))}/reactions`, {
-            method: 'POST',
-            body: JSON.stringify({
-                userId,
-                reactionType: text(reactionType || 'like') || 'like'
-            })
-        });
-        if (post && text(post.authorUserId) !== text(userId)) {
-            addToast({ type: 'like', title: 'Liked', text: `You liked ${post.authorName || 'a post'}`, icon: 'fa-heart' });
+        const normalizedPostId = text(postId);
+        const normalizedReactionType = text(reactionType || 'like') || 'like';
+        const post = (Array.isArray(runtime.feed) ? runtime.feed : []).find((entry) => text(entry?.id) === normalizedPostId);
+        const rollbackPost = post ? cloneFeedPost(post) : null;
+        const optimisticPost = post ? applyOptimisticPostReaction(post, userId, normalizedReactionType) : null;
+        if (optimisticPost?.id) {
+            mergeFeedPost(optimisticPost);
+            queueRender('post-react');
         }
-        await refreshFeed(true);
-        return payload?.post || null;
+        try {
+            const payload = await mutationRequest(`/api/social/posts/${encodeURIComponent(normalizedPostId)}/reactions`, {
+                method: 'POST',
+                body: JSON.stringify({
+                    userId,
+                    reactionType: normalizedReactionType
+                })
+            });
+            const updatedPost = payload?.post || null;
+            if (updatedPost?.id) {
+                mergeFeedPost(updatedPost);
+                queueRender('post-react');
+            }
+            if (post && text(post.authorUserId) !== text(userId)) {
+                addToast({ type: 'like', title: 'Liked', text: `You liked ${post.authorName || 'a post'}`, icon: 'fa-heart' });
+            }
+            return updatedPost;
+        } catch (error) {
+            if (rollbackPost?.id) {
+                mergeFeedPost(rollbackPost);
+                queueRender('post-react');
+            }
+            throw error;
+        }
     }
 
     async function reactToComment(postId, commentId, reactionType = 'like') {
         const userId = currentUserId();
         if (!userId || !text(postId) || !text(commentId)) throw new Error('Comment reaction could not be updated.');
-        const payload = await portalRequest(`/api/social/posts/${encodeURIComponent(text(postId))}/comments/${encodeURIComponent(text(commentId))}/reactions`, {
-            method: 'POST',
-            body: JSON.stringify({
-                userId,
-                reactionType: text(reactionType || 'like') || 'like'
-            })
-        });
-        await refreshFeed(true);
-        return payload?.post || null;
+        const normalizedPostId = text(postId);
+        const normalizedCommentId = text(commentId);
+        const normalizedReactionType = text(reactionType || 'like') || 'like';
+        const post = (Array.isArray(runtime.feed) ? runtime.feed : []).find((entry) => text(entry?.id) === normalizedPostId);
+        const rollbackPost = post ? cloneFeedPost(post) : null;
+        const optimisticPost = post ? applyOptimisticCommentReaction(post, normalizedCommentId, userId, normalizedReactionType) : null;
+        if (optimisticPost?.id) {
+            mergeFeedPost(optimisticPost);
+            queueRender('comment-react');
+        }
+        try {
+            const payload = await mutationRequest(`/api/social/posts/${encodeURIComponent(normalizedPostId)}/comments/${encodeURIComponent(normalizedCommentId)}/reactions`, {
+                method: 'POST',
+                body: JSON.stringify({
+                    userId,
+                    reactionType: normalizedReactionType
+                })
+            });
+            const updatedPost = payload?.post || null;
+            if (updatedPost?.id) {
+                mergeFeedPost(updatedPost);
+                queueRender('comment-react');
+            }
+            return updatedPost;
+        } catch (error) {
+            if (rollbackPost?.id) {
+                mergeFeedPost(rollbackPost);
+                queueRender('comment-react');
+            }
+            throw error;
+        }
     }
 
     async function addComment(postId, body, options = {}) {
         const authorUserId = currentUserId();
         if (!authorUserId || !text(postId) || !text(body)) throw new Error('Comment could not be created.');
-        const post = feedItems().find((p) => text(p.id) === text(postId));
+        const post = (Array.isArray(runtime.feed) ? runtime.feed : []).find((p) => text(p.id) === text(postId));
         const payload = await portalRequest(`/api/social/posts/${encodeURIComponent(text(postId))}/comments`, {
             method: 'POST',
             body: JSON.stringify({
@@ -1765,7 +2023,7 @@
 
     async function pinSocialPost(postId) {
         const actorId = currentUserId();
-        const post = feedItems().find((entry) => text(entry.id) === text(postId));
+        const post = (Array.isArray(runtime.feed) ? runtime.feed : []).find((entry) => text(entry.id) === text(postId));
         if (!actorId || !post) throw new Error('Post pin state could not be updated.');
         const payload = await portalRequest(`/api/social/posts/${encodeURIComponent(text(postId))}/pin`, {
             method: 'POST',
@@ -1777,21 +2035,6 @@
         });
         await refreshFeed(true);
         return payload?.post || null;
-    }
-
-    async function sendMessage(chatId, body, file) {
-        const senderUserId = currentUserId();
-        if (!senderUserId || !text(chatId)) throw new Error('Message could not be sent.');
-        const payload = await portalRequest(`/api/messenger/chats/${encodeURIComponent(text(chatId))}/messages`, {
-            method: 'POST',
-            body: JSON.stringify({
-                senderUserId,
-                body: text(body),
-                fileId: file?.id || null
-            })
-        });
-        queueRender('message-sent');
-        return payload?.message || null;
     }
 
     async function sendConnectionRequest(targetUserId) {
@@ -2400,6 +2643,9 @@
         respondPortalSocialConnectionRequest: respondConnection,
         removePortalSocialConnection: removeConnection,
         hidePortalMessengerChat: hideChat,
+        markPortalChatMessagesRead: markChatMessagesRead,
+        refreshPortalNotifications: refreshNotifications,
+        persistPortalSocialStatePatch: persistSocialStatePatch,
         togglePortalSocialFollow: toggleFollow,
         updatePortalSocialPost: updatePost,
         deletePortalSocialPost: deletePost,
@@ -2430,7 +2676,7 @@
         declinePortalCall: declineCall,
         endPortalCall: endCall,
         upsertPortalMessengerChatFromRealtime: upsertChat,
-        unhidePortalMessengerChatForUser: () => true,
+        unhidePortalMessengerChatForUser: unhideChatForUser,
         ensurePortalMessengerUiState: ensureMessengerUiState,
         renderPortalMessengerWorkspace: renderMessengerWorkspace,
         renderPortalNotificationChrome: renderNotificationChrome,

@@ -1,0 +1,73 @@
+- generic [active] [ref=e1]:
+  - text:  
+  - main [ref=e2]:
+    - generic [ref=e5]:
+      - heading " Exam Command Center" [level=1] [ref=e7]:
+        - generic [ref=e8]: 
+        - text: Exam Command Center
+      - generic [ref=e9]:
+        - generic [ref=e10]:
+          - strong [ref=e11]: "0"
+          - text: Awaiting Review
+        - generic [ref=e12]:
+          - strong [ref=e13]: "0"
+          - text: Scheduled
+        - generic [ref=e14]:
+          - strong [ref=e15]: "0"
+          - text: Live Now
+        - generic [ref=e16]:
+          - strong [ref=e17]: "0"
+          - text: All Templates
+      - generic [ref=e19]:
+        - button " All Templates" [ref=e20] [cursor=pointer]:
+          - generic [ref=e21]: 
+          - text: All Templates
+        - button " Review" [ref=e22] [cursor=pointer]:
+          - generic [ref=e23]: 
+          - text: Review
+        - button " Schedule" [ref=e24] [cursor=pointer]:
+          - generic [ref=e25]: 
+          - text: Schedule
+        - button " Live" [ref=e26] [cursor=pointer]:
+          - generic [ref=e27]: 
+          - text: Live
+        - button " Results" [ref=e28] [cursor=pointer]:
+          - generic [ref=e29]: 
+          - text: Results
+      - generic [ref=e31]:
+        - generic [ref=e32]:
+          - generic [ref=e33]:
+            - heading " All Templates" [level=2] [ref=e34]:
+              - generic [ref=e35]: 
+              - text: All Templates
+            - paragraph [ref=e36]: All faculty exam templates across the university.
+          - button "+ New Quiz" [ref=e38] [cursor=pointer]:
+            - generic [ref=e39]: +
+            - text: New Quiz
+        - generic [ref=e40]:
+          - textbox "Search quizzes..." [ref=e41]
+          - combobox [ref=e42]:
+            - option "All Status" [selected]
+            - option "Drafts"
+            - option "Submitted"
+            - option "Returned"
+            - option "Approved"
+        - generic [ref=e43]:
+          - generic [ref=e44]: 
+          - paragraph [ref=e45]: No templates match your filters.
+          - button "+ Create Quiz" [ref=e46] [cursor=pointer]:
+            - generic [ref=e47]: +
+            - text: Create Quiz
+  - text:                  
+  - complementary:
+    - generic:
+      - generic: K
+      - generic:
+        - generic: KIU
+        - generic: Integrated Campus Portal
+    - generic:
+      - generic: KI
+      - generic:
+        - generic: Portal User
+        - generic: University Portal
+  - text:         

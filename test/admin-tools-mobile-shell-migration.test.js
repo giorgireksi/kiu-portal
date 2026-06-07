@@ -11,7 +11,7 @@ function bootAdminToolsMobileShell(options = {}) {
   const dom = new JSDOM(
     `<!DOCTYPE html><html><head></head><body class="lux-route-admin-tools role-admin">
       <button id="lux-sidebar-toggle"></button>
-      <nav id="mobile-bottom-nav" aria-label="Mobile navigation" style="display:none;">
+      <nav id="mobile-bottom-nav" aria-label="Mobile navigation" hidden>
         <div class="mobile-nav-row">
           <button class="mobile-nav-btn is-active" id="mob-nav-home" type="button" data-nav-target="home"></button>
           <button class="mobile-nav-btn" id="mob-nav-messages" type="button"></button>
@@ -20,7 +20,7 @@ function bootAdminToolsMobileShell(options = {}) {
           <button class="mobile-nav-btn" id="mob-nav-more" type="button"></button>
         </div>
       </nav>
-      <div id="mobile-action-sheet" style="display:none;">
+      <div id="mobile-action-sheet" hidden>
         <div id="mob-sheet-backdrop"></div>
         <div id="mob-sheet-dynamic-nav"></div>
         <button id="mob-sheet-close" type="button"></button>

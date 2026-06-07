@@ -17,6 +17,10 @@ describe('login route regressions', () => {
         expect(html).not.toContain('assets/css/components.css');
         expect(html).not.toContain('assets/css/index-luxury.css');
         expect(html).not.toContain('assets/css/mobile-responsive.css');
+        expect(html).toContain('assets/css/lux-tokens.css');
+        expect(html).toContain('assets/css/lux-surfaces.css');
+        expect(html).toContain('assets/css/lux-controls.css');
+        expect(html).toContain('assets/css/lux-layout-primitives.css');
         expect(html).not.toContain('assets/js/app/app.js');
         expect(html).not.toContain('assets/js/app/api.js');
         expect(html).not.toContain('assets/js/app/auth.js');
@@ -25,6 +29,7 @@ describe('login route regressions', () => {
         expect(html).not.toContain('assets/js/shared/faculty.js');
         expect(html).toContain('assets/css/login-route.css');
         expect(html).toContain('assets/js/pages/login-runtime.js');
+        expect(html).toContain('class="login-page palette-obsidian-amber"');
         expect(html).not.toContain('onclick=');
         expect(html).toContain('data-login-tab="login"');
         expect(html).toContain('data-login-tab="activate"');

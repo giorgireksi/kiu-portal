@@ -1,0 +1,712 @@
+/* Shared luxury control layer extracted from index-luxury.css.
+   Transition owner for route-specific overrides remains index-luxury.css. */
+
+.lux-control {
+    width: 100%;
+    padding: 11px 14px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    color: var(--lux-text);
+    font-size: 13px;
+    font-family: inherit;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.lux-control::placeholder {
+    color: var(--lux-text-muted);
+    opacity: 0.6;
+}
+
+.lux-control:focus {
+    border-color: rgba(var(--lux-accent-rgb), 0.4);
+    background: rgba(255, 255, 255, 0.06);
+    box-shadow: 0 0 0 3px rgba(var(--lux-accent-rgb), 0.1);
+}
+
+.lux-control select {
+    cursor: pointer;
+}
+
+.lux-icon-btn,
+.lux-control-btn,
+.lux-mode-btn,
+.lux-bg-mode-btn {
+    position: relative;
+    overflow: hidden;
+}
+
+.lux-icon-btn {
+    width: var(--lux-icon-btn-size);
+    height: var(--lux-icon-btn-size);
+    border-radius: var(--lux-icon-btn-radius);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03)),
+        rgba(255, 255, 255, 0.02);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.07),
+        0 16px 34px rgba(0, 0, 0, 0.18);
+    transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, background .18s ease, color .18s ease;
+}
+
+.lux-icon-btn:hover {
+    transform: translateY(-2px);
+    color: var(--lux-text);
+    border-color: rgba(var(--lux-accent-rgb), 0.24);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.1),
+        0 18px 36px rgba(0, 0, 0, 0.24),
+        0 0 0 1px rgba(var(--lux-accent-rgb), 0.08);
+}
+
+.lux-icon-btn:active,
+.lux-primary-btn:active,
+.lux-secondary-btn:active,
+.lux-ghost-btn:active,
+.lux-quick-btn:active {
+    transform: translateY(1px) scale(0.99);
+}
+
+.lux-toast {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    z-index: 80;
+    max-width: min(360px, calc(100vw - 32px));
+    padding: 12px 16px;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(11, 15, 27, 0.92);
+    color: #f5f1e8;
+    font-size: 12px;
+    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.36);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity .18s ease, transform .18s ease;
+    pointer-events: none;
+}
+
+.lux-toast.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.lux-icon-badge {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--lux-accent), var(--lux-accent-2));
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    box-shadow: 0 10px 22px rgba(var(--lux-accent-rgb), 0.28);
+}
+
+.lux-icon-badge.is-zero {
+    opacity: 0;
+    transform: scale(0.8);
+    pointer-events: none;
+}
+
+.lux-user-chip-chevron {
+    flex-shrink: 0;
+    font-size: 10px;
+    line-height: 1;
+    color: var(--lux-text-soft);
+    transition: transform .18s ease, color .18s ease;
+}
+
+.lux-user-chip[aria-expanded="true"] .lux-user-chip-chevron {
+    transform: rotate(180deg);
+    color: var(--lux-text-muted);
+}
+
+.lux-primary-btn,
+.kiu-btn-blue {
+    position: relative;
+    min-height: var(--lux-primary-btn-min-height);
+    padding: var(--lux-primary-btn-padding) !important;
+    border-radius: var(--lux-button-radius) !important;
+    background:
+        linear-gradient(135deg, color-mix(in srgb, var(--lux-accent) 92%, #fff 8%), color-mix(in srgb, var(--lux-accent-2) 88%, #fff 12%)) !important;
+    box-shadow:
+        0 20px 40px rgba(var(--lux-accent-rgb), var(--lux-button-glow)),
+        inset 0 1px 0 rgba(255, 255, 255, 0.22) !important;
+    transition: transform .18s ease, box-shadow .18s ease, filter .18s ease !important;
+}
+
+.lux-primary-btn:hover,
+.kiu-btn-blue:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.04);
+    box-shadow:
+        0 24px 48px rgba(var(--lux-accent-rgb), calc(var(--lux-button-glow) + 0.12)),
+        inset 0 1px 0 rgba(255, 255, 255, 0.24) !important;
+}
+
+.lux-secondary-btn,
+.kiu-btn-outline,
+.lux-ghost-btn {
+    min-height: var(--lux-secondary-btn-min-height);
+    border-radius: var(--lux-button-radius) !important;
+    font-weight: 600;
+    transition: transform .18s ease, border-color .18s ease, background .18s ease, color .18s ease;
+}
+
+.lux-secondary-btn,
+.kiu-btn-outline {
+    padding: var(--lux-secondary-btn-padding);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03)) !important;
+    border: 1px solid rgba(255, 255, 255, 0.11) !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 16px 30px rgba(0, 0, 0, 0.12);
+}
+
+.lux-secondary-btn:hover,
+.kiu-btn-outline:hover {
+    transform: translateY(-2px);
+    border-color: rgba(var(--lux-accent-rgb), 0.22) !important;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.04)) !important;
+}
+
+.lux-ghost-btn {
+    padding: var(--lux-ghost-btn-padding);
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--lux-accent-2);
+}
+
+.lux-ghost-btn:hover {
+    transform: translateY(-1px);
+    border-color: rgba(var(--lux-accent-rgb), 0.14);
+    background: rgba(var(--lux-accent-rgb), 0.08);
+}
+
+.admin-glass-btn {
+    border: 1px solid rgba(255, 255, 255, 0.16) !important;
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.08)) !important;
+    box-shadow:
+        0 16px 28px rgba(2, 6, 23, 0.18),
+        inset 0 1px 0 rgba(255, 255, 255, 0.14) !important;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+}
+
+.admin-glass-btn:hover {
+    background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.18), rgba(73, 162, 255, 0.16)) !important;
+}
+
+.lux-disabled-btn {
+    min-height: 44px;
+    padding: 0 16px;
+    border-radius: 16px !important;
+    font-weight: 600;
+    background: rgba(148, 163, 184, 0.18) !important;
+    border: 1px solid rgba(148, 163, 184, 0.18) !important;
+    color: rgba(248, 250, 252, 0.78) !important;
+    box-shadow: none !important;
+    cursor: not-allowed;
+    opacity: 0.72;
+}
+
+.lux-rail-tab {
+    width: 100%;
+    display: inline-flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 10px;
+    text-align: left;
+    border-bottom: none;
+    border-left: 3px solid transparent;
+}
+
+.lux-rail-tab.active {
+    border-left-color: var(--lux-accent);
+}
+
+.lux-rail-tab i {
+    margin-right: 0;
+}
+
+#admin-reg-tabs {
+    gap: 12px;
+    padding: 14px !important;
+    background: linear-gradient(180deg, rgba(246, 248, 251, 0.96), rgba(231, 239, 248, 0.84)) !important;
+}
+
+.admin-reg-tab {
+    position: relative;
+    overflow: hidden;
+    transform-style: preserve-3d;
+    background: rgba(255, 255, 255, 0.78) !important;
+    border: 1px solid rgba(16, 32, 56, 0.08) !important;
+    border-bottom: none !important;
+    border-radius: 18px !important;
+    box-shadow:
+        0 16px 28px rgba(15, 23, 42, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.74) !important;
+    padding: 14px 22px !important;
+}
+
+.admin-reg-tab::after {
+    content: '';
+    position: absolute;
+    inset: 1px;
+    border-radius: inherit;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.28), transparent 62%);
+    opacity: 0.72;
+    pointer-events: none;
+}
+
+.admin-reg-tab:hover {
+    transform: translateY(-3px) rotateX(5deg) !important;
+}
+
+.admin-reg-tab.active,
+.admin-reg-tab.is-active {
+    background: linear-gradient(135deg, #12345c 0%, #0b84ff 100%) !important;
+    color: #ffffff !important;
+    font-weight: 800 !important;
+    box-shadow: 0 18px 34px rgba(11, 132, 255, 0.22) !important;
+    transform: translateY(-2px) rotateX(4deg) !important;
+}
+
+#admin-nav .admin-nav-link,
+#prof-nav .prof-nav-link {
+    position: relative;
+    min-width: 132px;
+    padding: 12px 18px !important;
+    border-radius: 20px !important;
+    display: inline-flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 9px !important;
+    color: rgba(241, 245, 249, 0.8) !important;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02)) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.08),
+        0 12px 24px rgba(2, 6, 23, 0.14);
+    transform-style: preserve-3d;
+    transition:
+        transform 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+        box-shadow 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+        background 0.22s ease,
+        color 0.22s ease,
+        border-color 0.22s ease !important;
+}
+
+#admin-nav .admin-nav-link i,
+#prof-nav .prof-nav-link i {
+    font-size: 16px !important;
+    margin: 0 !important;
+    transform: translateZ(14px);
+    text-shadow: 0 8px 18px rgba(10, 132, 255, 0.25);
+}
+
+#admin-nav .admin-nav-link::after,
+#prof-nav .prof-nav-link::after {
+    content: '';
+    position: absolute;
+    inset: 1px;
+    border-radius: inherit;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.14), transparent 60%);
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+#admin-nav .admin-nav-link:hover,
+#prof-nav .prof-nav-link:hover {
+    color: #ffffff !important;
+    border-color: rgba(147, 197, 253, 0.36) !important;
+    background: linear-gradient(135deg, rgba(23, 78, 150, 0.7), rgba(11, 132, 255, 0.32)) !important;
+    transform: translateY(-3px) rotateX(6deg) !important;
+    box-shadow:
+        0 24px 38px rgba(2, 6, 23, 0.26),
+        0 12px 24px rgba(11, 132, 255, 0.18),
+        inset 0 1px 0 rgba(255, 255, 255, 0.14) !important;
+}
+
+#admin-nav .admin-nav-link:active,
+#prof-nav .prof-nav-link:active {
+    transform: translateY(0) scale(0.985) !important;
+}
+
+#admin-nav .admin-nav-link.active,
+#prof-nav .prof-nav-link.active {
+    color: #ffffff !important;
+    background:
+        radial-gradient(circle at top right, rgba(255, 255, 255, 0.22), transparent 40%),
+        linear-gradient(135deg, #0f2d50 0%, #1b4d83 48%, #0b84ff 100%) !important;
+    border-color: rgba(191, 219, 254, 0.36) !important;
+    box-shadow:
+        0 30px 48px rgba(2, 6, 23, 0.28),
+        0 16px 34px rgba(11, 132, 255, 0.28),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+    transform: translateY(-2px) rotateX(4deg) !important;
+}
+
+.admin-table-toolbar select,
+.admin-table-toolbar button,
+.admin-section-block select,
+.admin-section-block input {
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.8),
+        0 10px 20px rgba(15, 23, 42, 0.04);
+}
+
+.modal-programs-option {
+    width: 100%;
+    padding: 12px;
+    text-align: center;
+    background: #f8f9fa;
+}
+
+.lux-picker-wrap {
+    position: relative;
+}
+
+.lux-universal-native-select {
+    display: none !important;
+}
+
+.lux-filter-hidden-select {
+    display: none;
+}
+
+.lux-picker-field {
+    position: relative;
+    width: 100%;
+    min-width: 0;
+    display: grid;
+    gap: 8px;
+}
+
+.lux-universal-picker-field {
+    width: 100%;
+}
+
+.lux-picker-label {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--lux-text-soft);
+    padding-left: 4px;
+}
+
+.lux-picker-field > .lux-picker-btn {
+    width: 100%;
+    min-width: 0;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 14px 12px 16px;
+    border-radius: 18px;
+}
+
+.lux-picker-field > .lux-picker-panel {
+    left: 0;
+    right: auto;
+    width: 100%;
+    min-width: 0;
+    top: calc(100% + 8px);
+}
+
+.lux-picker-copy {
+    display: grid;
+    gap: 4px;
+    min-width: 0;
+    text-align: left;
+}
+
+.lux-tab-strip {
+    display: flex;
+    gap: 10px;
+    padding: 10px;
+    border-radius: 24px;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.lux-tab-fill {
+    flex: 1;
+}
+
+.lux-tab-btn {
+    min-height: 48px;
+    padding: 12px 18px;
+    border-radius: 18px;
+    letter-spacing: 0.01em;
+    text-align: center;
+}
+
+.wave2-action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 46px;
+    padding: 0 16px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.lux-search input {
+    min-height: 48px;
+    border-radius: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, calc(var(--lux-raised-alpha) + 0.02)), rgba(255, 255, 255, calc(var(--lux-glass-alpha) + 0.01)));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07);
+}
+
+.lux-picker-btn {
+    min-width: 192px;
+    min-height: 50px;
+    padding: 10px 16px;
+    border-radius: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: var(--lux-text);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    cursor: pointer;
+    text-align: left;
+    background:
+        linear-gradient(180deg,
+            rgba(var(--lux-glass-tint-rgb), calc(var(--lux-raised-fill-alpha) + var(--lux-glass-highlight-alpha))),
+            rgba(var(--lux-glass-tint-rgb), var(--lux-raised-fill-alpha))) !important;
+    backdrop-filter: blur(calc(var(--lux-glass-blur) - 2px)) saturate(145%);
+    -webkit-backdrop-filter: blur(calc(var(--lux-glass-blur) - 2px)) saturate(145%);
+    transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+}
+
+.lux-picker-btn:hover,
+.lux-picker-btn.is-active {
+    transform: translateY(-1px);
+    border-color: rgba(var(--lux-accent-rgb), 0.38);
+    box-shadow: 0 14px 30px rgba(var(--lux-accent-rgb), 0.12);
+}
+
+.lux-picker-caption {
+    display: block;
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--lux-text-soft);
+}
+
+.lux-picker-btn strong {
+    display: block;
+    margin-top: 4px;
+    font-size: 14px;
+    line-height: 1.2;
+    color: var(--lux-text);
+    font-weight: 600;
+}
+
+.lux-picker-btn i {
+    color: var(--lux-text-soft);
+    font-size: 11px;
+}
+
+:root {
+    --lux-picker-visible-options: 5;
+    --lux-picker-option-height: 58px;
+    --lux-picker-panel-gap: 8px;
+    --lux-picker-panel-pad: 20px;
+    --lux-picker-panel-max-height: calc(
+        var(--lux-picker-option-height) * var(--lux-picker-visible-options)
+        + var(--lux-picker-panel-gap) * (var(--lux-picker-visible-options) - 1)
+        + var(--lux-picker-panel-pad)
+    );
+}
+
+.lux-picker-panel {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    width: min(320px, calc(100vw - 32px));
+    padding: 10px;
+    border-radius: 22px;
+    display: grid;
+    gap: 8px;
+    max-height: var(--lux-picker-panel-max-height);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    opacity: 0;
+    transform: translateY(8px);
+    pointer-events: none;
+    background:
+        linear-gradient(180deg,
+            rgba(var(--lux-topbar-tint-rgb), calc(var(--lux-topbar-fill-alpha) + 0.05)),
+            rgba(var(--lux-topbar-tint-rgb), var(--lux-topbar-fill-alpha))),
+        radial-gradient(circle at top right, rgba(var(--lux-bg-glow-rgb), 0.12), transparent 32%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    backdrop-filter: blur(calc(var(--lux-glass-blur) + 4px)) saturate(152%);
+    -webkit-backdrop-filter: blur(calc(var(--lux-glass-blur) + 4px)) saturate(152%);
+    box-shadow:
+        0 22px 54px rgba(0, 0, 0, 0.28),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08),
+        0 0 0 1px rgba(var(--lux-bg-glow-rgb), 0.03);
+    transition: opacity 0.18s ease, transform 0.18s ease;
+    z-index: 90;
+}
+
+.lux-picker-panel.is-open {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.lux-picker-panel::-webkit-scrollbar {
+    width: var(--lux-scrollbar-size, 8px);
+}
+
+.lux-picker-panel::-webkit-scrollbar-thumb {
+    background: var(--lux-scrollbar-thumb, rgba(255, 255, 255, 0.14));
+    border-radius: 999px;
+}
+
+.lux-picker-panel::-webkit-scrollbar-track {
+    background: var(--lux-scrollbar-track, transparent);
+}
+
+body.lux-light-mode .lux-picker-panel::-webkit-scrollbar-thumb,
+html.lux-light-mode body .lux-picker-panel::-webkit-scrollbar-thumb {
+    background: var(--lux-scrollbar-thumb, rgba(48, 34, 22, 0.18));
+}
+
+.lux-picker-option {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: transparent;
+    color: var(--lux-text);
+    display: grid;
+    gap: 4px;
+    text-align: left;
+    cursor: pointer;
+    transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+}
+
+.lux-picker-option strong {
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.lux-picker-option span {
+    font-size: 11px;
+    color: var(--lux-text-muted);
+    line-height: 1.45;
+}
+
+.lux-picker-option:hover,
+.lux-picker-option.is-active {
+    transform: translateY(-1px);
+    border-color: rgba(var(--lux-accent-rgb), 0.34);
+    background: rgba(var(--lux-accent-rgb), 0.08);
+}
+
+body.lux-light-mode .lux-picker-panel,
+html.lux-light-mode body .lux-picker-panel {
+    border-color: rgba(68, 49, 30, 0.12) !important;
+    box-shadow:
+        0 20px 44px rgba(93, 71, 47, 0.12),
+        inset 0 1px 0 rgba(255, 255, 255, 0.72);
+}
+
+body.lux-light-mode .lux-picker-btn,
+html.lux-light-mode body .lux-picker-btn {
+    background:
+        linear-gradient(180deg,
+            rgba(var(--lux-glass-tint-rgb), calc(var(--lux-raised-fill-alpha) + var(--lux-glass-highlight-alpha))),
+            rgba(var(--lux-glass-tint-rgb), var(--lux-raised-fill-alpha))) !important;
+}
+
+body.lux-light-mode .lux-tab-btn,
+html.lux-light-mode body .lux-tab-btn {
+    background: rgba(255, 255, 255, 0.78) !important;
+    border-color: rgba(48, 34, 22, 0.12) !important;
+    color: var(--lux-text) !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.74);
+}
+
+.lux-primary-btn:focus-visible,
+.lux-secondary-btn:focus-visible,
+.lux-disabled-btn:focus-visible,
+.lux-ghost-btn:focus-visible,
+.lux-icon-btn:focus-visible,
+.lux-quick-btn:focus-visible,
+.lux-control-btn:focus-visible,
+.lux-bg-mode-btn:focus-visible,
+.lux-mode-btn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(var(--lux-accent-rgb), 0.14), 0 18px 36px rgba(0, 0, 0, 0.18);
+}
+
+.lux-view-as-banner {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 12000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    padding: 0.55rem 1rem;
+    background: rgba(12, 24, 42, 0.92);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    color: #f5f8fc;
+    font-size: 0.875rem;
+    backdrop-filter: blur(12px);
+}
+
+:root {
+    --lux-view-as-banner-height: 2.75rem;
+}
+
+body.lux-view-as-active {
+    padding-top: var(--lux-view-as-banner-height);
+}
+
+body.lux-view-as-active #lux-shell,
+body.lux-view-as-active #lux-topbar {
+    top: var(--lux-view-as-banner-height);
+}
+
+body.lux-view-as-active #app-content {
+    padding-top: calc(var(--lux-view-as-banner-height) + var(--lux-topbar-height, 78px) + 26px) !important;
+}
+
+.lux-view-as-banner__exit {
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    background: rgba(255, 255, 255, 0.08);
+    color: inherit;
+    border-radius: 999px;
+    padding: 0.35rem 0.85rem;
+    font: inherit;
+    cursor: pointer;
+}
+
+.lux-view-as-banner__exit:hover {
+    background: rgba(255, 255, 255, 0.16);
+}

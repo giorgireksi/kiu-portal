@@ -177,26 +177,49 @@ function getStoredFileDownloadHtml(file, label = 'Download file') {
     if (!file) return '';
     if (file.dataUrl) {
         return `
-            <a href="${file.dataUrl}" download="${escapeHtml(file.name || 'download.bin')}" class="kiu-btn-outline" style="padding:8px 12px; font-size:12px; display:inline-flex; align-items:center; gap:6px;">
+            <a href="${file.dataUrl}" download="${escapeHtml(file.name || 'download.bin')}" class="kiu-btn-outline lms-route-file-action-btn">
                 <i class="fas fa-download"></i> ${escapeHtml(label)}
             </a>
         `;
     }
     if (file.storageKey && file.storageBackend === 'bridge' && typeof getPortalStoredFileUrl === 'function') {
         return `
-            <a href="${getPortalStoredFileUrl(file.storageKey)}" download="${escapeHtml(file.name || 'download.bin')}" target="_blank" rel="noopener" class="kiu-btn-outline" style="padding:8px 12px; font-size:12px; display:inline-flex; align-items:center; gap:6px;">
+            <a href="${getPortalStoredFileUrl(file.storageKey)}" download="${escapeHtml(file.name || 'download.bin')}" target="_blank" rel="noopener" class="kiu-btn-outline lms-route-file-action-btn">
                 <i class="fas fa-download"></i> ${escapeHtml(label)}
             </a>
         `;
     }
     if (file.storageKey) {
         return `
-            <button type="button" data-lms-click="downloadStoredFileByKey(${jsQuote(file.storageKey)}, ${jsQuote(file.name || 'download.bin')})" class="kiu-btn-outline" style="padding:8px 12px; font-size:12px; display:inline-flex; align-items:center; gap:6px;">
+            <button type="button" data-lms-click="downloadStoredFileByKey(${jsQuote(file.storageKey)}, ${jsQuote(file.name || 'download.bin')})" class="kiu-btn-outline lms-route-file-action-btn">
                 <i class="fas fa-download"></i> ${escapeHtml(label)}
             </button>
         `;
     }
     return '';
+}
+
+function renderLmsStoredFileAttachmentShell(file, options = {}) {
+    if (!file) return '';
+    const {
+        label = 'Attachment',
+        title = file.name || 'Attachment',
+        meta = '',
+        downloadLabel = 'Download file',
+        shellClass = 'lms-route-file-shell lms-route-field-mt-14',
+        titleClass = 'lms-route-file-shell-title',
+        metaClass = 'lms-route-file-shell-meta',
+        actionsClass = 'lms-route-file-shell-actions'
+    } = options || {};
+    const actionHtml = getStoredFileDownloadHtml(file, downloadLabel);
+    return `
+        <div class="${shellClass}">
+            <div class="lms-route-kv-label">${escapeHtml(label)}</div>
+            <div class="${titleClass}">${escapeHtml(title || file.name || 'Attachment')}</div>
+            ${meta ? `<div class="${metaClass}">${escapeHtml(meta)}</div>` : ''}
+            ${actionHtml ? `<div class="${actionsClass}">${actionHtml}</div>` : ''}
+        </div>
+    `;
 }
 
 function ensureSharedLmsFileInput() {
@@ -205,7 +228,7 @@ function ensureSharedLmsFileInput() {
         input = document.createElement('input');
         input.type = 'file';
         input.id = 'shared-lms-file-input';
-        input.style.display = 'none';
+        input.hidden = true;
         document.body.appendChild(input);
     }
     return input;

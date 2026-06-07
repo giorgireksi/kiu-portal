@@ -1,0 +1,361 @@
+:root {
+    color-scheme: dark;
+    --bg-a: var(--lux-bg, #05101d);
+    --bg-b: var(--lux-bg-soft, #0c1b2f);
+    --panel: color-mix(in srgb, var(--lux-surface, rgba(7, 16, 29, 0.88)) 86%, transparent 14%);
+    --line: var(--lux-border, rgba(255, 255, 255, 0.08));
+    --line-strong: rgba(var(--lux-accent-rgb, 212, 173, 111), 0.24);
+    --text: var(--lux-text, #f7f3eb);
+    --muted: var(--lux-text-muted, rgba(247, 243, 235, 0.68));
+    --accent: var(--lux-accent-2, #d4ad6f);
+    --accent-soft: rgba(var(--lux-accent-rgb, 212, 173, 111), 0.14);
+    --success: #30d49a;
+    --danger: #ff8f8f;
+    --warn: #ffd36d;
+    --launch-body-bg: var(--lux-shell-background);
+    --launch-shell-bg:
+        linear-gradient(180deg, rgba(11, 21, 36, 0.96), rgba(6, 12, 23, 0.98));
+    --launch-head-bg:
+        radial-gradient(circle at top right, rgba(212, 173, 111, 0.14), transparent 34%),
+        linear-gradient(180deg, rgba(18, 30, 49, 0.88), rgba(8, 14, 25, 0.94));
+    --launch-surface-bg: rgba(255, 255, 255, 0.03);
+    --launch-progress-track: rgba(255, 255, 255, 0.08);
+    --launch-progress-fill: linear-gradient(90deg, rgba(212, 173, 111, 0.25), rgba(212, 173, 111, 0.88));
+    --launch-shell-shadow: 0 26px 58px rgba(0, 0, 0, 0.34);
+    --launch-btn-transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+    --launch-progress-animation: pulseProgress 1.15s ease-in-out infinite alternate;
+    --launch-primary-bg: linear-gradient(135deg, #f0cc8c, #d4ad6f);
+    --launch-danger-bg: linear-gradient(135deg, #ffb3b3, #ff8f8f);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: 'Inter', sans-serif;
+    color: var(--text);
+    background: var(--launch-body-bg);
+    display: grid;
+    place-items: center;
+    padding: 18px;
+}
+
+.launch-shell {
+    width: min(460px, 100%);
+    border-radius: 28px;
+    border: 1px solid var(--line);
+    background: var(--launch-shell-bg);
+    box-shadow: var(--launch-shell-shadow);
+    overflow: hidden;
+}
+
+.launch-shell::after {
+    opacity: 0.34;
+}
+
+.launch-head {
+    padding: 26px 26px 18px;
+    border-bottom: 1px solid var(--line);
+    background: var(--launch-head-bg);
+}
+
+.launch-head::after,
+.launch-status-card::after,
+.launch-meta::after,
+.launch-actions::after {
+    opacity: 0.46;
+}
+
+.launch-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+.launch-kicker::before {
+    content: '';
+    width: 28px;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.24);
+}
+
+.launch-title {
+    margin: 14px 0 8px;
+    font-family: 'Playfair Display', serif;
+    font-size: 34px;
+    line-height: 1.04;
+}
+
+.launch-copy {
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.7;
+}
+
+.launch-body {
+    padding: 22px 26px 26px;
+    display: grid;
+    gap: 18px;
+}
+
+.launch-status-card,
+.launch-meta,
+.launch-actions {
+    border: 1px solid var(--line);
+    background: var(--launch-surface-bg);
+    border-radius: 22px;
+}
+
+.launch-status-card {
+    padding: 22px;
+    display: grid;
+    gap: 16px;
+}
+
+.launch-status-head {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.launch-status-icon {
+    width: 54px;
+    height: 54px;
+    border-radius: 18px;
+    display: grid;
+    place-items: center;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-size: 22px;
+    border: 1px solid var(--line-strong);
+}
+
+.launch-status-icon[data-launch-tone="info"] {
+    background: var(--accent-soft);
+    color: var(--accent);
+}
+
+.launch-status-icon[data-launch-tone="success"] {
+    background: rgba(48, 212, 154, 0.12);
+    color: var(--success);
+}
+
+.launch-status-icon[data-launch-tone="warn"] {
+    background: rgba(255, 211, 109, 0.14);
+    color: var(--warn);
+}
+
+.launch-status-icon[data-launch-tone="danger"] {
+    background: rgba(255, 143, 143, 0.14);
+    color: var(--danger);
+}
+
+.launch-status-label {
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+.launch-status-title {
+    margin-top: 4px;
+    font-size: 22px;
+    font-weight: 800;
+    line-height: 1.2;
+}
+
+.launch-status-copy {
+    margin-top: 6px;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.75;
+}
+
+.launch-progress {
+    position: relative;
+    height: 8px;
+    border-radius: 999px;
+    background: var(--launch-progress-track);
+    overflow: hidden;
+}
+
+.launch-progress > span {
+    position: absolute;
+    inset: 0;
+    width: 35%;
+    border-radius: inherit;
+    background: var(--launch-progress-fill);
+    animation: var(--launch-progress-animation);
+    transform-origin: left center;
+}
+
+.launch-progress[data-launch-tone="success"] > span {
+    background: linear-gradient(90deg, rgba(48, 212, 154, 0.32), rgba(48, 212, 154, 0.92));
+}
+
+.launch-progress[data-launch-tone="warn"] > span {
+    background: linear-gradient(90deg, rgba(255, 211, 109, 0.28), rgba(255, 211, 109, 0.88));
+}
+
+.launch-progress[data-launch-tone="danger"] > span {
+    background: linear-gradient(90deg, rgba(255, 143, 143, 0.28), rgba(255, 143, 143, 0.84));
+}
+
+@keyframes pulseProgress {
+    from {
+        transform: scaleX(0.48);
+        opacity: 0.56;
+    }
+
+    to {
+        transform: scaleX(1);
+        opacity: 1;
+    }
+}
+
+.launch-meta {
+    padding: 16px 18px;
+    display: grid;
+    gap: 10px;
+}
+
+.launch-meta-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    align-items: baseline;
+}
+
+.launch-meta-label {
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 800;
+}
+
+.launch-meta-value {
+    font-size: 13px;
+    color: var(--text);
+    text-align: right;
+}
+
+.launch-actions {
+    padding: 16px;
+    display: grid;
+    gap: 12px;
+}
+
+.launch-action-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.launch-btn {
+    appearance: none;
+    padding: 12px 14px;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: var(--launch-btn-transition);
+}
+
+.launch-btn:hover {
+    transform: translateY(-1px);
+}
+
+.protected-launch-page .launch-btn.lux-primary-btn,
+.protected-launch-page .launch-btn.lux-secondary-btn {
+    min-height: 48px;
+    padding: 12px 14px !important;
+}
+
+.launch-note {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.7;
+}
+
+.launch-note[data-launch-tone="success"] {
+    color: color-mix(in srgb, var(--success) 72%, white 28%);
+}
+
+.launch-note[data-launch-tone="warn"] {
+    color: color-mix(in srgb, var(--warn) 74%, white 26%);
+}
+
+.launch-note[data-launch-tone="danger"] {
+    color: color-mix(in srgb, var(--danger) 78%, white 22%);
+}
+
+.launch-actions[data-launch-tone="warn"] {
+    border-color: rgba(255, 211, 109, 0.2);
+}
+
+.launch-actions[data-launch-tone="danger"] {
+    border-color: rgba(255, 143, 143, 0.24);
+}
+
+.launch-status-card[data-launch-tone="warn"] {
+    border-color: rgba(255, 211, 109, 0.22);
+}
+
+.launch-status-card[data-launch-tone="danger"] {
+    border-color: rgba(255, 143, 143, 0.24);
+}
+
+.launch-status-card[data-launch-tone="success"] {
+    border-color: rgba(48, 212, 154, 0.22);
+}
+
+html[data-launch-performance="reduced"] {
+    --launch-body-bg: linear-gradient(180deg, var(--bg-b), var(--bg-a));
+    --launch-head-bg: linear-gradient(180deg, rgba(18, 30, 49, 0.88), rgba(8, 14, 25, 0.94));
+    --launch-surface-bg: rgba(255, 255, 255, 0.02);
+    --launch-shell-shadow: 0 16px 34px rgba(0, 0, 0, 0.28);
+    --launch-progress-fill: linear-gradient(90deg, rgba(212, 173, 111, 0.72), rgba(212, 173, 111, 0.72));
+    --launch-btn-transition: border-color 0.18s ease, background 0.18s ease;
+    --launch-progress-animation: none;
+}
+
+html[data-launch-performance="reduced"] .launch-progress > span {
+    width: 100%;
+    transform: scaleX(0.72);
+    opacity: 0.9;
+}
+
+html[data-launch-performance="reduced"] .launch-btn:hover {
+    transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .launch-progress > span {
+        width: 100%;
+        transform: scaleX(0.72);
+        opacity: 0.9;
+    }
+
+    .launch-btn {
+        transition: none;
+    }
+
+    .launch-btn:hover {
+        transform: none;
+    }
+}

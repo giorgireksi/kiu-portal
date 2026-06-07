@@ -72,15 +72,16 @@ describe('admin library mobile shell migration', () => {
   it('migrates the page onto the shared standalone mobile shell contract', () => {
     const source = readSource('admin-library.html');
     const guardrailSource = readSource('tools/check-architecture-guardrails.js');
-    const classificationSource = readSource('PORTAL_VISUAL_ROUTE_CLASSIFICATION.md');
+    const routeClassificationSource = readSource('tools/visual-route-classification.js');
 
     expect(source).toContain('window.__KIU_STANDALONE_MOBILE_SHELL_CONFIG = {');
     expect(source).toContain("activeTarget: 'library'");
     expect(source).toContain('assets/js/pages/standalone-mobile-shell.js');
     expect(source).not.toContain('(function initMobileExperience(){');
 
-    expect(guardrailSource).toContain("'admin-library.html': { category: 'standard-shell', dedicatedCss: ['assets/css/admin-library-route.css'], mobileShell: 'shared-standalone' }");
-    expect(classificationSource).toContain("| `admin-library.html` | `standard-shell` |");
+    expect(guardrailSource).toContain("require('./visual-route-classification')");
+    expect(routeClassificationSource).toContain("'admin-library.html': { category: 'standard-shell', dedicatedCss: ['assets/css/admin-library-route.css'], mobileShell: 'shared-standalone' }");
+    expect(routeClassificationSource).not.toContain("admin-library.html': { category: 'standard-shell', dedicatedCss: ['assets/css/admin-library-route.css', 'assets/css/library-route.css']");
   });
 
   it('uses the shared standalone shell on first tap and clears the default home active state', () => {

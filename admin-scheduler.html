@@ -10,814 +10,20 @@
     <link rel="stylesheet" href="assets/vendor/fontawesome/css/all.min.css?v=1776604821655">
     <link rel="stylesheet" href="assets/css/kiu-fonts.css?v=20260515-fonts1">
     <link rel="stylesheet" href="assets/css/base.css?v=20260419-libsync1">
-    <link rel="stylesheet" href="assets/css/layout.css?v=1776604821655">
-    <link rel="stylesheet" href="assets/css/components.css?v=1776604821655">
+    <link rel="stylesheet" href="assets/css/layout.css?v=20260528-layoutfix2">
     <script>
         if (!localStorage.getItem('currentUserRole')) localStorage.setItem('currentUserRole', 'admin');
     </script>
-<link rel="stylesheet" href="assets/css/index-luxury.css?v=20260429-schedulerselect1">
+<link rel="stylesheet" href="assets/css/lux-tokens.css?v=20260606-luxscrollbar1">
+    <link rel="stylesheet" href="assets/css/lux-surfaces.css?v=20260527-profcss1">
+    <link rel="stylesheet" href="assets/css/lux-controls.css?v=20260606-pickerscroll1">
+    <link rel="stylesheet" href="assets/css/lux-layout-primitives.css?v=20260606-luxscrollbar1">
+    <link rel="stylesheet" href="assets/css/index-luxury.css?v=20260531-partbg4">
 <link rel="stylesheet" href="assets/css/mobile-responsive.css?v=20260419-libsync1">
-    <script src="assets/js/theme-primer.js?v=20260419-flat5"></script>
-        <style>
-        #legacy-shell-hooks { display: none !important; }
-
-        
-        body.lux-light-mode.lux-route-admin-scheduler {
-            --lux-text: #1e1a16 !important;
-            --lux-text-muted: #5a4f42 !important;
-            --lux-text-soft: #8a7e72 !important;
-        }
-
-        /* Page background */
-        body.lux-light-mode.lux-route-admin-scheduler {
-            background: linear-gradient(180deg, #f5f0e8 0%, #ede6da 100%) !important;
-            --sch-panel-shadow: 0 14px 36px rgba(73,48,25,0.11);
-            --sch-card-shadow: 0 6px 16px rgba(73,48,25,0.08);
-            --sch-card-hover-shadow: 0 10px 24px rgba(73,48,25,0.11);
-            --sch-event-shadow: 0 8px 20px rgba(73,48,25,0.11);
-            --sch-event-hover-shadow: 0 12px 28px rgba(73,48,25,0.14);
-            --sch-modal-shadow: 0 22px 52px rgba(73,48,25,0.14);
-            --sch-glass-blur-soft: calc(var(--lux-glass-blur) * 0.44);
-            --sch-glass-blur-modal: calc(var(--lux-glass-blur) * 0.78);
-            --sch-glass-blur-footer: calc(var(--lux-glass-blur) * 0.34);
-        }
-
-        body.lux-light-mode.lux-route-admin-scheduler .scheduler-wrap {
-            background: transparent !important;
-        }
-
-        
-        body.lux-light-mode.lux-route-admin-scheduler .sch-sidebar,
-        body.lux-light-mode.lux-route-admin-scheduler .sch-rail-hero,
-        body.lux-light-mode.lux-route-admin-scheduler .sch-rail-section {
-            background: linear-gradient(180deg, rgba(255,255,255,calc(0.08 + var(--lux-panel-alpha) * 0.48)), rgba(245,239,229,calc(0.03 + var(--lux-glass-alpha) * 0.34))) !important;
-            border: 1px solid rgba(77,52,31,0.12) !important;
-            box-shadow: var(--sch-panel-shadow), inset 0 1px 0 rgba(255,255,255,0.72) !important;
-            color: #1e1a16 !important;
-        }
-
-        body.lux-light-mode.lux-route-admin-scheduler .sch-sidebar {
-            background: linear-gradient(180deg, rgba(255,255,255,calc(0.08 + var(--lux-panel-alpha) * 0.48)), rgba(245,239,229,calc(0.03 + var(--lux-glass-alpha) * 0.34))) !important;
-        }
-
-        /* Section titles */
-        body.lux-light-mode.lux-route-admin-scheduler .sch-rail-section-title {
-            color: #6b5d4f !important;
-        }
-
-        /* Kicker text */
-        body.lux-light-mode.lux-route-admin-scheduler .sch-rail-kicker,
-        body.lux-light-mode.lux-route-admin-scheduler .sch-board-kicker {
-            color: #6b5d4f !important;
-        }
-
-        body.lux-light-mode.lux-route-admin-scheduler .sch-rail-kicker i {
-            color: var(--lux-accent) !important;
-        }
-
-        /* Hero text */
-        body.lux-light-mode.lux-route-admin-scheduler .sch-rail-hero h1,
-        body.lux-light-mode.lux-route-admin-scheduler .sch-rail-hero p,
-        body.lux-light-mode.lux-route-admin-scheduler .sch-board-copy h2,
-        body.lux-light-mode.lux-route-admin-scheduler .sch-board-copy p {
-            color: #1e1a16 !important;
-        }
-
-        body.lux-light-mode.lux-route-admin-scheduler .sch-rail-hero p,
-        body.lux-light-mode.lux-route-admin-scheduler .sch-board-copy p {
-            color: #5a4f42 !important;
-        }
-
-        
-        body.lux-light-mode.lux-route-admin-scheduler .sch-stat-card {
-            background: linear-gradient(180deg, rgba(255,255,255,calc(0.08 + var(--lux-panel-alpha) * 0.48)), rgba(245,239,229,calc(0.03 + var(--lux-glass-alpha) * 0.34))) !important;
-            border: 1px solid rgba(77,52,31,0.12) !important;
-            box-shadow: var(--sch-card-shadow), inset 0 1px 0 rgba(255,255,255,0.72) !important;
-        }
-
-        body.lux-light-mode.lux-route-admin-scheduler .sch-stat-card strong {
-            color: #1e1a16 !important;
-        }
-
-        body.lux-light-mode.lux-route-admin-scheduler .sch-stat-card span {
-            color: #5a4f42 !important;
-        }
-
-        body.lux-light-mode.lux-route-admin-scheduler .sch-stat-label {
-            color: #8a7e72 !important;
-        }
-
-        
-        body.lux-light-mode.lux-route-admin-scheduler .sch-rail-pill {
-            background: linear-gradient(180deg, rgba(255,255,255,calc(0.06 + var(--lux-panel-alpha) * 0.32)), rgba(245,239,229,calc(0.02 + var(--lux-glass-alpha) * 0.22))) !important;
-            border: 1px solid rgba(77,52,31,0.10) !important;
-            color: #5a4f42 !important;
-        }
-
-        body.lux-light-mode.lux-route-admin-scheduler .sch-rail-pill-accent {
-            background: rgba(var(--lux-accent-rgb),0.12) !important;
-            border-color: rgba(var(--lux-accent-rgb),0.25) !important;
-            color: var(--lux-accent) !important;
-        }
-
-        body.lux-light-mode.lux-route-admin-scheduler .sch-rail-week-range {
-            color: #5a4f42 !important;
-            border-color: #e0d7cc !important;
-        }
-
-        
-        body.lux-light-mode.lux-route-admin-scheduler .sch-action-btn,
-        body.lux-light-mode.lux-route-admin-scheduler .sch-week-arrow {
-            background: linear-gradient(180deg, rgba(255,255,255,calc(0.08 + var(--lux-panel-alpha) * 0.48)), rgba(245,239,229,calc(0.02 + var(--lux-glass-alpha) * 0.30))) !important;
-            border: 1px solid rgba(77,52,31,0.12) !important;
-            color: #1e1a16 !important;
-            box-shadow: var(--sch-card-shadow), inset 0 1px 0 rgba(255,255,255,0.72) !important;
-        }
-
-        body.lux-light-mode.lux-route-admin-scheduler .lux-primary-btn.sch-action-btn,
-        body.lux-light-mode.lux-route-admin-scheduler .sch-week-current-btn {
-            background: linear-gradient(135deg, var(--lux-accent), var(--lux-accent-2)) !important;
-            color: #ffffff !important;
-            border-color: transparent !important;
-        }
-
-        /* Filter controls */
-        body.lux-light-mode.lux-route-admin-scheduler .sch-control-group span,
-        body.lux-light-mode.lux-route-admin-scheduler .sch-palette-count-label {
-            color: #8a7e72 !important;
-        }
-
-        
-        body.lux-light-mode.lux-route-admin-scheduler .sch-control-group select,
-        body.lux-light-mode.lux-route-admin-scheduler .sch-board-toolbar-row select {
-            background: linear-gradient(180deg, rgba(255,255,255,calc(0.08 + var(--lux-panel-alpha) * 0.48)), rgba(245,239,229,calc(0.02 + var(--lux-glass-alpha) * 0.30))) !important;
-            border: 1px solid rgba(77,52,31,0.12) !important;
-            color: #1e1a16 !important;
-        }
-
-        body.lux-light-mode.lux-route-admin-scheduler .sch-control-group select option {
-            color: #1e1a16 !important;
-            background: #ffffff !important;
-        }
-
-        body.lux-light-mode.lux-route-admin-scheduler .sch-board-toolbar-row select option {
-            color: #1e1a16 !important;
-            background: #ffffff !important;
-        }
-
-        
-        body.lux-light-mode.lux-route-admin-scheduler .sch-rail-note {
-            background: linear-gradient(180deg, rgba(var(--lux-accent-rgb),calc(0.08 + var(--lux-panel-alpha) * 0.32)), rgba(var(--lux-accent-rgb),calc(0.02 + var(--lux-glass-alpha) * 0.22))) !important;
-            color: #5a4f42 !important;
-            border: 1px solid rgba(var(--lux-accent-rgb),0.20) !important;
-        }
-
-        body.lux-light-mode.lux-route-admin-scheduler .sch-rail-note i {
-            color: var(--lux-accent) !important;
-        }
-
-        
-        body.lux-light-mode.lux-route-admin-scheduler .sch-search-shell {
-            background: linear-gradient(180deg, rgba(255,255,255,calc(0.08 + var(--lux-panel-alpha) * 0.48)), rgba(245,239,229,calc(0.02 + var(--lux-glass-alpha) * 0.30))) !important;
-            border: 1px solid rgba(77,52,31,0.12) !important;
-        }
-
-        body.lux-light-mode.lux-route-admin-scheduler .sch-search-shell i {
-            color: #8a7e72 !important;
-        }
-
-        body.lux-light-mode.lux-route-admin-scheduler .sch-search-shell input {
-            background: transparent !important;
-            border: none !important;
-            color: #1e1a16 !important;
-        }
-
-        body.lux-light-mode.lux-route-admin-scheduler .sch-search-shell input::placeholder {
-            color: #9a8c7e !important;
-        }
-
-        /* Palette meta */
-        body.lux-light-mode.lux-route-admin-scheduler .sch-palette-meta,
-        body.lux-light-mode.lux-route-admin-scheduler .sch-palette-summary {
-            color: #5a4f42 !important;
-        }
-
-        
-        body.lux-light-mode.lux-route-admin-scheduler .palette-card {
-            background: linear-gradient(180deg, rgba(255,255,255,calc(0.08 + var(--lux-panel-alpha) * 0.48)), rgba(245,239,229,calc(0.03 + var(--lux-glass-alpha) * 0.34))) !important;
-            border: 1px solid rgba(77,52,31,0.12) !important;
-            box-shadow: var(--sch-card-shadow), inset 0 1px 0 rgba(255,255,255,0.72) !important;
-            color: #1e1a16 !important;
-            backdrop-filter: blur(var(--sch-glass-blur-soft));
-            -webkit-backdrop-filter: blur(var(--sch-glass-blur-soft));
-        }
-
-        body.lux-light-mode.lux-route-admin-scheduler .palette-card:hover {
-            background: linear-gradient(180deg, rgba(255,255,255,calc(0.12 + var(--lux-panel-alpha) * 0.52)), rgba(245,239,229,calc(0.05 + var(--lux-glass-alpha) * 0.38))) !important;
-            border: 1px solid rgba(var(--lux-accent-rgb),0.25) !important;
-            box-shadow: var(--sch-card-hover-shadow), inset 0 1px 0 rgba(255,255,255,0.72) !important;
-            backdrop-filter: blur(var(--sch-glass-blur-soft));
-            -webkit-backdrop-filter: blur(var(--sch-glass-blur-soft));
-        }
-
-        body.lux-light-mode.lux-route-admin-scheduler .palette-card.selected {
-            background: linear-gradient(180deg, rgba(var(--lux-accent-rgb),calc(0.12 + var(--lux-panel-alpha) * 0.32)), rgba(var(--lux-accent-rgb),calc(0.04 + var(--lux-glass-alpha) * 0.22))) !important;
-            border: 1px solid rgba(var(--lux-accent-rgb),0.35) !important;
-            backdrop-filter: blur(var(--sch-glass-blur-soft));
-            -webkit-backdrop-filter: blur(var(--sch-glass-blur-soft));
-        }
-
-        body.lux-light-mode.lux-route-admin-scheduler .pc-id {
-            color: var(--lux-accent) !important;
-        }
-
-        body.lux-light-mode.lux-route-admin-scheduler .pc-name {
-            color: #1e1a16 !important;
-        }
-
-        body.lux-light-mode.lux-route-admin-scheduler .pc-meta {
-            color: #5a4f42 !important;
-        }
-
-        
-        body.lux-light-mode.lux-route-admin-scheduler .sch-empty-state {
-            background: linear-gradient(180deg, rgba(255,255,255,calc(0.06 + var(--lux-panel-alpha) * 0.32)), rgba(245,239,229,calc(0.02 + var(--lux-glass-alpha) * 0.22))) !important;
-            border: 1px solid rgba(77,52,31,0.10) !important;
-            color: #8a7e72 !important;
-        }
-
-        body.lux-light-mode.lux-route-admin-scheduler .sch-grid-empty {
-            background: linear-gradient(180deg, rgba(255,255,255,calc(0.06 + var(--lux-panel-alpha) * 0.32)), rgba(245,239,229,calc(0.02 + var(--lux-glass-alpha) * 0.22))) !important;
-            border: 1px solid rgba(77,52,31,0.10) !important;
-            color: #8a7e72 !important;
-        }
-
-        
-
-        body.lux-light-mode.lux-route-admin-scheduler .sch-main,
-        body.lux-light-mode.lux-route-admin-scheduler .sch-board-hero,
-        body.lux-light-mode.lux-route-admin-scheduler .sch-board-legend,
-        body.lux-light-mode.lux-route-admin-scheduler .sch-grid-shell {
-            background: linear-gradient(180deg, rgba(255,255,255,calc(0.08 + var(--lux-panel-alpha) * 0.48)), rgba(245,239,229,calc(0.03 + var(--lux-glass-alpha) * 0.34))) !important;
-            border: 1px solid rgba(77,52,31,0.12) !important;
-            box-shadow: var(--sch-panel-shadow), inset 0 1px 0 rgba(255,255,255,0.72) !important;
-            color: #1e1a16 !important;
-        }
-
-        
-        body.lux-light-mode.lux-route-admin-scheduler .sch-legend-pill {
-            background: linear-gradient(180deg, rgba(255,255,255,calc(0.06 + var(--lux-panel-alpha) * 0.32)), rgba(245,239,229,calc(0.02 + var(--lux-glass-alpha) * 0.22))) !important;
-            border: 1px solid rgba(77,52,31,0.10) !important;
-            color: #5a4f42 !important;
-        }
-
-        body.lux-light-mode.lux-route-admin-scheduler .sch-legend-draft {
-            color: #dc2626 !important;
-        }
-
-        body.lux-light-mode.lux-route-admin-scheduler .sch-legend-draft-dot {
-            background: #dc2626 !important;
-        }
-
-        
-        body.lux-light-mode.lux-route-admin-scheduler .sch-grid-tag {
-            background: linear-gradient(180deg, rgba(255,255,255,calc(0.06 + var(--lux-panel-alpha) * 0.32)), rgba(245,239,229,calc(0.02 + var(--lux-glass-alpha) * 0.22))) !important;
-            border: 1px solid rgba(77,52,31,0.10) !important;
-            color: #5a4f42 !important;
-        }
-
-        body.lux-light-mode.lux-route-admin-scheduler .sch-grid-tag-soft {
-            color: #5a4f42 !important;
-        }
-
-        body.lux-light-mode.lux-route-admin-scheduler .sch-week-label {
-            color: #5a4f42 !important;
-        }
-
-        
-        body.lux-light-mode.lux-route-admin-scheduler .sch-header-row {
-            background: linear-gradient(180deg, rgba(255,255,255,calc(0.08 + var(--lux-panel-alpha) * 0.36)), rgba(245,239,229,calc(0.04 + var(--lux-glass-alpha) * 0.26))) !important;
-            border: 1px solid rgba(77,52,31,0.12) !important;
-        }
-
-        body.lux-light-mode.lux-route-admin-scheduler .sch-day-col {
-            background: transparent !important;
-            border: 1px solid rgba(77,52,31,0.08) !important;
-            color: #1e1a16 !important;
-        }
-
-        body.lux-light-mode.lux-route-admin-scheduler .sch-time-col {
-            background: linear-gradient(180deg, rgba(255,255,255,calc(0.06 + var(--lux-panel-alpha) * 0.32)), rgba(245,239,229,calc(0.02 + var(--lux-glass-alpha) * 0.22))) !important;
-            border: 1px solid rgba(77,52,31,0.08) !important;
-            color: #5a4f42 !important;
-        }
-
-        
-        body.lux-light-mode.lux-route-admin-scheduler .sch-body {
-            background: linear-gradient(180deg, rgba(255,255,255,calc(0.02 + var(--lux-panel-alpha) * 0.16)), transparent) !important;
-            border: 1px solid rgba(77,52,31,0.08) !important;
-        }
-
-        body.lux-light-mode.lux-route-admin-scheduler .sch-time-labels {
-            background: linear-gradient(180deg, rgba(255,255,255,calc(0.04 + var(--lux-panel-alpha) * 0.24)), rgba(245,239,229,calc(0.01 + var(--lux-glass-alpha) * 0.16))) !important;
-            border: 1px solid rgba(77,52,31,0.08) !important;
-        }
-
-        body.lux-light-mode.lux-route-admin-scheduler .sch-time-slot {
-            border: 1px solid rgba(77,52,31,0.06) !important;
-        }
-
-        body.lux-light-mode.lux-route-admin-scheduler .sch-time-slot span {
-            background: linear-gradient(180deg, rgba(245,239,229,0.08), rgba(245,239,229,0.02)) !important;
-            border: 1px solid rgba(77,52,31,0.08) !important;
-            color: #5a4f42 !important;
-        }
-
-        body.lux-light-mode.lux-route-admin-scheduler .sch-time-labels {
-            background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(245,239,229,0.01)) !important;
-            border: 1px solid rgba(77,52,31,0.08) !important;
-        }
-
-        body.lux-light-mode.lux-route-admin-scheduler .sch-time-slot {
-            border: 1px solid rgba(77,52,31,0.06) !important;
-        }
-
-        body.lux-light-mode.lux-route-admin-scheduler .sch-time-slot span {
-            background: linear-gradient(180deg, rgba(245,239,229,0.08), rgba(245,239,229,0.02)) !important;
-            border: 1px solid rgba(77,52,31,0.08) !important;
-            color: #5a4f42 !important;
-        }
-
-        
-        body.lux-light-mode.lux-route-admin-scheduler .sch-day-lanes {
-            background: transparent !important;
-        }
-
-        body.lux-light-mode.lux-route-admin-scheduler .sch-lane {
-            background: transparent !important;
-            border: 1px solid rgba(77,52,31,0.06) !important;
-        }
-
-        
-        body.lux-light-mode.lux-route-admin-scheduler .sch-slot-bg {
-            background: transparent !important;
-            border: 1px solid rgba(77,52,31,0.04) !important;
-        }
-
-        body.lux-light-mode.lux-route-admin-scheduler .sch-slot-bg:hover {
-            background: linear-gradient(180deg, rgba(var(--lux-accent-rgb),calc(0.06 + var(--lux-panel-alpha) * 0.20)), rgba(var(--lux-accent-rgb),calc(0.02 + var(--lux-glass-alpha) * 0.14))) !important;
-        }
-
-        
-        body.lux-light-mode.lux-route-admin-scheduler .sch-event {
-            background: linear-gradient(180deg, rgba(var(--lux-accent-rgb),calc(0.12 + var(--lux-panel-alpha) * 0.40)), rgba(var(--lux-accent-rgb),calc(0.04 + var(--lux-glass-alpha) * 0.30))) !important;
-            border: 1px solid rgba(var(--lux-accent-rgb),0.30) !important;
-            color: #1e1a16 !important;
-            box-shadow: var(--sch-event-shadow), inset 0 1px 0 rgba(255,255,255,0.72) !important;
-            backdrop-filter: blur(var(--sch-glass-blur-soft));
-            -webkit-backdrop-filter: blur(var(--sch-glass-blur-soft));
-        }
-
-        body.lux-light-mode.lux-route-admin-scheduler .sch-event:hover {
-            background: linear-gradient(180deg, rgba(var(--lux-accent-rgb),calc(0.16 + var(--lux-panel-alpha) * 0.44)), rgba(var(--lux-accent-rgb),calc(0.06 + var(--lux-glass-alpha) * 0.34))) !important;
-            box-shadow: var(--sch-event-hover-shadow), inset 0 1px 0 rgba(255,255,255,0.72) !important;
-            backdrop-filter: blur(var(--sch-glass-blur-soft));
-            -webkit-backdrop-filter: blur(var(--sch-glass-blur-soft));
-        }
-
-        body.lux-light-mode.lux-route-admin-scheduler .sch-event .ev-title {
-            color: #1e1a16 !important;
-        }
-
-        body.lux-light-mode.lux-route-admin-scheduler .sch-event .ev-meta {
-            color: #5a4f42 !important;
-        }
-
-        body.lux-light-mode.lux-route-admin-scheduler .sch-event .ev-draft {
-            background: rgba(220,38,38,0.12) !important;
-            color: #dc2626 !important;
-        }
-
-        body.lux-light-mode.lux-route-admin-scheduler .sch-event .ev-trash {
-            color: #8a7e72 !important;
-        }
-
-        
-        body.lux-light-mode.lux-route-admin-scheduler .sch-modal {
-            background: linear-gradient(180deg, rgba(255,255,255,calc(0.12 + var(--lux-panel-alpha) * 0.52)), rgba(245,239,229,calc(0.05 + var(--lux-glass-alpha) * 0.38))) !important;
-            border: 1px solid rgba(77,52,31,0.12) !important;
-            box-shadow: var(--sch-modal-shadow), inset 0 1px 0 rgba(255,255,255,0.72) !important;
-            color: #1e1a16 !important;
-            backdrop-filter: blur(var(--sch-glass-blur-modal)) saturate(138%);
-            -webkit-backdrop-filter: blur(var(--sch-glass-blur-modal)) saturate(138%);
-        }
-
-        body.lux-light-mode.lux-route-admin-scheduler .sch-modal-head {
-            background: linear-gradient(135deg, rgba(245,239,229,calc(0.10 + var(--lux-panel-alpha) * 0.28)), rgba(245,239,229,calc(0.04 + var(--lux-glass-alpha) * 0.22))) !important;
-            border-bottom: 1px solid rgba(77,52,31,0.12) !important;
-            color: #1e1a16 !important;
-            backdrop-filter: blur(var(--sch-glass-blur-soft));
-            -webkit-backdrop-filter: blur(var(--sch-glass-blur-soft));
-        }
-
-        body.lux-light-mode.lux-route-admin-scheduler .sch-modal-body {
-            background: linear-gradient(180deg, rgba(255,255,255,calc(0.02 + var(--lux-panel-alpha) * 0.12)), transparent) !important;
-            color: #1e1a16 !important;
-        }
-
-        body.lux-light-mode.lux-route-admin-scheduler .sch-modal-foot {
-            background: linear-gradient(180deg, rgba(255,255,255,calc(0.04 + var(--lux-panel-alpha) * 0.24)), rgba(245,239,229,calc(0.02 + var(--lux-glass-alpha) * 0.18))) !important;
-            border-top: 1px solid rgba(77,52,31,0.12) !important;
-            backdrop-filter: blur(var(--sch-glass-blur-footer));
-            -webkit-backdrop-filter: blur(var(--sch-glass-blur-footer));
-        }
-
-        body.lux-light-mode.lux-route-admin-scheduler .sch-modal-head *,
-        body.lux-light-mode.lux-route-admin-scheduler .sch-modal-body *,
-        body.lux-light-mode.lux-route-admin-scheduler .sch-modal-foot * {
-            color: #1e1a16 !important;
-        }
-
-        
-        body.lux-light-mode.lux-route-admin-scheduler .sch-input-group input,
-        body.lux-light-mode.lux-route-admin-scheduler .sch-input-group select,
-        body.lux-light-mode.lux-route-admin-scheduler .sch-input-group input[type="time"],
-        body.lux-light-mode.lux-route-admin-scheduler .sch-input-group input[type="number"],
-        body.lux-light-mode.lux-route-admin-scheduler .sch-input-group input[readonly] {
-            background: linear-gradient(180deg, rgba(255,255,255,calc(0.08 + var(--lux-panel-alpha) * 0.48)), rgba(245,239,229,calc(0.02 + var(--lux-glass-alpha) * 0.30))) !important;
-            border: 1px solid rgba(77,52,31,0.12) !important;
-            color: #1e1a16 !important;
-        }
-
-        body.lux-light-mode.lux-route-admin-scheduler .sch-input-group select option {
-            background: #ffffff !important;
-            color: #1e1a16 !important;
-        }
-
-        body.lux-light-mode.lux-route-admin-scheduler .sch-input-group input::placeholder {
-            color: #9a8c7e !important;
-        }
-
-        
-        body.lux-light-mode.lux-route-admin-scheduler .sch-conflict-alert {
-            background: linear-gradient(180deg, rgba(220,38,38,calc(0.12 + var(--lux-panel-alpha) * 0.32)), rgba(220,38,38,calc(0.04 + var(--lux-glass-alpha) * 0.22))) !important;
-            border: 1px solid rgba(220,38,38,0.25) !important;
-            color: #b91c1c !important;
-        }
-
-        /* Create button */
-        body.lux-light-mode.lux-route-admin-scheduler .sch-create-btn {
-            background: linear-gradient(135deg, var(--lux-accent), var(--lux-accent-2)) !important;
-            color: #ffffff !important;
-        }
-
-        /* Scrollbar */
-        body.lux-light-mode.lux-route-admin-scheduler .sch-sidebar::-webkit-scrollbar-thumb,
-        body.lux-light-mode.lux-route-admin-scheduler .sch-palette-list::-webkit-scrollbar-thumb,
-        body.lux-light-mode.lux-route-admin-scheduler .sch-modal-body::-webkit-scrollbar-thumb {
-            background: rgba(0,0,0,0.15) !important;
-        }
-
-        
-        body.lux-light-mode.lux-route-admin-scheduler .sch-sidebar,
-        body.lux-light-mode.lux-route-admin-scheduler .sch-sidebar * {
-            color: #1e1a16 !important;
-        }
-
-        body.lux-light-mode.lux-route-admin-scheduler .sch-rail-section-title,
-        body.lux-light-mode.lux-route-admin-scheduler .sch-stat-label,
-        body.lux-light-mode.lux-route-admin-scheduler .sch-palette-count-label,
-        body.lux-light-mode.lux-route-admin-scheduler .sch-control-group > span,
-        body.lux-light-mode.lux-route-admin-scheduler .sch-rail-note {
-            color: inherit !important;
-        }
-
-        /* Late surface cleanup: remove the heavy slab backgrounds on this route */
-        body.lux-route-admin-scheduler .sch-rail-hero,
-        body.lux-route-admin-scheduler .sch-rail-section,
-        body.lux-route-admin-scheduler .sch-sidebar,
-        body.lux-route-admin-scheduler .sch-main,
-        body.lux-route-admin-scheduler .sch-board-hero,
-        body.lux-route-admin-scheduler .sch-board-legend {
-            background: transparent !important;
-            border-color: transparent !important;
-            box-shadow: none !important;
-            backdrop-filter: none !important;
-            -webkit-backdrop-filter: none !important;
-        }
-
-        body.lux-route-admin-scheduler .sch-stat-card,
-        body.lux-route-admin-scheduler .palette-card {
-            background: rgba(var(--lux-glass-tint-rgb, 16, 23, 38), 0.02) !important;
-            box-shadow: none !important;
-            backdrop-filter: none !important;
-            -webkit-backdrop-filter: none !important;
-        }
-
-        body.lux-light-mode.lux-route-admin-scheduler .sch-stat-card,
-        body.lux-light-mode.lux-route-admin-scheduler .palette-card {
-            background: rgba(255, 255, 255, 0.06) !important;
-        }
-
-        body.lux-route-admin-scheduler .sch-rail-hero::before,
-        body.lux-route-admin-scheduler .sch-rail-section::before,
-        body.lux-route-admin-scheduler .sch-sidebar::before,
-        body.lux-route-admin-scheduler .sch-main::before,
-        body.lux-route-admin-scheduler .sch-board-hero::before,
-        body.lux-route-admin-scheduler .sch-board-legend::before,
-        body.lux-route-admin-scheduler .sch-stat-card::before,
-        body.lux-route-admin-scheduler .palette-card::before,
-        body.lux-route-admin-scheduler .palette-card::after {
-            content: none !important;
-            display: none !important;
-            background: none !important;
-        }
-
-        
-        .sch-modal .quiz-modal-title {
-            font-size: 16px;
-            font-weight: 800;
-            color: #fff;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .sch-modal .quiz-modal-subtitle {
-            font-size: 12px;
-            color: rgba(255,255,255,0.8);
-            margin-top: 2px;
-        }
-        .sch-modal .quiz-modal-close {
-            cursor: pointer;
-            color: #fff;
-            opacity: 0.8;
-            font-size: 18px;
-            transition: opacity 0.2s;
-        }
-        .sch-modal .quiz-modal-close:hover { opacity: 1; }
-        .sch-modal .quiz-questions-head {
-            margin-top: 16px;
-            border-top: 1px solid var(--lux-border);
-            padding-top: 14px;
-        }
-        .sch-modal .quiz-questions-head-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-        .sch-modal .quiz-questions-head-row h4 {
-            margin: 0;
-            font-size: 14px;
-            color: var(--lux-text);
-        }
-        .sch-modal .quiz-add-btn {
-            background: rgba(var(--lux-accent-rgb),0.1);
-            color: var(--lux-accent);
-            border: none;
-            border-radius: 6px;
-            padding: 6px 12px;
-            font-size: 12px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .sch-modal .quiz-add-btn:hover {
-            background: rgba(var(--lux-accent-rgb),0.18);
-            transform: translateY(-1px);
-        }
-        .sch-modal .quiz-questions-list {
-            max-height: 240px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .sch-visually-hidden {
-            position: absolute;
-            width: 1px;
-            height: 1px;
-            padding: 0;
-            margin: -1px;
-            overflow: hidden;
-            clip: rect(0, 0, 0, 0);
-            white-space: nowrap;
-            border: 0;
-        }
-
-        .sch-modal-wide {
-            max-width: 600px;
-        }
-
-        .sch-modal-head-accent {
-            background: linear-gradient(135deg, var(--lux-accent), var(--lux-accent-2));
-        }
-
-        .sch-modal-body-pad {
-            padding: 20px;
-        }
-
-        .sch-modal-foot-between {
-            justify-content: space-between;
-        }
-
-        .sch-modal-title {
-            font-size: 15px;
-            font-weight: 800;
-        }
-
-        .sch-modal-subtitle {
-            font-size: 11px;
-            opacity: 0.7;
-            margin-top: 2px;
-        }
-
-        .sch-modal-week {
-            font-size: 11px;
-            opacity: 0.85;
-            margin-top: 4px;
-        }
-
-        .sch-modal-close-muted {
-            cursor: pointer;
-            opacity: 0.7;
-            font-size: 18px;
-        }
-
-        .sch-input-row-two {
-            grid-template-columns: 1fr 1fr;
-        }
-
-        .sch-input-row-subject {
-            grid-template-columns: 2fr 1fr;
-        }
-
-        .sch-input-row-three {
-            grid-template-columns: 1fr 1fr 1fr;
-        }
-
-        .sch-input-row-prof {
-            grid-template-columns: 1fr 1fr;
-        }
-
-        .sch-input-row-capacity {
-            grid-template-columns: 80px 1fr;
-        }
-
-        .sch-input-row-single {
-            grid-template-columns: 1fr;
-        }
-
-        .sch-inline-required {
-            color: #dc2626;
-        }
-
-        .sch-inline-optional {
-            color: #94a3b8;
-            font-weight: 400;
-            font-size: 9px;
-        }
-
-        .sch-input-readonly {
-            background: var(--lux-surface-hover);
-            color: var(--lux-text-muted);
-            font-weight: 700;
-        }
-
-        body.lux-route-admin-scheduler .mob-sheet-icon-admin {
-            background: linear-gradient(135deg, #f59e0b, #d97706);
-        }
-
-        body.lux-route-admin-scheduler .mob-sheet-icon-theme {
-            background: linear-gradient(135deg, #8b5cf6, #6d28d9);
-        }
-
-        body.lux-route-admin-scheduler .mob-sheet-icon-profile {
-            background: linear-gradient(135deg, #06b6d4, #0891b2);
-        }
-
-        body.lux-route-admin-scheduler .mob-sheet-icon-lightmode {
-            background: linear-gradient(135deg, #f97316, #ea580c);
-        }
-
-        
-        .sch-rail-hero {
-            animation: sch-fade-up 0.45s ease 0.08s both;
-        }
-        .sch-rail-section {
-            animation: sch-fade-up 0.4s ease both;
-        }
-        .sch-rail-section:nth-of-type(2) { animation-delay: 0.14s; }
-        .sch-rail-section:nth-of-type(3) { animation-delay: 0.22s; }
-        .sch-rail-section:nth-of-type(4) { animation-delay: 0.30s; }
-        .sch-rail-section:nth-of-type(5) { animation-delay: 0.38s; }
-        @keyframes sch-fade-up {
-            from { opacity: 0; transform: translateY(14px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .sch-board-hero {
-            animation: sch-fade-up 0.45s ease 0.1s both;
-        }
-        .sch-board-legend {
-            animation: sch-fade-up 0.35s ease 0.18s both;
-        }
-        .sch-grid-wrap {
-            animation: sch-fade-up 0.5s ease 0.25s both;
-        }
-
-        
-        .sch-stat-card {
-            transition: transform 0.22s ease, box-shadow 0.22s ease;
-        }
-        .sch-stat-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 12px 30px rgba(0,0,0,0.16), 0 0 0 1px rgba(var(--lux-accent-rgb),0.10);
-        }
-
-        
-        .sch-action-btn {
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-        .sch-action-btn:hover {
-            transform: translateY(-2px);
-        }
-        .sch-action-btn:active {
-            transform: translateY(0) scale(0.97);
-            transition-duration: 0.08s;
-        }
-
-        
-        .sch-week-arrow {
-            transition: transform 0.2s ease;
-        }
-        .sch-week-arrow:hover {
-            transform: translateY(-2px) scale(1.05);
-        }
-        .sch-week-arrow:active {
-            transform: translateY(0) scale(0.97);
-        }
-
-        
-        .palette-card {
-            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
-        }
-        .palette-card:hover {
-            transform: translateY(-2px) scale(1.01);
-        }
-
-        
-        .sch-legend-pill {
-            transition: transform 0.18s ease;
-        }
-        .sch-legend-pill:hover {
-            transform: translateY(-1px);
-        }
-
-        /* Compact the scheduler rail so the weekly grid uses the wasted left-side space. */
-        body.lux-route-admin-scheduler .scheduler-wrap {
-            grid-template-columns: minmax(248px, 286px) minmax(0, 1fr) !important;
-            gap: 14px !important;
-        }
-
-        body.lux-route-admin-scheduler .sch-sidebar {
-            padding: 14px !important;
-            gap: 12px !important;
-        }
-
-        body.lux-route-admin-scheduler .sch-rail-hero,
-        body.lux-route-admin-scheduler .sch-rail-section {
-            padding: 14px !important;
-        }
-
-        body.lux-route-admin-scheduler .sch-stat-grid,
-        body.lux-route-admin-scheduler .sch-action-grid,
-        body.lux-route-admin-scheduler .sch-control-grid {
-            gap: 8px !important;
-        }
-
-        body.lux-route-admin-scheduler .sch-action-btn {
-            min-height: 42px !important;
-            padding: 10px 12px !important;
-        }
-
-        body.lux-route-admin-scheduler .sch-calendar-toolbar {
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            gap: 10px;
-            margin-bottom: 12px;
-        }
-
-        body.lux-route-admin-scheduler .sch-calendar-toolbar .sch-week-label {
-            margin-right: auto;
-            font-family: 'DM Mono', monospace;
-            font-size: 11px;
-            color: var(--lux-text-muted);
-        }
-    </style>
+    <link rel="stylesheet" href="assets/css/admin-scheduler-route.css?v=20260606-schpalette1">
+    <script src="assets/js/theme-primer.js?v=20260604-styleguard2"></script>
 </head>
-<body class="kiu-shell-loading role-admin lux-nonhome-page lux-route-admin-scheduler lux-light-mode lux-unified-shell">
+<body class="kiu-shell-loading role-admin lux-nonhome-page lux-route-admin-scheduler lux-unified-shell">
 <!-- Navigation stubs (hidden, for JS compatibility) -->
 <nav id="prof-nav" aria-label="Professor navigation stub"></nav>
 <nav id="top-nav" aria-label="Top navigation stub"></nav>
@@ -841,96 +47,125 @@
 </div>
 
 <main id="app-content">
-    <div class="scheduler-wrap">
-        <aside class="sch-sidebar">
-            <section class="sch-rail-section">
-                <div class="sch-rail-section-title">Quick actions</div>
-                <div class="sch-action-grid">
-                    <button class="lux-primary-btn sch-action-btn" type="button" data-admin-scheduler-action="new-session"><i class="fas fa-calendar-plus"></i> New session</button>
-                    <button class="lux-secondary-btn sch-action-btn" type="button" data-admin-scheduler-action="today"><i class="fas fa-bullseye"></i> Today</button>
-                    <button class="lux-secondary-btn sch-action-btn" type="button" data-admin-scheduler-action="reset"><i class="fas fa-rotate-left"></i> Reset Filters</button>
-                    <button class="lux-secondary-btn sch-action-btn" type="button" data-admin-scheduler-action="palette"><i class="fas fa-layer-group"></i> Subjects</button>
-                </div>
-            </section>
-
-            <section class="sch-rail-section sch-filter-section">
-                <div class="sch-rail-section-title">Filters</div>
-                <div class="sch-control-grid">
-                    <label class="sch-control-group">
-                        <span>Faculty</span>
-                        <select id="admin-tt-faculty" name="admin-tt-faculty" data-admin-scheduler-filter="faculty">
-                            <option value="ECON">Management</option>
-                            <option value="CS">CS</option>
-                            <option value="LAW">Law</option>
-                            <option value="MED">Medicine</option>
-                            <option value="ARTS">Arts</option>
-                            <option value="all">All Faculties</option>
-                        </select>
-                    </label>
-                    <label class="sch-control-group">
-                        <span>Semester</span>
-                        <select id="admin-tt-semester" name="admin-tt-semester" data-admin-scheduler-filter="semester">
-                            <option value="1">Sem 1</option><option value="2">Sem 2</option>
-                            <option value="3" selected>Sem 3</option><option value="4">Sem 4</option>
-                            <option value="5">Sem 5</option><option value="6">Sem 6</option>
-                            <option value="7">Sem 7</option><option value="8">Sem 8</option>
-                        </select>
-                    </label>
-                    <label class="sch-control-group">
-                        <span>Professor</span>
-                        <select id="admin-tt-prof" name="admin-tt-prof" data-admin-scheduler-filter="prof">
-                            <option value="all">Select Professor...</option>
-                        </select>
-                    </label>
-                    <label class="sch-control-group">
-                        <span>Teaching assistant</span>
-                        <select id="admin-tt-ta" name="admin-tt-ta" data-admin-scheduler-filter="ta">
-                            <option value="all">Select Teaching Assistant...</option>
-                        </select>
-                    </label>
-                </div>
-                <div class="sch-rail-note">
-                    <i class="fas fa-circle-info"></i>
-                    Filters apply to both the grid and subject palette.
-                </div>
-            </section>
-
-            <section class="sch-rail-section sch-palette-section">
-                <div class="sch-rail-section-title">Subjects</div>
-                <div class="sch-search-shell">
-                    <i class="fas fa-search"></i>
-                    <label for="palette-search" class="sch-visually-hidden">Search subjects</label>
-                    <input type="text" id="palette-search" name="palette-search" data-admin-scheduler-search="palette" placeholder="Search subjects, ids, or courses">
-                </div>
-                <div class="sch-palette-meta">
-                    <span class="sch-palette-count-label">Showing</span>
-                    <span id="sch-palette-summary">0 subjects</span>
-                </div>
-                <div class="sch-palette-list" id="palette-list">
-                    <div class="sch-empty-state">Loading subjects...</div>
-                </div>
-            </section>
-        </aside>
-
-        <section class="sch-main">
-            <section class="sch-grid-wrap">
-                <div class="sch-calendar-toolbar">
-                    <span id="scheduler-week-label" class="sch-week-label">Loading week...</span>
-                    <button class="lux-secondary-btn sch-week-arrow" type="button" data-admin-scheduler-week="prev" aria-label="Previous week"><i class="fas fa-chevron-left"></i></button>
-                    <button class="lux-primary-btn sch-week-current-btn" id="scheduler-week-current" type="button" data-admin-scheduler-week="current">Current week</button>
-                    <button class="lux-secondary-btn sch-week-arrow" type="button" data-admin-scheduler-week="next" aria-label="Next week"><i class="fas fa-chevron-right"></i></button>
-                </div>
-                <div class="sch-grid-shell">
-                    <div class="sch-grid-topline">
-                        <span class="sch-grid-tag">GMT+4</span>
-                        <span class="sch-grid-tag sch-grid-tag-soft">Live conflict checks</span>
+    <div id="page-admin-scheduler" class="page-section active-page">
+        <div class="scheduler-wrap">
+            <aside class="sch-sidebar">
+                <section class="sch-rail-hero lux-hero">
+                    <div class="sch-rail-kicker lux-kicker"><i class="fas fa-calendar-days"></i> Master Scheduler</div>
+                    <h1>Coordinate faculty weeks without collisions.</h1>
+                    <p>Plan sessions, rooms, and teaching assignments from one premium scheduling surface that stays visually aligned with the index dashboard shell.</p>
+                    <div class="sch-rail-meta lux-pill-row">
+                        <span class="lux-pill" id="sch-current-faculty">Faculty: Management</span>
+                        <span class="lux-pill" id="sch-current-semester">Semester 1</span>
+                        <span class="lux-pill lux-pill-accent" id="sch-rail-week-badge">Selected week</span>
                     </div>
-                    <div id="scheduler-grid">
-                        <div class="sch-grid-empty">Loading grid...</div>
+                    <div class="sch-rail-week-range" id="sch-current-week-range">Week of ...</div>
+                    <div class="sch-rail-signal-grid lux-strip-grid lux-strip-grid--adaptive">
+                        <article class="sch-stat-card lux-strip-card lux-summary-surface lux-summary-surface--panel">
+                            <span class="sch-stat-label">Visible sessions</span>
+                            <strong id="sch-stat-sessions">0</strong>
+                            <span>Scheduled in current board scope.</span>
+                        </article>
+                        <article class="sch-stat-card lux-strip-card lux-summary-surface lux-summary-surface--panel">
+                            <span class="sch-stat-label">Draft sessions</span>
+                            <strong id="sch-stat-drafts">0</strong>
+                            <span>Need room or professor assignment.</span>
+                        </article>
+                        <article class="sch-stat-card lux-strip-card lux-summary-surface lux-summary-surface--panel">
+                            <span class="sch-stat-label">Rooms used</span>
+                            <strong id="sch-stat-rooms">0</strong>
+                            <span>Reserved across the selected week.</span>
+                        </article>
+                        <article class="sch-stat-card lux-strip-card lux-summary-surface lux-summary-surface--panel">
+                            <span class="sch-stat-label">Teaching staff</span>
+                            <strong id="sch-stat-instructors">0</strong>
+                            <span>Visible professors and assistants.</span>
+                        </article>
                     </div>
-                </div>
+                </section>
+
+                <section class="sch-rail-section sch-filter-section lux-summary-surface lux-summary-surface--panel">
+                    <div class="sch-rail-section-title">Board filters</div>
+                    <div class="sch-control-grid">
+                        <label class="sch-control-group">
+                            <span>Faculty</span>
+                            <select id="admin-tt-faculty" name="admin-tt-faculty" data-admin-scheduler-filter="faculty">
+                                <option value="ECON">Management</option>
+                                <option value="CS">CS</option>
+                                <option value="LAW">Law</option>
+                                <option value="MED">Medicine</option>
+                                <option value="ARTS">Arts</option>
+                                <option value="all">All Faculties</option>
+                            </select>
+                        </label>
+                        <label class="sch-control-group">
+                            <span>Semester</span>
+                            <select id="admin-tt-semester" name="admin-tt-semester" data-admin-scheduler-filter="semester">
+                                <option value="1" selected>Sem 1</option><option value="2">Sem 2</option><option value="3">Sem 3</option><option value="4">Sem 4</option>
+                                <option value="5">Sem 5</option><option value="6">Sem 6</option>
+                                <option value="7">Sem 7</option><option value="8">Sem 8</option>
+                            </select>
+                        </label>
+                        <label class="sch-control-group">
+                            <span>Professor</span>
+                            <select id="admin-tt-prof" name="admin-tt-prof" data-admin-scheduler-filter="prof">
+                                <option value="all">Select Professor...</option>
+                            </select>
+                        </label>
+                        <label class="sch-control-group">
+                            <span>Teaching assistant</span>
+                            <select id="admin-tt-ta" name="admin-tt-ta" data-admin-scheduler-filter="ta">
+                                <option value="all">Select Teaching Assistant...</option>
+                            </select>
+                        </label>
+                    </div>
+                    <div class="sch-rail-note">
+                        <i class="fas fa-circle-info"></i>
+                        Filters apply to both the session grid and the subject palette, so the board and the search lane stay in sync.
+                    </div>
+                </section>
+
+                <section class="sch-rail-section sch-palette-section lux-summary-surface lux-summary-surface--panel">
+                    <div class="sch-rail-section-title">Subject palette</div>
+                    <div class="sch-search-shell">
+                        <i class="fas fa-search"></i>
+                        <label for="palette-search" class="sch-visually-hidden">Search subjects</label>
+                        <input type="text" id="palette-search" name="palette-search" data-admin-scheduler-search="palette" placeholder="Search subjects, ids, or courses">
+                    </div>
+                    <div class="sch-palette-meta">
+                        <span class="sch-palette-count-label">Showing</span>
+                        <span><strong id="sch-palette-count">0</strong> · <span id="sch-palette-summary">0 subjects</span></span>
+                    </div>
+                    <div class="sch-palette-list" id="palette-list">
+                        <div class="sch-empty-state lux-summary-surface lux-summary-surface--panel">Loading subjects...</div>
+                    </div>
+                </section>
+            </aside>
+
+            <section class="sch-main">
+                <section class="sch-grid-wrap" id="admin-master-grid-container">
+                    <div class="sch-grid-shell lux-summary-surface lux-summary-surface--panel">
+                        <div class="sch-grid-topline">
+                            <div class="sch-grid-topline-start">
+                                <span class="sch-grid-tag">GMT+4</span>
+                                <span class="sch-grid-tag sch-grid-tag-soft">Live conflict checks</span>
+                            </div>
+                            <div class="sch-grid-topline-end">
+                                <strong id="scheduler-week-label" class="sch-grid-week-label">Loading week...</strong>
+                                <div class="sch-week-nav">
+                                    <button class="lux-secondary-btn sch-week-arrow" type="button" data-admin-scheduler-week="prev" aria-label="Previous week"><i class="fas fa-chevron-left"></i></button>
+                                    <button class="lux-primary-btn sch-week-current-btn" id="scheduler-week-current" type="button" data-admin-scheduler-week="current">Current week</button>
+                                    <button class="lux-secondary-btn sch-week-arrow" type="button" data-admin-scheduler-week="next" aria-label="Next week"><i class="fas fa-chevron-right"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="scheduler-grid">
+                            <div class="sch-grid-empty lux-summary-surface lux-summary-surface--panel">Loading grid...</div>
+                        </div>
+                    </div>
+                </section>
             </section>
-        </section>
+        </div>
     </div>
 </main>
 <template id="prof-quiz-modal-template">
@@ -969,97 +204,132 @@
 <template id="sch-modal-template">
     <div class="sch-modal-overlay" id="schModalOverlay" data-admin-scheduler-modal-overlay="true">
         <div class="sch-modal">
-            <div class="sch-modal-head">
+            <div class="sch-modal-head sch-modal-head-accent">
                 <div>
-                    <div class="sch-modal-title"><i class="fas fa-calendar-plus"></i> New Class Session</div>
+                    <div class="sch-modal-mode-chip" id="sch-modal-mode-chip">Create</div>
+                    <div class="sch-modal-title" id="sch-modal-title"><i class="fas fa-calendar-plus"></i> New Class Session</div>
                     <div class="sch-modal-subtitle" id="sch-modal-subtitle">Monday 09:00</div>
                     <div class="sch-modal-week" id="sch-modal-week">Week of ...</div>
                 </div>
                 <i class="fas fa-times sch-modal-close-muted" data-admin-scheduler-modal-close="true"></i>
             </div>
             <div class="sch-modal-body">
-                <div class="sch-conflict-alert" id="sch-conflict-msg"><i class="fas fa-exclamation-triangle"></i> <span id="sch-conflict-text"></span></div>
+                <div class="sch-conflict-alert" id="sch-conflict-msg" data-conflict-state="hidden"><i class="fas fa-circle-info" id="sch-conflict-icon"></i> <span id="sch-conflict-text"></span></div>
 
-                <div class="sch-input-row sch-input-row-subject">
-                    <div class="sch-input-group">
-                        <label for="sch-subject">Subject <span class="sch-inline-required">*</span></label>
-                        <select id="sch-subject" name="sch-subject"></select>
+                <section class="sch-form-section sch-form-section--identity">
+                    <div class="sch-form-section-head">
+                        <div class="sch-form-section-title">Session Basics</div>
+                        <div class="sch-form-section-copy">Choose the subject and group this session belongs to.</div>
                     </div>
-                    <div class="sch-input-group">
-                        <label for="sch-group">Group ID <span class="sch-inline-required">*</span></label>
-                        <input type="text" id="sch-group" name="sch-group" list="db-groups" placeholder="e.g. G1">
+                    <div class="sch-input-row sch-input-row-subject">
+                        <div class="sch-input-group">
+                            <label for="sch-subject">Subject <span class="sch-inline-required">*</span></label>
+                            <select id="sch-subject" name="sch-subject"></select>
+                        </div>
+                        <div class="sch-input-group">
+                            <div class="sch-input-label-row">
+                                <label for="sch-group">Group ID <span class="sch-inline-required">*</span></label>
+                                <button type="button" class="sch-preset-manage-link" data-scheduler-preset-manage="group">
+                                    <i class="fas fa-sliders-h"></i> Manage groups
+                                </button>
+                            </div>
+                            <select id="sch-group" name="sch-group" data-scheduler-preset-kind="group"></select>
+                        </div>
                     </div>
-                </div>
+                </section>
 
-                <div class="sch-input-row sch-input-row-two">
-                    <div class="sch-input-group">
-                        <label for="sch-day">Day</label>
-                        <select id="sch-day" name="sch-day">
-                            <option>Monday</option><option>Tuesday</option><option>Wednesday</option>
-                            <option>Thursday</option><option>Friday</option><option>Saturday</option><option>Sunday</option>
-                        </select>
+                <section class="sch-form-section sch-form-section--schedule">
+                    <div class="sch-form-section-head">
+                        <div class="sch-form-section-title">Time And Room</div>
+                        <div class="sch-form-section-copy">Place the session on the calendar and reserve the room.</div>
                     </div>
-                    <div class="sch-input-group">
-                        <label for="sch-room">Room</label>
-                        <input type="text" id="sch-room" name="sch-room" list="db-rooms" placeholder="e.g. A-101">
+                    <div class="sch-input-row sch-input-row-two">
+                        <div class="sch-input-group">
+                            <label for="sch-day">Day</label>
+                            <select id="sch-day" name="sch-day">
+                                <option>Monday</option><option>Tuesday</option><option>Wednesday</option>
+                                <option>Thursday</option><option>Friday</option><option>Saturday</option><option>Sunday</option>
+                            </select>
+                        </div>
+                        <div class="sch-input-group">
+                            <div class="sch-input-label-row">
+                                <label for="sch-room">Room</label>
+                                <button type="button" class="sch-preset-manage-link" data-scheduler-preset-manage="room">
+                                    <i class="fas fa-sliders-h"></i> Manage rooms
+                                </button>
+                            </div>
+                            <select id="sch-room" name="sch-room" data-scheduler-preset-kind="room"></select>
+                        </div>
                     </div>
-                </div>
 
-                <div class="sch-input-row sch-input-row-three">
-                    <div class="sch-input-group">
-                        <label for="sch-time">Start Time</label>
-                        <input type="time" id="sch-time" name="sch-time" value="09:00" step="60" data-admin-scheduler-session-field="time">
+                    <div class="sch-input-row sch-input-row-three">
+                        <div class="sch-input-group">
+                            <label for="sch-time">Start Time</label>
+                            <input type="time" id="sch-time" name="sch-time" value="09:00" step="60" data-admin-scheduler-session-field="time">
+                        </div>
+                        <div class="sch-input-group">
+                            <label for="sch-duration">Duration</label>
+                            <select id="sch-duration" name="sch-duration" data-admin-scheduler-session-field="duration">
+                                <option value="custom">Custom</option>
+                                <option value="60">1h (60 min)</option>
+                                <option value="90">1.5h (90 min)</option>
+                                <option value="110" selected>~2h (110 min)</option>
+                                <option value="120">2h (120 min)</option>
+                                <option value="150">2.5h (150 min)</option>
+                                <option value="180">3h (180 min)</option>
+                            </select>
+                        </div>
+                        <div class="sch-input-group">
+                            <label for="sch-endtime">End Time</label>
+                            <input type="time" id="sch-endtime" name="sch-endtime" data-admin-scheduler-session-field="endtime" required>
+                        </div>
                     </div>
-                    <div class="sch-input-group">
-                        <label for="sch-duration">Duration</label>
-                        <select id="sch-duration" name="sch-duration" data-admin-scheduler-session-field="duration">
-                            <option value="custom">Custom</option>
-                            <option value="60">1h (60 min)</option>
-                            <option value="90">1.5h (90 min)</option>
-                            <option value="110" selected>~2h (110 min)</option>
-                            <option value="120">2h (120 min)</option>
-                            <option value="150">2.5h (150 min)</option>
-                            <option value="180">3h (180 min)</option>
-                        </select>
-                    </div>
-                    <div class="sch-input-group">
-                        <label for="sch-endtime">End Time</label>
-                        <input type="time" id="sch-endtime" name="sch-endtime" data-admin-scheduler-session-field="endtime" required>
-                    </div>
-                </div>
+                </section>
 
-                <div class="sch-input-row sch-input-row-prof">
-                    <div class="sch-input-group">
-                        <label for="sch-prof">Professor <span class="sch-inline-optional">(optional)</span></label>
-                        <input type="text" id="sch-prof" name="sch-prof" list="sch-profs-list" placeholder="Search by name..." data-admin-scheduler-session-field="prof">
-                        <datalist id="sch-profs-list"></datalist>
+                <section class="sch-form-section sch-form-section--staffing">
+                    <div class="sch-form-section-head">
+                        <div class="sch-form-section-title">Session Type</div>
+                        <div class="sch-form-section-copy">Choose whether this slot is a lecture or a TA-led seminar.</div>
                     </div>
-                    <div class="sch-input-group">
-                        <label for="sch-ta">Teaching Assistant <span class="sch-inline-optional">(optional)</span></label>
-                        <input type="text" id="sch-ta" name="sch-ta" list="sch-profs-list" placeholder="Search by name...">
+                    <div class="sch-input-row sch-input-row-single">
+                        <div class="sch-input-group">
+                            <label for="sch-session-type">Session type</label>
+                            <select id="sch-session-type" name="sch-session-type" data-admin-scheduler-session-field="session-type">
+                                <option value="lecture">Lecture</option>
+                                <option value="seminar">Seminar (TA-led)</option>
+                            </select>
+                        </div>
                     </div>
-                </div>
+                    <input type="hidden" id="sch-prof" name="sch-prof" data-admin-scheduler-session-field="prof">
+                    <input type="hidden" id="sch-ta" name="sch-ta" data-admin-scheduler-session-field="ta">
+                </section>
 
-                <div class="sch-input-row sch-input-row-capacity">
-                    <div class="sch-input-group">
-                        <label for="sch-capacity">Capacity</label>
-                        <input type="number" id="sch-capacity" name="sch-capacity" value="40" min="1" max="200">
+                <section class="sch-form-section sch-form-section--scope">
+                    <div class="sch-form-section-head">
+                        <div class="sch-form-section-title">Capacity And Scope</div>
+                        <div class="sch-form-section-copy">Set attendance limits and choose whether the change is week-only or recurring.</div>
                     </div>
-                    <div class="sch-input-group">
-                        <label for="sch-faculty-display">Active Faculty (auto)</label>
-                        <input type="text" id="sch-faculty-display" name="sch-faculty-display" class="sch-input-readonly" readonly>
+                    <div class="sch-input-row sch-input-row-capacity">
+                        <div class="sch-input-group">
+                            <label for="sch-capacity">Capacity</label>
+                            <input type="number" id="sch-capacity" name="sch-capacity" value="40" min="1" max="200">
+                        </div>
+                        <div class="sch-input-group">
+                            <label for="sch-faculty-display">Active Faculty (auto)</label>
+                            <input type="text" id="sch-faculty-display" name="sch-faculty-display" class="sch-input-readonly" readonly>
+                        </div>
                     </div>
-                </div>
 
-                <div class="sch-input-row sch-input-row-single">
-                    <div class="sch-input-group">
-                        <label for="sch-apply-scope">Apply Changes To</label>
-                        <select id="sch-apply-scope" name="sch-apply-scope">
-                            <option value="selected-week">Selected week only</option>
-                            <option value="recurring">Recurring template</option>
-                        </select>
+                    <div class="sch-input-row sch-input-row-single">
+                        <div class="sch-input-group">
+                            <label for="sch-apply-scope">Apply Changes To</label>
+                            <select id="sch-apply-scope" name="sch-apply-scope">
+                                <option value="selected-week">Selected week only</option>
+                                <option value="recurring">Recurring template</option>
+                            </select>
+                        </div>
                     </div>
-                </div>
+                </section>
 
                 <input type="hidden" id="sch-semester-hidden" name="sch-semester-hidden">
                 <input type="hidden" id="sch-weekstart-hidden" name="sch-weekstart-hidden">
@@ -1075,59 +345,88 @@
         </div>
     </div>
 </template>
-
-<!-- Datalists for autocomplete -->
-<datalist id="db-groups">
-    <option value="G1"></option>
-    <option value="G2"></option>
-    <option value="G3"></option>
-    <option value="G4"></option>
-    <option value="L1"></option>
-    <option value="L2"></option>
-    <option value="Lab-1"></option>
-</datalist>
-<datalist id="db-rooms">
-    <option value="A-101"></option>
-    <option value="A-102"></option>
-    <option value="A-201"></option>
-    <option value="B-201"></option>
-    <option value="B-202"></option>
-    <option value="C-301"></option>
-    <option value="C-303"></option>
-    <option value="K-201"></option>
-    <option value="LAB-1"></option>
-    <option value="LAB-2"></option>
-</datalist>
-
+<!-- MANAGE SCHEDULER PRESETS (groups / rooms) -->
+<template id="sch-preset-manager-template">
+    <div class="sch-modal-overlay sch-preset-manage-overlay" id="schPresetManagerOverlay" data-admin-scheduler-preset-overlay="true" hidden>
+        <div class="sch-modal sch-modal-narrow" data-lux-glass-root="1">
+            <div class="sch-modal-head sch-modal-head-accent">
+                <div>
+                    <div class="sch-modal-mode-chip" id="sch-preset-manage-chip">Presets</div>
+                    <div class="sch-modal-title" id="sch-preset-manage-title"><i class="fas fa-users"></i> Manage Groups</div>
+                    <div class="sch-modal-subtitle" id="sch-preset-manage-subtitle">Add, search, or remove groups from pickers.</div>
+                </div>
+                <i class="fas fa-times sch-modal-close-muted" data-admin-scheduler-preset-close="true"></i>
+            </div>
+            <div class="sch-modal-body sch-modal-body-pad">
+                <div class="sch-form-section">
+                    <div class="sch-form-section-head">
+                        <div class="sch-form-section-title">Search</div>
+                    </div>
+                    <div class="sch-search-shell">
+                        <i class="fas fa-search"></i>
+                        <input type="search" id="sch-preset-search" class="sch-preset-manage-search" placeholder="Filter presets..." autocomplete="off">
+                    </div>
+                </div>
+                <div class="sch-form-section">
+                    <div class="sch-form-section-head">
+                        <div class="sch-form-section-title">All presets</div>
+                        <div class="sch-form-section-copy"><strong id="sch-preset-manage-count">0</strong> shown</div>
+                    </div>
+                    <p class="sch-preset-manage-helper">Remove deletes saved names or built-in defaults from pickers.</p>
+                    <div class="sch-preset-manage-list-shell">
+                        <div id="sch-preset-list" class="sch-preset-manage-list" role="list"></div>
+                        <div id="sch-preset-manage-empty" class="sch-empty-state lux-summary-surface lux-summary-surface--panel" hidden>No presets match your search.</div>
+                    </div>
+                </div>
+                <div class="sch-form-section">
+                    <div class="sch-form-section-head">
+                        <div class="sch-form-section-title">Add preset</div>
+                    </div>
+                    <div class="sch-preset-manage-add-row">
+                        <input type="text" id="sch-preset-manage-draft" class="sch-combo-save-input" placeholder="New group" autocomplete="off">
+                        <button type="button" class="lux-primary-btn sch-preset-manage-add-btn" data-scheduler-preset-add="true">
+                            <i class="fas fa-plus"></i> Add
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="sch-modal-foot sch-modal-foot-between">
+                <button type="button" class="lux-secondary-btn" data-admin-scheduler-preset-close="true">Cancel</button>
+                <button type="button" class="lux-primary-btn" data-admin-scheduler-preset-done="true">Done</button>
+            </div>
+        </div>
+    </div>
+</template>
 
 <script defer src="assets/js/app/app.js?v=1776604821655"></script>
 <script defer src="assets/js/app/auth.js?v=20260429-authfix2"></script>
 <script defer src="assets/js/data/initial-state.js?v=20260427"></script>
 <script defer src="assets/js/app/state.js?v=20260429-statestackfix1"></script>
 <script defer src="assets/js/shared/faculty.js?v=20260429-peopleisolation1"></script>
-<script defer src="assets/js/shared/utilities.js?v=20260504-transparency-refresh1"></script>
-<script defer src="assets/js/features/navigation.js?v=20260429-shellinit1"></script>
+<script defer src="assets/js/shared/utilities.js?v=20260606-schmodal4"></script>
+<script defer src="assets/js/features/navigation.js?v=20260604-standaloneboot2"></script>
 <script type="application/x-kiu-disabled" data-admin-scheduler-legacy="state-engine">
 /* Legacy scheduler state engine intentionally disabled; retained only as an audit placeholder. */
 </script>
 <script type="application/x-kiu-disabled" data-admin-scheduler-legacy="override-engine">
 /* Legacy scheduler override engine intentionally disabled; retained only as an audit placeholder. */
 </script>
-<script src="assets/js/pages/admin-scheduler.js?v=20260429-schedulerselect1"></script>
-<script src="assets/js/features/index-luxury.js?v=20260504-transparency-refresh1"></script>
-<script defer src="assets/js/features/luxury-shell-chrome.js?v=20260518-luxshell1"></script>
+<script src="assets/js/pages/admin-scheduler.js?v=20260606-schpalette1"></script>
+<script src="assets/js/features/index-luxury.js?v=20260606-schpalette1"></script>
+<script type="module" src="assets/js/features/luxury-particle-background.js?v=20260531-partbg8"></script>
+<script defer src="assets/js/features/luxury-shell-chrome.js?v=20260606-pickerscroll1"></script>
 <script defer src="assets/js/features/luxury-home-model.js?v=20260518-luxhome1"></script>
 <!-- MOBILE BOTTOM NAVIGATION (v2) -->
-<nav id="mobile-bottom-nav" aria-label="Mobile navigation" style="display:none;">
+<nav id="mobile-bottom-nav" aria-label="Mobile navigation" hidden>
     <div class="mobile-nav-row">
         <button class="mobile-nav-btn is-active" data-nav-target="home" type="button" id="mob-nav-home"><i class="fas fa-th-large"></i><span>Home</span></button>
-        <button class="mobile-nav-btn" type="button" id="mob-nav-messages" data-action="messages"><i class="fas fa-comment-dots"></i><span>Chat</span><em class="mob-badge" id="mob-badge-msg" style="display:none;">0</em></button>
-        <button class="mobile-nav-btn" type="button" id="mob-nav-notif" data-action="notifications"><i class="fas fa-bell"></i><span>Alerts</span><em class="mob-badge" id="mob-badge-notif" style="display:none;">0</em></button>
+        <button class="mobile-nav-btn" type="button" id="mob-nav-messages" data-action="messages"><i class="fas fa-comment-dots"></i><span>Chat</span><em class="mob-badge" id="mob-badge-msg" hidden>0</em></button>
+        <button class="mobile-nav-btn" type="button" id="mob-nav-notif" data-action="notifications"><i class="fas fa-bell"></i><span>Alerts</span><em class="mob-badge" id="mob-badge-notif" hidden>0</em></button>
         <button class="mobile-nav-btn" type="button" id="mob-nav-theme" data-action="theme"><i class="fas fa-palette"></i><span>Theme</span></button>
         <button class="mobile-nav-btn" type="button" id="mob-nav-more" data-action="more"><i class="fas fa-grip-horizontal"></i><span>More</span></button>
     </div>
 </nav>
-<div id="mobile-action-sheet" class="mob-sheet" style="display:none;" role="dialog" aria-modal="true">
+<div id="mobile-action-sheet" class="mob-sheet" hidden role="dialog" aria-modal="true">
     <div class="mob-sheet-backdrop" id="mob-sheet-backdrop"></div>
     <div class="mob-sheet-panel">
         <div class="mob-sheet-handle"><span></span></div>

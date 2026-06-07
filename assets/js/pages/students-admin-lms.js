@@ -7,6 +7,45 @@
     const DOC_STATUSES = ['Complete', 'Missing', 'Under Review', 'Expired', 'Rejected'];
     const ENROLLMENT_TYPES = ['Full-time', 'Part-time', 'Exchange Student', 'Visiting Student', 'Not Enrolled'];
 
+    const MOBILITY_CATEGORIES = [
+        { value: 'degree', label: 'Degree-seeking' },
+        { value: 'exchange_incoming', label: 'Exchange incoming' },
+        { value: 'visiting_incoming', label: 'Visiting incoming' },
+        { value: 'exchange_outgoing', label: 'Exchange outgoing' },
+        { value: 'internal_transfer', label: 'Internal KIU transfer' }
+    ];
+
+    const MOBILITY_FILTER_OPTIONS = [
+        { value: 'all', label: 'All mobility types' },
+        { value: 'exchange_incoming', label: 'Incoming exchange' },
+        { value: 'visiting_incoming', label: 'Incoming visiting' },
+        { value: 'exchange_outgoing', label: 'Outgoing' },
+        { value: 'internal_transfer', label: 'Internal transfer' },
+        { value: 'degree', label: 'Degree-seeking' }
+    ];
+
+    const MOBILITY_DIRECTION_BY_CATEGORY = {
+        degree: 'none',
+        exchange_incoming: 'incoming',
+        visiting_incoming: 'incoming',
+        exchange_outgoing: 'outgoing',
+        internal_transfer: 'internal'
+    };
+
+    const DEFAULT_MOBILITY = {
+        category: 'degree',
+        direction: 'none',
+        homeInstitution: '',
+        homeCountry: '',
+        hostProgram: '',
+        startDate: '',
+        endDate: '',
+        agreementRef: '',
+        internalFromFaculty: '',
+        internalFromProgram: '',
+        notes: ''
+    };
+
     const uiState = window.__studentsAdminLmsState || {
         query: '',
         faculty: 'all',
@@ -17,6 +56,7 @@
         account: 'all',
         profile: 'all',
         enrollment: 'all',
+        mobility: 'all',
         risk: 'all',
         archive: 'active',
         sort: 'name',
@@ -157,6 +197,147 @@
         return store[key];
     }
 
+    function normalizeStudentMobility(profile = {}) {
+        const mobility = { ...DEFAULT_MOBILITY, ...(profile.mobility && typeof profile.mobility === 'object' ? profile.mobility : {}) };
+        const hasStoredMobility = profile.mobility && typeof profile.mobility === 'object' && profile.mobility.category;
+
+        if (!hasStoredMobility && profile.enrollmentType) {
+            if (profile.enrollmentType === 'Exchange Student') {
+                mobility.category = 'exchange_incoming';
+                mobility.direction = 'incoming';
+            } else if (profile.enrollmentType === 'Visiting Student') {
+                mobility.category = 'visiting_incoming';
+                mobility.direction = 'incoming';
+            }
+        }
+
+        if (!MOBILITY_CATEGORIES.some(item => item.value === mobility.category)) {
+            mobility.category = 'degree';
+        }
+        mobility.direction = MOBILITY_DIRECTION_BY_CATEGORY[mobility.category] || 'none';
+        return mobility;
+    }
+
+    function enrollmentTypeFromMobility(mobility, subjectIds = []) {
+        const normalized = normalizeStudentMobility({ mobility });
+        switch (normalized.category) {
+            case 'exchange_incoming':
+            case 'exchange_outgoing':
+                return 'Exchange Student';
+            case 'visiting_incoming':
+                return 'Visiting Student';
+            case 'internal_transfer':
+            case 'degree':
+            default:
+                if (!subjectIds.length) return 'Not Enrolled';
+                return subjectIds.length >= 4 ? 'Full-time' : 'Part-time';
+        }
+    }
+
+    function syncEnrollmentTypeFromMobility(profile, subjectIds = []) {
+        const mobility = normalizeStudentMobility(profile);
+        const enrollmentType = enrollmentTypeFromMobility(mobility, subjectIds);
+        return { ...profile, mobility, enrollmentType };
+    }
+
+    function isMobilityStudent(studentOrProfile) {
+        const mobility = studentOrProfile?.mobility
+            ? normalizeStudentMobility({ mobility: studentOrProfile.mobility })
+            : normalizeStudentMobility(studentOrProfile || {});
+        return mobility.category !== 'degree' || mobility.direction !== 'none';
+    }
+
+    function mobilityBadgeLabel(student) {
+        const mobility = student.mobility || normalizeStudentMobility(getAdminProfile(student.id));
+        const labels = {
+            exchange_incoming: 'Exchange incoming',
+            visiting_incoming: 'Visiting incoming',
+            exchange_outgoing: 'Outgoing',
+            internal_transfer: 'Internal transfer'
+        };
+        return labels[mobility.category] || '';
+    }
+
+    function matchesMobilityFilter(student, filter) {
+        if (!filter || filter === 'all') return true;
+        const mobility = student.mobility || normalizeStudentMobility(getAdminProfile(student.id));
+        return mobility.category === filter;
+    }
+
+    function mobilityCategoryLabel(category) {
+        return MOBILITY_CATEGORIES.find(item => item.value === category)?.label || 'Degree-seeking';
+    }
+
+    function formatMobilityPeriod(startDate, endDate) {
+        const formatPart = value => {
+            if (!value) return '';
+            const date = new Date(`${value}T00:00:00`);
+            if (Number.isNaN(date.getTime())) return value;
+            return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+        };
+        const start = formatPart(startDate);
+        const end = formatPart(endDate);
+        if (start && end) return `${start} – ${end}`;
+        return start || end || '';
+    }
+
+    function missingMobilityFields(student) {
+        const mobility = student.mobility || normalizeStudentMobility(getAdminProfile(student.id));
+        const missing = [];
+        if (!['exchange_incoming', 'visiting_incoming', 'exchange_outgoing'].includes(mobility.category)) return missing;
+        if (!mobility.homeInstitution) missing.push('home institution');
+        if (!mobility.startDate || !mobility.endDate) missing.push('mobility dates');
+        return missing;
+    }
+
+    function readMobilityFromForm() {
+        const category = value('form-mobility-category') || 'degree';
+        return normalizeStudentMobility({
+            mobility: {
+                category,
+                direction: MOBILITY_DIRECTION_BY_CATEGORY[category] || 'none',
+                homeInstitution: value('form-home-institution'),
+                homeCountry: value('form-home-country'),
+                hostProgram: value('form-host-program'),
+                startDate: value('form-mobility-start'),
+                endDate: value('form-mobility-end'),
+                agreementRef: value('form-agreement-ref'),
+                internalFromFaculty: value('form-internal-from-faculty'),
+                internalFromProgram: value('form-internal-from-program'),
+                notes: value('form-mobility-notes')
+            }
+        });
+    }
+
+    function mobilityFormVisibilityGroups(category) {
+        if (['exchange_incoming', 'visiting_incoming'].includes(category)) return ['incoming'];
+        if (category === 'exchange_outgoing') return ['outgoing'];
+        if (category === 'internal_transfer') return ['internal', 'incoming'];
+        return [];
+    }
+
+    function updateMobilityFormVisibility() {
+        const category = value('form-mobility-category') || 'degree';
+        const groups = mobilityFormVisibilityGroups(category);
+        const direction = MOBILITY_DIRECTION_BY_CATEGORY[category] || 'none';
+        const directionNode = document.getElementById('form-mobility-direction');
+        if (directionNode) directionNode.textContent = direction === 'none' ? 'None' : direction.charAt(0).toUpperCase() + direction.slice(1);
+
+        document.querySelectorAll('[data-mobility-show]').forEach(node => {
+            const required = String(node.getAttribute('data-mobility-show') || '').split('|').filter(Boolean);
+            const visible = required.some(group => groups.includes(group));
+            node.hidden = !visible;
+        });
+    }
+
+    function mobilityCategoryOptionsMarkup(selected = 'degree') {
+        return MOBILITY_CATEGORIES.map(item => `<option value="${escapeHtmlCompat(item.value)}" ${selected === item.value ? 'selected' : ''}>${escapeHtmlCompat(item.label)}</option>`).join('');
+    }
+
+    function mobilityFilterOptionsMarkup() {
+        return MOBILITY_FILTER_OPTIONS.map(item => `<option value="${escapeHtmlCompat(item.value)}" ${uiState.mobility === item.value ? 'selected' : ''}>${escapeHtmlCompat(item.label)}</option>`).join('');
+    }
+
     function baseStudentRecords() {
         if (typeof getAllStudents === 'function') {
             const records = getAllStudents('all') || [];
@@ -233,6 +414,10 @@
     }
 
     function deriveEnrollmentType(student, profile, subjectIds) {
+        const mobility = normalizeStudentMobility(profile);
+        if (mobility.category !== 'degree') {
+            return enrollmentTypeFromMobility(mobility, subjectIds);
+        }
         if (profile.enrollmentType) return profile.enrollmentType;
         if (!subjectIds.length) return 'Not Enrolled';
         return subjectIds.length >= 4 ? 'Full-time' : 'Part-time';
@@ -297,8 +482,10 @@
 
     function buildNormalizedStudent(student) {
         const profile = getAdminProfile(student.id);
+        const mobility = normalizeStudentMobility(profile);
         const curriculumMap = getCurriculumMap();
         const courses = deriveCourses(student, profile, curriculumMap);
+        const subjectIds = Array.isArray(student.subjects) ? student.subjects : [];
         const gradeItems = profile.gradeItems || findRosterGradeItems(student.id);
         const docStatus = deriveDocumentStatus(student, profile);
         const status = deriveStatus(student, profile);
@@ -321,7 +508,8 @@
             academicStanding: deriveStanding(student, profile),
             gpa: Number(student.gpa || 0),
             creditsEarned: Number(student.ectsEarned || student.ects || 0),
-            enrollmentType: deriveEnrollmentType(student, profile, student.subjects || []),
+            enrollmentType: deriveEnrollmentType(student, profile, subjectIds),
+            mobility,
             semester: profile.semesterLabel || `Semester ${student.semester || 1}`,
             campus: profile.campus || 'Kutaisi Main Campus',
             advisor: profile.advisor || '',
@@ -475,7 +663,9 @@
             atRisk: students.filter(student => ['High', 'Medium'].includes(risk(student))).length,
             pending: students.filter(student => ['Not Invited', 'Invitation Sent', 'Needs Review'].includes(student.accountStatus)).length,
             missingDocs: students.filter(student => student.documentStatus !== 'Complete').length,
-            archived: normalizedStudents().filter(student => student.status === 'Archived').length
+            archived: normalizedStudents().filter(student => student.status === 'Archived').length,
+            incomingMobility: students.filter(student => ['exchange_incoming', 'visiting_incoming'].includes((student.mobility || {}).category)).length,
+            outgoingMobility: students.filter(student => (student.mobility || {}).category === 'exchange_outgoing').length
         };
     }
 
@@ -497,11 +687,15 @@
             if (uiState.profile === 'Missing Documents' && student.documentStatus === 'Complete') return false;
             if (uiState.profile === 'Missing Advisor' && student.advisor) return false;
             if (uiState.risk !== 'all' && risk(student) !== uiState.risk) return false;
+            if (uiState.mobility !== 'all' && !matchesMobilityFilter(student, uiState.mobility)) return false;
             if (!q) return true;
+            const mobility = student.mobility || {};
             const haystack = [
                 student.name, student.nameEn, student.studentId, student.email, student.personalEmail, student.phone,
                 student.program, student.faculty, student.year, student.status, student.academicStanding,
                 student.advisor, student.accountStatus, student.documentStatus, student.campus,
+                mobility.homeInstitution, mobility.homeCountry, mobility.agreementRef, mobility.internalFromFaculty,
+                mobility.internalFromProgram, mobilityCategoryLabel(mobility.category),
                 ...(student.courses || []).map(course => `${course.code} ${course.name} ${course.instructor}`)
             ].join(' ').toLowerCase();
             return haystack.includes(q);
@@ -534,6 +728,7 @@
             ['account', 'Account'],
             ['profile', 'Profile'],
             ['enrollment', 'Enrollment'],
+            ['mobility', 'Mobility'],
             ['risk', 'Risk'],
             ['archive', 'Archive']
         ].forEach(([key, label]) => {
@@ -558,7 +753,18 @@
 
     function metricCard(label, value, note) {
         return `
-            <article class="students-lms-stat-card">
+            <article class="students-lms-stat-card lux-strip-card surface-card">
+                <span>${escapeHtmlCompat(label)}</span>
+                <strong>${escapeHtmlCompat(value)}</strong>
+                <small>${escapeHtmlCompat(note)}</small>
+            </article>
+        `;
+    }
+
+    function commandCard(label, value, note, tone = '') {
+        const toneClass = tone ? ` is-${tone}` : '';
+        return `
+            <article class="students-lms-command-card${toneClass}">
                 <span>${escapeHtmlCompat(label)}</span>
                 <strong>${escapeHtmlCompat(value)}</strong>
                 <small>${escapeHtmlCompat(note)}</small>
@@ -569,13 +775,14 @@
     function renderStudentRow(student) {
         const completionValue = completion(student);
         const archived = student.status === 'Archived';
+        const mobilityPill = mobilityBadgeLabel(student);
         return `
             <tr class="${archived ? 'is-risk-row' : ''}">
                 <td class="students-lms-student-cell">
                     <div class="students-lms-person">
                         ${renderAvatar(student)}
                         <div>
-                            <div class="students-lms-name">${escapeHtmlCompat(student.name)}</div>
+                            <div class="students-lms-name">${escapeHtmlCompat(student.name)}${mobilityPill ? ` <span class="students-lms-pill is-primary">${escapeHtmlCompat(mobilityPill)}</span>` : ''}</div>
                             <div class="students-lms-meta">${escapeHtmlCompat(student.studentId)} &middot; ${escapeHtmlCompat(student.email || 'No institutional email')}</div>
                         </div>
                     </div>
@@ -591,11 +798,11 @@
                 </td>
                 <td class="students-lms-actions-cell">
                     <div class="students-lms-button-row center">
-                        <button class="students-lms-btn small primary" data-view-id="${escapeHtmlCompat(student.id)}" data-view-fac="${escapeHtmlCompat(student.facultyCode)}" type="button">View</button>
-                        <button class="students-lms-btn small" data-edit-id="${escapeHtmlCompat(student.id)}" data-edit-fac="${escapeHtmlCompat(student.facultyCode)}" type="button">Edit</button>
+                        <button class="students-lms-btn lux-primary-btn small primary" data-view-id="${escapeHtmlCompat(student.id)}" data-view-fac="${escapeHtmlCompat(student.facultyCode)}" type="button">View</button>
+                        <button class="students-lms-btn lux-secondary-btn small" data-edit-id="${escapeHtmlCompat(student.id)}" data-edit-fac="${escapeHtmlCompat(student.facultyCode)}" type="button">Edit</button>
                         ${archived
-                            ? `<button class="students-lms-btn small" data-restore-id="${escapeHtmlCompat(student.id)}" type="button">Restore</button>`
-                            : `<button class="students-lms-btn small danger" data-archive-id="${escapeHtmlCompat(student.id)}" type="button">Archive</button>`}
+                            ? `<button class="students-lms-btn lux-secondary-btn small" data-restore-id="${escapeHtmlCompat(student.id)}" type="button">Restore</button>`
+                            : `<button class="students-lms-btn lux-secondary-btn small danger" data-archive-id="${escapeHtmlCompat(student.id)}" type="button">Archive</button>`}
                     </div>
                 </td>
             </tr>
@@ -610,27 +817,43 @@
                 <section class="students-lms-hero">
                     <div class="students-lms-hero-copyblock">
                         <span class="students-lms-kicker"><i class="fas fa-satellite-dish"></i> Registrar Command Deck</span>
-                        <h1 class="students-lms-title">Student operations in one surface.</h1>
-                        <p class="students-lms-copy">Manage records, audit profile quality, investigate academic risk, review Microsoft account readiness, and move between directory and deep student profiles without leaving the KIU admin shell.</p>
+                        <h1 class="students-lms-title">Direct student operations for ${escapeHtmlCompat(uiState.faculty === 'all' ? 'every faculty' : getFacultyLabelSafe(uiState.faculty))}.</h1>
+                        <p class="students-lms-copy">Audit record quality, review academic risk, resolve Microsoft account readiness, and move from registrar triage into full student profiles without breaking the KIU admin flow.</p>
                         <div class="students-lms-hero-meta">
                             <span class="students-lms-chip is-primary"><i class="fas fa-university"></i> ${escapeHtmlCompat(uiState.faculty === 'all' ? 'All faculties' : getFacultyLabelSafe(uiState.faculty))}</span>
                             <span class="students-lms-chip is-muted"><i class="fas fa-user-graduate"></i> ${results.length} student${results.length !== 1 ? 's' : ''} in scope</span>
                             <span class="students-lms-chip ${metricValues.atRisk ? 'is-warning' : 'is-success'}"><i class="fas fa-triangle-exclamation"></i> ${metricValues.atRisk} active risk case${metricValues.atRisk === 1 ? '' : 's'}</span>
+                            <span class="students-lms-chip ${metricValues.pending ? 'is-warning' : 'is-muted'}"><i class="fab fa-microsoft"></i> ${metricValues.pending} account review</span>
+                        </div>
+                        <div class="students-lms-hero-actions">
+                            <button class="students-lms-btn lux-primary-btn primary" id="students-lms-hero-add-btn" type="button"><i class="fas fa-user-plus"></i> Add Student</button>
+                            <button class="students-lms-btn lux-secondary-btn" id="students-lms-hero-review-btn" type="button"><i class="fab fa-microsoft"></i> Review Accounts</button>
+                            <button class="students-lms-btn lux-secondary-btn soft" id="students-lms-hero-docs-btn" type="button"><i class="fas fa-file-circle-exclamation"></i> Missing Documents</button>
                         </div>
                     </div>
-                    <div class="students-lms-hero-board">
-                        <div class="students-lms-board-grid">
-                            ${metricCard('Active', metricValues.active, 'Live academic records')}
-                            ${metricCard('Pending setup', metricValues.pending, 'Account or status review')}
-                            ${metricCard('Missing docs', metricValues.missingDocs, 'Compliance follow-up')}
-                            ${metricCard('Archived', metricValues.archived, 'Hidden by default')}
+                    <div class="students-lms-hero-board lux-hero-side">
+                        <div class="students-lms-command-head">
+                            <strong>Registrar Priorities</strong>
+                            <p>Focus the queue before shifting into directory edits or deep profile audits.</p>
+                        </div>
+                        <div class="students-lms-board-grid students-lms-command-grid">
+                            ${commandCard('Active', metricValues.active, 'Live academic records', 'success')}
+                            ${commandCard('Pending setup', metricValues.pending, 'Account or status review', metricValues.pending ? 'warning' : 'muted')}
+                            ${commandCard('Missing docs', metricValues.missingDocs, 'Compliance follow-up', metricValues.missingDocs ? 'warning' : 'muted')}
+                            ${commandCard('Archived', metricValues.archived, 'Hidden by default', 'muted')}
+                        </div>
+                        <div class="students-lms-command-note">
+                            <span class="students-lms-pill is-muted"><i class="fas fa-shield-alt"></i> Audit-sensitive workflow</span>
+                            <p>Move from triage into student detail without losing faculty scope, filter context, or review history.</p>
                         </div>
                     </div>
                 </section>
 
-                <div class="students-lms-metric-grid">
+                <div class="students-lms-metric-grid lux-strip-grid lux-strip-grid--adaptive">
                     ${metricCard('Total students', metricValues.total, 'Within the current scope')}
                     ${metricCard('Currently enrolled', metricValues.enrolled, 'Students with active courses')}
+                    ${metricCard('Incoming mobility', metricValues.incomingMobility, 'Exchange and visiting incoming')}
+                    ${metricCard('Outgoing mobility', metricValues.outgoingMobility, 'Exchange outgoing placements')}
                     ${metricCard('At risk', metricValues.atRisk, 'Medium or high risk signals')}
                     ${metricCard('Pending setup', metricValues.pending, 'Needs onboarding action')}
                     ${metricCard('Missing documents', metricValues.missingDocs, 'Document review needed')}
@@ -645,10 +868,10 @@
                             <p>Use the improved LMS management workflow on top of KIU faculty-scoped data.</p>
                         </div>
                         <div class="students-lms-button-row">
-                            <button class="students-lms-btn" id="students-lms-import-btn" type="button"><i class="fas fa-file-import"></i> Import JSON</button>
-                            <button class="students-lms-btn" id="students-lms-export-btn" type="button"><i class="fas fa-file-export"></i> Export JSON</button>
-                            <button class="students-lms-btn soft" id="students-lms-export-csv-btn" type="button"><i class="fas fa-table"></i> Export CSV</button>
-                            <button class="students-lms-btn primary" id="students-lms-add-btn" type="button"><i class="fas fa-user-plus"></i> Add Student</button>
+                            <button class="students-lms-btn lux-secondary-btn" id="students-lms-import-btn" type="button"><i class="fas fa-file-import"></i> Import JSON</button>
+                            <button class="students-lms-btn lux-secondary-btn" id="students-lms-export-btn" type="button"><i class="fas fa-file-export"></i> Export JSON</button>
+                            <button class="students-lms-btn lux-secondary-btn soft" id="students-lms-export-csv-btn" type="button"><i class="fas fa-table"></i> Export CSV</button>
+                            <button class="students-lms-btn lux-primary-btn primary" id="students-lms-add-btn" type="button"><i class="fas fa-user-plus"></i> Add Student</button>
                         </div>
                     </div>
 
@@ -697,6 +920,10 @@
                             <select id="students-lms-enrollment" class="students-lms-control">${selectOptions(['Enrolled', 'Not Enrolled', ...ENROLLMENT_TYPES], uiState.enrollment, 'All students')}</select>
                         </label>
                         <label>
+                            <span class="students-lms-label">Mobility</span>
+                            <select id="students-lms-mobility" class="students-lms-control">${mobilityFilterOptionsMarkup()}</select>
+                        </label>
+                        <label>
                             <span class="students-lms-label">Archive</span>
                             <select id="students-lms-archive" class="students-lms-control">
                                 <option value="active" ${uiState.archive === 'active' ? 'selected' : ''}>Active records</option>
@@ -733,15 +960,15 @@
                                 <option value="no_advisor">No advisor</option>
                             </select>
                         </label>
-                        <button class="students-lms-btn" id="students-lms-clear-btn" type="button"><i class="fas fa-filter-circle-xmark"></i> Clear filters</button>
-                        <button class="students-lms-btn" id="students-lms-refresh-btn" type="button"><i class="fas fa-rotate"></i> Refresh from KIU</button>
+                        <button class="students-lms-btn lux-secondary-btn" id="students-lms-clear-btn" type="button"><i class="fas fa-filter-circle-xmark"></i> Clear filters</button>
+                        <button class="students-lms-btn lux-secondary-btn" id="students-lms-refresh-btn" type="button"><i class="fas fa-rotate"></i> Refresh from KIU</button>
                     </div>
 
                     <div class="students-lms-action-row spaced">
                         <div class="students-lms-filter-chip-row">${activeFiltersMarkup()}</div>
                         <div class="students-lms-button-row start">
-                            <button class="students-lms-btn" id="students-lms-recent-btn" type="button"><i class="fas fa-clock"></i> Recently updated</button>
-                            <button class="students-lms-btn" id="students-lms-account-review-btn" type="button"><i class="fab fa-microsoft"></i> Account review</button>
+                            <button class="students-lms-btn lux-secondary-btn" id="students-lms-recent-btn" type="button"><i class="fas fa-clock"></i> Recently updated</button>
+                            <button class="students-lms-btn lux-secondary-btn" id="students-lms-account-review-btn" type="button"><i class="fab fa-microsoft"></i> Account review</button>
                         </div>
                     </div>
                 </section>
@@ -798,7 +1025,7 @@
             <div class="students-lms-shell">
                 <section class="students-lms-profile-header">
                     <div class="students-lms-backline">
-                        <button class="students-lms-btn" id="students-lms-back-btn" type="button"><i class="fas fa-arrow-left"></i> Back to directory</button>
+                        <button class="students-lms-btn lux-secondary-btn" id="students-lms-back-btn" type="button"><i class="fas fa-arrow-left"></i> Back to directory</button>
                         <div class="students-lms-chip-row">
                             ${statusBadge(student.status)}
                             ${statusBadge(student.academicStanding)}
@@ -828,17 +1055,17 @@
                     </div>
 
                     <div class="students-lms-profile-actions spaced">
-                        <button class="students-lms-btn primary" data-edit-id="${escapeHtmlCompat(student.id)}" data-edit-fac="${escapeHtmlCompat(student.facultyCode)}" type="button"><i class="fas fa-pen"></i> Edit profile</button>
-                        <button class="students-lms-btn" id="students-lms-message-btn" type="button"><i class="fas fa-paper-plane"></i> Message</button>
-                        <button class="students-lms-btn" id="students-lms-enroll-btn" type="button"><i class="fas fa-book-medical"></i> Enroll in course</button>
+                        <button class="students-lms-btn lux-primary-btn primary" data-edit-id="${escapeHtmlCompat(student.id)}" data-edit-fac="${escapeHtmlCompat(student.facultyCode)}" type="button"><i class="fas fa-pen"></i> Edit profile</button>
+                        <button class="students-lms-btn lux-secondary-btn" id="students-lms-message-btn" type="button"><i class="fas fa-paper-plane"></i> Message</button>
+                        <button class="students-lms-btn lux-secondary-btn" id="students-lms-enroll-btn" type="button"><i class="fas fa-book-medical"></i> Enroll in course</button>
                         ${student.status === 'Archived'
-                            ? `<button class="students-lms-btn" data-restore-id="${escapeHtmlCompat(student.id)}" type="button"><i class="fas fa-box-open"></i> Restore</button>`
-                            : `<button class="students-lms-btn danger" data-archive-id="${escapeHtmlCompat(student.id)}" type="button"><i class="fas fa-box-archive"></i> Archive</button>`}
+                            ? `<button class="students-lms-btn lux-secondary-btn" data-restore-id="${escapeHtmlCompat(student.id)}" type="button"><i class="fas fa-box-open"></i> Restore</button>`
+                            : `<button class="students-lms-btn lux-secondary-btn danger" data-archive-id="${escapeHtmlCompat(student.id)}" type="button"><i class="fas fa-box-archive"></i> Archive</button>`}
                     </div>
 
                     <div class="students-lms-tabs">
-                        ${[['overview', 'Overview'], ['courses', 'Courses'], ['grades', 'Grades'], ['progress', 'Progress'], ['attendance', 'Attendance'], ['advising', 'Advising'], ['documents', 'Documents'], ['account', 'Account'], ['admin', 'Admin']].map(([key, label]) => `
-                            <button class="students-lms-tab ${uiState.tab === key ? 'active' : ''}" data-tab="${key}" type="button">${label}</button>
+                        ${[['overview', 'Overview'], ['mobility', 'Mobility'], ['courses', 'Courses'], ['grades', 'Grades'], ['progress', 'Progress'], ['attendance', 'Attendance'], ['advising', 'Advising'], ['documents', 'Documents'], ['account', 'Account'], ['admin', 'Admin']].map(([key, label]) => `
+                            <button class="students-lms-tab ${uiState.tab === key ? 'active' : ''}" data-tab="${key}" type="button" aria-pressed="${uiState.tab === key ? 'true' : 'false'}">${label}</button>
                         `).join('')}
                     </div>
                 </section>
@@ -850,6 +1077,7 @@
     }
 
     function renderProfileTab(student) {
+        if (uiState.tab === 'mobility') return renderMobilityTab(student);
         if (uiState.tab === 'courses') return renderCoursesTab(student);
         if (uiState.tab === 'grades') return renderGradesTab(student);
         if (uiState.tab === 'progress') return renderProgressTab(student);
@@ -913,12 +1141,49 @@
         ];
     }
 
+    function renderMobilityTab(student) {
+        const mobility = student.mobility || normalizeStudentMobility(getAdminProfile(student.id));
+        const missing = missingMobilityFields(student);
+        const period = formatMobilityPeriod(mobility.startDate, mobility.endDate);
+        return `
+            <div class="students-lms-profile-grid two">
+                ${infoCard('Mobility status', [
+                    ['Category', mobilityCategoryLabel(mobility.category)],
+                    ['Direction', mobility.direction === 'none' ? 'None' : mobility.direction.charAt(0).toUpperCase() + mobility.direction.slice(1)],
+                    ['Enrollment type', student.enrollmentType],
+                    ['Host program override', mobility.hostProgram || 'Same as main program']
+                ])}
+                ${infoCard('Partner / origin', [
+                    ['Home institution', mobility.homeInstitution || 'Not recorded'],
+                    ['Home country', mobility.homeCountry || 'Not recorded'],
+                    ['Mobility period', period || 'Not recorded'],
+                    ['Agreement reference', mobility.agreementRef || 'Not recorded']
+                ])}
+            </div>
+            ${mobility.category === 'internal_transfer' ? `
+                <div class="students-lms-profile-grid two spaced-sm">
+                    ${infoCard('Internal transfer', [
+                        ['From faculty', mobility.internalFromFaculty || 'Not recorded'],
+                        ['From program', mobility.internalFromProgram || 'Not recorded'],
+                        ['Current faculty', student.faculty],
+                        ['Current program', student.program]
+                    ])}
+                </div>
+            ` : ''}
+            <article class="students-lms-profile-card spaced-sm">
+                <h3>Mobility notes</h3>
+                ${missing.length ? `<div class="students-lms-chip is-warning spaced">Missing mobility data: ${escapeHtmlCompat(missing.join(', '))}</div>` : ''}
+                <p class="students-lms-spaced-text">${escapeHtmlCompat(mobility.notes || 'No mobility notes recorded.')}</p>
+            </article>
+        `;
+    }
+
     function renderOverviewTab(student) {
         return `
             <div class="students-lms-profile-grid">
                 ${infoCard('Identity', [['Full name', student.name], ['Student ID', student.studentId], ['Institutional email', student.email || 'Missing'], ['Phone', student.phone || 'Missing']])}
                 ${infoCard('Academic record', [['Program', student.program], ['Faculty / School', student.faculty || 'Missing'], ['Year / Level', student.year], ['Standing', student.academicStanding]])}
-                ${infoCard('Enrollment', [['Status', student.status], ['Type', student.enrollmentType], ['Semester', student.semester || 'Missing'], ['Campus', student.campus || 'Missing']])}
+                ${infoCard('Enrollment', [['Status', student.status], ['Type', student.enrollmentType], ['Mobility', mobilityCategoryLabel((student.mobility || {}).category)], ['Semester', student.semester || 'Missing'], ['Campus', student.campus || 'Missing']])}
                 ${infoCard('Academic summary', [['GPA', Number(student.gpa || 0).toFixed(2)], ['Credits earned', student.creditsEarned || 0], ['Expected graduation', student.expectedGraduation || 'Missing'], ['Risk level', risk(student)]])}
             </div>
             <div class="students-lms-profile-grid two spaced-sm">
@@ -1158,6 +1423,7 @@
             ['students-lms-account', 'account'],
             ['students-lms-profile', 'profile'],
             ['students-lms-enrollment', 'enrollment'],
+            ['students-lms-mobility', 'mobility'],
             ['students-lms-archive', 'archive'],
             ['students-lms-archive-quick', 'archive'],
             ['students-lms-risk', 'risk'],
@@ -1175,6 +1441,15 @@
             uiState.selectedId = null;
             renderStudentsAdminLmsPage();
             showToast('Student data refreshed from KIU state.');
+        });
+        root.querySelector('#students-lms-hero-add-btn')?.addEventListener('click', () => openModal());
+        root.querySelector('#students-lms-hero-review-btn')?.addEventListener('click', () => {
+            uiState.account = 'Needs Review';
+            renderStudentsAdminLmsPage();
+        });
+        root.querySelector('#students-lms-hero-docs-btn')?.addEventListener('click', () => {
+            uiState.profile = 'Missing Documents';
+            renderStudentsAdminLmsPage();
         });
         root.querySelector('#students-lms-recent-btn')?.addEventListener('click', () => {
             uiState.sort = 'updated';
@@ -1242,6 +1517,7 @@
             account: 'all',
             profile: 'all',
             enrollment: 'all',
+            mobility: 'all',
             risk: 'all',
             archive: 'active',
             sort: 'name'
@@ -1278,7 +1554,7 @@
                         <h2 id="students-admin-lms-modal-title">Add Student</h2>
                         <p class="students-lms-meta">Adapted LMS-grade student record editor for identity, academics, support, documents, and account readiness.</p>
                     </div>
-                    <button class="students-lms-btn" id="students-admin-lms-close"><i class="fas fa-times"></i> Close</button>
+                    <button class="students-lms-btn lux-secondary-btn" id="students-admin-lms-close" type="button"><i class="fas fa-times"></i> Close</button>
                 </div>
                 <div class="students-lms-modal-body">
                     ${modalSection('Basic information', `
@@ -1311,6 +1587,23 @@
                             ${field('Expected graduation', '<input id="form-graduation" class="students-lms-control" type="text" placeholder="2028" />')}
                         </div>
                     `)}
+                    ${modalSection('Mobility & transfer', `
+                        <div class="students-lms-form-grid">
+                            ${field('Mobility category', `<select id="form-mobility-category" class="students-lms-control">${mobilityCategoryOptionsMarkup()}</select>`)}
+                            <label><span class="students-lms-label">Direction</span><div class="students-lms-control students-lms-readonly" id="form-mobility-direction">None</div></label>
+                            <div data-mobility-show="incoming|outgoing" hidden>${field('Home institution', '<input id="form-home-institution" class="students-lms-control" type="text" placeholder="Partner university" />')}</div>
+                            <div data-mobility-show="incoming|outgoing" hidden>${field('Home country', '<input id="form-home-country" class="students-lms-control" type="text" placeholder="GE" maxlength="2" />')}</div>
+                            <div data-mobility-show="incoming|outgoing|internal" hidden>${field('Host program (optional)', '<input id="form-host-program" class="students-lms-control" type="text" placeholder="Override when different from main program" />')}</div>
+                            <div data-mobility-show="incoming|outgoing|internal" hidden>${field('Mobility start', '<input id="form-mobility-start" class="students-lms-control" type="date" />')}</div>
+                            <div data-mobility-show="incoming|outgoing|internal" hidden>${field('Mobility end', '<input id="form-mobility-end" class="students-lms-control" type="date" />')}</div>
+                            <div data-mobility-show="incoming|outgoing|internal" hidden>${field('Agreement reference', '<input id="form-agreement-ref" class="students-lms-control" type="text" placeholder="BLA-2026" />')}</div>
+                            <div data-mobility-show="internal" hidden>${field('Internal from faculty', '<input id="form-internal-from-faculty" class="students-lms-control" type="text" placeholder="ECON" />')}</div>
+                            <div data-mobility-show="internal" hidden>${field('Internal from program', '<input id="form-internal-from-program" class="students-lms-control" type="text" placeholder="BSc Computer Science" />')}</div>
+                        </div>
+                        <div class="students-lms-form-grid spaced">
+                            ${field('Mobility notes', '<textarea id="form-mobility-notes" class="students-lms-textarea" placeholder="Learning agreement, IR office notes, transfer rationale."></textarea>')}
+                        </div>
+                    `)}
                     ${modalSection('Learning data', `
                         <div class="students-lms-form-grid two">
                             ${field('Current courses', '<textarea id="form-courses" class="students-lms-textarea" placeholder="CS201 | Data Structures | Prof. Nino Beridze | 6 | 82"></textarea>')}
@@ -1338,9 +1631,9 @@
                     `)}
                 </div>
                 <div class="students-lms-form-actions">
-                    <button class="students-lms-btn" id="students-admin-lms-cancel">Cancel</button>
-                    <button class="students-lms-btn soft" id="students-admin-lms-validate">Validate</button>
-                    <button class="students-lms-btn primary" id="students-admin-lms-save">Save Student</button>
+                    <button class="students-lms-btn lux-secondary-btn" id="students-admin-lms-cancel" type="button">Cancel</button>
+                    <button class="students-lms-btn lux-secondary-btn soft" id="students-admin-lms-validate" type="button">Validate</button>
+                    <button class="students-lms-btn lux-primary-btn primary" id="students-admin-lms-save" type="button">Save Student</button>
                 </div>
             </div>
         `;
@@ -1362,6 +1655,20 @@
             if (student) showToast(`Validation passed. Profile would be ${completion(student)}% complete and ${risk(student)} risk.`);
         });
         modal.querySelector('#students-admin-lms-save')?.addEventListener('click', saveFormStudent);
+        modal.querySelector('#form-mobility-category')?.addEventListener('change', () => {
+            const category = value('form-mobility-category');
+            if (category === 'internal_transfer' && uiState.editingId) {
+                const student = normalizedStudents().find(item => item.id === String(uiState.editingId));
+                if (student) {
+                    if (!value('form-internal-from-faculty')) setValue('form-internal-from-faculty', student.facultyCode);
+                    if (!value('form-internal-from-program')) setValue('form-internal-from-program', student.program);
+                }
+            }
+            updateMobilityFormVisibility();
+            const mobility = readMobilityFromForm();
+            const courseCodes = parseCourses(value('form-courses')).map(course => course.code);
+            setValue('form-enrollment-type', enrollmentTypeFromMobility(mobility, courseCodes));
+        });
         modal.addEventListener('click', event => {
             if (event.target === modal) closeModal();
         });
@@ -1425,6 +1732,21 @@
         setValue('form-interests', (student?.interests || []).join(', '));
         setValue('form-notes', student?.notes || '');
         setValue('form-attendance-records', (student?.attendanceRecords || []).map(item => `${item.course} | ${item.date} | ${item.status} | ${item.note || ''}`).join('\n'));
+
+        const mobility = student?.mobility || normalizeStudentMobility(student ? getAdminProfile(student.id) : {});
+        const mobilitySelect = document.getElementById('form-mobility-category');
+        if (mobilitySelect) mobilitySelect.innerHTML = mobilityCategoryOptionsMarkup(mobility.category);
+        setValue('form-mobility-category', mobility.category || 'degree');
+        setValue('form-home-institution', mobility.homeInstitution);
+        setValue('form-home-country', mobility.homeCountry);
+        setValue('form-host-program', mobility.hostProgram);
+        setValue('form-mobility-start', mobility.startDate);
+        setValue('form-mobility-end', mobility.endDate);
+        setValue('form-agreement-ref', mobility.agreementRef);
+        setValue('form-internal-from-faculty', mobility.internalFromFaculty);
+        setValue('form-internal-from-program', mobility.internalFromProgram);
+        setValue('form-mobility-notes', mobility.notes);
+        updateMobilityFormVisibility();
 
         modal.classList.add('open');
         setTimeout(() => document.getElementById('form-name')?.focus(), 20);
@@ -1525,6 +1847,12 @@
             return null;
         }
 
+        const courses = parseCourses(value('form-courses'));
+        const mobility = readMobilityFromForm();
+        const enrollmentType = mobility.category === 'degree'
+            ? (value('form-enrollment-type') || 'Full-time')
+            : enrollmentTypeFromMobility(mobility, courses.map(course => course.code));
+
         return {
             id: uiState.editingId || studentId,
             studentId,
@@ -1539,13 +1867,14 @@
             academicStanding: value('form-standing'),
             gpa: Number(value('form-gpa')) || 0,
             creditsEarned: Number(value('form-credits')) || 0,
-            enrollmentType: value('form-enrollment-type') || 'Full-time',
+            mobility,
+            enrollmentType,
             semester: value('form-semester') || 'Semester 1',
             campus: value('form-campus') || 'Kutaisi Main Campus',
             advisor: value('form-advisor'),
             advisorEmail: value('form-advisor-email'),
             expectedGraduation: value('form-graduation'),
-            courses: parseCourses(value('form-courses')),
+            courses,
             gradeItems: parseGrades(value('form-grades')),
             attendance: Number(value('form-attendance')) || 0,
             missingAssignments: Number(value('form-missing')) || 0,
@@ -1582,6 +1911,18 @@
 
         const existingNormalized = uiState.editingId ? normalizedStudents().find(student => student.id === uiState.editingId) : null;
         const previousFaculty = existingNormalized?.facultyCode || record.facultyCode;
+        let mobility = record.mobility
+            ? normalizeStudentMobility({ mobility: record.mobility })
+            : normalizeStudentMobility(existingNormalized
+                ? { mobility: existingNormalized.mobility, enrollmentType: existingNormalized.enrollmentType }
+                : getAdminProfile(record.id));
+        if (existingNormalized && previousFaculty !== record.facultyCode && mobility.category === 'internal_transfer') {
+            if (!mobility.internalFromFaculty) mobility.internalFromFaculty = previousFaculty;
+            if (!mobility.internalFromProgram) mobility.internalFromProgram = existingNormalized.program || '';
+            mobility = normalizeStudentMobility({ mobility });
+        }
+        const syncedEnrollment = enrollmentTypeFromMobility(mobility, record.courses.map(course => course.code));
+        record.enrollmentType = mobility.category === 'degree' ? (record.enrollmentType || syncedEnrollment) : syncedEnrollment;
         const targetCourse = yearLabelToCourse(record.year);
         const provisioning = existingNormalized?.baseRecord
             ? {
@@ -1667,6 +2008,7 @@
             yearLabel: record.year,
             academicStanding: record.academicStanding,
             enrollmentType: record.enrollmentType,
+            mobility,
             semesterLabel: record.semester,
             campus: record.campus,
             advisor: record.advisor,
@@ -1744,10 +2086,16 @@
             'Risk',
             'Profile Completion',
             'Holds',
-            'LMS Account'
+            'LMS Account',
+            'Mobility Category',
+            'Home Institution',
+            'Mobility Start',
+            'Mobility End',
+            'Agreement Ref'
         ];
         const rows = filteredStudents().map(student => {
             const signals = studentDirectorySignals(student.baseRecord);
+            const mobility = student.mobility || {};
             return [
                 student.studentId,
                 student.name,
@@ -1762,7 +2110,12 @@
                 risk(student),
                 `${completion(student)}%`,
                 signals.holdLabel,
-                student.accountStatus
+                student.accountStatus,
+                mobility.category || 'degree',
+                mobility.homeInstitution || '',
+                mobility.startDate || '',
+                mobility.endDate || '',
+                mobility.agreementRef || ''
             ];
         });
         const escapeCell = value => `"${String(value ?? '').replace(/"/g, '""')}"`;
@@ -1796,6 +2149,15 @@
             gpa: Number(imported.gpa || 0),
             creditsEarned: Number(imported.creditsEarned || imported.ects || 0),
             enrollmentType: imported.enrollmentType || 'Not Enrolled',
+            mobility: imported.mobility || (imported.mobilityCategory ? normalizeStudentMobility({
+                mobility: {
+                    category: imported.mobilityCategory,
+                    homeInstitution: imported.homeInstitution || '',
+                    startDate: imported.mobilityStart || '',
+                    endDate: imported.mobilityEnd || '',
+                    agreementRef: imported.agreementRef || ''
+                }
+            }) : undefined),
             semester: imported.semester || 'Semester 1',
             campus: imported.campus || 'Kutaisi Main Campus',
             advisor: imported.advisor || '',
@@ -1852,11 +2214,31 @@
         if (uiState.view === 'profile') renderProfile(root);
         else renderDirectory(root);
         if (typeof queueEnglishLocalization === 'function') queueEnglishLocalization(root);
+        if (typeof window.queueLuxuryTransparencyRefresh === 'function') {
+            try {
+                window.queueLuxuryTransparencyRefresh(undefined, { roots: [root] });
+            } catch (error) { /* ignore */ }
+        }
     }
 
     window.renderStudentsAdminLmsPage = renderStudentsAdminLmsPage;
     window.renderStudentsPage = renderStudentsAdminLmsPage;
+    window.StudentsAdminMobility = {
+        normalizeStudentMobility,
+        syncEnrollmentTypeFromMobility,
+        isMobilityStudent,
+        mobilityBadgeLabel,
+        matchesMobilityFilter,
+        enrollmentTypeFromMobility,
+        formatMobilityPeriod,
+        mobilityCategoryLabel
+    };
     window.openStudentRegistration = function openStudentRegistrationModern() {
         openModal();
     };
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', renderStudentsAdminLmsPage, { once: true });
+    } else {
+        renderStudentsAdminLmsPage();
+    }
 })();

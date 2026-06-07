@@ -119,7 +119,7 @@
                     ? 'No subjects are published inside this module yet.'
                     : 'No subjects in this module match the selected semester filter.';
             return `
-                <div class="lux-empty-state lux-program-empty-state">
+                <div class="lux-empty-state lux-program-empty-state lux-program-empty-state--subjects">
                     <i class="fas fa-book-open"></i>
                     <strong class="lux-empty-state__title">Nothing to show</strong>
                     <span class="lux-empty-state__copy">${emptyText}</span>
@@ -135,7 +135,7 @@
             const language = String(subject.language || subject.teachingLanguage || '').trim();
             const hasPrerequisite = prerequisite !== 'None';
             return `
-                <article class="lux-subject-row ${hasPrerequisite ? 'has-prerequisite' : 'is-open'}">
+                <article class="lux-subject-row lux-program-subject-card ${hasPrerequisite ? 'has-prerequisite' : 'is-open'}">
                     <div class="lux-subject-row__code">
                         <div>${escapeHtml(subject.id)}</div>
                         <div class="lux-subject-row__meta">#${index + 1}</div>
@@ -144,18 +144,18 @@
                         <div class="lux-subject-row__title">${escapeHtml(subject.name || 'Untitled Subject')}</div>
                         <div class="lux-subject-row__meta">${escapeHtml(getFacultyLabel(subject.faculty || faculty))}</div>
                         <div class="lux-subject-row__chips">
-                            <span class="lux-status-pill">Semester ${escapeHtml(String(subject.semester || '-'))}</span>
-                            <span class="lux-status-pill">${escapeHtml(String(subject.ects || 0))} ECTS</span>
-                            ${subjectType ? `<span class="lux-status-pill">${escapeHtml(subjectType)}</span>` : ''}
-                            ${contactHours ? `<span class="lux-status-pill">${escapeHtml(contactHours)}</span>` : ''}
-                            ${language ? `<span class="lux-status-pill">${escapeHtml(language)}</span>` : ''}
+                            <span class="lux-status-pill wave2-chip wave2-chip--pill">Semester ${escapeHtml(String(subject.semester || '-'))}</span>
+                            <span class="lux-status-pill wave2-chip wave2-chip--pill">${escapeHtml(String(subject.ects || 0))} ECTS</span>
+                            ${subjectType ? `<span class="lux-status-pill wave2-chip wave2-chip--pill">${escapeHtml(subjectType)}</span>` : ''}
+                            ${contactHours ? `<span class="lux-status-pill wave2-chip wave2-chip--pill">${escapeHtml(contactHours)}</span>` : ''}
+                            ${language ? `<span class="lux-status-pill wave2-chip wave2-chip--pill">${escapeHtml(language)}</span>` : ''}
                         </div>
                         <div class="lux-subject-row__detail" title="${escapeHtml(prerequisite)}"><strong>Prerequisite:</strong> ${escapeHtml(prerequisite)}</div>
                         ${antiReq ? `<div class="lux-subject-row__detail is-soft" title="${escapeHtml(antiReq)}"><strong>Anti-requisite:</strong> ${escapeHtml(antiReq)}</div>` : ''}
                     </div>
                     <div class="lux-subject-row__stats">
                         <div class="lux-program-ects">${escapeHtml(String(subject.ects || 0))} ECTS</div>
-                        <span class="lux-status-pill">Sem ${escapeHtml(String(subject.semester || '-'))}</span>
+                        <span class="lux-status-pill wave2-chip wave2-chip--pill">Sem ${escapeHtml(String(subject.semester || '-'))}</span>
                         <span class="lux-program-requirement ${hasPrerequisite ? 'is-locked' : 'is-open'}">
                             <i class="fas ${hasPrerequisite ? 'fa-link' : 'fa-check'}"></i>
                             ${hasPrerequisite ? 'Requires' : 'Open'}
@@ -263,10 +263,10 @@
         root.dataset.programsContentShell = '1';
         root.innerHTML = `
             <div class="lux-program-shell">
-                <section id="programs-overview-region" class="lux-section-card lux-program-overview-card"></section>
+                <section id="programs-overview-region" class="lux-section-card lux-program-shell-section lux-program-shell-section--overview lux-program-overview-card"></section>
                 <div class="lux-program-grid">
-                    <section id="programs-module-rail-region" class="lux-section-card"></section>
-                    <section id="programs-subject-panel-region" class="lux-section-card"></section>
+                    <section id="programs-module-rail-region" class="lux-section-card lux-program-shell-section lux-program-shell-section--module-rail"></section>
+                    <section id="programs-subject-panel-region" class="lux-section-card lux-program-shell-section lux-program-shell-section--subject-panel"></section>
                 </div>
             </div>
         `;
@@ -274,59 +274,61 @@
 
     function renderProgramsOverviewRegion(context) {
         return `
-            <div class="lux-section-card__body">
-                <div class="lux-program-overview">
-                    <div class="lux-program-overview-main">
+            <div class="lux-section-card__body lux-program-shell-body lux-program-shell-body--overview">
+                <div class="lux-program-overview lux-hero-stage">
+                    <div class="lux-program-overview-main lux-hero-main">
                         <div class="lux-section-kicker"><i class="fas fa-compass"></i> Program atlas</div>
                         <div class="lux-section-title">${escapeHtml(context.programLabel)}</div>
-                        <div class="lux-section-copy" style="margin-top:8px;">Official program map for ${escapeHtml(context.facultyLabel)}. Use the module rail to move between blocks, inspect prerequisites, and verify semester placement before finalizing your study plan.</div>
-                        <div class="lux-program-metric-strip">
-                            <div class="lux-program-metric">
-                                <span>Total credits</span>
-                                <strong>${context.totalProgramEcts}</strong>
-                                <em>ECTS in program</em>
-                            </div>
-                            <div class="lux-program-metric">
-                                <span>Visible credits</span>
-                                <strong>${context.visibleEcts}</strong>
-                                <em>${escapeHtml(context.semesterLabel)}</em>
-                            </div>
-                            <div class="lux-program-metric">
-                                <span>Requirements</span>
-                                <strong>${context.totalPrerequisiteSubjects}</strong>
-                                <em>subjects with prerequisites</em>
-                            </div>
+                        <div class="lux-section-copy lux-program-overview-copy">Official program map for ${escapeHtml(context.facultyLabel)}. Use the module rail to move between blocks, inspect prerequisites, and verify semester placement before finalizing your study plan.</div>
+                        <div class="lux-program-metric-strip lux-program-summary-strip lux-strip-grid lux-strip-grid--adaptive">
+                            <article class="lux-program-metric lux-program-summary-card wave2-summary-card lux-strip-card surface-card">
+                                <span class="wave2-summary-label lux-program-summary-label">Total credits</span>
+                                <strong class="wave2-summary-value lux-program-summary-value">${context.totalProgramEcts}</strong>
+                                <em class="wave2-summary-copy lux-program-summary-copy">ECTS in program</em>
+                            </article>
+                            <article class="lux-program-metric lux-program-summary-card wave2-summary-card lux-strip-card surface-card">
+                                <span class="wave2-summary-label lux-program-summary-label">Visible credits</span>
+                                <strong class="wave2-summary-value lux-program-summary-value">${context.visibleEcts}</strong>
+                                <em class="wave2-summary-copy lux-program-summary-copy">${escapeHtml(context.semesterLabel)}</em>
+                            </article>
+                            <article class="lux-program-metric lux-program-summary-card wave2-summary-card lux-strip-card surface-card">
+                                <span class="wave2-summary-label lux-program-summary-label">Requirements</span>
+                                <strong class="wave2-summary-value lux-program-summary-value">${context.totalPrerequisiteSubjects}</strong>
+                                <em class="wave2-summary-copy lux-program-summary-copy">subjects with prerequisites</em>
+                            </article>
                         </div>
                         <div class="lux-program-chip-row">
-                            <span class="lux-status-pill"><i class="fas fa-university"></i> ${escapeHtml(context.facultyLabel)}</span>
-                            <span class="lux-status-pill"><i class="fas fa-filter"></i> ${escapeHtml(context.semesterLabel)}</span>
-                            <span class="lux-status-pill"><i class="fas fa-layer-group"></i> ${context.modules.length} modules</span>
-                            ${context.searchQuery ? `<span class="lux-status-pill"><i class="fas fa-search"></i> ${escapeHtml(context.searchQuery)}</span>` : ''}
+                            <span class="lux-status-pill wave2-chip wave2-chip--pill"><i class="fas fa-university"></i> ${escapeHtml(context.facultyLabel)}</span>
+                            <span class="lux-status-pill wave2-chip wave2-chip--pill"><i class="fas fa-filter"></i> ${escapeHtml(context.semesterLabel)}</span>
+                            <span class="lux-status-pill wave2-chip wave2-chip--pill"><i class="fas fa-layer-group"></i> ${context.modules.length} modules</span>
+                            ${context.searchQuery ? `<span class="lux-status-pill wave2-chip wave2-chip--pill"><i class="fas fa-search"></i> ${escapeHtml(context.searchQuery)}</span>` : ''}
                         </div>
                     </div>
-                    <div class="lux-program-focus-panel">
-                        <div class="lux-program-focus-label">Selected module</div>
-                        <div class="lux-program-focus-title">${escapeHtml(context.selectedModuleName)}</div>
-                        <div class="lux-program-focus-copy">${context.selectedModule ? `${context.searchLabel}. ${context.selectedModuleLimit ? `${context.selectedModuleEcts}/${context.selectedModuleLimit} ECTS load.` : `${context.selectedModuleEcts} ECTS total.`}` : 'Pick a module to review its subjects and credit load.'}</div>
-                        <div class="lux-program-progress"><span style="width:${context.selectedModuleLoad}%"></span></div>
-                        <div class="lux-program-focus-stats">
-                            <span class="lux-program-focus-stat">
+                    <div class="lux-program-focus-panel lux-hero-side">
+                        <div class="lux-hero-side-head">
+                            <span class="lux-program-focus-label">Selected module</span>
+                            <strong class="lux-program-focus-title">${escapeHtml(context.selectedModuleName)}</strong>
+                            <span class="lux-program-focus-copy">${context.selectedModule ? `${context.searchLabel}. ${context.selectedModuleLimit ? `${context.selectedModuleEcts}/${context.selectedModuleLimit} ECTS load.` : `${context.selectedModuleEcts} ECTS total.`}` : 'Pick a module to review its subjects and credit load.'}</span>
+                        </div>
+                        <div class="lux-program-progress"><span class="lux-program-progress__bar" style="--lux-program-load:${context.selectedModuleLoad}%"></span></div>
+                        <div class="lux-program-focus-stats lux-hero-signal-list">
+                            <span class="lux-program-focus-stat lux-hero-signal">
                                 <strong>${context.selectedModule ? context.selectedModuleEcts : 0}</strong>
                                 <em>ECTS</em>
                             </span>
-                            <span class="lux-program-focus-stat">
+                            <span class="lux-program-focus-stat lux-hero-signal">
                                 <strong>${context.selectedModule ? context.moduleSubjects.length : context.modules.length}</strong>
                                 <em>${context.selectedModule ? 'visible subjects' : 'available modules'}</em>
                             </span>
-                            <span class="lux-program-focus-stat ${context.selectedModuleLoad > 100 ? 'is-danger' : context.selectedModuleLoad === 100 ? 'is-success' : 'is-muted'}">
+                            <span class="lux-program-focus-stat lux-hero-signal ${context.selectedModuleLoad > 100 ? 'is-danger' : context.selectedModuleLoad === 100 ? 'is-success' : 'is-muted'}">
                                 <strong>${context.selectedModule && context.selectedModuleLimit ? context.selectedModuleLoad : '--'}</strong>
                                 <em>${context.selectedModule && context.selectedModuleLimit ? 'load percent' : 'open load'}</em>
                             </span>
                         </div>
                     </div>
                 </div>
-                <div class="lux-program-semester-strip" aria-label="Program semester timeline">
-                    <button type="button" class="lux-program-semester-chip ${context.semesterFilter === 'all' ? 'is-active' : ''}" data-programs-semester="all">
+                <div class="lux-program-semester-strip lux-program-semester-timeline" aria-label="Program semester timeline">
+                    <button type="button" class="lux-program-semester-chip lux-program-semester-timeline__chip ${context.semesterFilter === 'all' ? 'is-active' : ''}" data-programs-semester="all">
                         <span>All semesters</span>
                         <strong>${context.totalProgramEcts} ECTS</strong>
                         <em>${context.allProgramSubjects.length} subjects</em>
@@ -339,13 +341,13 @@
 
     function renderProgramsModuleRailRegion(context) {
         return `
-            <div class="lux-section-card__body">
+            <div class="lux-section-card__body lux-program-shell-body lux-program-shell-body--module-rail">
                 <div class="lux-program-section-head">
                     <div class="lux-section-kicker"><i class="fas fa-layer-group"></i> Curriculum modules</div>
-                    <span class="lux-status-pill">${context.modules.length}</span>
+                    <span class="lux-status-pill wave2-chip wave2-chip--pill">${context.modules.length}</span>
                 </div>
-                <div class="lux-section-copy" style="font-size:12px; margin-top:0; margin-bottom:14px;">Module list for ${escapeHtml(context.facultyLabel)} with live subject counts from the published academic program map.</div>
-                <div class="lux-module-rail" data-preserve-scroll-key="student-curriculum-modules">
+                <div class="lux-section-copy lux-program-rail-copy">Module list for ${escapeHtml(context.facultyLabel)} with live subject counts from the published academic program map.</div>
+                <div class="lux-module-rail lux-program-module-rail" data-preserve-scroll-key="student-curriculum-modules">
                     ${context.modules.length === 0 ? `
                         <div class="lux-empty-state lux-program-empty-state">
                             <i class="fas fa-layer-group"></i>
@@ -361,7 +363,7 @@
                         const load = limit > 0 ? Math.min(100, Math.round((ectsTotal / limit) * 100)) : 0;
                         const moduleSemesters = getCurriculumSemesterCoverage(moduleSubjectsForFaculty);
                         return `
-                            <label class="lux-module-option ${active ? 'is-active' : ''}">
+                            <label class="lux-module-option lux-program-module-option ${active ? 'is-active' : ''}">
                                 <span class="lux-module-option__main">
                                     <input type="radio" name="student-curriculum-module" value="${escapeHtml(module.id)}" ${active ? 'checked' : ''} data-programs-module-radio="1" data-programs-faculty="${escapeHtml(context.programFaculty)}">
                                     <span class="lux-module-option__text">
@@ -370,8 +372,8 @@
                                     </span>
                                 </span>
                                 <span class="lux-module-option__right">
-                                    <span class="lux-status-pill" style="flex-shrink:0;">ECTS: ${ectsTotal}${limit ? `/${limit}` : ''}</span>
-                                    <span class="lux-module-option__meter"><span style="width:${load}%"></span></span>
+                                    <span class="lux-status-pill wave2-chip wave2-chip--pill lux-program-ects-pill">ECTS: ${ectsTotal}${limit ? `/${limit}` : ''}</span>
+                                    <span class="lux-module-option__meter"><span class="lux-module-option__meter-bar" style="--lux-program-module-load:${load}%"></span></span>
                                 </span>
                             </label>
                         `;
@@ -383,33 +385,33 @@
 
     function renderProgramsSubjectPanelRegion(context) {
         return `
-            <div class="lux-section-card__body lux-program-subject-panel">
+            <div class="lux-section-card__body lux-program-shell-body lux-program-shell-body--subject-panel lux-program-subject-panel">
                 ${context.selectedModule ? `
-                    <div class="lux-program-section-head">
+                    <div class="lux-program-section-head lux-program-detail-head">
                         <div>
                             <div class="lux-section-title lux-program-module-title">${escapeHtml(context.selectedModule.name)}</div>
                             <div class="lux-section-copy lux-program-module-copy">Read-only module subjects for ${escapeHtml(context.facultyLabel)}.</div>
                         </div>
-                        <div class="lux-program-focus-summary">
-                            <span class="lux-status-pill">ECTS: ${context.selectedModuleEcts}${context.selectedModuleLimit ? `/${context.selectedModuleLimit}` : ''}</span>
-                            <span class="lux-status-pill">${context.searchLabel}</span>
+                        <div class="lux-program-focus-summary lux-program-detail-summary">
+                            <span class="lux-status-pill wave2-chip wave2-chip--pill">ECTS: ${context.selectedModuleEcts}${context.selectedModuleLimit ? `/${context.selectedModuleLimit}` : ''}</span>
+                            <span class="lux-status-pill wave2-chip wave2-chip--pill">${context.searchLabel}</span>
                         </div>
                     </div>
-                    <div class="lux-program-module-facts">
-                        <span class="lux-status-pill"><i class="fas fa-calendar-alt"></i> ${escapeHtml(context.semesterCoverage)}</span>
-                        <span class="lux-status-pill"><i class="fas fa-link"></i> ${context.prerequisiteCount} subject${context.prerequisiteCount === 1 ? '' : 's'} with prerequisites</span>
-                        <span class="lux-status-pill"><i class="fas fa-book-open"></i> ${context.selectedModuleSubjectsAll.length} total subject${context.selectedModuleSubjectsAll.length === 1 ? '' : 's'} in module</span>
+                    <div class="lux-program-module-facts lux-program-detail-facts">
+                        <span class="lux-status-pill wave2-chip wave2-chip--pill"><i class="fas fa-calendar-alt"></i> ${escapeHtml(context.semesterCoverage)}</span>
+                        <span class="lux-status-pill wave2-chip wave2-chip--pill"><i class="fas fa-link"></i> ${context.prerequisiteCount} subject${context.prerequisiteCount === 1 ? '' : 's'} with prerequisites</span>
+                        <span class="lux-status-pill wave2-chip wave2-chip--pill"><i class="fas fa-book-open"></i> ${context.selectedModuleSubjectsAll.length} total subject${context.selectedModuleSubjectsAll.length === 1 ? '' : 's'} in module</span>
                     </div>
-                    <div class="lux-program-column-head" aria-hidden="true">
+                    <div class="lux-program-column-head lux-program-detail-columns" aria-hidden="true">
                         <div class="lux-program-column-code">Code</div>
                         <div class="lux-program-column-subject">Subject title / requirements</div>
                         <div class="lux-program-column-ects">ECTS / semester</div>
                     </div>
-                    <div class="lux-program-subject-list">
+                    <div class="lux-program-subject-list lux-program-detail-list">
                         ${renderStudentCurriculumLibraryModuleRows(context.moduleSubjects, context.programFaculty, context.searchQuery ? 'search' : context.semesterFilter)}
                     </div>
                 ` : `
-                    <div class="lux-empty-state lux-program-empty-state">
+                    <div class="lux-empty-state lux-program-empty-state lux-program-empty-state--panel">
                         <i class="fas fa-layer-group"></i>
                         <strong class="lux-empty-state__title">No curriculum module selected</strong>
                         <span class="lux-empty-state__copy">No curriculum module is available to display yet.</span>
@@ -421,17 +423,17 @@
 
     function renderProgramsSubjectPanelLoadingRegion(context) {
         return `
-            <div class="lux-section-card__body lux-program-subject-panel">
-                <div class="lux-program-section-head">
+            <div class="lux-section-card__body lux-program-shell-body lux-program-shell-body--subject-panel lux-program-subject-panel">
+                <div class="lux-program-section-head lux-program-detail-head">
                     <div>
                         <div class="lux-section-title lux-program-module-title">${escapeHtml(context.selectedModule?.name || 'Program module')}</div>
                         <div class="lux-section-copy lux-program-module-copy">Preparing the current curriculum detail pane for ${escapeHtml(context.facultyLabel)}.</div>
                     </div>
-                    <div class="lux-program-focus-summary">
-                        <span class="lux-status-pill">Filter: ${escapeHtml(context.semesterLabel)}</span>
+                    <div class="lux-program-focus-summary lux-program-detail-summary">
+                        <span class="lux-status-pill wave2-chip wave2-chip--pill">Filter: ${escapeHtml(context.semesterLabel)}</span>
                     </div>
                 </div>
-                <div class="lux-empty-state lux-program-empty-state">
+                <div class="lux-empty-state lux-program-empty-state lux-program-empty-state--loading">
                     <i class="fas fa-spinner fa-spin"></i>
                     <strong class="lux-empty-state__title">Loading curriculum detail</strong>
                     <span class="lux-empty-state__copy">Preparing the filtered curriculum detail panel.</span>
@@ -541,8 +543,7 @@
         bindProgramsPageDelegates();
 
         if (!document.getElementById('student-educational-program-root')) {
-            contentBox.style.overflowX = 'visible';
-            contentBox.style.padding = '24px';
+            contentBox.classList.add('lux-program-stage-host');
             contentBox.innerHTML = '<div id="student-educational-program-root"></div>';
         }
         const root = document.getElementById('student-educational-program-root');
@@ -574,7 +575,7 @@
         }
         if (clearSearchButton) {
             clearSearchButton.dataset.programsFaculty = programFaculty;
-            clearSearchButton.style.display = preservedSearchQuery ? '' : 'none';
+            clearSearchButton.hidden = !preservedSearchQuery;
         }
         if (filterNote) {
             filterNote.textContent = programFaculty === shellFaculty
@@ -621,14 +622,14 @@
             const semesterEcts = semesterSubjects.reduce((sum, subject) => sum + toPositiveInt(subject.ects, 0), 0);
             const isActiveSemester = String(semesterFilter) === String(semester);
             return `
-                <button type="button" class="lux-program-semester-chip ${isActiveSemester ? 'is-active' : ''}" data-programs-semester="${semester}">
+                <button type="button" class="lux-program-semester-chip lux-program-semester-timeline__chip ${isActiveSemester ? 'is-active' : ''}" data-programs-semester="${semester}">
                     <span>Semester ${semester}</span>
                     <strong>${semesterEcts} ECTS</strong>
                     <em>${semesterSubjects.length} subject${semesterSubjects.length === 1 ? '' : 's'}</em>
                 </button>
             `;
         }).join('') : `
-            <span class="lux-program-semester-chip is-empty">
+            <span class="lux-program-semester-chip lux-program-semester-timeline__chip is-empty">
                 <span>No semester data</span>
                 <strong>0 ECTS</strong>
                 <em>Awaiting curriculum</em>

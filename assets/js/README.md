@@ -11,4 +11,6 @@ The organized source layout lives here:
 - `shared/`: cross-page helpers and data logic
 - `legacy/`: older non-canonical scripts kept for reference
 
-`assets/js/core.js` and the root `core.js` now act only as compatibility loaders for any older include path that still expects a single script entry.
+The old compatibility loaders `assets/js/core.js` and the root `core.js` are retired.
+
+Active routes now load the split files in `assets/js/` directly.

@@ -1,0 +1,280 @@
+- generic [active] [ref=e1]:
+  - text:  
+  - main [ref=e2]:
+    - generic [ref=e4]:
+      - generic [ref=e6]:
+        - generic [ref=e7]:
+          - generic [ref=e8]:
+            - generic [ref=e9]: 
+            - text: Admin Orders
+          - generic [ref=e10]: Orders Command Center
+          - generic [ref=e11]: Search Business Management students, professors, and teaching assistants, then issue orders in bulk from one place. Every recipient sees the final order in their own Orders inbox.
+          - generic [ref=e12]:
+            - generic [ref=e13]:
+              - generic [ref=e14]: 
+              - text: Admin workspace
+            - generic [ref=e15]:
+              - generic [ref=e16]: 
+              - text: Auto sync
+          - button " Back to CMS" [ref=e18] [cursor=pointer]:
+            - generic [ref=e19]: 
+            - text: Back to CMS
+        - complementary [ref=e20]:
+          - generic [ref=e21]:
+            - strong [ref=e22]: "0"
+            - generic [ref=e23]: Admin-side distribution metrics in the same hero-side signal language used on the home dashboard.
+          - generic [ref=e24]:
+            - generic [ref=e25]:
+              - generic [ref=e26]: Sent orders
+              - strong [ref=e27]: "0"
+              - emphasis [ref=e28]: Total published orders visible inside this faculty command center.
+            - generic [ref=e29]:
+              - generic [ref=e30]: Recipients covered
+              - strong [ref=e31]: "0"
+              - emphasis [ref=e32]: Students and staff touched by those orders.
+            - generic [ref=e33]:
+              - generic [ref=e34]: Created today
+              - strong [ref=e35]: "0"
+              - emphasis [ref=e36]: Orders published during the current day.
+      - generic [ref=e37]:
+        - generic [ref=e38]:
+          - generic [ref=e40]:
+            - generic [ref=e41]:
+              - generic [ref=e42]:
+                - generic [ref=e43]: Select Recipients
+                - generic [ref=e44]: Search one person or mark many at once inside Business Management.
+              - generic [ref=e45]: 0 selected
+            - textbox "Search by name, ID, email, or role" [ref=e46]
+            - generic [ref=e47]:
+              - button "All" [ref=e48]
+              - button "Students" [ref=e49]
+              - button "Professors" [ref=e50]
+              - button "TAs" [ref=e51]
+            - generic [ref=e52]:
+              - button " Select Filtered" [ref=e53] [cursor=pointer]:
+                - generic [ref=e54]: 
+                - text: Select Filtered
+              - button " Clear" [ref=e55] [cursor=pointer]:
+                - generic [ref=e56]: 
+                - text: Clear
+            - generic [ref=e58]:
+              - generic [ref=e59]:
+                - checkbox "QA Student Alpha Student qa.student.alpha@student.kiu.edu.ge admin-testing-econ-student · Semester 1" [ref=e60]
+                - generic [ref=e61]:
+                  - generic [ref=e62]:
+                    - generic [ref=e63]: QA Student Alpha
+                    - generic [ref=e64]: Student
+                  - generic [ref=e65]: qa.student.alpha@student.kiu.edu.ge
+                  - generic [ref=e66]: admin-testing-econ-student · Semester 1
+              - generic [ref=e67]:
+                - checkbox "QA Prof Alpha Professor qa.prof.alpha@kiu.edu.ge admin-testing-econ-professor" [ref=e68]
+                - generic [ref=e69]:
+                  - generic [ref=e70]:
+                    - generic [ref=e71]: QA Prof Alpha
+                    - generic [ref=e72]: Professor
+                  - generic [ref=e73]: qa.prof.alpha@kiu.edu.ge
+                  - generic [ref=e74]: admin-testing-econ-professor
+              - generic [ref=e75]:
+                - checkbox "QA TA Alpha Teaching Assistant qa.ta.alpha@kiu.edu.ge admin-testing-econ-ta" [ref=e76]
+                - generic [ref=e77]:
+                  - generic [ref=e78]:
+                    - generic [ref=e79]: QA TA Alpha
+                    - generic [ref=e80]: Teaching Assistant
+                  - generic [ref=e81]: qa.ta.alpha@kiu.edu.ge
+                  - generic [ref=e82]: admin-testing-econ-ta
+          - generic [ref=e84]:
+            - generic [ref=e86]:
+              - generic [ref=e87]: Compose Order
+              - generic [ref=e88]: This order will appear in the selected users' Orders page.
+            - generic [ref=e89]:
+              - textbox "Order title" [ref=e90]
+              - combobox [ref=e91]:
+                - option "General Order" [selected]
+                - option "Registration Order"
+                - option "Academic Order"
+                - option "Financial Order"
+                - option "Scholarship Order"
+                - option "HR Order"
+            - generic [ref=e92]:
+              - textbox [ref=e93]: 2026-05-27
+              - textbox "Write the full order description that recipients should see." [ref=e94]
+            - generic [ref=e95]:
+              - generic [ref=e96]: 0 students
+              - generic [ref=e97]: 0 professors
+              - generic [ref=e98]: 0 TAs
+            - button " Send Order" [ref=e99] [cursor=pointer]:
+              - generic [ref=e100]: 
+              - text: Send Order
+        - generic [ref=e101]:
+          - generic [ref=e103]:
+            - generic [ref=e104]:
+              - generic [ref=e105]:
+                - generic [ref=e106]: Sent Orders
+                - generic [ref=e107]: Orders already issued inside Business Management.
+              - generic [ref=e108]: 0 total
+            - table [ref=e110]:
+              - rowgroup [ref=e111]:
+                - row "Order Recipients Created Effective Actions" [ref=e112]:
+                  - columnheader "Order" [ref=e113]
+                  - columnheader "Recipients" [ref=e114]
+                  - columnheader "Created" [ref=e115]
+                  - columnheader "Effective" [ref=e116]
+                  - columnheader "Actions" [ref=e117]
+              - rowgroup [ref=e118]:
+                - row "No orders have been sent for this faculty yet." [ref=e119]:
+                  - cell "No orders have been sent for this faculty yet." [ref=e120]
+          - generic [ref=e124]:
+            - generic [ref=e125]: 
+            - text: Select an order to inspect its audience and full description.
+  - generic [ref=e126]:
+    - generic [ref=e127]:
+      - heading " Colour & Motion Studio" [level=3] [ref=e128]:
+        - generic [ref=e129]: 
+        - text: Colour & Motion Studio
+      - generic [ref=e130] [cursor=pointer]: 
+    - generic [ref=e131]:
+      - generic [ref=e132]:
+        - generic [ref=e133]: Curated Palettes
+        - generic [ref=e134]:
+          - button "Obsidian & Amber" [ref=e135]:
+            - generic [ref=e136]: Obsidian & Amber
+          - button "Slate & Sapphire" [ref=e137]:
+            - generic [ref=e138]: Slate & Sapphire
+          - button "Pine & Jade" [ref=e139]:
+            - generic [ref=e140]: Pine & Jade
+          - button "Burgundy & Rose" [ref=e141]:
+            - generic [ref=e142]: Burgundy & Rose
+          - button "Sand & Pearl" [ref=e143]:
+            - generic [ref=e144]: Sand & Pearl
+          - button "Ink & Orchid" [ref=e145]:
+            - generic [ref=e146]: Ink & Orchid
+      - generic [ref=e147]:
+        - generic [ref=e148]: Interface Mode
+        - generic [ref=e149]:
+          - button " Dark" [ref=e150]:
+            - generic [ref=e151]: 
+            - text: Dark
+          - button " Light" [ref=e152]:
+            - generic [ref=e153]: 
+            - text: Light
+      - generic [ref=e154]:
+        - generic [ref=e155]: Panel Transparency
+        - generic [ref=e156]:
+          - generic [ref=e157]:
+            - generic [ref=e158]:
+              - generic [ref=e159]: 
+              - text: Opacity Level
+            - text: 70%
+          - slider [ref=e160]: "70"
+          - generic [ref=e161]:
+            - generic [ref=e162]:
+              - generic [ref=e163]: 
+              - text: Full Transparent (0%)
+            - generic [ref=e164]:
+              - generic [ref=e165]: 
+              - text: Solid (100%)
+      - generic [ref=e166]:
+        - generic [ref=e167]: 3D Background
+        - generic [ref=e168]:
+          - button " Constellation Veil Floating depth nodes with cinematic glow" [ref=e169]:
+            - generic [ref=e170]:
+              - generic [ref=e171]: 
+              - text: Constellation Veil
+            - generic [ref=e172]: Floating depth nodes with cinematic glow
+          - button " Aurora Drift Luminous atmospheric ribbons behind the dashboard" [ref=e173]:
+            - generic [ref=e174]:
+              - generic [ref=e175]: 
+              - text: Aurora Drift
+            - generic [ref=e176]: Luminous atmospheric ribbons behind the dashboard
+          - button " Horizon Mesh Prestige wireframe depth with calmer motion" [ref=e177]:
+            - generic [ref=e178]:
+              - generic [ref=e179]: 
+              - text: Horizon Mesh
+            - generic [ref=e180]: Prestige wireframe depth with calmer motion
+      - generic [ref=e181]:
+        - generic [ref=e182]: Background Animation
+        - generic [ref=e183]:
+          - button " On" [ref=e184]:
+            - generic [ref=e185]: 
+            - text: "On"
+          - button " Off" [ref=e186]:
+            - generic [ref=e187]: 
+            - text: "Off"
+      - generic [ref=e188]:
+        - generic [ref=e189]: Custom Accent Mix
+        - generic [ref=e190]:
+          - generic [ref=e191]:
+            - generic [ref=e192]: Hue 0 deg
+            - slider [ref=e193]: "156"
+          - generic [ref=e194]:
+            - generic [ref=e195]: Saturation 72%
+            - slider [ref=e196]: "72"
+          - generic [ref=e197]:
+            - generic [ref=e198]: Lightness 34%
+            - slider [ref=e199]: "34"
+          - generic [ref=e200]: hsl(156, 72%, 34%)
+          - button "Apply Custom Mix" [ref=e201]
+  - text:                  
+  - generic:   
+  - generic:   
+  - generic [ref=e204]:
+    - generic [ref=e205]:
+      - generic [ref=e206]: Notification Center
+      - generic [ref=e207]: Track real grades, service replies, schedule changes, official orders, and selected social activity in one place.
+    - generic [ref=e208]:
+      - button " Minimize" [ref=e209] [cursor=pointer]:
+        - generic [ref=e210]: 
+        - text: Minimize
+      - button "" [ref=e211]:
+        - generic [ref=e212]: 
+  - complementary:
+    - generic:
+      - generic: K
+      - generic:
+        - generic: KIU
+        - generic: Integrated Campus Portal
+    - generic:
+      - generic: Control
+      - button " Dashboard":
+        - generic: 
+        - generic: Dashboard
+      - button " Admin Tools":
+        - generic: 
+        - generic: Admin Tools
+      - button " Scheduler":
+        - generic: 
+        - generic: Scheduler
+      - button " Staff":
+        - generic: 
+        - generic: Staff
+      - button " Students":
+        - generic: 
+        - generic: Students
+      - generic: Systems
+      - button " News":
+        - generic: 
+        - generic: News
+      - button " Library":
+        - generic: 
+        - generic: Library
+      - button " Orders":
+        - generic: 
+        - generic: Orders
+      - button " Social":
+        - generic: 
+        - generic: Social
+      - button " Exams":
+        - generic: 
+        - generic: Exams
+      - button " Programs":
+        - generic: 
+        - generic: Programs
+      - button " Profile":
+        - generic: 
+        - generic: Profile
+    - generic:
+      - generic: PA
+      - generic:
+        - generic: Portal Administrator
+        - generic: Admin View - Business Management
+  - text:         

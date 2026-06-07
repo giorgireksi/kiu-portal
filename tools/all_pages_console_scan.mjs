@@ -4,6 +4,7 @@ import { dirname, resolve } from 'node:path';
 
 const BASE_URL = process.env.KIU_BASE_URL || 'http://127.0.0.1:8876';
 const BACKEND_URL = process.env.KIU_BACKEND_URL || 'http://127.0.0.1:48933';
+const PLAYWRIGHT_EXECUTABLE = String(process.env.KIU_PLAYWRIGHT_EXECUTABLE || '').trim();
 const OUTPUT_PATH = resolve(
     process.cwd(),
     process.env.KIU_OUTPUT_PATH || 'artifacts/all-pages-console-scan.json'
@@ -232,7 +233,10 @@ async function capturePage(browser, pageName, adminToken) {
 
 async function main() {
     const adminToken = await fetchAdminPortalSessionToken();
-    const browser = await chromium.launch({ headless: true });
+    const browser = await chromium.launch({
+        headless: true,
+        ...(PLAYWRIGHT_EXECUTABLE ? { executablePath: PLAYWRIGHT_EXECUTABLE } : {})
+    });
     try {
         const results = [];
         for (const pageName of ROOT_PAGES) {

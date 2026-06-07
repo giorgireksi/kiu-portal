@@ -44,6 +44,19 @@ function bootMobileShell(options = {}) {
 }
 
 describe('index mobile shell runtime', () => {
+  it('keeps the generated scaffold on the hidden contract instead of inline display stubs', () => {
+    const source = readSource('assets/js/pages/index-mobile-shell.js');
+
+    expect(source).toContain('nav.hidden = true;');
+    expect(source).toContain('<em class="mob-badge" id="mob-badge-msg" hidden>0</em>');
+    expect(source).toContain('<em class="mob-badge" id="mob-badge-notif" hidden>0</em>');
+    expect(source).toContain('sheet.hidden = true;');
+    expect(source).toContain('function setElementShown(element, shown, displayValue) {');
+    expect(source).toContain('if (isElementShown(sheet)) {');
+    expect(source).toContain("if (adminSwitch) adminSwitch.hidden = role !== 'admin';");
+    expect(source).toContain('setElementShown(nav, isMobileViewport());');
+  });
+
   it('creates the mobile nav and action-sheet scaffold at runtime on mobile widths', () => {
     const dom = bootMobileShell();
     const doc = dom.window.document;
@@ -51,6 +64,8 @@ describe('index mobile shell runtime', () => {
     expect(doc.getElementById('mobile-bottom-nav')).not.toBeNull();
     expect(doc.getElementById('mobile-action-sheet')).not.toBeNull();
     expect(doc.getElementById('mob-sheet-dynamic-nav')).not.toBeNull();
+    expect(doc.getElementById('mob-badge-msg')?.hasAttribute('hidden')).toBe(true);
+    expect(doc.getElementById('mob-badge-notif')?.hasAttribute('hidden')).toBe(true);
     expect(doc.body.classList.contains('lux-sidebar-collapsed')).toBe(true);
   });
 

@@ -1,0 +1,69 @@
+- generic [active] [ref=e1] [cursor=pointer]:
+  - text:  
+  - main [ref=e2]:
+    - generic [ref=e4]:
+      - generic [ref=e5]:
+        - generic [ref=e6]:
+          - generic [ref=e7]:
+            - generic [ref=e8]:
+              - generic [ref=e9]: 
+              - text: Learning Management System
+            - generic [ref=e10]: Learning Workspace
+            - generic [ref=e11]: Review subjects you chose during registration, switch semesters, and open your enrolled course workspace.
+          - generic [ref=e12]:
+            - generic [ref=e13]:
+              - generic [ref=e14]:
+                - generic [ref=e16]: 
+                - generic [ref=e17]:
+                  - generic [ref=e18]: Business Management
+                  - generic [ref=e19]: Active Faculty
+              - generic [ref=e20]:
+                - generic [ref=e22]: 
+                - generic [ref=e23]:
+                  - generic [ref=e24]: "0"
+                  - generic [ref=e25]: Subjects
+              - generic [ref=e26]:
+                - generic [ref=e28]: 
+                - generic [ref=e29]:
+                  - generic [ref=e30]: "0"
+                  - generic [ref=e31]: Enrolled
+            - generic [ref=e33]:
+              - generic [ref=e34]: 
+              - text: "Faculty: Business Management"
+        - text: 
+      - generic [ref=e36]:
+        - generic [ref=e37]:
+          - generic [ref=e38]: Semester
+          - tablist "Semester" [ref=e39]:
+            - tab "Semester 1" [selected] [ref=e40]
+        - generic [ref=e41]:
+          - generic [ref=e42]:
+            - generic [ref=e43]:
+              - generic [ref=e44]: 
+              - text: Subjects
+            - generic [ref=e45]: My enrolled subjects
+            - generic [ref=e46]: Subjects you registered for in the selected semester. Open one to continue in your course workspace.
+          - generic [ref=e47]:
+            - generic [ref=e48]: 
+            - text: My LMS
+        - generic [ref=e50]: You have not registered for any subjects in this semester yet. Use Registration to choose your courses.
+        - generic [ref=e52]:
+          - generic [ref=e54]: 
+          - generic [ref=e55]: No enrolled subjects yet
+          - generic [ref=e56]: Register for subjects on the Registration page. After you choose your group, they will appear here for the matching semester.
+    - text:                  
+  - text:                      
+  - generic:   
+  - generic:   
+  - complementary:
+    - generic:
+      - generic: K
+      - generic:
+        - generic: KIU
+        - generic: Integrated Campus Portal
+    - generic:
+      - generic: KI
+      - generic:
+        - generic: Portal User
+        - generic: University Portal
+  - text:         

@@ -10,8 +10,8 @@
     const PANEL_KEY = 'KIU_SOCIAL_ACTIVE_PANEL';
     const CHAT_KEY = 'KIU_SOCIAL_ACTIVE_CHAT';
     const SOCIAL_COMMUNITY_MODULE_URL = 'assets/js/pages/social-community.js?v=20260516-socialcommunity-module1';
-    const SOCIAL_ALERTS_MODULE_URL = 'assets/js/pages/social-alerts.js?v=20260516-socialalerts-module1';
-    const SOCIAL_LOST_FOUND_MODULE_URL = 'assets/js/pages/social-lost-found.js?v=20260516-sociallostfound-module1';
+    const SOCIAL_ALERTS_MODULE_URL = 'assets/js/pages/social-alerts.js?v=20260604-alertcats1';
+    const SOCIAL_LOST_FOUND_MODULE_URL = 'assets/js/pages/social-lost-found.js?v=20260604-lfnative1';
     const SOCIAL_MESSAGES_MODULE_URL = 'assets/js/pages/social-messages.js?v=20260516-socialmessages-module1';
     const SOCIAL_PROFILE_MODULE_URL = 'assets/js/pages/social-profile.js?v=20260516-socialprofile-module1';
     const DIRECTORY_REFRESH_MS = 180;
@@ -25,6 +25,9 @@
     };
 
     let bound = false;
+    let boundHost = null;
+    let lastSocialRoot = null;
+    let globalKeydownBound = false;
     let renderAttemptCount = 0;
     let directoryRefreshTimer = 0;
     let lastShellSignature = '';
@@ -36,9 +39,99 @@
     let socialProfileModulePromise = null;
     let socialDesktopModulePrefetchScheduled = false;
     let socialDirectoryPrefetchScheduled = false;
+    let socialRouteGuardianBound = false;
+    let socialRouteGuardianInterval = 0;
+    let hostEventAbort = null;
+    const pendingCommentReactions = new Set();
+
+    function isStandaloneSocialRoute() {
+        const pathname = String(window.location?.pathname || '').toLowerCase();
+        return pathname.endsWith('/social.html') || pathname.endsWith('social.html');
+    }
+
+    function socialHostMarkup() {
+        return `
+            <div id="page-social" class="page-section active-page">
+                <div id="public-social-root">
+                    <div id="social-neo-root" class="social-neo social-neo-facebook" data-panel="feed">
+                        <div id="social-neo-flash-region"></div>
+                        <div id="social-neo-topbar-region"></div>
+                        <div id="social-neo-command-region"></div>
+                        <div class="social-neo-shell">
+                            <div class="social-neo-center" id="social-neo-center-region"></div>
+                            <div id="social-neo-rail-region"></div>
+                        </div>
+                        <div id="social-neo-drawer-region"></div>
+                        <div id="social-neo-mobile-tab-region"></div>
+                        <div id="social-neo-toast-region"></div>
+                        <div id="social-neo-dialog-region"></div>
+                        <div id="social-neo-story-viewer-region"></div>
+                        <div id="social-neo-story-composer-region"></div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    function ensureSocialRouteHost() {
+        if (!isStandaloneSocialRoute()) return document.getElementById(ROOT_ID);
+        let socialRoot = document.getElementById(ROOT_ID);
+        if (socialRoot) return socialRoot;
+        const appContent = document.getElementById('app-content');
+        if (!appContent) return null;
+        appContent.innerHTML = socialHostMarkup();
+        socialRoot = document.getElementById(ROOT_ID);
+        if (socialRoot) {
+            document.body.classList.add('lux-route-social', 'lux-entry-social', 'lux-family-social', 'lux-site-modernized');
+            document.body.classList.remove('lux-route-home', 'lux-entry-home', 'lux-home-page', 'kiu-shell-loading');
+            document.body.classList.add('lux-unified-shell', 'lux-nonhome-page');
+            document.body.dataset.luxPage = 'social';
+            document.body.dataset.luxEntry = 'social';
+            document.body.dataset.luxFamily = 'social';
+            bound = false;
+            boundHost = null;
+            bindEvents();
+        }
+        return socialRoot;
+    }
+
+    function guardStandaloneSocialRoute() {
+        if (!isStandaloneSocialRoute() || socialRouteGuardianBound) return;
+        const appContent = document.getElementById('app-content');
+        if (!appContent) return;
+        socialRouteGuardianBound = true;
+
+        const reconcile = () => {
+            const socialRoot = document.getElementById(ROOT_ID);
+            if (socialRoot && socialRoot === lastSocialRoot) return;
+            if (!socialRoot) {
+                lastSocialRoot = null;
+                if (!ensureSocialRouteHost()) return;
+            }
+            lastSocialRoot = document.getElementById(ROOT_ID);
+            bound = false;
+            boundHost = null;
+            bindEvents();
+            renderSocialPageNow('social-route-guardian');
+        };
+
+        const observer = new MutationObserver(() => reconcile());
+        observer.observe(appContent, { childList: true, subtree: true });
+        window.setTimeout(reconcile, 200);
+        window.setTimeout(reconcile, 800);
+        window.setTimeout(reconcile, 2000);
+        if (socialRouteGuardianInterval) window.clearInterval(socialRouteGuardianInterval);
+        socialRouteGuardianInterval = window.setInterval(() => reconcile(), 500);
+        window.setTimeout(() => {
+            if (socialRouteGuardianInterval) {
+                window.clearInterval(socialRouteGuardianInterval);
+                socialRouteGuardianInterval = 0;
+            }
+        }, 12000);
+    }
 
     function root() {
-        return document.getElementById(ROOT_ID);
+        return document.getElementById(ROOT_ID) || ensureSocialRouteHost();
     }
 
     function state() {
@@ -55,7 +148,37 @@
     }
 
     function text(value) {
-        return String(value || '').trim();
+        return String(value == null ? '' : value).trim();
+    }
+
+    function postKey(postOrId) {
+        if (postOrId && typeof postOrId === 'object') return text(postOrId.id);
+        return text(postOrId);
+    }
+
+    function syncCommentDraftFromTarget(target) {
+        const commentForm = target?.closest?.('form[data-form="comment"]');
+        if (!commentForm || text(target?.name) !== 'commentBody') return;
+        const runtime = state();
+        const postId = postKey(commentForm.getAttribute('data-post-id'));
+        if (!postId) return;
+        runtime.ui.commentDraftByPost = runtime.ui.commentDraftByPost || {};
+        runtime.ui.commentDraftByPost[postId] = target.value;
+    }
+
+    function focusCommentComposeInput(host, postId) {
+        const normalizedPostId = postKey(postId);
+        if (!host || !normalizedPostId) return null;
+        const input = host.querySelector(
+            `form[data-form="comment"][data-post-id="${CSS.escape(normalizedPostId)}"] [name="commentBody"]`
+        ) || host.querySelector(`#${CSS.escape(controlId('commentBody', normalizedPostId))}`);
+        if (input && typeof input.focus === 'function') {
+            try {
+                input.focus({ preventScroll: false });
+                input.scrollIntoView?.({ block: 'nearest', behavior: 'smooth' });
+            } catch (error) {}
+        }
+        return input;
     }
 
     function escape(value) {
@@ -612,11 +735,33 @@
             return plan;
         }
 
+        if (/^dialog-/.test(reason)) {
+            return {
+                flash: false,
+                topbar: false,
+                command: false,
+                center: false,
+                rail: false,
+                drawer: false,
+                mobileTab: false,
+                toast: false,
+                dialog: true,
+                storyViewer: false,
+                storyComposer: false
+            };
+        }
+
         const centerOnlyReasons = new Set([
             'post-save',
+            'post-react',
+            'post-pin',
             'post-file',
+            'feed',
+            'feed-error',
             'comment-reply',
             'comment-reply-cancel',
+            'comment-react',
+            'comment-report',
             'comment-created',
             'profile-tab',
             'profile-edit',
@@ -646,7 +791,13 @@
             'group-member-faculty',
             'project-invite-faculty',
             'portfolio-discover-faculty',
-            'portfolio-discover-role'
+            'portfolio-discover-role',
+            'project-task-toggle-form',
+            'project-task-toggle-my',
+            'project-task-quick-add',
+            'project-task-search',
+            'project-task-filter',
+            'project-task-created'
         ]);
         if (centerOnlyReasons.has(reason)) {
             const plan = {
@@ -958,6 +1109,12 @@
             icon: 'fa-layer-group',
             count: (Array.isArray(social.groups) ? social.groups : []).filter(isJoinedGroup).length
         }, {
+            id: 'workspace',
+            label: 'Projects',
+            helper: 'Team project hubs',
+            icon: 'fa-diagram-project',
+            count: (Array.isArray(social.projects) ? social.projects : []).filter((project) => ['owner', 'member', 'advisor', 'instructor-viewer'].includes(text(project?.role || '').toLowerCase())).length
+        }, {
             id: 'projects',
             label: 'Portfolio',
             helper: 'Student showcase feed',
@@ -1016,16 +1173,57 @@
     }
 
     function classifyNotification(notification) {
+        const nType = String(notification?.type || '').toLowerCase();
         const blob = `${text(notification?.title)} ${text(notification?.text)}`.toLowerCase();
-        if (notification?.routeData?.chatId || /message|chat|thread|reply/.test(blob)) return 'message';
-        if (/mention|tagged|mentioned|@/.test(blob)) return 'mention';
-        if (/call|video|voice/.test(blob)) return 'call';
+        if (notification?.routeData?.chatId || nType === 'message' || nType === 'chat' || /message|chat|thread|reply/.test(blob)) return 'message';
+        if (nType === 'mention' || /mention|tagged|mentioned|@/.test(blob)) return 'mention';
+        if (nType === 'call' || /call|video|voice/.test(blob)) return 'call';
         return 'system';
+    }
+
+    const ALERTS_CATEGORIES = [
+        { id: 'all', label: 'All', icon: 'fa-inbox' },
+        { id: 'academic', label: 'Academic', icon: 'fa-graduation-cap' },
+        { id: 'messages', label: 'Messages', icon: 'fa-envelope' },
+        { id: 'social', label: 'Social', icon: 'fa-users' },
+        { id: 'university', label: 'University', icon: 'fa-bullhorn' },
+        { id: 'support', label: 'Support', icon: 'fa-headset' }
+    ];
+
+    function classifyNotificationCategory(notification) {
+        const src = String(notification?.source || '').toLowerCase();
+        const nType = String(notification?.type || '').toLowerCase();
+        if (notification?.routeData?.chatId || nType === 'message' || nType === 'chat' || nType === 'call') return 'messages';
+        if (src === 'social') return 'social';
+        if (src === 'mail' || src === 'messenger' || src === 'calls') return 'messages';
+        if (src === 'student-service') return 'support';
+        if (src === 'news') return 'university';
+        if (nType.includes('grade') || nType === 'manual-quiz-grade' || nType === 'grades-published') return 'academic';
+        if (nType.includes('schedule')) return 'academic';
+        if (nType.includes('enrollment')) return 'academic';
+        if (nType.includes('announcement') || nType.includes('order')) return 'university';
+        if (src === 'registration') return 'academic';
+        return 'university';
+    }
+
+    function getCategoryUnreadCounts(notifications) {
+        const counts = { all: 0, academic: 0, messages: 0, social: 0, university: 0, support: 0 };
+        for (let i = 0; i < notifications.length; i++) {
+            if (!notifications[i].read) {
+                counts.all++;
+                const cat = classifyNotificationCategory(notifications[i]);
+                if (counts[cat] !== undefined) counts[cat]++;
+            }
+        }
+        return counts;
     }
 
     function filterNotificationsByView(notifications, filterId) {
         if (filterId === 'mentions') return notifications.filter((notification) => classifyNotification(notification) === 'mention');
         if (filterId === 'all') return notifications;
+        if (filterId === 'academic' || filterId === 'messages' || filterId === 'social' || filterId === 'university' || filterId === 'support') {
+            return notifications.filter((notification) => classifyNotificationCategory(notification) === filterId);
+        }
         return notifications.filter((notification) => !notification.read);
     }
 
@@ -1173,6 +1371,9 @@
         text,
         filterNotificationsByView,
         classifyNotification,
+        classifyNotificationCategory,
+        getCategoryUnreadCounts,
+        ALERTS_CATEGORIES,
         unreadNotifications,
         escape,
         when,
@@ -1222,12 +1423,16 @@
         isIncomingCall,
         escape
     });
-    function saveLostFoundItems(nextItems, reason = 'lost-found-save') {
+    async function saveLostFoundItems(nextItems, reason = 'lost-found-save') {
         const runtime = state();
         if (!runtime.social || typeof runtime.social !== 'object') runtime.social = {};
-        runtime.social.lostFoundItems = Array.isArray(nextItems) ? nextItems.map((item) => normalizeLostFoundItem(item)) : [];
-        if (typeof queuePortalSocialSync === 'function') {
-            try { queuePortalSocialSync(reason); } catch (error) {}
+        const normalizedItems = Array.isArray(nextItems) ? nextItems.map((item) => normalizeLostFoundItem(item)) : [];
+        runtime.social.lostFoundItems = normalizedItems;
+        if (typeof persistPortalSocialStatePatch === 'function') {
+            const persisted = await persistPortalSocialStatePatch({ lostFoundItems: normalizedItems }, reason);
+            if (Array.isArray(persisted?.lostFoundItems)) {
+                runtime.social.lostFoundItems = persisted.lostFoundItems.map((item) => normalizeLostFoundItem(item));
+            }
         }
         return runtime.social.lostFoundItems;
     }
@@ -1254,7 +1459,7 @@
         const activeEventsTab = text(runtime.ui?.eventsSubTab || 'student') || 'student';
         const activeLostFoundFilter = text(runtime.ui?.lostFoundFilter || 'open') || 'open';
         const activeMessagesFilter = text(runtime.ui?.messagesFilter || 'all') || 'all';
-        const activeAlertsFilter = text(runtime.ui?.alertsFilter || 'unread') || 'unread';
+        const activeAlertsFilter = text(runtime.ui?.alertsFilter || 'all') || 'all';
         const activeProfileTab = text(runtime.ui?.profileTab || 'posts') || 'posts';
 
         const tabs = activePanel === 'community'
@@ -1371,21 +1576,6 @@
                     }]
                     : activePanel === 'alerts'
                         ? [{
-                            action: 'panel-alerts',
-                            tab: 'unread',
-                            label: 'Unread',
-                            isActive: activeAlertsFilter === 'unread'
-                        }, {
-                            action: 'panel-alerts',
-                            tab: 'mentions',
-                            label: 'Mentions',
-                            isActive: activeAlertsFilter === 'mentions'
-                        }, {
-                            action: 'panel-alerts',
-                            tab: 'all',
-                            label: 'All alerts',
-                            isActive: activeAlertsFilter === 'all'
-                        }, {
                             action: 'panel-messages',
                             tab: 'all',
                             label: 'Messages',
@@ -1440,7 +1630,7 @@
                                 isActive: activeHomeFilter === 'campus'
                             }];
 
-        return `<div class="social-neo-tabs social-neo-tabs-context">
+        return `<div class="social-neo-tabs social-neo-tabs-context social-neo-topbar-tabs">
             ${tabs.map((tab) => {
                 const attrs = [tab.action ? `data-action="${escape(tab.action)}"` : ''];
                 if (tab.action === 'panel-feed' && tab.tab) attrs.push(`data-home-filter="${escape(tab.tab)}"`);
@@ -1451,7 +1641,7 @@
                 if (tab.action === 'panel-alerts' && tab.tab) attrs.push(`data-alerts-filter="${escape(tab.tab)}"`);
                 if (tab.action === 'panel-groups' && tab.tab) attrs.push(`data-groups-tab="${escape(tab.tab)}"`);
                   if (tab.action === 'panel-pages' && tab.tab) attrs.push(`data-pages-tab="${escape(tab.tab)}"`);
-                return `<button class="social-neo-tab ${tab.isActive ? 'is-active' : ''}" type="button" ${attrs.join(' ')}>${escape(tab.label)}</button>`;
+                return `<button class="social-neo-tab social-neo-topbar-tab ${tab.isActive ? 'is-active' : ''}" type="button" aria-pressed="${tab.isActive ? 'true' : 'false'}" ${attrs.join(' ')}>${escape(tab.label)}</button>`;
             }).join('')}
         </div>`;
     }
@@ -1763,11 +1953,36 @@
 
     function reactionEmoji(reactionType) {
         const type = text(reactionType || 'like').toLowerCase();
-        if (type === 'love') return 'â¤ï¸';
-        if (type === 'laugh') return 'ðŸ˜‚';
-        if (type === 'wow') return 'ðŸ˜®';
-        if (type === 'support') return 'ðŸ¤';
-        return 'ðŸ‘';
+        if (type === 'love') return '&#10084;&#65039;';
+        if (type === 'laugh') return '&#128514;';
+        if (type === 'wow') return '&#128558;';
+        if (type === 'support') return '&#129309;';
+        return '&#128077;';
+    }
+
+    function reactionLabel(reactionType) {
+        const type = text(reactionType || '').toLowerCase();
+        if (!type) return 'Like';
+        if (type === 'like') return 'Liked';
+        if (type === 'love') return 'Loved';
+        if (type === 'laugh') return 'Haha';
+        if (type === 'wow') return 'Wow';
+        if (type === 'support') return 'Support';
+        return type.charAt(0).toUpperCase() + type.slice(1);
+    }
+
+    function renderPostReactionMetrics(reactionCounts = {}) {
+        const types = ['like', 'love', 'laugh', 'wow', 'support'];
+        const active = types
+            .map((type) => [type, Number(reactionCounts[type] || 0)])
+            .filter(([, count]) => count > 0)
+            .sort((left, right) => right[1] - left[1]);
+        const total = active.reduce((sum, [, count]) => sum + count, 0);
+        if (!total) return '';
+        const icons = active.slice(0, 3).map(([type]) =>
+            `<span class="social-neo-reaction-metric-emoji" aria-hidden="true">${reactionEmoji(type)}</span>`
+        ).join('');
+        return `<span class="social-neo-post-metric social-neo-post-reaction-metric">${icons}<span>${escape(total)}</span></span>`;
     }
 
     function commentReactionType(comment) {
@@ -1777,13 +1992,14 @@
     }
 
     function renderCommentNode(comment, post, depth = 0) {
+        const normalizedPostId = postKey(post);
         const commentAuthor = accountById(comment.authorUserId) || { id: comment.authorUserId, displayName: comment.authorName || comment.authorUserId };
         const replyCount = Array.isArray(comment.replies) ? comment.replies.length : 0;
         const commentReaction = commentReactionType(comment);
         const reactionCounts = comment?.reactionCounts || {};
-        const marginLeft = depth ? `style="margin-left:${Math.min(depth * 16, 48)}px"` : '';
+        const depthClass = depth ? ` is-reply social-neo-comment-depth-${Math.min(depth, 3)}` : '';
         return `
-            <article class="social-neo-comment ${depth ? 'is-reply' : ''}" ${marginLeft} data-comment-id="${escape(text(comment.id))}">
+            <article class="social-neo-comment${depthClass}" data-comment-id="${escape(text(comment.id))}">
                 ${avatar(commentAuthor, 'social-neo-avatar-sm')}
                 <div class="social-neo-comment-bubble">
                     <div class="social-neo-comment-head">
@@ -1793,14 +2009,14 @@
                     <p>${escape(comment.body || comment.text || '')}</p>
                     <div class="social-neo-comment-actions">
                         ${['like', 'love', 'laugh', 'wow', 'support'].map((reactionType) => `
-                            <button class="social-neo-btn social-neo-btn-sm ${commentReaction === reactionType ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'}" type="button" data-action="comment-react" data-post-id="${escape(text(post.id))}" data-comment-id="${escape(text(comment.id))}" data-reaction-type="${escape(reactionType)}">
+                            <button class="social-neo-btn social-neo-btn-sm ${commentReaction === reactionType ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'}" type="button" data-action="comment-react" data-post-id="${escape(normalizedPostId)}" data-comment-id="${escape(text(comment.id))}" data-reaction-type="${escape(reactionType)}">
                                 <span>${reactionEmoji(reactionType)}</span> ${escape(text(reactionCounts[reactionType] || 0))}
                             </button>
                         `).join('')}
-                        <button class="social-neo-btn social-neo-btn-sm social-neo-btn-ghost" type="button" data-action="comment-reply" data-post-id="${escape(text(post.id))}" data-comment-id="${escape(text(comment.id))}" data-author-name="${escape(displayName(commentAuthor))}">
+                        <button class="social-neo-btn social-neo-btn-sm social-neo-btn-ghost" type="button" data-action="comment-reply" data-post-id="${escape(normalizedPostId)}" data-comment-id="${escape(text(comment.id))}" data-author-name="${escape(displayName(commentAuthor))}">
                             <i class="fas fa-reply"></i> Reply${replyCount ? ` (${replyCount})` : ''}
                         </button>
-                        <button class="social-neo-btn social-neo-btn-sm social-neo-btn-ghost" type="button" data-action="comment-report" data-post-id="${escape(text(post.id))}" data-comment-id="${escape(text(comment.id))}">
+                        <button class="social-neo-btn social-neo-btn-sm social-neo-btn-ghost" type="button" data-action="comment-report" data-post-id="${escape(normalizedPostId)}" data-comment-id="${escape(text(comment.id))}">
                             <i class="fas fa-flag"></i>
                         </button>
                     </div>
@@ -1861,7 +2077,7 @@
     function setPanel(panel) {
         const runtime = state();
         const normalizedPanel = text(panel).toLowerCase() === 'lost-found' ? 'lost-and-found' : text(panel);
-        const nextPanel = ['feed', 'community', 'groups', 'projects', 'pages', 'events', 'lost-and-found', 'messages', 'alerts', 'profile'].includes(normalizedPanel) ? normalizedPanel : 'feed';
+        const nextPanel = ['feed', 'community', 'groups', 'workspace', 'projects', 'pages', 'events', 'lost-and-found', 'messages', 'alerts', 'profile'].includes(normalizedPanel) ? normalizedPanel : 'feed';
         const panelChanged = runtime.ui.activePanel !== nextPanel;
         const drawerChanged = runtime.ui.shellDrawerOpen !== false;
         runtime.ui.activePanel = nextPanel;
@@ -1881,16 +2097,18 @@
     function setActiveChat(chatId) {
         const runtime = state();
         const nextChatId = text(chatId);
-        if (runtime.ui.activeChatId === nextChatId) {
-            try {
-                localStorage.setItem(CHAT_KEY, nextChatId);
-            } catch (error) {}
-            return;
-        }
+        const chatChanged = runtime.ui.activeChatId !== nextChatId;
         runtime.ui.activeChatId = nextChatId;
         try {
             localStorage.setItem(CHAT_KEY, runtime.ui.activeChatId);
         } catch (error) {}
+        if (typeof unhidePortalMessengerChatForUser === 'function' && nextChatId) {
+            try { unhidePortalMessengerChatForUser(nextChatId, currentUserId()); } catch (error) {}
+        }
+        if (typeof markPortalChatMessagesRead === 'function' && nextChatId) {
+            markPortalChatMessagesRead(nextChatId).catch(() => null);
+        }
+        if (!chatChanged) return;
         renderSocialPageNow('chat');
     }
 
@@ -1908,11 +2126,15 @@
 
     function focusRestoreSelector(node) {
         if (!node || node === document.body) return '';
-        if (node.id) return `#${domToken(node.id)}`;
         const name = text(node.getAttribute?.('name') || '');
         const bind = text(node.getAttribute?.('data-bind') || '');
         const form = node.closest?.('form[data-form]');
         const formName = text(form?.getAttribute('data-form') || '');
+        const postId = postKey(form?.getAttribute('data-post-id') || '');
+        if (formName === 'comment' && postId && name === 'commentBody') {
+            return `form[data-form="comment"][data-post-id="${CSS.escape(postId)}"] [name="commentBody"]`;
+        }
+        if (node.id) return `#${CSS.escape(node.id)}`;
         if (formName && name) return `form[data-form="${formName}"] [name="${name}"]`;
         if (bind) return `[data-bind="${bind}"]`;
         if (name) return `[name="${name}"]`;
@@ -1978,6 +2200,7 @@
                 flash: rootNode.querySelector('#social-neo-flash-region'),
                 topbar: rootNode.querySelector('#social-neo-topbar-region'),
                 command: rootNode.querySelector('#social-neo-command-region'),
+                workspaceNav: rootNode.querySelector('#social-neo-workspace-nav-region'),
                 center: rootNode.querySelector('#social-neo-center-region'),
                 rail: rootNode.querySelector('#social-neo-rail-region'),
                 drawer: rootNode.querySelector('#social-neo-drawer-region'),
@@ -1995,6 +2218,7 @@
                 <div id="social-neo-topbar-region"></div>
                 <div id="social-neo-command-region"></div>
                 <div class="social-neo-shell">
+                    <div id="social-neo-workspace-nav-region"></div>
                     <div class="social-neo-center" id="social-neo-center-region"></div>
                     <div id="social-neo-rail-region"></div>
                 </div>
@@ -2021,7 +2245,10 @@
 
     function queueDeferredModuleRender(reason) {
         const host = root();
-        if (host) host.__kiuLastRenderSignature = '';
+        if (host) {
+            host.__kiuLastRenderSignature = '';
+            host.__kiuForceCenterOnly = true;
+        }
         renderSocialPageNow(reason);
     }
 
@@ -2149,94 +2376,17 @@
 
     function renderPost(post) {
         const author = accountById(post.authorUserId) || { id: post.authorUserId, displayName: post.authorUserId };
-        const reactionCount = Number(post?.reactionCounts?.like || 0);
+        const reactionCounts = post?.reactionCounts || {};
+        const viewerReaction = text(post.viewerReaction || '');
+        const hasViewerReaction = Boolean(viewerReaction);
+        const reactionCount = Object.values(reactionCounts).reduce((sum, count) => sum + Number(count || 0), 0);
         const sharedPost = post.sharedPost;
         const comments = Array.isArray(post.comments) ? post.comments : [];
         const runtime = state();
-        const commentDraft = text(runtime.ui?.commentDraftByPost?.[post.id] || '');
-        const replyTarget = runtime.ui?.commentReplyTargetByPost?.[post.id] || null;
-        const commentInputId = controlId('commentBody', post.id);
-        const shareCount = Number(post?.shareCount || 0);
-        const saved = isPostSaved(post.id);
-        const scopeBadge = post.scopeType === 'page'
-            ? `Page - ${text(post.scopeName || 'Page')}`
-            : post.scopeType === 'group'
-                ? `Group - ${text(post.scopeName || 'Group')}`
-                : 'Profile';
-        const contextLine = `${accountSubtitle(author)} / ${feedReason(post, author)}`;
-        return `
-            <article class="social-neo-card social-neo-post-card">
-                <div class="social-neo-post-head">
-                    <button class="social-neo-post-author social-neo-clickable" type="button" data-action="profile-view" data-user-id="${escape(text(author.id))}">
-                        ${avatar(author)}
-                        <div>
-                            <strong>${escape(displayName(author))}</strong>
-                            <span>${escape(contextLine)} Â· ${escape(when(post.createdAt))}</span>
-                        </div>
-                    </button>
-                    <div class="social-neo-inline" style="gap:4px">
-                        <span class="social-neo-pill">${escape(scopeBadge)}</span>
-                        ${post.viewerCanManageScope ? `<button class="social-neo-btn social-neo-btn-sm social-neo-btn-ghost" type="button" data-action="post-pin" data-post-id="${escape(post.id)}"><i class="fas fa-thumbtack"></i> ${post.isPinned ? 'Pinned' : 'Pin'}</button>` : ''}
-                        ${post.viewerCanEdit ? `<button class="social-neo-btn social-neo-btn-sm social-neo-btn-ghost" type="button" data-action="post-edit" data-post-id="${escape(post.id)}"><i class="fas fa-pen"></i></button>` : ''}
-                        ${post.viewerCanEdit ? `<button class="social-neo-btn social-neo-btn-sm social-neo-btn-ghost" type="button" data-action="post-delete" data-post-id="${escape(post.id)}"><i class="fas fa-trash-alt"></i></button>` : ''}
-                        <button class="social-neo-btn social-neo-btn-sm social-neo-btn-ghost" type="button" data-action="post-report" data-post-id="${escape(post.id)}"><i class="fas fa-ellipsis-h"></i></button>
-                    </div>
-                </div>
-                <div class="social-neo-post-body">${escape(post.body || post.text || '') || '<span class="social-neo-muted">Shared without extra text.</span>'}</div>
-                ${(Array.isArray(post.media) ? post.media : []).map((media) => filePreview(media)).join('')}
-                ${sharedPost ? `
-                    <div class="social-neo-shared">
-                        <span class="social-neo-pill">Shared post</span>
-                        <strong>${escape(displayName(sharedPost.authorUserId))}</strong>
-                        <p>${escape(sharedPost.body || sharedPost.text || 'Original post')}</p>
-                    </div>
-                ` : ''}
-                <div class="social-neo-inline-metrics">
-                    ${reactionCount > 0 ? `<span><i class="fas fa-heart" style="color:var(--sn-danger)"></i> ${escape(reactionCount)}</span>` : ''}
-                    ${(comments.length || post.replyCount) ? `<span>${escape(comments.length + Number(post.replyCount || 0))} comment${comments.length + Number(post.replyCount || 0) !== 1 ? 's' : ''}</span>` : ''}
-                    ${shareCount > 0 ? `<span>${escape(shareCount)} share${shareCount !== 1 ? 's' : ''}</span>` : ''}
-                </div>
-                <div class="social-neo-post-actions">
-                    <button class="social-neo-btn ${post.viewerReaction === 'like' ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'}" type="button" data-action="post-react" data-post-id="${escape(post.id)}">
-                        <i class="fas fa-thumbs-up"></i> ${post.viewerReaction === 'like' ? 'Liked' : 'Like'}
-                    </button>
-                    <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="post-focus-comment" data-post-id="${escape(post.id)}">
-                        <i class="fas fa-comment"></i> Comment${post.replyCount ? ` (${escape(text(post.replyCount))})` : ''}
-                    </button>
-                    <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="post-share" data-post-id="${escape(post.id)}">
-                        <i class="fas fa-share"></i> Share
-                    </button>
-                    <div class="social-neo-reaction-picker">
-                        ${['like', 'love', 'laugh', 'wow', 'support'].map((reactionType) => `
-                            <button class="social-neo-btn social-neo-btn-sm ${post.viewerReaction === reactionType ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'}" type="button" data-action="post-react" data-post-id="${escape(post.id)}" data-reaction-type="${escape(reactionType)}" title="${escape(reactionType)}">
-                                <span>${reactionEmoji(reactionType)}</span>
-                            </button>
-                        `).join('')}
-                    </div>
-                    <span style="flex:1"></span>
-                    <button class="social-neo-btn ${saved ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'} social-neo-btn-sm" type="button" data-action="post-save" data-post-id="${escape(post.id)}">
-                        <i class="fas fa-bookmark"></i> ${saved ? 'Saved' : 'Save'}
-                    </button>
-                </div>
-                ${comments.length ? `<div class="social-neo-comment-list">${comments.map((comment) => renderCommentNode(comment, post, 0)).join('')}</div>` : ''}
-                <form class="social-neo-comment-compose" data-form="comment" data-post-id="${escape(post.id)}">
-                    ${avatar(currentUser(), 'social-neo-avatar-sm')}
-                    <input class="social-neo-input" id="${escape(commentInputId)}" type="text" name="commentBody" placeholder="Write a comment..." aria-label="Write a comment" value="${escape(commentDraft)}">
-                    <button class="social-neo-btn social-neo-btn-primary" type="submit">Reply</button>
-                </form>
-            </article>
-        `;
-    }
-
-    function renderPost(post) {
-        const author = accountById(post.authorUserId) || { id: post.authorUserId, displayName: post.authorUserId };
-        const reactionCount = Object.values(post?.reactionCounts || {}).reduce((sum, count) => sum + Number(count || 0), 0);
-        const sharedPost = post.sharedPost;
-        const comments = Array.isArray(post.comments) ? post.comments : [];
-        const runtime = state();
-        const commentDraft = text(runtime.ui?.commentDraftByPost?.[post.id] || '');
-        const replyTarget = runtime.ui?.commentReplyTargetByPost?.[post.id] || null;
-        const commentInputId = controlId('commentBody', post.id);
+        const normalizedPostId = postKey(post);
+        const commentDraft = String(runtime.ui?.commentDraftByPost?.[normalizedPostId] || '');
+        const replyTarget = runtime.ui?.commentReplyTargetByPost?.[normalizedPostId] || null;
+        const commentInputId = controlId('commentBody', normalizedPostId);
         const shareCount = Number(post?.shareCount || 0);
         const saved = isPostSaved(post.id);
         const scopeBadge = post.scopeType === 'page'
@@ -2255,19 +2405,19 @@
                 <div class="social-neo-post-head">
                     <button class="social-neo-post-author social-neo-clickable" type="button" data-action="profile-view" data-user-id="${escape(text(author.id))}">
                         ${avatar(author)}
-                        <div>
-                            <strong>${escape(displayName(author))}</strong>
-                            <span>${escape(contextLine)} - ${escape(when(post.createdAt))}</span>
+                        <div class="social-neo-post-author-copy">
+                            <strong class="social-neo-post-author-name">${escape(displayName(author))}</strong>
+                            <span class="social-neo-post-author-meta">${escape(contextLine)} - ${escape(when(post.createdAt))}</span>
                         </div>
                     </button>
-                    <div class="social-neo-inline" style="gap:4px;flex-wrap:wrap;justify-content:flex-end">
-                        <span class="social-neo-pill">${escape(scopeBadge)}</span>
-                        ${pagePostLabel ? `<span class="social-neo-pill">${escape(pagePostLabel)}</span>` : ''}
-                        ${post.isPinned ? `<span class="social-neo-pill" style="background:rgba(245,158,11,.12);color:#f59e0b"><i class="fas fa-thumbtack"></i> Pinned</span>` : ''}
-                        ${post.viewerCanManageScope ? `<button class="social-neo-btn social-neo-btn-sm social-neo-btn-ghost" type="button" data-action="post-pin" data-post-id="${escape(post.id)}"><i class="fas fa-thumbtack"></i> ${post.isPinned ? 'Unpin' : 'Pin'}</button>` : ''}
-                        ${post.viewerCanEdit ? `<button class="social-neo-btn social-neo-btn-sm social-neo-btn-ghost" type="button" data-action="post-edit" data-post-id="${escape(post.id)}"><i class="fas fa-pen"></i></button>` : ''}
-                        ${post.viewerCanEdit ? `<button class="social-neo-btn social-neo-btn-sm social-neo-btn-ghost" type="button" data-action="post-delete" data-post-id="${escape(post.id)}"><i class="fas fa-trash-alt"></i></button>` : ''}
-                        <button class="social-neo-btn social-neo-btn-sm social-neo-btn-ghost" type="button" data-action="post-report" data-post-id="${escape(post.id)}"><i class="fas fa-ellipsis-h"></i></button>
+                    <div class="social-neo-inline social-neo-inline-gap-4 social-neo-inline-post-actions-head social-neo-post-head-actions">
+                        <span class="social-neo-pill social-neo-post-scope-badge">${escape(scopeBadge)}</span>
+                        ${pagePostLabel ? `<span class="social-neo-pill social-neo-post-page-label">${escape(pagePostLabel)}</span>` : ''}
+                        ${post.isPinned ? `<span class="social-neo-pill social-neo-pill-pinned social-neo-post-pinned-pill"><i class="fas fa-thumbtack"></i> Pinned</span>` : ''}
+                        ${post.viewerCanManageScope ? `<button class="social-neo-btn social-neo-btn-sm social-neo-btn-ghost social-neo-post-head-action-btn" type="button" data-action="post-pin" data-post-id="${escape(normalizedPostId)}"><i class="fas fa-thumbtack"></i> ${post.isPinned ? 'Unpin' : 'Pin'}</button>` : ''}
+                        ${post.viewerCanEdit ? `<button class="social-neo-btn social-neo-btn-sm social-neo-btn-ghost social-neo-post-head-action-btn" type="button" data-action="post-edit" data-post-id="${escape(normalizedPostId)}"><i class="fas fa-pen"></i></button>` : ''}
+                        ${post.viewerCanEdit ? `<button class="social-neo-btn social-neo-btn-sm social-neo-btn-ghost social-neo-post-head-action-btn" type="button" data-action="post-delete" data-post-id="${escape(normalizedPostId)}"><i class="fas fa-trash-alt"></i></button>` : ''}
+                        <button class="social-neo-btn social-neo-btn-sm social-neo-btn-ghost social-neo-post-head-action-btn" type="button" data-action="post-report" data-post-id="${escape(normalizedPostId)}"><i class="fas fa-ellipsis-h"></i></button>
                     </div>
                 </div>
                 <div class="social-neo-post-body">${escape(post.body || post.text || '') || '<span class="social-neo-muted">Shared without extra text.</span>'}</div>
@@ -2279,44 +2429,46 @@
                         <p>${escape(sharedPost.body || sharedPost.text || 'Original post')}</p>
                     </div>
                 ` : ''}
-                <div class="social-neo-inline-metrics">
-                    ${reactionCount > 0 ? `<span><i class="fas fa-heart" style="color:var(--sn-danger)"></i> ${escape(reactionCount)}</span>` : ''}
-                    ${commentTotal ? `<span>${escape(commentTotal)} repl${commentTotal === 1 ? 'y' : 'ies'}</span>` : ''}
-                    ${shareCount > 0 ? `<span>${escape(shareCount)} share${shareCount !== 1 ? 's' : ''}</span>` : ''}
+                <div class="social-neo-inline-metrics social-neo-post-metrics">
+                    ${renderPostReactionMetrics(reactionCounts)}
+                    ${commentTotal ? `<span class="social-neo-post-metric">${escape(commentTotal)} repl${commentTotal === 1 ? 'y' : 'ies'}</span>` : ''}
+                    ${shareCount > 0 ? `<span class="social-neo-post-metric">${escape(shareCount)} share${shareCount !== 1 ? 's' : ''}</span>` : ''}
                 </div>
-                <div class="social-neo-post-actions">
-                    <button class="social-neo-btn ${post.viewerReaction === 'like' ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'}" type="button" data-action="post-react" data-post-id="${escape(post.id)}">
-                        <i class="fas fa-thumbs-up"></i> ${post.viewerReaction === 'like' ? 'Liked' : 'Like'}
+                <div class="social-neo-post-actions social-neo-post-action-row">
+                    <button class="social-neo-btn social-neo-post-action-btn ${hasViewerReaction ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'}" type="button" data-action="post-react" data-post-id="${escape(normalizedPostId)}" data-reaction-type="${escape(viewerReaction || 'like')}">
+                        ${hasViewerReaction
+                            ? `<span>${reactionEmoji(viewerReaction)}</span> ${escape(reactionLabel(viewerReaction))}`
+                            : '<i class="fas fa-thumbs-up"></i> Like'}
                     </button>
-                    <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="post-focus-comment" data-post-id="${escape(post.id)}">
+                    <button class="social-neo-btn social-neo-btn-ghost social-neo-post-action-btn" type="button" data-action="post-focus-comment" data-post-id="${escape(normalizedPostId)}">
                         <i class="fas fa-comment"></i> Comment${post.replyCount ? ` (${escape(text(post.replyCount))})` : ''}
                     </button>
-                    <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="post-share" data-post-id="${escape(post.id)}">
+                    <button class="social-neo-btn social-neo-btn-ghost social-neo-post-action-btn" type="button" data-action="post-share" data-post-id="${escape(normalizedPostId)}">
                         <i class="fas fa-share"></i> Share
                     </button>
                     <div class="social-neo-reaction-picker">
                         ${['like', 'love', 'laugh', 'wow', 'support'].map((reactionType) => `
-                            <button class="social-neo-btn social-neo-btn-sm ${post.viewerReaction === reactionType ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'}" type="button" data-action="post-react" data-post-id="${escape(post.id)}" data-reaction-type="${escape(reactionType)}" title="${escape(reactionType)}">
+                            <button class="social-neo-btn social-neo-btn-sm social-neo-post-reaction-btn ${post.viewerReaction === reactionType ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'}" type="button" data-action="post-react" data-post-id="${escape(normalizedPostId)}" data-reaction-type="${escape(reactionType)}" title="${escape(reactionType)}">
                                 <span>${reactionEmoji(reactionType)}</span>
                             </button>
                         `).join('')}
                     </div>
-                    <span style="flex:1"></span>
-                    <button class="social-neo-btn ${saved ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'} social-neo-btn-sm" type="button" data-action="post-save" data-post-id="${escape(post.id)}">
+                    <span class="social-neo-flex-spacer"></span>
+                    <button class="social-neo-btn social-neo-post-save-btn ${saved ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'} social-neo-btn-sm" type="button" data-action="post-save" data-post-id="${escape(normalizedPostId)}">
                         <i class="fas fa-bookmark"></i> ${saved ? 'Saved' : 'Save'}
                     </button>
                 </div>
                 ${renderCommentThread(comments, post)}
-                <form class="social-neo-comment-compose" data-form="comment" data-post-id="${escape(post.id)}">
+                <form class="social-neo-comment-compose" data-form="comment" data-post-id="${escape(normalizedPostId)}">
                     ${avatar(currentUser(), 'social-neo-avatar-sm')}
-                    <div style="display:flex;flex:1;flex-direction:column;gap:8px">
+                    <div class="social-neo-comment-compose-main">
                         ${replyTarget ? `
-                            <div class="social-neo-inline" style="justify-content:space-between;gap:8px;padding:8px 10px;border:1px solid rgba(255,255,255,.08);border-radius:12px;background:rgba(255,255,255,.03)">
-                                <span class="social-neo-label" style="margin:0">Replying to @${escape(replyLabel)}</span>
-                                <button class="social-neo-link-btn" type="button" data-action="comment-reply-cancel" data-post-id="${escape(post.id)}">Cancel</button>
+                            <div class="social-neo-inline social-neo-reply-target">
+                                <span class="social-neo-label social-neo-reply-target-label">Replying to @${escape(replyLabel)}</span>
+                                <button class="social-neo-link-btn" type="button" data-action="comment-reply-cancel" data-post-id="${escape(normalizedPostId)}">Cancel</button>
                             </div>
                         ` : ''}
-                        <div class="social-neo-inline" style="gap:8px;align-items:center">
+                        <div class="social-neo-inline social-neo-comment-compose-row">
                             <input class="social-neo-input" id="${escape(commentInputId)}" type="text" name="commentBody" placeholder="${escape(commentPlaceholder)}" aria-label="${escape(commentPlaceholder)}" value="${escape(commentDraft)}">
                             <button class="social-neo-btn social-neo-btn-primary" type="submit">${commentSubmitLabel}</button>
                         </div>
@@ -2360,22 +2512,22 @@
             campus: 'Campus-wide posts with open visibility.'
         };
         const storiesStrip = `
-            <section class="social-neo-card social-neo-story-card" style="padding:12px 16px !important">
-                <div class="social-neo-stories">
+            <section class="social-neo-card social-neo-story-card social-neo-story-card-compact social-neo-feed-story-card">
+                <div class="social-neo-stories social-neo-feed-story-strip">
                     ${!hasOwnStory ? `
-                        <div class="social-neo-story" data-action="story-add">
-                            <div class="social-neo-story-ring">
+                        <div class="social-neo-story social-neo-feed-story-item" data-action="story-add">
+                            <div class="social-neo-story-ring social-neo-feed-story-ring">
                                 ${avatar({ id: currentUserId(), displayName: 'You', avatar: currentUser()?.avatar })}
                             </div>
-                            <span>Your Story</span>
+                            <span class="social-neo-feed-story-label">Your Story</span>
                         </div>
                     ` : ''}
                     ${storyAuthors.map((a) => `
-                        <div class="social-neo-story" data-action="story-view" data-user-id="${escape(text(a.id))}">
-                            <div class="social-neo-story-ring">
+                        <div class="social-neo-story social-neo-feed-story-item" data-action="story-view" data-user-id="${escape(text(a.id))}">
+                            <div class="social-neo-story-ring social-neo-feed-story-ring">
                                 ${avatar(a)}
                             </div>
-                            <span>${escape(displayName(a).split(' ')[0])}</span>
+                            <span class="social-neo-feed-story-label">${escape(displayName(a).split(' ')[0])}</span>
                         </div>
                     `).join('')}
                 </div>
@@ -2385,57 +2537,57 @@
         return `
             ${storiesStrip}
             <section class="social-neo-card social-neo-composer-card">
-                <div class="social-neo-person" style="gap:12px">
+                <div class="social-neo-person social-neo-composer-person">
                     ${avatar(currentUser())}
-                    <textarea class="social-neo-textarea" id="${escape(composerTextId)}" name="composerText" rows="2" placeholder="What's on your mind, ${escape(displayName(currentUser()).split(' ')[0])}?" data-bind="composer-text" style="border-radius:var(--sn-pill);min-height:44px !important;padding:12px 18px !important">${escape(text(runtime.ui?.composerText || ''))}</textarea>
+                    <textarea class="social-neo-textarea social-neo-composer-textarea" id="${escape(composerTextId)}" name="composerText" rows="2" placeholder="What's on your mind, ${escape(displayName(currentUser()).split(' ')[0])}?" data-bind="composer-text">${escape(text(runtime.ui?.composerText || ''))}</textarea>
                 </div>
                 <div class="social-neo-composer-row">
-                    <div class="social-neo-scope-field">
-                        <span class="social-neo-label">Posting as</span>
-                        <select class="social-neo-select" id="${escape(composerScopeId)}" name="composerScope" data-bind="composer-scope">
+                    <div class="social-neo-scope-field social-neo-composer-scope-field">
+                        <span class="social-neo-label social-neo-composer-scope-label">Posting as</span>
+                        <select class="social-neo-select social-neo-composer-scope-select" id="${escape(composerScopeId)}" name="composerScope" data-bind="composer-scope">
                             ${scopeOptions.map((option) => `<option value="${escape(`${option.type}:${option.id}`)}" ${currentScopeType === option.type && currentScopeId === option.id ? 'selected' : ''}>${escape(option.name)}</option>`).join('')}
                         </select>
                     </div>
-                    <div class="social-neo-scope-field">
-                        <span class="social-neo-label">Audience</span>
-                        <select class="social-neo-select" id="${escape(composerAudienceId)}" name="composerAudience" data-bind="composer-audience">
-                            <option value="campus" ${currentAudience === 'campus' ? 'selected' : ''}>ðŸŒ Campus</option>
-                            <option value="faculty" ${currentAudience === 'faculty' ? 'selected' : ''}>ðŸ›ï¸ Faculty</option>
-                            <option value="connections" ${currentAudience === 'connections' ? 'selected' : ''}>ðŸ‘¥ Connections</option>
-                            <option value="group" ${currentAudience === 'group' ? 'selected' : ''}>ðŸ“ Group members</option>
-                            <option value="page" ${currentAudience === 'page' ? 'selected' : ''}>ðŸ“„ Page followers</option>
+                    <div class="social-neo-scope-field social-neo-composer-audience-field">
+                        <span class="social-neo-label social-neo-composer-audience-label">Audience</span>
+                        <select class="social-neo-select social-neo-composer-audience-select" id="${escape(composerAudienceId)}" name="composerAudience" data-bind="composer-audience">
+                            <option value="campus" ${currentAudience === 'campus' ? 'selected' : ''}>Campus</option>
+                            <option value="faculty" ${currentAudience === 'faculty' ? 'selected' : ''}>Faculty</option>
+                            <option value="connections" ${currentAudience === 'connections' ? 'selected' : ''}>Connections</option>
+                            <option value="group" ${currentAudience === 'group' ? 'selected' : ''}>Group members</option>
+                            <option value="page" ${currentAudience === 'page' ? 'selected' : ''}>Page followers</option>
                         </select>
                     </div>
                 </div>
                 ${renderFileChip(runtime.ui?.composerFile)}
-                <div class="social-neo-post-actions" style="border-top:1px solid var(--sn-bdr);padding-top:10px">
-                    <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="composer-attach"><i class="fas fa-image" style="color:var(--sn-success)"></i> Photo</button>
-                    <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="story-add"><i class="fas fa-circle-plus" style="color:var(--sn-info)"></i> Story</button>
-                    <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="panel-events" data-events-tab="student"><i class="fas fa-calendar-plus" style="color:var(--sn-warning)"></i> Event</button>
-                    <span style="flex:1"></span>
-                    <button class="social-neo-btn social-neo-btn-primary" type="button" data-action="post-submit">
+                <div class="social-neo-post-actions social-neo-composer-actions">
+                    <button class="social-neo-btn social-neo-btn-ghost social-neo-composer-attach-btn" type="button" data-action="composer-attach"><i class="fas fa-image social-neo-action-icon-photo"></i> Photo</button>
+                    <button class="social-neo-btn social-neo-btn-ghost social-neo-composer-story-btn" type="button" data-action="story-add"><i class="fas fa-circle-plus social-neo-action-icon-story"></i> Story</button>
+                    <button class="social-neo-btn social-neo-btn-ghost social-neo-composer-event-btn" type="button" data-action="panel-events" data-events-tab="student"><i class="fas fa-calendar-plus social-neo-action-icon-event"></i> Event</button>
+                    <span class="social-neo-flex-spacer"></span>
+                    <button class="social-neo-btn social-neo-btn-primary social-neo-composer-submit-btn" type="button" data-action="post-submit">
                         <i class="fas fa-paper-plane"></i> Publish
                     </button>
                 </div>
                 <input id="${escape(composerFileId)}" name="postFile" type="file" hidden>
             </section>
-            <section class="social-neo-card social-neo-filter-card">
-                <div class="social-neo-section-head">
-                    <div>
-                        <strong>Feed</strong>
-                        <span>${escape(homeFilterMeta[homeFilter] || homeFilterMeta.all)}</span>
+            <section class="social-neo-card social-neo-filter-card social-neo-feed-filter-card">
+                <div class="social-neo-section-head social-neo-feed-filter-head">
+                    <div class="social-neo-feed-filter-copy">
+                        <strong class="social-neo-feed-filter-title">Feed</strong>
+                        <span class="social-neo-feed-filter-description">${escape(homeFilterMeta[homeFilter] || homeFilterMeta.all)}</span>
                     </div>
-                    <button class="social-neo-link-btn" type="button" data-action="feed-refresh"><i class="fas fa-arrows-rotate"></i> Refresh</button>
+                    <button class="social-neo-link-btn social-neo-feed-filter-refresh" type="button" data-action="feed-refresh"><i class="fas fa-arrows-rotate"></i> Refresh</button>
                 </div>
-                <div class="social-neo-scope-field">
-                    <select class="social-neo-select" id="${escape(feedScopeId)}" name="feedScope" data-bind="feed-scope">
+                <div class="social-neo-scope-field social-neo-feed-filter-scope-field">
+                    <select class="social-neo-select social-neo-feed-filter-scope-select" id="${escape(feedScopeId)}" name="feedScope" data-bind="feed-scope">
                         ${focusOptions.map((option) => `<option value="${escape(`${option.type}:${option.id}`)}" ${text(runtime.ui?.feedScopeType) === option.type && text(runtime.ui?.feedScopeId) === option.id ? 'selected' : ''}>${escape(option.name)}</option>`).join('')}
                     </select>
                 </div>
-                <div class="social-neo-stat-grid">
-                    <div><strong>${escape(visibleFeed.length)}</strong><span>Posts</span></div>
-                    <div><strong>${escape((Array.isArray(runtime.social?.groups) ? runtime.social.groups : []).filter(isJoinedGroup).length)}</strong><span>Groups</span></div>
-                    <div><strong>${escape((Array.isArray(runtime.social?.pages) ? runtime.social.pages : []).filter((page) => page?.isFollowing || isManagedPage(page)).length)}</strong><span>Pages</span></div>
+                <div class="social-neo-stat-grid social-neo-feed-filter-stats">
+                    <div class="social-neo-feed-filter-stat"><strong class="social-neo-feed-filter-stat-value">${escape(visibleFeed.length)}</strong><span class="social-neo-feed-filter-stat-label">Posts</span></div>
+                    <div class="social-neo-feed-filter-stat"><strong class="social-neo-feed-filter-stat-value">${escape((Array.isArray(runtime.social?.groups) ? runtime.social.groups : []).filter(isJoinedGroup).length)}</strong><span class="social-neo-feed-filter-stat-label">Groups</span></div>
+                    <div class="social-neo-feed-filter-stat"><strong class="social-neo-feed-filter-stat-value">${escape((Array.isArray(runtime.social?.pages) ? runtime.social.pages : []).filter((page) => page?.isFollowing || isManagedPage(page)).length)}</strong><span class="social-neo-feed-filter-stat-label">Pages</span></div>
                 </div>
             </section>
             <section class="social-neo-stack">
@@ -2499,7 +2651,7 @@
             <div class="social-neo-stack social-neo-community-layout">
                 <section class="social-neo-card">
                     <div class="social-neo-section-head">
-                        <div><strong><i class="fas fa-user-friends" style="color:#8b5cf6"></i> Community overview</strong><span>People suggestions, verified staff, and shared-context shortcuts in one place.</span></div>
+                        <div><strong><i class="fas fa-user-friends social-neo-section-accent-icon is-purple"></i> Community overview</strong><span>People suggestions, verified staff, and shared-context shortcuts in one place.</span></div>
                     </div>
                     <div class="social-neo-stat-grid">
                         <div><strong>...</strong><span>Profiles</span></div>
@@ -2592,6 +2744,7 @@
         const projectRolePill = (role) => `<span class="social-neo-pill">${escape(roleLabels[text(role).toLowerCase()] || roleLabel(role || 'member'))}</span>`;
         const facultyPills = (codes = []) => (Array.isArray(codes) ? codes : []).map((code) => `<span class="social-neo-pill">${escape(code)}</span>`).join('');
         const skillPills = (skills = []) => (Array.isArray(skills) ? skills : []).map((skill) => `<span class="social-neo-pill">${escape(skill)}</span>`).join('');
+        const scrollList = (modifier, content) => `<div class="social-project-scroll-list${modifier ? ` ${modifier}` : ''}">${content}</div>`;
 
         const renderProjectCard = (project) => {
             const owner = accountById(project?.ownerUserId) || { id: project?.ownerUserId };
@@ -2610,15 +2763,15 @@
                             <h3>${escape(text(project?.name || 'Project workspace'))}</h3>
                             <p>${escape(text(project?.summary || project?.description || 'Structured team workspace.'))}</p>
                         </div>
-                        <div class="social-neo-inline" style="gap:8px;align-items:flex-start;flex-wrap:wrap;justify-content:flex-end">
+                        <div class="social-neo-inline social-neo-inline-end-gap-8-wrap social-neo-inline-items-start">
                             ${projectRolePill(project?.role || 'member')}
                             <button class="social-neo-btn social-neo-btn-primary" type="button" data-action="project-open" data-project-id="${escape(text(project?.id))}">
                                 <i class="fas fa-arrow-right"></i> Open workspace
                             </button>
                         </div>
                     </div>
-                    <div class="social-neo-inline" style="justify-content:space-between;gap:12px;flex-wrap:wrap">
-                        <div class="social-neo-person" style="gap:10px">
+                    <div class="social-neo-inline social-neo-inline-between-gap-12-wrap">
+                        <div class="social-neo-person social-neo-person-gap-10">
                             ${avatar(owner, 'social-neo-avatar-sm')}
                             <div>
                                 <strong>${escape(displayName(owner))}</strong>
@@ -2631,7 +2784,7 @@
                         </div>
                     </div>
                     ${(project?.skillTags || []).length || advisors.length ? `
-                        <div class="social-neo-inline" style="justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:12px">
+                        <div class="social-neo-inline social-neo-inline-between-gap-12-wrap social-neo-inline-mt-12">
                             <div class="social-neo-badge-row">${skillPills(project?.skillTags)}</div>
                             ${advisors.length ? `<div class="social-neo-badge-row">${advisors.map((account) => `<span class="social-neo-pill">${escape(displayName(account))}</span>`).join('')}</div>` : ''}
                         </div>
@@ -2645,13 +2798,13 @@
             const canManage = Boolean(activeProject?.isManager);
             return `
                 <article class="social-neo-card social-project-team-card">
-                    <div class="social-neo-inline" style="justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap">
-                        <div class="social-neo-person" style="align-items:flex-start;gap:12px">
+                    <div class="social-neo-inline social-neo-inline-between-start-wrap">
+                        <div class="social-neo-person social-neo-person-start-gap-12">
                             ${avatar(account)}
                             <div>
                                 <strong>${escape(displayName(account))}</strong>
                                 <div class="social-neo-muted">${escape(accountSubtitle(account))}</div>
-                                <div class="social-neo-badge-row" style="margin-top:8px">
+                                <div class="social-neo-badge-row social-neo-badge-row-mt-8">
                                     ${projectRolePill(role)}
                                     <span class="social-neo-pill">${escape(text(account?.facultyCode || account?.faculty || 'Faculty not set'))}</span>
                                     ${pending ? `<span class="social-neo-pill">Invited</span>` : ''}
@@ -2660,7 +2813,7 @@
                             </div>
                         </div>
                         ${canManage && text(userId) !== text(activeProject?.ownerUserId || '') ? `
-                            <div class="social-neo-inline" style="gap:8px;flex-wrap:wrap">
+                            <div class="social-neo-inline social-neo-inline-gap-8-wrap">
                                 ${role !== 'member' ? `<button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="project-member-role" data-project-id="${escape(text(activeProject?.id))}" data-user-id="${escape(text(userId))}" data-role="member">Make member</button>` : ''}
                                 ${role !== 'advisor' ? `<button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="project-member-role" data-project-id="${escape(text(activeProject?.id))}" data-user-id="${escape(text(userId))}" data-role="advisor">Make advisor</button>` : ''}
                                 ${role !== 'instructor-viewer' ? `<button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="project-member-role" data-project-id="${escape(text(activeProject?.id))}" data-user-id="${escape(text(userId))}" data-role="instructor-viewer">Viewer</button>` : ''}
@@ -2718,13 +2871,13 @@
                             <label><span class="social-neo-label">Skills / roles</span><input class="social-neo-input" type="text" name="projectSkillTags" value="${escape(text(runtime.ui?.projectSkillTags || ''))}" placeholder="developer, designer, researcher, analyst"></label>
                             <div>
                                 <span class="social-neo-label">Faculties involved</span>
-                                <div class="social-neo-badge-row" style="margin-top:8px">
+                                <div class="social-neo-badge-row social-neo-badge-row-mt-8">
                                     ${facultyOptions.map((facultyCode) => `
                                         <button class="social-neo-btn ${projectFaculties.includes(facultyCode) ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'} social-neo-btn-sm" type="button" data-action="project-faculty-toggle" data-faculty="${escape(facultyCode)}">${escape(facultyCode)}</button>
                                     `).join('')}
                                 </div>
                             </div>
-                            <section class="social-neo-card" style="padding:16px">
+                            <section class="social-neo-card social-neo-card-pad-16">
                                 <div class="social-neo-section-head">
                                     <div><strong>Invite teammates</strong><span>Search people, filter by faculty, and build the initial 4+ member team.</span></div>
                                     <span class="social-neo-pill"><strong>${escape(projectInviteSelectedIds.length)}</strong><span>Selected</span></span>
@@ -2737,7 +2890,7 @@
                                     </select>
                                 </div>
                                 ${projectInviteSelectedIds.length ? `
-                                    <div class="social-neo-badge-row" style="margin:10px 0 14px">
+                                    <div class="social-neo-badge-row social-neo-badge-row-10-14">
                                         ${projectInviteSelectedIds.map((userId) => {
                                             const account = accountById(userId) || { id: userId };
                                             return `<button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="project-selected-remove" data-user-id="${escape(text(userId))}">${escape(displayName(account))} <i class="fas fa-times"></i></button>`;
@@ -2746,14 +2899,14 @@
                                 ` : ''}
                                 <div class="social-neo-stack">
                                     ${filteredInviteCandidates.length ? filteredInviteCandidates.map((account) => `
-                                        <div class="social-neo-card" style="padding:12px">
-                                            <div class="social-neo-inline" style="justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap">
-                                                <div class="social-neo-person" style="align-items:flex-start;gap:10px">
+                                        <div class="social-neo-card social-neo-card-pad-12">
+                                            <div class="social-neo-inline social-neo-inline-between-start-wrap">
+                                                <div class="social-neo-person social-neo-person-start-gap-10">
                                                     ${avatar(account, 'social-neo-avatar-sm')}
                                                     <div>
                                                         <strong>${escape(displayName(account))}</strong>
                                                         <div class="social-neo-muted">${escape(accountSubtitle(account))}</div>
-                                                        <div class="social-neo-badge-row" style="margin-top:8px">
+                                                        <div class="social-neo-badge-row social-neo-badge-row-mt-8">
                                                             <span class="social-neo-pill">${escape(text(account?.facultyCode || account?.faculty || 'Faculty not set'))}</span>
                                                             ${Array.isArray(account?.interests) ? account.interests.slice(0, 2).map((interest) => `<span class="social-neo-pill">${escape(interest)}</span>`).join('') : ''}
                                                         </div>
@@ -2767,7 +2920,7 @@
                                     `).join('') : `<div class="social-neo-empty">No people matched the current team search.</div>`}
                                 </div>
                             </section>
-                            <div class="social-neo-inline" style="justify-content:flex-end;gap:10px;flex-wrap:wrap">
+                            <div class="social-neo-inline social-neo-inline-end-gap-10-wrap">
                                 <button class="social-neo-btn social-neo-btn-primary" type="submit"><i class="fas fa-diagram-project"></i> Create workspace</button>
                             </div>
                         </form>
@@ -2814,29 +2967,29 @@
                     </div>
                     <div class="social-neo-grid-2">
                         <div class="social-neo-stack">
-                            <div class="social-neo-card" style="padding:16px">
+                            <div class="social-neo-card social-neo-card-pad-16">
                                 <span class="social-neo-label">Summary</span>
-                                <p style="margin:8px 0 0">${escape(text(activeProject.summary || activeProject.description || 'No summary yet.'))}</p>
+                                <p class="social-project-body-copy social-neo-copy social-neo-copy-mt-8">${escape(text(activeProject.summary || activeProject.description || 'No summary yet.'))}</p>
                             </div>
-                            <div class="social-neo-card" style="padding:16px">
+                            <div class="social-neo-card social-neo-card-pad-16">
                                 <span class="social-neo-label">Faculties and skills</span>
-                                <div class="social-neo-badge-row" style="margin-top:8px">${facultyPills(activeProject.facultyCodes)} ${skillPills(activeProject.skillTags)}</div>
+                                <div class="social-neo-badge-row social-neo-badge-row-mt-8">${facultyPills(activeProject.facultyCodes)} ${skillPills(activeProject.skillTags)}</div>
                             </div>
-                            <div class="social-neo-card" style="padding:16px">
+                            <div class="social-neo-card social-neo-card-pad-16">
                                 <span class="social-neo-label">Advisor oversight</span>
-                                <div class="social-neo-stack" style="margin-top:10px">
-                                    ${text(activeProject.advisorUserId) ? `<div class="social-neo-person" style="gap:10px">${avatar(accountById(activeProject.advisorUserId) || { id: activeProject.advisorUserId }, 'social-neo-avatar-sm')}<div><strong>${escape(displayName(accountById(activeProject.advisorUserId) || { id: activeProject.advisorUserId }))}</strong><div class="social-neo-muted">Advisor</div></div></div>` : `<div class="social-neo-empty">No advisor assigned yet.</div>`}
+                                <div class="social-neo-stack social-neo-stack-mt-10">
+                                    ${text(activeProject.advisorUserId) ? `<div class="social-neo-person social-neo-person-gap-10">${avatar(accountById(activeProject.advisorUserId) || { id: activeProject.advisorUserId }, 'social-neo-avatar-sm')}<div><strong>${escape(displayName(accountById(activeProject.advisorUserId) || { id: activeProject.advisorUserId }))}</strong><div class="social-neo-muted">Advisor</div></div></div>` : `<div class="social-neo-empty">No advisor assigned yet.</div>`}
                                     ${(activeProject.instructorViewerIds || []).length ? activeProject.instructorViewerIds.map((userId) => {
                                         const account = accountById(userId) || { id: userId };
-                                        return `<div class="social-neo-person" style="gap:10px">${avatar(account, 'social-neo-avatar-sm')}<div><strong>${escape(displayName(account))}</strong><div class="social-neo-muted">Instructor viewer</div></div></div>`;
+                                        return `<div class="social-neo-person social-neo-person-gap-10">${avatar(account, 'social-neo-avatar-sm')}<div><strong>${escape(displayName(account))}</strong><div class="social-neo-muted">Instructor viewer</div></div></div>`;
                                     }).join('') : ''}
                                 </div>
                             </div>
                         </div>
                         <div class="social-neo-stack">
-                            <div class="social-neo-card" style="padding:16px">
+                            <div class="social-neo-card social-neo-card-pad-16">
                                 <span class="social-neo-label">Workspace stats</span>
-                                <div class="social-neo-stat-grid" style="margin-top:10px">
+                                <div class="social-neo-stat-grid social-neo-grid-mt-10">
                                     <div><strong>${escape(activeProject.memberCount || 0)}</strong><span>Members</span></div>
                                     <div><strong>${escape(activeProject.openTaskCount || 0)}</strong><span>Open tasks</span></div>
                                     <div><strong>${escape(activeProject.milestoneCount || 0)}</strong><span>Milestones</span></div>
@@ -2844,7 +2997,7 @@
                                 </div>
                             </div>
                             ${activeProject.isManager ? `
-                                <form data-form="project-settings" data-project-id="${escape(text(activeProject.id))}" class="social-neo-card social-neo-stack" style="padding:16px">
+                                <form data-form="project-settings" data-project-id="${escape(text(activeProject.id))}" class="social-neo-card social-neo-stack social-neo-card-pad-16">
                                     <div class="social-neo-section-head">
                                         <div><strong>Update workspace</strong><span>Adjust status, summary, advisor, and outcome framing.</span></div>
                                     </div>
@@ -2855,7 +3008,7 @@
                                         <label><span class="social-neo-label">Advisor</span><select class="social-neo-select" name="projectAdvisorUserId"><option value="">No advisor yet</option>${advisorCandidates.map((account) => `<option value="${escape(text(account.id))}" ${text(activeProject.advisorUserId) === text(account.id) ? 'selected' : ''}>${escape(displayName(account))}</option>`).join('')}</select></label>
                                     </div>
                                     <label><span class="social-neo-label">Outcome / showcase summary</span><textarea class="social-neo-textarea" rows="3" name="projectShowcaseSummary">${escape(text(activeProject.showcaseSummary || ''))}</textarea></label>
-                                    <div class="social-neo-inline" style="justify-content:flex-end;gap:8px;flex-wrap:wrap">
+                                    <div class="social-neo-inline social-neo-inline-end-gap-8-wrap">
                                         <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="project-showcase-publish" data-project-id="${escape(text(activeProject.id))}"><i class="fas fa-globe"></i> Publish showcase</button>
                                         <button class="social-neo-btn social-neo-btn-primary" type="submit">Save overview</button>
                                     </div>
@@ -2893,19 +3046,19 @@
                             </div>
                             <div class="social-neo-stack">
                                 ${filteredInviteCandidates.length ? filteredInviteCandidates.map((account) => `
-                                    <article class="social-neo-card" style="padding:12px">
-                                        <div class="social-neo-inline" style="justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap">
-                                            <div class="social-neo-person" style="align-items:flex-start;gap:10px">
+                                    <article class="social-neo-card social-neo-card-pad-12">
+                                        <div class="social-neo-inline social-neo-inline-between-start-wrap">
+                                            <div class="social-neo-person social-neo-person-start-gap-10">
                                                 ${avatar(account, 'social-neo-avatar-sm')}
                                                 <div>
                                                     <strong>${escape(displayName(account))}</strong>
                                                     <div class="social-neo-muted">${escape(accountSubtitle(account))}</div>
-                                                    <div class="social-neo-badge-row" style="margin-top:8px">
+                                                    <div class="social-neo-badge-row social-neo-badge-row-mt-8">
                                                         <span class="social-neo-pill">${escape(text(account?.facultyCode || account?.faculty || 'Faculty not set'))}</span>
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div class="social-neo-inline" style="gap:8px;flex-wrap:wrap">
+                                            <div class="social-neo-inline social-neo-inline-gap-8-wrap">
                                                 <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="project-member-invite" data-project-id="${escape(text(activeProject.id))}" data-user-id="${escape(text(account.id))}" data-role="member">Invite member</button>
                                                 <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="project-member-invite" data-project-id="${escape(text(activeProject.id))}" data-user-id="${escape(text(account.id))}" data-role="advisor">Invite advisor</button>
                                             </div>
@@ -2933,7 +3086,7 @@
                                     <label><span class="social-neo-label">Priority</span><select class="social-neo-select" name="projectTaskPriority">${['low','medium','high','urgent'].map((priority) => `<option value="${escape(priority)}" ${text(runtime.ui?.projectTaskPriority || 'medium') === priority ? 'selected' : ''}>${escape(priority)}</option>`).join('')}</select></label>
                                     <label><span class="social-neo-label">Status</span><select class="social-neo-select" name="projectTaskStatus">${taskColumns.map((column) => `<option value="${escape(column.id)}">${escape(column.label)}</option>`).join('')}</select></label>
                                 </div>
-                                <div class="social-neo-inline" style="justify-content:flex-end"><button class="social-neo-btn social-neo-btn-primary" type="submit">Add task</button></div>
+                                <div class="social-neo-inline social-neo-inline-end"><button class="social-neo-btn social-neo-btn-primary" type="submit">Add task</button></div>
                             </form>
                         ` : ''}
                         <div class="social-project-task-board">
@@ -2945,20 +3098,20 @@
                                     <div class="social-neo-stack">
                                         ${projectTasks.filter((task) => text(task?.status || 'backlog') === column.id).map((task) => `
                                             <article class="social-neo-card social-project-task-card">
-                                                <div class="social-neo-inline" style="justify-content:space-between;gap:8px;align-items:flex-start">
+                                                <div class="social-project-task-card-head">
                                                     <div>
                                                         <strong>${escape(text(task?.title || 'Task'))}</strong>
-                                                        ${text(task?.description) ? `<p style="margin:8px 0 0;color:var(--sn-txt2)">${escape(text(task.description))}</p>` : ''}
+                                                        ${text(task?.description) ? `<p>${escape(text(task.description))}</p>` : ''}
                                                     </div>
                                                     <span class="social-neo-pill">${escape(text(task?.priority || 'medium'))}</span>
                                                 </div>
-                                                <div class="social-neo-badge-row" style="margin-top:10px">
+                                                <div class="social-neo-badge-row social-neo-badge-row-mt-10">
                                                     ${text(task?.assigneeUserId) ? `<span class="social-neo-pill">${escape(displayName(accountById(task.assigneeUserId) || { id: task.assigneeUserId }))}</span>` : `<span class="social-neo-pill">Unassigned</span>`}
                                                     ${text(task?.dueAt) ? `<span class="social-neo-pill">${escape(when(task.dueAt))}</span>` : ''}
                                                 </div>
                                                 ${activeProject.viewerCanContribute ? `
-                                                    <div class="social-neo-inline" style="justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:12px">
-                                                        <div class="social-neo-inline" style="gap:8px;flex-wrap:wrap">
+                                                    <div class="social-project-task-actions">
+                                                        <div class="social-neo-inline social-neo-inline-gap-8-wrap">
                                                             ${index > 0 ? `<button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="project-task-move" data-project-id="${escape(text(activeProject.id))}" data-task-id="${escape(text(task.id))}" data-status="${escape(taskColumns[index - 1].id)}"><i class="fas fa-arrow-left"></i></button>` : ''}
                                                             ${index < taskColumns.length - 1 ? `<button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="project-task-move" data-project-id="${escape(text(activeProject.id))}" data-task-id="${escape(text(task.id))}" data-status="${escape(taskColumns[index + 1].id)}"><i class="fas fa-arrow-right"></i></button>` : ''}
                                                         </div>
@@ -2984,16 +3137,16 @@
                                         <label><span class="social-neo-label">Due</span><input class="social-neo-input" type="datetime-local" name="projectMilestoneDueAt" value="${escape(text(runtime.ui?.projectMilestoneDueAt || ''))}"></label>
                                     </div>
                                     <label><span class="social-neo-label">Description</span><textarea class="social-neo-textarea" rows="3" name="projectMilestoneDescription">${escape(text(runtime.ui?.projectMilestoneDescription || ''))}</textarea></label>
-                                    <div class="social-neo-inline" style="justify-content:flex-end"><button class="social-neo-btn social-neo-btn-primary" type="submit">Add milestone</button></div>
+                                    <div class="social-neo-inline social-neo-inline-end"><button class="social-neo-btn social-neo-btn-primary" type="submit">Add milestone</button></div>
                                 </form>
                             ` : ''}
                             <section class="social-neo-stack">
                                 ${projectMilestones.length ? projectMilestones.map((milestone) => `
                                     <article class="social-neo-card">
-                                        <div class="social-neo-inline" style="justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap">
+                                        <div class="social-neo-inline social-neo-inline-between-start-wrap">
                                             <div>
                                                 <strong>${escape(text(milestone?.title || 'Milestone'))}</strong>
-                                                ${text(milestone?.description) ? `<p style="margin:8px 0 0;color:var(--sn-txt2)">${escape(text(milestone.description))}</p>` : ''}
+                                                ${text(milestone?.description) ? `<p class="social-project-body-copy social-neo-copy social-neo-copy-mt-8">${escape(text(milestone.description))}</p>` : ''}
                                             </div>
                                             <div class="social-neo-badge-row">
                                                 ${milestone?.completed ? `<span class="social-neo-pill">Completed</span>` : `<span class="social-neo-pill">Open</span>`}
@@ -3001,7 +3154,7 @@
                                             </div>
                                         </div>
                                         ${activeProject.viewerCanContribute ? `
-                                            <div class="social-neo-inline" style="justify-content:flex-end;gap:8px;flex-wrap:wrap;margin-top:12px">
+                                            <div class="social-project-milestone-actions">
                                                 <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="project-milestone-toggle" data-project-id="${escape(text(activeProject.id))}" data-milestone-id="${escape(text(milestone.id))}" data-completed="${milestone?.completed ? '0' : '1'}">${milestone?.completed ? 'Reopen' : 'Complete'}</button>
                                                 <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="project-milestone-delete" data-project-id="${escape(text(activeProject.id))}" data-milestone-id="${escape(text(milestone.id))}">Remove</button>
                                             </div>
@@ -3023,19 +3176,19 @@
                                         </div>
                                         <label><span class="social-neo-label">Description</span><textarea class="social-neo-textarea" rows="3" name="projectDeliverableDescription">${escape(text(runtime.ui?.projectDeliverableDescription || ''))}</textarea></label>
                                         <label><span class="social-neo-label">Upload file</span><input class="social-neo-input" type="file" name="projectDeliverableFile" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.csv,.zip,.txt,image/*">${renderFileChip(runtime.ui?.projectDeliverableFile, 'Deliverable ready')}</label>
-                                        <div class="social-neo-inline" style="justify-content:flex-end"><button class="social-neo-btn social-neo-btn-primary" type="submit">Add deliverable</button></div>
+                                        <div class="social-neo-inline social-neo-inline-end"><button class="social-neo-btn social-neo-btn-primary" type="submit">Add deliverable</button></div>
                                     </form>
                                 ` : ''}
                                 <section class="social-neo-stack">
                                     ${projectDeliverables.length ? projectDeliverables.map((deliverable) => `
-                                        <article class="social-neo-card">
-                                            <div class="social-neo-inline" style="justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap">
+                                        <article class="social-neo-card social-project-deliverable-card">
+                                            <div class="social-project-deliverable-head">
                                                 <div>
                                                     <strong>${escape(text(deliverable?.title || 'Deliverable'))}</strong>
-                                                    <div class="social-neo-muted">${escape(text(deliverable?.versionLabel || ''))} Â· ${escape(displayName(accountById(deliverable?.submittedById) || { id: deliverable?.submittedById }))} Â· ${escape(when(deliverable?.submittedAt))}</div>
-                                                    ${text(deliverable?.description) ? `<p style="margin:8px 0 0;color:var(--sn-txt2)">${escape(text(deliverable.description))}</p>` : ''}
+                                                    <div class="social-neo-muted">${escape(text(deliverable?.versionLabel || ''))} &middot; ${escape(displayName(accountById(deliverable?.submittedById) || { id: deliverable?.submittedById }))} &middot; ${escape(when(deliverable?.submittedAt))}</div>
+                                                    ${text(deliverable?.description) ? `<p class="social-project-body-copy social-neo-copy social-neo-copy-mt-8">${escape(text(deliverable.description))}</p>` : ''}
                                                 </div>
-                                                <div class="social-neo-inline" style="gap:8px;flex-wrap:wrap">
+                                                <div class="social-neo-inline social-neo-inline-gap-8-wrap">
                                                     ${deliverable?.file?.url ? `<a class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" href="${escape(text(deliverable.file.url))}" target="_blank" rel="noreferrer">Open file</a>` : deliverable?.file?.dataUrl ? `<a class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" href="${escape(text(deliverable.file.dataUrl))}" target="_blank" rel="noreferrer">Open file</a>` : ''}
                                                     ${activeProject.viewerCanContribute ? `<button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="project-deliverable-delete" data-project-id="${escape(text(activeProject.id))}" data-deliverable-id="${escape(text(deliverable.id))}">Remove</button>` : ''}
                                                 </div>
@@ -3060,19 +3213,19 @@
                                                 <label><span class="social-neo-label">Starts</span><input class="social-neo-input" type="datetime-local" name="meetingStartsAt"></label>
                                                 <label><span class="social-neo-label">Ends</span><input class="social-neo-input" type="datetime-local" name="meetingEndsAt"></label>
                                             </div>
-                                            <div class="social-neo-inline" style="justify-content:flex-end"><button class="social-neo-btn social-neo-btn-primary" type="submit">Schedule meeting</button></div>
+                                            <div class="social-neo-inline social-neo-inline-end"><button class="social-neo-btn social-neo-btn-primary" type="submit">Schedule meeting</button></div>
                                         </form>
                                     ` : ''}
                                     <section class="social-neo-stack">
                                         ${projectMeetings.length ? projectMeetings.map((meeting) => `
-                                            <article class="social-neo-card">
-                                                <div class="social-neo-inline" style="justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap">
+                                            <article class="social-neo-card social-project-meeting-card">
+                                                <div class="social-project-meeting-head">
                                                     <div>
                                                         <strong>${escape(text(meeting?.title || 'Meeting'))}</strong>
-                                                        <div class="social-neo-muted">${escape(when(meeting?.startsAt))}${text(meeting?.location) ? ` Â· ${escape(text(meeting.location))}` : ''}</div>
-                                                        ${text(meeting?.description) ? `<p style="margin:8px 0 0;color:var(--sn-txt2)">${escape(text(meeting.description))}</p>` : ''}
+                                                        <div class="social-neo-muted">${escape(when(meeting?.startsAt))}${text(meeting?.location) ? ` &middot; ${escape(text(meeting.location))}` : ''}</div>
+                                                        ${text(meeting?.description) ? `<p class="social-project-body-copy social-neo-copy social-neo-copy-mt-8">${escape(text(meeting.description))}</p>` : ''}
                                                     </div>
-                                                    <div class="social-neo-inline" style="gap:8px;flex-wrap:wrap">
+                                                    <div class="social-project-meeting-footer">
                                                         ${(() => {
                                                             const safeOnlineLink = getSafeSocialExternalUrl(meeting?.onlineLink);
                                                             return safeOnlineLink ? `<a class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" href="${escape(safeOnlineLink)}" target="_blank" rel="noreferrer">Join link</a>` : '';
@@ -3090,7 +3243,7 @@
                                             <div class="social-neo-section-head">
                                                 <div><strong>Project chat</strong><span>This workspace reuses the existing private group chat for files, calls, and member messaging.</span></div>
                                             </div>
-                                            <div class="social-neo-inline" style="justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap">
+                                            <div class="social-project-chat-launch">
                                                 <div>
                                                     <strong>${escape(text(activeProject.name))} workspace chat</strong>
                                                     <div class="social-neo-muted">${escape(activeProject.chatId ? 'Chat is ready for direct messages, files, and calls.' : 'Chat will open from the backing group.')}</div>
@@ -3108,8 +3261,8 @@
                                                     const actor = accountById(entry.actorUserId) || { id: entry.actorUserId };
                                                     return `
                                                         <article class="social-neo-card">
-                                                            <div class="social-neo-inline" style="justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap">
-                                                                <div class="social-neo-person" style="align-items:flex-start;gap:10px">
+                                                            <div class="social-neo-inline social-neo-inline-between-start-wrap">
+                                                                <div class="social-neo-person social-neo-person-start-gap-10">
                                                                     ${avatar(actor, 'social-neo-avatar-sm')}
                                                                     <div>
                                                                         <strong>${escape(displayName(actor))}</strong>
@@ -3130,11 +3283,11 @@
                                                         <div><strong>Outcome and showcase</strong><span>Prepare the workspace for public presentation after completion.</span></div>
                                                         ${activeProject.showcasePageId ? `<span class="social-neo-pill">Showcase published</span>` : ''}
                                                     </div>
-                                                    <div class="social-neo-card" style="padding:16px">
+                                                    <div class="social-neo-card social-neo-card-pad-16">
                                                         <span class="social-neo-label">Showcase summary</span>
-                                                        <p style="margin:8px 0 0">${escape(text(activeProject.showcaseSummary || 'No showcase summary yet.'))}</p>
+                                                        <p class="social-project-body-copy social-neo-copy social-neo-copy-mt-8">${escape(text(activeProject.showcaseSummary || 'No showcase summary yet.'))}</p>
                                                     </div>
-                                                    <div class="social-neo-inline" style="justify-content:flex-end;gap:8px;flex-wrap:wrap">
+                                                    <div class="social-neo-inline social-neo-inline-end-gap-8-wrap">
                                                         ${activeProject.showcasePageId ? `<button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="panel-pages">Open pages</button>` : ''}
                                                         ${activeProject.isManager ? `<button class="social-neo-btn social-neo-btn-primary" type="button" data-action="project-showcase-publish" data-project-id="${escape(text(activeProject.id))}"><i class="fas fa-globe"></i> ${activeProject.showcasePageId ? 'Republish showcase' : 'Publish showcase'}</button>` : ''}
                                                     </div>
@@ -3152,16 +3305,16 @@
                                                                 <label><span class="social-neo-label">Blockers</span><textarea class="social-neo-textarea" rows="3" name="projectCheckinBlockers">${escape(text(runtime.ui?.projectCheckinBlockers || ''))}</textarea></label>
                                                                 <label><span class="social-neo-label">Next steps</span><textarea class="social-neo-textarea" rows="3" name="projectCheckinNextSteps">${escape(text(runtime.ui?.projectCheckinNextSteps || ''))}</textarea></label>
                                                             </div>
-                                                            <div class="social-neo-inline" style="justify-content:flex-end"><button class="social-neo-btn social-neo-btn-primary" type="submit">Post check-in</button></div>
+                                                            <div class="social-neo-inline social-neo-inline-end"><button class="social-neo-btn social-neo-btn-primary" type="submit">Post check-in</button></div>
                                                         </form>
                                                     ` : ''}
                                                     <div class="social-neo-stack">
                                                         ${projectCheckins.length ? projectCheckins.map((checkin) => {
                                                             const account = accountById(checkin.authorUserId) || { id: checkin.authorUserId };
                                                             return `
-                                                                <article class="social-neo-card">
-                                                                    <div class="social-neo-inline" style="justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap">
-                                                                        <div class="social-neo-person" style="align-items:flex-start;gap:10px">
+                                                                <article class="social-neo-card social-project-checkin-card">
+                                                                    <div class="social-neo-inline social-neo-inline-between-start-wrap">
+                                                                        <div class="social-neo-person social-neo-person-start-gap-10">
                                                                             ${avatar(account, 'social-neo-avatar-sm')}
                                                                             <div>
                                                                                 <strong>${escape(displayName(account))}</strong>
@@ -3169,10 +3322,10 @@
                                                                             </div>
                                                                         </div>
                                                                     </div>
-                                                                    <div class="social-neo-grid-3" style="margin-top:12px">
-                                                                        <div><span class="social-neo-label">Done</span><p style="margin:8px 0 0">${escape(text(checkin.whatDone || ''))}</p></div>
-                                                                        <div><span class="social-neo-label">Blockers</span><p style="margin:8px 0 0">${escape(text(checkin.blockers || ''))}</p></div>
-                                                                        <div><span class="social-neo-label">Next steps</span><p style="margin:8px 0 0">${escape(text(checkin.nextSteps || ''))}</p></div>
+                                                                    <div class="social-neo-grid-3 social-neo-grid-mt-12">
+                                                                        <div><span class="social-neo-label">Done</span><p>${escape(text(checkin.whatDone || ''))}</p></div>
+                                                                        <div><span class="social-neo-label">Blockers</span><p>${escape(text(checkin.blockers || ''))}</p></div>
+                                                                        <div><span class="social-neo-label">Next steps</span><p>${escape(text(checkin.nextSteps || ''))}</p></div>
                                                                     </div>
                                                                 </article>
                                                             `;
@@ -3184,15 +3337,15 @@
         return `
             <div class="social-neo-stack social-projects-shell">
                 <section class="social-neo-card social-project-detail-hero">
-                    <div class="social-neo-inline" style="justify-content:space-between;gap:14px;align-items:flex-start;flex-wrap:wrap">
-                        <div style="display:flex;flex-direction:column;gap:10px;min-width:280px;flex:1">
-                            <div class="social-neo-inline" style="gap:10px;flex-wrap:wrap">
+                    <div class="social-project-detail-top">
+                        <div class="social-project-detail-copy">
+                            <div class="social-neo-inline social-neo-inline-gap-10-wrap">
                                 <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="projects-back"><i class="fas fa-arrow-left"></i> Back</button>
                                 ${projectRolePill(activeProject.role || 'member')}
                                 <span class="social-neo-pill">${escape(text(activeProject.status || 'idea'))}</span>
                             </div>
-                            <h2 style="margin:0">${escape(text(activeProject.name || 'Project workspace'))}</h2>
-                            <p style="margin:0;color:var(--sn-txt2)">${escape(text(activeProject.summary || activeProject.description || ''))}</p>
+                            <h2 class="social-project-detail-title">${escape(text(activeProject.name || 'Project workspace'))}</h2>
+                            <p class="social-project-detail-summary">${escape(text(activeProject.summary || activeProject.description || ''))}</p>
                             <div class="social-neo-badge-row">
                                 ${facultyPills(activeProject.facultyCodes)}
                                 ${text(activeProject.courseTag) ? `<span class="social-neo-pill">${escape(activeProject.courseTag)}</span>` : ''}
@@ -3200,15 +3353,15 @@
                                 <span class="social-neo-pill"><strong>${escape(activeProject.openTaskCount || 0)}</strong><span>Open tasks</span></span>
                             </div>
                         </div>
-                        <div class="social-neo-stack" style="align-items:flex-end;min-width:260px">
-                            <div class="social-neo-person" style="gap:10px">
+                        <div class="social-project-detail-actions">
+                            <div class="social-neo-person social-neo-person-gap-10">
                                 ${avatar(owner)}
                                 <div>
                                     <strong>${escape(displayName(owner))}</strong>
                                     <div class="social-neo-muted">Workspace owner</div>
                                 </div>
                             </div>
-                            <div class="social-neo-inline" style="gap:8px;flex-wrap:wrap;justify-content:flex-end">
+                            <div class="social-neo-inline social-neo-inline-end-gap-8-wrap">
                                 <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="project-open-chat" data-project-id="${escape(text(activeProject.id))}"><i class="fas fa-comments"></i> Chat</button>
                                 <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="project-tab" data-project-id="${escape(text(activeProject.id))}" data-project-tab="meetings"><i class="fas fa-calendar-days"></i> Meetings</button>
                                 ${activeProject.isManager ? `<button class="social-neo-btn social-neo-btn-primary" type="button" data-action="project-showcase-publish" data-project-id="${escape(text(activeProject.id))}"><i class="fas fa-globe"></i> Showcase</button>` : ''}
@@ -3303,8 +3456,16 @@
         const projectRolePill = (role) => `<span class="social-neo-pill">${escape(roleLabels[text(role).toLowerCase()] || roleLabel(role || 'member'))}</span>`;
         const facultyPills = (codes = []) => (Array.isArray(codes) ? codes : []).map((code) => `<span class="social-neo-pill">${escape(code)}</span>`).join('');
         const skillPills = (skills = []) => (Array.isArray(skills) ? skills : []).map((skill) => `<span class="social-neo-pill">${escape(skill)}</span>`).join('');
+        const scrollList = (modifier, content) => `<div class="social-project-scroll-list${modifier ? ` ${modifier}` : ''}">${content}</div>`;
+        const projectToneFromAccent = (accent = '') => {
+            const normalized = text(accent).toLowerCase();
+            if (normalized === '#3b82f6') return 'blue';
+            if (normalized === '#8b5cf6') return 'purple';
+            if (normalized === '#14b8a6') return 'teal';
+            return 'orange';
+        };
         const renderMetricCard = (icon, label, value, note, accent = '#f97316') => `
-            <article class="social-project-metric-card" style="--project-accent:${accent}">
+            <article class="social-project-metric-card" data-project-tone="${projectToneFromAccent(accent)}">
                 <span class="social-project-metric-icon"><i class="fas ${escape(icon)}"></i></span>
                 <div>
                     <small>${escape(label)}</small>
@@ -3318,7 +3479,7 @@
             const circumference = 2 * Math.PI * 42;
             const dash = circumference - ((normalized / 100) * circumference);
             return `
-                <article class="social-project-ring-card" style="--project-accent:${accent}">
+                <article class="social-project-ring-card" data-project-tone="${projectToneFromAccent(accent)}">
                     <svg viewBox="0 0 110 110" aria-hidden="true">
                         <circle cx="55" cy="55" r="42" class="social-project-ring-track"></circle>
                         <circle cx="55" cy="55" r="42" class="social-project-ring-value" stroke-dasharray="${circumference}" stroke-dashoffset="${dash}"></circle>
@@ -3334,23 +3495,330 @@
         const renderSparkline = (points = []) => {
             const list = Array.isArray(points) && points.length ? points : [{ count: 0, label: '00/00' }];
             const maxValue = Math.max(1, ...list.map((entry) => countNum(entry?.count)));
-            const width = 240;
-            const height = 76;
+            const width = 800;
+            const height = 96;
             const step = list.length > 1 ? width / (list.length - 1) : width;
-            const polyline = list.map((entry, index) => {
+            const pts = list.map((entry, index) => {
                 const x = Math.round(index * step);
-                const y = Math.round(height - ((countNum(entry?.count) / maxValue) * (height - 18)) - 8);
-                return `${x},${y}`;
-            }).join(' ');
+                const y = Math.round(height - ((countNum(entry?.count) / maxValue) * (height - 20)) - 10);
+                return { x, y, label: text(entry?.label || ''), count: countNum(entry?.count) };
+            });
+            const polyline = pts.map((p) => `${p.x},${p.y}`).join(' ');
+            const areaPath = `M${pts[0].x},${height} ` + pts.map((p) => `L${p.x},${p.y}`).join(' ') + ` L${pts[pts.length - 1].x},${height} Z`;
             return `
-                <div class="social-project-sparkline">
-                    <svg viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" aria-hidden="true">
+                <div class="social-project-sparkline social-project-sparkline--full">
+                    <svg viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" aria-hidden="true" class="social-project-sparkline-svg">
+                        <defs>
+                            <linearGradient id="spark-area-gradient" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stop-color="var(--sn-proj-accent,#c8822a)" stop-opacity="0.28"/>
+                                <stop offset="100%" stop-color="var(--sn-proj-accent,#c8822a)" stop-opacity="0.02"/>
+                            </linearGradient>
+                        </defs>
+                        <path d="${areaPath}" fill="url(#spark-area-gradient)"/>
                         <polyline points="${polyline}" class="social-project-sparkline-line"></polyline>
+                        ${pts.map((p) => `<circle cx="${p.x}" cy="${p.y}" r="4" class="social-project-sparkline-dot" opacity="${p.count > 0 ? '1' : '0.3'}"/>`).join('')}
                     </svg>
                     <div class="social-project-sparkline-labels">
                         ${list.map((entry) => `<span>${escape(text(entry?.label || ''))}</span>`).join('')}
                     </div>
                 </div>
+            `;
+        };
+        const renderMiniProgressRing = (value, accent = '#f97316', size = 44) => {
+            const normalized = Math.max(0, Math.min(100, countNum(value)));
+            const r = (size / 2) - 5;
+            const circumference = 2 * Math.PI * r;
+            const dash = circumference - ((normalized / 100) * circumference);
+            const center = size / 2;
+            return `
+                <svg class="social-project-mini-ring" viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" aria-hidden="true">
+                    <circle cx="${center}" cy="${center}" r="${r}" fill="none" stroke="rgba(148,163,184,0.2)" stroke-width="4"></circle>
+                    <circle cx="${center}" cy="${center}" r="${r}" fill="none" stroke="${accent}" stroke-width="4" stroke-linecap="round" stroke-dasharray="${circumference}" stroke-dashoffset="${dash}" transform="rotate(-90 ${center} ${center})"></circle>
+                    <text x="${center}" y="${center}" text-anchor="middle" dominant-baseline="central" class="social-project-mini-ring-text">${escape(String(normalized))}%</text>
+                </svg>
+            `;
+        };
+        const renderMiniSparkline = (points = [], width = 200, height = 40) => {
+            const list = Array.isArray(points) && points.length ? points : [{ count: 0 }];
+            const maxValue = Math.max(1, ...list.map((entry) => countNum(entry?.count)));
+            const step = list.length > 1 ? width / (list.length - 1) : width;
+            const pts = list.map((entry, index) => {
+                const x = Math.round(index * step);
+                const y = Math.round(height - ((countNum(entry?.count) / maxValue) * (height - 8)) - 4);
+                return { x, y };
+            });
+            const polyline = pts.map((p) => `${p.x},${p.y}`).join(' ');
+            const areaPath = `M${pts[0].x},${height} ` + pts.map((p) => `L${p.x},${p.y}`).join(' ') + ` L${pts[pts.length - 1].x},${height} Z`;
+            return `
+                <svg class="social-project-mini-sparkline" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" aria-hidden="true">
+                    <defs>
+                        <linearGradient id="mini-spark-grad" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="var(--sn-proj-accent,#c8822a)" stop-opacity="0.3"/>
+                            <stop offset="100%" stop-color="var(--sn-proj-accent,#c8822a)" stop-opacity="0.02"/>
+                        </linearGradient>
+                    </defs>
+                    <path d="${areaPath}" fill="url(#mini-spark-grad)"/>
+                    <polyline points="${polyline}" fill="none" stroke="var(--sn-proj-accent,#c8822a)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></polyline>
+                </svg>
+            `;
+        };
+        const renderHealthIndicator = (project) => {
+            const tasks = Array.isArray(project?.tasks) ? project.tasks : [];
+            const now = Date.now();
+            const overdueTasks = tasks.filter((t) => t.status !== 'done' && t.dueAt && new Date(t.dueAt).getTime() < now).length;
+            const overdueMilestones = countNum(project?.milestoneOverdueCount);
+            const taskPct = countNum(project?.taskCompletionPercent);
+            const activityCount = countNum(project?.activityCount);
+            let level = 'good';
+            let label = 'On track';
+            let icon = 'fa-circle-check';
+            const alerts = [];
+            if (overdueTasks >= 3 || overdueMilestones >= 2) {
+                level = 'critical';
+                label = 'Critical';
+                icon = 'fa-triangle-exclamation';
+            } else if (overdueTasks >= 1 || overdueMilestones >= 1 || taskPct < 30) {
+                level = 'needs-attention';
+                label = 'Needs attention';
+                icon = 'fa-circle-exclamation';
+            }
+            if (overdueTasks > 0) alerts.push(`${overdueTasks} overdue task${overdueTasks > 1 ? 's' : ''}`);
+            if (overdueMilestones > 0) alerts.push(`${overdueMilestones} overdue milestone${overdueMilestones > 1 ? 's' : ''}`);
+            if (taskPct === 0 && tasks.length > 0) alerts.push('No tasks completed yet');
+            if (tasks.length === 0) alerts.push('No tasks created');
+            if (project?.milestoneCount === 0) alerts.push('No milestones set');
+            const wins = [];
+            if (taskPct >= 50) wins.push(`${taskPct}% tasks done`);
+            if (activityCount > 0) wins.push(`${activityCount} events this week`);
+            if (overdueTasks === 0 && overdueMilestones === 0 && tasks.length > 0) wins.push('No overdue items');
+            return `
+                <section class="social-neo-card social-project-health-card" data-health="${escape(level)}">
+                    <div class="social-neo-section-head">
+                        <div><strong>Project health</strong><span>Overall workspace status.</span></div>
+                        <span class="social-project-health-badge" data-health="${escape(level)}"><i class="fas ${escape(icon)}"></i> ${escape(label)}</span>
+                    </div>
+                    <div class="social-project-health-body">
+                        ${alerts.length ? `<div class="social-project-health-list">${alerts.map((a) => `<div class="social-project-health-alert"><i class="fas fa-circle-xmark"></i> ${escape(a)}</div>`).join('')}</div>` : ''}
+                        ${wins.length ? `<div class="social-project-health-list">${wins.map((w) => `<div class="social-project-health-win"><i class="fas fa-circle-check"></i> ${escape(w)}</div>`).join('')}</div>` : ''}
+                        ${!alerts.length && !wins.length ? '<div class="social-neo-muted">Start adding tasks and milestones to see health status.</div>' : ''}
+                    </div>
+                </section>
+            `;
+        };
+        const renderDeadlineTracker = (project) => {
+            const milestones = Array.isArray(project?.milestones) ? project.milestones : [];
+            const now = Date.now();
+            const upcoming = milestones.filter((m) => m.status !== 'completed' && m.dueAt).sort((a, b) => new Date(a.dueAt).getTime() - new Date(b.dueAt).getTime());
+            const nextMilestone = upcoming.find((m) => new Date(m.dueAt).getTime() >= now) || upcoming[0] || null;
+            const overdueMilestones = milestones.filter((m) => m.status !== 'completed' && m.dueAt && new Date(m.dueAt).getTime() < now).length;
+            const tasks = Array.isArray(project?.tasks) ? project.tasks : [];
+            const overdueTasks = tasks.filter((t) => t.status !== 'done' && t.dueAt && new Date(t.dueAt).getTime() < now).length;
+            const checkins = Array.isArray(project?.checkins) ? project.checkins : [];
+            const lastCheckin = checkins.length ? checkins[checkins.length - 1] : null;
+            let deadlineHtml = '';
+            if (nextMilestone) {
+                const daysLeft = Math.ceil((new Date(nextMilestone.dueAt).getTime() - now) / 86400000);
+                const isPast = daysLeft < 0;
+                const pct = nextMilestone.dueAt ? Math.min(100, Math.max(0, Math.round((1 - Math.abs(daysLeft) / 30) * 100))) : 0;
+                deadlineHtml = `
+                    <div class="social-project-deadline-next ${isPast ? 'is-overdue' : ''}">
+                        <div class="social-project-deadline-title">${escape(text(nextMilestone.title || 'Untitled milestone'))}</div>
+                        <div class="social-project-deadline-meta">
+                            ${isPast ? `<span class="social-project-deadline-overdue-count">${Math.abs(daysLeft)} day${Math.abs(daysLeft) !== 1 ? 's' : ''} overdue</span>` : `<span>${daysLeft} day${daysLeft !== 1 ? 's' : ''} remaining</span>`}
+                            <span>${escape(when(nextMilestone.dueAt))}</span>
+                        </div>
+                        <div class="social-project-deadline-bar"><div class="social-project-deadline-fill ${isPast ? 'is-overdue' : ''}" style="width:${pct}%"></div></div>
+                    </div>
+                `;
+            } else {
+                deadlineHtml = '<div class="social-neo-muted">No upcoming deadlines set.</div>';
+            }
+            return `
+                <section class="social-neo-card social-project-deadline-card">
+                    <div class="social-neo-section-head">
+                        <div><strong>Deadlines</strong><span>What is coming up next.</span></div>
+                        ${overdueMilestones > 0 || overdueTasks > 0 ? `<span class="social-neo-pill is-danger">${overdueMilestones + overdueTasks} overdue</span>` : ''}
+                    </div>
+                    ${deadlineHtml}
+                    ${lastCheckin ? `<div class="social-project-deadline-checkin"><i class="fas fa-comment-dots"></i> Last check-in: ${escape(when(lastCheckin.createdAt || ''))}</div>` : ''}
+                </section>
+            `;
+        };
+        const renderMyTasks = (project) => {
+            const userId = currentUserId();
+            const allTasks = Array.isArray(project?.tasks) ? project.tasks : [];
+            const myTasks = allTasks.filter((t) => text(t.assigneeUserId) === userId && t.status !== 'done').sort((a, b) => {
+                if (a.dueAt && b.dueAt) return new Date(a.dueAt).getTime() - new Date(b.dueAt).getTime();
+                if (a.dueAt) return -1;
+                if (b.dueAt) return 1;
+                return 0;
+            }).slice(0, 5);
+            const toneMap = { 'backlog': 'slate', 'todo': 'blue', 'in-progress': 'orange', 'blocked': 'rose', 'done': 'emerald' };
+            const labelMap = { 'backlog': 'Backlog', 'todo': 'To Do', 'in-progress': 'In Progress', 'blocked': 'Blocked', 'done': 'Done' };
+            const priorityIcon = { 'low': 'fa-arrow-down', 'medium': 'fa-minus', 'high': 'fa-arrow-up', 'urgent': 'fa-angles-up' };
+            return `
+                <section class="social-neo-card social-project-my-tasks-card">
+                    <div class="social-neo-section-head">
+                        <div><strong>My tasks</strong><span>Your assigned work.</span></div>
+                        <span class="social-neo-pill">${escape(String(myTasks.length))} open</span>
+                    </div>
+                    ${myTasks.length ? `<div class="social-project-my-tasks-list">${myTasks.map((task) => {
+                        const now = Date.now();
+                        const isOverdue = task.dueAt && new Date(task.dueAt).getTime() < now;
+                        const tone = toneMap[task.status] || 'slate';
+                        return `
+                            <div class="social-project-my-task-item ${isOverdue ? 'is-overdue' : ''}">
+                                <span class="social-project-status-dot is-${escape(tone)}"></span>
+                                <span class="social-project-my-task-title">${escape(text(task.title || ''))}</span>
+                                <span class="social-project-status-label">${escape(labelMap[task.status] || task.status)}</span>
+                                ${task.priority && task.priority !== 'medium' ? `<span class="social-project-priority-pill" data-priority="${escape(task.priority)}"><i class="fas ${escape(priorityIcon[task.priority] || 'fa-minus')}"></i> ${escape(task.priority)}</span>` : ''}
+                                ${task.dueAt ? `<span class="social-project-my-task-due ${isOverdue ? 'is-overdue' : ''}">${escape(when(task.dueAt))}</span>` : ''}
+                            </div>
+                        `;
+                    }).join('')}</div>` : '<div class="social-neo-empty">No tasks assigned to you yet.</div>'}
+                    <div class="social-project-card-new-cta"><span data-action="project-tab" data-project-id="${escape(text(project?.id))}" data-project-tab="tasks">View all tasks →</span></div>
+                </section>
+            `;
+        };
+        const renderTeamRoster = (project, members) => {
+            const list = Array.isArray(members) ? members.slice(0, 6) : [];
+            return `
+                <section class="social-neo-card social-project-roster-card">
+                    <div class="social-neo-section-head">
+                        <div><strong>Team</strong><span>Members and roles.</span></div>
+                        <span class="social-neo-pill">${escape(String(project?.memberCount || 0))} members</span>
+                    </div>
+                    ${list.length ? `<div class="social-project-team-roster">${list.map((member) => {
+                        const account = accountById(member.userId) || { id: member.userId };
+                        const online = isAccountOnline(account);
+                        const roleLabel = text(member.role || 'member');
+                        const facultyCode = text(member.facultyCode || account?.facultyCode || account?.faculty || '');
+                        return `
+                            <div class="social-project-roster-member">
+                                <span class="social-project-roster-dot ${online ? 'is-online' : ''}"></span>
+                                <div class="social-neo-person">${avatar(account, 'social-neo-avatar-sm')}<div><strong>${escape(displayName(account))}</strong><span>${escape(roleLabel)}${facultyCode ? ` · ${escape(facultyCode)}` : ''}</span></div></div>
+                            </div>
+                        `;
+                    }).join('')}</div>` : '<div class="social-neo-empty">No team members yet.</div>'}
+                    <div class="social-project-card-new-cta"><span data-action="project-tab" data-project-id="${escape(text(project?.id))}" data-project-tab="team">View all team →</span></div>
+                </section>
+            `;
+        };
+        const renderActivityItem = (entry) => {
+            const actor = accountById(entry.actorUserId) || { id: entry.actorUserId };
+            return `
+                <article class="social-project-activity-item">
+                    <div class="social-project-activity-icon"><i class="fas ${escape(activityIconMap[text(entry?.type || '')] || 'fa-clock-rotate-left')}"></i></div>
+                    <div class="social-project-activity-body">
+                        <div class="social-project-activity-head">
+                            <div class="social-neo-person">
+                                ${avatar(actor, 'social-neo-avatar-sm')}
+                                <div>
+                                    <strong>${escape(displayName(actor))}</strong>
+                                    <span>${escape(text(entry.summary || entry.type || 'Updated the project'))}</span>
+                                </div>
+                            </div>
+                            <em>${escape(when(entry.createdAt || ''))}</em>
+                        </div>
+                    </div>
+                </article>
+            `;
+        };
+        const renderActivityFeed = (project) => {
+            const items = Array.isArray(project?.activity) ? project.activity.slice(0, 5) : [];
+            return `
+                <section class="social-neo-card social-project-feed-card">
+                    <div class="social-neo-section-head">
+                        <div><strong>Recent activity</strong><span>Latest workspace changes.</span></div>
+                        <span class="social-neo-pill">${escape(String(project?.activityCount || 0))} events</span>
+                    </div>
+                    ${items.length ? `<div class="social-project-activity-feed">${items.map(renderActivityItem).join('')}</div>` : '<div class="social-neo-empty">No activity recorded yet.</div>'}
+                    <div class="social-project-card-new-cta"><span data-action="project-tab" data-project-id="${escape(text(project?.id))}" data-project-tab="activity">View all activity →</span></div>
+                </section>
+            `;
+        };
+        const renderRecentFiles = (project) => {
+            const deliverables = Array.isArray(project?.deliverables) ? project.deliverables : [];
+            const recent = deliverables.slice(-3).reverse();
+            return `
+                <section class="social-neo-card social-project-files-card">
+                    <div class="social-neo-section-head">
+                        <div><strong>Recent files</strong><span>Latest deliverables submitted.</span></div>
+                        <span class="social-neo-pill">${escape(String(project?.deliverableCount || 0))} total</span>
+                    </div>
+                    ${recent.length ? `<div class="social-project-recent-files">${recent.map((d) => {
+                        const submitter = accountById(d.submittedById) || { id: d.submittedById };
+                        const hasFile = d.file?.url || d.file?.dataUrl;
+                        return `
+                            <div class="social-project-file-item">
+                                <div class="social-project-file-icon"><i class="fas fa-file-lines"></i></div>
+                                <div class="social-project-file-info">
+                                    <strong>${escape(text(d.title || 'Untitled'))}</strong>
+                                    <span>${escape(text(d.versionLabel || ''))} · ${escape(displayName(submitter))} · ${escape(when(d.submittedAt || ''))}</span>
+                                </div>
+                                ${hasFile ? `<a class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" href="${escape(text(d.file.url || d.file.dataUrl))}" target="_blank" rel="noopener"><i class="fas fa-download"></i></a>` : ''}
+                            </div>
+                        `;
+                    }).join('')}</div>` : '<div class="social-neo-empty">No files submitted yet.</div>'}
+                    <div class="social-project-card-new-cta"><span data-action="project-tab" data-project-id="${escape(text(project?.id))}" data-project-tab="files">View all files →</span></div>
+                </section>
+            `;
+        };
+        const renderNextMeeting = (project) => {
+            const meetings = Array.isArray(project?.meetings) ? project.meetings : [];
+            const now = Date.now();
+            const next = meetings.find((m) => m.startsAt && new Date(m.startsAt).getTime() >= now) || null;
+            if (!next) {
+                return `
+                    <section class="social-neo-card social-project-next-meeting-card">
+                        <div class="social-neo-section-head">
+                            <div><strong>Next meeting</strong><span>Upcoming scheduled session.</span></div>
+                        </div>
+                        <div class="social-neo-empty">No upcoming meetings scheduled.</div>
+                        <div class="social-project-card-new-cta"><span data-action="project-tab" data-project-id="${escape(text(project?.id))}" data-project-tab="meetings">Schedule meeting →</span></div>
+                    </section>
+                `;
+            }
+            const startDate = new Date(next.startsAt);
+            const dateStr = startDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+            const timeStr = startDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+            return `
+                <section class="social-neo-card social-project-next-meeting-card">
+                    <div class="social-neo-section-head">
+                        <div><strong>Next meeting</strong><span>Upcoming scheduled session.</span></div>
+                        <span class="social-neo-pill">${escape(dateStr)}</span>
+                    </div>
+                    <div class="social-project-next-meeting-body">
+                        <div class="social-project-next-meeting-title">${escape(text(next.title || 'Untitled meeting'))}</div>
+                        <div class="social-project-next-meeting-meta">
+                            <span><i class="fas fa-clock"></i> ${escape(timeStr)}</span>
+                            ${next.location ? `<span><i class="fas fa-location-dot"></i> ${escape(text(next.location))}</span>` : ''}
+                        </div>
+                        ${next.description ? `<p class="social-project-next-meeting-desc">${escape(text(next.description))}</p>` : ''}
+                        <div class="social-project-next-meeting-actions">
+                            ${next.onlineLink ? `<a class="social-neo-btn social-neo-btn-primary social-neo-btn-sm" href="${escape(text(next.onlineLink))}" target="_blank" rel="noopener"><i class="fas fa-video"></i> Join meeting</a>` : ''}
+                            <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="project-tab" data-project-id="${escape(text(project?.id))}" data-project-tab="meetings"><i class="fas fa-calendar-days"></i> All meetings</button>
+                        </div>
+                    </div>
+                </section>
+            `;
+        };
+        const renderQuickActions = (project) => {
+            const isManager = Boolean(project?.isManager || project?.viewerCanContribute);
+            return `
+                <section class="social-neo-card social-project-quick-actions-card">
+                    <div class="social-neo-section-head">
+                        <div><strong>Quick actions</strong><span>Common workspace operations.</span></div>
+                    </div>
+                    <div class="social-project-quick-actions-grid">
+                        <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="project-tab" data-project-id="${escape(text(project?.id))}" data-project-tab="checkins"><i class="fas fa-comment-dots"></i> Post check-in</button>
+                        <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="project-tab" data-project-id="${escape(text(project?.id))}" data-project-tab="files"><i class="fas fa-paperclip"></i> Upload file</button>
+                        <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="project-open-chat" data-project-id="${escape(text(project?.id))}"><i class="fas fa-comments"></i> Open chat</button>
+                        <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="project-tab" data-project-id="${escape(text(project?.id))}" data-project-tab="tasks"><i class="fas fa-list-check"></i> Create task</button>
+                        <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="project-tab" data-project-id="${escape(text(project?.id))}" data-project-tab="meetings"><i class="fas fa-calendar-plus"></i> Schedule meeting</button>
+                        ${isManager ? `<button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="project-showcase-publish" data-project-id="${escape(text(project?.id))}"><i class="fas fa-globe"></i> Publish showcase</button>` : ''}
+                    </div>
+                </section>
             `;
         };
         const renderTaskStatusChart = (project) => {
@@ -3379,6 +3847,48 @@
                                     </div>
                                     <span>${escape(String(countNum(counts?.[column.id])))}</span>
                                 </article>
+                            `).join('')}
+                        </div>
+                    </div>
+                </section>
+            `;
+        };
+        const renderTaskStatusDonut = (project) => {
+            const counts = project?.taskStatusCounts || {};
+            const total = taskColumns.reduce((sum, column) => sum + countNum(counts?.[column.id]), 0);
+            const toneHex = { slate: '#94a3b8', blue: '#3b82f6', orange: '#f97316', rose: '#f43f5e', emerald: '#10b981' };
+            const radius = 54;
+            const circumference = 2 * Math.PI * radius;
+            let offset = 0;
+            const segments = total > 0 ? taskColumns.map((column) => {
+                const count = countNum(counts?.[column.id]);
+                if (count <= 0) return '';
+                const length = (count / total) * circumference;
+                const dash = `${length} ${circumference - length}`;
+                const circle = `<circle class="social-project-donut-seg" cx="80" cy="80" r="${radius}" fill="none" stroke="${toneHex[column.tone] || '#94a3b8'}" stroke-width="20" stroke-dasharray="${dash}" stroke-dashoffset="${-offset}" transform="rotate(-90 80 80)"></circle>`;
+                offset += length;
+                return circle;
+            }).join('') : `<circle cx="80" cy="80" r="${radius}" fill="none" stroke="rgba(148,163,184,0.25)" stroke-width="20"></circle>`;
+            const completion = countNum(project?.taskCompletionPercent);
+            return `
+                <section class="social-neo-card social-project-chart-card">
+                    <div class="social-neo-section-head">
+                        <div><strong>Status distribution</strong><span>Share of tasks in each column.</span></div>
+                        <span class="social-neo-pill">${escape(String(project?.taskCount || 0))} tasks</span>
+                    </div>
+                    <div class="social-project-donut-wrap">
+                        <svg class="social-project-donut" viewBox="0 0 160 160" role="img" aria-label="Task status distribution">
+                            ${segments}
+                            <text x="80" y="74" text-anchor="middle" class="social-project-donut-value">${escape(String(completion))}%</text>
+                            <text x="80" y="96" text-anchor="middle" class="social-project-donut-label">done</text>
+                        </svg>
+                        <div class="social-project-donut-legend">
+                            ${taskColumns.map((column) => `
+                                <span class="social-project-donut-key">
+                                    <i class="social-project-status-dot is-${escape(column.tone)}"></i>
+                                    ${escape(column.label)}
+                                    <em>${escape(String(countNum(counts?.[column.id])))}</em>
+                                </span>
                             `).join('')}
                         </div>
                     </div>
@@ -3420,77 +3930,112 @@
         };
         const renderProjectCard = (project) => {
             const owner = accountById(project?.ownerUserId) || { id: project?.ownerUserId };
-            const facultyMix = Array.isArray(project?.facultyMix) ? project.facultyMix.slice(0, 3) : [];
+            const status = text(project?.status || 'idea');
+            const statusDotClass = status === 'active' ? 'is-active' : status === 'completed' ? 'is-completed' : status === 'review' ? 'is-review' : '';
+            const statusLabel = statusMeta[status]?.label || status;
+            const taskPercent = countNum(project?.taskCompletionPercent);
+            const milestonePercent = countNum(project?.milestoneCompletionPercent);
+            const taskCount = countNum(project?.taskCount);
+            const completedTasks = countNum(project?.completedTaskCount);
+            const milestoneCount = countNum(project?.milestoneCount);
+            const completedMilestones = countNum(project?.milestoneCompletedCount);
+            const facultyCode = Array.isArray(project?.facultyCodes) ? project.facultyCodes[0] || '' : '';
             return `
-                <article class="social-neo-card social-project-card">
-                    <div class="social-project-card-head">
-                        <div>
-                            <div class="social-neo-badge-row">
-                                ${projectRolePill(project?.role || 'member')}
-                                <span class="social-neo-pill">${escape(text(statusMeta[text(project?.status || 'idea')]?.label || project?.status || 'idea'))}</span>
-                                <span class="social-neo-pill">${escape(String(project?.memberCount || 0))} members</span>
-                            </div>
-                            <h3>${escape(text(project?.name || 'Project workspace'))}</h3>
-                            <p>${escape(text(project?.summary || project?.description || 'Structured project studio for team delivery.'))}</p>
-                        </div>
-                        <button class="social-neo-btn social-neo-btn-primary" type="button" data-action="project-open" data-project-id="${escape(text(project?.id))}">
-                            <i class="fas fa-arrow-right"></i> Open workspace
-                        </button>
+                <article class="social-project-card-new" data-action="project-open" data-project-id="${escape(text(project?.id))}">
+                    <div class="social-project-card-new-status">
+                        <span class="social-project-status-dot ${escape(statusDotClass)}"></span>
+                        <span class="social-project-status-label">${escape(statusLabel)}</span>
                     </div>
-                    <div class="social-project-card-analytics">
-                        ${renderMetricCard('fa-list-check', 'Task health', `${project?.taskCompletionPercent || 0}%`, `${project?.openTaskCount || 0} open`, '#f97316')}
-                        ${renderMetricCard('fa-flag-checkered', 'Milestones', `${project?.milestoneCompletionPercent || 0}%`, `${project?.milestoneOverdueCount || 0} overdue`, '#3b82f6')}
-                    </div>
-                    <div class="social-neo-inline" style="justify-content:space-between;gap:12px;flex-wrap:wrap">
-                        <div class="social-neo-person" style="gap:10px">
-                            ${avatar(owner, 'social-neo-avatar-sm')}
-                            <div>
-                                <strong>${escape(displayName(owner))}</strong>
-                                <small class="social-neo-muted">Owner</small>
+                    <h3 class="social-project-card-new-title">${escape(text(project?.name || 'Project workspace'))}</h3>
+                    <p class="social-project-card-new-summary">${escape(text(project?.summary || project?.description || ''))}</p>
+                    <div class="social-project-card-new-progress">
+                        <div class="social-project-card-new-progress-row">
+                            <span class="social-project-card-new-progress-label">Tasks</span>
+                            <div class="social-project-card-new-progress-bar">
+                                <div class="social-project-card-new-progress-fill" style="width:${taskPercent}%"></div>
                             </div>
+                            <span class="social-project-card-new-progress-value">${taskPercent}% (${completedTasks}/${taskCount})</span>
                         </div>
-                        <div class="social-neo-badge-row">
-                            ${facultyMix.length ? facultyMix.map((entry) => `<span class="social-neo-pill">${escape(entry.facultyCode)} Â· ${escape(String(entry.count))}</span>`).join('') : facultyPills(project?.facultyCodes)}
-                            ${text(project?.courseTag) ? `<span class="social-neo-pill">${escape(project.courseTag)}</span>` : ''}
+                        <div class="social-project-card-new-progress-row">
+                            <span class="social-project-card-new-progress-label">Milestones</span>
+                            <div class="social-project-card-new-progress-bar">
+                                <div class="social-project-card-new-progress-fill" style="width:${milestonePercent}%"></div>
+                            </div>
+                            <span class="social-project-card-new-progress-value">${milestonePercent}% (${completedMilestones}/${milestoneCount})</span>
                         </div>
+                    </div>
+                    <div class="social-project-card-new-meta">
+                        <span>${escape(displayName(owner))} · ${escape(facultyCode)} · ${escape(String(project?.memberCount || 0))} members</span>
+                    </div>
+                    <div class="social-project-card-new-cta">
+                        <span>Open workspace →</span>
                     </div>
                 </article>
             `;
         };
-        const renderCreateWorkspaceForm = () => `
-            <section class="social-neo-card social-project-create-card">
-                <div class="social-neo-section-head">
-                    <div><strong>Create a workspace</strong><span>Private by default, built for 4+ member teams, and ready for cross-faculty delivery.</span></div>
-                    <span class="social-neo-pill">Project Studio</span>
+        const renderProjectRow = (project) => {
+            const status = text(project?.status || 'idea');
+            const statusDotClass = status === 'active' ? 'is-active' : status === 'completed' ? 'is-completed' : status === 'review' ? 'is-review' : '';
+            const statusLabel = statusMeta[status]?.label || status;
+            const taskPercent = countNum(project?.taskCompletionPercent);
+            const milestonePercent = countNum(project?.milestoneCompletionPercent);
+            const facultyCode = Array.isArray(project?.facultyCodes) ? project.facultyCodes[0] || '' : '';
+            return `
+                <div class="social-project-row" data-action="project-open" data-project-id="${escape(text(project?.id))}">
+                    <div class="social-project-row-status">
+                        <span class="social-project-status-dot ${escape(statusDotClass)}"></span>
+                        <span class="social-project-status-label">${escape(statusLabel)}</span>
+                    </div>
+                    <span class="social-project-row-title">${escape(text(project?.name || 'Project workspace'))}</span>
+                    <span class="social-project-row-meta">${escape(facultyCode)} · ${escape(String(project?.memberCount || 0))} members</span>
+                    <div class="social-project-row-progress">
+                        <div class="social-project-row-progress-bar">
+                            <div class="social-project-row-progress-fill" style="width:${taskPercent}%"></div>
+                        </div>
+                        <span class="social-project-row-progress-value">${taskPercent}%</span>
+                    </div>
                 </div>
-                <form data-form="create-project" class="social-neo-stack">
-                    <div class="social-neo-grid-2">
-                        <label><span class="social-neo-label">Project title</span><input class="social-neo-input" type="text" name="projectName" value="${escape(text(runtime.ui?.projectName || ''))}" placeholder="Smart irrigation prototype"></label>
-                        <label><span class="social-neo-label">Course / module</span><input class="social-neo-input" type="text" name="projectCourseTag" value="${escape(text(runtime.ui?.projectCourseTag || ''))}" placeholder="CS401 Capstone"></label>
+            `;
+        };
+        const renderCreateWorkspaceForm = () => {
+            const selectedChips = projectInviteSelectedIds.length
+                ? `<div class="drawer-selected-chips">${projectInviteSelectedIds.map((userId) => {
+                    const account = accountById(userId) || { id: userId };
+                    return `<span class="drawer-chip">${escape(displayName(account))} <button type="button" data-action="project-selected-remove" data-user-id="${escape(text(userId))}"><i class="fas fa-times"></i></button></span>`;
+                }).join('')}</div>`
+                : '';
+            return `
+                <form data-form="create-project" class="social-project-drawer-form">
+                    <div class="drawer-section">
+                        <div class="drawer-section-title">Basic info</div>
+                        <div class="social-neo-grid-2">
+                            <label><span class="social-neo-label">Title</span><input class="social-neo-input" type="text" name="projectName" value="${escape(text(runtime.ui?.projectName || ''))}" placeholder="Smart irrigation prototype"></label>
+                            <label><span class="social-neo-label">Course / module</span><input class="social-neo-input" type="text" name="projectCourseTag" value="${escape(text(runtime.ui?.projectCourseTag || ''))}" placeholder="CS401 Capstone"></label>
+                        </div>
+                        <label><span class="social-neo-label">Summary</span><input class="social-neo-input" type="text" name="projectSummary" value="${escape(text(runtime.ui?.projectSummary || ''))}" placeholder="Cross-faculty automation project for greenhouse monitoring"></label>
+                        <label><span class="social-neo-label">Description</span><textarea class="social-neo-textarea" name="projectDescription" rows="3" placeholder="What is the project, what problem are you solving, and what will the team deliver?">${escape(text(runtime.ui?.projectDescription || ''))}</textarea></label>
                     </div>
-                    <label><span class="social-neo-label">One-line summary</span><input class="social-neo-input" type="text" name="projectSummary" value="${escape(text(runtime.ui?.projectSummary || ''))}" placeholder="Cross-faculty automation project for greenhouse monitoring"></label>
-                    <label><span class="social-neo-label">Description</span><textarea class="social-neo-textarea" name="projectDescription" rows="4" placeholder="What is the project, what problem are you solving, and what will the team deliver?">${escape(text(runtime.ui?.projectDescription || ''))}</textarea></label>
-                    <div class="social-neo-grid-3">
-                        <label><span class="social-neo-label">Status</span><select class="social-neo-select" name="projectStatus">${['idea','active','review','completed'].map((status) => `<option value="${escape(status)}" ${text(runtime.ui?.projectStatus || 'idea') === status ? 'selected' : ''}>${escape(status)}</option>`).join('')}</select></label>
-                        <label><span class="social-neo-label">Visibility</span><select class="social-neo-select" name="projectVisibility">${['private','faculty','public'].map((visibility) => `<option value="${escape(visibility)}" ${text(runtime.ui?.projectVisibility || 'private') === visibility ? 'selected' : ''}>${escape(visibility)}</option>`).join('')}</select></label>
-                        <label><span class="social-neo-label">Advisor</span><select class="social-neo-select" name="projectAdvisorUserId"><option value="">No advisor yet</option>${advisorCandidates.map((account) => `<option value="${escape(text(account.id))}" ${text(runtime.ui?.projectAdvisorUserId || '') === text(account.id) ? 'selected' : ''}>${escape(displayName(account))}</option>`).join('')}</select></label>
-                    </div>
-                    <div class="social-neo-grid-2">
-                        <label><span class="social-neo-label">Recommended team size</span><input class="social-neo-input" type="number" min="2" name="projectRecommendedTeamSize" value="${escape(text(runtime.ui?.projectRecommendedTeamSize || 4))}"></label>
-                        <label><span class="social-neo-label">Minimum team size</span><input class="social-neo-input" type="number" min="2" name="projectMinTeamSize" value="${escape(text(runtime.ui?.projectMinTeamSize || 4))}"></label>
-                    </div>
-                    <label><span class="social-neo-label">Skills / roles</span><input class="social-neo-input" type="text" name="projectSkillTags" value="${escape(text(runtime.ui?.projectSkillTags || ''))}" placeholder="developer, designer, researcher, analyst"></label>
-                    <div>
-                        <span class="social-neo-label">Faculties involved</span>
-                        <div class="social-neo-badge-row" style="margin-top:8px">
-                            ${facultyOptions.map((facultyCode) => `<button class="social-neo-btn ${projectFaculties.includes(facultyCode) ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'} social-neo-btn-sm" type="button" data-action="project-faculty-toggle" data-faculty="${escape(facultyCode)}">${escape(facultyCode)}</button>`).join('')}
+                    <div class="drawer-section">
+                        <div class="drawer-section-title">Settings</div>
+                        <div class="social-neo-grid-3">
+                            <label><span class="social-neo-label">Status</span><select class="social-neo-select" name="projectStatus">${['idea','active','review','completed'].map((status) => `<option value="${escape(status)}" ${text(runtime.ui?.projectStatus || 'idea') === status ? 'selected' : ''}>${escape(status)}</option>`).join('')}</select></label>
+                            <label><span class="social-neo-label">Visibility</span><select class="social-neo-select" name="projectVisibility">${['private','faculty','public'].map((visibility) => `<option value="${escape(visibility)}" ${text(runtime.ui?.projectVisibility || 'private') === visibility ? 'selected' : ''}>${escape(visibility)}</option>`).join('')}</select></label>
+                            <label><span class="social-neo-label">Advisor</span><select class="social-neo-select" name="projectAdvisorUserId"><option value="">No advisor yet</option>${advisorCandidates.map((account) => `<option value="${escape(text(account.id))}" ${text(runtime.ui?.projectAdvisorUserId || '') === text(account.id) ? 'selected' : ''}>${escape(displayName(account))}</option>`).join('')}</select></label>
+                        </div>
+                        <div class="social-neo-grid-2">
+                            <label><span class="social-neo-label">Recommended team size</span><input class="social-neo-input" type="number" min="2" name="projectRecommendedTeamSize" value="${escape(text(runtime.ui?.projectRecommendedTeamSize || 4))}"></label>
+                            <label><span class="social-neo-label">Minimum team size</span><input class="social-neo-input" type="number" min="2" name="projectMinTeamSize" value="${escape(text(runtime.ui?.projectMinTeamSize || 4))}"></label>
+                        </div>
+                        <label><span class="social-neo-label">Skills / roles</span><input class="social-neo-input" type="text" name="projectSkillTags" value="${escape(text(runtime.ui?.projectSkillTags || ''))}" placeholder="developer, designer, researcher, analyst"></label>
+                        <div>
+                            <span class="social-neo-label">Faculties involved</span>
+                            <div class="social-neo-badge-row social-neo-badge-row-mt-8">
+                                ${facultyOptions.map((facultyCode) => `<button class="social-neo-btn ${projectFaculties.includes(facultyCode) ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'} social-neo-btn-sm" type="button" data-action="project-faculty-toggle" data-faculty="${escape(facultyCode)}">${escape(facultyCode)}</button>`).join('')}
+                            </div>
                         </div>
                     </div>
-                    <section class="social-neo-card social-project-inline-panel">
-                        <div class="social-neo-section-head">
-                            <div><strong>Seed the team</strong><span>Pick the first people before you publish the workspace.</span></div>
-                            <span class="social-neo-pill">${escape(String(projectInviteSelectedIds.length))} selected</span>
-                        </div>
+                    <div class="drawer-section">
+                        <div class="drawer-section-title">Seed the team <span class="drawer-section-count">${escape(String(projectInviteSelectedIds.length))} selected</span></div>
                         <div class="social-neo-directory-filters">
                             <input class="social-neo-input" type="search" name="projectInviteSearch" value="${escape(text(runtime.ui?.projectInviteSearch || ''))}" placeholder="Search by name, faculty, role, or interests">
                             <select class="social-neo-select" name="projectInviteFaculty">
@@ -3498,69 +4043,112 @@
                                 ${facultyOptions.map((facultyCode) => `<option value="${escape(facultyCode)}" ${inviteFaculty === facultyCode ? 'selected' : ''}>${escape(facultyCode)}</option>`).join('')}
                             </select>
                         </div>
-                        ${projectInviteSelectedIds.length ? `<div class="social-neo-badge-row" style="margin:10px 0 14px">${projectInviteSelectedIds.map((userId) => { const account = accountById(userId) || { id: userId }; return `<button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="project-selected-remove" data-user-id="${escape(text(userId))}">${escape(displayName(account))} <i class="fas fa-times"></i></button>`; }).join('')}</div>` : ''}
-                        <div class="social-neo-stack">
-                            ${filteredInviteCandidates.length ? filteredInviteCandidates.map((account) => `
-                                <div class="social-neo-entity-card">
-                                    <div class="social-neo-person">
-                                        ${avatar(account, 'social-neo-avatar-sm')}
-                                        <div>
-                                            <strong>${escape(displayName(account))}</strong>
-                                            <div class="social-neo-muted">${escape(accountSubtitle(account))}</div>
+                        ${selectedChips}
+                        <div class="social-project-scroll-list social-project-scroll-list--invite">
+                            <div class="social-neo-stack">
+                                ${filteredInviteCandidates.length ? filteredInviteCandidates.map((account) => `
+                                    <div class="social-neo-entity-card">
+                                        <div class="social-neo-person">
+                                            ${avatar(account, 'social-neo-avatar-sm')}
+                                            <div>
+                                                <strong>${escape(displayName(account))}</strong>
+                                                <div class="social-neo-muted">${escape(accountSubtitle(account))}</div>
+                                            </div>
                                         </div>
+                                        <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="project-selected-add" data-user-id="${escape(text(account.id))}">
+                                            <i class="fas fa-user-plus"></i> Add
+                                        </button>
                                     </div>
-                                    <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="project-selected-add" data-user-id="${escape(text(account.id))}">
-                                        <i class="fas fa-user-plus"></i> Add
-                                    </button>
-                                </div>
-                            `).join('') : `<div class="social-neo-empty">No people match the current search.</div>`}
+                                `).join('') : `<div class="social-neo-empty">No people match the current search.</div>`}
+                            </div>
                         </div>
-                    </section>
-                    <div class="social-neo-inline" style="justify-content:flex-end">
+                    </div>
+                    <div class="drawer-submit">
                         <button class="social-neo-btn social-neo-btn-primary" type="submit"><i class="fas fa-diagram-project"></i> Create workspace</button>
                     </div>
                 </form>
-            </section>
-        `;
+            `;
+        };
 
         if (!activeProject) {
+            const totalTasks = projects.reduce((sum, project) => sum + countNum(project?.taskCount), 0);
+            const totalActivity = projects.reduce((sum, project) => sum + countNum(project?.activityCount), 0);
             return `
                 <div class="social-neo-stack social-projects-shell">
-                    <section class="social-neo-card social-projects-hero social-projects-hero-rich">
-                        <div class="social-projects-hero-copy">
-                            <div class="social-neo-badge-row">
-                                <span class="social-neo-pill"><strong>${escape(String(projects.length))}</strong><span>Workspaces</span></span>
-                                <span class="social-neo-pill"><strong>${escape(String(myProjects.length))}</strong><span>Your roles</span></span>
-                                <span class="social-neo-pill"><strong>4+</strong><span>Recommended team size</span></span>
-                            </div>
+                    <div class="social-projects-header">
+                        <div>
                             <h2>Project Workspaces</h2>
-                            <p>Structured academic studios for cross-faculty teams. Track tasks, milestones, deliverables, meetings, check-ins, and chat from one private project hub.</p>
+                            <span class="social-neo-muted">Structured studios for cross-faculty team delivery.</span>
                         </div>
-                        <div class="social-project-hero-grid">
-                            ${renderMetricCard('fa-users', 'Cross-faculty', facultyOptions.length, 'faculties represented', '#8b5cf6')}
-                            ${renderMetricCard('fa-list-check', 'Total tasks', projects.reduce((sum, project) => sum + countNum(project?.taskCount), 0), 'across active studios', '#f97316')}
-                            ${renderMetricCard('fa-bolt', 'Activity', projects.reduce((sum, project) => sum + countNum(project?.activityCount), 0), 'timeline entries', '#14b8a6')}
+                        <button class="social-neo-btn social-neo-btn-primary" type="button" data-action="project-create-open">
+                            <i class="fas fa-plus"></i> Create workspace
+                        </button>
+                    </div>
+                    <div class="social-projects-stats-bar">
+                        <div class="social-projects-stat-item">
+                            <span class="social-projects-stat-number">${escape(String(projects.length))}</span>
+                            <span class="social-projects-stat-label">Workspaces</span>
                         </div>
-                    </section>
-                    <div class="social-project-index-grid">
-                        ${renderCreateWorkspaceForm()}
+                        <div class="social-projects-stat-item">
+                            <span class="social-projects-stat-number">${escape(String(myProjects.length))}</span>
+                            <span class="social-projects-stat-label">Your roles</span>
+                        </div>
+                        <div class="social-projects-stat-item">
+                            <span class="social-projects-stat-number">${escape(String(totalTasks))}</span>
+                            <span class="social-projects-stat-label">Tasks</span>
+                        </div>
+                        <div class="social-projects-stat-item">
+                            <span class="social-projects-stat-number">${escape(String(facultyOptions.length))}</span>
+                            <span class="social-projects-stat-label">Faculties</span>
+                        </div>
+                        <div class="social-projects-stat-item">
+                            <span class="social-projects-stat-number">${escape(String(totalActivity))}</span>
+                            <span class="social-projects-stat-label">Activity</span>
+                        </div>
+                    </div>
+                    <section class="social-neo-card">
+                        <div class="social-neo-section-head">
+                            <div><strong>Your workspaces</strong><span>Projects where you already have a role or oversight.</span></div>
+                            <span class="social-neo-pill"><strong>${escape(String(myProjects.length))}</strong></span>
+                        </div>
+                        ${scrollList('social-project-scroll-list--hub', `
                         <div class="social-neo-stack">
-                            <section class="social-neo-card">
-                                <div class="social-neo-section-head">
-                                    <div><strong>Your workspaces</strong><span>Projects where you already have a role or oversight.</span></div>
+                            ${myProjects.length ? myProjects.map(renderProjectCard).join('') : `<div class="social-neo-empty">No workspaces yet. Create your first project studio to start organizing the team.</div>`}
+                        </div>
+                        `)}
+                    </section>
+                    <section class="social-neo-card">
+                        <div class="social-neo-section-head">
+                            <div><strong>Most active studios</strong><span>Workspaces with the strongest project pulse right now.</span></div>
+                            <span class="social-neo-pill"><strong>${escape(String(featuredProjects.length))}</strong></span>
+                        </div>
+                        ${scrollList('social-project-scroll-list--compact', `
+                        <div class="social-project-rows">
+                            ${featuredProjects.length ? featuredProjects.map(renderProjectRow).join('') : `<div class="social-neo-empty">Project workspaces will appear here once teams start working.</div>`}
+                        </div>
+                        `)}
+                    </section>
+                    <div class="social-project-create-drawer" id="project-create-drawer" hidden>
+                        <div class="social-project-create-drawer-backdrop" data-action="project-create-close"></div>
+                        <div class="social-project-create-drawer-left">
+                            <div class="social-project-create-drawer-left-head">
+                                <div>
+                                    <h2>Project Workspaces</h2>
+                                    <span class="social-neo-muted">Your existing studios and active projects.</span>
                                 </div>
-                                <div class="social-neo-stack">
-                                    ${myProjects.length ? myProjects.map(renderProjectCard).join('') : `<div class="social-neo-empty">No workspaces yet. Create your first project studio to start organizing the team.</div>`}
-                                </div>
-                            </section>
-                            <section class="social-neo-card">
-                                <div class="social-neo-section-head">
-                                    <div><strong>Most active studios</strong><span>Workspaces with the strongest project pulse right now.</span></div>
-                                </div>
-                                <div class="social-neo-stack">
-                                    ${featuredProjects.length ? featuredProjects.map(renderProjectCard).join('') : `<div class="social-neo-empty">Project workspaces will appear here once teams start working.</div>`}
-                                </div>
-                            </section>
+                                <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="project-create-close"><i class="fas fa-times"></i></button>
+                            </div>
+                            ${scrollList('social-project-scroll-list--drawer-left', `
+                            <div class="social-neo-stack">
+                                ${projects.length ? projects.map(renderProjectCard).join('') : `<div class="social-neo-empty">No workspaces yet.</div>`}
+                            </div>
+                            `)}
+                        </div>
+                        <div class="social-project-create-drawer-panel">
+                            <div class="social-project-create-drawer-head">
+                                <strong>Create workspace</strong>
+                            </div>
+                            ${renderCreateWorkspaceForm()}
                         </div>
                     </div>
                 </div>
@@ -3591,18 +4179,18 @@
             return `
                 <article class="social-neo-card social-project-team-card">
                     <div class="social-project-team-card-head">
-                        <div class="social-neo-person" style="align-items:flex-start;gap:12px">
+                        <div class="social-neo-person social-neo-person-start-gap-12">
                             ${avatar(account)}
                             <div>
                                 <strong>${escape(displayName(account))}</strong>
                                 <div class="social-neo-muted">${escape(accountSubtitle(account))}</div>
-                                <div class="social-neo-badge-row" style="margin-top:8px">
+                                <div class="social-neo-badge-row social-neo-badge-row-mt-8">
                                     ${projectRolePill(role)}
                                     <span class="social-neo-pill">${escape(text(account?.facultyCode || account?.faculty || entry.facultyCode || 'Faculty not set'))}</span>
                                     <span class="social-neo-pill">${escape(text(account?.presenceLabel || entry.presenceLabel || 'Offline'))}</span>
                                     ${pending ? `<span class="social-neo-pill">Invited</span>` : ''}
                                 </div>
-                                ${text(entry.joinedAt || '') && !pending ? `<div class="social-neo-muted" style="margin-top:8px">Joined ${escape(when(entry.joinedAt))}</div>` : ''}
+                                ${text(entry.joinedAt || '') && !pending ? `<div class="social-neo-muted social-neo-muted-mt-8">Joined ${escape(when(entry.joinedAt))}</div>` : ''}
                             </div>
                         </div>
                         <div class="social-project-team-actions">
@@ -3622,23 +4210,85 @@
             const assignee = accountById(task?.assigneeUserId) || { id: task?.assigneeUserId };
             const dueAt = text(task?.dueAt || '');
             const dueMs = Number.isFinite(Date.parse(dueAt)) ? Date.parse(dueAt) : null;
-            const isOverdue = Boolean(dueMs && dueMs < Date.now() && text(task?.status || '') !== 'done');
+            const now = Date.now();
+            const isOverdue = Boolean(dueMs && dueMs < now && text(task?.status || '') !== 'done');
+            const isToday = Boolean(dueMs && !isOverdue && new Date(dueMs).toDateString() === new Date(now).toDateString());
+            const isSoon = Boolean(dueMs && !isOverdue && !isToday && dueMs < now + 7 * 86400000);
+            const priority = text(task?.priority || 'medium').toLowerCase() || 'medium';
+            const tag = text(task?.tag || task?.category || '');
+            const columnIndex = taskColumns.findIndex((c) => c.id === columnId);
+            const canMoveLeft = columnIndex > 0;
+            const canMoveRight = columnIndex < taskColumns.length - 1;
             return `
-                <article class="social-project-task-card ${isOverdue ? 'is-overdue' : ''}">
+                <article class="social-project-task-card ${isOverdue ? 'is-overdue' : ''}" data-priority="${escape(priority)}">
                     <div class="social-project-task-card-head">
                         <strong>${escape(text(task?.title || 'Task'))}</strong>
-                        <span class="social-neo-pill">${escape(text(task?.priority || 'medium'))}</span>
+                        <span class="social-neo-pill social-project-priority-pill" data-priority="${escape(priority)}"><i class="fas fa-flag"></i>${escape(priority)}</span>
                     </div>
-                    ${text(task?.description) ? `<p>${escape(text(task.description))}</p>` : ''}
-                    <div class="social-neo-badge-row">
-                        ${task?.assigneeUserId ? `<span class="social-neo-pill">${escape(displayName(assignee))}</span>` : '<span class="social-neo-pill">Unassigned</span>'}
-                        ${dueAt ? `<span class="social-neo-pill ${isOverdue ? 'is-danger' : ''}">${escape(when(dueAt))}</span>` : ''}
+                    ${text(task?.description) ? `<p class="social-project-task-desc">${escape(text(task.description))}</p>` : ''}
+                    <div class="social-neo-badge-row social-project-task-meta">
+                        ${tag ? `<span class="social-neo-pill social-project-task-tag"><i class="fas fa-tag"></i>${escape(tag)}</span>` : ''}
+                        ${task?.assigneeUserId ? `<span class="social-neo-pill social-project-task-assignee">${avatar(assignee, 'social-neo-avatar-xs')}${escape(displayName(assignee))}</span>` : '<span class="social-neo-pill social-project-task-assignee is-unassigned"><i class="fas fa-user"></i>Unassigned</span>'}
+                        ${dueAt ? `<span class="social-neo-pill social-project-task-due ${isOverdue ? 'is-overdue' : isToday ? 'is-today' : isSoon ? 'is-soon' : ''}"><i class="fas fa-clock"></i>${escape(when(dueAt))}</span>` : ''}
                     </div>
                     <div class="social-project-task-actions">
-                        ${taskColumns.filter((item) => item.id !== columnId).map((targetColumn) => `<button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="project-task-move" data-project-id="${escape(text(activeProject.id))}" data-task-id="${escape(text(task.id))}" data-status="${escape(targetColumn.id)}">${escape(targetColumn.label)}</button>`).join('')}
-                        ${activeProject.viewerCanContribute ? `<button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="project-task-delete" data-project-id="${escape(text(activeProject.id))}" data-task-id="${escape(text(task.id))}"><i class="fas fa-trash"></i></button>` : ''}
+                        ${canMoveLeft ? `<button class="social-neo-btn social-neo-btn-ghost social-neo-btn-icon" type="button" title="Move to ${escape(taskColumns[columnIndex - 1].label)}" data-action="project-task-move" data-project-id="${escape(text(activeProject.id))}" data-task-id="${escape(text(task.id))}" data-status="${escape(taskColumns[columnIndex - 1].id)}"><i class="fas fa-arrow-left"></i></button>` : ''}
+                        ${canMoveRight ? `<button class="social-neo-btn social-neo-btn-ghost social-neo-btn-icon" type="button" title="Move to ${escape(taskColumns[columnIndex + 1].label)}" data-action="project-task-move" data-project-id="${escape(text(activeProject.id))}" data-task-id="${escape(text(task.id))}" data-status="${escape(taskColumns[columnIndex + 1].id)}"><i class="fas fa-arrow-right"></i></button>` : ''}
+                        ${activeProject.viewerCanContribute ? `<button class="social-neo-btn social-neo-btn-ghost social-neo-btn-icon" type="button" title="Delete task" data-action="project-task-delete" data-project-id="${escape(text(activeProject.id))}" data-task-id="${escape(text(task.id))}"><i class="fas fa-trash"></i></button>` : ''}
                     </div>
                 </article>
+            `;
+        };
+        const renderTaskStatsBar = (tasks) => {
+            const total = tasks.length;
+            const now = Date.now();
+            const overdue = tasks.filter((t) => t.status !== 'done' && t.dueAt && new Date(t.dueAt).getTime() < now).length;
+            const inProgress = tasks.filter((t) => t.status === 'in-progress').length;
+            const blocked = tasks.filter((t) => t.status === 'blocked').length;
+            const done = tasks.filter((t) => t.status === 'done').length;
+            return `
+                <div class="social-project-task-stats-bar">
+                    <div class="social-project-task-stat"><strong>${escape(String(total))}</strong><span>Total</span></div>
+                    <div class="social-project-task-stat ${overdue > 0 ? 'is-danger' : ''}"><strong>${escape(String(overdue))}</strong><span>Overdue</span></div>
+                    <div class="social-project-task-stat"><strong>${escape(String(inProgress))}</strong><span>In progress</span></div>
+                    <div class="social-project-task-stat"><strong>${escape(String(blocked))}</strong><span>Blocked</span></div>
+                    <div class="social-project-task-stat"><strong>${escape(String(done))}</strong><span>Done</span></div>
+                </div>
+            `;
+        };
+        const renderTaskSearchBar = () => {
+            const searchVal = text(runtime.ui?.projectTaskSearch || '');
+            const priorityVal = text(runtime.ui?.projectTaskFilterPriority || 'all');
+            const assigneeVal = text(runtime.ui?.projectTaskFilterAssignee || 'all');
+            const myOnly = Boolean(runtime.ui?.projectTaskMyOnly);
+            return `
+                <div class="social-project-task-search">
+                    <div class="social-project-task-search-row">
+                        <button class="social-neo-btn ${myOnly ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'} social-neo-btn-sm" type="button" data-action="project-task-toggle-my"><i class="fas fa-user"></i> My tasks</button>
+                        <div class="social-project-task-search-input">
+                            <i class="fas fa-search"></i>
+                            <input class="social-neo-input" type="search" name="projectTaskSearch" value="${escape(searchVal)}" placeholder="Search tasks...">
+                        </div>
+                        <select class="social-neo-select social-neo-select-sm" name="projectTaskFilterPriority" data-lux-native>
+                            <option value="all" ${priorityVal === 'all' ? 'selected' : ''}>All priorities</option>
+                            ${['low','medium','high'].map((p) => `<option value="${escape(p)}" ${priorityVal === p ? 'selected' : ''}>${escape(p)}</option>`).join('')}
+                        </select>
+                        <select class="social-neo-select social-neo-select-sm" name="projectTaskFilterAssignee" data-lux-native>
+                            <option value="all" ${assigneeVal === 'all' ? 'selected' : ''}>All members</option>
+                            ${memberSummaries.map((entry) => `<option value="${escape(text(entry.userId))}" ${assigneeVal === text(entry.userId) ? 'selected' : ''}>${escape(displayName(accountById(entry.userId) || { id: entry.userId }))}</option>`).join('')}
+                        </select>
+                    </div>
+                </div>
+            `;
+        };
+        const renderColumnQuickAdd = (column) => {
+            if (!activeProject.viewerCanContribute) return '';
+            return `
+                <div class="social-project-task-column-footer">
+                    <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm social-project-task-quick-add-btn" type="button" data-action="project-task-quick-add" data-column="${escape(column.id)}">
+                        <i class="fas fa-plus"></i> Add task
+                    </button>
+                </div>
             `;
         };
         const renderMilestoneCard = (milestone) => {
@@ -3688,7 +4338,7 @@
                                 <span>${escape(when(deliverable?.submittedAt || deliverable?.createdAt || ''))}</span>
                             </div>
                         </div>
-                        <div class="social-neo-inline" style="gap:8px;flex-wrap:wrap">
+                        <div class="social-neo-inline social-neo-inline-gap-8-wrap">
                             ${deliverable?.file ? `<a class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" href="${escape(deliverable.file.url || '#')}" target="_blank" rel="noreferrer"><i class="fas fa-download"></i> Open file</a>` : ''}
                             ${activeProject.viewerCanContribute ? `<button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="project-deliverable-delete" data-project-id="${escape(text(activeProject.id))}" data-deliverable-id="${escape(text(deliverable.id))}"><i class="fas fa-trash"></i> Remove</button>` : ''}
                         </div>
@@ -3714,94 +4364,86 @@
             'checkin-posted': 'fa-comment-dots',
             'showcase-created': 'fa-globe'
         };
-        const renderActivityItem = (entry) => {
-            const actor = accountById(entry.actorUserId) || { id: entry.actorUserId };
-            return `
-                <article class="social-project-activity-item">
-                    <div class="social-project-activity-icon"><i class="fas ${escape(activityIconMap[text(entry?.type || '')] || 'fa-clock-rotate-left')}"></i></div>
-                    <div class="social-project-activity-body">
-                        <div class="social-project-activity-head">
-                            <div class="social-neo-person">
-                                ${avatar(actor, 'social-neo-avatar-sm')}
-                                <div>
-                                    <strong>${escape(displayName(actor))}</strong>
-                                    <span>${escape(text(entry.summary || entry.type || 'Updated the project'))}</span>
-                                </div>
-                            </div>
-                            <em>${escape(when(entry.createdAt || ''))}</em>
-                        </div>
-                    </div>
-                </article>
-            `;
-        };
         const renderOverviewTab = () => `
             <section class="social-neo-stack">
-                <div class="social-project-dashboard-grid">
-                    ${renderTaskStatusChart(activeProject)}
-                    ${renderWorkloadChart(activeProject)}
-                    <section class="social-neo-card social-project-chart-card">
+
+                <div class="social-project-ov-row social-project-ov-row--alerts">
+                    ${renderHealthIndicator(activeProject)}
+                    ${renderTaskStatusDonut(activeProject)}
+                </div>
+
+                <div class="social-project-overview-stats-strip">
+                    <div class="social-project-overview-stat-ring">
+                        ${renderMiniProgressRing(activeProject?.taskCompletionPercent || 0, '#f97316')}
+                        <span>Tasks</span>
+                    </div>
+                    <div class="social-project-overview-stat-ring">
+                        ${renderMiniProgressRing(activeProject?.milestoneCompletionPercent || 0, '#3b82f6')}
+                        <span>Milestones</span>
+                    </div>
+                    <div class="social-project-overview-stat">
+                        <strong>${escape(String(countNum(activeProject?.deliverableCount)))}</strong>
+                        <span>Files</span>
+                    </div>
+                    <div class="social-project-overview-stat">
+                        <strong>${escape(String(countNum(activeProject?.memberCount)))}</strong>
+                        <span>Team</span>
+                    </div>
+                    <div class="social-project-overview-stat-spark">
+                        ${renderMiniSparkline(activeProject?.activityBuckets || [], 120, 36)}
+                        <div><strong>${escape(String(countNum(activeProject?.activityCount)))}</strong><span>Events</span></div>
+                    </div>
+                </div>
+
+                <div class="social-project-ov-row social-project-ov-row--b2">
+                    ${renderMyTasks(activeProject)}
+                    ${renderTeamRoster(activeProject, memberSummaries)}
+                </div>
+
+                <div class="social-project-ov-row social-project-ov-row--activity-files">
+                    <section class="social-neo-card social-project-feed-card">
                         <div class="social-neo-section-head">
-                            <div><strong>Milestone progress</strong><span>Track phase completion and overdue items.</span></div>
-                            <span class="social-neo-pill">${escape(String(activeProject?.milestoneCount || 0))} milestones</span>
-                        </div>
-                        <div class="social-project-overview-grid">
-                            ${renderProgressRing(activeProject?.milestoneCompletionPercent || 0, 'Milestones complete', `${activeProject?.milestoneCompletedCount || 0} of ${activeProject?.milestoneCount || 0}`, '#3b82f6')}
-                            <div class="social-project-stats-list">
-                                <article><strong>${escape(String(activeProject?.milestoneOpenCount || 0))}</strong><span>still open</span></article>
-                                <article><strong>${escape(String(activeProject?.milestoneOverdueCount || 0))}</strong><span>overdue</span></article>
-                                <article><strong>${escape(String(activeProject?.meetingCount || 0))}</strong><span>meetings linked</span></article>
-                            </div>
-                        </div>
-                    </section>
-                    <section class="social-neo-card social-project-chart-card">
-                        <div class="social-neo-section-head">
-                            <div><strong>Activity pulse</strong><span>Last 7 days of workspace changes.</span></div>
+                            <div><strong>Recent activity</strong><span>Latest workspace changes.</span></div>
                             <span class="social-neo-pill">${escape(String(activeProject?.activityCount || 0))} events</span>
                         </div>
-                        ${renderSparkline(activeProject?.activityBuckets || [])}
+                        <div class="social-project-feed-sparkline">
+                            ${renderSparkline(activeProject?.activityBuckets || [])}
+                        </div>
+                        ${(Array.isArray(activeProject?.activity) ? activeProject.activity.slice(0, 5) : []).length ? `<div class="social-project-activity-feed">${(Array.isArray(activeProject?.activity) ? activeProject.activity.slice(0, 5) : []).map(renderActivityItem).join('')}</div>` : '<div class="social-neo-empty">No activity recorded yet.</div>'}
+                        <div class="social-project-card-new-cta"><span data-action="project-tab" data-project-id="${escape(text(activeProject?.id))}" data-project-tab="activity">View all activity →</span></div>
                     </section>
+                    ${renderRecentFiles(activeProject)}
                 </div>
-                <div class="social-project-overview-columns">
-                    <section class="social-neo-card social-project-rich-panel">
-                        <div class="social-neo-section-head">
-                            <div><strong>Workspace brief</strong><span>Scope, faculty mix, and ownership in one place.</span></div>
-                            <span class="social-neo-pill">${escape(text(statusMeta[text(activeProject.status || 'idea')]?.label || activeProject.status || 'idea'))}</span>
-                        </div>
-                        <p class="social-project-body-copy">${escape(text(activeProject.description || activeProject.summary || 'No description added yet.'))}</p>
-                        <div class="social-neo-badge-row">
-                            ${facultyPills(activeProject.facultyCodes)}
-                            ${skillPills(activeProject.skillTags)}
-                            ${text(activeProject.courseTag) ? `<span class="social-neo-pill">${escape(activeProject.courseTag)}</span>` : ''}
-                        </div>
-                        <div class="social-project-people-grid">
-                            <article class="social-neo-card social-project-mini-card">
-                                <span class="social-neo-label">Owner</span>
-                                <div class="social-neo-person">${avatar(owner, 'social-neo-avatar-sm')}<div><strong>${escape(displayName(owner))}</strong><span>${escape(accountSubtitle(owner))}</span></div></div>
-                            </article>
-                            <article class="social-neo-card social-project-mini-card">
-                                <span class="social-neo-label">Advisor / viewers</span>
-                                <div class="social-neo-badge-row">
-                                    ${advisorAccounts.length ? advisorAccounts.map((account) => `<span class="social-neo-pill">${escape(displayName(account))}</span>`).join('') : '<span class="social-neo-muted">No advisor assigned yet.</span>'}
-                                </div>
-                            </article>
-                        </div>
-                    </section>
-                    <section class="social-neo-card social-project-rich-panel">
-                        <div class="social-neo-section-head">
-                            <div><strong>Project settings</strong><span>Update summary, advisor, status, and outcome positioning.</span></div>
-                        </div>
-                        <form data-form="project-settings" data-project-id="${escape(text(activeProject.id))}" class="social-neo-stack">
-                            <label><span class="social-neo-label">Summary</span><input class="social-neo-input" type="text" name="projectSummary" value="${escape(text(activeProject.summary || ''))}"></label>
-                            <label><span class="social-neo-label">Description</span><textarea class="social-neo-textarea" rows="4" name="projectDescription">${escape(text(activeProject.description || ''))}</textarea></label>
-                            <div class="social-neo-grid-2">
-                                <label><span class="social-neo-label">Status</span><select class="social-neo-select" name="projectStatus">${['idea','active','review','completed'].map((status) => `<option value="${escape(status)}" ${text(activeProject.status || 'idea') === status ? 'selected' : ''}>${escape(status)}</option>`).join('')}</select></label>
-                                <label><span class="social-neo-label">Advisor</span><select class="social-neo-select" name="projectAdvisorUserId"><option value="">No advisor</option>${advisorCandidates.map((account) => `<option value="${escape(text(account.id))}" ${text(activeProject.advisorUserId || '') === text(account.id) ? 'selected' : ''}>${escape(displayName(account))}</option>`).join('')}</select></label>
+
+                <div class="social-project-ov-row social-project-ov-row--b2">
+                    ${renderNextMeeting(activeProject)}
+                    ${renderQuickActions(activeProject)}
+                </div>
+
+                <section class="social-neo-card social-project-rich-panel">
+                    <div class="social-neo-section-head">
+                        <div><strong>Workspace brief</strong><span>Scope, faculty mix, and ownership.</span></div>
+                        <span class="social-neo-pill">${escape(text(statusMeta[text(activeProject.status || 'idea')]?.label || activeProject.status || 'idea'))}</span>
+                    </div>
+                    <p class="social-project-body-copy">${escape(text(activeProject.description || activeProject.summary || 'No description added yet.'))}</p>
+                    <div class="social-neo-badge-row">
+                        ${facultyPills(activeProject.facultyCodes)}
+                        ${skillPills(activeProject.skillTags)}
+                        ${text(activeProject.courseTag) ? `<span class="social-neo-pill">${escape(activeProject.courseTag)}</span>` : ''}
+                    </div>
+                    <div class="social-project-people-grid">
+                        <article class="social-neo-card social-project-mini-card">
+                            <span class="social-neo-label">Owner</span>
+                            <div class="social-neo-person">${avatar(owner, 'social-neo-avatar-sm')}<div><strong>${escape(displayName(owner))}</strong><span>${escape(accountSubtitle(owner))}</span></div></div>
+                        </article>
+                        <article class="social-neo-card social-project-mini-card">
+                            <span class="social-neo-label">Advisor / viewers</span>
+                            <div class="social-neo-badge-row">
+                                ${advisorAccounts.length ? advisorAccounts.map((account) => `<span class="social-neo-pill">${escape(displayName(account))}</span>`).join('') : '<span class="social-neo-muted">No advisor assigned yet.</span>'}
                             </div>
-                            <label><span class="social-neo-label">Showcase summary</span><textarea class="social-neo-textarea" rows="3" name="projectShowcaseSummary">${escape(text(activeProject.showcaseSummary || ''))}</textarea></label>
-                            <div class="social-neo-inline" style="justify-content:flex-end"><button class="social-neo-btn social-neo-btn-primary" type="submit"><i class="fas fa-save"></i> Save workspace</button></div>
-                        </form>
-                    </section>
-                </div>
+                        </article>
+                    </div>
+                </section>
             </section>
         `;
         const renderTeamTab = () => `
@@ -3848,7 +4490,8 @@
                                 ${facultyOptions.map((facultyCode) => `<option value="${escape(facultyCode)}" ${inviteFaculty === facultyCode ? 'selected' : ''}>${escape(facultyCode)}</option>`).join('')}
                             </select>
                         </div>
-                        <div class="social-neo-stack" style="margin-top:14px">
+                        ${scrollList('social-project-scroll-list--invite', `
+                        <div class="social-neo-stack social-neo-stack-mt-14">
                             ${filteredInviteCandidates.length ? filteredInviteCandidates.map((account) => `
                                 <article class="social-neo-card social-project-invite-row">
                                     <div class="social-neo-person">
@@ -3866,6 +4509,7 @@
                                 </article>
                             `).join('') : `<div class="social-neo-empty">No invite candidates match the current filters.</div>`}
                         </div>
+                        `)}
                     </section>
                 ` : ''}
                 ${pendingMembers.length ? `
@@ -3873,60 +4517,79 @@
                         <div class="social-neo-section-head">
                             <div><strong>Pending invites</strong><span>People who have been invited but have not joined yet.</span></div>
                         </div>
-                        <div class="social-neo-stack">${pendingMembers.map((entry) => renderTeamMemberCard(entry, { pending: true })).join('')}</div>
+                        ${scrollList('social-project-scroll-list--members', `<div class="social-neo-stack">${pendingMembers.map((entry) => renderTeamMemberCard(entry, { pending: true })).join('')}</div>`)}
                     </section>
                 ` : ''}
                 <section class="social-neo-card social-project-rich-panel">
                     <div class="social-neo-section-head">
                         <div><strong>Active team</strong><span>${escape(String(activeProject.memberCount || 0))} members with visible role and presence cards.</span></div>
                     </div>
-                    <div class="social-neo-stack">${memberSummaries.map((entry) => renderTeamMemberCard(entry)).join('')}</div>
+                    ${scrollList('social-project-scroll-list--members', `<div class="social-neo-stack">${memberSummaries.map((entry) => renderTeamMemberCard(entry)).join('')}</div>`)}
                 </section>
             </section>
         `;
-        const renderTasksTab = () => `
-            <section class="social-neo-stack">
-                ${activeProject.viewerCanContribute ? `
-                    <article class="social-neo-card social-project-rich-panel">
-                        <div class="social-neo-section-head">
-                            <div><strong>Create task</strong><span>Add a unit of work with owner, due date, and urgency.</span></div>
-                        </div>
-                        <form data-form="project-task-create" data-project-id="${escape(text(activeProject.id))}" class="social-neo-stack">
-                            <div class="social-neo-grid-2">
-                                <label><span class="social-neo-label">Task title</span><input class="social-neo-input" type="text" name="projectTaskTitle" value="${escape(text(runtime.ui?.projectTaskTitle || ''))}"></label>
-                                <label><span class="social-neo-label">Assignee</span><select class="social-neo-select" name="projectTaskAssigneeId"><option value="">Unassigned</option>${memberSummaries.map((entry) => `<option value="${escape(text(entry.userId))}" ${text(runtime.ui?.projectTaskAssigneeId || '') === text(entry.userId) ? 'selected' : ''}>${escape(displayName(accountById(entry.userId) || { id: entry.userId }))}</option>`).join('')}</select></label>
-                            </div>
-                            <label><span class="social-neo-label">Description</span><textarea class="social-neo-textarea" rows="3" name="projectTaskDescription">${escape(text(runtime.ui?.projectTaskDescription || ''))}</textarea></label>
-                            <div class="social-neo-grid-3">
-                                <label><span class="social-neo-label">Due date</span><input class="social-neo-input" type="datetime-local" name="projectTaskDueAt" value="${escape(text(runtime.ui?.projectTaskDueAt || ''))}"></label>
-                                <label><span class="social-neo-label">Priority</span><select class="social-neo-select" name="projectTaskPriority">${['low','medium','high'].map((priority) => `<option value="${escape(priority)}" ${text(runtime.ui?.projectTaskPriority || 'medium') === priority ? 'selected' : ''}>${escape(priority)}</option>`).join('')}</select></label>
-                                <label><span class="social-neo-label">Column</span><select class="social-neo-select" name="projectTaskStatus">${taskColumns.map((column) => `<option value="${escape(column.id)}">${escape(column.label)}</option>`).join('')}</select></label>
-                            </div>
-                            <div class="social-neo-inline" style="justify-content:flex-end"><button class="social-neo-btn social-neo-btn-primary" type="submit">Create task</button></div>
-                        </form>
-                    </article>
-                ` : ''}
-                <div class="social-project-task-board">
-                    ${taskColumns.map((column) => {
-                        const columnTasks = projectTasks.filter((task) => text(task?.status || 'backlog') === column.id);
-                        return `
-                            <section class="social-project-task-column">
-                                <div class="social-project-task-column-head">
-                                    <div>
-                                        <strong>${escape(column.label)}</strong>
-                                        <span>${escape(String(columnTasks.length))} tasks</span>
+        const renderTasksTab = () => {
+            const formOpen = Boolean(runtime.ui?.projectTaskFormOpen);
+            const searchText = text(runtime.ui?.projectTaskSearch || '').toLowerCase();
+            const filterPriority = text(runtime.ui?.projectTaskFilterPriority || 'all');
+            const filterAssignee = text(runtime.ui?.projectTaskFilterAssignee || 'all');
+            const myOnly = Boolean(runtime.ui?.projectTaskMyOnly);
+            const userId = currentUserId();
+            let filteredTasks = projectTasks;
+            if (myOnly) filteredTasks = filteredTasks.filter((t) => text(t.assigneeUserId) === userId);
+            if (searchText) filteredTasks = filteredTasks.filter((t) => text(t.title || '').toLowerCase().includes(searchText) || text(t.description || '').toLowerCase().includes(searchText));
+            if (filterPriority !== 'all') filteredTasks = filteredTasks.filter((t) => text(t.priority || 'medium').toLowerCase() === filterPriority);
+            if (filterAssignee !== 'all') filteredTasks = filteredTasks.filter((t) => text(t.assigneeUserId) === filterAssignee);
+            return `
+                <section class="social-neo-stack">
+                    ${activeProject.viewerCanContribute ? `
+                        <article class="social-neo-card social-project-task-form-wrap">
+                            <button class="social-project-task-form-toggle" type="button" data-action="project-task-toggle-form">
+                                <span><i class="fas fa-plus"></i> Create task</span>
+                                <i class="fas fa-chevron-${formOpen ? 'up' : 'down'}"></i>
+                            </button>
+                            <div class="social-project-task-form-body" ${formOpen ? '' : 'hidden'}>
+                                <form data-form="project-task-create" data-project-id="${escape(text(activeProject.id))}" class="social-neo-stack">
+                                    <div class="social-neo-grid-2">
+                                        <label><span class="social-neo-label">Task title</span><input class="social-neo-input" type="text" name="projectTaskTitle" value="${escape(text(runtime.ui?.projectTaskTitle || ''))}"></label>
+                                        <label><span class="social-neo-label">Assignee</span><select class="social-neo-select" name="projectTaskAssigneeId" data-lux-native><option value="">Unassigned</option>${memberSummaries.map((entry) => `<option value="${escape(text(entry.userId))}" ${text(runtime.ui?.projectTaskAssigneeId || '') === text(entry.userId) ? 'selected' : ''}>${escape(displayName(accountById(entry.userId) || { id: entry.userId }))}</option>`).join('')}</select></label>
                                     </div>
-                                    <em class="is-${escape(column.tone)}"></em>
-                                </div>
-                                <div class="social-neo-stack">
-                                    ${columnTasks.length ? columnTasks.map((task) => renderTaskCard(task, column.id)).join('') : `<div class="social-neo-empty">No tasks in ${escape(column.label.toLowerCase())}.</div>`}
-                                </div>
-                            </section>
-                        `;
-                    }).join('')}
-                </div>
-            </section>
-        `;
+                                    <label><span class="social-neo-label">Description</span><textarea class="social-neo-textarea" rows="3" name="projectTaskDescription">${escape(text(runtime.ui?.projectTaskDescription || ''))}</textarea></label>
+                                    <div class="social-neo-grid-3">
+                                        <label><span class="social-neo-label">Due date</span><input class="social-neo-input" type="datetime-local" name="projectTaskDueAt" value="${escape(text(runtime.ui?.projectTaskDueAt || ''))}"></label>
+                                        <label><span class="social-neo-label">Priority</span><select class="social-neo-select" name="projectTaskPriority" data-lux-native>${['low','medium','high'].map((priority) => `<option value="${escape(priority)}" ${text(runtime.ui?.projectTaskPriority || 'medium') === priority ? 'selected' : ''}>${escape(priority)}</option>`).join('')}</select></label>
+                                        <label><span class="social-neo-label">Column</span><select class="social-neo-select" name="projectTaskStatus" data-lux-native>${taskColumns.map((column) => `<option value="${escape(column.id)}">${escape(column.label)}</option>`).join('')}</select></label>
+                                    </div>
+                                    <div class="social-neo-inline social-neo-inline-end"><button class="social-neo-btn social-neo-btn-primary" type="submit"><i class="fas fa-plus"></i> Create task</button></div>
+                                </form>
+                            </div>
+                        </article>
+                    ` : ''}
+                    ${renderTaskStatsBar(filteredTasks)}
+                    ${renderTaskSearchBar()}
+                    <div class="social-project-task-board">
+                        ${taskColumns.map((column) => {
+                            const columnTasks = filteredTasks.filter((task) => text(task?.status || 'backlog') === column.id);
+                            return `
+                                <section class="social-project-task-column" data-tone="${escape(column.tone)}">
+                                    <div class="social-project-task-column-head">
+                                        <div>
+                                            <strong>${escape(column.label)}</strong>
+                                            <span>${escape(String(columnTasks.length))} ${columnTasks.length === 1 ? 'task' : 'tasks'}</span>
+                                        </div>
+                                        <em class="social-project-task-column-count is-${escape(column.tone)}">${escape(String(columnTasks.length))}</em>
+                                    </div>
+                                    ${scrollList('social-project-scroll-list--tasks', `<div class="social-neo-stack">
+                                        ${columnTasks.length ? columnTasks.map((task) => renderTaskCard(task, column.id)).join('') : `<div class="social-neo-empty">No tasks in ${escape(column.label.toLowerCase())}.</div>`}
+                                    </div>`)}
+                                    ${renderColumnQuickAdd(column)}
+                                </section>
+                            `;
+                        }).join('')}
+                    </div>
+                </section>
+            `;
+        };
         const renderMilestonesTab = () => `
             <section class="social-neo-stack">
                 ${activeProject.viewerCanContribute ? `
@@ -3940,7 +4603,7 @@
                                 <label><span class="social-neo-label">Due date</span><input class="social-neo-input" type="datetime-local" name="projectMilestoneDueAt" value="${escape(text(runtime.ui?.projectMilestoneDueAt || ''))}"></label>
                             </div>
                             <label><span class="social-neo-label">Description</span><textarea class="social-neo-textarea" rows="3" name="projectMilestoneDescription">${escape(text(runtime.ui?.projectMilestoneDescription || ''))}</textarea></label>
-                            <div class="social-neo-inline" style="justify-content:flex-end"><button class="social-neo-btn social-neo-btn-primary" type="submit">Add milestone</button></div>
+                            <div class="social-neo-inline social-neo-inline-end"><button class="social-neo-btn social-neo-btn-primary" type="submit">Add milestone</button></div>
                         </form>
                     </article>
                 ` : ''}
@@ -3948,9 +4611,7 @@
                     <div class="social-neo-section-head">
                         <div><strong>Milestone timeline</strong><span>Upcoming, overdue, and completed phases in delivery order.</span></div>
                     </div>
-                    <div class="social-project-milestone-list">
-                        ${projectMilestones.length ? projectMilestones.map((milestone) => renderMilestoneCard(milestone)).join('') : `<div class="social-neo-empty">No milestones yet.</div>`}
-                    </div>
+                    ${scrollList('social-project-scroll-list--milestones', `<div class="social-project-milestone-list">${projectMilestones.length ? projectMilestones.map((milestone) => renderMilestoneCard(milestone)).join('') : `<div class="social-neo-empty">No milestones yet.</div>`}</div>`)}
                 </section>
             </section>
         `;
@@ -3967,18 +4628,16 @@
                                 <label><span class="social-neo-label">Version label</span><input class="social-neo-input" type="text" name="projectDeliverableVersion" value="${escape(text(runtime.ui?.projectDeliverableVersion || ''))}" placeholder="v1.0"></label>
                             </div>
                             <label><span class="social-neo-label">Description</span><textarea class="social-neo-textarea" rows="3" name="projectDeliverableDescription">${escape(text(runtime.ui?.projectDeliverableDescription || ''))}</textarea></label>
-                            <label class="social-neo-btn social-neo-btn-ghost social-neo-btn-block" style="justify-content:center;cursor:pointer">
+                            <label class="social-neo-btn social-neo-btn-ghost social-neo-btn-block social-neo-btn-pointer">
                                 <i class="fas fa-paperclip"></i> Attach file
                                 <input type="file" name="projectDeliverableFile" hidden>
                             </label>
                             ${renderFileChip(runtime.ui?.projectDeliverableFile, 'File ready to upload')}
-                            <div class="social-neo-inline" style="justify-content:flex-end"><button class="social-neo-btn social-neo-btn-primary" type="submit">Submit deliverable</button></div>
+                            <div class="social-neo-inline social-neo-inline-end"><button class="social-neo-btn social-neo-btn-primary" type="submit">Submit deliverable</button></div>
                         </form>
                     </article>
                 ` : ''}
-                <div class="social-project-deliverable-grid">
-                    ${projectDeliverables.length ? projectDeliverables.map((deliverable) => renderDeliverableCard(deliverable)).join('') : `<div class="social-neo-empty">No deliverables submitted yet.</div>`}
-                </div>
+                ${scrollList('social-project-scroll-list--deliverables', `<div class="social-project-deliverable-grid">${projectDeliverables.length ? projectDeliverables.map((deliverable) => renderDeliverableCard(deliverable)).join('') : `<div class="social-neo-empty">No deliverables submitted yet.</div>`}</div>`)}
             </section>
         `;
         const renderMeetingsTab = () => `
@@ -3998,11 +4657,11 @@
                                 <label><span class="social-neo-label">Starts</span><input class="social-neo-input" type="datetime-local" name="meetingStartsAt"></label>
                                 <label><span class="social-neo-label">Ends</span><input class="social-neo-input" type="datetime-local" name="meetingEndsAt"></label>
                             </div>
-                            <div class="social-neo-inline" style="justify-content:flex-end"><button class="social-neo-btn social-neo-btn-primary" type="submit">Schedule meeting</button></div>
+                            <div class="social-neo-inline social-neo-inline-end"><button class="social-neo-btn social-neo-btn-primary" type="submit">Schedule meeting</button></div>
                         </form>
                     </article>
                 ` : ''}
-                <div class="social-neo-stack">
+                ${scrollList('social-project-scroll-list--meetings', `<div class="social-neo-stack">
                     ${projectMeetings.length ? projectMeetings.map((meeting) => `
                         <article class="social-neo-card social-project-meeting-card">
                             <div class="social-project-meeting-head">
@@ -4017,7 +4676,7 @@
                             </div>
                             <div class="social-project-meeting-footer">
                                 <span>${escape(text(meeting.location || meeting.onlineLink || 'Location to be announced'))}</span>
-                                <div class="social-neo-inline" style="gap:8px;flex-wrap:wrap">
+                                <div class="social-neo-inline social-neo-inline-gap-8-wrap">
                                     ${(() => {
                                         const safeOnlineLink = getSafeSocialExternalUrl(meeting?.onlineLink);
                                         return safeOnlineLink ? `<a class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" href="${escape(safeOnlineLink)}" target="_blank" rel="noreferrer">Join link</a>` : '';
@@ -4027,7 +4686,7 @@
                             </div>
                         </article>
                     `).join('') : `<div class="social-neo-empty">No meetings scheduled yet.</div>`}
-                </div>
+                </div>`)}
             </section>
         `;
         const renderChatTab = () => `
@@ -4058,10 +4717,10 @@
                             <label><span class="social-neo-label">Blockers</span><textarea class="social-neo-textarea" rows="3" name="projectCheckinBlockers">${escape(text(runtime.ui?.projectCheckinBlockers || ''))}</textarea></label>
                             <label><span class="social-neo-label">Next steps</span><textarea class="social-neo-textarea" rows="3" name="projectCheckinNextSteps">${escape(text(runtime.ui?.projectCheckinNextSteps || ''))}</textarea></label>
                         </div>
-                        <div class="social-neo-inline" style="justify-content:flex-end"><button class="social-neo-btn social-neo-btn-primary" type="submit">Post check-in</button></div>
+                        <div class="social-neo-inline social-neo-inline-end"><button class="social-neo-btn social-neo-btn-primary" type="submit">Post check-in</button></div>
                     </form>
                 ` : ''}
-                <div class="social-neo-stack" style="margin-top:14px">
+                ${scrollList('social-project-scroll-list--checkins', `<div class="social-neo-stack social-neo-stack-mt-14">
                     ${projectCheckins.length ? projectCheckins.map((checkin) => {
                         const account = accountById(checkin.authorUserId) || { id: checkin.authorUserId };
                         return `
@@ -4081,7 +4740,7 @@
                             </article>
                         `;
                     }).join('') : `<div class="social-neo-empty">No check-ins yet.</div>`}
-                </div>
+                </div>`)}
             </section>
         `;
         const renderActivityTab = () => `
@@ -4089,9 +4748,7 @@
                 <div class="social-neo-section-head">
                     <div><strong>Workspace timeline</strong><span>Every material project update, from tasks to showcase publishing.</span></div>
                 </div>
-                <div class="social-project-activity-list">
-                    ${projectActivity.length ? projectActivity.map((entry) => renderActivityItem(entry)).join('') : `<div class="social-neo-empty">No project activity yet.</div>`}
-                </div>
+                ${scrollList('social-project-scroll-list--activity', `<div class="social-project-activity-list">${projectActivity.length ? projectActivity.map((entry) => renderActivityItem(entry)).join('') : `<div class="social-neo-empty">No project activity yet.</div>`}</div>`)}
             </section>
         `;
         const renderOutcomeTab = () => `
@@ -4116,7 +4773,7 @@
                             <p>${escape(activeProject.showcasePageId ? 'Refresh the showcase page when deliverables change.' : 'Publish a public-facing page once the project is ready to present.')}</p>
                         </article>
                     </div>
-                    <div class="social-neo-inline" style="justify-content:flex-end;gap:8px;flex-wrap:wrap">
+                    <div class="social-neo-inline social-neo-inline-end-gap-8-wrap">
                         ${activeProject.showcasePageId ? `<button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="panel-pages">Open pages</button>` : ''}
                         ${activeProject.isManager ? `<button class="social-neo-btn social-neo-btn-primary" type="button" data-action="project-showcase-publish" data-project-id="${escape(text(activeProject.id))}"><i class="fas fa-globe"></i> ${activeProject.showcasePageId ? 'Republish showcase' : 'Publish showcase'}</button>` : ''}
                     </div>
@@ -4159,7 +4816,7 @@
                 <section class="social-neo-card social-project-detail-hero social-project-detail-hero-rich">
                     <div class="social-project-detail-top">
                         <div class="social-project-detail-copy">
-                            <div class="social-neo-inline" style="gap:10px;flex-wrap:wrap">
+                            <div class="social-neo-inline social-neo-inline-gap-10-wrap">
                                 <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="projects-back"><i class="fas fa-arrow-left"></i> Back</button>
                                 ${projectRolePill(activeProject.role || 'member')}
                                 <span class="social-neo-pill">${escape(text(statusMeta[text(activeProject.status || 'idea')]?.label || activeProject.status || 'idea'))}</span>
@@ -4181,7 +4838,7 @@
                                     <span>${escape(activeProject.isOrphaned ? 'No current owner' : 'Workspace owner')}</span>
                                 </div>
                             </div>
-                            <div class="social-neo-inline" style="gap:8px;flex-wrap:wrap;justify-content:flex-end">
+                            <div class="social-neo-inline social-neo-inline-end-gap-8-wrap">
                                 <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="project-open-chat" data-project-id="${escape(text(activeProject.id))}"><i class="fas fa-comments"></i> Chat</button>
                                 <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="project-tab" data-project-id="${escape(text(activeProject.id))}" data-project-tab="meetings"><i class="fas fa-calendar-days"></i> Meetings</button>
                                 ${activeProject.isManager ? `<button class="social-neo-btn social-neo-btn-primary" type="button" data-action="project-showcase-publish" data-project-id="${escape(text(activeProject.id))}"><i class="fas fa-globe"></i> Showcase</button>` : ''}
@@ -4205,9 +4862,9 @@
                     </div>
                 </section>
                 <section class="social-neo-card social-project-tab-shell">
-                    <div class="social-project-tab-row social-project-tab-row-rich">
+                    <div class="social-project-tab-row social-project-tab-row-rich" role="tablist" aria-label="Project sections">
                         ${tabItems.map(([tabId, label, icon, note]) => `
-                            <button class="social-project-tab-pill ${activeTab === tabId ? 'is-active' : ''}" type="button" data-action="project-tab" data-project-id="${escape(text(activeProject.id))}" data-project-tab="${escape(tabId)}">
+                            <button class="social-project-tab-pill ${activeTab === tabId ? 'is-active' : ''}" type="button" role="tab" aria-selected="${activeTab === tabId ? 'true' : 'false'}" tabindex="${activeTab === tabId ? '0' : '-1'}" data-action="project-tab" data-project-id="${escape(text(activeProject.id))}" data-project-tab="${escape(tabId)}">
                                 <i class="fas ${escape(icon)}"></i>
                                 <span>
                                     <strong>${escape(label)}</strong>
@@ -4235,7 +4892,7 @@
 
         const renderGroupCard = (group) => `
             <article class="social-neo-card social-neo-group-card">
-                <div class="social-neo-group-card-header" style="background:linear-gradient(135deg,rgba(16,185,129,.15),rgba(16,185,129,.03))">
+                <div class="social-neo-group-card-header">
                     <div class="social-neo-group-card-icon"><i class="fas fa-layer-group"></i></div>
                     <div>
                         <strong>${escape(text(group.name || 'Group'))}</strong>
@@ -4308,7 +4965,7 @@
         const createView = `
             <section class="social-neo-card">
                 <div class="social-neo-section-head">
-                    <div><strong><i class="fas fa-plus-circle" style="color:#10b981"></i> Create New Group</strong></div>
+                    <div><strong><i class="fas fa-plus-circle social-neo-section-accent-icon is-green"></i> Create New Group</strong></div>
                 </div>
                 <form class="social-neo-stack" data-form="create-group">
                     <input class="social-neo-input" id="${escape(groupNameId)}" type="text" name="groupName" placeholder="Group name" value="${escape(text(runtime.ui?.groupName || ''))}">
@@ -4360,7 +5017,7 @@
 
         const renderPageCard = (page) => `
             <article class="social-neo-card social-neo-page-card">
-                <div class="social-neo-page-card-header" style="background:linear-gradient(135deg,rgba(59,130,246,.15),rgba(59,130,246,.03))">
+                <div class="social-neo-page-card-header">
                     <div class="social-neo-page-card-icon"><i class="fas fa-flag"></i></div>
                     <div>
                         <strong>${escape(text(page.name || 'Page'))}</strong>
@@ -4383,9 +5040,9 @@
         `;
 
         const renderSearchBar = () => `
-            <form class="social-neo-inline" data-form="pages-search" style="gap:8px;flex-wrap:wrap;align-items:flex-end;margin:0 0 14px">
-                <label style="flex:1;min-width:220px;display:flex;flex-direction:column;gap:6px">
-                    <span style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--sn-txt3)">Search pages</span>
+            <form class="social-neo-inline social-neo-inline-gap-8-wrap social-neo-inline-items-end social-neo-mb-14" data-form="pages-search">
+                <label class="social-neo-field-flex-1-220">
+                    <span class="social-neo-label">Search pages</span>
                     <input class="social-neo-input" id="${escape(pagesSearchId)}" name="pagesSearch" type="search" placeholder="Search pages to follow..." data-bind="pages-search" value="${escape(text(runtime.ui?.pagesSearch || ''))}">
                 </label>
                 <button class="social-neo-btn social-neo-btn-primary" type="submit">
@@ -4423,7 +5080,7 @@
         const createView = `
             <section class="social-neo-card">
                 <div class="social-neo-section-head">
-                    <div><strong><i class="fas fa-plus-circle" style="color:#3b82f6"></i> Create New Page</strong></div>
+                    <div><strong><i class="fas fa-plus-circle social-neo-section-accent-icon is-blue"></i> Create New Page</strong></div>
                 </div>
                 <form class="social-neo-stack" data-form="create-page">
                     <input class="social-neo-input" id="${escape(pageNameId)}" type="text" name="pageName" placeholder="Page name" value="${escape(text(runtime.ui?.pageName || ''))}">
@@ -4472,6 +5129,18 @@
         const eventMaxSeatsId  = controlId('eventMaxSeats');
         const eventImageId     = controlId('eventImage');
 
+        function getEventToneClass(category) {
+            const toneMap = {
+                academic: 'academic',
+                social: 'social',
+                career: 'career',
+                club: 'club',
+                university: 'university',
+                study: 'study'
+            };
+            return toneMap[text(category)] || 'default';
+        }
+
         // Helper: render a time-grouped list of events
         function renderEventList(list) {
             if (!list.length) return '<div class="social-neo-empty">No events here yet.</div>';
@@ -4486,34 +5155,30 @@
             return Object.entries(groups).map(([dateLabel, items]) => `
                 <div class="social-neo-time-group">
                     <div class="social-neo-time-group-head" data-action="event-time-group-toggle">
-                        <strong><i class="fas fa-calendar-day" style="font-size:10px;margin-right:5px;opacity:.6"></i>${escape(dateLabel)}</strong>
-                        <span>${escape(items.length)} event${items.length !== 1 ? 's' : ''} â–¾</span>
+                        <strong><i class="fas fa-calendar-day social-neo-time-group-icon"></i>${escape(dateLabel)}</strong>
+                        <span>${escape(items.length)} event${items.length !== 1 ? 's' : ''}</span>
                     </div>
                     <div class="social-neo-time-group-body">
                         ${items.map(item => {
-                            const catColors = {
-                                academic: '#6366f1', social: '#ec4899', career: '#f59e0b',
-                                club: '#10b981', university: '#3b82f6', study: '#8b5cf6'
-                            };
-                            const catColor = catColors[item.category] || 'var(--sn-accent)';
+                            const toneClass = getEventToneClass(item.category);
                             return `
-                            <article class="social-neo-event-card" style="border-left: 3px solid ${catColor}">
+                            <article class="social-neo-event-card is-${toneClass}">
                                 ${item.imageUrl ? `<div class="social-neo-event-img"><img src="${escape(item.imageUrl)}" alt="${escape(item.title)}"></div>` : ''}
-                                <div class="social-neo-inline" style="justify-content:space-between;flex-wrap:wrap;gap:4px">
+                                <div class="social-neo-inline social-neo-inline-between-gap-4-wrap">
                                     <strong>${escape(text(item.title || 'Untitled'))}</strong>
-                                    ${item.category ? `<span class="social-neo-pill" style="border-color:${catColor};color:${catColor}">${escape(item.category)}</span>` : ''}
+                                    ${item.category ? `<span class="social-neo-pill social-neo-event-category-pill is-${toneClass}">${escape(item.category)}</span>` : ''}
                                 </div>
-                                <span style="font-size:11px;line-height:1.45;color:var(--sn-txt2)">${escape(text(item.description || ''))}</span>
+                                <span class="social-neo-event-copy">${escape(text(item.description || ''))}</span>
                                 <div class="social-neo-badge-row">
-                                    <span class="social-neo-pill"><i class="fas fa-clock" style="font-size:8px"></i> ${escape(when(item.startsAt))}</span>
-                                    ${item.location ? `<span class="social-neo-pill"><i class="fas fa-map-pin" style="font-size:8px"></i> ${escape(item.location)}</span>` : ''}
-                                    ${item.isOnline ? `<span class="social-neo-pill"><i class="fas fa-globe" style="font-size:8px"></i> Online</span>` : ''}
-                                    ${item.maxSeats ? `<span class="social-neo-pill"><i class="fas fa-chair" style="font-size:8px"></i> ${escape(item.attendeeSummary?.going||0)}/${escape(item.maxSeats)} seats</span>` : ''}
-                                    ${item.isRecurring ? `<span class="social-neo-pill"><i class="fas fa-rotate" style="font-size:8px"></i> Recurring</span>` : ''}
+                                    <span class="social-neo-pill"><i class="fas fa-clock social-neo-pill-icon"></i> ${escape(when(item.startsAt))}</span>
+                                    ${item.location ? `<span class="social-neo-pill"><i class="fas fa-map-pin social-neo-pill-icon"></i> ${escape(item.location)}</span>` : ''}
+                                    ${item.isOnline ? `<span class="social-neo-pill"><i class="fas fa-globe social-neo-pill-icon"></i> Online</span>` : ''}
+                                    ${item.maxSeats ? `<span class="social-neo-pill"><i class="fas fa-chair social-neo-pill-icon"></i> ${escape(item.attendeeSummary?.going||0)}/${escape(item.maxSeats)} seats</span>` : ''}
+                                    ${item.isRecurring ? `<span class="social-neo-pill"><i class="fas fa-rotate social-neo-pill-icon"></i> Recurring</span>` : ''}
                                 </div>
                                 <div class="social-neo-inline">
-                                    <span style="font-size:10.5px;color:var(--sn-txt3)">ðŸ‘¤ ${escape(item.attendeeSummary?.going||0)} going Â· â­ ${escape(item.attendeeSummary?.interested||0)} interested</span>
-                                    <span style="flex:1"></span>
+                                    <span class="social-neo-attendee-summary">${escape(item.attendeeSummary?.going||0)} going &middot; ${escape(item.attendeeSummary?.interested||0)} interested</span>
+                                    <span class="social-neo-flex-spacer"></span>
                                     <button class="social-neo-btn ${item.viewerRsvpStatus==='going'?'social-neo-btn-primary':'social-neo-btn-ghost'}" type="button" data-action="event-rsvp" data-event-id="${escape(text(item.id))}" data-status="going">Going</button>
                                     <button class="social-neo-btn ${item.viewerRsvpStatus==='interested'?'social-neo-btn-primary':'social-neo-btn-ghost'}" type="button" data-action="event-rsvp" data-event-id="${escape(text(item.id))}" data-status="interested">Interested</button>
                                     <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="event-rsvp" data-event-id="${escape(text(item.id))}" data-status="declined">Decline</button>
@@ -4585,7 +5250,7 @@
                         </label>
                     </div>
 
-                    <div class="social-neo-inline" style="gap:14px;flex-wrap:wrap">
+                    <div class="social-neo-inline social-neo-inline-gap-14-wrap">
                         <label class="social-neo-checkbox" for="${escape(eventIsOnlineId)}">
                             <input id="${escape(eventIsOnlineId)}" type="checkbox" name="eventIsOnline" ${runtime.ui?.eventIsOnline?'checked':''}>
                             <span>Online event</span>
@@ -4595,17 +5260,17 @@
                             <span>Recurring weekly</span>
                         </label>
                         ${runtime.ui?.eventIsOnline ? `
-                            <input class="social-neo-input" id="${escape(eventOnlineLinkId)}" type="url" name="eventOnlineLink" placeholder="https://zoom.us/..." style="flex:1;min-width:160px" value="${escape(text(runtime.ui?.eventOnlineLink || ''))}">
+                            <input class="social-neo-input social-neo-input-flex-1-160" id="${escape(eventOnlineLinkId)}" type="url" name="eventOnlineLink" placeholder="https://zoom.us/..." value="${escape(text(runtime.ui?.eventOnlineLink || ''))}">
                         ` : ''}
                     </div>
 
                     <div class="social-neo-inline">
-                        <label class="social-neo-btn social-neo-btn-ghost" style="cursor:pointer">
+                        <label class="social-neo-btn social-neo-btn-ghost social-neo-btn-pointer">
                             <i class="fas fa-image"></i> Add cover photo
                             <input id="${escape(eventImageId)}" name="eventImage" type="file" accept="image/*" hidden>
                         </label>
                         ${runtime.ui?.eventImageFile ? `<span class="social-neo-draft-file"><i class="fas fa-image"></i> ${escape(runtime.ui.eventImageFile.name)}</span>` : ''}
-                        <span style="flex:1"></span>
+                        <span class="social-neo-flex-spacer"></span>
                         <button class="social-neo-btn social-neo-btn-primary" type="submit"><i class="fas fa-calendar-plus"></i> Create event</button>
                     </div>
                 </form>
@@ -4614,13 +5279,13 @@
 
         // University-only creation form (staff only)
         const universityCreateForm = isStaff ? `
-            <section class="social-neo-card" style="border-left:3px solid #3b82f6">
+            <section class="social-neo-card social-neo-section-card--official">
                 <div class="social-neo-section-head">
                     <div>
                         <strong>Create official university event</strong>
                         <span>Visible to all students. Marked as official. Only faculty & admin can publish here.</span>
                     </div>
-                    <span class="social-neo-pill" style="border-color:#3b82f6;color:#3b82f6">${escape(roleLabel(userRole))}</span>
+                    <span class="social-neo-pill is-blue">${escape(roleLabel(userRole))}</span>
                 </div>
                 <form class="social-neo-stack" data-form="create-event">
                     <input type="hidden" name="eventCategory" value="university">
@@ -4662,21 +5327,21 @@
                         </label>
                     </div>
                     <div class="social-neo-inline">
-                        <label class="social-neo-btn social-neo-btn-ghost" style="cursor:pointer">
+                        <label class="social-neo-btn social-neo-btn-ghost social-neo-btn-pointer">
                             <i class="fas fa-image"></i> Add cover photo
                             <input name="eventImage" type="file" accept="image/*" hidden>
                         </label>
-                        <span style="flex:1"></span>
-                        <button class="social-neo-btn social-neo-btn-primary" type="submit" style="background:rgba(59,130,246,.8)!important"><i class="fas fa-university"></i> Publish official event</button>
+                        <span class="social-neo-flex-spacer"></span>
+                        <button class="social-neo-btn social-neo-btn-primary is-blue" type="submit"><i class="fas fa-university"></i> Publish official event</button>
                     </div>
                 </form>
             </section>
         ` : `
             <section class="social-neo-card">
-                <div class="social-neo-empty" style="text-align:left;padding:12px">
-                    <i class="fas fa-university" style="font-size:18px;opacity:.3;display:block;margin-bottom:6px"></i>
-                    <strong style="color:var(--sn-txt);font-size:12px">Official university events</strong>
-                    <p style="margin:4px 0 0;font-size:11px;color:var(--sn-txt3)">Only faculty and administrators can publish official university events. They will appear here automatically when published.</p>
+                <div class="social-neo-empty social-neo-empty-left">
+                    <i class="fas fa-university social-neo-empty-left-icon"></i>
+                    <strong class="social-neo-empty-left-title">Official university events</strong>
+                    <p class="social-neo-empty-left-copy">Only faculty and administrators can publish official university events. They will appear here automatically when published.</p>
                 </div>
             </section>
         `;
@@ -4721,16 +5386,16 @@
                 </div>
                 <div class="social-neo-list">
                     ${studyGroups.length ? studyGroups.map(g => `
-                        <article class="social-neo-entity-card" style="border-left:3px solid #8b5cf6">
+                        <article class="social-neo-entity-card social-neo-entity-card--study">
                             <div>
                                 <strong>${escape(text(g.name||'Study Group'))}</strong>
                                 <span>${escape(text(g.description||''))}</span>
-                                <div class="social-neo-badge-row" style="margin-top:4px">
-                                    <span class="social-neo-pill"><i class="fas fa-users" style="font-size:8px"></i> ${escape(g.memberCount||0)} members</span>
+                                <div class="social-neo-badge-row social-neo-badge-row-mt-4">
+                                    <span class="social-neo-pill"><i class="fas fa-users social-neo-pill-icon"></i> ${escape(g.memberCount||0)} members</span>
                                     <span class="social-neo-pill">${escape(text(g.visibility||'public'))}</span>
                                 </div>
                             </div>
-                            <div class="social-neo-inline" style="flex-direction:column;align-items:flex-end;gap:4px">
+                            <div class="social-neo-inline social-neo-inline-column-end">
                                 ${g.membershipState==='member'||g.membershipState==='manager'
                                     ? `<button class="social-neo-btn social-neo-btn-primary" type="button" data-action="group-chat" data-group-id="${escape(text(g.id))}">Open chat</button>
                                        <button class="social-neo-link-btn" type="button" data-action="group-leave-open" data-group-id="${escape(text(g.id))}">Leave</button>`
@@ -4753,7 +5418,7 @@
                             <div class="social-neo-section-head">
                                 <div>
                                     <strong>Student events</strong>
-                                    <span>${escape(studentEvents.length)} upcoming Â· grouped by date</span>
+                                    <span>${escape(studentEvents.length)} upcoming &middot; grouped by date</span>
                                 </div>
                             </div>
                             <div class="social-neo-stack">${renderEventList(studentEvents)}</div>
@@ -4860,7 +5525,7 @@
             const description = text(item.description || '').trim() || 'Details will be shared in the event thread.';
             const title = text(item.title || 'Untitled event');
             return `
-                <article class="social-neo-event-feature social-neo-event-feature--${escape(tone)}" style="--event-accent:${accent}">
+                <article class="social-neo-event-feature social-neo-event-feature--${escape(tone)}">
                     ${item.imageUrl ? `
                         <div class="social-neo-event-feature-cover">
                             <img src="${escape(item.imageUrl)}" alt="${escape(title)}">
@@ -4873,7 +5538,7 @@
                         </div>
                         <div class="social-neo-event-feature-copy">
                             <div class="social-neo-badge-row social-neo-events-badges">
-                                <span class="social-neo-pill" style="border-color:${accent};color:${accent}">${escape(categoryLabel)}</span>
+                                <span class="social-neo-pill social-neo-event-category-pill is-${escape(tone)}">${escape(categoryLabel)}</span>
                                 ${item.isOfficial ? '<span class="social-neo-pill">Official</span>' : ''}
                                 ${item.isOnline ? '<span class="social-neo-pill">Online</span>' : ''}
                                 ${item.isRecurring ? '<span class="social-neo-pill">Recurring</span>' : ''}
@@ -4902,7 +5567,7 @@
                         <div class="social-neo-event-feature-meta-item">
                             <i class="fas fa-users"></i>
                             <div>
-                                <strong>${escape(`${goingCount} going`)}${interestedCount ? ` Â· ${escape(`${interestedCount} interested`)}` : ''}</strong>
+                                <strong>${escape(`${goingCount} going`)}${interestedCount ? ` &middot; ${escape(`${interestedCount} interested`)}` : ''}</strong>
                                 <span>${escape(item.joinMode === 'invite-only' ? 'Invite only' : item.joinMode === 'member-required' ? 'Members only' : 'Open registration')}</span>
                             </div>
                         </div>
@@ -4957,7 +5622,7 @@
                                     <strong>${escape(text(item.title || 'Untitled event'))}</strong>
                                     <span>${escape(item?.startsAt ? when(item.startsAt) : 'Time to be announced')}</span>
                                 </div>
-                                <div class="social-neo-inline" style="gap:8px;flex-wrap:wrap;justify-content:flex-end">
+                                <div class="social-neo-inline social-neo-inline-end-gap-8-wrap">
                                     <span class="social-neo-pill">${escape(text(item.scopeName || 'Published event'))}</span>
                                     <button class="social-neo-btn social-neo-btn-ghost social-neo-events-delete-btn" type="button" data-action="event-delete-open" data-event-id="${escape(text(item.id))}">
                                         <i class="fas fa-trash"></i> Remove
@@ -5031,7 +5696,7 @@
                             <input class="social-neo-input" id="${escape(eventMaxSeatsId)}" type="number" name="eventMaxSeats" min="1" placeholder="Unlimited" value="${escape(text(runtime.ui?.eventMaxSeats || ''))}">
                         </label>
                     </div>
-                    <div class="social-neo-inline social-neo-events-toggle-row" style="gap:14px;flex-wrap:wrap">
+                    <div class="social-neo-inline social-neo-events-toggle-row social-neo-inline-gap-14-wrap">
                         <label class="social-neo-checkbox" for="${escape(eventIsOnlineId)}">
                             <input id="${escape(eventIsOnlineId)}" type="checkbox" name="eventIsOnline" ${runtime.ui?.eventIsOnline ? 'checked' : ''}>
                             <span>Online event</span>
@@ -5041,16 +5706,16 @@
                             <span>Recurring weekly</span>
                         </label>
                         ${runtime.ui?.eventIsOnline ? `
-                            <input class="social-neo-input" id="${escape(eventOnlineLinkId)}" type="url" name="eventOnlineLink" placeholder="https://zoom.us/..." style="flex:1;min-width:180px" value="${escape(text(runtime.ui?.eventOnlineLink || ''))}">
+                            <input class="social-neo-input social-neo-input-flex-1-180" id="${escape(eventOnlineLinkId)}" type="url" name="eventOnlineLink" placeholder="https://zoom.us/..." value="${escape(text(runtime.ui?.eventOnlineLink || ''))}">
                         ` : ''}
                     </div>
                     <div class="social-neo-inline social-neo-events-form-actions">
-                        <label class="social-neo-btn social-neo-btn-ghost" style="cursor:pointer">
+                        <label class="social-neo-btn social-neo-btn-ghost social-neo-btn-pointer">
                             <i class="fas fa-image"></i> Add cover photo
                             <input id="${escape(eventImageId)}" name="eventImage" type="file" accept="image/*" hidden>
                         </label>
                         ${runtime.ui?.eventImageFile ? `<span class="social-neo-draft-file"><i class="fas fa-image"></i> ${escape(runtime.ui.eventImageFile.name)}</span>` : ''}
-                        <span style="flex:1"></span>
+                        <span class="social-neo-flex-spacer"></span>
                         <button class="social-neo-btn social-neo-btn-primary" type="submit"><i class="fas fa-calendar-plus"></i> Create student event</button>
                     </div>
                 </form>
@@ -5109,7 +5774,7 @@
                             <input class="social-neo-input" type="number" name="eventMaxSeats" min="1" placeholder="Unlimited" value="${escape(text(runtime.ui?.eventMaxSeats || ''))}">
                         </label>
                     </div>
-                    <div class="social-neo-inline social-neo-events-toggle-row" style="gap:14px;flex-wrap:wrap">
+                    <div class="social-neo-inline social-neo-events-toggle-row social-neo-inline-gap-14-wrap">
                         <label class="social-neo-checkbox">
                             <input type="checkbox" name="eventIsOnline" ${runtime.ui?.eventIsOnline ? 'checked' : ''}>
                             <span>Online / hybrid</span>
@@ -5119,17 +5784,17 @@
                             <span>Recurring weekly</span>
                         </label>
                         ${runtime.ui?.eventIsOnline ? `
-                            <input class="social-neo-input" type="url" name="eventOnlineLink" placeholder="https://meeting-link.example" style="flex:1;min-width:180px" value="${escape(text(runtime.ui?.eventOnlineLink || ''))}">
+                            <input class="social-neo-input social-neo-input-flex-1-180" type="url" name="eventOnlineLink" placeholder="https://meeting-link.example" value="${escape(text(runtime.ui?.eventOnlineLink || ''))}">
                         ` : ''}
                     </div>
                     <div class="social-neo-inline social-neo-events-form-actions">
-                        <label class="social-neo-btn social-neo-btn-ghost" style="cursor:pointer">
+                        <label class="social-neo-btn social-neo-btn-ghost social-neo-btn-pointer">
                             <i class="fas fa-image"></i> Add cover photo
                             <input name="eventImage" type="file" accept="image/*" hidden>
                         </label>
                         ${runtime.ui?.eventImageFile ? `<span class="social-neo-draft-file"><i class="fas fa-image"></i> ${escape(runtime.ui.eventImageFile.name)}</span>` : ''}
-                        <span style="flex:1"></span>
-                        <button class="social-neo-btn social-neo-btn-primary" type="submit" style="background:rgba(59,130,246,.82)!important"><i class="fas fa-university"></i> Publish official event</button>
+                        <span class="social-neo-flex-spacer"></span>
+                        <button class="social-neo-btn social-neo-btn-primary is-blue" type="submit"><i class="fas fa-university"></i> Publish official event</button>
                     </div>
                 </form>
             </section>
@@ -5195,16 +5860,16 @@
                 </div>
                 <div class="social-neo-list">
                     ${studyGroups.length ? studyGroups.map((group) => `
-                        <article class="social-neo-entity-card" style="border-left:3px solid #8b5cf6">
+                        <article class="social-neo-entity-card social-neo-entity-card--study">
                             <div>
                                 <strong>${escape(text(group.name || 'Study Group'))}</strong>
                                 <span>${escape(text(group.description || ''))}</span>
-                                <div class="social-neo-badge-row" style="margin-top:4px">
-                                    <span class="social-neo-pill"><i class="fas fa-users" style="font-size:8px"></i> ${escape(group.memberCount || 0)} members</span>
+                                <div class="social-neo-badge-row social-neo-badge-row-mt-4">
+                                    <span class="social-neo-pill"><i class="fas fa-users social-neo-pill-icon"></i> ${escape(group.memberCount || 0)} members</span>
                                     <span class="social-neo-pill">${escape(text(group.visibility || 'public'))}</span>
                                 </div>
                             </div>
-                            <div class="social-neo-inline" style="flex-direction:column;align-items:flex-end;gap:4px">
+                            <div class="social-neo-inline social-neo-inline-column-end">
                                 ${group.membershipState === 'member' || group.membershipState === 'manager'
                                     ? `<button class="social-neo-btn social-neo-btn-primary" type="button" data-action="group-chat" data-group-id="${escape(text(group.id))}">Open chat</button>
                                        <button class="social-neo-link-btn" type="button" data-action="group-leave-open" data-group-id="${escape(text(group.id))}">Leave</button>`
@@ -5338,7 +6003,7 @@
                         </div>
                     </div>
                     <div class="social-neo-events-hero-grid">
-                        <button class="social-neo-events-hero-stat ${studentSectionState}" type="button" data-action="events-tab-student">
+                        <button class="social-neo-events-hero-stat lux-strip-card surface-card ${studentSectionState}" type="button" data-action="events-tab-student">
                             <div class="social-neo-events-hero-stat-icon"><i class="fas fa-calendar-days"></i></div>
                             <div class="social-neo-events-hero-stat-copy">
                                 <strong>${escape(studentEvents.length)}</strong>
@@ -5346,7 +6011,7 @@
                                 <small>Clubs, meetups, study jams</small>
                             </div>
                         </button>
-                        <button class="social-neo-events-hero-stat ${universitySectionState}" type="button" data-action="events-tab-university">
+                        <button class="social-neo-events-hero-stat lux-strip-card surface-card ${universitySectionState}" type="button" data-action="events-tab-university">
                             <div class="social-neo-events-hero-stat-icon"><i class="fas fa-landmark"></i></div>
                             <div class="social-neo-events-hero-stat-copy">
                                 <strong>${escape(uniEvents.length)}</strong>
@@ -5354,7 +6019,7 @@
                                 <small>Official sessions and notices</small>
                             </div>
                         </button>
-                        <button class="social-neo-events-hero-stat ${studySectionState}" type="button" data-action="events-tab-studygroups">
+                        <button class="social-neo-events-hero-stat lux-strip-card surface-card ${studySectionState}" type="button" data-action="events-tab-studygroups">
                             <div class="social-neo-events-hero-stat-icon"><i class="fas fa-users"></i></div>
                             <div class="social-neo-events-hero-stat-copy">
                                 <strong>${escape(studyGroups.length)}</strong>
@@ -5406,7 +6071,7 @@
         const user = currentUser();
         const notifications = notificationItems();
         const reports = Array.isArray(state().social?.reports) ? state().social.reports : [];
-        const alertsFilter = text(state().ui?.alertsFilter || 'unread') || 'unread';
+        const alertsFilter = text(state().ui?.alertsFilter || 'all') || 'all';
         const visibleNotifications = filterNotificationsByView(notifications, alertsFilter);
         const priorityNotifications = visibleNotifications.filter((notification) => classifyNotification(notification) !== 'system');
         const systemNotifications = visibleNotifications.filter((notification) => classifyNotification(notification) === 'system');
@@ -5562,7 +6227,7 @@
             const previewNames = groupMemberPreviewNames(memberIds, 5);
             return `
                 <article class="social-neo-card social-neo-group-card">
-                    <div class="social-neo-group-card-header" style="background:linear-gradient(135deg,rgba(16,185,129,.15),rgba(16,185,129,.03))">
+                    <div class="social-neo-group-card-header">
                         <div class="social-neo-group-card-icon social-neo-group-card-avatar">${groupAvatar(group)}</div>
                         <div>
                             <strong>${escape(text(group.name || 'Group'))}</strong>
@@ -5609,7 +6274,7 @@
                                     <strong>Members</strong>
                                     <span>${escape(memberIds.length || Number(group.memberCount || 0))} active members</span>
                                 </div>
-                                <div class="social-neo-stack" style="width:100%">
+                                <div class="social-neo-stack social-neo-stack-w-100">
                                     ${memberIds.slice(0, 6).map((memberId) => renderMemberLine(group, memberId)).join('') || '<div class="social-neo-empty">No members yet.</div>'}
                                 </div>
                             </article>
@@ -5625,7 +6290,7 @@
                                         <strong>Pending requests</strong>
                                         <span>${escape(pendingMembers.length)} members waiting for approval</span>
                                     </div>
-                                    <div class="social-neo-stack" style="width:100%">
+                                    <div class="social-neo-stack social-neo-stack-w-100">
                                         ${pendingMembers.map((memberId) => {
                                             const account = accountById(memberId) || { id: memberId };
                                             return `
@@ -5663,7 +6328,7 @@
                         <i class="fas fa-layer-group"></i>
                         <strong>No groups yet</strong>
                         <span>Create the first group to start a campus community.</span>
-                        <div class="social-neo-form-actions" style="margin-top:14px">
+                        <div class="social-neo-form-actions social-neo-form-actions-mt-14">
                             <button class="social-neo-btn social-neo-btn-primary" type="button" data-action="panel-groups" data-groups-tab="create">
                                 <i class="fas fa-plus-circle"></i> Create Group
                             </button>
@@ -5689,7 +6354,7 @@
                         <i class="fas fa-door-open"></i>
                         <strong>You haven't joined any groups</strong>
                         <span>Discover groups and join conversations.</span>
-                        <div class="social-neo-form-actions" style="margin-top:14px">
+                        <div class="social-neo-form-actions social-neo-form-actions-mt-14">
                             <button class="social-neo-btn social-neo-btn-primary" type="button" data-action="panel-groups" data-groups-tab="create">
                                 <i class="fas fa-plus-circle"></i> Create Group Instead
                             </button>
@@ -5741,7 +6406,7 @@
                 <section class="social-neo-card social-neo-group-create-main">
                     <div class="social-neo-section-head">
                         <div>
-                            <strong><i class="fas fa-plus-circle" style="color:#10b981"></i> Create New Group</strong>
+                            <strong><i class="fas fa-plus-circle social-neo-section-accent-icon is-green"></i> Create New Group</strong>
                             <span>Build the group first, choose who to invite, then open the group chat with messages, file uploads, calls, and video calls.</span>
                         </div>
                     </div>
@@ -5776,12 +6441,12 @@
                         </div>
                     </div>
                     <div class="social-neo-stack">
-                        <div class="social-neo-inline" style="align-items:end;gap:10px;flex-wrap:wrap">
-                            <label style="flex:1 1 260px;display:grid;gap:6px;min-width:220px">
+                        <div class="social-neo-inline social-neo-inline-items-end social-neo-inline-gap-10-wrap">
+                            <label class="social-neo-field-flex-1-260">
                                 <span class="social-neo-label">Search people</span>
                                 <input class="social-neo-input" id="${escape(memberSearchId)}" type="search" name="groupMemberSearch" placeholder="Search people to invite..." value="${escape(text(runtime.ui?.groupInviteSearch || ''))}">
                             </label>
-                            <label style="flex:0 0 220px;display:grid;gap:6px;min-width:180px">
+                            <label class="social-neo-field-fixed-220">
                                 <span class="social-neo-label">Faculty</span>
                                 <select class="social-neo-select" id="${escape(memberFacultyId)}" name="groupMemberFaculty" data-lux-native data-lux-picker-enhanced="true">
                                     ${facultyOptions.map((faculty) => `<option value="${escape(faculty)}" ${facultyFilter === faculty ? 'selected' : ''}>${escape(faculty === 'all' ? 'All faculties' : facultyLabel(faculty))}</option>`).join('')}
@@ -5940,7 +6605,7 @@
 
         const renderSearchBar = () => `
             <form class="social-neo-inline social-neo-pages-toolbar" data-form="pages-search">
-                <label style="flex:1;min-width:240px;display:grid;gap:6px">
+                <label class="social-neo-field-flex-1-260">
                     <span class="social-neo-label">Search pages</span>
                     <input class="social-neo-input" id="${escape(pagesSearchId)}" name="pagesSearch" type="search" placeholder="Search pages by name, category, or bio..." data-bind="pages-search" value="${escape(text(runtime.ui?.pagesSearch || ''))}">
                 </label>
@@ -6016,7 +6681,7 @@
             <section class="social-neo-card social-neo-pages-wizard">
                 <div class="social-neo-section-head">
                     <div>
-                        <strong><i class="fas fa-flag" style="color:#60a5fa"></i> Create a new page</strong>
+                        <strong><i class="fas fa-flag social-neo-section-accent-icon is-blue"></i> Create a new page</strong>
                         <span>Build a public-facing page for a brand, product, club, department, or official campus team.</span>
                     </div>
                     <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="page-wizard-close">
@@ -6123,7 +6788,7 @@
                                 <span class="social-neo-label">Primary action label</span>
                                 <input class="social-neo-input" id="${escape(pageActionLabelId)}" type="text" name="pageActionLabel" placeholder="Visit site / Join beta / Learn more" value="${escape(text(runtime.ui?.pageActionLabel || ''))}">
                             </label>
-                            <label style="grid-column:1/-1">
+                            <label class="social-neo-grid-col-span-all">
                                 <span class="social-neo-label">Primary action URL</span>
                                 <input class="social-neo-input" id="${escape(pageActionUrlId)}" type="url" name="pageActionUrl" placeholder="https://..." value="${escape(text(runtime.ui?.pageActionUrl || ''))}">
                             </label>
@@ -6263,14 +6928,14 @@
                             <label><span class="social-neo-label">Cover image URL</span><input class="social-neo-input" type="url" name="pageCoverUrl" value="${escape(text(runtime.ui?.pageCoverUrl || page?.coverImage || ''))}"></label>
                             <label><span class="social-neo-label">Upload avatar</span><input class="social-neo-input" type="file" name="pageAvatarFile" accept="image/*">${renderFileChip(runtime.ui?.pageAvatarFile, 'Avatar image ready')}</label>
                             <label><span class="social-neo-label">Upload cover</span><input class="social-neo-input" type="file" name="pageCoverFile" accept="image/*">${renderFileChip(runtime.ui?.pageCoverFile, 'Cover image ready')}</label>
-                            <label style="grid-column:1/-1"><span class="social-neo-label">Tagline</span><input class="social-neo-input" type="text" name="pageTagline" value="${escape(text(runtime.ui?.pageTagline || page?.tagline || ''))}"></label>
-                            <label style="grid-column:1/-1"><span class="social-neo-label">Short description</span><textarea class="social-neo-textarea" rows="3" name="pageDescription">${escape(text(runtime.ui?.pageDescription || page?.description || ''))}</textarea></label>
-                            <label style="grid-column:1/-1"><span class="social-neo-label">About</span><textarea class="social-neo-textarea" rows="5" name="pageAbout">${escape(text(runtime.ui?.pageAbout || page?.about || ''))}</textarea></label>
+                            <label class="social-neo-grid-col-span-all"><span class="social-neo-label">Tagline</span><input class="social-neo-input" type="text" name="pageTagline" value="${escape(text(runtime.ui?.pageTagline || page?.tagline || ''))}"></label>
+                            <label class="social-neo-grid-col-span-all"><span class="social-neo-label">Short description</span><textarea class="social-neo-textarea" rows="3" name="pageDescription">${escape(text(runtime.ui?.pageDescription || page?.description || ''))}</textarea></label>
+                            <label class="social-neo-grid-col-span-all"><span class="social-neo-label">About</span><textarea class="social-neo-textarea" rows="5" name="pageAbout">${escape(text(runtime.ui?.pageAbout || page?.about || ''))}</textarea></label>
                             <label><span class="social-neo-label">Website</span><input class="social-neo-input" type="url" name="pageWebsite" value="${escape(text(runtime.ui?.pageWebsite || page?.website || ''))}"></label>
                             <label><span class="social-neo-label">Contact email</span><input class="social-neo-input" type="email" name="pageContactEmail" value="${escape(text(runtime.ui?.pageContactEmail || page?.contactEmail || ''))}"></label>
                             <label><span class="social-neo-label">Location</span><input class="social-neo-input" type="text" name="pageLocation" value="${escape(text(runtime.ui?.pageLocation || page?.location || ''))}"></label>
                             <label><span class="social-neo-label">Primary action label</span><input class="social-neo-input" type="text" name="pageActionLabel" value="${escape(text(runtime.ui?.pageActionLabel || page?.actionLabel || ''))}"></label>
-                            <label style="grid-column:1/-1"><span class="social-neo-label">Primary action URL</span><input class="social-neo-input" type="url" name="pageActionUrl" value="${escape(text(runtime.ui?.pageActionUrl || page?.actionUrl || ''))}"></label>
+                            <label class="social-neo-grid-col-span-all"><span class="social-neo-label">Primary action URL</span><input class="social-neo-input" type="url" name="pageActionUrl" value="${escape(text(runtime.ui?.pageActionUrl || page?.actionUrl || ''))}"></label>
                         </div>
                         <div class="social-neo-form-actions">
                             <button class="social-neo-btn social-neo-btn-primary" type="submit"><i class="fas fa-save"></i> Save Page</button>
@@ -6402,7 +7067,7 @@
                             <i class="fas fa-flag"></i>
                             <strong>${pageSearch ? 'No pages match your search' : activeTab === 'following' ? 'No followed pages yet' : 'No pages yet'}</strong>
                             <span>${pageSearch ? 'Try a different page name, category, or bio.' : activeTab === 'following' ? 'Follow pages to keep their official and community posts close.' : 'Use Create Page to launch the first page in this space.'}</span>
-                            <div class="social-neo-form-actions" style="justify-content:center">
+                            <div class="social-neo-form-actions social-neo-inline-end">
                                 <button class="social-neo-btn social-neo-btn-primary" type="button" data-action="page-wizard-open">
                                     <i class="fas fa-plus"></i> Create Page
                                 </button>
@@ -6649,7 +7314,7 @@
             <section class="social-neo-card social-portfolio-profile-block">
                 <div class="social-neo-section-head">
                     <div><strong>${isOwn ? 'Your portfolio' : 'Portfolio highlights'}</strong><span>${isOwn ? 'Showcase projects, research, design, and startup work inside campus social.' : 'Visible showcase entries from this profile.'}</span></div>
-                    <div class="social-neo-inline" style="gap:8px;flex-wrap:wrap">
+                    <div class="social-neo-inline social-neo-inline-gap-8-wrap">
                         <span class="social-neo-pill"><strong>${escape(items.length)}</strong><span>Visible</span></span>
                         ${isOwn ? `<button class="social-neo-btn social-neo-btn-primary social-neo-btn-sm" type="button" data-action="profile-portfolio-open"><i class="fas fa-briefcase"></i> Open Portfolio</button>` : ''}
                     </div>
@@ -6664,7 +7329,7 @@
                                 </div>
                                 <strong>${escape(entry.title)}</strong>
                                 <p>${escape(entry.summary || entry.description || 'Portfolio entry')}</p>
-                                <div class="social-neo-inline" style="justify-content:space-between;gap:8px;flex-wrap:wrap">
+                                <div class="social-neo-inline social-neo-inline-between-gap-8-wrap">
                                     <div class="social-neo-badge-row">${entry.hashtags.slice(0, 2).map((tag) => `<span class="social-neo-pill">#${escape(tag.replace(/^#/, ''))}</span>`).join('')}</div>
                                     <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="project-open" data-project-id="${escape(entry.id)}">Open</button>
                                 </div>
@@ -6720,8 +7385,8 @@
         ];
         return `
             <div class="social-neo-stack social-portfolio-shell">
-                <section class="social-neo-card social-portfolio-hero">
-                    <div class="social-portfolio-hero-main">
+                <section class="social-neo-card social-portfolio-hero lux-hero-stage">
+                    <div class="social-portfolio-hero-main lux-hero-main">
                         <div class="social-portfolio-hero-copy">
                             <span class="social-neo-eyebrow">Student Portfolio</span>
                             <h2>Present your best work like it belongs in a premium campus showcase</h2>
@@ -6736,17 +7401,17 @@
                             </div>
                         ` : ''}
                     </div>
-                    <div class="social-portfolio-hero-side">
+                    <div class="social-portfolio-hero-side lux-hero-side">
                         <div class="social-portfolio-stat-grid">
-                            <article class="social-portfolio-stat-tile">
+                            <article class="social-portfolio-stat-tile lux-strip-card surface-card">
                                 <strong>${escape(allEntries.filter((entry) => entry.status === 'published').length)}</strong>
                                 <span>Published showcases</span>
                             </article>
-                            <article class="social-portfolio-stat-tile">
+                            <article class="social-portfolio-stat-tile lux-strip-card surface-card">
                                 <strong>${escape(myEntries.length)}</strong>
                                 <span>Your entries</span>
                             </article>
-                            <article class="social-portfolio-stat-tile">
+                            <article class="social-portfolio-stat-tile lux-strip-card surface-card">
                                 <strong>${escape(tagOptions.length)}</strong>
                                 <span>Discovery tags</span>
                             </article>
@@ -6871,7 +7536,7 @@
                                     <div class="social-portfolio-form-state">
                                         ${editing ? `<span class="social-neo-pill"><strong>Edit mode</strong><span>This entry will update in place</span></span>` : hasDraft ? `<span class="social-neo-pill"><strong>Draft active</strong><span>You can hide and reopen anytime</span></span>` : `<span class="social-neo-pill"><strong>Ready</strong><span>Publish when the card feels finished</span></span>`}
                                     </div>
-                                    <div class="social-neo-inline" style="justify-content:flex-end;gap:8px;flex-wrap:wrap">
+                                    <div class="social-neo-inline social-neo-inline-end-gap-8-wrap">
                                         <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="${editing ? 'portfolio-edit-cancel' : 'portfolio-compose-reset'}">${editing ? 'Discard edit' : 'Reset draft'}</button>
                                         <button class="social-neo-btn social-neo-btn-primary" type="submit"><i class="fas fa-briefcase"></i> ${editing ? 'Save portfolio entry' : 'Publish portfolio card'}</button>
                                     </div>
@@ -6881,7 +7546,7 @@
                     </section>
                 ` : ''}
 
-                <section class="social-portfolio-feed">
+                <section class="social-portfolio-feed social-project-scroll-list social-project-scroll-list--portfolio">
                     ${filteredEntries.length ? filteredEntries.map((entry, index) => {
                         const owner = entry.owner;
                         const isOpen = highlightedOpenId === entry.id;
@@ -6965,22 +7630,20 @@
     }
 
     function renderShellPrimaryNav(activePanel) {
-        const runtime = state();
         const panels = activeNavPanels();
-        const panelColors = {feed:'#3b82f6',community:'#8b5cf6',groups:'#10b981',projects:'#f97316',pages:'#3b82f6',events:'#f59e0b','lost-and-found':'#a855f7',messages:'#14b8a6',alerts:'#f43f5e',calls:'#10b981',profile:'#6366f1'};
 
         return `
             <div class="social-neo-shell-primary-nav" role="tablist" aria-label="Social navigation">
                 ${panels.map((panel) => `
                     <button class="social-neo-shell-nav-btn ${text(activePanel) === panel.id ? 'is-active' : ''}" type="button" data-action="panel-${escape(panel.id)}">
-                        <span class="social-neo-shell-nav-icon" style="background:${panelColors[panel.id] || 'var(--sn-accent)'}">
+                        <span class="social-neo-shell-nav-icon" data-panel-tone="${escape(panel.id)}">
                             <i class="fas ${escape(panel.icon)}"></i>
                         </span>
                         <span class="social-neo-shell-nav-copy">
-                            <strong>${escape(panel.label)}</strong>
-                            <small>${escape(panel.helper)}</small>
+                            <strong class="social-neo-shell-nav-title">${escape(panel.label)}</strong>
+                            <small class="social-neo-shell-nav-helper">${escape(panel.helper)}</small>
                         </span>
-                        ${panel.count > 0 ? `<em class="social-neo-shell-nav-count">${escape(panel.count)}</em>` : ''}
+                        ${panel.count > 0 ? `<em class="social-neo-shell-nav-count social-neo-shell-nav-count-label">${escape(panel.count)}</em>` : ''}
                     </button>
                 `).join('')}
             </div>
@@ -6989,16 +7652,15 @@
 
     function renderMobileTabBar(activePanel) {
         const panels = activeNavPanels();
-        const panelColors = {feed:'#3b82f6',community:'#8b5cf6',groups:'#10b981',projects:'#f97316',pages:'#3b82f6',events:'#f59e0b','lost-and-found':'#a855f7',messages:'#14b8a6',alerts:'#f43f5e',calls:'#10b981',profile:'#6366f1'};
         return `
             <nav class="social-neo-mobile-tabbar" aria-label="Social mobile navigation">
                 ${panels.map((panel) => `
                     <button class="social-neo-mobile-tab ${text(activePanel) === panel.id ? 'is-active' : ''}" type="button" data-action="panel-${escape(panel.id)}">
-                        <span class="social-neo-mobile-tab-icon" style="--tab-color:${escape(panelColors[panel.id] || '#c8822a')}">
+                        <span class="social-neo-mobile-tab-icon" data-panel-tone="${escape(panel.id)}">
                             <i class="fas ${escape(panel.icon)}"></i>
-                            ${panel.count > 0 ? `<em>${escape(panel.count > 99 ? '99+' : panel.count)}</em>` : ''}
+                            ${panel.count > 0 ? `<em class="social-neo-mobile-tab-count">${escape(panel.count > 99 ? '99+' : panel.count)}</em>` : ''}
                         </span>
-                        <span>${escape(panel.label)}</span>
+                        <span class="social-neo-mobile-tab-label">${escape(panel.label)}</span>
                     </button>
                 `).join('')}
             </nav>
@@ -7011,40 +7673,82 @@
         const user = currentUser() || {};
         const open = Boolean(runtime.ui?.shellDrawerOpen);
         if (!open) return '';
-        const panelColors = {feed:'#3b82f6',community:'#8b5cf6',groups:'#10b981',projects:'#f97316',pages:'#3b82f6',events:'#f59e0b','lost-and-found':'#a855f7',messages:'#14b8a6',alerts:'#f43f5e',calls:'#10b981',profile:'#6366f1'};
         return `
             <div class="social-neo-shell-drawer-backdrop" data-action="shell-drawer-close"></div>
             <aside class="social-neo-shell-drawer" aria-label="Social navigation drawer">
-                <section class="social-neo-card social-neo-shell-drawer-profile" style="background:linear-gradient(135deg,rgba(var(--sn-accent-rgb),.10),transparent 60%),var(--sn-bg) !important">
+                <section class="social-neo-card social-neo-shell-drawer-profile social-neo-shell-drawer-profile-card">
                     <div class="social-neo-shell-drawer-head">
-                        <button class="social-neo-person social-neo-clickable" type="button" data-action="panel-profile" data-user-id="${escape(currentUserId())}" style="gap:12px">
+                        <button class="social-neo-person social-neo-clickable social-neo-person-start-gap-12 social-neo-shell-drawer-profile-chip" type="button" data-action="panel-profile" data-user-id="${escape(currentUserId())}">
                             ${avatar(user)}
-                            <div>
-                                <strong>${escape(displayName(user))}</strong>
-                                <span>${escape(accountSubtitle(user))}</span>
+                            <div class="social-neo-shell-drawer-profile-copy">
+                                <strong class="social-neo-shell-drawer-profile-name">${escape(displayName(user))}</strong>
+                                <span class="social-neo-shell-drawer-profile-subtitle">${escape(accountSubtitle(user))}</span>
                             </div>
                         </button>
                         <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="shell-drawer-close"><i class="fas fa-times"></i></button>
                     </div>
-                    <div class="social-neo-inline" style="gap:4px;flex-wrap:wrap">
-                        <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="panel-profile" data-user-id="${escape(currentUserId())}"><i class="fas fa-user"></i> Profile</button>
-                        <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="panel-messages"><i class="fas fa-paper-plane"></i> Messages</button>
+                    <div class="social-neo-inline social-neo-inline-gap-4 social-neo-shell-drawer-actions">
+                        <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm social-neo-shell-drawer-action-btn" type="button" data-action="panel-profile" data-user-id="${escape(currentUserId())}"><i class="fas fa-user"></i> Profile</button>
+                        <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm social-neo-shell-drawer-action-btn" type="button" data-action="panel-messages"><i class="fas fa-paper-plane"></i> Messages</button>
                     </div>
                 </section>
                 <section class="social-neo-card social-neo-shell-drawer-nav-card">
-                    <div class="social-neo-sidebar-nav">
+                    <div class="social-neo-sidebar-nav social-neo-shell-drawer-nav">
                         ${panels.map((panel) => `
-                            <button class="social-neo-side-link ${text(activePanel) === panel.id ? 'is-active' : ''}" type="button" data-action="panel-${escape(panel.id)}">
+                            <button class="social-neo-side-link social-neo-shell-drawer-nav-btn ${text(activePanel) === panel.id ? 'is-active' : ''}" type="button" data-action="panel-${escape(panel.id)}">
+                                <span class="social-neo-side-main social-neo-shell-drawer-nav-main">
+                                    <span class="social-neo-side-icon social-neo-shell-drawer-nav-icon" data-panel-tone="${escape(panel.id)}"><i class="fas ${escape(panel.icon)}"></i></span>
+                                    <span class="social-neo-side-copy social-neo-shell-drawer-nav-copy">
+                                        <strong class="social-neo-shell-drawer-nav-title">${escape(panel.label)}</strong>
+                                        <small class="social-neo-shell-drawer-nav-helper">${escape(panel.helper)}</small>
+                                    </span>
+                                </span>
+                                ${panel.count > 0 ? `<em class="social-neo-side-count social-neo-shell-drawer-nav-count">${escape(panel.count)}</em>` : ''}
+                            </button>
+                        `).join('')}
+                    </div>
+                </section>
+            </aside>
+        `;
+    }
+
+    function renderShellWorkspaceNav(activePanel) {
+        const panels = activeNavPanels();
+        return `
+            <aside class="social-neo-workspace-nav">
+                <section class="social-neo-card social-neo-workspace-nav-card">
+                    <div class="social-neo-section-head social-neo-rail-head">
+                        <div class="social-neo-rail-head-copy">
+                            <strong class="social-neo-rail-title">Social Workspace</strong>
+                            <span class="social-neo-rail-copy">Navigate the network by product area.</span>
+                        </div>
+                    </div>
+                    <div class="social-neo-sidebar-nav social-neo-workspace-nav-list">
+                        ${panels.map((panel) => `
+                            <button class="social-neo-side-link social-neo-workspace-nav-btn ${text(activePanel) === panel.id ? 'is-active' : ''}" type="button" data-action="panel-${escape(panel.id)}">
                                 <span class="social-neo-side-main">
-                                    <span class="social-neo-side-icon" style="background:${panelColors[panel.id] || 'var(--sn-accent)'}"><i class="fas ${escape(panel.icon)}"></i></span>
+                                    <span class="social-neo-side-icon" data-panel-tone="${escape(panel.id)}"><i class="fas ${escape(panel.icon)}"></i></span>
                                     <span class="social-neo-side-copy">
                                         <strong>${escape(panel.label)}</strong>
                                         <small>${escape(panel.helper)}</small>
                                     </span>
                                 </span>
-                                ${panel.count > 0 ? `<em class="social-neo-side-count">${escape(panel.count)}</em>` : ''}
+                                ${panel.count > 0 ? `<em class="social-neo-side-count">${escape(panel.count > 99 ? '99+' : panel.count)}</em>` : ''}
                             </button>
                         `).join('')}
+                    </div>
+                </section>
+                <section class="social-neo-card social-neo-workspace-nav-card social-neo-workspace-nav-card--actions">
+                    <div class="social-neo-section-head social-neo-rail-head">
+                        <div class="social-neo-rail-head-copy">
+                            <strong class="social-neo-rail-title">Quick Create</strong>
+                            <span class="social-neo-rail-copy">Jump straight into publishing flows.</span>
+                        </div>
+                    </div>
+                    <div class="social-neo-workspace-nav-actions">
+                        <button class="social-neo-btn social-neo-btn-primary" type="button" data-action="composer-focus"><i class="fas fa-pen-to-square"></i> Publish Post</button>
+                        <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="story-add"><i class="fas fa-circle-plus"></i> Add Story</button>
+                        <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="events-compose-toggle"><i class="fas fa-calendar-plus"></i> Create Event</button>
                     </div>
                 </section>
             </aside>
@@ -7111,20 +7815,33 @@
                     { icon: 'fa-comments', title: 'Group chat handoff', text: 'Joined groups connect cleanly into the message workspace.' }
                 ]
             },
-            projects: {
+            workspace: {
                 tone: 'orange',
                 label: 'Project workspaces',
-                title: 'Turn student work into organized team execution and portfolio proof.',
-                summary: `${projects.length} workspaces / ${projects.filter((project) => text(project?.status || '') === 'active').length} active / ${projects.filter((project) => text(project?.visibility || '') === 'public').length} public`,
+                title: 'Turn student work into organized team execution.',
+                summary: `${projects.length} workspaces / ${projects.filter((project) => text(project?.status || '') === 'active').length} active / ${projects.filter((project) => text(project?.visibility || '') === 'public').length} open`,
                 actions: [
-                    { label: 'New portfolio entry', icon: 'fa-diagram-project', action: 'portfolio-compose-open', tone: 'primary' },
-                    { label: 'Project overview', icon: 'fa-table-columns', action: 'panel-projects' },
-                    { label: 'Open profile portfolio', icon: 'fa-id-card', action: 'profile-portfolio-open' }
+                    { label: 'New project', icon: 'fa-diagram-project', action: 'panel-workspace', tone: 'primary' },
+                    { label: 'My projects', icon: 'fa-table-columns', action: 'panel-workspace' }
                 ],
                 tasks: [
                     { icon: 'fa-list-check', title: 'Task clarity', text: 'Tasks, milestones, deliverables, and check-ins have separate visual lanes.' },
-                    { icon: 'fa-chart-line', title: 'Progress visibility', text: 'Project cards emphasize status, owner, team, and next step.' },
-                    { icon: 'fa-award', title: 'Portfolio-ready', text: 'Students can present completed work as evidence, not just activity.' }
+                    { icon: 'fa-chart-line', title: 'Progress visibility', text: 'Analytics show workload per member and status distribution at a glance.' },
+                    { icon: 'fa-user-plus', title: 'Find teammates', text: 'Open projects accept join requests so nobody has to search on Facebook.' }
+                ]
+            },
+            projects: {
+                tone: 'orange',
+                label: 'Student portfolio',
+                title: 'Present completed work as a polished campus showcase.',
+                summary: `${projects.length} entries / ${projects.filter((project) => text(project?.status || '') === 'published').length} published`,
+                actions: [
+                    { label: 'New portfolio entry', icon: 'fa-diagram-project', action: 'portfolio-compose-open', tone: 'primary' },
+                    { label: 'Open profile portfolio', icon: 'fa-id-card', action: 'profile-portfolio-open' }
+                ],
+                tasks: [
+                    { icon: 'fa-award', title: 'Portfolio-ready', text: 'Students can present completed work as evidence, not just activity.' },
+                    { icon: 'fa-magnifying-glass', title: 'Discovery feed', text: 'Filter showcases by faculty, audience, and tags.' }
                 ]
             },
             pages: {
@@ -7194,17 +7911,20 @@
             alerts: {
                 tone: 'rose',
                 label: 'Notification center',
-                title: 'Prioritize requests, mentions, reports, and system alerts.',
-                summary: `${alerts.length} alerts / ${unreadNotifications()} unread / ${(Array.isArray(social.reports) ? social.reports : []).length} reports`,
+                title: 'Filter notifications by category — academic, messages, social, university, support.',
+                summary: `${alerts.length} alerts / ${unreadNotifications()} unread`,
                 actions: [
-                    { label: 'Unread', icon: 'fa-bell', action: 'panel-alerts', attrs: 'data-alerts-filter="unread"', tone: 'primary' },
-                    { label: 'Mentions', icon: 'fa-at', action: 'panel-alerts', attrs: 'data-alerts-filter="mentions"' },
-                    { label: 'Reports', icon: 'fa-shield-halved', action: 'panel-alerts', attrs: 'data-alerts-filter="reports"' }
+                    { label: 'All', icon: 'fa-inbox', action: 'panel-alerts', attrs: 'data-alerts-filter="all"', tone: 'primary' },
+                    { label: 'Academic', icon: 'fa-graduation-cap', action: 'panel-alerts', attrs: 'data-alerts-filter="academic"' },
+                    { label: 'Messages', icon: 'fa-envelope', action: 'panel-alerts', attrs: 'data-alerts-filter="messages"' },
+                    { label: 'Social', icon: 'fa-users', action: 'panel-alerts', attrs: 'data-alerts-filter="social"' },
+                    { label: 'University', icon: 'fa-bullhorn', action: 'panel-alerts', attrs: 'data-alerts-filter="university"' },
+                    { label: 'Support', icon: 'fa-headset', action: 'panel-alerts', attrs: 'data-alerts-filter="support"' }
                 ],
                 tasks: [
-                    { icon: 'fa-triangle-exclamation', title: 'Priority clarity', text: 'High-signal alerts are visually stronger than routine updates.' },
-                    { icon: 'fa-check-double', title: 'Read state', text: 'Unread and handled alerts should be obvious at a glance.' },
-                    { icon: 'fa-bolt', title: 'Actionable cards', text: 'Approvals, reports, and mentions expose direct actions.' }
+                    { icon: 'fa-layer-group', title: 'Category filters', text: 'Academic, Messages, Social, University, Support — find what matters fast.' },
+                    { icon: 'fa-check-double', title: 'Mark category read', text: 'Clear a whole category at once with one click.' },
+                    { icon: 'fa-bolt', title: 'Actionable cards', text: 'Each notification shows its category, icon, and direct actions.' }
                 ]
             },
             profile: {
@@ -7225,12 +7945,14 @@
             }
         };
         const meta = sectionMeta[activePanel] || sectionMeta.feed;
-        const actionMarkup = meta.actions.map((item) => `
-            <button class="social-neo-section-action ${item.tone === 'primary' ? 'is-primary' : ''}" type="button" data-action="${escape(item.action)}" ${item.attrs || ''}>
+        const activeAlertsFilter = activePanel === 'alerts' ? (text(runtime.ui?.alertsFilter || 'all') || 'all') : '';
+        const actionMarkup = meta.actions.map((item) => {
+            const isActive = activePanel === 'alerts' && item.attrs && item.attrs.includes(`data-alerts-filter="${activeAlertsFilter}"`);
+            return `<button class="social-neo-section-action ${item.tone === 'primary' && !isActive ? 'is-primary' : ''} ${isActive ? 'is-active' : ''}" type="button" data-action="${escape(item.action)}" ${item.attrs || ''}>
                 <i class="fas ${escape(item.icon)}"></i>
                 <span>${escape(item.label)}</span>
-            </button>
-        `).join('');
+            </button>`;
+        }).join('');
         const metricMarkup = (activeConfig.pills || []).map((pill) => `
             <article class="social-neo-section-metric">
                 <strong>${escape(pill.value)}</strong>
@@ -7275,209 +7997,209 @@
         const suggestedConnections = (Array.isArray(runtime.directory) ? runtime.directory : []).filter((account) => connectionStatusFor(account?.id).state === 'none').slice(0, 3);
         const railMarkup = activePanel === 'community'
             ? `
-                <section class="social-neo-card">
-                    <div class="social-neo-section-head">
-                        <div><strong>Pending Requests</strong></div>
+                <section class="social-neo-card social-neo-rail-card social-neo-rail-card--pending-requests">
+                    <div class="social-neo-section-head social-neo-rail-head">
+                        <div class="social-neo-rail-head-copy"><strong class="social-neo-rail-title">Pending Requests</strong></div>
                     </div>
-                    <div class="social-neo-list">
+                    <div class="social-neo-list social-neo-rail-list">
                         ${relationships.incoming.slice(0, 3).map((relationship) => {
                             const account = accountById(relationship.fromId) || { id: relationship.fromId };
-                            return `<article class="social-neo-entity-card">
-                                <div>
-                                    <strong>${escape(displayName(account))}</strong>
-                                    <span>${escape(accountSubtitle(account))}</span>
+                            return `<article class="social-neo-entity-card social-neo-rail-item">
+                                <div class="social-neo-rail-item-copy">
+                                    <strong class="social-neo-rail-item-title">${escape(displayName(account))}</strong>
+                                    <span class="social-neo-rail-item-meta">${escape(accountSubtitle(account))}</span>
                                 </div>
-                                <button class="social-neo-link-btn" type="button" data-action="connection-accept" data-relationship-id="${escape(text(relationship.id))}">Approve</button>
+                                <button class="social-neo-link-btn social-neo-rail-item-action" type="button" data-action="connection-accept" data-relationship-id="${escape(text(relationship.id))}">Approve</button>
                             </article>`;
                         }).join('')}
-                        ${!relationships.incoming.length ? `<div class="social-neo-empty">No requests waiting.</div>` : ''}
+                        ${!relationships.incoming.length ? `<div class="social-neo-empty social-neo-rail-empty">No requests waiting.</div>` : ''}
                     </div>
                 </section>
-                <section class="social-neo-card">
-                    <div class="social-neo-section-head">
-                        <div><strong>Recommended</strong></div>
+                <section class="social-neo-card social-neo-rail-card social-neo-rail-card--recommended">
+                    <div class="social-neo-section-head social-neo-rail-head">
+                        <div class="social-neo-rail-head-copy"><strong class="social-neo-rail-title">Recommended</strong></div>
                     </div>
-                    <div class="social-neo-list">
+                    <div class="social-neo-list social-neo-rail-list">
                         ${featuredGroups.map((group) => `
-                            <article class="social-neo-entity-card">
-                                <div>
-                                    <strong>${escape(text(group.name || 'Group'))}</strong>
-                                    <span>${escape(`${group.memberCount || 0} members`)}</span>
+                            <article class="social-neo-entity-card social-neo-rail-item">
+                                <div class="social-neo-rail-item-copy">
+                                    <strong class="social-neo-rail-item-title">${escape(text(group.name || 'Group'))}</strong>
+                                    <span class="social-neo-rail-item-meta">${escape(`${group.memberCount || 0} members`)}</span>
                                 </div>
-                                <button class="social-neo-link-btn" type="button" data-action="focus-feed" data-scope-type="group" data-scope-id="${escape(text(group.id))}">Open</button>
+                                <button class="social-neo-link-btn social-neo-rail-item-action" type="button" data-action="focus-feed" data-scope-type="group" data-scope-id="${escape(text(group.id))}">Open</button>
                             </article>
                         `).join('')}
                         ${featuredPages.map((page) => `
-                            <article class="social-neo-entity-card">
-                                <div>
-                                    <strong>${escape(text(page.name || 'Page'))}</strong>
-                                    <span>${escape(text(page.description || `${page.followerCount || 0} followers`))}</span>
+                            <article class="social-neo-entity-card social-neo-rail-item">
+                                <div class="social-neo-rail-item-copy">
+                                    <strong class="social-neo-rail-item-title">${escape(text(page.name || 'Page'))}</strong>
+                                    <span class="social-neo-rail-item-meta">${escape(text(page.description || `${page.followerCount || 0} followers`))}</span>
                                 </div>
-                                <button class="social-neo-link-btn" type="button" data-action="focus-feed" data-scope-type="page" data-scope-id="${escape(text(page.id))}">Open</button>
+                                <button class="social-neo-link-btn social-neo-rail-item-action" type="button" data-action="focus-feed" data-scope-type="page" data-scope-id="${escape(text(page.id))}">Open</button>
                             </article>
                         `).join('')}
-                        ${!featuredGroups.length && !featuredPages.length ? `<div class="social-neo-empty">No spaces to recommend yet.</div>` : ''}
+                        ${!featuredGroups.length && !featuredPages.length ? `<div class="social-neo-empty social-neo-rail-empty">No spaces to recommend yet.</div>` : ''}
                     </div>
                 </section>
-                <section class="social-neo-card">
-                    <div class="social-neo-section-head">
-                        <div><strong>Campus Now</strong></div>
+                <section class="social-neo-card social-neo-rail-card social-neo-rail-card--campus-now">
+                    <div class="social-neo-section-head social-neo-rail-head">
+                        <div class="social-neo-rail-head-copy"><strong class="social-neo-rail-title">Campus Now</strong></div>
                     </div>
-                    <div class="social-neo-list">
+                    <div class="social-neo-list social-neo-rail-list">
                         ${featuredEvents.map((item) => `
-                            <article class="social-neo-entity-card">
-                                <div>
-                                    <strong>${escape(text(item.title || 'Event'))}</strong>
-                                    <span>${escape(when(item.startsAt))}</span>
+                            <article class="social-neo-entity-card social-neo-rail-item">
+                                <div class="social-neo-rail-item-copy">
+                                    <strong class="social-neo-rail-item-title">${escape(text(item.title || 'Event'))}</strong>
+                                    <span class="social-neo-rail-item-meta">${escape(when(item.startsAt))}</span>
                                 </div>
-                                <button class="social-neo-link-btn" type="button" data-action="panel-events">View</button>
+                                <button class="social-neo-link-btn social-neo-rail-item-action" type="button" data-action="panel-events">View</button>
                             </article>
                         `).join('')}
-                        ${!featuredEvents.length ? `<div class="social-neo-empty">No live activity scheduled.</div>` : ''}
+                        ${!featuredEvents.length ? `<div class="social-neo-empty social-neo-rail-empty">No live activity scheduled.</div>` : ''}
                     </div>
                 </section>
             `
             : activePanel === 'feed'
                 ? `
-                    <section class="social-neo-card">
-                        <div class="social-neo-section-head">
-                            <div><strong>People You May Know</strong></div>
+                    <section class="social-neo-card social-neo-rail-card social-neo-rail-card--suggested-people">
+                        <div class="social-neo-section-head social-neo-rail-head">
+                            <div class="social-neo-rail-head-copy"><strong class="social-neo-rail-title">People You May Know</strong></div>
                         </div>
-                        <div class="social-neo-list">
+                        <div class="social-neo-list social-neo-rail-list">
                             ${suggestedConnections.map((account) => `
-                                <article class="social-neo-directory-item">
-                                    <div class="social-neo-person">
+                                <article class="social-neo-directory-item social-neo-rail-directory-item">
+                                    <div class="social-neo-person social-neo-rail-person">
                                         ${avatar(account, 'social-neo-avatar-sm')}
-                                        <div>
-                                            <strong>${escape(displayName(account))}</strong>
-                                            <span>${escape(accountSubtitle(account))}</span>
+                                        <div class="social-neo-rail-person-copy">
+                                            <strong class="social-neo-rail-person-name">${escape(displayName(account))}</strong>
+                                            <span class="social-neo-rail-person-meta">${escape(accountSubtitle(account))}</span>
                                         </div>
                                     </div>
-                                    <button class="social-neo-btn social-neo-btn-primary social-neo-btn-sm" type="button" data-action="connection-send" data-user-id="${escape(text(account.id))}"><i class="fas fa-user-plus"></i></button>
+                                    <button class="social-neo-btn social-neo-btn-primary social-neo-btn-sm social-neo-rail-person-action" type="button" data-action="connection-send" data-user-id="${escape(text(account.id))}"><i class="fas fa-user-plus"></i></button>
                                 </article>
                             `).join('')}
-                            ${!suggestedConnections.length ? `<div class="social-neo-empty">No suggestions right now.</div>` : ''}
+                            ${!suggestedConnections.length ? `<div class="social-neo-empty social-neo-rail-empty">No suggestions right now.</div>` : ''}
                         </div>
                     </section>
-                    <section class="social-neo-card">
-                        <div class="social-neo-section-head">
-                            <div><strong>Active Groups</strong></div>
+                    <section class="social-neo-card social-neo-rail-card social-neo-rail-card--active-groups">
+                        <div class="social-neo-section-head social-neo-rail-head">
+                            <div class="social-neo-rail-head-copy"><strong class="social-neo-rail-title">Active Groups</strong></div>
                         </div>
-                        <div class="social-neo-list">
+                        <div class="social-neo-list social-neo-rail-list">
                             ${featuredGroups.map((group) => `
-                                <article class="social-neo-entity-card">
-                                    <div>
-                                        <strong>${escape(text(group.name || 'Group'))}</strong>
-                                        <span>${escape(`${group.memberCount || 0} members / ${text(group.visibility || 'public')}`)}</span>
+                                <article class="social-neo-entity-card social-neo-rail-item">
+                                    <div class="social-neo-rail-item-copy">
+                                        <strong class="social-neo-rail-item-title">${escape(text(group.name || 'Group'))}</strong>
+                                        <span class="social-neo-rail-item-meta">${escape(`${group.memberCount || 0} members / ${text(group.visibility || 'public')}`)}</span>
                                     </div>
-                                    <button class="social-neo-link-btn" type="button" data-action="focus-feed" data-scope-type="group" data-scope-id="${escape(text(group.id))}">Open</button>
+                                    <button class="social-neo-link-btn social-neo-rail-item-action" type="button" data-action="focus-feed" data-scope-type="group" data-scope-id="${escape(text(group.id))}">Open</button>
                                 </article>
                             `).join('')}
-                            ${!featuredGroups.length ? `<div class="social-neo-empty">No active groups yet.</div>` : ''}
+                            ${!featuredGroups.length ? `<div class="social-neo-empty social-neo-rail-empty">No active groups yet.</div>` : ''}
                         </div>
                     </section>
-                    <section class="social-neo-card">
-                        <div class="social-neo-section-head">
-                            <div><strong>Saved & Trending</strong></div>
+                    <section class="social-neo-card social-neo-rail-card social-neo-rail-card--saved-trending">
+                        <div class="social-neo-section-head social-neo-rail-head">
+                            <div class="social-neo-rail-head-copy"><strong class="social-neo-rail-title">Saved & Trending</strong></div>
                         </div>
-                        <div class="social-neo-list">
+                        <div class="social-neo-list social-neo-rail-list">
                             ${savedItems().filter((item) => text(item.itemType) === 'post').slice(0, 2).map((item) => {
                                 const record = (Array.isArray(runtime.feed) ? runtime.feed : []).find((post) => text(post.id) === text(item.itemId));
                                 if (!record) return '';
                                 return `
-                                    <article class="social-neo-entity-card">
-                                        <div>
-                                            <strong>Saved post</strong>
-                                            <span>${escape(text(record.body || record.text || 'Saved social post').slice(0, 90))}</span>
+                                    <article class="social-neo-entity-card social-neo-rail-item">
+                                        <div class="social-neo-rail-item-copy">
+                                            <strong class="social-neo-rail-item-title">Saved post</strong>
+                                            <span class="social-neo-rail-item-meta">${escape(text(record.body || record.text || 'Saved social post').slice(0, 90))}</span>
                                         </div>
-                                        <button class="social-neo-link-btn" type="button" data-action="focus-feed" data-scope-type="${escape(text(record.scopeType || 'profile'))}" data-scope-id="${escape(text(record.scopeId || currentUserId()))}">Open</button>
+                                        <button class="social-neo-link-btn social-neo-rail-item-action" type="button" data-action="focus-feed" data-scope-type="${escape(text(record.scopeType || 'profile'))}" data-scope-id="${escape(text(record.scopeId || currentUserId()))}">Open</button>
                                     </article>
                                 `;
                             }).join('')}
                             ${featuredEvents.map((item) => `
-                                <article class="social-neo-entity-card">
-                                    <div>
-                                        <strong>${escape(text(item.title || 'Event'))}</strong>
-                                        <span>${escape(when(item.startsAt))}</span>
+                                <article class="social-neo-entity-card social-neo-rail-item">
+                                    <div class="social-neo-rail-item-copy">
+                                        <strong class="social-neo-rail-item-title">${escape(text(item.title || 'Event'))}</strong>
+                                        <span class="social-neo-rail-item-meta">${escape(when(item.startsAt))}</span>
                                     </div>
-                                    <button class="social-neo-link-btn" type="button" data-action="panel-events">View</button>
+                                    <button class="social-neo-link-btn social-neo-rail-item-action" type="button" data-action="panel-events">View</button>
                                 </article>
                             `).join('')}
                             ${alerts.slice(0, 1).map((alert) => `
-                                <article class="social-neo-entity-card">
-                                    <div>
-                                        <strong>${escape(text(alert.title || 'Alert'))}</strong>
-                                        <span>${escape(text(alert.text || ''))}</span>
+                                <article class="social-neo-entity-card social-neo-rail-item">
+                                    <div class="social-neo-rail-item-copy">
+                                        <strong class="social-neo-rail-item-title">${escape(text(alert.title || 'Alert'))}</strong>
+                                        <span class="social-neo-rail-item-meta">${escape(text(alert.text || ''))}</span>
                                     </div>
                                 </article>
                             `).join('')}
-                            ${!savedItems().length && !featuredEvents.length && !alerts.length ? `<div class="social-neo-empty">No saved items or live activity yet.</div>` : ''}
+                            ${!savedItems().length && !featuredEvents.length && !alerts.length ? `<div class="social-neo-empty social-neo-rail-empty">No saved items or live activity yet.</div>` : ''}
                         </div>
                     </section>
                 `
                 : `
-                    <section class="social-neo-card">
-                        <div class="social-neo-section-head">
-                            <div><strong>Overview</strong></div>
+                    <section class="social-neo-card social-neo-rail-card social-neo-rail-card--overview">
+                        <div class="social-neo-section-head social-neo-rail-head">
+                            <div class="social-neo-rail-head-copy"><strong class="social-neo-rail-title">Overview</strong></div>
                         </div>
-                        <div class="social-neo-stat-grid">
-                            <div><strong>${escape(Array.isArray(runtime.feed) ? runtime.feed.length : 0)}</strong><span>Posts</span></div>
-                            <div><strong>${escape(Array.isArray(social.pages) ? social.pages.length : 0)}</strong><span>Pages</span></div>
-                            <div><strong>${escape(Array.isArray(social.groups) ? social.groups.length : 0)}</strong><span>Groups</span></div>
-                            <div><strong>${escape(Array.isArray(social.events) ? social.events.length : 0)}</strong><span>Events</span></div>
-                            <div><strong>${escape(relationships.connections.length)}</strong><span>Connections</span></div>
-                            <div><strong>${escape(unreadNotifications())}</strong><span>Unread alerts</span></div>
+                        <div class="social-neo-stat-grid social-neo-rail-overview-stats">
+                            <div class="social-neo-rail-overview-stat"><strong class="social-neo-rail-overview-value">${escape(Array.isArray(runtime.feed) ? runtime.feed.length : 0)}</strong><span class="social-neo-rail-overview-label">Posts</span></div>
+                            <div class="social-neo-rail-overview-stat"><strong class="social-neo-rail-overview-value">${escape(Array.isArray(social.pages) ? social.pages.length : 0)}</strong><span class="social-neo-rail-overview-label">Pages</span></div>
+                            <div class="social-neo-rail-overview-stat"><strong class="social-neo-rail-overview-value">${escape(Array.isArray(social.groups) ? social.groups.length : 0)}</strong><span class="social-neo-rail-overview-label">Groups</span></div>
+                            <div class="social-neo-rail-overview-stat"><strong class="social-neo-rail-overview-value">${escape(Array.isArray(social.events) ? social.events.length : 0)}</strong><span class="social-neo-rail-overview-label">Events</span></div>
+                            <div class="social-neo-rail-overview-stat"><strong class="social-neo-rail-overview-value">${escape(relationships.connections.length)}</strong><span class="social-neo-rail-overview-label">Connections</span></div>
+                            <div class="social-neo-rail-overview-stat"><strong class="social-neo-rail-overview-value">${escape(unreadNotifications())}</strong><span class="social-neo-rail-overview-label">Unread alerts</span></div>
                         </div>
                     </section>
-                    <section class="social-neo-card">
-                        <div class="social-neo-section-head">
-                            <div><strong>Pages & Groups</strong></div>
+                    <section class="social-neo-card social-neo-rail-card social-neo-rail-card--pages-groups">
+                        <div class="social-neo-section-head social-neo-rail-head">
+                            <div class="social-neo-rail-head-copy"><strong class="social-neo-rail-title">Pages & Groups</strong></div>
                         </div>
-                        <div class="social-neo-list">
+                        <div class="social-neo-list social-neo-rail-list">
                             ${featuredPages.map((page) => `
-                                <article class="social-neo-entity-card">
-                                    <div>
-                                        <strong>${escape(text(page.name || 'Page'))}</strong>
-                                        <span>${escape(text(page.description || `${page.followerCount || 0} followers`))}</span>
+                                <article class="social-neo-entity-card social-neo-rail-item">
+                                    <div class="social-neo-rail-item-copy">
+                                        <strong class="social-neo-rail-item-title">${escape(text(page.name || 'Page'))}</strong>
+                                        <span class="social-neo-rail-item-meta">${escape(text(page.description || `${page.followerCount || 0} followers`))}</span>
                                     </div>
-                                    <button class="social-neo-link-btn" type="button" data-action="focus-feed" data-scope-type="page" data-scope-id="${escape(text(page.id))}">Open</button>
+                                    <button class="social-neo-link-btn social-neo-rail-item-action" type="button" data-action="focus-feed" data-scope-type="page" data-scope-id="${escape(text(page.id))}">Open</button>
                                 </article>
                             `).join('')}
                             ${featuredGroups.map((group) => `
-                                <article class="social-neo-entity-card">
-                                    <div>
-                                        <strong>${escape(text(group.name || 'Group'))}</strong>
-                                        <span>${escape(`${group.memberCount || 0} members / ${text(group.visibility || 'public')}`)}</span>
+                                <article class="social-neo-entity-card social-neo-rail-item">
+                                    <div class="social-neo-rail-item-copy">
+                                        <strong class="social-neo-rail-item-title">${escape(text(group.name || 'Group'))}</strong>
+                                        <span class="social-neo-rail-item-meta">${escape(`${group.memberCount || 0} members / ${text(group.visibility || 'public')}`)}</span>
                                     </div>
-                                    <button class="social-neo-link-btn" type="button" data-action="focus-feed" data-scope-type="group" data-scope-id="${escape(text(group.id))}">Open</button>
+                                    <button class="social-neo-link-btn social-neo-rail-item-action" type="button" data-action="focus-feed" data-scope-type="group" data-scope-id="${escape(text(group.id))}">Open</button>
                                 </article>
                             `).join('')}
-                            ${!featuredPages.length && !featuredGroups.length ? `<div class="social-neo-empty">No pages or groups yet.</div>` : ''}
+                            ${!featuredPages.length && !featuredGroups.length ? `<div class="social-neo-empty social-neo-rail-empty">No pages or groups yet.</div>` : ''}
                         </div>
                     </section>
-                    <section class="social-neo-card">
-                        <div class="social-neo-section-head">
-                            <div><strong>Campus Now</strong></div>
+                    <section class="social-neo-card social-neo-rail-card social-neo-rail-card--campus-now">
+                        <div class="social-neo-section-head social-neo-rail-head">
+                            <div class="social-neo-rail-head-copy"><strong class="social-neo-rail-title">Campus Now</strong></div>
                         </div>
-                        <div class="social-neo-list">
+                        <div class="social-neo-list social-neo-rail-list">
                             ${featuredEvents.map((item) => `
-                                <article class="social-neo-entity-card">
-                                    <div>
-                                        <strong>${escape(text(item.title || 'Event'))}</strong>
-                                        <span>${escape(when(item.startsAt))}</span>
+                                <article class="social-neo-entity-card social-neo-rail-item">
+                                    <div class="social-neo-rail-item-copy">
+                                        <strong class="social-neo-rail-item-title">${escape(text(item.title || 'Event'))}</strong>
+                                        <span class="social-neo-rail-item-meta">${escape(when(item.startsAt))}</span>
                                     </div>
-                                    <button class="social-neo-link-btn" type="button" data-action="panel-events">View</button>
+                                    <button class="social-neo-link-btn social-neo-rail-item-action" type="button" data-action="panel-events">View</button>
                                 </article>
                             `).join('')}
                             ${alerts.map((alert) => `
-                                <article class="social-neo-entity-card">
-                                    <div>
-                                        <strong>${escape(text(alert.title || 'Alert'))}</strong>
-                                        <span>${escape(text(alert.text || ''))}</span>
+                                <article class="social-neo-entity-card social-neo-rail-item">
+                                    <div class="social-neo-rail-item-copy">
+                                        <strong class="social-neo-rail-item-title">${escape(text(alert.title || 'Alert'))}</strong>
+                                        <span class="social-neo-rail-item-meta">${escape(text(alert.text || ''))}</span>
                                     </div>
                                 </article>
                             `).join('')}
-                            ${!featuredEvents.length && !alerts.length ? `<div class="social-neo-empty">No live activity yet.</div>` : ''}
+                            ${!featuredEvents.length && !alerts.length ? `<div class="social-neo-empty social-neo-rail-empty">No live activity yet.</div>` : ''}
                         </div>
                     </section>
                 `;
@@ -7485,16 +8207,16 @@
             <aside class="social-neo-rail">
                 ${railMarkup}
                 ${call ? `
-                    <section class="social-neo-card">
-                        <div class="social-neo-section-head">
-                            <div>
-                                <strong>Active call</strong>
-                                <span>${escape(text(state().ui?.callMessage || call.status || 'In progress'))}</span>
+                    <section class="social-neo-card social-neo-rail-card social-neo-rail-call-card">
+                        <div class="social-neo-section-head social-neo-rail-head">
+                            <div class="social-neo-rail-head-copy social-neo-rail-call-copy">
+                                <strong class="social-neo-rail-title social-neo-rail-call-title">Active call</strong>
+                                <span class="social-neo-rail-copy social-neo-rail-call-status">${escape(text(state().ui?.callMessage || call.status || 'In progress'))}</span>
                             </div>
                         </div>
-                        <div class="social-neo-inline">
-                            <button class="social-neo-btn social-neo-btn-primary" type="button" data-action="panel-messages">Open thread</button>
-                            <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="call-end" data-chat-id="${escape(text(call.chatId))}">End</button>
+                        <div class="social-neo-inline social-neo-rail-call-actions">
+                            <button class="social-neo-btn social-neo-btn-primary social-neo-rail-call-open social-neo-rail-call-open-btn" type="button" data-action="panel-messages">Open thread</button>
+                            <button class="social-neo-btn social-neo-btn-ghost social-neo-rail-call-end social-neo-rail-call-end-btn" type="button" data-action="call-end" data-chat-id="${escape(text(call.chatId))}">End</button>
                         </div>
                     </section>
                 ` : ''}
@@ -7531,7 +8253,7 @@
                     { label: 'Members', value: (Array.isArray(runtime.social?.groups) ? runtime.social.groups : []).reduce((s,g) => s + (g.memberCount||0), 0) }
                 ]
             },
-            projects: {
+            workspace: {
                 title: 'Project Workspaces',
                 description: 'Structured team workspaces for cross-faculty projects, tasks, milestones, meetings, and deliverables.',
                 pills: [
@@ -7539,6 +8261,15 @@
                     { label: 'Active', value: (Array.isArray(runtime.social?.projects) ? runtime.social.projects : []).filter((project) => text(project?.status || '') === 'active').length },
                     { label: 'My role', value: roleLabel(currentUser()?.role) },
                     { label: 'Private by default', value: 'On' }
+                ]
+            },
+            projects: {
+                title: 'Student Portfolio',
+                description: 'A polished public showcase feed where students present research, builds, and capstone work for discovery.',
+                pills: [
+                    { label: 'Entries', value: Array.isArray(runtime.social?.projects) ? runtime.social.projects.length : 0 },
+                    { label: 'Published', value: (Array.isArray(runtime.social?.projects) ? runtime.social.projects : []).filter((project) => text(project?.status || '') === 'published').length },
+                    { label: 'Role', value: roleLabel(currentUser()?.role) }
                 ]
             },
             pages: {
@@ -7619,13 +8350,14 @@
         return `
             <section class="social-neo-card social-neo-topbar-card">
                 <div class="social-neo-topbar-copy">
-                    <h1>${escape(activeConfig.title)}</h1>
-                    <p>${escape(activeConfig.description)}</p>
-                    <div class="social-neo-badge-row social-neo-panel-meta" style="margin-top:8px">
+                    <span class="social-neo-eyebrow social-neo-topbar-eyebrow">Campus Social Network</span>
+                    <h1 class="social-neo-topbar-title">${escape(activeConfig.title)}</h1>
+                    <p class="social-neo-topbar-description">${escape(activeConfig.description)}</p>
+                    <div class="social-neo-badge-row social-neo-badge-row-mt-8 social-neo-topbar-pills">
                         ${activeConfig.pills.map((pill) => `
-                            <span class="social-neo-pill">
-                                <strong>${escape(pill.value)}</strong>
-                                <span>${escape(pill.label)}</span>
+                            <span class="social-neo-pill social-neo-topbar-pill">
+                                <strong class="social-neo-topbar-pill-value">${escape(pill.value)}</strong>
+                                <span class="social-neo-topbar-pill-label">${escape(pill.label)}</span>
                             </span>
                         `).join('')}
                     </div>
@@ -7635,14 +8367,14 @@
                     <button class="social-neo-shell-profile-chip" type="button" data-action="panel-profile" data-user-id="${escape(currentUserId())}">
                         ${avatar(user, 'social-neo-avatar-sm')}
                         <span class="social-neo-shell-profile-copy">
-                            <strong>${escape(displayName(user))}</strong>
-                            <small>${escape(accountSubtitle(user))}</small>
+                            <strong class="social-neo-shell-profile-name">${escape(displayName(user))}</strong>
+                            <small class="social-neo-shell-profile-subtitle">${escape(accountSubtitle(user))}</small>
                         </span>
                     </button>
-                    ${renderShellPrimaryNav(activePanel)}
                     <div class="social-neo-shell-topbar-actions">
-                        ${activePanel !== 'messages' ? `<button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="panel-messages"><i class="fas fa-paper-plane"></i> Messages</button>` : ''}
-                        ${activePanel !== 'profile' ? `<button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="panel-profile" data-user-id="${escape(currentUserId())}"><i class="fas fa-user"></i> Profile</button>` : ''}
+                        ${activePanel !== 'messages' ? `<button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm social-neo-shell-topbar-action-btn" type="button" data-action="panel-messages"><i class="fas fa-paper-plane"></i> Messages</button>` : ''}
+                        ${activePanel !== 'profile' ? `<button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm social-neo-shell-topbar-action-btn" type="button" data-action="panel-profile" data-user-id="${escape(currentUserId())}"><i class="fas fa-user"></i> Profile</button>` : ''}
+                        <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm social-neo-shell-topbar-action-btn" type="button" data-action="shell-drawer-open"><i class="fas fa-bars"></i> Menu</button>
                     </div>
                 </div>
             </section>
@@ -7654,8 +8386,10 @@
             ? renderCommunityPanel()
             : activePanel === 'groups'
                 ? renderGroupsPanel()
-                : activePanel === 'projects'
-                    ? renderProjectsPanel()
+                : activePanel === 'workspace'
+                    ? renderProjectsWorkspacePanelClassic()
+                    : activePanel === 'projects'
+                        ? renderProjectsPanel()
                     : activePanel === 'pages'
                         ? renderPagesPanel()
                         : activePanel === 'events'
@@ -7685,6 +8419,7 @@
                 ${renderSocialTopbarRegion(activePanel, activeConfig, user)}
                 ${renderSectionCommandCenter(activePanel, activeConfig, runtime)}
                 <div class="social-neo-shell">
+                    ${renderShellWorkspaceNav(activePanel)}
                     <div class="social-neo-center">
                         ${panelMarkup}
                     </div>
@@ -7742,14 +8477,14 @@
         if (kind === 'post-edit' && post) {
             return `<div class="social-neo-dialog-backdrop" data-action="dialog-close">
                 <form class="social-neo-dialog-card" data-form="dialog-post-edit" data-action="noop">
-                    <div class="social-neo-section-head">
-                        <div><strong>Edit post</strong><span>Refine the post without leaving the feed.</span></div>
-                        <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="dialog-close"><i class="fas fa-times"></i></button>
+                    <div class="social-neo-section-head social-neo-dialog-head">
+                        <div class="social-neo-dialog-heading"><strong class="social-neo-dialog-title">Edit post</strong><span class="social-neo-dialog-subtitle">Refine the post without leaving the feed.</span></div>
+                        <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-close-btn" type="button" data-action="dialog-close"><i class="fas fa-times"></i></button>
                     </div>
                     <textarea class="social-neo-textarea" name="dialogBody" rows="6" placeholder="Update your post...">${escape(text(dialog.body || post.body || post.text || ''))}</textarea>
-                    <div class="social-neo-form-actions">
-                        <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="dialog-close">Cancel</button>
-                        <button class="social-neo-btn social-neo-btn-primary" type="submit">Save changes</button>
+                    <div class="social-neo-form-actions social-neo-dialog-actions">
+                        <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-cancel-btn" type="button" data-action="dialog-close">Cancel</button>
+                        <button class="social-neo-btn social-neo-btn-primary social-neo-dialog-submit-btn" type="submit">Save changes</button>
                     </div>
                     <input type="hidden" name="postId" value="${escape(text(post.id))}">
                 </form>
@@ -7758,15 +8493,15 @@
         if (kind === 'post-share' && post) {
             return `<div class="social-neo-dialog-backdrop" data-action="dialog-close">
                 <form class="social-neo-dialog-card" data-form="dialog-post-share" data-action="noop">
-                    <div class="social-neo-section-head">
-                        <div><strong>Share post</strong><span>Add context before it goes back into the stream.</span></div>
-                        <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="dialog-close"><i class="fas fa-times"></i></button>
+                    <div class="social-neo-section-head social-neo-dialog-head">
+                        <div class="social-neo-dialog-heading"><strong class="social-neo-dialog-title">Share post</strong><span class="social-neo-dialog-subtitle">Add context before it goes back into the stream.</span></div>
+                        <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-close-btn" type="button" data-action="dialog-close"><i class="fas fa-times"></i></button>
                     </div>
                     <textarea class="social-neo-textarea" name="dialogNote" rows="4" placeholder="Say something about this...">${escape(text(dialog.note || ''))}</textarea>
                     <div class="social-neo-dialog-preview">${escape(text(post.body || post.text || 'Original post'))}</div>
-                    <div class="social-neo-form-actions">
-                        <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="dialog-close">Cancel</button>
-                        <button class="social-neo-btn social-neo-btn-primary" type="submit">Share now</button>
+                    <div class="social-neo-form-actions social-neo-dialog-actions">
+                        <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-cancel-btn" type="button" data-action="dialog-close">Cancel</button>
+                        <button class="social-neo-btn social-neo-btn-primary social-neo-dialog-submit-btn" type="submit">Share now</button>
                     </div>
                     <input type="hidden" name="postId" value="${escape(text(post.id))}">
                 </form>
@@ -7775,30 +8510,52 @@
         if (kind === 'post-report' && post) {
             return `<div class="social-neo-dialog-backdrop" data-action="dialog-close">
                 <form class="social-neo-dialog-card" data-form="dialog-post-report" data-action="noop">
-                    <div class="social-neo-section-head">
-                        <div><strong>Report post</strong><span>Explain what is wrong with this content.</span></div>
-                        <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="dialog-close"><i class="fas fa-times"></i></button>
+                    <div class="social-neo-section-head social-neo-dialog-head">
+                        <div class="social-neo-dialog-heading"><strong class="social-neo-dialog-title">Report post</strong><span class="social-neo-dialog-subtitle">Explain what is wrong with this content.</span></div>
+                        <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-close-btn" type="button" data-action="dialog-close"><i class="fas fa-times"></i></button>
                     </div>
                     <textarea class="social-neo-textarea" name="dialogReason" rows="4" placeholder="Spam, harassment, misleading information...">${escape(text(dialog.reason || 'Inappropriate or misleading'))}</textarea>
-                    <div class="social-neo-form-actions">
-                        <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="dialog-close">Cancel</button>
-                        <button class="social-neo-btn social-neo-btn-primary" type="submit">Submit report</button>
+                    <div class="social-neo-form-actions social-neo-dialog-actions">
+                        <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-cancel-btn" type="button" data-action="dialog-close">Cancel</button>
+                        <button class="social-neo-btn social-neo-btn-primary social-neo-dialog-submit-btn" type="submit">Submit report</button>
                     </div>
                     <input type="hidden" name="postId" value="${escape(text(post.id))}">
+                </form>
+            </div>`;
+        }
+        if (kind === 'comment-report') {
+            const reportPost = (Array.isArray(state().feed) ? state().feed : []).find((item) => postKey(item) === postKey(dialog.postId));
+            const comment = findCommentInThread(reportPost?.comments, dialog.commentId);
+            if (!comment) return '';
+            return `<div class="social-neo-dialog-backdrop" data-action="dialog-close">
+                <form class="social-neo-dialog-card" data-form="dialog-comment-report" data-action="noop">
+                    <div class="social-neo-section-head social-neo-dialog-head">
+                        <div class="social-neo-dialog-heading"><strong class="social-neo-dialog-title">Report comment</strong><span class="social-neo-dialog-subtitle">Explain what is wrong with this comment.</span></div>
+                        <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-close-btn" type="button" data-action="dialog-close"><i class="fas fa-times"></i></button>
+                    </div>
+                    <div class="social-neo-dialog-preview">${escape(text(comment.body || comment.text || 'Comment'))}</div>
+                    <textarea class="social-neo-textarea" name="dialogReason" rows="4" placeholder="Spam, harassment, misleading information...">${escape(text(dialog.reason || 'Inappropriate or misleading'))}</textarea>
+                    <div class="social-neo-form-actions social-neo-dialog-actions">
+                        <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-cancel-btn" type="button" data-action="dialog-close">Cancel</button>
+                        <button class="social-neo-btn social-neo-btn-primary social-neo-dialog-submit-btn" type="submit">Submit report</button>
+                    </div>
+                    <input type="hidden" name="postId" value="${escape(postKey(dialog.postId))}">
+                    <input type="hidden" name="commentId" value="${escape(text(dialog.commentId))}">
+                    <input type="hidden" name="targetOwnerId" value="${escape(text(comment.authorUserId || ''))}">
                 </form>
             </div>`;
         }
         if (kind === 'post-delete' && post) {
             return `<div class="social-neo-dialog-backdrop" data-action="dialog-close">
                 <form class="social-neo-dialog-card" data-form="dialog-post-delete" data-action="noop">
-                    <div class="social-neo-section-head">
-                        <div><strong>Delete post</strong><span>This removes the post from the social feed.</span></div>
-                        <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="dialog-close"><i class="fas fa-times"></i></button>
+                    <div class="social-neo-section-head social-neo-dialog-head">
+                        <div class="social-neo-dialog-heading"><strong class="social-neo-dialog-title">Delete post</strong><span class="social-neo-dialog-subtitle">This removes the post from the social feed.</span></div>
+                        <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-close-btn" type="button" data-action="dialog-close"><i class="fas fa-times"></i></button>
                     </div>
                     <div class="social-neo-dialog-preview">${escape(text(post.body || post.text || 'This post has no text.'))}</div>
-                    <div class="social-neo-form-actions">
-                        <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="dialog-close">Cancel</button>
-                        <button class="social-neo-btn social-neo-btn-primary" type="submit">Delete post</button>
+                    <div class="social-neo-form-actions social-neo-dialog-actions">
+                        <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-cancel-btn" type="button" data-action="dialog-close">Cancel</button>
+                        <button class="social-neo-btn social-neo-btn-primary social-neo-dialog-submit-btn" type="submit">Delete post</button>
                     </div>
                     <input type="hidden" name="postId" value="${escape(text(post.id))}">
                 </form>
@@ -7807,21 +8564,21 @@
         if (kind === 'profile-cover') {
             return `<div class="social-neo-dialog-backdrop" data-action="dialog-close">
                 <form class="social-neo-dialog-card" data-form="dialog-profile-cover" data-action="noop">
-                    <div class="social-neo-section-head">
-                        <div><strong>Update cover photo</strong><span>Paste an image URL or upload a file for your profile banner.</span></div>
-                        <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="dialog-close"><i class="fas fa-times"></i></button>
+                    <div class="social-neo-section-head social-neo-dialog-head">
+                        <div class="social-neo-dialog-heading"><strong class="social-neo-dialog-title">Update cover photo</strong><span class="social-neo-dialog-subtitle">Paste an image URL or upload a file for your profile banner.</span></div>
+                        <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-close-btn" type="button" data-action="dialog-close"><i class="fas fa-times"></i></button>
                     </div>
                     <input class="social-neo-input" name="coverImageUrl" type="url" placeholder="https://..." value="${escape(text(dialog.coverImage || ''))}">
                     ${renderFileChip(state().ui?.coverImageFile, 'Cover image ready')}
                     <div class="social-neo-inline social-neo-quick-actions">
-                        <label class="social-neo-btn social-neo-btn-ghost" style="cursor:pointer">
+                        <label class="social-neo-btn social-neo-btn-ghost social-neo-btn-pointer">
                             <i class="fas fa-image"></i> Upload image
                             <input name="coverImageFile" type="file" accept="image/*" hidden>
                         </label>
                     </div>
-                    <div class="social-neo-form-actions">
-                        <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="dialog-close">Cancel</button>
-                        <button class="social-neo-btn social-neo-btn-primary" type="submit">Update cover</button>
+                    <div class="social-neo-form-actions social-neo-dialog-actions">
+                        <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-cancel-btn" type="button" data-action="dialog-close">Cancel</button>
+                        <button class="social-neo-btn social-neo-btn-primary social-neo-dialog-submit-btn" type="submit">Update cover</button>
                     </div>
                 </form>
             </div>`;
@@ -7830,17 +8587,17 @@
             const groups = inviteEligibleGroups();
             return `<div class="social-neo-dialog-backdrop" data-action="dialog-close">
                 <form class="social-neo-dialog-card" data-form="dialog-group-invite" data-action="noop">
-                    <div class="social-neo-section-head">
-                        <div><strong>Invite to group</strong><span>Send ${escape(text(dialog.targetUserName || 'this member'))} a social invitation.</span></div>
-                        <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="dialog-close"><i class="fas fa-times"></i></button>
+                    <div class="social-neo-section-head social-neo-dialog-head">
+                        <div class="social-neo-dialog-heading"><strong class="social-neo-dialog-title">Invite to group</strong><span class="social-neo-dialog-subtitle">Send ${escape(text(dialog.targetUserName || 'this member'))} a social invitation.</span></div>
+                        <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-close-btn" type="button" data-action="dialog-close"><i class="fas fa-times"></i></button>
                     </div>
                     <select class="social-neo-select" name="inviteGroupId" data-lux-native data-lux-picker-enhanced="true">
                         ${groups.map((group) => `<option value="${escape(text(group.id))}" ${text(dialog.groupId || '') === text(group.id) ? 'selected' : ''}>${escape(text(group.name || 'Group'))}</option>`).join('')}
                     </select>
                     <textarea class="social-neo-textarea" name="inviteNote" rows="4" placeholder="Want to join our study group this week?">${escape(text(dialog.note || ''))}</textarea>
-                    <div class="social-neo-form-actions">
-                        <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="dialog-close">Cancel</button>
-                        <button class="social-neo-btn social-neo-btn-primary" type="submit">Send invite</button>
+                    <div class="social-neo-form-actions social-neo-dialog-actions">
+                        <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-cancel-btn" type="button" data-action="dialog-close">Cancel</button>
+                        <button class="social-neo-btn social-neo-btn-primary social-neo-dialog-submit-btn" type="submit">Send invite</button>
                     </div>
                     <input type="hidden" name="targetUserId" value="${escape(text(dialog.targetUserId || ''))}">
                 </form>
@@ -7865,13 +8622,13 @@
             const nextOwnerName = nextOwnerId ? displayName(accountById(nextOwnerId) || { id: nextOwnerId, displayName: nextOwnerId }) : '';
             return `<div class="social-neo-dialog-backdrop" data-action="dialog-close">
                 <form class="social-neo-dialog-card" data-form="dialog-group-leave" data-action="noop">
-                    <div class="social-neo-section-head">
-                        <div><strong>Leave group</strong><span>You will lose access to the group chat and updates until you join again.</span></div>
-                        <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="dialog-close"><i class="fas fa-times"></i></button>
+                    <div class="social-neo-section-head social-neo-dialog-head">
+                        <div class="social-neo-dialog-heading"><strong class="social-neo-dialog-title">Leave group</strong><span class="social-neo-dialog-subtitle">You will lose access to the group chat and updates until you join again.</span></div>
+                        <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-close-btn" type="button" data-action="dialog-close"><i class="fas fa-times"></i></button>
                     </div>
                     <div class="social-neo-dialog-preview">
-                        <strong>${escape(text(groupItem.name || 'Group'))}</strong>
-                        <div class="social-neo-muted" style="margin-top:6px">${escape(`${groupItem.memberCount || 0} members`)}</div>
+                        <strong class="social-neo-dialog-preview-title">${escape(text(groupItem.name || 'Group'))}</strong>
+                        <div class="social-neo-muted social-neo-muted-mt-6">${escape(`${groupItem.memberCount || 0} members`)}</div>
                     </div>
                     <div class="social-neo-dialog-preview">
                         ${isOwner
@@ -7880,13 +8637,13 @@
                                 : 'You created this group. If you leave now, the group stays alive without an owner until someone else joins and takes it over.')
                             : 'Chat history, posts, and files stay in the group. Only your membership is removed.'}
                     </div>
-                    <label class="social-neo-item-line">
+                    <label class="social-neo-item-line social-neo-dialog-checkbox-line">
                         <input type="checkbox" name="confirmGroupLeave" value="yes">
-                        <span>I want to leave this group.</span>
+                        <span class="social-neo-dialog-checkbox-copy">I want to leave this group.</span>
                     </label>
-                    <div class="social-neo-form-actions">
-                        <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="dialog-close">Cancel</button>
-                        <button class="social-neo-btn social-neo-btn-primary" type="submit">Leave group</button>
+                    <div class="social-neo-form-actions social-neo-dialog-actions">
+                        <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-cancel-btn" type="button" data-action="dialog-close">Cancel</button>
+                        <button class="social-neo-btn social-neo-btn-primary social-neo-dialog-submit-btn" type="submit">Leave group</button>
                     </div>
                     <input type="hidden" name="groupId" value="${escape(text(groupItem.id))}">
                     <input type="hidden" name="groupChatId" value="${escape(text(groupItem.chatId || ''))}">
@@ -7900,13 +8657,13 @@
             const nextOwner = nextOwnerId ? accountById(nextOwnerId) || { id: nextOwnerId } : null;
             return `<div class="social-neo-dialog-backdrop" data-action="dialog-close">
                 <form class="social-neo-dialog-card" data-form="dialog-project-leave" data-action="noop">
-                    <div class="social-neo-section-head">
-                        <div><strong>Leave workspace</strong><span>This removes you from the team but keeps the workspace history, tasks, files, and chat intact.</span></div>
-                        <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="dialog-close"><i class="fas fa-times"></i></button>
+                    <div class="social-neo-section-head social-neo-dialog-head">
+                        <div class="social-neo-dialog-heading"><strong class="social-neo-dialog-title">Leave workspace</strong><span class="social-neo-dialog-subtitle">This removes you from the team but keeps the workspace history, tasks, files, and chat intact.</span></div>
+                        <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-close-btn" type="button" data-action="dialog-close"><i class="fas fa-times"></i></button>
                     </div>
                     <div class="social-neo-dialog-preview">
-                        <strong>${escape(text(projectItem.name || 'Project workspace'))}</strong>
-                        <div class="social-neo-muted" style="margin-top:6px">${escape(`${projectItem.memberCount || 0} team members`)}</div>
+                        <strong class="social-neo-dialog-preview-title">${escape(text(projectItem.name || 'Project workspace'))}</strong>
+                        <div class="social-neo-muted social-neo-muted-mt-6">${escape(`${projectItem.memberCount || 0} team members`)}</div>
                     </div>
                     <div class="social-neo-dialog-preview ${isOwner ? 'social-neo-dialog-preview-danger' : ''}">
                         ${isOwner
@@ -7915,13 +8672,13 @@
                                 : 'You own this workspace. If you leave now, the workspace stays active but becomes ownerless until someone joins or is assigned later.')
                             : 'Your membership will be removed, but chat history, tasks, milestones, deliverables, and activity remain untouched.'}
                     </div>
-                    <label class="social-neo-item-line">
+                    <label class="social-neo-item-line social-neo-dialog-checkbox-line">
                         <input type="checkbox" name="confirmProjectLeave" value="yes">
-                        <span>I understand that I am leaving this workspace.</span>
+                        <span class="social-neo-dialog-checkbox-copy">I understand that I am leaving this workspace.</span>
                     </label>
-                    <div class="social-neo-form-actions">
-                        <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="dialog-close">Cancel</button>
-                        <button class="social-neo-btn social-neo-btn-primary" type="submit">Leave workspace</button>
+                    <div class="social-neo-form-actions social-neo-dialog-actions">
+                        <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-cancel-btn" type="button" data-action="dialog-close">Cancel</button>
+                        <button class="social-neo-btn social-neo-btn-primary social-neo-dialog-submit-btn" type="submit">Leave workspace</button>
                     </div>
                     <input type="hidden" name="projectId" value="${escape(text(projectItem.id))}">
                     <input type="hidden" name="projectChatId" value="${escape(text(projectItem.chatId || projectItem.groupChatId || ''))}">
@@ -7931,20 +8688,20 @@
         if (kind === 'event-delete' && eventItem) {
             return `<div class="social-neo-dialog-backdrop" data-action="dialog-close">
                 <form class="social-neo-dialog-card" data-form="dialog-event-delete" data-action="noop">
-                    <div class="social-neo-section-head">
-                        <div><strong>Delete event</strong><span>This removes the event and its RSVP history.</span></div>
-                        <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="dialog-close"><i class="fas fa-times"></i></button>
+                    <div class="social-neo-section-head social-neo-dialog-head">
+                        <div class="social-neo-dialog-heading"><strong class="social-neo-dialog-title">Delete event</strong><span class="social-neo-dialog-subtitle">This removes the event and its RSVP history.</span></div>
+                        <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-close-btn" type="button" data-action="dialog-close"><i class="fas fa-times"></i></button>
                     </div>
                     <div class="social-neo-dialog-preview">
-                        <strong>${escape(text(eventItem.title || 'Untitled event'))}</strong>
-                        <div class="social-neo-muted" style="margin-top:6px">${escape(when(eventItem.startsAt || ''))}</div>
+                        <strong class="social-neo-dialog-preview-title">${escape(text(eventItem.title || 'Untitled event'))}</strong>
+                        <div class="social-neo-muted social-neo-muted-mt-6">${escape(when(eventItem.startsAt || ''))}</div>
                     </div>
                     <div class="social-neo-dialog-preview social-neo-dialog-preview-danger">
                         This will remove the event for everyone and clear its RSVP history.
                     </div>
-                    <div class="social-neo-form-actions">
-                        <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="dialog-close">Cancel</button>
-                        <button class="social-neo-btn social-neo-btn-primary" type="submit">Delete event</button>
+                    <div class="social-neo-form-actions social-neo-dialog-actions">
+                        <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-cancel-btn" type="button" data-action="dialog-close">Cancel</button>
+                        <button class="social-neo-btn social-neo-btn-primary social-neo-dialog-submit-btn" type="submit">Delete event</button>
                     </div>
                     <input type="hidden" name="eventId" value="${escape(text(eventItem.id))}">
                 </form>
@@ -7953,20 +8710,20 @@
         if (kind === 'message-delete' && dialogChat && dialogMessage) {
             return `<div class="social-neo-dialog-backdrop" data-action="dialog-close">
                 <form class="social-neo-dialog-card" data-form="dialog-message-delete" data-action="noop">
-                    <div class="social-neo-section-head">
-                        <div><strong>Remove message</strong><span>This will delete the message from the chat thread.</span></div>
-                        <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="dialog-close"><i class="fas fa-times"></i></button>
+                    <div class="social-neo-section-head social-neo-dialog-head">
+                        <div class="social-neo-dialog-heading"><strong class="social-neo-dialog-title">Remove message</strong><span class="social-neo-dialog-subtitle">This will delete the message from the chat thread.</span></div>
+                        <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-close-btn" type="button" data-action="dialog-close"><i class="fas fa-times"></i></button>
                     </div>
                     <div class="social-neo-dialog-preview">
                         ${escape(text(dialogMessage.text || dialogMessage.file?.name || 'Message attachment'))}
                     </div>
-                    <label class="social-neo-item-line">
+                    <label class="social-neo-item-line social-neo-dialog-checkbox-line">
                         <input type="checkbox" name="confirmMessageDelete" value="yes">
-                        <span>Remove this message from the conversation.</span>
+                        <span class="social-neo-dialog-checkbox-copy">Remove this message from the conversation.</span>
                     </label>
-                    <div class="social-neo-form-actions">
-                        <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="dialog-close">Cancel</button>
-                        <button class="social-neo-btn social-neo-btn-primary" type="submit">Remove message</button>
+                    <div class="social-neo-form-actions social-neo-dialog-actions">
+                        <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-cancel-btn" type="button" data-action="dialog-close">Cancel</button>
+                        <button class="social-neo-btn social-neo-btn-primary social-neo-dialog-submit-btn" type="submit">Remove message</button>
                     </div>
                     <input type="hidden" name="chatId" value="${escape(text(dialogChat.id))}">
                     <input type="hidden" name="messageId" value="${escape(text(dialogMessage.id))}">
@@ -7976,20 +8733,20 @@
         if (kind === 'chat-hide' && dialogChat) {
             return `<div class="social-neo-dialog-backdrop" data-action="dialog-close">
                 <form class="social-neo-dialog-card" data-form="dialog-chat-hide" data-action="noop">
-                    <div class="social-neo-section-head">
-                        <div><strong>Hide conversation</strong><span>This only removes the chat from your inbox view.</span></div>
-                        <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="dialog-close"><i class="fas fa-times"></i></button>
+                    <div class="social-neo-section-head social-neo-dialog-head">
+                        <div class="social-neo-dialog-heading"><strong class="social-neo-dialog-title">Hide conversation</strong><span class="social-neo-dialog-subtitle">This only removes the chat from your inbox view.</span></div>
+                        <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-close-btn" type="button" data-action="dialog-close"><i class="fas fa-times"></i></button>
                     </div>
                     <div class="social-neo-dialog-preview">
-                        <strong>${escape(chatTitle(dialogChat))}</strong>
-                        <div class="social-neo-muted" style="margin-top:6px">${escape(chatPreview(dialogChat))}</div>
+                        <strong class="social-neo-dialog-preview-title">${escape(chatTitle(dialogChat))}</strong>
+                        <div class="social-neo-muted social-neo-muted-mt-6">${escape(chatPreview(dialogChat))}</div>
                     </div>
                     <div class="social-neo-dialog-preview social-neo-dialog-preview-danger">
                         Chat history will stay saved. This only hides the conversation from your inbox until you open it again or a new message arrives.
                     </div>
-                    <div class="social-neo-form-actions">
-                        <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="dialog-close">Cancel</button>
-                        <button class="social-neo-btn social-neo-btn-primary" type="submit">Hide from inbox</button>
+                    <div class="social-neo-form-actions social-neo-dialog-actions">
+                        <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-cancel-btn" type="button" data-action="dialog-close">Cancel</button>
+                        <button class="social-neo-btn social-neo-btn-primary social-neo-dialog-submit-btn" type="submit">Hide from inbox</button>
                     </div>
                     <input type="hidden" name="chatId" value="${escape(text(dialogChat.id))}">
                 </form>
@@ -8010,14 +8767,14 @@
             </div>
             <div class="social-neo-story-header" data-action="noop">
                 ${avatar(story)}
-                <div>
+                <div class="social-neo-story-header-copy">
                     <div class="social-neo-story-author">${escape(story.authorName || 'User')}</div>
                     <div class="social-neo-story-time">${escape(story.createdAt ? formatPortalSocialWhen(story.createdAt) : 'Just now')}</div>
                 </div>
-                <button class="social-neo-btn social-neo-btn-ghost" style="margin-left:auto" type="button" data-action="story-close-viewer"><i class="fas fa-times"></i></button>
+                <button class="social-neo-btn social-neo-btn-ghost social-neo-story-close-btn" type="button" data-action="story-close-viewer"><i class="fas fa-times"></i></button>
             </div>
             ${story.mediaUrl ? `<img src="${escape(story.mediaUrl)}" alt="Story" data-action="noop" />` : ''}
-            ${story.caption ? `<div data-action="noop" style="position:absolute;bottom:60px;left:12px;right:12px;color:#fff;font-size:14px;text-align:center;background:rgba(0,0,0,.5);padding:8px;border-radius:8px">${escape(story.caption)}</div>` : ''}
+            ${story.caption ? `<div data-action="noop" class="social-neo-story-caption">${escape(story.caption)}</div>` : ''}
             <div class="social-neo-story-nav is-prev" data-action="story-prev"></div>
             <div class="social-neo-story-nav is-next" data-action="story-next"></div>
         </div>`;
@@ -8027,41 +8784,100 @@
         if (!isPortalStoryComposerOpen()) return '';
         return `<div class="social-neo-story-composer" data-action="story-close-composer">
             <form class="social-neo-story-composer-card" data-form="add-story" data-action="noop">
-                <h3>Add Story</h3>
-                <p style="color:var(--sn-txt2);font-size:13px;margin:8px 0">Share a photo that will be visible for 24 hours.</p>
+                <h3 class="social-neo-story-composer-title">Add Story</h3>
+                <p class="social-neo-story-compose-copy">Share a photo that will be visible for 24 hours.</p>
                 <input type="text" class="social-neo-story-composer-input" name="storyCaption" placeholder="Add a caption..." value="${escape(text(state().ui?.storyCaption || ''))}" />
                 <input type="text" class="social-neo-story-composer-input" name="storyMediaUrl" placeholder="Image URL..." value="${escape(text(state().ui?.storyMediaUrl || ''))}" />
                 ${renderFileChip(state().ui?.storyFile, 'Story image ready')}
-                <label class="social-neo-btn social-neo-btn-ghost" style="cursor:pointer;justify-content:center">
+                <label class="social-neo-btn social-neo-btn-ghost social-neo-story-upload-btn social-neo-story-upload-shell">
                     <i class="fas fa-image"></i> Upload image
                     <input name="storyFile" type="file" accept="image/*" hidden>
                 </label>
-                <div class="social-neo-profile-edit-actions">
-                    <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="story-close-composer">Cancel</button>
-                    <button class="social-neo-btn social-neo-btn-primary" type="submit">Share Story</button>
+                <div class="social-neo-profile-edit-actions social-neo-story-composer-actions">
+                    <button class="social-neo-btn social-neo-btn-ghost social-neo-story-composer-cancel-btn" type="button" data-action="story-close-composer">Cancel</button>
+                    <button class="social-neo-btn social-neo-btn-primary social-neo-story-composer-submit-btn" type="submit">Share Story</button>
                 </div>
                 <p class="social-neo-story-expiry">This story will expire in 24 hours</p>
             </form>
         </div>`;
     }
 
+    function collectCommentReactionFingerprint(comments = [], limit = 12, collected = []) {
+        if (!Array.isArray(comments) || collected.length >= limit) return collected;
+        comments.forEach((comment) => {
+            if (collected.length >= limit) return;
+            collected.push([text(comment?.id), JSON.stringify(comment?.reactionCounts || {})]);
+            if (Array.isArray(comment?.replies) && comment.replies.length) {
+                collectCommentReactionFingerprint(comment.replies, limit, collected);
+            }
+        });
+        return collected;
+    }
+
+    function summarizeCommentReactions(comments = []) {
+        return JSON.stringify(collectCommentReactionFingerprint(comments).slice(0, 12));
+    }
+
+    function buildFeedFingerprint(runtime) {
+        const feed = Array.isArray(runtime?.feed) ? runtime.feed : [];
+        const feedSlice = feed.slice(0, 24).map((post) => [
+            postKey(post),
+            text(post?.viewerReaction || ''),
+            JSON.stringify(post?.reactionCounts || {}),
+            isPostSaved(postKey(post)) ? '1' : '0',
+            post?.isPinned ? '1' : '0',
+            Number(post?.replyCount || 0),
+            Number(post?.shareCount || 0),
+            summarizeCommentReactions(post?.comments)
+        ].join(':')).join('|');
+        const drafts = JSON.stringify(runtime?.ui?.commentDraftByPost || {});
+        const replies = JSON.stringify(runtime?.ui?.commentReplyTargetByPost || {});
+        return `${feedSlice}::${drafts}::${replies}`;
+    }
+
     function buildSocialRenderSignature(activePanel, runtime) {
         const ui = runtime?.ui || {};
+        const dialog = activeDialog();
         return [
             activePanel,
+            text(currentUser()?.role || 'student'),
+            text(currentUserId() || ''),
+            text(typeof currentFacultyCode === 'function' ? currentFacultyCode() : ''),
             text(ui.activeChatId || ''),
             text(ui.homeFeedFilter || ''),
             text(ui.communityTab || ''),
             text(ui.eventsSubTab || ''),
+            text(ui.eventsComposerSection || ''),
+            text(ui.activeScopeType || ''),
+            text(ui.activeScopeId || ''),
+            text(ui.eventScope || ''),
+            Boolean(ui.eventIsOnline),
+            text(ui.eventImageFile?.name || ''),
             text(ui.messagesFilter || ''),
             text(ui.alertsFilter || ''),
             text(ui.activeProfileUserId || ''),
+            text(ui.activeProjectId || ''),
+            text(ui.projectTab || ''),
+            Boolean(ui.projectComposerOpen),
             text(ui.activePageId || ''),
             text(ui.pageWizardStep || ''),
             ui.callOpen ? 'call-open' : 'call-closed',
-            activeDialog()?.kind || '',
+            text(dialog?.type || ''),
+            text(dialog?.postId || dialog?.eventId || dialog?.groupId || dialog?.chatId || ''),
             isPortalStoryViewerOpen() ? 'story-viewer-open' : 'story-viewer-closed',
-            isPortalStoryComposerOpen() ? 'story-composer-open' : 'story-composer-closed'
+            isPortalStoryComposerOpen() ? 'story-composer-open' : 'story-composer-closed',
+            Boolean(ui.projectTaskFormOpen),
+            Boolean(ui.projectTaskMyOnly),
+            text(ui.projectTaskSearch || ''),
+            text(ui.projectTaskFilterPriority || ''),
+            text(ui.projectTaskFilterAssignee || ''),
+            text(ui.lostFoundFilter || ''),
+            Boolean(ui.lostFoundComposerOpen),
+            text(ui.lostFoundEditId || ''),
+            text(ui.lostFoundKind || ''),
+            text(ui.lostFoundSearch || ''),
+            text(ui.lostFoundBrowseFaculty || ''),
+            buildFeedFingerprint(runtime)
         ].join('|');
     }
 
@@ -8078,16 +8894,35 @@
             const user = currentUser() || {};
             const shell = ensureSocialShell(host);
             const renderSignature = buildSocialRenderSignature(activePanel, runtime);
-            if (reason !== 'boot' && !/-module$/.test(reason) && host.__kiuLastRenderSignature === renderSignature) {
+            const forceCenterOnly = Boolean(host.__kiuForceCenterOnly);
+            host.__kiuForceCenterOnly = false;
+            const forceRender = /^(feed|feed-error|hydrate|hydrate-accounts|hydrate-error|social-bootstrap|post-created|dialog-|comment-|post-save|post-pin|post-react|post-submit)/.test(reason);
+            if (!forceRender && reason !== 'boot' && !/-module$/.test(reason) && host.__kiuLastRenderSignature === renderSignature) {
                 return;
             }
             const renderPlan = resolveSocialRenderPlan(reason, activePanel, runtime);
+            if (forceRender && renderPlan.center && shell.center) {
+                delete shell.center.__kiuLastMarkup;
+            }
+            if (forceCenterOnly) {
+                renderPlan.flash = false;
+                renderPlan.topbar = false;
+                renderPlan.command = false;
+                renderPlan.rail = false;
+                renderPlan.drawer = false;
+                renderPlan.mobileTab = false;
+                renderPlan.toast = false;
+                renderPlan.dialog = false;
+                renderPlan.storyViewer = false;
+                renderPlan.storyComposer = false;
+            }
             const interactionSnapshot = captureInteractionState(host);
             shell.root.dataset.role = text(currentUser()?.role || 'student');
             shell.root.dataset.panel = activePanel;
             if (renderPlan.flash) setSocialRegionMarkup(shell.flash, renderSocialFlashStatus(runtime));
             if (renderPlan.topbar) setSocialRegionMarkup(shell.topbar, renderSocialTopbarRegion(activePanel, activeConfig, user));
             if (renderPlan.command) setSocialRegionMarkup(shell.command, renderSectionCommandCenter(activePanel, activeConfig, runtime));
+            setSocialRegionMarkup(shell.workspaceNav, renderShellWorkspaceNav(activePanel));
             if (renderPlan.center) setSocialRegionMarkup(shell.center, renderActivePanelMarkup(activePanel));
             if (renderPlan.rail) setSocialRegionMarkup(shell.rail, renderRail(activePanel));
             if (renderPlan.drawer) setSocialRegionMarkup(shell.drawer, renderShellDrawer(activePanel));
@@ -8099,6 +8934,11 @@
             bindFileInputs();
             enhanceSocialAccessibility(host);
             restoreInteractionState(host, interactionSnapshot);
+            const focusPostId = postKey(runtime.ui?.commentReplyFocusPostId || '');
+            if (focusPostId && /^comment-reply/.test(reason)) {
+                focusCommentComposeInput(host, focusPostId);
+                delete runtime.ui.commentReplyFocusPostId;
+            }
             bindEvents();
             revealShell();
             const transparencyRoots = [
@@ -8143,7 +8983,7 @@
                     if (node) node.scrollIntoView({ block: 'center', behavior: 'smooth' });
                 });
             }
-        }, reason === 'boot' ? 0 : 80);
+        }, reason === 'boot' || /^(comment-|post-react|post-save|post-pin)/.test(reason) ? 0 : 80);
     }
 
     async function withBusy(action) {
@@ -8181,12 +9021,19 @@
         if (action === 'panel-lost-found' || action === 'panel-lost-and-found') {
             const filter = text(trigger.getAttribute('data-lost-found-filter'));
             if (filter) state().ui.lostFoundFilter = filter;
-            return setPanel('lost-and-found');
+            setPanel('lost-and-found');
+            renderSocialPageNow('lost-found-filter');
+            return;
         }
         if (action === 'panel-groups') {
             const tab = text(trigger.getAttribute('data-groups-tab'));
             if (tab) state().ui.groupsTab = tab;
             return setPanel('groups');
+        }
+        if (action === 'panel-workspace') {
+            state().ui.activeProjectId = '';
+            state().ui.projectTab = 'overview';
+            return setPanel('workspace');
         }
         if (action === 'panel-projects') {
             state().ui.activeProjectId = '';
@@ -8209,11 +9056,22 @@
         if (action === 'panel-messages') {
             const filter = text(trigger.getAttribute('data-messages-filter'));
             if (filter) state().ui.messagesFilter = filter;
-            return setPanel('messages');
+            setPanel('messages');
+            const activeChatId = text(state().ui?.activeChatId || '');
+            if (activeChatId && typeof markPortalChatMessagesRead === 'function') {
+                markPortalChatMessagesRead(activeChatId).catch(() => null);
+            }
+            return;
         }
         if (action === 'panel-alerts') {
             const filter = text(trigger.getAttribute('data-alerts-filter'));
             if (filter) state().ui.alertsFilter = filter;
+            if (typeof refreshPortalNotifications === 'function') {
+                return withBusy(async () => {
+                    await refreshPortalNotifications(true);
+                    setPanel('alerts');
+                });
+            }
             return setPanel('alerts');
         }
         if (action === 'panel-profile') {
@@ -8263,43 +9121,45 @@
             return;
         }
         if (action === 'lost-found-resolve') {
-            const itemId = text(trigger.getAttribute('data-item-id'));
-            if (!itemId) return;
-            const currentId = currentUserId();
-            const nextItems = lostFoundItems().map((entry) => normalizeLostFoundItem(entry)).map((entry) => {
-                if (text(entry.id) !== itemId) return entry;
-                return {
-                    ...entry,
-                    status: 'resolved',
-                    resolvedAt: new Date().toISOString(),
-                    resolvedByUserId: currentId,
-                    updatedAt: new Date().toISOString()
-                };
+            return withBusy(async () => {
+                const itemId = text(trigger.getAttribute('data-item-id'));
+                if (!itemId) return;
+                const currentId = currentUserId();
+                const nextItems = lostFoundItems().map((entry) => normalizeLostFoundItem(entry)).map((entry) => {
+                    if (text(entry.id) !== itemId) return entry;
+                    return {
+                        ...entry,
+                        status: 'resolved',
+                        resolvedAt: new Date().toISOString(),
+                        resolvedByUserId: currentId,
+                        updatedAt: new Date().toISOString()
+                    };
+                });
+                await saveLostFoundItems(nextItems, 'lost-found-resolved');
+                renderSocialPageNow('lost-found-resolve');
             });
-            saveLostFoundItems(nextItems, 'lost-found-resolved');
-            renderSocialPageNow('lost-found-resolve');
-            return;
         }
         if (action === 'lost-found-delete') {
-            const itemId = text(trigger.getAttribute('data-item-id'));
-            if (!itemId) return;
-            const runtime = state();
-            const actorId = currentUserId();
-            const actorRole = text(currentUser()?.role || '');
-            const item = lostFoundItems().map((entry) => normalizeLostFoundItem(entry)).find((entry) => text(entry.id) === itemId);
-            if (!item) return;
-            if (text(item.authorUserId) !== actorId && !['admin', 'student_service'].includes(actorRole)) return;
-            const confirmed = typeof window.confirm === 'function'
-                ? window.confirm(`Remove "${item.title || 'this listing'}" from Lost & Found?`)
-                : true;
-            if (!confirmed) return;
-            const nextItems = lostFoundItems()
-                .map((entry) => normalizeLostFoundItem(entry))
-                .filter((entry) => text(entry.id) !== itemId);
-            saveLostFoundItems(nextItems, 'lost-found-deleted');
-            if (text(runtime.ui?.lostFoundEditId || '') === itemId) resetLostFoundDraft();
-            renderSocialPageNow('lost-found-delete');
-            return;
+            return withBusy(async () => {
+                const itemId = text(trigger.getAttribute('data-item-id'));
+                if (!itemId) return;
+                const runtime = state();
+                const actorId = currentUserId();
+                const actorRole = text(currentUser()?.role || '');
+                const item = lostFoundItems().map((entry) => normalizeLostFoundItem(entry)).find((entry) => text(entry.id) === itemId);
+                if (!item) return;
+                if (text(item.authorUserId) !== actorId && !['admin', 'student_service'].includes(actorRole)) return;
+                const confirmed = typeof window.confirm === 'function'
+                    ? window.confirm(`Remove "${item.title || 'this listing'}" from Lost & Found?`)
+                    : true;
+                if (!confirmed) return;
+                const nextItems = lostFoundItems()
+                    .map((entry) => normalizeLostFoundItem(entry))
+                    .filter((entry) => text(entry.id) !== itemId);
+                await saveLostFoundItems(nextItems, 'lost-found-deleted');
+                if (text(runtime.ui?.lostFoundEditId || '') === itemId) resetLostFoundDraft();
+                renderSocialPageNow('lost-found-delete');
+            });
         }
         if (action === 'lost-found-contact') {
             const targetUserId = text(trigger.getAttribute('data-user-id'));
@@ -8372,7 +9232,7 @@ if (action === 'profile-tab-following') { state().ui.profileTab = 'following'; r
         if (action === 'profile-edit-cancel') { state().ui.editProfileMode = false; return renderSocialPageNow('profile-cancel'); }
         if (action === 'event-time-group-toggle') {
             event.preventDefault();
-            target.closest('.social-neo-time-group')?.classList.toggle('is-open');
+            event.target.closest('.social-neo-time-group')?.classList.toggle('is-open');
             return;
         }
         if (action === 'profile-edit-cover') return openDialog('profile-cover', { coverImage: profileCover(profileAccount(currentUserId())) });
@@ -8515,9 +9375,28 @@ if (action === 'profile-tab-following') { state().ui.profileTab = 'following'; r
         if (action === 'connection-remove') return withBusy(() => removePortalSocialConnection(trigger.getAttribute('data-user-id')));
         if (action === 'group-member-search') return renderSocialPageNow('group-member-search');
         if (action === 'project-open') {
+            // Open in whichever section the user is in: the team workspace stays in
+            // "Projects" (workspace); the showcase stays in "Portfolio" (projects).
+            const currentPanel = text(state().ui?.activePanel || '');
+            const targetPanel = currentPanel === 'workspace' ? 'workspace' : 'projects';
             state().ui.activeProjectId = text(trigger.getAttribute('data-project-id'));
             state().ui.projectTab = 'overview';
-            return setPanel('projects');
+            state().ui.activePanel = targetPanel;
+            state().ui.shellDrawerOpen = false;
+            try { localStorage.setItem(PANEL_KEY, targetPanel); } catch (error) {}
+            // Force a render: setPanel() skips re-rendering when the panel is
+            // unchanged, but activeProjectId changed so we must repaint.
+            return renderSocialPageNow('project-open');
+        }
+        if (action === 'project-create-open') {
+            const drawer = document.getElementById('project-create-drawer');
+            if (drawer) { drawer.hidden = false; drawer.removeAttribute('hidden'); }
+            return;
+        }
+        if (action === 'project-create-close') {
+            const drawer = document.getElementById('project-create-drawer');
+            if (drawer) { drawer.hidden = true; drawer.setAttribute('hidden', ''); }
+            return;
         }
         if (action === 'portfolio-filter-tag') {
             state().ui.projectDiscoverTag = text(trigger.getAttribute('data-tag') || '').toLowerCase();
@@ -8655,6 +9534,31 @@ if (action === 'profile-tab-following') { state().ui.profileTab = 'following'; r
                 trigger.getAttribute('data-task-id')
             ));
         }
+        if (action === 'project-task-toggle-form') {
+            state().ui.projectTaskFormOpen = !state().ui.projectTaskFormOpen;
+            renderSocialPageNow('project-task-toggle-form');
+            return;
+        }
+        if (action === 'project-task-toggle-my') {
+            state().ui.projectTaskMyOnly = !state().ui.projectTaskMyOnly;
+            renderSocialPageNow('project-task-toggle-my');
+            return;
+        }
+        if (action === 'project-task-quick-add') {
+            state().ui.projectTaskFormOpen = true;
+            const column = trigger.getAttribute('data-column') || 'backlog';
+            setTimeout(() => {
+                const form = document.querySelector('form[data-form="project-task-create"]');
+                if (form) {
+                    const statusSelect = form.querySelector('[name="projectTaskStatus"]');
+                    if (statusSelect) statusSelect.value = column;
+                    const titleInput = form.querySelector('[name="projectTaskTitle"]');
+                    if (titleInput) titleInput.focus();
+                }
+            }, 50);
+            renderSocialPageNow('project-task-quick-add');
+            return;
+        }
         if (action === 'project-milestone-toggle') {
             return withBusy(() => updatePortalSocialProjectMilestone(
                 trigger.getAttribute('data-project-id'),
@@ -8711,9 +9615,26 @@ if (action === 'profile-tab-following') { state().ui.profileTab = 'following'; r
             input?.focus();
             return;
         }
+        if (action === 'composer-focus') {
+            setPanel('feed');
+            window.requestAnimationFrame(() => {
+                root()?.querySelector('[data-bind="composer-text"]')?.focus({ preventScroll: false });
+                root()?.querySelector('.social-neo-composer-card')?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+            });
+            return;
+        }
         if (action === 'post-submit') {
+            if (!trigger.closest('.social-neo-composer-card')) {
+                setPanel('feed');
+                window.requestAnimationFrame(() => {
+                    root()?.querySelector('[data-bind="composer-text"]')?.focus({ preventScroll: false });
+                    root()?.querySelector('.social-neo-composer-card')?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                });
+                return;
+            }
             const runtime = state();
-            const body = text(runtime.ui?.composerText || '');
+            const composerTextarea = root()?.querySelector('[data-bind="composer-text"]');
+            const body = text(composerTextarea?.value || runtime.ui?.composerText || '');
             const file = runtime.ui?.composerFile || null;
             const scopeType = text(runtime.ui?.activeScopeType || 'profile') || 'profile';
             const scopeId = text(runtime.ui?.activeScopeId || currentUserId()) || currentUserId();
@@ -8734,41 +9655,66 @@ if (action === 'profile-tab-following') { state().ui.profileTab = 'following'; r
         }
         if (action === 'post-react') {
             const reactionType = text(trigger.getAttribute('data-reaction-type') || 'like') || 'like';
-            return withBusy(() => reactToPortalSocialPost(trigger.getAttribute('data-post-id'), reactionType));
+            const postId = trigger.getAttribute('data-post-id');
+            return withBusy(async () => {
+                await reactToPortalSocialPost(postId, reactionType);
+                renderSocialPageNow('post-react');
+            });
         }
-        if (action === 'post-pin') return withBusy(() => pinPortalSocialPost(trigger.getAttribute('data-post-id')));
+        if (action === 'post-pin') {
+            const postId = trigger.getAttribute('data-post-id');
+            return withBusy(async () => {
+                await pinPortalSocialPost(postId);
+                renderSocialPageNow('post-pin');
+            });
+        }
         if (action === 'comment-react') {
-            return withBusy(() => reactToPortalSocialComment(
-                trigger.getAttribute('data-post-id'),
-                trigger.getAttribute('data-comment-id'),
-                text(trigger.getAttribute('data-reaction-type') || 'like') || 'like'
-            ));
+            if (typeof reactToPortalSocialComment !== 'function') {
+                if (typeof setPortalSocialFlash === 'function') setPortalSocialFlash('Social runtime not ready.', 'danger');
+                return;
+            }
+            const reactionKey = `${postKey(trigger.getAttribute('data-post-id'))}:${text(trigger.getAttribute('data-comment-id'))}`;
+            if (pendingCommentReactions.has(reactionKey)) return;
+            pendingCommentReactions.add(reactionKey);
+            return withBusy(async () => {
+                try {
+                    await reactToPortalSocialComment(
+                        trigger.getAttribute('data-post-id'),
+                        trigger.getAttribute('data-comment-id'),
+                        text(trigger.getAttribute('data-reaction-type') || 'like') || 'like'
+                    );
+                    renderSocialPageNow('comment-react');
+                } finally {
+                    pendingCommentReactions.delete(reactionKey);
+                }
+            });
         }
         if (action === 'comment-reply') {
-            const postId = text(trigger.getAttribute('data-post-id'));
+            const postId = postKey(trigger.getAttribute('data-post-id'));
             const commentId = text(trigger.getAttribute('data-comment-id'));
             const authorName = text(trigger.getAttribute('data-author-name') || 'member');
             const runtime = state();
-            if (!runtime.ui.commentReplyTargetByPost) runtime.ui.commentReplyTargetByPost = {};
+            runtime.ui = runtime.ui || {};
+            runtime.ui.commentReplyTargetByPost = runtime.ui.commentReplyTargetByPost || {};
             runtime.ui.commentReplyTargetByPost[postId] = { commentId, authorName };
-            const input = root()?.querySelector(`#${controlId('commentBody', postId)}`);
-            input?.focus();
+            runtime.ui.commentReplyFocusPostId = postId;
             renderSocialPageNow('comment-reply');
             return;
         }
         if (action === 'comment-reply-cancel') {
-            const postId = text(trigger.getAttribute('data-post-id'));
+            const postId = postKey(trigger.getAttribute('data-post-id'));
             const runtime = state();
+            runtime.ui = runtime.ui || {};
             if (runtime.ui.commentReplyTargetByPost) delete runtime.ui.commentReplyTargetByPost[postId];
+            if (postKey(runtime.ui.commentReplyFocusPostId) === postId) delete runtime.ui.commentReplyFocusPostId;
             renderSocialPageNow('comment-reply-cancel');
             return;
         }
         if (action === 'comment-report') {
-            const postId = text(trigger.getAttribute('data-post-id'));
-            const commentId = text(trigger.getAttribute('data-comment-id'));
-            const post = (Array.isArray(state().feed) ? state().feed : []).find((item) => text(item.id) === postId);
-            const comment = findCommentInThread(post?.comments, commentId);
-            return withBusy(() => reportPortalSocialContent('comment', commentId, 'Inappropriate content', comment?.authorUserId || ''));
+            return openDialog('comment-report', {
+                postId: postKey(trigger.getAttribute('data-post-id')),
+                commentId: text(trigger.getAttribute('data-comment-id'))
+            });
         }
         if (action === 'post-save') return withBusy(() => toggleSavedPost(trigger.getAttribute('data-post-id')));
         if (action === 'post-delete') return openDialog('post-delete', { postId: trigger.getAttribute('data-post-id') });
@@ -8917,7 +9863,58 @@ if (action === 'profile-tab-following') { state().ui.profileTab = 'following'; r
                 ''
             ));
         }
-        if (action === 'notification-read') return withBusy(() => markPortalNotificationRead(trigger.getAttribute('data-notification-id')));
+        if (action === 'notification-read') {
+            return withBusy(async () => {
+                const notificationId = text(trigger.getAttribute('data-notification-id'));
+                const notification = notificationItems().find((item) => text(item.id) === notificationId || text(item.key) === notificationId);
+                await markPortalNotificationRead(notificationId);
+                if (notification?.routeData?.chatId) {
+                    setActiveChat(text(notification.routeData.chatId));
+                    setPanel('messages');
+                    return;
+                }
+                if (notification?.routeData?.groupId) {
+                    await focusFeed('group', text(notification.routeData.groupId));
+                    return;
+                }
+                const routePage = text(notification?.routePage || '');
+                if (routePage && routePage !== 'social') {
+                    if (typeof navigate === 'function') {
+                        navigate(routePage);
+                        return;
+                    }
+                    if (routePage.endsWith('.html')) {
+                        window.location.assign(routePage);
+                        return;
+                    }
+                    window.location.assign(`${routePage}.html`);
+                    return;
+                }
+                renderSocialPageNow('notification-read');
+            });
+        }
+        if (action === 'notification-mark-category-read') {
+            return withBusy(async () => {
+                const category = text(trigger.getAttribute('data-category')) || text(state().ui?.alertsFilter || 'all');
+                const items = notificationItems();
+                const toMark = category === 'all'
+                    ? items.filter(n => !n.read)
+                    : items.filter(n => !n.read && classifyNotificationCategory(n) === category);
+                for (const n of toMark) {
+                    try { markPortalNotificationRead(n.key); } catch (err) {}
+                }
+                renderSocialPageNow('alerts-mark-category-read');
+            });
+        }
+        if (action === 'alerts-moderation-toggle') {
+            const body = document.querySelector('[data-bind="alerts-moderation-body"]');
+            const chevron = trigger.querySelector('.sn-alerts-mod-chevron');
+            if (body) {
+                const isOpen = body.classList.toggle('is-open');
+                if (chevron) chevron.style.transform = isOpen ? 'rotate(180deg)' : '';
+            }
+            return;
+        }
         if (action === 'notification-open-chat') {
             return withBusy(async () => {
                 await markPortalNotificationRead(trigger.getAttribute('data-notification-id'));
@@ -9191,7 +10188,7 @@ if (action === 'profile-tab-following') { state().ui.profileTab = 'following'; r
                 const nextItems = editId
                     ? currentItems.map((entry) => text(entry.id) === editId ? nextItem : entry)
                     : [nextItem, ...currentItems];
-                saveLostFoundItems(nextItems, editId ? 'lost-found-updated' : 'lost-found-created');
+                await saveLostFoundItems(nextItems, editId ? 'lost-found-updated' : 'lost-found-created');
                 resetLostFoundDraft();
                 renderSocialPageNow('lost-found-save');
             });
@@ -9199,9 +10196,13 @@ if (action === 'profile-tab-following') { state().ui.profileTab = 'following'; r
 
         if (formType === 'comment') {
             return withBusy(async () => {
-                const postId = text(form.getAttribute('data-post-id'));
+                const postId = postKey(form.getAttribute('data-post-id'));
+                const commentInput = form.querySelector('[name="commentBody"]');
+                if (commentInput) syncCommentDraftFromTarget(commentInput);
+                runtime.ui.commentDraftByPost = runtime.ui.commentDraftByPost || {};
                 const replyTarget = runtime.ui?.commentReplyTargetByPost?.[postId] || null;
-                const body = text(form.commentBody?.value || runtime.ui?.commentDraftByPost?.[postId]);
+                const bodySource = event.target?.name === 'commentBody' ? event.target : commentInput;
+                const body = text(bodySource?.value || runtime.ui.commentDraftByPost?.[postId]);
                 if (!body) throw new Error('Comment body is required.');
                 await commentOnPortalSocialPost(postId, body, {
                     parentCommentId: replyTarget?.commentId || '',
@@ -9247,6 +10248,12 @@ if (action === 'profile-tab-following') { state().ui.profileTab = 'following'; r
         }
 
         if (formType === 'create-project') {
+            const projectTitleValue = text(form.projectName?.value || runtime.ui?.projectName);
+            if (!projectTitleValue) {
+                if (typeof setPortalSocialFlash === 'function') setPortalSocialFlash('Add a project title before creating the workspace.', 'danger');
+                form.projectName?.focus?.();
+                return;
+            }
             return withBusy(async () => {
                 const facultyCodes = Array.isArray(runtime.ui?.projectFacultyCodes) && runtime.ui.projectFacultyCodes.length
                     ? runtime.ui.projectFacultyCodes
@@ -9495,6 +10502,19 @@ if (action === 'profile-tab-following') { state().ui.profileTab = 'following'; r
             });
         }
 
+        if (formType === 'dialog-comment-report') {
+            return withBusy(async () => {
+                await reportPortalSocialContent(
+                    'comment',
+                    text(form.commentId?.value),
+                    text(form.dialogReason?.value),
+                    text(form.targetOwnerId?.value)
+                );
+                closeDialog();
+                renderSocialPageNow('comment-report');
+            });
+        }
+
         if (formType === 'dialog-post-delete') {
             return withBusy(async () => {
                 await deletePortalSocialPost(text(form.postId?.value));
@@ -9528,7 +10548,7 @@ if (action === 'profile-tab-following') { state().ui.profileTab = 'following'; r
                 await setPortalSocialProjectMembership(projectId, 'leave');
                 if (text(state().ui?.activeChatId || '') === projectChatId) {
                     state().ui.activeChatId = '';
-                    setPanel('projects');
+                    setPanel('workspace');
                 }
                 if (text(state().ui?.activeProjectId || '') === projectId) {
                     state().ui.activeProjectId = '';
@@ -9623,6 +10643,9 @@ if (action === 'profile-tab-following') { state().ui.profileTab = 'following'; r
         if (target.matches('form[data-form="project-task-create"] [name="projectTaskAssigneeId"]')) runtime.ui.projectTaskAssigneeId = target.value;
         if (target.matches('form[data-form="project-task-create"] [name="projectTaskDueAt"]')) runtime.ui.projectTaskDueAt = target.value;
         if (target.matches('form[data-form="project-task-create"] [name="projectTaskPriority"]')) runtime.ui.projectTaskPriority = target.value;
+        if (target.matches('[name="projectTaskSearch"]')) { runtime.ui.projectTaskSearch = target.value; renderSocialPageNow('project-task-search'); }
+        if (target.matches('[name="projectTaskFilterPriority"]')) { runtime.ui.projectTaskFilterPriority = target.value; renderSocialPageNow('project-task-filter'); }
+        if (target.matches('[name="projectTaskFilterAssignee"]')) { runtime.ui.projectTaskFilterAssignee = target.value; renderSocialPageNow('project-task-filter'); }
         if (target.matches('form[data-form="project-milestone-create"] [name="projectMilestoneTitle"]')) runtime.ui.projectMilestoneTitle = target.value;
         if (target.matches('form[data-form="project-milestone-create"] [name="projectMilestoneDescription"]')) runtime.ui.projectMilestoneDescription = target.value;
         if (target.matches('form[data-form="project-milestone-create"] [name="projectMilestoneDueAt"]')) runtime.ui.projectMilestoneDueAt = target.value;
@@ -9735,11 +10758,7 @@ if (action === 'profile-tab-following') { state().ui.profileTab = 'following'; r
         if (target.matches('form[data-form="add-story"] [name="storyCaption"]')) runtime.ui.storyCaption = target.value;
         if (target.matches('form[data-form="add-story"] [name="storyMediaUrl"]')) runtime.ui.storyMediaUrl = target.value;
 
-        const commentForm = target.closest('form[data-form="comment"]');
-        if (commentForm && target.name === 'commentBody') {
-            runtime.ui.commentDraftByPost = runtime.ui.commentDraftByPost || {};
-            runtime.ui.commentDraftByPost[text(commentForm.getAttribute('data-post-id'))] = target.value;
-        }
+        syncCommentDraftFromTarget(target);
 
         const messageForm = target.closest('form[data-form="send-message"]');
         if (messageForm && target.name === 'messageBody') {
@@ -9832,6 +10851,7 @@ if (action === 'profile-tab-following') { state().ui.profileTab = 'following'; r
             runtime.ui.composerFile = target.files?.[0] || null;
             renderSocialPageNow('post-file');
         }
+        syncCommentDraftFromTarget(target);
         if (target.name === 'pagePostFile') {
             runtime.ui.pagePostFile = target.files?.[0] || null;
             renderSocialPageNow('page-post-file');
@@ -9934,16 +10954,44 @@ if (action === 'profile-tab-following') { state().ui.profileTab = 'following'; r
                 search.focus({ preventScroll: false });
             }
         }
+        if (!isTyping && (event.key === 'ArrowRight' || event.key === 'ArrowLeft')) {
+            const focused = document.activeElement;
+            if (focused?.getAttribute('role') === 'tab') {
+                const tabs = Array.from(document.querySelectorAll('[role="tab"]'));
+                const idx = tabs.indexOf(focused);
+                if (idx >= 0) {
+                    const next = event.key === 'ArrowRight'
+                        ? tabs[(idx + 1) % tabs.length]
+                        : tabs[(idx - 1 + tabs.length) % tabs.length];
+                    if (next) {
+                        next.focus();
+                        next.click();
+                        event.preventDefault();
+                    }
+                }
+            }
+        }
     }
 
     function bindEvents() {
         const host = root();
-        if (!host || bound) return;
-        host.addEventListener('click', handleClick);
-        host.addEventListener('submit', handleSubmit);
-        host.addEventListener('input', handleInput);
-        host.addEventListener('change', handleChange);
-        document.addEventListener('keydown', handleGlobalKeydown);
+        if (!host) return;
+        if (bound && boundHost === host) return;
+        if (hostEventAbort) {
+            hostEventAbort.abort();
+            hostEventAbort = null;
+        }
+        hostEventAbort = new AbortController();
+        const { signal } = hostEventAbort;
+        host.addEventListener('click', handleClick, { signal });
+        host.addEventListener('submit', handleSubmit, { signal });
+        host.addEventListener('input', handleInput, { signal });
+        host.addEventListener('change', handleChange, { signal });
+        if (!globalKeydownBound) {
+            document.addEventListener('keydown', handleGlobalKeydown);
+            globalKeydownBound = true;
+        }
+        boundHost = host;
         bound = true;
     }
 
@@ -9963,22 +11011,26 @@ if (action === 'profile-tab-following') { state().ui.profileTab = 'following'; r
         }
     }
 
-    function boot() {
+    async function boot() {
+        ensureSocialRouteHost();
+        bindEvents();
+        guardStandaloneSocialRoute();
         window.__kiuSocialLiteRenderPage = renderSocialPageNow;
         applyShellIdentity(true);
-        if (typeof ensurePortalSocialRuntimeLoaded === 'function') {
-            Promise.resolve(ensurePortalSocialRuntimeLoaded()).catch(() => null);
-        } else if (typeof bootstrapCanonicalSocialRuntime === 'function') {
-            Promise.resolve(bootstrapCanonicalSocialRuntime()).catch(() => null);
-        } else if (typeof hydratePortalSocialRuntime === 'function') {
-            Promise.resolve(hydratePortalSocialRuntime()).catch(() => null);
-        }
+        const runHydrate = typeof ensurePortalSocialRuntimeLoaded === 'function'
+            ? () => Promise.resolve(ensurePortalSocialRuntimeLoaded()).catch(() => null)
+            : typeof bootstrapCanonicalSocialRuntime === 'function'
+                ? () => Promise.resolve(bootstrapCanonicalSocialRuntime()).catch(() => null)
+                : typeof hydratePortalSocialRuntime === 'function'
+                    ? () => Promise.resolve(hydratePortalSocialRuntime()).catch(() => null)
+                    : null;
+        if (runHydrate) await runHydrate();
         window.requestAnimationFrame(renderOrRetry);
     }
 
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', boot, { once: true });
+        document.addEventListener('DOMContentLoaded', () => { boot().catch(() => null); }, { once: true });
     } else {
-        boot();
+        boot().catch(() => null);
     }
 })();

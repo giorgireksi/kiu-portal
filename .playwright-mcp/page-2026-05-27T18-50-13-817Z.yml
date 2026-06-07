@@ -1,0 +1,51 @@
+- generic [active] [ref=e1]:
+  - text:  
+  - main [ref=e2]
+  - complementary:
+    - generic:
+      - generic: K
+      - generic:
+        - generic: KIU
+        - generic: Integrated Campus Portal
+    - generic:
+      - generic: KI
+      - generic:
+        - generic: Portal User
+        - generic: University Portal
+  - generic [ref=e6]:
+    - generic [ref=e7]:
+      - button "Show nav" [pressed] [ref=e8] [cursor=pointer]:
+        - generic [ref=e9]: Show nav
+      - generic [ref=e10]:
+        - text: KIU
+        - generic [ref=e11]: 
+        - strong [ref=e12]: Dashboard
+      - generic [ref=e13]:
+        - generic [ref=e14]: 
+        - textbox "Search modules, staff, documents, requests..." [ref=e15]
+    - generic [ref=e16]:
+      - button "Faculty Faculty " [ref=e18] [cursor=pointer]:
+        - generic [ref=e19]: Faculty
+        - strong [ref=e20]: Faculty
+        - generic [ref=e21]: 
+      - button "View Portal View " [ref=e23] [cursor=pointer]:
+        - generic [ref=e24]: View
+        - strong [ref=e25]: Portal View
+        - generic [ref=e26]: 
+      - button " Customize" [ref=e27] [cursor=pointer]:
+        - generic [ref=e28]: 
+        - generic [ref=e29]: Customize
+      - button "" [ref=e30] [cursor=pointer]:
+        - generic [ref=e31]: 
+      - button " 0" [ref=e33] [cursor=pointer]:
+        - generic [ref=e34]: 
+        - generic [ref=e35]: "0"
+      - button " 0" [ref=e37] [cursor=pointer]:
+        - generic [ref=e38]: 
+        - generic [ref=e39]: "0"
+      - button "KI Portal Dashboard" [ref=e40] [cursor=pointer]:
+        - generic [ref=e41]: KI
+        - generic [ref=e42]:
+          - generic [ref=e43]: Portal
+          - generic [ref=e44]: Dashboard
+        - generic [ref=e45]: 

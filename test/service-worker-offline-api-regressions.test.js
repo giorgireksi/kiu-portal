@@ -16,4 +16,14 @@ describe('service worker offline API regressions', () => {
         expect(source).toContain("fetch(request).catch(() => buildOfflineApiResponse(request))");
         expect(source).not.toContain("fetch(request).catch(() => caches.match('/index.html'))");
     });
+
+    it('always returns a concrete Response for failed navigation and asset requests', () => {
+        const source = readSource('service-worker.js');
+
+        expect(source).toContain('function buildOfflineNavigationResponse() {');
+        expect(source).toContain('function buildOfflineAssetResponse(request) {');
+        expect(source).toContain('return buildOfflineNavigationResponse();');
+        expect(source).toContain('return buildOfflineAssetResponse(request);');
+        expect(source).not.toContain('return caches.match(request);');
+    });
 });

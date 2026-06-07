@@ -97,59 +97,57 @@
             const completeness = personProfileCompleteness(account);
             const showInvite = inviteEligibleGroups().length > 0 && connectionStatusFor(account?.id).state !== 'incoming';
             return `
-                <article class="social-neo-card social-neo-directory-item" style="padding:16px">
-                    <div class="social-neo-inline" style="align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap">
-                        <div class="social-neo-person" style="align-items:flex-start;gap:12px;flex:1;min-width:260px">
-                            ${avatar(account)}
-                            <div style="display:flex;flex:1;flex-direction:column;gap:6px">
-                                <div class="social-neo-inline" style="justify-content:space-between;align-items:flex-start;gap:10px">
-                                    <div>
-                                        <strong>${escape(displayName(account))}</strong>
-                                        <div style="color:var(--sn-txt3);font-size:13px">${escape(accountSubtitle(account))}</div>
-                                    </div>
-                                    <span class="social-neo-pill">${escape(`${completeness}% complete`)}</span>
+                <article class="social-neo-card social-neo-directory-item social-neo-card-pad-16 social-neo-community-card">
+                    <div class="social-neo-person social-neo-person-start-gap-12 social-neo-community-person">
+                        ${avatar(account)}
+                        <div class="social-neo-field-flex-1-260 social-neo-community-copy">
+                            <div class="social-neo-post-head social-neo-inline-items-start social-neo-inline-gap-10-wrap social-neo-community-head">
+                                <div class="social-neo-rail-person-copy social-neo-community-heading">
+                                    <strong class="social-neo-rail-person-name">${escape(displayName(account))}</strong>
+                                    <div class="social-neo-rail-person-meta social-neo-community-subtitle">${escape(accountSubtitle(account))}</div>
                                 </div>
-                                <div class="social-neo-badge-row">
-                                    ${badges.map((badge) => `<span class="social-neo-pill">${escape(badge)}</span>`).join('')}
-                                    <span class="social-neo-pill">${escape(personActivityLabel(account?.id))}</span>
-                                </div>
-                                ${text(account?.bio) ? `<p style="margin:0;color:var(--sn-txt2)">${escape(text(account.bio))}</p>` : ''}
-                                <div style="color:var(--sn-txt3);font-size:13px">${escape(renderSharedContext(account))}</div>
-                                ${showSuggestion ? `<div style="color:var(--sn-accent);font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase">${escape(personSuggestionReason(account))}</div>` : ''}
-                                ${interests.length ? `
-                                    <div class="social-neo-badge-row">
-                                        ${interests.map((interest) => `<span class="social-neo-pill">${escape(interest)}</span>`).join('')}
-                                    </div>
-                                ` : ''}
-                                ${(showStaffMeta || isStaffAccount(account)) && (text(account?.availability) || text(account?.officeHours) || text(account?.email) || text(account?.location)) ? `
-                                    <div class="social-neo-badge-row">
-                                        ${text(account?.availability) ? `<span class="social-neo-pill">Availability: ${escape(text(account.availability))}</span>` : ''}
-                                        ${text(account?.officeHours) ? `<span class="social-neo-pill">Office hours: ${escape(text(account.officeHours))}</span>` : ''}
-                                        ${text(account?.location) ? `<span class="social-neo-pill">${escape(text(account.location))}</span>` : ''}
-                                        ${text(account?.email) ? `<span class="social-neo-pill">${escape(text(account.email))}</span>` : ''}
-                                    </div>
-                                ` : ''}
+                                <span class="social-neo-pill social-neo-community-completeness">${escape(`${completeness}% complete`)}</span>
                             </div>
+                            <div class="social-neo-badge-row social-neo-community-badges">
+                                ${badges.map((badge) => `<span class="social-neo-pill">${escape(badge)}</span>`).join('')}
+                                <span class="social-neo-pill">${escape(personActivityLabel(account?.id))}</span>
+                            </div>
+                            ${text(account?.bio) ? `<p class="social-neo-copy social-neo-event-copy social-neo-community-bio">${escape(text(account.bio))}</p>` : ''}
+                            <div class="social-neo-rail-person-meta social-neo-community-context">${escape(renderSharedContext(account))}</div>
+                            ${showSuggestion ? `<div class="social-neo-label social-neo-community-suggestion">${escape(personSuggestionReason(account))}</div>` : ''}
+                            ${interests.length ? `
+                                <div class="social-neo-badge-row social-neo-community-interests">
+                                    ${interests.map((interest) => `<span class="social-neo-pill">${escape(interest)}</span>`).join('')}
+                                </div>
+                            ` : ''}
+                            ${(showStaffMeta || isStaffAccount(account)) && (text(account?.availability) || text(account?.officeHours) || text(account?.email) || text(account?.location)) ? `
+                                <div class="social-neo-badge-row social-neo-community-staff-meta">
+                                    ${text(account?.availability) ? `<span class="social-neo-pill">Availability: ${escape(text(account.availability))}</span>` : ''}
+                                    ${text(account?.officeHours) ? `<span class="social-neo-pill">Office hours: ${escape(text(account.officeHours))}</span>` : ''}
+                                    ${text(account?.location) ? `<span class="social-neo-pill">${escape(text(account.location))}</span>` : ''}
+                                    ${text(account?.email) ? `<span class="social-neo-pill">${escape(text(account.email))}</span>` : ''}
+                                </div>
+                            ` : ''}
                         </div>
-                        <div style="display:flex;flex-direction:column;gap:10px;min-width:250px">
-                            <div class="social-neo-inline" style="justify-content:flex-end;gap:8px;flex-wrap:wrap">
-                                ${renderRelationshipActions(account)}
-                                ${showConnectionControls ? `<button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="connection-remove" data-user-id="${escape(text(account.id))}">Remove</button>` : ''}
-                            </div>
-                            <div class="social-neo-inline" style="justify-content:flex-end;gap:8px;flex-wrap:wrap">
-                                <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="profile-view" data-user-id="${escape(text(account.id))}">
-                                    <i class="fas fa-user"></i> View profile
-                                </button>
-                                <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="person-mention" data-user-id="${escape(text(account.id))}">
-                                    <i class="fas fa-at"></i> Mention
-                                </button>
-                                ${showInvite ? `<button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="person-group-invite" data-user-id="${escape(text(account.id))}">
-                                    <i class="fas fa-user-plus"></i> Invite to group
-                                </button>` : ''}
-                                <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="directory-study-chat" data-user-id="${escape(text(account.id))}">
-                                    <i class="fas fa-book-open"></i> Study chat
-                                </button>
-                            </div>
+                    </div>
+                    <div class="social-neo-field-fixed-220 social-neo-stack-end-260 social-neo-community-actions">
+                        <div class="social-neo-inline social-neo-inline-gap-8-wrap social-neo-community-action-row social-neo-community-action-row-primary">
+                            ${renderRelationshipActions(account)}
+                            ${showConnectionControls ? `<button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="connection-remove" data-user-id="${escape(text(account.id))}">Remove</button>` : ''}
+                        </div>
+                        <div class="social-neo-inline social-neo-inline-gap-8-wrap social-neo-community-action-row social-neo-community-action-row-secondary">
+                            <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="profile-view" data-user-id="${escape(text(account.id))}">
+                                <i class="fas fa-user"></i> View profile
+                            </button>
+                            <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="person-mention" data-user-id="${escape(text(account.id))}">
+                                <i class="fas fa-at"></i> Mention
+                            </button>
+                            ${showInvite ? `<button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="person-group-invite" data-user-id="${escape(text(account.id))}">
+                                <i class="fas fa-user-plus"></i> Invite to group
+                            </button>` : ''}
+                            <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="directory-study-chat" data-user-id="${escape(text(account.id))}">
+                                <i class="fas fa-book-open"></i> Study chat
+                            </button>
                         </div>
                     </div>
                 </article>
@@ -226,7 +224,7 @@
             <div class="social-neo-stack social-neo-community-layout">
                 <section class="social-neo-card">
                     <div class="social-neo-section-head">
-                        <div><strong><i class="fas fa-user-friends" style="color:#8b5cf6"></i> Community overview</strong><span>People suggestions, verified staff, and shared-context shortcuts in one place.</span></div>
+                        <div><strong><i class="fas fa-user-friends social-neo-community-overview-icon"></i> Community overview</strong><span>People suggestions, verified staff, and shared-context shortcuts in one place.</span></div>
                     </div>
                     <div class="social-neo-stat-grid">
                         <div><strong>${escape(directory.length)}</strong><span>Profiles</span></div>

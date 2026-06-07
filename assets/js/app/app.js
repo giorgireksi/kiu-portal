@@ -1,4 +1,4 @@
-/* Compatibility-first runtime/bootstrap slice extracted from core.js. Source of truth remains root core.js compatibility bundle. */
+/* Compatibility-first runtime/bootstrap slice extracted from the legacy core.js bundle. Active routes now load split files directly. */
 
 (function ensurePortalApiRuntimeAvailability() {
     const fallbackPromise = Promise.resolve(null);
@@ -236,6 +236,7 @@
             try { currentCourseId = ''; } catch (e) {}
             try { currentLmsQuizCourseKey = ''; } catch (e) {}
             if (typeof clearTemporarySocialNavGlow === 'function') clearTemporarySocialNavGlow();
+            if (typeof resetLmsLiveQuizRuntimeState === 'function') resetLmsLiveQuizRuntimeState();
             localStorage.removeItem('KIU_FORCE_HOME_ON_ROLE_SWITCH');
             localStorage.removeItem('KIU_PENDING_SOCIAL_RETURN');
             localStorage.removeItem('KIU_PENDING_ADMIN_PAGE');
@@ -245,10 +246,7 @@
         window.clearTemporarySocialNavGlow = function clearTemporarySocialNavGlowFallback() {
             document.querySelectorAll('[data-social-return-glow="true"]').forEach((item) => {
                 item.removeAttribute('data-social-return-glow');
-                item.style.boxShadow = '';
-                item.style.background = '';
-                item.style.border = '';
-                item.style.color = '';
+                item.classList.remove('active');
             });
         };
     }
@@ -294,7 +292,7 @@
                 navItem.dataset.navExams = 'true';
                 navItem.id = 'nav-exams-faculty';
                 navItem.setAttribute('onclick', "navigate('exams')");
-                navItem.innerHTML = '<i class="fas fa-file-signature" style="display:block; margin-bottom:5px; font-size:16px;"></i> Exams';
+                navItem.innerHTML = '<i class="fas fa-file-signature"></i> Exams';
                 profNav.appendChild(navItem);
             }
             const examsNav = profNav?.querySelector('[data-nav-exams]');
@@ -313,18 +311,13 @@
             if (typeof ensureOrdersNavLinks === 'function') ensureOrdersNavLinks();
             if (typeof ensureFacultyExamsNavLink === 'function') ensureFacultyExamsNavLink();
 
-            const adminNav = document.getElementById('admin-nav');
-            if (adminNav) {
-                adminNav.style.display = effectiveRole === USER_ROLES.ADMIN ? 'flex' : 'none';
-            }
-
-            const profNav = document.getElementById('prof-nav');
-            if (profNav) {
-                profNav.style.display = (effectiveRole === USER_ROLES.PROFESSOR || effectiveRole === USER_ROLES.TA) ? 'flex' : 'none';
+            if (typeof window.syncShellNavVisibility === 'function') {
+                const activePage = typeof getCurrentPortalPageId === 'function' ? getCurrentPortalPageId() : 'home';
+                window.syncShellNavVisibility(activePage, effectiveRole);
             }
 
             document.querySelectorAll('.admin-nav-link').forEach(item => {
-                item.style.display = effectiveRole === USER_ROLES.ADMIN ? '' : 'none';
+                item.hidden = effectiveRole !== USER_ROLES.ADMIN;
             });
 
             const facultyProfile = typeof getFacultyProfile === 'function'
@@ -370,7 +363,7 @@
                 const navItem = document.createElement('div');
                 navItem.className = 'nav-item prof-nav-link';
                 navItem.dataset.navOrders = 'true';
-                navItem.innerHTML = '<i class="fas fa-book-open" style="display:block; margin-bottom:5px; font-size:16px;"></i> Orders';
+                navItem.innerHTML = '<i class="fas fa-book-open"></i> Orders';
                 navItem.addEventListener('click', () => {
                     if (typeof navigate === 'function') navigate('orders');
                 });
@@ -413,8 +406,7 @@
             }
             if (saveBtn) {
                 saveBtn.disabled = !selectedModule;
-                saveBtn.style.opacity = selectedModule ? '1' : '0.6';
-                saveBtn.style.cursor = selectedModule ? 'pointer' : 'not-allowed';
+                saveBtn.setAttribute('aria-disabled', selectedModule ? 'false' : 'true');
             }
         };
     }
@@ -424,7 +416,7 @@
             if (!picker) return;
             const selectedValues = typeof getSelectedAntiReqCodes === 'function' ? getSelectedAntiReqCodes() : [];
             picker.innerHTML = `
-                <div style="padding:10px; font-size:12px; color:var(--kiu-text-muted);">
+                <div data-role="selected-anti-row" class="registration-antireq-selected-row">
                     ${selectedValues.length ? `Selected anti-requisites: ${escapeHtml(selectedValues.join(', '))}` : 'Anti-requisite picker will appear when the registration module is ready.'}
                 </div>
             `;
@@ -521,6 +513,10 @@
             .replace(/[^a-z0-9]+/g, '');
     }
 
+    function normalizeGradebookRosterKey(value) {
+        return normalizeGradebookGroupIdentifier(value);
+    }
+
     if (typeof window.getEnrolledStudentsForGroup !== 'function') {
         window.getEnrolledStudentsForGroup = function getEnrolledStudentsForGroup(courseId, groupId) {
             const domain = getDomain();
@@ -572,39 +568,67 @@
         window.resolveGradebookRosterKey = function resolveGradebookRosterKey(courseId, groupId, enrolledStudents = []) {
             const keys = Object.keys(KIU_STATE.studentGrades || {});
             const subject = getDomain().subjectsById?.[courseId] || KIU_STATE.curriculum.find(item => item.id === courseId);
+            const rawCourseId = String(courseId || '').trim();
+            const rawGroupId = String(groupId || '').trim();
             const groupNorm = normalizeGradebookGroupIdentifier(groupId);
             const courseNorm = normalizeGradebookGroupIdentifier(courseId);
             const subjectCodeNorm = normalizeGradebookGroupIdentifier(subject?.code || '');
             const firstSegmentNorm = normalizeGradebookGroupIdentifier(String(courseId || '').split('-')[0]);
             const exactCandidates = [
-                `${String(courseId || '').toLowerCase()}_${String(groupId || '').toLowerCase()}`,
+                `${rawCourseId}::${rawGroupId}`,
+                `${courseNorm}::${groupNorm}`,
+                `${subjectCodeNorm}::${groupNorm}`,
+                `${firstSegmentNorm}::${groupNorm}`,
+                `${rawCourseId}_${rawGroupId}`.toLowerCase(),
                 `${courseNorm}_${groupNorm}`,
                 `${subjectCodeNorm}_${groupNorm}`,
-                `${firstSegmentNorm}_${groupNorm}`
+                `${firstSegmentNorm}_${groupNorm}`,
+                rawCourseId,
+                subject?.code || '',
+                courseNorm,
+                subjectCodeNorm,
+                firstSegmentNorm
             ].filter(Boolean);
+            const normalizedKeyMap = new Map();
+            keys.forEach(key => {
+                const normalizedKey = normalizeGradebookRosterKey(key);
+                if (normalizedKey && !normalizedKeyMap.has(normalizedKey)) {
+                    normalizedKeyMap.set(normalizedKey, key);
+                }
+            });
 
             for (const candidate of exactCandidates) {
-                if (keys.includes(candidate)) return candidate;
+                const resolvedKey = normalizedKeyMap.get(normalizeGradebookRosterKey(candidate));
+                if (resolvedKey) return resolvedKey;
             }
 
-            const enrolledIds = new Set((enrolledStudents || []).map(student => student.id));
+            const enrolledIds = new Set((enrolledStudents || []).map(student => String(student?.id || '').trim()).filter(Boolean));
             let bestKey = null;
             let bestScore = -1;
+            let bestRosterSize = -1;
 
             keys.forEach(key => {
-                let score = 0;
-                if (normalizeGradebookGroupIdentifier(key).endsWith(groupNorm)) score += 2;
-                const roster = KIU_STATE.studentGrades[key] || [];
+                const roster = Array.isArray(KIU_STATE.studentGrades[key]) ? KIU_STATE.studentGrades[key] : [];
+                const normalizedKey = normalizeGradebookRosterKey(key);
+                let score = roster.length > 0 ? 1 : 0;
+                if (groupNorm && normalizedKey.endsWith(groupNorm)) score += 2;
+                if (courseNorm && normalizedKey === courseNorm) score += 4;
+                if (subjectCodeNorm && normalizedKey === subjectCodeNorm) score += 4;
+                if (firstSegmentNorm && normalizedKey === firstSegmentNorm) score += 2;
+                if (courseNorm && groupNorm && normalizedKey === `${courseNorm}${groupNorm}`) score += 8;
+                if (subjectCodeNorm && groupNorm && normalizedKey === `${subjectCodeNorm}${groupNorm}`) score += 8;
+                if (firstSegmentNorm && groupNorm && normalizedKey === `${firstSegmentNorm}${groupNorm}`) score += 8;
                 roster.forEach(student => {
-                    if (enrolledIds.has(student.id)) score += 4;
+                    if (enrolledIds.has(String(student?.id || '').trim())) score += 4;
                 });
-                if (score > bestScore) {
+                if (score > bestScore || (score === bestScore && roster.length > bestRosterSize)) {
                     bestScore = score;
+                    bestRosterSize = roster.length;
                     bestKey = key;
                 }
             });
 
-            return bestKey || `${courseNorm || 'course'}_${groupNorm || 'group'}`;
+            return bestKey || exactCandidates[0] || `${courseNorm || 'course'}_${groupNorm || 'group'}`;
         };
     }
 
@@ -643,21 +667,62 @@
     }
 
     if (typeof window.getGradebookGroupsForCurrentUser !== 'function') {
-        window.getGradebookGroupsForCurrentUser = function getGradebookGroupsForCurrentUser() {
+        window.getGradebookGroupsForCurrentUser = function getGradebookGroupsForCurrentUser(filterOverrides = null) {
             const currentUser = getCurrentUser();
             const currentFaculty = getCurrentFaculty();
-            const currentName = currentUser?.name || currentUser?.nameEn || '';
-            const semesterFilter = String(document.getElementById('fs-filter-sem')?.value || '').trim();
-            const facultyFilter = String(document.getElementById('fs-filter-fac')?.value || currentFaculty || '').trim();
+            const currentIdentityKeys = (() => {
+                if (typeof getUserNameVariants === 'function') {
+                    return getUserNameVariants(currentUser);
+                }
+                const fallback = new Set();
+                [currentUser?.name, currentUser?.nameEn, currentUser?.email].forEach(value => {
+                    const normalized = typeof normalizePersonNameKey === 'function'
+                        ? normalizePersonNameKey(value)
+                        : String(value || '').trim().toLowerCase();
+                    if (normalized) fallback.add(normalized);
+                });
+                return fallback;
+            })();
+            const semesterFilter = String(
+                filterOverrides?.semester ?? document.getElementById('fs-filter-sem')?.value ?? ''
+            ).trim();
+            const facultyFilter = String(
+                filterOverrides?.faculty ?? document.getElementById('fs-filter-fac')?.value ?? currentFaculty ?? ''
+            ).trim();
             const groups = [];
 
             Object.entries(KIU_STATE.availableGroups || {}).forEach(([courseId, courseGroups]) => {
                 (courseGroups || []).forEach(group => {
                     if (semesterFilter && semesterFilter !== 'all' && String(group?.semester || KIU_STATE.activeSemester || '').trim() !== semesterFilter) return;
-                    if (facultyFilter && facultyFilter !== 'all' && String(group?.faculty || '').trim() && String(group.faculty).trim() !== facultyFilter) return;
+                    if (facultyFilter && facultyFilter !== 'all' && String(group?.faculty || '').trim()) {
+                        const groupFaculty = typeof normalizeFacultyCode === 'function'
+                            ? normalizeFacultyCode(group.faculty, '')
+                            : String(group.faculty || '').trim().toUpperCase();
+                        const selectedFaculty = typeof normalizeFacultyCode === 'function'
+                            ? normalizeFacultyCode(facultyFilter, '')
+                            : String(facultyFilter || '').trim().toUpperCase();
+                        if (groupFaculty && selectedFaculty && groupFaculty !== selectedFaculty) return;
+                    }
                     const isAssigned = currentUser?.role === USER_ROLES.ADMIN
-                        ? (!currentFaculty || currentFaculty === 'all' || group.faculty === currentFaculty)
-                        : (group.prof === currentName || group.ta === currentName);
+                        ? (() => {
+                            if (!currentFaculty || currentFaculty === 'all') return true;
+                            const groupFaculty = typeof normalizeFacultyCode === 'function'
+                                ? normalizeFacultyCode(group.faculty, '')
+                                : String(group.faculty || '').trim().toUpperCase();
+                            const selectedFaculty = typeof normalizeFacultyCode === 'function'
+                                ? normalizeFacultyCode(currentFaculty, '')
+                                : String(currentFaculty || '').trim().toUpperCase();
+                            return !selectedFaculty || groupFaculty === selectedFaculty;
+                        })()
+                        : (() => {
+                            const profKey = typeof normalizePersonNameKey === 'function'
+                                ? normalizePersonNameKey(group.prof)
+                                : String(group.prof || '').trim().toLowerCase();
+                            const taKey = typeof normalizePersonNameKey === 'function'
+                                ? normalizePersonNameKey(group.ta)
+                                : String(group.ta || '').trim().toLowerCase();
+                            return currentIdentityKeys.has(profKey) || currentIdentityKeys.has(taKey);
+                        })();
                     if (!isAssigned) return;
 
                     const subject = getDomain().subjectsById?.[courseId] || KIU_STATE.curriculum.find(item => item.id === courseId);
@@ -790,33 +855,28 @@
         window.ensureSubjectSemesterParityHint = function ensureSubjectSemesterParityHintFallback() {
             if (typeof refreshSemesterDropdowns === 'function') refreshSemesterDropdowns();
 
-            const semesterSelect = document.getElementById('new-subject-semester');
-            if (!semesterSelect) return;
+            const hiddenSemesters = document.getElementById('new-subject-semesters');
+            const hintAnchor = document.getElementById('new-subject-semester-parity-hint')
+                || document.getElementById('new-subject-semester-picker')
+                || hiddenSemesters;
+            if (!hintAnchor) return;
 
             let hint = document.getElementById('new-subject-semester-parity-hint');
             if (!hint) {
                 hint = document.createElement('div');
                 hint.id = 'new-subject-semester-parity-hint';
-                hint.style.fontSize = '11px';
-                hint.style.marginTop = '8px';
-                hint.style.color = '#475569';
-                hint.style.lineHeight = '1.35';
-                semesterSelect.insertAdjacentElement('afterend', hint);
+                hint.className = 'lux-card-meta lux-admin-tools-parity-hint';
+                hintAnchor.insertAdjacentElement('afterend', hint);
             }
 
             let exceptionWrap = document.getElementById('new-subject-semester-parity-exception-wrap');
             if (!exceptionWrap) {
                 exceptionWrap = document.createElement('div');
                 exceptionWrap.id = 'new-subject-semester-parity-exception-wrap';
-                exceptionWrap.style.marginTop = '8px';
-                exceptionWrap.style.display = 'flex';
-                exceptionWrap.style.alignItems = 'center';
-                exceptionWrap.style.gap = '8px';
-                exceptionWrap.style.fontSize = '11px';
-                exceptionWrap.style.color = '#334155';
+                exceptionWrap.className = 'registration-parity-exception';
                 exceptionWrap.innerHTML = `
-                    <input id="new-subject-parity-both-checkbox" type="checkbox" style="margin:0;">
-                    <label for="new-subject-parity-both-checkbox" style="cursor:pointer;">
+                    <input id="new-subject-parity-both-checkbox" class="registration-parity-exception-checkbox" type="checkbox">
+                    <label for="new-subject-parity-both-checkbox" class="registration-parity-exception-label">
                         Exception: allow this subject for both odd and even student semesters
                     </label>
                 `;
@@ -824,8 +884,23 @@
             }
 
             const exceptionCheckbox = document.getElementById('new-subject-parity-both-checkbox');
-            const describeParity = (semester) => {
-                const sem = Number(semester);
+            const readSemesters = () => {
+                if (typeof window.getBuilderSubjectSemesters === 'function') {
+                    return window.getBuilderSubjectSemesters();
+                }
+                if (!hiddenSemesters) return [1];
+                try {
+                    const parsed = JSON.parse(hiddenSemesters.value || '[1]');
+                    return Array.isArray(parsed) ? parsed.filter((entry) => Number(entry) > 0) : [1];
+                } catch (error) {
+                    return [1];
+                }
+            };
+            const describeParity = (semesters) => {
+                if (typeof window.getSemesterParityDescriptionForSemesters === 'function') {
+                    return window.getSemesterParityDescriptionForSemesters(semesters);
+                }
+                const sem = Number(semesters?.[0]);
                 if (!Number.isFinite(sem) || sem <= 0) {
                     return 'Semester parity rule will be shown after selecting a valid semester.';
                 }
@@ -834,17 +909,16 @@
                     : `Semester ${sem} is EVEN: this subject is available to even-semester students (2/4/6/8...), if prerequisite is none or passed.`;
             };
             const updateHint = () => {
-                const semValue = parseInt(semesterSelect.value, 10);
-                const baseText = describeParity(semValue);
+                const baseText = describeParity(readSemesters());
                 const exceptionText = exceptionCheckbox?.checked
                     ? ' Exception is ON: this subject will be available in both odd and even semesters (prerequisite still applies).'
                     : '';
                 hint.textContent = `${baseText}${exceptionText}`;
             };
 
-            if (!semesterSelect.dataset.parityHintBound) {
-                semesterSelect.addEventListener('change', updateHint);
-                semesterSelect.dataset.parityHintBound = '1';
+            if (hiddenSemesters && !hiddenSemesters.dataset.parityHintBound) {
+                hiddenSemesters.addEventListener('change', updateHint);
+                hiddenSemesters.dataset.parityHintBound = '1';
             }
             if (exceptionCheckbox && !exceptionCheckbox.dataset.parityHintBound) {
                 exceptionCheckbox.addEventListener('change', updateHint);
@@ -861,23 +935,42 @@
         };
     }
 
-    function normalizeRuntimeScriptPath(src) {
+    function normalizeRuntimeScriptKey(src) {
         const raw = String(src || '').trim();
         if (!raw) return '';
         try {
-            return new URL(raw, window.location.href).pathname.replace(/\\/g, '/').toLowerCase();
+            const url = new URL(raw, window.location.href);
+            return `${url.pathname.replace(/\\/g, '/').toLowerCase()}${url.search}`;
         } catch (error) {
-            return raw.split('?')[0].replace(/\\/g, '/').toLowerCase();
+            const [path, query = ''] = raw.split('?');
+            return `${path.replace(/\\/g, '/').toLowerCase()}${query ? `?${query}` : ''}`;
         }
     }
 
+    function normalizeRuntimeScriptPath(src) {
+        const key = normalizeRuntimeScriptKey(src);
+        const queryIndex = key.indexOf('?');
+        return queryIndex >= 0 ? key.slice(0, queryIndex) : key;
+    }
+
     function findExistingRuntimeScript(src) {
-        const targetPath = normalizeRuntimeScriptPath(src);
-        if (!targetPath) return null;
+        const targetKey = normalizeRuntimeScriptKey(src);
+        if (!targetKey) return null;
         return Array.from(document.scripts || []).find((script) => {
             const candidate = script.getAttribute('src') || script.src || '';
-            return normalizeRuntimeScriptPath(candidate) === targetPath;
+            return normalizeRuntimeScriptKey(candidate) === targetKey;
         }) || null;
+    }
+
+    function removeRuntimeScriptsWithPath(pathname) {
+        const normalizedPath = normalizeRuntimeScriptPath(pathname);
+        if (!normalizedPath) return;
+        Array.from(document.scripts || []).forEach((script) => {
+            const candidate = script.getAttribute('src') || script.src || '';
+            if (normalizeRuntimeScriptPath(candidate) === normalizedPath) {
+                script.remove();
+            }
+        });
     }
 
     function hasRuntimeScriptAlreadyExecuted(script) {
@@ -903,10 +996,12 @@
 
     function loadRuntimeScriptOnce(src) {
         return new Promise((resolve, reject) => {
+            const targetKey = normalizeRuntimeScriptKey(src);
             const existing = findExistingRuntimeScript(src);
             if (existing) {
                 const markLoaded = () => {
                     existing.dataset.kiuLoaded = '1';
+                    existing.dataset.kiuRuntimeVersion = targetKey;
                     resolve(true);
                 };
                 if (hasRuntimeScriptAlreadyExecuted(existing)) {
@@ -918,9 +1013,12 @@
                 return;
             }
 
+            removeRuntimeScriptsWithPath(src);
+
             const script = document.createElement('script');
             script.src = src;
             script.defer = true;
+            script.dataset.kiuRuntimeVersion = targetKey;
             script.onload = () => {
                 script.dataset.kiuLoaded = '1';
                 resolve(true);
@@ -931,10 +1029,10 @@
     }
 
     const SOCIAL_RUNTIME_SCRIPT_GROUPS = [
-        ['assets/js/shared/social-runtime-lite.js?v=20260429-portfolio1'],
+        ['assets/js/shared/social-runtime-lite.js?v=20260606-postactions6'],
         [
-            'assets/js/pages/social-mobile.js?v=20260429-portfolio1',
-            'assets/js/pages/social-page.js?v=20260510-social-ux100'
+            'assets/js/pages/social-mobile.js?v=20260603-projects1',
+            'assets/js/pages/social-page.js?v=20260606-postactions6'
         ]
     ];
     let socialRuntimeLoadPromise = null;
@@ -1020,10 +1118,10 @@
         return studentServiceRuntimeLoadPromise;
     };
 
-    const ORDERS_RUNTIME_SCRIPT = 'assets/js/shared/orders-workspace.js?v=20260516-orders-workspace1';
+    const ORDERS_RUNTIME_SCRIPT = 'assets/js/shared/orders-workspace.js?v=20260528-orders-workspace5';
     let ordersRuntimeLoadPromise = null;
     window.ensurePortalOrdersRuntimeLoaded = function ensurePortalOrdersRuntimeLoaded() {
-        if (typeof window.renderOrdersInboxPage === 'function') {
+        if (typeof renderOrdersInboxPage === 'function') {
             window.__KIU_ORDERS_RUNTIME_LOADED = true;
             return Promise.resolve(true);
         }
@@ -1031,7 +1129,7 @@
         if (ordersRuntimeLoadPromise) return ordersRuntimeLoadPromise;
         ordersRuntimeLoadPromise = loadRuntimeScriptOnce(ORDERS_RUNTIME_SCRIPT)
             .then(() => {
-                window.__KIU_ORDERS_RUNTIME_LOADED = typeof window.renderOrdersInboxPage === 'function';
+                window.__KIU_ORDERS_RUNTIME_LOADED = typeof renderOrdersInboxPage === 'function';
                 return window.__KIU_ORDERS_RUNTIME_LOADED;
             })
             .catch((error) => {
@@ -1042,7 +1140,7 @@
         return ordersRuntimeLoadPromise;
     };
 
-    const LIBRARY_RUNTIME_SCRIPT = 'assets/js/pages/library.js?v=20260518-libraryshell1';
+    const LIBRARY_RUNTIME_SCRIPT = 'assets/js/pages/library.js?v=20260531-alibrebuild3';
     let libraryRuntimeLoadPromise = null;
     window.ensurePortalLibraryRuntimeLoaded = function ensurePortalLibraryRuntimeLoaded() {
         if (typeof window.renderLibraryPageShellContext === 'function') {
@@ -1086,44 +1184,67 @@
         return lmsRuntimeLoadPromise;
     };
 
+    const REGISTRATION_PICKER_ASSET_TOKEN = '20260606-regtrack1';
+    const registrationRuntimeAsset = (path) => `${path}?v=${REGISTRATION_PICKER_ASSET_TOKEN}`;
     const REGISTRATION_RUNTIME_SCRIPTS = [
         'assets/js/pages/gradebook.js?v=20260430-lmsgrades1',
         'assets/js/pages/lms.js?v=20260430-anticheatsimple3',
-        'assets/js/pages/registration.js?v=20260429-facultyisolation1',
+        registrationRuntimeAsset('assets/js/pages/registration-shared.js'),
+        registrationRuntimeAsset('assets/js/pages/registration-enrollment.js'),
+        registrationRuntimeAsset('assets/js/pages/registration.js'),
         'assets/js/pages/planner.js?v=20260430-lmsgrades1',
         'assets/js/pages/directories.js?v=20260429-peopleisolation1',
-        'assets/js/pages/student-registration.js?v=20260430-lmsgrades1',
-        'assets/js/pages/admin-registration.js?v=20260413-hotfix11'
+        registrationRuntimeAsset('assets/js/pages/student-registration.js'),
+        'assets/js/pages/admin-registration-track.js?v=20260606-regtrack1',
+        'assets/js/pages/admin-registration.js?v=20260606-regtrack1'
     ];
     const REGISTRATION_STUDENT_ROUTE_RUNTIME_SCRIPTS = [
-        'assets/js/pages/timetable-runtime.js?v=20260516-surface-split1',
-        'assets/js/pages/student-registration.js?v=20260430-lmsgrades1',
-        'assets/js/pages/registration-student-route.js?v=20260516-studentroutesplit1'
+        registrationRuntimeAsset('assets/js/pages/timetable-runtime.js'),
+        registrationRuntimeAsset('assets/js/pages/registration-shared.js'),
+        registrationRuntimeAsset('assets/js/pages/registration-enrollment.js'),
+        registrationRuntimeAsset('assets/js/pages/student-registration.js'),
+        registrationRuntimeAsset('assets/js/pages/registration-student-route.js')
     ];
     let registrationRuntimeLoadPromise = null;
     function isStandaloneRegistrationRoute() {
         return Boolean(document.getElementById('page-registration') && document.body.classList.contains('lux-route-registration'));
     }
+    function isRegistrationPickerRuntimeCurrent() {
+        return window.REGISTRATION_PICKER_BUILD === REGISTRATION_PICKER_ASSET_TOKEN;
+    }
+
     window.ensurePortalRegistrationRuntimeLoaded = function ensurePortalRegistrationRuntimeLoaded() {
         const isStudentRoute = isStandaloneRegistrationRoute();
-        if (isStudentRoute) {
+        if (isStudentRoute && isRegistrationPickerRuntimeCurrent()) {
+            window.__KIU_REGISTRATION_RUNTIME_LOADED = true;
+            return Promise.resolve(true);
+        }
+        if (isStudentRoute && !isRegistrationPickerRuntimeCurrent()) {
+            window.__KIU_REGISTRATION_RUNTIME_LOADED = false;
+            registrationRuntimeLoadPromise = null;
+            removeRuntimeScriptsWithPath(registrationRuntimeAsset('assets/js/pages/student-registration.js'));
+            removeRuntimeScriptsWithPath(registrationRuntimeAsset('assets/js/pages/registration-enrollment.js'));
+            removeRuntimeScriptsWithPath(registrationRuntimeAsset('assets/js/pages/registration-shared.js'));
+            removeRuntimeScriptsWithPath(registrationRuntimeAsset('assets/js/pages/registration-student-route.js'));
+            removeRuntimeScriptsWithPath(registrationRuntimeAsset('assets/js/pages/timetable-runtime.js'));
+        }
+        if (!isStudentRoute) {
             if (
-                typeof window.renderStudentRegStructures === 'function'
-                && typeof window.refreshRegistrationUI === 'function'
-                && typeof window.updateEctsProgress === 'function'
+                typeof window.renderCurriculumTable === 'function'
+                && typeof window.bootAdminRegistrationCms === 'function'
+                && typeof window.bindFacultyRegistrationCmsData === 'function'
             ) {
                 window.__KIU_REGISTRATION_RUNTIME_LOADED = true;
                 return Promise.resolve(true);
             }
-        } else if (
-            typeof window.renderCurriculumTable === 'function'
-            && typeof window.bootAdminRegistrationCms === 'function'
-            && typeof window.bindFacultyRegistrationCmsData === 'function'
-        ) {
-            window.__KIU_REGISTRATION_RUNTIME_LOADED = true;
+        }
+        if (window.__KIU_REGISTRATION_RUNTIME_LOADED && (!isStudentRoute || isRegistrationPickerRuntimeCurrent())) {
             return Promise.resolve(true);
         }
-        if (window.__KIU_REGISTRATION_RUNTIME_LOADED) return Promise.resolve(true);
+        if (window.__KIU_REGISTRATION_RUNTIME_LOADED) {
+            window.__KIU_REGISTRATION_RUNTIME_LOADED = false;
+            registrationRuntimeLoadPromise = null;
+        }
         if (registrationRuntimeLoadPromise) return registrationRuntimeLoadPromise;
         const scriptsToLoad = isStudentRoute ? REGISTRATION_STUDENT_ROUTE_RUNTIME_SCRIPTS : REGISTRATION_RUNTIME_SCRIPTS;
         registrationRuntimeLoadPromise = scriptsToLoad
@@ -1186,8 +1307,8 @@ const USER_ROLES = {
 const ACTIVE_SESSION_KEY = 'KIU_ACTIVE_SESSION_USER_ID';
 const ACTIVE_ROLE_IMPERSONATION_KEY = 'KIU_ACTIVE_ROLE_IMPERSONATION';
 const PENDING_ROLE_SWITCH_KEY = 'KIU_PENDING_ROLE_SWITCH_ROLE';
-const MANUAL_TESTING_STATE_VERSION = 6;
-const REAL_TESTING_CLEANUP_FLAG = 'KIU_REAL_TESTING_CLEANUP_V6';
+const MANUAL_TESTING_STATE_VERSION = 7;
+const REAL_TESTING_CLEANUP_FLAG = 'KIU_REAL_TESTING_CLEANUP_V7';
 const TIMETABLE_WEEK_STORAGE_KEY = 'KIU_TIMETABLE_WEEK_START';
 const PROFILE_CALENDAR_WEEK_STORAGE_KEY = 'KIU_PROFILE_CALENDAR_WEEK_START';
 const SCHEDULER_WEEK_STORAGE_KEY = 'KIU_SCHEDULER_WEEK_START';
@@ -1949,10 +2070,10 @@ function applyStudentPageEnglishOverrides() {
         const label = item.textContent || '';
         if (!hasBrokenUiText(label)) return;
         if ((item.getAttribute('onclick') || '').includes("navigate('library')")) {
-            item.innerHTML = '<i class="fas fa-book" style="display:block; margin-bottom:5px; font-size:16px;"></i> Library';
+            item.innerHTML = '<i class="fas fa-book"></i> Library';
         }
         if ((item.getAttribute('onclick') || '').includes("navigate('orders')")) {
-            item.innerHTML = '<i class="fas fa-book-open" style="display:block; margin-bottom:5px; font-size:16px;"></i> Orders';
+            item.innerHTML = '<i class="fas fa-book-open"></i> Orders';
         }
     });
 
@@ -1965,9 +2086,6 @@ function applyStudentPageEnglishOverrides() {
 
     const registrationTermOption = document.querySelector('#page-registration .filter-shell select option');
     setNodeTextIfBroken(registrationTermOption, '17) 2025/2026 Spring Semester');
-
-    const registrationInfoTitle = document.querySelector('#page-registration .content-box.surface-card > div[style*="font-weight: 700"][style*="font-size: 18px"]');
-    setNodeTextIfBroken(registrationInfoTitle, 'Student Information');
 
     const registrationInfoRows = document.querySelectorAll('#page-registration .reg-header-info > div');
     if (registrationInfoRows[2]) {
@@ -2057,10 +2175,10 @@ function applyStudentPageEnglishOverrides() {
 
 function applyProfilePageEnglishOverrides() {
     const profileTabLabels = [
-        '<i class="fas fa-user" style="color:var(--kiu-orange); margin-right:10px;"></i> Profile',
-        '<i class="fas fa-envelope" style="color:var(--kiu-blue); margin-right:10px;"></i> Email',
-        '<i class="fas fa-lock" style="color:var(--kiu-blue); margin-right:10px;"></i> Password Change',
-        '<i class="fas fa-calendar" style="color:var(--kiu-blue); margin-right:10px;"></i> My Timetable'
+        '<i class="fas fa-user"></i> Profile',
+        '<i class="fas fa-envelope"></i> Email',
+        '<i class="fas fa-lock"></i> Password Change',
+        '<i class="fas fa-calendar"></i> My Timetable'
     ];
     document.querySelectorAll('#page-profile .content-box.surface-card .tab').forEach((tab, index) => {
         if (profileTabLabels[index]) setNodeHtmlIfBroken(tab, profileTabLabels[index]);
@@ -2434,15 +2552,15 @@ function applyCommonShellEnglishOverrides() {
     document.querySelectorAll('#admin-nav .nav-item').forEach(item => {
         const onclick = item.getAttribute('onclick') || '';
         if (onclick.includes("navigate('home')")) {
-            setNodeHtmlIfBroken(item, '<i class="fas fa-hammer" style="display:block; margin-bottom:5px; font-size:16px;"></i> Curriculum CMS');
+            setNodeHtmlIfBroken(item, '<i class="fas fa-hammer"></i> Curriculum CMS');
         } else if (onclick.includes("navigate('admin-scheduler')")) {
-            setNodeHtmlIfBroken(item, '<i class="fas fa-calendar-plus" style="display:block; margin-bottom:5px; font-size:16px;"></i> Master Scheduler');
+            setNodeHtmlIfBroken(item, '<i class="fas fa-calendar-plus"></i> Master Scheduler');
         } else if (onclick.includes("navigate('library')")) {
-            setNodeHtmlIfBroken(item, '<i class="fas fa-book" style="display:block; margin-bottom:5px; font-size:16px;"></i> Library');
+            setNodeHtmlIfBroken(item, '<i class="fas fa-book"></i> Library');
         } else if (onclick.includes("navigate('orders')")) {
-            setNodeHtmlIfBroken(item, '<i class="fas fa-book-open" style="display:block; margin-bottom:5px; font-size:16px;"></i> Orders');
+            setNodeHtmlIfBroken(item, '<i class="fas fa-book-open"></i> Orders');
         } else if (onclick.includes("navigate('exams')")) {
-            setNodeHtmlIfBroken(item, '<i class="fas fa-file-pen" style="display:block; margin-bottom:5px; font-size:16px;"></i> Exams');
+            setNodeHtmlIfBroken(item, '<i class="fas fa-file-pen"></i> Exams');
         }
     });
 
@@ -2805,7 +2923,6 @@ installEnglishLocalization();
         sheet.classList.remove('is-open');
         sheet.hidden = true;
         sheet.setAttribute('aria-hidden', 'true');
-        sheet.style.display = 'none';
         document.body.style.overflow = '';
     }
 
@@ -2848,7 +2965,7 @@ installEnglishLocalization();
 
 (function registerPortalServiceWorker() {
     const PORTAL_CACHE_RESET_KEY = 'KIU_PORTAL_CACHE_RESET_VERSION';
-    const PORTAL_CACHE_RESET_VERSION = '20260514-studentsadmin-clean2';
+    const PORTAL_CACHE_RESET_VERSION = '20260606-postactions6';
 
     async function clearPortalSiteCaches(force = false) {
         try {
@@ -2888,7 +3005,7 @@ installEnglishLocalization();
         if (document.querySelector('link[rel="manifest"]')) return;
         const link = document.createElement('link');
         link.rel = 'manifest';
-        link.href = 'manifest.webmanifest?v=20260426-prod1';
+        link.href = 'manifest.webmanifest?v=20260604-styleguard2';
         document.head.appendChild(link);
     }
 

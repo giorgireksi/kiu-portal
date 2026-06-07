@@ -121,6 +121,9 @@
                 gap: 10px;
                 margin-top: 12px;
             }
+            .mail-pill-row--center {
+                justify-content: center;
+            }
             .mail-pill {
                 display: inline-flex;
                 align-items: center;
@@ -138,6 +141,9 @@
                 gap: 10px;
                 align-items: center;
                 justify-content: flex-end;
+            }
+            .mail-actions--center {
+                justify-content: center;
             }
             .mail-banner {
                 display: flex;
@@ -164,6 +170,9 @@
                 color: #fee2e2;
                 border-color: rgba(220,38,38,0.24);
             }
+            .mail-banner--mt-14 {
+                margin-top: 14px;
+            }
             .mail-shell {
                 display: grid;
                 grid-template-columns: minmax(220px, 260px) minmax(300px, 1.05fr) minmax(360px, 1.2fr);
@@ -188,6 +197,9 @@
             .mail-panel-title {
                 display: grid;
                 gap: 4px;
+            }
+            .mail-panel-title--mt-18 {
+                margin-top: 18px;
             }
             .mail-panel-title strong {
                 font-size: 15px;
@@ -348,8 +360,24 @@
                 place-items: center;
                 min-height: 320px;
             }
+            .mail-list-empty--compact {
+                min-height: 0;
+                padding: 18px;
+            }
             .mail-connect-card {
                 min-height: 420px;
+            }
+            .mail-empty-icon-sm {
+                font-size: 22px;
+            }
+            .mail-empty-icon-md {
+                font-size: 24px;
+            }
+            .mail-empty-icon-lg {
+                font-size: 32px;
+            }
+            .mail-reader-title {
+                margin: 0;
             }
             .mail-reader-header {
                 display: grid;
@@ -393,6 +421,9 @@
                 gap: 10px;
                 flex-wrap: wrap;
                 margin-top: 16px;
+            }
+            .mail-compose-actions--flush {
+                margin-top: 0;
             }
             .mail-attachment-link {
                 display: flex;
@@ -871,6 +902,15 @@
                     radial-gradient(circle at top right, rgba(96,165,250,0.16), transparent 28%),
                     linear-gradient(180deg, rgba(10,18,36,0.92), rgba(7,14,28,0.92));
                 border-radius: 30px;
+            }
+            .mail-connect-title {
+                font-size: 24px;
+                color: #fff;
+            }
+            .mail-connect-copy {
+                max-width: 560px;
+                line-height: 1.8;
+                color: rgba(226,232,240,0.84);
             }
             @media (max-width: 1320px) {
                 .mail-command-deck {
@@ -1368,8 +1408,8 @@
                     </label>
                 </div>
                 <div class="mail-message-list">
-                    ${runtime.loading ? '<div class="mail-list-empty"><i class="fas fa-circle-notch fa-spin" style="font-size:22px;"></i><strong>Refreshing mailbox</strong><span>Pulling the latest Outlook messages into the portal.</span></div>' : ''}
-                    ${!runtime.loading && !runtime.messages.length ? '<div class="mail-list-empty"><i class="fas fa-envelope-open-text" style="font-size:22px;"></i><strong>No messages here yet</strong><span>Change filters, search again, or refresh to pull fresh mail from Outlook.</span></div>' : ''}
+                    ${runtime.loading ? '<div class="mail-list-empty"><i class="fas fa-circle-notch fa-spin mail-empty-icon-sm"></i><strong>Refreshing mailbox</strong><span>Pulling the latest Outlook messages into the portal.</span></div>' : ''}
+                    ${!runtime.loading && !runtime.messages.length ? '<div class="mail-list-empty"><i class="fas fa-envelope-open-text mail-empty-icon-sm"></i><strong>No messages here yet</strong><span>Change filters, search again, or refresh to pull fresh mail from Outlook.</span></div>' : ''}
                     ${!runtime.loading ? runtime.messages.map(message => `
                         <button class="mail-message-card${runtime.selectedMessageId === message.id ? ' is-active' : ''}${message.isRead ? '' : ' is-unread'}" type="button" data-mail-open="${emailEscape(message.id)}">
                             <div class="mail-message-top">
@@ -1411,10 +1451,10 @@
                                 <span>Attachments</span>
                                 <strong>Files for portal recipients</strong>
                             </div>
-                            <div class="mail-compose-actions" style="margin-top:0;">
+                            <div class="mail-compose-actions mail-compose-actions--flush">
                                 <button class="lux-secondary-btn" type="button" data-mail-attach><i class="fas fa-paperclip"></i> Add Files</button>
                             </div>
-                            <input id="mail-compose-file-input" type="file" multiple style="display:none;">
+                            <input id="mail-compose-file-input" type="file" multiple hidden>
                             <div class="mail-compose-attachment-list">
                                 ${Array.isArray(runtime.compose.attachments) && runtime.compose.attachments.length ? runtime.compose.attachments.map((attachment, index) => `
                                     <div class="mail-compose-attachment">
@@ -1424,7 +1464,7 @@
                                         </div>
                                         <button class="lux-ghost-btn" type="button" data-mail-remove-attachment="${index}"><i class="fas fa-trash"></i> Remove</button>
                                     </div>
-                                `).join('') : '<div class="mail-list-empty" style="min-height:0; padding:18px;"><span>Portal-to-portal mail supports uploaded files. Outlook external send still uses basic send/reply only.</span></div>'}
+                                `).join('') : '<div class="mail-list-empty mail-list-empty--compact"><span>Portal-to-portal mail supports uploaded files. Outlook external send still uses basic send/reply only.</span></div>'}
                             </div>
                         </div>
                         <div class="mail-compose-actions">
@@ -1439,7 +1479,7 @@
             return `
                 <div class="mail-panel mail-reader-panel">
                     <div class="mail-reader-empty">
-                        <i class="fas fa-envelope-circle-check" style="font-size:24px;"></i>
+                        <i class="fas fa-envelope-circle-check mail-empty-icon-md"></i>
                         <strong>Select a message</strong>
                         <span>Open any message from the list to load its full Outlook body, attachments, and reply tools here.</span>
                         <button class="lux-primary-btn" type="button" data-mail-compose="new"><i class="fas fa-pen"></i> New Message</button>
@@ -1449,7 +1489,7 @@
         }
         const attachmentHtml = Array.isArray(message.attachments) && message.attachments.length
             ? `
-                <div class="mail-panel-title" style="margin-top:18px;">
+                <div class="mail-panel-title mail-panel-title--mt-18">
                     <span>Attachments</span>
                     <strong>Received files</strong>
                 </div>
@@ -1537,7 +1577,7 @@
                                 : 'Portal mail is fully active. Add Outlook only when you want your personal mailbox layered into this workspace.')
                             : 'Portal mail is fully active, but Microsoft mail has not been configured on this server yet.'}
                     </p>
-                    <div class="mail-compose-actions" style="margin-top:0;">
+                    <div class="mail-compose-actions mail-compose-actions--flush">
                         <button class="lux-primary-btn" type="button" data-mail-compose="new"><i class="fas fa-pen"></i> New thread</button>
                         ${configured && !summary.connected ? `<button class="lux-secondary-btn" type="button" data-mail-connect><i class="fab fa-microsoft"></i> Add Outlook</button>` : ''}
                     </div>
@@ -1606,8 +1646,8 @@
                     </div>
                 </div>
                 <div class="mail-message-list">
-                    ${runtime.loading ? '<div class="mail-list-empty"><i class="fas fa-circle-notch fa-spin" style="font-size:22px;"></i><strong>Refreshing mailbox field</strong><span>Pulling the latest portal and Outlook traffic into the workspace.</span></div>' : ''}
-                    ${!runtime.loading && !runtime.messages.length ? `<div class="mail-list-empty"><i class="fas fa-envelope-open-text" style="font-size:22px;"></i><strong>No messages in ${emailEscape(activeFolder.displayName)}</strong><span>${runtime.search ? 'Search came back empty. Change the query or drop the unread filter.' : 'This lane is clear. Compose a new thread or refresh when new mail arrives.'}</span></div>` : ''}
+                    ${runtime.loading ? '<div class="mail-list-empty"><i class="fas fa-circle-notch fa-spin mail-empty-icon-sm"></i><strong>Refreshing mailbox field</strong><span>Pulling the latest portal and Outlook traffic into the workspace.</span></div>' : ''}
+                    ${!runtime.loading && !runtime.messages.length ? `<div class="mail-list-empty"><i class="fas fa-envelope-open-text mail-empty-icon-sm"></i><strong>No messages in ${emailEscape(activeFolder.displayName)}</strong><span>${runtime.search ? 'Search came back empty. Change the query or drop the unread filter.' : 'This lane is clear. Compose a new thread or refresh when new mail arrives.'}</span></div>` : ''}
                     ${!runtime.loading ? runtime.messages.map(message => `
                         <button class="mail-message-card${runtime.selectedMessageId === message.id ? ' is-active' : ''}${message.isRead ? '' : ' is-unread'}" type="button" data-mail-open="${emailEscape(message.id)}">
                             <div class="mail-message-top">
@@ -1664,10 +1704,10 @@
                                         <span>Attachments</span>
                                         <strong>Portal delivery files</strong>
                                     </div>
-                                    <div class="mail-compose-actions" style="margin-top:0;">
+                                    <div class="mail-compose-actions mail-compose-actions--flush">
                                         <button class="lux-secondary-btn" type="button" data-mail-attach><i class="fas fa-paperclip"></i> Add Files</button>
                                     </div>
-                                    <input id="mail-compose-file-input" type="file" multiple style="display:none;">
+                                    <input id="mail-compose-file-input" type="file" multiple hidden>
                                     <div class="mail-compose-attachment-list">
                                         ${Array.isArray(runtime.compose.attachments) && runtime.compose.attachments.length ? runtime.compose.attachments.map((attachment, index) => `
                                             <div class="mail-compose-attachment">
@@ -1677,7 +1717,7 @@
                                                 </div>
                                                 <button class="lux-ghost-btn" type="button" data-mail-remove-attachment="${index}"><i class="fas fa-trash"></i> Remove</button>
                                             </div>
-                                        `).join('') : '<div class="mail-list-empty" style="min-height:0; padding:18px;"><span>Stage documents, screenshots, or forms here. Internal portal recipients keep the files inside the portal workflow.</span></div>'}
+                                        `).join('') : '<div class="mail-list-empty mail-list-empty--compact"><span>Stage documents, screenshots, or forms here. Internal portal recipients keep the files inside the portal workflow.</span></div>'}
                                     </div>
                                 </div>
                                 <div class="mail-compose-actions">
@@ -1711,7 +1751,7 @@
             return `
                 <div class="mail-panel mail-reader-panel">
                     <div class="mail-reader-empty">
-                        <i class="fas fa-envelope-circle-check" style="font-size:24px;"></i>
+                        <i class="fas fa-envelope-circle-check mail-empty-icon-md"></i>
                         <strong>Reader is on standby</strong>
                         <span>Open a message from the field on the left or start a new thread. The reader will load the full body, metadata, and attachments here.</span>
                         <button class="lux-primary-btn" type="button" data-mail-compose="new"><i class="fas fa-pen"></i> New Message</button>
@@ -1721,7 +1761,7 @@
         }
         const attachmentHtml = Array.isArray(message.attachments) && message.attachments.length
             ? `
-                <div class="mail-panel-title" style="margin-top:18px;">
+                <div class="mail-panel-title mail-panel-title--mt-18">
                     <span>Attachments</span>
                     <strong>Received files</strong>
                 </div>
@@ -1753,7 +1793,7 @@
                             <span>Reader deck</span>
                             <strong>${emailEscape(message.subject || '(No subject)')}</strong>
                         </div>
-                        <h3 style="margin:0;">${emailEscape(message.subject || '(No subject)')}</h3>
+                        <h3 class="mail-reader-title">${emailEscape(message.subject || '(No subject)')}</h3>
                     </div>
                     <div class="mail-reader-grid">
                         <div class="mail-reader-line">
@@ -1795,17 +1835,17 @@
     function renderDisconnectedWorkspace() {
         return `
             <div class="mail-connect-card">
-                <i class="fas fa-envelope-circle-check" style="font-size:32px;"></i>
-                <strong style="font-size:24px; color:#fff;">Connect your Outlook mailbox</strong>
-                <span style="max-width:560px; line-height:1.8; color:rgba(226,232,240,0.84);">
+                <i class="fas fa-envelope-circle-check mail-empty-icon-lg"></i>
+                <strong class="mail-connect-title">Connect your Outlook mailbox</strong>
+                <span class="mail-connect-copy">
                     Use the built-in portal mailbox immediately for account-to-account email with file attachments. If you also want your personal Outlook inbox inside the portal, connect Outlook as an optional second layer.
                 </span>
-                <div class="mail-pill-row" style="justify-content:center;">
+                <div class="mail-pill-row mail-pill-row--center">
                     <span class="mail-pill"><i class="fas fa-envelope"></i> Portal mail works without Outlook</span>
                     <span class="mail-pill"><i class="fas fa-paperclip"></i> File attachments for portal recipients</span>
                     <span class="mail-pill"><i class="fas fa-bolt"></i> Optional Outlook sync on top</span>
                 </div>
-                <div class="mail-actions" style="justify-content:center;">
+                <div class="mail-actions mail-actions--center">
                     <button class="lux-primary-btn" type="button" data-mail-connect><i class="fab fa-microsoft"></i> Connect Outlook</button>
                 </div>
             </div>
@@ -1833,7 +1873,7 @@
                                 <span class="mail-pill"><i class="fas fa-circle-info"></i> ${summary.unreadCount} unread across all folders</span>
                                 <span class="mail-pill"><i class="fas fa-clock-rotate-left"></i> ${emailEscape(summary.lastSyncLabel)}</span>
                             </div>
-                            ${runtime.bootstrap?.impersonationNotice ? `<div class="mail-banner is-info" style="margin-top:14px;"><i class="fas fa-user-shield"></i><div>${emailEscape(runtime.bootstrap.impersonationNotice)}</div></div>` : ''}
+                            ${runtime.bootstrap?.impersonationNotice ? `<div class="mail-banner is-info mail-banner--mt-14"><i class="fas fa-user-shield"></i><div>${emailEscape(runtime.bootstrap.impersonationNotice)}</div></div>` : ''}
                         </div>
                         <div class="mail-actions">
                             ${connected ? `

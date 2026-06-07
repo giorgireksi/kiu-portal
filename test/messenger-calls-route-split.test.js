@@ -18,6 +18,7 @@ describe('messenger and calls route split', () => {
         expect(routeModule).toContain("app.post('/api/messenger/message'");
         expect(routeModule).toContain("app.delete('/api/messenger/chats/:chatId/messages/:messageId'");
         expect(routeModule).toContain("app.post('/api/messenger/chats/:chatId/hide'");
+        expect(routeModule).toContain("app.post('/api/messenger/chats/:chatId/read'");
         expect(routeModule).toContain("app.post('/api/calls/start'");
         expect(routeModule).toContain("app.post('/api/calls/accept'");
         expect(routeModule).toContain("app.post('/api/calls/decline'");

@@ -1,4 +1,4 @@
-/* Faculty-scoped shared data and helpers extracted from core.js. Source of truth remains root core.js compatibility bundle. */
+/* Faculty-scoped shared data and helpers extracted from the legacy core.js bundle. Active routes now load split files directly. */
 
 // FACULTY HELPERS
 // Schedule and faculty helpers
@@ -50,11 +50,9 @@ function kiuResolveColorTriplet(color, fallback = '164,38,44') {
         return fallbackValue;
     }
     const probe = document.createElement('span');
-    probe.style.color = '#000000';
     probe.style.color = String(color).trim();
     probe.style.position = 'absolute';
-    probe.style.opacity = '0';
-    probe.style.pointerEvents = 'none';
+    probe.hidden = true;
     (document.body || document.documentElement).appendChild(probe);
     const resolved = window.getComputedStyle(probe).color || '';
     probe.remove();
@@ -383,15 +381,25 @@ function normalizeScheduleGroup(subjectId, group) {
     const fallbackFaculty = normalizeFacultyCode(group.faculty || deriveFacultyFromSubjectId(subjectId));
     const duration = group.duration || '110min';
     const rawSessionType = String(group.sessionType || group.classType || group.type || '').trim().toLowerCase();
-    const normalizedSessionType = rawSessionType.includes('seminar')
-        ? 'seminar'
-        : rawSessionType.includes('workshop')
-            ? 'seminar'
-            : rawSessionType.includes('lab')
-                ? 'seminar'
-                : rawSessionType.includes('lecture')
-                    ? 'lecture'
-                    : (/(^|[\s_-])(sem|seminar|workshop|lab)($|[\s_-])/i.test(String(group.name || group.id || '')) ? 'seminar' : 'lecture');
+    const instructorPlaceholder = /^(tbd|unassigned|n\/a|--|-)$/i;
+    const profName = String(group.prof || '').trim();
+    const taName = String(group.ta || '').trim();
+    const hasAssignedProf = Boolean(profName) && !instructorPlaceholder.test(profName);
+    const hasAssignedTa = Boolean(taName) && !instructorPlaceholder.test(taName);
+    let normalizedSessionType = 'lecture';
+    if (hasAssignedTa && !hasAssignedProf) {
+        normalizedSessionType = 'seminar';
+    } else if (hasAssignedProf && hasAssignedTa) {
+        normalizedSessionType = 'lecture';
+    } else if (rawSessionType.includes('seminar') || rawSessionType.includes('workshop') || rawSessionType.includes('lab')) {
+        normalizedSessionType = 'seminar';
+    } else if (/(^|[\s_-])(sem|seminar|workshop|lab)($|[\s_-])/i.test(String(group.name || group.id || ''))) {
+        normalizedSessionType = 'seminar';
+    } else if (hasAssignedProf) {
+        normalizedSessionType = 'lecture';
+    } else if (rawSessionType.includes('lecture')) {
+        normalizedSessionType = 'lecture';
+    }
     const endTime = normalizeTimeString(group.endTime || '', '') || (() => {
         const startMinutes = convertTimeToMinutes(group.time || '09:00');
         const durationMinutes = parseInt(String(duration).match(/\d+/)?.[0] || '110', 10);
@@ -430,6 +438,39 @@ function normalizeScheduleGroup(subjectId, group) {
         endWeek: group.endWeek ? formatLocalDateISO(getWeekStartDate(group.endWeek)) : null,
         weekOverrides
     };
+}
+
+function migrateAvailableGroupsSessionTypes() {
+    if (!KIU_STATE?.availableGroups || typeof normalizeScheduleGroup !== 'function') return 0;
+    let updated = 0;
+    Object.entries(KIU_STATE.availableGroups).forEach(([subjectId, groups]) => {
+        KIU_STATE.availableGroups[subjectId] = (groups || [])
+            .map((group) => {
+                const normalized = normalizeScheduleGroup(subjectId, group);
+                if (!normalized) return null;
+                if (String(normalized.sessionType || '') !== String(group?.sessionType || '')) {
+                    updated += 1;
+                }
+                return normalized;
+            })
+            .filter(Boolean);
+    });
+    return updated;
+}
+
+function inferSchedulerSessionType(professor = '', ta = '', explicitType = '') {
+    const placeholder = /^(tbd|unassigned|n\/a|--|-)$/i;
+    const profName = String(professor || '').trim();
+    const taName = String(ta || '').trim();
+    const hasProf = Boolean(profName) && !placeholder.test(profName);
+    const hasTa = Boolean(taName) && !placeholder.test(taName);
+    if (hasTa && !hasProf) return 'seminar';
+    if (hasProf && !hasTa) return 'lecture';
+    const normalizedExplicit = String(explicitType || '').trim().toLowerCase();
+    if (normalizedExplicit === 'seminar' || normalizedExplicit === 'lecture') {
+        return normalizedExplicit;
+    }
+    return 'lecture';
 }
 
 function getEffectiveGroupForWeek(subjectId, group, weekStart) {
@@ -804,13 +845,31 @@ function getUserPerformanceSummary(user) {
             primary: String(currentSemester),
             secondary: typeof user.gpa === 'number' ? user.gpa.toFixed(2) : '0.00',
             tertiary: String(completedEcts),
-            quaternary: avgScore > 0 ? `${avgScore}<span style="font-size:14px; color:var(--kiu-text-muted);">/${letter}</span>` : '<span style="font-size:14px; color:var(--kiu-text-muted);">No grades yet</span>'
+            quaternary: avgScore > 0 ? `${avgScore}/${letter}` : 'No grades yet'
         };
     }
 
+    const identityKeys = (() => {
+        if (typeof getUserNameVariants === 'function') {
+            return getUserNameVariants(user);
+        }
+        const fallback = new Set();
+        [user.name, user.nameEn, user.email].forEach(value => {
+            const normalized = typeof normalizePersonNameKey === 'function'
+                ? normalizePersonNameKey(value)
+                : String(value || '').trim().toLowerCase();
+            if (normalized) fallback.add(normalized);
+        });
+        return fallback;
+    })();
     const assignedSections = Object.values(KIU_STATE.availableGroups || {}).flat().filter(group => {
-        const identities = [user.name, user.nameEn, user.email].filter(Boolean);
-        return identities.includes(group.prof) || identities.includes(group.ta);
+        const profKey = typeof normalizePersonNameKey === 'function'
+            ? normalizePersonNameKey(group.prof)
+            : String(group.prof || '').trim().toLowerCase();
+        const taKey = typeof normalizePersonNameKey === 'function'
+            ? normalizePersonNameKey(group.ta)
+            : String(group.ta || '').trim().toLowerCase();
+        return identityKeys.has(profKey) || identityKeys.has(taKey);
     });
     const totalHours = assignedSections.reduce((sum, group) => {
         const durMatch = String(group.duration || '').match(/\d+/);
@@ -883,18 +942,7 @@ function ensurePersonalDataAvatarFallback(avatarEl) {
     if (!fallback) {
         fallback = document.createElement('div');
         fallback.setAttribute('data-personal-data-avatar-fallback', 'true');
-        fallback.style.width = '110px';
-        fallback.style.height = '110px';
-        fallback.style.borderRadius = '50%';
-        fallback.style.margin = '0 auto 15px';
-        fallback.style.display = 'none';
-        fallback.style.alignItems = 'center';
-        fallback.style.justifyContent = 'center';
-        fallback.style.background = 'linear-gradient(135deg, var(--kiu-blue), var(--kiu-blue-dark, var(--kiu-blue)))';
-        fallback.style.color = 'white';
-        fallback.style.fontSize = '32px';
-        fallback.style.fontWeight = '800';
-        fallback.style.letterSpacing = '0.04em';
+        fallback.hidden = true;
         avatarEl.insertAdjacentElement('afterend', fallback);
     }
     return fallback;
@@ -1073,7 +1121,7 @@ function ensureStudentSocialFileInput() {
         input = document.createElement('input');
         input.type = 'file';
         input.id = 'student-social-file-input';
-        input.style.display = 'none';
+        input.hidden = true;
         document.body.appendChild(input);
     }
     return input;
@@ -1233,13 +1281,13 @@ function renderStudentSocialWorkspace() {
     if (!container) return;
     const currentUser = getCurrentUser();
     if (!currentUser || currentUser.role !== USER_ROLES.STUDENT) {
-        container.innerHTML = `<div style="color:var(--kiu-text-muted); text-align:center;">Student social workspace is available only for student accounts.</div>`;
+        container.innerHTML = '<div class="portal-msg-empty">Student social workspace is available only for student accounts.</div>';
         return;
     }
     container.innerHTML = `
-        <div class="surface-card" style="padding:24px; text-align:center; color:var(--kiu-text-muted);">
-            <div style="font-size:20px; font-weight:900; color:var(--kiu-navy);">Legacy student social shell retired</div>
-            <div style="font-size:13px; margin-top:8px;">Use the standalone Social page and the shared messenger chrome for live social activity.</div>
+        <div class="surface-card portal-msg-thread-empty-wrap">
+            <div class="portal-msg-thread-empty-title">Legacy student social shell retired</div>
+            <div class="portal-msg-thread-empty-copy">Use the standalone Social page and the shared messenger chrome for live social activity.</div>
         </div>
     `;
 }
@@ -1592,27 +1640,21 @@ function openPortalNotificationItem(notificationKey) {
 }
 
 function buildPortalNotificationListHtml(items, compact = false) {
-    const accentTone = getFacultyThemeTone(getCurrentFaculty(), {
-        useCurrentPalette: true,
-        softAlpha: 0.1,
-        tintAlpha: 0.14,
-        borderAlpha: 0.22
-    });
     if (!items.length) {
-        return `<div style="padding:${compact ? '18px' : '24px'}; border:1px dashed #d6e0ef; border-radius:18px; color:#64748b; text-align:center;">No notifications yet.</div>`;
+        return '<div class="portal-msg-empty">No notifications yet.</div>';
     }
     return items.map(item => `
-        <button type="button" data-notif-action="open-item" data-notification-key="${escapeHtml(item.key)}" style="width:100%; text-align:left; border:1px solid ${item.read ? '#e2e8f0' : accentTone.border}; background:${item.read ? '#ffffff' : `linear-gradient(135deg, ${accentTone.softBg}, rgba(255,255,255,0.92))`}; border-radius:18px; padding:${compact ? '12px 13px' : '14px 16px'}; display:flex; gap:12px; align-items:flex-start; cursor:pointer;">
-            <div style="width:${compact ? '36px' : '40px'}; height:${compact ? '36px' : '40px'}; border-radius:14px; background:linear-gradient(135deg, ${accentTone.accent}, ${item.source === 'social' ? accentTone.accent2 : 'rgba(15,23,42,0.92)'}); color:white; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+        <button type="button" class="portal-msg-card portal-msg-chat-item${item.read ? '' : ' is-active'}" data-notif-action="open-item" data-notification-key="${escapeHtml(item.key)}">
+            <div class="portal-msg-avatar-chip">
                 <i class="fas ${escapeHtml(item.icon || 'fa-bell')}"></i>
             </div>
-            <div style="min-width:0; flex:1;">
-                <div style="display:flex; justify-content:space-between; gap:10px; align-items:flex-start;">
-                    <div style="font-size:${compact ? '12px' : '13px'}; font-weight:800; color:var(--kiu-navy);">${escapeHtml(item.title || 'Notification')}</div>
-                    <span style="font-size:10px; font-weight:800; padding:5px 8px; border-radius:999px; background:${accentTone.softBg}; color:${accentTone.accent}; border:1px solid ${accentTone.border}; text-transform:uppercase;">${escapeHtml(item.source === 'social' ? 'Social' : 'School')}</span>
+            <div class="portal-msg-card-main">
+                <div class="portal-msg-card-title-row">
+                    <div class="portal-msg-card-title">${escapeHtml(item.title || 'Notification')}</div>
+                    <span class="portal-msg-mini-badge${item.read ? '' : ' is-unread'}">${escapeHtml(item.source === 'social' ? 'Social' : 'School')}</span>
                 </div>
-                <div style="font-size:${compact ? '11px' : '12px'}; color:#475569; margin-top:5px; line-height:1.45;">${escapeHtml(item.text || '')}</div>
-                <div style="font-size:11px; color:#94a3b8; margin-top:7px;">${escapeHtml(formatLmsDateTime(item.createdAt))}</div>
+                <div class="portal-msg-card-sub">${escapeHtml(item.text || '')}</div>
+                <div class="portal-msg-time">${escapeHtml(formatLmsDateTime(item.createdAt))}</div>
             </div>
         </button>
     `).join('');
@@ -1623,27 +1665,27 @@ function buildPortalNotificationWorkspaceHtml(summary, mode = 'compact') {
     const { currentUser, uiState, items, unreadCount } = summary;
     const visibleItems = compact ? items.slice(0, 6) : items;
     return `
-        <div style="display:grid; gap:${compact ? '12px' : '16px'};">
-            <div style="display:flex; justify-content:space-between; gap:12px; align-items:center; flex-wrap:wrap;">
+        <div class="portal-msg-page-shell">
+            <div class="portal-msg-page-top">
                 <div>
-                    <div style="font-size:${compact ? '15px' : '18px'}; font-weight:900; color:var(--kiu-navy);">Notifications</div>
-                    <div style="font-size:12px; color:#64748b; margin-top:4px;">${escapeHtml(getPortalMessengerRoleLabel(currentUser.role))} | ${unreadCount} unread</div>
+                    <div class="portal-msg-page-title">Notifications</div>
+                    <div class="portal-msg-page-copy">${escapeHtml(getPortalMessengerRoleLabel(currentUser.role))} | ${unreadCount} unread</div>
                 </div>
-                <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                <div class="portal-msg-filter-row">
                     ${[
                         ['all', 'All'],
                         ['school', 'School'],
                         ['social', 'Social']
                     ].map(([value, label]) => `
-                        <button type="button" data-notif-action="set-filter" data-filter-value="${value}" style="border:1px solid ${uiState.filter === value ? 'rgba(37,99,235,0.35)' : '#dbe5f1'}; background:${uiState.filter === value ? 'linear-gradient(135deg,#0b84ff,#0a5fc4)' : '#f8fafc'}; color:${uiState.filter === value ? '#fff' : '#334155'}; border-radius:999px; padding:8px 12px; font-size:11px; font-weight:800; cursor:pointer;">${label}</button>
+                        <button type="button" class="portal-msg-chip${uiState.filter === value ? ' is-active' : ''}" data-notif-action="set-filter" data-filter-value="${value}">${label}</button>
                     `).join('')}
                 </div>
             </div>
-            <div style="display:flex; justify-content:space-between; gap:10px; align-items:center; flex-wrap:wrap;">
-                <div style="font-size:11px; color:#64748b;">School updates like grades, Student Service replies, timetable changes, and official notices stay together with selected social activity.</div>
-                <button type="button" class="kiu-btn-outline" data-notif-action="mark-all" style="padding:8px 12px; font-size:11px;"><i class="fas fa-check-double"></i> Mark all as read</button>
+            <div class="portal-msg-actions">
+                <div class="portal-msg-panel-meta">School updates like grades, Student Service replies, timetable changes, and official notices stay together with selected social activity.</div>
+                <button type="button" class="kiu-btn-outline portal-msg-inline-btn" data-notif-action="mark-all"><i class="fas fa-check-double"></i> Mark all as read</button>
             </div>
-            <div style="display:grid; gap:${compact ? '10px' : '12px'}; max-height:${compact ? '340px' : 'calc(76vh - 160px)'}; overflow:auto; padding-right:2px;">
+            <div class="portal-msg-list${compact ? ' is-compact' : ''}">
                 ${buildPortalNotificationListHtml(visibleItems, compact)}
             </div>
         </div>
@@ -2316,7 +2358,7 @@ function ensurePortalMessengerFileInput() {
         input = document.createElement('input');
         input.type = 'file';
         input.id = 'portal-messenger-file-input';
-        input.style.display = 'none';
+        input.hidden = true;
         document.body.appendChild(input);
     }
     return input;
@@ -2432,7 +2474,7 @@ function renderPortalMessengerWorkspace() {
     const currentUser = getCurrentUser();
     if (!currentUser) {
         containers.forEach(container => {
-            container.innerHTML = `<div style="color:var(--kiu-text-muted); text-align:center;">Messenger is available after login.</div>`;
+            container.innerHTML = '<div class="portal-msg-empty">Messenger is available after login.</div>';
         });
         return;
     }
@@ -2461,118 +2503,117 @@ function renderPortalMessengerWorkspace() {
     const activeChat = uiState.activeChatId ? KIU_STATE.portalMessengerChats[uiState.activeChatId] : null;
     const activeDraft = activeChat ? getPortalMessengerDraftFile(activeChat.id) : null;
     const messengerFaculty = normalizeFacultyCode(currentUser.facultyCode || currentUser.faculty || getCurrentFaculty(), 'ECON');
-    const messengerTone = getFacultyThemeTone(messengerFaculty, {
-        useCurrentPalette: true,
-        softAlpha: 0.12,
-        borderAlpha: 0.24
-    });
 
     const html = `
-        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:18px; flex-wrap:wrap; margin-bottom:20px;">
+        <div class="portal-msg-page-shell">
+        <div class="portal-msg-page-top">
             <div>
-                <div style="font-size:24px; font-weight:900; color:var(--kiu-navy);">Portal Messenger</div>
-                <div style="font-size:13px; color:var(--kiu-text-muted); margin-top:6px;">Search students, professors, and teaching assistants, open private chats, and share files inside the portal.</div>
+                <div class="portal-msg-page-title">Portal Messenger</div>
+                <div class="portal-msg-page-copy">Search students, professors, and teaching assistants, open private chats, and share files inside the portal.</div>
             </div>
-            <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                <span style="display:inline-flex; align-items:center; gap:6px; padding:10px 14px; border-radius:999px; background:${messengerTone.softBg}; border:1px solid ${messengerTone.border}; color:${messengerTone.accent}; font-size:12px; font-weight:800;">
+            <div class="portal-msg-page-pills">
+                <span class="portal-msg-pill is-role">
                     <i class="fas fa-user-shield"></i> ${escapeHtml(getPortalMessengerRoleLabel(currentUser.role))}
                 </span>
-                <span style="display:inline-flex; align-items:center; gap:6px; padding:10px 14px; border-radius:999px; background:#f8fafc; border:1px solid var(--kiu-border); color:var(--kiu-text-main); font-size:12px; font-weight:700;">
+                <span class="portal-msg-pill">
                     <i class="fas fa-building"></i> ${escapeHtml(getFacultyLabel(messengerFaculty))}
                 </span>
             </div>
         </div>
-        <div style="display:grid; grid-template-columns:minmax(300px,0.95fr) minmax(280px,0.95fr) minmax(360px,1.35fr); gap:20px; align-items:start;">
-            <div style="background:#ffffff; border:1px solid var(--kiu-border); border-radius:22px; padding:18px; box-shadow:0 14px 32px rgba(15,23,42,0.05);">
-                <div style="font-size:15px; font-weight:800; color:var(--kiu-navy); margin-bottom:12px;">Find People</div>
-                <input type="text" value="${escapeHtml(search)}" data-legacy-input="setPortalMessengerSearch(this.value)" placeholder="Search by name, ID, email, faculty..." style="width:100%; border:1px solid var(--kiu-border); border-radius:14px; padding:11px 12px; outline:none; margin-bottom:12px;">
-                <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px;">
+        <div class="portal-msg-shell">
+            <div class="portal-msg-panel">
+                <div class="portal-msg-panel-title">Find People</div>
+                <input type="text" class="portal-msg-search is-compact" value="${escapeHtml(search)}" data-legacy-input="setPortalMessengerSearch(this.value)" placeholder="Search by name, ID, email, faculty...">
+                <div class="portal-msg-filter-row">
                     ${[
                         ['all', 'All'],
                         [USER_ROLES.STUDENT, 'Students'],
                         [USER_ROLES.PROFESSOR, 'Professors'],
                         [USER_ROLES.TA, 'TAs']
                     ].map(([value, label]) => `
-                        <button type="button" data-legacy-click="setPortalMessengerRoleFilter('${value}')" style="border:1px solid ${roleFilter === value ? 'rgba(10,132,255,0.4)' : '#dbe5f1'}; background:${roleFilter === value ? 'linear-gradient(135deg,#0b84ff,#0a5fc4)' : '#f8fafc'}; color:${roleFilter === value ? '#fff' : 'var(--kiu-text-main)'}; border-radius:999px; padding:8px 12px; font-size:11px; font-weight:800; cursor:pointer;">
+                        <button type="button" class="portal-msg-chip${roleFilter === value ? ' is-active' : ''}" data-legacy-click="setPortalMessengerRoleFilter('${value}')">
                             ${label}
                         </button>
                     `).join('')}
                 </div>
-                <div style="display:flex; flex-direction:column; gap:10px; max-height:520px; overflow:auto;">
+                <div class="portal-msg-list portal-msg-list--capped">
                     ${directory.length ? directory.map(person => `
-                        <div style="border:1px solid #e2e8f0; border-radius:16px; padding:12px; display:flex; align-items:center; justify-content:space-between; gap:12px;">
-                            <div style="min-width:0;">
-                                <div style="font-size:13px; font-weight:800; color:var(--kiu-navy); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(person.displayName)}</div>
-                                <div style="font-size:11px; color:var(--kiu-text-muted); margin-top:4px;">${escapeHtml(person.roleLabel)} | ${escapeHtml(person.facultyName)}</div>
-                                <div style="font-size:11px; color:#94a3b8; margin-top:3px;">${escapeHtml(person.email || getSafeInstitutionalEmail(person))}</div>
+                        <div class="portal-msg-card">
+                            <div class="portal-msg-card-main">
+                                <div class="portal-msg-card-title">${escapeHtml(person.displayName)}</div>
+                                <div class="portal-msg-card-meta">${escapeHtml(person.roleLabel)} | ${escapeHtml(person.facultyName)}</div>
+                                <div class="portal-msg-card-sub">${escapeHtml(person.email || getSafeInstitutionalEmail(person))}</div>
                             </div>
-                            <button class="kiu-btn-blue" style="padding:8px 10px; font-size:11px; flex-shrink:0;" data-legacy-click="openPortalDirectChat('${escapeHtml(String(person.id))}')"><i class="fas fa-comments"></i> Message</button>
+                            <button class="kiu-btn-blue portal-msg-inline-btn" data-legacy-click="openPortalDirectChat('${escapeHtml(String(person.id))}')"><i class="fas fa-comments"></i> Message</button>
                         </div>
-                    `).join('') : `<div style="font-size:12px; color:var(--kiu-text-muted); text-align:center; padding:22px 10px;">No people matched your search.</div>`}
+                    `).join('') : '<div class="portal-msg-empty">No people matched your search.</div>'}
                 </div>
             </div>
-            <div style="background:#ffffff; border:1px solid var(--kiu-border); border-radius:22px; padding:18px; box-shadow:0 14px 32px rgba(15,23,42,0.05);">
-                <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:12px;">
-                    <div style="font-size:15px; font-weight:800; color:var(--kiu-navy);">Private Chats</div>
-                    <div style="font-size:11px; color:var(--kiu-text-muted);">${chats.length} active</div>
+            <div class="portal-msg-panel">
+                <div class="portal-msg-panel-head">
+                    <div class="portal-msg-panel-title">Private Chats</div>
+                    <div class="portal-msg-panel-meta">${chats.length} active</div>
                 </div>
-                <div style="display:flex; flex-direction:column; gap:10px; max-height:520px; overflow:auto;">
+                <div class="portal-msg-list portal-msg-list--capped">
                     ${chats.length ? chats.map(chat => `
-                        <button type="button" data-legacy-click="openPortalMessengerChat('${chat.id}')" style="text-align:left; border:1px solid ${uiState.activeChatId === chat.id ? 'rgba(10,132,255,0.35)' : '#e2e8f0'}; background:${uiState.activeChatId === chat.id ? 'rgba(239,246,255,0.95)' : '#ffffff'}; border-radius:16px; padding:12px; cursor:pointer;">
-                            <div style="font-size:13px; font-weight:800; color:var(--kiu-navy);">${escapeHtml(getPortalMessengerDisplayNameForChat(chat, currentUserId))}</div>
-                            <div style="font-size:11px; color:var(--kiu-text-muted); margin-top:4px;">${escapeHtml(getPortalMessengerMessagePreview(chat))}</div>
+                        <button type="button" class="portal-msg-chat-item${uiState.activeChatId === chat.id ? ' is-active' : ''}" data-legacy-click="openPortalMessengerChat('${chat.id}')">
+                            <div class="portal-msg-card-main">
+                                <div class="portal-msg-card-title">${escapeHtml(getPortalMessengerDisplayNameForChat(chat, currentUserId))}</div>
+                                <div class="portal-msg-card-meta">${escapeHtml(getPortalMessengerMessagePreview(chat))}</div>
+                            </div>
                         </button>
-                    `).join('') : `<div style="font-size:12px; color:var(--kiu-text-muted); text-align:center; padding:22px 10px;">Start a private conversation from the directory.</div>`}
+                    `).join('') : '<div class="portal-msg-empty">Start a private conversation from the directory.</div>'}
                 </div>
             </div>
-            <div style="background:#ffffff; border:1px solid var(--kiu-border); border-radius:22px; padding:18px; box-shadow:0 18px 40px rgba(15,23,42,0.06); min-height:620px; display:flex; flex-direction:column;">
+            <div class="portal-msg-panel portal-msg-thread-panel">
                 ${activeChat ? `
-                    <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:14px; padding-bottom:12px; border-bottom:1px solid #e2e8f0;">
+                    <div class="portal-msg-thread-head">
                         <div>
-                            <div style="font-size:18px; font-weight:900; color:var(--kiu-navy);">${escapeHtml(getPortalMessengerDisplayNameForChat(activeChat, currentUserId))}</div>
-                            <div style="font-size:12px; color:var(--kiu-text-muted); margin-top:4px;">${escapeHtml((activeChat.members || []).map(memberId => {
+                            <div class="portal-msg-thread-title">${escapeHtml(getPortalMessengerDisplayNameForChat(activeChat, currentUserId))}</div>
+                            <div class="portal-msg-thread-copy">${escapeHtml((activeChat.members || []).map(memberId => {
                                 const user = getPortalMessengerUserById(memberId);
                                 return user ? `${user.displayName} (${user.roleLabel})` : memberId;
                             }).join(', '))}</div>
                         </div>
-                        <div style="font-size:11px; color:var(--kiu-text-muted);">Private chat</div>
+                        <div class="portal-msg-thread-badge">Private chat</div>
                     </div>
-                    <div class="portal-messenger-chat-log" style="flex:1; min-height:0; overflow:auto; display:flex; flex-direction:column; gap:12px; padding-right:4px;">
+                    <div class="portal-messenger-chat-log portal-msg-chat-log">
                         ${(activeChat.messages || []).length ? activeChat.messages.map(message => {
                             const mine = String(message.senderId) === currentUserId;
                             return `
-                                <div style="display:flex; flex-direction:column; align-items:${mine ? 'flex-end' : 'flex-start'};">
-                                    <div style="font-size:11px; color:var(--kiu-text-muted); margin-bottom:4px;">${escapeHtml(message.senderName || message.senderId)} | ${escapeHtml(getPortalMessengerRoleLabel(message.senderRole))} | ${escapeHtml(formatLmsDateTime(message.sentAt))}</div>
-                                    <div style="max-width:80%; background:${mine ? 'linear-gradient(135deg,#0b84ff,#0a5fc4)' : '#f8fafc'}; color:${mine ? '#ffffff' : 'var(--kiu-text-main)'}; border:${mine ? 'none' : '1px solid #e2e8f0'}; border-radius:18px; padding:12px 14px;">
-                                        ${message.text ? `<div style="white-space:pre-wrap; font-size:13px; line-height:1.55;">${escapeHtml(message.text)}</div>` : ''}
-                                        ${message.file ? `<div style="margin-top:${message.text ? '10px' : '0'};">${mine
-                                            ? `<a href="${message.file.dataUrl}" download="${escapeHtml(message.file.name)}" style="display:inline-flex; align-items:center; gap:6px; color:#ffffff; font-size:12px; font-weight:700; text-decoration:underline;"><i class="fas fa-file-download"></i> ${escapeHtml(message.file.name)}</a>`
+                                <div class="portal-msg-bubble-row${mine ? ' is-mine' : ''}">
+                                    <div class="portal-msg-bubble-meta">${escapeHtml(message.senderName || message.senderId)} | ${escapeHtml(getPortalMessengerRoleLabel(message.senderRole))} | ${escapeHtml(formatLmsDateTime(message.sentAt))}</div>
+                                    <div class="portal-msg-bubble${mine ? ' is-mine' : ''}">
+                                        ${message.text ? `<div class="portal-msg-bubble-text">${escapeHtml(message.text)}</div>` : ''}
+                                        ${message.file ? `<div class="portal-msg-bubble-file">${mine
+                                            ? `<a href="${message.file.dataUrl}" download="${escapeHtml(message.file.name)}"><i class="fas fa-file-download"></i> ${escapeHtml(message.file.name)}</a>`
                                             : getStoredFileDownloadHtml(message.file, message.file.name)}</div>` : ''}
                                     </div>
                                 </div>
                             `;
-                        }).join('') : `<div style="margin:auto; text-align:center; color:var(--kiu-text-muted);">No messages yet. Start the conversation.</div>`}
+                        }).join('') : '<div class="portal-msg-thread-empty-wrap"><div class="portal-msg-thread-empty-title">No messages yet</div><div class="portal-msg-thread-empty-copy">Start the conversation.</div></div>'}
                     </div>
-                    <div style="margin-top:14px; padding-top:14px; border-top:1px solid #e2e8f0;">
-                        <div data-legacy-dragover="handlePortalMessengerDragOver(event)" data-legacy-drop="handlePortalMessengerDrop(event, '${activeChat.id}')" style="border:1px dashed #cbd5e1; border-radius:16px; padding:12px; background:#f8fafc; margin-bottom:12px;">
-                            <textarea id="portal-messenger-message-input" placeholder="Write a private message..." style="width:100%; min-height:96px; border:1px solid var(--kiu-border); border-radius:16px; padding:12px 14px; outline:none; resize:vertical; background:white;"></textarea>
-                            <div style="font-size:11px; color:var(--kiu-text-muted); margin-top:8px;">Drag and drop a file here or use the attach button.</div>
+                    <div class="portal-msg-composer-wrap">
+                        <div data-legacy-dragover="handlePortalMessengerDragOver(event)" data-legacy-drop="handlePortalMessengerDrop(event, '${activeChat.id}')" class="portal-msg-composer">
+                            <textarea id="portal-messenger-message-input" class="portal-msg-textarea is-compact" placeholder="Write a private message..."></textarea>
+                            <div class="portal-msg-composer-note">Drag and drop a file here or use the attach button.</div>
                         </div>
-                        <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
-                            <div id="portal-messenger-attachment-label" style="font-size:12px; color:var(--kiu-blue); font-weight:700;">${activeDraft?.name ? `<i class="fas fa-paperclip"></i> ${escapeHtml(activeDraft.name)}` : 'No file selected'}</div>
-                            <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                                <button class="kiu-btn-outline" data-legacy-click="pickPortalMessengerFile('${activeChat.id}')"><i class="fas fa-paperclip"></i> Attach File</button>
-                                <button class="kiu-btn-blue" data-legacy-click="sendPortalMessengerMessage('${activeChat.id}')"><i class="fas fa-paper-plane"></i> Send</button>
+                        <div class="portal-msg-composer-footer">
+                            <div id="portal-messenger-attachment-label" class="portal-msg-attachment-label">${activeDraft?.name ? `<i class="fas fa-paperclip"></i> ${escapeHtml(activeDraft.name)}` : 'No file selected'}</div>
+                            <div class="portal-msg-actions">
+                                <button class="kiu-btn-outline portal-msg-inline-btn" data-legacy-click="pickPortalMessengerFile('${activeChat.id}')"><i class="fas fa-paperclip"></i> Attach File</button>
+                                <button class="kiu-btn-blue portal-msg-inline-btn" data-legacy-click="sendPortalMessengerMessage('${activeChat.id}')"><i class="fas fa-paper-plane"></i> Send</button>
                             </div>
                         </div>
                     </div>
                 ` : `
-                    <div style="margin:auto; text-align:center;">
-                        <div style="font-size:20px; font-weight:900; color:var(--kiu-navy);">No active conversation yet</div>
-                        <div style="font-size:13px; color:var(--kiu-text-muted); margin-top:8px;">Search for a student, professor, or teaching assistant and click Message to start chatting.</div>
+                    <div class="portal-msg-thread-empty-wrap">
+                        <div class="portal-msg-thread-empty-title">No active conversation yet</div>
+                        <div class="portal-msg-thread-empty-copy">Search for a student, professor, or teaching assistant and click Message to start chatting.</div>
                     </div>
                 `}
             </div>
+        </div>
         </div>
     `;
 

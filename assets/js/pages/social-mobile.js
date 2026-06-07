@@ -152,13 +152,13 @@
     function getActiveSocialPanel() {
         const runtime = getSocialRuntime();
         const panel = normalizeSocialPanel(runtime?.ui?.activePanel || 'feed');
-        return ['feed', 'community', 'projects', 'events', 'lost-and-found', 'messages', 'alerts', 'profile'].includes(panel) ? panel : 'feed';
+        return ['feed', 'community', 'workspace', 'projects', 'events', 'lost-and-found', 'messages', 'alerts', 'profile'].includes(panel) ? panel : 'feed';
     }
 
     function activeMobileNavKey(panel = getActiveSocialPanel()) {
         const normalizedPanel = normalizeSocialPanel(panel);
         if (normalizedPanel === 'community') return 'community';
-        if (normalizedPanel === 'projects' || normalizedPanel === 'profile') return 'more';
+        if (normalizedPanel === 'workspace' || normalizedPanel === 'projects' || normalizedPanel === 'profile') return 'more';
         if (normalizedPanel === 'events') return 'events';
         if (normalizedPanel === 'lost-and-found') return 'lost-and-found';
         if (normalizedPanel === 'messages' || normalizedPanel === 'alerts') return 'inbox';
@@ -193,7 +193,7 @@
         if (!badge) return;
         const total = getUnreadMessageCount() + getUnreadAlertCount();
         badge.textContent = total > 99 ? '99+' : String(total);
-        badge.style.display = total > 0 ? '' : 'none';
+        badge.hidden = total <= 0;
     }
 
     function setSocialPanel(panel) {
@@ -258,24 +258,58 @@
         });
     }
 
-    function closeSheet() {
+    function isElementShown(element) {
+        if (!element) return false;
+        const explicitState = element.getAttribute('data-mob-visible');
+        if (explicitState === 'true') return true;
+        if (explicitState === 'false') return false;
+        if (element.hidden || element.getAttribute('aria-hidden') === 'true') return false;
+        return !/display\s*:\s*none/i.test(String(element.getAttribute('style') || ''));
+    }
+
+    function setElementShown(element, shown, displayValue = '') {
+        void displayValue;
+        if (!element) return;
+        element.hidden = !shown;
+        element.setAttribute('data-mob-visible', shown ? 'true' : 'false');
+    }
+
+    function setSheetBodyState(isOpen) {
+        document.body.classList.toggle('mob-sheet-open', isOpen === true);
+    }
+
+    function closeSheet(options = {}) {
         const sheet = document.getElementById('mobile-action-sheet');
+        const moreButton = document.getElementById('mob-nav-more');
+        const closeButton = document.getElementById('mob-sheet-close');
         if (!sheet) return;
         sheet.classList.remove('is-open');
-        document.body.style.overflow = '';
+        sheet.setAttribute('aria-hidden', 'true');
+        if (moreButton) moreButton.setAttribute('aria-expanded', 'false');
+        if (closeButton) closeButton.removeAttribute('data-mob-sheet-focus');
+        setSheetBodyState(false);
         window.setTimeout(() => {
-            sheet.style.display = 'none';
+            setElementShown(sheet, false);
+            if (options.restoreFocus !== false && moreButton) moreButton.focus();
             syncSocialChrome();
         }, 300);
     }
 
     function openSheet() {
         const sheet = document.getElementById('mobile-action-sheet');
+        const moreButton = document.getElementById('mob-nav-more');
+        const closeButton = document.getElementById('mob-sheet-close');
         if (!sheet) return;
-        sheet.style.display = '';
-        document.body.style.overflow = 'hidden';
+        setElementShown(sheet, true);
+        sheet.setAttribute('aria-hidden', 'false');
+        if (moreButton) moreButton.setAttribute('aria-expanded', 'true');
+        setSheetBodyState(true);
         window.requestAnimationFrame(() => {
             sheet.classList.add('is-open');
+            if (closeButton) {
+                closeButton.setAttribute('data-mob-sheet-focus', '1');
+                closeButton.focus();
+            }
         });
         buildRoleNav();
     }
@@ -283,7 +317,7 @@
     function toggleSheet() {
         const sheet = document.getElementById('mobile-action-sheet');
         if (!sheet) return;
-        if (sheet.style.display !== 'none') {
+        if (isElementShown(sheet)) {
             closeSheet();
             return;
         }
@@ -346,6 +380,10 @@
                         <i class="fas fa-stream"></i>
                         <span>Feed</span>
                     </button>
+                    <button class="mob-sheet-nav-btn" type="button" data-social-panel="workspace">
+                        <i class="fas fa-diagram-project"></i>
+                        <span>Projects</span>
+                    </button>
                     <button class="mob-sheet-nav-btn" type="button" data-social-panel="projects">
                         <i class="fas fa-briefcase"></i>
                         <span>Portfolio</span>
@@ -391,7 +429,7 @@
 
         const adminSwitch = document.getElementById('mob-act-admin');
         if (adminSwitch) {
-            adminSwitch.style.display = ['admin', 'student_service', 'professor', 'ta'].includes(role) ? '' : 'none';
+            adminSwitch.hidden = !['admin', 'student_service', 'professor', 'ta'].includes(role);
         }
     }
 
@@ -471,9 +509,9 @@
     function handleResize() {
         const nav = document.getElementById('mobile-bottom-nav');
         if (!nav) return;
-        nav.style.display = isMobileViewport() ? '' : 'none';
+        setElementShown(nav, isMobileViewport());
         if (!isMobileViewport()) {
-            closeSheet();
+            closeSheet({ restoreFocus: false });
             return;
         }
         setSidebarCollapsedState();

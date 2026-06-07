@@ -116,7 +116,7 @@ function buildInitScript() {
             localStorage.setItem('currentUserRole', authState.role);
             localStorage.setItem('currentFaculty', authState.faculty);
             localStorage.setItem('KIU_FACULTY_CONTEXT', authState.faculty);
-            localStorage.setItem('KIU_REAL_TESTING_CLEANUP_V6', '6');
+            localStorage.setItem('KIU_REAL_TESTING_CLEANUP_V7', '7');
             localStorage.removeItem('KIU_PENDING_ROLE_SWITCH_ROLE');
             localStorage.removeItem('KIU_PORTAL_SESSION_TOKEN');
             localStorage.setItem('KIU_PERSISTENT_STATE', JSON.stringify(persistedState));

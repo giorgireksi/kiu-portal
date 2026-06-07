@@ -64,7 +64,7 @@ function createEmptyRegistrationCmsByFaculty(sourceProfiles = {}) {
     return Object.fromEntries(
         Object.keys(sourceProfiles || {}).map(code => [
             code,
-            { concCourseData: {}, minorProgramData: {} }
+            { concCourseData: {}, minorProgramData: {}, trackData: {}, customTabs: [], builtinTabOverrides: {}, hiddenBuiltinTabs: [] }
         ])
     );
 }
@@ -99,6 +99,144 @@ function createEmptySocialHubState() {
     };
 }
 
+function isAdminTestingPersonaIdForPurge(id = '') {
+    return String(id || '').trim().toLowerCase().startsWith('admin-testing-');
+}
+
+function isDemoOrTestingRecord(record = {}, options = {}) {
+    if (!record || typeof record !== 'object') return false;
+    const id = String(record.id || record.userId || record.studentId || '').trim().toLowerCase();
+    const retainAdminTesting = Boolean(options.retainAdminTestingPersonas);
+    if (isAdminTestingPersonaIdForPurge(id) && retainAdminTesting) return false;
+    if (record.isDemoAccount) return true;
+    if (record.isAdminTestingPersona && !retainAdminTesting) return true;
+    if (!id) return false;
+    if (isAdminTestingPersonaIdForPurge(id)) return true;
+    if (id.includes('-demo') || id.endsWith('-demo')) return true;
+    if (id.startsWith('testing-')) return true;
+    if (/^(econ|cs|law|med|arts)-(student|professor|ta|service)(-demo)?/.test(id)) return true;
+    return false;
+}
+
+function isDemoCourseId(courseId = '') {
+    const id = String(courseId || '').trim().toUpperCase();
+    return id.includes('-DEMO-') || id.endsWith('-DEMO') || /^[A-Z]+-DEMO-\d+/.test(id);
+}
+
+function purgeDemoContentFromState(state, options = {}) {
+    if (!state || typeof state !== 'object') return state;
+    if (Array.isArray(state.users)) {
+        state.users = state.users.filter(user => !isDemoOrTestingRecord(user, options));
+    }
+    if (state.facultyProfiles && typeof state.facultyProfiles === 'object') {
+        Object.values(state.facultyProfiles).forEach((profile) => {
+            if (!profile || typeof profile !== 'object') return;
+            if (Array.isArray(profile.curriculum)) {
+                profile.curriculum = profile.curriculum.filter(subject => !isDemoCourseId(subject?.id || subject?.courseId));
+            }
+            ['professors', 'tas', 'students'].forEach((key) => {
+                if (!Array.isArray(profile[key])) return;
+                profile[key] = profile[key].filter(member => !isDemoOrTestingRecord(member, options));
+            });
+        });
+    }
+    if (Array.isArray(state.curriculum)) {
+        state.curriculum = state.curriculum.filter(subject => !isDemoCourseId(subject?.id || subject?.courseId));
+    }
+    if (Array.isArray(state.publicSocialPosts)) {
+        state.publicSocialPosts = state.publicSocialPosts.filter(post => !isDemoOrTestingRecord({ id: post?.authorId || post?.userId }, options));
+    }
+    if (Array.isArray(state.portalNotifications)) {
+        state.portalNotifications = state.portalNotifications.filter(item => String(item?.type || '') !== 'demo-ready');
+    }
+    if (Array.isArray(state.studentServiceTickets)) {
+        state.studentServiceTickets = state.studentServiceTickets.filter(ticket => !String(ticket?.id || '').toLowerCase().startsWith('testing-'));
+    }
+    const purgeStudentKeyedMap = (map) => {
+        if (!map || typeof map !== 'object') return;
+        Object.keys(map).forEach((studentId) => {
+            if (isDemoOrTestingRecord({ id: studentId }, options)) delete map[studentId];
+        });
+    };
+    purgeStudentKeyedMap(state.studentSchedulesByStudent);
+    purgeStudentKeyedMap(state.studentRegistrations);
+    purgeStudentKeyedMap(state.studentGrades);
+    purgeStudentKeyedMap(state.studentPassedCourses);
+    purgeStudentKeyedMap(state.tuitionBalances);
+    if (state.availableGroups && typeof state.availableGroups === 'object') {
+        Object.keys(state.availableGroups).forEach((subjectId) => {
+            if (isDemoCourseId(subjectId)) delete state.availableGroups[subjectId];
+        });
+    }
+    purgeDemoRegistrationCmsFromState(state);
+    return state;
+}
+
+function purgeDemoRegistrationCmsFromState(state) {
+    if (!state || typeof state !== 'object') return;
+    const structures = state.adminProgramStructures;
+    if (structures && typeof structures === 'object') {
+        Object.values(structures).forEach((facultyBucket) => {
+            if (!facultyBucket || typeof facultyBucket !== 'object') return;
+            ['prog', 'free', 'conc', 'minor'].forEach((tabKey) => {
+                if (!Array.isArray(facultyBucket[tabKey])) return;
+                facultyBucket[tabKey] = facultyBucket[tabKey]
+                    .filter((module) => module && typeof module === 'object' && !isDemoCourseId(module.id))
+                    .map((module) => {
+                        if (!Array.isArray(module.subModules)) return module;
+                        return {
+                            ...module,
+                            subModules: module.subModules.filter((sub) => (
+                                sub
+                                && typeof sub === 'object'
+                                && !isDemoCourseId(sub.id)
+                            ))
+                        };
+                    });
+            });
+        });
+    }
+    const cmsByFaculty = state.registrationCMSByFaculty;
+    if (cmsByFaculty && typeof cmsByFaculty === 'object') {
+        Object.values(cmsByFaculty).forEach((bucket) => {
+            if (!bucket || typeof bucket !== 'object') return;
+            ['concCourseData', 'minorProgramData'].forEach((mapKey) => {
+                const map = bucket[mapKey];
+                if (!map || typeof map !== 'object') return;
+                Object.keys(map).forEach((programKey) => {
+                    const program = map[programKey];
+                    if (!program || typeof program !== 'object') return;
+                    Object.keys(program).forEach((groupKey) => {
+                        const group = program[groupKey];
+                        if (!group || typeof group !== 'object' || !Array.isArray(group.courses)) return;
+                        group.courses = group.courses.filter((course) => {
+                            const courseId = course?.id || course?.courseId || course?.title || '';
+                            return !isDemoCourseId(courseId);
+                        });
+                    });
+                });
+            });
+            const trackData = bucket.trackData && typeof bucket.trackData === 'object' ? bucket.trackData : {};
+            Object.values(trackData).forEach((tabTrack) => {
+                if (!tabTrack || typeof tabTrack !== 'object') return;
+                Object.values(tabTrack).forEach((groups) => {
+                    if (!groups || typeof groups !== 'object') return;
+                    Object.values(groups).forEach((group) => {
+                        if (!group || typeof group !== 'object' || !Array.isArray(group.courses)) return;
+                        group.courses = group.courses.filter((course) => {
+                            const courseId = course?.n || course?.sourceCourseId || course?.title || '';
+                            return !isDemoCourseId(courseId);
+                        });
+                    });
+                });
+            });
+            if (Array.isArray(bucket.customTabs)) {
+                bucket.customTabs = bucket.customTabs.filter((tab) => tab && !isDemoCourseId(tab.id));
+            }
+        });
+    }
+}
+
 function scrubFakeMedia(value) {
     const raw = String(value || '').trim();
     if (!raw) return '';
@@ -114,8 +252,11 @@ function scrubFakeMedia(value) {
     return value;
 }
 
-function sanitizeStateForManualTesting(state) {
+function sanitizeStateForManualTesting(state, options = {}) {
     if (!state || typeof state !== 'object') return state;
+    const purgeOptions = {
+        retainAdminTestingPersonas: Boolean(options.retainAdminTestingPersonas)
+    };
     const facultyProfiles = state.facultyProfiles && typeof state.facultyProfiles === 'object'
         ? state.facultyProfiles
         : buildEmptyFacultyProfiles();
@@ -196,6 +337,8 @@ function sanitizeStateForManualTesting(state) {
     state.meta.manualTestingSanitizedVersion = typeof MANUAL_TESTING_STATE_VERSION === 'number' ? MANUAL_TESTING_STATE_VERSION : 4;
     state.auth = state.auth && typeof state.auth === 'object' ? state.auth : {};
     if (!state.auth.activeUserId) delete state.auth.activeUserId;
+    purgeDemoContentFromState(state, purgeOptions);
+    if (typeof stripSeededMockStudents === 'function') stripSeededMockStudents(state, purgeOptions);
     return state;
 }
 

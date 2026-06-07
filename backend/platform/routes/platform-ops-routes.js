@@ -1,6 +1,7 @@
 function registerPlatformOpsRoutes(app, deps = {}) {
     const {
         backendUrl,
+        buildLocalSetupBootstrap,
         buildProductionReadinessStatus,
         buildRtcConfig,
         fs,
@@ -10,6 +11,7 @@ function registerPlatformOpsRoutes(app, deps = {}) {
         getStore,
         requireActualSessionRole,
         requireSessionAccount,
+        sendError,
         uploadsDir
     } = deps;
 
@@ -58,6 +60,16 @@ function registerPlatformOpsRoutes(app, deps = {}) {
     app.get('/api/platform/downloads', (request, response) => {
         response.json({ ok: true, downloads: getAntiCheatDownloadCatalog() });
     });
+
+    if (typeof buildLocalSetupBootstrap === 'function') {
+        app.get('/api/local-setup/bootstrap', async (request, response) => {
+            try {
+                response.json(await buildLocalSetupBootstrap());
+            } catch (error) {
+                sendError(response, 500, `Failed to build local setup bootstrap: ${error instanceof Error ? error.message : 'unknown error'}`);
+            }
+        });
+    }
 }
 
 module.exports = {

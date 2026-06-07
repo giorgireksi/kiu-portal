@@ -1,0 +1,1227 @@
+/* ============================================================
+   PROJECT WORKSPACE — LMS-style detail panel refresh
+   Loaded after social-rebuild.css; scoped to
+   body.lux-route-social .social-project-* only. No other route affected.
+   ============================================================ */
+body.lux-route-social .social-projects-shell {
+    --sn-proj-accent: var(--project-accent, var(--sn-accent, #c8822a));
+    --sn-proj-accent-rgb: var(--sn-accent-rgb, 200,130,42);
+    --sn-proj-lane: rgba(var(--lux-glass-tint-rgb,15,23,42), calc(0.10 + var(--lux-panel-alpha,0.74) * 0.10));
+    --sn-proj-strip: 4px;
+}
+body.lux-light-mode.lux-route-social .social-projects-shell {
+    --sn-proj-lane: rgba(120,90,50,0.05);
+}
+
+/* ---- Reusable section header (kicker + accent bar) ---- */
+body.lux-route-social .social-projects-shell .social-neo-section-head {
+    position: relative;
+    align-items: flex-start;
+    gap: 12px;
+    padding-bottom: 12px;
+    margin-bottom: 14px;
+    border-bottom: 1px solid var(--sn-bdr);
+}
+body.lux-route-social .social-projects-shell .social-neo-section-head > div:first-child {
+    position: relative;
+    padding-left: 14px;
+}
+body.lux-route-social .social-projects-shell .social-neo-section-head > div:first-child::before {
+    content: "";
+    position: absolute; left: 0; top: 2px; bottom: 2px;
+    width: 3px; border-radius: 999px;
+    background: linear-gradient(180deg, var(--sn-proj-accent), transparent);
+}
+body.lux-route-social .social-projects-shell .social-neo-section-head strong {
+    font-size: 15px; font-weight: 800; letter-spacing: -0.01em;
+    display: block;
+}
+body.lux-route-social .social-projects-shell .social-neo-section-head span {
+    color: var(--lux-text-muted, rgba(226,232,240,0.62));
+    font-size: 12.5px;
+}
+
+/* ---- Tab bar: horizontal pill control ---- */
+body.lux-route-social .social-project-tab-row,
+body.lux-route-social .social-project-tab-row-rich {
+    display: flex; flex-wrap: nowrap; gap: 6px;
+    overflow-x: auto; scrollbar-width: thin;
+    padding: 6px; margin: 0;
+    background: var(--sn-proj-lane);
+    border: 1px solid var(--sn-bdr);
+    border-radius: var(--sn-pill);
+    position: sticky; top: 8px; z-index: 6;
+    -webkit-backdrop-filter: blur(var(--sn-blur)); backdrop-filter: blur(var(--sn-blur));
+    scroll-behavior: smooth;
+    -webkit-mask-image: linear-gradient(to right, transparent, black 12px, black 100%);
+    mask-image: linear-gradient(to right, transparent, black 12px, black 100%);
+}
+body.lux-route-social .social-project-tab-row::-webkit-scrollbar,
+body.lux-route-social .social-project-tab-row-rich::-webkit-scrollbar { height: 6px; }
+body.lux-route-social .social-project-tab-row .social-neo-btn,
+body.lux-route-social .social-project-tab-row-rich .social-neo-btn {
+    flex: 0 0 auto;
+    border-radius: var(--sn-pill) !important;
+    border: 1px solid transparent !important;
+    background: transparent !important;
+    color: var(--lux-text-muted, rgba(226,232,240,0.7)) !important;
+    font-weight: 700; padding: 8px 16px !important;
+    transition: all var(--sn-ease);
+}
+body.lux-route-social .social-project-tab-row .social-neo-btn:hover {
+    background: rgba(var(--sn-proj-accent-rgb), 0.12) !important;
+    color: var(--sn-txt) !important;
+    transform: translateY(-1px);
+}
+body.lux-route-social .social-project-tab-row .social-neo-btn-primary {
+    background: linear-gradient(135deg, var(--sn-proj-accent), rgba(var(--sn-proj-accent-rgb),0.78)) !important;
+    color: #fff !important;
+    box-shadow: 0 6px 16px rgba(var(--sn-proj-accent-rgb), 0.32);
+}
+
+/* ---- Tab pill: rich variant ---- */
+body.lux-route-social .social-project-tab-shell {
+    overflow: visible;
+}
+body.lux-route-social .social-project-tab-pill {
+    flex: 0 0 auto;
+    border: 1px solid var(--sn-bdr);
+    background: rgba(var(--lux-glass-tint-rgb,8,14,30), calc(var(--lux-panel-alpha, 0.74) * 0.62));
+    color: var(--sn-txt);
+    border-radius: 14px;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-align: left;
+    cursor: pointer;
+    white-space: nowrap;
+    position: relative;
+    transition: all var(--sn-ease);
+}
+body.lux-route-social .social-project-tab-pill i {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(var(--sn-proj-accent-rgb), 0.1);
+    display: grid;
+    place-items: center;
+    font-size: 13px;
+    flex-shrink: 0;
+    transition: background var(--sn-ease), color var(--sn-ease);
+}
+body.lux-route-social .social-project-tab-pill span {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+}
+body.lux-route-social .social-project-tab-pill strong {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+}
+body.lux-route-social .social-project-tab-pill small {
+    font-size: 11px;
+    color: var(--sn-txt2);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+body.lux-route-social .social-project-tab-pill:hover {
+    border-color: rgba(var(--sn-proj-accent-rgb), 0.3);
+    background: rgba(var(--sn-proj-accent-rgb), 0.08);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+}
+body.lux-route-social .social-project-tab-pill:hover i {
+    background: rgba(var(--sn-proj-accent-rgb), 0.2);
+}
+body.lux-route-social .social-project-tab-pill.is-active {
+    border-color: rgba(249, 115, 22, 0.4);
+    background: linear-gradient(135deg, rgba(249, 115, 22, 0.18), rgba(var(--lux-glass-tint-rgb, 8, 14, 30), calc(var(--lux-panel-alpha, 0.74) * 0.95)));
+    box-shadow: 0 4px 16px rgba(249, 115, 22, 0.18), inset 0 0 0 1px rgba(249, 115, 22, 0.12);
+    transform: translateY(-1px);
+}
+body.lux-route-social .social-project-tab-pill.is-active i {
+    background: rgba(249, 115, 22, 0.25);
+    color: #f97316;
+}
+body.lux-route-social .social-project-tab-pill:focus-visible {
+    outline: 2px solid var(--sn-proj-accent);
+    outline-offset: 2px;
+}
+body.lux-light-mode.lux-route-social .social-project-tab-pill {
+    background: rgba(255, 255, 255, 0.80);
+    border-color: rgba(var(--lux-accent-rgb, 148, 163, 184), calc(0.02 + var(--lux-glass-alpha, 0.06) * 3));
+}
+body.lux-light-mode.lux-route-social .social-project-tab-pill:hover {
+    background: rgba(249, 115, 22, 0.06);
+}
+body.lux-light-mode.lux-route-social .social-project-tab-pill.is-active {
+    background: linear-gradient(135deg, rgba(249, 115, 22, 0.12), rgba(255, 255, 255, 0.96));
+}
+@media (max-width: 760px) {
+    body.lux-route-social .social-project-tab-pill {
+        padding: 8px 12px;
+        gap: 8px;
+    }
+    body.lux-route-social .social-project-tab-pill i {
+        width: 28px;
+        height: 28px;
+        font-size: 12px;
+    }
+    body.lux-route-social .social-project-tab-pill strong {
+        font-size: 12px;
+    }
+}
+
+/* ---- Detail hero ---- */
+body.lux-route-social .social-project-detail-hero-rich {
+    overflow: hidden; position: relative;
+    border-radius: var(--sn-r-xl) !important;
+}
+body.lux-route-social .social-project-detail-hero-rich::after {
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    background:
+        radial-gradient(120% 80% at 0% 0%, rgba(var(--sn-proj-accent-rgb),0.18), transparent 55%),
+        radial-gradient(90% 70% at 100% 0%, rgba(var(--sn-proj-accent-rgb),0.10), transparent 50%);
+}
+body.lux-route-social .social-project-detail-hero-rich > * { position: relative; z-index: 1; }
+body.lux-route-social .social-project-detail-hero-rich h2 {
+    font-size: clamp(24px, 2.4vw, 34px); font-weight: 850; letter-spacing: -0.02em; margin: 8px 0 4px;
+}
+
+/* ---- Metric / chart cards: hover-lift + accent top ---- */
+body.lux-route-social .social-project-metric-card,
+body.lux-route-social .social-project-ring-card,
+body.lux-route-social .social-project-chart-card,
+body.lux-route-social .social-project-rich-panel,
+body.lux-route-social .social-project-deliverable-card,
+body.lux-route-social .social-project-meeting-card,
+body.lux-route-social .social-project-checkin-card,
+body.lux-route-social .social-project-team-card {
+    transition: transform var(--sn-ease), box-shadow var(--sn-ease), border-color var(--sn-ease);
+}
+body.lux-route-social .social-project-metric-card:hover,
+body.lux-route-social .social-project-ring-card:hover,
+body.lux-route-social .social-project-chart-card:hover,
+body.lux-route-social .social-project-deliverable-card:hover,
+body.lux-route-social .social-project-meeting-card:hover,
+body.lux-route-social .social-project-team-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(var(--sn-proj-accent-rgb), 0.35);
+    box-shadow: 0 18px 40px rgba(2,6,23,.28);
+}
+body.lux-route-social .social-project-metric-card { position: relative; overflow: hidden; }
+body.lux-route-social .social-project-metric-card::before {
+    content: ""; position: absolute; left: 0; right: 0; top: 0; height: 3px;
+    background: linear-gradient(90deg, var(--project-accent, var(--sn-accent)), transparent 70%);
+    opacity: .9;
+}
+body.lux-route-social .social-project-metric-card strong { font-size: 26px; font-weight: 850; }
+
+/* ---- Status distribution bar ---- */
+body.lux-route-social .social-project-status-bar {
+    display: flex; gap: 3px; height: 14px; border-radius: 999px; overflow: hidden;
+    background: var(--sn-proj-lane); padding: 0;
+}
+body.lux-route-social .social-project-status-segment { height: 100%; border-radius: 4px; transition: width var(--sn-ease); }
+body.lux-route-social .social-project-status-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(96px,1fr)); gap: 8px; margin-top: 14px;
+}
+body.lux-route-social .social-project-status-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 10px; border-radius: 12px; background: var(--sn-proj-lane);
+    font-size: 12.5px;
+}
+
+/* ---- Workload bars: gradient fill ---- */
+body.lux-route-social .social-project-workload-item { padding: 10px 0; }
+body.lux-route-social .social-project-workload-bar {
+    height: 10px; border-radius: 999px; background: var(--sn-proj-lane); overflow: hidden; margin-top: 8px;
+}
+body.lux-route-social .social-project-workload-bar > span {
+    display: block; height: 100%; border-radius: 999px;
+    background: linear-gradient(90deg, var(--sn-proj-accent), rgba(var(--sn-proj-accent-rgb),0.6));
+    transition: width var(--sn-ease-spring);
+}
+
+/* ---- Kanban board ---- */
+body.lux-route-social .social-project-task-board {
+    display: grid; grid-template-columns: repeat(5, minmax(0,1fr)); gap: 12px; align-items: start;
+    position: relative; z-index: 2;
+}
+body.lux-route-social .social-project-task-column {
+    background: var(--sn-proj-lane); border: 1px solid var(--sn-bdr);
+    border-radius: var(--sn-r-lg); padding: 12px; min-width: 0;
+}
+body.lux-route-social .social-project-task-column-head {
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;
+    padding-bottom: 10px; border-bottom: 1px solid var(--sn-bdr);
+}
+body.lux-route-social .social-project-task-column-head strong { font-weight: 800; font-size: 13.5px; }
+body.lux-route-social .social-project-task-column-head span { font-size: 11px; color: var(--lux-text-muted,rgba(226,232,240,.55)); }
+body.lux-route-social .social-project-task-column-count {
+    font-style: normal; font-weight: 800; font-size: 12px; min-width: 24px; height: 24px;
+    display: inline-flex; align-items: center; justify-content: center; border-radius: 999px;
+    color: #fff;
+}
+body.lux-route-social .social-project-task-column-count.is-slate   { background: #94a3b8; }
+body.lux-route-social .social-project-task-column-count.is-blue    { background: #3b82f6; }
+body.lux-route-social .social-project-task-column-count.is-orange  { background: #f59e0b; }
+body.lux-route-social .social-project-task-column-count.is-rose    { background: #f43f5e; }
+body.lux-route-social .social-project-task-column-count.is-emerald { background: #10b981; }
+body.lux-route-social .social-project-task-column[data-tone='blue']    .social-project-task-column-head { border-bottom-color: rgba(59,130,246,.4); }
+body.lux-route-social .social-project-task-column[data-tone='orange']  .social-project-task-column-head { border-bottom-color: rgba(245,158,11,.4); }
+body.lux-route-social .social-project-task-column[data-tone='rose']    .social-project-task-column-head { border-bottom-color: rgba(244,63,94,.4); }
+body.lux-route-social .social-project-task-column[data-tone='emerald'] .social-project-task-column-head { border-bottom-color: rgba(16,185,129,.4); }
+
+/* ---- Task cards: priority strip + meta ---- */
+body.lux-route-social .social-project-task-card {
+    position: relative; overflow: hidden;
+    background: var(--sn-bg); border: 1px solid var(--sn-bdr);
+    border-radius: 14px; padding: 12px 12px 12px 16px;
+    transition: transform var(--sn-ease), box-shadow var(--sn-ease), border-color var(--sn-ease);
+}
+body.lux-route-social .social-project-task-card::before {
+    content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: var(--sn-proj-strip);
+    background: var(--sn-info);
+}
+body.lux-route-social .social-project-task-card[data-priority='high']::before,
+body.lux-route-social .social-project-task-card[data-priority='urgent']::before { background: var(--sn-danger); }
+body.lux-route-social .social-project-task-card[data-priority='medium']::before { background: var(--sn-warning); }
+body.lux-route-social .social-project-task-card[data-priority='low']::before { background: var(--sn-info); }
+body.lux-route-social .social-project-task-card:hover {
+    transform: translateY(-2px); border-color: rgba(var(--sn-proj-accent-rgb),0.4);
+    box-shadow: 0 12px 26px rgba(2,6,23,.26);
+}
+body.lux-route-social .social-project-task-card.is-overdue { border-color: rgba(248,113,113,.5); }
+body.lux-route-social .social-project-task-card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+body.lux-route-social .social-project-task-card-head strong { font-size: 13.5px; font-weight: 700; line-height: 1.35; }
+body.lux-route-social .social-project-priority-pill {
+    text-transform: capitalize; font-size: 10.5px; font-weight: 800; gap: 5px;
+}
+body.lux-route-social .social-project-priority-pill[data-priority='high'],
+body.lux-route-social .social-project-priority-pill[data-priority='urgent'] { color: var(--sn-danger); border-color: rgba(248,113,113,.4); }
+body.lux-route-social .social-project-priority-pill[data-priority='medium'] { color: var(--sn-warning); border-color: rgba(251,191,36,.4); }
+body.lux-route-social .social-project-priority-pill[data-priority='low'] { color: var(--sn-info); border-color: rgba(96,165,250,.4); }
+body.lux-route-social .social-project-task-meta { gap: 6px; flex-wrap: wrap; }
+body.lux-route-social .social-project-task-assignee { display: inline-flex; align-items: center; gap: 6px; }
+body.lux-route-social .social-project-task-tag { color: var(--sn-info); }
+body.lux-route-social .social-project-task-actions {
+    display: flex; flex-wrap: wrap; gap: 4px; margin-top: 10px;
+    opacity: .55; transition: opacity var(--sn-ease);
+}
+body.lux-route-social .social-project-task-card:hover .social-project-task-actions { opacity: 1; }
+
+/* ---- Task form collapsible ---- */
+body.lux-route-social .social-project-task-form-wrap { padding: 0; overflow: hidden; position: relative; z-index: 2; }
+body.lux-route-social .social-project-task-form-toggle {
+    display: flex; align-items: center; justify-content: space-between; width: 100%;
+    padding: 14px 18px; background: none; border: none; cursor: pointer;
+    font-size: 14px; font-weight: 700; color: var(--sn-txt);
+    border-bottom: 1px solid var(--sn-bdr);
+}
+body.lux-route-social .social-project-task-form-toggle:hover { background: var(--sn-hover); }
+body.lux-route-social .social-project-task-form-toggle i { color: var(--sn-txt3); font-size: 12px; }
+body.lux-route-social .social-project-task-form-body { padding: 18px; }
+body.lux-route-social .social-project-task-form-body[hidden] { display: none; }
+
+/* ---- Task stats bar ---- */
+body.lux-route-social .social-project-task-stats-bar {
+    display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px;
+    padding: 14px 18px; background: var(--sn-bg); border: 1px solid var(--sn-bdr);
+    border-radius: 14px; text-align: center;
+    position: relative; z-index: 2;
+}
+body.lux-route-social .social-project-task-stat { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+body.lux-route-social .social-project-task-stat strong { font-size: 20px; font-weight: 800; color: var(--sn-txt); line-height: 1.2; }
+body.lux-route-social .social-project-task-stat span { font-size: 10px; color: var(--sn-txt2); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+body.lux-route-social .social-project-task-stat.is-danger strong { color: var(--sn-danger); }
+
+/* ---- Task search bar ---- */
+body.lux-route-social .social-project-task-search { margin-bottom: 4px; position: relative; z-index: 2; }
+body.lux-route-social .social-project-task-search-row {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+}
+body.lux-route-social .social-project-task-search-input {
+    position: relative; flex: 1; min-width: 180px;
+}
+body.lux-route-social .social-project-task-search-input i {
+    position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+    color: var(--sn-txt3); font-size: 13px; pointer-events: none;
+}
+body.lux-route-social .social-project-task-search-input .social-neo-input {
+    padding-left: 34px; height: 36px; font-size: 13px;
+}
+body.lux-route-social .social-neo-select-sm { height: 36px; font-size: 13px; min-width: auto; }
+
+/* ---- Task icon-only buttons ---- */
+body.lux-route-social .social-neo-btn-icon {
+    width: 30px; height: 30px; padding: 0; display: inline-flex;
+    align-items: center; justify-content: center; border-radius: 8px;
+    font-size: 12px; flex-shrink: 0;
+}
+body.lux-route-social .social-neo-btn-icon:hover { background: var(--sn-hover); }
+
+/* ---- Task due date color coding ---- */
+body.lux-route-social .social-project-task-due.is-overdue { color: var(--sn-danger); border-color: rgba(248,113,113,.4); background: rgba(248,113,113,.08); }
+body.lux-route-social .social-project-task-due.is-today { color: #f97316; border-color: rgba(249,115,22,.4); background: rgba(249,115,22,.08); }
+body.lux-route-social .social-project-task-due.is-soon { color: #eab308; border-color: rgba(234,179,8,.4); background: rgba(234,179,8,.08); }
+
+/* ---- Task description clamp ---- */
+body.lux-route-social .social-project-task-desc {
+    font-size: 13px; color: var(--sn-txt2); line-height: 1.45; margin: 6px 0 0;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+
+/* ---- Column quick-add footer ---- */
+body.lux-route-social .social-project-task-column-footer {
+    margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--sn-bdr);
+}
+body.lux-route-social .social-project-task-quick-add-btn {
+    width: 100%; justify-content: center; font-size: 12px; color: var(--sn-txt3);
+    border: 1px dashed var(--sn-bdr); border-radius: 10px; padding: 8px;
+}
+body.lux-route-social .social-project-task-quick-add-btn:hover {
+    color: var(--sn-accent); border-color: rgba(var(--sn-accent-rgb), .3);
+    background: rgba(var(--sn-accent-rgb), .06);
+}
+
+/* ---- Milestones timeline ---- */
+body.lux-route-social .social-project-milestone-item {
+    position: relative; display: grid; grid-template-columns: 28px minmax(0,1fr); gap: 12px;
+    padding: 4px 0 18px 0;
+}
+body.lux-route-social .social-project-milestone-item:not(:last-child)::before {
+    content: ""; position: absolute; left: 13px; top: 22px; bottom: 0; width: 2px; background: var(--sn-bdr);
+}
+body.lux-route-social .social-project-milestone-marker {
+    width: 16px; height: 16px; border-radius: 999px; margin: 4px auto 0;
+    border: 3px solid var(--sn-proj-lane); background: var(--sn-info); z-index: 1;
+}
+body.lux-route-social .social-project-milestone-item.is-completed .social-project-milestone-marker { background: var(--sn-success); }
+body.lux-route-social .social-project-milestone-item.is-overdue .social-project-milestone-marker { background: var(--sn-danger); }
+body.lux-route-social .social-project-milestone-item.is-upcoming .social-project-milestone-marker { background: var(--sn-warning); }
+body.lux-route-social .social-project-milestone-body {
+    background: var(--sn-bg); border: 1px solid var(--sn-bdr); border-radius: 14px; padding: 12px 14px;
+}
+
+/* ---- Deliverable / file cards ---- */
+body.lux-route-social .social-project-deliverable-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+body.lux-route-social .social-project-deliverable-card { border-left: 3px solid rgba(var(--sn-proj-accent-rgb),0.55); }
+
+/* ---- Team member cards ---- */
+body.lux-route-social .social-project-team-card { border-radius: 14px; }
+body.lux-route-social .social-project-team-card-head { display: flex; align-items: center; gap: 10px; }
+
+/* ---- LMS-style forms ---- */
+body.lux-route-social .social-projects-shell .social-neo-label {
+    text-transform: uppercase; letter-spacing: .06em; font-size: 11px; font-weight: 800;
+    color: var(--lux-text-muted, rgba(226,232,240,.6)); margin-bottom: 6px; display: block;
+}
+body.lux-route-social .social-projects-shell .social-neo-input,
+body.lux-route-social .social-projects-shell .social-neo-select,
+body.lux-route-social .social-projects-shell .social-neo-textarea {
+    border-radius: 14px !important; min-height: 44px; transition: border-color var(--sn-ease), box-shadow var(--sn-ease);
+}
+body.lux-route-social .social-projects-shell .social-neo-input:focus,
+body.lux-route-social .social-projects-shell .social-neo-select:focus,
+body.lux-route-social .social-projects-shell .social-neo-textarea:focus {
+    border-color: var(--sn-proj-accent) !important;
+    box-shadow: 0 0 0 3px rgba(var(--sn-proj-accent-rgb), 0.18) !important;
+    outline: none;
+}
+body.lux-route-social .social-projects-shell .social-neo-btn-primary {
+    border-radius: var(--sn-pill) !important;
+    background: linear-gradient(135deg, var(--sn-proj-accent), rgba(var(--sn-proj-accent-rgb),0.8)) !important;
+    border: none !important; color: #fff !important; min-height: 44px;
+    box-shadow: 0 8px 20px rgba(var(--sn-proj-accent-rgb), 0.3);
+    transition: transform var(--sn-ease), box-shadow var(--sn-ease);
+}
+body.lux-route-social .social-projects-shell .social-neo-btn-primary:hover { transform: translateY(-2px); }
+
+/* ---- Friendly empty states ---- */
+body.lux-route-social .social-projects-shell .social-neo-empty {
+    position: relative;
+    text-align: left; padding: 18px 18px 18px 54px; border-radius: 14px;
+    background: linear-gradient(180deg, rgba(var(--sn-proj-accent-rgb), .06), rgba(255,255,255,.02));
+    border: 1px dashed rgba(var(--sn-proj-accent-rgb), .20);
+    color: var(--sn-txt); font-size: 13px; line-height: 1.55;
+    min-height: 96px;
+    display: flex; align-items: center;
+    justify-content: flex-start;
+}
+body.lux-route-social .social-projects-shell .social-neo-empty::before {
+    content: "\f0c8"; font-family: "Font Awesome 6 Free"; font-weight: 400;
+    position: absolute; left: 18px; font-size: 18px; color: var(--sn-proj-accent);
+    opacity: .85;
+}
+
+/* ---- Bounded lists ---- */
+body.lux-route-social .social-project-scroll-list {
+    --project-scroll-max: 420px;
+    display: grid;
+    gap: 12px;
+    max-height: var(--project-scroll-max);
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 4px;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+}
+body.lux-route-social .social-project-scroll-list::-webkit-scrollbar {
+    width: var(--lux-scrollbar-size);
+}
+body.lux-route-social .social-project-scroll-list::-webkit-scrollbar-track {
+    background: var(--lux-scrollbar-track);
+}
+body.lux-route-social .social-project-scroll-list::-webkit-scrollbar-thumb {
+    background: var(--lux-scrollbar-thumb);
+    border: 1px solid var(--lux-scrollbar-thumb-border);
+    border-radius: 999px;
+    box-shadow: var(--lux-scrollbar-thumb-shadow);
+}
+body.lux-route-social .social-project-scroll-list::-webkit-scrollbar-thumb:hover {
+    background: var(--lux-scrollbar-thumb-hover);
+}
+body.lux-route-social .social-project-scroll-list--hub {
+    --project-scroll-max: 440px;
+}
+body.lux-route-social .social-project-scroll-list--members {
+    --project-scroll-max: 460px;
+}
+body.lux-route-social .social-project-scroll-list--invite {
+    --project-scroll-max: 380px;
+}
+body.lux-route-social .social-project-scroll-list--tasks {
+    --project-scroll-max: 560px;
+}
+body.lux-route-social .social-project-scroll-list--milestones {
+    --project-scroll-max: 520px;
+}
+body.lux-route-social .social-project-scroll-list--deliverables {
+    --project-scroll-max: 540px;
+}
+body.lux-route-social .social-project-scroll-list--meetings {
+    --project-scroll-max: 480px;
+}
+body.lux-route-social .social-project-scroll-list--checkins {
+    --project-scroll-max: 520px;
+}
+body.lux-route-social .social-project-scroll-list--activity {
+    --project-scroll-max: 560px;
+}
+body.lux-route-social .social-project-scroll-list--portfolio {
+    --project-scroll-max: clamp(580px, 72vh, 960px);
+}
+body.lux-route-social .social-project-scroll-list--deliverables,
+body.lux-route-social .social-project-scroll-list--portfolio {
+    gap: 14px;
+}
+body.lux-route-social .social-project-task-column {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+body.lux-route-social .social-project-task-column .social-project-scroll-list--tasks {
+    flex: 1;
+    min-height: 0;
+}
+body.lux-route-social .social-project-task-board {
+    align-items: stretch;
+}
+body.lux-route-social .social-project-task-column .social-neo-empty {
+    min-height: 110px;
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 1100px) {
+    body.lux-route-social .social-project-task-board { grid-template-columns: repeat(2, minmax(0,1fr)); }
+}
+@media (max-width: 760px) {
+    body.lux-route-social .social-project-task-board { grid-template-columns: 1fr; }
+    body.lux-route-social .social-project-tab-row { top: 4px; }
+    body.lux-route-social .social-project-scroll-list {
+        --project-scroll-max: 360px;
+    }
+    body.lux-route-social .social-project-scroll-list--portfolio {
+        --project-scroll-max: 640px;
+    }
+    body.lux-route-social .social-project-task-stats-bar {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    body.lux-route-social .social-project-task-search-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    body.lux-route-social .social-project-task-search-row .social-neo-btn {
+        width: 100%;
+    }
+    body.lux-route-social .social-neo-select-sm {
+        width: 100%;
+    }
+}
+
+/* ============================================================
+   OVERVIEW TAB — Zone-based explicit grid layout
+   Replaces the broken auto-fit grid with intentional columns.
+   ============================================================ */
+
+/* Zone B row 1: fixed-width donut | fills-remaining status graph */
+body.lux-route-social .social-project-ov-row {
+    display: grid;
+    gap: 18px;
+    align-items: start;
+}
+body.lux-route-social .social-project-ov-row--b1 {
+    grid-template-columns: 260px minmax(0,1fr);
+}
+/* Zone B row 2: equal halves — workload | milestone */
+body.lux-route-social .social-project-ov-row--b2 {
+    grid-template-columns: 1fr 1fr;
+}
+
+/* Donut card: fixed square so the ring is never cut */
+body.lux-route-social .social-project-ov-row--b1 .social-project-chart-card:first-child {
+    min-height: 220px;
+}
+
+/* Milestone overview: ring (fixed) + stats column (fills rest), never wraps */
+body.lux-route-social .social-project-milestone-overview {
+    display: grid;
+    grid-template-columns: 120px minmax(0,1fr);
+    gap: 16px;
+    align-items: center;
+    margin-top: 4px;
+}
+body.lux-route-social .social-project-milestone-stats {
+    display: grid;
+    gap: 10px;
+}
+body.lux-route-social .social-project-milestone-stat {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    border-radius: 12px;
+    background: var(--sn-proj-lane);
+    border: 1px solid var(--sn-bdr);
+}
+body.lux-route-social .social-project-milestone-stat strong {
+    font-size: 18px;
+    font-weight: 850;
+    line-height: 1;
+}
+body.lux-route-social .social-project-milestone-stat span {
+    font-size: 11px;
+    color: var(--lux-text-muted, rgba(226,232,240,.62));
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+}
+body.lux-route-social .social-project-milestone-stat.is-danger strong {
+    color: var(--sn-danger);
+}
+
+/* Shrink the ring inside the milestone card so it fits the 120px column */
+body.lux-route-social .social-project-milestone-overview .social-project-ring-card {
+    padding: 0 !important;
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+body.lux-route-social .social-project-milestone-overview .social-project-ring-card svg {
+    width: 100px;
+    height: 100px;
+}
+body.lux-route-social .social-project-milestone-overview .social-project-ring-copy {
+    text-align: center;
+}
+body.lux-route-social .social-project-milestone-overview .social-project-ring-copy strong {
+    font-size: 22px !important;
+}
+body.lux-route-social .social-project-milestone-overview .social-project-ring-copy span,
+body.lux-route-social .social-project-milestone-overview .social-project-ring-copy small {
+    font-size: 10px;
+}
+
+/* Zone C: Activity pulse — full-width tall card */
+body.lux-route-social .social-project-activity-card {
+    padding: 18px !important;
+}
+
+/* Full-width sparkline */
+body.lux-route-social .social-project-sparkline--full {
+    width: 100%;
+}
+body.lux-route-social .social-project-sparkline-svg {
+    width: 100%;
+    height: 100px;
+    display: block;
+    overflow: visible;
+}
+body.lux-route-social .social-project-sparkline-line {
+    stroke: var(--sn-proj-accent);
+    stroke-width: 2.5;
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+body.lux-route-social .social-project-sparkline-dot {
+    fill: var(--sn-proj-accent);
+    stroke: var(--sn-bg);
+    stroke-width: 2;
+    r: 4;
+}
+body.lux-route-social .social-project-sparkline-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 6px;
+    padding: 0 2px;
+    font-size: 10.5px;
+    color: var(--lux-text-muted, rgba(226,232,240,.55));
+    font-weight: 600;
+    letter-spacing: .03em;
+}
+
+/* Zone D: 50/50 columns — already handled by social-project-overview-columns */
+/* Ensure it's strictly 50/50, not the old 1.1fr/.9fr */
+body.lux-route-social .social-project-overview-columns {
+    grid-template-columns: 1fr 1fr !important;
+}
+
+/* Metric strip in hero: always 5 equal columns */
+body.lux-route-social .social-project-dashboard-strip {
+    grid-template-columns: repeat(5, minmax(0,1fr)) !important;
+}
+
+/* ---- Responsive overrides ---- */
+@media (max-width: 1200px) {
+    body.lux-route-social .social-project-ov-row--b1 {
+        grid-template-columns: 220px minmax(0,1fr);
+    }
+}
+@media (max-width: 980px) {
+    body.lux-route-social .social-project-ov-row--b1,
+    body.lux-route-social .social-project-ov-row--b2,
+    body.lux-route-social .social-project-overview-columns {
+        grid-template-columns: 1fr !important;
+    }
+    body.lux-route-social .social-project-dashboard-strip {
+        grid-template-columns: repeat(2, minmax(0,1fr)) !important;
+    }
+    body.lux-route-social .social-project-milestone-overview {
+        grid-template-columns: 100px minmax(0,1fr);
+    }
+    body.lux-route-social .social-project-ov-row--alerts,
+    body.lux-route-social .social-project-ov-row--activity-files {
+        grid-template-columns: 1fr;
+    }
+    body.lux-route-social .social-project-quick-actions-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+@media (max-width: 640px) {
+    body.lux-route-social .social-project-dashboard-strip {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* ============================================================
+   UPGRADED MAIN PAGE — Header, stats bar, project cards, rows, drawer
+   ============================================================ */
+
+/* ---- Header ---- */
+body.lux-route-social .social-projects-header {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; flex-wrap: wrap;
+    padding: 0 0 4px 0;
+}
+body.lux-route-social .social-projects-header h2 {
+    margin: 0; font-size: 24px; font-weight: 800; line-height: 1.2;
+}
+body.lux-route-social .social-projects-header .social-neo-muted {
+    font-size: 13px; display: block; margin-top: 4px;
+}
+
+/* ---- Stats bar ---- */
+body.lux-route-social .social-projects-stats-bar {
+    display: grid; grid-template-columns: repeat(5, 1fr);
+    gap: 12px; padding: 16px 20px;
+    background: var(--sn-bg); border: 1px solid var(--sn-bdr);
+    border-radius: 16px; text-align: center;
+}
+body.lux-route-social .social-projects-stat-item {
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+}
+body.lux-route-social .social-projects-stat-number {
+    font-size: 28px; font-weight: 800; color: var(--sn-txt);
+    line-height: 1;
+}
+body.lux-route-social .social-projects-stat-label {
+    font-size: 11px; color: var(--sn-txt2); text-transform: uppercase;
+    letter-spacing: 0.06em; font-weight: 600;
+}
+
+/* ---- Project card (Your Workspaces) ---- */
+body.lux-route-social .social-project-card-new {
+    background: var(--sn-bg); border: 1px solid var(--sn-bdr);
+    border-radius: 16px; padding: 20px; cursor: pointer;
+    transition: all var(--sn-ease); position: relative; overflow: hidden;
+}
+body.lux-route-social .social-project-card-new::before {
+    content: ""; position: absolute; left: 0; right: 0; top: 0;
+    height: 3px; background: linear-gradient(90deg, var(--sn-accent), transparent 70%);
+    opacity: 0; transition: opacity var(--sn-ease);
+}
+body.lux-route-social .social-project-card-new:hover {
+    border-color: rgba(var(--sn-accent-rgb), 0.3);
+    box-shadow: 0 12px 28px rgba(0,0,0,0.18);
+    transform: translateY(-2px);
+}
+body.lux-route-social .social-project-card-new:hover::before {
+    opacity: 1;
+}
+body.lux-route-social .social-project-card-new-status {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 12px;
+}
+body.lux-route-social .social-project-status-dot {
+    width: 8px; height: 8px; border-radius: 999px; flex-shrink: 0;
+    background: var(--sn-txt3);
+}
+body.lux-route-social .social-project-status-dot.is-active { background: var(--sn-success); }
+body.lux-route-social .social-project-status-dot.is-completed { background: var(--sn-info); }
+body.lux-route-social .social-project-status-dot.is-review { background: var(--sn-warning); }
+body.lux-route-social .social-project-status-label {
+    font-size: 12px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.04em; color: var(--sn-txt2);
+}
+body.lux-route-social .social-project-card-new-title {
+    font-size: 18px; font-weight: 800; margin: 0 0 8px 0;
+    line-height: 1.3; color: var(--sn-txt);
+}
+body.lux-route-social .social-project-card-new-summary {
+    font-size: 14px; color: var(--sn-txt2); line-height: 1.5;
+    margin: 0 0 16px 0;
+    display: -webkit-box; -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical; overflow: hidden;
+}
+
+/* ---- Progress bars ---- */
+body.lux-route-social .social-project-card-new-progress {
+    display: flex; flex-direction: column; gap: 10px;
+    margin-bottom: 16px;
+}
+body.lux-route-social .social-project-card-new-progress-row {
+    display: flex; align-items: center; gap: 12px;
+}
+body.lux-route-social .social-project-card-new-progress-label {
+    font-size: 12px; font-weight: 600; color: var(--sn-txt2);
+    min-width: 80px;
+}
+body.lux-route-social .social-project-card-new-progress-bar {
+    flex: 1; height: 6px; background: var(--sn-proj-lane);
+    border-radius: 999px; overflow: hidden;
+}
+body.lux-route-social .social-project-card-new-progress-fill {
+    height: 100%; border-radius: 999px;
+    background: linear-gradient(90deg, var(--sn-accent), rgba(var(--sn-accent-rgb), 0.7));
+    transition: width var(--sn-ease);
+}
+body.lux-route-social .social-project-card-new-progress-value {
+    font-size: 12px; font-weight: 700; color: var(--sn-txt);
+    min-width: 80px; text-align: right;
+}
+
+/* ---- Card meta and CTA ---- */
+body.lux-route-social .social-project-card-new-meta {
+    display: flex; align-items: center; gap: 12px;
+    padding-top: 14px; border-top: 1px solid var(--sn-bdr);
+    font-size: 13px; color: var(--sn-txt2);
+}
+body.lux-route-social .social-project-card-new-cta {
+    display: flex; justify-content: flex-end; margin-top: 12px;
+}
+body.lux-route-social .social-project-card-new-cta span {
+    font-size: 13px; font-weight: 700; color: var(--sn-accent);
+    display: flex; align-items: center; gap: 6px;
+}
+
+/* ---- Compact row (Most Active) ---- */
+body.lux-route-social .social-project-rows {
+    display: flex; flex-direction: column; gap: 4px;
+}
+body.lux-route-social .social-project-row {
+    display: flex; align-items: center; gap: 16px;
+    padding: 12px 14px; border-radius: 12px; cursor: pointer;
+    border: 1px solid transparent; background: var(--sn-bg);
+    transition: all var(--sn-ease);
+}
+body.lux-route-social .social-project-row:hover {
+    background: var(--sn-hover); border-color: var(--sn-bdr);
+}
+body.lux-route-social .social-project-row-status {
+    display: flex; align-items: center; gap: 6px;
+    min-width: 80px; flex-shrink: 0;
+}
+body.lux-route-social .social-project-row-title {
+    font-size: 14px; font-weight: 700; flex: 1;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    color: var(--sn-txt);
+}
+body.lux-route-social .social-project-row-meta {
+    font-size: 12px; color: var(--sn-txt2);
+    display: flex; align-items: center; gap: 8px;
+    flex-shrink: 0;
+}
+body.lux-route-social .social-project-row-progress {
+    display: flex; align-items: center; gap: 8px;
+    min-width: 120px; flex-shrink: 0;
+}
+body.lux-route-social .social-project-row-progress-bar {
+    flex: 1; height: 4px; background: var(--sn-proj-lane);
+    border-radius: 999px; overflow: hidden;
+}
+body.lux-route-social .social-project-row-progress-fill {
+    height: 100%; border-radius: 999px;
+    background: var(--sn-accent);
+    transition: width var(--sn-ease);
+}
+body.lux-route-social .social-project-row-progress-value {
+    font-size: 11px; font-weight: 700; color: var(--sn-txt);
+    min-width: 30px; text-align: right;
+}
+
+/* ---- Create workspace drawer ---- */
+body.lux-route-social .social-project-create-drawer {
+    position: fixed; inset: 0; z-index: 100;
+    display: flex;
+}
+body.lux-route-social .social-project-create-drawer[hidden] { display: none; }
+body.lux-route-social .social-project-create-drawer-backdrop {
+    position: absolute; inset: 0; background: rgba(0,0,0,0.45);
+    cursor: pointer;
+    animation: social-drawer-fade-in .2s ease;
+}
+body.lux-route-social .social-project-create-drawer-left {
+    position: relative;
+    flex: 1 1 50%;
+    overflow-y: auto;
+    padding: 24px 24px 24px 32px;
+    display: flex; flex-direction: column; gap: 16px;
+    z-index: 1;
+}
+body.lux-route-social .social-project-create-drawer-left-head {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 8px; flex-shrink: 0;
+}
+body.lux-route-social .social-project-create-drawer-left-head h2 {
+    margin: 0; font-size: 20px; font-weight: 800; line-height: 1.2;
+}
+body.lux-route-social .social-project-create-drawer-left-head .social-neo-muted {
+    font-size: 13px; display: block; margin-top: 4px;
+}
+body.lux-route-social .social-project-create-drawer-left-list {
+    display: grid; gap: 12px;
+    flex: 1; min-height: 0;
+    overflow-y: auto; padding-right: 4px;
+    scrollbar-width: thin;
+}
+body.lux-route-social .social-project-create-drawer-panel {
+    position: relative;
+    flex: 0 0 min(480px, 50%);
+    background: var(--sn-bg); border-left: 1px solid var(--sn-bdr);
+    overflow-y: auto; padding: 24px;
+    animation: social-drawer-slide-in .25s cubic-bezier(.4,0,.2,1);
+    z-index: 1;
+}
+body.lux-route-social .social-project-create-drawer-head {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 18px; padding-bottom: 14px;
+    border-bottom: 1px solid var(--sn-bdr);
+}
+body.lux-route-social .social-project-create-drawer-head strong {
+    font-size: 17px; font-weight: 800;
+}
+
+/* ---- Drawer form sections ---- */
+body.lux-route-social .social-project-drawer-form {
+    display: flex; flex-direction: column; gap: 0;
+}
+body.lux-route-social .social-project-drawer-form > .drawer-section > label {
+    display: grid; gap: 4px;
+    margin-bottom: 12px;
+}
+body.lux-route-social .drawer-section {
+    margin-bottom: 24px;
+}
+body.lux-route-social .drawer-section-title {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.08em; color: var(--sn-txt3);
+    margin-bottom: 14px; padding-bottom: 10px;
+    border-bottom: 1px solid var(--sn-bdr);
+    display: flex; align-items: center; justify-content: space-between;
+}
+body.lux-route-social .drawer-section-count {
+    font-size: 11px; font-weight: 600; color: var(--sn-accent);
+    text-transform: none; letter-spacing: 0;
+}
+
+/* ---- Selected chips ---- */
+body.lux-route-social .drawer-selected-chips {
+    display: flex; flex-wrap: wrap; gap: 6px;
+    margin-bottom: 12px;
+}
+body.lux-route-social .drawer-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 10px; border-radius: 8px;
+    background: var(--sn-proj-lane); border: 1px solid var(--sn-bdr);
+    font-size: 12px; font-weight: 600; color: var(--sn-txt);
+}
+body.lux-route-social .drawer-chip button {
+    background: none; border: none; cursor: pointer;
+    color: var(--sn-txt3); font-size: 10px; padding: 0;
+    display: flex; align-items: center;
+}
+body.lux-route-social .drawer-chip button:hover {
+    color: var(--sn-danger);
+}
+
+/* ---- Sticky submit ---- */
+body.lux-route-social .drawer-submit {
+    position: sticky; bottom: 0;
+    padding: 16px 0 8px 0;
+    background: var(--sn-bg);
+    border-top: 1px solid var(--sn-bdr);
+    margin-top: 8px;
+    z-index: 2;
+}
+
+/* ---- Scrollable lists ---- */
+body.lux-route-social .social-project-scroll-list--compact {
+    --project-scroll-max: 360px;
+}
+body.lux-route-social .social-project-scroll-list--drawer-left {
+    --project-scroll-max: none;
+    max-height: none;
+}
+
+@keyframes social-drawer-fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+@keyframes social-drawer-slide-in {
+    from { transform: translateX(40px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+/* ---- Overview redesign ---- */
+body.lux-route-social .social-project-ov-row--alerts {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: start;
+}
+body.lux-route-social .social-project-overview-stats-strip {
+    display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px;
+    padding: 16px 20px; background: var(--sn-bg); border: 1px solid var(--sn-bdr);
+    border-radius: 16px; text-align: center;
+}
+body.lux-route-social .social-project-overview-stat strong {
+    font-size: 22px; font-weight: 800; display: block; color: var(--sn-txt); line-height: 1.2;
+}
+body.lux-route-social .social-project-overview-stat span {
+    font-size: 11px; color: var(--sn-txt2); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600;
+}
+body.lux-route-social .social-project-overview-stat-ring {
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+}
+body.lux-route-social .social-project-overview-stat-ring span {
+    font-size: 11px; color: var(--sn-txt2); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600;
+}
+body.lux-route-social .social-project-overview-stat-spark {
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+}
+body.lux-route-social .social-project-overview-stat-spark > div {
+    display: flex; flex-direction: column; align-items: center;
+}
+body.lux-route-social .social-project-overview-stat-spark strong {
+    font-size: 22px; font-weight: 800; display: block; color: var(--sn-txt); line-height: 1.2;
+}
+body.lux-route-social .social-project-overview-stat-spark span {
+    font-size: 11px; color: var(--sn-txt2); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600;
+}
+body.lux-route-social .social-project-mini-ring {
+    display: block;
+}
+body.lux-route-social .social-project-mini-ring-text {
+    font-size: 10px; font-weight: 800; fill: var(--sn-txt);
+}
+body.lux-route-social .social-project-mini-sparkline {
+    display: block; width: 100%; height: 36px;
+}
+body.lux-route-social .social-project-feed-sparkline {
+    margin-bottom: 12px; border-radius: 12px; overflow: hidden;
+    background: var(--sn-proj-lane); padding: 8px 12px;
+}
+body.lux-route-social .social-project-feed-sparkline .social-project-sparkline-svg {
+    height: 60px;
+}
+body.lux-route-social .social-project-ov-row--activity-files {
+    display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 18px; align-items: start;
+}
+
+/* Health indicator */
+body.lux-route-social .social-project-health-card {
+    padding: 18px; position: relative; overflow: hidden;
+}
+body.lux-route-social .social-project-health-card[data-health="good"] { border-left: 4px solid var(--sn-success); }
+body.lux-route-social .social-project-health-card[data-health="needs-attention"] { border-left: 4px solid var(--sn-warning); }
+body.lux-route-social .social-project-health-card[data-health="critical"] { border-left: 4px solid var(--sn-danger); }
+body.lux-route-social .social-project-health-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 12px; font-weight: 700; padding: 4px 12px;
+    border-radius: 999px; border: 1px solid var(--sn-bdr);
+}
+body.lux-route-social .social-project-health-badge[data-health="good"] { color: var(--sn-success); background: rgba(16,185,129,.1); border-color: rgba(16,185,129,.3); }
+body.lux-route-social .social-project-health-badge[data-health="needs-attention"] { color: var(--sn-warning); background: rgba(245,158,11,.1); border-color: rgba(245,158,11,.3); }
+body.lux-route-social .social-project-health-badge[data-health="critical"] { color: var(--sn-danger); background: rgba(248,113,113,.1); border-color: rgba(248,113,113,.3); }
+body.lux-route-social .social-project-health-body { margin-top: 12px; }
+body.lux-route-social .social-project-health-list { display: flex; flex-direction: column; gap: 6px; }
+body.lux-route-social .social-project-health-alert,
+body.lux-route-social .social-project-health-win {
+    display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500;
+}
+body.lux-route-social .social-project-health-alert i { color: var(--sn-danger); font-size: 12px; }
+body.lux-route-social .social-project-health-win i { color: var(--sn-success); font-size: 12px; }
+
+/* Deadline tracker */
+body.lux-route-social .social-project-deadline-card { padding: 18px; }
+body.lux-route-social .social-project-deadline-next { margin-top: 8px; }
+body.lux-route-social .social-project-deadline-next.is-overdue { color: var(--sn-danger); }
+body.lux-route-social .social-project-deadline-title { font-size: 15px; font-weight: 700; color: var(--sn-txt); margin-bottom: 6px; }
+body.lux-route-social .social-project-deadline-meta {
+    display: flex; align-items: center; gap: 12px; font-size: 13px; color: var(--sn-txt2); margin-bottom: 10px;
+}
+body.lux-route-social .social-project-deadline-overdue-count { color: var(--sn-danger); font-weight: 700; }
+body.lux-route-social .social-project-deadline-bar {
+    height: 6px; background: var(--sn-proj-lane); border-radius: 999px; overflow: hidden;
+}
+body.lux-route-social .social-project-deadline-fill {
+    height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--sn-accent), rgba(var(--sn-accent-rgb), .7));
+    transition: width var(--sn-ease);
+}
+body.lux-route-social .social-project-deadline-fill.is-overdue { background: var(--sn-danger); }
+body.lux-route-social .social-project-deadline-checkin {
+    margin-top: 12px; font-size: 12px; color: var(--sn-txt3); display: flex; align-items: center; gap: 6px;
+}
+
+/* My tasks */
+body.lux-route-social .social-project-my-tasks-card { padding: 18px; }
+body.lux-route-social .social-project-my-tasks-list { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+body.lux-route-social .social-project-my-task-item {
+    display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+    border-radius: 12px; background: var(--sn-proj-lane); font-size: 13px;
+    transition: background var(--sn-ease);
+}
+body.lux-route-social .social-project-my-task-item:hover { background: var(--sn-hover); }
+body.lux-route-social .social-project-my-task-item.is-overdue { border-left: 3px solid var(--sn-danger); }
+body.lux-route-social .social-project-my-task-title { flex: 1; font-weight: 600; color: var(--sn-txt); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+body.lux-route-social .social-project-my-task-due { font-size: 12px; color: var(--sn-txt3); flex-shrink: 0; }
+body.lux-route-social .social-project-my-task-due.is-overdue { color: var(--sn-danger); font-weight: 700; }
+
+/* Team roster */
+body.lux-route-social .social-project-roster-card { padding: 18px; }
+body.lux-route-social .social-project-team-roster { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+body.lux-route-social .social-project-roster-member {
+    display: flex; align-items: center; gap: 10px; padding: 8px 0;
+}
+body.lux-route-social .social-project-roster-dot {
+    width: 8px; height: 8px; border-radius: 999px; flex-shrink: 0;
+    background: var(--sn-txt3);
+}
+body.lux-route-social .social-project-roster-dot.is-online { background: var(--sn-success); box-shadow: 0 0 6px rgba(16,185,129,.5); }
+
+/* Activity feed */
+body.lux-route-social .social-project-feed-card { padding: 18px; }
+body.lux-route-social .social-project-activity-feed { display: flex; flex-direction: column; gap: 4px; margin-top: 8px; }
+body.lux-route-social .social-project-activity-feed .social-project-activity-item { padding: 8px 0; }
+
+/* Recent files */
+body.lux-route-social .social-project-files-card { padding: 18px; }
+body.lux-route-social .social-project-recent-files { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+body.lux-route-social .social-project-file-item {
+    display: flex; align-items: center; gap: 12px; padding: 10px 12px;
+    border-radius: 12px; background: var(--sn-proj-lane); font-size: 13px;
+}
+body.lux-route-social .social-project-file-icon {
+    width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center;
+    background: rgba(var(--sn-proj-accent-rgb), .12); color: var(--sn-accent); font-size: 14px; flex-shrink: 0;
+}
+body.lux-route-social .social-project-file-info { flex: 1; min-width: 0; }
+body.lux-route-social .social-project-file-info strong { display: block; font-size: 13px; font-weight: 700; color: var(--sn-txt); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+body.lux-route-social .social-project-file-info span { font-size: 12px; color: var(--sn-txt3); }
+
+/* Next meeting */
+body.lux-route-social .social-project-next-meeting-card { padding: 18px; }
+body.lux-route-social .social-project-next-meeting-body { margin-top: 8px; }
+body.lux-route-social .social-project-next-meeting-title { font-size: 16px; font-weight: 700; color: var(--sn-txt); margin-bottom: 6px; }
+body.lux-route-social .social-project-next-meeting-meta {
+    display: flex; align-items: center; gap: 16px; font-size: 13px; color: var(--sn-txt2); margin-bottom: 8px;
+}
+body.lux-route-social .social-project-next-meeting-meta i { color: var(--sn-accent); margin-right: 4px; }
+body.lux-route-social .social-project-next-meeting-desc { font-size: 13px; color: var(--sn-txt2); line-height: 1.5; margin-bottom: 10px; }
+body.lux-route-social .social-project-next-meeting-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+/* Quick actions */
+body.lux-route-social .social-project-quick-actions-card { padding: 18px; }
+body.lux-route-social .social-project-quick-actions-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 8px;
+}
+body.lux-route-social .social-project-quick-actions-grid .social-neo-btn {
+    justify-content: center; font-size: 13px; padding: 10px 12px;
+}
+
+/* ---- Mobile overrides ---- */
+@media (max-width: 760px) {
+    body.lux-route-social .social-projects-header {
+        flex-direction: column; align-items: flex-start; gap: 12px;
+    }
+    body.lux-route-social .social-projects-stats-bar {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    body.lux-route-social .social-project-card-new-progress-row {
+        flex-direction: column; align-items: flex-start; gap: 4px;
+    }
+    body.lux-route-social .social-project-card-new-progress-value {
+        min-width: auto; text-align: left;
+    }
+    body.lux-route-social .social-project-row {
+        flex-wrap: wrap;
+    }
+    body.lux-route-social .social-project-row-progress {
+        min-width: 100%; width: 100%;
+    }
+    body.lux-route-social .social-project-create-drawer {
+        flex-direction: column;
+    }
+    body.lux-route-social .social-project-create-drawer-left {
+        display: none;
+    }
+    body.lux-route-social .social-project-create-drawer-panel {
+        flex: 1; width: 100%; max-width: 100%; padding: 18px;
+    }
+    body.lux-route-social .social-project-ov-row--alerts,
+    body.lux-route-social .social-project-ov-row--activity-files {
+        grid-template-columns: 1fr;
+    }
+    body.lux-route-social .social-project-overview-stats-strip {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    body.lux-route-social .social-project-quick-actions-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}

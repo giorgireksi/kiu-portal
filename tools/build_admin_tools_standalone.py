@@ -12,7 +12,9 @@ SOURCE_HTML = ROOT / "admin-tools.html"
 DEFAULT_OUTPUT_HTML = ROOT / "artifacts" / "generated" / "admin-tools" / "admin-tools-standalone.html"
 GENERATED_BANNER = (
     "<!-- GENERATED FILE: built from admin-tools.html by "
-    "tools/build_admin_tools_standalone.py. Do not edit by hand. -->\n"
+    "tools/build_admin_tools_standalone.py. Tooling-only standalone bundle; "
+    "not part of the live route stack or visual-unification audit. "
+    "Do not edit by hand. -->\n"
 )
 
 

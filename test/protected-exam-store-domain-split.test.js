@@ -99,6 +99,8 @@ describe('protected exam store domain split', () => {
         expect(redeemed?.clientSessionToken).toBeTruthy();
         expect(redeemed?.allowedDomains).toContain('portal.kiu.test');
         expect(redeemed?.allowedDomains).toContain('api.kiu.test');
+        expect(redeemed?.antiCheatPolicy?.kioskMode).toBe(true);
+        expect(redeemed?.antiCheatPolicy?.processScanMs).toBe(1500);
 
         const heartbeat = store.heartbeatProtectedQuiz({
             courseId: session.protectedCourseId,
@@ -106,8 +108,55 @@ describe('protected exam store domain split', () => {
             clientSessionToken: redeemed.clientSessionToken
         });
         expect(heartbeat?.attempt?.antiCheatConnected).toBe(true);
+        expect(heartbeat?.attempt?.appliedAntiCheatPolicy?.kioskMode).toBe(true);
 
         const monitor = store.getProtectedQuizMonitor(session.protectedCourseId, session.protectedQuizId);
         expect(monitor?.quizzes?.[0]?.attempts).toHaveLength(1);
+        expect(monitor?.quizzes?.[0]?.antiCheatPolicy?.processScanning).toBe(true);
+
+        const forced = store.updateProtectedQuizAttemptControl({
+            courseId: session.protectedCourseId,
+            quizId: session.protectedQuizId,
+            studentId: 'student-1',
+            studentName: 'Student One',
+            actorUserId: 'professor-1'
+        }, 'force-submit');
+        expect(forced?.attempt?.status).toBe('auto-submitted');
+        expect(store.getProtectedClientAttempt(session.protectedCourseId, session.protectedQuizId, redeemed.clientSessionToken)).toBeNull();
+    });
+
+    it('stores admin anti-cheat policy per protected quiz and returns it on redemption', () => {
+        const store = buildStore();
+        const quiz = store.syncProtectedQuiz({
+            courseId: 'COURSE-1',
+            quizId: 'QUIZ-1',
+            title: 'Policy Quiz',
+            allowedStudents: [{ id: 'student-1', name: 'Student One' }],
+            antiCheatPolicy: {
+                kioskMode: false,
+                processScanning: true,
+                vmDetection: false,
+                allowedDomains: ['library.kiu.test'],
+                blockedProcesses: ['obs64.exe'],
+                heartbeatMs: 750,
+                processScanMs: 90000
+            }
+        });
+        expect(quiz?.antiCheatPolicy?.kioskMode).toBe(false);
+        expect(quiz?.antiCheatPolicy?.vmDetection).toBe(false);
+        expect(quiz?.antiCheatPolicy?.heartbeatMs).toBe(1000);
+        expect(quiz?.antiCheatPolicy?.processScanMs).toBe(60000);
+
+        const launch = store.createProtectedQuizLaunchTicket({
+            courseId: 'COURSE-1',
+            quizId: 'QUIZ-1',
+            actorUserId: 'student-1',
+            studentName: 'Student One'
+        });
+        const redeemed = store.redeemProtectedQuizLaunch({ ticket: launch.ticket });
+        expect(redeemed?.antiCheatPolicy?.kioskMode).toBe(false);
+        expect(redeemed?.antiCheatPolicy?.allowedDomains).toContain('library.kiu.test');
+        expect(redeemed?.antiCheatPolicy?.allowedDomains).toContain('portal.kiu.test');
+        expect(redeemed?.antiCheatPolicy?.blockedProcesses).toEqual(['obs64.exe']);
     });
 });

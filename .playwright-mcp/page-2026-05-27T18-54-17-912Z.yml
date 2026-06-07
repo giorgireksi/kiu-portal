@@ -1,0 +1,152 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e4]:
+    - generic [ref=e6]: Sign in to open the social workspace. If the page is running from local files, make sure the platform server is available at http://127.0.0.1:8877.
+    - generic [ref=e8]:
+      - generic [ref=e9]:
+        - generic [ref=e10]: Campus Social Network
+        - heading "Campus Home" [level=1] [ref=e11]
+        - paragraph [ref=e12]: Posts, updates, groups, and campus activity in one stream.
+        - generic [ref=e13]:
+          - generic [ref=e14]:
+            - strong
+            - generic [ref=e15]: Posts
+          - generic [ref=e16]:
+            - strong
+            - generic [ref=e17]: Following
+          - generic [ref=e18]:
+            - strong
+            - generic [ref=e19]: Joined groups
+        - generic [ref=e20]:
+          - button "All" [pressed] [ref=e21] [cursor=pointer]
+          - button "Following" [ref=e22] [cursor=pointer]
+          - button "Groups" [ref=e23] [cursor=pointer]
+          - button "Pages" [ref=e24] [cursor=pointer]
+          - button "Campus" [ref=e25] [cursor=pointer]
+      - generic [ref=e26]:
+        - button "K Portal User Portal User" [ref=e27] [cursor=pointer]:
+          - generic [ref=e28]: K
+          - generic [ref=e29]:
+            - strong [ref=e30]: Portal User
+            - generic [ref=e31]: Portal User
+        - generic [ref=e32]:
+          - button " Messages" [ref=e33] [cursor=pointer]:
+            - generic [ref=e34]: 
+            - text: Messages
+          - button " Profile" [ref=e35] [cursor=pointer]:
+            - generic [ref=e36]: 
+            - text: Profile
+          - button " Menu" [ref=e37] [cursor=pointer]:
+            - generic [ref=e38]: 
+            - text: Menu
+    - region "Publish, discover, and follow campus activity." [ref=e40]:
+      - generic [ref=e41]:
+        - generic [ref=e42]: Live social stream
+        - heading "Publish, discover, and follow campus activity." [level=2] [ref=e43]
+        - paragraph [ref=e44]: 0 posts / 0 joined groups / 0 followed pages
+        - generic [ref=e45]:
+          - button " Refresh feed" [ref=e46] [cursor=pointer]:
+            - generic [ref=e47]: 
+            - generic [ref=e48]: Refresh feed
+          - button " Add story" [ref=e49] [cursor=pointer]:
+            - generic [ref=e50]: 
+            - generic [ref=e51]: Add story
+          - button " Find groups" [ref=e52] [cursor=pointer]:
+            - generic [ref=e53]: 
+            - generic [ref=e54]: Find groups
+      - generic [ref=e55]:
+        - generic [ref=e56]:
+          - article [ref=e57]:
+            - strong
+            - generic [ref=e58]: Posts
+          - article [ref=e59]:
+            - strong
+            - generic [ref=e60]: Following
+          - article [ref=e61]:
+            - strong
+            - generic [ref=e62]: Joined groups
+        - generic [ref=e63]:
+          - article [ref=e64]:
+            - generic [ref=e66]: 
+            - generic [ref=e67]:
+              - strong [ref=e68]: Share an update
+              - generic [ref=e69]: Use the composer below with a clear audience before posting.
+          - article [ref=e70]:
+            - generic [ref=e72]: 
+            - generic [ref=e73]:
+              - strong [ref=e74]: Follow official updates
+              - generic [ref=e75]: Page and faculty posts stay visible in the feed filters.
+          - article [ref=e76]:
+            - generic [ref=e78]: 
+            - generic [ref=e79]:
+              - strong [ref=e80]: Save useful posts
+              - generic [ref=e81]: Keep important campus posts available from your profile.
+    - generic [ref=e82]:
+      - generic [ref=e83]:
+        - generic [ref=e86] [cursor=pointer]:
+          - generic [ref=e87]:
+            - generic [ref=e88]: "Y"
+            - text: +
+          - generic [ref=e89]: Your Story
+        - generic [ref=e90]:
+          - generic [ref=e91]:
+            - generic [ref=e92]: K
+            - textbox "What's on your mind, Portal?" [ref=e93]
+          - generic [ref=e94]:
+            - generic [ref=e95]:
+              - generic [ref=e96]: Posting as
+              - combobox [ref=e97] [cursor=pointer]:
+                - option "My profile" [selected]
+            - generic [ref=e98]:
+              - generic [ref=e99]: Audience
+              - combobox [ref=e100] [cursor=pointer]:
+                - option "Campus" [selected]
+                - option "Faculty"
+                - option "Connections"
+                - option "Group members"
+                - option "Page followers"
+          - generic [ref=e101]:
+            - button " Photo" [ref=e102] [cursor=pointer]:
+              - generic [ref=e103]: 
+              - text: Photo
+            - button " Story" [ref=e104] [cursor=pointer]:
+              - generic [ref=e105]: 
+              - text: Story
+            - button " Event" [ref=e106] [cursor=pointer]:
+              - generic [ref=e107]: 
+              - text: Event
+            - button " Publish" [ref=e108] [cursor=pointer]:
+              - generic [ref=e109]: 
+              - text: Publish
+        - generic [ref=e110]:
+          - generic [ref=e111]:
+            - generic [ref=e112]:
+              - strong [ref=e113]: Feed
+              - generic [ref=e114]: Showing the full campus stream.
+            - button " Refresh" [ref=e115] [cursor=pointer]:
+              - generic [ref=e116]: 
+              - text: Refresh
+          - combobox [ref=e118] [cursor=pointer]:
+            - option "All visible posts" [selected]
+            - option "My profile posts"
+          - generic [ref=e119]:
+            - generic [ref=e120]:
+              - strong
+              - generic [ref=e121]: Posts
+            - generic [ref=e122]:
+              - strong
+              - generic [ref=e123]: Groups
+            - generic [ref=e124]:
+              - strong
+              - generic [ref=e125]: Pages
+        - generic [ref=e127]: No posts match the current Home filter yet.
+      - complementary [ref=e129]:
+        - generic [ref=e130]:
+          - strong [ref=e133]: People You May Know
+          - generic [ref=e135]: No suggestions right now.
+        - generic [ref=e136]:
+          - strong [ref=e139]: Active Groups
+          - generic [ref=e141]: No active groups yet.
+        - generic [ref=e142]:
+          - strong [ref=e145]: Saved & Trending
+          - generic [ref=e147]: No saved items or live activity yet.
+  - text:                             

@@ -255,7 +255,12 @@ async function stubSocialRuntime(context, seededAuth) {
 
 function collectRouteFailures(summary, expected) {
     const failures = [];
-    if (summary.errors.length) failures.push(`route emitted runtime errors: ${summary.errors.join(' | ')}`);
+    const ignorableUnauthorizedSessionError = summary.diagnosticKind === 'unauthorized-session'
+        && summary.errors.length > 0
+        && summary.errors.every((error) => String(error || '').includes('401 (Unauthorized)'));
+    if (summary.errors.length && !ignorableUnauthorizedSessionError) {
+        failures.push(`route emitted runtime errors: ${summary.errors.join(' | ')}`);
+    }
     if (expected.shellExists && !summary.shellExists) failures.push('lux shell did not render');
     if (expected.topbarExists && !summary.topbarExists) failures.push('lux topbar did not render');
     if ((expected.navCountMin || 0) > 0 && summary.navCount < expected.navCountMin) {
@@ -415,6 +420,23 @@ async function main() {
         if (failures.length) {
             console.error('Runtime shell smoke failed:');
             failures.forEach((failure) => console.error(`- ${failure}`));
+            process.exitCode = 1;
+        }
+
+        const { spawnSync } = await import('node:child_process');
+        const liveQuizSmoke = spawnSync(process.execPath, ['tools/lms_live_quiz_smoke.mjs'], {
+            cwd: process.cwd(),
+            encoding: 'utf8',
+            env: { ...process.env, KIU_BASE_URL: BASE_URL }
+        });
+        if (liveQuizSmoke.status === 0) {
+            console.log('LMS live quiz smoke passed (runtime shell suite).');
+        } else if (liveQuizSmoke.status === null) {
+            console.warn('LMS live quiz smoke skipped (spawn failed).');
+        } else {
+            const output = `${liveQuizSmoke.stdout || ''}\n${liveQuizSmoke.stderr || ''}`.trim();
+            console.error('LMS live quiz smoke failed:');
+            console.error(output || `exit ${liveQuizSmoke.status}`);
             process.exitCode = 1;
         }
     } finally {

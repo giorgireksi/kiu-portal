@@ -1,0 +1,281 @@
+- generic [active] [ref=e1]:
+  - text:  
+  - main [ref=e2]:
+    - generic [ref=e5]:
+      - generic [ref=e6]:
+        - generic [ref=e7]:
+          - generic [ref=e8]: Home Dashboard
+          - strong [ref=e9]: Personal workspace layout
+          - paragraph [ref=e10]: This homepage can be customized per role and faculty without changing the underlying portal logic.
+        - button "Customize dashboard" [ref=e12] [cursor=pointer]
+      - generic [ref=e14]:
+        - article [ref=e15]:
+          - generic [ref=e17]:
+            - generic [ref=e19]: 
+            - generic [ref=e20]:
+              - strong [ref=e21]: Academic access is clear
+              - generic [ref=e22]: No finance hold is blocking your current semester tools.
+            - button "Open study card" [ref=e23] [cursor=pointer]
+        - article [ref=e24]:
+          - generic [ref=e26]:
+            - generic [ref=e27]:
+              - generic [ref=e28]:
+                - generic [ref=e29]: Student Dashboard
+                - heading "Student, here is your dashboard." [level=1] [ref=e30]
+                - paragraph [ref=e31]: 2025/2026 Spring Semester in Business Management. Your classes, registration, records, and campus updates.
+                - generic [ref=e32]:
+                  - generic [ref=e33]: Business Management
+                  - generic [ref=e34]: 2025/2026 Spring Semester
+                  - generic [ref=e35]: Semester S1
+                  - generic [ref=e36]: Registration open
+                  - generic [ref=e37]: 0 unread updates
+                - generic [ref=e38]:
+                  - button "Continue registration" [ref=e39] [cursor=pointer]
+                  - button "Open LMS" [ref=e40] [cursor=pointer]
+                  - button "Clear cache" [ref=e41] [cursor=pointer]
+              - complementary [ref=e42]:
+                - generic [ref=e43]:
+                  - strong [ref=e44]: Semester Overview
+                  - generic [ref=e45]: Your schedule and academic status for today.
+                - generic [ref=e46]:
+                  - generic [ref=e47]:
+                    - generic [ref=e48]: Next class
+                    - strong [ref=e49]: No class scheduled
+                    - emphasis [ref=e50]: Your timetable will surface here once sections are assigned.
+                  - generic [ref=e51]:
+                    - generic [ref=e52]: Registration
+                    - strong [ref=e53]: Open
+                    - emphasis [ref=e54]: Continue sections, electives, and free-credit choices.
+                  - generic [ref=e55]:
+                    - generic [ref=e56]: Balance
+                    - strong [ref=e57]: Clear
+                    - emphasis [ref=e58]: Finance access is clear for the active term.
+            - generic [ref=e59]:
+              - generic [ref=e60]:
+                - strong [ref=e61]: S1
+                - generic [ref=e62]: Semester
+              - generic [ref=e63]:
+                - strong [ref=e64]: "--"
+                - generic [ref=e65]: GPA
+              - generic [ref=e66]:
+                - strong [ref=e67]: "0"
+                - generic [ref=e68]: ECTS
+              - generic [ref=e69]:
+                - strong [ref=e70]: "0"
+                - generic [ref=e71]: Updates
+        - article [ref=e72]:
+          - generic [ref=e74]:
+            - generic [ref=e75]:
+              - generic [ref=e76]:
+                - generic [ref=e77]: "Today\x19s schedule"
+                - generic [ref=e78]: Classes, rooms, and the next academic movement in your day.
+              - generic [ref=e79]: Planning
+            - generic [ref=e81]:
+              - generic [ref=e82]: 
+              - generic [ref=e83]:
+                - strong [ref=e84]: No scheduled classes yet
+                - generic [ref=e85]: "Select sections in registration to populate today\x19s teaching plan."
+            - button "Open My Schedule" [ref=e87] [cursor=pointer]
+        - article [ref=e88]:
+          - generic [ref=e90]:
+            - generic [ref=e91]:
+              - generic [ref=e92]:
+                - generic [ref=e93]: Registration lane
+                - generic [ref=e94]: Registration access, finance status, and progress conditions for the active term.
+              - generic [ref=e95]: Open now
+            - generic [ref=e96]:
+              - generic [ref=e97]:
+                - generic [ref=e98]: 
+                - generic [ref=e99]:
+                  - strong [ref=e100]: Registration is open
+                  - generic [ref=e101]: Sections, electives, and free-credit choices can still be changed.
+              - generic [ref=e102]:
+                - generic [ref=e103]: 
+                - generic [ref=e104]:
+                  - strong [ref=e105]: Finance access clear
+                  - generic [ref=e106]: No finance hold is blocking this semester right now.
+              - generic [ref=e107]:
+                - generic [ref=e108]: 
+                - generic [ref=e109]:
+                  - strong [ref=e110]: 0 completed ECTS
+                  - generic [ref=e111]: "GPA: --"
+            - button "Open Registration" [ref=e113] [cursor=pointer]
+        - article [ref=e114]:
+          - generic [ref=e116]:
+            - generic [ref=e117]:
+              - generic [ref=e118]:
+                - generic [ref=e119]: Current scores
+                - generic [ref=e120]: Live grade signals from the subjects already carrying marks.
+              - generic [ref=e121]: "--"
+            - generic [ref=e123]:
+              - generic [ref=e124]: 
+              - generic [ref=e125]:
+                - strong [ref=e126]: No scored subjects yet
+                - generic [ref=e127]: Scores will appear once coursework or exams are recorded in the gradebook.
+            - button "Open Study Card" [ref=e129] [cursor=pointer]
+        - article [ref=e130]:
+          - generic [ref=e132]:
+            - generic [ref=e133]:
+              - generic [ref=e134]:
+                - generic [ref=e135]: Official updates
+                - generic [ref=e136]: The newest portal changes tied to your student profile.
+              - generic [ref=e137]: Inbox
+            - generic [ref=e139]:
+              - generic [ref=e140]: 
+              - generic [ref=e141]:
+                - strong [ref=e142]: No new updates
+                - generic [ref=e143]: Fresh orders, notifications, and tracked changes will appear here.
+            - button "Open Orders" [ref=e145] [cursor=pointer]
+        - article [ref=e146]:
+          - generic [ref=e148]:
+            - generic [ref=e149]:
+              - generic [ref=e150]:
+                - generic [ref=e151]: Support & access
+                - generic [ref=e152]: Requests, Student Service, and tracked support movement around your account.
+              - generic [ref=e153]: Access
+            - generic [ref=e154]:
+              - generic [ref=e155]:
+                - generic [ref=e156]: 
+                - generic [ref=e157]:
+                  - strong [ref=e158]: No support requests
+                  - generic [ref=e159]: Support requests and tracked appeals will appear here.
+              - generic [ref=e160]:
+                - generic [ref=e161]: 
+                - generic [ref=e162]:
+                  - strong [ref=e163]: Student Service
+                  - generic [ref=e164]: Ask for help, review articles, and continue tracked requests without leaving the main dashboard.
+            - button "Open Student Service" [ref=e166] [cursor=pointer]
+        - article [ref=e167]:
+          - generic [ref=e169]:
+            - generic [ref=e170]:
+              - generic [ref=e171]:
+                - generic [ref=e172]: Workspace hub
+                - generic [ref=e173]: The quickest path into the systems tied to this view.
+              - generic [ref=e174]: Student Portal
+            - generic [ref=e175]:
+              - button " 0 updates LMS Classes, assignments, materials, and live course updates. All quiet for now" [ref=e176] [cursor=pointer]:
+                - generic [ref=e177]:
+                  - generic [ref=e179]: 
+                  - generic [ref=e180]: 0 updates
+                - strong [ref=e181]: LMS
+                - generic [ref=e182]: Classes, assignments, materials, and live course updates.
+                - emphasis [ref=e186]: All quiet for now
+              - button " Open now Registration Registration is open for section, elective, and free-credit choices. Continue registration" [ref=e187] [cursor=pointer]:
+                - generic [ref=e188]:
+                  - generic [ref=e190]: 
+                  - generic [ref=e191]: Open now
+                - strong [ref=e192]: Registration
+                - generic [ref=e193]: Registration is open for section, elective, and free-credit choices.
+                - emphasis [ref=e197]: Continue registration
+              - button " Awaiting sections Timetable See your weekly teaching schedule, rooms, and times. Choose sections first" [ref=e198] [cursor=pointer]:
+                - generic [ref=e199]:
+                  - generic [ref=e201]: 
+                  - generic [ref=e202]: Awaiting sections
+                - strong [ref=e203]: Timetable
+                - generic [ref=e204]: See your weekly teaching schedule, rooms, and times.
+                - emphasis [ref=e208]: Choose sections first
+              - 'button " 0 ECTS Study Card 0 completed ECTS with transcript and progress records in one place. GPA: --" [ref=e209] [cursor=pointer]':
+                - generic [ref=e210]:
+                  - generic [ref=e212]: 
+                  - generic [ref=e213]: 0 ECTS
+                - strong [ref=e214]: Study Card
+                - generic [ref=e215]: 0 completed ECTS with transcript and progress records in one place.
+                - emphasis [ref=e218]: "GPA: --"
+              - button " 0 total Orders 0 official orders available in your archive. 0 unread" [ref=e219] [cursor=pointer]:
+                - generic [ref=e220]:
+                  - generic [ref=e222]: 
+                  - generic [ref=e223]: 0 total
+                - strong [ref=e224]: Orders
+                - generic [ref=e225]: 0 official orders available in your archive.
+                - emphasis [ref=e229]: 0 unread
+              - button " 0 open Student Service Support requests, guidance articles, and support. Speak with Student Service" [ref=e230] [cursor=pointer]:
+                - generic [ref=e231]:
+                  - generic [ref=e233]: 
+                  - generic [ref=e234]: 0 open
+                - strong [ref=e235]: Student Service
+                - generic [ref=e236]: Support requests, guidance articles, and support.
+                - emphasis [ref=e240]: Speak with Student Service
+        - article [ref=e241]:
+          - generic [ref=e243]:
+            - generic [ref=e244]:
+              - generic [ref=e245]:
+                - generic [ref=e246]: Orders & notices
+                - generic [ref=e247]: Official orders that affect records, access, or semester timing.
+              - generic [ref=e248]: 0 total
+            - generic [ref=e250]:
+              - generic [ref=e251]: 
+              - generic [ref=e252]:
+                - strong [ref=e253]: No orders yet
+                - generic [ref=e254]: Official orders and student notices will appear here.
+            - button "Open Orders" [ref=e256] [cursor=pointer]
+        - article [ref=e257]:
+          - generic [ref=e259]:
+            - generic [ref=e260]:
+              - generic [ref=e261]:
+                - generic [ref=e262]: Messages
+                - generic [ref=e263]: Conversation signals from support and academic follow-up.
+              - generic [ref=e264]: Quiet
+            - generic [ref=e266]:
+              - generic [ref=e267]: 
+              - generic [ref=e268]:
+                - strong [ref=e269]: No new messages
+                - generic [ref=e270]: Direct conversations and academic follow-up will appear here.
+            - button "Open Social" [ref=e272] [cursor=pointer]
+  - complementary:
+    - generic:
+      - generic: K
+      - generic:
+        - generic: KIU
+        - generic: Integrated Campus Portal
+    - generic:
+      - generic: Core
+      - button " Dashboard":
+        - generic: 
+        - generic: Dashboard
+      - button " LMS":
+        - generic: 
+        - generic: LMS
+      - button " Timetable":
+        - generic: 
+        - generic: Timetable
+      - button " Registration":
+        - generic: 
+        - generic: Registration
+      - generic: Records
+      - button " Programs":
+        - generic: 
+        - generic: Programs
+      - button " Study Card":
+        - generic: 
+        - generic: Study Card
+      - button " Personal Data":
+        - generic: 
+        - generic: Personal Data
+      - button " Profile":
+        - generic: 
+        - generic: Profile
+      - generic: Support
+      - button " News":
+        - generic: 
+        - generic: News
+      - button " AI Career Analyst":
+        - generic: 
+        - generic: AI Career Analyst
+      - button " E-Chancellery":
+        - generic: 
+        - generic: E-Chancellery
+      - button " Student Service":
+        - generic: 
+        - generic: Student Service
+      - button " Library":
+        - generic: 
+        - generic: Library
+      - button " Social":
+        - generic: 
+        - generic: Social
+    - generic:
+      - generic: KI
+      - generic:
+        - generic: Portal User
+        - generic: University Portal
+  - text:                   

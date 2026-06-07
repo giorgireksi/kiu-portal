@@ -1,0 +1,83 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e4]:
+    - generic [ref=e6]:
+      - generic [ref=e7]:
+        - generic [ref=e8]: Campus Social Network
+        - heading "Messages" [level=1] [ref=e9]
+        - paragraph [ref=e10]: Keep direct threads and group rooms moving without losing sight of the wider social inbox.
+        - generic [ref=e11]:
+          - generic [ref=e12]:
+            - strong
+            - generic [ref=e13]: Chats
+          - generic [ref=e14]:
+            - strong
+            - generic [ref=e15]: Unread
+          - generic [ref=e16]:
+            - strong [ref=e17]: Idle
+            - generic [ref=e18]: Active call
+        - generic [ref=e19]:
+          - button "Chats" [pressed] [ref=e20] [cursor=pointer]
+          - button "Unread" [ref=e21] [cursor=pointer]
+          - button "Alerts" [ref=e22] [cursor=pointer]
+      - generic [ref=e23]:
+        - button "PA Portal Administrator Admin" [ref=e24] [cursor=pointer]:
+          - generic [ref=e25]: PA
+          - generic [ref=e26]:
+            - strong [ref=e27]: Portal Administrator
+            - generic [ref=e28]: Admin
+        - generic [ref=e29]:
+          - button " Profile" [ref=e30] [cursor=pointer]:
+            - generic [ref=e31]: 
+            - text: Profile
+          - button " Menu" [ref=e32] [cursor=pointer]:
+            - generic [ref=e33]: 
+            - text: Menu
+    - region "Keep direct and group conversations organized." [ref=e35]:
+      - generic [ref=e36]:
+        - generic [ref=e37]: Social inbox
+        - heading "Keep direct and group conversations organized." [level=2] [ref=e38]
+        - paragraph [ref=e39]: 0 chats / 0 unread / no active call
+        - generic [ref=e40]:
+          - button " All chats" [ref=e41] [cursor=pointer]:
+            - generic [ref=e42]: 
+            - generic [ref=e43]: All chats
+          - button " Unread" [ref=e44] [cursor=pointer]:
+            - generic [ref=e45]: 
+            - generic [ref=e46]: Unread
+          - button " Find people" [ref=e47] [cursor=pointer]:
+            - generic [ref=e48]: 
+            - generic [ref=e49]: Find people
+      - generic [ref=e50]:
+        - generic [ref=e51]:
+          - article [ref=e52]:
+            - strong
+            - generic [ref=e53]: Chats
+          - article [ref=e54]:
+            - strong
+            - generic [ref=e55]: Unread
+          - article [ref=e56]:
+            - strong [ref=e57]: Idle
+            - generic [ref=e58]: Active call
+        - generic [ref=e59]:
+          - article [ref=e60]:
+            - generic [ref=e62]: 
+            - generic [ref=e63]:
+              - strong [ref=e64]: Thread focus
+              - generic [ref=e65]: Inbox, active conversation, and group details are visually separated.
+          - article [ref=e66]:
+            - generic [ref=e68]: 
+            - generic [ref=e69]:
+              - strong [ref=e70]: Shared assets
+              - generic [ref=e71]: Files, media, links, members, and invites have dedicated panels.
+          - article [ref=e72]:
+            - generic [ref=e74]: 
+            - generic [ref=e75]:
+              - strong [ref=e76]: Call state
+              - generic [ref=e77]: Active call controls stay near the relevant conversation.
+    - generic [ref=e78]:
+      - generic:            
+      - generic [ref=e81]:
+        - generic [ref=e82]: 
+        - strong [ref=e83]: Loading Messages
+        - generic [ref=e84]: Preparing threads, group rails, and call controls.
+  - text:                         

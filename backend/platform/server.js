@@ -3,6 +3,7 @@ const path = require('path');
 const crypto = require('crypto');
 const express = require('express');
 const dotenv = require('dotenv');
+const QRCode = require('qrcode');
 const webPush = require('web-push');
 const { registerAdminIntegrationsRoutes } = require('./routes/admin-integrations-routes');
 const { registerAcademicRoutes } = require('./routes/academic-routes');
@@ -23,7 +24,9 @@ const { registerSocialRoutes } = require('./routes/social-routes');
 const { registerStudentServiceRoutes } = require('./routes/student-service-routes');
 const { registerSystemRoutes } = require('./routes/system-routes');
 const { PlatformStore } = require('./store');
-const { uniqueStrings } = require('./utils');
+const { isPortalImpersonationRole } = require('./domains/auth-session-service');
+const lmsLiveQuizService = require('./domains/lms-live-quiz-service');
+const { asArray, uniqueStrings } = require('./utils');
 
 const ROOT_DIR = path.resolve(__dirname, '..', '..');
 dotenv.config({ path: path.join(ROOT_DIR, '.env') });
@@ -114,7 +117,18 @@ const ANTI_CHEAT_RELEASE_CATALOG = {
         title: 'Install the Android anti-cheat app',
         description: 'Android students can install the anti-cheat APK directly. If the app is already installed, the open button should hand off to the protected anti-cheat browser.',
         installLabel: 'Download Android APK',
-        protocolUrl: 'anticheat://open?source=download-page&platform=android',
+        protocolUrl: (() => {
+            const params = new URLSearchParams({
+                screen: 'launcher',
+                source: 'download-page',
+                platform: 'android',
+                appUrl: APP_URL,
+                backendUrl: BACKEND_URL,
+                quizUrl: `${APP_URL}/lms.html`,
+                examPortalUrl: `${APP_URL}/exam-portal.html`
+            });
+            return `anticheat://open?${params.toString()}`;
+        })(),
         supportsProtocolCheck: true,
         installNotes: [
             'After downloading, allow installation from this source if Android asks.',
@@ -792,9 +806,63 @@ function renderAntiCheatDownloadPage({ selectedPlatform = 'windows', selectedDow
 </html>`;
 }
 
+async function buildLocalSetupBootstrap() {
+    const catalog = getAntiCheatDownloadCatalog();
+    const androidEntry = catalog.find(entry => entry.key === 'android') || catalog[0] || null;
+    const appOrigin = APP_ORIGIN || APP_URL;
+    const backendOrigin = BACKEND_URL;
+    const setupUrl = `${appOrigin}/wifi-setup.html`;
+    const loginUrl = `${appOrigin}/login.html`;
+    const lmsUrl = `${appOrigin}/lms.html`;
+    const backendHealthUrl = `${backendOrigin}/health`;
+    const androidDownloadPageUrl = `${appOrigin}/download?platform=android`;
+    const androidDownloadFileUrl = `${appOrigin}/download?platform=android&download=file`;
+    const androidProtocolUrl = androidEntry?.protocolUrl || '';
+    const qrOptions = {
+        errorCorrectionLevel: 'M',
+        margin: 1,
+        width: 320,
+        color: {
+            dark: '#0f172a',
+            light: '#ffffff'
+        }
+    };
+    const setupQrDataUrl = await QRCode.toDataURL(androidDownloadPageUrl, qrOptions);
+    const loginQrDataUrl = await QRCode.toDataURL(loginUrl, qrOptions);
+    return {
+        ok: true,
+        appUrl: appOrigin,
+        backendUrl: backendOrigin,
+        setupUrl,
+        loginUrl,
+        lmsUrl,
+        backendHealthUrl,
+        androidDownloadPageUrl,
+        androidDownloadFileUrl,
+        androidProtocolUrl,
+        setupQrDataUrl,
+        loginQrDataUrl,
+        lanHost: new URL(appOrigin).hostname,
+        useLanMode: appOrigin !== 'http://127.0.0.1:8876'
+    };
+}
+
+function pruneSseClientsForUser(userId) {
+    const key = String(userId || '').trim();
+    const set = sseClients.get(key);
+    if (!set) return;
+    set.forEach((client) => {
+        if (client?.writableEnded || client?.destroyed || client?.closed) {
+            set.delete(client);
+        }
+    });
+    if (!set.size) sseClients.delete(key);
+}
+
 function registerSseClient(userId, response) {
     const key = String(userId || '').trim();
     if (!key) return false;
+    pruneSseClientsForUser(key);
     const totalCount = getSseConnectionCount();
     const currentCount = sseClients.get(key)?.size || 0;
     if (currentCount >= SSE_MAX_CONNECTIONS_PER_USER || totalCount >= SSE_MAX_CONNECTIONS_TOTAL) return false;
@@ -869,8 +937,84 @@ function getActualSessionRole(sessionAccount) {
     return String(sessionAccount?.session?.actualRole || sessionAccount?.account?.role || '').trim().toLowerCase();
 }
 
+function getActualActorUserId(sessionAccount) {
+    return String(sessionAccount?.session?.userId || sessionAccount?.account?.id || '').trim();
+}
+
+function isSessionImpersonating(sessionAccount) {
+    if (!isActualAdminSession(sessionAccount)) return false;
+    const impersonatedRole = String(sessionAccount?.session?.impersonatedRole || '').trim();
+    const impersonatedUserId = String(sessionAccount?.session?.impersonatedUserId || '').trim();
+    return Boolean(impersonatedRole || impersonatedUserId);
+}
+
+function resolveImpersonatedActorUserId(sessionAccount) {
+    if (!isSessionImpersonating(sessionAccount)) return '';
+    const explicitUserId = String(sessionAccount?.session?.impersonatedUserId || '').trim();
+    if (explicitUserId) return explicitUserId;
+    const impersonatedRole = String(sessionAccount?.session?.impersonatedRole || '').trim().toLowerCase();
+    if (!impersonatedRole || impersonatedRole === 'admin') return '';
+    const account = sessionAccount?.account || {};
+    const session = sessionAccount?.session || {};
+    const facultyCode = normalizeAccessFaculty(
+        account.facultyCode
+        || account.faculty
+        || session.faculty
+        || 'ECON'
+    );
+    const portalState = store.state.portal?.state && typeof store.state.portal.state === 'object'
+        ? store.state.portal.state
+        : {};
+    const profile = portalState.facultyProfiles?.[facultyCode];
+    const rosterKey = impersonatedRole === 'professor'
+        ? 'professors'
+        : impersonatedRole === 'ta'
+            ? 'tas'
+            : impersonatedRole === 'student'
+                ? 'students'
+                : '';
+    const roster = rosterKey && profile && Array.isArray(profile[rosterKey]) ? profile[rosterKey] : [];
+    const candidates = roster
+        .map(member => ({
+            id: String(member?.id || '').trim(),
+            facultyCode: normalizeAccessFaculty(member?.facultyCode || member?.faculty || facultyCode)
+        }))
+        .filter(member => member.id);
+    const pickCandidate = (list = []) => {
+        if (!list.length) return '';
+        const facultyMatch = list.find(member => member.facultyCode === facultyCode);
+        return (facultyMatch || list[0]).id;
+    };
+    if (isActualAdminSession(sessionAccount)) {
+        const testingCandidates = candidates.filter(member => member.id.toLowerCase().startsWith('admin-testing-'));
+        const testingPick = pickCandidate(testingCandidates);
+        if (testingPick) return testingPick;
+    }
+    const rosterPick = pickCandidate(candidates);
+    if (rosterPick) return rosterPick;
+    const accountCandidates = Object.values(store.state.accounts || {})
+        .filter(entry => String(entry?.role || '').trim().toLowerCase() === impersonatedRole)
+        .map(entry => ({
+            id: String(entry?.id || '').trim(),
+            facultyCode: normalizeAccessFaculty(entry?.facultyCode || entry?.faculty || facultyCode)
+        }))
+        .filter(entry => entry.id);
+    if (isActualAdminSession(sessionAccount)) {
+        const testingAccounts = accountCandidates.filter(entry => entry.id.toLowerCase().startsWith('admin-testing-'));
+        const testingPick = pickCandidate(testingAccounts);
+        if (testingPick) return testingPick;
+    }
+    return pickCandidate(accountCandidates);
+}
+
 function getActorUserId(sessionAccount) {
-    return String(sessionAccount?.account?.id || '').trim();
+    if (isSessionImpersonating(sessionAccount)) {
+        const impersonatedUserId = String(sessionAccount?.session?.impersonatedUserId || '').trim();
+        if (impersonatedUserId) return impersonatedUserId;
+        const resolvedUserId = resolveImpersonatedActorUserId(sessionAccount);
+        if (resolvedUserId) return resolvedUserId;
+    }
+    return getActualActorUserId(sessionAccount);
 }
 
 function isActualAdminSession(sessionAccount) {
@@ -880,7 +1024,12 @@ function isActualAdminSession(sessionAccount) {
 function resolveSessionBoundUserId(sessionAccount, requestedUserId = '') {
     const actorUserId = getActorUserId(sessionAccount);
     const requested = String(requestedUserId || '').trim();
-    if (isActualAdminSession(sessionAccount) && requested) return requested;
+    if (isActualAdminSession(sessionAccount) && !isSessionImpersonating(sessionAccount) && requested) {
+        return requested;
+    }
+    if (isSessionImpersonating(sessionAccount) && requested && requested !== actorUserId) {
+        return actorUserId;
+    }
     return actorUserId;
 }
 
@@ -891,7 +1040,7 @@ function buildSelfServiceAccountPayload(payload = {}, sessionAccount) {
             sanitizedPayload[field] = payload[field];
         }
     });
-    sanitizedPayload.id = getActorUserId(sessionAccount);
+    sanitizedPayload.id = getActualActorUserId(sessionAccount);
     sanitizedPayload.email = String(sessionAccount?.account?.email || payload?.email || '').trim().toLowerCase();
     return sanitizedPayload;
 }
@@ -906,6 +1055,19 @@ function cloneJson(value) {
 }
 
 function getLiveQuizActorName(sessionAccount) {
+    const actorUserId = getActorUserId(sessionAccount);
+    const actualActorUserId = getActualActorUserId(sessionAccount);
+    if (actorUserId && actorUserId !== actualActorUserId) {
+        const personaAccount = store?.getAccountById?.(actorUserId);
+        const personaName = String(
+            personaAccount?.displayName
+            || personaAccount?.nameEn
+            || personaAccount?.name
+            || personaAccount?.email
+            || ''
+        ).trim();
+        if (personaName) return personaName;
+    }
     return String(
         sessionAccount?.account?.displayName
         || sessionAccount?.account?.nameEn
@@ -915,128 +1077,51 @@ function getLiveQuizActorName(sessionAccount) {
     ).trim() || 'Student';
 }
 
-function getLiveQuizCurrentQuestion(session = {}) {
-    const questions = Array.isArray(session?.questions) ? session.questions : [];
-    const index = Math.min(Math.max(0, Number.parseInt(session?.currentQuestionIndex, 10) || 0), Math.max(questions.length - 1, 0));
-    return questions[index] || null;
-}
-
-function getLiveQuizQuestionTimeState(question = {}) {
-    const state = String(question?.state || (question?.activatedAt ? 'showing' : 'draft')).trim().toLowerCase();
-    const activatedAtMs = question?.activatedAt ? new Date(question.activatedAt).getTime() : 0;
-    const limitMs = Math.max(10000, (Number.parseInt(question?.timeLimit, 10) || 45) * 1000);
-    const nowMs = Date.now();
-    const elapsedMs = Number.isFinite(activatedAtMs) && activatedAtMs > 0 ? Math.max(0, nowMs - activatedAtMs) : 0;
-    const remainingMs = state === 'paused' && Number.isFinite(Number(question?.pausedRemainingMs))
-        ? Math.max(0, Number(question.pausedRemainingMs))
-        : (activatedAtMs ? Math.max(0, limitMs - elapsedMs) : limitMs);
-    const expired = Boolean(activatedAtMs && elapsedMs > limitMs) || ['locked', 'revealed', 'completed'].includes(state);
+function getLiveQuizMergeHelpers() {
     return {
-        state,
-        answerable: state === 'showing' && Boolean(activatedAtMs) && !expired,
-        remainingMs
+        getActorUserId,
+        getLiveQuizActorName
     };
-}
-
-function scoreLiveQuizAnswer(question = {}, selectedOption = null, answeredAt = new Date()) {
-    const correct = Number(selectedOption) === Number(question.correctOption);
-    const activatedAt = question?.activatedAt ? new Date(question.activatedAt).getTime() : Date.now();
-    const answerTime = answeredAt instanceof Date ? answeredAt.getTime() : new Date(answeredAt).getTime();
-    const safeAnswerTime = Number.isFinite(answerTime) ? answerTime : Date.now();
-    const elapsedMs = Math.max(0, safeAnswerTime - (Number.isFinite(activatedAt) ? activatedAt : safeAnswerTime));
-    if (!correct) return { correct: false, score: 0, responseMs: elapsedMs };
-    const limitMs = Math.max(10000, (Number.parseInt(question?.timeLimit, 10) || 45) * 1000);
-    const remainingRatio = Math.max(0, Math.min(1, 1 - (elapsedMs / limitMs)));
-    return {
-        correct: true,
-        score: 500 + Math.round(500 * remainingRatio),
-        responseMs: elapsedMs
-    };
-}
-
-function recalculateLiveQuizParticipant(participant = {}, session = {}) {
-    const questions = Array.isArray(session?.questions) ? session.questions : [];
-    let score = 0;
-    let streak = 0;
-    const answers = participant.answers && typeof participant.answers === 'object' ? participant.answers : {};
-    Object.entries(answers).forEach(([questionId, answer]) => {
-        const question = questions.find(item => String(item?.id || '') === String(questionId || ''));
-        if (!question || !answer || typeof answer !== 'object') return;
-        const scored = scoreLiveQuizAnswer(question, Number(answer.selectedOption), answer.answeredAt || new Date());
-        answer.correct = scored.correct;
-        answer.score = scored.score;
-        answer.responseMs = scored.responseMs;
-        if (scored.correct) {
-            streak += 1;
-        } else {
-            streak = 0;
-        }
-        score += scored.score;
-    });
-    participant.score = score;
-    participant.streak = streak;
-    return participant;
 }
 
 function mergeStudentLiveQuizAnswer(existingWorkspace = {}, submittedWorkspace = {}, sessionAccount = null) {
-    const actorUserId = getActorUserId(sessionAccount);
-    if (!actorUserId) return { error: 'Student session is missing an account id.', status: 403 };
-    const nextWorkspace = cloneJson(existingWorkspace && typeof existingWorkspace === 'object' ? existingWorkspace : {}) || { sessions: [] };
-    nextWorkspace.sessions = Array.isArray(nextWorkspace.sessions) ? nextWorkspace.sessions : [];
-    const submittedSessions = Array.isArray(submittedWorkspace?.sessions) ? submittedWorkspace.sessions : [];
-    const existingSession = nextWorkspace.sessions.find(session => String(session?.status || '').toLowerCase() === 'live')
-        || nextWorkspace.sessions.find(session => submittedSessions.some(item => String(item?.id || '') === String(session?.id || '')));
-    if (!existingSession || String(existingSession.status || '').toLowerCase() !== 'live') {
-        return { error: 'There is no live quiz open for answers.', status: 409 };
-    }
-    const submittedSession = submittedSessions.find(session => String(session?.id || '') === String(existingSession.id || '')) || {};
-    const currentQuestion = getLiveQuizCurrentQuestion(existingSession);
-    if (!currentQuestion) return { error: 'There is no active question to answer.', status: 409 };
-    const timeState = getLiveQuizQuestionTimeState(currentQuestion);
-    if (!timeState.answerable) return { error: 'This question is not accepting answers right now.', status: 409 };
-    const submittedParticipant = submittedSession?.participants && typeof submittedSession.participants === 'object'
-        ? submittedSession.participants[actorUserId]
-        : null;
-    const submittedAnswer = submittedParticipant?.answers && typeof submittedParticipant.answers === 'object'
-        ? submittedParticipant.answers[currentQuestion.id]
-        : null;
-    if (!submittedAnswer || typeof submittedAnswer !== 'object') {
-        return { error: 'No answer was submitted for the active question.', status: 400 };
-    }
-    const selectedOption = Number.parseInt(submittedAnswer.selectedOption, 10);
-    if (!Number.isInteger(selectedOption) || selectedOption < 0 || selectedOption > 3) {
-        return { error: 'Answer option is invalid.', status: 400 };
-    }
-    const existingParticipants = existingSession.participants && typeof existingSession.participants === 'object' ? existingSession.participants : {};
-    existingSession.participants = existingParticipants;
-    if (!existingParticipants[actorUserId] || typeof existingParticipants[actorUserId] !== 'object') {
-        return { error: 'This live quiz is only open to students in the LMS group.', status: 403 };
-    }
-    const participant = existingParticipants[actorUserId];
-    participant.id = actorUserId;
-    participant.accountId = actorUserId;
-    participant.nickname = getLiveQuizActorName(sessionAccount);
-    participant.answers = participant.answers && typeof participant.answers === 'object' ? participant.answers : {};
-    const showVersion = Math.max(0, Number.parseInt(currentQuestion.showVersion, 10) || 0);
-    const existingAnswer = participant.answers[currentQuestion.id];
-    if (existingAnswer && Number(existingAnswer.showVersion || 0) === showVersion) {
-        return { error: 'This question has already been answered.', status: 409 };
-    }
-    const now = new Date();
-    const scored = scoreLiveQuizAnswer(currentQuestion, selectedOption, now);
-    participant.answers[currentQuestion.id] = {
-        questionId: currentQuestion.id,
-        selectedOption,
-        correct: scored.correct,
-        score: scored.score,
-        responseMs: scored.responseMs,
-        answeredAt: now.toISOString(),
-        showVersion,
-        questionState: String(currentQuestion.state || 'showing').toLowerCase()
-    };
-    participant.lastSeenAt = now.toISOString();
-    existingParticipants[actorUserId] = recalculateLiveQuizParticipant(participant, existingSession);
-    return { workspace: nextWorkspace };
+    return lmsLiveQuizService.mergeStudentLiveQuizAnswer(
+        existingWorkspace,
+        submittedWorkspace,
+        sessionAccount,
+        getLiveQuizMergeHelpers()
+    );
+}
+
+function mergeStudentLiveQuizJoin(existingWorkspace = {}, submittedWorkspace = {}, sessionAccount = null) {
+    return lmsLiveQuizService.mergeStudentLiveQuizJoin(
+        existingWorkspace,
+        submittedWorkspace,
+        sessionAccount,
+        getLiveQuizMergeHelpers()
+    );
+}
+
+function submitStudentLiveQuizAnswer(existingWorkspace = {}, payload = {}, sessionAccount = null) {
+    return lmsLiveQuizService.submitStudentLiveQuizAnswer(
+        existingWorkspace,
+        payload,
+        sessionAccount,
+        getLiveQuizMergeHelpers()
+    );
+}
+
+function submitStudentLiveQuizJoin(existingWorkspace = {}, payload = {}, sessionAccount = null) {
+    return lmsLiveQuizService.submitStudentLiveQuizJoin(
+        existingWorkspace,
+        payload,
+        sessionAccount,
+        getLiveQuizMergeHelpers()
+    );
+}
+
+function mergeStaffLiveQuizWorkspace(existingWorkspace = {}, submittedWorkspace = {}) {
+    return lmsLiveQuizService.mergeStaffLiveQuizWorkspace(existingWorkspace, submittedWorkspace);
 }
 
 function getRequesterIp(request) {
@@ -1216,12 +1301,24 @@ function requireActualSessionRole(request, response, allowedRoles = STAFF_ROLES)
 }
 
 function getSessionActor(sessionAccount = {}) {
-    const account = sessionAccount.account || {};
-    const session = sessionAccount.session || {};
+    const actorUserId = getActorUserId(sessionAccount);
+    const actorRole = getSessionRole(sessionAccount);
+    const actualActorUserId = getActualActorUserId(sessionAccount);
+    let facultyCode = '';
+    const personaAccount = actorUserId && actorUserId !== actualActorUserId
+        ? store.getAccountById(actorUserId)
+        : null;
+    if (personaAccount) {
+        facultyCode = normalizeAccessFaculty(personaAccount.facultyCode || personaAccount.faculty || '');
+    } else {
+        const account = sessionAccount.account || {};
+        const session = sessionAccount.session || {};
+        facultyCode = normalizeAccessFaculty(account.facultyCode || account.faculty || session.faculty || '');
+    }
     return {
-        actorUserId: String(account.id || session.userId || '').trim(),
-        actorRole: String(session.actualRole || account.role || '').trim().toLowerCase(),
-        facultyCode: String(account.facultyCode || account.faculty || session.faculty || '').trim().toUpperCase()
+        actorUserId,
+        actorRole,
+        facultyCode
     };
 }
 
@@ -1233,13 +1330,18 @@ function getRequestIpAddress(request) {
 function addRouteAuditEvent(request, sessionAccount, event = {}) {
     if (!store?.addAuditEvent) return null;
     const actor = getSessionActor(sessionAccount);
-    return store.addAuditEvent({
+    const auditPayload = {
         actorUserId: actor.actorUserId,
         actorRole: actor.actorRole,
         requestId: String(request.headers['x-request-id'] || '').trim(),
         ipAddress: getRequestIpAddress(request),
         ...event
-    });
+    };
+    if (isSessionImpersonating(sessionAccount)) {
+        auditPayload.actualActorUserId = getActualActorUserId(sessionAccount);
+        auditPayload.actualActorRole = getActualSessionRole(sessionAccount);
+    }
+    return store.addAuditEvent(auditPayload);
 }
 
 function requireGradebookCourseAccess(request, response, allowedRoles, courseId, action = 'read') {
@@ -1274,14 +1376,16 @@ function requireCourseStaffAccess(request, response, courseId, action = 'read', 
         sendError(response, 400, 'Course id is required.');
         return null;
     }
-    if (!store.canAccessGradebookCourse(normalizedCourseId, actor.actorUserId, actor.actorRole, action)) {
+    const parsedCourseId = parseLmsLiveQuizResourceKey(normalizedCourseId);
+    const resolvedCourseId = String(parsedCourseId.courseId || normalizedCourseId).trim();
+    if (!store.canAccessGradebookCourse(resolvedCourseId, actor.actorUserId, actor.actorRole, action)) {
         sendError(response, 403, 'You are not assigned to this course scope.');
         addRouteAuditEvent(request, sessionAccount, {
             eventDomain: 'course-access',
             eventType: 'scope-denied',
             entityType: 'course',
-            entityId: normalizedCourseId,
-            afterState: { action, courseId: normalizedCourseId }
+            entityId: parsedCourseId.resourceKey || normalizedCourseId,
+            afterState: { action, courseId: resolvedCourseId, groupId: parsedCourseId.groupId || null }
         });
         return null;
     }
@@ -1289,25 +1393,272 @@ function requireCourseStaffAccess(request, response, courseId, action = 'read', 
 }
 
 function getCourseIdFromResourceKey(resourceKey = '') {
-    return String(resourceKey || '').split('::')[0].trim();
+    return parseLmsLiveQuizResourceKey(resourceKey).courseId;
+}
+
+function normalizeLmsLiveQuizScopeKey(value = '') {
+    return String(value || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '');
+}
+
+function stripLmsLiveQuizSectionSuffix(groupId = '') {
+    const rawGroupId = String(groupId || '').trim();
+    const sectionSuffixPrefix = '__lmssec_';
+    const markerIndex = rawGroupId.lastIndexOf(sectionSuffixPrefix);
+    if (markerIndex < 0) {
+        return { groupId: rawGroupId, sectionType: '' };
+    }
+    const baseGroupId = rawGroupId.slice(0, markerIndex);
+    const sectionType = rawGroupId.slice(markerIndex + sectionSuffixPrefix.length);
+    return {
+        groupId: baseGroupId || rawGroupId,
+        sectionType: String(sectionType || '').trim().toLowerCase()
+    };
+}
+
+function parseLmsLiveQuizResourceKey(resourceKey = '') {
+    const raw = String(resourceKey || '').trim();
+    if (!raw.includes('::')) {
+        return { courseId: raw, groupId: null, resourceKey: raw, sectionType: '' };
+    }
+    const [courseId, ...groupParts] = raw.split('::');
+    const sectionParts = stripLmsLiveQuizSectionSuffix(groupParts.join('::'));
+    return {
+        courseId: courseId || raw,
+        groupId: sectionParts.groupId || null,
+        resourceKey: raw,
+        sectionType: sectionParts.sectionType || ''
+    };
+}
+
+function getLmsLiveQuizEnrollmentGroupKey(enrollment = {}) {
+    const sectionId = String(
+        enrollment.sectionId
+        || enrollment.section?.id
+        || enrollment.section?.groupId
+        || enrollment.groupId
+        || ''
+    ).trim();
+    const sectionCode = String(enrollment.section?.code || enrollment.groupId || '').trim();
+    if (!sectionId && !sectionCode) return '';
+    const parsedSection = parseLmsLiveQuizResourceKey(sectionId || sectionCode);
+    return parsedSection.groupId || sectionCode || sectionId;
+}
+
+function isStaffForLmsLiveQuizResource(parsedResourceKey = {}, userId = '', role = '') {
+    const normalizedUserId = String(userId || '').trim();
+    const normalizedRole = String(role || '').trim().toLowerCase();
+    if (!normalizedUserId) return false;
+    const courseId = String(parsedResourceKey.courseId || '').trim();
+    const groupId = parsedResourceKey.groupId;
+    const targetCourse = normalizeLmsLiveQuizScopeKey(courseId);
+    const targetGroup = groupId ? normalizeLmsLiveQuizScopeKey(groupId) : '';
+    return Object.values(store.state.sections || {}).some(section => {
+        const parsedSectionCourse = parseLmsLiveQuizResourceKey(section?.courseId || '');
+        const parsedSection = parseLmsLiveQuizResourceKey(section?.id || section?.code || '');
+        const sectionCourseKeys = new Set([
+            normalizeLmsLiveQuizScopeKey(section?.courseId || ''),
+            normalizeLmsLiveQuizScopeKey(parsedSectionCourse.courseId || ''),
+            normalizeLmsLiveQuizScopeKey(parsedSection.courseId || '')
+        ].filter(Boolean));
+        const sectionGroup = normalizeLmsLiveQuizScopeKey(parsedSection.groupId || section?.code || '');
+        const courseMatches = sectionCourseKeys.has(targetCourse);
+        if (!courseMatches) return false;
+        if (targetGroup && sectionGroup && sectionGroup !== targetGroup) return false;
+        const professorIds = [
+            section?.professorId,
+            section?.instructorUserId,
+            section?.instructorId
+        ].map(value => String(value || '').trim()).filter(Boolean);
+        const taIds = [
+            ...(Array.isArray(section?.taIds) ? section.taIds : []),
+            section?.assistantUserId,
+            section?.assistantId,
+            section?.taId
+        ].map(value => String(value || '').trim()).filter(Boolean);
+        if (normalizedRole === 'professor') return professorIds.includes(normalizedUserId);
+        if (normalizedRole === 'ta') return taIds.includes(normalizedUserId);
+        return professorIds.includes(normalizedUserId) || taIds.includes(normalizedUserId);
+    });
+}
+
+function isPortalCurriculumStaffForLiveQuiz(courseId = '', groupId = '', userId = '', role = '') {
+    const portalState = store.state.portal?.state && typeof store.state.portal.state === 'object'
+        ? store.state.portal.state
+        : {};
+    const normalizedRole = String(role || '').trim().toLowerCase();
+    const normalizedUserId = String(userId || '').trim();
+    if (!normalizedUserId || !['professor', 'ta'].includes(normalizedRole)) return false;
+    const account = store.getAccountById(normalizedUserId);
+    if (!account) return false;
+    const facultyCode = normalizeAccessFaculty(account.facultyCode || account.faculty || '');
+    const profile = portalState.facultyProfiles?.[facultyCode];
+    if (!profile || typeof profile !== 'object') return false;
+    const listed = normalizedRole === 'professor'
+        ? asArray(profile.professors).some(member => String(member?.id || '').trim() === normalizedUserId)
+        : asArray(profile.tas).some(member => String(member?.id || '').trim() === normalizedUserId);
+    if (!listed) return false;
+    const targetCourse = normalizeLmsLiveQuizScopeKey(courseId);
+    const inCurriculum = asArray(profile.curriculum).some(subject =>
+        normalizeLmsLiveQuizScopeKey(subject?.id || subject?.subjectId || '') === targetCourse
+    );
+    if (!inCurriculum) return false;
+    if (!groupId) return true;
+    const targetGroup = normalizeLmsLiveQuizScopeKey(groupId);
+    const groups = asArray(portalState.availableGroups?.[courseId]);
+    return groups.some(group => normalizeLmsLiveQuizScopeKey(group?.id || group?.name || '') === targetGroup);
+}
+
+function getLmsLiveQuizStaffIdentityTokens(userId = '') {
+    const normalizedUserId = String(userId || '').trim();
+    const tokens = new Set([normalizedUserId, normalizeLmsLiveQuizScopeKey(normalizedUserId)]);
+    const account = store.getAccountById(normalizedUserId);
+    if (!account) return tokens;
+    [account.displayName, account.nameEn, account.name, account.email].forEach(value => {
+        const token = String(value || '').trim();
+        if (!token || token.toLowerCase() === 'tbd') return;
+        tokens.add(token);
+        tokens.add(normalizeLmsLiveQuizScopeKey(token));
+    });
+    return tokens;
+}
+
+function matchesLmsLiveQuizStaffToken(token = '', identityTokens = new Set()) {
+    const raw = String(token || '').trim();
+    if (!raw || raw.toLowerCase() === 'tbd') return false;
+    return identityTokens.has(raw) || identityTokens.has(normalizeLmsLiveQuizScopeKey(raw));
+}
+
+function isAssignedViaLmsLiveQuizGroupRoster(courseId = '', groupId = '', userId = '', role = '') {
+    const portalState = store.state.portal?.state && typeof store.state.portal.state === 'object'
+        ? store.state.portal.state
+        : {};
+    const normalizedRole = String(role || '').trim().toLowerCase();
+    const normalizedUserId = String(userId || '').trim();
+    if (!normalizedUserId || !courseId) return false;
+    const identityTokens = getLmsLiveQuizStaffIdentityTokens(normalizedUserId);
+    const targetGroup = groupId ? normalizeLmsLiveQuizScopeKey(groupId) : '';
+    return asArray(portalState.availableGroups?.[courseId]).some(group => {
+        if (targetGroup && normalizeLmsLiveQuizScopeKey(group?.id || group?.name || '') !== targetGroup) return false;
+        const profToken = String(group?.professorId || group?.prof || '').trim();
+        const taToken = String(group?.taId || group?.assistantId || group?.ta || '').trim();
+        if (normalizedRole === 'professor') return matchesLmsLiveQuizStaffToken(profToken, identityTokens);
+        if (normalizedRole === 'ta') return matchesLmsLiveQuizStaffToken(taToken, identityTokens);
+        return matchesLmsLiveQuizStaffToken(profToken, identityTokens)
+            || matchesLmsLiveQuizStaffToken(taToken, identityTokens);
+    });
+}
+
+function isStaffViaLmsCourseTeachingTeam(parsedResourceKey = {}, userId = '', role = '') {
+    const normalizedUserId = String(userId || '').trim();
+    const normalizedRole = String(role || '').trim().toLowerCase();
+    if (!normalizedUserId) return false;
+    const courseId = String(parsedResourceKey.courseId || '').trim();
+    const groupId = String(parsedResourceKey.groupId || '').trim();
+    const sectionType = String(parsedResourceKey.sectionType || '').trim().toLowerCase();
+    const sectionSuffix = sectionType ? `__lmssec_${sectionType}` : '';
+    const candidateKeys = uniqueStrings([
+        parsedResourceKey.resourceKey,
+        groupId ? `${courseId}::${groupId}${sectionSuffix}` : '',
+        groupId ? `${courseId}::${groupId}` : '',
+        courseId
+    ]);
+    return candidateKeys.some(key => {
+        const lmsCourse = store.state.lmsCourses?.[key];
+        const teachingTeam = Array.isArray(lmsCourse?.teachingTeam) ? lmsCourse.teachingTeam : [];
+        return teachingTeam.some(member => {
+            if (typeof member === 'string') return member === normalizedUserId;
+            const memberId = String(member?.userId || member?.id || '').trim();
+            const memberRole = String(member?.role || member?.assignmentRole || '').trim().toLowerCase();
+            if (memberId !== normalizedUserId) return false;
+            if (!normalizedRole || !memberRole) return true;
+            return memberRole === normalizedRole
+                || (normalizedRole === 'professor' && memberRole === 'instructor');
+        });
+    });
+}
+
+function canAccessLmsLiveQuizAsStaff(sessionAccount, parsedResourceKey = {}, action = 'read') {
+    if (isActualAdminSession(sessionAccount) && !isSessionImpersonating(sessionAccount)) return true;
+    const actor = getSessionActor(sessionAccount);
+    const courseId = String(parsedResourceKey.courseId || '').trim();
+    const groupId = parsedResourceKey.groupId || null;
+    const gradebookAction = action === 'write' ? 'score' : 'read';
+    if (store.canAccessGradebookCourse(courseId, actor.actorUserId, actor.actorRole, gradebookAction)) {
+        return true;
+    }
+    if (isStaffForLmsLiveQuizResource(parsedResourceKey, actor.actorUserId, actor.actorRole)) {
+        return true;
+    }
+    if (isStaffViaLmsCourseTeachingTeam(parsedResourceKey, actor.actorUserId, actor.actorRole)) {
+        return true;
+    }
+    if (isAssignedViaLmsLiveQuizGroupRoster(courseId, groupId, actor.actorUserId, actor.actorRole)) {
+        return true;
+    }
+    return isPortalCurriculumStaffForLiveQuiz(courseId, groupId, actor.actorUserId, actor.actorRole);
+}
+
+function enrollmentMatchesLmsLiveQuizGroup(enrollment = {}, courseId = '', groupId = '') {
+    if (normalizeLmsLiveQuizScopeKey(enrollment.courseId || enrollment.sourceCourseId || '') !== normalizeLmsLiveQuizScopeKey(courseId)) {
+        return false;
+    }
+    if (!groupId) return true;
+    const targetGroup = normalizeLmsLiveQuizScopeKey(groupId);
+    const keys = new Set();
+    const enrollmentGroupId = getLmsLiveQuizEnrollmentGroupKey(enrollment);
+    if (enrollmentGroupId) keys.add(normalizeLmsLiveQuizScopeKey(enrollmentGroupId));
+    const section = enrollment.section && typeof enrollment.section === 'object' ? enrollment.section : {};
+    if (section.code) keys.add(normalizeLmsLiveQuizScopeKey(section.code));
+    if (section.id) {
+        const parsed = parseLmsLiveQuizResourceKey(section.id);
+        if (parsed.groupId) keys.add(normalizeLmsLiveQuizScopeKey(parsed.groupId));
+    }
+    if (enrollment.groupId) keys.add(normalizeLmsLiveQuizScopeKey(enrollment.groupId));
+    if (enrollment.groupName) keys.add(normalizeLmsLiveQuizScopeKey(enrollment.groupName));
+    return keys.has(targetGroup);
+}
+
+function isStudentViaLmsLiveQuizPortalSchedule(studentId = '', courseId = '', groupId = '') {
+    const normalizedStudentId = String(studentId || '').trim();
+    if (!normalizedStudentId || !courseId) return false;
+    const portalState = store.state.portal?.state && typeof store.state.portal.state === 'object'
+        ? store.state.portal.state
+        : {};
+    const schedule = portalState.studentSchedulesByStudent?.[normalizedStudentId];
+    if (!Array.isArray(schedule) || !schedule.length) return false;
+    return schedule.some(entry => enrollmentMatchesLmsLiveQuizGroup(entry, courseId, groupId));
 }
 
 function requireLmsLiveQuizWorkspaceAccess(request, response, resourceKey, action = 'read') {
     const sessionAccount = request.kiuSessionAccount || requireSessionAccount(request, response);
     if (!sessionAccount) return null;
     const actor = getSessionActor(sessionAccount);
-    const courseId = getCourseIdFromResourceKey(resourceKey);
+    const parsedResourceKey = parseLmsLiveQuizResourceKey(resourceKey);
+    const courseId = parsedResourceKey.courseId;
+    const groupId = parsedResourceKey.groupId;
     if (!courseId) {
         sendError(response, 400, 'resourceKey is required.');
         return null;
     }
     if (STAFF_ROLES.has(actor.actorRole)) {
-        return requireCourseStaffAccess(request, response, courseId, action === 'write' ? 'score' : 'read', new Set(['admin', 'professor', 'ta']));
+        if (!canAccessLmsLiveQuizAsStaff(sessionAccount, parsedResourceKey, action)) {
+            sendError(response, 403, 'You are not assigned to this course scope.');
+            addRouteAuditEvent(request, sessionAccount, {
+                eventDomain: 'course-access',
+                eventType: 'scope-denied',
+                entityType: 'lms-live-quiz',
+                entityId: parsedResourceKey.resourceKey || courseId,
+                afterState: { action, courseId, groupId }
+            });
+            return null;
+        }
+        return sessionAccount;
     }
     if (actor.actorRole === 'student') {
-        const canAccess = store.getStudentEnrollmentsByCourse(courseId).some(enrollment =>
-            String(enrollment.studentId || '').trim() === actor.actorUserId
-        );
+        const enrollments = store.getStudentEnrollments(actor.actorUserId);
+        const canAccess = enrollments.some(enrollment =>
+            enrollmentMatchesLmsLiveQuizGroup(enrollment, courseId, groupId)
+        ) || isStudentViaLmsLiveQuizPortalSchedule(actor.actorUserId, courseId, groupId);
         if (!canAccess) {
             sendError(response, 403, 'You are not assigned to this course scope.');
             return null;
@@ -1325,17 +1676,18 @@ function normalizeAccessFaculty(value = '') {
 function canAccessStudentAcademicRecord(sessionAccount, studentId = '') {
     const normalizedStudentId = String(studentId || '').trim();
     if (!normalizedStudentId) return false;
-    if (isActualAdminSession(sessionAccount)) return true;
+    if (isActualAdminSession(sessionAccount) && !isSessionImpersonating(sessionAccount)) return true;
     const actorUserId = getActorUserId(sessionAccount);
     if (actorUserId === normalizedStudentId) return true;
-    const actualRole = getActualSessionRole(sessionAccount);
-    if (['professor', 'ta'].includes(actualRole)) {
+    const effectiveRole = getSessionRole(sessionAccount);
+    if (['professor', 'ta'].includes(effectiveRole)) {
         return store.getStudentEnrollments(normalizedStudentId).some(enrollment =>
-            store.isCourseTeachingStaff(enrollment.courseId, actorUserId, actualRole)
+            store.isCourseTeachingStaff(enrollment.courseId, actorUserId, effectiveRole)
         );
     }
-    if (actualRole === 'student_service') {
-        const actorFaculty = normalizeAccessFaculty(sessionAccount?.account?.facultyCode || sessionAccount?.account?.faculty || '');
+    if (effectiveRole === 'student_service') {
+        const actor = getSessionActor(sessionAccount);
+        const actorFaculty = normalizeAccessFaculty(actor.facultyCode || '');
         const studentAccount = store.getAccountById(normalizedStudentId);
         const studentFaculty = normalizeAccessFaculty(studentAccount?.facultyCode || studentAccount?.faculty || '');
         return !actorFaculty || !studentFaculty || actorFaculty === studentFaculty;
@@ -2069,6 +2421,7 @@ function getBootstrapMailFolderMessages(userId, folderKey, options = {}) {
 
 registerPlatformOpsRoutes(app, {
     backendUrl: BACKEND_URL,
+    buildLocalSetupBootstrap,
     buildProductionReadinessStatus,
     buildRtcConfig,
     fs,
@@ -2078,6 +2431,7 @@ registerPlatformOpsRoutes(app, {
     getStore: () => store,
     requireActualSessionRole,
     requireSessionAccount,
+    sendError,
     uploadsDir: UPLOADS_DIR
 });
 
@@ -2140,10 +2494,14 @@ registerLmsLiveQuizRoutes(app, {
     broadcastAll,
     getSessionRole,
     getStore: () => store,
+    mergeStaffLiveQuizWorkspace,
+    mergeStudentLiveQuizJoin,
     mergeStudentLiveQuizAnswer,
     requireLmsLiveQuizWorkspaceAccess,
     sendError,
-    staffRoles: STAFF_ROLES
+    staffRoles: STAFF_ROLES,
+    submitStudentLiveQuizJoin,
+    submitStudentLiveQuizAnswer
 });
 
 registerStudentServiceRoutes(app, {
@@ -2188,6 +2546,7 @@ registerAuthMaintenanceRoutes(app, {
     enforceRateLimit,
     getSessionToken,
     getStore: () => store,
+    isPortalImpersonationRole,
     loginRateLimitMax: LOGIN_RATE_LIMIT_MAX,
     loginRateLimitWindowMs: LOGIN_RATE_LIMIT_WINDOW_MS,
     requireActualSessionRole,
@@ -2249,9 +2608,10 @@ registerMessengerCallsRoutes(app, {
 registerAcademicRoutes(app, {
     canAccessStudentAcademicRecord,
     getActorUserId,
-    getActualSessionRole,
+    getSessionRole,
     getStore: () => store,
     isActualAdminSession,
+    isSessionImpersonating,
     requireCourseStaffAccess,
     requireSessionAccount,
     sendError
@@ -2343,5 +2703,11 @@ if (require.main === module) {
 module.exports = {
     app,
     startServer,
-    getStore: () => store
+    getStore: () => store,
+    lmsLiveQuizService,
+    mergeStaffLiveQuizWorkspace,
+    mergeStudentLiveQuizJoin,
+    mergeStudentLiveQuizAnswer,
+    submitStudentLiveQuizJoin,
+    submitStudentLiveQuizAnswer
 };

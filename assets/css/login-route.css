@@ -5,17 +5,18 @@
 }
 
 :root {
-    --login-bg: #060a10;
-    --login-bg-soft: #0e1726;
-    --login-accent: #d4943a;
-    --login-accent-strong: #a06625;
-    --login-accent-glow: rgba(212, 148, 58, 0.35);
+    color-scheme: dark;
+    --login-bg: var(--lux-shell-background, #060a10);
+    --login-bg-soft: color-mix(in srgb, var(--lux-surface, #0e1726) 84%, transparent);
+    --login-accent: var(--lux-accent, #d4943a);
+    --login-accent-strong: var(--lux-accent-2, #a06625);
+    --login-accent-glow: rgba(var(--lux-accent-rgb, 212, 148, 58), 0.28);
     --login-success: #10b981;
     --login-danger: #ef4444;
     --login-text: #1a1510;
     --login-muted: #7a6b5c;
     --login-border: rgba(77, 52, 31, 0.12);
-    --login-border-strong: rgba(255, 248, 239, 0.12);
+    --login-border-strong: color-mix(in srgb, var(--lux-border-strong, rgba(255, 248, 239, 0.12)) 74%, rgba(255, 248, 239, 0.18));
     --login-shadow: 0 40px 100px rgba(0, 0, 0, 0.45);
 }
 
@@ -130,7 +131,9 @@ body::after {
     border-radius: 28px;
     overflow: hidden;
     border: 1px solid var(--login-border-strong);
-    background: linear-gradient(145deg, rgba(12, 18, 30, 0.82), rgba(18, 26, 42, 0.65));
+    background:
+        linear-gradient(145deg, rgba(12, 18, 30, 0.82), rgba(18, 26, 42, 0.65)),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.01));
     box-shadow: var(--login-shadow), 0 0 0 1px rgba(255, 255, 255, 0.04);
     backdrop-filter: blur(32px) saturate(150%);
     -webkit-backdrop-filter: blur(32px) saturate(150%);
@@ -268,6 +271,15 @@ body::after {
         box-shadow 0.2s ease;
 }
 
+.login-tab.lux-secondary-btn {
+    min-height: 0;
+    padding: 12px 14px !important;
+    justify-content: center;
+    box-shadow: none;
+    background: transparent !important;
+    border: 0 !important;
+}
+
 .login-tab.active {
     background: linear-gradient(135deg, rgba(200, 130, 42, 0.16), rgba(255, 255, 255, 0.86));
     color: var(--login-text);
@@ -319,6 +331,10 @@ body::after {
         box-shadow 0.2s ease;
 }
 
+.login-page .input-wrapper input.lux-control {
+    min-height: 54px;
+}
+
 .input-wrapper input::placeholder {
     color: rgba(108, 92, 77, 0.52);
     font-weight: 400;
@@ -327,12 +343,14 @@ body::after {
 .input-wrapper .toggle-pwd {
     position: absolute;
     right: 14px;
-    background: none;
-    border: none;
     color: rgba(108, 92, 77, 0.5);
-    cursor: pointer;
     font-size: 14px;
-    padding: 4px;
+    width: 36px;
+    height: 36px;
+    min-height: 36px;
+    padding: 0;
+    border-radius: 12px;
+    box-shadow: none;
     transition: color 0.2s ease;
 }
 
@@ -349,9 +367,6 @@ body::after {
 .login-btn {
     width: 100%;
     padding: 15px 18px;
-    background: linear-gradient(135deg, rgba(200, 130, 42, 0.98), rgba(143, 83, 33, 0.9));
-    color: #fffaf2;
-    border: none;
     border-radius: 16px;
     font-size: 14px;
     font-weight: 800;
@@ -367,20 +382,21 @@ body::after {
     letter-spacing: 0.02em;
     transition:
         transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
-        box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1),
-        filter 0.25s cubic-bezier(0.16, 1, 0.3, 1),
         opacity 0.2s ease;
+}
+
+.login-page .login-btn.lux-primary-btn,
+.login-page .login-btn.lux-secondary-btn {
+    min-height: 54px;
+    padding: 15px 18px !important;
 }
 
 .login-btn:hover {
     transform: translateY(-2px) scale(1.01);
-    box-shadow: 0 16px 36px rgba(143, 83, 33, 0.35);
-    filter: brightness(1.08);
 }
 
 .login-btn:active {
     transform: translateY(0) scale(0.99);
-    box-shadow: 0 6px 16px rgba(143, 83, 33, 0.2);
 }
 
 .login-btn.microsoft-btn {
@@ -402,6 +418,12 @@ body::after {
     animation: spin 0.8s linear infinite;
 }
 
+.login-btn:disabled,
+.login-btn.is-disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
 .login-error,
 .login-success {
     font-size: 13px;
@@ -420,6 +442,12 @@ body::after {
         padding 0.25s ease;
 }
 
+.login-error:not(:empty),
+.login-success:not(:empty) {
+    position: relative;
+    overflow: hidden;
+}
+
 .login-error:not(:empty) {
     background: rgba(239, 68, 68, 0.08);
     border: 1px solid rgba(239, 68, 68, 0.18);
@@ -430,6 +458,19 @@ body::after {
     background: rgba(16, 185, 129, 0.08);
     border: 1px solid rgba(16, 185, 129, 0.18);
     color: var(--login-success);
+}
+
+.login-error:not(:empty)::after,
+.login-success:not(:empty)::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    border-radius: inherit;
+    opacity: 0.28;
+    background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.18), transparent 42%),
+        radial-gradient(circle at 18% 18%, rgba(255, 255, 255, 0.16), transparent 36%);
 }
 
 .login-error:empty,
@@ -470,13 +511,46 @@ body::after {
     z-index: 1;
 }
 
+.login-support-card {
+    position: relative;
+    z-index: 1;
+    border-radius: 18px;
+}
+
+.login-support-card::after {
+    opacity: 0.38;
+}
+
 .tab-content {
     display: none;
     animation: fadeIn 0.28s ease;
 }
 
+.tab-content[hidden] {
+    display: none !important;
+}
+
 .tab-content.active {
     display: block;
+}
+
+.login-form-card {
+    margin-top: 4px;
+    padding: 22px;
+    border-radius: 24px;
+    border: 1px solid rgba(77, 52, 31, 0.12);
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.76), rgba(255, 255, 255, 0.66)),
+        rgba(255, 255, 255, 0.72);
+    box-shadow:
+        0 18px 36px rgba(94, 67, 42, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.72);
+    position: relative;
+    z-index: 1;
+}
+
+.login-form-card::after {
+    opacity: 0.52;
 }
 
 .login-note {

@@ -22,6 +22,6 @@ describe('profile source regressions', () => {
         expect(html).toContain('placeholder="Repeat password"');
         expect(html).toContain('Password recovery uses your registered mobile number.');
         expect(html).toContain('Contact KIU support if you need an SMS reset code.');
-        expect(html).toContain('<button class="profile-shell-disabled-action" type="button">Update</button>');
+        expect(html).toContain('<button class="lux-disabled-btn profile-shell-disabled-action" type="button" aria-disabled="true" disabled>Update</button>');
     });
 });

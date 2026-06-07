@@ -42,7 +42,7 @@ function buildInitScript() {
             localStorage.setItem('currentUserRole', authState.role);
             localStorage.setItem('currentFaculty', authState.faculty);
             localStorage.setItem('KIU_FACULTY_CONTEXT', authState.faculty);
-            localStorage.setItem('KIU_REAL_TESTING_CLEANUP_V6', '6');
+            localStorage.setItem('KIU_REAL_TESTING_CLEANUP_V7', '7');
             localStorage.setItem('KIU_CAREER_HISTORY', '[]');
             localStorage.setItem('KIU_CAREER_REPORTS', '[]');
             localStorage.setItem('KIU_CAREER_VACANCIES', '[]');

@@ -1,24 +1,34 @@
-﻿/* Dedicated student registration logic extracted from core.js. Source of truth remains root core.js compatibility bundle. */
+/* Dedicated student registration logic extracted from the legacy core.js bundle. Active routes now load split files directly. */
 
 // --- STUDENT REGISTRATION LOGIC ---
 
 function switchRegTab(tabId, triggerElement = null) {
+    invalidateStudentRegistrationViewCache();
     document.querySelectorAll('.reg-tab').forEach(t => t.classList.remove('active'));
-    
-    // Convert 'program' to 'prog', 'free' remains 'free', 'concentration' -> 'conc', 'minor' -> 'minor'
-    let structureTab = tabId;
-    if (tabId === 'program') structureTab = 'prog';
-    if (tabId === 'concentration') structureTab = 'conc';
 
-    const shellTabId = structureTab === 'prog' ? 'program' : (structureTab === 'conc' ? 'concentration' : structureTab);
+    const faculty = getCurrentFaculty() || 'ECON';
+    const structureTab = typeof resolveStudentRegistrationStructureTab === 'function'
+        ? resolveStudentRegistrationStructureTab(tabId, faculty)
+        : (tabId === 'program' ? 'prog' : (tabId === 'concentration' ? 'conc' : tabId));
+    const tabConfig = typeof resolveStudentRegistrationTabConfig === 'function'
+        ? resolveStudentRegistrationTabConfig(structureTab, faculty)
+        : null;
+    const shellTabId = tabConfig?.shellId
+        || (structureTab === 'prog' ? 'program' : (structureTab === 'conc' ? 'concentration' : structureTab));
     const clickedTab = (triggerElement && typeof triggerElement.closest === 'function' ? triggerElement.closest('.reg-tab') : null)
         || document.querySelector(`.reg-tab[data-reg-tab="${shellTabId}"]`)
         || document.querySelector(`.reg-tab[data-student-reg-tab="${shellTabId}"]`);
-    if (clickedTab) clickedTab.classList.add('active');
+    if (clickedTab) {
+        clickedTab.classList.add('active');
+        clickedTab.setAttribute('aria-selected', 'true');
+    }
+    document.querySelectorAll('#page-registration .reg-tabs .reg-tab').forEach((tab) => {
+        if (tab !== clickedTab) tab.setAttribute('aria-selected', 'false');
+    });
     
     // Hide all legacy hardcoded tabs if they exist
     document.querySelectorAll('[id^=reg-tab-]').forEach(t => {
-        if(t) t.style.display = 'none';
+        if (t) t.hidden = true;
     });
     
     if (window.__studentRegActiveTab === structureTab) {
@@ -57,6 +67,73 @@ const studentRegistrationViewCache = {
     history: null,
     selected: null
 };
+
+function invalidateStudentRegistrationViewCache() {
+    Object.keys(studentRegistrationViewCache).forEach((key) => {
+        studentRegistrationViewCache[key] = null;
+    });
+}
+
+function countAdminRegistrationModulesForFaculty(faculty) {
+    const fac = normalizeFacultyCode(faculty || 'ECON', 'ECON');
+    if (typeof countRegistrationTrackProgramsForFaculty === 'function') {
+        const trackCount = countRegistrationTrackProgramsForFaculty(fac);
+        if (trackCount > 0) return trackCount;
+    }
+    const structures = KIU_STATE.adminProgramStructures?.[fac];
+    if (!structures || typeof structures !== 'object') return 0;
+    return ['prog', 'free', 'conc', 'minor'].reduce((sum, tabId) => {
+        const modules = structures[tabId];
+        return sum + (Array.isArray(modules) ? modules.length : 0);
+    }, 0);
+}
+
+function findFacultyWithRegistrationCmsContent(excludeFaculty) {
+    const excluded = normalizeFacultyCode(excludeFaculty || 'ECON', 'ECON');
+    const facultyCodes = new Set([
+        ...Object.keys(KIU_STATE.adminProgramStructures || {}),
+        ...Object.keys(KIU_STATE.registrationCMSByFaculty || {}),
+        ...Object.keys(KIU_STATE.facultyProfiles || KIU_EMPTY_STATE.facultyProfiles || {})
+    ]);
+    for (const facultyCode of facultyCodes) {
+        const normalized = normalizeFacultyCode(facultyCode, 'ECON');
+        if (normalized === excluded) continue;
+        if (countAdminRegistrationModulesForFaculty(normalized) > 0) {
+            return normalized;
+        }
+    }
+    return '';
+}
+
+function buildStudentRegistrationFacultyHintNode(activeFaculty, safeData) {
+    if (Array.isArray(safeData) && safeData.length > 0) return null;
+    const alternateFaculty = findFacultyWithRegistrationCmsContent(activeFaculty);
+    if (!alternateFaculty) return null;
+    const hint = document.createElement('div');
+    hint.className = 'registration-faculty-hint';
+    const facultyLabel = typeof getFacultyLabel === 'function' ? getFacultyLabel(alternateFaculty) : alternateFaculty;
+    hint.textContent = `Registration structure exists for ${facultyLabel}. Switch faculty in the shell to view it.`;
+    return hint;
+}
+
+window.invalidateStudentRegistrationViewCache = invalidateStudentRegistrationViewCache;
+window.addEventListener('kiu:registration-cms-changed', () => {
+    invalidateStudentRegistrationViewCache();
+    const container = document.getElementById('student-reg-content-container');
+    if (!container) return;
+    const faculty = getCurrentFaculty() || 'ECON';
+    let activeTab = window.__studentRegActiveTab || 'prog';
+    if (activeTab !== 'history' && activeTab !== 'selected' && typeof getStudentRegistrationTabsForFaculty === 'function') {
+        const validTabIds = getStudentRegistrationTabsForFaculty(faculty).map((tab) => tab.studentTabId || tab.id);
+        if (!validTabIds.includes(activeTab)) {
+            activeTab = 'prog';
+            window.__studentRegActiveTab = activeTab;
+        }
+    }
+    if (typeof renderStudentRegStructures === 'function') {
+        renderStudentRegStructures(activeTab);
+    }
+});
 
 const STUDENT_REGISTRATION_SECTION_META = {
     prog: {
@@ -103,14 +180,22 @@ function getScopedStudentRegistrationTrackSelection(tabId = '') {
     if (!store[scopeKey] || typeof store[scopeKey] !== 'object') {
         store[scopeKey] = {};
     }
-    if ((tabId === 'conc' || tabId === 'minor') && store[scopeKey][tabId] == null && typeof store[tabId] === 'string') {
+    const faculty = getCurrentFaculty() || 'ECON';
+    const usesTrackSelection = typeof isStudentRegistrationTrackLayoutTab === 'function'
+        ? isStudentRegistrationTrackLayoutTab(tabId, faculty)
+        : (tabId === 'conc' || tabId === 'minor');
+    if (usesTrackSelection && store[scopeKey][tabId] == null && typeof store[tabId] === 'string') {
         store[scopeKey][tabId] = store[tabId];
     }
     return store[scopeKey];
 }
 
 function getStudentRegistrationChoice(tabId, data) {
-    const source = (tabId === 'conc' || tabId === 'minor')
+    const faculty = getCurrentFaculty() || 'ECON';
+    const usesTrackSelection = typeof isStudentRegistrationTrackLayoutTab === 'function'
+        ? isStudentRegistrationTrackLayoutTab(tabId, faculty)
+        : (tabId === 'conc' || tabId === 'minor');
+    const source = usesTrackSelection
         ? (getScopedStudentRegistrationTrackSelection(tabId)?.[tabId] || studentRegistrationUiState[tabId])
         : studentRegistrationUiState[tabId];
     const items = Array.isArray(data) ? data : [];
@@ -126,7 +211,11 @@ function setStudentRegistrationChoice(tabId, selectedId) {
         return;
     }
     studentRegistrationUiState[tabId] = nextSelectedId;
-    if (tabId === 'conc' || tabId === 'minor') {
+    const faculty = getCurrentFaculty() || 'ECON';
+    const usesTrackSelection = typeof isStudentRegistrationTrackLayoutTab === 'function'
+        ? isStudentRegistrationTrackLayoutTab(tabId, faculty)
+        : (tabId === 'conc' || tabId === 'minor');
+    if (usesTrackSelection) {
         getScopedStudentRegistrationTrackSelection(tabId)[tabId] = nextSelectedId;
         saveState();
     }
@@ -154,7 +243,10 @@ function updateStudentRegistrationSelectionView(tabId, selectedId) {
     const pane = document.getElementById(`student-${tabId}-pane`);
     if (!pane) return false;
 
-    const itemSelector = tabId === 'prog' || tabId === 'free'
+    const usesModuleLayout = typeof isStudentRegistrationModuleLayoutTab === 'function'
+        ? isStudentRegistrationModuleLayoutTab(tabId, fac)
+        : (tabId === 'prog' || tabId === 'free');
+    const itemSelector = usesModuleLayout
         ? `input[data-student-reg-module="${tabId}"]`
         : `input[data-student-reg-program="${tabId}"]`;
 
@@ -164,9 +256,14 @@ function updateStudentRegistrationSelectionView(tabId, selectedId) {
         input.closest('.registration-module-choice')?.classList.toggle('is-active', isActive);
     });
 
-    if (tabId === 'prog' || tabId === 'free') {
+    if (usesModuleLayout) {
         const selectedModule = safeData.find((item) => item.id === selectedId) || safeData[0] || null;
-        const meta = STUDENT_REGISTRATION_SECTION_META[tabId] || STUDENT_REGISTRATION_SECTION_META.prog;
+        const tabConfig = typeof resolveStudentRegistrationTabConfig === 'function'
+            ? resolveStudentRegistrationTabConfig(tabId, fac)
+            : null;
+        const meta = tabConfig
+            ? { paneSubtitle: tabConfig.paneSubtitle || `${tabConfig.label} Subjects` }
+            : (STUDENT_REGISTRATION_SECTION_META[tabId] || STUDENT_REGISTRATION_SECTION_META.prog);
         pane.replaceChildren(renderStudentModulePaneHtml(selectedModule, tabId, fac, courseContext, meta.paneSubtitle));
         return true;
     }
@@ -281,26 +378,27 @@ function formatStudentSelectedSectionSummary(selectedSections) {
 
 function buildStudentRegistrationViewSignature(tabId, faculty, safeData, selectedId) {
     const itemIds = (Array.isArray(safeData) ? safeData : []).map((item) => String(item?.id || '')).join('|');
+    const cmsRevision = Number(KIU_STATE.meta?.registrationCmsRevision || 0);
     const user = getCurrentUser();
     if (tabId === 'selected') {
         const schedule = normalizeStudentScheduleEntries(KIU_STATE.studentSchedulesByStudent?.[user?.id]);
-        return `${tabId}|${faculty}|${(schedule || []).map((item) => `${item.courseId || ''}:${item.groupId || ''}`).join('|')}`;
+        return `${tabId}|${faculty}|${cmsRevision}|${(schedule || []).map((item) => `${item.courseId || ''}:${item.groupId || ''}`).join('|')}`;
     }
     if (tabId === 'history') {
         const passed = Array.isArray(KIU_STATE.studentPassedCourses?.[user?.id]) ? KIU_STATE.studentPassedCourses[user.id] : [];
-        return `${tabId}|${faculty}|${passed.map((entry) => typeof entry === 'string' ? entry : (entry?.courseId || entry?.id || '')).join('|')}`;
+        return `${tabId}|${faculty}|${cmsRevision}|${passed.map((entry) => typeof entry === 'string' ? entry : (entry?.courseId || entry?.id || '')).join('|')}`;
     }
-    return `${tabId}|${faculty}|${selectedId || ''}|${itemIds}`;
+    return `${tabId}|${faculty}|${cmsRevision}|${selectedId || ''}|${itemIds}`;
 }
 
 function createStudentRegistrationRenderErrorNode() {
     const wrapper = document.createElement('div');
-    wrapper.style.cssText = 'padding:28px; background:white; border:1px dashed #dbe5f1; border-radius:18px; color:#475569;';
+    wrapper.className = 'registration-render-error';
     const title = document.createElement('div');
-    title.style.cssText = 'font-size:16px; font-weight:800; color:var(--kiu-navy); margin-bottom:8px;';
+    title.className = 'registration-render-error-title';
     title.textContent = 'Student registration view could not load correctly.';
     const copy = document.createElement('div');
-    copy.style.cssText = 'font-size:12px; color:#64748b;';
+    copy.className = 'registration-render-error-copy';
     copy.textContent = 'The page hit saved data that needs cleanup. The renderer has been hardened, so refresh once and try again.';
     wrapper.append(title, copy);
     return wrapper;
@@ -344,7 +442,7 @@ function buildStudentModuleChoiceNode(module, tabId, selectedId, courseContext, 
     input.checked = active;
     input.dataset.studentRegModule = tabId;
     input.dataset.studentRegChoice = module.id;
-    input.style.margin = '0';
+    input.className = 'registration-module-choice-radio';
     const title = document.createElement('span');
     title.className = 'registration-module-choice-title';
     title.textContent = `${module.letter || ''}. ${module.name || 'Untitled Module'}`.trim();
@@ -369,7 +467,7 @@ function buildStudentProgramChoiceNode(program, tabId, selectedId) {
     input.checked = active;
     input.dataset.studentRegProgram = tabId;
     input.dataset.studentRegChoice = program.id;
-    input.style.margin = '0';
+    input.className = 'registration-module-choice-radio';
     const title = document.createElement('span');
     title.className = 'registration-module-choice-title';
     title.textContent = program.name;
@@ -380,7 +478,7 @@ function buildStudentProgramChoiceNode(program, tabId, selectedId) {
 
 function buildStudentRegistrationSelectedViewNode() {
     const container = document.createElement('div');
-    container.style.cssText = 'display:grid; gap:14px;';
+    container.className = 'registration-state-list';
     const user = getCurrentUser();
     const activeFaculty = normalizeFacultyCode(getCurrentFaculty(), 'ECON');
     const schedule = normalizeStudentScheduleEntries(KIU_STATE.studentSchedulesByStudent?.[user?.id])
@@ -405,13 +503,13 @@ function buildStudentRegistrationSelectedViewNode() {
         const card = document.createElement('div');
         card.className = 'registration-state-card';
         const title = document.createElement('div');
-        title.style.cssText = 'font-size:18px; font-weight:800; color:var(--kiu-navy);';
+        title.className = 'registration-state-title';
         title.textContent = first.courseName || courseId;
         const code = document.createElement('div');
-        code.style.cssText = 'font-size:12px; color:#64748b; margin-top:6px;';
+        code.className = 'registration-state-meta';
         code.textContent = courseId;
         const summary = document.createElement('div');
-        summary.style.cssText = 'font-size:13px; color:#0f172a; margin-top:12px; line-height:1.7;';
+        summary.className = 'registration-state-summary';
         summary.textContent = sectionSummary;
         card.append(title, code, summary);
         container.appendChild(card);
@@ -425,7 +523,7 @@ function renderStudentRegistrationSelectedView() {
 
 function buildStudentRegistrationHistoryViewNode() {
     const container = document.createElement('div');
-    container.style.cssText = 'display:grid; gap:14px;';
+    container.className = 'registration-state-list';
     const user = getCurrentUser();
     const rawPassed = user ? KIU_STATE.studentPassedCourses?.[user.id] : [];
     const passedCourses = Array.isArray(rawPassed) ? rawPassed : [];
@@ -440,17 +538,17 @@ function buildStudentRegistrationHistoryViewNode() {
         const card = document.createElement('div');
         card.className = 'registration-state-card';
         const row = document.createElement('div');
-        row.style.cssText = 'display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap;';
+        row.className = 'registration-history-row';
         const left = document.createElement('div');
         const title = document.createElement('div');
-        title.style.cssText = 'font-size:17px; font-weight:800; color:var(--kiu-navy);';
+        title.className = 'registration-state-title registration-state-title--compact';
         title.textContent = courseName || courseId;
         const code = document.createElement('div');
-        code.style.cssText = 'font-size:12px; color:#64748b; margin-top:6px;';
+        code.className = 'registration-state-meta';
         code.textContent = courseId;
         left.append(title, code);
         const meta = document.createElement('div');
-        meta.style.cssText = 'font-size:12px; color:#475569; text-align:right;';
+        meta.className = 'registration-history-meta';
         meta.textContent = [semester, ects].filter(Boolean).join(' / ') || 'Completed';
         row.append(left, meta);
         card.appendChild(row);
@@ -466,32 +564,46 @@ function renderStudentRegistrationHistoryView() {
 function buildStudentCourseActionNode(courseId, courseMeta, selectedSections, publishedGroups, eligibility) {
     if (!eligibility.allowed) {
         const locked = document.createElement('span');
-        locked.style.cssText = 'display:inline-flex; align-items:center; justify-content:center; min-width:96px; padding:8px 12px; border-radius:12px; font-size:11px; font-weight:800; background:#f8fafc; color:#94a3b8; border:1px solid #e2e8f0;';
+        locked.className = 'registration-course-action-state is-locked';
         locked.textContent = 'Locked';
         return locked;
     }
     if (!publishedGroups.length) {
         const noSections = document.createElement('span');
-        noSections.style.cssText = 'display:inline-flex; align-items:center; justify-content:center; min-width:96px; padding:8px 12px; border-radius:12px; font-size:11px; font-weight:800; background:#fff7ed; color:#c2410c; border:1px solid #fdba74;';
+        noSections.className = 'registration-course-action-state is-empty';
         noSections.textContent = 'No Sections';
         return noSections;
     }
+    const actions = document.createElement('div');
+    actions.className = 'registration-course-action-group';
     const button = document.createElement('button');
     button.type = 'button';
-    button.className = 'kiu-btn-blue';
+    button.className = 'lux-primary-btn registration-course-picker-btn';
     button.dataset.studentCoursePicker = courseId;
     button.dataset.studentCourseName = courseMeta.name || courseId;
-    button.style.cssText = 'padding:8px 12px; font-size:11px; min-width:96px;';
     const icon = document.createElement('i');
     icon.className = 'fas fa-check';
     button.append(icon, document.createTextNode(` ${selectedSections.length > 0 ? 'Manage' : 'Choose'}`));
-    return button;
+    actions.appendChild(button);
+    if (selectedSections.length > 0) {
+        const removeButton = document.createElement('button');
+        removeButton.type = 'button';
+        removeButton.className = 'lux-secondary-btn registration-course-remove-btn';
+        removeButton.dataset.studentCourseRemove = courseId;
+        removeButton.dataset.studentCourseName = courseMeta.name || courseId;
+        removeButton.setAttribute('aria-label', `Remove ${courseMeta.name || courseId}`);
+        const removeIcon = document.createElement('i');
+        removeIcon.className = 'fas fa-times';
+        removeButton.append(removeIcon, document.createTextNode(' Remove'));
+        actions.appendChild(removeButton);
+    }
+    return actions;
 }
 
-function appendCourseMetaLine(parent, value, style = '') {
+function appendCourseMetaLine(parent, value, className = '') {
     if (!value) return;
     const line = document.createElement('div');
-    line.style.cssText = style;
+    line.className = className ? `registration-course-meta-line ${className}` : 'registration-course-meta-line';
     line.textContent = value;
     parent.appendChild(line);
 }
@@ -535,12 +647,12 @@ function buildStudentCourseRowNode(courseRef, idx, fac, courseContext) {
     const meta = document.createElement('div');
     meta.className = 'registration-course-meta';
     appendCourseMetaLine(meta, `Prerequisite: ${details.prerequisite}`);
-    appendCourseMetaLine(meta, details.antiRequisite ? `Anti-requisite: ${details.antiRequisite}` : '', 'margin-top:4px;');
-    appendCourseMetaLine(meta, details.curriculumSemester || '', 'margin-top:4px; color:#0f766e; font-weight:700;');
-    appendCourseMetaLine(meta, details.studentAccess ? `Student access: ${details.studentAccess}` : '', 'margin-top:4px; color:#2563eb; font-weight:700;');
-    appendCourseMetaLine(meta, publishedSummary ? `Published sections: ${publishedSummary}` : '', 'margin-top:4px; color:#0f766e; font-weight:700;');
-    appendCourseMetaLine(meta, selectedSummary ? `Selected sections: ${selectedSummary}` : '', 'margin-top:4px; color:#047857; font-weight:700;');
-    appendCourseMetaLine(meta, eligibility.reasons.length > 0 ? eligibility.reasons.join(' / ') : '', 'margin-top:4px; color:#dc2626; font-size:10px; font-weight:700;');
+    appendCourseMetaLine(meta, details.antiRequisite ? `Anti-requisite: ${details.antiRequisite}` : '', 'is-spaced');
+    appendCourseMetaLine(meta, details.curriculumSemester || '', 'is-spaced is-accent');
+    appendCourseMetaLine(meta, details.studentAccess ? `Student access: ${details.studentAccess}` : '', 'is-spaced is-info');
+    appendCourseMetaLine(meta, publishedSummary ? `Published sections: ${publishedSummary}` : '', 'is-spaced is-accent');
+    appendCourseMetaLine(meta, selectedSummary ? `Selected sections: ${selectedSummary}` : '', 'is-spaced is-success');
+    appendCourseMetaLine(meta, eligibility.reasons.length > 0 ? eligibility.reasons.join(' / ') : '', 'is-spaced is-danger is-small');
 
     const action = document.createElement('div');
     action.className = 'registration-course-action';
@@ -554,7 +666,7 @@ function renderStudentCourseRows(courseList, fac, courseContext) {
     const rows = courseList || [];
     if (rows.length === 0) {
         const empty = document.createElement('div');
-        empty.style.cssText = 'padding:18px; text-align:center; color:var(--kiu-text-muted); background:#f8fafc; border:1px dashed #dbe5f1; border-radius:16px;';
+        empty.className = 'registration-course-empty';
         empty.textContent = 'No subjects assigned';
         return empty;
     }
@@ -673,9 +785,7 @@ function renderStudentTrackPaneHtml(program, tabId, fac, courseContext) {
     const body = document.createElement('div');
     body.className = 'registration-track-card-body';
     if (!groups.length) {
-        const empty = createRegistrationEmptyStateNode('No subject groups added yet.');
-        empty.style.margin = '0';
-        body.appendChild(empty);
+        body.appendChild(createRegistrationEmptyStateNode('No subject groups added yet.'));
     } else {
         groups.forEach((group) => body.appendChild(buildStudentTrackGroupNode(program, group, tabId, fac, courseContext)));
     }
@@ -740,7 +850,21 @@ function renderStudentRegStructures(tabId = 'prog') {
         studentRegistrationRenderState.faculty = fac;
         studentRegistrationRenderState.safeData = safeData;
         studentRegistrationRenderState.courseContext = courseContext;
-        const meta = STUDENT_REGISTRATION_SECTION_META[tabId] || STUDENT_REGISTRATION_SECTION_META.prog;
+        const tabConfig = typeof resolveStudentRegistrationTabConfig === 'function'
+            ? resolveStudentRegistrationTabConfig(tabId, fac)
+            : null;
+        const meta = tabConfig
+            ? {
+                title: tabConfig.label,
+                subtitle: STUDENT_REGISTRATION_SECTION_META[tabId]?.subtitle
+                    || `Use the ${tabConfig.label.toLowerCase()} structure created by admin and choose only eligible subjects.`,
+                listTitle: tabConfig.listTitle || `${tabConfig.label} Programs`,
+                paneSubtitle: tabConfig.paneSubtitle || `${tabConfig.label} Subjects`
+            }
+            : (STUDENT_REGISTRATION_SECTION_META[tabId] || STUDENT_REGISTRATION_SECTION_META.prog);
+        const usesModuleLayout = typeof isStudentRegistrationModuleLayoutTab === 'function'
+            ? isStudentRegistrationModuleLayoutTab(tabId, fac)
+            : (tabId === 'prog' || tabId === 'free');
         const selectedIdForSignature = getStudentRegistrationChoice(tabId, safeData);
         const viewSignature = buildStudentRegistrationViewSignature(tabId, fac, safeData, selectedIdForSignature);
         const cachedView = studentRegistrationViewCache[tabId];
@@ -751,8 +875,10 @@ function renderStudentRegStructures(tabId = 'prog') {
 
         const fragment = document.createDocumentFragment();
         fragment.appendChild(buildStudentRegistrationSectionHeadNode(meta));
+        const facultyHint = buildStudentRegistrationFacultyHintNode(fac, safeData);
+        if (facultyHint) fragment.appendChild(facultyHint);
 
-        if (tabId === 'prog' || tabId === 'free') {
+        if (usesModuleLayout) {
             const selectedId = selectedIdForSignature;
             const selectedModule = safeData.find(item => item.id === selectedId) || safeData[0] || null;
             const shellGrid = document.createElement('div');
@@ -772,9 +898,7 @@ function renderStudentRegStructures(tabId = 'prog') {
             list.className = 'registration-module-list';
             list.dataset.preserveScrollKey = `student-reg-${tabId}-modules`;
             if (safeData.length === 0) {
-                const empty = createRegistrationEmptyStateNode('No modules available yet');
-                empty.style.margin = '0';
-                list.appendChild(empty);
+                list.appendChild(createRegistrationEmptyStateNode('No modules available yet'));
             } else {
                 safeData.forEach((module) => list.appendChild(buildStudentModuleChoiceNode(module, tabId, selectedId, courseContext, fac)));
             }
@@ -805,9 +929,7 @@ function renderStudentRegStructures(tabId = 'prog') {
             list.className = 'registration-module-list';
             list.dataset.preserveScrollKey = `student-reg-${tabId}-programs`;
             if (safeData.length === 0) {
-                const empty = createRegistrationEmptyStateNode(`No ${tabId === 'conc' ? 'concentration' : 'minor'} programs yet`);
-                empty.style.margin = '0';
-                list.appendChild(empty);
+                list.appendChild(createRegistrationEmptyStateNode(`No ${meta.listTitle.toLowerCase()} yet`));
             } else {
                 safeData.forEach((program) => list.appendChild(buildStudentProgramChoiceNode(program, tabId, selectedId)));
             }
@@ -835,23 +957,75 @@ function setStudentRegTrack(tabId, trackId) {
     setStudentRegistrationChoice(tabId, trackId);
 }
 
-function normalizeStudentAcademicRegistrationTabs(activeTabId = 'program') {
-    const tabsHost = document.querySelector('#page-registration .reg-tabs');
+function sanitizeRegistrationTabStripVisuals(tabsHost) {
     if (!tabsHost) return;
+    tabsHost.classList.add('reg-tabs--plain');
+    tabsHost.classList.remove('lux-modern-surface');
+    tabsHost.removeAttribute('data-lux-transparency-signature');
+    tabsHost.removeAttribute('data-lux-tone');
+    tabsHost.removeAttribute('style');
+    tabsHost.querySelectorAll('.reg-tab').forEach((tab) => {
+        tab.classList.remove('lux-modern-tab');
+        tab.removeAttribute('data-lux-tone');
+        tab.removeAttribute('style');
+        if (tab.tagName !== 'BUTTON') {
+            const replacement = document.createElement('button');
+            replacement.type = 'button';
+            replacement.className = tab.className;
+            replacement.setAttribute('role', 'tab');
+            [...tab.attributes].forEach((attr) => {
+                if (attr.name === 'class' || attr.name === 'role') return;
+                replacement.setAttribute(attr.name, attr.value);
+            });
+            replacement.replaceChildren(...tab.childNodes);
+            tab.replaceWith(replacement);
+        }
+    });
+}
 
-    const desiredTabs = [
-        { id: 'program', label: 'My<br>Program' },
-        { id: 'free', label: 'Free<br>Credits' },
-        { id: 'concentration', label: 'Concentration' },
-        { id: 'minor', label: 'Minor' },
+function formatStudentRegistrationTabLabel(label) {
+    const text = String(label || '').trim();
+    if (!text) return '';
+    if (text.includes('<br>')) return text;
+    const words = text.split(/\s+/);
+    if (words.length <= 2) return text;
+    const midpoint = Math.ceil(words.length / 2);
+    return `${words.slice(0, midpoint).join(' ')}<br>${words.slice(midpoint).join(' ')}`;
+}
+
+function buildStudentRegistrationShellTabs(faculty) {
+    const fac = normalizeFacultyCode(faculty || getCurrentFaculty() || 'ECON', 'ECON');
+    const academicTabs = typeof getStudentRegistrationTabsForFaculty === 'function'
+        ? getStudentRegistrationTabsForFaculty(fac)
+        : Object.values({
+            prog: { shellId: 'program', label: 'My Program' },
+            free: { shellId: 'free', label: 'Free Credits' },
+            conc: { shellId: 'concentration', label: 'Concentration' },
+            minor: { shellId: 'minor', label: 'Minor' }
+        });
+    return [
+        ...academicTabs.map((tab) => ({
+            id: tab.shellId || tab.id,
+            label: formatStudentRegistrationTabLabel(tab.label)
+        })),
         { id: 'history', label: 'History' },
         { id: 'selected', label: 'Selected<br>Courses' }
     ];
+}
+
+function normalizeStudentAcademicRegistrationTabs(activeTabId = 'program') {
+    const tabsHost = document.querySelector('#page-registration .reg-tabs');
+    if (!tabsHost) return;
+    sanitizeRegistrationTabStripVisuals(tabsHost);
+
+    const desiredTabs = buildStudentRegistrationShellTabs(getCurrentFaculty() || 'ECON');
 
     let tabs = Array.from(tabsHost.querySelectorAll('.reg-tab'));
     while (tabs.length < desiredTabs.length) {
-        const newTab = document.createElement('div');
+        const newTab = document.createElement('button');
+        newTab.type = 'button';
         newTab.className = 'reg-tab';
+        newTab.setAttribute('role', 'tab');
         tabsHost.appendChild(newTab);
         tabs = Array.from(tabsHost.querySelectorAll('.reg-tab'));
     }
@@ -859,12 +1033,14 @@ function normalizeStudentAcademicRegistrationTabs(activeTabId = 'program') {
     tabs.forEach((tab, index) => {
         const desired = desiredTabs[index];
         if (!desired) {
-            tab.style.display = 'none';
+            tab.hidden = true;
             tab.classList.remove('active');
+            tab.setAttribute('aria-selected', 'false');
             tab.removeAttribute('data-student-reg-tab');
             return;
         }
-        tab.style.display = '';
+        tab.hidden = false;
+        tab.setAttribute('role', 'tab');
         tab.setAttribute('data-student-reg-tab', desired.id);
         tab.setAttribute('data-reg-tab', desired.id);
         tab.removeAttribute('onclick');
@@ -876,7 +1052,9 @@ function normalizeStudentAcademicRegistrationTabs(activeTabId = 'program') {
             });
             tab.dataset.studentRegLabel = desired.label;
         }
-        tab.classList.toggle('active', desired.id === activeTabId);
+        const isActive = desired.id === activeTabId;
+        tab.classList.toggle('active', isActive);
+        tab.setAttribute('aria-selected', isActive ? 'true' : 'false');
     });
 }
 
@@ -946,69 +1124,23 @@ function buildStudentCourseRefFromStandaloneAssignment(assignment) {
 }
 
 function buildStudentRegistrationDataFromStandaloneState(faculty) {
-    const fac = normalizeFacultyCode(faculty || getCurrentFaculty() || 'ECON', 'ECON');
-    const facultyStructures = KIU_STATE.adminProgramStructures?.[fac];
-    if (!facultyStructures) {
-        return { prog: [], free: [], conc: [], minor: [] };
+    if (typeof buildStudentRegistrationDataFromCms === 'function') {
+        return buildStudentRegistrationDataFromCms(faculty);
     }
-
-    const normalizeArray = (value) => Array.isArray(value) ? value.filter(Boolean) : [];
-    const cmsBucket = getStandaloneStudentRegistrationCmsBucket(fac);
-    const facultyConcCourseData = cmsBucket.concCourseData;
-    const facultyMinorProgramData = cmsBucket.minorProgramData;
-
-    const convertModule = (module) => ({
-        id: module?.id || '',
-        letter: module?.letter || '',
-        name: module?.name || 'Untitled Module',
-        maxEcts: module?.maxEcts || 0,
-        minEcts: module?.minEcts || 0,
-        courses: normalizeArray(module?.subModules).map(buildStudentCourseRefFromStandaloneAssignment)
-    });
-
-    const convertTrackGroup = (groupName, group, index) => ({
-        id: `${groupName}-${index}`,
-        letter: String.fromCharCode(65 + (index % 26)),
-        name: groupName,
-        maxEcts: group?.maxEcts || parseEctsProgress(group?.ects || '0/0').max || 0,
-        minEcts: 0,
-        courses: normalizeArray(group?.courses).map((course) => ({
-            courseId: getAssignedCourseId(course),
-            id: course?.n || '',
-            n: course?.n || '',
-            title: course?.title || '',
-            ects: course?.ects || '',
-            precondition: course?.precondition || '',
-            semesterRuleMode: course?.semesterRuleMode || 'all',
-            allowedSemesters: course?.allowedSemesters || '',
-            lectureCapacity: normalizeStudentAssignedSeatLimit(course?.lectureCapacity, 40),
-            seminarCapacity: normalizeStudentAssignedSeatLimit(course?.seminarCapacity, 20)
-        }))
-    });
-
-    return {
-        prog: normalizeArray(facultyStructures.prog).map(convertModule),
-        free: normalizeArray(facultyStructures.free).map(convertModule),
-        conc: Object.entries(facultyConcCourseData).map(([programName, groups]) => ({
-            id: programName,
-            name: programName,
-            modules: Object.entries(groups || {}).map(([groupName, group], index) => convertTrackGroup(groupName, group, index))
-        })),
-        minor: Object.entries(facultyMinorProgramData).map(([programName, program]) => ({
-            id: programName,
-            name: programName,
-            modules: Object.entries(program?.courseGroups || {}).map(([groupName, group], index) => convertTrackGroup(groupName, group, index))
-        }))
-    };
+    return { prog: [], free: [], conc: [], minor: [] };
 }
 
 function getStudentRegistrationDataForTab(faculty, tabId) {
+    if (typeof getStudentRegistrationDataForTabFromCms === 'function') {
+        return getStudentRegistrationDataForTabFromCms(faculty, tabId);
+    }
     const derived = buildStudentRegistrationDataFromStandaloneState(faculty);
     const derivedData = derived?.[tabId];
     if (Array.isArray(derivedData)) {
         return derivedData;
     }
-    const legacyData = KIU_STATE.registrationStructures?.[faculty]?.[tabId];
+    const fac = normalizeFacultyCode(faculty || 'ECON', 'ECON');
+    const legacyData = KIU_STATE.registrationStructures?.[fac]?.[tabId];
     return Array.isArray(legacyData) ? legacyData : [];
 }
 
@@ -1016,8 +1148,8 @@ function toggleStudentTrackGroup(groupId) {
     const el = document.getElementById(groupId);
     if (!el) return;
     const icon = document.getElementById(`${groupId}-icon`);
-    const hidden = el.style.display === 'none';
-    el.style.display = hidden ? '' : 'none';
+    const hidden = el.hidden;
+    el.hidden = !hidden;
     if (icon) {
         icon.classList.toggle('fa-chevron-down', hidden);
         icon.classList.toggle('fa-chevron-right', !hidden);
@@ -1299,12 +1431,12 @@ function toPositiveInt(value, fallback = 0) {
 
 function buildStructuredFormFieldNode(field) {
     const wrapper = document.createElement('div');
-    wrapper.style.cssText = 'display:flex; flex-direction:column; gap:6px;';
+    wrapper.className = 'registration-structured-field';
 
     const id = field.name;
     const label = document.createElement('label');
     label.htmlFor = id;
-    label.style.cssText = 'font-size:11px; font-weight:800; color:#60728d; text-transform:uppercase; letter-spacing:0.04em;';
+    label.className = 'registration-structured-label';
     label.textContent = field.label || field.name;
     wrapper.appendChild(label);
 
@@ -1312,11 +1444,11 @@ function buildStructuredFormFieldNode(field) {
     if (field.type === 'textarea') {
         control = document.createElement('textarea');
         control.rows = field.rows || 3;
-        control.style.cssText = `width:100%; resize:vertical; min-height:96px; padding:14px 15px; border:1px solid rgba(16,32,56,0.1); border-radius:16px; background:${field.readonly || field.disabled ? 'rgba(241,245,249,0.95)' : 'rgba(255,255,255,0.9)'}; color:#102038; font:inherit; outline:none; box-shadow:inset 0 1px 0 rgba(255,255,255,0.5);`;
+        control.className = `registration-structured-control registration-structured-control--textarea${field.readonly || field.disabled ? ' is-muted' : ''}`;
         control.value = field.value == null ? '' : String(field.value);
     } else if (field.type === 'select') {
         control = document.createElement('select');
-        control.style.cssText = `width:100%; min-height:50px; padding:14px 15px; border:1px solid rgba(16,32,56,0.1); border-radius:16px; background:${field.disabled ? 'rgba(241,245,249,0.95)' : 'rgba(255,255,255,0.9)'}; color:#102038; font:inherit; outline:none; box-shadow:inset 0 1px 0 rgba(255,255,255,0.5);`;
+        control.className = `registration-structured-control${field.disabled ? ' is-muted' : ''}`;
         (field.options || []).forEach((opt) => {
             const option = document.createElement('option');
             option.value = String(opt.value);
@@ -1327,7 +1459,7 @@ function buildStructuredFormFieldNode(field) {
     } else {
         control = document.createElement('input');
         control.type = field.type || 'text';
-        control.style.cssText = `width:100%; min-height:50px; padding:14px 15px; border:1px solid rgba(16,32,56,0.1); border-radius:16px; background:${field.readonly || field.disabled ? 'rgba(241,245,249,0.95)' : 'rgba(255,255,255,0.9)'}; color:#102038; font:inherit; outline:none; box-shadow:inset 0 1px 0 rgba(255,255,255,0.5);`;
+        control.className = `registration-structured-control${field.readonly || field.disabled ? ' is-muted' : ''}`;
         control.value = field.value == null ? '' : String(field.value);
         if (field.min != null) control.min = String(field.min);
         if (field.max != null) control.max = String(field.max);
@@ -1343,7 +1475,7 @@ function buildStructuredFormFieldNode(field) {
 
     if (field.help) {
         const help = document.createElement('div');
-        help.style.cssText = 'margin-top:6px; font-size:11px; color:#8aa0bc;';
+        help.className = 'registration-structured-help';
         help.textContent = String(field.help);
         wrapper.appendChild(help);
     }
@@ -1357,49 +1489,48 @@ function openStructuredFormModal(config) {
     const fields = config.fields || [];
     const modal = document.createElement('div');
     modal.id = 'kiu-structured-form-modal';
-    modal.style.cssText = 'position:fixed; inset:0; z-index:8000; display:flex; align-items:center; justify-content:center; padding:20px; background:rgba(8,15,28,0.62); backdrop-filter:blur(12px);';
+    modal.className = 'registration-structured-modal-backdrop';
 
     const card = document.createElement('div');
-    card.style.cssText = 'width:min(94vw, 720px); max-height:92vh; overflow:hidden; border-radius:30px; background:linear-gradient(180deg, rgba(255,255,255,0.98), rgba(244,247,252,0.98)); border:1px solid rgba(255,255,255,0.7); box-shadow:0 34px 90px rgba(2,6,23,0.35); display:flex; flex-direction:column;';
+    card.className = 'registration-structured-modal-card';
 
     const header = document.createElement('div');
-    header.style.cssText = 'padding:24px 26px; background:linear-gradient(135deg, #0f1e33 0%, #16375d 52%, #0b84ff 100%); color:white; display:flex; justify-content:space-between; gap:16px; align-items:flex-start;';
+    header.className = 'registration-structured-modal-head';
     const headerCopy = document.createElement('div');
+    headerCopy.className = 'registration-structured-modal-copy';
     const headerTitle = document.createElement('div');
-    headerTitle.style.cssText = 'font-size:18px; font-weight:900; letter-spacing:-0.03em;';
+    headerTitle.className = 'registration-structured-modal-title';
     headerTitle.textContent = config.title || 'Edit Item';
     const headerSubtitle = document.createElement('div');
-    headerSubtitle.style.cssText = 'font-size:12px; color:rgba(255,255,255,0.76); margin-top:4px;';
+    headerSubtitle.className = 'registration-structured-modal-subtitle';
     headerSubtitle.textContent = config.subtitle || 'Fill in the details below.';
     headerCopy.append(headerTitle, headerSubtitle);
     const closeBtn = document.createElement('button');
     closeBtn.type = 'button';
     closeBtn.id = 'kiu-structured-form-close';
-    closeBtn.style.cssText = 'width:40px; height:40px; border-radius:14px; border:1px solid rgba(255,255,255,0.18); background:rgba(255,255,255,0.08); color:white; cursor:pointer; font-size:20px; line-height:1;';
+    closeBtn.className = 'registration-structured-modal-close';
     closeBtn.textContent = '×';
     header.append(headerCopy, closeBtn);
 
     const form = document.createElement('form');
     form.id = 'kiu-structured-form';
-    form.style.cssText = 'display:flex; flex-direction:column; min-height:0;';
+    form.className = 'registration-structured-form';
     const body = document.createElement('div');
-    body.style.cssText = 'padding:24px 26px; overflow:auto;';
+    body.className = 'registration-structured-modal-body';
     const grid = document.createElement('div');
-    grid.style.cssText = 'display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:14px;';
+    grid.className = 'registration-structured-grid';
     fields.forEach((field) => grid.appendChild(buildStructuredFormFieldNode(field)));
     body.appendChild(grid);
     const footer = document.createElement('div');
-    footer.style.cssText = 'padding:18px 26px 26px; border-top:1px solid rgba(16,32,56,0.06); background:rgba(248,250,253,0.92); display:flex; gap:12px; justify-content:flex-end; align-items:center;';
+    footer.className = 'registration-structured-modal-footer';
     const cancelBtn = document.createElement('button');
     cancelBtn.type = 'button';
     cancelBtn.id = 'kiu-structured-form-cancel';
-    cancelBtn.className = 'kiu-btn-outline';
-    cancelBtn.style.cssText = 'padding:12px 18px; font-size:13px;';
+    cancelBtn.className = 'lux-secondary-btn registration-structured-modal-action';
     cancelBtn.textContent = 'Cancel';
     const submitBtn = document.createElement('button');
     submitBtn.type = 'submit';
-    submitBtn.className = 'kiu-btn-blue';
-    submitBtn.style.cssText = 'padding:12px 18px; font-size:13px;';
+    submitBtn.className = 'lux-primary-btn registration-structured-modal-action';
     submitBtn.textContent = config.submitLabel || 'Save';
     footer.append(cancelBtn, submitBtn);
     form.append(body, footer);
@@ -1843,7 +1974,7 @@ function getTrackGroupProgress(group, completedOverride = null) {
 }
 
 function renderStudentRegModulesAdvanced(modules, fac, options = {}) {
-    if (!modules || modules.length === 0) return `<tr><td colspan="6" style="text-align:center; padding:30px; color:#94a3b8;">No mapping found.</td></tr>`;
+    if (!modules || modules.length === 0) return `<tr><td colspan="6" class="registration-advanced-map-empty">No mapping found.</td></tr>`;
     
     const user = getCurrentUser() || { id: '31961', semester: KIU_STATE.activeSemester || 1 };
     const stdReg = normalizeStudentRegistrationCourseIds(KIU_STATE.studentRegistrations[user.id]);
@@ -1860,26 +1991,26 @@ function renderStudentRegModulesAdvanced(modules, fac, options = {}) {
             : `${mod.maxEcts || 0}/${mod.minEcts || 0}`;
 
         let rows = `
-        <tbody id="mod-group-${mod.id}" data-mod-id="${mod.id}">
+        <tbody id="mod-group-${mod.id}" data-mod-id="${mod.id}" class="registration-advanced-module-group">
             <!-- Parent Module Row -->
-            <tr style="background:#f8fafc; border-bottom:1px solid #e2e8f0; color:#334155; font-size:13px; cursor:pointer;" data-student-mod-toggle="${escapeHtml(mod.id)}">
-                <td style="text-align:center; padding:10px 8px; border-right:1px solid #e2e8f0;"><i class="fas fa-chevron-down" id="icon-${mod.id}" style="color:#64748b;"></i></td>
-                <td style="text-align:center; padding:10px 8px; border-right:1px solid #e2e8f0; font-weight:700;">
-                    ${mod.letter || 'A'} <span style="font-weight:normal; color:#64748b;">(${mod.id})</span>
+            <tr class="registration-advanced-module-row" data-student-mod-toggle="${escapeHtml(mod.id)}">
+                <td class="registration-advanced-module-cell registration-advanced-module-cell--toggle"><i class="fas fa-chevron-down registration-advanced-module-icon" id="icon-${mod.id}"></i></td>
+                <td class="registration-advanced-module-cell registration-advanced-module-cell--letter">
+                    ${mod.letter || 'A'} <span class="registration-advanced-module-letter-meta">(${mod.id})</span>
                 </td>
-                <td style="padding:10px 15px; border-right:1px solid #e2e8f0; text-align:left;">${mod.name}</td>
-                <td style="text-align:center; padding:10px 8px; border-right:1px solid #e2e8f0; font-weight:700; color:#ea580c;">${ectsLabel}</td>
-                <td style="padding:10px 15px; border-right:1px solid #e2e8f0;"></td>
-                <td style="text-align:center; padding:10px 8px;"></td>
+                <td class="registration-advanced-module-cell registration-advanced-module-cell--name">${mod.name}</td>
+                <td class="registration-advanced-module-cell registration-advanced-module-cell--ects">${ectsLabel}</td>
+                <td class="registration-advanced-module-cell registration-advanced-module-cell--spacer"></td>
+                <td class="registration-advanced-module-cell registration-advanced-module-cell--action"></td>
             </tr>
         </tbody>
-        <tbody id="mod-items-${mod.id}">
+        <tbody id="mod-items-${mod.id}" class="registration-advanced-course-group">
         `;
         
         if ((mod.courses || []).length === 0) {
             rows += `
-            <tr style="border-bottom:1px solid #e2e8f0; font-size:12px;">
-                <td colspan="6" style="padding:15px; text-align:center; color:#94a3b8; font-style:italic;">-- Empty Module --</td>
+            <tr class="registration-advanced-module-empty-row">
+                <td colspan="6" class="registration-advanced-module-empty-cell">-- Empty Module --</td>
             </tr>`;
         } else {
             rows += mod.courses.map((cId, i) => {
@@ -1891,34 +2022,34 @@ function renderStudentRegModulesAdvanced(modules, fac, options = {}) {
                 const eligibility = evaluateStudentCourseEligibility(user, courseDef, passedCourseSet, studentSemester);
                 const semesterRestrictionLabel = getAssignedSemesterRestrictionLabel(courseDef);
                 const restrictionMeta = semesterRestrictionLabel
-                    ? `<div style="margin-top:4px; color:#2563eb; font-size:10px; font-weight:700;">${escapeHtml(semesterRestrictionLabel)}</div>`
+                    ? `<div class="registration-advanced-course-note registration-advanced-course-note--semester">${escapeHtml(semesterRestrictionLabel)}</div>`
                     : '';
                 const restrictionText = eligibility.reasons.length > 0
-                    ? `<div style="margin-top:4px; color:#dc2626; font-size:10px; font-weight:600;">${escapeHtml(eligibility.reasons.join(' / '))}</div>`
+                    ? `<div class="registration-advanced-course-note registration-advanced-course-note--blocked">${escapeHtml(eligibility.reasons.join(' / '))}</div>`
                     : '';
                 
                 let actionHTML = '';
                 let statusIcon = '';
                 
                 if (!isSelected && !eligibility.allowed) {
-                    statusIcon = `<i class="fas fa-times" style="color:#ef4444; font-size:18px;"></i>`;
-                    actionHTML = `<button class="kiu-btn-outline" style="color:#94a3b8; border-color:#e2e8f0; cursor:not-allowed;" disabled><i class="fas fa-lock"></i> Locked</button>`;
+                    statusIcon = `<span class="registration-advanced-status registration-advanced-status--blocked"><i class="fas fa-times"></i></span>`;
+                    actionHTML = `<button class="lux-secondary-btn registration-advanced-action-btn registration-advanced-action-btn--locked" disabled><i class="fas fa-lock"></i> Locked</button>`;
                 } else if (isSelected) {
-                    statusIcon = `<i class="fas fa-check" style="color:#10b981; font-size:18px;"></i>`;
+                    statusIcon = `<span class="registration-advanced-status registration-advanced-status--selected"><i class="fas fa-check"></i></span>`;
                     actionHTML = ``; 
                 } else {
-                    statusIcon = `<div style="width:18px; height:18px; border:2px solid #cbd5e1; border-radius:3px; display:inline-block;"></div>`;
-                    actionHTML = `<button type="button" class="kiu-btn-blue" data-student-toggle-course="${escapeHtml(courseId)}">Add</button>`;
+                    statusIcon = `<span class="registration-advanced-status registration-advanced-status--open" aria-hidden="true"></span>`;
+                    actionHTML = `<button type="button" class="lux-primary-btn registration-advanced-action-btn" data-student-toggle-course="${escapeHtml(courseId)}">Add</button>`;
                 }
                 
                 return `
-                <tr style="border-bottom:1px solid #f1f5f9; font-size:12px; background:white;">
-                    <td style="text-align:center; padding:10px 8px; border-right:1px solid #f1f5f9;">${statusIcon}</td>
-                    <td style="text-align:center; padding:10px 8px; border-right:1px solid #f1f5f9; color:#64748b;">${i+1}</td>
-                    <td style="padding:10px 15px; border-right:1px solid #f1f5f9; text-align:left;">${escapeHtml(courseDef.name)}</td>
-                    <td style="text-align:center; padding:10px 8px; border-right:1px solid #f1f5f9;">${courseDef.ects}</td>
-                    <td style="padding:10px 15px; border-right:1px solid #f1f5f9; color:#64748b; font-size:11px; text-align:left;">${escapeHtml(condText)}${restrictionMeta}${restrictionText}</td>
-                    <td style="text-align:center; padding:10px 8px;">${actionHTML}</td>
+                <tr class="registration-advanced-course-row">
+                    <td class="registration-advanced-course-cell registration-advanced-course-cell--status">${statusIcon}</td>
+                    <td class="registration-advanced-course-cell registration-advanced-course-cell--index">${i+1}</td>
+                    <td class="registration-advanced-course-cell registration-advanced-course-cell--name">${escapeHtml(courseDef.name)}</td>
+                    <td class="registration-advanced-course-cell registration-advanced-course-cell--ects">${courseDef.ects}</td>
+                    <td class="registration-advanced-course-cell registration-advanced-course-cell--meta">${escapeHtml(condText)}${restrictionMeta}${restrictionText}</td>
+                    <td class="registration-advanced-course-cell registration-advanced-course-cell--action">${actionHTML}</td>
                 </tr>`;
             }).join('');
         }
@@ -1940,10 +2071,13 @@ function toggleStudentMod(modId) {
     }
 }
 
+const REGISTRATION_PICKER_BUILD = '20260605-regpicker3';
+
 const studentCourseSectionPickerState = {
     courseId: null,
     courseName: '',
-    activeType: 'lecture'
+    activeType: 'lecture',
+    typePinned: false
 };
 
 function getStudentSectionTypeLabel(sessionType) {
@@ -1952,6 +2086,26 @@ function getStudentSectionTypeLabel(sessionType) {
     if (normalized === 'workshop') return 'Workshop';
     if (normalized === 'lab') return 'Lab';
     return 'Lecture';
+}
+
+function getStudentSectionInstructorLabel(group, sessionType = '') {
+    const normalizedType = String(sessionType || group?.sessionType || 'lecture').trim().toLowerCase();
+    const prof = toEnglishText(group?.prof || '').trim();
+    const ta = toEnglishText(group?.ta || '').trim();
+    const placeholder = /^(tbd|unassigned|n\/a|--|-)$/i;
+    const hasProf = Boolean(prof) && !placeholder.test(prof);
+    const hasTa = Boolean(ta) && !placeholder.test(ta);
+    if (normalizedType === 'seminar') {
+        if (hasTa) return ta;
+        if (hasProf) return prof;
+        return 'Unassigned TA';
+    }
+    if (hasProf) return prof;
+    return 'Unassigned';
+}
+
+function getStudentSectionInstructorColumnLabel(sessionType) {
+    return String(sessionType || '').trim().toLowerCase() === 'seminar' ? 'TA' : 'Professor';
 }
 
 function getStudentCoursePickerGroups(courseId, courseName = '') {
@@ -1977,25 +2131,119 @@ function closeStudentCourseSectionPicker() {
     if (modal) modal.remove();
 }
 
+function getStudentCoursePickerCurrentSchedule() {
+    const currentUser = getCurrentUser();
+    if (!currentUser) return [];
+    const activeFaculty = normalizeFacultyCode(getCurrentFaculty(), 'ECON');
+    return normalizeStudentScheduleEntries(KIU_STATE.studentSchedulesByStudent?.[currentUser.id])
+        .filter((item) => {
+            const derivedFaculty = typeof deriveFacultyFromSubjectId === 'function'
+                ? deriveFacultyFromSubjectId(item?.courseId)
+                : '';
+            const entryFaculty = normalizeFacultyCode(item?.faculty || derivedFaculty || activeFaculty, activeFaculty);
+            return entryFaculty === activeFaculty;
+        });
+}
+
+function formatStudentCourseSectionRemoveConfirm(courseId, groupId, courseName = '') {
+    const normalizedCourseId = String(courseId || '').trim();
+    const normalizedGroupId = String(groupId || '').trim();
+    const subjectLabel = String(
+        courseName || studentCourseSectionPickerState.courseName || normalizedCourseId
+    ).trim() || 'this subject';
+    const scheduleEntry = getStudentCoursePickerCurrentSchedule().find((item) =>
+        canonicalCourseKey(item.courseId) === canonicalCourseKey(normalizedCourseId)
+        && String(item.groupId || '') === normalizedGroupId
+    );
+    const groupLabel = String(scheduleEntry?.groupName || scheduleEntry?.groupId || normalizedGroupId || 'section').trim();
+    const typeLabel = getStudentSectionTypeLabel(scheduleEntry?.sessionType || 'lecture');
+    return `Remove ${typeLabel} section ${groupLabel} for ${subjectLabel} from your registration draft?`;
+}
+
+function normalizeRegistrationRemoveVerificationToken(value) {
+    return String(value || '').trim().toUpperCase();
+}
+
+function runRegistrationRemoveVerification({
+    step1Text = '',
+    step2Text = '',
+    promptText = '',
+    expectedToken = ''
+} = {}) {
+    const normalizedExpected = normalizeRegistrationRemoveVerificationToken(expectedToken);
+    if (!normalizedExpected) return false;
+    if (typeof window.confirm !== 'function' || typeof window.prompt !== 'function') {
+        return false;
+    }
+    if (!window.confirm(String(step1Text || 'Remove this registration item?'))) return false;
+    if (!window.confirm(String(step2Text || 'This action cannot be undone without choosing the section again.'))) {
+        return false;
+    }
+    const typedValue = window.prompt(
+        String(promptText || `Type ${normalizedExpected} to confirm removal.`),
+        ''
+    );
+    if (typedValue == null) return false;
+    if (normalizeRegistrationRemoveVerificationToken(typedValue) !== normalizedExpected) {
+        if (typeof showToast === 'function') {
+            showToast('Removal cancelled. Confirmation text did not match.');
+        }
+        return false;
+    }
+    return true;
+}
+
+function buildStudentCourseSectionRemoveVerification(courseId, groupId, courseName = '') {
+    const normalizedCourseId = String(courseId || '').trim();
+    const normalizedGroupId = String(groupId || '').trim();
+    const subjectLabel = String(
+        courseName || studentCourseSectionPickerState.courseName || normalizedCourseId
+    ).trim() || 'this subject';
+    const scheduleEntry = getStudentCoursePickerCurrentSchedule().find((item) =>
+        canonicalCourseKey(item.courseId) === canonicalCourseKey(normalizedCourseId)
+        && String(item.groupId || '') === normalizedGroupId
+    );
+    const groupLabel = String(scheduleEntry?.groupName || scheduleEntry?.groupId || normalizedGroupId || 'section').trim();
+    const typeLabel = getStudentSectionTypeLabel(scheduleEntry?.sessionType || 'lecture');
+    const expectedToken = normalizeRegistrationRemoveVerificationToken(groupLabel);
+    return {
+        step1Text: formatStudentCourseSectionRemoveConfirm(courseId, groupId, courseName),
+        step2Text: `You will lose your seat in ${groupLabel} (${typeLabel}) for ${subjectLabel}. You must choose this section again to re-enroll.`,
+        promptText: `Step 3 of 3: Type ${expectedToken} to confirm removal of this section.`,
+        expectedToken
+    };
+}
+
+function buildStudentCourseSubjectRemoveVerification(courseId, courseName = '') {
+    const normalizedCourseId = String(courseId || '').trim();
+    const subjectLabel = String(courseName || normalizedCourseId).trim() || 'this subject';
+    const expectedToken = normalizeRegistrationRemoveVerificationToken(normalizedCourseId);
+    return {
+        step1Text: `Remove ${subjectLabel} from your registration draft?`,
+        step2Text: `This removes every lecture and seminar section you selected for ${subjectLabel}.`,
+        promptText: `Step 3 of 3: Type ${expectedToken} to confirm subject removal.`,
+        expectedToken
+    };
+}
+
 function buildStudentCourseSectionActionButton(courseId, group, selected, isFull) {
     const button = document.createElement('button');
     if (selected) {
-        button.className = 'kiu-btn-outline';
-        button.disabled = true;
-        button.style.cssText = 'padding:8px 12px; font-size:11px; color:#047857; border-color:#86efac;';
-        button.textContent = 'Selected';
+        button.type = 'button';
+        button.className = 'lux-secondary-btn registration-section-picker-action-btn is-selected';
+        button.dataset.studentCourseSectionClear = escapeHtml(courseId);
+        button.dataset.studentCourseSectionGroup = escapeHtml(group.id);
+        button.textContent = 'Remove';
         return button;
     }
     if (isFull) {
-        button.className = 'kiu-btn-outline';
+        button.className = 'lux-secondary-btn registration-section-picker-action-btn is-full';
         button.disabled = true;
-        button.style.cssText = 'padding:8px 12px; font-size:11px; color:#94a3b8; border-color:#cbd5e1; cursor:not-allowed;';
         button.textContent = 'Full';
         return button;
     }
     button.type = 'button';
-    button.className = 'kiu-btn-blue';
-    button.style.cssText = 'padding:8px 12px; font-size:11px;';
+    button.className = 'lux-primary-btn registration-section-picker-action-btn';
     button.dataset.studentCourseSectionChoose = escapeHtml(courseId);
     button.dataset.studentCourseSectionGroup = escapeHtml(group.id);
     button.textContent = 'Choose';
@@ -2004,12 +2252,46 @@ function buildStudentCourseSectionActionButton(courseId, group, selected, isFull
 
 function buildStudentCourseSectionPickerEmptyState(message) {
     const empty = document.createElement('div');
-    empty.style.cssText = 'padding:26px; text-align:center; color:#64748b; background:#f8fafc; border:1px dashed #dbe5f1; border-radius:16px;';
+    empty.className = 'registration-section-picker-empty';
     empty.textContent = message;
     return empty;
 }
 
+function buildStudentCourseSectionPickerFooter(courseId, courseName, hasSubjectSelection) {
+    const footer = document.createElement('div');
+    footer.className = 'registration-section-picker-foot';
+    footer.dataset.role = 'student-course-section-picker-foot';
+
+    const actions = document.createElement('div');
+    actions.className = 'registration-section-picker-foot-actions';
+
+    if (hasSubjectSelection) {
+        const removeSubjectButton = document.createElement('button');
+        removeSubjectButton.type = 'button';
+        removeSubjectButton.className = 'lux-secondary-btn registration-section-picker-remove-subject-btn';
+        removeSubjectButton.dataset.studentCourseRemove = courseId;
+        removeSubjectButton.dataset.studentCourseName = courseName || courseId;
+        const removeIcon = document.createElement('i');
+        removeIcon.className = 'fas fa-trash-alt';
+        removeSubjectButton.append(removeIcon, document.createTextNode(' Remove subject'));
+        actions.appendChild(removeSubjectButton);
+    }
+
+    const closeButton = document.createElement('button');
+    closeButton.type = 'button';
+    closeButton.className = 'lux-primary-btn registration-section-picker-foot-close-btn';
+    closeButton.dataset.studentCourseSectionClose = '1';
+    closeButton.textContent = 'Close';
+    actions.appendChild(closeButton);
+
+    footer.appendChild(actions);
+    return footer;
+}
+
 function openStudentCourseSectionPicker(courseId, courseName = '') {
+    if (window.REGISTRATION_PICKER_BUILD !== REGISTRATION_PICKER_BUILD && typeof console !== 'undefined' && typeof console.error === 'function') {
+        console.error('[registration] stale student-registration.js detected. Hard refresh registration.html.');
+    }
     const normalizedCourseId = String(courseId || '').trim();
     if (!normalizedCourseId) return;
 
@@ -2020,46 +2302,46 @@ function openStudentCourseSectionPicker(courseId, courseName = '') {
         ? 'lecture'
         : (groups[0]?.sessionType || 'lecture');
     studentCourseSectionPickerState.activeType = String(preferredType || 'lecture').toLowerCase();
+    studentCourseSectionPickerState.typePinned = false;
 
     closeStudentCourseSectionPicker();
     const modal = document.createElement('div');
     modal.id = 'student-course-section-picker-modal';
     modal.className = 'registration-section-picker-backdrop';
-    modal.style.cssText = 'position:fixed; inset:0; z-index:100000; display:flex; align-items:center; justify-content:center; padding:22px; background:rgba(15,23,42,0.56); backdrop-filter:blur(10px);';
     const dialog = document.createElement('div');
     dialog.className = 'registration-section-picker-dialog';
     dialog.setAttribute('role', 'dialog');
     dialog.setAttribute('aria-modal', 'true');
     dialog.setAttribute('aria-label', 'Choose course section');
-    dialog.style.cssText = 'width:min(980px,100%); max-height:min(760px,92vh); overflow:auto; background:var(--kiu-solid-white,#fff); border-radius:24px; box-shadow:0 30px 80px rgba(15,23,42,0.28); border:1px solid rgba(226,232,240,0.9);';
+    dialog.dataset.registrationPickerBuild = REGISTRATION_PICKER_BUILD;
 
     const header = document.createElement('div');
-    header.style.cssText = 'display:flex; align-items:flex-start; justify-content:space-between; gap:14px; padding:22px 24px; border-bottom:1px solid #e5edf6;';
+    header.className = 'registration-section-picker-head';
     const headingWrap = document.createElement('div');
+    headingWrap.className = 'registration-section-picker-title-wrap';
     const kicker = document.createElement('div');
-    kicker.style.cssText = 'font-size:12px; font-weight:900; color:#64748b; text-transform:uppercase; letter-spacing:.12em;';
+    kicker.className = 'registration-section-picker-kicker';
     kicker.textContent = 'Section picker';
     const heading = document.createElement('h2');
-    heading.style.cssText = 'margin:6px 0 0; font-size:22px; line-height:1.2; color:var(--kiu-navy,#0f172a);';
+    heading.className = 'registration-section-picker-title';
     heading.textContent = 'Choose subject section';
     const subheading = document.createElement('p');
-    subheading.style.cssText = 'margin:8px 0 0; font-size:13px; color:#64748b;';
+    subheading.className = 'registration-section-picker-copy';
     subheading.textContent = 'Select the lecture or seminar group published by the scheduler.';
     headingWrap.append(kicker, heading, subheading);
     const closeButton = document.createElement('button');
     closeButton.type = 'button';
     closeButton.dataset.studentCourseSectionClose = '1';
     closeButton.setAttribute('aria-label', 'Close section picker');
-    closeButton.className = 'kiu-btn-outline';
-    closeButton.style.cssText = 'width:40px; height:40px; padding:0; border-radius:14px;';
+    closeButton.className = 'lux-secondary-btn registration-section-picker-close';
     const closeIcon = document.createElement('i');
     closeIcon.className = 'fas fa-times';
     closeButton.appendChild(closeIcon);
     header.append(headingWrap, closeButton);
 
     const content = document.createElement('div');
+    content.className = 'registration-section-picker-content';
     content.dataset.role = 'student-course-section-picker-content';
-    content.style.cssText = 'padding:22px 24px;';
 
     dialog.append(header, content);
     modal.appendChild(dialog);
@@ -2072,6 +2354,7 @@ function openStudentCourseSectionPicker(courseId, courseName = '') {
 
 function setStudentCourseSectionType(type) {
     studentCourseSectionPickerState.activeType = String(type || 'lecture').toLowerCase();
+    studentCourseSectionPickerState.typePinned = true;
     renderStudentCourseSectionPicker();
 }
 
@@ -2088,21 +2371,13 @@ function renderStudentCourseSectionPicker() {
         return acc;
     }, {});
     const fallbackType = availableTypes.find(type => groupedByType[type].length > 0) || 'lecture';
-    const activeType = groupedByType[studentCourseSectionPickerState.activeType]?.length > 0
-        ? studentCourseSectionPickerState.activeType
-        : fallbackType;
+    const requestedType = studentCourseSectionPickerState.activeType;
+    const activeType = studentCourseSectionPickerState.typePinned
+        ? requestedType
+        : (groupedByType[requestedType]?.length > 0 ? requestedType : fallbackType);
     studentCourseSectionPickerState.activeType = activeType;
 
-    const currentUser = getCurrentUser();
-    const activeFaculty = normalizeFacultyCode(getCurrentFaculty(), 'ECON');
-    const currentSchedule = currentUser
-        ? normalizeStudentScheduleEntries(KIU_STATE.studentSchedulesByStudent?.[currentUser.id])
-            .filter(item => {
-                const derivedFaculty = typeof deriveFacultyFromSubjectId === 'function' ? deriveFacultyFromSubjectId(item?.courseId) : '';
-                const entryFaculty = normalizeFacultyCode(item?.faculty || derivedFaculty || activeFaculty, activeFaculty);
-                return entryFaculty === activeFaculty;
-            })
-        : [];
+    const currentSchedule = getStudentCoursePickerCurrentSchedule();
     const rows = (groupedByType[activeType] || []).map(group => {
         const enrolledCount = getEnrolledStudentsForGroup(courseId, group.id).length;
         const capacity = parseInt(group.capacity || 40, 10) || 40;
@@ -2116,24 +2391,29 @@ function renderStudentCourseSectionPicker() {
     if (!content) return;
 
     const header = document.createElement('div');
-    header.style.cssText = 'display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:16px;';
+    header.className = 'registration-section-picker-toolbar';
     const titleWrap = document.createElement('div');
+    titleWrap.className = 'registration-section-picker-toolbar-copy';
     const title = document.createElement('div');
-    title.style.cssText = 'font-size:15px; font-weight:800; color:var(--kiu-navy);';
+    title.className = 'registration-section-picker-toolbar-title';
     title.textContent = courseName;
     const subtitle = document.createElement('div');
-    subtitle.style.cssText = 'font-size:12px; color:#64748b; margin-top:4px;';
+    subtitle.className = 'registration-section-picker-toolbar-meta';
     subtitle.textContent = `Type: ${getStudentSectionTypeLabel(activeType)}`;
     titleWrap.append(title, subtitle);
     const typeButtons = document.createElement('div');
-    typeButtons.style.cssText = 'display:flex; gap:8px;';
+    typeButtons.className = 'registration-section-picker-type-actions';
     availableTypes.forEach((type) => {
         const button = document.createElement('button');
         button.type = 'button';
         button.dataset.studentCourseSectionType = type;
-        button.className = type === activeType ? 'kiu-btn-blue' : 'kiu-btn-outline';
-        button.style.cssText = 'padding:8px 14px; font-size:12px;';
-        button.textContent = getStudentSectionTypeLabel(type);
+        const typeCount = groupedByType[type]?.length || 0;
+        button.className = type === activeType
+            ? 'lux-primary-btn registration-section-picker-type-btn is-active'
+            : 'lux-secondary-btn registration-section-picker-type-btn';
+        if (typeCount === 0) button.classList.add('is-empty');
+        button.textContent = `${getStudentSectionTypeLabel(type)} (${typeCount})`;
+        button.setAttribute('aria-pressed', type === activeType ? 'true' : 'false');
         typeButtons.appendChild(button);
     });
     header.append(titleWrap, typeButtons);
@@ -2144,27 +2424,30 @@ function renderStudentCourseSectionPicker() {
     if (groups.length === 0) {
         fragment.appendChild(buildStudentCourseSectionPickerEmptyState('No teaching sections have been published for this subject yet.'));
     } else if ((groupedByType[activeType] || []).length === 0) {
-        fragment.appendChild(buildStudentCourseSectionPickerEmptyState(`No ${getStudentSectionTypeLabel(activeType).toLowerCase()} sections are available for this subject yet.`));
+        const emptyMessage = activeType === 'seminar'
+            ? 'No seminar sections are published yet. Staff must publish a seminar group with a teaching assistant in the scheduler.'
+            : `No ${getStudentSectionTypeLabel(activeType).toLowerCase()} sections are available for this subject yet.`;
+        fragment.appendChild(buildStudentCourseSectionPickerEmptyState(emptyMessage));
     } else {
         const tableWrap = document.createElement('div');
-        tableWrap.style.cssText = 'overflow:auto; border:1px solid #dbe5f1; border-radius:16px; background:white; box-shadow:0 12px 30px rgba(15,23,42,0.08);';
+        tableWrap.className = 'registration-section-picker-table-wrap';
         const table = document.createElement('table');
-        table.style.cssText = 'width:100%; border-collapse:collapse; font-size:12px;';
+        table.className = 'registration-section-picker-table';
         const thead = document.createElement('thead');
-        thead.style.cssText = 'background:#f8fbff; color:#334155;';
+        thead.className = 'registration-section-picker-table-head';
         const headRow = document.createElement('tr');
         [
-            ['Day', 'text-align:left;'],
-            ['Hours', ''],
-            ['Room', ''],
-            ['Free', ''],
-            ['Professor', 'text-align:left;'],
-            ['Duration', ''],
-            ['Group', ''],
-            ['Action', 'text-align:right;']
-        ].forEach(([label, extraStyle]) => {
+            ['Day', 'registration-section-picker-head-cell registration-section-picker-head-cell--left'],
+            ['Hours', 'registration-section-picker-head-cell'],
+            ['Room', 'registration-section-picker-head-cell'],
+            ['Free', 'registration-section-picker-head-cell'],
+            [getStudentSectionInstructorColumnLabel(activeType), 'registration-section-picker-head-cell registration-section-picker-head-cell--left'],
+            ['Duration', 'registration-section-picker-head-cell'],
+            ['Group', 'registration-section-picker-head-cell'],
+            ['Action', 'registration-section-picker-head-cell registration-section-picker-head-cell--right']
+        ].forEach(([label, className]) => {
             const th = document.createElement('th');
-            th.style.cssText = `padding:12px 10px;${extraStyle}`;
+            th.className = className;
             th.textContent = label;
             headRow.appendChild(th);
         });
@@ -2172,23 +2455,23 @@ function renderStudentCourseSectionPicker() {
         const tbody = document.createElement('tbody');
         rows.forEach(({ group, freeSeats, selected, isFull }) => {
             const row = document.createElement('tr');
-            row.style.cssText = 'border-bottom:1px solid #e5edf6;';
+            row.className = 'registration-section-picker-row';
             [
-                [toEnglishText(group.day || 'TBD'), 'text-align:left;'],
-                [group.time || 'TBD', ''],
-                [group.room || 'TBD', ''],
-                [String(freeSeats), 'text-align:center;'],
-                [toEnglishText(group.prof || 'Unassigned'), 'text-align:left;'],
-                [group.duration || '110min', ''],
-                [group.name || group.id || '', '']
-            ].forEach(([value, extraStyle]) => {
+                [toEnglishText(group.day || 'TBD'), 'registration-section-picker-cell registration-section-picker-cell--left'],
+                [group.time || 'TBD', 'registration-section-picker-cell'],
+                [group.room || 'TBD', 'registration-section-picker-cell'],
+                [String(freeSeats), 'registration-section-picker-cell registration-section-picker-cell--center'],
+                [getStudentSectionInstructorLabel(group, activeType), 'registration-section-picker-cell registration-section-picker-cell--left'],
+                [group.duration || '110min', 'registration-section-picker-cell'],
+                [group.name || group.id || '', 'registration-section-picker-cell']
+            ].forEach(([value, className]) => {
                 const td = document.createElement('td');
-                td.style.cssText = `padding:12px 10px;${extraStyle}`;
+                td.className = className;
                 td.textContent = value;
                 row.appendChild(td);
             });
             const actionCell = document.createElement('td');
-            actionCell.style.cssText = 'padding:12px 10px; text-align:right;';
+            actionCell.className = 'registration-section-picker-cell registration-section-picker-cell--action';
             actionCell.appendChild(buildStudentCourseSectionActionButton(courseId, group, selected, isFull));
             row.appendChild(actionCell);
             tbody.appendChild(row);
@@ -2198,23 +2481,84 @@ function renderStudentCourseSectionPicker() {
         fragment.appendChild(tableWrap);
     }
 
+    const hasSubjectSelection = currentSchedule.some(item =>
+        canonicalCourseKey(item.courseId) === canonicalCourseKey(courseId)
+    );
+    fragment.appendChild(buildStudentCourseSectionPickerFooter(courseId, courseName, hasSubjectSelection));
+
     content.replaceChildren(fragment);
+}
+
+function clearStudentCourseSection(courseId, groupId) {
+    if (typeof unselectCourseGroup !== 'function') return false;
+    const preferredFaculty = getCurrentFaculty();
+    const courseDef = getCourseByIdForRegistration(courseId, preferredFaculty) || { id: courseId, name: courseId };
+    const verified = runRegistrationRemoveVerification(buildStudentCourseSectionRemoveVerification(
+        courseId,
+        groupId,
+        studentCourseSectionPickerState.courseName || courseDef.name || courseId
+    ));
+    if (!verified) return false;
+    unselectCourseGroup(courseId, groupId);
+    renderStudentCourseSectionPicker();
+    const activeTabId = window.__studentRegActiveTab || 'prog';
+    if (document.getElementById('student-reg-content-container')) {
+        renderStudentRegStructures(activeTabId);
+        updateEctsProgress();
+    }
+    return true;
+}
+
+function removeStudentCourseSelection(courseId, courseName = '') {
+    const normalizedCourseId = String(courseId || '').trim();
+    if (!normalizedCourseId) return false;
+    const label = String(courseName || normalizedCourseId).trim();
+    const verified = runRegistrationRemoveVerification(buildStudentCourseSubjectRemoveVerification(
+        normalizedCourseId,
+        label
+    ));
+    if (!verified) return false;
+    if (typeof removeStudentCourseEnrollment !== 'function') return false;
+    const removed = removeStudentCourseEnrollment(normalizedCourseId);
+    if (removed) closeStudentCourseSectionPicker();
+    return removed;
 }
 
 function chooseStudentCourseSection(courseId, groupId) {
     const preferredFaculty = getCurrentFaculty();
     const courseDef = getCourseByIdForRegistration(courseId, preferredFaculty) || { id: courseId, name: courseId };
-    const allowedGroup = getStudentCoursePickerGroups(courseId, courseDef.name || courseId)
-        .some(group => canonicalCourseKey(group.id || group.groupId || group.name || '') === canonicalCourseKey(groupId));
-    if (!allowedGroup) {
+    const pickerGroups = getStudentCoursePickerGroups(courseId, courseDef.name || courseId);
+    const targetGroup = pickerGroups.find((group) =>
+        canonicalCourseKey(group.id || group.groupId || group.name || '') === canonicalCourseKey(groupId)
+    );
+    if (!targetGroup) {
         if (typeof showToast === 'function') {
             showToast('This section belongs to another faculty or is no longer available.', 'warning');
         }
         return false;
     }
-    const success = selectCourseGroup(courseId, courseDef.name || courseId, groupId);
-    if (success !== false) {
-        closeStudentCourseSectionPicker();
+    const normalizedGroup = typeof normalizeScheduleGroup === 'function'
+        ? normalizeScheduleGroup(courseId, targetGroup)
+        : targetGroup;
+    const scheduleConflict = typeof findStudentEnrollmentScheduleConflict === 'function'
+        ? findStudentEnrollmentScheduleConflict(
+            getStudentCoursePickerCurrentSchedule(),
+            courseId,
+            normalizedGroup || targetGroup
+        )
+        : null;
+    if (scheduleConflict) {
+        const confirmText = typeof formatStudentScheduleConflictChooseConfirm === 'function'
+            ? formatStudentScheduleConflictChooseConfirm(scheduleConflict, normalizedGroup || targetGroup)
+            : (typeof formatStudentScheduleConflictWarning === 'function'
+                ? `${formatStudentScheduleConflictWarning(scheduleConflict, normalizedGroup || targetGroup)}\n\nAdd this section anyway?`
+                : `Schedule overlap with ${scheduleConflict.courseName || scheduleConflict.courseId} (${scheduleConflict.groupName || scheduleConflict.groupId}).\n\nAdd this section anyway?`);
+        const accepted = typeof window.confirm === 'function' ? window.confirm(confirmText) : true;
+        if (!accepted) return false;
+    }
+    const result = selectCourseGroup(courseId, courseDef.name || courseId, groupId);
+    if (result !== false) {
+        renderStudentCourseSectionPicker();
         const activeTabId = window.__studentRegActiveTab || 'prog';
         if (document.getElementById('student-reg-content-container')) {
             renderStudentRegStructures(activeTabId);
@@ -2268,12 +2612,32 @@ function handleStudentRegistrationClick(event) {
         return;
     }
 
+    const removeCourseTrigger = event.target.closest('[data-student-course-remove]');
+    if (removeCourseTrigger) {
+        event.preventDefault();
+        removeStudentCourseSelection(
+            removeCourseTrigger.getAttribute('data-student-course-remove') || '',
+            removeCourseTrigger.getAttribute('data-student-course-name') || ''
+        );
+        return;
+    }
+
     const chooseSectionTrigger = event.target.closest('[data-student-course-section-choose]');
     if (chooseSectionTrigger) {
         event.preventDefault();
         chooseStudentCourseSection(
             chooseSectionTrigger.getAttribute('data-student-course-section-choose') || '',
             chooseSectionTrigger.getAttribute('data-student-course-section-group') || ''
+        );
+        return;
+    }
+
+    const clearSectionTrigger = event.target.closest('[data-student-course-section-clear]');
+    if (clearSectionTrigger) {
+        event.preventDefault();
+        clearStudentCourseSection(
+            clearSectionTrigger.getAttribute('data-student-course-section-clear') || '',
+            clearSectionTrigger.getAttribute('data-student-course-section-group') || ''
         );
         return;
     }
@@ -2300,17 +2664,50 @@ function handleStudentRegistrationChange(event) {
 function bindStudentRegistrationDelegates() {
     if (window.__studentRegistrationDelegatesBound) return;
     document.addEventListener('click', handleStudentRegistrationClick);
+    document.addEventListener('click', (event) => {
+        if (!event.target.closest('#student-course-section-picker-modal')) return;
+        handleStudentRegistrationClick(event);
+        event.stopImmediatePropagation();
+    }, true);
     document.addEventListener('change', handleStudentRegistrationChange);
     window.__studentRegistrationDelegatesBound = true;
 }
 
 bindStudentRegistrationDelegates();
 
+window.REGISTRATION_PICKER_BUILD = REGISTRATION_PICKER_BUILD;
+if (document.getElementById('page-registration') && !window.__registrationPickerBuildLogged) {
+    window.__registrationPickerBuildLogged = true;
+    if (typeof console !== 'undefined' && typeof console.info === 'function') {
+        console.info(`[registration] picker build ${REGISTRATION_PICKER_BUILD}`);
+    }
+    const expectedBuild = '20260605-regpicker3';
+    const htmlScripts = Array.from(document.scripts || [])
+        .map(script => script.getAttribute('src') || script.src || '')
+        .filter(src => src.includes('student-registration.js'));
+    const htmlExpectsNewBuild = htmlScripts.some(src => src.includes(expectedBuild));
+    if (htmlExpectsNewBuild && window.REGISTRATION_PICKER_BUILD === expectedBuild) {
+        // current bundle matches registration.html
+    } else if (htmlExpectsNewBuild) {
+        const banner = document.createElement('div');
+        banner.className = 'registration-runtime-stale-banner';
+        banner.setAttribute('role', 'alert');
+        banner.textContent = 'Registration scripts are out of date. Hard refresh (Ctrl+Shift+R) or restart the local server from the current project folder.';
+        const host = document.getElementById('page-registration');
+        if (host && !document.querySelector('.registration-runtime-stale-banner')) {
+            host.prepend(banner);
+        }
+    }
+}
+
 window.openStudentCourseSectionPicker = openStudentCourseSectionPicker;
 window.closeStudentCourseSectionPicker = closeStudentCourseSectionPicker;
 window.renderStudentCourseSectionPicker = renderStudentCourseSectionPicker;
 window.setStudentCourseSectionType = setStudentCourseSectionType;
 window.chooseStudentCourseSection = chooseStudentCourseSection;
+window.clearStudentCourseSection = clearStudentCourseSection;
+window.runRegistrationRemoveVerification = runRegistrationRemoveVerification;
+window.removeStudentCourseSelection = removeStudentCourseSelection;
 window.toggleCourseSelection = toggleCourseSelection;
 
 /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•

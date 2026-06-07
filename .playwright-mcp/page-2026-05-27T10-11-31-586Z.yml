@@ -1,0 +1,81 @@
+- generic [active] [ref=e1]:
+  - text:  
+  - main [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e5]:
+        - generic [ref=e6]:
+          - generic [ref=e7]: Profile and Account Security
+          - generic [ref=e8]: Manage core profile details, institutional email access, and account-security settings from a cleaner personal account workspace.
+          - generic [ref=e9]:
+            - generic [ref=e10]:
+              - generic [ref=e11]: 
+              - text: Profile details
+            - generic [ref=e12]:
+              - generic [ref=e13]: 
+              - text: Access and password controls
+        - complementary [ref=e14]:
+          - generic [ref=e15]:
+            - strong [ref=e16]: 4 lanes
+            - generic [ref=e17]: The same home-style summary shell now frames your personal workspace and account controls.
+          - generic [ref=e18]:
+            - generic [ref=e19]:
+              - generic [ref=e20]: Identity
+              - strong [ref=e21]: Profile
+              - emphasis [ref=e22]: Core user details and account record.
+            - generic [ref=e23]:
+              - generic [ref=e24]: Messaging
+              - strong [ref=e25]: Email
+              - emphasis [ref=e26]: Institutional contact access and mailbox tools.
+            - generic [ref=e27]:
+              - generic [ref=e28]: Security
+              - strong [ref=e29]: Password
+              - emphasis [ref=e30]: Account access controls and recovery guidance.
+      - generic [ref=e31]:
+        - article [ref=e32]:
+          - generic [ref=e33]:
+            - generic [ref=e34]: Profile lane
+            - heading "Identity" [level=3] [ref=e35]
+            - paragraph [ref=e36]: Keep your main account details updated and readable.
+        - article [ref=e37]:
+          - generic [ref=e38]:
+            - generic [ref=e39]: Mailbox lane
+            - heading "Email" [level=3] [ref=e40]
+            - paragraph [ref=e41]: Jump into institutional contact access from the same route.
+        - article [ref=e42]:
+          - generic [ref=e43]:
+            - generic [ref=e44]: Security lane
+            - heading "Password" [level=3] [ref=e45]
+            - paragraph [ref=e46]: Change credentials and review recovery guidance in one place.
+      - generic [ref=e47]:
+        - generic [ref=e49]:
+          - button " Profile" [ref=e50] [cursor=pointer]:
+            - generic [ref=e51]: 
+            - text: Profile
+          - button " Email" [ref=e52] [cursor=pointer]:
+            - generic [ref=e53]: 
+            - text: Email
+          - button " Password Change" [ref=e54] [cursor=pointer]:
+            - generic [ref=e55]: 
+            - text: Password Change
+          - button " My Timetable" [ref=e56] [cursor=pointer]:
+            - generic [ref=e57]: 
+            - text: My Timetable
+        - generic [ref=e58]:
+          - generic [ref=e59]: Portal Administrator Profile
+          - generic [ref=e61]:
+            - textbox [ref=e63]: admin-root
+            - button "Update" [ref=e64] [cursor=pointer]
+          - generic [ref=e65]: Loading messenger...
+  - text:                  
+  - complementary:
+    - generic:
+      - generic: K
+      - generic:
+        - generic: KIU
+        - generic: Integrated Campus Portal
+    - generic:
+      - generic: KI
+      - generic:
+        - generic: Portal User
+        - generic: University Portal
+  - text:         

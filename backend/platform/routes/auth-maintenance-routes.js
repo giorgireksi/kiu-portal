@@ -3,6 +3,7 @@ function registerAuthMaintenanceRoutes(app, deps = {}) {
         enforceRateLimit,
         getSessionToken,
         getStore,
+        isPortalImpersonationRole = () => false,
         loginRateLimitMax,
         loginRateLimitWindowMs,
         requireActualSessionRole,
@@ -41,9 +42,18 @@ function registerAuthMaintenanceRoutes(app, deps = {}) {
             sendError(response, 400, 'A valid non-admin impersonation role is required.');
             return;
         }
-        const session = store.updateSessionImpersonation(getSessionToken(request), nextRole);
+        if (!isPortalImpersonationRole(nextRole)) {
+            sendError(response, 400, 'Impersonation role must be student, professor, ta, or student_service.');
+            return;
+        }
+        const userId = String(request.body?.userId || request.body?.impersonatedUserId || '').trim();
+        if (!userId) {
+            sendError(response, 400, 'userId is required for impersonation.');
+            return;
+        }
+        const session = store.updateSessionImpersonation(getSessionToken(request), nextRole, userId);
         if (!session) {
-            sendError(response, 404, 'Admin session not found.');
+            sendError(response, 404, 'Admin session not found or impersonation persona is invalid.');
             return;
         }
         response.json({ ok: true, session: store.createClientSessionPayload(session), account: store.getAccountById(session.userId) });

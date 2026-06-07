@@ -1,0 +1,258 @@
+- generic [active] [ref=e1]:
+  - text:  
+  - main [ref=e2]:
+    - generic [ref=e4]:
+      - generic [ref=e5]:
+        - generic [ref=e6]:
+          - generic [ref=e7]:
+            - generic [ref=e8]:
+              - generic [ref=e9]: 
+              - text: Student timetable
+            - generic [ref=e10]: Weekly Schedule
+            - generic [ref=e11]: See this week's classes, rooms, instructors, and academic rhythm in a simple timetable.
+            - generic [ref=e12]:
+              - generic [ref=e13]:
+                - generic [ref=e14]: 
+                - text: Current Week
+              - generic [ref=e15]:
+                - generic [ref=e16]: 
+                - text: Live Next Class
+              - generic [ref=e17]:
+                - generic [ref=e18]: 
+                - text: Semester 3
+          - complementary [ref=e19]:
+            - generic [ref=e20]: Weekly focus
+            - generic [ref=e21]: No sessions this week
+            - generic [ref=e22]: Nothing is scheduled for May 2026 - 25-31 yet.
+            - generic [ref=e24]:
+              - generic [ref=e25]: 
+              - text: Quiet academic window
+        - generic [ref=e26]:
+          - generic [ref=e27]:
+            - generic [ref=e29]:  Schedule Tools
+            - generic [ref=e30]: Current week, semester scope, and class details
+          - generic [ref=e31]:
+            - generic [ref=e32]:
+              - generic [ref=e33]:
+                - generic [ref=e34]: 
+                - text: Filters
+              - generic [ref=e35]:
+                - generic [ref=e36]: Semester
+                - generic [ref=e165]:
+                  - generic [ref=e166]: Semester
+                  - button "Semester Semester 3 " [ref=e167] [cursor=pointer]:
+                    - generic [ref=e168]:
+                      - generic [ref=e169]: Semester
+                      - strong [ref=e170]: Semester 3
+                    - generic [ref=e171]: 
+                  - listbox:
+                    - option:
+                      - strong: Semester 1
+                      - generic: Choose semester
+                    - option:
+                      - strong: Semester 2
+                      - generic: Choose semester
+                    - option [selected]:
+                      - strong: Semester 3
+                      - generic: Current selection
+                    - option:
+                      - strong: Semester 4
+                      - generic: Choose semester
+              - text: 
+            - generic [ref=e38]:
+              - group "Schedule View" [ref=e40]:
+                - button "Sessions" [pressed] [ref=e41] [cursor=pointer]:
+                  - generic [ref=e42]: 
+                  - text: Sessions
+                - button "Timetable" [ref=e43] [cursor=pointer]:
+                  - generic [ref=e44]: 
+                  - text: Timetable
+              - generic [ref=e45]:
+                - generic [ref=e46]:
+                  - button "Previous Week" [ref=e47] [cursor=pointer]:
+                    - generic [ref=e48]: 
+                  - generic [ref=e49]: May 2026 - 25-31
+                  - button "Next Week" [ref=e50] [cursor=pointer]:
+                    - generic [ref=e51]: 
+                  - button "Current Week" [ref=e52] [cursor=pointer]
+                - article [ref=e53]:
+                  - generic [ref=e54]:
+                    - generic [ref=e55]: 
+                    - text: Next Up
+                  - generic [ref=e56]: No upcoming session in this week
+                  - paragraph [ref=e57]: No group, room, or instructor is scheduled for this selected week.
+                  - generic [ref=e58]:
+                    - generic [ref=e59]:
+                      - generic [ref=e60]: 
+                      - text: No group
+                    - generic [ref=e61]:
+                      - generic [ref=e62]: 
+                      - text: No room
+                    - generic [ref=e63]:
+                      - generic [ref=e64]: 
+                      - text: No instructor
+                - generic [ref=e65]:
+                  - generic [ref=e66]:
+                    - generic [ref=e67]: 
+                    - text: 0 sessions
+                  - generic [ref=e68]:
+                    - generic [ref=e69]: 
+                    - text: 0 active days
+                  - generic [ref=e70]:
+                    - generic [ref=e71]: 
+                    - text: 0.0 planned hours
+      - generic [ref=e72]:
+        - article [ref=e73]:
+          - generic [ref=e74]:
+            - generic [ref=e75]: 
+            - text: Scope
+          - generic [ref=e76]: Semester 3 - Student
+          - paragraph [ref=e77]: May 2026 - 25-31 in session mode.
+          - generic [ref=e78]:
+            - generic [ref=e79]: May 2026 - 25-31
+            - generic [ref=e80]:
+              - generic [ref=e81]: 
+              - text: Session list view
+            - generic [ref=e82]:
+              - generic [ref=e83]: 
+              - text: Business Management
+        - article [ref=e84]:
+          - generic [ref=e85]:
+            - generic [ref=e86]: 
+            - text: Week Load
+          - generic [ref=e87]: 0 sessions across 0 days
+          - paragraph [ref=e88]: This week is empty, so there is no peak day yet.
+          - generic [ref=e89]:
+            - generic [ref=e90]:
+              - generic [ref=e91]: 
+              - text: 0 scheduled sessions
+            - generic [ref=e92]:
+              - generic [ref=e93]: 
+              - text: 0.0 planned hours
+            - generic [ref=e94]:
+              - generic [ref=e95]: 
+              - text: No busiest day
+        - article [ref=e96]:
+          - generic [ref=e97]:
+            - generic [ref=e98]: 
+            - text: Next Up
+          - generic [ref=e99]: "--"
+          - generic [ref=e100]:
+            - generic [ref=e101]: Room loading
+            - generic [ref=e102]: Faculty loading
+            - generic [ref=e103]: Type loading
+      - generic [ref=e104]:
+        - generic [ref=e105]:
+          - generic [ref=e106]:
+            - generic [ref=e107]: Weekly Timetable
+            - paragraph [ref=e108]: Use session cards for quick scanning or the timetable grid for a full weekly view.
+          - generic [ref=e109]: Schedule live
+        - generic [ref=e112]:
+          - generic [ref=e114]: 
+          - generic [ref=e115]: No sessions for the selected week
+          - generic [ref=e116]: No timetable sessions found for May 2026 - 25-31.
+  - text:                      
+  - generic:   
+  - generic:   
+  - generic [ref=e119]:
+    - generic [ref=e120]:
+      - generic [ref=e121]: Notification Center
+      - generic [ref=e122]: Track real grades, service replies, schedule changes, official orders, and selected social activity in one place.
+    - generic [ref=e123]:
+      - button " Minimize" [ref=e124] [cursor=pointer]:
+        - generic [ref=e125]: 
+        - text: Minimize
+      - button "" [ref=e126]:
+        - generic [ref=e127]: 
+  - complementary:
+    - generic:
+      - generic: K
+      - generic:
+        - generic: KIU
+        - generic: Integrated Campus Portal
+    - generic:
+      - generic: Core
+      - button " Dashboard":
+        - generic: 
+        - generic: Dashboard
+      - button " LMS":
+        - generic: 
+        - generic: LMS
+      - button " Timetable":
+        - generic: 
+        - generic: Timetable
+      - button " Registration":
+        - generic: 
+        - generic: Registration
+      - generic: Records
+      - button " Programs":
+        - generic: 
+        - generic: Programs
+      - button " Study Card":
+        - generic: 
+        - generic: Study Card
+      - button " Personal Data":
+        - generic: 
+        - generic: Personal Data
+      - button " Profile":
+        - generic: 
+        - generic: Profile
+      - generic: Support
+      - button " News":
+        - generic: 
+        - generic: News
+      - button " AI Career Analyst":
+        - generic: 
+        - generic: AI Career Analyst
+      - button " E-Chancellery":
+        - generic: 
+        - generic: E-Chancellery
+      - button " Student Service":
+        - generic: 
+        - generic: Student Service
+      - button " Library":
+        - generic: 
+        - generic: Library
+      - button " Social":
+        - generic: 
+        - generic: Social
+    - generic:
+      - generic: KI
+      - generic:
+        - generic: Portal User
+        - generic: University Portal
+  - generic [ref=e128]:
+    - generic [ref=e129]:
+      - button "Show nav" [pressed] [ref=e130] [cursor=pointer]:
+        - generic [ref=e131]: Show nav
+      - generic [ref=e132]:
+        - text: KIU
+        - generic [ref=e133]: 
+        - strong [ref=e134]: My Schedule
+      - generic [ref=e135]:
+        - generic [ref=e136]: 
+        - textbox "Search modules, staff, documents, requests..." [ref=e137]
+    - generic [ref=e138]:
+      - button "Faculty Management " [ref=e172] [cursor=pointer]:
+        - generic [ref=e141]: Faculty
+        - strong [ref=e142]: Management
+        - generic [ref=e143]: 
+      - button "View Student Portal " [ref=e173] [cursor=pointer]:
+        - generic [ref=e146]: View
+        - strong [ref=e147]: Student Portal
+        - generic [ref=e148]: 
+      - text: 
+      - button "" [ref=e149] [cursor=pointer]:
+        - generic [ref=e150]: 
+      - button " 0" [ref=e152] [cursor=pointer]:
+        - generic [ref=e153]: 
+        - generic: "0"
+      - button " 0" [ref=e156] [cursor=pointer]:
+        - generic [ref=e157]: 
+        - generic: "0"
+      - button "KI Portal Student Portal / University Portal" [ref=e174] [cursor=pointer]:
+        - generic [ref=e160]: KI
+        - generic [ref=e161]:
+          - generic [ref=e162]: Portal
+          - generic [ref=e163]: Student Portal / University Portal
+        - generic [ref=e164]: 

@@ -101,488 +101,396 @@ body.lux-route-staff #staff-content .admin-mini-grid {
     }
 }
 
-/* Staff command center rebuild. */
-body.lux-route-staff #staff-content .staff-admin-shell {
-    gap: 22px !important;
-}
-
-body.lux-route-staff #staff-content .staff-admin-hero .admin-hero-metrics {
-    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-}
-
-body.lux-route-staff #staff-content .staff-admin-controls .lux-card-body {
-    padding: 28px !important;
-}
-
-body.lux-route-staff #staff-content .staff-admin-filter-grid {
-    grid-template-columns: minmax(280px, 1.55fr) repeat(4, minmax(160px, .8fr)) !important;
-}
-
-body.lux-route-staff #staff-content .staff-admin-workspace {
-    display: grid !important;
-    grid-template-columns: minmax(0, 1.55fr) minmax(360px, .85fr) !important;
-    gap: 18px !important;
-    align-items: start !important;
-}
-
-body.lux-route-staff #staff-content .staff-admin-directory-panel,
-body.lux-route-staff #staff-content .staff-admin-drawer {
-    position: relative !important;
-    overflow: hidden !important;
-    border: 1px solid rgba(var(--lux-accent-rgb), .22) !important;
-    border-radius: 26px !important;
-    background:
-        radial-gradient(circle at 4% 0%, rgba(255, 255, 255, calc(var(--lux-transparency-alpha, .92) * .07)), transparent 34%),
-        radial-gradient(circle at 88% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, .92) * .22)), transparent 42%),
-        linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, .92) * .055)), rgba(8, 12, 20, calc(var(--lux-transparency-alpha, .92) * .90)) 48%, rgba(6, 9, 16, calc(var(--lux-transparency-alpha, .92) * .82))) !important;
-    box-shadow: 0 24px 58px rgba(0, 0, 0, .24), inset 0 1px 0 rgba(255, 255, 255, .08) !important;
-    backdrop-filter: blur(var(--lux-transparency-blur, 20px)) saturate(var(--lux-transparency-saturate, 145%)) !important;
-    -webkit-backdrop-filter: blur(var(--lux-transparency-blur, 20px)) saturate(var(--lux-transparency-saturate, 145%)) !important;
-}
-
-body.lux-route-staff #staff-content .staff-admin-directory-panel {
-    padding: 16px !important;
-}
-
-body.lux-route-staff #staff-content .staff-admin-table-head,
-body.lux-route-staff #staff-content .staff-admin-row {
-    display: grid !important;
-    grid-template-columns: minmax(260px, 1.35fr) minmax(150px, .75fr) minmax(120px, .62fr) minmax(142px, .7fr) minmax(150px, .82fr) minmax(180px, 1fr) minmax(110px, .6fr) !important;
-    gap: 12px !important;
-    align-items: center !important;
-}
-
-body.lux-route-staff #staff-content .staff-admin-table-head {
-    position: sticky !important;
-    top: 0 !important;
-    z-index: 2 !important;
-    min-height: 46px !important;
-    padding: 0 14px !important;
-    border: 1px solid rgba(var(--lux-accent-rgb), .15) !important;
-    border-radius: 18px !important;
-    background: rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, .92) * .10)) !important;
-    color: var(--lux-text-muted) !important;
-    font-size: 11px !important;
-    font-weight: 900 !important;
-    letter-spacing: .06em !important;
-    text-transform: uppercase !important;
-}
-
-body.lux-route-staff #staff-content .staff-admin-row-list {
+/* Staff directory runtime contract layer for the class-driven cleanup pass. */
+body.lux-route-staff #staff-content .staff-dir-card-section {
     display: grid !important;
     gap: 10px !important;
-    margin-top: 10px !important;
 }
 
-body.lux-route-staff #staff-content .staff-admin-row {
-    width: 100% !important;
-    min-height: 84px !important;
-    padding: 14px !important;
-    border: 1px solid rgba(var(--lux-accent-rgb), .13) !important;
-    border-radius: 18px !important;
-    background: rgba(255, 255, 255, calc(var(--lux-transparency-alpha, .92) * .035)) !important;
-    color: var(--lux-text) !important;
-    text-align: left !important;
-    cursor: pointer !important;
-    transition: transform .18s ease, border-color .18s ease, background .18s ease !important;
-}
-
-body.lux-route-staff #staff-content .staff-admin-row:hover,
-body.lux-route-staff #staff-content .staff-admin-row.is-selected {
-    transform: translateY(-1px) !important;
-    border-color: rgba(var(--lux-accent-rgb), .36) !important;
-    background: rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, .92) * .09)) !important;
-}
-
-body.lux-route-staff #staff-content .staff-admin-person {
-    display: flex !important;
-    align-items: center !important;
-    gap: 12px !important;
-    min-width: 0 !important;
-}
-
-body.lux-route-staff #staff-content .staff-admin-person strong,
-body.lux-route-staff #staff-content .staff-admin-row > span > strong {
-    display: block !important;
-    color: var(--lux-text) !important;
-    font-size: 14px !important;
-    line-height: 1.25 !important;
-}
-
-body.lux-route-staff #staff-content .staff-admin-person small,
-body.lux-route-staff #staff-content .staff-admin-drawer small {
-    display: block !important;
-    margin-top: 4px !important;
-    color: var(--lux-text-muted) !important;
-    font-size: 12px !important;
-    line-height: 1.3 !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-}
-
-body.lux-route-staff #staff-content .staff-admin-row em {
-    color: var(--lux-text-muted) !important;
-    font-style: normal !important;
-}
-
-body.lux-route-staff #staff-content .staff-admin-load {
-    display: block !important;
-    height: 6px !important;
-    margin-top: 8px !important;
-    overflow: hidden !important;
-    border-radius: 999px !important;
-    background: rgba(255, 255, 255, .08) !important;
-}
-
-body.lux-route-staff #staff-content .staff-admin-load i {
-    display: block !important;
-    height: 100% !important;
-    border-radius: inherit !important;
-    background: linear-gradient(90deg, var(--lux-accent), var(--lux-accent-2)) !important;
-}
-
-body.lux-route-staff #staff-content .staff-admin-drawer {
-    position: sticky !important;
-    top: 102px !important;
-    display: grid !important;
-    gap: 16px !important;
-    padding: 22px !important;
-}
-
-body.lux-route-staff #staff-content .staff-admin-drawer-head {
+body.lux-route-staff #staff-content .staff-dir-head {
     display: grid !important;
     grid-template-columns: auto minmax(0, 1fr) auto !important;
     gap: 14px !important;
-    align-items: center !important;
+    align-items: start !important;
 }
 
-body.lux-route-staff #staff-content .staff-admin-drawer-head h3 {
-    margin: 3px 0 0 !important;
+body.lux-route-staff #staff-content .staff-dir-identity {
+    display: grid !important;
+    gap: 4px !important;
+    min-width: 0 !important;
+}
+
+body.lux-route-staff #staff-content .staff-dir-name {
     color: var(--lux-text) !important;
-    font-size: 22px !important;
-    line-height: 1.1 !important;
+    font-size: 17px !important;
+    font-weight: 900 !important;
+    line-height: 1.15 !important;
 }
 
-body.lux-route-staff #staff-content .staff-admin-drawer-head p {
-    margin: 5px 0 0 !important;
+body.lux-route-staff #staff-content .staff-dir-name-en,
+body.lux-route-staff #staff-content .staff-dir-name-alt {
+    color: var(--lux-accent) !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    line-height: 1.35 !important;
+}
+
+body.lux-route-staff #staff-content .staff-dir-title,
+body.lux-route-staff #staff-content .staff-dir-role,
+body.lux-route-staff #staff-content .staff-dir-meta,
+body.lux-route-staff #staff-content .staff-dir-load-meta,
+body.lux-route-staff #staff-content .staff-dir-load-summary,
+body.lux-route-staff #staff-content .staff-dir-schedule-meta,
+body.lux-route-staff #staff-content .staff-dir-session-meta,
+body.lux-route-staff #staff-content .staff-dir-session-count,
+body.lux-route-staff #staff-content .staff-dir-empty-note {
     color: var(--lux-text-muted) !important;
     font-size: 12px !important;
+    line-height: 1.45 !important;
 }
 
-body.lux-route-staff #staff-content .staff-admin-drawer-tabs {
-    display: grid !important;
-    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
-    gap: 6px !important;
-    padding: 5px !important;
-    border: 1px solid rgba(var(--lux-accent-rgb), .14) !important;
-    border-radius: 16px !important;
-    background: rgba(255, 255, 255, calc(var(--lux-transparency-alpha, .92) * .035)) !important;
-}
-
-body.lux-route-staff #staff-content .staff-admin-drawer-tabs span {
-    min-height: 34px !important;
-    display: inline-flex !important;
+body.lux-route-staff #staff-content .staff-dir-inline-meta {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 10px 14px !important;
     align-items: center !important;
-    justify-content: center !important;
-    border-radius: 12px !important;
-    color: var(--lux-text-muted) !important;
-    font-size: 11px !important;
-    font-weight: 900 !important;
 }
 
-body.lux-route-staff #staff-content .staff-admin-drawer-tabs .is-active {
-    color: var(--lux-text) !important;
-    background: rgba(var(--lux-accent-rgb), .18) !important;
+body.lux-route-staff #staff-content .staff-dir-inline-meta > span {
+    display: inline-flex !important;
+    gap: 8px !important;
+    align-items: center !important;
+    min-width: 0 !important;
 }
 
-body.lux-route-staff #staff-content .staff-admin-drawer-grid {
+body.lux-route-staff #staff-content .staff-dir-stat-grid {
     display: grid !important;
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
     gap: 10px !important;
 }
 
-body.lux-route-staff #staff-content .staff-admin-drawer-grid article,
-body.lux-route-staff #staff-content .staff-admin-drawer-section {
+body.lux-route-staff #staff-content .staff-dir-stat-card {
+    display: grid !important;
+    gap: 6px !important;
     padding: 14px !important;
     border: 1px solid rgba(var(--lux-accent-rgb), .14) !important;
     border-radius: 18px !important;
     background: rgba(255, 255, 255, calc(var(--lux-transparency-alpha, .92) * .04)) !important;
 }
 
-body.lux-route-staff #staff-content .staff-admin-drawer-grid article > span {
-    display: block !important;
-    color: var(--lux-text-muted) !important;
-    font-size: 10px !important;
-    font-weight: 900 !important;
-    letter-spacing: .06em !important;
-    text-transform: uppercase !important;
-}
-
-body.lux-route-staff #staff-content .staff-admin-drawer-grid strong {
-    display: block !important;
-    margin-top: 7px !important;
+body.lux-route-staff #staff-content .staff-dir-stat-card strong {
     color: var(--lux-text) !important;
-    font-size: 17px !important;
-}
-
-body.lux-route-staff #staff-content .staff-admin-drawer-grid .is-warning,
-body.lux-route-staff #staff-content .staff-admin-drawer-grid .is-danger {
-    color: #fbbf24 !important;
-}
-
-body.lux-route-staff #staff-content .staff-admin-drawer-grid .is-success {
-    color: #20c57c !important;
-}
-
-body.lux-route-staff #staff-content .staff-admin-timeline {
-    display: grid !important;
-    gap: 10px !important;
-    margin-top: 12px !important;
-}
-
-body.lux-route-staff #staff-content .staff-admin-timeline > div {
-    display: grid !important;
-    grid-template-columns: 28px minmax(0, 1fr) !important;
-    gap: 10px !important;
-    align-items: start !important;
-}
-
-body.lux-route-staff #staff-content .staff-admin-timeline i {
-    width: 28px !important;
-    height: 28px !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    border-radius: 10px !important;
-    color: var(--lux-accent) !important;
-    background: rgba(var(--lux-accent-rgb), .12) !important;
-}
-
-body.lux-route-staff #staff-content .staff-admin-timeline strong {
-    display: block !important;
-    color: var(--lux-text) !important;
-    font-size: 13px !important;
-}
-
-body.lux-route-staff #staff-content .staff-admin-timeline span {
-    color: var(--lux-text-muted) !important;
-    font-size: 12px !important;
-    line-height: 1.4 !important;
-}
-
-body.lux-route-staff #staff-content .staff-admin-empty,
-body.lux-route-staff #staff-content .staff-admin-drawer.is-empty {
-    min-height: 280px !important;
-    display: grid !important;
-    place-items: center !important;
-    gap: 8px !important;
-    text-align: center !important;
-    color: var(--lux-text-muted) !important;
-}
-
-body.lux-route-staff #staff-content .staff-admin-empty i,
-body.lux-route-staff #staff-content .staff-admin-drawer.is-empty i {
-    font-size: 30px !important;
-    color: var(--lux-accent) !important;
-}
-
-body.lux-light-mode.lux-route-staff #staff-content .staff-admin-directory-panel,
-body.lux-light-mode.lux-route-staff #staff-content .staff-admin-drawer,
-html.lux-light-mode body.lux-route-staff #staff-content .staff-admin-directory-panel,
-html.lux-light-mode body.lux-route-staff #staff-content .staff-admin-drawer {
-    background:
-        radial-gradient(circle at 4% 0%, rgba(255, 255, 255, calc(var(--lux-transparency-alpha, .86) * .90)), transparent 34%),
-        radial-gradient(circle at 88% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, .86) * .18)), transparent 42%),
-        linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, .86) * .045)), rgba(255, 255, 255, calc(var(--lux-transparency-alpha, .86) * .84)) 48%, rgba(247, 241, 232, calc(var(--lux-transparency-alpha, .86) * .68))) !important;
-}
-
-@media (max-width: 1280px) {
-    body.lux-route-staff #staff-content .staff-admin-workspace {
-        grid-template-columns: 1fr !important;
-    }
-
-    body.lux-route-staff #staff-content .staff-admin-drawer {
-        position: relative !important;
-        top: auto !important;
-    }
-}
-
-@media (max-width: 980px) {
-    body.lux-route-staff #staff-content .staff-admin-hero .admin-hero-metrics,
-body.lux-route-staff #staff-content .staff-admin-filter-grid {
-        grid-template-columns: 1fr 1fr !important;
-    }
-
-    body.lux-route-staff #staff-content .staff-admin-table-head {
-        display: none !important;
-    }
-
-    body.lux-route-staff #staff-content .staff-admin-row {
-        grid-template-columns: 1fr 1fr !important;
-    }
-}
-
-@media (max-width: 640px) {
-    body.lux-route-staff #staff-content .staff-admin-hero .admin-hero-metrics,
-body.lux-route-staff #staff-content .staff-admin-filter-grid,
-body.lux-route-staff #staff-content .staff-admin-row,
-body.lux-route-staff #staff-content .staff-admin-drawer-grid {
-        grid-template-columns: 1fr !important;
-    }
-}
-
-/* Staff command center refinement pass. Keeps the page in the KIU theme but removes the old oversized directory feel. */
-body.lux-route-staff #staff-content {
-    max-width: 1720px !important;
-}
-
-body.lux-route-staff #staff-content .staff-admin-shell {
-    gap: 18px !important;
-}
-
-body.lux-route-staff #staff-content .staff-admin-hero {
-    min-height: 0 !important;
-    padding: 30px 40px !important;
-    align-items: center !important;
-    grid-template-columns: minmax(0, 1.18fr) minmax(520px, .82fr) !important;
-}
-
-body.lux-route-staff #staff-content .staff-admin-hero .page-hero-title {
-    max-width: 620px !important;
-    font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
-    font-size: clamp(42px, 4.2vw, 72px) !important;
-    line-height: .93 !important;
-    letter-spacing: 0 !important;
-}
-
-body.lux-route-staff #staff-content .staff-admin-hero .page-hero-subtitle {
-    max-width: 760px !important;
-    margin-top: 14px !important;
-    font-size: 15px !important;
-    line-height: 1.58 !important;
-}
-
-body.lux-route-staff #staff-content .staff-admin-hero .admin-hero-metrics {
-    gap: 12px !important;
-}
-
-body.lux-route-staff #staff-content .staff-admin-hero .admin-hero-metrics article {
-    min-height: 92px !important;
-    padding: 16px 18px !important;
-    border-radius: 20px !important;
-    background:
-        linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, .92) * .13)), rgba(9, 14, 25, calc(var(--lux-transparency-alpha, .92) * .72))) !important;
-}
-
-body.lux-route-staff #staff-content .staff-admin-hero .admin-hero-metrics strong {
-    font-size: 34px !important;
+    font-size: 20px !important;
     line-height: 1 !important;
 }
 
-body.lux-route-staff #staff-content .staff-admin-controls .lux-card-body {
-    padding: 24px !important;
+body.lux-route-staff #staff-content .staff-dir-stat-card span {
+    color: var(--lux-text-muted) !important;
+    font-size: 11px !important;
+    font-weight: 800 !important;
+    letter-spacing: .05em !important;
+    text-transform: uppercase !important;
 }
 
-body.lux-route-staff #staff-content .staff-admin-controls .lux-actions-between {
-    align-items: start !important;
-    gap: 18px !important;
-}
-
-body.lux-route-staff #staff-content .staff-admin-controls .lux-card-actions {
+body.lux-route-staff #staff-content .staff-dir-load-head,
+body.lux-route-staff #staff-content .staff-dir-section-head,
+body.lux-route-staff #staff-content .staff-dir-subject-head,
+body.lux-route-staff #staff-content .staff-dir-schedule-head {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    align-items: flex-start !important;
+    justify-content: space-between !important;
     gap: 10px !important;
 }
 
-body.lux-route-staff #staff-content .staff-admin-controls .lux-primary-btn,
-body.lux-route-staff #staff-content .staff-admin-controls .lux-secondary-btn {
-    min-height: 46px !important;
+body.lux-route-staff #staff-content .staff-dir-load-meta {
+    margin-top: 0 !important;
+    font-weight: 700 !important;
 }
 
-body.lux-route-staff #staff-content .staff-admin-filter-grid {
-    margin-top: 18px !important;
-    grid-template-columns: minmax(340px, 1.45fr) repeat(4, minmax(150px, .75fr)) !important;
-    gap: 12px !important;
+body.lux-route-staff #staff-content .staff-dir-load-summary,
+body.lux-route-staff #staff-content .staff-dir-session-count {
+    margin-top: 0 !important;
 }
 
-body.lux-route-staff #staff-content .staff-admin-workspace {
-    grid-template-columns: minmax(980px, 1fr) minmax(430px, 500px) !important;
+body.lux-route-staff #staff-content .staff-dir-load-meta.is-success {
+    color: #76e6ae !important;
+}
+
+body.lux-route-staff #staff-content .staff-dir-load-meta.is-warning {
+    color: #ffd1a4 !important;
+}
+
+body.lux-route-staff #staff-content .staff-dir-load-meta.is-danger {
+    color: #ffd2d2 !important;
+}
+
+body.lux-route-staff #staff-content .staff-dir-progress,
+body.lux-route-staff #staff-content .staff-dir-load-bar {
+    height: 8px !important;
+    overflow: hidden !important;
+    border: 1px solid rgba(var(--lux-accent-rgb), .10) !important;
+    border-radius: 999px !important;
+    background: rgba(255, 255, 255, .08) !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06) !important;
+    display: block !important;
+}
+
+body.lux-route-staff #staff-content .staff-dir-progress-fill,
+body.lux-route-staff #staff-content .staff-dir-load-bar > i {
+    display: block !important;
+    width: var(--staff-dir-progress, 0%) !important;
+    height: 100% !important;
+    border-radius: inherit !important;
+    background: linear-gradient(90deg, var(--lux-accent), var(--lux-accent-2, var(--lux-accent))) !important;
+    box-shadow: 0 0 18px rgba(var(--lux-accent-rgb), .28) !important;
+}
+
+body.lux-route-staff #staff-content .staff-dir-progress-fill.is-success,
+body.lux-route-staff #staff-content .staff-dir-load-bar[data-staff-dir-load-tone='success'] > i {
+    background: linear-gradient(90deg, #20c57c, #76e6ae) !important;
+}
+
+body.lux-route-staff #staff-content .staff-dir-progress-fill.is-warning,
+body.lux-route-staff #staff-content .staff-dir-load-bar[data-staff-dir-load-tone='warning'] > i {
+    background: linear-gradient(90deg, #f4a261, #ffd1a4) !important;
+}
+
+body.lux-route-staff #staff-content .staff-dir-progress-fill.is-danger,
+body.lux-route-staff #staff-content .staff-dir-load-bar[data-staff-dir-load-tone='danger'] > i {
+    background: linear-gradient(90deg, #f87171, #ffb4b4) !important;
+}
+
+body.lux-route-staff #staff-content .staff-dir-section {
+    display: grid !important;
+    gap: 10px !important;
+}
+
+body.lux-route-staff #staff-content .staff-dir-section-title {
+    margin-bottom: 8px !important;
+}
+
+body.lux-route-staff #staff-content .staff-dir-subject-pills {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 10px !important;
+}
+
+body.lux-route-staff #staff-content .staff-dir-schedule-count {
+    margin-top: 0 !important;
+}
+
+body.lux-route-staff #staff-content .staff-dir-schedule-list,
+body.lux-route-staff #staff-content .staff-dir-session-list {
+    display: grid !important;
+    gap: 8px !important;
+}
+
+body.lux-route-staff #staff-content .staff-dir-schedule-item,
+body.lux-route-staff #staff-content .staff-dir-session-head {
+    display: grid !important;
+    gap: 6px !important;
+}
+
+body.lux-route-staff #staff-content .staff-dir-schedule-title,
+body.lux-route-staff #staff-content .staff-dir-session-title {
+    color: var(--lux-text) !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    line-height: 1.35 !important;
+}
+
+body.lux-route-staff #staff-content .staff-dir-schedule-empty {
+    color: var(--lux-text-muted) !important;
+}
+
+body.lux-route-staff #staff-content .staff-dir-stack-tight {
+    display: grid !important;
+    gap: 8px !important;
+}
+
+body.staff-dir-print,
+body.staff-dir-print-page {
+    margin: 0;
+    background: #ffffff;
+    color: #1f2933;
+    font-family: "Segoe UI", Arial, sans-serif;
+}
+
+body.staff-dir-print .staff-dir-print-shell,
+body.staff-dir-print-page .staff-dir-print-shell {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 40px;
+}
+
+body.staff-dir-print .staff-dir-print-head,
+body.staff-dir-print-page .staff-dir-print-head {
+    display: grid;
+    gap: 8px;
+    margin-bottom: 32px;
+    text-align: center;
+}
+
+body.staff-dir-print .staff-dir-print-hero,
+body.staff-dir-print-page .staff-dir-print-hero {
+    min-height: 0 !important;
+}
+
+body.staff-dir-print .staff-dir-print-kicker,
+body.staff-dir-print-page .staff-dir-print-kicker {
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: #4a5568;
+}
+
+body.staff-dir-print .staff-dir-print-title,
+body.staff-dir-print-page .staff-dir-print-title {
+    margin: 0;
+    color: #102131;
+    font-size: 30px;
+    line-height: 1.1;
+}
+
+body.staff-dir-print .staff-dir-print-subtitle,
+body.staff-dir-print-page .staff-dir-print-subtitle {
+    margin: 0;
+    color: #526070;
+    font-size: 15px;
+}
+
+body.staff-dir-print .staff-dir-print-meta,
+body.staff-dir-print-page .staff-dir-print-meta {
+    display: grid;
+    gap: 8px;
+    margin: 0 0 24px;
+}
+
+body.staff-dir-print .staff-dir-print-meta-row,
+body.staff-dir-print-page .staff-dir-print-meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+body.staff-dir-print .staff-dir-print-meta-label,
+body.staff-dir-print-page .staff-dir-print-meta-label {
+    font-weight: 700;
+    color: #102131;
+}
+
+body.staff-dir-print .staff-dir-print-summary,
+body.staff-dir-print-page .staff-dir-print-summary {
+    display: grid !important;
     gap: 18px !important;
 }
 
-body.lux-route-staff #staff-content .staff-admin-directory-panel {
-    overflow-x: auto !important;
-    overflow-y: visible !important;
-    padding: 16px !important;
-    scrollbar-color: rgba(var(--lux-accent-rgb), .42) rgba(255, 255, 255, .06) !important;
+body.staff-dir-print .staff-dir-print-overline,
+body.staff-dir-print-page .staff-dir-print-overline {
+    color: #526070 !important;
 }
 
-body.lux-route-staff #staff-content .staff-admin-table-head,
-body.lux-route-staff #staff-content .staff-admin-row {
-    min-width: 1080px !important;
-    grid-template-columns: minmax(260px, 1.28fr) minmax(140px, .66fr) minmax(105px, .5fr) minmax(128px, .62fr) minmax(140px, .66fr) minmax(170px, .86fr) minmax(120px, .6fr) !important;
+body.staff-dir-print .staff-dir-print-badge,
+body.staff-dir-print-page .staff-dir-print-badge {
+    align-self: start;
 }
 
-body.lux-route-staff #staff-content .staff-admin-table-head {
-    min-height: 42px !important;
-    border-radius: 16px !important;
+body.staff-dir-print .staff-dir-print-rows,
+body.staff-dir-print-page .staff-dir-print-rows {
+    display: grid;
+    gap: 12px;
 }
 
-body.lux-route-staff #staff-content .staff-admin-row {
-    min-height: 78px !important;
-    padding: 12px 14px !important;
-    border-radius: 16px !important;
-}
-
-body.lux-route-staff #staff-content .staff-admin-row .lux-avatar,
-body.lux-route-staff #staff-content .staff-admin-drawer-head .lux-avatar {
-    box-shadow: 0 14px 32px rgba(var(--lux-accent-rgb), .24) !important;
-}
-
-body.lux-route-staff #staff-content .staff-admin-drawer {
-    top: 92px !important;
-    padding: 22px !important;
-    border-radius: 24px !important;
-}
-
-body.lux-route-staff #staff-content .staff-admin-drawer-head {
-    padding-bottom: 14px !important;
-    border-bottom: 1px solid rgba(var(--lux-accent-rgb), .12) !important;
-}
-
-body.lux-route-staff #staff-content .staff-admin-drawer-section {
-    border-radius: 16px !important;
-}
-
-body.lux-route-staff #staff-content .staff-admin-drawer .lux-card-actions {
+body.staff-dir-print .staff-dir-print-row,
+body.staff-dir-print-page .staff-dir-print-row {
     display: grid !important;
-    grid-template-columns: 1fr 1fr 1fr !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 12px !important;
+    align-items: stretch !important;
 }
 
-body.lux-route-staff #staff-content .staff-admin-drawer .lux-card-actions .lux-primary-btn,
-body.lux-route-staff #staff-content .staff-admin-drawer .lux-card-actions .lux-secondary-btn {
-    min-width: 0 !important;
-    width: 100% !important;
+body.staff-dir-print .staff-dir-print-cell,
+body.staff-dir-print-page .staff-dir-print-cell {
+    display: grid;
+    gap: 6px;
 }
 
-body.lux-light-mode.lux-route-staff #staff-content .staff-admin-hero .admin-hero-metrics article,
-html.lux-light-mode body.lux-route-staff #staff-content .staff-admin-hero .admin-hero-metrics article {
-    background:
-        linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, .86) * .12)), rgba(255, 255, 255, calc(var(--lux-transparency-alpha, .86) * .78))) !important;
+body.staff-dir-print .staff-dir-print-cell strong,
+body.staff-dir-print-page .staff-dir-print-cell strong {
+    color: #102131;
+    font-size: 11px;
+    letter-spacing: .05em;
+    text-transform: uppercase;
 }
 
-@media (max-width: 1480px) {
-    body.lux-route-staff #staff-content .staff-admin-workspace {
-        grid-template-columns: 1fr !important;
+body.staff-dir-print .staff-dir-print-cell small,
+body.staff-dir-print-page .staff-dir-print-cell small {
+    color: #526070;
+    font-size: 13px;
+}
+
+body.staff-dir-print .staff-dir-print-table,
+body.staff-dir-print-page .staff-dir-print-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+body.staff-dir-print .staff-dir-print-table th,
+body.staff-dir-print .staff-dir-print-table td,
+body.staff-dir-print-page .staff-dir-print-table th,
+body.staff-dir-print-page .staff-dir-print-table td {
+    border: 1px solid #d6dde5;
+    padding: 10px 12px;
+    text-align: left;
+}
+
+body.staff-dir-print .staff-dir-print-table th,
+body.staff-dir-print-page .staff-dir-print-table th {
+    background: #f4f6f8;
+    font-size: 12px;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+}
+
+body.staff-dir-print .staff-dir-print-summary-stat,
+body.staff-dir-print-page .staff-dir-print-summary-stat {
+    margin-top: 20px;
+    font-size: 15px;
+    font-weight: 700;
+    color: #102131;
+}
+
+body.staff-dir-print .staff-dir-print-stamp-wrap,
+body.staff-dir-print-page .staff-dir-print-stamp-wrap {
+    margin-top: 24px;
+    text-align: center;
+}
+
+body.staff-dir-print .staff-dir-print-stamp,
+body.staff-dir-print-page .staff-dir-print-stamp {
+    display: inline-block;
+    padding: 10px 14px;
+    border: 3px solid #c73f34;
+    color: #c73f34;
+    font-size: 14px;
+    font-weight: 900;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    transform: rotate(-15deg);
+}
+
+@media print {
+    body.staff-dir-print .staff-dir-print-shell,
+    body.staff-dir-print-page .staff-dir-print-shell {
+        padding: 0;
     }
-
-    body.lux-route-staff #staff-content .staff-admin-drawer {
-        position: relative !important;
-        top: auto !important;
-    }
 }
 
-@media (max-width: 1180px) {
-    body.lux-route-staff #staff-content .staff-admin-hero,
-body.lux-route-staff #staff-content .staff-admin-filter-grid {
-        grid-template-columns: 1fr !important;
-    }
+body.lux-route-staff #staff-name-geo:focus,
+body.lux-route-staff #staff-name-en:focus {
+    border-color: var(--kiu-blue) !important;
+    box-shadow: 0 0 0 3px rgba(10,132,255,0.1);
 }

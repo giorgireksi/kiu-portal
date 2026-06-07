@@ -4,60 +4,110 @@
     const FILTER_FIELDS = ['topic', 'language', 'status'];
     const LIBRARY_PAGE_SHELL_MARKUP = `
         <div class="page-hero library-page-hero lux-summary-surface lux-summary-surface--hero" data-library-shell="1">
-            <div class="page-hero-title">Research and Reference Library</div>
-            <div class="page-hero-copy">Browse official books, topical references, and PDF resources in the same luxury shell used across the portal.</div>
-            <div class="page-hero-meta">
-                <span class="page-hero-badge"><i class="fas fa-book-open"></i> Shared catalog</span>
-                <span class="page-hero-badge"><i class="fas fa-filter"></i> Topic and language filters</span>
-                <span class="page-hero-badge"><i class="fas fa-file-pdf"></i> PDF access</span>
+            <div class="lux-hero-stage">
+                <div class="lux-hero-main">
+                    <div class="page-hero-title">Research and Reference Library</div>
+                    <div class="page-hero-copy">Browse official books, topical references, and PDF resources in the same luxury shell used across the portal.</div>
+                    <div class="page-hero-meta">
+                        <span class="page-hero-badge wave2-chip wave2-chip--hero"><i class="fas fa-book-open"></i> Shared catalog</span>
+                        <span class="page-hero-badge wave2-chip wave2-chip--hero"><i class="fas fa-filter"></i> Topic and language filters</span>
+                        <span class="page-hero-badge wave2-chip wave2-chip--hero"><i class="fas fa-file-pdf"></i> PDF access</span>
+                    </div>
+                </div>
+                <aside class="lux-hero-side library-hero-side library-hero-summary">
+                    <div class="lux-hero-side-head library-hero-summary-card">
+                        <strong id="library-hero-total" class="library-hero-summary-value">0 books</strong>
+                        <span class="library-hero-summary-copy">Index-style summary signals for the catalog and the current filtered shelf.</span>
+                    </div>
+                    <div class="lux-hero-signal-list library-hero-signal-grid">
+                        <div class="lux-hero-signal library-hero-signal-card library-hero-signal-card--visible">
+                            <span class="library-hero-signal-label">Visible now</span>
+                            <strong id="library-hero-visible" class="library-hero-signal-value">0</strong>
+                            <em class="library-hero-signal-copy">Books matching the active filters.</em>
+                        </div>
+                        <div class="lux-hero-signal library-hero-signal-card library-hero-signal-card--pdf">
+                            <span class="library-hero-signal-label">PDF ready</span>
+                            <strong id="library-hero-pdf" class="library-hero-signal-value">0</strong>
+                            <em class="library-hero-signal-copy">Filtered entries with downloadable PDFs.</em>
+                        </div>
+                        <div class="lux-hero-signal library-hero-signal-card library-hero-signal-card--active">
+                            <span class="library-hero-signal-label">Active shelf</span>
+                            <strong id="library-hero-active" class="library-hero-signal-value">0</strong>
+                            <em class="library-hero-signal-copy">Filtered entries currently marked active.</em>
+                        </div>
+                    </div>
+                </aside>
             </div>
         </div>
-        <div class="filter-shell library-filter-shell">
+        <section class="lux-strip-grid lux-strip-grid--adaptive library-widget-strip">
+            <article class="lux-strip-card surface-card library-overview-card library-hero-metric wave2-summary-card library-hero-metric--visible">
+                <div class="lux-card-body lux-mini-panel">
+                    <div class="lux-card-title wave2-summary-label">Visible shelf</div>
+                    <h3 id="library-widget-visible" class="wave2-summary-value">0</h3>
+                    <p class="wave2-summary-copy">Books matching the current search and picker state.</p>
+                </div>
+            </article>
+            <article class="lux-strip-card surface-card library-overview-card library-hero-metric wave2-summary-card library-hero-metric--topics">
+                <div class="lux-card-body lux-mini-panel">
+                    <div class="lux-card-title wave2-summary-label">Topic lanes</div>
+                    <h3 id="library-widget-topics" class="wave2-summary-value">0</h3>
+                    <p class="wave2-summary-copy">Distinct catalog topics available in the current shelf.</p>
+                </div>
+            </article>
+            <article class="lux-strip-card surface-card library-overview-card library-hero-metric wave2-summary-card library-hero-metric--languages">
+                <div class="lux-card-body lux-mini-panel">
+                    <div class="lux-card-title wave2-summary-label">Language lanes</div>
+                    <h3 id="library-widget-languages" class="wave2-summary-value">0</h3>
+                    <p class="wave2-summary-copy">Languages still represented after filtering the shelf.</p>
+                </div>
+            </article>
+        </section>
+        <div class="filter-shell library-filter-shell library-filter-panel surface-card lux-summary-surface lux-summary-surface--panel">
             <div class="filter-shell-title">Browse Catalog</div>
-            <div class="lib-search-bar library-search-grid">
-                <label class="lux-picker-field library-picker-field">
+            <div class="library-filter-bar library-search-grid library-filter-grid lux-data-card">
+                <label class="lux-picker-field library-picker-field library-filter-field library-filter-field--search">
                     <span class="lux-picker-label library-picker-label">Search</span>
-                    <input id="library-filter-search" type="text" class="lib-input" placeholder="Search by title, subtitle, author, year..." data-library-search-field="query">
+                    <input id="library-filter-search" type="text" class="library-field-input lux-control library-filter-input" placeholder="Search by title, subtitle, author, year..." data-library-search-field="query">
                 </label>
-                <div class="lux-picker-field library-picker-field">
+                <div class="lux-picker-field library-picker-field library-filter-field library-filter-field--picker">
                     <span class="lux-picker-label library-picker-label">Topic</span>
-                    <button type="button" class="lux-picker-btn library-picker-btn" id="library-filter-topic-btn" aria-haspopup="listbox" aria-expanded="false" data-library-picker-field="topic">
-                        <span class="library-picker-btn-copy">
+                    <button type="button" class="lux-picker-btn library-picker-btn library-filter-picker-btn" id="library-filter-topic-btn" aria-haspopup="listbox" aria-expanded="false" data-library-picker-field="topic">
+                        <span class="library-picker-btn-copy library-filter-picker-copy lux-picker-copy">
                             <strong id="library-filter-topic-value">All Topics</strong>
                         </span>
                         <i class="fas fa-chevron-down"></i>
                     </button>
-                    <div class="lux-picker-panel library-picker-panel" id="library-filter-topic-panel"></div>
-                    <select id="library-filter-topic" class="library-hidden-select" data-library-select-field="topic"></select>
+                    <div class="lux-picker-panel lux-picker-panel-scroll library-picker-panel library-filter-picker-panel" id="library-filter-topic-panel"></div>
+                    <select id="library-filter-topic" class="library-hidden-select library-filter-hidden-select lux-filter-hidden-select" data-library-select-field="topic"></select>
                 </div>
-                <div class="lux-picker-field library-picker-field">
+                <div class="lux-picker-field library-picker-field library-filter-field library-filter-field--picker">
                     <span class="lux-picker-label library-picker-label">Language</span>
-                    <button type="button" class="lux-picker-btn library-picker-btn" id="library-filter-language-btn" aria-haspopup="listbox" aria-expanded="false" data-library-picker-field="language">
-                        <span class="library-picker-btn-copy">
+                    <button type="button" class="lux-picker-btn library-picker-btn library-filter-picker-btn" id="library-filter-language-btn" aria-haspopup="listbox" aria-expanded="false" data-library-picker-field="language">
+                        <span class="library-picker-btn-copy library-filter-picker-copy lux-picker-copy">
                             <strong id="library-filter-language-value">All Languages</strong>
                         </span>
                         <i class="fas fa-chevron-down"></i>
                     </button>
-                    <div class="lux-picker-panel library-picker-panel" id="library-filter-language-panel"></div>
-                    <select id="library-filter-language" class="library-hidden-select" data-library-select-field="language"></select>
+                    <div class="lux-picker-panel lux-picker-panel-scroll library-picker-panel library-filter-picker-panel" id="library-filter-language-panel"></div>
+                    <select id="library-filter-language" class="library-hidden-select library-filter-hidden-select lux-filter-hidden-select" data-library-select-field="language"></select>
                 </div>
-                <div class="lux-picker-field library-picker-field">
+                <div class="lux-picker-field library-picker-field library-filter-field library-filter-field--picker">
                     <span class="lux-picker-label library-picker-label">Status</span>
-                    <button type="button" class="lux-picker-btn library-picker-btn" id="library-filter-status-btn" aria-haspopup="listbox" aria-expanded="false" data-library-picker-field="status">
-                        <span class="library-picker-btn-copy">
+                    <button type="button" class="lux-picker-btn library-picker-btn library-filter-picker-btn" id="library-filter-status-btn" aria-haspopup="listbox" aria-expanded="false" data-library-picker-field="status">
+                        <span class="library-picker-btn-copy library-filter-picker-copy lux-picker-copy">
                             <strong id="library-filter-status-value">All Statuses</strong>
                         </span>
                         <i class="fas fa-chevron-down"></i>
                     </button>
-                    <div class="lux-picker-panel library-picker-panel" id="library-filter-status-panel"></div>
-                    <select id="library-filter-status" class="library-hidden-select" data-library-select-field="status"></select>
+                    <div class="lux-picker-panel lux-picker-panel-scroll library-picker-panel library-filter-picker-panel" id="library-filter-status-panel"></div>
+                    <select id="library-filter-status" class="library-hidden-select library-filter-hidden-select lux-filter-hidden-select" data-library-select-field="status"></select>
                 </div>
             </div>
         </div>
         <div class="content-box surface-card library-catalog-card lux-summary-surface lux-summary-surface--panel">
-            <div class="tabs-container library-tabs">
-                <div class="tab active library-tab-fill">Books</div>
-                <div class="tab library-tab-fill">Read-only for students, professors, and TAs</div>
+            <div class="tabs-container library-tabs lux-tab-strip">
+                <button type="button" class="tab active library-tab-fill lux-tab-fill lux-select-card lux-tab-btn" aria-pressed="true">Books</button>
+                <button type="button" class="tab library-tab-fill lux-tab-fill lux-select-card lux-tab-btn" aria-pressed="false">Read-only for students, professors, and TAs</button>
             </div>
             <div class="library-scroll-wrap">
                 <table class="kiu-table library-catalog-table library-table-min-800">
@@ -65,8 +115,8 @@
                     <tbody id="shared-library-body"></tbody>
                 </table>
             </div>
-            <div class="library-catalog-foot">
-                <span id="shared-library-count">0 books</span>
+            <div class="library-catalog-foot library-catalog-footer">
+                <span id="shared-library-count" class="library-catalog-count">0 books</span>
             </div>
         </div>
     `;
@@ -96,9 +146,16 @@
         if (!Array.isArray(KIU_STATE.adminLibrary.params.status)) KIU_STATE.adminLibrary.params.status = ['Active'];
     }
 
+    function hasAdminLibraryWorkspace(root) {
+        return Boolean(root?.querySelector?.('.alib-workspace'));
+    }
+
     function ensureLibraryPageShell() {
         const root = document.getElementById('page-library');
         if (!root) return null;
+        if (document.body?.classList?.contains('lux-route-admin-library') || hasAdminLibraryWorkspace(root)) {
+            return root;
+        }
         if (root.querySelector('[data-library-shell="1"]')) return root;
         root.innerHTML = LIBRARY_PAGE_SHELL_MARKUP;
         return root;
@@ -124,12 +181,14 @@
 
     function createLibraryCell(text) {
         const cell = document.createElement('td');
+        cell.className = 'library-catalog-cell';
         cell.textContent = text;
         return cell;
     }
 
     function createLibraryPdfCell(pdfLink) {
         const cell = document.createElement('td');
+        cell.className = 'library-catalog-cell library-catalog-pdf-cell';
         if (!pdfLink) {
             cell.textContent = '-';
             return cell;
@@ -138,7 +197,7 @@
         link.href = pdfLink;
         link.target = '_blank';
         link.rel = 'noopener noreferrer';
-        link.className = 'library-pdf-link';
+        link.className = 'library-pdf-link library-catalog-pdf-link';
         const icon = document.createElement('i');
         icon.className = 'fas fa-file-pdf';
         link.appendChild(icon);
@@ -148,6 +207,7 @@
 
     function createLibraryRow(book, index) {
         const row = document.createElement('tr');
+        row.className = 'library-catalog-row';
         [
             book.id ? String(book.id) : `BK-${index + 1}`,
             book.title || '-',
@@ -197,13 +257,10 @@
 
     function renderLibraryEmptyState(tbody) {
         const row = document.createElement('tr');
-        row.className = 'library-empty-row';
+        row.className = 'library-empty-row library-catalog-empty-row';
         const cell = document.createElement('td');
-        cell.className = 'library-empty-cell';
+        cell.className = 'library-empty-cell library-catalog-cell library-catalog-empty-cell';
         cell.colSpan = 9;
-        cell.style.textAlign = 'center';
-        cell.style.color = 'var(--kiu-text-muted)';
-        cell.style.padding = '24px';
         cell.textContent = 'No books found.';
         row.appendChild(cell);
         tbody.replaceChildren(row);
@@ -244,6 +301,26 @@
 
         const count = document.getElementById('shared-library-count');
         if (count) count.textContent = `${books.length} book${books.length === 1 ? '' : 's'}`;
+
+        const totalCount = (KIU_STATE.adminLibrary.books || []).length;
+        const pdfCount = books.filter((book) => Boolean(book.pdfLink)).length;
+        const activeCount = books.filter((book) => String(book.status || '').toLowerCase() === 'active').length;
+        const topicCount = new Set(books.map((book) => String(book.thematic || '').trim()).filter(Boolean)).size;
+        const languageCount = new Set(books.map((book) => String(book.language || '').trim()).filter(Boolean)).size;
+
+        const metrics = {
+            'library-hero-total': `${totalCount} books`,
+            'library-hero-visible': String(books.length),
+            'library-hero-pdf': String(pdfCount),
+            'library-hero-active': String(activeCount),
+            'library-widget-visible': String(books.length),
+            'library-widget-topics': String(topicCount),
+            'library-widget-languages': String(languageCount)
+        };
+        Object.entries(metrics).forEach(([id, value]) => {
+            const node = document.getElementById(id);
+            if (node) node.textContent = value;
+        });
     }
 
     function renderLibraryPickerPanel(field, options, currentValue) {
@@ -356,12 +433,24 @@
     }
 
     function renderLibraryPageShellContext() {
+        const root = document.getElementById('page-library');
+        if (!root) return null;
+        if (document.body?.classList?.contains('lux-route-admin-library') || hasAdminLibraryWorkspace(root)) {
+            return root;
+        }
         return ensureLibraryPageShell();
     }
 
     function renderLibraryPage() {
-        const root = renderLibraryPageShellContext();
-        if (!root) return;
+        const root = document.getElementById('page-library');
+        if (document.body?.classList?.contains('lux-route-admin-library') || hasAdminLibraryWorkspace(root)) {
+            if (typeof window.renderAdminLibrary === 'function') {
+                window.renderAdminLibrary();
+            }
+            return;
+        }
+        const shellRoot = renderLibraryPageShellContext();
+        if (!shellRoot) return;
         bindLibraryInteractions();
         renderSharedLibraryFilters();
         renderSharedLibraryCatalog();

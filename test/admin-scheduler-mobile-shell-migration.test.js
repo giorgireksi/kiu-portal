@@ -79,7 +79,9 @@ describe('admin scheduler mobile shell migration', () => {
     expect(source).toContain('assets/js/pages/standalone-mobile-shell.js');
     expect(source).not.toContain('(function initMobileExperience(){');
 
-    expect(guardrailSource).toContain("'admin-scheduler.html': { category: 'special-surface', dedicatedCss: [], mobileShell: 'shared-standalone' }");
+    expect(guardrailSource).toContain("'admin-scheduler.html': { category: 'special-surface', dedicatedCss: ['assets/css/admin-scheduler-route.css'], mobileShell: 'shared-standalone' }");
+    expect(source).toContain('assets/css/admin-scheduler-route.css?v=20260606-schmodal6');
+    expect(source).not.toContain('<style>');
     expect(classificationSource).toContain("| `admin-scheduler.html` | `special-surface` |");
   });
 

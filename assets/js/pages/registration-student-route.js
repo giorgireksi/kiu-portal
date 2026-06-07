@@ -189,16 +189,11 @@ function renderECTSBudget() {
 
     if (bar && txt) {
         const percentage = Math.min((total / limit) * 100, 100);
-        bar.style.width = `${percentage}%`;
+        bar.style.setProperty('--registration-ects-progress', `${percentage}%`);
         txt.innerText = `${total} / ${limit}`;
-
-        if (total === limit) {
-            bar.style.background = 'var(--kiu-green)';
-            txt.style.color = 'var(--kiu-green)';
-        } else {
-            bar.style.background = 'var(--kiu-orange)';
-            txt.style.color = 'var(--kiu-orange)';
-        }
+        const isComplete = total === limit;
+        bar.classList.toggle('is-complete', isComplete);
+        txt.classList.toggle('is-complete', isComplete);
     }
     syncRegistrationWorkspaceSummary();
 }
@@ -209,16 +204,16 @@ function renderSelectedCoursesTab() {
     const currentSchedule = getCurrentStudentSchedule();
 
     if (!currentSchedule || currentSchedule.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="9" style="padding:20px;">No courses have been added to your schedule yet.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="9" class="registration-selected-empty">No courses have been added to your schedule yet.</td></tr>';
         return;
     }
 
     let html = '';
     currentSchedule.forEach((course) => {
         html += `
-            <tr>
-                <td style="text-align:left;">${course.groupName}</td>
-                <td style="text-align:left; font-weight:600;">${course.courseName}</td>
+            <tr class="registration-selected-row">
+                <td class="registration-selected-cell registration-selected-cell--left">${course.groupName}</td>
+                <td class="registration-selected-cell registration-selected-cell--title">${course.courseName}</td>
                 <td>${course.day}</td>
                 <td>${course.time}</td>
                 <td>${course.room}</td>

@@ -1,0 +1,3037 @@
+body.lux-route-student-service {
+    --lux-service-accent-rgb: var(--lux-accent-rgb);
+    --lux-service-mint-rgb: var(--lux-home-secondary-rgb);
+    --lux-timetable-accent-rgb: var(--lux-service-accent-rgb);
+    --lux-timetable-accent-soft-rgb: var(--lux-service-mint-rgb);
+    --lux-topbar-tint-rgb: 12, 16, 26;
+
+    /* ===== Single source of truth: color-fade / glow / glass recipe ===== */
+    --ssvc-fade-surface:
+        radial-gradient(circle at 8% 0%, rgba(255, 255, 255, calc(var(--lux-color-fade-alpha, .92) * 0.075)), transparent 32%),
+        radial-gradient(circle at 72% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * 0.28)), transparent 38%),
+        radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .92) * 0.18)), transparent 38%),
+        linear-gradient(135deg,
+            rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * 0.10)),
+            rgba(10, 15, 24, calc(var(--lux-transparency-alpha, .92) * 0.89)) 44%,
+            rgba(7, 10, 18, calc(var(--lux-transparency-alpha, .92) * 0.80)));
+    --ssvc-fade-surface-hero:
+        radial-gradient(circle at 6% 0%, rgba(255, 255, 255, calc(var(--lux-color-fade-alpha, .92) * 0.08)), transparent 32%),
+        radial-gradient(circle at 58% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * 0.22)), transparent 38%),
+        radial-gradient(circle at 100% 100%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .92) * 0.16)), transparent 40%),
+        linear-gradient(135deg,
+            rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * 0.12)),
+            rgba(10, 15, 24, calc(var(--lux-transparency-alpha, .92) * 0.90)) 46%,
+            rgba(7, 10, 18, calc(var(--lux-transparency-alpha, .92) * 0.82)));
+    --ssvc-fade-surface-soft:
+        radial-gradient(circle at 0% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * 0.10)), transparent 34%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.018));
+    --ssvc-fade-control:
+        linear-gradient(180deg, rgba(255, 255, 255, calc(0.04 + var(--lux-glass-alpha, .06))), rgba(255, 255, 255, 0.02)),
+        radial-gradient(circle at top right, rgba(var(--lux-accent-rgb), 0.10), transparent 32%);
+    --ssvc-fade-border: rgba(var(--lux-accent-rgb), 0.16);
+    --ssvc-fade-border-soft: rgba(var(--lux-accent-rgb), 0.12);
+    --ssvc-fade-shadow:
+        0 24px 58px rgba(0, 0, 0, 0.24),
+        inset 0 1px 0 rgba(255, 255, 255, 0.07);
+    --ssvc-fade-shadow-soft: none;
+    --ssvc-fade-glow-ring: 0 0 0 1px rgba(var(--lux-accent-rgb), 0.30), 0 18px 40px rgba(var(--lux-accent-rgb), var(--lux-panel-glow, 0.22));
+    --ssvc-fade-blur: blur(var(--lux-transparency-blur, 18px)) saturate(var(--lux-transparency-saturate, 140%));
+    --student-service-fade-a: var(--lux-service-accent-rgb, 59, 130, 246);
+    --student-service-fade-b: var(--lux-home-secondary-rgb, 16, 185, 129);
+    --student-service-fade-c: var(--lux-accent-rgb, 212, 148, 58);
+    --student-service-fade-d: 244, 63, 94;
+}
+
+html.lux-light-mode body.lux-route-student-service,
+body.lux-light-mode.lux-route-student-service {
+    --ssvc-fade-surface:
+        radial-gradient(circle at 8% 0%, rgba(255, 255, 255, calc(var(--lux-color-fade-alpha, .88) * 0.88)), transparent 34%),
+        radial-gradient(circle at 72% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .88) * 0.20)), transparent 38%),
+        radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .88) * 0.13)), transparent 38%),
+        linear-gradient(135deg,
+            rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .88) * 0.075)),
+            rgba(255, 255, 255, calc(var(--lux-transparency-alpha, .88) * 0.88)) 44%,
+            rgba(247, 241, 232, calc(var(--lux-transparency-alpha, .88) * 0.72)));
+    --ssvc-fade-surface-hero: var(--ssvc-fade-surface);
+    --ssvc-fade-surface-soft:
+        radial-gradient(circle at 0% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .88) * 0.08)), transparent 34%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.66), rgba(250, 246, 239, 0.44));
+    --ssvc-fade-control:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(248, 244, 237, 0.62)),
+        radial-gradient(circle at top right, rgba(var(--lux-accent-rgb), 0.10), transparent 32%);
+    --ssvc-fade-border: rgba(48, 34, 22, 0.10);
+    --ssvc-fade-border-soft: rgba(var(--lux-accent-rgb), 0.11);
+    --ssvc-fade-shadow:
+        0 22px 48px rgba(107, 91, 62, 0.13),
+        inset 0 1px 0 rgba(255, 255, 255, 0.74);
+    --ssvc-fade-shadow-soft: none;
+    --ssvc-fade-glow-ring: 0 0 0 1px rgba(var(--lux-accent-rgb), 0.22), 0 16px 34px rgba(var(--lux-accent-rgb), 0.16);
+    --ssvc-fade-blur: blur(var(--lux-transparency-blur, 18px)) saturate(var(--lux-transparency-saturate, 140%));
+}
+
+body.lux-route-student-service::before {
+    background:
+        radial-gradient(circle at 16% 10%, rgba(var(--lux-service-accent-rgb), 0.14), transparent 28%),
+        radial-gradient(circle at 84% 84%, rgba(var(--lux-service-accent-rgb), 0.06), transparent 24%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.01), transparent 38%);
+}
+
+body.lux-route-student-service #lux-bg-overlay {
+    background:
+        linear-gradient(115deg, rgba(255, 255, 255, 0.02), transparent 35%),
+        linear-gradient(180deg, rgba(7, 9, 16, 0.10), rgba(7, 9, 16, 0.48));
+}
+
+body.lux-route-student-service .student-service-shell {
+    display: grid;
+    gap: 20px;
+}
+
+body.lux-route-student-service .student-service-panel,
+body.lux-route-student-service .student-service-area-card,
+body.lux-route-student-service .student-service-summary-card,
+body.lux-route-student-service .student-service-ticket-stat,
+body.lux-route-student-service .student-service-home-card,
+body.lux-route-student-service .student-service-lane-card,
+body.lux-route-student-service .student-service-lane-choice-card,
+body.lux-route-student-service .student-service-hero-aside-stat,
+body.lux-route-student-service .student-service-ops-card,
+body.lux-route-student-service .student-service-home-panel {
+    contain: layout style;
+    content-visibility: auto;
+    contain-intrinsic-size: auto 320px;
+}
+
+body.lux-route-student-service .student-service-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1.45fr) minmax(320px, 0.78fr);
+    gap: 20px;
+    min-height: 320px;
+    margin-bottom: 25px;
+    padding: 38px 38px !important;
+    border-radius: 34px !important;
+    background:
+        radial-gradient(circle at 86% 16%, rgba(var(--lux-accent-rgb), 0.18), transparent 20%),
+        radial-gradient(circle at 8% 18%, rgba(255, 255, 255, 0.06), transparent 22%),
+        linear-gradient(135deg, rgba(8, 12, 20, 0.96), rgba(13, 18, 30, 0.95)) !important;
+    box-shadow:
+        0 34px 88px rgba(2, 6, 23, 0.26),
+        0 1px 0 rgba(255, 255, 255, 0.10) inset !important;
+}
+
+body.lux-route-student-service .student-service-hero-shell {
+    position: relative;
+}
+
+body.lux-route-student-service .student-service-hero-main-shell {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+body.lux-route-student-service .student-service-hero-main {
+    display: grid;
+    gap: 10px;
+    min-width: 0;
+}
+
+body.lux-route-student-service .student-service-hero-title {
+    font-family: "Playfair Display", "Georgia", serif;
+    font-size: clamp(38px, 4.2vw, 58px);
+    line-height: 0.95;
+    letter-spacing: -0.045em;
+}
+
+body.lux-route-student-service .student-service-hero-copy {
+    max-width: 920px;
+}
+
+body.lux-route-student-service .student-service-hero-kicker {
+    color: var(--lux-accent) !important;
+}
+
+body.lux-route-student-service .student-service-hero-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 14px;
+}
+
+body.lux-route-student-service .student-service-hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.06) !important;
+    border: 1px solid rgba(255, 255, 255, 0.10) !important;
+    color: rgba(255, 255, 255, 0.72) !important;
+}
+
+body.lux-route-student-service .student-service-hero-badge--role {
+    background: linear-gradient(180deg, rgba(var(--lux-accent-rgb), 0.16), rgba(255, 255, 255, 0.05)) !important;
+}
+
+body.lux-route-student-service .student-service-hero-badge--lane {
+    background: linear-gradient(180deg, rgba(var(--lux-home-secondary-rgb), 0.16), rgba(255, 255, 255, 0.05)) !important;
+}
+
+body.lux-route-student-service .student-service-hero-badge--knowledge {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.10), rgba(255, 255, 255, 0.04)) !important;
+}
+
+body.lux-route-student-service .student-service-hero-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 18px;
+}
+
+body.lux-route-student-service .student-service-hero-action-cluster {
+    align-items: stretch;
+}
+
+body.lux-route-student-service .student-service-hero-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    min-height: 44px;
+    padding: 0 18px;
+    text-align: center;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+}
+
+body.lux-route-student-service .student-service-hero-action i {
+    font-size: 13px;
+}
+
+body.lux-route-student-service .student-service-hero-action--primary {
+    box-shadow:
+        0 18px 34px rgba(var(--lux-accent-rgb), 0.18),
+        inset 0 1px 0 rgba(255, 255, 255, 0.10);
+}
+
+body.lux-route-student-service .student-service-hero-action--secondary {
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.10), rgba(255, 255, 255, 0.04));
+    color: var(--lux-text);
+    box-shadow:
+        0 16px 28px rgba(2, 6, 23, 0.16),
+        inset 0 1px 0 rgba(255, 255, 255, 0.14);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+}
+
+body.lux-route-student-service .student-service-hero-action--secondary:hover {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.14), rgba(var(--lux-accent-rgb), 0.10));
+}
+
+body.lux-route-student-service .student-service-hero-aside-head {
+    display: grid;
+    gap: 10px;
+}
+
+body.lux-route-student-service .student-service-hero-aside {
+    position: relative;
+    overflow: hidden;
+    padding: 24px;
+    border-radius: 28px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background:
+        radial-gradient(circle at 18% 18%, rgba(var(--lux-accent-rgb), 0.16), transparent 30%),
+        radial-gradient(circle at 84% 82%, rgba(var(--lux-home-secondary-rgb), 0.12), transparent 34%),
+        linear-gradient(180deg, rgba(10, 14, 20, 0.88), rgba(7, 10, 15, 0.96));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 24px 54px rgba(0, 0, 0, 0.24);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+body.lux-route-student-service .student-service-hero-aside-shell {
+    align-self: stretch;
+}
+
+body.lux-route-student-service .student-service-hero-aside::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.05), transparent 42%),
+        linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.02));
+}
+
+body.lux-route-student-service .student-service-hero-aside>* {
+    position: relative;
+    z-index: 1;
+}
+
+body.lux-route-student-service .student-service-hero-aside-kicker {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(var(--lux-accent-rgb), 0.94);
+}
+
+body.lux-route-student-service .student-service-hero-aside-title {
+    font-family: "Playfair Display", "Georgia", serif;
+    font-size: clamp(28px, 3vw, 40px);
+    line-height: 0.95;
+    letter-spacing: -0.04em;
+    color: var(--lux-text);
+}
+
+body.lux-route-student-service .student-service-hero-aside-copy {
+    color: var(--lux-text-muted);
+    font-size: 14px;
+    line-height: 1.65;
+}
+
+body.lux-route-student-service .student-service-hero-aside-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+    margin-top: 4px;
+}
+
+body.lux-route-student-service .student-service-hero-aside-stat {
+    padding: 12px 14px;
+    border-radius: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.04);
+}
+
+body.lux-route-student-service .student-service-hero-aside-stat-label {
+    display: block;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--lux-text-soft);
+}
+
+body.lux-route-student-service .student-service-hero-aside-stat-value {
+    display: block;
+    margin-top: 6px;
+    color: var(--lux-text);
+    font-size: 15px;
+}
+
+body.lux-route-student-service .student-service-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+}
+
+body.lux-route-student-service .student-service-summary-card.lux-strip-card {
+    min-height: 0;
+}
+
+body.lux-route-student-service .student-service-summary-section {
+    display: grid;
+    gap: 12px;
+}
+
+body.lux-route-student-service .student-service-workflow-strip {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+}
+
+body.lux-route-student-service .student-service-workflow-section {
+    display: grid;
+    gap: 12px;
+}
+
+body.lux-route-student-service .student-service-workflow-step {
+    display: grid;
+    grid-template-columns: auto auto 1fr;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 18px;
+    border-radius: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background:
+        radial-gradient(circle at top right, rgba(var(--lux-accent-rgb), 0.08), transparent 32%),
+        linear-gradient(180deg, rgba(12, 17, 26, 0.83), rgba(8, 11, 17, 0.94));
+    box-shadow: 0 16px 34px rgba(0, 0, 0, 0.18);
+}
+
+body.lux-route-student-service .student-service-workflow-step-index {
+    width: 34px;
+    height: 34px;
+    border-radius: 999px;
+    display: grid;
+    place-items: center;
+    font-size: 12px;
+    font-weight: 800;
+    color: #fff8ef;
+    background: linear-gradient(135deg, rgba(var(--lux-accent-rgb), 0.92), rgba(var(--lux-home-secondary-rgb), 0.84));
+}
+
+body.lux-route-student-service .student-service-workflow-step-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    display: grid;
+    place-items: center;
+    color: rgba(var(--lux-accent-rgb), 0.96);
+    background: rgba(var(--lux-accent-rgb), 0.08);
+    border: 1px solid rgba(var(--lux-accent-rgb), 0.12);
+}
+
+body.lux-route-student-service .student-service-workflow-step-copy {
+    display: grid;
+    gap: 4px;
+    min-width: 0;
+}
+
+body.lux-route-student-service .student-service-workflow-step-title {
+    font-size: 14px;
+    color: var(--lux-text);
+}
+
+body.lux-route-student-service .student-service-workflow-step-description {
+    font-size: 12px;
+    line-height: 1.55;
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-student-service .student-service-summary-card {
+    padding: 18px 20px;
+    border-radius: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background:
+        radial-gradient(circle at top right, rgba(var(--lux-accent-rgb), 0.08), transparent 34%),
+        linear-gradient(180deg, rgba(12, 17, 26, 0.85), rgba(8, 11, 17, 0.94));
+    box-shadow: 0 18px 44px rgba(0, 0, 0, 0.22);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+}
+
+body.lux-route-student-service .student-service-summary-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: rgba(255, 255, 255, 0.58);
+}
+
+body.lux-route-student-service .student-service-summary-value {
+    margin-top: 10px;
+    font-family: "Playfair Display", "Georgia", serif;
+    font-size: clamp(30px, 3vw, 44px);
+    line-height: 0.95;
+    letter-spacing: -0.05em;
+    color: var(--lux-text);
+}
+
+body.lux-route-student-service .student-service-summary-copy {
+    margin-top: 10px;
+    color: var(--lux-text-muted);
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+body.lux-route-student-service .student-service-summary-card--signal-a {
+    background:
+        radial-gradient(circle at top right, rgba(var(--lux-accent-rgb), 0.18), transparent 28%),
+        linear-gradient(180deg, rgba(12, 17, 26, 0.86), rgba(8, 11, 17, 0.94));
+}
+
+body.lux-route-student-service .student-service-summary-card--signal-b {
+    background:
+        radial-gradient(circle at top right, rgba(var(--lux-home-secondary-rgb), 0.18), transparent 28%),
+        linear-gradient(180deg, rgba(12, 17, 26, 0.86), rgba(8, 11, 17, 0.94));
+}
+
+body.lux-route-student-service .student-service-summary-card--signal-c {
+    background:
+        radial-gradient(circle at top right, rgba(var(--lux-accent-rgb), 0.14), transparent 28%),
+        linear-gradient(180deg, rgba(12, 17, 26, 0.86), rgba(8, 11, 17, 0.94));
+}
+
+body.lux-route-student-service .student-service-summary-card--signal-d {
+    background:
+        radial-gradient(circle at top right, rgba(var(--lux-home-secondary-rgb), 0.14), transparent 28%),
+        linear-gradient(180deg, rgba(12, 17, 26, 0.86), rgba(8, 11, 17, 0.94));
+}
+
+body.lux-route-student-service .student-service-overview {
+    padding: 24px;
+}
+
+body.lux-route-student-service .student-service-overview-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 14px;
+    margin-bottom: 18px;
+}
+
+body.lux-route-student-service .student-service-overview-kicker {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: rgba(var(--lux-accent-rgb), 0.82);
+}
+
+body.lux-route-student-service .student-service-overview-title {
+    margin-top: 8px;
+    font-family: "Playfair Display", "Georgia", serif;
+    font-size: clamp(24px, 2.8vw, 36px);
+    line-height: 0.98;
+    letter-spacing: -0.04em;
+    color: var(--lux-text);
+}
+
+body.lux-route-student-service .student-service-overview-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--lux-text);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+body.lux-route-student-service .student-service-canvas {
+    position: relative;
+    min-height: 260px;
+    padding: 0;
+    overflow: hidden;
+    border-radius: 30px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background:
+        radial-gradient(circle at top right, rgba(var(--lux-service-accent-rgb), 0.10), transparent 34%),
+        linear-gradient(180deg, rgba(10, 14, 20, 0.86), rgba(7, 10, 15, 0.94));
+    box-shadow: 0 24px 54px rgba(0, 0, 0, 0.22);
+}
+
+body.lux-route-student-service .student-service-canvas>* {
+    position: relative;
+    z-index: 1;
+}
+
+body.lux-route-student-service .student-service-student-layout {
+    display: grid;
+    gap: 18px;
+}
+
+body.lux-route-student-service .student-service-panel {
+    padding: 22px;
+    border-radius: 28px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background:
+        radial-gradient(circle at top right, rgba(var(--lux-timetable-accent-rgb), 0.10), transparent 34%),
+        linear-gradient(180deg, rgba(12, 17, 26, 0.84), rgba(8, 12, 19, 0.92));
+    box-shadow: 0 18px 48px rgba(0, 0, 0, 0.24);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+}
+
+body.lux-route-student-service .student-service-panel-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+body.lux-route-student-service .student-service-kicker {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: rgba(var(--lux-timetable-accent-soft-rgb), 0.98);
+    font-weight: 800;
+}
+
+body.lux-route-student-service .student-service-panel-title {
+    margin-top: 8px;
+    font-family: "Playfair Display", "Georgia", serif;
+    font-size: clamp(26px, 3vw, 40px);
+    line-height: 0.98;
+    letter-spacing: -0.04em;
+    color: var(--lux-text);
+}
+
+body.lux-route-student-service .student-service-panel-wide {
+    grid-column: 1 / -1;
+}
+
+body.lux-route-student-service .student-service-panel-chip,
+body.lux-route-student-service .student-service-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 13px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--lux-text);
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+body.lux-route-student-service .student-service-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    background: var(--lux-bg-soft);
+    color: var(--lux-text-muted);
+    font-size: 11px;
+    font-weight: 800;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+/* Legacy question/ops chips still emit tone aliases from student-service.js. */
+body.lux-route-student-service .student-service-status.is-positive {
+    background: rgba(var(--lux-home-secondary-rgb), 0.14);
+    color: var(--lux-home-secondary);
+    border-color: rgba(var(--lux-home-secondary-rgb), 0.18);
+}
+
+body.lux-route-student-service .student-service-status.is-warning {
+    background: rgba(var(--lux-accent-rgb), 0.14);
+    color: var(--lux-accent);
+    border-color: rgba(var(--lux-accent-rgb), 0.18);
+}
+
+body.lux-route-student-service .student-service-status.is-review {
+    background: rgba(var(--lux-accent-rgb), 0.10);
+    color: rgba(var(--lux-accent-rgb), 0.92);
+    border-color: rgba(var(--lux-accent-rgb), 0.16);
+}
+
+body.lux-route-student-service .student-service-status.is-neutral {
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--lux-text-muted);
+    border-color: rgba(255, 255, 255, 0.10);
+}
+
+body.lux-route-student-service .student-service-view-toggle {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+body.lux-route-student-service .student-service-view-toggle button {
+    min-height: 44px;
+}
+
+body.lux-route-student-service .student-service-student-badges,
+body.lux-route-student-service .student-service-compose-meta {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 14px;
+}
+
+body.lux-route-student-service .student-service-area-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 14px;
+    margin-top: 18px;
+}
+
+body.lux-route-student-service .student-service-area-card,
+body.lux-route-student-service .student-service-article-card,
+body.lux-route-student-service .student-service-ticket-row,
+body.lux-route-student-service .student-service-home-ticket,
+body.lux-route-student-service .student-service-home-topic {
+    width: 100%;
+    text-align: left;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 20px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02));
+    color: var(--lux-text);
+    cursor: pointer;
+    transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
+}
+
+body.lux-route-student-service .student-service-area-card {
+    padding: 16px;
+    display: grid;
+    gap: 12px;
+}
+
+body.lux-route-student-service .student-service-area-card:hover,
+body.lux-route-student-service .student-service-article-card:hover,
+body.lux-route-student-service .student-service-ticket-row:hover,
+body.lux-route-student-service .student-service-home-ticket:hover,
+body.lux-route-student-service .student-service-home-topic:hover {
+    transform: translateY(-1px);
+    border-color: rgba(var(--lux-timetable-accent-rgb), 0.30);
+    box-shadow: 0 18px 36px rgba(0, 0, 0, 0.18);
+}
+
+body.lux-route-student-service .student-service-area-card.is-active,
+body.lux-route-student-service .student-service-article-card.is-active,
+body.lux-route-student-service .student-service-ticket-row.is-selected {
+    border-color: rgba(var(--lux-timetable-accent-rgb), 0.44);
+    background: linear-gradient(180deg, rgba(var(--lux-timetable-accent-rgb), 0.12), rgba(255, 255, 255, 0.03));
+    box-shadow: 0 18px 38px rgba(var(--lux-timetable-accent-rgb), 0.12);
+}
+
+body.lux-route-student-service .student-service-area-card-head,
+body.lux-route-student-service .student-service-article-top,
+body.lux-route-student-service .student-service-ticket-row-top,
+body.lux-route-student-service .student-service-ticket-focus-head,
+body.lux-route-student-service .student-service-home-ticket-top,
+body.lux-route-student-service .student-service-home-panel-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+body.lux-route-student-service .student-service-area-copy,
+body.lux-route-student-service .student-service-article-copy,
+body.lux-route-student-service .student-service-guide-copy,
+body.lux-route-student-service .student-service-ticket-focus-copy,
+body.lux-route-student-service .student-service-ticket-row-copy,
+body.lux-route-student-service .student-service-home-ticket-copy,
+body.lux-route-student-service .student-service-home-summary-row span,
+body.lux-route-student-service .student-service-home-empty,
+body.lux-route-student-service .student-service-empty-copy {
+    color: var(--lux-text-muted);
+    font-size: 13px;
+    line-height: 1.65;
+}
+
+body.lux-route-student-service .student-service-area-foot,
+body.lux-route-student-service .student-service-home-ticket-meta,
+body.lux-route-student-service .student-service-ticket-row-meta,
+body.lux-route-student-service .student-service-thread-entry-time {
+    font-size: 11px;
+    color: var(--lux-text-soft);
+}
+
+body.lux-route-student-service .student-service-student-columns,
+body.lux-route-student-service .student-service-ticket-columns,
+body.lux-route-student-service .student-service-home-rail {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 18px;
+    align-items: start;
+    margin-top: 18px;
+}
+
+body.lux-route-student-service .student-service-article-stack,
+body.lux-route-student-service .student-service-compose-form,
+body.lux-route-student-service .student-service-ticket-list,
+body.lux-route-student-service .student-service-thread-list,
+body.lux-route-student-service .student-service-home-grid,
+body.lux-route-student-service .student-service-home-summary-list {
+    display: grid;
+    gap: 10px;
+}
+
+body.lux-route-student-service .student-service-article-card {
+    padding: 14px 16px;
+}
+
+body.lux-route-student-service .student-service-ticket-hero {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 18px;
+}
+
+body.lux-route-student-service .student-service-ticket-stat,
+body.lux-route-student-service .student-service-home-card {
+    padding: 16px 18px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.04);
+    display: grid;
+    gap: 8px;
+}
+
+body.lux-route-student-service .student-service-ticket-stat span,
+body.lux-route-student-service .student-service-home-card-label,
+body.lux-route-student-service .student-service-home-kicker,
+body.lux-route-student-service .student-service-home-panel-kicker {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: var(--lux-text-soft);
+    font-weight: 800;
+}
+
+body.lux-route-student-service .student-service-ticket-stat strong,
+body.lux-route-student-service .student-service-home-card strong {
+    font-size: clamp(24px, 3vw, 42px);
+    line-height: 0.95;
+    letter-spacing: -0.05em;
+    color: var(--lux-text);
+}
+
+body.lux-route-student-service .student-service-ticket-list {
+    max-height: 680px;
+    overflow: auto;
+    padding-right: 4px;
+}
+
+body.lux-route-student-service .student-service-ticket-row {
+    padding: 15px;
+}
+
+body.lux-route-student-service .student-service-ticket-detail {
+    display: grid;
+    gap: 14px;
+}
+
+body.lux-route-student-service .student-service-ticket-focus,
+body.lux-route-student-service .student-service-ticket-thread,
+body.lux-route-student-service .student-service-home-panel {
+    padding: 18px;
+    border-radius: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.04);
+}
+
+body.lux-route-student-service .student-service-ticket-focus-meta {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 14px;
+}
+
+body.lux-route-student-service .student-service-ticket-focus-copy {
+    margin-top: 14px;
+    padding: 14px 16px;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+body.lux-route-student-service .student-service-ticket-thread {
+    display: grid;
+    gap: 14px;
+}
+
+body.lux-route-student-service .student-service-thread-list {
+    max-height: 320px;
+    overflow: auto;
+    padding-right: 4px;
+}
+
+body.lux-route-student-service .student-service-thread-entry {
+    padding: 14px;
+    border-radius: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.03);
+}
+
+body.lux-route-student-service .student-service-thread-entry.is-student {
+    border-color: rgba(var(--lux-timetable-accent-rgb), 0.18);
+}
+
+body.lux-route-student-service .student-service-thread-entry-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 11px;
+    color: var(--lux-text-soft);
+}
+
+body.lux-route-student-service .student-service-thread-entry-copy {
+    margin-top: 8px;
+    color: var(--lux-text);
+    font-size: 13px;
+    line-height: 1.65;
+}
+
+body.lux-route-student-service .student-service-thread-reply {
+    display: grid;
+    gap: 10px;
+    margin-top: 14px;
+}
+
+body.lux-route-student-service .student-service-thread-reply textarea,
+body.lux-route-student-service .student-service-compose-form input,
+body.lux-route-student-service .student-service-compose-form textarea,
+body.lux-route-student-service .student-service-compose-form select {
+    width: 100%;
+}
+
+body.lux-route-student-service .student-service-extra-fields {
+    display: grid;
+    gap: 12px;
+    padding: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.03);
+}
+
+body.lux-route-student-service .student-service-empty-state {
+    padding: 18px;
+    border-radius: 18px;
+    border: 1px dashed rgba(255, 255, 255, 0.12);
+    color: var(--lux-text-muted);
+    background: rgba(255, 255, 255, 0.02);
+}
+
+body.lux-route-student-service .student-service-empty-state-large {
+    padding: 30px;
+    text-align: center;
+}
+
+body.lux-route-student-service .student-service-loading-state {
+    text-align: center;
+    padding: 80px 20px;
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-student-service .student-service-loading-icon {
+    font-size: 32px;
+    margin-bottom: 16px;
+    display: block;
+}
+
+body.lux-route-student-service .student-service-detail-card {
+    padding: 0;
+}
+
+body.lux-route-student-service .student-service-detail-toggle {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 16px 18px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    text-align: left;
+}
+
+body.lux-route-student-service .student-service-detail-title {
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--lux-text);
+}
+
+body.lux-route-student-service .student-service-detail-icon {
+    font-size: 18px;
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-student-service .student-service-detail-body {
+    padding: 0 18px 18px;
+}
+
+body.lux-route-student-service .student-service-empty-title {
+    font-size: 16px;
+    color: var(--lux-text);
+    font-weight: 800;
+    margin-bottom: 6px;
+}
+
+body.lux-route-student-service .student-service-home-workbench {
+    display: grid;
+    gap: 18px;
+}
+
+body.lux-route-student-service .student-service-home-title {
+    font-family: "Playfair Display", "Georgia", serif;
+    font-size: clamp(28px, 3.2vw, 42px);
+    line-height: 0.98;
+    letter-spacing: -0.04em;
+    color: var(--lux-text);
+}
+
+body.lux-route-student-service .student-service-home-meta {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+body.lux-route-student-service .student-service-home-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 13px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--lux-text);
+    font-size: 11px;
+    font-weight: 700;
+}
+
+body.lux-route-student-service .student-service-home-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+body.lux-route-student-service .student-service-home-card p {
+    margin: 0;
+    color: var(--lux-text-muted);
+    font-size: 12px;
+    line-height: 1.55;
+}
+
+body.lux-route-student-service .student-service-home-rail {
+    grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
+}
+
+body.lux-route-student-service .student-service-home-panel-head {
+    margin-bottom: 14px;
+}
+
+body.lux-route-student-service .student-service-home-queue {
+    display: grid;
+    gap: 10px;
+}
+
+body.lux-route-student-service .student-service-home-ticket {
+    padding: 14px;
+}
+
+body.lux-route-student-service .student-service-home-summary-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 11px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    color: var(--lux-text);
+    font-size: 13px;
+}
+
+body.lux-route-student-service .student-service-home-summary-row strong {
+    font-size: 14px;
+    color: var(--lux-text);
+}
+
+body.lux-route-student-service .student-service-home-topic-grid {
+    display: grid;
+    gap: 10px;
+    margin-top: 14px;
+}
+
+body.lux-route-student-service .student-service-home-topic {
+    padding: 12px 14px;
+    display: grid;
+    gap: 5px;
+}
+
+body.lux-route-student-service .student-service-home-topic strong {
+    font-size: 13px;
+}
+
+body.lux-route-student-service .student-service-home-topic span {
+    font-size: 11px;
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-student-service .student-service-home-empty {
+    padding: 16px;
+    border-radius: 18px;
+    border: 1px dashed rgba(255, 255, 255, 0.10);
+    color: var(--lux-text-muted);
+    text-align: center;
+}
+
+body.lux-route-student-service .student-service-staff-layout {
+    display: grid;
+    gap: 18px;
+}
+
+body.lux-route-student-service .student-service-student-guide,
+body.lux-route-student-service .student-service-student-compose {
+    display: grid;
+    gap: 16px;
+}
+
+body.lux-route-student-service .student-service-staff-columns {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+    gap: 18px;
+    align-items: start;
+}
+
+body.lux-route-student-service .student-service-staff-search {
+    display: grid;
+    gap: 12px;
+}
+
+body.lux-route-student-service .student-service-staff-filter-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+
+body.lux-route-student-service .student-service-staff-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+}
+
+body.lux-route-student-service .student-service-staff-search input,
+body.lux-route-student-service .student-service-staff-search select {
+    min-height: 46px;
+}
+
+body.lux-route-student-service .student-service-student-shell,
+body.lux-route-student-service .student-service-staff-shell {
+    display: grid;
+    gap: 18px;
+}
+
+body.lux-route-student-service .student-service-ops-shell {
+    display: grid;
+    gap: 18px;
+}
+
+body.lux-route-student-service .student-service-zone {
+    padding: 24px;
+    border-radius: 28px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background:
+        radial-gradient(circle at top right, rgba(var(--lux-service-accent-rgb), 0.12), transparent 34%),
+        linear-gradient(180deg, rgba(12, 17, 26, 0.88), rgba(8, 11, 17, 0.95));
+    box-shadow: 0 20px 54px rgba(0, 0, 0, 0.24);
+}
+
+body.lux-route-student-service .student-service-qa-composer-card {
+    display: grid;
+    gap: 18px;
+}
+
+body.lux-route-student-service .student-service-qa-activity-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+body.lux-route-student-service .student-service-qa-composer-collapsed {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 14px;
+    align-items: center;
+}
+
+body.lux-route-student-service .student-service-qa-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    color: var(--lux-text);
+    background: linear-gradient(135deg, rgba(var(--lux-accent-rgb, 200, 130, 42), 0.22), rgba(255, 255, 255, 0.06));
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    flex-shrink: 0;
+}
+
+body.lux-route-student-service .student-service-qa-avatar-sm {
+    width: 32px;
+    height: 32px;
+    font-size: 10px;
+}
+
+body.lux-route-student-service .student-service-qa-composer-prompt {
+    text-align: left;
+    width: 100%;
+    display: grid;
+    gap: 4px;
+    padding: 14px 18px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: var(--lux-text);
+    cursor: pointer;
+    transition: border-color .2s ease, background .2s ease, transform .2s ease;
+}
+
+body.lux-route-student-service .student-service-qa-composer-prompt:hover {
+    background: rgba(var(--lux-accent-rgb, 200, 130, 42), 0.08);
+    border-color: rgba(var(--lux-accent-rgb, 200, 130, 42), 0.24);
+    transform: translateY(-1px);
+}
+
+body.lux-route-student-service .student-service-qa-compose-form {
+    display: grid;
+    gap: 12px;
+}
+
+body.lux-route-student-service .student-service-qa-mode-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+body.lux-route-student-service .student-service-qa-mode-switch {
+    align-items: center;
+}
+
+body.lux-route-student-service .student-service-qa-mode-btn {
+    justify-content: center;
+}
+
+body.lux-route-student-service .student-service-qa-field-row {
+    align-items: stretch;
+}
+
+body.lux-route-student-service .student-service-qa-anonymous-toggle {
+    align-self: flex-start;
+}
+
+body.lux-route-student-service .student-service-pill-toggle {
+    justify-content: flex-start;
+    gap: 8px;
+    padding: 10px 14px;
+    font-size: 11px;
+    letter-spacing: 0.02em;
+}
+
+body.lux-route-student-service .student-service-pill-toggle input {
+    accent-color: var(--lux-accent);
+}
+
+body.lux-route-student-service .student-service-qa-helper-copy {
+    font-size: 12px;
+    line-height: 1.6;
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-student-service .student-service-qa-similar-strip {
+    display: grid;
+    gap: 8px;
+    padding: 12px 14px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+body.lux-route-student-service .student-service-qa-similar-list {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+body.lux-route-student-service .student-service-qa-searchbar {
+    margin-top: 4px;
+    margin-bottom: 14px;
+}
+
+body.lux-route-student-service .student-service-qa-filter-stack {
+    display: grid;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+body.lux-route-student-service .student-service-qa-filter-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+body.lux-route-student-service .student-service-qa-filter-row button {
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--lux-text-muted);
+    border-radius: 999px;
+    padding: 8px 13px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all .2s ease;
+}
+
+body.lux-route-student-service .student-service-qa-filter-row button:hover,
+body.lux-route-student-service .student-service-qa-filter-row button.is-active {
+    background: rgba(var(--lux-accent-rgb, 200, 130, 42), 0.12);
+    border-color: rgba(var(--lux-accent-rgb, 200, 130, 42), 0.32);
+    color: var(--lux-accent);
+}
+
+body.lux-route-student-service .student-service-qa-feed-wrap {
+    display: grid;
+}
+
+body.lux-route-student-service .student-service-qa-feed {
+    display: grid;
+    gap: 14px;
+}
+
+body.lux-route-student-service .student-service-qa-card,
+body.lux-route-student-service .student-service-qa-answer-card {
+    display: grid;
+    gap: 12px;
+    padding: 18px;
+    border-radius: 22px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: linear-gradient(180deg, rgba(16, 22, 32, 0.95), rgba(10, 14, 21, 0.94));
+    color: var(--lux-text);
+}
+
+body.lux-route-student-service .student-service-qa-card.is-open {
+    border-color: rgba(var(--lux-service-accent-rgb), 0.34);
+    box-shadow: 0 0 0 1px rgba(var(--lux-service-accent-rgb), 0.12), 0 18px 34px rgba(0, 0, 0, 0.22);
+}
+
+body.lux-route-student-service .student-service-qa-answer-card.is-accepted {
+    border-color: rgba(var(--lux-service-accent-rgb), 0.30);
+    background:
+        radial-gradient(circle at top right, rgba(var(--lux-service-accent-rgb), 0.10), transparent 32%),
+        linear-gradient(180deg, rgba(16, 22, 32, 0.95), rgba(10, 14, 21, 0.94));
+}
+
+body.lux-route-student-service .student-service-qa-card-head,
+body.lux-route-student-service .student-service-qa-answer-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+body.lux-route-student-service .student-service-qa-card-author,
+body.lux-route-student-service .student-service-qa-answer-author {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+body.lux-route-student-service .student-service-qa-card-author-copy,
+body.lux-route-student-service .student-service-qa-answer-author-copy {
+    display: grid;
+    gap: 4px;
+}
+
+body.lux-route-student-service .student-service-qa-card-author-name,
+body.lux-route-student-service .student-service-qa-answer-author-name {
+    display: block;
+}
+
+body.lux-route-student-service .student-service-qa-card-author-date,
+body.lux-route-student-service .student-service-qa-answer-author-role,
+body.lux-route-student-service .student-service-qa-answer-time {
+    display: block;
+}
+
+body.lux-route-student-service .student-service-qa-card-stat {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+body.lux-route-student-service .student-service-qa-card-main {
+    display: grid;
+    gap: 10px;
+    width: 100%;
+    text-align: left;
+    border: 0;
+    padding: 0;
+    background: transparent;
+    cursor: pointer;
+}
+
+body.lux-route-student-service .student-service-qa-chip-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+body.lux-route-student-service .student-service-qa-card-title {
+    font-family: "Playfair Display", "Georgia", serif;
+    font-size: clamp(24px, 2.6vw, 34px);
+    line-height: 0.98;
+    letter-spacing: -0.04em;
+    color: var(--lux-text);
+}
+
+body.lux-route-student-service .student-service-qa-card-preview,
+body.lux-route-student-service .student-service-qa-detail-body,
+body.lux-route-student-service .student-service-qa-answer-copy {
+    color: var(--lux-text-muted);
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+body.lux-route-student-service .student-service-qa-card-accepted {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: rgba(var(--lux-service-accent-rgb), 0.96);
+    font-size: 12px;
+    font-weight: 800;
+}
+
+body.lux-route-student-service .student-service-qa-card-footer {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+body.lux-route-student-service .student-service-qa-card-stats,
+body.lux-route-student-service .student-service-qa-answer-meta,
+body.lux-route-student-service .student-service-qa-detail-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+body.lux-route-student-service .student-service-qa-thread-reply {
+    margin-top: 4px;
+}
+
+body.lux-route-student-service .student-service-qa-card-detail,
+body.lux-route-student-service .student-service-qa-detail {
+    display: grid;
+    gap: 12px;
+}
+
+body.lux-route-student-service .student-service-qa-card-detail {
+    padding-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+body.lux-route-student-service .student-service-qa-detail-meta {
+    align-items: center;
+}
+
+body.lux-route-student-service .student-service-qa-related-copy {
+    margin-top: 0;
+}
+
+body.lux-route-student-service .student-service-qa-detail-actions--moderation {
+    padding-top: 4px;
+}
+
+body.lux-route-student-service .student-service-qa-answer-list {
+    display: grid;
+    gap: 12px;
+}
+
+body.lux-route-student-service .student-service-qa-answer-actions {
+    align-items: center;
+}
+
+body.lux-route-student-service .student-service-qa-detail-action-btn,
+body.lux-route-student-service .student-service-qa-answer-accept-btn,
+body.lux-route-student-service .student-service-qa-reply-submit-btn {
+    justify-content: center;
+}
+
+body.lux-route-student-service .student-service-qa-reply-shell {
+    align-items: stretch;
+}
+
+body.lux-route-student-service .student-service-qa-reply-input {
+    width: 100%;
+}
+
+body.lux-route-student-service .student-service-qa-empty-note,
+body.lux-route-student-service .student-service-qa-owner-note,
+body.lux-route-student-service .student-service-qa-empty-state {
+    margin-top: 4px;
+    padding: 16px;
+    border-radius: 18px;
+    border: 1px dashed rgba(255, 255, 255, 0.12);
+}
+
+body.lux-route-student-service .student-service-zone-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 14px;
+    margin-bottom: 16px;
+}
+
+body.lux-route-student-service .student-service-zone-title {
+    margin-top: 8px;
+    font-family: "Playfair Display", "Georgia", serif;
+    font-size: clamp(24px, 2.8vw, 40px);
+    line-height: 0.98;
+    letter-spacing: -0.04em;
+    color: var(--lux-text);
+}
+
+body.lux-route-student-service .student-service-zone-copy {
+    margin-top: 8px;
+    color: var(--lux-text-muted);
+    font-size: 14px;
+    line-height: 1.6;
+    max-width: 860px;
+}
+
+body.lux-route-student-service .student-service-lane-chooser {
+    display: grid;
+    gap: 18px;
+}
+
+body.lux-route-student-service .student-service-lane-switcher-shell {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 18px 22px;
+    border-radius: 26px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+body.lux-route-student-service .student-service-lane-switcher-copy {
+    display: grid;
+    gap: 6px;
+    max-width: 520px;
+}
+
+body.lux-route-student-service .student-service-lane-switcher-copy .student-service-zone-copy {
+    margin-top: 0;
+}
+
+body.lux-route-student-service .student-service-lane-switcher {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+body.lux-route-student-service .student-service-lane-switcher-btn,
+body.lux-route-student-service .student-service-lane-switcher-reset {
+    justify-content: center;
+}
+
+body.lux-route-student-service .student-service-lane-switcher-btn {
+    min-width: 180px;
+}
+
+body.lux-route-student-service .student-service-lane-switcher-btn.is-active {
+    box-shadow:
+        0 0 0 1px rgba(var(--lux-service-accent-rgb), 0.18),
+        0 18px 32px rgba(var(--lux-service-accent-rgb), 0.16);
+}
+
+body.lux-route-student-service .student-service-lane-choice-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+body.lux-route-student-service .student-service-lane-choice-card {
+    width: 100%;
+    min-height: 252px;
+    padding: 22px;
+    border-radius: 28px;
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    text-align: left;
+    color: var(--lux-text);
+    cursor: pointer;
+    appearance: none;
+    transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+body.lux-route-student-service .student-service-lane-choice-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(var(--lux-service-accent-rgb), 0.30);
+    box-shadow: 0 20px 38px rgba(0, 0, 0, 0.18);
+}
+
+body.lux-route-student-service .student-service-lane-choice-card:focus-visible {
+    outline: 2px solid rgba(var(--lux-service-accent-rgb), 0.36);
+    outline-offset: 3px;
+}
+
+body.lux-route-student-service .student-service-lane-choice-card--service {
+    --student-service-card-rgb: var(--student-service-fade-a);
+    --student-service-card-rgb-2: var(--student-service-fade-b);
+}
+
+body.lux-route-student-service .student-service-lane-choice-card--qa {
+    --student-service-card-rgb: var(--student-service-fade-c);
+    --student-service-card-rgb-2: var(--student-service-fade-d);
+}
+
+body.lux-route-student-service .student-service-lane-choice-kicker {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(var(--lux-service-accent-rgb), 0.92);
+}
+
+body.lux-route-student-service .student-service-lane-choice-title {
+    font-family: "Playfair Display", "Georgia", serif;
+    font-size: clamp(28px, 3vw, 40px);
+    line-height: 0.95;
+    letter-spacing: -0.04em;
+    color: var(--lux-text);
+}
+
+body.lux-route-student-service .student-service-lane-choice-copy {
+    color: var(--lux-text-muted);
+    font-size: 14px;
+    line-height: 1.65;
+}
+
+body.lux-route-student-service .student-service-lane-choice-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: auto;
+}
+
+body.lux-route-student-service .student-service-lane-choice-stats span {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 13px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--lux-text);
+    font-size: 11px;
+    font-weight: 700;
+}
+
+body.lux-route-student-service .student-service-lane-choice-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 4px;
+    color: rgba(var(--lux-service-accent-rgb), 0.98);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.03em;
+}
+
+body.lux-route-student-service .student-service-mini-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 42px;
+    padding: 0 14px;
+    border-radius: 999px;
+    border: 1px solid rgba(var(--lux-service-accent-rgb), 0.22);
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--lux-text);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.03em;
+}
+
+body.lux-route-student-service .student-service-find-bar,
+body.lux-route-student-service .student-service-request-meta,
+body.lux-route-student-service .student-service-ticket-detail-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+body.lux-route-student-service .student-service-find-bar {
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+
+body.lux-route-student-service .student-service-find-search {
+    flex: 1 1 380px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 48px;
+    padding: 0 14px;
+    border-radius: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    background: rgba(255, 255, 255, 0.04);
+}
+
+body.lux-route-student-service .student-service-find-search i {
+    color: rgba(var(--lux-service-accent-rgb), 0.95);
+}
+
+body.lux-route-student-service .student-service-find-search input {
+    flex: 1;
+    border: 0 !important;
+    background: transparent !important;
+    min-height: 42px;
+    padding: 0 !important;
+    box-shadow: none !important;
+}
+
+body.lux-route-student-service .student-service-find-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+}
+
+body.lux-route-student-service .student-service-lane-card,
+body.lux-route-student-service .student-service-ticket-card,
+body.lux-route-student-service .student-service-ops-card,
+body.lux-route-student-service .student-service-track-panel,
+body.lux-route-student-service .student-service-article-preview {
+    display: grid;
+    gap: 10px;
+    padding: 16px;
+    border-radius: 22px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: linear-gradient(180deg, rgba(16, 22, 32, 0.95), rgba(10, 14, 21, 0.94));
+    color: var(--lux-text);
+}
+
+body.lux-route-student-service .student-service-lane-card,
+body.lux-route-student-service .student-service-ticket-card {
+    text-align: left;
+}
+
+body.lux-route-student-service .student-service-lane-card.is-active,
+body.lux-route-student-service .student-service-ticket-card.is-selected {
+    border-color: rgba(var(--lux-service-accent-rgb), 0.34);
+    box-shadow: 0 0 0 1px rgba(var(--lux-service-accent-rgb), 0.12), 0 18px 34px rgba(0, 0, 0, 0.22);
+}
+
+body.lux-route-student-service .student-service-lane-head,
+body.lux-route-student-service .student-service-lane-foot,
+body.lux-route-student-service .student-service-ticket-card-top,
+body.lux-route-student-service .student-service-ticket-card-meta,
+body.lux-route-student-service .student-service-ops-ticket-top,
+body.lux-route-student-service .student-service-track-panel-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+body.lux-route-student-service .student-service-lane-head strong,
+body.lux-route-student-service .student-service-ticket-card-top strong,
+body.lux-route-student-service .student-service-ops-ticket-top strong {
+    font-size: 14px;
+    line-height: 1.25;
+    color: var(--lux-text);
+}
+
+body.lux-route-student-service .student-service-lane-copy,
+body.lux-route-student-service .student-service-article-preview-copy {
+    color: var(--lux-text-muted);
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+body.lux-route-student-service .student-service-article-preview-head,
+body.lux-route-student-service .student-service-ops-label {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.58);
+}
+
+body.lux-route-student-service .student-service-article-preview-head {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    justify-content: space-between;
+}
+
+body.lux-route-student-service .student-service-lane-head span,
+body.lux-route-student-service .student-service-lane-foot,
+body.lux-route-student-service .student-service-ticket-card-meta,
+body.lux-route-student-service .student-service-ticket-card-copy,
+body.lux-route-student-service .student-service-ops-ticket-copy,
+body.lux-route-student-service .student-service-ops-copy,
+body.lux-route-student-service .student-service-track-panel-copy {
+    color: var(--lux-text-muted);
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+body.lux-route-student-service .student-service-article-preview-body,
+body.lux-route-student-service .student-service-ticket-detail-copy {
+    margin-top: 2px;
+    color: var(--lux-text-muted);
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+body.lux-route-student-service .student-service-action-row,
+body.lux-route-student-service .student-service-track-panel-meta,
+body.lux-route-student-service .student-service-ops-pill-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+body.lux-route-student-service .student-service-track-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+body.lux-route-student-service .student-service-track-card {
+    padding: 14px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.04);
+}
+
+body.lux-route-student-service .student-service-track-card span {
+    display: block;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: rgba(255, 255, 255, 0.56);
+}
+
+body.lux-route-student-service .student-service-track-card strong {
+    display: block;
+    margin-top: 8px;
+    font-family: "Playfair Display", "Georgia", serif;
+    font-size: clamp(24px, 2.4vw, 36px);
+    line-height: 0.92;
+    letter-spacing: -0.05em;
+    color: var(--lux-text);
+}
+
+body.lux-route-student-service .student-service-student-grid,
+body.lux-route-student-service .student-service-ticket-grid,
+body.lux-route-student-service .student-service-staff-grid {
+    display: grid;
+    gap: 18px;
+}
+
+body.lux-route-student-service .student-service-student-grid,
+body.lux-route-student-service .student-service-ticket-grid,
+body.lux-route-student-service .student-service-staff-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+body.lux-route-student-service .student-service-panel-switch,
+body.lux-route-student-service .student-service-ops-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+body.lux-route-student-service .student-service-ops-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 14px;
+    margin-bottom: 16px;
+}
+
+body.lux-route-student-service .student-service-ops-card--queue {
+    min-height: 100%;
+}
+
+body.lux-route-student-service .student-service-ops-ticket,
+body.lux-route-student-service .student-service-ops-lane {
+    text-align: left;
+    padding: 14px 16px;
+    border-radius: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.04);
+    display: grid;
+    gap: 8px;
+}
+
+body.lux-route-student-service .student-service-ticket-detail-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+
+
+body.lux-route-student-service .student-service-ticket-list,
+body.lux-route-student-service .student-service-inbox-list,
+body.lux-route-student-service .student-service-track-list,
+body.lux-route-student-service .student-service-ops-list,
+body.lux-route-student-service .student-service-ops-lanes {
+    display: grid;
+    gap: 10px;
+}
+
+body.lux-route-student-service .student-service-article-card,
+body.lux-route-student-service .student-service-ticket-row,
+body.lux-route-student-service .student-service-ticket-card,
+body.lux-route-student-service .student-service-home-ticket,
+body.lux-route-student-service .student-service-home-topic,
+body.lux-route-student-service .student-service-track-card,
+body.lux-route-student-service .student-service-ops-ticket,
+body.lux-route-student-service .student-service-ops-lane,
+body.lux-route-student-service .student-service-qa-card,
+body.lux-route-student-service .student-service-qa-answer-card {
+    content-visibility: auto;
+    contain-intrinsic-size: 0 280px;
+}
+
+body.lux-route-student-service .student-service-request-form {
+    display: grid;
+    gap: 12px;
+}
+
+body.lux-route-student-service .student-service-qa-composer-prompt-title {
+    display: block;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--lux-text);
+}
+
+body.lux-route-student-service .student-service-qa-composer-prompt-copy {
+    display: block;
+    font-size: 12px;
+    line-height: 1.6;
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-student-service .student-service-qa-composer-open-btn,
+body.lux-route-student-service .student-service-qa-composer-collapse-btn,
+body.lux-route-student-service .student-service-qa-composer-minimize-btn,
+body.lux-route-student-service .student-service-qa-card-toggle-btn {
+    justify-content: center;
+}
+
+body.lux-route-student-service .student-service-qa-similar-title {
+    margin-bottom: 8px;
+}
+
+body.lux-route-student-service .student-service-qa-compose-actions {
+    align-items: center;
+}
+
+body.lux-route-student-service .student-service-request-extra {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+
+body.lux-route-student-service .student-service-ops-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+}
+
+body.lux-route-student-service .student-service-ops-value {
+    font-family: "Playfair Display", "Georgia", serif;
+    font-size: clamp(28px, 3vw, 44px);
+    line-height: 0.95;
+    letter-spacing: -0.05em;
+    color: var(--lux-text);
+}
+
+@media (max-width:1120px) {
+
+    body.lux-route-student-service .student-service-student-grid,
+body.lux-route-student-service .student-service-ticket-grid,
+body.lux-route-student-service .student-service-staff-grid,
+body.lux-route-student-service .student-service-track-grid,
+body.lux-route-student-service .student-service-ops-grid {
+        grid-template-columns: 1fr;
+    }
+
+    body.lux-route-student-service .student-service-request-extra {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width:720px) {
+
+    body.lux-route-student-service .student-service-zone-head,
+body.lux-route-student-service .student-service-find-bar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    body.lux-route-student-service .student-service-mini-action {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+body.lux-route-student-service .content-box.surface-card,
+body.lux-route-student-service .surface-card,
+body.lux-route-student-service .content-box {
+    background:
+        radial-gradient(circle at top right, rgba(var(--lux-service-accent-rgb), 0.10), transparent 34%),
+        linear-gradient(180deg, rgba(12, 17, 26, 0.84), rgba(8, 12, 19, 0.92)) !important;
+    color: var(--lux-text) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    box-shadow: 0 18px 48px rgba(0, 0, 0, 0.24) !important;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+}
+
+/* Temporary exception for legacy shared-surface sanitizers outside this pack's write scope. */
+body.lux-route-student-service #page-student-service :is(.content-box, .surface-card, [class*='student-service-'])[style*='background:#fff'],
+body.lux-route-student-service #page-student-service :is(.content-box, .surface-card, [class*='student-service-'])[style*='background:white'],
+body.lux-route-student-service #page-student-service :is(.content-box, .surface-card, [class*='student-service-'])[style*='background: white'],
+body.lux-route-student-service #page-student-service :is(.content-box, .surface-card, [class*='student-service-'])[style*='background:#fbfdff'],
+body.lux-route-student-service #page-student-service :is(.content-box, .surface-card, [class*='student-service-'])[style*='background:#f8fafc'],
+body.lux-route-student-service #page-student-service :is(.content-box, .surface-card, [class*='student-service-'])[style*='background:#eff6ff'],
+body.lux-route-student-service #page-student-service :is(.content-box, .surface-card, [class*='student-service-'])[style*='background:#fff7ed'],
+body.lux-route-student-service #page-student-service :is(.content-box, .surface-card, [class*='student-service-'])[style*='background:#f5f3ff'],
+body.lux-route-student-service #page-student-service :is(.content-box, .surface-card, [class*='student-service-'])[style*='background:#ecfdf5'],
+body.lux-route-student-service #page-student-service :is(.content-box, .surface-card, [class*='student-service-'])[style*='background:#fffaf0'] {
+    background:
+        radial-gradient(circle at top right, rgba(var(--lux-accent-rgb), 0.10), transparent 32%),
+        var(--lux-surface) !important;
+    color: var(--lux-text) !important;
+    border-color: var(--lux-border) !important;
+}
+
+body.lux-route-student-service #page-student-service :is(.content-box, .surface-card, [class*='student-service-'])[style*='color:var(--kiu-navy)'],
+body.lux-route-student-service #page-student-service :is(.content-box, .surface-card, [class*='student-service-'])[style*='color:#0f172a'],
+body.lux-route-student-service #page-student-service :is(.content-box, .surface-card, [class*='student-service-'])[style*='color:#1e293b'],
+body.lux-route-student-service #page-student-service :is(.content-box, .surface-card, [class*='student-service-'])[style*='color:#334155'] {
+    color: var(--lux-text) !important;
+}
+
+body.lux-route-student-service #page-student-service :is(.content-box, .surface-card, [class*='student-service-'])[style*='color:var(--kiu-text-muted)'],
+body.lux-route-student-service #page-student-service :is(.content-box, .surface-card, [class*='student-service-'])[style*='color:#475569'],
+body.lux-route-student-service #page-student-service :is(.content-box, .surface-card, [class*='student-service-'])[style*='color:#64748b'] {
+    color: var(--lux-text-muted) !important;
+}
+
+body.lux-route-student-service .content-box *,
+body.lux-route-student-service .surface-card * {
+    border-color: var(--lux-border);
+}
+
+body.lux-route-student-service #page-student-service .student-service-hero,
+body.lux-route-student-service #page-student-service .student-service-hero-aside,
+body.lux-route-student-service #page-student-service .student-service-workflow-strip,
+body.lux-route-student-service #page-student-service .student-service-workflow-step,
+body.lux-route-student-service #page-student-service .student-service-summary-card,
+body.lux-route-student-service #page-student-service .student-service-overview,
+body.lux-route-student-service #page-student-service .student-service-canvas,
+body.lux-route-student-service #page-student-service .student-service-panel,
+body.lux-route-student-service #page-student-service .student-service-zone,
+body.lux-route-student-service #page-student-service .student-service-lane-switcher-shell,
+body.lux-route-student-service #page-student-service .student-service-lane-card,
+body.lux-route-student-service #page-student-service .student-service-ticket-card,
+body.lux-route-student-service #page-student-service .student-service-ops-card,
+body.lux-route-student-service #page-student-service .student-service-track-panel,
+body.lux-route-student-service #page-student-service .student-service-article-preview,
+body.lux-route-student-service #page-student-service .student-service-ticket-focus,
+body.lux-route-student-service #page-student-service .student-service-ticket-thread,
+body.lux-route-student-service #page-student-service .student-service-home-panel,
+body.lux-route-student-service #page-student-service .student-service-lane-choice-card {
+    position: relative;
+    overflow: hidden;
+    background: var(--ssvc-fade-surface) !important;
+    border-color: var(--ssvc-fade-border) !important;
+    box-shadow: var(--ssvc-fade-shadow) !important;
+    backdrop-filter: var(--ssvc-fade-blur) !important;
+    -webkit-backdrop-filter: var(--ssvc-fade-blur) !important;
+}
+
+body.lux-route-student-service #page-student-service .student-service-hero {
+    background: var(--ssvc-fade-surface-hero) !important;
+}
+
+body.lux-route-student-service #page-student-service .student-service-area-card,
+body.lux-route-student-service #page-student-service .student-service-article-card,
+body.lux-route-student-service #page-student-service .student-service-ticket-row,
+body.lux-route-student-service #page-student-service .student-service-home-ticket,
+body.lux-route-student-service #page-student-service .student-service-home-topic,
+body.lux-route-student-service #page-student-service .student-service-ticket-stat,
+body.lux-route-student-service #page-student-service .student-service-home-card,
+body.lux-route-student-service #page-student-service .student-service-track-card,
+body.lux-route-student-service #page-student-service .student-service-ops-ticket,
+body.lux-route-student-service #page-student-service .student-service-ops-lane {
+    background: var(--ssvc-fade-surface-soft) !important;
+    border-color: var(--ssvc-fade-border-soft) !important;
+    box-shadow: var(--ssvc-fade-shadow-soft) !important;
+    backdrop-filter: var(--ssvc-fade-blur) !important;
+    -webkit-backdrop-filter: var(--ssvc-fade-blur) !important;
+}
+
+body.lux-route-lms .lux-control,
+body.lux-route-lms input,
+body.lux-route-lms select,
+body.lux-route-lms textarea {
+    background: var(--lux-bg-soft) !important;
+    color: var(--lux-text) !important;
+    border: 1px solid var(--lux-border) !important;
+    border-radius: 14px;
+}
+body.lux-light-mode.lux-route-lms .lux-control,
+body.lux-light-mode.lux-route-lms input,
+body.lux-light-mode.lux-route-lms select,
+body.lux-light-mode.lux-route-lms textarea {
+    background: rgba(255, 255, 255, 0.48) !important;
+    border-color: rgba(26, 36, 51, 0.12) !important;
+}
+body.lux-route-lms .lux-control::placeholder,
+body.lux-route-lms input::placeholder,
+body.lux-route-lms textarea::placeholder {
+    color: var(--lux-text-dim) !important;
+}
+
+body.lux-route-student-service .kiu-btn-blue,
+body.lux-route-student-service .kiu-btn-outline,
+body.lux-route-student-service button {
+    border-radius: 16px !important;
+}
+
+body.lux-route-student-service .kiu-btn-blue,
+body.lux-route-student-service #page-student-service button:not(.kiu-btn-outline):not(.kiu-btn-blue):not(.profile-menu-item) {
+    background: linear-gradient(135deg, rgba(var(--lux-accent-rgb), 0.94), rgba(var(--lux-home-secondary-rgb), 0.90)) !important;
+    color: #fff8ef !important;
+    border: 1px solid rgba(var(--lux-accent-rgb), 0.30) !important;
+    box-shadow: 0 18px 36px rgba(var(--lux-accent-rgb), 0.22) !important;
+}
+
+body.lux-route-student-service .kiu-btn-outline,
+body.lux-route-student-service #page-student-service button.kiu-btn-outline {
+    background: var(--lux-surface) !important;
+    color: var(--lux-text) !important;
+    border: 1px solid rgba(var(--lux-accent-rgb), 0.16) !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+}
+
+body.lux-route-student-service #page-student-service button:hover,
+body.lux-route-student-service .kiu-btn-blue:hover,
+body.lux-route-student-service .kiu-btn-outline:hover {
+    transform: translateY(-1px);
+}
+
+body.lux-route-student-service #page-student-service input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='color']),
+body.lux-route-student-service #page-student-service select,
+body.lux-route-student-service #page-student-service textarea {
+    min-height: 44px;
+    padding: 11px 14px;
+    border-radius: 14px !important;
+    border: 1px solid rgba(255, 255, 255, 0.10) !important;
+    background: rgba(255, 255, 255, 0.04) !important;
+    color: var(--lux-text) !important;
+    box-shadow: none !important;
+    outline: none;
+}
+
+body.lux-route-student-service #page-student-service input::placeholder,
+body.lux-route-student-service #page-student-service textarea::placeholder {
+    color: var(--lux-text-soft) !important;
+}
+
+@media (max-width: 1120px) {
+
+    body.lux-route-student-service .student-service-hero,
+body.lux-route-student-service .student-service-summary-grid,
+body.lux-route-student-service .student-service-workflow-strip,
+body.lux-route-student-service .student-service-student-columns,
+body.lux-route-student-service .student-service-ticket-columns,
+body.lux-route-student-service .student-service-home-rail,
+body.lux-route-student-service .student-service-staff-columns {
+        grid-template-columns: 1fr;
+    }
+
+    body.lux-route-student-service .student-service-ticket-hero,
+body.lux-route-student-service .student-service-home-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 720px) {
+    body.lux-route-student-service .student-service-hero-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    body.lux-route-student-service .student-service-hero-action {
+        width: 100%;
+        justify-content: center;
+    }
+
+    body.lux-route-student-service .student-service-hero-aside-grid {
+        grid-template-columns: 1fr;
+    }
+
+    body.lux-route-student-service .student-service-overview-head {
+        flex-direction: column;
+    }
+
+    body.lux-route-student-service .student-service-ticket-hero,
+body.lux-route-student-service .student-service-home-grid {
+        grid-template-columns: 1fr;
+    }
+
+    body.lux-route-student-service .student-service-staff-filter-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+body.lux-light-mode.lux-nonhome-page:not(.lux-route-students-admin) .page-hero,
+body.lux-light-mode.lux-nonhome-page:not(.lux-route-students-admin) .content-box,
+body.lux-light-mode.lux-nonhome-page:not(.lux-route-students-admin) .surface-card,
+body.lux-light-mode.lux-nonhome-page:not(.lux-route-students-admin) .admin-card,
+body.lux-light-mode.lux-nonhome-page:not(.lux-route-students-admin) .filter-shell,
+body.lux-light-mode.lux-nonhome-page:not(.lux-route-students-admin) .tabs-container,
+body.lux-light-mode.lux-nonhome-page:not(.lux-route-students-admin) .reg-tabs,
+body.lux-light-mode.lux-family-admin .scheduler-wrap>*,
+body.lux-light-mode.lux-route-profile-view .pv-meta,
+body.lux-light-mode.lux-route-profile-view .pv-left,
+body.lux-light-mode.lux-route-profile-view .pv-right {
+    background:
+        radial-gradient(circle at top right, rgba(var(--lux-accent-rgb), 0.14), transparent 30%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.78), rgba(245, 239, 231, 0.86)) !important;
+    color: var(--lux-text) !important;
+    border: 1px solid rgba(48, 34, 22, 0.10) !important;
+    box-shadow: 0 20px 42px rgba(62, 42, 20, 0.12) !important;
+}
+
+body.lux-light-mode.lux-nonhome-page:not(.lux-route-students-admin) input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='color']),
+body.lux-light-mode.lux-nonhome-page:not(.lux-route-students-admin) select,
+body.lux-light-mode.lux-nonhome-page:not(.lux-route-students-admin) textarea,
+body.lux-light-mode.lux-family-admin input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='color']),
+body.lux-light-mode.lux-family-admin select,
+body.lux-light-mode.lux-family-admin textarea,
+body.lux-light-mode.lux-route-profile-view input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='color']),
+body.lux-light-mode.lux-route-profile-view select,
+body.lux-light-mode.lux-route-profile-view textarea {
+    background: rgba(255, 255, 255, 0.7) !important;
+    color: var(--lux-text) !important;
+    border-color: rgba(48, 34, 22, 0.12) !important;
+}
+
+body.lux-light-mode.lux-route-student-service {
+    --lux-topbar-tint-rgb: 245, 238, 228;
+    --lux-bg: #f6efe5;
+    --lux-bg-soft: #efe7dc;
+    --lux-surface: #ffffff;
+    --lux-surface-2: #faf5ee;
+    --lux-surface-3: #f3ece3;
+    --lux-border: rgba(48, 34, 22, 0.10);
+    --lux-border-strong: rgba(48, 34, 22, 0.16);
+    --lux-text: #201912;
+    --lux-text-muted: rgba(74, 60, 45, 0.72);
+    --lux-text-soft: rgba(74, 60, 45, 0.54);
+    background:
+        radial-gradient(circle at 14% 8%, rgba(var(--lux-accent-rgb), 0.08), transparent 28%),
+        radial-gradient(circle at 84% 84%, rgba(var(--lux-home-secondary-rgb), 0.06), transparent 24%),
+        linear-gradient(180deg, #f7f1e8 0%, #ece3d6 100%);
+    color: var(--lux-text);
+}
+
+body.lux-light-mode.lux-route-student-service #lux-shell {
+    background: linear-gradient(180deg, #f6efe5 0%, #e9e0d4 100%) !important;
+}
+
+body.lux-light-mode.lux-route-student-service #lux-topbar {
+    background: rgba(247, 243, 236, 0.88) !important;
+    border-bottom: 1px solid rgba(48, 34, 22, 0.08) !important;
+}
+
+body.lux-light-mode.lux-route-student-service #lux-sidebar {
+    background: linear-gradient(180deg, rgba(252, 249, 245, 0.98), rgba(241, 235, 226, 0.98)) !important;
+    border-right: 1px solid rgba(48, 34, 22, 0.08) !important;
+}
+
+body.lux-light-mode.lux-route-student-service #app-content {
+    background: transparent !important;
+}
+
+body.lux-light-mode.lux-route-student-service .page-hero,
+body.lux-light-mode.lux-route-student-service .content-box,
+body.lux-light-mode.lux-route-student-service .surface-card,
+body.lux-light-mode.lux-route-student-service .admin-hero,
+body.lux-light-mode.lux-route-student-service .student-service-hero,
+body.lux-light-mode.lux-route-student-service .student-service-summary-card,
+body.lux-light-mode.lux-route-student-service .student-service-workflow-step,
+body.lux-light-mode.lux-route-student-service .student-service-zone,
+body.lux-light-mode.lux-route-student-service .student-service-lane-card,
+body.lux-light-mode.lux-route-student-service .student-service-ticket-card,
+body.lux-light-mode.lux-route-student-service .student-service-track-card,
+body.lux-light-mode.lux-route-student-service .student-service-ops-card,
+body.lux-light-mode.lux-route-student-service .student-service-track-panel,
+body.lux-light-mode.lux-route-student-service .student-service-ticket-focus,
+body.lux-light-mode.lux-route-student-service .student-service-ticket-thread,
+body.lux-light-mode.lux-route-student-service .student-service-panel {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(246, 241, 234, 0.98)) !important;
+    color: var(--lux-text) !important;
+    border: 1px solid var(--lux-border) !important;
+    box-shadow: 0 18px 46px rgba(73, 48, 25, 0.10) !important;
+}
+
+body.lux-light-mode.lux-route-student-service .student-service-hero-title,
+body.lux-light-mode.lux-route-student-service .student-service-hero-copy,
+body.lux-light-mode.lux-route-student-service .student-service-zone-title,
+body.lux-light-mode.lux-route-student-service .student-service-zone-copy,
+body.lux-light-mode.lux-route-student-service .student-service-panel-title,
+body.lux-light-mode.lux-route-student-service .student-service-summary-value,
+body.lux-light-mode.lux-route-student-service .student-service-track-card strong,
+body.lux-light-mode.lux-route-student-service .student-service-ops-value,
+body.lux-light-mode.lux-route-student-service .student-service-hero-aside-title,
+body.lux-light-mode.lux-route-student-service .student-service-ticket-card-top strong,
+body.lux-light-mode.lux-route-student-service .student-service-ticket-row-top strong,
+body.lux-light-mode.lux-route-student-service .student-service-ops-ticket-top strong {
+    color: var(--lux-text) !important;
+}
+
+body.lux-light-mode.lux-route-student-service .student-service-hero-badge,
+body.lux-light-mode.lux-route-student-service .student-service-pill,
+body.lux-light-mode.lux-route-student-service .student-service-panel-chip,
+body.lux-light-mode.lux-route-student-service .student-service-status {
+    background: var(--lux-bg-soft) !important;
+    border-color: var(--lux-border) !important;
+    color: var(--lux-text) !important;
+}
+
+body.lux-light-mode.lux-route-student-service .student-service-hero-action,
+body.lux-light-mode.lux-route-student-service .student-service-mini-action,
+body.lux-light-mode.lux-route-student-service .student-service-view-toggle button,
+body.lux-light-mode.lux-route-student-service .student-service-panel-switch button {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(246, 241, 234, 0.98)) !important;
+    border-color: var(--lux-border) !important;
+    color: var(--lux-text) !important;
+}
+
+body.lux-light-mode.lux-route-student-service .student-service-hero-action:hover,
+body.lux-light-mode.lux-route-student-service .student-service-mini-action:hover,
+body.lux-light-mode.lux-route-student-service .student-service-view-toggle button:hover,
+body.lux-light-mode.lux-route-student-service .student-service-panel-switch button:hover {
+    border-color: rgba(var(--lux-accent-rgb), 0.22) !important;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(241, 235, 226, 0.98)) !important;
+    color: var(--lux-accent) !important;
+}
+
+body.lux-light-mode.lux-route-student-service #lux-topbar .lux-search input,
+body.lux-light-mode.lux-route-student-service #lux-topbar .lux-picker-btn,
+body.lux-light-mode.lux-route-student-service #lux-topbar .lux-topbar-editor-btn,
+body.lux-light-mode.lux-route-student-service #lux-topbar .lux-icon-btn,
+body.lux-light-mode.lux-route-student-service #lux-topbar .lux-user-chip {
+    background: rgba(255, 255, 255, 0.82) !important;
+    color: var(--lux-text) !important;
+    border: 1px solid var(--lux-border) !important;
+    box-shadow: 0 12px 26px rgba(73, 48, 25, 0.10) !important;
+}
+
+body.lux-light-mode.lux-route-student-service #page-student-service input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='color']),
+body.lux-light-mode.lux-route-student-service #page-student-service select,
+body.lux-light-mode.lux-route-student-service #page-student-service textarea {
+    background: rgba(255, 255, 255, 0.88) !important;
+    color: var(--lux-text) !important;
+    border-color: var(--lux-border) !important;
+}
+
+body.lux-light-mode.lux-route-student-service #page-student-service input::placeholder,
+body.lux-light-mode.lux-route-student-service #page-student-service textarea::placeholder {
+    color: var(--lux-text-soft) !important;
+}
+
+body.lux-route-student-service .content-box,
+body.lux-route-student-service .surface-card {
+    background: rgba(255, 255, 255, 0.03) !important;
+    border: 1px solid rgba(255, 255, 255, 0.06) !important;
+    color: var(--lux-text) !important;
+}
+
+body.lux-route-student-service .content-box *,
+body.lux-route-student-service .surface-card * {
+    color: inherit;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   CRITICAL: Kill hardcoded blue from base.css + layout.css
+   The .admin-hero in layout.css uses !important blue gradients.
+   We MUST outspecify with body prefix + !important to win.
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── Hero section: use CSS variable for surface color (dark mode only) ── */
+body:not(.lux-light-mode).lux-route-student-service .admin-hero,
+body:not(.lux-light-mode).lux-route-student-service .admin-hero.student-service-hero,
+body:not(.lux-light-mode).lux-route-student-service section.admin-hero {
+    background:
+        radial-gradient(circle at 85% 16%, rgba(var(--lux-accent-rgb), 0.18), transparent 28%),
+        radial-gradient(circle at 8% 90%, rgba(var(--lux-accent-rgb), 0.08), transparent 30%),
+        var(--lux-surface) !important;
+    border: 1px solid rgba(var(--lux-accent-rgb), 0.14) !important;
+    box-shadow: var(--lux-shadow) !important;
+    color: var(--lux-text) !important;
+}
+
+/* ── Hero action buttons: accent gradient,
+NOT blue glass ── */
+body.lux-route-student-service .admin-glass-btn,
+body.lux-route-student-service .admin-hero-actions .admin-glass-btn,
+body.lux-route-student-service .student-service-hero-action,
+body.lux-route-student-service .admin-hero .lux-primary-btn {
+    background:
+        linear-gradient(135deg,
+            color-mix(in srgb, var(--lux-accent) 92%, #fff 8%),
+            color-mix(in srgb, var(--lux-accent-2, var(--lux-accent)) 88%, #fff 12%)) !important;
+    border: none !important;
+    color: #fff !important;
+    box-shadow:
+        0 16px 32px rgba(var(--lux-accent-rgb, 200, 130, 42), 0.28),
+        inset 0 1px 0 rgba(255, 255, 255, 0.18) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+body.lux-route-student-service .admin-glass-btn:hover,
+body.lux-route-student-service .student-service-hero-action:hover {
+    filter: brightness(1.1) !important;
+    transform: translateY(-2px) !important;
+    background:
+        linear-gradient(135deg,
+            color-mix(in srgb, var(--lux-accent) 88%, #fff 12%),
+            color-mix(in srgb, var(--lux-accent-2, var(--lux-accent)) 84%, #fff 16%)) !important;
+    box-shadow:
+        0 20px 40px rgba(var(--lux-accent-rgb, 200, 130, 42), 0.36),
+        inset 0 1px 0 rgba(255, 255, 255, 0.22) !important;
+}
+
+body.lux-route-student-service .student-service-hero-action--secondary {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03)) !important;
+    border: 1px solid rgba(255, 255, 255, 0.14) !important;
+    color: var(--lux-text) !important;
+    box-shadow:
+        0 14px 28px rgba(0, 0, 0, 0.14),
+        inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+}
+
+body.lux-route-student-service .student-service-hero-action--secondary:hover {
+    filter: none !important;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.13), rgba(255, 255, 255, 0.05)) !important;
+    border-color: rgba(var(--lux-accent-rgb), 0.26) !important;
+    color: var(--lux-accent) !important;
+    box-shadow:
+        0 18px 34px rgba(0, 0, 0, 0.18),
+        inset 0 1px 0 rgba(255, 255, 255, 0.16) !important;
+}
+
+/* ── Chips / badges in hero: glass,
+NOT blue ── */
+/* ── Hero kicker,
+titles,
+copy ── */
+body.lux-route-student-service .student-service-hero-title {
+    color: var(--lux-text) !important;
+    font-family: 'Playfair Display', serif !important;
+}
+
+body.lux-route-student-service .student-service-hero-copy {
+    color: var(--lux-text-muted) !important;
+}
+
+/* ── All lux-primary-btn on this route: accent gradient ── */
+body.lux-route-student-service .lux-primary-btn {
+    background:
+        linear-gradient(135deg,
+            color-mix(in srgb, var(--lux-accent) 92%, #fff 8%),
+            color-mix(in srgb, var(--lux-accent-2, var(--lux-accent)) 88%, #fff 12%)) !important;
+    border: none !important;
+    color: #fff !important;
+    box-shadow:
+        0 16px 32px rgba(var(--lux-accent-rgb, 200, 130, 42), 0.25),
+        inset 0 1px 0 rgba(255, 255, 255, 0.18) !important;
+}
+
+body.lux-route-student-service .lux-primary-btn:hover {
+    filter: brightness(1.08) !important;
+    transform: translateY(-2px) !important;
+    box-shadow:
+        0 20px 40px rgba(var(--lux-accent-rgb, 200, 130, 42), 0.32),
+        inset 0 1px 0 rgba(255, 255, 255, 0.22) !important;
+}
+
+/* ── All lux-secondary-btn on this route: glass outline ── */
+body.lux-route-student-service .lux-secondary-btn {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.02)) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    color: var(--lux-text-muted) !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 12px 24px rgba(0, 0, 0, 0.12) !important;
+}
+
+body.lux-route-student-service .lux-secondary-btn:hover {
+    border-color: rgba(var(--lux-accent-rgb, 200, 130, 42), 0.28) !important;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.10), rgba(255, 255, 255, 0.04)) !important;
+    color: var(--lux-accent) !important;
+    transform: translateY(-2px) !important;
+}
+
+/* ── Hero ::before pseudo-element (from layout.css) — kill blue tint ── */
+body.lux-route-student-service .admin-hero::before {
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent 50%),
+        radial-gradient(circle at 18% 0%, rgba(var(--lux-accent-rgb, 200, 130, 42), 0.08), transparent 24%) !important;
+}
+
+/* ── Content-box ::after top-line glow: use accent,
+not blue ── */
+body.lux-route-student-service .content-box::after,
+body.lux-route-student-service .surface-card::after {
+    background: linear-gradient(90deg,
+            rgba(var(--lux-accent-rgb, 200, 130, 42), 0),
+            rgba(var(--lux-accent-rgb, 200, 130, 42), 0.3),
+            rgba(var(--lux-accent-rgb, 200, 130, 42), 0.1),
+            rgba(var(--lux-accent-rgb, 200, 130, 42), 0)) !important;
+}
+
+/* ── Student service overview section: use CSS variable ── */
+body.lux-route-student-service .student-service-overview {
+    background: var(--lux-bg-soft) !important;
+    border: 1px solid var(--lux-border) !important;
+}
+
+/* ensure responsive collapse */
+@media(max-width:900px) {
+
+    .student-service-staff-grid,
+    .student-service-student-grid,
+    .student-service-ticket-grid,
+    .student-service-home-rail {
+        grid-template-columns: 1fr;
+    }
+
+    .student-service-hero {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   LIGHT MODE: Force all student-service elements to use light colors
+   This MUST come after all dark rules to win the cascade
+   ══════════════════════════════════════════════════════════════ */
+body.lux-light-mode.lux-route-student-service .student-service-shell,
+body.lux-light-mode.lux-route-student-service .student-service-hero,
+body.lux-light-mode.lux-route-student-service .admin-hero,
+body.lux-light-mode.lux-route-student-service .page-hero,
+body.lux-light-mode.lux-route-student-service .content-box,
+body.lux-light-mode.lux-route-student-service .surface-card,
+body.lux-light-mode.lux-route-student-service .student-service-panel,
+body.lux-light-mode.lux-route-student-service .student-service-area-card,
+body.lux-light-mode.lux-route-student-service .student-service-article-card,
+body.lux-light-mode.lux-route-student-service .student-service-ticket-row,
+body.lux-light-mode.lux-route-student-service .student-service-home-ticket,
+body.lux-light-mode.lux-route-student-service .student-service-home-topic,
+body.lux-light-mode.lux-route-student-service .student-service-ticket-focus,
+body.lux-light-mode.lux-route-student-service .student-service-ticket-thread,
+body.lux-light-mode.lux-route-student-service .student-service-summary-card,
+body.lux-light-mode.lux-route-student-service .student-service-workflow-step,
+body.lux-light-mode.lux-route-student-service .student-service-zone,
+body.lux-light-mode.lux-route-student-service .student-service-lane-card,
+body.lux-light-mode.lux-route-student-service .student-service-ticket-card,
+body.lux-light-mode.lux-route-student-service .student-service-track-card,
+body.lux-light-mode.lux-route-student-service .student-service-ops-card,
+body.lux-light-mode.lux-route-student-service .student-service-track-panel,
+body.lux-light-mode.lux-route-student-service .student-service-ticket-detail,
+body.lux-light-mode.lux-route-student-service .student-service-thread-entry,
+body.lux-light-mode.lux-route-student-service .student-service-empty-state,
+body.lux-light-mode.lux-route-student-service .student-service-empty-state-large,
+body.lux-light-mode.lux-route-student-service .student-service-home-card,
+body.lux-light-mode.lux-route-student-service .student-service-hero-action,
+body.lux-light-mode.lux-route-student-service .student-service-mini-action,
+body.lux-light-mode.lux-route-student-service .student-service-view-toggle button,
+body.lux-light-mode.lux-route-student-service .student-service-panel-switch button,
+body.lux-light-mode.lux-route-student-service .student-service-student-columns,
+body.lux-light-mode.lux-route-student-service .student-service-staff-columns,
+body.lux-light-mode.lux-route-student-service .student-service-compose-form,
+body.lux-light-mode.lux-route-student-service .student-service-ticket-list,
+body.lux-light-mode.lux-route-student-service .student-service-thread-list,
+body.lux-light-mode.lux-route-student-service .student-service-home-grid,
+body.lux-light-mode.lux-route-student-service .student-service-home-summary-list,
+body.lux-light-mode.lux-route-student-service .student-service-hero-aside,
+body.lux-light-mode.lux-route-student-service .student-service-hero-aside-stat,
+body.lux-light-mode.lux-route-student-service .student-service-canvas,
+body.lux-light-mode.lux-route-student-service .student-service-student-guide,
+body.lux-light-mode.lux-route-student-service .student-service-student-compose,
+body.lux-light-mode.lux-route-student-service .student-service-staff-search,
+body.lux-light-mode.lux-route-student-service .student-service-staff-filter-row,
+body.lux-light-mode.lux-route-student-service .student-service-staff-actions,
+body.lux-light-mode.lux-route-student-service .student-service-staff-shell,
+body.lux-light-mode.lux-route-student-service .student-service-student-shell,
+body.lux-light-mode.lux-route-student-service .student-service-overview {
+    background: var(--lux-surface) !important;
+    color: var(--lux-text) !important;
+    border-color: var(--lux-border) !important;
+}
+
+body.lux-light-mode.lux-route-student-service .student-service-panel-chip,
+body.lux-light-mode.lux-route-student-service .student-service-pill,
+body.lux-light-mode.lux-route-student-service .student-service-status,
+body.lux-light-mode.lux-route-student-service .student-service-hero-badge,
+body.lux-light-mode.lux-route-student-service .admin-chip {
+    background: var(--lux-bg-soft) !important;
+    color: var(--lux-text) !important;
+    border-color: var(--lux-border) !important;
+}
+
+body.lux-light-mode.lux-route-student-service .student-service-hero-action:hover,
+body.lux-light-mode.lux-route-student-service .student-service-mini-action:hover,
+body.lux-light-mode.lux-route-student-service .student-service-view-toggle button:hover,
+body.lux-light-mode.lux-route-student-service .student-service-panel-switch button:hover {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(241, 235, 226, 0.98)) !important;
+    border-color: rgba(var(--lux-accent-rgb), 0.22) !important;
+    color: var(--lux-accent) !important;
+}
+
+body.lux-light-mode.lux-route-student-service .student-service-hero-action--secondary {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(246, 241, 234, 0.98)) !important;
+    border-color: var(--lux-border) !important;
+    color: var(--lux-text) !important;
+    box-shadow:
+        0 12px 24px rgba(62, 42, 20, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.72) !important;
+}
+
+body.lux-light-mode.lux-route-student-service .student-service-hero-action--secondary:hover {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(241, 235, 226, 0.98)) !important;
+    border-color: rgba(var(--lux-accent-rgb), 0.22) !important;
+    color: var(--lux-accent) !important;
+}
+
+body.lux-light-mode.lux-route-student-service .student-service-area-copy,
+body.lux-light-mode.lux-route-student-service .student-service-article-copy,
+body.lux-light-mode.lux-route-student-service .student-service-guide-copy,
+body.lux-light-mode.lux-route-student-service .student-service-ticket-focus-copy,
+body.lux-light-mode.lux-route-student-service .student-service-ticket-row-copy,
+body.lux-light-mode.lux-route-student-service .student-service-home-ticket-copy,
+body.lux-light-mode.lux-route-student-service .student-service-home-empty,
+body.lux-light-mode.lux-route-student-service .student-service-empty-copy,
+body.lux-light-mode.lux-route-student-service .student-service-thread-entry-copy,
+body.lux-light-mode.lux-route-student-service .student-service-hero-copy,
+body.lux-light-mode.lux-route-student-service .student-service-zone-copy,
+body.lux-light-mode.lux-route-student-service .student-service-panel-title,
+body.lux-light-mode.lux-route-student-service .student-service-summary-value,
+body.lux-light-mode.lux-route-student-service .student-service-track-card strong,
+body.lux-light-mode.lux-route-student-service .student-service-ops-value,
+body.lux-light-mode.lux-route-student-service .student-service-hero-aside-title,
+body.lux-light-mode.lux-route-student-service .student-service-ticket-card-top strong,
+body.lux-light-mode.lux-route-student-service .student-service-ticket-row-top strong,
+body.lux-light-mode.lux-route-student-service .student-service-ops-ticket-top strong,
+body.lux-light-mode.lux-route-student-service .student-service-hero-title,
+body.lux-light-mode.lux-route-student-service .student-service-zone-title,
+body.lux-light-mode.lux-route-student-service .student-service-panel-title,
+body.lux-light-mode.lux-route-student-service .student-service-summary-value,
+body.lux-light-mode.lux-route-student-service .student-service-empty-title,
+body.lux-light-mode.lux-route-student-service .student-service-home-title {
+    color: var(--lux-text) !important;
+}
+
+body.lux-light-mode.lux-route-student-service .student-service-area-foot,
+body.lux-light-mode.lux-route-student-service .student-service-home-ticket-meta,
+body.lux-light-mode.lux-route-student-service .student-service-ticket-row-meta,
+body.lux-light-mode.lux-route-student-service .student-service-thread-entry-time {
+    color: var(--lux-text-muted) !important;
+}
+
+body.lux-light-mode.lux-route-student-service .student-service-thread-reply textarea,
+body.lux-light-mode.lux-route-student-service .student-service-compose-form input,
+body.lux-light-mode.lux-route-student-service .student-service-compose-form textarea,
+body.lux-light-mode.lux-route-student-service .student-service-compose-form select,
+body.lux-light-mode.lux-route-student-service .student-service-staff-search input,
+body.lux-light-mode.lux-route-student-service .student-service-staff-search select {
+    background: rgba(255, 255, 255, 0.76) !important;
+    color: var(--lux-text) !important;
+    border-color: var(--lux-border) !important;
+}
+
+body.lux-light-mode.lux-route-student-service .kiu-btn-outline,
+body.lux-light-mode.lux-route-student-service #page-student-service button.kiu-btn-outline {
+    background: var(--lux-surface) !important;
+    color: var(--lux-text) !important;
+    border: 1px solid var(--lux-border) !important;
+}
+
+body.lux-light-mode.lux-route-student-service .content-box *,
+body.lux-light-mode.lux-route-student-service .surface-card * {
+    border-color: var(--lux-border) !important;
+}
+
+/* Student Service account widgets: signal-colored fade overlays on tokenized surfaces. */
+body.lux-route-student-service .student-service-summary-card,
+body.lux-route-student-service .student-service-ticket-stat,
+body.lux-route-student-service .student-service-home-card,
+body.lux-route-student-service .student-service-track-card,
+body.lux-route-student-service .student-service-lane-switcher-shell,
+body.lux-route-student-service .student-service-lane-card,
+body.lux-route-student-service .student-service-ticket-card,
+body.lux-route-student-service .student-service-ops-card,
+body.lux-route-student-service .student-service-home-panel,
+body.lux-route-student-service .student-service-zone {
+    position: relative;
+    overflow: hidden;
+    border-color: rgba(var(--student-service-card-rgb, var(--student-service-fade-a)), 0.18) !important;
+    background:
+        radial-gradient(circle at 6% 0%, rgba(255, 255, 255, calc(var(--lux-color-fade-alpha, .92) * .08)), transparent 32%),
+        radial-gradient(circle at 74% 0%, rgba(var(--student-service-card-rgb, var(--student-service-fade-a)), calc(var(--lux-color-fade-alpha, .92) * .30)), transparent 42%),
+        radial-gradient(circle at 100% 96%, rgba(var(--student-service-card-rgb-2, var(--student-service-fade-b)), calc(var(--lux-color-fade-alpha, .92) * .18)), transparent 40%),
+        linear-gradient(135deg, rgba(var(--student-service-card-rgb, var(--student-service-fade-a)), calc(var(--lux-color-fade-alpha, .92) * .08)), rgba(10, 15, 24, calc(var(--lux-transparency-alpha, .92) * .86)) 44%, rgba(7, 10, 18, calc(var(--lux-transparency-alpha, .92) * .78))) !important;
+    box-shadow:
+        0 24px 58px rgba(0, 0, 0, 0.24),
+        inset 0 1px 0 rgba(255, 255, 255, 0.07) !important;
+    backdrop-filter: blur(var(--lux-transparency-blur, 20px)) saturate(var(--lux-transparency-saturate, 145%)) !important;
+    -webkit-backdrop-filter: blur(var(--lux-transparency-blur, 20px)) saturate(var(--lux-transparency-saturate, 145%)) !important;
+}
+
+body.lux-route-student-service .student-service-summary-card--signal-a,
+body.lux-route-student-service .student-service-ticket-stat:nth-child(4n+1),
+body.lux-route-student-service .student-service-home-card:nth-child(4n+1),
+body.lux-route-student-service .student-service-track-card:nth-child(4n+1),
+body.lux-route-student-service .student-service-lane-card:nth-child(4n+1),
+body.lux-route-student-service .student-service-ticket-card:nth-child(4n+1),
+body.lux-route-student-service .student-service-ops-card:nth-child(4n+1) {
+    --student-service-card-rgb: var(--student-service-fade-a);
+    --student-service-card-rgb-2: var(--student-service-fade-b);
+}
+
+body.lux-route-student-service .student-service-summary-card--signal-b,
+body.lux-route-student-service .student-service-ticket-stat:nth-child(4n+2),
+body.lux-route-student-service .student-service-home-card:nth-child(4n+2),
+body.lux-route-student-service .student-service-track-card:nth-child(4n+2),
+body.lux-route-student-service .student-service-lane-card:nth-child(4n+2),
+body.lux-route-student-service .student-service-ticket-card:nth-child(4n+2),
+body.lux-route-student-service .student-service-ops-card:nth-child(4n+2) {
+    --student-service-card-rgb: var(--student-service-fade-b);
+    --student-service-card-rgb-2: var(--student-service-fade-c);
+}
+
+body.lux-route-student-service .student-service-summary-card--signal-c,
+body.lux-route-student-service .student-service-ticket-stat:nth-child(4n+3),
+body.lux-route-student-service .student-service-home-card:nth-child(4n+3),
+body.lux-route-student-service .student-service-track-card:nth-child(4n+3),
+body.lux-route-student-service .student-service-lane-card:nth-child(4n+3),
+body.lux-route-student-service .student-service-ticket-card:nth-child(4n+3),
+body.lux-route-student-service .student-service-ops-card:nth-child(4n+3) {
+    --student-service-card-rgb: var(--student-service-fade-c);
+    --student-service-card-rgb-2: var(--student-service-fade-d);
+}
+
+body.lux-route-student-service .student-service-summary-card--signal-d,
+body.lux-route-student-service .student-service-ticket-stat:nth-child(4n),
+body.lux-route-student-service .student-service-home-card:nth-child(4n),
+body.lux-route-student-service .student-service-track-card:nth-child(4n),
+body.lux-route-student-service .student-service-lane-card:nth-child(4n),
+body.lux-route-student-service .student-service-ticket-card:nth-child(4n),
+body.lux-route-student-service .student-service-ops-card:nth-child(4n) {
+    --student-service-card-rgb: var(--student-service-fade-d);
+    --student-service-card-rgb-2: var(--student-service-fade-a);
+}
+
+body.lux-route-student-service .student-service-zone:nth-of-type(2n),
+body.lux-route-student-service .student-service-home-panel:nth-of-type(2n) {
+    --student-service-card-rgb: var(--student-service-fade-b);
+    --student-service-card-rgb-2: var(--student-service-fade-c);
+}
+
+body.lux-route-student-service .student-service-lane-card.is-active,
+body.lux-route-student-service .student-service-ticket-card.is-selected {
+    border-color: rgba(var(--student-service-card-rgb, var(--student-service-fade-a)), 0.52) !important;
+    box-shadow:
+        0 0 0 1px rgba(var(--student-service-card-rgb, var(--student-service-fade-a)), 0.18),
+        0 18px 38px rgba(var(--student-service-card-rgb, var(--student-service-fade-a)), 0.16) !important;
+}
+
+body.lux-light-mode.lux-route-student-service .student-service-summary-card,
+body.lux-light-mode.lux-route-student-service .student-service-ticket-stat,
+body.lux-light-mode.lux-route-student-service .student-service-home-card,
+body.lux-light-mode.lux-route-student-service .student-service-track-card,
+body.lux-light-mode.lux-route-student-service .student-service-lane-switcher-shell,
+body.lux-light-mode.lux-route-student-service .student-service-lane-card,
+body.lux-light-mode.lux-route-student-service .student-service-ticket-card,
+body.lux-light-mode.lux-route-student-service .student-service-ops-card,
+body.lux-light-mode.lux-route-student-service .student-service-home-panel,
+body.lux-light-mode.lux-route-student-service .student-service-zone {
+    border-color: rgba(var(--student-service-card-rgb, var(--student-service-fade-a)), 0.18) !important;
+    background:
+        radial-gradient(circle at 6% 0%, rgba(255, 255, 255, calc(var(--lux-color-fade-alpha, .88) * .88)), transparent 34%),
+        radial-gradient(circle at 74% 0%, rgba(var(--student-service-card-rgb, var(--student-service-fade-a)), calc(var(--lux-color-fade-alpha, .88) * .24)), transparent 42%),
+        radial-gradient(circle at 100% 96%, rgba(var(--student-service-card-rgb-2, var(--student-service-fade-b)), calc(var(--lux-color-fade-alpha, .88) * .14)), transparent 40%),
+        linear-gradient(135deg, rgba(var(--student-service-card-rgb, var(--student-service-fade-a)), calc(var(--lux-color-fade-alpha, .88) * .065)), rgba(255, 255, 255, calc(var(--lux-transparency-alpha, .88) * .84)) 44%, rgba(247, 241, 232, calc(var(--lux-transparency-alpha, .88) * .70))) !important;
+    box-shadow:
+        0 16px 34px rgba(32, 42, 58, 0.10),
+        inset 0 1px 0 rgba(255, 255, 255, 0.74) !important;
+}
+
+body[data-lux-performance='efficient'].lux-route-student-service .student-service-summary-card,
+body[data-lux-performance='efficient'].lux-route-student-service .student-service-ticket-stat,
+body[data-lux-performance='efficient'].lux-route-student-service .student-service-home-card,
+body[data-lux-performance='efficient'].lux-route-student-service .student-service-track-card,
+body[data-lux-performance='efficient'].lux-route-student-service .student-service-lane-switcher-shell,
+body[data-lux-performance='efficient'].lux-route-student-service .student-service-lane-card,
+body[data-lux-performance='efficient'].lux-route-student-service .student-service-ticket-card,
+body[data-lux-performance='efficient'].lux-route-student-service .student-service-ops-card,
+body[data-lux-performance='efficient'].lux-route-student-service .student-service-home-panel,
+body[data-lux-performance='efficient'].lux-route-student-service .student-service-zone {
+    box-shadow: 0 14px 30px rgba(0, 0, 0, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
+    -webkit-backdrop-filter: blur(10px) saturate(118%) !important;
+    backdrop-filter: blur(10px) saturate(118%) !important;
+}
+
+body[data-lux-performance='efficient'].lux-route-student-service .student-service-article-card,
+body[data-lux-performance='efficient'].lux-route-student-service .student-service-ticket-row,
+body[data-lux-performance='efficient'].lux-route-student-service .student-service-home-ticket,
+body[data-lux-performance='efficient'].lux-route-student-service .student-service-home-topic,
+body[data-lux-performance='efficient'].lux-route-student-service .student-service-ops-ticket,
+body[data-lux-performance='efficient'].lux-route-student-service .student-service-ops-lane,
+body[data-lux-performance='efficient'].lux-route-student-service .student-service-qa-card,
+body[data-lux-performance='efficient'].lux-route-student-service .student-service-qa-answer-card {
+    box-shadow: 0 10px 22px rgba(0, 0, 0, 0.14) !important;
+    -webkit-backdrop-filter: blur(8px) saturate(112%) !important;
+    backdrop-filter: blur(8px) saturate(112%) !important;
+}
+
+body[data-lux-performance='efficient'].lux-route-student-service .student-service-lane-card.is-active,
+body[data-lux-performance='efficient'].lux-route-student-service .student-service-ticket-card.is-selected {
+    box-shadow:
+        0 0 0 1px rgba(var(--student-service-card-rgb, var(--student-service-fade-a)), 0.16),
+        0 12px 26px rgba(var(--student-service-card-rgb, var(--student-service-fade-a)), 0.12) !important;
+}
+
+body[data-lux-performance='efficient'].lux-light-mode.lux-route-student-service .student-service-summary-card,
+body[data-lux-performance='efficient'].lux-light-mode.lux-route-student-service .student-service-ticket-stat,
+body[data-lux-performance='efficient'].lux-light-mode.lux-route-student-service .student-service-home-card,
+body[data-lux-performance='efficient'].lux-light-mode.lux-route-student-service .student-service-track-card,
+body[data-lux-performance='efficient'].lux-light-mode.lux-route-student-service .student-service-lane-switcher-shell,
+body[data-lux-performance='efficient'].lux-light-mode.lux-route-student-service .student-service-lane-card,
+body[data-lux-performance='efficient'].lux-light-mode.lux-route-student-service .student-service-ticket-card,
+body[data-lux-performance='efficient'].lux-light-mode.lux-route-student-service .student-service-ops-card,
+body[data-lux-performance='efficient'].lux-light-mode.lux-route-student-service .student-service-home-panel,
+body[data-lux-performance='efficient'].lux-light-mode.lux-route-student-service .student-service-zone {
+    box-shadow: 0 14px 28px rgba(62, 42, 20, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.72) !important;
+}
+
+body[data-lux-performance='efficient'].lux-light-mode.lux-route-student-service .student-service-article-card,
+body[data-lux-performance='efficient'].lux-light-mode.lux-route-student-service .student-service-ticket-row,
+body[data-lux-performance='efficient'].lux-light-mode.lux-route-student-service .student-service-home-ticket,
+body[data-lux-performance='efficient'].lux-light-mode.lux-route-student-service .student-service-home-topic,
+body[data-lux-performance='efficient'].lux-light-mode.lux-route-student-service .student-service-ops-ticket,
+body[data-lux-performance='efficient'].lux-light-mode.lux-route-student-service .student-service-ops-lane,
+body[data-lux-performance='efficient'].lux-light-mode.lux-route-student-service .student-service-qa-card,
+body[data-lux-performance='efficient'].lux-light-mode.lux-route-student-service .student-service-qa-answer-card {
+    box-shadow: 0 10px 20px rgba(62, 42, 20, 0.07) !important;
+}
+
+body.lux-route-student-service .student-service-status[data-student-service-status-scope='ticket'],
+body.lux-route-student-service .student-service-status[data-student-service-status-scope='article'],
+body.lux-route-student-service .student-service-status--ticket,
+body.lux-route-student-service .student-service-status--article {
+    justify-content: center;
+    min-height: 30px;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+body.lux-route-student-service .student-service-status[data-student-service-status-key='open'],
+body.lux-route-student-service .student-service-status--open {
+    background: rgba(var(--lux-service-accent-rgb), 0.16);
+    color: rgba(var(--lux-service-accent-rgb), 0.98);
+    border-color: rgba(var(--lux-service-accent-rgb), 0.22);
+}
+
+body.lux-route-student-service .student-service-status[data-student-service-status-key='in-review'],
+body.lux-route-student-service .student-service-status[data-student-service-status-key='waiting-student'],
+body.lux-route-student-service .student-service-status--in-review,
+body.lux-route-student-service .student-service-status--waiting-student {
+    background: rgba(var(--lux-accent-rgb), 0.14);
+    color: var(--lux-accent);
+    border-color: rgba(var(--lux-accent-rgb), 0.2);
+}
+
+body.lux-route-student-service .student-service-status[data-student-service-status-key='waiting-service'],
+body.lux-route-student-service .student-service-status[data-student-service-status-key='resolved'],
+body.lux-route-student-service .student-service-status[data-student-service-status-key='closed'],
+body.lux-route-student-service .student-service-status[data-student-service-status-key='published'],
+body.lux-route-student-service .student-service-status--waiting-service,
+body.lux-route-student-service .student-service-status--resolved,
+body.lux-route-student-service .student-service-status--closed,
+body.lux-route-student-service .student-service-status--published {
+    background: rgba(var(--lux-home-secondary-rgb), 0.16);
+    color: var(--lux-home-secondary);
+    border-color: rgba(var(--lux-home-secondary-rgb), 0.22);
+}
+
+body.lux-route-student-service .student-service-status[data-student-service-status-key='draft'],
+body.lux-route-student-service .student-service-status[data-student-service-status-key='neutral'],
+body.lux-route-student-service .student-service-status--draft,
+body.lux-route-student-service .student-service-status--neutral {
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--lux-text-muted);
+    border-color: rgba(255, 255, 255, 0.12);
+}
+
+body.lux-route-student-service .student-service-ticket-card-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+body.lux-route-student-service .student-service-ticket-card-title {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-size: 14px;
+    line-height: 1.3;
+    color: var(--lux-text);
+}
+
+body.lux-route-student-service .student-service-ticket-card-status,
+body.lux-route-student-service .student-service-ticket-detail-status,
+body.lux-route-student-service .student-service-track-panel-status,
+body.lux-route-student-service .student-service-article-preview-status {
+    flex: 0 0 auto;
+    align-self: flex-start;
+}
+
+body.lux-route-student-service .student-service-ticket-card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 10px;
+}
+
+body.lux-route-student-service .student-service-ticket-card-meta-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+body.lux-route-student-service .student-service-ticket-card-meta-item:not(:first-child)::before {
+    content: '';
+    width: 4px;
+    height: 4px;
+    border-radius: 999px;
+    background: rgba(var(--lux-service-accent-rgb), 0.42);
+}
+
+body.lux-route-student-service .student-service-ticket-card-copy {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+}
+
+body.lux-route-student-service .student-service-ticket-detail-copy--summary {
+    padding: 14px 16px;
+    border-radius: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--lux-text);
+}
+
+body.lux-route-student-service .student-service-thread-entry {
+    display: grid;
+    gap: 8px;
+}
+
+body.lux-route-student-service .student-service-thread-entry.is-support {
+    border-color: rgba(var(--lux-home-secondary-rgb), 0.14);
+}
+
+body.lux-route-student-service .student-service-thread-entry-author {
+    font-size: 12px;
+    line-height: 1.35;
+    color: var(--lux-text);
+}
+
+body.lux-route-student-service .student-service-thread-entry-role {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 9px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--lux-text-muted);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+body.lux-route-student-service .student-service-thread-entry-copy {
+    margin-top: 0;
+}
+
+body.lux-route-student-service .student-service-thread-entry-copy-body > :first-child {
+    margin-top: 0;
+}
+
+body.lux-route-student-service .student-service-thread-entry-copy-body > :last-child {
+    margin-bottom: 0;
+}
+
+body.lux-route-student-service .student-service-empty-state--tickets,
+body.lux-route-student-service .student-service-empty-state--detail {
+    display: grid;
+    place-items: center;
+    text-align: center;
+}
+
+body.lux-route-student-service .student-service-empty-state--tickets {
+    min-height: 104px;
+}
+
+body.lux-route-student-service .student-service-empty-state--detail {
+    min-height: 220px;
+}
+
+body.lux-light-mode.lux-route-student-service .student-service-status[data-student-service-status-key='open'],
+body.lux-light-mode.lux-route-student-service .student-service-status--open {
+    background: rgba(var(--lux-service-accent-rgb), 0.12) !important;
+    color: rgba(var(--lux-service-accent-rgb), 1) !important;
+    border-color: rgba(var(--lux-service-accent-rgb), 0.24) !important;
+}
+
+body.lux-light-mode.lux-route-student-service .student-service-status[data-student-service-status-key='in-review'],
+body.lux-light-mode.lux-route-student-service .student-service-status[data-student-service-status-key='waiting-student'],
+body.lux-light-mode.lux-route-student-service .student-service-status--in-review,
+body.lux-light-mode.lux-route-student-service .student-service-status--waiting-student {
+    background: rgba(var(--lux-accent-rgb), 0.12) !important;
+    color: var(--lux-accent) !important;
+    border-color: rgba(var(--lux-accent-rgb), 0.2) !important;
+}
+
+body.lux-light-mode.lux-route-student-service .student-service-status[data-student-service-status-key='waiting-service'],
+body.lux-light-mode.lux-route-student-service .student-service-status[data-student-service-status-key='resolved'],
+body.lux-light-mode.lux-route-student-service .student-service-status[data-student-service-status-key='closed'],
+body.lux-light-mode.lux-route-student-service .student-service-status[data-student-service-status-key='published'],
+body.lux-light-mode.lux-route-student-service .student-service-status--waiting-service,
+body.lux-light-mode.lux-route-student-service .student-service-status--resolved,
+body.lux-light-mode.lux-route-student-service .student-service-status--closed,
+body.lux-light-mode.lux-route-student-service .student-service-status--published {
+    background: rgba(var(--lux-home-secondary-rgb), 0.12) !important;
+    color: color-mix(in srgb, var(--lux-home-secondary) 88%, #143d2c 12%) !important;
+    border-color: rgba(var(--lux-home-secondary-rgb), 0.2) !important;
+}
+
+body.lux-light-mode.lux-route-student-service .student-service-status[data-student-service-status-key='draft'],
+body.lux-light-mode.lux-route-student-service .student-service-status[data-student-service-status-key='neutral'],
+body.lux-light-mode.lux-route-student-service .student-service-status--draft,
+body.lux-light-mode.lux-route-student-service .student-service-status--neutral,
+body.lux-light-mode.lux-route-student-service .student-service-thread-entry-role {
+    background: rgba(255, 255, 255, 0.8) !important;
+    color: var(--lux-text-muted) !important;
+    border-color: var(--lux-border) !important;
+}
+
+body.lux-light-mode.lux-route-student-service .student-service-ticket-card-meta-item:not(:first-child)::before {
+    background: rgba(var(--lux-service-accent-rgb), 0.28) !important;
+}
+
+body.lux-light-mode.lux-route-student-service .student-service-ticket-detail-copy--summary,
+body.lux-light-mode.lux-route-student-service .student-service-thread-entry-copy-body,
+body.lux-light-mode.lux-route-student-service .student-service-empty-state--tickets,
+body.lux-light-mode.lux-route-student-service .student-service-empty-state--detail {
+    color: var(--lux-text) !important;
+}

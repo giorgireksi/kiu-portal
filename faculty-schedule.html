@@ -5,51 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="refresh" content="0; url=timetable.html">
     <title>Redirecting to Teaching Schedule</title>
-    <style>
-        body {
-            margin: 0;
-            min-height: 100vh;
-            display: grid;
-            place-items: center;
-            padding: 24px;
-            font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-            background: #0b1220;
-            color: #e5ecf4;
-        }
-
-        main {
-            max-width: 460px;
-            padding: 24px;
-            border: 1px solid rgba(229, 236, 244, 0.14);
-            border-radius: 18px;
-            background: rgba(11, 18, 32, 0.94);
-            text-align: center;
-        }
-
-        h1 {
-            margin: 0 0 12px;
-            font-size: 1.25rem;
-        }
-
-        p {
-            margin: 0 0 12px;
-            line-height: 1.5;
-        }
-
-        a {
-            color: #93c5fd;
-            font-weight: 600;
-        }
-    </style>
+    <link rel="stylesheet" href="assets/css/lux-tokens.css?v=20260606-luxscrollbar1">
+    <link rel="stylesheet" href="assets/css/lux-surfaces.css?v=20260527-profcss1">
+    <link rel="stylesheet" href="assets/css/lux-controls.css?v=20260606-pickerscroll1">
+    <link rel="stylesheet" href="assets/css/lux-layout-primitives.css?v=20260606-luxscrollbar1">
+    <link rel="stylesheet" href="assets/css/redirect-route.css?v=20260524-redirect1">
     <script>
         window.location.replace('timetable.html');
     </script>
 </head>
-<body>
-    <main>
-        <h1>Redirecting to Teaching Schedule</h1>
-        <p>The faculty schedule route now forwards to the live timetable workspace.</p>
-        <p><a href="timetable.html">Continue if you are not redirected automatically.</a></p>
+<body class="redirect-route palette-slate-sapphire">
+    <main class="redirect-route__card lux-summary-surface lux-summary-surface--panel">
+        <p class="redirect-route__eyebrow">Legacy Alias</p>
+        <p class="redirect-route__status lux-status-pill lux-status-pill--dot lux-status-pill--soft">Auto-redirect active</p>
+        <h1 class="redirect-route__title">Redirecting to Teaching Schedule</h1>
+        <p class="redirect-route__copy">The faculty schedule route now forwards to the live timetable workspace.</p>
+        <div class="redirect-route__actions">
+            <a class="redirect-route__action lux-primary-btn" href="timetable.html">Open Timetable</a>
+        </div>
+        <p class="redirect-route__helper">If your browser blocks automatic navigation, use the button above to continue manually.</p>
     </main>
 </body>
 </html>

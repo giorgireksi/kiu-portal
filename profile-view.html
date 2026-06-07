@@ -8,12 +8,15 @@
     <link rel="stylesheet" href="assets/vendor/fontawesome/css/all.min.css?v=1776604822072">
     <link rel="stylesheet" href="assets/css/kiu-fonts.css?v=20260515-fonts1">
     <link rel="stylesheet" href="assets/css/base.css?v=20260419-libsync1">
-    <link rel="stylesheet" href="assets/css/layout.css?v=1776604822072">
-    <link rel="stylesheet" href="assets/css/components.css?v=1776604822072">
-    <link rel="stylesheet" href="assets/css/profile-view-route.css?v=20260518-profileview-markup1">
-<link rel="stylesheet" href="assets/css/index-luxury.css?v=20260419-libsync1">
-<link rel="stylesheet" href="assets/css/mobile-responsive.css?v=20260419-libsync1">
-    <script src="assets/js/theme-primer.js?v=20260419-flat5"></script>
+    <link rel="stylesheet" href="assets/css/layout.css?v=20260528-layoutfix2">
+    <link rel="stylesheet" href="assets/css/lux-tokens.css?v=20260606-luxscrollbar1">
+    <link rel="stylesheet" href="assets/css/lux-surfaces.css?v=20260527-profcss1">
+    <link rel="stylesheet" href="assets/css/lux-controls.css?v=20260606-pickerscroll1">
+    <link rel="stylesheet" href="assets/css/lux-layout-primitives.css?v=20260606-luxscrollbar1">
+    <link rel="stylesheet" href="assets/css/index-luxury.css?v=20260531-partbg4">
+    <link rel="stylesheet" href="assets/css/mobile-responsive.css?v=20260419-libsync1">
+    <link rel="stylesheet" href="assets/css/profile-view-route.css?v=20260530-pvglass1">
+    <script src="assets/js/theme-primer.js?v=20260604-styleguard2"></script>
 </head>
 <body class="kiu-shell-loading lux-nonhome-page lux-route-profile-view lux-unified-shell">
 <!-- Navigation stubs (hidden, for JS compatibility) -->
@@ -32,7 +35,7 @@
 
 <template id="pv-session-modal-template">
     <div id="pv-session-modal" class="pv-modal-overlay" data-pv-modal-overlay>
-        <div class="pv-modal-card pv-modal-card--session">
+        <div class="pv-modal-card surface-card pv-modal-card--session">
             <div class="pv-modal-header">
                 <div>
                     <div class="pv-modal-title" data-pv-session-title><i class="fas fa-calendar-plus"></i> New Class Session</div>
@@ -42,27 +45,27 @@
             </div>
             <div class="pv-modal-form" id="pv-session-form">
                 <div class="pv-modal-grid-session-subject">
-                    <div><label class="pvsm-lbl">Subject <span class="pv-inline-required">*</span></label><select id="pvs-subject" class="pvsm-in"></select></div>
-                    <div><label class="pvsm-lbl">Group ID <span class="pv-inline-required">*</span></label><input id="pvs-group" type="text" class="pvsm-in" placeholder="e.g. G1"></div>
+                    <div><label class="pvsm-lbl">Subject <span class="pv-inline-required">*</span></label><select id="pvs-subject" class="pv-modal-input lux-control"></select></div>
+                    <div><label class="pvsm-lbl">Group ID <span class="pv-inline-required">*</span></label><input id="pvs-group" type="text" class="pv-modal-input lux-control" placeholder="e.g. G1"></div>
                 </div>
                 <div class="pv-modal-grid-two">
-                    <div><label class="pvsm-lbl">Day</label><select id="pvs-day" class="pvsm-in"></select></div>
-                    <div><label class="pvsm-lbl">Room</label><input id="pvs-room" type="text" class="pvsm-in" placeholder="e.g. A-101"></div>
+                    <div><label class="pvsm-lbl">Day</label><select id="pvs-day" class="pv-modal-input lux-control"></select></div>
+                    <div><label class="pvsm-lbl">Room</label><input id="pvs-room" type="text" class="pv-modal-input lux-control" placeholder="e.g. A-101"></div>
                 </div>
                 <div class="pv-modal-grid-three">
-                    <div><label class="pvsm-lbl">Start Time</label><input id="pvs-time" type="time" class="pvsm-in" step="60" data-pv-session-sync="start"></div>
-                    <div><label class="pvsm-lbl">Duration</label><select id="pvs-duration" class="pvsm-in" data-pv-session-sync="start"><option value="50">50min</option><option value="80">80min</option><option value="110" selected>~2h (110 min)</option><option value="170">~3h (170 min)</option></select></div>
-                    <div><label class="pvsm-lbl">End Time</label><select id="pvs-endtime" class="pvsm-in" data-pv-session-sync="end"></select></div>
+                    <div><label class="pvsm-lbl">Start Time</label><input id="pvs-time" type="time" class="pv-modal-input lux-control" step="60" data-pv-session-sync="start"></div>
+                    <div><label class="pvsm-lbl">Duration</label><select id="pvs-duration" class="pv-modal-input lux-control" data-pv-session-sync="start"><option value="50">50min</option><option value="80">80min</option><option value="110" selected>~2h (110 min)</option><option value="170">~3h (170 min)</option></select></div>
+                    <div><label class="pvsm-lbl">End Time</label><select id="pvs-endtime" class="pv-modal-input lux-control" data-pv-session-sync="end"></select></div>
                 </div>
                 <div class="pv-modal-grid-two">
-                    <div><label class="pvsm-lbl">Professor <span class="pv-inline-optional">(optional)</span></label><input id="pvs-prof" type="text" class="pvsm-in" list="pvs-profs-dl" placeholder="Search by name..."><datalist id="pvs-profs-dl"></datalist></div>
-                    <div><label class="pvsm-lbl">Teaching Assistant <span class="pv-inline-optional">(optional)</span></label><input id="pvs-ta" type="text" class="pvsm-in" list="pvs-tas-dl" placeholder="Search by name..."><datalist id="pvs-tas-dl"></datalist></div>
+                    <div><label class="pvsm-lbl">Professor <span class="pv-inline-optional">(optional)</span></label><input id="pvs-prof" type="text" class="pv-modal-input lux-control" list="pvs-profs-dl" placeholder="Search by name..."><datalist id="pvs-profs-dl"></datalist></div>
+                    <div><label class="pvsm-lbl">Teaching Assistant <span class="pv-inline-optional">(optional)</span></label><input id="pvs-ta" type="text" class="pv-modal-input lux-control" list="pvs-tas-dl" placeholder="Search by name..."><datalist id="pvs-tas-dl"></datalist></div>
                 </div>
                 <div class="pv-modal-grid-capacity">
-                    <div><label class="pvsm-lbl">Capacity</label><input id="pvs-capacity" type="number" class="pvsm-in" value="40" min="1" max="200"></div>
-                    <div><label class="pvsm-lbl">Active Faculty (auto)</label><input id="pvs-faculty-name" type="text" class="pvsm-in pv-readonly-input" readonly></div>
+                    <div><label class="pvsm-lbl">Capacity</label><input id="pvs-capacity" type="number" class="pv-modal-input lux-control" value="40" min="1" max="200"></div>
+                    <div><label class="pvsm-lbl">Active Faculty (auto)</label><input id="pvs-faculty-name" type="text" class="pv-modal-input pv-readonly-input lux-control" readonly></div>
                 </div>
-                <div><label class="pvsm-lbl">Apply Changes To</label><select id="pvs-scope" class="pvsm-in"><option value="selected-week">Selected week only</option><option value="recurring">Recurring template</option></select></div>
+                <div><label class="pvsm-lbl">Apply Changes To</label><select id="pvs-scope" class="pv-modal-input lux-control"><option value="selected-week">Selected week only</option><option value="recurring">Recurring template</option></select></div>
             </div>
             <div class="pv-modal-footer">
                 <button type="button" class="lux-primary-btn pv-modal-submit" data-pv-action="create-session"><i class="fas fa-plus-circle"></i> Create Session &amp; Deploy</button>
@@ -73,25 +76,25 @@
 
 <template id="pv-editgroup-modal-template">
     <div id="pv-editgroup-modal" class="pv-modal-overlay" data-pv-modal-overlay>
-        <div class="pv-modal-card pv-modal-card--group">
+        <div class="pv-modal-card surface-card pv-modal-card--group">
             <div class="pv-modal-header pv-modal-header--compact">
                 <div><div class="pv-modal-title" data-pv-group-title><i class="fas fa-edit"></i> Edit Group</div><div class="pv-modal-subtitle" data-pv-group-subtitle></div></div>
                 <i class="fas fa-times pv-modal-close" data-pv-remove-target="pv-editgroup-modal"></i>
             </div>
             <div class="pv-modal-form pv-modal-form--compact" id="pv-eg-form">
                 <div class="pv-modal-grid-two">
-                    <div><label class="peg-lbl">Day</label><select id="peg-day" class="peg-in"></select></div>
-                    <div><label class="peg-lbl">Room</label><input id="peg-room" type="text" class="peg-in"></div>
+                    <div><label class="peg-lbl">Day</label><select id="peg-day" class="pv-group-input lux-control"></select></div>
+                    <div><label class="peg-lbl">Room</label><input id="peg-room" type="text" class="pv-group-input lux-control"></div>
                 </div>
                 <div class="pv-modal-grid-three">
-                    <div><label class="peg-lbl">Start Time</label><select id="peg-time" class="peg-in"></select></div>
-                    <div><label class="peg-lbl">Duration</label><select id="peg-dur" class="peg-in"></select></div>
-                    <div><label class="peg-lbl">End Time</label><select id="peg-endtime" class="peg-in"></select></div>
+                    <div><label class="peg-lbl">Start Time</label><select id="peg-time" class="pv-group-input lux-control"></select></div>
+                    <div><label class="peg-lbl">Duration</label><select id="peg-dur" class="pv-group-input lux-control"></select></div>
+                    <div><label class="peg-lbl">End Time</label><select id="peg-endtime" class="pv-group-input lux-control"></select></div>
                 </div>
                 <div class="pv-modal-grid-group-people">
-                    <div><label class="peg-lbl">Capacity</label><input id="peg-cap" type="number" class="peg-in" min="1" max="200"></div>
-                    <div><label class="peg-lbl">Professor</label><input id="peg-prof" type="text" class="peg-in"></div>
-                    <div><label class="peg-lbl">TA</label><input id="peg-ta" type="text" class="peg-in"></div>
+                    <div><label class="peg-lbl">Capacity</label><input id="peg-cap" type="number" class="pv-group-input lux-control" min="1" max="200"></div>
+                    <div><label class="peg-lbl">Professor</label><input id="peg-prof" type="text" class="pv-group-input lux-control"></div>
+                    <div><label class="peg-lbl">TA</label><input id="peg-ta" type="text" class="pv-group-input lux-control"></div>
                 </div>
             </div>
             <div class="pv-modal-footer pv-modal-footer--compact">
@@ -118,8 +121,8 @@
 <script src="assets/js/data/initial-state.js?v=1776604822072"></script>
 <script src="assets/js/app/state.js?v=20260429-statestackfix1"></script>
 <script src="assets/js/shared/faculty.js?v=20260429-peopleisolation1"></script>
-<script src="assets/js/shared/utilities.js?v=20260504-transparency-refresh1"></script>
-<script src="assets/js/features/navigation.js?v=20260429-shellinit1"></script>
+<script src="assets/js/shared/utilities.js?v=20260605-blurfix1"></script>
+<script src="assets/js/features/navigation.js?v=20260604-standaloneboot2"></script>
 <script src="assets/js/features/ui.js?v=20260429-peopleisolation1"></script>
 <script src="assets/js/pages/profile-view-admin-actions.js?v=20260517-profileviewadmin1"></script>
 <script>
@@ -301,7 +304,55 @@ function pvEnsureTabContent(tabId) {
     if (!template) return tabPanel;
     tabPanel.innerHTML = template.innerHTML;
     tabPanel.dataset.pvMounted = '1';
+    applyProfileViewDataStyles(tabPanel);
     return tabPanel;
+}
+
+function escapeProfileViewAttr(value) {
+    return String(value == null ? '' : value)
+        .replace(/&/g, '&amp;')
+        .replace(/"/g, '&quot;')
+        .replace(/</g, '&lt;');
+}
+
+const PROFILE_VIEW_DATA_STYLE_BINDINGS = [
+    ['data-pv-mini-body-height', '--pv-mini-body-height'],
+    ['data-pv-event-top', '--pv-event-top'],
+    ['data-pv-event-height', '--pv-event-height'],
+    ['data-pv-event-accent', '--pv-event-accent'],
+    ['data-pv-event-soft', '--pv-event-soft'],
+    ['data-pv-event-soft-hover', '--pv-event-soft-hover'],
+    ['data-pv-event-border', '--pv-event-border'],
+    ['data-pv-hero-accent', '--pv-hero-accent'],
+    ['data-pv-avatar-bg', '--pv-avatar-bg'],
+    ['data-pv-role-badge-bg', '--pv-role-badge-bg'],
+    ['data-pv-role-badge-color', '--pv-role-badge-color'],
+    ['data-pv-status-bg', '--pv-status-bg'],
+    ['data-pv-status-color', '--pv-status-color'],
+    ['data-pv-faculty-accent', '--pv-faculty-accent'],
+    ['data-pv-stat-accent', '--pv-stat-accent'],
+    ['data-pv-inline-status-bg', '--pv-inline-status-bg'],
+    ['data-pv-inline-status-color', '--pv-inline-status-color'],
+    ['data-pv-progress-value-color', '--pv-progress-value-color'],
+    ['data-pv-progress-width', '--pv-progress-width'],
+    ['data-pv-progress-color', '--pv-progress-color'],
+    ['data-pv-financial-status-color', '--pv-financial-status-color'],
+    ['data-pv-subject-pill-bg', '--pv-subject-pill-bg'],
+    ['data-pv-subject-pill-color', '--pv-subject-pill-color'],
+    ['data-pv-grade-record-color', '--pv-grade-record-color'],
+    ['data-pv-inline-accent', '--pv-inline-accent'],
+    ['data-pv-financial-border', '--pv-financial-border'],
+    ['data-pv-financial-accent', '--pv-financial-accent']
+];
+
+function applyProfileViewDataStyles(root = document) {
+    PROFILE_VIEW_DATA_STYLE_BINDINGS.forEach(([attributeName, cssVariable]) => {
+        root.querySelectorAll(`[${attributeName}]`).forEach((node) => {
+            const value = node.getAttribute(attributeName);
+            if (!value) return;
+            node.style.setProperty(cssVariable, value);
+        });
+    });
 }
 
 function bindProfileViewDelegatedInteractions() {
@@ -402,7 +453,7 @@ function bindProfileViewDelegatedInteractions() {
                 generateTranscriptForUser(actionNode.dataset.pvUserId || '');
                 return;
             case 'remove-static-document':
-                actionNode.closest('div[style*="border-radius:12px"]')?.remove();
+                actionNode.closest('.pv-document-card')?.remove();
                 return;
             case 'remove-custom-document':
                 pvRemoveCustomDoc(
@@ -443,18 +494,27 @@ function bindProfileViewDelegatedInteractions() {
         syncProfileViewSessionModal(event.target);
     });
 
+    if (!window.__pvAvatarErrorBound) {
+        window.__pvAvatarErrorBound = true;
+        document.addEventListener('error', (event) => {
+            const target = event.target;
+            if (!(target instanceof HTMLImageElement) || !target.matches('[data-pv-avatar-image]')) return;
+            const fallbackHost = target.parentElement;
+            if (!fallbackHost) return;
+            const fallbackText = fallbackHost.dataset.pvAvatarFallback || 'PU';
+            fallbackHost.textContent = fallbackText;
+        }, true);
+    }
+
     document.addEventListener('mouseover', (event) => {
         const hoverNode = event.target.closest('[data-pv-hover]');
         if (!hoverNode) return;
         if (hoverNode.dataset.pvHover === 'slot') {
-            hoverNode.style.background = 'rgba(37,99,235,0.04)';
-            hoverNode.querySelector('.slot-hint')?.style.setProperty('display', 'block');
+            hoverNode.classList.add('is-hover');
             return;
         }
         if (hoverNode.dataset.pvHover === 'event-card') {
-            const hoverColor = hoverNode.dataset.pvHoverColor || 'rgba(37,99,235,0.12)';
-            hoverNode.style.background = hoverColor;
-            hoverNode.querySelector('.pv-ev-trash')?.style.setProperty('opacity', '1');
+            hoverNode.classList.add('is-hover');
         }
     });
 
@@ -464,13 +524,11 @@ function bindProfileViewDelegatedInteractions() {
         const nextTarget = event.relatedTarget;
         if (nextTarget && hoverNode.contains(nextTarget)) return;
         if (hoverNode.dataset.pvHover === 'slot') {
-            hoverNode.style.background = '';
-            hoverNode.querySelector('.slot-hint')?.style.setProperty('display', 'none');
+            hoverNode.classList.remove('is-hover');
             return;
         }
         if (hoverNode.dataset.pvHover === 'event-card') {
-            hoverNode.style.background = hoverNode.dataset.pvHoverBase || '';
-            hoverNode.querySelector('.pv-ev-trash')?.style.setProperty('opacity', '0');
+            hoverNode.classList.remove('is-hover');
         }
     });
 }
@@ -484,33 +542,33 @@ function generateMiniTimetableHTML(items, color, profileCtx) {
     const endHour = 19;
     const isAdmin = !!profileCtx && profileViewCanManage();
     
-    let html = `<div style="width:100%; border:1px solid var(--kiu-border); border-radius:10px; overflow:hidden; background:white; font-family:var(--kiu-font-body); display:grid; grid-template-rows: auto 1fr;">`;
+    let html = `<div class="pv-mini-timetable">`;
     
     // Header Row
-    html += `<div style="display:grid; grid-template-columns:50px repeat(6, 1fr); background:#f8fafc; border-bottom:2px solid #e2e8f0; width: 100%;">
-        <div style="border-right:1px solid #e2e8f0; padding:10px 0; text-align:center; font-size:9px; font-weight:800; color:#94a3b8; text-transform:uppercase;">Time</div>`;
+    html += `<div class="pv-mini-timetable-header">
+        <div class="pv-mini-timetable-time-head">Time</div>`;
     dayLabels.forEach(d => {
-        html += `<div style="padding:10px 0; border-right:1px solid #e2e8f0; text-align:center; font-size:11px; font-weight:700; color:#334155;">${d}</div>`;
+        html += `<div class="pv-mini-timetable-day-head">${d}</div>`;
     });
     html += `</div>`;
     
     // Body Row
-    html += `<div style="display:grid; grid-template-columns:50px 1fr; position:relative; min-height:${(endHour-startHour)*50}px; background:#fafafa; width: 100%;">
-        <div style="border-right:1px solid #e2e8f0; background:white;">`;
+    html += `<div class="pv-mini-timetable-body" data-pv-mini-body-height="${escapeProfileViewAttr(`${(endHour-startHour)*50}px`)}">
+        <div class="pv-mini-timetable-hours">`;
     for(let h = startHour; h < endHour; h++) {
-        html += `<div style="height:50px; border-bottom:1px solid #f1f5f9; position:relative;">
-            <span style="position:absolute; top:-7px; right:5px; font-size:9px; font-weight:600; color:#94a3b8; background:white; padding:0 2px;">${h}:00</span>
+        html += `<div class="pv-mini-timetable-hour-cell">
+            <span class="pv-mini-timetable-hour-label">${h}:00</span>
         </div>`;
     }
     html += `</div>
-    <div style="display:grid; grid-template-columns:repeat(6, 1fr); position:relative;">`;
+    <div class="pv-mini-timetable-grid">`;
     for(let i=0; i<6; i++) {
-        html += `<div style="border-right:1px solid #f1f5f9; position:relative;">`;
+        html += `<div class="pv-mini-timetable-day-column">`;
         for(let h = startHour; h < endHour; h++) {
             if (isAdmin) {
-                html += `<div style="height:50px; border-bottom:1px solid #f1f5f9; cursor:crosshair; transition:background 0.1s; position:relative;" data-pv-hover="slot" data-pv-action="open-session-modal" data-pv-type="${profileCtx.type}" data-pv-id="${profileCtx.id}" data-pv-fac="${profileCtx.facCode}" data-pv-day="${PROFILE_VIEW_DAY_NAMES[i]}" data-pv-time="${h}:00"><span class="slot-hint" style="display:none;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:9px;font-weight:700;color:rgba(37,99,235,0.5);white-space:nowrap;pointer-events:none;">+ New</span></div>`;
+                html += `<div class="pv-mini-timetable-slot pv-mini-timetable-slot--admin" data-pv-hover="slot" data-pv-action="open-session-modal" data-pv-type="${profileCtx.type}" data-pv-id="${profileCtx.id}" data-pv-fac="${profileCtx.facCode}" data-pv-day="${PROFILE_VIEW_DAY_NAMES[i]}" data-pv-time="${h}:00"><span class="slot-hint pv-slot-hint">+ New</span></div>`;
             } else {
-                html += `<div style="height:50px; border-bottom:1px solid #f1f5f9;"></div>`;
+                html += `<div class="pv-mini-timetable-slot"></div>`;
             }
         }
         
@@ -526,13 +584,13 @@ function generateMiniTimetableHTML(items, color, profileCtx) {
             const heightPx = Math.max(30, (durMins / 60) * 50);
             
             const deleteBtn = isAdmin
-                ? `<div class="pv-ev-trash" data-pv-action="delete-session" data-pv-course="${ev.courseId}" data-pv-group="${ev.id}" data-pv-type="${profileCtx.type}" data-pv-id="${profileCtx.id}" data-pv-fac="${profileCtx.facCode}" style="position:absolute;top:2px;right:2px;opacity:0;font-size:9px;color:#dc2626;cursor:pointer;background:white;border-radius:3px;padding:1px 3px;transition:opacity 0.15s;"><i class="fas fa-trash"></i></div>`
+                ? `<div class="pv-ev-trash" data-pv-action="delete-session" data-pv-course="${ev.courseId}" data-pv-group="${ev.id}" data-pv-type="${profileCtx.type}" data-pv-id="${profileCtx.id}" data-pv-fac="${profileCtx.facCode}"><i class="fas fa-trash"></i></div>`
                 : '';
             
-            html += `<div style="position:absolute; top:${topPx}px; left:2px; right:2px; height:${heightPx - 4}px; background:${color}10; border-left:3px solid ${color}; border-radius:4px; padding:4px 6px; overflow:hidden; border:1px solid ${color}30; box-shadow:0 2px 4px rgba(0,0,0,0.03); cursor:pointer; transition:all 0.15s; z-index:5;" title="Course: ${ev.courseId}\nRoom: ${ev.room||''}\nTime: ${ev.time} (${ev.duration||'110min'})\nGroup: ${ev.id}" data-pv-hover="event-card" data-pv-hover-base="${color}10" data-pv-hover-color="${color}20">
+            html += `<div class="pv-mini-event-card" data-pv-event-top="${escapeProfileViewAttr(`${topPx}px`)}" data-pv-event-height="${escapeProfileViewAttr(`${heightPx - 4}px`)}" data-pv-event-accent="${escapeProfileViewAttr(color)}" data-pv-event-soft="${escapeProfileViewAttr(`${color}10`)}" data-pv-event-soft-hover="${escapeProfileViewAttr(`${color}20`)}" data-pv-event-border="${escapeProfileViewAttr(`${color}30`)}" title="Course: ${ev.courseId}\nRoom: ${ev.room||''}\nTime: ${ev.time} (${ev.duration||'110min'})\nGroup: ${ev.id}" data-pv-hover="event-card">
                 ${deleteBtn}
-                <div style="font-size:10px; font-weight:800; color:${color}; margin-bottom:2px; line-height:1.2; text-overflow:ellipsis; overflow:hidden; white-space:nowrap;">${ev.courseId} <span style="font-weight:400; opacity:0.8;">(${ev.id})</span></div>
-                <div style="font-size:9px; color:#475569; line-height:1.2; text-overflow:ellipsis; overflow:hidden; white-space:nowrap;"><i class="fas fa-map-marker-alt" style="opacity:0.7;"></i> ${ev.room||''}</div>
+                <div class="pv-mini-event-title">${ev.courseId} <span class="pv-mini-event-title-group">(${ev.id})</span></div>
+                <div class="pv-mini-event-room"><i class="fas fa-map-marker-alt"></i> ${ev.room||''}</div>
             </div>`;
         });
         
@@ -626,44 +684,44 @@ function renderProfile(type, id, facCode) {
 
     root.innerHTML = `
     <!-- HERO -->
-    <div class="pv-hero" style="background:linear-gradient(135deg,${facColor} 0%,${facColor}cc 100%); flex-shrink:0;">
+    <div class="pv-hero lux-summary-surface lux-summary-surface--hero" data-pv-hero-accent="${escapeProfileViewAttr(facColor)}">
         <div class="pv-hero-pattern"></div>
         <div class="pv-avatar-wrap">
-            <div class="pv-avatar" style="background:${facColor}dd;">
+            <div class="pv-avatar" data-pv-avatar-bg="${escapeProfileViewAttr(`${facColor}dd`)}" data-pv-avatar-fallback="${avatarInitials}">
                 ${avatarUrl
-                    ? `<img loading="lazy" src="${avatarUrl}" alt="${person.name}" onerror="this.style.display='none'; this.parentNode.textContent='${avatarInitials}'">`
+                    ? `<img class="pv-avatar-image" data-pv-avatar-image="1" loading="lazy" src="${avatarUrl}" alt="${person.name}">`
                     : avatarInitials}
             </div>
         </div>
         <div class="pv-header-actions">
-            <button class="pv-action-btn" type="button" data-pv-action="email-placeholder" data-pv-email="${(person.email||'').replace(/"/g,'&quot;')}"><i class="fas fa-envelope"></i> Email</button>
-            <button class="pv-action-btn" type="button" data-pv-action="print"><i class="fas fa-print"></i> Print</button>
-                    ${profileViewCanManage() ? `<button class="pv-action-btn" type="button" style="background:rgba(99,102,241,0.4); border-color:rgba(99,102,241,0.6);" data-pv-action="toggle-edit" data-pv-type="${type}" data-pv-id="${id}" data-pv-fac="${facCode}"><i class="fas fa-edit"></i> Edit</button>` : ''}
+            <button class="pv-action-btn lux-secondary-btn" type="button" data-pv-action="email-placeholder" data-pv-email="${(person.email||'').replace(/"/g,'&quot;')}"><i class="fas fa-envelope"></i> Email</button>
+            <button class="pv-action-btn lux-secondary-btn" type="button" data-pv-action="print"><i class="fas fa-print"></i> Print</button>
+                    ${profileViewCanManage() ? `<button class="pv-action-btn pv-action-btn--edit lux-primary-btn" type="button" data-pv-action="toggle-edit" data-pv-type="${type}" data-pv-id="${id}" data-pv-fac="${facCode}"><i class="fas fa-edit"></i> Edit</button>` : ''}
         </div>
     </div>
 
     <!-- NAME / META -->
-    <div class="pv-meta" style="flex-shrink:0;">
-        <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px;">
+    <div class="pv-meta surface-card">
+        <div class="pv-meta-head">
             <div>
                 <div class="pv-name">${person.name || PROFILE_VIEW_EMPTY_TEXT}</div>
-                ${person.nameEn ? `<div style="font-size:15px; color:#64748b; font-weight:500; margin-top:2px;">${person.nameEn}</div>` : ''}
-                <div class="pv-role-badge" style="background:${badge.bg}; color:${badge.color};">
+                ${person.nameEn ? `<div class="pv-name-en">${person.nameEn}</div>` : ''}
+                <div class="pv-role-badge lux-status-pill lux-status-pill--soft" data-pv-role-badge-bg="${escapeProfileViewAttr(badge.bg)}" data-pv-role-badge-color="${escapeProfileViewAttr(badge.color)}">
                     <i class="fas fa-${type==='student'?'user-graduate':type==='professor'?'chalkboard-teacher':'user-tie'}"></i>
                     ${badge.label}
-                    <span style="opacity:0.6; font-weight:400;">&middot;</span>
+                    <span class="pv-role-sep">&middot;</span>
                     ${personFac.name || facCode}
                 </div>
             </div>
-            <span style="background:${statusBg}; color:${statusFg}; padding:6px 16px; border-radius:20px; font-size:13px; font-weight:800; align-self:flex-start;">${person.status || 'Active'}</span>
+            <span class="pv-status-badge lux-status-pill lux-status-pill--soft" data-pv-status-bg="${escapeProfileViewAttr(statusBg)}" data-pv-status-color="${escapeProfileViewAttr(statusFg)}">${person.status || 'Active'}</span>
         </div>
-        <div class="pv-meta-pills">
-            <div class="pv-meta-pill"><i class="fas fa-id-badge" style="color:${facColor};"></i> ID: <strong>${id}</strong></div>
-            ${person.email ? `<div class="pv-meta-pill"><i class="fas fa-envelope" style="color:${facColor};"></i> ${person.email}</div>` : ''}
-            ${person.phone ? `<div class="pv-meta-pill"><i class="fas fa-phone" style="color:${facColor};"></i> ${person.phone}</div>` : ''}
-            ${person.office ? `<div class="pv-meta-pill"><i class="fas fa-door-open" style="color:${facColor};"></i> Office: ${person.office}</div>` : ''}
-            ${person.program ? `<div class="pv-meta-pill"><i class="fas fa-graduation-cap" style="color:${facColor};"></i> ${person.program}</div>` : ''}
-            ${person.joinYear ? `<div class="pv-meta-pill"><i class="fas fa-calendar-alt" style="color:${facColor};"></i> Since ${person.joinYear}</div>` : ''}
+        <div class="pv-meta-pills" data-pv-faculty-accent="${escapeProfileViewAttr(facColor)}">
+            <div class="pv-meta-pill"><i class="fas fa-id-badge"></i> ID: <strong>${id}</strong></div>
+            ${person.email ? `<div class="pv-meta-pill"><i class="fas fa-envelope"></i> ${person.email}</div>` : ''}
+            ${person.phone ? `<div class="pv-meta-pill"><i class="fas fa-phone"></i> ${person.phone}</div>` : ''}
+            ${person.office ? `<div class="pv-meta-pill"><i class="fas fa-door-open"></i> Office: ${person.office}</div>` : ''}
+            ${person.program ? `<div class="pv-meta-pill"><i class="fas fa-graduation-cap"></i> ${person.program}</div>` : ''}
+            ${person.joinYear ? `<div class="pv-meta-pill"><i class="fas fa-calendar-alt"></i> Since ${person.joinYear}</div>` : ''}
         </div>
     </div>
 
@@ -671,34 +729,34 @@ function renderProfile(type, id, facCode) {
     <div class="pv-body">
 
         <!-- LEFT SIDEBAR -->
-        <div class="pv-left">
+        <div class="pv-left surface-card">
             <!-- Key Stats -->
             <div class="pv-section">
                 <div class="pv-section-title">Key Statistics</div>
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px;">
+                <div class="lux-strip-grid lux-strip-grid--adaptive pv-stat-grid pv-stat-grid--overview">
                     ${type === 'student' ? `
-                    <div class="pv-stat-card">
-                        <div class="pv-stat-num" style="color:${gpaColor};">${gpa.toFixed(2)}</div>
+                    <div class="pv-stat-card surface-card lux-strip-card lux-summary-surface lux-summary-surface--panel">
+                        <div class="pv-stat-num pv-stat-num--accent" data-pv-stat-accent="${escapeProfileViewAttr(gpaColor)}">${gpa.toFixed(2)}</div>
                         <div class="pv-stat-lbl">GPA</div>
                     </div>
-                    <div class="pv-stat-card">
+                    <div class="pv-stat-card surface-card lux-strip-card lux-summary-surface lux-summary-surface--panel">
                         <div class="pv-stat-num">${person.ects || 0}</div>
                         <div class="pv-stat-lbl">ECTS Earned</div>
                     </div>
-                    <div class="pv-stat-card">
+                    <div class="pv-stat-card surface-card lux-strip-card lux-summary-surface lux-summary-surface--panel">
                         <div class="pv-stat-num">${person.semester || 1}</div>
                         <div class="pv-stat-lbl">Semester</div>
                     </div>
-                    <div class="pv-stat-card">
-                        <div class="pv-stat-num" style="color:${debt > 0 ? '#dc2626' : '#15803d'}; font-size:18px;">${debt > 0 ? debt + ' GEL' : 'Paid'}</div>
+                    <div class="pv-stat-card surface-card lux-strip-card lux-summary-surface lux-summary-surface--panel">
+                        <div class="pv-stat-num pv-stat-num--compact pv-stat-num--accent" data-pv-stat-accent="${escapeProfileViewAttr(debt > 0 ? '#dc2626' : '#15803d')}">${debt > 0 ? debt + ' GEL' : 'Paid'}</div>
                         <div class="pv-stat-lbl">Balance</div>
                     </div>` : `
-                    <div class="pv-stat-card">
+                    <div class="pv-stat-card surface-card lux-strip-card lux-summary-surface lux-summary-surface--panel">
                         <div class="pv-stat-num">${schedule.length}</div>
                         <div class="pv-stat-lbl">Sessions</div>
                     </div>
-                    <div class="pv-stat-card">
-                        <div class="pv-stat-num" style="font-size:18px;">${person.maxHours || 12}h</div>
+                    <div class="pv-stat-card surface-card lux-strip-card lux-summary-surface lux-summary-surface--panel">
+                        <div class="pv-stat-num pv-stat-num--compact">${person.maxHours || 12}h</div>
                         <div class="pv-stat-lbl">Max Hours</div>
                     </div>`}
                 </div>
@@ -707,7 +765,7 @@ function renderProfile(type, id, facCode) {
             <!-- Contact Info -->
             <div class="pv-section">
                 <div class="pv-section-title">Contact Information</div>
-                <div class="pv-info-row"><span class="pv-info-label">Email</span><span class="pv-info-value" style="font-size:11px;">${person.email || PROFILE_VIEW_EMPTY_TEXT}</span></div>
+                <div class="pv-info-row"><span class="pv-info-label">Email</span><span class="pv-info-value pv-info-value--email">${person.email || PROFILE_VIEW_EMPTY_TEXT}</span></div>
                 <div class="pv-info-row"><span class="pv-info-label">Phone</span><span class="pv-info-value">${person.phone || PROFILE_VIEW_EMPTY_TEXT}</span></div>
                 ${person.office ? `<div class="pv-info-row"><span class="pv-info-label">Office</span><span class="pv-info-value">${person.office}</span></div>` : ''}
                 <div class="pv-info-row"><span class="pv-info-label">Faculty</span><span class="pv-info-value">${personFac.name || facCode}</span></div>
@@ -718,79 +776,79 @@ function renderProfile(type, id, facCode) {
             <div class="pv-section">
                 <div class="pv-section-title">Profile Photo</div>
                 <div class="upload-zone" data-pv-action="upload-photo-placeholder" role="button" tabindex="0">
-                    <i class="fas fa-cloud-upload-alt" style="font-size:24px; color:#94a3b8; margin-bottom:8px; display:block;"></i>
-                    <div style="font-size:12px; font-weight:700; color:#64748b;">Upload Photo</div>
-                    <div style="font-size:10px; color:#94a3b8; margin-top:3px;">JPG, PNG &middot; Max 5MB</div>
+                    <i class="fas fa-cloud-upload-alt upload-zone-icon"></i>
+                    <div class="upload-zone-title">Upload Photo</div>
+                    <div class="upload-zone-copy">JPG, PNG &middot; Max 5MB</div>
                 </div>
             </div>` : ''}
         </div>
 
         <!-- RIGHT: Tabs -->
-        <div class="pv-right">
+        <div class="pv-right surface-card">
             <div class="pv-tabs">
-                ${tabs.map((t, i) => `<div class="pv-tab ${i===0?'active':''}" data-pv-tab-target="pvtab-${i}">${t}</div>`).join('')}
+                ${tabs.map((t, i) => `<button type="button" class="pv-tab lux-select-card ${i===0?'active':''}" data-pv-tab-target="pvtab-${i}" aria-pressed="${i===0?'true':'false'}">${t}</button>`).join('')}
             </div>
 
             <!-- Overview Tab -->
             <div class="pv-tab-content active" id="pvtab-0" data-pv-mounted="1">
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+                <div class="pv-overview-grid">
                     <div>
-                        <div style="font-size:13px; font-weight:700; color:#0f172a; margin-bottom:12px;">Personal Details</div>
+                        <div class="pv-subsection-title pv-subsection-title--tight">Personal Details</div>
                         <div class="pv-info-row"><span class="pv-info-label">Full Name</span><span class="pv-info-value">${person.name}</span></div>
                         ${person.nameEn ? `<div class="pv-info-row"><span class="pv-info-label">Name (EN)</span><span class="pv-info-value">${person.nameEn}</span></div>` : ''}
-                        <div class="pv-info-row"><span class="pv-info-label">ID Number</span><span class="pv-info-value" style="font-family:monospace;">${id}</span></div>
+                        <div class="pv-info-row"><span class="pv-info-label">ID Number</span><span class="pv-info-value pv-info-value--mono">${id}</span></div>
                         <div class="pv-info-row"><span class="pv-info-label">Role</span><span class="pv-info-value">${badge.label}</span></div>
                         <div class="pv-info-row"><span class="pv-info-label">Faculty</span><span class="pv-info-value">${personFac.name}</span></div>
-                        <div class="pv-info-row"><span class="pv-info-label">Status</span><span class="pv-info-value"><span style="background:${statusBg}; color:${statusFg}; padding:2px 8px; border-radius:10px; font-size:11px;">${person.status || 'Active'}</span></span></div>
-                        ${type === 'student' ? `<div class="pv-info-row"><span class="pv-info-label">Program</span><span class="pv-info-value" style="font-size:12px;">${person.program || PROFILE_VIEW_EMPTY_TEXT}</span></div>` : ''}
+                        <div class="pv-info-row"><span class="pv-info-label">Status</span><span class="pv-info-value"><span class="pv-inline-status lux-status-pill lux-status-pill--soft lux-status-pill--compact" data-pv-inline-status-bg="${escapeProfileViewAttr(statusBg)}" data-pv-inline-status-color="${escapeProfileViewAttr(statusFg)}">${person.status || 'Active'}</span></span></div>
+                        ${type === 'student' ? `<div class="pv-info-row"><span class="pv-info-label">Program</span><span class="pv-info-value pv-info-value--small">${person.program || PROFILE_VIEW_EMPTY_TEXT}</span></div>` : ''}
                         ${type !== 'student' ? `<div class="pv-info-row"><span class="pv-info-label">Title</span><span class="pv-info-value">${person.title || PROFILE_VIEW_EMPTY_TEXT}</span></div>
                         <div class="pv-info-row"><span class="pv-info-label">Since</span><span class="pv-info-value">${person.joinYear || PROFILE_VIEW_EMPTY_TEXT}</span></div>` : ''}
                     </div>
                     <div>
-                        ${type === 'student' ? `
-                        <div style="font-size:13px; font-weight:700; color:#0f172a; margin-bottom:12px;">Academic Standing</div>
-                        <div style="margin-bottom:16px;">
-                            <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:6px;">
-                                <span style="color:#64748b;">GPA</span>
-                                <span style="font-weight:800; color:${gpaColor};">${gpa.toFixed(2)} / 4.00</span>
+                    ${type === 'student' ? `
+                        <div class="pv-subsection-title pv-subsection-title--tight">Academic Standing</div>
+                        <div class="pv-overview-progress-block">
+                            <div class="pv-overview-progress-head">
+                                <span class="pv-overview-progress-label">GPA</span>
+                                <span class="pv-overview-progress-value" data-pv-progress-value-color="${escapeProfileViewAttr(gpaColor)}">${gpa.toFixed(2)} / 4.00</span>
                             </div>
-                            <div class="grade-bar"><div class="grade-bar-fill" style="width:${(gpa/4)*100}%; background:${gpaColor};"></div></div>
+                            <div class="grade-bar"><div class="grade-bar-fill" data-pv-progress-width="${escapeProfileViewAttr(`${(gpa/4)*100}%`)}" data-pv-progress-color="${escapeProfileViewAttr(gpaColor)}"></div></div>
                         </div>
-                        <div style="margin-bottom:16px;">
-                            <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:6px;">
-                                <span style="color:#64748b;">ECTS Progress</span>
-                                <span style="font-weight:800;">${person.ects || 0} / 240</span>
+                        <div class="pv-overview-progress-block">
+                            <div class="pv-overview-progress-head">
+                                <span class="pv-overview-progress-label">ECTS Progress</span>
+                                <span class="pv-overview-progress-value">${person.ects || 0} / 240</span>
                             </div>
-                            <div class="grade-bar"><div class="grade-bar-fill" style="width:${((person.ects||0)/240)*100}%; background:#3b82f6;"></div></div>
+                            <div class="grade-bar"><div class="grade-bar-fill" data-pv-progress-width="${escapeProfileViewAttr(`${((person.ects||0)/240)*100}%`)}" data-pv-progress-color="#3b82f6"></div></div>
                         </div>
-                        <div style="background:#f8fafc; border-radius:10px; padding:14px; border:1px solid var(--kiu-border);">
-                            <div style="font-size:11px; color:#64748b; margin-bottom:8px; font-weight:700;">Financial Status</div>
-                            <div style="font-size:20px; font-weight:900; color:${debt>0?'#dc2626':'#15803d'};">${debt > 0 ? debt + ' GEL owed' : 'No outstanding balance'}</div>
-                        ${debt > 0 ? `<button type="button" style="margin-top:10px; width:100%; padding:8px; background:#dc2626; color:white; border:none; border-radius:8px; font-weight:700; cursor:pointer; font-size:12px;" data-pv-action="pay-balance-placeholder"><i class="fas fa-credit-card"></i> Pay Balance</button>` : ''}
+                        <div class="pv-financial-status-card lux-data-card lux-info-card">
+                            <div class="pv-financial-status-label">Financial Status</div>
+                            <div class="pv-financial-status-value" data-pv-financial-status-color="${escapeProfileViewAttr(debt>0?'#dc2626':'#15803d')}">${debt > 0 ? debt + ' GEL owed' : 'No outstanding balance'}</div>
+                        ${debt > 0 ? `<button type="button" class="pv-inline-action-btn lux-primary-btn pv-inline-action-btn--danger pv-inline-action-btn--wide" data-pv-action="pay-balance-placeholder"><i class="fas fa-credit-card"></i> Pay Balance</button>` : ''}
                         </div>
                     ${profileViewCanManage() ? `
-                        <div style="margin-top:16px; background:#fff7ed; border-radius:10px; padding:14px; border:1px solid #fb923c;">
-                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <div class="pv-probation-card lux-data-card lux-info-card">
+                            <div class="pv-probation-head">
                                 <div>
-                                    <div style="font-size:12px; font-weight:700; color:#ea580c; margin-bottom:2px;"><i class="fas fa-exclamation-triangle"></i> Academic Probation</div>
-                                    <div style="font-size:11px; color:#c2410c;">Limits student to 24 ECTS per semester.</div>
+                                    <div class="pv-probation-title"><i class="fas fa-exclamation-triangle"></i> Academic Probation</div>
+                                    <div class="pv-probation-copy">Limits student to 24 ECTS per semester.</div>
                                 </div>
-                                <button type="button" style="padding:6px 12px; border-radius:8px; background:#ea580c; border:none; color:white; font-weight:700; font-size:11px; cursor:pointer;" data-pv-action="toggle-probation" data-pv-user-id="${id}"><i class="fas fa-exchange-alt"></i> Toggle</button>
+                                <button type="button" class="pv-inline-action-btn lux-secondary-btn pv-inline-action-btn--probation" data-pv-action="toggle-probation" data-pv-user-id="${id}"><i class="fas fa-exchange-alt"></i> Toggle</button>
                             </div>
                         </div>` : ''}
                     ` : `
-                        <div style="font-size:13px; font-weight:700; color:#0f172a; margin-bottom:12px;">Teaching Load</div>
-                        <div style="margin-bottom:16px;">
-                            <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:6px;">
-                                <span style="color:#64748b;">Scheduled Hours</span>
-                                <span style="font-weight:800;">${schedule.length > 0 ? (schedule.length * 1.8).toFixed(1) : 0}h / ${person.maxHours || 12}h max</span>
+                        <div class="pv-subsection-title pv-subsection-title--tight">Teaching Load</div>
+                        <div class="pv-overview-progress-block">
+                            <div class="pv-overview-progress-head">
+                                <span class="pv-overview-progress-label">Scheduled Hours</span>
+                                <span class="pv-overview-progress-value">${schedule.length > 0 ? (schedule.length * 1.8).toFixed(1) : 0}h / ${person.maxHours || 12}h max</span>
                             </div>
-                            <div class="grade-bar"><div class="grade-bar-fill" style="width:${Math.min(100, (schedule.length * 1.8 / (person.maxHours||12))*100)}%; background:#3b82f6;"></div></div>
+                            <div class="grade-bar"><div class="grade-bar-fill" data-pv-progress-width="${escapeProfileViewAttr(`${Math.min(100, (schedule.length * 1.8 / (person.maxHours||12))*100)}%`)}" data-pv-progress-color="#3b82f6"></div></div>
                         </div>
                         ${(person.subjects||[]).length > 0 ? `
-                        <div style="font-size:11px; color:#64748b; font-weight:700; margin-bottom:8px; text-transform:uppercase; letter-spacing:0.5px;">Assigned Subjects</div>
-                        <div style="display:flex; flex-wrap:wrap; gap:6px;">
-                            ${(person.subjects||[]).map(sid => `<span style="background:${facColor}15; color:${facColor}; padding:4px 10px; border-radius:8px; font-size:11px; font-weight:700;">${sid}</span>`).join('')}
+                        <div class="pv-assigned-subjects-title">Assigned Subjects</div>
+                        <div class="pv-assigned-subjects">
+                            ${(person.subjects||[]).map(sid => `<span class="pv-assigned-subject-pill lux-status-pill lux-status-pill--soft lux-status-pill--compact" data-pv-subject-pill-bg="${escapeProfileViewAttr(`${facColor}15`)}" data-pv-subject-pill-color="${escapeProfileViewAttr(facColor)}">${sid}</span>`).join('')}
                         </div>` : ''}`}
                     </div>
                 </div>
@@ -800,38 +858,38 @@ function renderProfile(type, id, facCode) {
             <div class="pv-tab-content" id="pvtab-1" data-pv-mounted="0"></div>
             <template id="pvtab-1-template">
                 ${type === 'student' ? `
-                <div style="font-size:13px; font-weight:700; color:#0f172a; margin-bottom:16px;">Grade Records by Subject</div>
+                <div class="pv-subsection-title">Grade Records by Subject</div>
                 ${Object.keys(KIU_STATE.studentGrades || {}).map(roster => {
                     const stGrade = KIU_STATE.studentGrades[roster].find(s => String(s.id) === String(id));
                     if (!stGrade) return '';
                     const total = (stGrade.q1||0)*0.1 + (stGrade.qa||0)*0.1 + (stGrade.mid||0)*0.3 + (stGrade.final||0)*0.5;
                     const letterGrade = total>=91?'A':total>=81?'B':total>=71?'C':total>=61?'D':total>=51?'E':'F';
                     const gc = total>=80?'#15803d':total>=60?'#d97706':'#dc2626';
-                    return `<div class="pv-course-row">
-                        <div>
-                            <div style="font-weight:700; font-size:13px;">${roster.toUpperCase()}</div>
-                            <div style="font-size:11px; color:#64748b; margin-top:2px;">Q1: ${stGrade.q1} &middot; QA: ${stGrade.qa} &middot; Mid: ${stGrade.mid} &middot; Final: ${stGrade.final}</div>
+                    return `<div class="pv-course-row surface-card lux-inline-card">
+                        <div class="pv-grade-record-main">
+                            <div class="pv-grade-record-title">${roster.toUpperCase()}</div>
+                            <div class="pv-grade-record-copy">Q1: ${stGrade.q1} &middot; QA: ${stGrade.qa} &middot; Mid: ${stGrade.mid} &middot; Final: ${stGrade.final}</div>
                         </div>
-                        <div style="text-align:right;">
-                            <div style="font-size:22px; font-weight:900; color:${gc};">${letterGrade}</div>
-                            <div style="font-size:11px; color:#64748b;">${total.toFixed(1)}/100</div>
+                        <div class="pv-grade-record-score" data-pv-grade-record-color="${escapeProfileViewAttr(gc)}">
+                            <div class="pv-grade-record-letter">${letterGrade}</div>
+                            <div class="pv-grade-record-total">${total.toFixed(1)}/100</div>
                         </div>
                     </div>`;
                 }).join('') || renderProfileViewEmptyState('No grade records found for this student.')}` : `
                 ${generateMiniTimetableHTML(schedule, facColor, {type, id, facCode})}
                     ${profileViewCanManage() ? `
-                <div style="margin-top:16px; display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
-                        <button type="button" data-pv-action="open-session-modal" data-pv-type="${type}" data-pv-id="${id}" data-pv-fac="${facCode}" style="padding:8px 18px; background:linear-gradient(135deg,#6366f1,#4f46e5); color:white; border:none; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer;"><i class="fas fa-plus-circle"></i> Add Session</button>
-                        <button type="button" data-pv-action="copy-schedule" data-pv-type="${type}" data-pv-id="${id}" style="padding:8px 18px; background:linear-gradient(135deg,#0891b2,#0e7490); color:white; border:none; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer;"><i class="fas fa-copy"></i> Copy to Next Weeks</button>
-                    <span style="font-size:10px; color:#64748b;"><i class="fas fa-info-circle" style="color:var(--kiu-blue);"></i> Click empty slots on calendar or use Add Session button</span>
+                <div class="pv-action-bar">
+                        <button type="button" class="pv-inline-action-btn lux-primary-btn pv-inline-action-btn--primary" data-pv-action="open-session-modal" data-pv-type="${type}" data-pv-id="${id}" data-pv-fac="${facCode}"><i class="fas fa-plus-circle"></i> Add Session</button>
+                        <button type="button" class="pv-inline-action-btn lux-secondary-btn pv-inline-action-btn--secondary" data-pv-action="copy-schedule" data-pv-type="${type}" data-pv-id="${id}"><i class="fas fa-copy"></i> Copy to Next Weeks</button>
+                    <span class="pv-action-bar-hint"><i class="fas fa-info-circle"></i> Click empty slots on calendar or use Add Session button</span>
                 </div>` : ''}
                 <!-- Session List for quick reference -->
-                ${schedule.length > 0 ? `<div style="margin-top:14px;">
-                    <div style="font-size:10px; font-weight:800; color:#94a3b8; text-transform:uppercase; margin-bottom:6px;">All Sessions (${schedule.length})</div>
+                ${schedule.length > 0 ? `<div class="pv-session-list-shell">
+                    <div class="pv-session-list-title">All Sessions (${schedule.length})</div>
                     ${schedule.map(s => `
-                    <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; margin-bottom:4px; font-size:11px;">
-                        <div><strong style="color:${facColor};">${s.courseId}</strong> <span style="color:#64748b;">(${s.id})</span> &middot; ${s.day} ${s.time} &middot; ${s.room} &middot; ${s.duration}</div>
-                            ${profileViewCanManage() ? `<button type="button" data-pv-action="delete-session" data-pv-course="${s.courseId}" data-pv-group="${s.id}" data-pv-type="${type}" data-pv-id="${id}" data-pv-fac="${facCode}" style="background:#fee2e2; color:#dc2626; border:none; border-radius:4px; padding:3px 6px; cursor:pointer; font-size:10px;"><i class="fas fa-trash-alt"></i></button>` : ''}
+                    <div class="pv-session-list-row lux-inline-card">
+                        <div class="pv-session-list-copy"><strong data-pv-inline-accent="${escapeProfileViewAttr(facColor)}">${s.courseId}</strong> <span>(${s.id})</span> &middot; ${s.day} ${s.time} &middot; ${s.room} &middot; ${s.duration}</div>
+                            ${profileViewCanManage() ? `<button type="button" class="pv-inline-action-btn lux-secondary-btn pv-inline-action-btn--danger pv-inline-action-btn--compact" data-pv-action="delete-session" data-pv-course="${s.courseId}" data-pv-group="${s.id}" data-pv-type="${type}" data-pv-id="${id}" data-pv-fac="${facCode}"><i class="fas fa-trash-alt"></i></button>` : ''}
                     </div>`).join('')}
                 </div>` : ''}`}
             </template>
@@ -842,38 +900,38 @@ function renderProfile(type, id, facCode) {
                 ${type === 'student' ? `
                 ${generateMiniTimetableHTML(enrolledCourses, facColor, {type, id, facCode})}
                     ${profileViewCanManage() ? `
-                <div style="margin-top:16px; display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
-                        <button type="button" data-pv-action="open-session-modal" data-pv-type="${type}" data-pv-id="${id}" data-pv-fac="${facCode}" style="padding:8px 18px; background:linear-gradient(135deg,#6366f1,#4f46e5); color:white; border:none; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer;"><i class="fas fa-plus-circle"></i> Add Session</button>
-                        <button type="button" data-pv-action="copy-schedule" data-pv-type="${type}" data-pv-id="${id}" style="padding:8px 18px; background:linear-gradient(135deg,#0891b2,#0e7490); color:white; border:none; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer;"><i class="fas fa-copy"></i> Copy to Next Weeks</button>
-                    <span style="font-size:10px; color:#64748b;"><i class="fas fa-info-circle" style="color:var(--kiu-blue);"></i> Click empty slots on calendar or use Add Session button</span>
+                <div class="pv-action-bar">
+                        <button type="button" class="pv-inline-action-btn lux-primary-btn pv-inline-action-btn--primary" data-pv-action="open-session-modal" data-pv-type="${type}" data-pv-id="${id}" data-pv-fac="${facCode}"><i class="fas fa-plus-circle"></i> Add Session</button>
+                        <button type="button" class="pv-inline-action-btn lux-secondary-btn pv-inline-action-btn--secondary" data-pv-action="copy-schedule" data-pv-type="${type}" data-pv-id="${id}"><i class="fas fa-copy"></i> Copy to Next Weeks</button>
+                    <span class="pv-action-bar-hint"><i class="fas fa-info-circle"></i> Click empty slots on calendar or use Add Session button</span>
                 </div>` : ''}
                 <!-- Session List for quick reference -->
-                ${enrolledCourses.length > 0 ? `<div style="margin-top:14px;">
-                    <div style="font-size:10px; font-weight:800; color:#94a3b8; text-transform:uppercase; margin-bottom:6px;">All Sessions (${enrolledCourses.length})</div>
+                ${enrolledCourses.length > 0 ? `<div class="pv-session-list-shell">
+                    <div class="pv-session-list-title">All Sessions (${enrolledCourses.length})</div>
                     ${enrolledCourses.map(s => `
-                    <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; margin-bottom:4px; font-size:11px;">
-                        <div><strong style="color:${facColor};">${s.courseId}</strong> <span style="color:#64748b;">(${s.groupName})</span> &middot; ${s.day} ${s.time} &middot; ${s.room} &middot; ${s.duration}</div>
-                            ${profileViewCanManage() ? `<button type="button" data-pv-action="delete-session" data-pv-course="${s.courseId}" data-pv-group="${s.groupName}" data-pv-type="${type}" data-pv-id="${id}" data-pv-fac="${facCode}" style="background:#fee2e2; color:#dc2626; border:none; border-radius:4px; padding:3px 6px; cursor:pointer; font-size:10px;"><i class="fas fa-trash-alt"></i></button>` : ''}
+                    <div class="pv-session-list-row lux-inline-card">
+                        <div class="pv-session-list-copy"><strong data-pv-inline-accent="${escapeProfileViewAttr(facColor)}">${s.courseId}</strong> <span>(${s.groupName})</span> &middot; ${s.day} ${s.time} &middot; ${s.room} &middot; ${s.duration}</div>
+                            ${profileViewCanManage() ? `<button type="button" class="pv-inline-action-btn lux-secondary-btn pv-inline-action-btn--danger pv-inline-action-btn--compact" data-pv-action="delete-session" data-pv-course="${s.courseId}" data-pv-group="${s.groupName}" data-pv-type="${type}" data-pv-id="${id}" data-pv-fac="${facCode}"><i class="fas fa-trash-alt"></i></button>` : ''}
                     </div>`).join('')}
                 </div>` : renderProfileViewEmptyState('No registered courses yet.', 'Complete academic registration to populate this tab.')}` : `
-                <div style="font-size:13px; font-weight:700; color:#0f172a; margin-bottom:16px; display:flex; justify-content:space-between; align-items:center;">Teaching Groups
-                    ${profileViewCanManage() ? `<button type="button" data-pv-action="open-session-modal" data-pv-type="${type}" data-pv-id="${id}" data-pv-fac="${facCode}" style="padding:5px 12px; background:linear-gradient(135deg,#6366f1,#4f46e5); color:white; border:none; border-radius:6px; font-size:10px; font-weight:700; cursor:pointer;"><i class="fas fa-plus"></i> Add Group</button>` : ''}
+                <div class="pv-section-head">Teaching Groups
+                    ${profileViewCanManage() ? `<button type="button" class="pv-inline-action-btn lux-primary-btn pv-inline-action-btn--primary pv-inline-action-btn--compact" data-pv-action="open-session-modal" data-pv-type="${type}" data-pv-id="${id}" data-pv-fac="${facCode}"><i class="fas fa-plus"></i> Add Group</button>` : ''}
                 </div>
                 ${schedule.length > 0 ? schedule.map(s => {
                     const roster = KIU_STATE.studentGrades[s.courseId.toLowerCase() + '_' + s.id] ||[];
-                    return `<div class="pv-course-row" style="position:relative;">
-                        <div style="flex:1;">
-                            <div style="font-weight:700;">${s.courseId} &middot; Group ${s.id}</div>
-                            <div style="font-size:11px; color:#64748b; margin-top:2px;">${s.day} ${s.time} &middot; ${s.room} &middot; ${s.duration}</div>
+                    return `<div class="pv-course-row pv-course-row--group surface-card lux-inline-card">
+                        <div class="pv-group-card-main">
+                            <div class="pv-group-card-title">${s.courseId} &middot; Group ${s.id}</div>
+                            <div class="pv-group-card-copy">${s.day} ${s.time} &middot; ${s.room} &middot; ${s.duration}</div>
                         </div>
-                        <div style="display:flex; align-items:center; gap:8px;">
-                            <div style="text-align:right; font-size:12px; color:#64748b;">
+                        <div class="pv-group-card-side">
+                            <div class="pv-group-card-stats">
                                 <div><i class="fas fa-users"></i> ${getEnrolledStudentsForGroup(s.courseId, s.id).length || s.registered || 0}/${s.capacity || PROFILE_VIEW_EMPTY_TEXT} students</div>
                                 <div>Sem ${s.semester}</div>
                             </div>
                     ${profileViewCanManage() ? `
-                            <button type="button" data-pv-action="edit-group" data-pv-course="${s.courseId}" data-pv-group="${s.id}" data-pv-type="${type}" data-pv-id="${id}" data-pv-fac="${facCode}" style="padding:5px 8px; background:#f0f7ff; border:1px solid var(--kiu-blue); color:var(--kiu-blue); border-radius:5px; font-size:10px; cursor:pointer; font-weight:700;"><i class="fas fa-pen"></i></button>
-                            <button type="button" data-pv-action="delete-session" data-pv-course="${s.courseId}" data-pv-group="${s.id}" data-pv-type="${type}" data-pv-id="${id}" data-pv-fac="${facCode}" style="padding:5px 8px; background:#fee2e2; border:1px solid #fca5a5; color:#dc2626; border-radius:5px; font-size:10px; cursor:pointer;"><i class="fas fa-trash-alt"></i></button>` : ''}
+                            <button type="button" class="pv-inline-action-btn lux-secondary-btn pv-inline-action-btn--outline pv-inline-action-btn--compact" data-pv-action="edit-group" data-pv-course="${s.courseId}" data-pv-group="${s.id}" data-pv-type="${type}" data-pv-id="${id}" data-pv-fac="${facCode}"><i class="fas fa-pen"></i></button>
+                            <button type="button" class="pv-inline-action-btn lux-secondary-btn pv-inline-action-btn--danger pv-inline-action-btn--compact" data-pv-action="delete-session" data-pv-course="${s.courseId}" data-pv-group="${s.id}" data-pv-type="${type}" data-pv-id="${id}" data-pv-fac="${facCode}"><i class="fas fa-trash-alt"></i></button>` : ''}
                         </div>
                     </div>`;
                 }).join('') : renderProfileViewEmptyState('No groups assigned yet.', 'Teaching groups will appear here after schedule assignments are published.')}`}
@@ -882,45 +940,45 @@ function renderProfile(type, id, facCode) {
             <!-- Tab 3: Documents -->
             <div class="pv-tab-content" id="pvtab-3" data-pv-mounted="0"></div>
             <template id="pvtab-3-template">
-                <div style="font-size:13px; font-weight:700; color:#0f172a; margin-bottom:16px; display:flex; justify-content:space-between; align-items:center;">Official Documents
-                    ${profileViewCanManage() ? `<button type="button" data-pv-action="add-document" data-pv-type="${type}" data-pv-id="${id}" data-pv-fac="${facCode}" style="padding:5px 12px; background:linear-gradient(135deg,#6366f1,#4f46e5); color:white; border:none; border-radius:6px; font-size:10px; font-weight:700; cursor:pointer;"><i class="fas fa-plus"></i> Add Document</button>` : ''}
+                <div class="pv-section-head">Official Documents
+                    ${profileViewCanManage() ? `<button type="button" class="pv-inline-action-btn lux-primary-btn pv-inline-action-btn--primary pv-inline-action-btn--compact" data-pv-action="add-document" data-pv-type="${type}" data-pv-id="${id}" data-pv-fac="${facCode}"><i class="fas fa-plus"></i> Add Document</button>` : ''}
                 </div>
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                <div class="pv-document-grid">
                     ${type === 'student' ? `
-                    <div style="background:#f8fafc; border:1px solid var(--kiu-border); border-radius:12px; padding:16px; display:flex; justify-content:space-between; align-items:center;">
-                        <div><div style="font-weight:700; font-size:13px;">Academic Transcript</div><div style="font-size:11px; color:#64748b; margin-top:2px;">Official PDF with stamp</div></div>
-                        <div style="display:flex; gap:6px;">
-                            <button class="kiu-btn-blue" type="button" style="padding:7px 12px; font-size:11px; border-radius:8px;" data-pv-action="generate-transcript" data-pv-user-id="${id}"><i class="fas fa-download"></i> Generate</button>
-                            ${profileViewCanManage() ? `<button type="button" data-pv-action="remove-static-document" style="padding:7px 8px; background:#fee2e2; border:1px solid #fca5a5; color:#dc2626; border-radius:8px; font-size:10px; cursor:pointer;"><i class="fas fa-trash-alt"></i></button>` : ''}
+                    <div class="pv-document-card lux-inline-card">
+                        <div><div class="pv-document-title">Academic Transcript</div><div class="pv-document-copy">Official PDF with stamp</div></div>
+                        <div class="pv-document-actions">
+                            <button class="lux-primary-btn pv-document-btn" type="button" data-pv-action="generate-transcript" data-pv-user-id="${id}"><i class="fas fa-download"></i> Generate</button>
+                            ${profileViewCanManage() ? `<button type="button" class="pv-inline-action-btn lux-secondary-btn pv-inline-action-btn--danger pv-inline-action-btn--compact" data-pv-action="remove-static-document"><i class="fas fa-trash-alt"></i></button>` : ''}
                         </div>
                     </div>
-                    <div style="background:#f8fafc; border:1px solid var(--kiu-border); border-radius:12px; padding:16px; display:flex; justify-content:space-between; align-items:center;">
-                        <div><div style="font-weight:700; font-size:13px;">Student Status Certificate</div><div style="font-size:11px; color:#64748b; margin-top:2px;">Enrollment verification</div></div>
-                        <div style="display:flex; gap:6px;">
-                            <button class="kiu-btn-blue" type="button" style="padding:7px 12px; font-size:11px; border-radius:8px;"><i class="fas fa-download"></i> Generate</button>
-                            ${profileViewCanManage() ? `<button type="button" data-pv-action="remove-static-document" style="padding:7px 8px; background:#fee2e2; border:1px solid #fca5a5; color:#dc2626; border-radius:8px; font-size:10px; cursor:pointer;"><i class="fas fa-trash-alt"></i></button>` : ''}
+                    <div class="pv-document-card lux-inline-card">
+                        <div><div class="pv-document-title">Student Status Certificate</div><div class="pv-document-copy">Enrollment verification</div></div>
+                        <div class="pv-document-actions">
+                            <button class="lux-primary-btn pv-document-btn" type="button"><i class="fas fa-download"></i> Generate</button>
+                            ${profileViewCanManage() ? `<button type="button" class="pv-inline-action-btn lux-secondary-btn pv-inline-action-btn--danger pv-inline-action-btn--compact" data-pv-action="remove-static-document"><i class="fas fa-trash-alt"></i></button>` : ''}
                         </div>
                     </div>` : `
-                    <div style="background:#f8fafc; border:1px solid var(--kiu-border); border-radius:12px; padding:16px; display:flex; justify-content:space-between; align-items:center;">
-                        <div><div style="font-weight:700; font-size:13px;">Employment Contract</div><div style="font-size:11px; color:#64748b; margin-top:2px;">Current contract on file</div></div>
-                        <div style="display:flex; gap:6px;">
-                            <button class="kiu-btn-outline" type="button" style="padding:7px 12px; font-size:11px; border-radius:8px;"><i class="fas fa-eye"></i> View</button>
-                            ${profileViewCanManage() ? `<button type="button" data-pv-action="remove-static-document" style="padding:7px 8px; background:#fee2e2; border:1px solid #fca5a5; color:#dc2626; border-radius:8px; font-size:10px; cursor:pointer;"><i class="fas fa-trash-alt"></i></button>` : ''}
+                    <div class="pv-document-card lux-inline-card">
+                        <div><div class="pv-document-title">Employment Contract</div><div class="pv-document-copy">Current contract on file</div></div>
+                        <div class="pv-document-actions">
+                            <button class="lux-secondary-btn pv-document-btn" type="button"><i class="fas fa-eye"></i> View</button>
+                            ${profileViewCanManage() ? `<button type="button" class="pv-inline-action-btn lux-secondary-btn pv-inline-action-btn--danger pv-inline-action-btn--compact" data-pv-action="remove-static-document"><i class="fas fa-trash-alt"></i></button>` : ''}
                         </div>
                     </div>
-                    <div style="background:#f8fafc; border:1px solid var(--kiu-border); border-radius:12px; padding:16px; display:flex; justify-content:space-between; align-items:center;">
-                        <div><div style="font-weight:700; font-size:13px;">Teaching Confirmation</div><div style="font-size:11px; color:#64748b; margin-top:2px;">Current semester document</div></div>
-                        <div style="display:flex; gap:6px;">
-                            <button class="kiu-btn-outline" type="button" style="padding:7px 12px; font-size:11px; border-radius:8px;"><i class="fas fa-download"></i> Generate</button>
-                            ${profileViewCanManage() ? `<button type="button" data-pv-action="remove-static-document" style="padding:7px 8px; background:#fee2e2; border:1px solid #fca5a5; color:#dc2626; border-radius:8px; font-size:10px; cursor:pointer;"><i class="fas fa-trash-alt"></i></button>` : ''}
+                    <div class="pv-document-card lux-inline-card">
+                        <div><div class="pv-document-title">Teaching Confirmation</div><div class="pv-document-copy">Current semester document</div></div>
+                        <div class="pv-document-actions">
+                            <button class="lux-secondary-btn pv-document-btn" type="button"><i class="fas fa-download"></i> Generate</button>
+                            ${profileViewCanManage() ? `<button type="button" class="pv-inline-action-btn lux-secondary-btn pv-inline-action-btn--danger pv-inline-action-btn--compact" data-pv-action="remove-static-document"><i class="fas fa-trash-alt"></i></button>` : ''}
                         </div>
                     </div>`}
                     ${((type !== 'student' ? (person.customDocs||[]) : (person.customDocs||[]))).map(doc => `
-                    <div style="background:#f8fafc; border:1px solid var(--kiu-border); border-radius:12px; padding:16px; display:flex; justify-content:space-between; align-items:center;">
-                        <div><div style="font-weight:700; font-size:13px;">${doc.title}</div><div style="font-size:11px; color:#64748b; margin-top:2px;">${doc.description || 'Custom document'}</div></div>
-                        <div style="display:flex; gap:6px;">
-                            <button class="kiu-btn-outline" type="button" aria-label="Download custom document" style="padding:7px 12px; font-size:11px; border-radius:8px;"><i class="fas fa-download"></i></button>
-                            ${profileViewCanManage() ? `<button type="button" data-pv-action="remove-custom-document" data-pv-type="${type}" data-pv-id="${id}" data-pv-fac="${facCode}" data-pv-doc-title="${doc.title.replace(/"/g,'&quot;')}" style="padding:7px 8px; background:#fee2e2; border:1px solid #fca5a5; color:#dc2626; border-radius:8px; font-size:10px; cursor:pointer;"><i class="fas fa-trash-alt"></i></button>` : ''}
+                    <div class="pv-document-card lux-inline-card">
+                        <div><div class="pv-document-title">${doc.title}</div><div class="pv-document-copy">${doc.description || 'Custom document'}</div></div>
+                        <div class="pv-document-actions">
+                            <button class="lux-secondary-btn pv-document-btn" type="button" aria-label="Download custom document"><i class="fas fa-download"></i></button>
+                            ${profileViewCanManage() ? `<button type="button" class="pv-inline-action-btn lux-secondary-btn pv-inline-action-btn--danger pv-inline-action-btn--compact" data-pv-action="remove-custom-document" data-pv-type="${type}" data-pv-id="${id}" data-pv-fac="${facCode}" data-pv-doc-title="${doc.title.replace(/"/g,'&quot;')}"><i class="fas fa-trash-alt"></i></button>` : ''}
                         </div>
                     </div>`).join('')}
                 </div>
@@ -930,45 +988,50 @@ function renderProfile(type, id, facCode) {
             ${type === 'student' ? `
             <div class="pv-tab-content" id="pvtab-4" data-pv-mounted="0"></div>
             <template id="pvtab-4-template">
-                <div style="font-size:13px; font-weight:700; color:#0f172a; margin-bottom:16px;">Financial Ledger</div>
-                <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:20px;">
-                    <div class="pv-stat-card" style="border-color:${debt>0?'#fca5a5':'#86efac'};">
-                        <div class="pv-stat-num" style="color:${debt>0?'#dc2626':'#15803d'}; font-size:20px;">${debt > 0 ? debt+' GEL' : 'Paid'}</div>
+                <div class="pv-subsection-title">Financial Ledger</div>
+                <div class="lux-strip-grid lux-strip-grid--adaptive pv-stat-grid pv-financial-stat-grid">
+                    <div class="pv-stat-card pv-stat-card--financial surface-card lux-strip-card lux-summary-surface lux-summary-surface--panel" data-pv-financial-border="${escapeProfileViewAttr(debt>0?'#fca5a5':'#86efac')}" data-pv-financial-accent="${escapeProfileViewAttr(debt>0?'#dc2626':'#15803d')}">
+                        <div class="pv-stat-num pv-stat-num--compact pv-stat-num--financial">${debt > 0 ? debt+' GEL' : 'Paid'}</div>
                         <div class="pv-stat-lbl">Current Balance</div>
                     </div>
-                    <div class="pv-stat-card"><div class="pv-stat-num" style="font-size:20px;">2,250</div><div class="pv-stat-lbl">Tuition/Semester (GEL)</div></div>
-                    <div class="pv-stat-card"><div class="pv-stat-num" style="font-size:20px; color:#15803d;">Yes</div><div class="pv-stat-lbl">Scholarship Active</div></div>
+                    <div class="pv-stat-card surface-card lux-strip-card lux-summary-surface lux-summary-surface--panel"><div class="pv-stat-num pv-stat-num--compact">2,250</div><div class="pv-stat-lbl">Tuition/Semester (GEL)</div></div>
+                    <div class="pv-stat-card surface-card lux-strip-card lux-summary-surface lux-summary-surface--panel"><div class="pv-stat-num pv-stat-num--compact pv-stat-num--success">Yes</div><div class="pv-stat-lbl">Scholarship Active</div></div>
                 </div>
-                <table class="kiu-table" style="font-size:12px;">
-                    <thead style="background:#f8fafc;"><tr><th style="text-align:left;">Date</th><th>Description</th><th>Amount</th><th>Status</th></tr></thead>
+                <table class="pv-financial-table kiu-table">
+                    <thead><tr><th class="pv-table-cell-left">Date</th><th>Description</th><th>Amount</th><th>Status</th></tr></thead>
                     <tbody>
-                        <tr><td style="text-align:left;">2026-03-01</td><td>Tuition Installment 2 (Spring 2026)</td><td style="color:#dc2626;">-1,125 GEL</td><td><span style="color:#d97706;">Pending</span></td></tr>
-                        <tr><td style="text-align:left;">2026-01-15</td><td>Tuition Installment 1 (Spring 2026)</td><td style="color:#15803d;">+1,125 GEL</td><td><span style="color:#15803d;">Paid</span></td></tr>
-                        <tr><td style="text-align:left;">2025-09-10</td><td>Tuition (Fall 2025)</td><td style="color:#15803d;">+2,250 GEL</td><td><span style="color:#15803d;">Paid</span></td></tr>
+                        <tr><td class="pv-table-cell-left">2026-03-01</td><td>Tuition Installment 2 (Spring 2026)</td><td class="pv-financial-amount pv-financial-amount--negative">-1,125 GEL</td><td><span class="pv-financial-status lux-status-pill lux-status-pill--soft lux-status-pill--compact pv-financial-status--pending">Pending</span></td></tr>
+                        <tr><td class="pv-table-cell-left">2026-01-15</td><td>Tuition Installment 1 (Spring 2026)</td><td class="pv-financial-amount pv-financial-amount--positive">+1,125 GEL</td><td><span class="pv-financial-status lux-status-pill lux-status-pill--soft lux-status-pill--compact pv-financial-status--paid">Paid</span></td></tr>
+                        <tr><td class="pv-table-cell-left">2025-09-10</td><td>Tuition (Fall 2025)</td><td class="pv-financial-amount pv-financial-amount--positive">+2,250 GEL</td><td><span class="pv-financial-status lux-status-pill lux-status-pill--soft lux-status-pill--compact pv-financial-status--paid">Paid</span></td></tr>
                     </tbody>
                 </table>
                 ${profileViewCanManage() ? `
-                <div style="margin-top:24px; padding:20px; background:white; border:1px solid var(--kiu-border); border-radius:12px;">
-                    <div style="font-size:13px; font-weight:700; color:#c2410c; margin-bottom:12px;"><i class="fas fa-money-check-alt"></i> Apply Financial Hold / Grant</div>
-                    <div style="display:flex; gap:12px; align-items:flex-end;">
-                        <div style="flex:1;">
-                            <label style="font-size:11px; font-weight:700; color:var(--kiu-text-muted); text-transform:uppercase;">Amount (GEL)</label>
-                            <input type="number" id="bursar-debt-amount" placeholder="e.g. 2250" style="width:100%; padding:9px 12px; border:1px solid var(--kiu-border); border-radius:8px; outline:none; margin-top:4px; font-size:13px;">
+                <div class="pv-financial-admin-card">
+                    <div class="pv-financial-admin-title"><i class="fas fa-money-check-alt"></i> Apply Financial Hold / Grant</div>
+                    <div class="pv-financial-admin-row">
+                        <div class="pv-financial-admin-field">
+                            <label class="pv-financial-admin-label">Amount (GEL)</label>
+                            <input class="pv-financial-admin-input lux-control" type="number" id="bursar-debt-amount" placeholder="e.g. 2250">
                         </div>
-                        <button type="button" style="padding:10px 16px; border-radius:8px; background:#fff0f0; border:1px solid #fca5a5; color:#dc2626; font-weight:700; font-size:13px; cursor:pointer;" data-pv-action="apply-hold" data-pv-user-id="${id}"><i class="fas fa-lock"></i> Apply Hold</button>
-                        <button type="button" style="padding:10px 16px; border-radius:8px; background:#f0fdf4; border:1px solid #86efac; color:#16a34a; font-weight:700; font-size:13px; cursor:pointer;" data-pv-action="apply-scholarship" data-pv-user-id="${id}"><i class="fas fa-hand-holding-usd"></i> Apply Grant</button>
+                        <button type="button" class="pv-inline-action-btn lux-secondary-btn pv-inline-action-btn--danger pv-inline-action-btn--hold" data-pv-action="apply-hold" data-pv-user-id="${id}"><i class="fas fa-lock"></i> Apply Hold</button>
+                        <button type="button" class="pv-inline-action-btn lux-secondary-btn pv-inline-action-btn--success pv-inline-action-btn--grant" data-pv-action="apply-scholarship" data-pv-user-id="${id}"><i class="fas fa-hand-holding-usd"></i> Apply Grant</button>
                     </div>
                 </div>
                 ` : ''}
             </template>` : ''}
         </div>
     </div>`;
+    applyProfileViewDataStyles(root);
 }
 
 function pvSwitchTab(el, tabId) {
-    document.querySelectorAll('.pv-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.pv-tab').forEach(t => {
+        t.classList.remove('active');
+        t.setAttribute('aria-pressed', 'false');
+    });
     document.querySelectorAll('.pv-tab-content').forEach(c => c.classList.remove('active'));
     el.classList.add('active');
+    el.setAttribute('aria-pressed', 'true');
     const tc = pvEnsureTabContent(tabId);
     if (tc) tc.classList.add('active');
 }
@@ -991,60 +1054,60 @@ function toggleProfileEditMode(type, id, facCode) {
     let fieldsHtml = '';
     if (type === 'student') {
         fieldsHtml = `
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:16px;">
-                <div><label class="em-lbl">Name (Georgian)</label><input id="em-name" type="text" value="${person.name||''}" class="em-input"></div>
-                <div><label class="em-lbl">Name (English)</label><input id="em-name-en" type="text" value="${person.nameEn||''}" class="em-input"></div>
+            <div class="pv-edit-grid-two">
+                <div><label class="em-lbl">Name (Georgian)</label><input id="em-name" type="text" value="${person.name||''}" class="em-input lux-control"></div>
+                <div><label class="em-lbl">Name (English)</label><input id="em-name-en" type="text" value="${person.nameEn||''}" class="em-input lux-control"></div>
             </div>
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:16px;">
-                <div><label class="em-lbl">Email</label><input id="em-email" type="email" value="${person.email||''}" class="em-input"></div>
-                <div><label class="em-lbl">Phone</label><input id="em-phone" type="text" value="${person.phone||''}" class="em-input"></div>
+            <div class="pv-edit-grid-two">
+                <div><label class="em-lbl">Email</label><input id="em-email" type="email" value="${person.email||''}" class="em-input lux-control"></div>
+                <div><label class="em-lbl">Phone</label><input id="em-phone" type="text" value="${person.phone||''}" class="em-input lux-control"></div>
             </div>
-            <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:14px; margin-bottom:16px;">
-                <div><label class="em-lbl">Program</label><input id="em-program" type="text" value="${person.program||''}" class="em-input"></div>
-                <div><label class="em-lbl">Semester</label><input id="em-semester" type="number" value="${person.semester||1}" class="em-input"></div>
-                <div><label class="em-lbl">GPA</label><input id="em-gpa" type="number" step="0.01" value="${person.gpa||0}" class="em-input"></div>
-                <div><label class="em-lbl">ECTS</label><input id="em-ects" type="number" value="${person.ects||0}" class="em-input"></div>
+            <div class="pv-edit-grid-four">
+                <div><label class="em-lbl">Program</label><input id="em-program" type="text" value="${person.program||''}" class="em-input lux-control"></div>
+                <div><label class="em-lbl">Semester</label><input id="em-semester" type="number" value="${person.semester||1}" class="em-input lux-control"></div>
+                <div><label class="em-lbl">GPA</label><input id="em-gpa" type="number" step="0.01" value="${person.gpa||0}" class="em-input lux-control"></div>
+                <div><label class="em-lbl">ECTS</label><input id="em-ects" type="number" value="${person.ects||0}" class="em-input lux-control"></div>
             </div>
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:16px;">
-                <div><label class="em-lbl">Status</label><select id="em-status" class="em-input" style="background:white;"><option ${person.status==='Active'?'selected':''}>Active</option><option ${person.status==='Probation'?'selected':''}>Probation</option><option ${person.status==='Suspended'?'selected':''}>Suspended</option></select></div>
-                <div><label class="em-lbl">Tuition Balance (GEL)</label><input id="em-balance" type="number" value="${(KIU_STATE.tuitionBalances||{})[id]||0}" class="em-input"></div>
+            <div class="pv-edit-grid-two">
+                <div><label class="em-lbl">Status</label><select id="em-status" class="em-input lux-control"><option ${person.status==='Active'?'selected':''}>Active</option><option ${person.status==='Probation'?'selected':''}>Probation</option><option ${person.status==='Suspended'?'selected':''}>Suspended</option></select></div>
+                <div><label class="em-lbl">Tuition Balance (GEL)</label><input id="em-balance" type="number" value="${(KIU_STATE.tuitionBalances||{})[id]||0}" class="em-input lux-control"></div>
             </div>`;
     } else {
         fieldsHtml = `
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:16px;">
-                <div><label class="em-lbl">Name (Georgian)</label><input id="em-name" type="text" value="${person.name||''}" class="em-input"></div>
-                <div><label class="em-lbl">Name (English)</label><input id="em-name-en" type="text" value="${person.nameEn||''}" class="em-input"></div>
+            <div class="pv-edit-grid-two">
+                <div><label class="em-lbl">Name (Georgian)</label><input id="em-name" type="text" value="${person.name||''}" class="em-input lux-control"></div>
+                <div><label class="em-lbl">Name (English)</label><input id="em-name-en" type="text" value="${person.nameEn||''}" class="em-input lux-control"></div>
             </div>
-            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; margin-bottom:16px;">
-                <div><label class="em-lbl">Rank/Title</label><select id="em-title" class="em-input" style="background:white;"><option ${person.title==='Professor'?'selected':''}>Professor</option><option ${person.title==='Associate Professor'?'selected':''}>Associate Professor</option><option ${person.title==='Lecturer'?'selected':''}>Lecturer</option><option ${person.title==='Visiting Professor'?'selected':''}>Visiting Professor</option><option ${person.title==='Teaching Assistant'?'selected':''}>Teaching Assistant</option></select></div>
-                <div><label class="em-lbl">Office</label><input id="em-office" type="text" value="${person.office||''}" class="em-input"></div>
-                <div><label class="em-lbl">Since (Year)</label><input id="em-joinyear" type="number" value="${person.joinYear||2024}" class="em-input"></div>
+            <div class="pv-edit-grid-three">
+                <div><label class="em-lbl">Rank/Title</label><select id="em-title" class="em-input lux-control"><option ${person.title==='Professor'?'selected':''}>Professor</option><option ${person.title==='Associate Professor'?'selected':''}>Associate Professor</option><option ${person.title==='Lecturer'?'selected':''}>Lecturer</option><option ${person.title==='Visiting Professor'?'selected':''}>Visiting Professor</option><option ${person.title==='Teaching Assistant'?'selected':''}>Teaching Assistant</option></select></div>
+                <div><label class="em-lbl">Office</label><input id="em-office" type="text" value="${person.office||''}" class="em-input lux-control"></div>
+                <div><label class="em-lbl">Since (Year)</label><input id="em-joinyear" type="number" value="${person.joinYear||2024}" class="em-input lux-control"></div>
             </div>
-            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; margin-bottom:16px;">
-                <div><label class="em-lbl">Email</label><input id="em-email" type="email" value="${person.email||''}" class="em-input"></div>
-                <div><label class="em-lbl">Phone</label><input id="em-phone" type="text" value="${person.phone||''}" class="em-input"></div>
-                <div><label class="em-lbl">Max Teaching Hours</label><input id="em-maxhours" type="number" value="${person.maxHours||12}" class="em-input"></div>
+            <div class="pv-edit-grid-three">
+                <div><label class="em-lbl">Email</label><input id="em-email" type="email" value="${person.email||''}" class="em-input lux-control"></div>
+                <div><label class="em-lbl">Phone</label><input id="em-phone" type="text" value="${person.phone||''}" class="em-input lux-control"></div>
+                <div><label class="em-lbl">Max Teaching Hours</label><input id="em-maxhours" type="number" value="${person.maxHours||12}" class="em-input lux-control"></div>
             </div>
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:16px;">
-                <div><label class="em-lbl">Status</label><select id="em-status" class="em-input" style="background:white;"><option ${person.status==='Active'?'selected':''}>Active</option><option ${person.status==='Suspended'?'selected':''}>Suspended</option></select></div>
+            <div class="pv-edit-grid-two">
+                <div><label class="em-lbl">Status</label><select id="em-status" class="em-input lux-control"><option ${person.status==='Active'?'selected':''}>Active</option><option ${person.status==='Suspended'?'selected':''}>Suspended</option></select></div>
             </div>`;
     }
 
     const modalHtml = `
-    <div id="profile-edit-modal" data-pv-modal-overlay style="position:fixed; inset:0; z-index:6000; background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; backdrop-filter:blur(4px);">
-        <div style="background:white; border-radius:20px; width:90%; max-width:700px; max-height:85vh; overflow-y:auto; box-shadow:0 24px 60px rgba(0,0,0,0.25);">
-            <div style="padding:20px 24px; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center; position:sticky; top:0; background:white; z-index:5; border-radius:20px 20px 0 0;">
+    <div id="profile-edit-modal" class="pv-modal-overlay pv-modal-overlay--profile-edit" data-pv-modal-overlay>
+        <div class="pv-profile-edit-card surface-card">
+            <div class="pv-profile-edit-header">
                 <div>
-                    <div style="font-size:16px; font-weight:800; color:var(--kiu-navy);">Edit Profile &middot; ${person.name}</div>
-                    <div style="font-size:11px; color:#64748b; margin-top:2px;">${type.charAt(0).toUpperCase()+type.slice(1)} &middot; ID: ${id}</div>
+                    <div class="pv-profile-edit-title">Edit Profile &middot; ${person.name}</div>
+                    <div class="pv-profile-edit-subtitle">${type.charAt(0).toUpperCase()+type.slice(1)} &middot; ID: ${id}</div>
                 </div>
-                <button type="button" data-pv-remove-target="profile-edit-modal" style="background:none; border:1px solid #e2e8f0; border-radius:8px; padding:8px 16px; font-size:12px; font-weight:700; color:#64748b; cursor:pointer;"><i class="fas fa-times"></i></button>
+                <button type="button" class="pv-profile-edit-close lux-secondary-btn" data-pv-remove-target="profile-edit-modal"><i class="fas fa-times"></i></button>
             </div>
-            <div style="padding:24px;" id="profile-edit-form" data-type="${type}" data-id="${id}" data-fac="${facCode}">
+            <div class="pv-profile-edit-form" id="profile-edit-form" data-type="${type}" data-id="${id}" data-fac="${facCode}">
                 ${fieldsHtml}
-                <div style="display:flex; gap:12px; margin-top:8px;">
-                    <button type="button" data-pv-action="save-profile-edit" style="flex:3; padding:14px; background:linear-gradient(135deg,var(--kiu-blue),var(--kiu-navy)); color:white; border:none; border-radius:12px; font-weight:800; font-size:14px; cursor:pointer;"><i class="fas fa-save"></i> Save All Changes</button>
-                    <button type="button" data-pv-remove-target="profile-edit-modal" style="flex:1; padding:14px; background:#f1f5f9; color:#64748b; border:1px solid #e2e8f0; border-radius:12px; font-weight:700; font-size:14px; cursor:pointer;">Cancel</button>
+                <div class="pv-profile-edit-actions">
+                    <button type="button" class="pv-profile-edit-save lux-primary-btn" data-pv-action="save-profile-edit"><i class="fas fa-save"></i> Save All Changes</button>
+                    <button type="button" class="pv-profile-edit-cancel lux-secondary-btn" data-pv-remove-target="profile-edit-modal">Cancel</button>
                 </div>
             </div>
         </div>
@@ -1098,12 +1161,24 @@ function saveProfileEdit() {
     saveState();
     document.getElementById('profile-edit-modal').remove();
     renderProfile(type, id, fac);
-    // Brief confirmation
+    showProfileViewToast('Profile updated successfully!');
+}
+
+function showProfileViewToast(message, options = {}) {
+    const tone = String(options.tone || 'success');
+    const detail = String(options.detail || '').trim();
+    const durationMs = Number(options.durationMs || 3000);
     const toast = document.createElement('div');
-    toast.style.cssText = 'position:fixed;top:20px;right:20px;z-index:9999;background:#15803d;color:white;padding:14px 24px;border-radius:10px;font-weight:700;font-size:13px;box-shadow:0 8px 24px rgba(0,0,0,0.15);animation:fadeIn 0.3s;';
-    toast.innerHTML = '<i class="fas fa-check-circle" style="margin-right:8px;"></i>Profile updated successfully!';
+    toast.className = `pv-toast pv-toast--${tone}`;
+    toast.innerHTML = `
+        <i class="fas fa-check-circle pv-toast-icon"></i>
+        <div class="pv-toast-content">
+            <div>${escapeHtml(String(message || 'Saved.'))}</div>
+            ${detail ? `<div class="pv-toast-detail">${escapeHtml(detail)}</div>` : ''}
+        </div>
+    `;
     document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 3000);
+    setTimeout(() => toast.remove(), durationMs);
 }
 
 // ============================================
@@ -1162,11 +1237,7 @@ function saveProfileSchedule(type, id, facCode) {
     saveState();
     renderProfile(type, id, facCode);
 
-    const toast = document.createElement('div');
-    toast.style.cssText = 'position:fixed;top:20px;right:20px;z-index:9999;background:#15803d;color:white;padding:14px 24px;border-radius:10px;font-weight:700;font-size:13px;box-shadow:0 8px 24px rgba(0,0,0,0.15);';
-    toast.innerHTML = '<i class="fas fa-check-circle" style="margin-right:8px;"></i>Schedule saved & synced!';
-    document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 3000);
+    showProfileViewToast('Schedule saved & synced!');
 }
 
 // ============================================
@@ -1174,11 +1245,6 @@ function saveProfileSchedule(type, id, facCode) {
 // ============================================
 function openProfileSessionModal(type, id, facCode, prefillDay, prefillTime) {
     const fp = getFacultyProfile(facCode);
-    const modalTone = getFacultyThemeTone(facCode, {
-        useCurrentPalette: true,
-        softAlpha: 0.12,
-        borderAlpha: 0.24
-    });
     let person = null;
     if (type === 'student') person = getAllStudents().find(s => s.id === id);
     else if (type === 'professor') person = getAllStaff('professors').find(p => p.id === id);
@@ -1205,8 +1271,6 @@ function openProfileSessionModal(type, id, facCode, prefillDay, prefillTime) {
     form.dataset.id = id;
     form.dataset.fac = facCode;
     form.dataset.person = person.name;
-    form.style.setProperty('--pv-modal-accent', modalTone.accent);
-    form.style.setProperty('--pv-modal-soft-bg', modalTone.softBg);
 
     modal.querySelector('#pvs-subject').innerHTML = subjectOpts;
     modal.querySelector('#pvs-day').innerHTML = PROFILE_VIEW_DAY_NAMES.map((day) => `<option ${day===prefillDay?'selected':''}>${day}</option>`).join('');
@@ -1317,11 +1381,7 @@ function pvCreateSession() {
     document.getElementById('pv-session-modal')?.remove();
     renderProfile(type, id, facCode);
 
-    const toast = document.createElement('div');
-    toast.style.cssText = 'position:fixed;top:20px;right:20px;z-index:9999;background:#15803d;color:white;padding:14px 24px;border-radius:10px;font-weight:700;font-size:13px;box-shadow:0 8px 24px rgba(0,0,0,0.15);';
-    toast.innerHTML = '<i class="fas fa-check-circle" style="margin-right:8px;"></i>Session created & synced!';
-    document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 3000);
+    showProfileViewToast('Session created & synced!');
 }
 
 function pvDeleteSession(courseId, groupId, type, personId, facCode) {
@@ -1349,11 +1409,6 @@ function pvEditGroup(courseId, groupId, type, personId, facCode) {
     const groups = KIU_STATE.availableGroups[courseId] ||[];
     const group = groups.find(g => g.id === groupId || g.name === groupId);
     if (!group) { alert('Group not found!'); return; }
-    const modalTone = getFacultyThemeTone(facCode, {
-        useCurrentPalette: true,
-        softAlpha: 0.12,
-        borderAlpha: 0.24
-    });
     
     const normalizedGroupDay = PROFILE_VIEW_DAY_NAMES[PROFILE_VIEW_DAY_INDEX[group.day] ?? 0] || group.day || PROFILE_VIEW_DAY_NAMES[0];
     
@@ -1379,8 +1434,6 @@ function pvEditGroup(courseId, groupId, type, personId, facCode) {
     form.dataset.type = type;
     form.dataset.pid = personId;
     form.dataset.fac = facCode;
-    form.style.setProperty('--pv-modal-accent', modalTone.accent);
-    form.style.setProperty('--pv-modal-soft-bg', modalTone.softBg);
 
     modal.querySelector('#peg-day').innerHTML = PROFILE_VIEW_DAY_NAMES.map((day) => `<option${day===normalizedGroupDay?' selected':''}>${day}</option>`).join('');
     modal.querySelector('#peg-time').innerHTML = PROFILE_VIEW_GROUP_TIME_OPTIONS.map((time) => `<option${time===(group.time||'09:00')?' selected':''}>${time}</option>`).join('');
@@ -1427,11 +1480,7 @@ function pvSaveGroupEdit() {
     document.getElementById('pv-editgroup-modal')?.remove();
     renderProfile(type, personId, facCode);
     
-    const toast = document.createElement('div');
-    toast.style.cssText = 'position:fixed;top:20px;right:20px;z-index:9999;background:#15803d;color:white;padding:14px 24px;border-radius:10px;font-weight:700;font-size:13px;box-shadow:0 8px 24px rgba(0,0,0,0.15);';
-    toast.innerHTML = '<i class="fas fa-check-circle" style="margin-right:8px;"></i>Group updated!';
-    document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 3000);
+    showProfileViewToast('Group updated!');
 }
 
 // ============================================
@@ -1453,16 +1502,12 @@ function pvAddDocument(type, id, facCode) {
     saveState();
     renderProfile(type, id, facCode);
     
-    const toast = document.createElement('div');
-    toast.style.cssText = 'position:fixed;top:20px;right:20px;z-index:9999;background:#15803d;color:white;padding:14px 24px;border-radius:10px;font-weight:700;font-size:13px;box-shadow:0 8px 24px rgba(0,0,0,0.15);';
-    toast.innerHTML = '<i class="fas fa-check-circle" style="margin-right:8px;"></i>Document added!';
-    document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 3000);
+    showProfileViewToast('Document added!');
 }
 
 function pvRemoveDocument(btn) {
     if (!confirm('Remove this document?')) return;
-    const card = btn.closest('div[style*="border-radius:12px"]');
+    const card = btn.closest('.pv-document-card');
     if (card) card.remove();
 }
 
@@ -1513,27 +1558,31 @@ function copyScheduleToNextWeeks(type, id) {
 
     saveState();
 
-    const toast = document.createElement('div');
-    toast.style.cssText = 'position:fixed;top:20px;right:20px;z-index:9999;background:linear-gradient(135deg,#0891b2,#0e7490);color:white;padding:16px 24px;border-radius:12px;font-weight:700;font-size:13px;box-shadow:0 8px 24px rgba(0,0,0,0.2);max-width:400px;';
-    toast.innerHTML = `<i class="fas fa-check-circle" style="margin-right:8px;"></i>Schedule duplicated across ${weeks} weeks!<br><span style="font-size:11px; font-weight:400; opacity:0.9;">${schedule.length} sessions x ${weeks} weeks = ${schedule.length * weeks} total sessions</span>`;
-    document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 4000);
+    showProfileViewToast(
+        `Schedule duplicated across ${weeks} weeks!`,
+        {
+            tone: 'info',
+            detail: `${schedule.length} sessions x ${weeks} weeks = ${schedule.length * weeks} total sessions`,
+            durationMs: 4000
+        }
+    );
 }
 </script>
-<script src="assets/js/features/index-luxury.js?v=20260504-transparency-refresh1"></script>
-<script defer src="assets/js/features/luxury-shell-chrome.js?v=20260518-luxshell1"></script>
+<script src="assets/js/features/index-luxury.js?v=20260605-blurfix1"></script>
+<script type="module" src="assets/js/features/luxury-particle-background.js?v=20260531-partbg8"></script>
+<script defer src="assets/js/features/luxury-shell-chrome.js?v=20260606-pickerscroll1"></script>
 <script defer src="assets/js/features/luxury-home-model.js?v=20260518-luxhome1"></script>
 <!-- MOBILE BOTTOM NAVIGATION (v2) -->
-<nav id="mobile-bottom-nav" aria-label="Mobile navigation" style="display:none;">
+<nav id="mobile-bottom-nav" aria-label="Mobile navigation" hidden>
     <div class="mobile-nav-row">
         <button class="mobile-nav-btn is-active" data-nav-target="home" type="button" id="mob-nav-home"><i class="fas fa-th-large"></i><span>Home</span></button>
-        <button class="mobile-nav-btn" type="button" id="mob-nav-messages" data-action="messages"><i class="fas fa-comment-dots"></i><span>Chat</span><em class="mob-badge" id="mob-badge-msg" style="display:none;">0</em></button>
-        <button class="mobile-nav-btn" type="button" id="mob-nav-notif" data-action="notifications"><i class="fas fa-bell"></i><span>Alerts</span><em class="mob-badge" id="mob-badge-notif" style="display:none;">0</em></button>
+        <button class="mobile-nav-btn" type="button" id="mob-nav-messages" data-action="messages"><i class="fas fa-comment-dots"></i><span>Chat</span><em class="mob-badge" id="mob-badge-msg" hidden>0</em></button>
+        <button class="mobile-nav-btn" type="button" id="mob-nav-notif" data-action="notifications"><i class="fas fa-bell"></i><span>Alerts</span><em class="mob-badge" id="mob-badge-notif" hidden>0</em></button>
         <button class="mobile-nav-btn" type="button" id="mob-nav-theme" data-action="theme"><i class="fas fa-palette"></i><span>Theme</span></button>
         <button class="mobile-nav-btn" type="button" id="mob-nav-more" data-action="more"><i class="fas fa-grip-horizontal"></i><span>More</span></button>
     </div>
 </nav>
-<div id="mobile-action-sheet" class="mob-sheet" style="display:none;" role="dialog" aria-modal="true">
+<div id="mobile-action-sheet" class="mob-sheet" hidden role="dialog" aria-modal="true">
     <div class="mob-sheet-backdrop" id="mob-sheet-backdrop"></div>
     <div class="mob-sheet-panel">
         <div class="mob-sheet-handle"><span></span></div>

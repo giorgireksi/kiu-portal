@@ -298,18 +298,18 @@ function getChancelleryStatusMeta(status) {
 
 function getChancelleryStatusPill(status) {
     const meta = getChancelleryStatusMeta(status);
-    return `<span class="lux-status-pill is-${meta.tone}"><i class="${meta.icon}"></i> ${escapeChancelleryHtml(meta.label)}</span>`;
+    return `<span class="lux-status-pill lux-chancellery-status-pill lux-chancellery-case-status-pill is-${meta.tone}"><i class="${meta.icon}"></i> ${escapeChancelleryHtml(meta.label)}</span>`;
 }
 
-function getChancelleryKindPillStyle(kindMeta) {
+function getChancelleryKindPillClass(kindMeta) {
     const tone = kindMeta?.tone || 'muted';
     if (tone === 'primary') {
-        return 'background:rgba(var(--lux-accent-rgb),0.12); color:var(--lux-accent); border-color:rgba(var(--lux-accent-rgb),0.22);';
+        return 'lux-chancellery-kind-pill is-primary';
     }
     if (tone === 'secondary') {
-        return 'background:rgba(var(--lux-accent-2-rgb),0.12); color:var(--lux-accent-2); border-color:rgba(var(--lux-accent-2-rgb),0.22);';
+        return 'lux-chancellery-kind-pill is-secondary';
     }
-    return 'background:rgba(148,163,184,0.14); color:var(--lux-text-muted); border-color:rgba(148,163,184,0.22);';
+    return 'lux-chancellery-kind-pill is-muted';
 }
 
 function getChancelleryLatestPreview(request) {
@@ -507,7 +507,7 @@ function renderChancelleryThread(request) {
     if (!thread.length) {
         return '<div class="lux-empty-state">No conversation history has been recorded for this request yet.</div>';
     }
-    return `<div class="lux-thread">${
+    return `<div class="lux-thread lux-chancellery-thread">${
         thread.map(entry => {
             const entryType = entry.kind === 'status'
                 ? 'status'
@@ -516,7 +516,7 @@ function renderChancelleryThread(request) {
                     : 'staff';
             const typeLabel = entry.kind === 'status' ? 'Status update' : entry.authorRole || 'message';
             return `
-                <div class="lux-thread-entry is-${entryType}">
+                <div class="lux-thread-entry lux-chancellery-thread-entry is-${entryType}">
                     <div class="lux-thread-head">
                         <div>
                             <div class="lux-thread-author">${escapeChancelleryHtml(entry.authorName || 'System')}</div>
@@ -525,7 +525,7 @@ function renderChancelleryThread(request) {
                         <div class="lux-thread-time">${escapeChancelleryHtml(formatChancelleryDate(entry.createdAt, true))}</div>
                     </div>
                     <div class="lux-thread-message">${escapeChancelleryHtml(entry.message || '')}</div>
-                    ${entry.status ? `<div class="lux-meta" style="margin-top:8px;"><strong>Workflow state:</strong> ${escapeChancelleryHtml(entry.status)}</div>` : ''}
+                    ${entry.status ? `<div class="lux-meta lux-chancellery-thread-status"><strong>Workflow state:</strong> ${escapeChancelleryHtml(entry.status)}</div>` : ''}
                 </div>
             `;
         }).join('')
@@ -534,27 +534,27 @@ function renderChancelleryThread(request) {
 
 function renderChancelleryRequestList(requests, selectedCaseId) {
     if (!requests.length) {
-        return '<div class="lux-empty-state" style="min-height:180px;">No requests match this view yet.</div>';
+        return '<div class="lux-empty-state lux-chancellery-empty-state">No requests match this view yet.</div>';
     }
-    return `<div class="lux-queue-list">${
+    return `<div class="lux-queue-list lux-chancellery-queue-list">${
         requests.map(request => {
             const kindMeta = CHANCELLERY_REQUEST_KIND_META[request.requestKind] || CHANCELLERY_REQUEST_KIND_META.legacy;
             const selected = request.id === selectedCaseId;
             return `
-                <button type="button" data-chancellery-select-case="${escapeChancelleryHtml(request.id)}" class="lux-queue-item${selected ? ' is-selected' : ''}">
-                    <div class="lux-queue-head">
-                        <div style="display:grid; gap:8px;">
-                            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-                                <span class="lux-overline" style="color:var(--lux-text);">${escapeChancelleryHtml(request.id)}</span>
-                                <span class="lux-pill" style="${getChancelleryKindPillStyle(kindMeta)}">
+                <button type="button" data-chancellery-select-case="${escapeChancelleryHtml(request.id)}" class="lux-queue-item lux-chancellery-queue-item${selected ? ' is-selected' : ''}">
+                    <div class="lux-queue-head lux-chancellery-queue-head">
+                        <div class="lux-chancellery-queue-copy">
+                            <div class="lux-chancellery-queue-tag-row">
+                                <span class="lux-overline lux-chancellery-queue-id">${escapeChancelleryHtml(request.id)}</span>
+                                <span class="lux-pill ${getChancelleryKindPillClass(kindMeta)}">
                                     <i class="${kindMeta.icon}"></i> ${escapeChancelleryHtml(kindMeta.label)}
                                 </span>
                             </div>
-                            <div style="font-size:18px; font-weight:800; color:var(--lux-text);">${escapeChancelleryHtml(request.subjectName)}</div>
+                            <div class="lux-chancellery-queue-subject">${escapeChancelleryHtml(request.subjectName)}</div>
                         </div>
                         ${getChancelleryStatusPill(request.status)}
                     </div>
-                    <div class="lux-inline-meta">
+                    <div class="lux-inline-meta lux-chancellery-inline-meta lux-chancellery-queue-meta">
                         <span>${escapeChancelleryHtml(request.groupName || request.groupId || 'No group selected')}</span>
                         <span>${escapeChancelleryHtml(formatChancelleryDate(request.createdAt))}</span>
                     </div>
@@ -572,62 +572,62 @@ function renderChancelleryStudentAppealsPanel(requests, selectedRequest) {
             <div class="lux-stack">
                 <div class="lux-card">
                     <div class="lux-card-body">
-                        <div class="lux-card-head">
+                        <div class="lux-card-head lux-chancellery-card-head">
                             <div>
                                 <div class="lux-page-kicker"><i class="fas fa-file-circle-plus"></i> New Appeal</div>
-                                <div class="lux-card-title">Submit a request</div>
+                                <div class="lux-card-title lux-chancellery-card-title">Submit a request</div>
                                 <div class="lux-card-copy">Choose a graded subject, select the request type, and explain what should be reviewed.</div>
                             </div>
                         </div>
                         <div class="lux-field-grid">
                             <div class="lux-field">
                                 <label for="chancellery-subject-select">Subject</label>
-                                <select id="chancellery-subject-select" class="lux-control">
+                                <select id="chancellery-subject-select" class="lux-control lux-chancellery-control">
                                     <option value="">Select a graded subject</option>
                                     ${subjects.map(subject => `<option value="${escapeChancelleryHtml(`${subject.subjectId}::${subject.groupId}`)}">${escapeChancelleryHtml(subject.subjectName)} Â· ${escapeChancelleryHtml(subject.groupName)}</option>`).join('')}
                                 </select>
                             </div>
                             <div class="lux-field">
                                 <label for="chancellery-request-kind">Request Type</label>
-                                <select id="chancellery-request-kind" class="lux-control">
+                                <select id="chancellery-request-kind" class="lux-control lux-chancellery-control">
                                     <option value="grade-appeal">Grade Appeal</option>
                                     <option value="retake-request">Retake Request</option>
                                 </select>
                             </div>
                             <div class="lux-field">
                                 <label for="chancellery-request-message">Reason</label>
-                                <textarea id="chancellery-request-message" class="lux-control" rows="6" placeholder="Explain the evaluation issue or the reason for the retake request..."></textarea>
+                                <textarea id="chancellery-request-message" class="lux-control lux-chancellery-control" rows="6" placeholder="Explain the evaluation issue or the reason for the retake request..."></textarea>
                             </div>
                         </div>
-                        <div class="lux-card-actions" style="margin-top:16px;">
-                            <button type="button" class="kiu-btn-blue" data-chancellery-action="submit-request" style="width:100%;">
+                        <div class="lux-card-actions lux-chancellery-form-actions">
+                            <button type="button" class="lux-primary-btn lux-chancellery-submit-btn" data-chancellery-action="submit-request">
                                 <i class="fas fa-paper-plane"></i> Send Request
                             </button>
                         </div>
-                        <div class="lux-meta" style="margin-top:12px;">Requests are delivered to administration and the assigned professor or TA for that subject. Grades are not changed automatically from this page.</div>
+                        <div class="lux-meta lux-chancellery-card-note">Requests are delivered to administration and the assigned professor or TA for that subject. Grades are not changed automatically from this page.</div>
                     </div>
                 </div>
                 <div class="lux-card">
                     <div class="lux-card-body">
-                        <div class="lux-actions-between">
+                        <div class="lux-actions-between lux-chancellery-actions-between">
                             <div>
-                                <div class="lux-card-title">My Cases</div>
+                                <div class="lux-card-title lux-chancellery-card-title">My Cases</div>
                                 <div class="lux-card-copy">Track status, staff replies, and the latest note for each request.</div>
                             </div>
                             <span class="lux-pill">${requests.length} case${requests.length === 1 ? '' : 's'}</span>
                         </div>
-                        <div style="margin-top:16px;">${renderChancelleryRequestList(requests, selectedRequest?.id || '')}</div>
+                        <div class="lux-chancellery-list-region">${renderChancelleryRequestList(requests, selectedRequest?.id || '')}</div>
                     </div>
                 </div>
             </div>
             <div class="lux-card">
                 <div class="lux-card-body">
                     ${selectedRequest ? `
-                        <div class="lux-card-head">
+                        <div class="lux-card-head lux-chancellery-card-head">
                             <div>
                                 <div class="lux-page-kicker"><i class="fas fa-timeline"></i> Active Case</div>
-                                <div class="lux-card-title">${escapeChancelleryHtml(selectedRequest.subjectName)}</div>
-                                <div class="lux-inline-meta">
+                                <div class="lux-card-title lux-chancellery-card-title">${escapeChancelleryHtml(selectedRequest.subjectName)}</div>
+                                <div class="lux-inline-meta lux-chancellery-inline-meta">
                                     <span>${escapeChancelleryHtml(selectedRequest.id)}</span>
                                     <span>${escapeChancelleryHtml(deriveChancelleryTypeLabel(selectedRequest.requestKind))}</span>
                                     <span>${escapeChancelleryHtml(selectedRequest.groupName || selectedRequest.groupId || 'No group')}</span>
@@ -635,21 +635,21 @@ function renderChancelleryStudentAppealsPanel(requests, selectedRequest) {
                             </div>
                             ${getChancelleryStatusPill(selectedRequest.status)}
                         </div>
-                        <div class="lux-subcards" style="margin-bottom:18px;">
-                            <div class="lux-subcard">
+                        <div class="lux-subcards lux-chancellery-subcards-spaced">
+                            <div class="lux-subcard lux-chancellery-subcard">
                                 <div class="lux-overline">Recipients</div>
                                 <div class="lux-meta">Administration${selectedRequest.recipientContext?.professorName ? `<br>${escapeChancelleryHtml(selectedRequest.recipientContext.professorName)}` : ''}${selectedRequest.recipientContext?.taName ? `<br>${escapeChancelleryHtml(selectedRequest.recipientContext.taName)}` : ''}</div>
                             </div>
-                            <div class="lux-subcard">
+                            <div class="lux-subcard lux-chancellery-subcard">
                                 <div class="lux-overline">Faculty</div>
                                 <div class="lux-meta">${escapeChancelleryHtml(typeof getFacultyLabel === 'function' ? getFacultyLabel(selectedRequest.faculty) : selectedRequest.faculty)}</div>
                             </div>
-                            <div class="lux-subcard">
+                            <div class="lux-subcard lux-chancellery-subcard">
                                 <div class="lux-overline">Submitted</div>
                                 <div class="lux-meta">${escapeChancelleryHtml(formatChancelleryDate(selectedRequest.createdAt, true))}</div>
                             </div>
                         </div>
-                        <div class="lux-card-title" style="font-size:16px; margin-bottom:10px;">Conversation & Workflow</div>
+                        <div class="lux-card-title lux-chancellery-section-title">Conversation & Workflow</div>
                         ${renderChancelleryThread(selectedRequest)}
                     ` : `
                         <div class="lux-empty-state">Select one of your requests to open the full history, recipients, and status timeline.</div>
@@ -669,21 +669,21 @@ function renderChancelleryStudentFinancePanel() {
     return `
         <div class="lux-card">
             <div class="lux-card-body">
-                <div class="lux-card-head">
+                <div class="lux-card-head lux-chancellery-card-head">
                     <div>
                         <div class="lux-page-kicker"><i class="fas fa-wallet"></i> Financial Summary</div>
-                        <div class="lux-card-title">Bursar snapshot</div>
+                        <div class="lux-card-title lux-chancellery-card-title">Bursar snapshot</div>
                         <div class="lux-card-copy">Read-only balance information while appeal and retake requests stay in the main workspace.</div>
                     </div>
-                    <span class="lux-status-pill is-${tone}">${escapeChancelleryHtml(statusLabel)}</span>
+                    <span class="lux-status-pill lux-chancellery-finance-pill is-${tone}">${escapeChancelleryHtml(statusLabel)}</span>
                 </div>
                 <div class="lux-subcards">
-                    <div class="lux-subcard">
+                    <div class="lux-subcard lux-chancellery-subcard">
                         <div class="lux-overline">Current Balance</div>
                         <div id="finance-current-balance" class="lux-metric">${balance.toLocaleString()} GEL</div>
-                        <div class="lux-meta">${escapeChancelleryHtml(statusLabel)}</div>
+                        <div id="finance-status-note" class="lux-status-pill lux-chancellery-finance-pill is-${balance > 0 ? 'warning' : 'success'}">${escapeChancelleryHtml(statusLabel)}</div>
                     </div>
-                    <div class="lux-subcard">
+                    <div class="lux-subcard lux-chancellery-subcard">
                         <div class="lux-overline">Portal Note</div>
                         <div class="lux-meta">This page is currently focused on exam appeals and retake requests. Tuition payments and detailed statements stay read-only here.</div>
                     </div>
@@ -720,23 +720,23 @@ function renderChancelleryStaffWorkspace(requests) {
             <div class="lux-stack">
                 <div class="lux-card">
                     <div class="lux-card-body">
-                        <div class="lux-card-head">
+                        <div class="lux-card-head lux-chancellery-card-head">
                             <div>
                                 <div class="lux-page-kicker"><i class="fas fa-inbox"></i> ${escapeChancelleryHtml(roleLabel)}</div>
-                                <div class="lux-card-title">Workflow filters</div>
+                                <div class="lux-card-title lux-chancellery-card-title">Workflow filters</div>
                                 <div class="lux-card-copy">${isReadOnly ? 'Use this case view to verify office workflow status before replying in Student Service.' : 'Review appeals, answer students, and keep the workflow status current.'}</div>
                             </div>
                         </div>
-                        <div class="lux-stat-grid" style="margin-bottom:16px;">
-                            <div class="lux-stat-card">
+                        <div class="lux-stat-grid lux-strip-grid lux-strip-grid--adaptive lux-chancellery-stats-grid">
+                            <div class="lux-stat-card lux-strip-card surface-card">
                                 <div class="lux-stat-label">Open</div>
                                 <div class="lux-stat-value">${openCount}</div>
                             </div>
-                            <div class="lux-stat-card">
+                            <div class="lux-stat-card lux-strip-card surface-card">
                                 <div class="lux-stat-label">Resolved</div>
                                 <div class="lux-stat-value">${resolvedCount}</div>
                             </div>
-                            <div class="lux-stat-card">
+                            <div class="lux-stat-card lux-strip-card surface-card">
                                 <div class="lux-stat-label">Waiting</div>
                                 <div class="lux-stat-value">${waitingCount}</div>
                             </div>
@@ -744,14 +744,14 @@ function renderChancelleryStaffWorkspace(requests) {
                         <div class="lux-field-grid">
                             <div class="lux-field">
                                 <label>Status</label>
-                                <select data-chancellery-filter="status" class="lux-control">
+                                <select data-chancellery-filter="status" class="lux-control lux-chancellery-control">
                                     <option value="all"${statusFilter === 'all' ? ' selected' : ''}>All statuses</option>
                                     ${CHANCELLERY_STATUS_FLOW.map(status => `<option value="${escapeChancelleryHtml(normalizeChancelleryKey(status))}"${statusFilter === normalizeChancelleryKey(status) ? ' selected' : ''}>${escapeChancelleryHtml(status)}</option>`).join('')}
                                 </select>
                             </div>
                             <div class="lux-field">
                                 <label>Request Type</label>
-                                <select data-chancellery-filter="type" class="lux-control">
+                                <select data-chancellery-filter="type" class="lux-control lux-chancellery-control">
                                     <option value="all"${typeFilter === 'all' ? ' selected' : ''}>All types</option>
                                     <option value="grade-appeal"${typeFilter === 'grade-appeal' ? ' selected' : ''}>Grade Appeal</option>
                                     <option value="retake-request"${typeFilter === 'retake-request' ? ' selected' : ''}>Retake Request</option>
@@ -760,7 +760,7 @@ function renderChancelleryStaffWorkspace(requests) {
                             </div>
                             <div class="lux-field">
                                 <label>Subject</label>
-                                <select data-chancellery-filter="subject" class="lux-control">
+                                <select data-chancellery-filter="subject" class="lux-control lux-chancellery-control">
                                     <option value="all"${subjectFilter === 'all' ? ' selected' : ''}>All subjects</option>
                                     ${subjectOptions.map(request => `<option value="${escapeChancelleryHtml(normalizeChancelleryKey(request.subjectId))}"${subjectFilter === normalizeChancelleryKey(request.subjectId) ? ' selected' : ''}>${escapeChancelleryHtml(request.subjectName)}</option>`).join('')}
                                 </select>
@@ -770,60 +770,60 @@ function renderChancelleryStaffWorkspace(requests) {
                 </div>
                 <div class="lux-card">
                     <div class="lux-card-body">
-                        <div class="lux-actions-between">
+                        <div class="lux-actions-between lux-chancellery-actions-between">
                             <div>
-                                <div class="lux-card-title">Request Queue</div>
+                                <div class="lux-card-title lux-chancellery-card-title">Request Queue</div>
                                 <div class="lux-card-copy">${isReadOnly ? 'Use this read-only queue for student-support context.' : 'Only subjects in your staff scope appear here.'}</div>
                             </div>
                             <span class="lux-pill">${filteredRequests.length} item${filteredRequests.length === 1 ? '' : 's'}</span>
                         </div>
-                        <div style="margin-top:16px;">${renderChancelleryRequestList(filteredRequests, selectedFilteredRequest?.id || '')}</div>
+                        <div class="lux-chancellery-list-region">${renderChancelleryRequestList(filteredRequests, selectedFilteredRequest?.id || '')}</div>
                     </div>
                 </div>
             </div>
             <div class="lux-card">
                 <div class="lux-card-body">
                     ${selectedFilteredRequest ? `
-                        <div class="lux-card-head">
+                        <div class="lux-card-head lux-chancellery-card-head">
                             <div>
                                 <div class="lux-page-kicker"><i class="fas fa-scale-balanced"></i> Selected Request</div>
-                                <div class="lux-card-title">${escapeChancelleryHtml(selectedFilteredRequest.subjectName)}</div>
-                                <div class="lux-inline-meta">
+                                <div class="lux-card-title lux-chancellery-card-title">${escapeChancelleryHtml(selectedFilteredRequest.subjectName)}</div>
+                                <div class="lux-inline-meta lux-chancellery-inline-meta">
                                     <span>${escapeChancelleryHtml(selectedFilteredRequest.id)}</span>
                                     <span>${escapeChancelleryHtml(selectedFilteredRequest.studentName)}</span>
                                     <span>${escapeChancelleryHtml(deriveChancelleryTypeLabel(selectedFilteredRequest.requestKind))}</span>
                                 </div>
                             </div>
-                            <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+                            <div class="lux-chancellery-status-actions">
                                 ${getChancelleryStatusPill(selectedFilteredRequest.status)}
                                 ${isReadOnly ? `
-                                    <span class="lux-pill"><i class="fas fa-eye"></i> View only</span>
+                                    <span class="lux-pill lux-chancellery-view-pill"><i class="fas fa-eye"></i> View only</span>
                                 ` : `
-                                    <select data-chancellery-status-target="${escapeChancelleryHtml(selectedFilteredRequest.id)}" class="lux-control" style="min-width:220px;">
+                                    <select data-chancellery-status-target="${escapeChancelleryHtml(selectedFilteredRequest.id)}" class="lux-control lux-chancellery-control lux-chancellery-status-select">
                                         ${CHANCELLERY_STATUS_FLOW.map(status => `<option value="${escapeChancelleryHtml(status)}"${selectedFilteredRequest.status === status ? ' selected' : ''}>${escapeChancelleryHtml(status)}</option>`).join('')}
                                     </select>
                                 `}
                             </div>
                         </div>
-                        <div class="lux-subcards" style="margin-bottom:18px;">
-                            <div class="lux-subcard">
+                        <div class="lux-subcards lux-chancellery-subcards-spaced">
+                            <div class="lux-subcard lux-chancellery-subcard">
                                 <div class="lux-overline">Recipients</div>
                                 <div class="lux-meta">Administration${selectedFilteredRequest.recipientContext?.professorName ? `<br>${escapeChancelleryHtml(selectedFilteredRequest.recipientContext.professorName)}` : ''}${selectedFilteredRequest.recipientContext?.taName ? `<br>${escapeChancelleryHtml(selectedFilteredRequest.recipientContext.taName)}` : ''}</div>
                             </div>
-                            <div class="lux-subcard">
+                            <div class="lux-subcard lux-chancellery-subcard">
                                 <div class="lux-overline">Faculty</div>
                                 <div class="lux-meta">${escapeChancelleryHtml(typeof getFacultyLabel === 'function' ? getFacultyLabel(selectedFilteredRequest.faculty) : selectedFilteredRequest.faculty)}</div>
                             </div>
-                            <div class="lux-subcard">
+                            <div class="lux-subcard lux-chancellery-subcard">
                                 <div class="lux-overline">Latest Update</div>
                                 <div class="lux-meta">${escapeChancelleryHtml(formatChancelleryDate(selectedFilteredRequest.updatedAt, true))}</div>
                             </div>
                         </div>
-                        <div class="lux-card-title" style="font-size:16px; margin-bottom:10px;">Conversation & Workflow</div>
+                        <div class="lux-card-title lux-chancellery-section-title">Conversation & Workflow</div>
                         ${renderChancelleryThread(selectedFilteredRequest)}
-                        <div style="margin-top:18px;">
+                        <div class="lux-chancellery-thread-region">
                             ${isReadOnly ? `
-                                <div class="lux-subcard">
+                                <div class="lux-subcard lux-chancellery-subcard">
                                     <div class="lux-overline">Operating boundary</div>
                                     <div class="lux-meta">Use this page to confirm the official case status, then continue the student conversation back in Student Service. Appeal status changes and office replies stay in the academic workflow.</div>
                                 </div>
@@ -831,14 +831,14 @@ function renderChancelleryStaffWorkspace(requests) {
                                 <div class="lux-field-grid">
                                     <div class="lux-field">
                                         <label for="chancellery-staff-reply">Reply to Student</label>
-                                        <textarea id="chancellery-staff-reply" class="lux-control" rows="5" placeholder="Write a clear update for the student..."></textarea>
+                                        <textarea id="chancellery-staff-reply" class="lux-control lux-chancellery-control" rows="5" placeholder="Write a clear update for the student..."></textarea>
                                     </div>
                                 </div>
-                                <div class="lux-card-actions" style="margin-top:14px; justify-content:flex-end;">
-                                    <button type="button" class="kiu-btn-outline" data-chancellery-action="mark-resolved" data-request-id="${escapeChancelleryHtml(selectedFilteredRequest.id)}">
+                                <div class="lux-card-actions lux-chancellery-reply-actions">
+                                    <button type="button" class="lux-secondary-btn" data-chancellery-action="mark-resolved" data-request-id="${escapeChancelleryHtml(selectedFilteredRequest.id)}">
                                         <i class="fas fa-circle-check"></i> Mark Resolved
                                     </button>
-                                    <button type="button" class="kiu-btn-blue" data-chancellery-action="submit-staff-reply">
+                                    <button type="button" class="lux-primary-btn" data-chancellery-action="submit-staff-reply">
                                         <i class="fas fa-reply"></i> Send Reply
                                     </button>
                                 </div>
@@ -883,10 +883,10 @@ function renderChancelleryHero({ isStudent, uiState, headingTitle, headingCopy, 
                 </div>
                 ${isStudent ? `
                     <div class="lux-card-actions lux-chancellery-hero-actions">
-                        <button type="button" id="chan-tab-appeals" class="kiu-btn-outline ${uiState.tab !== 'finance' ? 'active' : ''}" data-chancellery-tab="appeals">
+                        <button type="button" id="chan-tab-appeals" class="lux-secondary-btn lux-chancellery-tab-btn ${uiState.tab !== 'finance' ? 'active' : ''}" data-chancellery-tab="appeals">
                             <i class="fas fa-file-circle-question"></i> Appeals & Retakes
                         </button>
-                        <button type="button" id="chan-tab-finance" class="kiu-btn-outline ${uiState.tab === 'finance' ? 'active' : ''}" data-chancellery-tab="finance">
+                        <button type="button" id="chan-tab-finance" class="lux-secondary-btn lux-chancellery-tab-btn ${uiState.tab === 'finance' ? 'active' : ''}" data-chancellery-tab="finance">
                             <i class="fas fa-wallet"></i> Financial Summary
                         </button>
                     </div>
@@ -894,10 +894,10 @@ function renderChancelleryHero({ isStudent, uiState, headingTitle, headingCopy, 
             </div>
             <div class="lux-chancellery-hero-focus">
                 <div class="lux-card lux-chancellery-focus-card">
-                    <div class="lux-card-head">
+                    <div class="lux-card-head lux-chancellery-card-head">
                         <div>
                     <div class="lux-page-kicker"><i class="fas fa-bolt"></i> Live signal</div>
-                            <div class="lux-card-title">${isStudent ? 'Track your cases at a glance' : 'See the current case load'}</div>
+                            <div class="lux-card-title lux-chancellery-card-title">${isStudent ? 'Track your cases at a glance' : 'See the current case load'}</div>
                             <div class="lux-card-copy">${isStudent ? 'Appeals, finance state, and the latest action stay visible in one calm panel.' : 'Open requests, waiting items, and resolved cases stay visible in one calm panel.'}</div>
                         </div>
                         ${getChancelleryStatusPill(heroStatusLabel)}
@@ -1004,19 +1004,14 @@ function renderFinancialLedger() {
     const balance = (studentId && tuitionBalances[studentId]) || 0;
     balanceEl.innerText = `${balance.toLocaleString()} GEL`;
     
-    const statusBox = balanceEl.nextElementSibling;
+    const statusBox = document.getElementById('finance-status-note');
+    if (!statusBox) return;
     if (balance <= 0) {
         statusBox.innerHTML = '<i class="fas fa-check-circle"></i> All fees are paid';
-        statusBox.style.color = 'var(--kiu-green)';
+        statusBox.className = 'lux-status-pill lux-chancellery-finance-pill is-success';
     } else {
         statusBox.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Outstanding balance';
-        statusBox.style.color = 'var(--kiu-red)';
-    }
-
-    // Admin Grant Logic injection
-    const grantContainer = document.getElementById('admin-grant-section');
-    if (grantContainer) {
-        grantContainer.style.display = currentUserRole === 'admin' ? 'block' : 'none';
+        statusBox.className = 'lux-status-pill lux-chancellery-finance-pill is-warning';
     }
 }
 

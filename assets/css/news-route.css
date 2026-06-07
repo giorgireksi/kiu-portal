@@ -1,3 +1,67 @@
+body.lux-route-news {
+    /* ===== Single source of truth: color-fade / glow / glass recipe ===== */
+    --news-fade-surface:
+        radial-gradient(circle at 8% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .92) * .075)), transparent 32%),
+        radial-gradient(circle at 74% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .28)), transparent 38%),
+        radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .92) * .18)), transparent 38%),
+        linear-gradient(135deg,
+            rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .10)),
+            rgba(10,15,24, calc(var(--lux-transparency-alpha, .92) * .89)) 44%,
+            rgba(7,10,18, calc(var(--lux-transparency-alpha, .92) * .80)));
+    --news-fade-surface-soft:
+        radial-gradient(circle at 12% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .92) * .055)), transparent 30%),
+        radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .14)), transparent 34%),
+        linear-gradient(135deg,
+            rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .065)),
+            rgba(10,15,24, calc(var(--lux-transparency-alpha, .92) * .88)) 46%,
+            rgba(7,10,18, calc(var(--lux-transparency-alpha, .92) * .80)));
+    --news-fade-control:
+        linear-gradient(180deg, rgba(255,255,255, calc(0.04 + var(--lux-glass-alpha, .06))), rgba(255,255,255, 0.02)),
+        radial-gradient(circle at top right, rgba(var(--lux-accent-rgb), 0.10), transparent 32%);
+    --news-fade-border: rgba(var(--lux-accent-rgb), 0.18);
+    --news-fade-border-soft: rgba(255,255,255, 0.11);
+    --news-fade-shadow:
+        0 24px 58px rgba(0,0,0,0.24),
+        inset 0 1px 0 rgba(255,255,255,0.08);
+    --news-fade-shadow-soft:
+        0 18px 40px rgba(0,0,0,0.20),
+        inset 0 1px 0 rgba(255,255,255,0.06);
+    --news-fade-glow-ring: 0 0 0 1px rgba(var(--lux-accent-rgb),0.30), 0 18px 40px rgba(var(--lux-accent-rgb), var(--lux-panel-glow, 0.22));
+    --news-fade-blur: blur(var(--lux-transparency-blur, 18px)) saturate(var(--lux-transparency-saturate, 140%));
+}
+
+html.lux-light-mode body.lux-route-news,
+body.lux-light-mode.lux-route-news {
+    --news-fade-surface:
+        radial-gradient(circle at 8% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .86) * .88)), transparent 34%),
+        radial-gradient(circle at 74% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .22)), transparent 38%),
+        radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .86) * .13)), transparent 38%),
+        linear-gradient(135deg,
+            rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .075)),
+            rgba(255,255,255, calc(var(--lux-transparency-alpha, .86) * .88)) 44%,
+            rgba(247,241,232, calc(var(--lux-transparency-alpha, .86) * .72)));
+    --news-fade-surface-soft:
+        radial-gradient(circle at 12% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .86) * .62)), transparent 30%),
+        radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .14)), transparent 34%),
+        linear-gradient(135deg,
+            rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .045)),
+            rgba(255,255,255, calc(var(--lux-transparency-alpha, .86) * .84)) 46%,
+            rgba(247,241,232, calc(var(--lux-transparency-alpha, .86) * .72)));
+    --news-fade-control:
+        linear-gradient(180deg, rgba(255,255,255, 0.82), rgba(248,244,237, 0.62)),
+        radial-gradient(circle at top right, rgba(var(--lux-accent-rgb), 0.10), transparent 32%);
+    --news-fade-border: rgba(var(--lux-accent-rgb), 0.18);
+    --news-fade-border-soft: rgba(48,34,22, 0.12);
+    --news-fade-shadow:
+        0 18px 42px rgba(73,48,25,0.10),
+        inset 0 1px 0 rgba(255,255,255,0.74);
+    --news-fade-shadow-soft:
+        0 16px 34px rgba(107,91,62,0.10),
+        inset 0 1px 0 rgba(255,255,255,0.66);
+    --news-fade-glow-ring: 0 0 0 1px rgba(var(--lux-accent-rgb),0.22), 0 16px 34px rgba(var(--lux-accent-rgb), 0.16);
+    --news-fade-blur: blur(var(--lux-transparency-blur, 18px)) saturate(var(--lux-transparency-saturate, 140%));
+}
+
 #portal-news-root {
     color: var(--lux-text);
     min-height: 70vh;
@@ -10,37 +74,6 @@
     gap: 18px;
     margin-top: 24px;
     align-items: start;
-}
-
-#portal-news-root .newsx-panel,
-#portal-news-root .newsx-hero {
-    border: 1px solid rgba(255,255,255, calc(0.04 + var(--lux-glass-alpha, 0.06) * 0.3));
-    border-radius: 28px;
-    box-shadow: 0 20px 50px rgba(0,0,0, calc(0.10 + var(--lux-panel-alpha, 0.74) * 0.14));
-    backdrop-filter: blur(var(--lux-transparency-blur, 24px)) saturate(var(--lux-transparency-saturate, 145%));
-    -webkit-backdrop-filter: blur(var(--lux-transparency-blur, 24px)) saturate(var(--lux-transparency-saturate, 145%));
-    transition: background 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease;
-}
-
-#portal-news-root .newsx-panel {
-    background:
-        radial-gradient(circle at top right, rgba(var(--lux-accent-rgb), calc(0.04 + var(--lux-card-glow-alpha, 0.06))), transparent 36%),
-        linear-gradient(
-            180deg,
-            rgba(var(--lux-glass-tint-rgb, 12, 17, 26), calc(var(--lux-panel-alpha, 0.74) * 0.88)),
-            rgba(var(--lux-glass-tint-rgb, 8, 12, 19), calc(var(--lux-panel-alpha, 0.74) * 0.66))
-        );
-}
-
-body.lux-light-mode #portal-news-root .newsx-panel {
-    background:
-        radial-gradient(circle at top right, rgba(var(--lux-accent-rgb), calc(0.04 + var(--lux-card-glow-alpha, 0.06))), transparent 36%),
-        linear-gradient(
-            180deg,
-            rgba(255, 255, 255, calc(var(--lux-panel-alpha, 0.74) * 1.08)),
-            rgba(248, 243, 234, calc(var(--lux-panel-alpha, 0.74) * 0.92))
-        );
-    border-color: rgba(26, 36, 51, calc(0.04 + var(--lux-glass-alpha, 0.06) * 0.2));
 }
 
 #portal-news-root .newsx-sidebar,
@@ -64,11 +97,8 @@ body.lux-light-mode #portal-news-root .newsx-panel {
 
 #portal-news-root .newsx-hero {
     padding: 34px 36px;
-    color: #fff;
-    background:
-        radial-gradient(circle at 88% 14%, rgba(255,255,255,0.22), transparent 28%),
-        radial-gradient(circle at 12% 100%, rgba(var(--lux-home-secondary-rgb, 100,200,150), 0.12), transparent 30%),
-        linear-gradient(135deg, rgba(var(--lux-accent-rgb), 0.94), rgba(17, 29, 52, 0.97));
+    color: var(--lux-text);
+    background: var(--news-fade-surface);
     position: relative;
     overflow: hidden;
 }
@@ -115,7 +145,7 @@ body.lux-light-mode #portal-news-root .newsx-panel {
 #portal-news-root .newsx-copy {
     margin: 0;
     max-width: 760px;
-    color: rgba(255,255,255,0.82);
+    color: var(--lux-text-muted);
     font-size: 14px;
     line-height: 1.7;
 }
@@ -134,24 +164,18 @@ body.lux-light-mode #portal-news-root .newsx-panel {
 
 #portal-news-root .newsx-badge,
 #portal-news-root .newsx-chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 12px;
-    border-radius: 999px;
     font-size: 12px;
     font-weight: 800;
 }
 
 #portal-news-root .newsx-badge {
-    color: #fff;
-    background: rgba(255,255,255,0.12);
+    color: var(--lux-text);
+    background: var(--news-fade-control);
+    border: 1px solid var(--news-fade-border-soft);
 }
 
 #portal-news-root .newsx-chip {
-    color: var(--lux-text);
-    background: rgba(var(--lux-accent-rgb), 0.08);
-    border: 1px solid rgba(var(--lux-accent-rgb), 0.18);
+    min-height: 34px;
 }
 
 #portal-news-root .newsx-chip.is-priority-important {
@@ -224,19 +248,12 @@ body.lux-light-mode #portal-news-root .newsx-panel {
     padding-right: 4px;
 }
 
-#portal-news-root .newsx-section-btn,
-#portal-news-root .newsx-account-card,
-#portal-news-root .newsx-pane-btn,
 #portal-news-root .newsx-btn {
     appearance: none;
-    border: 1px solid rgba(var(--lux-accent-rgb), calc(0.04 + var(--lux-glass-alpha, 0.06) * 0.3));
     cursor: pointer;
     transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
 }
 
-#portal-news-root .newsx-section-btn:hover,
-#portal-news-root .newsx-account-card:hover,
-#portal-news-root .newsx-pane-btn:hover,
 #portal-news-root .newsx-btn:hover {
     transform: translateY(-1px);
 }
@@ -244,7 +261,7 @@ body.lux-light-mode #portal-news-root .newsx-panel {
 #portal-news-root .newsx-section-btn {
     width: 100%;
     border-radius: 18px;
-    background: rgba(var(--lux-accent-rgb), calc(0.02 + var(--lux-panel-alpha, 0.74) * 0.04));
+    background: var(--news-fade-control);
     color: var(--lux-text);
     padding: 14px 16px;
     display: flex;
@@ -252,12 +269,6 @@ body.lux-light-mode #portal-news-root .newsx-panel {
     gap: 10px;
     align-items: center;
     text-align: left;
-}
-
-#portal-news-root .newsx-section-btn.is-active {
-    border-color: rgba(var(--lux-accent-rgb), 0.34);
-    background: rgba(var(--lux-accent-rgb), 0.12);
-    box-shadow: 0 16px 28px rgba(var(--lux-accent-rgb), 0.12);
 }
 
 #portal-news-root .newsx-section-btn .newsx-sec-icon {
@@ -302,10 +313,6 @@ body.lux-light-mode #portal-news-root .newsx-panel {
 #portal-news-root .newsx-select,
 #portal-news-root .newsx-textarea {
     width: 100%;
-    background: rgba(var(--lux-accent-rgb), calc(0.01 + var(--lux-panel-alpha, 0.74) * 0.03));
-    color: var(--lux-text);
-    border: 1px solid rgba(var(--lux-accent-rgb), calc(0.04 + var(--lux-glass-alpha, 0.06) * 0.3));
-    border-radius: 16px;
     outline: none;
     font: inherit;
     box-sizing: border-box;
@@ -314,23 +321,14 @@ body.lux-light-mode #portal-news-root .newsx-panel {
 #portal-news-root .newsx-input,
 #portal-news-root .newsx-select {
     min-height: 46px;
-    padding: 0 14px;
     font-size: 14px;
 }
 
 #portal-news-root .newsx-textarea {
     min-height: 116px;
-    padding: 14px;
     resize: vertical;
     line-height: 1.6;
     font-size: 14px;
-}
-
-#portal-news-root .newsx-input:focus,
-#portal-news-root .newsx-select:focus,
-#portal-news-root .newsx-textarea:focus {
-    border-color: rgba(var(--lux-accent-rgb), 0.38);
-    box-shadow: 0 0 0 4px rgba(var(--lux-accent-rgb), 0.10);
 }
 
 #portal-news-root .newsx-btn {
@@ -344,14 +342,9 @@ body.lux-light-mode #portal-news-root .newsx-panel {
     align-items: center;
     justify-content: center;
     gap: 8px;
-    background: rgba(var(--lux-accent-rgb), calc(0.02 + var(--lux-panel-alpha, 0.74) * 0.06));
-    color: var(--lux-text);
 }
 
 #portal-news-root .newsx-btn-primary {
-    border-color: rgba(var(--lux-accent-rgb), 0.28);
-    color: #fff;
-    background: linear-gradient(135deg, rgba(var(--lux-accent-rgb), 0.96), rgba(var(--lux-home-secondary-rgb, 100,200,150), 0.78));
     box-shadow: 0 16px 32px rgba(var(--lux-accent-rgb), 0.22);
 }
 
@@ -373,16 +366,12 @@ body.lux-light-mode #portal-news-root .newsx-panel {
 #portal-news-root .newsx-pane-btn {
     min-height: 40px;
     border-radius: 14px;
-    background: rgba(var(--lux-accent-rgb), calc(0.02 + var(--lux-panel-alpha, 0.74) * 0.04));
-    color: var(--lux-text-muted);
     font: inherit;
     font-weight: 800;
 }
 
 #portal-news-root .newsx-pane-btn.is-active {
     color: var(--lux-text);
-    border-color: rgba(var(--lux-accent-rgb), 0.28);
-    background: rgba(var(--lux-accent-rgb), 0.12);
 }
 
 #portal-news-root .newsx-card-header {
@@ -443,9 +432,6 @@ body.lux-light-mode #portal-news-root .newsx-panel {
 
 #portal-news-root .newsx-stat {
     padding: 12px;
-    border-radius: 16px;
-    background: rgba(var(--lux-accent-rgb), calc(0.02 + var(--lux-panel-alpha, 0.74) * 0.04));
-    border: 1px solid rgba(var(--lux-accent-rgb), calc(0.04 + var(--lux-glass-alpha, 0.06) * 0.3));
     transition: transform 0.18s ease, box-shadow 0.18s ease;
 }
 
@@ -480,9 +466,6 @@ body.lux-light-mode #portal-news-root .newsx-panel {
 
 #portal-news-root .newsx-private-item {
     padding: 12px 14px;
-    border-radius: 16px;
-    background: rgba(var(--lux-accent-rgb), calc(0.02 + var(--lux-panel-alpha, 0.74) * 0.04));
-    border: 1px solid rgba(var(--lux-accent-rgb), calc(0.04 + var(--lux-glass-alpha, 0.06) * 0.3));
 }
 
 #portal-news-root .newsx-private-meta {
@@ -494,48 +477,9 @@ body.lux-light-mode #portal-news-root .newsx-panel {
     color: var(--lux-text-muted);
 }
 
-#portal-news-root .newsx-check {
-    display: flex;
-    gap: 10px;
-    padding: 12px;
-    border-radius: 16px;
-    background: rgba(var(--lux-accent-rgb), calc(0.02 + var(--lux-panel-alpha, 0.74) * 0.04));
-    border: 1px solid rgba(var(--lux-accent-rgb), calc(0.04 + var(--lux-glass-alpha, 0.06) * 0.3));
-}
-
-#portal-news-root .newsx-check input {
-    margin-top: 2px;
-    accent-color: var(--lux-accent);
-}
-
 #portal-news-root .newsx-account-card {
-    background: rgba(var(--lux-accent-rgb), calc(0.02 + var(--lux-panel-alpha, 0.74) * 0.04));
-    border-radius: 18px;
     padding: 14px;
     text-align: left;
-}
-
-#portal-news-root .newsx-account-card.is-active {
-    border-color: rgba(var(--lux-accent-rgb), 0.32);
-    background: rgba(var(--lux-accent-rgb), 0.12);
-}
-
-#portal-news-root .newsx-empty,
-#portal-news-root .newsx-error {
-    padding: 24px;
-    text-align: center;
-    border-radius: 20px;
-}
-
-#portal-news-root .newsx-empty {
-    border: 1px dashed var(--lux-border-strong);
-    color: var(--lux-text-muted);
-}
-
-#portal-news-root .newsx-error {
-    border: 1px solid rgba(200, 70, 70, 0.3);
-    background: rgba(200, 70, 70, 0.1);
-    color: #dc6a79;
 }
 
 #portal-news-root .newsx-divider {
@@ -665,60 +609,68 @@ body.lux-light-mode #portal-news-root .newsx-panel {
 }
 
 body.lux-route-news #portal-news-root .newsx-panel,
-body.lux-route-news #portal-news-root .newsx-hero,
+body.lux-route-news #portal-news-root .newsx-sidebar,
+body.lux-route-news #portal-news-root .newsx-rail,
+body.lux-route-news #portal-news-root .newsx-feed-card,
+body.lux-route-news #portal-news-root .newsx-filter,
+body.lux-route-news #portal-news-root .newsx-section,
+body.lux-route-news #portal-news-root .newsx-hero {
+    background: var(--news-fade-surface) !important;
+    border-color: var(--news-fade-border) !important;
+    box-shadow: var(--news-fade-shadow) !important;
+    -webkit-backdrop-filter: var(--news-fade-blur) !important;
+    backdrop-filter: var(--news-fade-blur) !important;
+    transition: border-color 0.14s ease, transform 0.14s ease !important;
+}
+
 body.lux-route-news #portal-news-root .newsx-section-btn,
 body.lux-route-news #portal-news-root .newsx-account-card,
 body.lux-route-news #portal-news-root .newsx-pane-btn,
 body.lux-route-news #portal-news-root .newsx-stat,
 body.lux-route-news #portal-news-root .newsx-private-item,
-body.lux-route-news #portal-news-root .newsx-check,
-body.lux-route-news #portal-news-root :is(.newsx-input, .newsx-select, .newsx-textarea) {
-    background:
-        radial-gradient(circle at 8% 0%, rgba(255, 255, 255, calc(var(--lux-transparency-alpha, 0.74) * 0.07)), transparent 32%),
-        radial-gradient(circle at 74% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, 0.74) * 0.20)), transparent 38%),
-        radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-transparency-alpha, 0.74) * 0.14)), transparent 38%),
-        linear-gradient(
-            135deg,
-            rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, 0.74) * 0.09)),
-            rgba(var(--lux-glass-tint-rgb, 16, 23, 38), calc(var(--lux-transparency-alpha, 0.74) * 0.90)) 44%,
-            rgba(var(--lux-glass-tint-rgb, 8, 12, 19), calc(var(--lux-transparency-alpha, 0.74) * 0.82))
-        ) !important;
-    border-color: var(--lux-border) !important;
-    box-shadow: 0 14px 34px rgba(0, 0, 0, calc(0.06 + var(--lux-transparency-alpha, 0.74) * 0.10)) !important;
-    backdrop-filter: blur(var(--lux-transparency-blur, 18px)) saturate(var(--lux-transparency-saturate, 140%)) !important;
-    -webkit-backdrop-filter: blur(var(--lux-transparency-blur, 18px)) saturate(var(--lux-transparency-saturate, 140%)) !important;
+body.lux-route-news #portal-news-root .newsx-check {
+    background: var(--news-fade-surface-soft) !important;
+    border-color: var(--news-fade-border) !important;
+    box-shadow: var(--news-fade-shadow-soft) !important;
+    -webkit-backdrop-filter: var(--news-fade-blur) !important;
+    backdrop-filter: var(--news-fade-blur) !important;
     transition: border-color 0.14s ease, transform 0.14s ease !important;
 }
 
 body.lux-light-mode.lux-route-news #portal-news-root .newsx-panel,
+body.lux-light-mode.lux-route-news #portal-news-root .newsx-sidebar,
+body.lux-light-mode.lux-route-news #portal-news-root .newsx-rail,
+body.lux-light-mode.lux-route-news #portal-news-root .newsx-feed-card,
+body.lux-light-mode.lux-route-news #portal-news-root .newsx-filter,
+body.lux-light-mode.lux-route-news #portal-news-root .newsx-section,
 body.lux-light-mode.lux-route-news #portal-news-root .newsx-hero,
+html.lux-light-mode body.lux-route-news #portal-news-root .newsx-panel,
+html.lux-light-mode body.lux-route-news #portal-news-root .newsx-sidebar,
+html.lux-light-mode body.lux-route-news #portal-news-root .newsx-rail,
+html.lux-light-mode body.lux-route-news #portal-news-root .newsx-feed-card,
+html.lux-light-mode body.lux-route-news #portal-news-root .newsx-filter,
+html.lux-light-mode body.lux-route-news #portal-news-root .newsx-section,
+html.lux-light-mode body.lux-route-news #portal-news-root .newsx-hero {
+    background: var(--news-fade-surface) !important;
+    box-shadow: var(--news-fade-shadow) !important;
+    color: var(--lux-text);
+}
+
 body.lux-light-mode.lux-route-news #portal-news-root .newsx-section-btn,
 body.lux-light-mode.lux-route-news #portal-news-root .newsx-account-card,
 body.lux-light-mode.lux-route-news #portal-news-root .newsx-pane-btn,
 body.lux-light-mode.lux-route-news #portal-news-root .newsx-stat,
 body.lux-light-mode.lux-route-news #portal-news-root .newsx-private-item,
 body.lux-light-mode.lux-route-news #portal-news-root .newsx-check,
-body.lux-light-mode.lux-route-news #portal-news-root :is(.newsx-input, .newsx-select, .newsx-textarea),
-html.lux-light-mode body.lux-route-news #portal-news-root .newsx-panel,
-html.lux-light-mode body.lux-route-news #portal-news-root .newsx-hero,
 html.lux-light-mode body.lux-route-news #portal-news-root .newsx-section-btn,
 html.lux-light-mode body.lux-route-news #portal-news-root .newsx-account-card,
 html.lux-light-mode body.lux-route-news #portal-news-root .newsx-pane-btn,
 html.lux-light-mode body.lux-route-news #portal-news-root .newsx-stat,
 html.lux-light-mode body.lux-route-news #portal-news-root .newsx-private-item,
-html.lux-light-mode body.lux-route-news #portal-news-root .newsx-check,
-html.lux-light-mode body.lux-route-news #portal-news-root :is(.newsx-input, .newsx-select, .newsx-textarea) {
-    background:
-        radial-gradient(circle at 8% 0%, rgba(255, 255, 255, calc(var(--lux-transparency-alpha, 0.74) * 0.88)), transparent 34%),
-        radial-gradient(circle at 74% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, 0.74) * 0.18)), transparent 38%),
-        radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-transparency-alpha, 0.74) * 0.12)), transparent 38%),
-        linear-gradient(
-            135deg,
-            rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, 0.74) * 0.07)),
-            rgba(255, 255, 255, calc(var(--lux-transparency-alpha, 0.74) * 0.86)) 44%,
-            rgba(245, 239, 229, calc(var(--lux-transparency-alpha, 0.74) * 0.70))
-        ) !important;
-    box-shadow: 0 12px 28px rgba(73, 48, 25, 0.08) !important;
+html.lux-light-mode body.lux-route-news #portal-news-root .newsx-check {
+    background: var(--news-fade-surface-soft) !important;
+    box-shadow: var(--news-fade-shadow-soft) !important;
+    color: var(--lux-text);
 }
 
 body.lux-route-news #portal-news-root .newsx-hero {
@@ -732,15 +684,24 @@ body.lux-route-news #portal-news-root .newsx-copy {
 
 body.lux-route-news #portal-news-root .newsx-badge,
 body.lux-route-news #portal-news-root .newsx-chip {
-    background: rgba(var(--lux-accent-rgb), 0.08) !important;
-    border: 1px solid rgba(var(--lux-accent-rgb), 0.16) !important;
+    background: var(--news-fade-control) !important;
+    border: 1px solid var(--news-fade-border-soft) !important;
     color: var(--lux-text) !important;
+    -webkit-backdrop-filter: var(--news-fade-blur);
+    backdrop-filter: var(--news-fade-blur);
+}
+
+body.lux-route-news #portal-news-root .newsx-chip.is-priority-important,
+body.lux-route-news #portal-news-root .newsx-chip.is-priority-critical,
+body.lux-route-news #portal-news-root .newsx-chip.is-pinned {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
 }
 
 body.lux-route-news #portal-news-root .newsx-feed-card:hover,
 body.lux-route-news #portal-news-root .newsx-stat:hover {
     transform: translateY(-1px);
-    box-shadow: 0 16px 34px rgba(0, 0, 0, 0.12) !important;
+    box-shadow: var(--news-fade-shadow-soft) !important;
 }
 
 @media (max-width: 1260px) {

@@ -10,6 +10,12 @@ const {
 
 const ROOT = path.resolve(__dirname, '..');
 
+const explicitMobileShellRouteGuardrails = {
+    'admin-orders.html': { category: 'standard-shell', dedicatedCss: ['assets/css/admin-orders-route.css'], mobileShell: 'shared-standalone' },
+    'admin-tools.html': { category: 'special-surface', dedicatedCss: ['assets/css/admin-tools-luxury.css'], mobileShell: 'shared-standalone' },
+    'admin-scheduler.html': { category: 'special-surface', dedicatedCss: ['assets/css/admin-scheduler-route.css'], mobileShell: 'shared-standalone' }
+};
+
 const lineCountThresholds = [
     {
         file: 'backend/platform/store.js',
@@ -166,6 +172,7 @@ const extractedRouteOwners = [
             "app.post('/api/messenger/message'",
             "app.delete('/api/messenger/chats/:chatId/messages/:messageId'",
             "app.post('/api/messenger/chats/:chatId/hide'",
+            "app.post('/api/messenger/chats/:chatId/read'",
             "app.post('/api/calls/start'",
             "app.post('/api/calls/accept'",
             "app.post('/api/calls/decline'",
@@ -199,7 +206,8 @@ const extractedRouteOwners = [
         module: 'backend/platform/routes/lms-live-quiz-routes.js',
         routes: [
             "app.get('/api/lms/live-quizzes/:resourceKey'",
-            "app.post('/api/lms/live-quizzes/:resourceKey'"
+            "app.post('/api/lms/live-quizzes/:resourceKey'",
+            "app.post('/api/lms/live-quizzes/:resourceKey/answers'"
         ]
     },
     {
@@ -309,6 +317,20 @@ let failed = false;
 const serverSource = readText('backend/platform/server.js');
 
 console.log('Architecture guardrails');
+
+for (const [page, expected] of Object.entries(explicitMobileShellRouteGuardrails)) {
+    const actual = routeVisualClassification[page];
+    const matches = Boolean(actual)
+        && actual.category === expected.category
+        && JSON.stringify(actual.dedicatedCss) === JSON.stringify(expected.dedicatedCss)
+        && actual.mobileShell === expected.mobileShell;
+    console.log(`${matches ? 'PASS' : 'FAIL'} explicit mobile shell route guardrail ${page}`);
+    if (!matches) {
+        console.log(`  Expected: ${JSON.stringify(expected)}`);
+        console.log(`  Actual: ${JSON.stringify(actual || null)}`);
+        failed = true;
+    }
+}
 
 for (const entry of lineCountThresholds) {
     const count = countLines(entry.file);

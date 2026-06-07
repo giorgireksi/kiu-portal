@@ -7,11 +7,31 @@ function readSource(relativePath) {
 }
 
 describe('exam portal regressions', () => {
-    it('uses the local Font Awesome bundle instead of a runtime CDN stylesheet', () => {
+    it('loads the LMS asset stack and avoids conflicting lux-summary surfaces', () => {
         const html = readSource('exam-portal.html');
+        const css = readSource('assets/css/exam-portal-route.css');
 
         expect(html).toContain('assets/vendor/fontawesome/css/all.min.css');
+        expect(html).toContain('assets/js/theme-primer.js');
+        expect(html).toContain('assets/css/base.css');
+        expect(html).toContain('assets/css/layout.css');
+        expect(html).toContain('assets/css/lux-tokens.css');
+        expect(html).toContain('assets/css/lux-surfaces.css');
+        expect(html).toContain('assets/css/lux-controls.css');
+        expect(html).toContain('assets/css/lux-layout-primitives.css');
+        expect(html).toContain('assets/css/index-luxury.css');
+        expect(html).toContain('assets/css/lms-route.css');
+        expect(html).toContain('assets/css/exam-portal-route.css');
+        expect(html).toContain('body class="lux-route-lms lux-route-exam"');
+        expect(html).toContain('id="exam-backend-status"');
+        expect(html).toContain('id="exam-frontend-status"');
+        expect(html).not.toContain('lux-summary-surface');
+        expect(html).not.toContain('<style>');
         expect(html).not.toContain('cdnjs.cloudflare.com');
+        expect(css).not.toMatch(/\.exam-panel::after/);
+        expect(css).not.toMatch(/\.exam-hero\s*\{/);
+        expect(css).not.toMatch(/\.exam-step-row/);
+        expect(css).toContain('body.lux-route-exam .exam-portal-stage');
     });
 
     it('keeps session launch buttons delegated instead of inline', () => {
@@ -20,6 +40,7 @@ describe('exam portal regressions', () => {
         expect(source).toContain('function bindLaunchSessionButtons()');
         expect(source).toContain("data-exam-launch-session=");
         expect(source).not.toContain('onclick="launchScheduledExam(');
+        expect(source).not.toContain('lux-summary-surface');
     });
 
     it('uses targeted timer updates instead of full-list rerenders', () => {
@@ -31,6 +52,7 @@ describe('exam portal regressions', () => {
         expect(source).not.toContain('setInterval(renderSessionCards, 1000);');
         expect(source.match(/function renderSessionCards\(/g) || []).toHaveLength(1);
         expect(source.match(/function renderProtectedShell\(/g) || []).toHaveLength(1);
+        expect(source).not.toContain('style=');
     });
 
     it('records protected-attempt timer gating and manual-answer ownership in source', () => {

@@ -293,6 +293,113 @@ function closeStructuredFormModal() {
     if (existing) existing.remove();
 }
 
+function closeAdminRegManageModal() {
+    if (typeof window.__kiuAdminRegManageCleanup === 'function') {
+        window.__kiuAdminRegManageCleanup();
+        window.__kiuAdminRegManageCleanup = null;
+    }
+    const existing = document.getElementById('kiu-admin-reg-manage-modal');
+    if (existing) existing.remove();
+}
+
+function openAdminRegManageModal({
+    title = 'Manage item',
+    subtitle = '',
+    editLabel = 'Edit',
+    deleteLabel = 'Delete',
+    onEdit,
+    onDelete
+} = {}) {
+    closeAdminRegManageModal();
+
+    const modal = document.createElement('div');
+    modal.id = 'kiu-admin-reg-manage-modal';
+    modal.className = 'registration-structured-modal-backdrop admin-reg-manage-modal-backdrop';
+
+    const card = document.createElement('div');
+    card.className = 'registration-structured-modal-card';
+
+    const header = document.createElement('div');
+    header.className = 'registration-structured-modal-head';
+    const headerCopy = document.createElement('div');
+    headerCopy.className = 'registration-structured-modal-copy';
+    const headerTitle = document.createElement('div');
+    headerTitle.className = 'registration-structured-modal-title';
+    headerTitle.textContent = title;
+    const headerSubtitle = document.createElement('div');
+    headerSubtitle.className = 'registration-structured-modal-subtitle';
+    headerSubtitle.textContent = subtitle || 'Choose an action for this item.';
+    headerCopy.append(headerTitle, headerSubtitle);
+    const closeButton = document.createElement('button');
+    closeButton.type = 'button';
+    closeButton.className = 'registration-structured-modal-close';
+    closeButton.textContent = '×';
+    header.append(headerCopy, closeButton);
+
+    const body = document.createElement('div');
+    body.className = 'registration-structured-modal-body';
+    const actions = document.createElement('div');
+    actions.className = 'admin-reg-manage-modal-actions';
+
+    const editButton = document.createElement('button');
+    editButton.type = 'button';
+    editButton.className = 'lux-secondary-btn admin-reg-manage-modal-action';
+    editButton.innerHTML = `<i class="fas fa-edit" aria-hidden="true"></i> ${String(editLabel || 'Edit')}`;
+    editButton.addEventListener('click', () => {
+        close();
+        if (typeof onEdit === 'function') onEdit();
+    });
+
+    const deleteButton = document.createElement('button');
+    deleteButton.type = 'button';
+    deleteButton.className = 'lux-secondary-btn admin-reg-manage-modal-action admin-reg-manage-modal-action--danger';
+    deleteButton.innerHTML = `<i class="fas fa-trash" aria-hidden="true"></i> ${String(deleteLabel || 'Delete')}`;
+    deleteButton.addEventListener('click', () => {
+        close();
+        if (typeof onDelete === 'function') onDelete();
+    });
+
+    actions.append(editButton, deleteButton);
+    body.appendChild(actions);
+
+    const footer = document.createElement('div');
+    footer.className = 'registration-structured-modal-footer';
+    const dismissButton = document.createElement('button');
+    dismissButton.type = 'button';
+    dismissButton.className = 'lux-secondary-btn registration-structured-modal-action';
+    dismissButton.textContent = 'Close';
+    footer.appendChild(dismissButton);
+
+    card.append(header, body, footer);
+    modal.appendChild(card);
+    document.body.appendChild(modal);
+
+    if (document.body.classList.contains('lux-route-admin-tools')) {
+        modal.dataset.luxStructuredModal = '1';
+        if (typeof window.queueLuxuryTransparencyRefresh === 'function') {
+            window.queueLuxuryTransparencyRefresh(undefined, { roots: [modal] });
+        }
+    }
+
+    const close = () => closeAdminRegManageModal();
+    const onKeyDown = (event) => {
+        if (event.key === 'Escape') close();
+    };
+    window.__kiuAdminRegManageCleanup = () => {
+        window.removeEventListener('keydown', onKeyDown);
+    };
+    closeButton.onclick = close;
+    dismissButton.onclick = close;
+    window.addEventListener('keydown', onKeyDown);
+    modal.addEventListener('click', (event) => {
+        if (event.target === modal) close();
+    });
+
+    setTimeout(() => {
+        if (typeof editButton.focus === 'function') editButton.focus();
+    }, 0);
+}
+
 function jsQuote(value) {
     return `'${String(value == null ? '' : value).replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`;
 }
@@ -304,12 +411,12 @@ function toPositiveInt(value, fallback = 0) {
 
 function buildStructuredFormFieldNode(field) {
     const wrapper = document.createElement('div');
-    wrapper.style.cssText = 'display:flex; flex-direction:column; gap:6px;';
+    wrapper.className = 'registration-structured-field';
 
     const id = field.name;
     const label = document.createElement('label');
     label.htmlFor = id;
-    label.style.cssText = 'font-size:11px; font-weight:800; color:#60728d; text-transform:uppercase; letter-spacing:0.04em;';
+    label.className = 'registration-structured-label';
     label.textContent = field.label || field.name;
     wrapper.appendChild(label);
 
@@ -317,11 +424,11 @@ function buildStructuredFormFieldNode(field) {
     if (field.type === 'textarea') {
         control = document.createElement('textarea');
         control.rows = field.rows || 3;
-        control.style.cssText = `width:100%; resize:vertical; min-height:96px; padding:14px 15px; border:1px solid rgba(16,32,56,0.1); border-radius:16px; background:${field.readonly || field.disabled ? 'rgba(241,245,249,0.95)' : 'rgba(255,255,255,0.9)'}; color:#102038; font:inherit; outline:none; box-shadow:inset 0 1px 0 rgba(255,255,255,0.5);`;
+        control.className = `registration-structured-control registration-structured-control--textarea${field.readonly || field.disabled ? ' is-muted' : ''}`;
         control.value = field.value == null ? '' : String(field.value);
     } else if (field.type === 'select') {
         control = document.createElement('select');
-        control.style.cssText = `width:100%; min-height:50px; padding:14px 15px; border:1px solid rgba(16,32,56,0.1); border-radius:16px; background:${field.disabled ? 'rgba(241,245,249,0.95)' : 'rgba(255,255,255,0.9)'}; color:#102038; font:inherit; outline:none; box-shadow:inset 0 1px 0 rgba(255,255,255,0.5);`;
+        control.className = `registration-structured-control${field.disabled ? ' is-muted' : ''}`;
         (field.options || []).forEach((optionConfig) => {
             const option = document.createElement('option');
             option.value = String(optionConfig.value);
@@ -332,7 +439,7 @@ function buildStructuredFormFieldNode(field) {
     } else {
         control = document.createElement('input');
         control.type = field.type || 'text';
-        control.style.cssText = `width:100%; min-height:50px; padding:14px 15px; border:1px solid rgba(16,32,56,0.1); border-radius:16px; background:${field.readonly || field.disabled ? 'rgba(241,245,249,0.95)' : 'rgba(255,255,255,0.9)'}; color:#102038; font:inherit; outline:none; box-shadow:inset 0 1px 0 rgba(255,255,255,0.5);`;
+        control.className = `registration-structured-control${field.readonly || field.disabled ? ' is-muted' : ''}`;
         control.value = field.value == null ? '' : String(field.value);
         if (field.min != null) control.min = String(field.min);
         if (field.max != null) control.max = String(field.max);
@@ -348,7 +455,7 @@ function buildStructuredFormFieldNode(field) {
 
     if (field.help) {
         const help = document.createElement('div');
-        help.style.cssText = 'margin-top:6px; font-size:11px; color:#8aa0bc;';
+        help.className = 'registration-structured-help';
         help.textContent = String(field.help);
         wrapper.appendChild(help);
     }
@@ -362,55 +469,61 @@ function openStructuredFormModal(config) {
     const fields = config.fields || [];
     const modal = document.createElement('div');
     modal.id = 'kiu-structured-form-modal';
-    modal.style.cssText = 'position:fixed; inset:0; z-index:8000; display:flex; align-items:center; justify-content:center; padding:20px; background:rgba(8,15,28,0.62); backdrop-filter:blur(12px);';
+    modal.className = 'registration-structured-modal-backdrop';
 
     const card = document.createElement('div');
-    card.style.cssText = 'width:min(94vw, 720px); max-height:92vh; overflow:hidden; border-radius:30px; background:linear-gradient(180deg, rgba(255,255,255,0.98), rgba(244,247,252,0.98)); border:1px solid rgba(255,255,255,0.7); box-shadow:0 34px 90px rgba(2,6,23,0.35); display:flex; flex-direction:column;';
+    card.className = 'registration-structured-modal-card';
 
     const header = document.createElement('div');
-    header.style.cssText = 'padding:24px 26px; background:linear-gradient(135deg, #0f1e33 0%, #16375d 52%, #0b84ff 100%); color:white; display:flex; justify-content:space-between; gap:16px; align-items:flex-start;';
+    header.className = 'registration-structured-modal-head';
     const headerCopy = document.createElement('div');
+    headerCopy.className = 'registration-structured-modal-copy';
     const headerTitle = document.createElement('div');
-    headerTitle.style.cssText = 'font-size:18px; font-weight:900; letter-spacing:-0.03em;';
+    headerTitle.className = 'registration-structured-modal-title';
     headerTitle.textContent = config.title || 'Edit Item';
     const headerSubtitle = document.createElement('div');
-    headerSubtitle.style.cssText = 'font-size:12px; color:rgba(255,255,255,0.76); margin-top:4px;';
+    headerSubtitle.className = 'registration-structured-modal-subtitle';
     headerSubtitle.textContent = config.subtitle || 'Fill in the details below.';
     headerCopy.append(headerTitle, headerSubtitle);
     const closeButton = document.createElement('button');
     closeButton.type = 'button';
     closeButton.id = 'kiu-structured-form-close';
-    closeButton.style.cssText = 'width:40px; height:40px; border-radius:14px; border:1px solid rgba(255,255,255,0.18); background:rgba(255,255,255,0.08); color:white; cursor:pointer; font-size:20px; line-height:1;';
-    closeButton.textContent = 'x';
+    closeButton.className = 'registration-structured-modal-close';
+    closeButton.textContent = '×';
     header.append(headerCopy, closeButton);
 
     const form = document.createElement('form');
     form.id = 'kiu-structured-form';
-    form.style.cssText = 'display:flex; flex-direction:column; min-height:0;';
+    form.className = 'registration-structured-form';
     const body = document.createElement('div');
-    body.style.cssText = 'padding:24px 26px; overflow:auto;';
+    body.className = 'registration-structured-modal-body';
     const grid = document.createElement('div');
-    grid.style.cssText = 'display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:14px;';
+    grid.className = 'registration-structured-grid';
     fields.forEach((field) => grid.appendChild(buildStructuredFormFieldNode(field)));
     body.appendChild(grid);
     const footer = document.createElement('div');
-    footer.style.cssText = 'padding:18px 26px 26px; border-top:1px solid rgba(16,32,56,0.06); background:rgba(248,250,253,0.92); display:flex; gap:12px; justify-content:flex-end; align-items:center;';
+    footer.className = 'registration-structured-modal-footer';
     const cancelButton = document.createElement('button');
     cancelButton.type = 'button';
     cancelButton.id = 'kiu-structured-form-cancel';
-    cancelButton.className = 'kiu-btn-outline';
-    cancelButton.style.cssText = 'padding:12px 18px; font-size:13px;';
+    cancelButton.className = 'lux-secondary-btn registration-structured-modal-action';
     cancelButton.textContent = 'Cancel';
     const submitButton = document.createElement('button');
     submitButton.type = 'submit';
-    submitButton.className = 'kiu-btn-blue';
-    submitButton.style.cssText = 'padding:12px 18px; font-size:13px;';
+    submitButton.className = 'lux-primary-btn registration-structured-modal-action';
     submitButton.textContent = config.submitLabel || 'Save';
     footer.append(cancelButton, submitButton);
     form.append(body, footer);
     card.append(header, form);
     modal.appendChild(card);
     document.body.appendChild(modal);
+
+    if (document.body.classList.contains('lux-route-admin-tools')) {
+        modal.dataset.luxStructuredModal = '1';
+        if (typeof window.queueLuxuryTransparencyRefresh === 'function') {
+            window.queueLuxuryTransparencyRefresh(undefined, { roots: [modal] });
+        }
+    }
 
     const onKeyDown = (event) => {
         if (event.key === 'Escape') close();
@@ -675,3 +788,770 @@ function getStudentRegisteredEctsTotal(studentId, preferredFaculty = null) {
         return sum + (course ? getCourseEctsValue(course) : 0);
     }, 0);
 }
+
+function parseAllowedSemesterList(rawValue) {
+    const text = String(rawValue || '').trim();
+    if (!text) return [];
+
+    return [...new Set(
+        text
+            .split(/[^0-9]+/)
+            .map(part => parseInt(part, 10))
+            .filter(value => Number.isFinite(value) && value > 0)
+    )].sort((a, b) => a - b);
+}
+
+function normalizeAssignedSemesterRestriction(mode, allowedSemesters) {
+    const normalizedMode = ['all', 'odd', 'even', 'specific'].includes(String(mode || '').toLowerCase())
+        ? String(mode || '').toLowerCase()
+        : 'all';
+    const parsedSemesters = parseAllowedSemesterList(allowedSemesters);
+
+    if (normalizedMode === 'specific') {
+        if (parsedSemesters.length === 0) {
+            return { semesterRuleMode: 'all', allowedSemesters: '' };
+        }
+        return {
+            semesterRuleMode: 'specific',
+            allowedSemesters: parsedSemesters.join(', ')
+        };
+    }
+
+    return {
+        semesterRuleMode: normalizedMode,
+        allowedSemesters: ''
+    };
+}
+
+function getAssignedSemesterRestrictionLabel(item) {
+    const restriction = normalizeAssignedSemesterRestriction(item?.semesterRuleMode, item?.allowedSemesters);
+    if (restriction.semesterRuleMode === 'odd') return 'Odd semesters only';
+    if (restriction.semesterRuleMode === 'even') return 'Even semesters only';
+    if (restriction.semesterRuleMode === 'specific') return `Semesters: ${restriction.allowedSemesters}`;
+    return '';
+}
+
+function getAssignedSemesterRestrictionReason(item, studentSemester) {
+    const normalizedSemester = Number.isFinite(studentSemester) ? studentSemester : parseInt(studentSemester, 10);
+    if (!Number.isFinite(normalizedSemester) || normalizedSemester <= 0) return '';
+
+    const restriction = normalizeAssignedSemesterRestriction(item?.semesterRuleMode, item?.allowedSemesters);
+    if (restriction.semesterRuleMode === 'all') return '';
+
+    if (restriction.semesterRuleMode === 'odd') {
+        return normalizedSemester % 2 === 1 ? '' : 'Restricted to odd-semester students only';
+    }
+
+    if (restriction.semesterRuleMode === 'even') {
+        return normalizedSemester % 2 === 0 ? '' : 'Restricted to even-semester students only';
+    }
+
+    const allowedSemesters = parseAllowedSemesterList(restriction.allowedSemesters);
+    return allowedSemesters.includes(normalizedSemester)
+        ? ''
+        : `Restricted to semesters: ${allowedSemesters.join(', ')}`;
+}
+
+function getAssignedCourseId(courseRef) {
+    if (typeof courseRef === 'string') return courseRef;
+    return String(courseRef?.sourceCourseId || courseRef?.courseId || courseRef?.id || courseRef?.n || '').trim();
+}
+
+function buildRegistrationCourseMeta(courseRef, preferredFaculty = null) {
+    const courseId = getAssignedCourseId(courseRef);
+    const cleanText = value => {
+        const normalized = typeof toEnglishText === 'function' ? toEnglishText(value) : value;
+        return String(normalized == null ? '' : normalized).trim();
+    };
+    const courseTitle = typeof courseRef === 'string' ? '' : cleanText(courseRef?.title || courseRef?.name || '');
+    const libraryCourse = getCourseByIdForRegistration(courseId, preferredFaculty, courseTitle);
+    const baseCourse = libraryCourse || {
+        id: courseId,
+        name: cleanText(courseTitle || courseId),
+        ects: courseRef?.ects || 0,
+        semester: null,
+        cond: cleanText(courseRef?.precondition || courseRef?.prerequisites || 'None') || 'None',
+        antireq: 'None'
+    };
+
+    if (!courseRef || typeof courseRef === 'string') return baseCourse;
+
+    return {
+        ...baseCourse,
+        id: courseId || baseCourse.id,
+        name: cleanText(courseRef.title || courseRef.name || baseCourse.name),
+        ects: courseRef.ects || baseCourse.ects,
+        cond: cleanText(libraryCourse?.cond ?? courseRef.precondition ?? courseRef.prerequisites ?? baseCourse.cond) || 'None',
+        antireq: cleanText(libraryCourse?.antireq ?? courseRef.antireq ?? baseCourse.antireq) || 'None',
+        semester: libraryCourse?.semester ?? courseRef.semester ?? baseCourse.semester,
+        sourceCourseId: libraryCourse?.id || courseRef.sourceCourseId || courseId || '',
+        semesterRuleMode: courseRef.semesterRuleMode || '',
+        allowedSemesters: courseRef.allowedSemesters || '',
+        lectureCapacity: courseRef.lectureCapacity || '',
+        seminarCapacity: courseRef.seminarCapacity || ''
+    };
+}
+
+function getAssignedCourseCurriculumDetails(item, preferredFaculty = null) {
+    const meta = buildRegistrationCourseMeta(item, preferredFaculty);
+    const prerequisite = meta?.cond && String(meta.cond).trim() && String(meta.cond).trim().toLowerCase() !== 'none'
+        ? String(meta.cond).trim()
+        : 'None';
+    const antiRequisite = meta?.antireq && String(meta.antireq).trim() && String(meta.antireq).trim().toLowerCase() !== 'none'
+        ? String(meta.antireq).trim()
+        : '';
+    const semesterNumber = parseInt(meta?.semester, 10);
+    const curriculumSemester = Number.isFinite(semesterNumber) && semesterNumber > 0
+        ? `Curriculum semester: ${semesterNumber}`
+        : '';
+
+    return {
+        prerequisite,
+        antiRequisite,
+        curriculumSemester,
+        studentAccess: getAssignedSemesterRestrictionLabel(item)
+    };
+}
+
+function getAssignedCourseCurriculumSummary(item, preferredFaculty = null) {
+    const details = getAssignedCourseCurriculumDetails(item, preferredFaculty);
+    const lines = [`Prerequisite: ${details.prerequisite}`];
+    if (details.antiRequisite) lines.push(`Anti-requisite: ${details.antiRequisite}`);
+    if (details.curriculumSemester) lines.push(details.curriculumSemester);
+    return lines.join('\n');
+}
+
+function getSemesterRestrictionFieldConfig(item = {}) {
+    const restriction = normalizeAssignedSemesterRestriction(item?.semesterRuleMode, item?.allowedSemesters);
+    return [
+        {
+            name: 'semesterRuleMode',
+            label: 'Student Semester Access',
+            type: 'select',
+            value: restriction.semesterRuleMode,
+            options: [
+                { value: 'all', label: 'All semesters' },
+                { value: 'odd', label: 'Odd semesters only' },
+                { value: 'even', label: 'Even semesters only' },
+                { value: 'specific', label: 'Specific semesters' }
+            ],
+            help: 'Use this to restrict who can register for this assigned subject.'
+        },
+        {
+            name: 'allowedSemesters',
+            label: 'Allowed Semester Numbers',
+            value: restriction.allowedSemesters,
+            placeholder: 'e.g. 1, 3, 5',
+            help: 'Only used when "Specific semesters" is selected.'
+        }
+    ];
+}
+
+function getTrackGroupProgress(group, completedOverride = null) {
+    const rawProgress = parseEctsProgress(group?.ects || `${group?.maxEcts || 0}/0`, group?.maxEcts || 0);
+    const max = Number(group?.maxEcts ?? rawProgress.max ?? 0) || 0;
+    const completed = completedOverride == null
+        ? Number(group?.completedEcts ?? rawProgress.completed ?? 0) || 0
+        : Number(completedOverride) || 0;
+    return { max, completed, label: formatEctsProgress(max, completed) };
+}
+
+/* Registration trackData adapter (shared by admin + student routes). */
+
+const REGISTRATION_TRACK_MAIN_GROUP = 'Main';
+const REGISTRATION_TRACK_MIGRATION_VERSION = 1;
+
+const REGISTRATION_BUILTIN_TABS = {
+    prog: {
+        id: 'prog',
+        label: 'Program',
+        shellId: 'program',
+        studentTabId: 'prog',
+        layout: 'modules',
+        listTitle: 'Program Modules',
+        paneSubtitle: 'Program Module Subjects'
+    },
+    free: {
+        id: 'free',
+        label: 'Free Credits',
+        shellId: 'free',
+        studentTabId: 'free',
+        layout: 'modules',
+        listTitle: 'Free Credit Modules',
+        paneSubtitle: 'Free Credit Subjects'
+    },
+    conc: {
+        id: 'conc',
+        label: 'Concentration',
+        shellId: 'concentration',
+        studentTabId: 'conc',
+        layout: 'track',
+        listTitle: 'Concentration Programs'
+    },
+    minor: {
+        id: 'minor',
+        label: 'Minor',
+        shellId: 'minor',
+        studentTabId: 'minor',
+        layout: 'track',
+        listTitle: 'Minor Programs'
+    }
+};
+
+function ensureRegistrationTrackMeta() {
+    if (!KIU_STATE.meta || typeof KIU_STATE.meta !== 'object') {
+        KIU_STATE.meta = {};
+    }
+    if (!KIU_STATE.meta.adminRegTrackMigrationByFaculty || typeof KIU_STATE.meta.adminRegTrackMigrationByFaculty !== 'object') {
+        KIU_STATE.meta.adminRegTrackMigrationByFaculty = {};
+    }
+    return KIU_STATE.meta;
+}
+
+function hasRegistrationTrackMigration(faculty) {
+    const fac = normalizeFacultyCode(faculty || 'ECON', 'ECON');
+    const meta = ensureRegistrationTrackMeta();
+    return Number(meta.adminRegTrackMigrationByFaculty[fac] || 0) >= REGISTRATION_TRACK_MIGRATION_VERSION;
+}
+
+function markRegistrationTrackMigration(faculty) {
+    const fac = normalizeFacultyCode(faculty || 'ECON', 'ECON');
+    ensureRegistrationTrackMeta().adminRegTrackMigrationByFaculty[fac] = REGISTRATION_TRACK_MIGRATION_VERSION;
+}
+
+function ensureRegistrationTrackBucket(faculty) {
+    const fac = normalizeFacultyCode(faculty || 'ECON', 'ECON');
+    if (!KIU_STATE.registrationCMSByFaculty) {
+        KIU_STATE.registrationCMSByFaculty = {};
+    }
+    if (!KIU_STATE.registrationCMSByFaculty[fac]) {
+        KIU_STATE.registrationCMSByFaculty[fac] = {
+            concCourseData: {},
+            minorProgramData: {},
+            trackData: {},
+            customTabs: [],
+            builtinTabOverrides: {},
+            hiddenBuiltinTabs: []
+        };
+    }
+    const bucket = KIU_STATE.registrationCMSByFaculty[fac];
+    if (!bucket.trackData || typeof bucket.trackData !== 'object') {
+        bucket.trackData = {};
+    }
+    if (!Array.isArray(bucket.customTabs)) {
+        bucket.customTabs = [];
+    }
+    if (!bucket.builtinTabOverrides || typeof bucket.builtinTabOverrides !== 'object') {
+        bucket.builtinTabOverrides = {};
+    }
+    if (!Array.isArray(bucket.hiddenBuiltinTabs)) {
+        bucket.hiddenBuiltinTabs = [];
+    }
+    return bucket;
+}
+
+function cloneRegistrationTrackGroup(group = {}) {
+    return {
+        maxEcts: Number(group.maxEcts || parseEctsProgress(group.ects || '0/0').max || 0),
+        completedEcts: Number(group.completedEcts || 0),
+        ects: group.ects || `${Number(group.maxEcts || 0)}/${Number(group.completedEcts || 0)}`,
+        courses: Array.isArray(group.courses) ? cloneJson(group.courses) : []
+    };
+}
+
+function submoduleToRegistrationTrackCourse(subModule = {}) {
+    const courseId = subModule.sourceCourseId
+        || (Array.isArray(subModule.courses) ? subModule.courses[0] : '')
+        || subModule.id
+        || subModule.n
+        || '';
+    return {
+        n: subModule.number || subModule.n || subModule.id || '',
+        title: subModule.name || subModule.title || 'Untitled Subject',
+        ects: String(subModule.ects || '6'),
+        precondition: subModule.prerequisites || subModule.precondition || '',
+        antireq: subModule.antireq || 'None',
+        sourceCourseId: courseId,
+        sourceFaculty: subModule.sourceFaculty || '',
+        semesterRuleMode: subModule.semesterRuleMode || 'all',
+        allowedSemesters: subModule.allowedSemesters || '',
+        lectureCapacity: subModule.lectureCapacity ?? 40,
+        seminarCapacity: subModule.seminarCapacity ?? 20
+    };
+}
+
+function migrateRegistrationCmsToTrackModel(faculty) {
+    const fac = normalizeFacultyCode(faculty || 'ECON', 'ECON');
+    if (hasRegistrationTrackMigration(fac)) {
+        return ensureRegistrationTrackBucket(fac);
+    }
+
+    const bucket = ensureRegistrationTrackBucket(fac);
+    if (!KIU_STATE.adminProgramStructures) {
+        KIU_STATE.adminProgramStructures = {};
+    }
+    const structures = KIU_STATE.adminProgramStructures[fac] || {};
+
+    ['prog', 'free'].forEach((tabId) => {
+        const modules = Array.isArray(structures[tabId]) ? structures[tabId] : [];
+        if (!bucket.trackData[tabId] || typeof bucket.trackData[tabId] !== 'object') {
+            bucket.trackData[tabId] = {};
+        }
+        modules.forEach((module) => {
+            if (!module || typeof module !== 'object') return;
+            const programName = String(module.name || module.id || 'Untitled Module').trim();
+            if (!programName) return;
+            const maxEcts = Number(module.maxEcts || 0);
+            bucket.trackData[tabId][programName] = {
+                [REGISTRATION_TRACK_MAIN_GROUP]: {
+                    maxEcts,
+                    completedEcts: 0,
+                    ects: `${maxEcts}/0`,
+                    courses: (Array.isArray(module.subModules) ? module.subModules : []).map(submoduleToRegistrationTrackCourse)
+                }
+            };
+        });
+        if (Array.isArray(structures[tabId])) {
+            structures[tabId] = [];
+        }
+    });
+
+    if (!bucket.trackData.conc || typeof bucket.trackData.conc !== 'object') {
+        bucket.trackData.conc = {};
+    }
+    const concSource = bucket.concCourseData && typeof bucket.concCourseData === 'object'
+        ? bucket.concCourseData
+        : {};
+    Object.entries(concSource).forEach(([programName, groups]) => {
+        if (!groups || typeof groups !== 'object') return;
+        bucket.trackData.conc[programName] = Object.fromEntries(
+            Object.entries(groups).map(([groupName, group]) => [groupName, cloneRegistrationTrackGroup(group)])
+        );
+    });
+
+    if (!bucket.trackData.minor || typeof bucket.trackData.minor !== 'object') {
+        bucket.trackData.minor = {};
+    }
+    const minorSource = bucket.minorProgramData && typeof bucket.minorProgramData === 'object'
+        ? bucket.minorProgramData
+        : {};
+    Object.entries(minorSource).forEach(([programName, program]) => {
+        const courseGroups = program?.courseGroups && typeof program.courseGroups === 'object'
+            ? program.courseGroups
+            : {};
+        bucket.trackData.minor[programName] = Object.fromEntries(
+            Object.entries(courseGroups).map(([groupName, group]) => [groupName, cloneRegistrationTrackGroup(group)])
+        );
+    });
+
+    markRegistrationTrackMigration(fac);
+    syncRegistrationTrackLegacyMirrors(bucket, fac);
+    return bucket;
+}
+
+function syncRegistrationConcMirrorFromTrack(trackConc = {}) {
+    const mirror = {};
+    Object.entries(trackConc).forEach(([programName, groups]) => {
+        if (!groups || typeof groups !== 'object') return;
+        mirror[programName] = Object.fromEntries(
+            Object.entries(groups).map(([groupName, group]) => [groupName, cloneRegistrationTrackGroup(group)])
+        );
+    });
+    return mirror;
+}
+
+function syncRegistrationMinorMirrorFromTrack(trackMinor = {}) {
+    const mirror = {};
+    Object.entries(trackMinor).forEach(([programName, groups]) => {
+        if (!groups || typeof groups !== 'object') return;
+        mirror[programName] = {
+            courseGroups: Object.fromEntries(
+                Object.entries(groups).map(([groupName, group]) => [groupName, cloneRegistrationTrackGroup(group)])
+            )
+        };
+    });
+    return mirror;
+}
+
+function syncRegistrationProgFreeMirrorFromTrack(trackData = {}, faculty) {
+    const fac = normalizeFacultyCode(faculty || 'ECON', 'ECON');
+    if (!KIU_STATE.adminProgramStructures) {
+        KIU_STATE.adminProgramStructures = {};
+    }
+    if (!KIU_STATE.adminProgramStructures[fac]) {
+        KIU_STATE.adminProgramStructures[fac] = { prog: [], free: [], conc: [], minor: [] };
+    }
+    ['prog', 'free'].forEach((tabId) => {
+        const track = trackData[tabId] && typeof trackData[tabId] === 'object' ? trackData[tabId] : {};
+        KIU_STATE.adminProgramStructures[fac][tabId] = Object.entries(track).map(([programName, groups], index) => {
+            const groupList = groups && typeof groups === 'object' ? Object.values(groups) : [];
+            const courses = [];
+            groupList.forEach((group) => {
+                (Array.isArray(group?.courses) ? group.courses : []).forEach((course) => courses.push(course));
+            });
+            const maxEcts = groupList.reduce((sum, group) => sum + Number(group?.maxEcts || 0), 0);
+            return {
+                id: programName,
+                letter: String.fromCharCode(65 + (index % 26)),
+                name: programName,
+                maxEcts,
+                minEcts: 0,
+                subModules: courses.map((course) => ({
+                    id: course?.n || course?.sourceCourseId || '',
+                    number: course?.n || '',
+                    n: course?.n || '',
+                    name: course?.title || '',
+                    title: course?.title || '',
+                    ects: course?.ects || '',
+                    prerequisites: course?.precondition || '',
+                    precondition: course?.precondition || '',
+                    semesterRuleMode: course?.semesterRuleMode || 'all',
+                    allowedSemesters: course?.allowedSemesters || '',
+                    lectureCapacity: course?.lectureCapacity ?? 40,
+                    seminarCapacity: course?.seminarCapacity ?? 20,
+                    sourceCourseId: course?.sourceCourseId || '',
+                    sourceFaculty: course?.sourceFaculty || ''
+                }))
+            };
+        });
+    });
+}
+
+function syncRegistrationTrackLegacyMirrors(bucket, faculty) {
+    if (!bucket || typeof bucket !== 'object') return bucket;
+    const trackData = bucket.trackData && typeof bucket.trackData === 'object' ? bucket.trackData : {};
+    bucket.concCourseData = syncRegistrationConcMirrorFromTrack(trackData.conc || {});
+    bucket.minorProgramData = syncRegistrationMinorMirrorFromTrack(trackData.minor || {});
+    syncRegistrationProgFreeMirrorFromTrack(trackData, faculty);
+    return bucket;
+}
+
+function normalizeRegistrationTrackSeatLimit(value, fallback) {
+    const parsed = parseInt(value, 10);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}
+
+function convertRegistrationTrackCourseRef(course) {
+    return {
+        courseId: getAssignedCourseId(course),
+        id: course?.n || '',
+        n: course?.n || '',
+        title: course?.title || '',
+        ects: course?.ects || '',
+        precondition: course?.precondition || '',
+        semesterRuleMode: course?.semesterRuleMode || 'all',
+        allowedSemesters: course?.allowedSemesters || '',
+        lectureCapacity: normalizeRegistrationTrackSeatLimit(course?.lectureCapacity, 40),
+        seminarCapacity: normalizeRegistrationTrackSeatLimit(course?.seminarCapacity, 20)
+    };
+}
+
+function convertRegistrationTrackTabForStudent(trackObj) {
+    if (!trackObj || typeof trackObj !== 'object') return [];
+    const normalizeArray = (value) => Array.isArray(value) ? value.filter(Boolean) : [];
+    const convertTrackGroup = (groupName, group, index) => ({
+        id: `${groupName}-${index}`,
+        letter: String.fromCharCode(65 + (index % 26)),
+        name: groupName,
+        maxEcts: group?.maxEcts || parseEctsProgress(group?.ects || '0/0').max || 0,
+        minEcts: 0,
+        courses: normalizeArray(group?.courses).map(convertRegistrationTrackCourseRef)
+    });
+
+    return Object.entries(trackObj).map(([programName, groups]) => ({
+        id: programName,
+        name: programName,
+        modules: Object.entries(groups || {}).map(([groupName, group], index) => convertTrackGroup(groupName, group, index))
+    }));
+}
+
+function convertRegistrationTrackTabForStudentModules(trackObj) {
+    if (!trackObj || typeof trackObj !== 'object') return [];
+    return Object.entries(trackObj).map(([programName, groups], index) => {
+        const groupList = groups && typeof groups === 'object' ? Object.values(groups) : [];
+        const courses = [];
+        let maxEcts = 0;
+        groupList.forEach((group) => {
+            maxEcts += Number(group?.maxEcts || 0);
+            (Array.isArray(group?.courses) ? group.courses : []).forEach((course) => {
+                courses.push(convertRegistrationTrackCourseRef(course));
+            });
+        });
+        return {
+            id: programName,
+            letter: String.fromCharCode(65 + (index % 26)),
+            name: programName,
+            maxEcts,
+            minEcts: 0,
+            courses
+        };
+    });
+}
+
+function resolveStudentRegistrationTabConfig(tabId, faculty) {
+    const safeId = String(tabId || '').trim();
+    const fac = normalizeFacultyCode(faculty || 'ECON', 'ECON');
+    const bucket = ensureRegistrationTrackBucket(fac);
+    if (REGISTRATION_BUILTIN_TABS[safeId]) {
+        if (Array.isArray(bucket.hiddenBuiltinTabs) && bucket.hiddenBuiltinTabs.includes(safeId)) {
+            return null;
+        }
+        const base = { ...REGISTRATION_BUILTIN_TABS[safeId] };
+        const overrides = bucket.builtinTabOverrides?.[safeId];
+        if (overrides && typeof overrides === 'object') {
+            const label = overrides.label || base.label;
+            return {
+                ...base,
+                label,
+                listTitle: overrides.programsLabel || overrides.listTitle || base.listTitle,
+                paneSubtitle: overrides.paneSubtitle || base.paneSubtitle
+            };
+        }
+        return base;
+    }
+    const custom = (bucket.customTabs || []).find((tab) => tab && (tab.id === safeId || tab.studentTabId === safeId));
+    if (!custom) return null;
+    const label = custom.label || custom.id;
+    return {
+        id: custom.id,
+        label,
+        shellId: custom.studentTabId || custom.id,
+        studentTabId: custom.studentTabId || custom.id,
+        layout: 'track',
+        listTitle: custom.programsLabel || `${label} Programs`,
+        paneSubtitle: custom.paneSubtitle || `${label} Subjects`
+    };
+}
+
+function getStudentRegistrationTabsForFaculty(faculty) {
+    const fac = normalizeFacultyCode(faculty || 'ECON', 'ECON');
+    const bucket = ensureRegistrationTrackBucket(fac);
+    const builtinTabs = Object.keys(REGISTRATION_BUILTIN_TABS)
+        .map((tabId) => resolveStudentRegistrationTabConfig(tabId, fac))
+        .filter(Boolean);
+    const customTabs = (bucket.customTabs || [])
+        .filter((tab) => tab && tab.id)
+        .map((tab) => resolveStudentRegistrationTabConfig(tab.id, fac))
+        .filter(Boolean);
+    return [...builtinTabs, ...customTabs];
+}
+
+function isStudentRegistrationModuleLayoutTab(tabId, faculty) {
+    const config = resolveStudentRegistrationTabConfig(tabId, faculty);
+    return config ? config.layout === 'modules' : (tabId === 'prog' || tabId === 'free');
+}
+
+function isStudentRegistrationTrackLayoutTab(tabId, faculty) {
+    const config = resolveStudentRegistrationTabConfig(tabId, faculty);
+    return config ? config.layout === 'track' : (tabId === 'conc' || tabId === 'minor');
+}
+
+function resolveStudentRegistrationStructureTab(shellTabId, faculty) {
+    const safeShell = String(shellTabId || '').trim();
+    if (safeShell === 'program') return 'prog';
+    if (safeShell === 'concentration') return 'conc';
+    if (safeShell === 'history' || safeShell === 'selected') return safeShell;
+    const fac = normalizeFacultyCode(faculty || 'ECON', 'ECON');
+    const tabs = getStudentRegistrationTabsForFaculty(fac);
+    const match = tabs.find((tab) => tab.shellId === safeShell || tab.tabId === safeShell || tab.id === safeShell);
+    return match ? (match.studentTabId || match.id) : safeShell;
+}
+
+function countRegistrationTrackProgramsForFaculty(faculty) {
+    const fac = normalizeFacultyCode(faculty || 'ECON', 'ECON');
+    const bucket = ensureRegistrationTrackBucket(fac);
+    migrateRegistrationCmsToTrackModel(fac);
+    const trackData = bucket.trackData && typeof bucket.trackData === 'object' ? bucket.trackData : {};
+    const tabs = getStudentRegistrationTabsForFaculty(fac);
+    return tabs.reduce((sum, tab) => {
+        const track = trackData[tab.id];
+        if (!track || typeof track !== 'object') return sum;
+        return sum + Object.keys(track).length;
+    }, 0);
+}
+
+function buildStudentRegistrationDataFromCms(faculty) {
+    const fac = normalizeFacultyCode(faculty || getCurrentFaculty() || 'ECON', 'ECON');
+    const bucket = migrateRegistrationCmsToTrackModel(fac);
+    const trackData = bucket.trackData && typeof bucket.trackData === 'object' ? bucket.trackData : {};
+    const tabs = getStudentRegistrationTabsForFaculty(fac);
+    const result = { prog: [], free: [], conc: [], minor: [] };
+
+    tabs.forEach((tab) => {
+        const track = trackData[tab.id] || {};
+        const tabKey = tab.studentTabId || tab.id;
+        if (tab.layout === 'modules') {
+            result[tabKey] = convertRegistrationTrackTabForStudentModules(track);
+        } else {
+            result[tabKey] = convertRegistrationTrackTabForStudent(track);
+        }
+    });
+
+    return result;
+}
+
+function getStudentRegistrationDataForTabFromCms(faculty, tabId) {
+    const derived = buildStudentRegistrationDataFromCms(faculty);
+    const derivedData = derived?.[tabId];
+    if (Array.isArray(derivedData)) {
+        return derivedData;
+    }
+    const fac = normalizeFacultyCode(faculty || 'ECON', 'ECON');
+    const legacyData = KIU_STATE.registrationStructures?.[fac]?.[tabId];
+    return Array.isArray(legacyData) ? legacyData : [];
+}
+
+function normalizeRegistrationRemoveVerificationToken(value) {
+    return String(value || '').trim().toUpperCase();
+}
+
+function runRegistrationRemoveVerification({
+    step1Text = '',
+    step2Text = '',
+    promptText = '',
+    expectedToken = ''
+} = {}) {
+    const normalizedExpected = normalizeRegistrationRemoveVerificationToken(expectedToken);
+    if (!normalizedExpected) return false;
+    if (typeof window.confirm !== 'function' || typeof window.prompt !== 'function') {
+        return false;
+    }
+    if (!window.confirm(String(step1Text || 'Remove this registration item?'))) return false;
+    if (!window.confirm(String(step2Text || 'This action cannot be undone.'))) {
+        return false;
+    }
+    const typedValue = window.prompt(
+        String(promptText || `Type ${normalizedExpected} to confirm removal.`),
+        ''
+    );
+    if (typedValue == null) return false;
+    if (normalizeRegistrationRemoveVerificationToken(typedValue) !== normalizedExpected) {
+        if (typeof showToast === 'function') {
+            showToast('Removal cancelled. Confirmation text did not match.');
+        }
+        return false;
+    }
+    return true;
+}
+
+function buildAdminRegTabRemoveVerification(tabId, tabConfig, programCount = 0) {
+    const label = String(tabConfig?.label || tabId).trim();
+    const safeTabId = String(tabId || '').trim();
+    const expectedToken = normalizeRegistrationRemoveVerificationToken(safeTabId);
+    const programLabel = Number(programCount) === 1 ? '1 program' : `${Number(programCount) || 0} programs`;
+    return {
+        step1Text: `Delete custom registration tab "${label}"?`,
+        step2Text: `This permanently removes the tab and ${programLabel} with all groups and subjects. Students will no longer see this lane.`,
+        promptText: `Step 3 of 3: Type ${expectedToken} to confirm tab deletion.`,
+        expectedToken
+    };
+}
+
+function buildAdminRegBuiltinTabRemoveVerification(tabId, tabConfig) {
+    const label = String(tabConfig?.label || tabId).trim();
+    const safeTabId = String(tabId || '').trim();
+    const expectedToken = normalizeRegistrationRemoveVerificationToken(safeTabId);
+    return {
+        step1Text: `Hide built-in registration tab "${label}" for this faculty?`,
+        step2Text: 'The tab will disappear from admin and student registration for this faculty. Program data stays saved and can be restored later.',
+        promptText: `Step 3 of 3: Type ${expectedToken} to confirm hiding this tab.`,
+        expectedToken
+    };
+}
+
+function runRegistrationRemoveConfirmation({
+    step1Text = '',
+    step2Text = ''
+} = {}) {
+    if (typeof window.confirm !== 'function') return false;
+    if (!window.confirm(String(step1Text || 'Remove this registration item?'))) return false;
+    if (!window.confirm(String(step2Text || 'This action cannot be undone.'))) return false;
+    return true;
+}
+
+function buildAdminRegProgramRemoveVerification(tabId, programName, tabConfig) {
+    const label = String(tabConfig?.label || tabId || 'Program').trim();
+    const safeName = String(programName || '').trim();
+    const groupCount = Object.keys(getAdminRegTrackDataForVerification(tabId, programName)).length;
+    const groupLabel = groupCount === 1 ? '1 group' : `${groupCount} groups`;
+    return {
+        step1Text: `Delete program "${safeName}" from ${label}?`,
+        step2Text: `This permanently removes ${groupLabel} and all subjects under "${safeName}".`
+    };
+}
+
+function buildAdminRegGroupRemoveVerification(tabId, programName, groupName) {
+    const safeProgram = String(programName || '').trim();
+    const safeGroup = String(groupName || '').trim();
+    const group = getAdminRegTrackDataForVerification(tabId, programName)[safeGroup];
+    const subjectCount = Array.isArray(group?.courses) ? group.courses.length : 0;
+    const subjectLabel = subjectCount === 1 ? '1 subject' : `${subjectCount} subjects`;
+    return {
+        step1Text: `Delete group "${safeGroup}" from "${safeProgram}"?`,
+        step2Text: `This permanently removes ${subjectLabel} assigned to "${safeGroup}".`
+    };
+}
+
+function buildAdminRegSubjectRemoveVerification(tabId, programName, groupName, course) {
+    const safeTitle = String(course?.title || 'this subject').trim();
+    const safeGroup = String(groupName || '').trim();
+    return {
+        step1Text: `Delete subject "${safeTitle}" from "${safeGroup}"?`,
+        step2Text: 'Students will no longer see this subject in the registration lane.'
+    };
+}
+
+function getAdminRegTrackDataForVerification(tabId, programName) {
+    if (typeof window.getAdminRegTrackData === 'function') {
+        const track = window.getAdminRegTrackData(tabId) || {};
+        const program = track[String(programName || '').trim()];
+        return program && typeof program === 'object' ? program : {};
+    }
+    return {};
+}
+
+function purgeStudentRegistrationTrackSelectionForTab(tabId, studentTabId = tabId) {
+    const ids = [...new Set([tabId, studentTabId].filter(Boolean).map((value) => String(value).trim()).filter(Boolean))];
+    if (!ids.length) return;
+    const store = KIU_STATE.studentRegistrationTrackSelection;
+    if (!store || typeof store !== 'object') return;
+    ids.forEach((id) => {
+        delete store[id];
+        Object.values(store).forEach((scope) => {
+            if (scope && typeof scope === 'object') {
+                delete scope[id];
+            }
+        });
+    });
+}
+
+window.getAssignedCourseCurriculumDetails = getAssignedCourseCurriculumDetails;
+window.buildRegistrationCourseMeta = buildRegistrationCourseMeta;
+window.getAssignedCourseCurriculumSummary = getAssignedCourseCurriculumSummary;
+window.getSemesterRestrictionFieldConfig = getSemesterRestrictionFieldConfig;
+window.getTrackGroupProgress = getTrackGroupProgress;
+window.normalizeAssignedSemesterRestriction = normalizeAssignedSemesterRestriction;
+window.getAssignedCourseId = getAssignedCourseId;
+window.migrateRegistrationCmsToTrackModel = migrateRegistrationCmsToTrackModel;
+window.syncRegistrationTrackLegacyMirrors = syncRegistrationTrackLegacyMirrors;
+window.convertRegistrationTrackTabForStudent = convertRegistrationTrackTabForStudent;
+window.convertRegistrationTrackTabForStudentModules = convertRegistrationTrackTabForStudentModules;
+window.buildStudentRegistrationDataFromCms = buildStudentRegistrationDataFromCms;
+window.getStudentRegistrationDataForTabFromCms = getStudentRegistrationDataForTabFromCms;
+window.getStudentRegistrationTabsForFaculty = getStudentRegistrationTabsForFaculty;
+window.resolveStudentRegistrationStructureTab = resolveStudentRegistrationStructureTab;
+window.resolveStudentRegistrationTabConfig = resolveStudentRegistrationTabConfig;
+window.isStudentRegistrationModuleLayoutTab = isStudentRegistrationModuleLayoutTab;
+window.isStudentRegistrationTrackLayoutTab = isStudentRegistrationTrackLayoutTab;
+window.countRegistrationTrackProgramsForFaculty = countRegistrationTrackProgramsForFaculty;
+window.normalizeRegistrationRemoveVerificationToken = normalizeRegistrationRemoveVerificationToken;
+window.runRegistrationRemoveVerification = runRegistrationRemoveVerification;
+window.runRegistrationRemoveConfirmation = runRegistrationRemoveConfirmation;
+window.buildAdminRegTabRemoveVerification = buildAdminRegTabRemoveVerification;
+window.buildAdminRegBuiltinTabRemoveVerification = buildAdminRegBuiltinTabRemoveVerification;
+window.buildAdminRegProgramRemoveVerification = buildAdminRegProgramRemoveVerification;
+window.buildAdminRegGroupRemoveVerification = buildAdminRegGroupRemoveVerification;
+window.buildAdminRegSubjectRemoveVerification = buildAdminRegSubjectRemoveVerification;
+window.openAdminRegManageModal = openAdminRegManageModal;
+window.closeAdminRegManageModal = closeAdminRegManageModal;
+window.purgeStudentRegistrationTrackSelectionForTab = purgeStudentRegistrationTrackSelectionForTab;

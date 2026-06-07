@@ -12,12 +12,15 @@
     <link rel="stylesheet" href="assets/vendor/fontawesome/css/all.min.css?v=1776604821651">
     <link rel="stylesheet" href="assets/css/kiu-fonts.css?v=20260515-fonts1">
     <link rel="stylesheet" href="assets/css/base.css?v=20260419-libsync1">
-    <link rel="stylesheet" href="assets/css/layout.css?v=1776604821651">
-    <link rel="stylesheet" href="assets/css/components.css?v=1776604821651">
-    <link rel="stylesheet" href="assets/css/index-luxury.css?v=20260505-orders-inbox-fades1">
+    <link rel="stylesheet" href="assets/css/layout.css?v=20260528-layoutfix2">
+    <link rel="stylesheet" href="assets/css/lux-tokens.css?v=20260606-luxscrollbar1">
+    <link rel="stylesheet" href="assets/css/lux-surfaces.css?v=20260527-profcss1">
+    <link rel="stylesheet" href="assets/css/lux-controls.css?v=20260606-pickerscroll1">
+    <link rel="stylesheet" href="assets/css/lux-layout-primitives.css?v=20260606-luxscrollbar1">
+    <link rel="stylesheet" href="assets/css/index-luxury.css?v=20260531-partbg4">
 <link rel="stylesheet" href="assets/css/mobile-responsive.css?v=20260419-libsync1">
-    <link rel="stylesheet" href="assets/css/admin-orders-route.css?v=20260515-admin-orders-route1">
-    <script src="assets/js/theme-primer.js?v=20260419-flat5"></script>
+    <link rel="stylesheet" href="assets/css/admin-orders-route.css?v=20260602-aordersglass1">
+    <script src="assets/js/theme-primer.js?v=20260605-initvisual2"></script>
 </head>
 <body class="kiu-shell-loading lux-nonhome-page lux-route-admin-orders lux-unified-shell role-admin" data-faculty="ECON">
 <!-- Navigation stubs (hidden, for JS compatibility) -->
@@ -104,7 +107,7 @@
         <div class="admin-orders-studio-section">
             <div class="admin-orders-studio-overline">3D Background</div>
             <div class="admin-orders-background-list">
-                <button type="button" class="admin-orders-background-btn" data-admin-orders-background="constellation">
+                <button type="button" class="admin-orders-background-btn" data-admin-orders-background="peak">
                     <span class="admin-orders-background-title"><i class="fas fa-th"></i> Constellation Veil</span>
                     <span class="admin-orders-background-copy">Floating depth nodes with cinematic glow</span>
                 </button>
@@ -165,25 +168,26 @@
 <script defer src="assets/js/app/state.js?v=20260429-statestackfix1"></script>
     <script defer src="assets/js/shared/faculty.js?v=20260429-peopleisolation1"></script>
 <script defer src="assets/js/shared/messenger.js?v=20260505-orders-inbox-fades1"></script>
-<script defer src="assets/js/shared/orders-workspace.js?v=20260516-orders-workspace1"></script>
-<script defer src="assets/js/shared/utilities.js?v=20260505-orders-remove-old-inline1"></script>
+<script defer src="assets/js/shared/orders-workspace.js?v=20260528-orders-workspace5"></script>
+<script defer src="assets/js/shared/utilities.js?v=20260605-initvisual2"></script>
     <script defer src="assets/js/features/navigation.js?v=20260429-shellinit1"></script>
 <script defer src="assets/js/features/ui.js?v=20260429-peopleisolation1"></script>
-<script defer src="assets/js/features/index-luxury.js?v=20260504-transparency-refresh1"></script>
-<script defer src="assets/js/features/luxury-shell-chrome.js?v=20260518-luxshell1"></script>
+<script defer src="assets/js/features/index-luxury.js?v=20260605-initvisual2"></script>
+<script type="module" src="assets/js/features/luxury-particle-background.js?v=20260531-partbg8"></script>
+<script defer src="assets/js/features/luxury-shell-chrome.js?v=20260606-pickerscroll1"></script>
 <script defer src="assets/js/features/luxury-home-model.js?v=20260518-luxhome1"></script>
 <script defer src="assets/js/pages/admin-orders.js?v=20260515-admin-orders-page1"></script>
 <!-- MOBILE BOTTOM NAVIGATION (v2) -->
-<nav id="mobile-bottom-nav" aria-label="Mobile navigation" style="display:none;">
+<nav id="mobile-bottom-nav" aria-label="Mobile navigation" hidden>
     <div class="mobile-nav-row">
         <button class="mobile-nav-btn is-active" data-nav-target="home" type="button" id="mob-nav-home"><i class="fas fa-th-large"></i><span>Home</span></button>
-        <button class="mobile-nav-btn" type="button" id="mob-nav-messages" data-action="messages"><i class="fas fa-comment-dots"></i><span>Chat</span><em class="mob-badge" id="mob-badge-msg" style="display:none;">0</em></button>
-        <button class="mobile-nav-btn" type="button" id="mob-nav-notif" data-action="notifications"><i class="fas fa-bell"></i><span>Alerts</span><em class="mob-badge" id="mob-badge-notif" style="display:none;">0</em></button>
+        <button class="mobile-nav-btn" type="button" id="mob-nav-messages" data-action="messages"><i class="fas fa-comment-dots"></i><span>Chat</span><em class="mob-badge" id="mob-badge-msg" hidden>0</em></button>
+        <button class="mobile-nav-btn" type="button" id="mob-nav-notif" data-action="notifications"><i class="fas fa-bell"></i><span>Alerts</span><em class="mob-badge" id="mob-badge-notif" hidden>0</em></button>
         <button class="mobile-nav-btn" type="button" id="mob-nav-theme" data-action="theme"><i class="fas fa-palette"></i><span>Theme</span></button>
         <button class="mobile-nav-btn" type="button" id="mob-nav-more" data-action="more"><i class="fas fa-grip-horizontal"></i><span>More</span></button>
     </div>
 </nav>
-<div id="mobile-action-sheet" class="mob-sheet" style="display:none;" role="dialog" aria-modal="true">
+<div id="mobile-action-sheet" class="mob-sheet" hidden role="dialog" aria-modal="true">
     <div class="mob-sheet-backdrop" id="mob-sheet-backdrop"></div>
     <div class="mob-sheet-panel">
         <div class="mob-sheet-handle"><span></span></div>
@@ -263,9 +267,6 @@ window.__KIU_STANDALONE_MOBILE_SHELL_CONFIG = {
 <script defer src="assets/js/pages/standalone-mobile-shell.js?v=20260520-admin-orders-mobile1"></script>
 </body>
 </html>
-
-
-
 
 
 

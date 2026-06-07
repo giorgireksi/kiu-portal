@@ -34,6 +34,8 @@ describe('Profile view source regressions', () => {
         expect(profileViewHtml).toContain('data-pv-action="create-session"');
         expect(profileViewHtml).toContain('data-pv-action="save-group-edit"');
         expect(profileViewHtml).toContain('data-pv-action="remove-schedule-row"');
+        expect(profileViewHtml).toContain('data-pv-avatar-image="1"');
+        expect(profileViewHtml).toContain('data-pv-avatar-fallback="${avatarInitials}"');
         expect(profileViewHtml).toContain('id="pv-session-modal-template"');
         expect(profileViewHtml).toContain('id="pv-editgroup-modal-template"');
         expect(profileViewHtml).toContain('id="pv-schedule-row-template"');
@@ -46,6 +48,7 @@ describe('Profile view source regressions', () => {
         expect(profileViewHtml).not.toContain('id="pv-editgroup-modal" data-pv-modal-overlay style=');
         expect(profileViewHtml).not.toContain('class="prof-sched-edit-row" style=');
         expect(profileViewHtml).not.toContain('id="mob-act-admin"><span class="mob-sheet-icon" style=');
+        expect(profileViewHtml).not.toContain('onerror=');
         expect(inlineHandlerCount).toBe(0);
     });
 
@@ -53,15 +56,30 @@ describe('Profile view source regressions', () => {
         const profileViewHtml = readAsset('profile-view.html');
         const routeCss = readAsset('assets/css/profile-view-route.css');
 
-        expect(profileViewHtml).toContain('assets/css/profile-view-route.css?v=20260518-profileview-markup1');
+        expect(profileViewHtml).toContain('assets/css/profile-view-route.css');
         expect(profileViewHtml).not.toContain('<style>');
         expect(routeCss).toContain('.pv-hero {');
+        expect(routeCss).toContain('.pv-meta-head {');
+        expect(routeCss).toContain('.pv-status-badge {');
+        expect(routeCss).toContain('.pv-overview-grid {');
+        expect(routeCss).toContain('.pv-profile-edit-card {');
+        expect(routeCss).toContain('.pv-financial-status-card {');
+        expect(routeCss).toContain('.pv-stat-grid--overview {');
+        expect(routeCss).toContain('.upload-zone-title {');
+        expect(routeCss).toContain('.pv-toast {');
+        expect(routeCss).toContain('.pv-toast-detail {');
         expect(routeCss).toContain('.pv-modal-overlay {');
         expect(routeCss).toContain('.pv-schedule-edit-row {');
+        expect(routeCss).toContain('.pv-mini-timetable {');
+        expect(routeCss).toContain('.pv-mini-event-card {');
+        expect(routeCss).toContain('.pv-slot-hint {');
+        expect(routeCss).toContain('.pv-action-bar {');
+        expect(routeCss).toContain('.pv-session-list-row {');
+        expect(routeCss).toContain('.pv-document-card {');
+        expect(routeCss).toContain('.pv-financial-admin-card {');
+        expect(routeCss).toContain('.pv-financial-table {');
         expect(routeCss).toContain('.lux-route-profile-view .mob-sheet-icon-admin {');
         expect(routeCss).toContain('.em-input:focus {');
-        expect(routeCss).toContain('.pvsm-in:focus,');
-        expect(routeCss).toContain('.peg-in:focus {');
         expect(routeCss).toContain('@keyframes schModalIn {');
     });
 

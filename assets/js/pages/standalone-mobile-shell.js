@@ -66,6 +66,26 @@
         ).trim().toLowerCase();
     }
 
+    function isElementShown(element) {
+        if (!element) return false;
+        const explicitState = element.getAttribute('data-mob-visible');
+        if (explicitState === 'true') return true;
+        if (explicitState === 'false') return false;
+        if (element.hidden || element.getAttribute('aria-hidden') === 'true') return false;
+        return !/display\s*:\s*none/i.test(String(element.getAttribute('style') || ''));
+    }
+
+    function setElementShown(element, shown, displayValue = '') {
+        void displayValue;
+        if (!element) return;
+        element.hidden = !shown;
+        element.setAttribute('data-mob-visible', shown ? 'true' : 'false');
+    }
+
+    function setSheetBodyState(isOpen) {
+        document.body.classList.toggle('mob-sheet-open', isOpen === true);
+    }
+
     function buildRoleNav() {
         const container = document.getElementById('mob-sheet-dynamic-nav');
         if (!container) return;
@@ -94,7 +114,7 @@
         const visibleRoles = Array.isArray(getConfig().adminVisibleRoles) ? getConfig().adminVisibleRoles : null;
         if (visibleRoles) {
             const adminSwitch = document.getElementById('mob-act-admin');
-            if (adminSwitch) adminSwitch.style.display = visibleRoles.includes(getRole()) ? '' : 'none';
+            if (adminSwitch) adminSwitch.hidden = !visibleRoles.includes(getRole());
         }
     }
 
@@ -246,27 +266,41 @@
     function toggleSheet() {
         const sheet = document.getElementById('mobile-action-sheet');
         if (!sheet) return;
-        sheet.style.display !== 'none' ? closeSheet() : openSheet();
+        isElementShown(sheet) ? closeSheet() : openSheet();
     }
 
     function openSheet() {
         const sheet = document.getElementById('mobile-action-sheet');
+        const moreButton = document.getElementById('mob-nav-more');
+        const closeButton = document.getElementById('mob-sheet-close');
         if (!sheet) return;
-        sheet.style.display = '';
-        document.body.style.overflow = 'hidden';
+        setElementShown(sheet, true, '');
+        sheet.setAttribute('aria-hidden', 'false');
+        if (moreButton) moreButton.setAttribute('aria-expanded', 'true');
+        setSheetBodyState(true);
         requestAnimationFrame(() => {
             sheet.classList.add('is-open');
+            if (closeButton) {
+                closeButton.setAttribute('data-mob-sheet-focus', '1');
+                closeButton.focus();
+            }
         });
         buildRoleNav();
     }
 
-    function closeSheet() {
+    function closeSheet(options = {}) {
         const sheet = document.getElementById('mobile-action-sheet');
+        const moreButton = document.getElementById('mob-nav-more');
+        const closeButton = document.getElementById('mob-sheet-close');
         if (!sheet) return;
         sheet.classList.remove('is-open');
-        document.body.style.overflow = '';
+        sheet.setAttribute('aria-hidden', 'true');
+        if (moreButton) moreButton.setAttribute('aria-expanded', 'false');
+        if (closeButton) closeButton.removeAttribute('data-mob-sheet-focus');
+        setSheetBodyState(false);
         setTimeout(() => {
-            sheet.style.display = 'none';
+            setElementShown(sheet, false);
+            if (options.restoreFocus !== false && moreButton) moreButton.focus();
         }, 300);
     }
 
@@ -325,8 +359,8 @@
     function onResize() {
         const nav = document.getElementById('mobile-bottom-nav');
         if (!nav) return;
-        nav.style.display = isMob() ? '' : 'none';
-        if (!isMob()) closeSheet();
+        setElementShown(nav, isMob(), '');
+        if (!isMob()) closeSheet({ restoreFocus: false });
     }
 
     function init() {

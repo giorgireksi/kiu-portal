@@ -13,7 +13,7 @@ describe('luxury shell chrome split', () => {
         const homeRuntime = readSource('assets/js/features/luxury-home-dashboard-runtime.js');
         const indexHtml = readSource('index.html');
 
-        expect(indexHtml).toContain('assets/js/features/luxury-shell-chrome.js?v=20260518-luxshell1');
+        expect(indexHtml).toContain('assets/js/features/luxury-shell-chrome.js?v=20260527-luxshell2');
         expect(luxury).toContain('window.__KIU_LUXURY_SHARED = {');
         expect(homeRuntime).toContain('window.__KIU_LUXURY_HOME_DASHBOARD_RUNTIME_READY = true;');
         expect(shellChrome).toContain('function getLuxurySharedConfig() {');
@@ -32,6 +32,8 @@ describe('luxury shell chrome split', () => {
         expect(luxury).toContain('mixHsl,');
         expect(luxury).toContain('hslToRgb,');
         expect(luxury).toContain('getThemeMode,');
+        expect(luxury).not.toContain('getNotificationSnapshot,\n        getMessengerSnapshot');
+        expect(luxury).not.toContain('getMessengerSnapshot,\n        buildHomeModel');
         expect(luxury).toContain('toggleSidebar');
         expect(luxury).toContain("window.toggleSidebar = typeof toggleSidebar === 'function' ? toggleSidebar : window.toggleSidebar;");
         expect(luxury).toContain("if (typeof window.buildHomeWidgetDefinitions !== 'function') {");

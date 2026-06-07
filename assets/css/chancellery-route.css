@@ -1,0 +1,675 @@
+/* Chancellery route — single source of truth: --chan-fade-* tokens */
+
+body.lux-route-chancellery {
+    --lux-panel-alpha: 0.72;
+    --lux-glass-alpha: 0.10;
+    --lux-glass-blur: 24px;
+    --lux-topbar-tint-rgb: 11, 28, 46;
+    --lux-bg: #050912;
+    --lux-bg-soft: #0a1220;
+    --lux-surface: #0d1625;
+    --lux-surface-2: #101a2a;
+    --lux-surface-3: #162133;
+    --lux-border: rgba(255, 255, 255, 0.08);
+    --lux-border-strong: rgba(255, 255, 255, 0.14);
+    --lux-text: #f4ede0;
+    --lux-text-muted: rgba(214, 224, 243, 0.74);
+    --lux-text-soft: rgba(214, 224, 243, 0.56);
+    --chan-fade-surface:
+        radial-gradient(circle at 6% 0%, rgba(255, 255, 255, calc(var(--lux-color-fade-alpha, .92) * 0.08)), transparent 32%),
+        radial-gradient(circle at 74% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * 0.28)), transparent 42%),
+        radial-gradient(circle at 100% 96%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .92) * 0.18)), transparent 40%),
+        linear-gradient(135deg,
+            rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * 0.10)),
+            rgba(10, 15, 24, calc(var(--lux-transparency-alpha, .92) * 0.89)) 44%,
+            rgba(7, 10, 18, calc(var(--lux-transparency-alpha, .92) * 0.80)));
+    --chan-fade-surface-soft:
+        radial-gradient(circle at 12% 0%, rgba(255, 255, 255, calc(var(--lux-color-fade-alpha, .92) * 0.055)), transparent 30%),
+        radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * 0.14)), transparent 34%),
+        linear-gradient(135deg,
+            rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * 0.065)),
+            rgba(10, 15, 24, calc(var(--lux-transparency-alpha, .92) * 0.88)) 46%,
+            rgba(7, 10, 18, calc(var(--lux-transparency-alpha, .92) * 0.80)));
+    --chan-fade-control:
+        linear-gradient(180deg, rgba(255, 255, 255, calc(0.04 + var(--lux-glass-alpha, .06))), rgba(255, 255, 255, 0.02)),
+        radial-gradient(circle at top right, rgba(var(--lux-accent-rgb), 0.10), transparent 32%);
+    --chan-fade-chip: var(--chan-fade-surface-soft);
+    --chan-fade-border: rgba(var(--lux-accent-rgb), 0.22);
+    --chan-fade-border-soft: rgba(255, 255, 255, 0.10);
+    --chan-fade-shadow:
+        0 24px 58px rgba(0, 0, 0, 0.24),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08),
+        0 0 0 1px rgba(var(--lux-accent-rgb), 0.04);
+    --chan-fade-shadow-soft:
+        0 20px 44px rgba(0, 0, 0, 0.20),
+        inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    --chan-fade-blur: blur(var(--lux-transparency-blur, 20px)) saturate(var(--lux-transparency-saturate, 145%));
+    --chan-fade-row: rgba(var(--lux-glass-tint-rgb, 16, 23, 38), calc(var(--lux-raised-fill-alpha, 0.045) + 0.04));
+    --chan-fade-row-hover: rgba(var(--lux-accent-rgb), calc(0.04 + var(--lux-transparency-alpha, 0.92) * 0.06));
+    background:
+        radial-gradient(circle at 18% 0%, rgba(var(--lux-accent-rgb), 0.12), transparent 32%),
+        radial-gradient(circle at 82% 10%, rgba(var(--lux-accent-rgb), 0.08), transparent 26%),
+        linear-gradient(180deg, #050912 0%, #060b13 100%);
+    color: var(--lux-text);
+}
+
+body.lux-light-mode.lux-route-chancellery,
+html.lux-light-mode body.lux-route-chancellery {
+    --lux-topbar-tint-rgb: 236, 230, 219;
+    --lux-bg: #f7f3ed;
+    --lux-bg-soft: #f1ebe2;
+    --lux-surface: #fffaf4;
+    --lux-surface-2: #f8f3ea;
+    --lux-surface-3: #efe7db;
+    --lux-border: rgba(20, 30, 48, 0.09);
+    --lux-border-strong: rgba(20, 30, 48, 0.15);
+    --lux-text: #1d2633;
+    --lux-text-muted: rgba(52, 63, 84, 0.74);
+    --lux-text-soft: rgba(52, 63, 84, 0.56);
+    --chan-fade-surface:
+        radial-gradient(circle at 6% 0%, rgba(255, 255, 255, calc(var(--lux-color-fade-alpha, .86) * 0.88)), transparent 34%),
+        radial-gradient(circle at 74% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * 0.24)), transparent 42%),
+        radial-gradient(circle at 100% 96%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .86) * 0.14)), transparent 40%),
+        linear-gradient(135deg,
+            rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * 0.065)),
+            rgba(255, 255, 255, calc(var(--lux-transparency-alpha, .86) * 0.84)) 44%,
+            rgba(247, 241, 232, calc(var(--lux-transparency-alpha, .86) * 0.70)));
+    --chan-fade-surface-soft:
+        radial-gradient(circle at 12% 0%, rgba(255, 255, 255, calc(var(--lux-color-fade-alpha, .86) * 0.62)), transparent 30%),
+        radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * 0.14)), transparent 34%),
+        linear-gradient(135deg,
+            rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * 0.045)),
+            rgba(255, 255, 255, calc(var(--lux-transparency-alpha, .86) * 0.84)) 46%,
+            rgba(247, 241, 232, calc(var(--lux-transparency-alpha, .86) * 0.72)));
+    --chan-fade-control:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(248, 244, 237, 0.62)),
+        radial-gradient(circle at top right, rgba(var(--lux-accent-rgb), 0.10), transparent 32%);
+    --chan-fade-border: rgba(var(--lux-accent-rgb), 0.16);
+    --chan-fade-border-soft: rgba(77, 52, 31, 0.12);
+    --chan-fade-shadow:
+        0 18px 42px rgba(73, 48, 25, 0.10),
+        inset 0 1px 0 rgba(255, 255, 255, 0.74);
+    --chan-fade-shadow-soft:
+        0 14px 30px rgba(73, 48, 25, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.62);
+    --chan-fade-row: rgba(255, 255, 255, calc(var(--lux-raised-fill-alpha, 0.06) + 0.48));
+    --chan-fade-row-hover: rgba(var(--lux-accent-rgb), calc(0.03 + var(--lux-transparency-alpha, 0.86) * 0.05));
+    background:
+        radial-gradient(circle at 20% 0%, rgba(var(--lux-accent-rgb), 0.10), transparent 32%),
+        radial-gradient(circle at 85% 12%, rgba(var(--lux-accent-rgb), 0.08), transparent 26%),
+        linear-gradient(180deg, #f7f3ed 0%, #f0e8dc 100%);
+    color: var(--lux-text);
+}
+
+body.lux-route-chancellery .page-hero {
+    margin-bottom: 0;
+}
+
+body.lux-route-chancellery header,
+body.lux-route-chancellery #top-nav,
+body.lux-route-chancellery #prof-nav,
+body.lux-route-chancellery #admin-nav {
+    background: rgba(8, 12, 20, 0.88) !important;
+    color: var(--lux-text) !important;
+    border-color: var(--lux-border) !important;
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.18) !important;
+}
+
+body.lux-light-mode.lux-route-chancellery header,
+body.lux-light-mode.lux-route-chancellery #top-nav,
+body.lux-light-mode.lux-route-chancellery #prof-nav,
+body.lux-light-mode.lux-route-chancellery #admin-nav {
+    background: rgba(255, 255, 255, 0.82) !important;
+    color: var(--lux-text) !important;
+    border-color: var(--lux-border) !important;
+    box-shadow: 0 18px 40px rgba(16, 24, 40, 0.08) !important;
+}
+
+body.lux-route-chancellery header .header-left,
+body.lux-route-chancellery header .header-right,
+body.lux-route-chancellery header .user-info,
+body.lux-route-chancellery header .user-dropdown-trigger,
+body.lux-route-chancellery header .faculty-switcher select,
+body.lux-route-chancellery header .role-switcher select,
+body.lux-route-chancellery header .lang-switcher,
+body.lux-route-chancellery #top-nav .nav-item,
+body.lux-route-chancellery #prof-nav .nav-item,
+body.lux-route-chancellery #admin-nav .nav-item {
+    color: var(--lux-text) !important;
+}
+
+body.lux-route-chancellery header .faculty-switcher select,
+body.lux-route-chancellery header .role-switcher select {
+    background: var(--chan-fade-control) !important;
+    border: 1px solid var(--chan-fade-border-soft) !important;
+    color: var(--lux-text) !important;
+}
+
+body.lux-light-mode.lux-route-chancellery header .faculty-switcher select,
+body.lux-light-mode.lux-route-chancellery header .role-switcher select {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(247, 243, 235, 0.96)) !important;
+    border: 1px solid var(--chan-fade-border-soft) !important;
+}
+
+body.lux-route-chancellery #app-content {
+    background: transparent !important;
+}
+
+body.lux-route-chancellery #page-chancellery {
+    position: relative;
+    z-index: 1;
+    padding-bottom: 96px;
+}
+
+body.lux-route-chancellery .lux-page-shell {
+    display: grid;
+    gap: 18px;
+}
+
+#page-chancellery .lux-summary-surface {
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+#page-chancellery .lux-summary-surface::after {
+    display: none !important;
+}
+
+/* Large panel shells */
+body.lux-route-chancellery #page-chancellery :is(
+    .page-hero,
+    .lux-chancellery-hero,
+    .lux-chancellery-focus-card,
+    .lux-chancellery-snapshot-card,
+    .lux-card
+) {
+    position: relative;
+    overflow: hidden;
+    background: var(--chan-fade-surface) !important;
+    border: 1px solid var(--chan-fade-border) !important;
+    box-shadow: var(--chan-fade-shadow) !important;
+    backdrop-filter: var(--chan-fade-blur) !important;
+    -webkit-backdrop-filter: var(--chan-fade-blur) !important;
+    color: var(--lux-text) !important;
+}
+
+/* Soft chrome */
+body.lux-route-chancellery #page-chancellery :is(
+    .lux-stat-card,
+    .lux-chancellery-subcard,
+    .lux-subcard,
+    .lux-strip-card,
+    .lux-chancellery-focus-row
+) {
+    background: var(--chan-fade-surface-soft) !important;
+    border: 1px solid var(--chan-fade-border-soft) !important;
+    box-shadow: var(--chan-fade-shadow-soft) !important;
+    backdrop-filter: var(--chan-fade-blur) !important;
+    -webkit-backdrop-filter: var(--chan-fade-blur) !important;
+    color: var(--lux-text) !important;
+}
+
+/* Queue / thread rows */
+body.lux-route-chancellery #page-chancellery :is(
+    .lux-chancellery-queue-item,
+    .lux-queue-item,
+    .lux-chancellery-thread-entry,
+    .lux-thread-entry
+) {
+    background: var(--chan-fade-row) !important;
+    border: 1px solid var(--chan-fade-border-soft) !important;
+    box-shadow: var(--chan-fade-shadow-soft) !important;
+    backdrop-filter: var(--chan-fade-blur) !important;
+    -webkit-backdrop-filter: var(--chan-fade-blur) !important;
+    color: var(--lux-text) !important;
+    transition: border-color 200ms ease, box-shadow 200ms ease, background 200ms ease;
+}
+
+body.lux-route-chancellery #page-chancellery :is(
+    .lux-chancellery-queue-item:hover,
+    .lux-queue-item:hover
+) {
+    background: var(--chan-fade-row-hover) !important;
+    border-color: rgba(var(--lux-accent-rgb), 0.22) !important;
+}
+
+body.lux-route-chancellery #page-chancellery :is(
+    .lux-chancellery-queue-item.is-selected,
+    .lux-queue-item.is-selected
+) {
+    border-color: rgba(var(--lux-accent-rgb), 0.34) !important;
+    box-shadow: 0 14px 28px rgba(var(--lux-accent-rgb), 0.10), var(--chan-fade-shadow-soft) !important;
+}
+
+/* Controls / chips */
+body.lux-route-chancellery #page-chancellery :is(
+    .lux-chancellery-control,
+    .lux-control,
+    .lux-chancellery-status-select,
+    .lux-chancellery-tab-btn:not(.active)
+) {
+    background: var(--chan-fade-control) !important;
+    border: 1px solid var(--chan-fade-border-soft) !important;
+    box-shadow: var(--chan-fade-shadow-soft);
+    backdrop-filter: var(--chan-fade-blur);
+    -webkit-backdrop-filter: var(--chan-fade-blur);
+    color: var(--lux-text) !important;
+}
+
+body.lux-route-chancellery #page-chancellery :is(
+    .lux-status-pill,
+    .lux-pill,
+    .lux-chancellery-status-pill,
+    .lux-chancellery-view-pill,
+    .lux-chancellery-finance-pill,
+    .page-hero-badge
+) {
+    background: var(--chan-fade-chip) !important;
+    border: 1px solid var(--chan-fade-border-soft) !important;
+    box-shadow: var(--chan-fade-shadow-soft);
+    backdrop-filter: var(--chan-fade-blur);
+    -webkit-backdrop-filter: var(--chan-fade-blur);
+    color: var(--lux-text) !important;
+}
+
+body.lux-route-chancellery #page-chancellery .lux-chancellery-tab-btn.active {
+    background: linear-gradient(135deg, rgba(var(--lux-accent-rgb), 0.92), var(--lux-accent-2)) !important;
+    color: #fff8ef !important;
+    border-color: transparent !important;
+    box-shadow: 0 12px 24px rgba(var(--lux-accent-rgb), 0.18) !important;
+}
+
+body.lux-route-chancellery #page-chancellery .lux-chancellery-control:focus-visible,
+body.lux-route-chancellery #page-chancellery .lux-control:focus-visible {
+    border-color: rgba(var(--lux-accent-rgb), 0.28) !important;
+    box-shadow: 0 0 0 3px rgba(var(--lux-accent-rgb), 0.12), var(--chan-fade-shadow-soft);
+}
+
+body.lux-route-chancellery #page-chancellery .lux-empty-state {
+    background: var(--chan-fade-row) !important;
+    border: 1px dashed var(--chan-fade-border-soft) !important;
+    color: var(--lux-text-muted) !important;
+}
+
+body.lux-route-chancellery #page-chancellery .lux-chancellery-kind-pill.is-primary {
+    border-color: rgba(var(--lux-accent-rgb), 0.24) !important;
+    color: color-mix(in srgb, var(--lux-accent) 72%, #fff 28%);
+}
+
+body.lux-route-chancellery #page-chancellery .lux-chancellery-kind-pill.is-secondary {
+    border-color: var(--chan-fade-border-soft) !important;
+    color: var(--lux-accent-2);
+}
+
+body.lux-route-chancellery #page-chancellery .lux-chancellery-kind-pill.is-muted {
+    border-color: var(--chan-fade-border-soft) !important;
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-chancellery footer {
+    background: transparent !important;
+    color: var(--lux-text-soft) !important;
+}
+
+/* Layout (unchanged) */
+body.lux-route-chancellery .lux-chancellery-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1.25fr) minmax(300px, 0.95fr);
+    gap: 20px;
+    align-items: stretch;
+    border-radius: 30px;
+    padding: 26px;
+}
+
+body.lux-route-chancellery .lux-chancellery-hero-copy,
+body.lux-route-chancellery .lux-chancellery-hero-focus {
+    min-width: 0;
+}
+
+body.lux-route-chancellery .lux-chancellery-focus-card {
+    padding: 20px;
+}
+
+body.lux-route-chancellery .lux-chancellery-focus-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 14px;
+}
+
+body.lux-route-chancellery .lux-chancellery-focus-row {
+    padding: 14px;
+    border-radius: 18px;
+}
+
+body.lux-route-chancellery .lux-chancellery-focus-value {
+    margin-top: 6px;
+    font-size: 20px;
+    font-weight: 900;
+    color: var(--lux-text);
+    font-variant-numeric: tabular-nums;
+}
+
+body.lux-route-chancellery .lux-chancellery-hero-actions {
+    margin-top: 18px;
+}
+
+body.lux-route-chancellery .lux-chancellery-snapshot-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+body.lux-route-chancellery .lux-chancellery-snapshot-card {
+    min-height: 150px;
+}
+
+body.lux-route-chancellery .lux-card-body {
+    padding: 22px;
+}
+
+body.lux-route-chancellery .lux-chancellery-card-head,
+body.lux-route-chancellery .lux-chancellery-actions-between {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+body.lux-route-chancellery .lux-chancellery-card-title,
+body.lux-route-chancellery .lux-stat-value,
+body.lux-route-chancellery .lux-metric {
+    color: var(--lux-text) !important;
+}
+
+body.lux-route-chancellery .lux-card-copy,
+body.lux-route-chancellery .lux-meta,
+body.lux-route-chancellery .lux-chancellery-inline-meta,
+body.lux-route-chancellery .lux-overline,
+body.lux-route-chancellery .lux-stat-label {
+    color: var(--lux-text-muted) !important;
+}
+
+body.lux-route-chancellery .lux-page-kicker {
+    color: rgba(var(--lux-accent-rgb), 0.92) !important;
+}
+
+body.lux-route-chancellery .page-hero-title {
+    color: var(--lux-text) !important;
+}
+
+body.lux-route-chancellery .page-hero-copy {
+    color: var(--lux-text-muted) !important;
+}
+
+body.lux-route-chancellery .lux-card-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+body.lux-route-chancellery .lux-chancellery-thread-status {
+    margin-top: 8px;
+}
+
+body.lux-route-chancellery .lux-chancellery-empty-state {
+    min-height: 180px;
+}
+
+body.lux-route-chancellery .lux-chancellery-queue-copy {
+    display: grid;
+    gap: 8px;
+}
+
+body.lux-route-chancellery .lux-chancellery-queue-head {
+    align-items: flex-start;
+}
+
+body.lux-route-chancellery .lux-chancellery-queue-meta {
+    margin-top: 8px;
+}
+
+body.lux-route-chancellery .lux-chancellery-queue-tag-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+body.lux-route-chancellery .lux-chancellery-queue-id,
+body.lux-route-chancellery .lux-chancellery-queue-subject {
+    color: var(--lux-text) !important;
+}
+
+body.lux-route-chancellery .lux-chancellery-queue-subject {
+    font-size: 18px;
+    font-weight: 800;
+}
+
+body.lux-route-chancellery .lux-chancellery-form-actions {
+    margin-top: 16px;
+}
+
+body.lux-route-chancellery .lux-chancellery-submit-btn {
+    width: 100%;
+}
+
+body.lux-route-chancellery .lux-chancellery-card-note {
+    margin-top: 12px;
+}
+
+body.lux-route-chancellery .lux-chancellery-finance-pill {
+    margin-top: 10px;
+    width: max-content;
+}
+
+body.lux-route-chancellery .lux-chancellery-list-region {
+    margin-top: 16px;
+}
+
+body.lux-route-chancellery .lux-chancellery-subcards-spaced {
+    margin-bottom: 18px;
+}
+
+body.lux-route-chancellery .lux-chancellery-section-title {
+    margin-bottom: 10px;
+    font-size: 16px;
+}
+
+body.lux-route-chancellery .lux-chancellery-stats-grid {
+    margin-bottom: 16px;
+}
+
+body.lux-route-chancellery .lux-chancellery-status-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+body.lux-route-chancellery .lux-chancellery-status-select {
+    min-width: 220px;
+}
+
+body.lux-route-chancellery .lux-chancellery-thread-region {
+    margin-top: 18px;
+}
+
+body.lux-route-chancellery .lux-chancellery-reply-actions {
+    margin-top: 14px;
+    justify-content: flex-end;
+}
+
+body.lux-route-chancellery .lux-chancellery-tab-btn,
+body.lux-route-chancellery .lux-chancellery-form-actions .lux-primary-btn,
+body.lux-route-chancellery .lux-chancellery-reply-actions :is(.lux-primary-btn, .lux-secondary-btn) {
+    min-height: 42px;
+}
+
+body.lux-route-chancellery .lux-field-grid {
+    display: grid;
+    gap: 14px;
+}
+
+body.lux-route-chancellery .lux-field label {
+    color: var(--lux-text-muted) !important;
+}
+
+body.lux-route-chancellery .lux-chancellery-control::placeholder,
+body.lux-route-chancellery .lux-control::placeholder {
+    color: var(--lux-text-soft);
+}
+
+body.lux-route-chancellery .lux-chancellery-queue-list {
+    display: grid;
+    gap: 12px;
+}
+
+body.lux-route-chancellery .lux-chancellery-queue-item {
+    text-align: left;
+    padding: 18px;
+    border-radius: 22px;
+    width: 100%;
+}
+
+body.lux-route-chancellery .lux-chancellery-thread {
+    display: grid;
+    gap: 12px;
+}
+
+body.lux-route-chancellery .lux-chancellery-thread-entry {
+    border-radius: 20px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Home-style command center restyle
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+body.lux-route-chancellery #page-chancellery .lux-chancellery-hero,
+body.lux-route-chancellery #page-chancellery .page-hero.lux-chancellery-hero {
+    border-top: 3px solid rgba(var(--lux-accent-rgb), 0.55);
+}
+
+body.lux-route-chancellery #page-chancellery .page-hero-title {
+    font-size: clamp(34px, 4vw, 52px);
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+}
+
+body.lux-route-chancellery #page-chancellery .lux-page-kicker {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+body.lux-route-chancellery #page-chancellery .lux-chancellery-card-head {
+    padding-bottom: 12px;
+    margin-bottom: 4px;
+    border-bottom: 1px solid var(--chan-fade-border-soft);
+}
+
+body.lux-route-chancellery #page-chancellery .lux-chancellery-focus-row,
+body.lux-route-chancellery #page-chancellery .lux-chancellery-snapshot-card {
+    position: relative;
+    display: grid;
+    gap: 6px;
+    overflow: hidden;
+}
+
+body.lux-route-chancellery #page-chancellery .lux-chancellery-focus-row::before,
+body.lux-route-chancellery #page-chancellery .lux-chancellery-snapshot-card::before {
+    content: '';
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 3px;
+    background: linear-gradient(
+        180deg,
+        rgba(var(--lux-accent-rgb), 0.85),
+        rgba(var(--lux-home-secondary-rgb), 0.45)
+    );
+    border-radius: 18px 0 0 18px;
+}
+
+body.lux-route-chancellery #page-chancellery .lux-overline,
+body.lux-route-chancellery #page-chancellery .lux-stat-label {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(var(--lux-accent-rgb), 0.88) !important;
+}
+
+body.lux-route-chancellery #page-chancellery .lux-chancellery-focus-value,
+body.lux-route-chancellery #page-chancellery .lux-stat-value {
+    font-size: clamp(22px, 2.2vw, 30px);
+    font-variant-numeric: tabular-nums;
+}
+
+/* High-transparency reinstatement */
+html.lux-high-transparency body.lux-route-chancellery:not(.lux-light-mode) #page-chancellery :is(
+    .page-hero,
+    .lux-chancellery-hero,
+    .lux-chancellery-focus-card,
+    .lux-chancellery-snapshot-card,
+    .lux-card
+) {
+    background: var(--chan-fade-surface) !important;
+    border-color: var(--chan-fade-border) !important;
+    box-shadow: var(--chan-fade-shadow) !important;
+    backdrop-filter: var(--chan-fade-blur) !important;
+    -webkit-backdrop-filter: var(--chan-fade-blur) !important;
+}
+
+html.lux-high-transparency body.lux-route-chancellery:not(.lux-light-mode) #page-chancellery :is(
+    .lux-stat-card,
+    .lux-chancellery-subcard,
+    .lux-subcard,
+    .lux-chancellery-focus-row,
+    .lux-chancellery-queue-item,
+    .lux-queue-item,
+    .lux-chancellery-thread-entry,
+    .lux-thread-entry
+) {
+    background: var(--chan-fade-surface-soft) !important;
+    border-color: var(--chan-fade-border-soft) !important;
+    box-shadow: var(--chan-fade-shadow-soft) !important;
+    backdrop-filter: var(--chan-fade-blur) !important;
+    -webkit-backdrop-filter: var(--chan-fade-blur) !important;
+}
+
+body[data-lux-performance='efficient'].lux-route-chancellery #page-chancellery :is(
+    .lux-chancellery-hero,
+    .lux-chancellery-focus-card,
+    .lux-card,
+    .lux-chancellery-subcard,
+    .lux-subcard
+) {
+    box-shadow: var(--chan-fade-shadow-soft) !important;
+    -webkit-backdrop-filter: blur(10px) saturate(118%) !important;
+    backdrop-filter: blur(10px) saturate(118%) !important;
+}
+
+body[data-lux-performance='efficient'].lux-route-chancellery #page-chancellery :is(
+    .lux-chancellery-queue-item,
+    .lux-queue-item,
+    .lux-chancellery-thread-entry,
+    .lux-thread-entry
+) {
+    box-shadow: var(--chan-fade-shadow-soft) !important;
+    -webkit-backdrop-filter: blur(8px) saturate(112%) !important;
+    backdrop-filter: blur(8px) saturate(112%) !important;
+}
+
+@media (max-width: 980px) {
+    body.lux-route-chancellery .lux-chancellery-hero {
+        grid-template-columns: 1fr;
+    }
+
+    body.lux-route-chancellery .lux-chancellery-snapshot-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}

@@ -19,9 +19,13 @@ describe('faculty schedule route regressions', () => {
         expect(html).toContain("window.location.replace('timetable.html');");
         expect((html.match(/<script\b(?![^>]*\bsrc=)[^>]*>/gi) || [])).toHaveLength(1);
         expect((html.match(/<script\b[^>]*\bsrc=/gi) || [])).toHaveLength(0);
-        expect((html.match(/<link\b[^>]*\brel=["']stylesheet["'][^>]*>/gi) || [])).toHaveLength(0);
+        expect((html.match(/<link\b[^>]*\brel=["']stylesheet["'][^>]*>/gi) || [])).toHaveLength(5);
         expect(html).not.toContain('assets/js/');
-        expect(html).not.toContain('assets/css/');
+        expect(html).toContain('assets/css/lux-tokens.css');
+        expect(html).toContain('assets/css/lux-surfaces.css');
+        expect(html).toContain('assets/css/lux-controls.css');
+        expect(html).toContain('assets/css/lux-layout-primitives.css');
+        expect(html).toContain('assets/css/redirect-route.css');
         expect(html).not.toContain('lux-unified-shell');
         expect(html).not.toContain('kiu-shell-loading');
         expect(html).not.toContain('id=\"prof-nav\"');

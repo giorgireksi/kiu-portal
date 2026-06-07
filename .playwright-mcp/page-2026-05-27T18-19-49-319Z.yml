@@ -1,0 +1,600 @@
+- generic [active] [ref=e1]:
+  - text:  
+  - main [ref=e2]:
+    - generic [ref=e5]:
+      - generic [ref=e235]:
+        - generic [ref=e236]:
+          - generic [ref=e237]: Campus Social Network
+          - heading "People" [level=1] [ref=e238]
+          - paragraph [ref=e239]: Find classmates, staff, and manage your campus connections.
+          - generic [ref=e240]:
+            - generic [ref=e241]:
+              - strong [ref=e242]: "10"
+              - generic [ref=e243]: People
+            - generic [ref=e244]:
+              - strong
+              - generic [ref=e245]: Connections
+            - generic [ref=e246]:
+              - strong
+              - generic [ref=e247]: Pending
+          - generic [ref=e248]:
+            - button "People" [pressed] [ref=e249] [cursor=pointer]
+            - button "Suggested" [ref=e250] [cursor=pointer]
+            - button "Requests" [ref=e251] [cursor=pointer]
+            - button "Connections" [ref=e252] [cursor=pointer]
+            - button "Staff" [ref=e253] [cursor=pointer]
+        - generic [ref=e254]:
+          - button "PA Portal Administrator Admin" [ref=e255] [cursor=pointer]:
+            - generic [ref=e256]: PA
+            - generic [ref=e257]:
+              - strong [ref=e258]: Portal Administrator
+              - generic [ref=e259]: Admin
+          - tablist "Social navigation" [ref=e260]:
+            - button " Home Live campus feed 1" [ref=e261] [cursor=pointer]:
+              - generic [ref=e263]: 
+              - generic [ref=e264]:
+                - strong [ref=e265]: Home
+                - generic [ref=e266]: Live campus feed
+              - emphasis [ref=e267]: "1"
+            - button " People Directory & connections" [ref=e268] [cursor=pointer]:
+              - generic [ref=e270]: 
+              - generic [ref=e271]:
+                - strong [ref=e272]: People
+                - generic [ref=e273]: Directory & connections
+            - button " Groups Courses & clubs 2" [ref=e274] [cursor=pointer]:
+              - generic [ref=e276]: 
+              - generic [ref=e277]:
+                - strong [ref=e278]: Groups
+                - generic [ref=e279]: Courses & clubs
+              - emphasis [ref=e280]: "2"
+            - button " Portfolio Student showcase feed 2" [ref=e281] [cursor=pointer]:
+              - generic [ref=e283]: 
+              - generic [ref=e284]:
+                - strong [ref=e285]: Portfolio
+                - generic [ref=e286]: Student showcase feed
+              - emphasis [ref=e287]: "2"
+            - button " Pages Official & followed" [ref=e288] [cursor=pointer]:
+              - generic [ref=e290]: 
+              - generic [ref=e291]:
+                - strong [ref=e292]: Pages
+                - generic [ref=e293]: Official & followed
+            - button " Events What's happening" [ref=e294] [cursor=pointer]:
+              - generic [ref=e296]: 
+              - generic [ref=e297]:
+                - strong [ref=e298]: Events
+                - generic [ref=e299]: What's happening
+            - button " Lost & Found Campus items" [ref=e300] [cursor=pointer]:
+              - generic [ref=e302]: 
+              - generic [ref=e303]:
+                - strong [ref=e304]: Lost & Found
+                - generic [ref=e305]: Campus items
+            - button " Messages Direct and group chats" [ref=e306] [cursor=pointer]:
+              - generic [ref=e308]: 
+              - generic [ref=e309]:
+                - strong [ref=e310]: Messages
+                - generic [ref=e311]: Direct and group chats
+            - button " Alerts Mentions and notices" [ref=e312] [cursor=pointer]:
+              - generic [ref=e314]: 
+              - generic [ref=e315]:
+                - strong [ref=e316]: Alerts
+                - generic [ref=e317]: Mentions and notices
+          - generic [ref=e318]:
+            - button " Messages" [ref=e319] [cursor=pointer]:
+              - generic [ref=e320]: 
+              - text: Messages
+            - button " Profile" [ref=e321] [cursor=pointer]:
+              - generic [ref=e322]: 
+              - text: Profile
+      - region "Find classmates, staff, and useful campus contacts." [ref=e323]:
+        - generic [ref=e324]:
+          - generic [ref=e325]: People discovery
+          - heading "Find classmates, staff, and useful campus contacts." [level=2] [ref=e326]
+          - paragraph [ref=e327]: 10 people / 0 connections / 0 requests
+          - generic [ref=e328]:
+            - button " People" [ref=e329] [cursor=pointer]:
+              - generic [ref=e330]: 
+              - generic [ref=e331]: People
+            - button " Requests" [ref=e332] [cursor=pointer]:
+              - generic [ref=e333]: 
+              - generic [ref=e334]: Requests
+            - button " Staff" [ref=e335] [cursor=pointer]:
+              - generic [ref=e336]: 
+              - generic [ref=e337]: Staff
+        - generic [ref=e338]:
+          - generic [ref=e339]:
+            - article [ref=e340]:
+              - strong [ref=e341]: "10"
+              - generic [ref=e342]: People
+            - article [ref=e343]:
+              - strong
+              - generic [ref=e344]: Connections
+            - article [ref=e345]:
+              - strong
+              - generic [ref=e346]: Pending
+          - generic [ref=e347]:
+            - article [ref=e348]:
+              - generic [ref=e350]: 
+              - generic [ref=e351]:
+                - strong [ref=e352]: Search by role
+                - generic [ref=e353]: Use filters to find students, professors, TAs, and staff faster.
+            - article [ref=e354]:
+              - generic [ref=e356]: 
+              - generic [ref=e357]:
+                - strong [ref=e358]: Manage requests
+                - generic [ref=e359]: Approve or decline connection requests from one clean area.
+            - article [ref=e360]:
+              - generic [ref=e362]: 
+              - generic [ref=e363]:
+                - strong [ref=e364]: Start a chat
+                - generic [ref=e365]: Open a direct message from every person card.
+      - generic [ref=e134]:
+        - generic [ref=e366]:
+          - generic [ref=e367]:
+            - generic [ref=e369]:
+              - strong [ref=e370]:
+                - generic [ref=e371]: 
+                - text: Community overview
+              - generic [ref=e372]: People suggestions, verified staff, and shared-context shortcuts in one place.
+            - generic [ref=e373]:
+              - generic [ref=e374]:
+                - strong [ref=e375]: "10"
+                - generic [ref=e376]: Profiles
+              - generic [ref=e377]:
+                - strong [ref=e378]: "10"
+                - generic [ref=e379]: Suggested
+              - generic [ref=e380]:
+                - strong
+                - generic [ref=e381]: Requests
+              - generic [ref=e382]:
+                - strong
+                - generic [ref=e383]: Connections
+          - generic [ref=e384]:
+            - generic [ref=e385]:
+              - generic [ref=e386]:
+                - strong [ref=e387]: People
+                - generic [ref=e388]: Find classmates, staff, and collaborators with shared context.
+              - generic [ref=e389]:
+                - strong [ref=e390]: "10"
+                - generic [ref=e391]: Profiles
+            - generic [ref=e392]:
+              - searchbox "Search people..." [ref=e393]
+              - text: 
+            - generic [ref=e394]:
+              - generic [ref=e395]:
+                - strong [ref=e396]: "10"
+                - generic [ref=e397]: Profiles
+              - generic [ref=e398]:
+                - strong [ref=e399]: "10"
+                - generic [ref=e400]: Suggested
+              - generic [ref=e401]:
+                - strong [ref=e402]: "6"
+                - generic [ref=e403]: Staff
+            - generic [ref=e404]:
+              - article [ref=e405]:
+                - generic [ref=e406]:
+                  - generic [ref=e407]: QP
+                  - generic [ref=e408]:
+                    - generic [ref=e409]:
+                      - generic [ref=e410]:
+                        - strong [ref=e411]: QA Prof Alpha
+                        - generic [ref=e412]: Professor / Business Management
+                      - generic [ref=e413]: 0% complete
+                    - generic [ref=e414]:
+                      - generic [ref=e415]: Professor
+                      - generic [ref=e416]: Verified staff
+                      - generic [ref=e417]: Club lead
+                      - generic [ref=e418]: Last posted 2026-04-29
+                    - generic [ref=e419]: Same faculty
+                    - generic [ref=e420]: Same faculty
+                    - generic [ref=e422]: qa.prof.alpha@kiu.edu.ge
+                - generic [ref=e423]:
+                  - generic [ref=e424]:
+                    - button "Message" [ref=e425] [cursor=pointer]
+                    - button "Add friend" [ref=e426] [cursor=pointer]
+                  - generic [ref=e427]:
+                    - button " View profile" [ref=e428] [cursor=pointer]:
+                      - generic [ref=e429]: 
+                      - text: View profile
+                    - button "@ Mention" [ref=e430] [cursor=pointer]:
+                      - generic [ref=e431]: "@"
+                      - text: Mention
+                    - button " Invite to group" [ref=e432] [cursor=pointer]:
+                      - generic [ref=e433]: 
+                      - text: Invite to group
+                    - button " Study chat" [ref=e434] [cursor=pointer]:
+                      - generic [ref=e435]: 
+                      - text: Study chat
+              - article [ref=e436]:
+                - generic [ref=e437]:
+                  - generic [ref=e438]: QP
+                  - generic [ref=e439]:
+                    - generic [ref=e440]:
+                      - generic [ref=e441]:
+                        - strong [ref=e442]: QA Prof Beta
+                        - generic [ref=e443]: Professor / Computer Science
+                      - generic [ref=e444]: 0% complete
+                    - generic [ref=e445]:
+                      - generic [ref=e446]: Professor
+                      - generic [ref=e447]: Verified staff
+                      - generic [ref=e448]: New to social
+                    - generic [ref=e449]: Campus member
+                    - generic [ref=e450]: Campus suggestion
+                    - generic [ref=e452]: qa.prof.beta@kiu.edu.ge
+                - generic [ref=e453]:
+                  - generic [ref=e454]:
+                    - button "Message" [ref=e455] [cursor=pointer]
+                    - button "Add friend" [ref=e456] [cursor=pointer]
+                  - generic [ref=e457]:
+                    - button " View profile" [ref=e458] [cursor=pointer]:
+                      - generic [ref=e459]: 
+                      - text: View profile
+                    - button "@ Mention" [ref=e460] [cursor=pointer]:
+                      - generic [ref=e461]: "@"
+                      - text: Mention
+                    - button " Invite to group" [ref=e462] [cursor=pointer]:
+                      - generic [ref=e463]: 
+                      - text: Invite to group
+                    - button " Study chat" [ref=e464] [cursor=pointer]:
+                      - generic [ref=e465]: 
+                      - text: Study chat
+              - article [ref=e466]:
+                - generic [ref=e467]:
+                  - generic [ref=e468]: QS
+                  - generic [ref=e469]:
+                    - generic [ref=e470]:
+                      - generic [ref=e471]:
+                        - strong [ref=e472]: QA Service Alpha
+                        - generic [ref=e473]: Student Service / Business Management
+                      - generic [ref=e474]: 0% complete
+                    - generic [ref=e475]:
+                      - generic [ref=e476]: Student Service
+                      - generic [ref=e477]: Verified staff
+                      - generic [ref=e478]: New to social
+                    - generic [ref=e479]: Same faculty
+                    - generic [ref=e480]: Same faculty
+                    - generic [ref=e482]: qa.service.alpha@kiu.edu.ge
+                - generic [ref=e483]:
+                  - generic [ref=e484]:
+                    - button "Message" [ref=e485] [cursor=pointer]
+                    - button "Add friend" [ref=e486] [cursor=pointer]
+                  - generic [ref=e487]:
+                    - button " View profile" [ref=e488] [cursor=pointer]:
+                      - generic [ref=e489]: 
+                      - text: View profile
+                    - button "@ Mention" [ref=e490] [cursor=pointer]:
+                      - generic [ref=e491]: "@"
+                      - text: Mention
+                    - button " Invite to group" [ref=e492] [cursor=pointer]:
+                      - generic [ref=e493]: 
+                      - text: Invite to group
+                    - button " Study chat" [ref=e494] [cursor=pointer]:
+                      - generic [ref=e495]: 
+                      - text: Study chat
+              - article [ref=e496]:
+                - generic [ref=e497]:
+                  - generic [ref=e498]: QS
+                  - generic [ref=e499]:
+                    - generic [ref=e500]:
+                      - generic [ref=e501]:
+                        - strong [ref=e502]: QA Service Beta
+                        - generic [ref=e503]: Student Service / Computer Science
+                      - generic [ref=e504]: 0% complete
+                    - generic [ref=e505]:
+                      - generic [ref=e506]: Student Service
+                      - generic [ref=e507]: Verified staff
+                      - generic [ref=e508]: New to social
+                    - generic [ref=e509]: Campus member
+                    - generic [ref=e510]: Campus suggestion
+                    - generic [ref=e512]: qa.service.beta@kiu.edu.ge
+                - generic [ref=e513]:
+                  - generic [ref=e514]:
+                    - button "Message" [ref=e515] [cursor=pointer]
+                    - button "Add friend" [ref=e516] [cursor=pointer]
+                  - generic [ref=e517]:
+                    - button " View profile" [ref=e518] [cursor=pointer]:
+                      - generic [ref=e519]: 
+                      - text: View profile
+                    - button "@ Mention" [ref=e520] [cursor=pointer]:
+                      - generic [ref=e521]: "@"
+                      - text: Mention
+                    - button " Invite to group" [ref=e522] [cursor=pointer]:
+                      - generic [ref=e523]: 
+                      - text: Invite to group
+                    - button " Study chat" [ref=e524] [cursor=pointer]:
+                      - generic [ref=e525]: 
+                      - text: Study chat
+              - article [ref=e526]:
+                - generic [ref=e527]:
+                  - generic [ref=e528]: QS
+                  - generic [ref=e529]:
+                    - generic [ref=e530]:
+                      - generic [ref=e531]:
+                        - strong [ref=e532]: QA Student Alpha
+                        - generic [ref=e533]: Student / Business Management
+                      - generic [ref=e534]: 0% complete
+                    - generic [ref=e535]:
+                      - generic [ref=e536]: Club lead
+                      - generic [ref=e537]: New to social
+                    - generic [ref=e538]: Same faculty
+                    - generic [ref=e539]: Same faculty
+                - generic [ref=e540]:
+                  - generic [ref=e541]:
+                    - button "Message" [ref=e542] [cursor=pointer]
+                    - button "Add friend" [ref=e543] [cursor=pointer]
+                  - generic [ref=e544]:
+                    - button " View profile" [ref=e545] [cursor=pointer]:
+                      - generic [ref=e546]: 
+                      - text: View profile
+                    - button "@ Mention" [ref=e547] [cursor=pointer]:
+                      - generic [ref=e548]: "@"
+                      - text: Mention
+                    - button " Invite to group" [ref=e549] [cursor=pointer]:
+                      - generic [ref=e550]: 
+                      - text: Invite to group
+                    - button " Study chat" [ref=e551] [cursor=pointer]:
+                      - generic [ref=e552]: 
+                      - text: Study chat
+              - article [ref=e553]:
+                - generic [ref=e554]:
+                  - generic [ref=e555]: QS
+                  - generic [ref=e556]:
+                    - generic [ref=e557]:
+                      - generic [ref=e558]:
+                        - strong [ref=e559]: QA Student Beta
+                        - generic [ref=e560]: Student / Computer Science
+                      - generic [ref=e561]: 0% complete
+                    - generic [ref=e563]: New to social
+                    - generic [ref=e564]: Campus member
+                    - generic [ref=e565]: Campus suggestion
+                - generic [ref=e566]:
+                  - generic [ref=e567]:
+                    - button "Message" [ref=e568] [cursor=pointer]
+                    - button "Add friend" [ref=e569] [cursor=pointer]
+                  - generic [ref=e570]:
+                    - button " View profile" [ref=e571] [cursor=pointer]:
+                      - generic [ref=e572]: 
+                      - text: View profile
+                    - button "@ Mention" [ref=e573] [cursor=pointer]:
+                      - generic [ref=e574]: "@"
+                      - text: Mention
+                    - button " Invite to group" [ref=e575] [cursor=pointer]:
+                      - generic [ref=e576]: 
+                      - text: Invite to group
+                    - button " Study chat" [ref=e577] [cursor=pointer]:
+                      - generic [ref=e578]: 
+                      - text: Study chat
+              - article [ref=e579]:
+                - generic [ref=e580]:
+                  - generic [ref=e581]: QS
+                  - generic [ref=e582]:
+                    - generic [ref=e583]:
+                      - generic [ref=e584]:
+                        - strong [ref=e585]: QA Student Delta
+                        - generic [ref=e586]: Student / Medicine
+                      - generic [ref=e587]: 0% complete
+                    - generic [ref=e589]: New to social
+                    - generic [ref=e590]: Campus member
+                    - generic [ref=e591]: Campus suggestion
+                - generic [ref=e592]:
+                  - generic [ref=e593]:
+                    - button "Message" [ref=e594] [cursor=pointer]
+                    - button "Add friend" [ref=e595] [cursor=pointer]
+                  - generic [ref=e596]:
+                    - button " View profile" [ref=e597] [cursor=pointer]:
+                      - generic [ref=e598]: 
+                      - text: View profile
+                    - button "@ Mention" [ref=e599] [cursor=pointer]:
+                      - generic [ref=e600]: "@"
+                      - text: Mention
+                    - button " Invite to group" [ref=e601] [cursor=pointer]:
+                      - generic [ref=e602]: 
+                      - text: Invite to group
+                    - button " Study chat" [ref=e603] [cursor=pointer]:
+                      - generic [ref=e604]: 
+                      - text: Study chat
+              - article [ref=e605]:
+                - generic [ref=e606]:
+                  - generic [ref=e607]: QS
+                  - generic [ref=e608]:
+                    - generic [ref=e609]:
+                      - generic [ref=e610]:
+                        - strong [ref=e611]: QA Student Gamma
+                        - generic [ref=e612]: Student / Law
+                      - generic [ref=e613]: 0% complete
+                    - generic [ref=e615]: New to social
+                    - generic [ref=e616]: Campus member
+                    - generic [ref=e617]: Campus suggestion
+                - generic [ref=e618]:
+                  - generic [ref=e619]:
+                    - button "Message" [ref=e620] [cursor=pointer]
+                    - button "Add friend" [ref=e621] [cursor=pointer]
+                  - generic [ref=e622]:
+                    - button " View profile" [ref=e623] [cursor=pointer]:
+                      - generic [ref=e624]: 
+                      - text: View profile
+                    - button "@ Mention" [ref=e625] [cursor=pointer]:
+                      - generic [ref=e626]: "@"
+                      - text: Mention
+                    - button " Invite to group" [ref=e627] [cursor=pointer]:
+                      - generic [ref=e628]: 
+                      - text: Invite to group
+                    - button " Study chat" [ref=e629] [cursor=pointer]:
+                      - generic [ref=e630]: 
+                      - text: Study chat
+              - article [ref=e631]:
+                - generic [ref=e632]:
+                  - generic [ref=e633]: QT
+                  - generic [ref=e634]:
+                    - generic [ref=e635]:
+                      - generic [ref=e636]:
+                        - strong [ref=e637]: QA TA Alpha
+                        - generic [ref=e638]: Teaching Assistant / Business Management
+                      - generic [ref=e639]: 0% complete
+                    - generic [ref=e640]:
+                      - generic [ref=e641]: TA
+                      - generic [ref=e642]: Verified staff
+                      - generic [ref=e643]: New to social
+                    - generic [ref=e644]: Same faculty
+                    - generic [ref=e645]: Same faculty
+                    - generic [ref=e647]: qa.ta.alpha@kiu.edu.ge
+                - generic [ref=e648]:
+                  - generic [ref=e649]:
+                    - button "Message" [ref=e650] [cursor=pointer]
+                    - button "Add friend" [ref=e651] [cursor=pointer]
+                  - generic [ref=e652]:
+                    - button " View profile" [ref=e653] [cursor=pointer]:
+                      - generic [ref=e654]: 
+                      - text: View profile
+                    - button "@ Mention" [ref=e655] [cursor=pointer]:
+                      - generic [ref=e656]: "@"
+                      - text: Mention
+                    - button " Invite to group" [ref=e657] [cursor=pointer]:
+                      - generic [ref=e658]: 
+                      - text: Invite to group
+                    - button " Study chat" [ref=e659] [cursor=pointer]:
+                      - generic [ref=e660]: 
+                      - text: Study chat
+              - article [ref=e661]:
+                - generic [ref=e662]:
+                  - generic [ref=e663]: QT
+                  - generic [ref=e664]:
+                    - generic [ref=e665]:
+                      - generic [ref=e666]:
+                        - strong [ref=e667]: QA TA Beta
+                        - generic [ref=e668]: Teaching Assistant / Computer Science
+                      - generic [ref=e669]: 0% complete
+                    - generic [ref=e670]:
+                      - generic [ref=e671]: TA
+                      - generic [ref=e672]: Verified staff
+                      - generic [ref=e673]: New to social
+                    - generic [ref=e674]: Campus member
+                    - generic [ref=e675]: Campus suggestion
+                    - generic [ref=e677]: qa.ta.beta@kiu.edu.ge
+                - generic [ref=e678]:
+                  - generic [ref=e679]:
+                    - button "Message" [ref=e680] [cursor=pointer]
+                    - button "Add friend" [ref=e681] [cursor=pointer]
+                  - generic [ref=e682]:
+                    - button " View profile" [ref=e683] [cursor=pointer]:
+                      - generic [ref=e684]: 
+                      - text: View profile
+                    - button "@ Mention" [ref=e685] [cursor=pointer]:
+                      - generic [ref=e686]: "@"
+                      - text: Mention
+                    - button " Invite to group" [ref=e687] [cursor=pointer]:
+                      - generic [ref=e688]: 
+                      - text: Invite to group
+                    - button " Study chat" [ref=e689] [cursor=pointer]:
+                      - generic [ref=e690]: 
+                      - text: Study chat
+        - complementary [ref=e691]:
+          - generic [ref=e692]:
+            - strong [ref=e695]: Pending Requests
+            - generic [ref=e697]: No requests waiting.
+          - generic [ref=e698]:
+            - strong [ref=e701]: Recommended
+            - generic [ref=e702]:
+              - article [ref=e703]:
+                - generic [ref=e704]:
+                  - strong [ref=e705]: asd Workspace
+                  - generic [ref=e706]: 1 members
+                - button "Open" [ref=e707] [cursor=pointer]
+              - article [ref=e708]:
+                - generic [ref=e709]:
+                  - strong [ref=e710]: rewr Workspace
+                  - generic [ref=e711]: 1 members
+                - button "Open" [ref=e712] [cursor=pointer]
+              - article [ref=e713]:
+                - generic [ref=e714]:
+                  - strong [ref=e715]: test
+                  - generic [ref=e716]: test
+                - button "Open" [ref=e717] [cursor=pointer]
+          - generic [ref=e718]:
+            - strong [ref=e721]: Campus Now
+            - generic [ref=e723]: No live activity scheduled.
+  - text:                         
+  - complementary:
+    - generic:
+      - generic: K
+      - generic:
+        - generic: KIU
+        - generic: Integrated Campus Portal
+    - generic:
+      - generic: Control
+      - button " Dashboard":
+        - generic: 
+        - generic: Dashboard
+      - button " Admin Tools":
+        - generic: 
+        - generic: Admin Tools
+      - button " Scheduler":
+        - generic: 
+        - generic: Scheduler
+      - button " Staff":
+        - generic: 
+        - generic: Staff
+      - button " Students":
+        - generic: 
+        - generic: Students
+      - generic: Systems
+      - button " News":
+        - generic: 
+        - generic: News
+      - button " Library":
+        - generic: 
+        - generic: Library
+      - button " Orders":
+        - generic: 
+        - generic: Orders
+      - button " Social":
+        - generic: 
+        - generic: Social
+      - button " Exams":
+        - generic: 
+        - generic: Exams
+      - button " Programs":
+        - generic: 
+        - generic: Programs
+      - button " Profile":
+        - generic: 
+        - generic: Profile
+    - generic:
+      - generic: PA
+      - generic:
+        - generic: Portal Administrator
+        - generic: Admin View - Business Management
+  - generic [ref=e200]:
+    - generic [ref=e201]:
+      - button "Show nav" [pressed] [ref=e202] [cursor=pointer]:
+        - generic [ref=e203]: Show nav
+      - generic [ref=e204]:
+        - text: KIU
+        - generic [ref=e205]: 
+        - strong [ref=e206]: Social
+      - generic [ref=e207]:
+        - generic [ref=e208]: 
+        - textbox "Search modules, staff, documents, requests..." [ref=e209]
+    - generic [ref=e210]:
+      - button "Faculty Management " [ref=e212] [cursor=pointer]:
+        - generic [ref=e213]: Faculty
+        - strong [ref=e214]: Management
+        - generic [ref=e215]: 
+      - button "View Admin View " [ref=e217] [cursor=pointer]:
+        - generic [ref=e218]: View
+        - strong [ref=e219]: Admin View
+        - generic [ref=e220]: 
+      - text: 
+      - button "" [ref=e221] [cursor=pointer]:
+        - generic [ref=e222]: 
+      - button " 0" [ref=e224] [cursor=pointer]:
+        - generic [ref=e225]: 
+        - generic: "0"
+      - button " 0" [ref=e227] [cursor=pointer]:
+        - generic [ref=e228]: 
+        - generic: "0"
+      - button "PA Portal Social / Admin View" [ref=e229] [cursor=pointer]:
+        - generic [ref=e230]: PA
+        - generic [ref=e231]:
+          - generic [ref=e232]: Portal
+          - generic [ref=e233]: Social / Admin View
+        - generic [ref=e234]: 

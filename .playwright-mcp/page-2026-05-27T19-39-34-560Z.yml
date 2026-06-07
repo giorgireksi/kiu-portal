@@ -1,0 +1,42 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e4]:
+    - generic [ref=e6]:
+      - generic [ref=e7]:
+        - generic [ref=e8]: Campus Social Network
+        - heading "Messages" [level=1] [ref=e9]
+        - paragraph [ref=e10]: Keep direct threads and group rooms moving without losing sight of the wider social inbox.
+        - generic [ref=e11]:
+          - generic [ref=e12]:
+            - strong [ref=e13]: "0"
+            - generic [ref=e14]: Chats
+          - generic [ref=e15]:
+            - strong [ref=e16]: "0"
+            - generic [ref=e17]: Unread
+          - generic [ref=e18]:
+            - strong [ref=e19]: Idle
+            - generic [ref=e20]: Active call
+        - generic [ref=e21]:
+          - button "Chats" [pressed] [ref=e22] [cursor=pointer]
+          - button "Unread" [ref=e23] [cursor=pointer]
+          - button "Alerts" [ref=e24] [cursor=pointer]
+      - generic [ref=e25]:
+        - button "PA Portal Administrator Admin" [ref=e26] [cursor=pointer]:
+          - generic [ref=e27]: PA
+          - generic [ref=e28]:
+            - strong [ref=e29]: Portal Administrator
+            - generic [ref=e30]: Admin
+        - generic [ref=e31]:
+          - button " Profile" [ref=e32] [cursor=pointer]:
+            - generic [ref=e33]: 
+            - text: Profile
+          - button " Menu" [ref=e34] [cursor=pointer]:
+            - generic [ref=e35]: 
+            - text: Menu
+    - generic:      
+    - generic [ref=e36]:
+      - generic:            
+      - generic [ref=e39]:
+        - generic [ref=e40]: 
+        - strong [ref=e41]: Loading Messages
+        - generic [ref=e42]: Preparing threads, group rails, and call controls.
+  - text:                         

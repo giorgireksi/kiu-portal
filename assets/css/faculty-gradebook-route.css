@@ -1,0 +1,2334 @@
+/* Faculty Gradebook route-owned styling — single source of truth: --fg-fade-* tokens */
+
+body.lux-route-faculty-gradebook.lux-unified-shell {
+    --fg-fade-surface:
+        radial-gradient(circle at 6% 0%, rgba(255, 255, 255, calc(var(--lux-color-fade-alpha, .92) * .08)), transparent 32%),
+        radial-gradient(circle at 74% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .28)), transparent 42%),
+        radial-gradient(circle at 100% 96%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .92) * .18)), transparent 40%),
+        linear-gradient(135deg,
+            rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .10)),
+            rgba(10, 15, 24, calc(var(--lux-transparency-alpha, .92) * .89)) 44%,
+            rgba(7, 10, 18, calc(var(--lux-transparency-alpha, .92) * .80)));
+    --fg-fade-surface-soft:
+        radial-gradient(circle at 12% 0%, rgba(255, 255, 255, calc(var(--lux-color-fade-alpha, .92) * .055)), transparent 30%),
+        radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .14)), transparent 34%),
+        linear-gradient(135deg,
+            rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .065)),
+            rgba(10, 15, 24, calc(var(--lux-transparency-alpha, .92) * .88)) 46%,
+            rgba(7, 10, 18, calc(var(--lux-transparency-alpha, .92) * .80)));
+    --fg-fade-control:
+        linear-gradient(180deg, rgba(255, 255, 255, calc(0.04 + var(--lux-glass-alpha, .06))), rgba(255, 255, 255, 0.02)),
+        radial-gradient(circle at top right, rgba(var(--lux-accent-rgb), 0.10), transparent 32%);
+    --fg-fade-chip: var(--fg-fade-surface-soft);
+    --fg-fade-border: rgba(var(--lux-accent-rgb), 0.22);
+    --fg-fade-border-soft: rgba(255, 255, 255, 0.10);
+    --fg-fade-shadow:
+        0 24px 58px rgba(0, 0, 0, 0.24),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08),
+        0 0 0 1px rgba(var(--lux-accent-rgb), 0.04);
+    --fg-fade-shadow-soft:
+        0 20px 44px rgba(0, 0, 0, 0.20),
+        inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    --fg-fade-blur: blur(var(--lux-transparency-blur, 20px)) saturate(var(--lux-transparency-saturate, 145%));
+    --fg-fade-modal:
+        radial-gradient(circle at 12% 0%, rgba(255, 255, 255, calc(var(--lux-color-fade-alpha, .92) * .08)), transparent 34%),
+        radial-gradient(circle at 88% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .16)), transparent 36%),
+        linear-gradient(155deg, rgba(10, 16, 24, calc(var(--lux-transparency-alpha, .92) * .96)), rgba(8, 12, 18, calc(var(--lux-transparency-alpha, .92) * .96)));
+    --fg-fade-row: rgba(var(--lux-glass-tint-rgb, 16, 23, 38), calc(var(--lux-raised-fill-alpha, 0.045) + 0.04));
+    --fg-fade-row-hover: rgba(var(--lux-accent-rgb), calc(0.04 + var(--lux-transparency-alpha, 0.92) * 0.06));
+    --fg-fade-danger:
+        linear-gradient(180deg, rgba(220, 116, 116, 0.18), rgba(220, 116, 116, 0.08)),
+        rgba(120, 22, 22, 0.22);
+    --fg-fade-danger-border: rgba(248, 113, 113, 0.26);
+}
+
+body.lux-light-mode.lux-route-faculty-gradebook.lux-unified-shell,
+html.lux-light-mode body.lux-route-faculty-gradebook.lux-unified-shell {
+    --fg-fade-surface:
+        radial-gradient(circle at 6% 0%, rgba(255, 255, 255, calc(var(--lux-color-fade-alpha, .86) * .88)), transparent 34%),
+        radial-gradient(circle at 74% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .24)), transparent 42%),
+        radial-gradient(circle at 100% 96%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .86) * .14)), transparent 40%),
+        linear-gradient(135deg,
+            rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .065)),
+            rgba(255, 255, 255, calc(var(--lux-transparency-alpha, .86) * .84)) 44%,
+            rgba(247, 241, 232, calc(var(--lux-transparency-alpha, .86) * .70)));
+    --fg-fade-surface-soft:
+        radial-gradient(circle at 12% 0%, rgba(255, 255, 255, calc(var(--lux-color-fade-alpha, .86) * .62)), transparent 30%),
+        radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .14)), transparent 34%),
+        linear-gradient(135deg,
+            rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .045)),
+            rgba(255, 255, 255, calc(var(--lux-transparency-alpha, .86) * .84)) 46%,
+            rgba(247, 241, 232, calc(var(--lux-transparency-alpha, .86) * .72)));
+    --fg-fade-control:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(248, 244, 237, 0.62)),
+        radial-gradient(circle at top right, rgba(var(--lux-accent-rgb), 0.10), transparent 32%);
+    --fg-fade-border: rgba(var(--lux-accent-rgb), 0.16);
+    --fg-fade-border-soft: rgba(77, 52, 31, 0.12);
+    --fg-fade-shadow:
+        0 18px 42px rgba(73, 48, 25, 0.10),
+        inset 0 1px 0 rgba(255, 255, 255, 0.74);
+    --fg-fade-shadow-soft:
+        0 14px 30px rgba(73, 48, 25, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.62);
+    --fg-fade-modal: var(--fg-fade-surface);
+    --fg-fade-row: rgba(255, 255, 255, calc(var(--lux-raised-fill-alpha, 0.06) + 0.48));
+    --fg-fade-row-hover: rgba(var(--lux-accent-rgb), calc(0.03 + var(--lux-transparency-alpha, 0.86) * 0.05));
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .lux-summary-surface--hero {
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .lux-faculty-hero::before,
+body.lux-route-faculty-gradebook.lux-unified-shell .lux-faculty-hero::after {
+    display: none !important;
+}
+
+/* Panel shells — CSS-owned (wins over global .lux-card / .surface-card) */
+body.lux-route-faculty-gradebook.lux-unified-shell .lux-faculty-hero,
+body.lux-route-faculty-gradebook.lux-unified-shell .lux-faculty-hero-focus,
+body.lux-route-faculty-gradebook.lux-unified-shell .lux-faculty-command,
+body.lux-route-faculty-gradebook.lux-unified-shell .lux-faculty-stage,
+body.lux-route-faculty-gradebook.lux-unified-shell .lux-faculty-insight,
+body.lux-route-faculty-gradebook.lux-unified-shell .lux-faculty-filters,
+body.lux-route-faculty-gradebook.lux-unified-shell .lux-faculty-controls {
+    background: var(--fg-fade-surface) !important;
+    border: 1px solid var(--fg-fade-border) !important;
+    box-shadow: var(--fg-fade-shadow) !important;
+    backdrop-filter: var(--fg-fade-blur) !important;
+    -webkit-backdrop-filter: var(--fg-fade-blur) !important;
+}
+
+/* Soft chrome lock-in */
+body.lux-route-faculty-gradebook.lux-unified-shell :is(
+    .gb-eval-entry-card,
+    .gb-eval-section-card,
+    .gb-modern-stats > div,
+    .gb-modal-category-card,
+    .gb-modal-section,
+    .gb-modal-history-card,
+    .gb-sheet-weight-card,
+    .gb-roster-card-body,
+    .gb-student-context-bar,
+    .gb-staff-stat-grid .lux-strip-card.surface-card,
+    .gb-staff-linked-small,
+    .gb-staff-linked-quiz,
+    .gb-sheet-audit,
+    .gb-timeline-item
+) {
+    background: var(--fg-fade-surface-soft) !important;
+    border-color: var(--fg-fade-border-soft) !important;
+    box-shadow: var(--fg-fade-shadow-soft) !important;
+    backdrop-filter: var(--fg-fade-blur) !important;
+    -webkit-backdrop-filter: var(--fg-fade-blur) !important;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .lux-status-pill {
+    background: var(--fg-fade-chip) !important;
+    border: 1px solid var(--fg-fade-border-soft) !important;
+    backdrop-filter: var(--fg-fade-blur);
+    -webkit-backdrop-filter: var(--fg-fade-blur);
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell :is(
+    #faculty-filters select,
+    .gb-sheet-weight-input,
+    .gb-staff-control-grid select,
+    .gb-staff-control-grid input,
+    .gb-staff-create-grid input,
+    .gb-staff-create-grid select,
+    .gb-score-edit-card input,
+    .gb-score-edit-card textarea
+) {
+    background: var(--fg-fade-control) !important;
+    border-color: var(--fg-fade-border-soft) !important;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-modal-shell,
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-score-edit-card {
+    background: var(--fg-fade-modal) !important;
+    border-color: var(--fg-fade-border-soft) !important;
+    box-shadow: var(--fg-fade-shadow) !important;
+    backdrop-filter: var(--fg-fade-blur) !important;
+    -webkit-backdrop-filter: var(--fg-fade-blur) !important;
+}
+
+html.lux-high-transparency body.lux-route-faculty-gradebook:not(.lux-light-mode) .lux-faculty-hero,
+html.lux-high-transparency body.lux-route-faculty-gradebook:not(.lux-light-mode) .lux-faculty-command,
+html.lux-high-transparency body.lux-route-faculty-gradebook:not(.lux-light-mode) .lux-faculty-insight,
+html.lux-high-transparency body.lux-route-faculty-gradebook:not(.lux-light-mode) .lux-faculty-stage {
+    background: var(--fg-fade-surface) !important;
+    border-color: var(--fg-fade-border) !important;
+    box-shadow: var(--fg-fade-shadow) !important;
+    backdrop-filter: var(--fg-fade-blur) !important;
+    -webkit-backdrop-filter: var(--fg-fade-blur) !important;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .lux-faculty-gradebook-page {
+    display: grid;
+
+    display: grid;
+    gap: 20px;
+
+    gap: 20px;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .lux-faculty-hero-top {
+
+
+    display: grid;
+    grid-template-columns: minmax(0, 1.08fr) minmax(300px, 0.92fr);
+    gap: 22px;
+    align-items: stretch;
+}
+
+
+
+body.lux-route-faculty-gradebook.lux-unified-shell .lux-faculty-hero-main {
+
+
+    display: grid;
+    gap: 14px;
+}
+
+
+
+body.lux-route-faculty-gradebook.lux-unified-shell :is(.gb-modern-card, .gb-staff-control-card, .gb-staff-linked-small, .gb-sheet-table-shell, .gb-sheet-audit, .gb-staff-linked-quiz, .gb-staff-create-card) {
+    border: 1px solid var(--fg-fade-border-soft) !important;
+    background: var(--fg-fade-surface-soft) !important;
+    box-shadow: var(--fg-fade-shadow-soft) !important;
+    backdrop-filter: var(--fg-fade-blur) !important;
+    -webkit-backdrop-filter: var(--fg-fade-blur) !important;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell :is(.gb-modern-card, .gb-staff-control-card, .gb-staff-linked-small, .gb-sheet-table-shell, .gb-sheet-audit, .gb-staff-linked-quiz, .gb-staff-create-card):hover {
+    transform: translateY(-1px);
+    box-shadow:
+        0 28px 64px rgba(0, 0, 0, 0.28),
+        inset 0 1px 0 rgba(255, 255, 255, 0.10),
+        0 0 0 1px rgba(var(--lux-accent-rgb), 0.06);
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .lux-faculty-hero-focus {
+
+
+    display: grid;
+    gap: 12px;
+    align-content: start;
+    padding: 22px;
+    border-radius: 24px;
+    background: var(--fg-fade-surface) !important;
+    border: 1px solid var(--fg-fade-border) !important;
+    box-shadow: var(--fg-fade-shadow) !important;
+    backdrop-filter: var(--fg-fade-blur) !important;
+    -webkit-backdrop-filter: var(--fg-fade-blur) !important;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+
+
+body.lux-route-faculty-gradebook.lux-unified-shell .lux-faculty-hero-focus:hover {
+
+
+    transform: translateY(-2px);
+    box-shadow:
+        0 28px 64px rgba(0, 0, 0, 0.28),
+        inset 0 1px 0 rgba(255, 255, 255, 0.10),
+        0 0 0 1px rgba(var(--lux-accent-rgb), 0.06);
+    border-color: rgba(var(--lux-accent-rgb), 0.24);
+}
+
+
+
+body.lux-light-mode.lux-unified-shell.lux-route-faculty-gradebook .lux-faculty-hero-focus {
+    background: var(--fg-fade-surface) !important;
+    border-color: var(--fg-fade-border) !important;
+    box-shadow: var(--fg-fade-shadow) !important;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .lux-faculty-hero {
+
+
+    position: relative;
+    overflow: hidden;
+    padding: 28px;
+    border-radius: 26px;
+    background: var(--fg-fade-surface) !important;
+    border: 1px solid var(--fg-fade-border) !important;
+    box-shadow: var(--fg-fade-shadow) !important;
+    backdrop-filter: var(--fg-fade-blur) !important;
+    -webkit-backdrop-filter: var(--fg-fade-blur) !important;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+
+
+body.lux-route-faculty-gradebook.lux-unified-shell .lux-faculty-hero::after {
+
+
+    display: none !important;
+}
+
+
+
+
+body.lux-route-faculty-gradebook.lux-unified-shell .lux-faculty-hero::before,
+body.lux-route-faculty-gradebook.lux-unified-shell .lux-faculty-hero::after {
+    display: none !important;
+}
+
+
+
+body.lux-route-faculty-gradebook.lux-unified-shell .lux-faculty-hero:hover {
+
+
+    transform: translateY(-2px);
+    box-shadow:
+        0 28px 64px rgba(0, 0, 0, 0.28),
+        inset 0 1px 0 rgba(255, 255, 255, 0.12),
+        0 0 0 1px rgba(var(--lux-accent-rgb), 0.06);
+    border-color: rgba(var(--lux-accent-rgb), 0.24);
+}
+
+
+
+body.lux-light-mode.lux-unified-shell.lux-route-faculty-gradebook .lux-faculty-hero {
+    background: var(--fg-fade-surface) !important;
+    border-color: var(--fg-fade-border) !important;
+    box-shadow: var(--fg-fade-shadow) !important;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell :is(.lux-faculty-focus-kicker, .lux-faculty-insight-label, .gb-modern-kicker, .gb-sheet-audit-head, .gb-sheet-weight-label) {
+
+    color: var(--lux-text-muted);
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+
+    text-transform: uppercase;
+}
+
+
+
+body.lux-route-faculty-gradebook.lux-unified-shell .lux-faculty-insight-value {
+
+
+    color: var(--lux-text);
+    font-size: clamp(22px, 2vw, 30px);
+    font-weight: 850;
+    line-height: 1.08;
+}
+
+
+
+body.lux-route-faculty-gradebook.lux-unified-shell :is(.lux-faculty-focus-copy, .lux-faculty-command-head p, .lux-faculty-insight p, .gb-sheet-copy, .gb-sheet-weight-note, .gb-staff-control-copy, .gb-staff-hero p) {
+
+    color: var(--lux-text-muted);
+    font-size: 13px;
+    line-height: 1.6;
+
+    line-height: 1.6;
+}
+
+
+
+body.lux-route-faculty-gradebook.lux-unified-shell .lux-faculty-insight-list {
+
+
+    display: grid;
+    gap: 8px;
+}
+
+
+
+body.lux-route-faculty-gradebook.lux-unified-shell :is(.lux-faculty-focus-meta span, .lux-faculty-insight-list span) {
+
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 38px;
+    padding: 0 12px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--lux-text);
+
+    color: var(--lux-text);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+
+
+body.lux-route-faculty-gradebook.lux-unified-shell .lux-faculty-command {
+
+
+    display: grid;
+    gap: 18px;
+    padding: 24px;
+    background: var(--fg-fade-surface) !important;
+    border: 1px solid var(--fg-fade-border) !important;
+    box-shadow: var(--fg-fade-shadow) !important;
+    backdrop-filter: var(--fg-fade-blur) !important;
+    -webkit-backdrop-filter: var(--fg-fade-blur) !important;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+
+
+body.lux-route-faculty-gradebook.lux-unified-shell .lux-faculty-command:hover {
+
+
+    transform: translateY(-2px);
+    box-shadow:
+        0 28px 64px rgba(0, 0, 0, 0.28),
+        inset 0 1px 0 rgba(255, 255, 255, 0.10),
+        0 0 0 1px rgba(var(--lux-accent-rgb), 0.06);
+    border-color: rgba(var(--lux-accent-rgb), 0.24);
+}
+
+
+
+body.lux-light-mode.lux-unified-shell.lux-route-faculty-gradebook .lux-faculty-command {
+    background: var(--fg-fade-surface) !important;
+    border-color: var(--fg-fade-border) !important;
+    box-shadow: var(--fg-fade-shadow) !important;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-staff-hero {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-letter-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 34px;
+    padding: 0 12px;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.06) !important;
+    color: var(--lux-text);
+    font-size: 11px;
+    font-weight: 800;
+    backdrop-filter: var(--fg-fade-blur) !important;
+    -webkit-backdrop-filter: var(--fg-fade-blur) !important;
+    transition: transform 0.18s ease, border-color 0.18s ease;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell :is(.lux-faculty-command-note, .lux-faculty-stage-status, .gb-status-badge, .gb-letter-badge):hover {
+
+    transform: translateY(-1px);
+    border-color: rgba(var(--lux-accent-rgb), 0.24) !important;
+}
+
+
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-letter-badge.grade-a { background: rgba(16, 185, 129, 0.15); color: #10b981; }
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-letter-badge.grade-b { background: rgba(59, 130, 246, 0.15); color: #3b82f6; }
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-letter-badge.grade-c { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-letter-badge.grade-d { background: rgba(139, 92, 246, 0.15); color: #8b5cf6; }
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-letter-badge.grade-f { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-status-badge.is-pending { background: rgba(245, 158, 11, 0.16); color: #f59e0b; }
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-status-badge.is-graded { background: rgba(16, 185, 129, 0.14); color: #10b981; }
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-status-badge.is-missing { background: rgba(148, 163, 184, 0.12); color: #94a3b8; }
+
+body.lux-route-faculty-gradebook.lux-unified-shell .lux-faculty-command-grid {
+
+
+    display: grid;
+    grid-template-columns: minmax(240px, 0.38fr) minmax(0, 1fr);
+    gap: 16px;
+    align-items: start;
+}
+
+
+
+body.lux-route-faculty-gradebook.lux-unified-shell :is(.lux-faculty-filters, .lux-faculty-controls, .gb-staff-workspace, .gb-staff-create-panel) {
+
+
+    display: grid;
+    gap: 14px;
+    background: var(--fg-fade-surface) !important;
+    border: 1px solid var(--fg-fade-border) !important;
+    box-shadow: var(--fg-fade-shadow) !important;
+    backdrop-filter: var(--fg-fade-blur) !important;
+    -webkit-backdrop-filter: var(--fg-fade-blur) !important;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+
+
+body.lux-route-faculty-gradebook.lux-unified-shell :is(.lux-faculty-filters, .lux-faculty-controls, .gb-staff-workspace, .gb-staff-create-panel):hover {
+
+
+    transform: translateY(-2px);
+    box-shadow:
+        0 28px 64px rgba(0, 0, 0, 0.28),
+        inset 0 1px 0 rgba(255, 255, 255, 0.10),
+        0 0 0 1px rgba(var(--lux-accent-rgb), 0.06);
+    border-color: rgba(var(--lux-accent-rgb), 0.24);
+}
+
+
+
+body.lux-route-faculty-gradebook.lux-unified-shell .lux-faculty-filter-title {
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--lux-text-muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 2px;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .lux-field-stack {
+    display: grid;
+    gap: 8px;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell :is(#faculty-filters select, .gb-sheet-weight-input, .gb-staff-control-grid select, .gb-staff-control-grid input, .gb-staff-create-grid input, .gb-staff-create-grid select, .gb-score-edit-card input, .gb-score-edit-card textarea) {
+    min-height: 42px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 12px;
+    padding: 0 12px;
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--lux-text);
+    transition: border-color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell :is(#faculty-filters select, .gb-sheet-weight-input, .gb-staff-control-grid select, .gb-staff-control-grid input, .gb-staff-create-grid input, .gb-staff-create-grid select, .gb-score-edit-card input, .gb-score-edit-card textarea):focus {
+    border-color: rgba(var(--lux-accent-rgb), 0.34);
+    box-shadow: 0 0 0 3px rgba(var(--lux-accent-rgb), 0.10);
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-score-edit-card textarea {
+    min-height: 86px;
+    padding: 12px;
+
+    padding: 12px;
+    resize: vertical;
+
+    resize: vertical;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .lux-faculty-insight-grid {
+
+
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+}
+
+
+
+body.lux-route-faculty-gradebook.lux-unified-shell .lux-faculty-insight-grid > .lux-faculty-insight:nth-child(1) {
+
+
+    transition-delay: 0s;
+}
+
+
+
+body.lux-route-faculty-gradebook.lux-unified-shell .lux-faculty-insight-grid > .lux-faculty-insight:nth-child(2) {
+
+
+    transition-delay: 0.04s;
+}
+
+
+
+body.lux-route-faculty-gradebook.lux-unified-shell .lux-faculty-insight-grid > .lux-faculty-insight:nth-child(3) {
+
+
+    transition-delay: 0.08s;
+}
+
+
+
+body.lux-route-faculty-gradebook.lux-unified-shell .lux-faculty-insight {
+
+
+    display: grid;
+    gap: 10px;
+    padding: 20px;
+    border-radius: 22px;
+    background: var(--fg-fade-surface) !important;
+    border: 1px solid var(--fg-fade-border) !important;
+    box-shadow: var(--fg-fade-shadow) !important;
+    backdrop-filter: var(--fg-fade-blur) !important;
+    -webkit-backdrop-filter: var(--fg-fade-blur) !important;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+
+
+body.lux-route-faculty-gradebook.lux-unified-shell .lux-faculty-insight:hover {
+
+
+    transform: translateY(-2px);
+    box-shadow:
+        0 28px 64px rgba(0, 0, 0, 0.28),
+        inset 0 1px 0 rgba(255, 255, 255, 0.10),
+        0 0 0 1px rgba(var(--lux-accent-rgb), 0.06);
+    border-color: rgba(var(--lux-accent-rgb), 0.24);
+}
+
+
+
+body.lux-light-mode.lux-unified-shell.lux-route-faculty-gradebook .lux-faculty-insight {
+    background: var(--fg-fade-surface) !important;
+    border-color: rgba(var(--lux-accent-rgb), 0.16) !important;
+    box-shadow:
+        0 18px 42px rgba(73, 48, 25, 0.10),
+        inset 0 1px 0 rgba(255, 255, 255, 0.74);
+}
+
+body.lux-light-mode.lux-unified-shell.lux-route-faculty-gradebook .lux-faculty-insight:hover {
+    box-shadow:
+        0 22px 50px rgba(73, 48, 25, 0.14),
+        inset 0 1px 0 rgba(255, 255, 255, 0.78),
+
+        inset 0 1px 0 rgba(255, 255, 255, 0.78),
+        0 0 0 1px rgba(var(--lux-accent-rgb), 0.10);
+
+        0 0 0 1px rgba(var(--lux-accent-rgb), 0.10);
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .lux-faculty-stage {
+
+
+    display: grid;
+    gap: 18px;
+    padding: 24px;
+    border-radius: 24px;
+    background: var(--fg-fade-surface) !important;
+    border: 1px solid var(--fg-fade-border) !important;
+    box-shadow: var(--fg-fade-shadow) !important;
+    backdrop-filter: var(--fg-fade-blur) !important;
+    -webkit-backdrop-filter: var(--fg-fade-blur) !important;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+
+
+body.lux-route-faculty-gradebook.lux-unified-shell .lux-faculty-stage:hover {
+
+
+    transform: translateY(-1px);
+    box-shadow:
+        0 28px 64px rgba(0, 0, 0, 0.28),
+        inset 0 1px 0 rgba(255, 255, 255, 0.10),
+        0 0 0 1px rgba(var(--lux-accent-rgb), 0.06);
+    border-color: rgba(var(--lux-accent-rgb), 0.24);
+}
+
+
+
+body.lux-light-mode.lux-unified-shell.lux-route-faculty-gradebook .lux-faculty-stage {
+    background: var(--fg-fade-surface) !important;
+    border-color: var(--fg-fade-border) !important;
+    box-shadow: var(--fg-fade-shadow) !important;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell :is(.lux-roster-view, .lux-spreadsheet-view, #gradebook-spreadsheet-view) {
+    display: grid;
+    gap: 16px;
+    min-width: 0;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .lux-spreadsheet-view[hidden] {
+    display: none !important;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .lux-faculty-controls-row {
+
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    justify-content: space-between;
+}
+
+
+
+body.lux-route-faculty-gradebook.lux-unified-shell .lux-faculty-controls-actions {
+
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+
+
+body.lux-route-faculty-gradebook.lux-unified-shell .lux-faculty-overview-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-sheet-head {
+    display: grid;
+    gap: 6px;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-sheet-title {
+    color: var(--lux-text);
+    font-size: 20px;
+    font-weight: 900;
+    letter-spacing: -0.02em;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-sheet-weight-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-sheet-audit {
+    display: grid;
+    gap: 8px;
+    padding: 16px;
+    border-radius: 18px;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-sheet-weight-label {
+    display: grid;
+    gap: 6px;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-sheet-weight-note {
+    font-size: 11px;
+    font-weight: 800;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-weight-shell {
+    min-width: 320px;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-weight-shell-readonly {
+    min-width: 280px;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell :is(.gb-weight-label, .gb-weight-field-label) {
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-weight-pill-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-history-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-weight-pill {
+    background: rgba(var(--lux-accent-rgb), 0.10);
+    border: 1px solid rgba(var(--lux-accent-rgb), 0.18);
+    color: var(--lux-text);
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell :is(.gb-history-chip-empty, .gb-weight-total) {
+    font-size: 11px;
+    font-weight: 800;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-history-chip-empty {
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-weight-total {
+    margin-top: 8px;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-weight-total.is-balanced {
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-weight-total.is-warning {
+    color: #f97316;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-weight-field-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(130px, 1fr));
+    gap: 12px;
+    margin-top: 10px;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-weight-field {
+    display: grid;
+    gap: 6px;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-weight-input {
+    min-height: 40px;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-roster-hero {
+    display: grid;
+    gap: 8px;
+    margin-bottom: 18px;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell :is(.gb-roster-eyebrow, .gb-roster-hero-title) {
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-roster-eyebrow {
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-roster-hero-title {
+    margin-top: 10px;
+    color: var(--lux-text);
+    font-size: 28px;
+    font-weight: 900;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-roster-hero-copy {
+    margin-top: 12px;
+    color: var(--lux-text-muted);
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-roster-card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-roster-card {
+    cursor: pointer;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-roster-card:hover {
+    transform: translateY(-2px);
+    box-shadow:
+        0 24px 48px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08),
+        0 0 0 1px rgba(var(--lux-accent-rgb), 0.08);
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-roster-card-hero {
+    border-radius: 0;
+    border: 0;
+    box-shadow: none;
+    min-height: 140px;
+    display: flex;
+    align-items: flex-end;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-roster-card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    width: 100%;
+    gap: 12px;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-roster-card-title {
+    font-size: 24px;
+    margin-top: 8px;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-roster-count-pill {
+    background: rgba(255, 255, 255, 0.14);
+    color: var(--lux-text);
+    border-color: rgba(255, 255, 255, 0.18);
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-roster-kv-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-roster-kv {
+    display: grid;
+    gap: 6px;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-roster-kv-label {
+    color: var(--lux-text-soft);
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-roster-kv-value {
+    color: var(--lux-text);
+    font-size: 18px;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell :is(.gb-roster-student-cell, .gb-roster-history-cell) {
+    display: grid;
+    gap: 8px;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-roster-student-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-roster-action-btn {
+    width: max-content;
+    padding: 6px 10px;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-roster-quiz-status-cell {
+    text-align: center;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-roster-linked-note {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 9px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-quiz-status-pill.is-published {
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-roster-linked-note.is-pending {
+    background: rgba(245, 158, 11, 0.16);
+    color: #f59e0b;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-quiz-status-pill.is-reviewed {
+    background: rgba(16, 185, 129, 0.14);
+    color: #10b981;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-quiz-status-pill.is-in-progress {
+    background: rgba(var(--lux-accent-rgb), 0.1);
+    color: var(--lux-accent);
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-roster-linked-summary {
+    display: grid;
+    gap: 4px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--lux-border);
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-roster-linked-summary.is-pending {
+    border-color: #fdba74;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-roster-linked-title {
+    font-size: 11px;
+    font-weight: 900;
+    color: var(--lux-text);
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-roster-linked-subtitle {
+    font-size: 10px;
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-staff-linked-subtitle {
+    margin-top: 4px;
+    font-size: 11px;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell :is(.gb-roster-head-cell--left, .gb-roster-id-cell, .gb-roster-name-cell, .gb-roster-history-column) {
+    text-align: left;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-roster-name-cell {
+    font-weight: 700;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-roster-score-cell {
+    font-weight: 700;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-roster-score-cell.is-muted {
+    color: var(--lux-text);
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-roster-score-cell.is-success {
+    color: var(--lux-accent);
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-roster-score-cell.is-info {
+    color: var(--lux-accent);
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-roster-score-cell.is-warning {
+    color: #f59e0b;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-roster-score-cell.is-danger {
+    color: #ef4444;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-roster-letter-cell {
+    font-weight: 700;
+    font-size: 14px;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-roster-history-column {
+    line-height: 1.6;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell :is(.gb-eval-entry-card, .gb-eval-section-card) {
+    border-radius: 14px;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-eval-entry-card {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px 14px;
+    border: 1px solid var(--fg-fade-border-soft) !important;
+    background: var(--fg-fade-surface-soft) !important;
+    box-shadow: 0 20px 44px rgba(0, 0, 0, 0.20), inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
+    backdrop-filter: var(--fg-fade-blur) !important;
+    -webkit-backdrop-filter: var(--fg-fade-blur) !important;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-eval-entry-card:hover {
+    transform: translateY(-1px);
+    border-color: rgba(var(--lux-accent-rgb), 0.22);
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell :is(.gb-eval-entry-head, .gb-eval-entry-actions, .gb-eval-entry-badges, .gb-eval-section-head, .gb-eval-section-actions, .gb-eval-section-badges) {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell :is(.gb-eval-entry-head, .gb-eval-section-head) {
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-eval-entry-main {
+    min-width: 0;
+    display: grid;
+    gap: 6px;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-eval-entry-title {
+    font-size: 13px;
+    font-weight: 900;
+    color: var(--lux-text);
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-eval-entry-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-eval-entry-pill.is-linked {
+    background: rgba(var(--lux-accent-rgb), 0.12);
+    color: var(--lux-accent);
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-eval-entry-pill.is-pending {
+    background: rgba(245, 158, 11, 0.16);
+    color: #f59e0b;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-eval-entry-subtitle {
+    font-size: 11px;
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-eval-entry-meta {
+    font-size: 11px;
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-eval-entry-note {
+    font-size: 11px;
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-eval-entry-actions {
+    align-items: center;
+    justify-content: flex-end;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-eval-entry-score {
+    font-size: 15px;
+    color: var(--lux-accent);
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-eval-entry-score.is-pending {
+    font-size: 12px;
+    font-weight: 800;
+    color: #f59e0b;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell :is(.gb-eval-entry-btn, .gb-eval-section-btn) {
+    padding: 5px 8px;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-eval-section-btn {
+    padding: 7px 10px;
+    font-size: 11px;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell :is(.gb-eval-entry-btn-primary, .gb-eval-section-btn-primary) {
+    color: #fff;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell :is(.gb-eval-entry-btn-danger, .gb-eval-section-btn-danger) {
+    color: #ef4444;
+    border-color: rgba(239, 68, 68, 0.25);
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-eval-entry-input {
+    width: 96px;
+    padding: 7px 9px;
+    border: 1px solid var(--lux-border);
+    border-radius: 10px;
+    outline: none;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-eval-entry-history {
+    padding-top: 8px;
+    border-top: 1px dashed var(--lux-border);
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-eval-entry-history-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 3px 0;
+    font-size: 11px;
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-eval-entry-history-score {
+    color: var(--lux-text);
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-eval-empty-inline {
+    padding: 4px 0;
+    font-size: 12px;
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-eval-section-card {
+    padding: 12px 14px;
+    border: 1px solid var(--fg-fade-border-soft) !important;
+    background: var(--fg-fade-surface-soft) !important;
+    box-shadow: 0 20px 44px rgba(0, 0, 0, 0.20), inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
+    backdrop-filter: var(--fg-fade-blur) !important;
+    -webkit-backdrop-filter: var(--fg-fade-blur) !important;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-eval-section-card:hover {
+    transform: translateY(-1px);
+    border-color: rgba(var(--lux-accent-rgb), 0.22);
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-eval-section-head {
+    margin-bottom: 10px;
+    gap: 12px;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-eval-section-kicker {
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-eval-section-current {
+    margin-top: 4px;
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--lux-accent);
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-eval-section-copy {
+    margin-top: 5px;
+    font-size: 11px;
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-eval-section-actions {
+    align-items: center;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-eval-section-body {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-sheet-controls {
+    display: grid;
+    gap: 16px;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-sheet-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 280px;
+    gap: 16px;
+    align-items: start;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-sheet-table-scroll {
+    overflow: auto;
+    max-height: 700px;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-sheet-audit-list {
+    display: grid;
+    gap: 10px;
+    max-height: 620px;
+    overflow: auto;
+    font-size: 12px;
+    line-height: 1.6;
+    color: var(--lux-text);
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-sheet-audit-entry {
+    color: var(--lux-text);
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-score-bar-fill {
+    width: var(--gb-score-width, 0%);
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-score-orbit {
+    width: 134px;
+    height: 134px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    justify-self: end;
+    background:
+        conic-gradient(var(--lux-accent) var(--gb-progress, 0deg), rgba(148,163,184,0.18) 0),
+        rgba(var(--lux-glass-tint-rgb, 248, 250, 252), 0.04);
+    box-shadow: inset 0 0 0 1px rgba(var(--lux-glass-tint-rgb, 248, 250, 252), 0.06);
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-score-orbit > div {
+    width: 102px;
+    height: 102px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    align-content: center;
+    background:
+        linear-gradient(180deg, rgba(5, 10, 19, calc(var(--lux-panel-fill-alpha, 0.08) + 0.032)), rgba(1, 5, 11, var(--lux-panel-fill-alpha, 0.08)));
+    border: 1px solid rgba(255, 255, 255, 0.10);
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-score-orbit strong {
+    font-size: 34px;
+    line-height: 1;
+    color: var(--lux-text);
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-score-orbit span {
+    color: var(--lux-text-muted);
+    font-size: 12px;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-modal-section-body {
+    display: grid;
+    gap: 14px;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell [data-gradebook-action="save"] {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell :is(.gb-sheet-audit-empty, .gb-empty-state) {
+    min-height: 140px;
+    display: grid;
+    place-items: center;
+    gap: 10px;
+    padding: 24px;
+    text-align: center;
+    color: var(--lux-text-muted);
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell :is(.gb-sheet-audit-empty i, .gb-empty-state i) {
+    font-size: 34px;
+    opacity: 0.35;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell :is(.gb-staff-actions, .gb-quick-actions) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell :is(.gb-modern-action, .gb-staff-actions button, .gb-quick-actions button, .gb-score-edit-actions button, .gb-modal-action-btn) {
+    min-height: 36px;
+    border: 1px solid rgba(255, 255, 255, 0.11);
+    border-radius: 11px;
+    padding: 8px 12px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03));
+    color: var(--lux-text);
+    font-size: 11px;
+    font-weight: 900;
+    cursor: pointer;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 16px 30px rgba(0, 0, 0, 0.12);
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell :is(.gb-modern-action, .gb-staff-actions button, .gb-quick-actions button, .gb-score-edit-actions button, .gb-modal-action-btn):hover {
+    transform: translateY(-2px);
+    border-color: rgba(var(--lux-accent-rgb), 0.22);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.04));
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell :is(.gb-modern-action, .gb-staff-actions button, .gb-quick-actions button, .gb-score-edit-actions button, .gb-modal-action-btn):active {
+    transform: translateY(1px) scale(0.99);
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell button.is-primary {
+    background: linear-gradient(135deg, color-mix(in srgb, var(--lux-accent) 92%, #fff 8%), color-mix(in srgb, var(--lux-accent-2, var(--lux-accent)) 88%, #fff 12%));
+    color: #fff;
+    border-color: transparent;
+    box-shadow: 0 20px 40px rgba(var(--lux-accent-rgb), var(--lux-button-glow, 0.42)), inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell button.is-primary:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.04);
+    box-shadow: 0 24px 48px rgba(var(--lux-accent-rgb), calc(var(--lux-button-glow, 0.42) + 0.12)), inset 0 1px 0 rgba(255, 255, 255, 0.24);
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell button.is-danger {
+    color: #fecaca;
+    border-color: rgba(239, 68, 68, 0.25);
+    background: rgba(239, 68, 68, 0.1);
+    box-shadow: 0 16px 30px rgba(239, 68, 68, 0.12);
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell button.is-danger:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 20px 38px rgba(239, 68, 68, 0.18);
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-modal-action-btn-primary {
+    color: #fff;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-modal-action-btn-danger {
+    color: #fecaca;
+    border-color: rgba(239, 68, 68, 0.25);
+    background: rgba(239, 68, 68, 0.1);
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-staff-stat-grid {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(120px, 1fr));
+    gap: 10px;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-staff-stat-grid :is(span, strong) {
+    display: block;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-staff-stat-grid span {
+    color: var(--lux-text-muted);
+    font-size: 11px;
+    font-weight: 800;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-staff-stat-grid strong {
+    margin-top: 5px;
+    color: var(--lux-text);
+    font-size: 22px;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-staff-control-grid {
+    display: grid;
+    grid-template-columns: minmax(170px, 0.35fr) 150px minmax(0, 1fr);
+    gap: 12px;
+    align-items: end;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell :is(.gb-staff-control-grid label, .gb-staff-create-grid label, .gb-score-edit-card label) {
+    display: grid;
+    gap: 7px;
+    color: var(--lux-text-muted);
+    font-size: 11px;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-staff-weight-panel {
+    display: grid;
+    grid-template-columns: minmax(320px, 0.8fr) minmax(260px, 0.6fr);
+    gap: 12px;
+    margin-top: 12px;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell :is(.gb-staff-linked-small, .gb-staff-linked-quiz) {
+    display: grid;
+    gap: 8px;
+    align-content: start;
+    padding: 14px;
+    border-radius: 16px;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-staff-create-card {
+    padding: 16px;
+    border-radius: 20px;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-staff-create-grid {
+    display: grid;
+    grid-template-columns: minmax(160px, 0.4fr) minmax(220px, 1fr) auto;
+    gap: 10px;
+    align-items: end;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-modern-card {
+    display: grid;
+    gap: 14px;
+    padding: 18px;
+    border-radius: 22px;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-modern-hero {
+    padding: 24px;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-modern-hero-main {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 150px;
+    gap: 18px;
+    align-items: center;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-modern-kicker {
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(var(--lux-accent-rgb), 0.9);
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell :is(.gb-modern-card h3, .gb-staff-hero h2) {
+    margin: 4px 0 0;
+    color: var(--lux-text);
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-modern-hero h2 {
+    margin: 7px 0 0;
+    color: var(--lux-text);
+    font-size: 32px;
+    line-height: 1.08;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell :is(.gb-modern-hero p, .gb-modern-card p) {
+    margin: 8px 0 0;
+    max-width: 720px;
+    color: var(--lux-text-muted);
+    line-height: 1.6;
+    font-size: 13px;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell :is(.gb-modern-stats, .gb-modern-grid) {
+    display: grid;
+    gap: 12px;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-modern-stats {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    margin-top: 18px;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-modern-stats > div {
+    min-height: 88px;
+    display: grid;
+    align-content: center;
+    gap: 8px;
+    padding: 14px 16px;
+    border-radius: 18px;
+    background: var(--fg-fade-surface-soft) !important;
+    border: 1px solid rgba(255, 255, 255, 0.10) !important;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-modern-stats > div:hover {
+    transform: translateY(-1px);
+    border-color: rgba(var(--lux-accent-rgb), 0.20);
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-modern-stats span {
+    color: var(--lux-text-muted);
+    font-size: 11px;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-modern-stats strong {
+    color: var(--lux-text);
+    font-size: 26px;
+    line-height: 1;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-modern-grid {
+    grid-template-columns: minmax(320px, 0.9fr) minmax(0, 1.1fr);
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-weight-stack {
+    display: grid;
+    gap: 10px;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-weight-row {
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    gap: 10px;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell :is(.gb-weight-label, .gb-weight-detail) {
+    display: grid;
+    gap: 4px;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell :is(.gb-weight-label strong, .gb-subject-cell strong) {
+    color: var(--lux-text);
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell :is(.gb-weight-label span, .gb-weight-detail span, .gb-subject-cell span) {
+    color: var(--lux-text-muted);
+    font-size: 12px;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell :is(.gb-weight-track, .gb-composition-bar) {
+    width: 100%;
+    min-height: 10px;
+    display: flex;
+    overflow: hidden;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell :is(.gb-weight-track, .gb-composition-bar) span {
+    display: block;
+    min-height: 10px;
+    width: var(--gb-track-width, 0%);
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell :is(.gb-composition-bar .is-earned, .gb-composition-legend i.is-earned) { background: #22c55e; }
+body.lux-route-faculty-gradebook.lux-unified-shell :is(.gb-composition-bar .is-pending, .gb-composition-legend i.is-pending, .gb-weight-track .is-pending) { background: #f59e0b; }
+
+body.lux-route-faculty-gradebook.lux-unified-shell :is(.gb-composition-bar .is-remaining, .gb-composition-legend i.is-remaining, .gb-weight-track .is-remaining) { background: rgba(148, 163, 184, 0.28); }
+
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-weight-track .is-earned {
+    background: #22c55e;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-weight-row--q1 .gb-weight-track .is-earned {
+    background: #38bdf8;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-weight-row--qa .gb-weight-track .is-earned {
+    background: #22c55e;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-weight-row--mid .gb-weight-track .is-earned {
+    background: #f59e0b;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-weight-row--fin .gb-weight-track .is-earned {
+    background: #ef4444;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-composition-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    color: var(--lux-text-muted);
+    font-size: 12px;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-composition-legend i {
+    display: inline-flex;
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-timeline {
+    display: grid;
+    gap: 12px;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-timeline-item {
+    display: grid;
+    grid-template-columns: 36px minmax(0, 1fr) auto;
+    gap: 12px;
+    align-items: start;
+    padding: 14px;
+    border-radius: 18px;
+    background: var(--fg-fade-surface-soft) !important;
+    border: 1px solid var(--fg-fade-border-soft) !important;
+    box-shadow: var(--fg-fade-shadow-soft) !important;
+    backdrop-filter: var(--fg-fade-blur) !important;
+    -webkit-backdrop-filter: var(--fg-fade-blur) !important;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-timeline-item:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 16px 34px rgba(0, 0, 0, 0.18);
+    border-color: rgba(var(--lux-accent-rgb), 0.18);
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-timeline-dot {
+    width: 36px;
+    height: 36px;
+    border-radius: 14px;
+    display: grid;
+    place-items: center;
+    color: var(--lux-accent);
+    background: rgba(var(--lux-accent-rgb), 0.12);
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-timeline-title {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    color: var(--lux-text);
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell :is(.gb-timeline-meta, .gb-timeline-note) {
+    margin-top: 5px;
+    color: var(--lux-text-muted);
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-timeline-score {
+    color: var(--lux-text);
+    font-size: 18px;
+    font-weight: 900;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell #gradebook-table {
+    width: 100%;
+    min-width: 900px;
+    border-collapse: separate;
+    border-spacing: 0 10px;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell #gradebook-table thead th {
+    border: 0;
+    background: transparent;
+    color: var(--lux-text-soft);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 8px 12px;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell #gradebook-table tbody td {
+    background: var(--fg-fade-row) !important;
+    border-top: 1px solid rgba(var(--lux-accent-rgb), 0.08);
+    border-bottom: 1px solid rgba(var(--lux-accent-rgb), 0.08);
+    color: var(--lux-text);
+    vertical-align: middle;
+    padding: 14px 12px;
+    transition: background 0.18s ease, border-color 0.18s ease;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell #gradebook-table tbody tr:hover td {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(var(--lux-accent-rgb), 0.16);
+}
+
+body.lux-light-mode.lux-unified-shell.lux-route-faculty-gradebook #gradebook-table tbody td {
+    background: rgba(255, 255, 255, 0.5);
+    border-color: rgba(77, 52, 31, 0.10);
+}
+
+body.lux-light-mode.lux-unified-shell.lux-route-faculty-gradebook #gradebook-table tbody tr:hover td {
+    background: rgba(255, 255, 255, 0.72);
+    border-color: rgba(77, 52, 31, 0.16);
+}
+
+body.lux-light-mode.lux-unified-shell.lux-route-faculty-gradebook :is(.lux-faculty-focus-meta span, .lux-faculty-insight-list span) {
+    background: rgba(255, 255, 255, 0.6);
+    border-color: rgba(77, 52, 31, 0.10);
+}
+
+body.lux-light-mode.lux-unified-shell.lux-route-faculty-gradebook :is(.lux-faculty-filters, .lux-faculty-controls, .gb-staff-workspace, .gb-staff-create-panel) {
+    background: var(--fg-fade-surface) !important;
+    border-color: var(--fg-fade-border) !important;
+    box-shadow: var(--fg-fade-shadow) !important;
+}
+
+body.lux-light-mode.lux-unified-shell.lux-route-faculty-gradebook :is(.gb-modern-action, .gb-staff-actions button, .gb-quick-actions button, .gb-score-edit-actions button, .gb-modal-action-btn) {
+    background: rgba(255, 255, 255, 0.6);
+    border-color: rgba(77, 52, 31, 0.12);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.74), 0 12px 24px rgba(73, 48, 25, 0.06);
+}
+
+body.lux-light-mode.lux-unified-shell.lux-route-faculty-gradebook :is(#faculty-filters select, .gb-sheet-weight-input, .gb-staff-control-grid select, .gb-staff-control-grid input, .gb-staff-create-grid input, .gb-staff-create-grid select, .gb-score-edit-card input, .gb-score-edit-card textarea) {
+    background: rgba(255, 255, 255, 0.6);
+    border-color: rgba(77, 52, 31, 0.14);
+}
+
+body.lux-light-mode.lux-unified-shell.lux-route-faculty-gradebook .gb-modal-category-card {
+    background: rgba(255, 255, 255, 0.6);
+    border-color: rgba(77, 52, 31, 0.12);
+}
+
+body.lux-light-mode.lux-unified-shell.lux-route-faculty-gradebook .gb-modal-history-card {
+    background: rgba(255, 255, 255, 0.5);
+    border-color: rgba(77, 52, 31, 0.10);
+}
+
+body.lux-light-mode.lux-unified-shell.lux-route-faculty-gradebook .gb-modal-section {
+    background: rgba(255, 255, 255, 0.5);
+    border-color: rgba(77, 52, 31, 0.10);
+}
+
+body.lux-light-mode.lux-unified-shell.lux-route-faculty-gradebook .gb-modal-shell {
+    background: var(--fg-fade-modal) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 7000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(4, 8, 16, 0.72);
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-modal-shell {
+    width: min(1120px, calc(100vw - 32px));
+    max-height: calc(100vh - 48px);
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.10) !important;
+    border-radius: 24px;
+    background: var(--fg-fade-modal) !important;
+    box-shadow: 0 30px 90px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+    color: var(--lux-text);
+    backdrop-filter: var(--fg-fade-blur) !important;
+    -webkit-backdrop-filter: var(--fg-fade-blur) !important;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-modal-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 118px auto;
+    gap: 16px;
+    align-items: center;
+    padding: 24px 26px;
+    border-bottom: 1px solid rgba(var(--lux-accent-rgb), 0.12);
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-modal-hero h2 {
+    margin: 6px 0 0;
+    color: var(--lux-text);
+    font-size: 26px;
+    line-height: 1.1;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-modal-hero p {
+    margin: 6px 0 0;
+    color: var(--lux-text-muted);
+    font-size: 13px;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-modal-score {
+    width: 108px;
+    height: 108px;
+    border-radius: 28px;
+    display: grid;
+    place-items: center;
+    align-content: center;
+    background: rgba(var(--lux-accent-rgb), 0.12);
+    border: 1px solid rgba(var(--lux-accent-rgb), 0.20);
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-modal-score strong {
+    color: var(--lux-text);
+    font-size: 32px;
+    line-height: 1;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-modal-score span {
+    margin-top: 6px;
+    color: var(--lux-text-muted);
+    font-size: 11px;
+    font-weight: 900;
+    text-align: center;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-modal-close {
+    border-radius: 14px;
+    box-shadow: 0 16px 30px rgba(var(--lux-accent-rgb), 0.18);
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-modal-body {
+    max-height: calc(100vh - 204px);
+    overflow: auto;
+    padding: 22px 24px 26px;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-modal-category-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-modal-category-card {
+    display: grid;
+    grid-template-rows: auto auto minmax(34px, auto);
+    gap: 11px;
+    min-width: 0;
+    width: 100%;
+    min-height: 132px;
+    padding: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.10) !important;
+    border-radius: 18px;
+    background:
+        linear-gradient(145deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03)),
+        rgba(8, 15, 31, 0.42) !important;
+    text-align: left;
+    font: inherit;
+    cursor: pointer;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07), 0 16px 30px rgba(0, 0, 0, 0.12) !important;
+    transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell :is(.gb-modal-category-card:hover, .gb-modal-category-card.is-active) {
+    transform: translateY(-2px);
+    border-color: rgba(var(--lux-accent-rgb), 0.35);
+    box-shadow:
+        0 20px 40px rgba(0, 0, 0, 0.18),
+        inset 0 1px 0 rgba(255, 255, 255, 0.10),
+        0 0 0 1px rgba(var(--lux-accent-rgb), 0.08);
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell :is(.gb-modal-category-top, .gb-modal-category-body) {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    min-width: 0;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-modal-category-top {
+    align-items: flex-start;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-modal-category-body {
+    align-items: center;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-modal-category-body > div {
+    display: grid;
+    gap: 4px;
+    justify-items: end;
+    min-width: 74px;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell :is(.gb-modal-category-card span, .gb-modal-category-card small) {
+    color: var(--lux-text-muted);
+    font-size: 11px;
+    font-weight: 800;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-modal-category-card > small {
+    display: none;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-modal-category-card strong {
+    color: var(--lux-text);
+    font-size: 30px;
+    line-height: 1;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-modal-category-card em {
+    flex: 0 0 auto;
+    font-style: normal;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-modal-category-latest {
+    min-width: 0;
+    padding-top: 10px;
+    border-top: 1px solid rgba(148, 163, 184, 0.14);
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-modal-category-latest span {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    white-space: normal;
+    line-height: 1.35;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-modal-history-grid {
+    display: grid;
+    gap: 14px;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-modal-section {
+    border: 1px solid var(--fg-fade-border-soft);
+    border-radius: 20px;
+    background: var(--fg-fade-surface-soft) !important;
+    backdrop-filter: var(--fg-fade-blur);
+    -webkit-backdrop-filter: var(--fg-fade-blur);
+    padding: 16px;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-modal-section-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    align-items: flex-start;
+    margin-bottom: 12px;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-modal-section-head h3 {
+    margin: 5px 0 0;
+    color: var(--lux-text);
+    font-size: 17px;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-modal-section-head p {
+    margin: 5px 0 0;
+    color: var(--lux-text-muted);
+    font-size: 12px;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell :is(.gb-modal-section-actions, .gb-modal-history-actions) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-modal-history-card {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(96px, auto);
+    gap: 14px;
+    padding: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.10) !important;
+    border-left: 4px solid rgba(148, 163, 184, 0.5);
+    border-radius: 18px;
+    background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02)),
+        rgba(8, 15, 31, 0.32) !important;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-modal-history-card:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 16px 34px rgba(0, 0, 0, 0.18);
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-modal-history-card.is-pending {
+    border-left-color: #f59e0b;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-modal-history-card.is-graded {
+    border-left-color: #22c55e;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-modal-history-main {
+    display: grid;
+    grid-template-columns: 38px minmax(0, 1fr);
+    gap: 12px;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-modal-history-icon {
+    width: 38px;
+    height: 38px;
+    display: grid;
+    place-items: center;
+    border-radius: 14px;
+    color: var(--lux-accent);
+    background: rgba(var(--lux-accent-rgb), 0.12);
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-modal-history-title {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    color: var(--lux-text);
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-modal-history-kind {
+    width: max-content;
+    margin-top: 7px;
+    padding: 5px 8px;
+    border-radius: 999px;
+    color: var(--lux-text-muted);
+    background: rgba(255, 255, 255, 0.08);
+    font-size: 10px;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell :is(.gb-modal-history-card p, .gb-modal-change-list span) {
+    margin: 5px 0 0;
+    color: var(--lux-text-muted);
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-modal-change-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 7px;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-modal-change-list span {
+    margin: 0;
+    padding: 5px 8px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-modal-history-score {
+    display: grid;
+    min-width: 96px;
+    min-height: 76px;
+    align-content: center;
+    justify-items: center;
+    gap: 5px;
+    padding: 12px;
+    border-radius: 16px;
+    border: 1px solid rgba(var(--lux-accent-rgb), 0.14);
+    background: rgba(var(--lux-accent-rgb), 0.08);
+    color: var(--lux-text-muted);
+    font-size: 11px;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-modal-history-score strong {
+    color: var(--lux-text);
+    font-size: 20px;
+    text-transform: none;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-modal-history-actions {
+    grid-column: 1 / -1;
+    padding-top: 10px;
+    border-top: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-modal-load-more {
+    min-height: 42px;
+    border: 1px dashed rgba(var(--lux-accent-rgb), 0.34);
+    border-radius: 16px;
+    background: rgba(var(--lux-accent-rgb), 0.10);
+    font-weight: 900;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-modal-load-more:hover {
+    transform: translateY(-1px);
+    background: rgba(var(--lux-accent-rgb), 0.16);
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-modal-empty {
+    min-height: 120px;
+    display: grid;
+    place-items: center;
+    gap: 7px;
+    color: var(--lux-text-muted);
+    text-align: center;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-score-edit-card {
+    width: min(460px, 100%);
+    display: grid;
+    gap: 14px;
+    padding: 20px;
+    border-radius: 22px;
+    border: 1px solid rgba(255, 255, 255, 0.10) !important;
+    background: var(--fg-fade-modal) !important;
+    box-shadow: 0 28px 80px rgba(0, 0, 0, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+    backdrop-filter: var(--fg-fade-blur) !important;
+    -webkit-backdrop-filter: var(--fg-fade-blur) !important;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-roster-card-body {
+    background: var(--fg-fade-surface-soft) !important;
+    border-top: 1px solid var(--fg-fade-border-soft);
+    border-radius: 0 0 22px 22px;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-sheet-weight-card {
+    background: var(--fg-fade-surface-soft) !important;
+    backdrop-filter: var(--fg-fade-blur) !important;
+    -webkit-backdrop-filter: var(--fg-fade-blur) !important;
+    border: 1px solid var(--fg-fade-border-soft) !important;
+    border-radius: 18px;
+    padding: 16px;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-staff-stat-grid .lux-strip-card.surface-card {
+    background: var(--fg-fade-surface-soft) !important;
+    border: 1px solid var(--fg-fade-border-soft) !important;
+    border-radius: 18px;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
+    backdrop-filter: var(--fg-fade-blur) !important;
+    -webkit-backdrop-filter: var(--fg-fade-blur) !important;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-staff-stat-grid .lux-strip-card.surface-card:hover {
+    transform: translateY(-1px);
+    box-shadow:
+        0 28px 64px rgba(0, 0, 0, 0.28),
+        inset 0 1px 0 rgba(255, 255, 255, 0.10),
+        0 0 0 1px rgba(var(--lux-accent-rgb), 0.04) !important;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-student-context-bar {
+    background: var(--fg-fade-surface-soft) !important;
+    border: 1px solid var(--fg-fade-border-soft) !important;
+    border-radius: 18px;
+    padding: 16px;
+    box-shadow: 0 20px 44px rgba(0, 0, 0, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
+    backdrop-filter: var(--fg-fade-blur) !important;
+    -webkit-backdrop-filter: var(--fg-fade-blur) !important;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-student-context-bar:hover {
+    transform: translateY(-1px);
+    border-color: rgba(var(--lux-accent-rgb), 0.22) !important;
+    box-shadow: 0 24px 52px rgba(0, 0, 0, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+}
+
+body.lux-light-mode.lux-unified-shell.lux-route-faculty-gradebook .gb-roster-card {
+    background: var(--fg-fade-surface) !important;
+    border-color: var(--fg-fade-border) !important;
+    box-shadow: var(--fg-fade-shadow) !important;
+}
+
+body.lux-light-mode.lux-unified-shell.lux-route-faculty-gradebook .gb-roster-card-body {
+    background: var(--fg-fade-surface-soft) !important;
+    border-top-color: var(--fg-fade-border-soft);
+}
+
+body.lux-light-mode.lux-unified-shell.lux-route-faculty-gradebook .gb-staff-hero {
+    background: var(--fg-fade-surface) !important;
+    border-color: var(--fg-fade-border) !important;
+    box-shadow: var(--fg-fade-shadow) !important;
+}
+
+body.lux-light-mode.lux-unified-shell.lux-route-faculty-gradebook .gb-student-context-bar {
+    background: var(--fg-fade-surface-soft) !important;
+    border-color: var(--fg-fade-border-soft) !important;
+    box-shadow: var(--fg-fade-shadow-soft) !important;
+}
+
+@media (max-width: 1100px) {
+    body.lux-route-faculty-gradebook.lux-unified-shell .lux-faculty-hero-top,
+    body.lux-route-faculty-gradebook.lux-unified-shell .lux-faculty-command-grid,
+    body.lux-route-faculty-gradebook.lux-unified-shell .gb-sheet-layout,
+    body.lux-route-faculty-gradebook.lux-unified-shell .gb-staff-control-grid,
+    body.lux-route-faculty-gradebook.lux-unified-shell .gb-staff-weight-panel,
+    body.lux-route-faculty-gradebook.lux-unified-shell .gb-modern-hero-main,
+    body.lux-route-faculty-gradebook.lux-unified-shell .gb-modern-grid,
+    body.lux-route-faculty-gradebook.lux-unified-shell .gb-modal-hero,
+    body.lux-route-faculty-gradebook.lux-unified-shell .gb-custom-section-panel > div:last-child {
+        grid-template-columns: minmax(0, 1fr);
+
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    }
+
+@media (max-width: 768px) {
+    body.lux-route-faculty-gradebook.lux-unified-shell :is(.lux-faculty-command, .lux-faculty-stage) {
+
+        padding: 18px;
+    }
+
+    
+
+    body.lux-route-faculty-gradebook.lux-unified-shell :is(.lux-faculty-command-head, .lux-faculty-stage-head, .gb-modern-card-head, .gb-staff-hero) {
+
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    
+
+    body.lux-route-faculty-gradebook.lux-unified-shell .lux-faculty-insight-grid,
+    body.lux-route-faculty-gradebook.lux-unified-shell .gb-sheet-weight-grid,
+    body.lux-route-faculty-gradebook.lux-unified-shell .gb-staff-create-grid,
+    body.lux-route-faculty-gradebook.lux-unified-shell .gb-weight-row,
+    body.lux-route-faculty-gradebook.lux-unified-shell .gb-modal-history-card {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    body.lux-route-faculty-gradebook.lux-unified-shell .gb-modal-history-score {
+        justify-items: start;
+    }
+}
+
+/* Faculty route: workspace glass on page shell panels */
+body.lux-route-faculty-gradebook.lux-unified-shell .lux-faculty-canvas {
+    padding: 0;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-lms-staff-hero,
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-lms-staff-assessment-bar,
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-lms-staff-roster,
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-lms-staff-detail,
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-lms-staff-active-card,
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-lms-staff-score-history {
+    background: var(--fg-fade-surface) !important;
+    border: 1px solid var(--fg-fade-border-soft) !important;
+    box-shadow: var(--fg-fade-shadow-soft) !important;
+    backdrop-filter: var(--fg-fade-blur);
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .lux-strip-card.surface-card {
+    background: var(--fg-fade-chip) !important;
+    border: 1px solid var(--fg-fade-border-soft) !important;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-lms-staff-roster-row {
+    background: var(--fg-fade-row);
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-lms-staff-roster-row:hover,
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-lms-staff-roster-row.is-active {
+    background: var(--fg-fade-row-hover);
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .gb-score-edit-card {
+    background: var(--fg-fade-modal) !important;
+    border: 1px solid var(--fg-fade-border) !important;
+    box-shadow: var(--fg-fade-shadow) !important;
+}
+
+/* Compact faculty page shell */
+body.lux-route-faculty-gradebook.lux-unified-shell .lux-faculty-insight-grid {
+    display: none;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .lux-faculty-hero {
+    padding-bottom: 12px;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .lux-faculty-command {
+    margin-top: 0;
+    padding: 16px 18px;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .lux-faculty-command-grid {
+    display: grid;
+    grid-template-columns: minmax(260px, 320px) minmax(0, 1fr);
+    gap: 14px;
+    align-items: start;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .lux-faculty-filters {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px 12px;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .lux-faculty-filters .lux-faculty-filter-title {
+    grid-column: 1 / -1;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .lux-faculty-stage {
+    margin-top: 12px;
+    padding: 16px 18px 18px;
+}
+
+body.lux-route-faculty-gradebook.lux-unified-shell .lux-faculty-stage-head {
+    margin-bottom: 12px;
+}
+
+@media (max-width: 900px) {
+    body.lux-route-faculty-gradebook.lux-unified-shell .lux-faculty-command-grid,
+    body.lux-route-faculty-gradebook.lux-unified-shell .lux-faculty-filters {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}

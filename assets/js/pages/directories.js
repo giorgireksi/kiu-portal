@@ -1,4 +1,4 @@
-/* Staff and student directory logic extracted from core.js. Source of truth remains root core.js compatibility bundle. */
+/* Staff and student directory logic extracted from the legacy core.js bundle. Active routes now load split files directly. */
 
 //  STAFF DIRECTORY  (Professors + TAs, faculty-scoped)
 // Shared text normalization keeps staff-directory values readable across legacy records.
@@ -260,6 +260,122 @@ function closeStaffDirectoryDrawer() {
     renderStaffPage();
 }
 
+function buildStaffDirectoryLoadBarMarkup(percent, tone = 'muted') {
+    return `<span class="staff-admin-load staff-dir-load-bar" data-staff-dir-load-fill="${percent}" data-staff-dir-load-tone="${escapeDirectoryHtml(tone)}"><i></i></span>`;
+}
+
+function applyStaffDirectoryLoadBars(scope = document) {
+    if (!scope || typeof scope.querySelectorAll !== 'function') return;
+    scope.querySelectorAll('[data-staff-dir-load-fill]').forEach(element => {
+        const fill = Number.parseFloat(element.getAttribute('data-staff-dir-load-fill') || '0');
+        const clamped = Number.isFinite(fill) ? Math.max(0, Math.min(100, fill)) : 0;
+        const fillElement = element.querySelector('i');
+        if (!fillElement) return;
+        fillElement.style.width = `${clamped}%`;
+    });
+}
+
+function getStaffDirectoryPrintStylesheetMarkup() {
+    const stylesheetPaths = [
+        'assets/vendor/fontawesome/css/all.min.css',
+        'assets/css/kiu-fonts.css',
+        'assets/css/base.css',
+        'assets/css/layout.css',
+        'assets/css/lux-tokens.css',
+        'assets/css/lux-surfaces.css',
+        'assets/css/lux-controls.css',
+        'assets/css/lux-layout-primitives.css',
+        'assets/css/index-luxury.css',
+        'assets/css/staff-command-center.css'
+    ];
+    return stylesheetPaths
+        .map(path => `<link rel="stylesheet" href="${escapeDirectoryHtml(new URL(path, window.location.href).href)}">`)
+        .join('\n');
+}
+
+function buildStaffDirectoryTranscriptMarkup({ userId, studentName, transcriptData, averageScore }) {
+    const generatedOn = new Date().toISOString().split('T')[0];
+    const recordRows = transcriptData.map(record => `
+        <article class="lux-inline-card staff-dir-print-row">
+            <span class="staff-dir-print-cell">
+                <strong>Course Code</strong>
+                <small>${escapeDirectoryHtml(record.course)}</small>
+            </span>
+            <span class="staff-dir-print-cell">
+                <strong>Final Score</strong>
+                <small>${escapeDirectoryHtml(record.final)} / 100</small>
+            </span>
+            <span class="staff-dir-print-cell">
+                <strong>Letter Grade</strong>
+                <small>${escapeDirectoryHtml(record.letter)}</small>
+            </span>
+        </article>
+    `).join('');
+
+    return `
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Academic Transcript - ${escapeDirectoryHtml(userId)}</title>
+            ${getStaffDirectoryPrintStylesheetMarkup()}
+        </head>
+        <body class="lux-light-mode lux-route-staff staff-dir-print-page">
+            <main id="staff-content">
+                <div class="lux-page-shell staff-dir-print-shell">
+                    <section class="page-hero admin-directory-hero staff-dir-print-hero">
+                        <div>
+                            <div class="lux-page-kicker staff-dir-print-kicker">Academic Records</div>
+                            <div class="page-hero-title">Kutaisi International University</div>
+                            <div class="page-hero-copy">Academic transcript prepared for registrar review and student record verification.</div>
+                            <div class="page-hero-meta">
+                                <span class="page-hero-badge"><i class="fas fa-id-card"></i> Student ID: ${escapeDirectoryHtml(userId)}</span>
+                                <span class="page-hero-badge"><i class="fas fa-user"></i> ${escapeDirectoryHtml(studentName)}</span>
+                                <span class="page-hero-badge"><i class="fas fa-calendar-day"></i> Generated: ${escapeDirectoryHtml(generatedOn)}</span>
+                            </div>
+                        </div>
+                        <div class="admin-hero-metrics">
+                            <article>
+                                <span>Record status</span>
+                                <strong>Active</strong>
+                            </article>
+                            <article>
+                                <span>Courses</span>
+                                <strong>${escapeDirectoryHtml(transcriptData.length)}</strong>
+                            </article>
+                            <article>
+                                <span>Average score</span>
+                                <strong>${escapeDirectoryHtml(averageScore)} / 100</strong>
+                            </article>
+                        </div>
+                    </section>
+                    <section class="admin-directory-card staff-dir-print-summary">
+                        <div class="lux-actions-between staff-dir-print-head">
+                            <div>
+                                <div class="lux-overline staff-dir-print-overline">Transcript overview</div>
+                                <div class="lux-card-title">Verified course results</div>
+                                <div class="lux-card-copy">This export uses the shared staff route presentation instead of embedded print-only styles.</div>
+                            </div>
+                            <span class="lux-status-pill is-info staff-dir-print-badge">KIU Registrar verified copy</span>
+                        </div>
+                        <div class="staff-dir-print-rows">
+                            ${recordRows}
+                        </div>
+                    </section>
+                </div>
+            </main>
+            <script>
+                window.addEventListener('load', function () {
+                    window.setTimeout(function () {
+                        window.print();
+                    }, 0);
+                }, { once: true });
+            <\/script>
+        </body>
+        </html>
+    `;
+}
+
 function exportStaffDirectoryCsv() {
     const records = window.__lastStaffDirectoryRecords || [];
     const headers = ['Staff ID', 'Name', 'English Name', 'Role', 'Title', 'Email', 'Phone', 'Office', 'Status', 'Microsoft Account', 'Subjects', 'Sessions', 'Weekly Load'];
@@ -384,11 +500,6 @@ function renderStaffPageLegacy() {
     const container = document.getElementById('staff-content');
     if (!container) return;
 
-    // Ensure QA testing accounts are injected before rendering
-    if (typeof ensureAdminTestingPersonas === 'function') {
-        ensureAdminTestingPersonas(localStorage.getItem('currentFaculty') || 'ECON');
-    }
-
     const fac = getCurrentFaculty();
     const fp = getFacultyProfile(fac);
     const tab = container.dataset.tab || 'professors';
@@ -493,7 +604,7 @@ function renderStaffPageLegacy() {
         const scheduledHrs = Math.round((hoursMap[member.name] || hoursMap[member.nameEn] || 0) * 10) / 10;
         const maxHrs = member.maxHours || 12;
         const hrsPercent = Math.max(6, Math.min(100, Math.round((scheduledHrs / maxHrs) * 100) || 0));
-        const hrsColor = hrsPercent > 90 ? '#f87171' : hrsPercent > 70 ? '#f4a261' : '#20c57c';
+        const loadTone = hrsPercent > 90 ? 'danger' : hrsPercent > 70 ? 'warning' : scheduledHrs > 0 ? 'success' : 'muted';
         const assignedSubjects = (member.subjects || []).map(subjectId => {
             const sub = (KIU_STATE.curriculum || []).find(item => item.id === subjectId) || (fp.curriculum || []).find(item => item.id === subjectId);
             return normalizeDirectoryText(sub ? sub.name : subjectId, String(subjectId || ''));
@@ -504,12 +615,12 @@ function renderStaffPageLegacy() {
             : escapeDirectoryHtml(getInitialsAvatar(member.nameEn || member.name));
         return `
             <div class="lux-person-card admin-directory-card admin-staff-card">
-                <div class="lux-person-head">
+                    <div class="lux-person-head">
                     <div class="lux-avatar">${avatarMarkup}</div>
-                    <div style="flex:1; min-width:0;">
-                        <div class="lux-person-name">${escapeDirectoryHtml(displayName)}</div>
-                        ${displayNameEn && displayNameEn !== displayName ? `<div class="lux-meta" style="margin-top:2px; color:var(--lux-accent);">${escapeDirectoryHtml(displayNameEn)}</div>` : ''}
-                        <div class="lux-meta">${escapeDirectoryHtml(displayTitle)}</div>
+                    <div class="staff-dir-identity">
+                        <div class="lux-person-name staff-dir-name">${escapeDirectoryHtml(displayName)}</div>
+                        ${displayNameEn && displayNameEn !== displayName ? `<div class="lux-meta staff-dir-name-alt">${escapeDirectoryHtml(displayNameEn)}</div>` : ''}
+                        <div class="lux-meta staff-dir-role">${escapeDirectoryHtml(displayTitle)}</div>
                     </div>
                     <span class="lux-status-pill is-${getDirectoryStatusTone(displayStatus)}">${escapeDirectoryHtml(displayStatus)}</span>
                 </div>
@@ -530,34 +641,32 @@ function renderStaffPageLegacy() {
                     <div><strong>${scheduledHrs}h</strong><span>weekly load</span></div>
                 </div>
                 <div class="lux-subcard">
-                    <div class="lux-actions-between">
+                    <div class="lux-actions-between staff-dir-section-head">
                         <div class="lux-overline">Teaching Load</div>
-                        <div class="lux-meta" style="margin-top:0; color:${hrsColor};">${scheduledHrs}h / ${maxHrs}h max</div>
+                        <span class="lux-status-pill is-${loadTone} staff-dir-load-summary">${scheduledHrs}h / ${maxHrs}h max</span>
                     </div>
-                    <div class="staff-load-track">
-                        <div class="staff-load-fill" style="width:${hrsPercent}%; background:${hrsColor}; box-shadow:0 0 16px ${hrsColor}55;"></div>
-                    </div>
+                    ${buildStaffDirectoryLoadBarMarkup(hrsPercent, loadTone)}
                 </div>
                 ${assignedSubjects.length ? `
-                    <div>
-                        <div class="lux-overline" style="margin-bottom:8px;">Assigned Subjects</div>
+                    <div class="staff-dir-section">
+                        <div class="lux-overline staff-dir-section-title">Assigned Subjects</div>
                         <div class="lux-card-actions">
                             ${assignedSubjects.map(subject => `<span class="lux-status-pill is-muted">${escapeDirectoryHtml(subject)}</span>`).join('')}
                         </div>
                     </div>
                 ` : ''}
-                <div>
-                    <div class="lux-actions-between" style="margin-bottom:10px;">
+                <div class="staff-dir-section">
+                    <div class="lux-actions-between staff-dir-section-head">
                         <div class="lux-overline">Schedule</div>
-                        <div class="lux-meta" style="margin-top:0;">${sessions.length} session${sessions.length === 1 ? '' : 's'}</div>
+                        <div class="lux-meta staff-dir-session-count">${sessions.length} session${sessions.length === 1 ? '' : 's'}</div>
                     </div>
                     ${sessions.length ? `
-                        <div class="lux-stack" style="gap:8px;">
+                        <div class="staff-dir-session-list">
                             ${sessions.slice(0, 3).map(session => `
                                 <div class="lux-subcard">
-                                    <div class="lux-actions-between">
-                                        <div style="font-weight:700; color:var(--lux-text);">${escapeDirectoryHtml(session.courseId)} Â· ${escapeDirectoryHtml(session.name || session.id || '')}</div>
-                                        <div class="lux-meta" style="margin-top:0;">${escapeDirectoryHtml(session.day || '')} ${escapeDirectoryHtml(session.time || '')}</div>
+                                    <div class="lux-actions-between staff-dir-session-head">
+                                        <strong class="staff-dir-session-title">${escapeDirectoryHtml(session.courseId)} - ${escapeDirectoryHtml(session.name || session.id || '')}</strong>
+                                        <div class="lux-meta staff-dir-session-meta">${escapeDirectoryHtml(session.day || '')} ${escapeDirectoryHtml(session.time || '')}</div>
                                     </div>
                                 </div>
                             `).join('')}
@@ -669,16 +778,13 @@ function renderStaffPageLegacy() {
     if (typeof queueLuxuryTransparencyRefresh === 'function') {
         queueLuxuryTransparencyRefresh();
     }
+    applyStaffDirectoryLoadBars(container);
     consumePendingAdminAccountFlow();
 }
 
 function renderStaffPage() {
     const container = document.getElementById('staff-content');
     if (!container) return;
-    if (typeof ensureAdminTestingPersonas === 'function') {
-        ensureAdminTestingPersonas(localStorage.getItem('currentFaculty') || 'ECON');
-    }
-
     const fac = getCurrentFaculty();
     const fp = getFacultyProfile(fac);
     const totalStudents = getAllStudents(fac).length;
@@ -737,7 +843,7 @@ function renderStaffPage() {
                 <span><span class="lux-status-pill is-${record.account.tone}"><i class="fab fa-microsoft"></i> ${escapeDirectoryHtml(record.account.linked ? 'Linked' : 'Review')}</span></span>
                 <span>
                     <strong>${escapeDirectoryHtml(loadText)}</strong>
-                    <span class="staff-admin-load"><i style="width:${record.loadPercent}%;"></i></span>
+                    ${buildStaffDirectoryLoadBarMarkup(record.loadPercent, record.loadTone)}
                 </span>
                 <span>${record.assignedSubjects.length ? escapeDirectoryHtml(record.assignedSubjects.slice(0, 2).join(', ')) : '<em>Unassigned</em>'}</span>
                 <span><span class="lux-status-pill is-${record.statusTone}">${escapeDirectoryHtml(record.status)}</span></span>
@@ -929,6 +1035,7 @@ function renderStaffPage() {
     if (typeof queueLuxuryTransparencyRefresh === 'function') {
         queueLuxuryTransparencyRefresh();
     }
+    applyStaffDirectoryLoadBars(container);
     consumePendingAdminAccountFlow();
 }
 
@@ -1104,36 +1211,17 @@ function generateTranscriptForUser(userId) {
         return;
     }
     
-    let html = `
-        <html><head><title>Official Transcript - ${userId}</title>
-        <style>body{font-family:Arial; padding:40px; color:#333;} table{width:100%; border-collapse:collapse; margin-top:20px;} th,td{border:1px solid #ddd; padding:10px; text-align:left;} th{background:#f4f4f4;} .header{text-align:center; margin-bottom:40px;} .stamp{color:red; border:3px solid red; display:inline-block; padding:10px; font-weight:bold; transform:rotate(-15deg); margin-top:30px;}</style>
-        </head><body>
-        <div class="header">
-            <h2>KUTAISI INTERNATIONAL UNIVERSITY</h2>
-            <h3>OFFICIAL ACADEMIC TRANSCRIPT</h3>
-            <p>Generated on: ${new Date().toISOString().split('T')[0]}</p>
-        </div>
-        <div style="margin-bottom:20px;">
-            <strong>Student ID:</strong> ${userId}<br>
-            <strong>Full Name:</strong> ${studentName}<br>
-            <strong>Status:</strong> Active
-        </div>
-        <table>
-            <tr><th>Course Code</th><th>Final Score (/100)</th><th>Letter Grade</th></tr>
-    `;
-    
     let totalScore = 0;
     transcriptData.forEach(dr => {
         totalScore += dr.final;
-        html += `<tr><td>${dr.course}</td><td>${dr.final}</td><td><strong>${dr.letter}</strong></td></tr>`;
     });
-    
-    html += `</table>
-        <div style="margin-top:20px;"><strong>Cumulative GPA Average:</strong> ${(totalScore / transcriptData.length).toFixed(2)} / 100.00</div>
-        <div style="text-align:center;"><div class="stamp">OFFICIAL KIU REGISTRAR<br>VERIFIED COPY</div></div>
-        <script>window.print();</script>
-        </body></html>
-    `;
+
+    const html = buildStaffDirectoryTranscriptMarkup({
+        userId,
+        studentName,
+        transcriptData,
+        averageScore: (totalScore / transcriptData.length).toFixed(2)
+    });
 
     const blob = new Blob([html], { type: 'text/html' });
     const objectUrl = URL.createObjectURL(blob);

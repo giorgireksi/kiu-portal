@@ -25,4 +25,21 @@ describe('admin tools interaction safety', () => {
         expect(source).toContain("tab.getAttribute('data-admin-tools-reg-tab')");
         expect(source).toContain("tabRouteTarget === tabTarget");
     });
+
+    it('keeps admin tools shell chrome from caching blank nav or repainting alignment endlessly', () => {
+        const shellChrome = readSource('assets/js/features/luxury-shell-chrome.js');
+        const alignment = readSource('assets/js/pages/admin-tools-index-alignment.js');
+
+        expect(shellChrome).toContain('function getFallbackNavGroups(role)');
+        expect(shellChrome).toContain('const configuredGroups = navByRole[role] || navByRole.student || [];');
+        expect(shellChrome).toContain('const groups = configuredGroups.length ? configuredGroups : getFallbackNavGroups(role);');
+        expect(shellChrome).toContain("navRoot.dataset.renderSignature = '';");
+        expect(shellChrome).toContain('if (navRoot.dataset.renderSignature === signature && navRoot.children.length) return;');
+
+        expect(alignment).toContain('function getAlignmentSignature(page)');
+        expect(alignment).toContain('if (page.dataset.adminToolsIndexSignature !== signature) {');
+        expect(alignment).toContain('page.dataset.adminToolsIndexSignature = getAlignmentSignature(page);');
+        expect(alignment).toContain("document.getElementById('lux-admin-tools-shell')");
+        expect(alignment).toContain('observer.observe(observerRoot, { childList: true, subtree: true });');
+    });
 });

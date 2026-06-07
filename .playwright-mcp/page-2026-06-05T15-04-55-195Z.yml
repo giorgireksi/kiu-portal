@@ -1,0 +1,57 @@
+- generic [active] [ref=e1]:
+  - text:  
+  - main [ref=e2]
+  - text:                     
+  - generic:   
+  - generic:   
+  - complementary:
+    - generic:
+      - generic: K
+      - generic:
+        - generic: KIU
+        - generic: Integrated Campus Portal
+    - generic:
+      - generic: Faculty
+      - button " Dashboard":
+        - generic: 
+        - generic: Dashboard
+      - button " Schedule":
+        - generic: 
+        - generic: Schedule
+      - button " LMS":
+        - generic: 
+        - generic: LMS
+      - button " Gradebook":
+        - generic: 
+        - generic: Gradebook
+      - button " Exams":
+        - generic: 
+        - generic: Exams
+      - button " Programs":
+        - generic: 
+        - generic: Programs
+      - generic: Campus
+      - button " News":
+        - generic: 
+        - generic: News
+      - button " Library":
+        - generic: 
+        - generic: Library
+      - button " Orders":
+        - generic: 
+        - generic: Orders
+      - button " Social":
+        - generic: 
+        - generic: Social
+      - button " Appeals":
+        - generic: 
+        - generic: Appeals
+      - button " Profile":
+        - generic: 
+        - generic: Profile
+    - generic:
+      - generic: PO
+      - generic:
+        - generic: Professor One
+        - generic: Professor View - Business Management
+  - text:         
