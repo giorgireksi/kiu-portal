@@ -3531,7 +3531,9 @@
             && typeof window.renderCommentThread === 'function'
             && window.renderCommentThread !== renderCommentThread
             && typeof window.findCommentInThread === 'function'
-            && window.findCommentInThread !== findCommentInThread) {
+            && window.findCommentInThread !== findCommentInThread
+            && typeof window.patchPostReactions === 'function'
+            && window.patchPostReactions !== patchPostReactions) {
             return Promise.resolve();
         }
         const existing = document.querySelector(`script[src="${SOCIAL_FEED_MODULE_URL}"]`);
@@ -3562,7 +3564,9 @@
             && typeof window.renderCommentThread === 'function'
             && window.renderCommentThread !== renderCommentThread
             && typeof window.findCommentInThread === 'function'
-            && window.findCommentInThread !== findCommentInThread);
+            && window.findCommentInThread !== findCommentInThread
+            && typeof window.patchPostReactions === 'function'
+            && window.patchPostReactions !== patchPostReactions);
     }
 
 
@@ -5709,15 +5713,24 @@
      * @returns {{ savedPosts: Array<Object> }}
      */
     function socialHub() {
+        if (hasSocialFeedModule() && typeof window.socialHub === 'function' && window.socialHub !== socialHub) {
+            return window.socialHub();
+        }
+        ensureSocialFeedModule().catch(() => null);
         if (!window.KIU_STATE) window.KIU_STATE = {};
         if (!window.KIU_STATE.socialHub) window.KIU_STATE.socialHub = {};
         if (!Array.isArray(window.KIU_STATE.socialHub.savedPosts)) window.KIU_STATE.socialHub.savedPosts = [];
         return window.KIU_STATE.socialHub;
     }
 
+
     function savedItems() {
+        if (hasSocialFeedModule() && typeof window.savedItems === 'function' && window.savedItems !== savedItems) {
+            return window.savedItems();
+        }
         return (Array.isArray(socialHub().savedPosts) ? socialHub().savedPosts : []).filter((item) => text(item?.userId) === currentUserId());
     }
+
 
     function savedPostRecords() {
         return Array.isArray(state().social?.savedPosts) ? state().social.savedPosts : [];
@@ -5741,8 +5754,13 @@
 
     /** Checks whether the current user has bookmarked a post. */
     function isPostSaved(postId) {
-        return savedItems().some((item) => text(item?.itemType) === 'post' && text(item?.itemId) === text(postId));
+        if (hasSocialFeedModule() && typeof window.isPostSaved === 'function' && window.isPostSaved !== isPostSaved) {
+            return window.isPostSaved(postId);
+        }
+        ensureSocialFeedModule().catch(() => null);
+        return false;
     }
+
 
     /**
      * Toggles the saved/bookmarked state of a post for the current user.
@@ -5751,41 +5769,15 @@
      * @param {string} postId
      */
     async function toggleSavedPost(postId) {
-        const normalizedId = text(postId);
-        if (!normalizedId) return;
-        const hub = socialHub();
-        const existing = hub.savedPosts.find((item) =>
-            text(item?.userId) === currentUserId()
-            && text(item?.itemType) === 'post'
-            && text(item?.itemId) === normalizedId
-        );
-        if (existing) {
-            hub.savedPosts = hub.savedPosts.filter((item) => text(item?.id) !== text(existing.id));
-        } else {
-            hub.savedPosts.unshift({
-                id: `saved-post-${Date.now()}`,
-                userId: currentUserId(),
-                itemType: 'post',
-                itemId: normalizedId,
-                createdAt: new Date().toISOString()
-            });
+        if (hasSocialFeedModule() && typeof window.toggleSavedPost === 'function' && window.toggleSavedPost !== toggleSavedPost) {
+            return window.toggleSavedPost(postId);
         }
-        if (typeof saveState === 'function') {
-            try { saveState(); } catch (error) {}
+        await ensureSocialFeedModule().catch(() => null);
+        if (typeof window.toggleSavedPost === 'function' && window.toggleSavedPost !== toggleSavedPost) {
+            return window.toggleSavedPost(postId);
         }
-        if (typeof addPortalSocialToast === 'function') {
-            addPortalSocialToast({
-                type: 'success',
-                title: existing ? 'Removed from saved' : 'Saved for later',
-                text: existing ? 'The post was removed from your saved list.' : 'The post is now available from saved content.',
-                icon: 'fa-bookmark'
-            });
-        }
-        if (typeof loadPortalSavedSocialPosts === 'function') {
-            try { await loadPortalSavedSocialPosts(true); } catch (error) {}
-        }
-        return !existing;
     }
+
 
     /**
      * Maps a reaction type string to its HTML entity emoji.
@@ -6257,35 +6249,30 @@
 
 
     function patchPhotographyFeedReactions(postId) {
-        const normalizedId = postKey(postId);
-        if (!normalizedId) return false;
-        const host = root();
-        if (!host) return false;
-        const card = host.querySelector(`.social-photo-feed-card [data-action="post-react"][data-post-id="${CSS.escape(normalizedId)}"]`)?.closest('.social-photo-feed-card');
-        if (!card) return false;
-        return patchPostReactions(postId);
+        if (hasSocialFeedModule() && typeof window.patchPhotographyFeedReactions === 'function' && window.patchPhotographyFeedReactions !== patchPhotographyFeedReactions) {
+            return window.patchPhotographyFeedReactions(postId);
+        }
+        ensureSocialFeedModule().catch(() => null);
+        return false;
     }
+
 
     function patchPostSaveButtons(postId) {
-        const normalizedId = postKey(postId);
-        if (!normalizedId) return false;
-        const host = root();
-        if (!host) return false;
-        const saved = isPostSaved(normalizedId);
-        const buttons = host.querySelectorAll(`.social-neo-post-save-btn[data-action="post-save"][data-post-id="${CSS.escape(normalizedId)}"]`);
-        if (!buttons.length) return false;
-        buttons.forEach((saveBtn) => {
-            saveBtn.classList.toggle('social-neo-btn-primary', saved);
-            saveBtn.classList.toggle('social-neo-btn-ghost', !saved);
-            const label = saveBtn.closest('.social-photo-feed-card') ? (saved ? 'Saved' : 'Keep') : (saved ? 'Saved' : 'Save');
-            saveBtn.innerHTML = `<i class="fas fa-bookmark"></i> ${label}`;
-        });
-        return true;
+        if (hasSocialFeedModule() && typeof window.patchPostSaveButtons === 'function' && window.patchPostSaveButtons !== patchPostSaveButtons) {
+            return window.patchPostSaveButtons(postId);
+        }
+        ensureSocialFeedModule().catch(() => null);
+        return false;
     }
 
+
     function patchPhotographyFeedSave(postId) {
+        if (hasSocialFeedModule() && typeof window.patchPhotographyFeedSave === 'function' && window.patchPhotographyFeedSave !== patchPhotographyFeedSave) {
+            return window.patchPhotographyFeedSave(postId);
+        }
         return patchPostSaveButtons(postId);
     }
+
 
     function patchPhotographyFollowButtons(userId, isFollowing) {
         const normalizedId = text(userId);
@@ -6322,56 +6309,13 @@
     /** Surgically updates a single post card's reaction UI (metrics, Like button, picker)
      *  without re-rendering the entire center column — prevents scroll jumps. */
     function patchPostReactions(postId) {
-        const normalizedId = postKey(postId);
-        if (!normalizedId) return false;
-        const host = root();
-        if (!host) return false;
-        const card = host.querySelector(`.social-neo-post-card [data-action="post-react"][data-post-id="${CSS.escape(normalizedId)}"]`)?.closest('.social-neo-post-card');
-        if (!card) return false;
-        const runtime = state();
-        const feed = Array.isArray(runtime?.feed) ? runtime.feed : [];
-        const post = feed.find((entry) => text(entry?.id) === normalizedId);
-        if (!post) return false;
-        const viewerReaction = text(post.viewerReaction || '');
-        const hasViewerReaction = Boolean(viewerReaction);
-        const reactionCounts = post.reactionCounts && typeof post.reactionCounts === 'object' ? post.reactionCounts : {};
-        const metricsRegion = card.querySelector('.social-neo-post-metrics');
-        if (metricsRegion) {
-            const existingMetric = metricsRegion.querySelector('.social-neo-post-reaction-metric');
-            const freshMarkup = renderPostReactionMetrics(reactionCounts);
-            if (existingMetric) {
-                if (freshMarkup) {
-                    existingMetric.outerHTML = freshMarkup;
-                } else {
-                    existingMetric.remove();
-                }
-            } else if (freshMarkup) {
-                metricsRegion.insertAdjacentHTML('afterbegin', freshMarkup);
-            }
+        if (hasSocialFeedModule() && typeof window.patchPostReactions === 'function' && window.patchPostReactions !== patchPostReactions) {
+            return window.patchPostReactions(postId);
         }
-        const isPhotoCard = card.classList.contains('social-photo-feed-card');
-        const mainBtn = card.querySelector(`.social-neo-post-action-btn[data-action="post-react"][data-post-id="${CSS.escape(normalizedId)}"]`);
-        if (mainBtn) {
-            mainBtn.classList.toggle('social-neo-btn-primary', hasViewerReaction);
-            mainBtn.classList.toggle('social-neo-btn-ghost', !hasViewerReaction);
-            mainBtn.setAttribute('data-reaction-type', viewerReaction || 'like');
-            mainBtn.innerHTML = hasViewerReaction
-                ? `<span>${reactionEmoji(viewerReaction)}</span> ${escape(reactionLabel(viewerReaction))}`
-                : isPhotoCard
-                    ? '<span aria-hidden="true">👍</span> Appreciate'
-                    : '<i class="fas fa-thumbs-up"></i> Like';
-        }
-        const picker = card.querySelector('.social-neo-reaction-picker');
-        if (picker) {
-            picker.querySelectorAll('.social-neo-post-reaction-btn').forEach((btn) => {
-                const type = text(btn.getAttribute('data-reaction-type'));
-                const isActive = type === viewerReaction;
-                btn.classList.toggle('social-neo-btn-primary', isActive);
-                btn.classList.toggle('social-neo-btn-ghost', !isActive);
-            });
-        }
-        return true;
+        ensureSocialFeedModule().catch(() => null);
+        return false;
     }
+
 
     function portfolioEditorFormRoot() {
         if (text(activeDialog()?.type || '') === 'portfolio-editor') {

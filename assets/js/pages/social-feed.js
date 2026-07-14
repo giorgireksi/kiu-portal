@@ -13,7 +13,6 @@
         displayName,
         reactionEmoji,
         reactionLabel,
-        isPostSaved,
         pagePostTypeLabel,
         feedReason,
         renderPostEntityLinks,
@@ -48,15 +47,11 @@
         isCommentDialog,
         patchPostComposeAttachDialog,
         patchPostComposeDialog,
-        patchPostReactions,
-        patchPostSaveButtons,
-        patchPhotographyFeedReactions,
         scrollSocialCenterElementIntoView,
         refreshPortalSocialFeed,
         reactToPortalSocialPost,
         reactToPortalSocialComment,
         pinPortalSocialPost,
-        toggleSavedPost,
         openPortalStoryComposer,
         closePortalStoryComposer,
         openPortalStoryViewer,
@@ -89,7 +84,6 @@
         || typeof displayName !== 'function'
         || typeof reactionEmoji !== 'function'
         || typeof reactionLabel !== 'function'
-        || typeof isPostSaved !== 'function'
         || typeof pagePostTypeLabel !== 'function'
         || typeof feedReason !== 'function'
         || typeof renderPostEntityLinks !== 'function'
@@ -124,15 +118,11 @@
         || typeof isCommentDialog !== 'function'
         || typeof patchPostComposeAttachDialog !== 'function'
         || typeof patchPostComposeDialog !== 'function'
-        || typeof patchPostReactions !== 'function'
-        || typeof patchPostSaveButtons !== 'function'
-        || typeof patchPhotographyFeedReactions !== 'function'
         || typeof scrollSocialCenterElementIntoView !== 'function'
         || typeof refreshPortalSocialFeed !== 'function'
         || typeof reactToPortalSocialPost !== 'function'
         || typeof reactToPortalSocialComment !== 'function'
         || typeof pinPortalSocialPost !== 'function'
-        || typeof toggleSavedPost !== 'function'
         || typeof openPortalStoryComposer !== 'function'
         || typeof closePortalStoryComposer !== 'function'
         || typeof openPortalStoryViewer !== 'function'
@@ -513,6 +503,151 @@
     window.relayoutCommentTrunks = relayoutCommentTrunks;
     window.findCommentInThread = findCommentInThread;
     window.__kiuRelayoutCommentTrunks = relayoutCommentTrunks;
+
+    function socialHub() {
+        if (!window.KIU_STATE) window.KIU_STATE = {};
+        if (!window.KIU_STATE.socialHub) window.KIU_STATE.socialHub = {};
+        if (!Array.isArray(window.KIU_STATE.socialHub.savedPosts)) window.KIU_STATE.socialHub.savedPosts = [];
+        return window.KIU_STATE.socialHub;
+    }
+
+    function savedItems() {
+        return (Array.isArray(socialHub().savedPosts) ? socialHub().savedPosts : []).filter((item) => text(item?.userId) === currentUserId());
+    }
+
+    function isPostSaved(postId) {
+        return savedItems().some((item) => text(item?.itemType) === 'post' && text(item?.itemId) === text(postId));
+    }
+
+    async function toggleSavedPost(postId) {
+        const normalizedId = text(postId);
+        if (!normalizedId) return;
+        const hub = socialHub();
+        const existing = hub.savedPosts.find((item) =>
+            text(item?.userId) === currentUserId()
+            && text(item?.itemType) === 'post'
+            && text(item?.itemId) === normalizedId
+        );
+        if (existing) {
+            hub.savedPosts = hub.savedPosts.filter((item) => text(item?.id) !== text(existing.id));
+        } else {
+            hub.savedPosts.unshift({
+                id: `saved-post-${Date.now()}`,
+                userId: currentUserId(),
+                itemType: 'post',
+                itemId: normalizedId,
+                createdAt: new Date().toISOString()
+            });
+        }
+        if (typeof saveState === 'function') {
+            try { saveState(); } catch (error) {}
+        }
+        if (typeof addPortalSocialToast === 'function') {
+            addPortalSocialToast({
+                type: 'success',
+                title: existing ? 'Removed from saved' : 'Saved for later',
+                text: existing ? 'The post was removed from your saved list.' : 'The post is now available from saved content.',
+                icon: 'fa-bookmark'
+            });
+        }
+        if (typeof loadPortalSavedSocialPosts === 'function') {
+            try { await loadPortalSavedSocialPosts(true); } catch (error) {}
+        }
+        return !existing;
+    }
+
+    function patchPhotographyFeedReactions(postId) {
+        const normalizedId = postKey(postId);
+        if (!normalizedId) return false;
+        const host = root();
+        if (!host) return false;
+        const card = host.querySelector(`.social-photo-feed-card [data-action="post-react"][data-post-id="${CSS.escape(normalizedId)}"]`)?.closest('.social-photo-feed-card');
+        if (!card) return false;
+        return patchPostReactions(postId);
+    }
+
+    function patchPostSaveButtons(postId) {
+        const normalizedId = postKey(postId);
+        if (!normalizedId) return false;
+        const host = root();
+        if (!host) return false;
+        const saved = isPostSaved(normalizedId);
+        const buttons = host.querySelectorAll(`.social-neo-post-save-btn[data-action="post-save"][data-post-id="${CSS.escape(normalizedId)}"]`);
+        if (!buttons.length) return false;
+        buttons.forEach((saveBtn) => {
+            saveBtn.classList.toggle('social-neo-btn-primary', saved);
+            saveBtn.classList.toggle('social-neo-btn-ghost', !saved);
+            const label = saveBtn.closest('.social-photo-feed-card') ? (saved ? 'Saved' : 'Keep') : (saved ? 'Saved' : 'Save');
+            saveBtn.innerHTML = `<i class="fas fa-bookmark"></i> ${label}`;
+        });
+        return true;
+    }
+
+    function patchPhotographyFeedSave(postId) {
+        return patchPostSaveButtons(postId);
+    }
+
+    function patchPostReactions(postId) {
+        const normalizedId = postKey(postId);
+        if (!normalizedId) return false;
+        const host = root();
+        if (!host) return false;
+        const card = host.querySelector(`.social-neo-post-card [data-action="post-react"][data-post-id="${CSS.escape(normalizedId)}"]`)?.closest('.social-neo-post-card');
+        if (!card) return false;
+        const runtime = state();
+        const feed = Array.isArray(runtime?.feed) ? runtime.feed : [];
+        const post = feed.find((entry) => text(entry?.id) === normalizedId);
+        if (!post) return false;
+        const viewerReaction = text(post.viewerReaction || '');
+        const hasViewerReaction = Boolean(viewerReaction);
+        const reactionCounts = post.reactionCounts && typeof post.reactionCounts === 'object' ? post.reactionCounts : {};
+        const metricsRegion = card.querySelector('.social-neo-post-metrics');
+        if (metricsRegion) {
+            const existingMetric = metricsRegion.querySelector('.social-neo-post-reaction-metric');
+            const freshMarkup = renderPostReactionMetrics(reactionCounts);
+            if (existingMetric) {
+                if (freshMarkup) {
+                    existingMetric.outerHTML = freshMarkup;
+                } else {
+                    existingMetric.remove();
+                }
+            } else if (freshMarkup) {
+                metricsRegion.insertAdjacentHTML('afterbegin', freshMarkup);
+            }
+        }
+        const isPhotoCard = card.classList.contains('social-photo-feed-card');
+        const mainBtn = card.querySelector(`.social-neo-post-action-btn[data-action="post-react"][data-post-id="${CSS.escape(normalizedId)}"]`);
+        if (mainBtn) {
+            mainBtn.classList.toggle('social-neo-btn-primary', hasViewerReaction);
+            mainBtn.classList.toggle('social-neo-btn-ghost', !hasViewerReaction);
+            mainBtn.setAttribute('data-reaction-type', viewerReaction || 'like');
+            mainBtn.innerHTML = hasViewerReaction
+                ? `<span>${reactionEmoji(viewerReaction)}</span> ${escape(reactionLabel(viewerReaction))}`
+                : isPhotoCard
+                    ? '<span aria-hidden="true">👍</span> Appreciate'
+                    : '<i class="fas fa-thumbs-up"></i> Like';
+        }
+        const picker = card.querySelector('.social-neo-reaction-picker');
+        if (picker) {
+            picker.querySelectorAll('.social-neo-post-reaction-btn').forEach((btn) => {
+                const type = text(btn.getAttribute('data-reaction-type'));
+                const isActive = type === viewerReaction;
+                btn.classList.toggle('social-neo-btn-primary', isActive);
+                btn.classList.toggle('social-neo-btn-ghost', !isActive);
+            });
+        }
+        return true;
+    }
+
+    window.socialHub = socialHub;
+    window.savedItems = savedItems;
+    window.isPostSaved = isPostSaved;
+    window.toggleSavedPost = toggleSavedPost;
+    window.patchPhotographyFeedReactions = patchPhotographyFeedReactions;
+    window.patchPostSaveButtons = patchPostSaveButtons;
+    window.patchPhotographyFeedSave = patchPhotographyFeedSave;
+    window.patchPostReactions = patchPostReactions;
+
 
 
 

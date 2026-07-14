@@ -26,11 +26,13 @@ describe('social post actions regressions', () => {
         expect(source).toContain('function syncCommentDraftFromTarget(target)');
         expect(source).toContain('function reactionLabel(reactionType)');
         expect(source).toContain('function renderPostReactionMetrics(reactionCounts = {})');
-        expect(source).toContain('const hasViewerReaction = Boolean(viewerReaction)');
-        // Post card markup lives in social-feed.js; page keeps reaction patch helpers.
+        // Post card markup + reaction/save patches live in social-feed.js.
+        expect(source + feedModule).toContain('const hasViewerReaction = Boolean(viewerReaction)');
         expect(source + feedModule).toContain('data-reaction-type="${escape(viewerReaction || \'like\')}"');
         expect(feedModule).toContain('function renderPost(post)');
+        expect(feedModule).toContain('function patchPostReactions(postId)');
         expect(source).toMatch(/function renderPost\(post\)[\s\S]*window\.renderPost !== renderPost/);
+        expect(source).toMatch(/function patchPostReactions\(postId\)[\s\S]*window\.patchPostReactions !== patchPostReactions/);
         expect(source + feedModule).not.toContain('fa-heart social-neo-metric-heart');
         expect(source).toContain('async function boot()');
         expect(source).toContain('if (runHydrate) await runHydrate();');

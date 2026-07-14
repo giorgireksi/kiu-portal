@@ -21,7 +21,7 @@ Render bridge: `queueRender` → `window.__kiuSocialLiteRenderPage` (`renderSoci
 
 | id | UI label | Owner |
 |----|----------|--------|
-| `feed` | Home | social-feed.js (hero + panel + **post card** + **comment markup + dialog patches** + compose/attach + `renderFeedOwnedDialog` + handlers); page thin-stubs; dispatches via `isSocialFeedClickAction` |
+| `feed` | Home | social-feed.js (hero + panel + post card + comments + **reaction/save patches** + saved-post hub helpers + compose/attach + handlers); page thin-stubs; dispatches via `isSocialFeedClickAction` |
 | `community` | People | social-community.js (panel + **`renderRelationshipActions`** + `handleSocialCommunityClick` for `connection-*`/`person-*`); page thin-stubs / dispatches |
 | `groups` | Groups | social-groups.js (hero + panel + create/detail/leave/invite + group-panel dialogs via `renderGroupOwnedDialog` + `handleSocialGroupsClick` for `group-*` actions); page dispatches via `isSocialGroupsClickAction` |
 | `workspace` | Projects | social-workspace.js (render stack + `handleSocialWorkspaceClick` / `Submit` / `Input` / `Change`); page dispatches domain events |
