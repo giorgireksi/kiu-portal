@@ -67,7 +67,7 @@ describe('social mobile runtime regressions', () => {
     expect(source).toContain("if (!forceRender && reason !== 'boot' && !/-module$/.test(reason) && host.__kiuLastRenderSignature === renderSignature) {");
     expect(source).toContain("if (!forceRender && reason !== 'boot' && !/-module$/.test(reason) && host.__kiuLastRenderSignature === renderSignature) {");
     expect(source).toContain('social-neo-inline-gap-4');
-    expect(source).toContain('social-neo-flex-spacer');
+    expect(source + feedModule).toContain('social-neo-flex-spacer');
     expect(source).toContain('commentReplyFocusPostId');
     expect(feedModule).toContain('social-neo-composer-cta');
     expect(readSource('assets/js/pages/social-workspace.js')).toContain('social-project-task-card-head');
@@ -145,20 +145,22 @@ describe('social mobile runtime regressions', () => {
     expect(source).toContain('social-neo-mobile-tab-region');
     expect(source).not.toContain('social-neo-mobile-tab-label');
     expect(source).not.toContain('social-neo-mobile-tab-count');
-    expect(source).toContain('social-neo-post-author-copy');
-    expect(source).toContain('social-neo-post-author-name');
-    expect(source).toContain('social-neo-post-author-meta');
-    expect(source).toContain('social-neo-post-head-actions');
-    expect(source).toContain('social-neo-post-scope-badge');
-    expect(source).toContain('social-neo-post-page-label');
-    expect(source).toContain('social-neo-post-pinned-pill');
-    expect(source).toContain('social-neo-post-head-action-btn');
-    expect(source).toContain('social-neo-post-metrics');
-    expect(source).toContain('social-neo-post-metric');
-    expect(source).toContain('social-neo-post-action-row');
-    expect(source).toContain('social-neo-post-action-btn');
-    expect(source).toContain('social-neo-post-reaction-btn');
-    expect(source).toContain('social-neo-post-save-btn');
+    // Post card chrome lives in social-feed.js (page keeps patch helpers for some classes).
+    const postCardSource = source + feedModule;
+    expect(postCardSource).toContain('social-neo-post-author-copy');
+    expect(postCardSource).toContain('social-neo-post-author-name');
+    expect(postCardSource).toContain('social-neo-post-author-meta');
+    expect(postCardSource).toContain('social-neo-post-head-actions');
+    expect(postCardSource).toContain('social-neo-post-scope-badge');
+    expect(postCardSource).toContain('social-neo-post-page-label');
+    expect(postCardSource).toContain('social-neo-post-pinned-pill');
+    expect(postCardSource).toContain('social-neo-post-head-action-btn');
+    expect(postCardSource).toContain('social-neo-post-metrics');
+    expect(postCardSource).toContain('social-neo-post-metric');
+    expect(postCardSource).toContain('social-neo-post-action-row');
+    expect(postCardSource).toContain('social-neo-post-action-btn');
+    expect(postCardSource).toContain('social-neo-post-reaction-btn');
+    expect(postCardSource).toContain('social-neo-post-save-btn');
     // Feed compose is CTA → dialog (scope/audience fields live in dialog / residual CSS only).
     expect(feedModule).toContain('social-neo-composer-attach-btn');
     expect(source).not.toContain('social-neo-composer-story-btn');

@@ -137,10 +137,14 @@ describe('social post compose dialog regressions', () => {
 
     it('keeps legacy linkedSurveyId feed cards while rendering entityLinks', () => {
         const source = readSource('assets/js/pages/social-page.js');
+        const feedModule = readSource('assets/js/pages/social-feed.js');
         expect(source).toContain('function postEntityLinks(');
         expect(source).toContain('linkedSurveyId');
         expect(source).toContain('survey-take-open');
         expect(source).toContain('social-neo-post-entity-card');
-        expect(source).toContain('renderPostEntityLinks(post)');
+        // Card body owns renderPostEntityLinks call; helper stays on page, card in feed module.
+        expect(source + feedModule).toContain('renderPostEntityLinks(post)');
+        expect(feedModule).toContain('function renderPost(post)');
+        expect(source).toMatch(/function renderPost\(post\)[\s\S]*window\.renderPost !== renderPost/);
     });
 });

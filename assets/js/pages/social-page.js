@@ -3523,7 +3523,9 @@
             && typeof window.renderFeedPanel === 'function'
             && window.renderFeedPanel !== renderFeedPanel
             && typeof window.renderPostComposeDialog === 'function'
-            && window.renderPostComposeDialog !== renderPostComposeDialog) {
+            && window.renderPostComposeDialog !== renderPostComposeDialog
+            && typeof window.renderPost === 'function'
+            && window.renderPost !== renderPost) {
             return Promise.resolve();
         }
         const existing = document.querySelector(`script[src="${SOCIAL_FEED_MODULE_URL}"]`);
@@ -3548,7 +3550,9 @@
             && typeof window.renderFeedPanel === 'function'
             && window.renderFeedPanel !== renderFeedPanel
             && typeof window.renderPostComposeDialog === 'function'
-            && window.renderPostComposeDialog !== renderPostComposeDialog);
+            && window.renderPostComposeDialog !== renderPostComposeDialog
+            && typeof window.renderPost === 'function'
+            && window.renderPost !== renderPost);
     }
 
 
@@ -5032,6 +5036,12 @@
         avatar,
         displayName,
         renderPost,
+        reactionEmoji,
+        reactionLabel,
+        isPostSaved,
+        pagePostTypeLabel,
+        feedReason,
+        renderPostEntityLinks,
         relationshipBuckets,
         isJoinedGroup,
         feedScopeOptions,
@@ -8867,87 +8877,11 @@
 
 
     function renderPost(post) {
-        const author = accountById(post.authorUserId) || { id: post.authorUserId, displayName: post.authorUserId };
-        const reactionCounts = post?.reactionCounts || {};
-        const viewerReaction = text(post.viewerReaction || '');
-        const hasViewerReaction = Boolean(viewerReaction);
-        const reactionCount = Object.values(reactionCounts).reduce((sum, count) => sum + Number(count || 0), 0);
-        const sharedPost = post.sharedPost;
-        const comments = Array.isArray(post.comments) ? post.comments : [];
-        const normalizedPostId = postKey(post);
-        const shareCount = Number(post?.shareCount || 0);
-        const saved = isPostSaved(post.id);
-        const scopeBadge = post.scopeType === 'page'
-            ? `Page - ${text(post.scopeName || 'Page')}`
-            : post.scopeType === 'group'
-                ? `Group - ${text(post.scopeName || 'Group')}`
-                : 'Profile';
-        const pagePostLabel = post.scopeType === 'page' ? pagePostTypeLabel(post) : '';
-        const contextLine = `${accountSubtitle(author)} - ${feedReason(post, author)}`;
-        const commentTotal = comments.length + Number(post.replyCount || 0);
-        return `
-            <article class="social-neo-card social-neo-post-card ${post.isPinned ? 'is-pinned' : ''}">
-                <div class="social-neo-post-head">
-                    <button class="social-neo-post-author social-neo-clickable" type="button" data-action="profile-view" data-user-id="${escape(text(author.id))}">
-                        ${avatar(author)}
-                        <div class="social-neo-post-author-copy">
-                            <strong class="social-neo-post-author-name">${escape(displayName(author))}</strong>
-                            <span class="social-neo-post-author-meta">${escape(contextLine)} - ${escape(when(post.createdAt))}</span>
-                        </div>
-                    </button>
-                    <div class="social-neo-inline social-neo-inline-gap-4 social-neo-inline-post-actions-head social-neo-post-head-actions">
-                        <span class="social-neo-pill social-neo-post-scope-badge">${escape(scopeBadge)}</span>
-                        ${pagePostLabel ? `<span class="social-neo-pill social-neo-post-page-label">${escape(pagePostLabel)}</span>` : ''}
-                        ${post.isPinned ? `<span class="social-neo-pill social-neo-pill-pinned social-neo-post-pinned-pill"><i class="fas fa-thumbtack"></i> Pinned</span>` : ''}
-                        ${post.viewerCanManageScope ? `<button class="social-neo-btn social-neo-btn-sm social-neo-btn-ghost social-neo-post-head-action-btn" type="button" data-action="post-pin" data-post-id="${escape(normalizedPostId)}"><i class="fas fa-thumbtack"></i> ${post.isPinned ? 'Unpin' : 'Pin'}</button>` : ''}
-                        ${post.viewerCanEdit ? `<button class="social-neo-btn social-neo-btn-sm social-neo-btn-ghost social-neo-post-head-action-btn" type="button" data-action="post-edit" data-post-id="${escape(normalizedPostId)}"><i class="fas fa-pen"></i></button>` : ''}
-                        ${post.viewerCanEdit ? `<button class="social-neo-btn social-neo-btn-sm social-neo-btn-ghost social-neo-post-head-action-btn" type="button" data-action="post-delete" data-post-id="${escape(normalizedPostId)}"><i class="fas fa-trash-alt"></i></button>` : ''}
-                        <button class="social-neo-btn social-neo-btn-sm social-neo-btn-ghost social-neo-post-head-action-btn" type="button" data-action="post-report" data-post-id="${escape(normalizedPostId)}"><i class="fas fa-ellipsis-h"></i></button>
-                    </div>
-                </div>
-                <div class="social-neo-post-body">${escape(post.body || post.text || '') || '<span class="social-neo-muted">Shared without extra text.</span>'}</div>
-                ${renderPostEntityLinks(post)}
-                ${(Array.isArray(post.media) ? post.media : []).map((media) => filePreview(media)).join('')}
-                ${sharedPost ? `
-                    <div class="social-neo-shared">
-                        <span class="social-neo-pill">Shared post</span>
-                        <strong>${escape(displayName(sharedPost.authorUserId))}</strong>
-                        <p>${escape(sharedPost.body || sharedPost.text || 'Original post')}</p>
-                    </div>
-                ` : ''}
-                ${(() => {
-                    const reactionMetricHtml = renderPostReactionMetrics(reactionCounts);
-                    const commentMetricHtml = commentTotal ? `<span class="social-neo-post-metric">${escape(commentTotal)} repl${commentTotal === 1 ? 'y' : 'ies'}</span>` : '';
-                    const shareMetricHtml = shareCount > 0 ? `<span class="social-neo-post-metric">${escape(shareCount)} share${shareCount !== 1 ? 's' : ''}</span>` : '';
-                    if (!reactionMetricHtml && !commentMetricHtml && !shareMetricHtml) return '';
-                    return `<div class="social-neo-inline-metrics social-neo-post-metrics">${reactionMetricHtml}${commentMetricHtml}${shareMetricHtml}</div>`;
-                })()}
-                <div class="social-neo-post-actions social-neo-post-action-row">
-                    <button class="social-neo-btn social-neo-post-action-btn ${hasViewerReaction ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'}" type="button" data-action="post-react" data-post-id="${escape(normalizedPostId)}" data-reaction-type="${escape(viewerReaction || 'like')}">
-                        ${hasViewerReaction
-                            ? `<span>${reactionEmoji(viewerReaction)}</span> ${escape(reactionLabel(viewerReaction))}`
-                            : '<i class="fas fa-thumbs-up"></i> Like'}
-                    </button>
-                    <button class="social-neo-btn social-neo-btn-ghost social-neo-post-action-btn" type="button" data-action="post-focus-comment" data-post-id="${escape(normalizedPostId)}">
-                        <i class="fas fa-comment"></i> Comment${post.replyCount ? ` (${escape(text(post.replyCount))})` : ''}
-                    </button>
-                    <button class="social-neo-btn social-neo-btn-ghost social-neo-post-action-btn" type="button" data-action="post-share" data-post-id="${escape(normalizedPostId)}">
-                        <i class="fas fa-share"></i> Share
-                    </button>
-                    <div class="social-neo-reaction-picker">
-                        ${['like', 'love', 'laugh', 'wow', 'support'].map((reactionType) => `
-                            <button class="social-neo-btn social-neo-btn-sm social-neo-post-reaction-btn ${post.viewerReaction === reactionType ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'}" type="button" data-action="post-react" data-post-id="${escape(normalizedPostId)}" data-reaction-type="${escape(reactionType)}" title="${escape(reactionType)}">
-                                <span>${reactionEmoji(reactionType)}</span>
-                            </button>
-                        `).join('')}
-                    </div>
-                    <span class="social-neo-flex-spacer"></span>
-                    <button class="social-neo-btn social-neo-post-save-btn ${saved ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'} social-neo-btn-sm" type="button" data-action="post-save" data-post-id="${escape(normalizedPostId)}">
-                        <i class="fas fa-bookmark"></i> ${saved ? 'Saved' : 'Save'}
-                    </button>
-                </div>
-            </article>
-        `;
+        if (hasSocialFeedModule() && typeof window.renderPost === 'function' && window.renderPost !== renderPost) {
+            return window.renderPost(post);
+        }
+        ensureSocialFeedModule().then(() => queueDeferredModuleRender('feed-module')).catch(() => null);
+        return '';
     }
 
     function renderSocialLuxHero(options = {}) {
