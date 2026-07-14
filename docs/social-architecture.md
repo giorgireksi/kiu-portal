@@ -109,13 +109,29 @@ Template modules for copy-paste consistency: `social-feed.js`, `social-events.js
 
 ## Quality roadmap (A+)
 
-1. **Ship & freeze** — this doc + modularization commit; boundary rule above.
+1. **Ship & freeze** — this doc + modularization commit; boundary rule above. *(done)*
 2. **Stub death on touch** — remove dual paths when a domain is edited (no mega-PR).
-3. **Uniform exports** — audit all 12 domains against the contract; fix gaps only.
-4. **Workspace split** — when next editing workspace, extract one seam (desk / graph / budget); keep `handleSocialWorkspace*` as façade.
+3. **Uniform exports** — audit all 12 domains against the contract; locked by `test/social-domain-export-contract.test.js`. *(done)*
+4. **Workspace split** — when next editing workspace, extract one seam (see below); keep `handleSocialWorkspace*` as façade.
 5. **Shell thin** — only if glue still blocks work; success = zero domain business rules on the page.
 
 Gates: `npm run test:social` (or `node node_modules/vitest/vitest.mjs run test/social-*.test.js`). Do not extract for line-count vanity.
+
+## Workspace internal seams (split candidates)
+
+`social-workspace.js` stays one public entry (`handleSocialWorkspaceClick` / `Submit` / `Input` / `Change`). Prefer extracting **one** seam per PR when product work lands there:
+
+| Seam | What lives there | Split priority |
+|------|------------------|----------------|
+| **task-graph** | Graph SVG/canvas, edges, inspector rail, fullscreen, PERT/CPM helpers | Highest (largest surface) |
+| **task-desk** | Desk tree/cards, week plan, matrix/board views | High when editing desk UX |
+| **budget / actuals** | Budget settings, expenses, plan vs baseline strips | Medium |
+| **risks** | Risk list/register UI | Medium |
+| **portfolio** | Portfolio discover/editor panels shared with `projects` panel | Medium |
+| **team / chat** | Members, invites, project chat parity | Lower unless messaging changes |
+| **public handlers** | `is*` / `handle*` façade only — stay in workspace entry file | Never extract away |
+
+Do **not** move workspace domain logic back into `social-page.js`.
 
 ## Verification
 
