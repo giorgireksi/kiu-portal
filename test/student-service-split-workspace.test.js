@@ -5,6 +5,29 @@ import { join } from 'path';
 function readAsset(relativePath) {
     return readFileSync(join(process.cwd(), relativePath), 'utf-8');
 }
+function ssvcHubAndQa() {
+    // QA module first so body splits hit real implementations, not hub stubs.
+    return readAsset('assets/js/pages/student-service-qa.js') + readAsset('assets/js/pages/student-service.js');
+}
+
+function extractStudentServiceFnBlock(source, name) {
+    const marker = `function ${name}(`;
+    const start = source.indexOf(marker);
+    if (start < 0) return '';
+    const brace = source.indexOf('{', start);
+    if (brace < 0) return '';
+    let depth = 0;
+    for (let i = brace; i < source.length; i += 1) {
+        const ch = source[i];
+        if (ch === '{') depth += 1;
+        else if (ch === '}') {
+            depth -= 1;
+            if (depth === 0) return source.slice(start, i + 1);
+        }
+    }
+    return '';
+}
+
 function ssvcBoth() {
     return readAsset('assets/js/pages/student-service.js') + readAsset('assets/js/pages/student-service-filters.js');
 }
@@ -12,7 +35,7 @@ function ssvcBoth() {
 
 describe('Student Service split workspace regressions', () => {
     it('persists and restores the selected top-level lane', () => {
-        const source = readAsset('assets/js/pages/student-service.js');
+        const source = ssvcHubAndQa();
 
         expect(source).toContain("const STUDENT_SERVICE_LANES = ['service', 'qa'];");
         expect(source).toContain("const STUDENT_SERVICE_UI_PREFS_KEY = 'KIU_STUDENT_SERVICE_UI_PREFS';");
@@ -22,7 +45,7 @@ describe('Student Service split workspace regressions', () => {
     });
 
     it('renders a social-style Q&A feed inside the split workspace instead of the old split-pane workbench', () => {
-        const source = readAsset('assets/js/pages/student-service.js');
+        const source = ssvcHubAndQa();
         const css = readAsset('assets/css/student-service-route.css');
         const mobileCss = readAsset('assets/css/mobile-responsive.css');
 
@@ -317,7 +340,7 @@ describe('Student Service split workspace regressions', () => {
     it('renders guidance modal as a search-only split workspace without lane cards or topic picker', () => {
         const serviceModule = readAsset('assets/js/pages/student-service-service.js');
         const css = readAsset('assets/css/student-service-route.css');
-        const studentServiceJs = readAsset('assets/js/pages/student-service.js');
+        const studentServiceJs = ssvcHubAndQa();
 
         expect(serviceModule).not.toContain('renderStudentServiceLaneRailMarkup');
         expect(serviceModule).not.toContain('student-service-lane-card');
@@ -335,7 +358,7 @@ describe('Student Service split workspace regressions', () => {
     });
 
     it('delegates the Q&A, ops, and service-workbench actions instead of emitting inline hooks', () => {
-        const source = readAsset('assets/js/pages/student-service.js');
+        const source = ssvcHubAndQa();
         const qaModule = readAsset('assets/js/pages/student-service-qa.js');
         const serviceModule = readAsset('assets/js/pages/student-service-service.js');
         const combined = `${source}\n${qaModule}\n${serviceModule}`;
@@ -459,7 +482,7 @@ describe('student-service button cascade guardrails', () => {
     });
 
     it('student-service.js keeps Q&A search-only without dimension filter pills', () => {
-        const source = readAsset('assets/js/pages/student-service.js');
+        const source = ssvcHubAndQa();
         const qaModule = readAsset('assets/js/pages/student-service-qa.js');
         const serviceModule = readAsset('assets/js/pages/student-service-service.js');
         const combined = `${source}\n${qaModule}\n${serviceModule}`;
@@ -473,7 +496,7 @@ describe('student-service button cascade guardrails', () => {
     });
 
     it('student-service.js composer modal cancel button must use lux-secondary-btn', () => {
-        const source = readAsset('assets/js/pages/student-service.js');
+        const source = ssvcHubAndQa();
 
         expect(source).toContain(
             'class="lux-secondary-btn" data-student-service-cancel-composer-modal="true"'
@@ -495,7 +518,7 @@ describe('student-service button cascade guardrails', () => {
 
 describe('lane switcher render recovery', () => {
     it('memoizes markup per DOM element so lane shell swaps still repaint', () => {
-        const source = readAsset('assets/js/pages/student-service.js');
+        const source = ssvcHubAndQa();
 
         expect(source).toContain('const studentServiceMarkupCache = new WeakMap();');
         expect(source).toContain('studentServiceMarkupCache.get(element)');
@@ -505,7 +528,7 @@ describe('lane switcher render recovery', () => {
     });
 
     it('lane switcher and chooser share the same delegated lane handler', () => {
-        const source = readAsset('assets/js/pages/student-service.js');
+        const source = ssvcHubAndQa();
 
         expect(source).toContain("const laneButton = event.target.closest('[data-student-service-lane]');");
         expect(source).toContain('setStudentServiceLane(laneButton.dataset.studentServiceLane || \'\');');
@@ -516,7 +539,7 @@ describe('lane switcher render recovery', () => {
     });
 
     it('lands on Q&A feed when switching lanes by clearing open thread state', () => {
-        const studentServiceJs = readAsset('assets/js/pages/student-service.js');
+        const studentServiceJs = ssvcHubAndQa();
         const serviceModule = readAsset('assets/js/pages/student-service-service.js');
 
         expect(studentServiceJs).toContain('ui.selectedQuestionId = \'\';');
@@ -540,7 +563,7 @@ describe('lane switcher render recovery', () => {
     });
 
     it('keeps compose markup stable while draft text changes', () => {
-        const studentServiceJs = readAsset('assets/js/pages/student-service.js');
+        const studentServiceJs = ssvcHubAndQa();
         const serviceModule = readAsset('assets/js/pages/student-service-service.js');
 
         expect(studentServiceJs).toContain('function captureStudentServiceComposeFocus(scopeElement)');
@@ -559,7 +582,7 @@ describe('lane switcher render recovery', () => {
 
 describe('student service bootstrap and module recovery guardrails', () => {
     it('renders a bootstrap error banner with retry when workspace data fails to load', () => {
-        const source = readAsset('assets/js/pages/student-service.js');
+        const source = ssvcHubAndQa();
         const css = readAsset('assets/css/student-service-route.css');
 
         expect(source).toContain('function renderStudentServiceBootstrapErrorBanner()');
@@ -576,7 +599,7 @@ describe('student service bootstrap and module recovery guardrails', () => {
     });
 
     it('recovers service module load failures with retry controls', () => {
-        const source = readAsset('assets/js/pages/student-service.js');
+        const source = ssvcHubAndQa();
         const css = readAsset('assets/css/student-service-route.css');
 
         expect(source).toContain('function renderStudentServiceServiceModuleLoadError(');
@@ -592,7 +615,7 @@ describe('student service bootstrap and module recovery guardrails', () => {
     });
 
     it('routes internal notes and handoff writes through manifest API paths', () => {
-        const source = readAsset('assets/js/pages/student-service.js');
+        const source = ssvcHubAndQa();
         const apiPaths = readAsset('assets/js/shared/student-service-api-paths.js');
 
         expect(apiPaths).toContain('ticketInternalNotes: (ticketId) =>');
@@ -610,7 +633,7 @@ describe('student service bootstrap and module recovery guardrails', () => {
 
 describe('Q&A hub interaction render guardrails', () => {
     it('includes draft-question state in the body render signature without inline composer expansion', () => {
-        const source = readAsset('assets/js/pages/student-service.js');
+        const source = ssvcHubAndQa();
 
         expect(source).not.toContain('ui.qaComposerExpanded ? \'1\' : \'0\'');
         expect(source).toContain('ui.draftQuestion?.askMode || \'public\'');
@@ -618,7 +641,7 @@ describe('Q&A hub interaction render guardrails', () => {
     });
 
     it('keeps delegated handlers for composer modal open and Q&A search input', () => {
-        const source = readAsset('assets/js/pages/student-service.js');
+        const source = ssvcHubAndQa();
 
         expect(source).toContain("const composerToggle = event.target.closest('[data-student-service-question-composer-toggle]');");
         expect(source).toContain('openStudentServiceQuestionComposerModal();');
@@ -629,16 +652,17 @@ describe('Q&A hub interaction render guardrails', () => {
     });
 
     it('uses a static Ask something opener without Q&A dimension filter pills', () => {
-        const source = readAsset('assets/js/pages/student-service.js');
+        const source = ssvcHubAndQa();
         const qaModule = readAsset('assets/js/pages/student-service-qa.js');
 
         expect(source).not.toContain('data-student-service-question-filter-field="qaStatus"');
         expect(source).toContain('data-student-service-question-composer-toggle="open"><i class="fas fa-pen"></i> Ask');
-        expect(qaModule).not.toContain('data-student-service-question-composer-toggle="open"');
+        // Composer markup owns the Ask opener after Q&A domain extract.
+        expect(qaModule).toContain('data-student-service-question-composer-toggle="open"');
     });
 
     it('recovers stale Q&A loading bodies and routes staff QA through the guarded feed entry', () => {
-        const source = readAsset('assets/js/pages/student-service.js');
+        const source = ssvcHubAndQa();
         const serviceModule = readAsset('assets/js/pages/student-service-service.js');
         const qaModule = readAsset('assets/js/pages/student-service-qa.js');
         const css = readAsset('assets/css/student-service-route.css');
@@ -661,7 +685,7 @@ describe('Q&A hub interaction render guardrails', () => {
 
 describe('Q&A open chat guardrails', () => {
     it('posts questions instantly and opens replies to every logged-in viewer', () => {
-        const source = readAsset('assets/js/pages/student-service.js');
+        const source = ssvcHubAndQa();
 
         expect(source).toContain("alert('Your question was posted.');");
         expect(source).not.toContain('submitted for review');
@@ -674,7 +698,7 @@ describe('Q&A open chat guardrails', () => {
     });
 
     it('keeps student Q&A command bar free of desk copy', () => {
-        const source = readAsset('assets/js/pages/student-service.js');
+        const source = ssvcHubAndQa();
         const qaModule = readAsset('assets/js/pages/student-service-qa.js');
 
         expect(source).not.toContain('Open campus chat for questions and answers.');
@@ -686,7 +710,7 @@ describe('Q&A open chat guardrails', () => {
 
 describe('Q&A card interaction guardrails', () => {
     it('invalidates page render via content fingerprint and clears signature only as last resort', () => {
-        const source = readAsset('assets/js/pages/student-service.js');
+        const source = ssvcHubAndQa();
 
         expect(source).toContain('function buildStudentServiceQaContentFingerprint(');
         expect(source).toContain('viewerHelpfulVote ? 1 : 0');
@@ -697,7 +721,7 @@ describe('Q&A card interaction guardrails', () => {
     });
 
     it('uses content-aware QA feed cache keys in lazy modules', () => {
-        const source = readAsset('assets/js/pages/student-service.js');
+        const source = ssvcHubAndQa();
         const qaModule = readAsset('assets/js/pages/student-service-qa.js');
 
         expect(source).toContain('function buildStudentServiceQaFeedCacheKey(');
@@ -705,7 +729,7 @@ describe('Q&A card interaction guardrails', () => {
     });
 
     it('renders flat thread comments with compose section and lux skip on card buttons', () => {
-        const source = readAsset('assets/js/pages/student-service.js');
+        const source = ssvcHubAndQa();
         const css = readAsset('assets/css/student-service-route.css');
 
         expect(source).toContain('student-service-qa-thread-comments');
@@ -724,7 +748,7 @@ describe('Q&A card interaction guardrails', () => {
 
 describe('Q&A comment reply guardrails', () => {
     it('groups answers into threaded comments with per-comment reply controls', () => {
-        const source = readAsset('assets/js/pages/student-service.js');
+        const source = ssvcHubAndQa();
 
         expect(source).toContain('function includeStudentServiceThreadParents(');
         expect(source).toContain('function preferStudentServiceAnswerRecord(');
@@ -766,7 +790,7 @@ describe('Q&A comment reply guardrails', () => {
     });
 
     it('keeps thread modal actions lean without staff tools panel', () => {
-        const source = readAsset('assets/js/pages/student-service.js');
+        const source = ssvcHubAndQa();
 
         expect(source).toContain('function renderStudentServiceQuestionDetailActionsMarkup(');
         expect(source).not.toContain('student-service-qa-staff-tools-panel');
@@ -776,7 +800,7 @@ describe('Q&A comment reply guardrails', () => {
     });
 
     it('delegates QA thread clicks from the modal root host', () => {
-        const source = readAsset('assets/js/pages/student-service.js');
+        const source = ssvcHubAndQa();
 
         expect(source).toContain('function handleStudentServiceQaThreadClick(');
         expect(source).toContain('studentServiceModalQaInteractionsBound');
@@ -788,7 +812,7 @@ describe('Q&A comment reply guardrails', () => {
     });
 
     it('merges flat answers back onto questions and nests replies for thread lines', () => {
-        const source = readAsset('assets/js/pages/student-service.js');
+        const source = ssvcHubAndQa();
 
         expect(source).toContain('const answerIds = new Set((answers || []).map(entry => String(entry.id || \'\').trim()).filter(Boolean));');
         expect(source).toContain('if (!parentId || !answerIds.has(parentId))');
@@ -802,7 +826,7 @@ describe('Q&A comment reply guardrails', () => {
     });
 
     it('resolves parentAnswerId from inline reply shells and merges POST question snapshots', () => {
-        const source = readAsset('assets/js/pages/student-service.js');
+        const source = ssvcHubAndQa();
 
         expect(source).toContain('function resolveStudentServiceReplyShell(');
         expect(source).toContain('function resolveStudentServiceParentAnswerId(');
@@ -823,7 +847,7 @@ describe('Q&A comment reply guardrails', () => {
     });
 
     it('renders nested reply markup when thread entries carry parentAnswerId', () => {
-        const source = readAsset('assets/js/pages/student-service.js');
+        const source = ssvcHubAndQa();
 
         expect(source).toContain('replies.length');
         expect(source).toContain('<div class="social-neo-comment-children">');
@@ -833,7 +857,7 @@ describe('Q&A comment reply guardrails', () => {
     });
 
     it('hard-locks nested reply parentAnswerId and supports two-step comment delete', () => {
-        const source = readAsset('assets/js/pages/student-service.js');
+        const source = ssvcHubAndQa();
         const css = readAsset('assets/css/student-service-route.css');
 
         expect(source).toContain('requestBody.parentAnswerId = parentAnswerId');
@@ -881,27 +905,27 @@ describe('Q&A comment reply guardrails', () => {
 
     it('maps legacy answer author ids in backend normalization and keeps per-answer delete options out of shared card defaults', () => {
         const domainSource = readAsset('backend/platform/domains/student-service-service.js');
-        const source = readAsset('assets/js/pages/student-service.js');
+        const source = ssvcHubAndQa();
 
         expect(domainSource).toContain('function normalizeStudentServiceAnswerRecord(');
         expect(domainSource).toContain('responderUserId: String(answer.responderUserId || authorUserId || \'\').trim()');
         expect(source).toContain('function resolveStudentServiceAnswerAuthorId(');
         expect(source).toContain('function buildStudentServiceAnswerCardOptions(');
-        const cardOptionsBlock = source.split('function buildStudentServiceAnswerCardOptions(')[1]?.split('\nfunction ')[0] || '';
+        const cardOptionsBlock = extractStudentServiceFnBlock(source, 'buildStudentServiceAnswerCardOptions');
         expect(cardOptionsBlock).not.toContain('canDelete');
         expect(source).toContain('canDelete: canCurrentUserDeleteStudentServiceAnswer(question, answer)');
-        const deleteAnswerBlock = source.split('function canCurrentUserDeleteStudentServiceAnswer(')[1]?.split('\nfunction ')[0] || '';
+        const deleteAnswerBlock = extractStudentServiceFnBlock(source, 'canCurrentUserDeleteStudentServiceAnswer');
         expect(deleteAnswerBlock).toContain('resolveStudentServiceAnswerAuthorId(answer)');
         expect(deleteAnswerBlock).not.toContain('canCurrentUserModerateStudentService');
         expect(deleteAnswerBlock).not.toContain('canCurrentUserManageStudentServiceQuestionAnswers');
     });
 
     it('keeps inline reply and open-thread state out of QA feed cache keys', () => {
-        const source = readAsset('assets/js/pages/student-service.js');
+        const source = ssvcHubAndQa();
         const css = readAsset('assets/css/student-service-route.css');
 
-        const cacheKeyBlock = source.split('function buildStudentServiceQaFeedCacheKey(')[1]?.split('\nfunction ')[0] || '';
-        const bodySignatureBlock = source.split('function buildStudentServiceBodySignature(')[1]?.split('\nfunction ')[0] || '';
+        const cacheKeyBlock = extractStudentServiceFnBlock(source, 'buildStudentServiceQaFeedCacheKey');
+        const bodySignatureBlock = extractStudentServiceFnBlock(source, 'buildStudentServiceBodySignature');
         expect(cacheKeyBlock).not.toContain('replyingToAnswerId');
         expect(cacheKeyBlock).not.toContain('replyingToQuestionId');
         expect(cacheKeyBlock).not.toContain('selectedQuestion');
@@ -928,13 +952,13 @@ describe('Q&A comment reply guardrails', () => {
         expect(source).toContain('data-student-service-dismiss-thread-modal');
         expect(source).toContain('data-student-service-cancel-thread-modal');
         expect(source).toContain('function openStudentServiceQuestion(');
-        const openQuestionBlock = source.split('function openStudentServiceQuestion(')[1]?.split(/\n(?:async )?function /)[0] || '';
+        const openQuestionBlock = extractStudentServiceFnBlock(source, 'openStudentServiceQuestion');
         expect(openQuestionBlock).not.toContain('renderStudentServicePage()');
-        const setOpenQuestionBlock = source.split('function setStudentServiceOpenQuestionId(')[1]?.split(/\nfunction /)[0] || '';
+        const setOpenQuestionBlock = extractStudentServiceFnBlock(source, 'setStudentServiceOpenQuestionId');
         expect(setOpenQuestionBlock).toContain('mountStudentServiceQuestionThreadModal(normalizedId)');
         expect(setOpenQuestionBlock).not.toContain('openStudentServiceQuestionCardElement');
         expect(source).toContain('function setStudentServiceQuestionFeedback(');
-        const questionFeedbackBlock = source.split('function setStudentServiceQuestionFeedback(')[1]?.split(/\n(?:async )?function /)[0] || '';
+        const questionFeedbackBlock = extractStudentServiceFnBlock(source, 'setStudentServiceQuestionFeedback');
         expect(questionFeedbackBlock).not.toContain('refreshStudentServiceDataAndRender()');
         expect(source).toContain('function patchStudentServiceAnswerHelpfulBtn(');
         expect(source).toContain('function renderStudentServiceQuestionHelpfulButtonMarkup(');
@@ -943,7 +967,7 @@ describe('Q&A comment reply guardrails', () => {
         expect(source).toContain('function triggerStudentServiceHelpfulAnimation(');
         expect(source).toContain('student-service-qa-question-helpful-btn');
         expect(source).toContain('student-service-qa-answer-helpful-label');
-        const answerFeedbackBlock = source.split('function setStudentServiceAnswerFeedback(')[1]?.split(/\n(?:async )?function /)[0] || '';
+        const answerFeedbackBlock = extractStudentServiceFnBlock(source, 'setStudentServiceAnswerFeedback');
         expect(answerFeedbackBlock).toContain('studentServiceHelpfulPending');
         expect(answerFeedbackBlock).toContain('triggerStudentServiceHelpfulAnimation');
         expect(answerFeedbackBlock).toContain('updateStudentServiceAnswerHelpfulButton');
@@ -957,7 +981,7 @@ describe('Q&A comment reply guardrails', () => {
     });
 
     it('exposes owner resolution controls for question authors and public status labels', () => {
-        const source = readAsset('assets/js/pages/student-service.js');
+        const source = ssvcHubAndQa();
         const css = readAsset('assets/css/student-service-route.css');
         const routes = readAsset('backend/platform/routes/student-service-routes.js');
 
@@ -978,7 +1002,7 @@ describe('Q&A comment reply guardrails', () => {
     });
 
     it('blocks student service writes when the backend API manifest is missing or stale', () => {
-        const source = readAsset('assets/js/pages/student-service.js');
+        const source = ssvcHubAndQa();
         const apiSource = readAsset('assets/js/app/api.js');
 
         expect(source).toContain('missing API manifest');

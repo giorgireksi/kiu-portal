@@ -35,7 +35,7 @@ Lane preference persists via `STUDENT_SERVICE_UI_PREFS_KEY` / `setStudentService
 |--------|----------------|
 | `student-service.js` | Boot, stores/bootstrap, lane chrome, modal root, ensure*, action dispatch, shared normalize until extracted |
 | `student-service-service.js` | Service-lane shell mounts (student hub, my tickets, responder, staff workbench) |
-| `student-service-qa.js` | Q&A-lane shell mounts; growing toward full Q&A markup/handlers |
+| `student-service-qa.js` | Q&A-lane shells + full Q&A markup/handlers (normalize, feed, composer, thread, submit/delete/feedback) |
 | `student-service-filters.js` | Inbox filter layouts, published layout, dropdown/control markup, filter editor (lazy via `ensureStudentServiceFiltersModule`) |
 | `student-service-attachments.js` | Attachment normalize + gallery/picker markup |
 | `student-service-tickets.js` | Ticket/thread markup + ticket actions |
@@ -67,7 +67,7 @@ When editing a domain, prefer **one** implementation in its module. Update dual-
 2. **Phase 1** — extract inbox filters → `student-service-filters.js` *(done)*  
 3. **Phase 2** — extract attachments → `student-service-attachments.js` *(done)*  
 4. **Phase 3** — tickets/thread domain module *(done: normalize, modals, submit/reply/status/handoff)*  
-5. **Phase 4** — deepen Q&A module  
+5. **Phase 4** — deepen Q&A module *(done)*  
 6. **Phase 5** — hub click-router compaction; optional articles/handoff  
 
 ## Verification
