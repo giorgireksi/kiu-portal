@@ -37,7 +37,6 @@
         when,
         filePreview,
         renderPostReactionMetrics,
-        renderCommentThread,
         setPanel,
         openDialog,
         closeDialog,
@@ -76,7 +75,6 @@
         patchCommentDialogCount,
         readFileAsDataUrl,
         removePortalSocialComment,
-        renderCommentNode,
         reportPortalSocialContent,
         reportSocialPost,
         restorePreviousDialog,
@@ -121,7 +119,6 @@
         || typeof when !== 'function'
         || typeof filePreview !== 'function'
         || typeof renderPostReactionMetrics !== 'function'
-        || typeof renderCommentThread !== 'function'
         || typeof setPanel !== 'function'
         || typeof openDialog !== 'function'
         || typeof closeDialog !== 'function'
@@ -160,7 +157,6 @@
         || typeof patchCommentDialogCount !== 'function'
         || typeof readFileAsDataUrl !== 'function'
         || typeof removePortalSocialComment !== 'function'
-        || typeof renderCommentNode !== 'function'
         || typeof reportPortalSocialContent !== 'function'
         || typeof reportSocialPost !== 'function'
         || typeof restorePreviousDialog !== 'function'
@@ -258,6 +254,118 @@
     }
 
     window.renderPost = renderPost;
+
+    function commentReactionType(comment) {
+        const reactions = comment?.reactions && typeof comment.reactions === 'object' ? comment.reactions : {};
+        const userId = currentUserId();
+        return Object.keys(reactions).find((type) => Array.isArray(reactions[type]) && reactions[type].some((id) => text(id) === userId)) || '';
+    }
+
+    /**
+     * Renders a single comment bubble with reactions, reply button, and nested replies.
+     * Recursively calls itself for child replies, capping depth CSS class at 3.
+     * @param {Object} comment  - Comment object with id, body, authorUserId, replies[], reactions.
+     * @param {Object} post     - Parent post (used for data-post-id attributes).
+     * @param {number} [depth]  - Current nesting depth (0 = root comment).
+     * @returns {string} HTML `<article>` markup.
+     */
+    /**
+     * Renders the inline (Reddit-style) reply composer shown directly beneath a
+     * comment when it is the active reply target. Carries the parent comment id
+     * on the form so the submit handler attaches the reply correctly.
+     */
+    function renderInlineReplyForm(comment, post, context) {
+        const normalizedPostId = postKey(post);
+        const formType = context === 'dialog' ? 'dialog-comment' : 'comment';
+        const author = displayName(accountById(comment.authorUserId) || { id: comment.authorUserId, displayName: comment.authorName || comment.authorUserId });
+        const inputId = `social-reply-input-${text(comment.id)}`;
+        return `
+            <form class="social-neo-comment-reply-form" data-form="${formType}" data-post-id="${escape(normalizedPostId)}" data-reply-comment-id="${escape(text(comment.id))}" data-reply-author="${escape(author)}">
+                <input class="social-neo-input lux-modern-field" id="${escape(inputId)}" type="text" name="commentBody" placeholder="Reply to @${escape(author)}..." aria-label="Reply to @${escape(author)}..." value="" autocomplete="off">
+                <div class="social-neo-comment-reply-form-actions">
+                    <button class="social-neo-btn social-neo-btn-sm social-neo-btn-ghost" type="button" data-action="comment-reply-cancel" data-post-id="${escape(normalizedPostId)}" data-comment-id="${escape(text(comment.id))}">Cancel</button>
+                    <button class="social-neo-btn social-neo-btn-sm social-neo-btn-primary" type="submit">Reply</button>
+                </div>
+                <input type="hidden" name="postId" value="${escape(normalizedPostId)}">
+            </form>
+        `;
+    }
+
+    /** The 5 emoji reaction buttons for a comment (extracted so they can be patched in place). */
+    function renderCommentReactionButtons(comment, normalizedPostId) {
+        const commentReaction = commentReactionType(comment);
+        const reactionCounts = comment?.reactionCounts || {};
+        return ['like', 'love', 'laugh', 'wow', 'support'].map((reactionType) => `
+            <button class="social-neo-btn social-neo-btn-sm ${commentReaction === reactionType ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'}" type="button" data-action="comment-react" data-post-id="${escape(normalizedPostId)}" data-comment-id="${escape(text(comment.id))}" data-reaction-type="${escape(reactionType)}">
+                <span>${reactionEmoji(reactionType)}</span> ${escape(text(reactionCounts[reactionType] || 0))}
+            </button>
+        `).join('');
+    }
+
+    function renderCommentNode(comment, post, depth = 0, context = 'feed') {
+        const normalizedPostId = postKey(post);
+        const commentAuthor = accountById(comment.authorUserId) || { id: comment.authorUserId, displayName: comment.authorName || comment.authorUserId };
+        const replyCount = Array.isArray(comment.replies) ? comment.replies.length : 0;
+        const depthClass = depth ? ` is-reply social-neo-comment-depth-${Math.min(depth, 3)}` : '';
+        const viewer = currentUser();
+        const canDeleteComment = Boolean(
+            viewer && comment?.authorUserId &&
+            (text(viewer.id) === text(comment.authorUserId) || String(viewer.role || '').toLowerCase() === 'admin')
+        );
+        const isReplyTarget = text(state().ui?.commentReplyTargetByPost?.[normalizedPostId]?.commentId) === text(comment.id);
+        return `
+            <article class="social-neo-comment${depthClass}" data-comment-id="${escape(text(comment.id))}">
+                <div class="social-neo-comment-row">
+                    ${avatar(commentAuthor, 'social-neo-avatar-sm')}
+                    <div class="social-neo-comment-body">
+                        <div class="social-neo-comment-bubble">
+                            <div class="social-neo-comment-head">
+                                <strong>${escape(displayName(commentAuthor))}</strong>
+                                <span>${escape(when(comment.createdAt))}</span>
+                            </div>
+                            <p>${escape(comment.body || comment.text || '')}</p>
+                        </div>
+                        <div class="social-neo-comment-actions">
+                            <span class="social-neo-comment-reactions">${renderCommentReactionButtons(comment, normalizedPostId)}</span>
+                            <button class="social-neo-btn social-neo-btn-sm social-neo-btn-ghost social-neo-comment-reply-btn${isReplyTarget ? ' is-active' : ''}" type="button" data-action="comment-reply" data-post-id="${escape(normalizedPostId)}" data-comment-id="${escape(text(comment.id))}" data-author-name="${escape(displayName(commentAuthor))}">
+                                <i class="fas fa-reply"></i> <span class="social-neo-comment-reply-label">Reply${replyCount ? ` (${replyCount})` : ''}</span>
+                            </button>
+                            ${canDeleteComment ? `
+                            <button class="social-neo-btn social-neo-btn-sm social-neo-btn-ghost social-neo-comment-delete-btn" type="button" data-action="comment-delete" data-post-id="${escape(normalizedPostId)}" data-comment-id="${escape(text(comment.id))}" aria-label="Delete comment">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                            ` : ''}
+                            <button class="social-neo-btn social-neo-btn-sm social-neo-btn-ghost" type="button" data-action="comment-report" data-post-id="${escape(normalizedPostId)}" data-comment-id="${escape(text(comment.id))}">
+                                <i class="fas fa-flag"></i>
+                            </button>
+                        </div>
+                        ${isReplyTarget ? renderInlineReplyForm(comment, post, context) : ''}
+                    </div>
+                </div>
+                ${Array.isArray(comment.replies) && comment.replies.length ? `<div class="social-neo-comment-children">${comment.replies.map((reply) => renderCommentNode(reply, post, depth + 1, context)).join('')}</div>` : ''}
+            </article>
+        `;
+    }
+
+    /**
+     * Renders the full comment thread below a post card.
+     * Delegates to renderCommentNode for each root-level comment.
+     * @param {Array<Object>} comments - Root-level comments array.
+     * @param {Object} post - Parent post.
+     * @returns {string} HTML or empty string if no comments.
+     */
+    function renderCommentThread(comments, post, context = 'feed') {
+        const roots = Array.isArray(comments) ? comments : [];
+        if (!roots.length) return '';
+        return `<div class="social-neo-comment-list">${roots.map((comment) => renderCommentNode(comment, post, 0, context)).join('')}</div>`;
+    }
+
+    window.commentReactionType = commentReactionType;
+    window.renderInlineReplyForm = renderInlineReplyForm;
+    window.renderCommentReactionButtons = renderCommentReactionButtons;
+    window.renderCommentNode = renderCommentNode;
+    window.renderCommentThread = renderCommentThread;
+
 
     const POST_COMPOSE_ATTACH_SECTIONS = [
         { id: 'group', label: 'Groups', icon: 'fa-user-group' },
