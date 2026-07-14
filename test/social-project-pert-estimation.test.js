@@ -79,7 +79,7 @@ describe('social project PERT estimation', () => {
         const runtime = readSource('assets/js/shared/social-runtime-lite.js');
         const service = readSource('backend/platform/domains/social-projects-service.js');
 
-        expect(page).toContain('function computePertExpected(');
+        expect(page).toContain("createSocialWorkspaceStub('computePertExpected'");
         expect((page + readSource('assets/js/pages/social-workspace.js'))).toContain('name="projectTaskTimeOptimistic"');
         expect(page).not.toContain('name="projectTaskRiskTimeImpact"');
         expect(page).not.toContain('function taskHasQuantifiedRisk(');

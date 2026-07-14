@@ -77,61 +77,12 @@
         };
     }
 
-    function readProjectWeekPlansStore(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.readProjectWeekPlansStore === 'function' && window.readProjectWeekPlansStore !== readProjectWeekPlansStore) {
-            return window.readProjectWeekPlansStore(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return {};
-    }
 
-    function readProjectWeekPlan(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.readProjectWeekPlan === 'function' && window.readProjectWeekPlan !== readProjectWeekPlan) {
-            return window.readProjectWeekPlan(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return {};
-    }
 
-    function writeProjectWeekPlan(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.writeProjectWeekPlan === 'function' && window.writeProjectWeekPlan !== writeProjectWeekPlan) {
-            return window.writeProjectWeekPlan(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return;
-    }
 
-    function addToProjectWeekPlan(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.addToProjectWeekPlan === 'function' && window.addToProjectWeekPlan !== addToProjectWeekPlan) {
-            return window.addToProjectWeekPlan(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return;
-    }
 
-    function addManyToProjectWeekPlan(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.addManyToProjectWeekPlan === 'function' && window.addManyToProjectWeekPlan !== addManyToProjectWeekPlan) {
-            return window.addManyToProjectWeekPlan(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return;
-    }
 
-    function removeFromProjectWeekPlan(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.removeFromProjectWeekPlan === 'function' && window.removeFromProjectWeekPlan !== removeFromProjectWeekPlan) {
-            return window.removeFromProjectWeekPlan(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return;
-    }
 
-    function normalizeProjectWeekPlanWindow(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.normalizeProjectWeekPlanWindow === 'function' && window.normalizeProjectWeekPlanWindow !== normalizeProjectWeekPlanWindow) {
-            return window.normalizeProjectWeekPlanWindow(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return;
-    }
 
     function taskActivityMs(task) {
         const candidates = [
@@ -220,29 +171,8 @@
     ]);
     const PROJECT_TASK_GRAPH_CHECKPOINT_MAX = 12;
 
-    function shouldRenderProjectTaskGraphStack(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.shouldRenderProjectTaskGraphStack === 'function' && window.shouldRenderProjectTaskGraphStack !== shouldRenderProjectTaskGraphStack) {
-            return window.shouldRenderProjectTaskGraphStack(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
-    function shouldRenderProjectHealthStack(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.shouldRenderProjectHealthStack === 'function' && window.shouldRenderProjectHealthStack !== shouldRenderProjectHealthStack) {
-            return window.shouldRenderProjectHealthStack(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return false;
-    }
 
-    function renderWorkspaceOwnedDialog(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.renderWorkspaceOwnedDialog === 'function' && window.renderWorkspaceOwnedDialog !== renderWorkspaceOwnedDialog) {
-            return window.renderWorkspaceOwnedDialog(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
     function shouldRestoreStackedDialog(type = '') {
         const kind = text(type);
@@ -254,102 +184,18 @@
         return false;
     }
 
-    function isProjectTaskGraphStackActive(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.isProjectTaskGraphStackActive === 'function' && window.isProjectTaskGraphStackActive !== isProjectTaskGraphStackActive) {
-            return window.isProjectTaskGraphStackActive(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    function getProjectTaskGraphStackAnchorDialog(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.getProjectTaskGraphStackAnchorDialog === 'function' && window.getProjectTaskGraphStackAnchorDialog !== getProjectTaskGraphStackAnchorDialog) {
-            return window.getProjectTaskGraphStackAnchorDialog(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    function wrapProjectTaskGraphStack(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.wrapProjectTaskGraphStack === 'function' && window.wrapProjectTaskGraphStack !== wrapProjectTaskGraphStack) {
-            return window.wrapProjectTaskGraphStack(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    function wrapProjectHealthStack(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.wrapProjectHealthStack === 'function' && window.wrapProjectHealthStack !== wrapProjectHealthStack) {
-            return window.wrapProjectHealthStack(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    function renderHealthStackLayers(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.renderHealthStackLayers === 'function' && window.renderHealthStackLayers !== renderHealthStackLayers) {
-            return window.renderHealthStackLayers(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    function maybeWrapStackedProjectDialog(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.maybeWrapStackedProjectDialog === 'function' && window.maybeWrapStackedProjectDialog !== maybeWrapStackedProjectDialog) {
-            return window.maybeWrapStackedProjectDialog(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    function renderStackedProjectTaskChild(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.renderStackedProjectTaskChild === 'function' && window.renderStackedProjectTaskChild !== renderStackedProjectTaskChild) {
-            return window.renderStackedProjectTaskChild(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    function trySyncProjectTaskGraphStackDialog(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.trySyncProjectTaskGraphStackDialog === 'function' && window.trySyncProjectTaskGraphStackDialog !== trySyncProjectTaskGraphStackDialog) {
-            return window.trySyncProjectTaskGraphStackDialog(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    function projectTaskGraphStackedBackdropClass(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.projectTaskGraphStackedBackdropClass === 'function' && window.projectTaskGraphStackedBackdropClass !== projectTaskGraphStackedBackdropClass) {
-            return window.projectTaskGraphStackedBackdropClass(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    function resolveProjectTaskGraphNodeFromTarget(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.resolveProjectTaskGraphNodeFromTarget === 'function' && window.resolveProjectTaskGraphNodeFromTarget !== resolveProjectTaskGraphNodeFromTarget) {
-            return window.resolveProjectTaskGraphNodeFromTarget(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    function sortProjectBoardTasksByPriority(tasks = []) {
-        if (hasSocialWorkspaceModule() && typeof window.sortProjectBoardTasksByPriority === 'function' && window.sortProjectBoardTasksByPriority !== sortProjectBoardTasksByPriority) {
-            return window.sortProjectBoardTasksByPriority.apply(null, arguments);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return Array.isArray(tasks) ? [...tasks] : [];
-    }
 
 
-    function filterProjectBoardTasks(runtime, tasks = []) {
-        if (hasSocialWorkspaceModule() && typeof window.filterProjectBoardTasks === 'function' && window.filterProjectBoardTasks !== filterProjectBoardTasks) {
-            return window.filterProjectBoardTasks.apply(null, arguments);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return Array.isArray(tasks) ? tasks : [];
-    }
+
+
+
+
+
+
+
+
+
+
 
 
     function renderProjectWorkspaceNavButtons(project, options = {}) {
@@ -363,13 +209,6 @@
         `.trim();
     }
 
-    function projectTaskDependsOnIds(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.projectTaskDependsOnIds === 'function' && window.projectTaskDependsOnIds !== projectTaskDependsOnIds) {
-            return window.projectTaskDependsOnIds(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
     function projectTaskDownstreamIds(taskId, tasks = []) {
         const id = text(taskId);
@@ -387,13 +226,6 @@
     }
 
     /** Desk readiness from dependsOn (graph parents) — pure read. */
-    function resolveDeskTaskReadiness(task, taskById = new Map(), groups = null) {
-        if (hasSocialWorkspaceModule() && typeof window.resolveDeskTaskReadiness === 'function' && window.resolveDeskTaskReadiness !== resolveDeskTaskReadiness) {
-            return window.resolveDeskTaskReadiness.apply(null, arguments);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return { kind: 'ready', label: 'Ready', openDeps: [], openCount: 0 };
-    }
 
 
     /**
@@ -402,21 +234,7 @@
      * Children sit directly under their primary in-list parent (not flat by depth).
      * Multi-parent: first in-list dep after sibling sort is primary; others only affect readiness UI.
      */
-    function orderDeskTasksByDependency(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.orderDeskTasksByDependency === 'function' && window.orderDeskTasksByDependency !== orderDeskTasksByDependency) {
-            return window.orderDeskTasksByDependency(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return [];
-    }
 
-    function buildDeskTaskForest(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.buildDeskTaskForest === 'function' && window.buildDeskTaskForest !== buildDeskTaskForest) {
-            return window.buildDeskTaskForest(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return [];
-    }
 
     function countDeskForestNodes(forest) {
         let n = 0;
@@ -431,13 +249,6 @@
     }
 
 
-    function buildProjectTaskInspectorFields(task) {
-        if (hasSocialWorkspaceModule() && typeof window.buildProjectTaskInspectorFields === 'function' && window.buildProjectTaskInspectorFields !== buildProjectTaskInspectorFields) {
-            return window.buildProjectTaskInspectorFields.apply(null, arguments);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return [];
-    }
 
 
     function formatProjectTaskBudgetEstimate(amount, currency = 'USD') {
@@ -482,13 +293,6 @@
         };
     }
 
-    function syncProjectTaskMatrixPreview(form) {
-        if (hasSocialWorkspaceModule() && typeof window.syncProjectTaskMatrixPreview === 'function' && window.syncProjectTaskMatrixPreview !== syncProjectTaskMatrixPreview) {
-            return window.syncProjectTaskMatrixPreview.apply(null, arguments);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return;
-    }
 
 
     function normalizeTaskScore1to5(value, fallback = 3) {
@@ -526,29 +330,8 @@
         return Number.isFinite(n) && n > 0 ? Math.round(n * 10) / 10 : 0;
     }
 
-    function computePertExpected(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.computePertExpected === 'function' && window.computePertExpected !== computePertExpected) {
-            return window.computePertExpected(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return 0;
-    }
 
-    function taskHasPert(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.taskHasPert === 'function' && window.taskHasPert !== taskHasPert) {
-            return window.taskHasPert(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return false;
-    }
 
-    function resolveTaskScheduleEstimate(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.resolveTaskScheduleEstimate === 'function' && window.resolveTaskScheduleEstimate !== resolveTaskScheduleEstimate) {
-            return window.resolveTaskScheduleEstimate(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return { estimate: 0, unit: 'h', source: 'estimate' };
-    }
 
     function formatTaskTime(value, unit) {
         const n = normalizeTaskTime(value);
@@ -587,38 +370,10 @@
     }
 
     // Impact×Effort is the headline priority. Always matrix now (no manual/mode).
-    function resolveProjectTaskPriorityDisplay(task) {
-        if (hasSocialWorkspaceModule() && typeof window.resolveProjectTaskPriorityDisplay === 'function' && window.resolveProjectTaskPriorityDisplay !== resolveProjectTaskPriorityDisplay) {
-            return window.resolveProjectTaskPriorityDisplay.apply(null, arguments);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return { label: 'Medium', tone: 'neutral', score: 3 };
-    }
 
 
-    function clampProjectTaskGraphCardHeight(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.clampProjectTaskGraphCardHeight === 'function' && window.clampProjectTaskGraphCardHeight !== clampProjectTaskGraphCardHeight) {
-            return window.clampProjectTaskGraphCardHeight(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
-    function estimateProjectTaskGraphCardHeight(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.estimateProjectTaskGraphCardHeight === 'function' && window.estimateProjectTaskGraphCardHeight !== estimateProjectTaskGraphCardHeight) {
-            return window.estimateProjectTaskGraphCardHeight(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
-    function measureProjectTaskGraphCardHeights(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.measureProjectTaskGraphCardHeights === 'function' && window.measureProjectTaskGraphCardHeights !== measureProjectTaskGraphCardHeights) {
-            return window.measureProjectTaskGraphCardHeights(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
     function buildProjectTaskFlowEdges(taskList = [], explicitPairs = new Set()) {
         const sorted = [...taskList].sort((left, right) => {
@@ -639,301 +394,42 @@
         return flowEdges;
     }
 
-    function normalizeProjectTaskGraphMode(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.normalizeProjectTaskGraphMode === 'function' && window.normalizeProjectTaskGraphMode !== normalizeProjectTaskGraphMode) {
-            return window.normalizeProjectTaskGraphMode(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
-    function projectTaskGraphShowInferred(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.projectTaskGraphShowInferred === 'function' && window.projectTaskGraphShowInferred !== projectTaskGraphShowInferred) {
-            return window.projectTaskGraphShowInferred(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
-    function projectTaskGraphShowCritical(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.projectTaskGraphShowCritical === 'function' && window.projectTaskGraphShowCritical !== projectTaskGraphShowCritical) {
-            return window.projectTaskGraphShowCritical(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
-    function projectTaskGraphShowFlow(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.projectTaskGraphShowFlow === 'function' && window.projectTaskGraphShowFlow !== projectTaskGraphShowFlow) {
-            return window.projectTaskGraphShowFlow(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
-    function projectTaskGraphVisibleEdges(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.projectTaskGraphVisibleEdges === 'function' && window.projectTaskGraphVisibleEdges !== projectTaskGraphVisibleEdges) {
-            return window.projectTaskGraphVisibleEdges(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
-    function buildProjectTaskGraphModel(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.buildProjectTaskGraphModel === 'function' && window.buildProjectTaskGraphModel !== buildProjectTaskGraphModel) {
-            return window.buildProjectTaskGraphModel(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
-    function layoutProjectTaskGraphByStatus(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.layoutProjectTaskGraphByStatus === 'function' && window.layoutProjectTaskGraphByStatus !== layoutProjectTaskGraphByStatus) {
-            return window.layoutProjectTaskGraphByStatus(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
-    function compareProjectTaskGraphNodes(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.compareProjectTaskGraphNodes === 'function' && window.compareProjectTaskGraphNodes !== compareProjectTaskGraphNodes) {
-            return window.compareProjectTaskGraphNodes(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
-    function hashProjectTaskGraphSeed(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.hashProjectTaskGraphSeed === 'function' && window.hashProjectTaskGraphSeed !== hashProjectTaskGraphSeed) {
-            return window.hashProjectTaskGraphSeed(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
-    function projectTaskGraphPseudoRandom(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.projectTaskGraphPseudoRandom === 'function' && window.projectTaskGraphPseudoRandom !== projectTaskGraphPseudoRandom) {
-            return window.projectTaskGraphPseudoRandom(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
-    function getProjectTaskGraphMetrics(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.getProjectTaskGraphMetrics === 'function' && window.getProjectTaskGraphMetrics !== getProjectTaskGraphMetrics) {
-            return window.getProjectTaskGraphMetrics(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
-    function computeProjectTaskGraphStageSize(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.computeProjectTaskGraphStageSize === 'function' && window.computeProjectTaskGraphStageSize !== computeProjectTaskGraphStageSize) {
-            return window.computeProjectTaskGraphStageSize(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
-    function computeProjectTaskGraphNodeDegree(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.computeProjectTaskGraphNodeDegree === 'function' && window.computeProjectTaskGraphNodeDegree !== computeProjectTaskGraphNodeDegree) {
-            return window.computeProjectTaskGraphNodeDegree(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
-    function projectTaskGraphBoxRepulse(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.projectTaskGraphBoxRepulse === 'function' && window.projectTaskGraphBoxRepulse !== projectTaskGraphBoxRepulse) {
-            return window.projectTaskGraphBoxRepulse(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
-    function resolveProjectTaskGraphCardOverlaps(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.resolveProjectTaskGraphCardOverlaps === 'function' && window.resolveProjectTaskGraphCardOverlaps !== resolveProjectTaskGraphCardOverlaps) {
-            return window.resolveProjectTaskGraphCardOverlaps(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
-    function layoutProjectTaskGraphForce(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.layoutProjectTaskGraphForce === 'function' && window.layoutProjectTaskGraphForce !== layoutProjectTaskGraphForce) {
-            return window.layoutProjectTaskGraphForce(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
-    function projectTaskGraphLayoutUsesSavedPositions(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.projectTaskGraphLayoutUsesSavedPositions === 'function' && window.projectTaskGraphLayoutUsesSavedPositions !== projectTaskGraphLayoutUsesSavedPositions) {
-            return window.projectTaskGraphLayoutUsesSavedPositions(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
-    function applyProjectTaskGraphSavedPositions(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.applyProjectTaskGraphSavedPositions === 'function' && window.applyProjectTaskGraphSavedPositions !== applyProjectTaskGraphSavedPositions) {
-            return window.applyProjectTaskGraphSavedPositions(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
-    function projectTaskGraphRectsOverlap(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.projectTaskGraphRectsOverlap === 'function' && window.projectTaskGraphRectsOverlap !== projectTaskGraphRectsOverlap) {
-            return window.projectTaskGraphRectsOverlap(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
-    function findFreeProjectTaskGraphPosition(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.findFreeProjectTaskGraphPosition === 'function' && window.findFreeProjectTaskGraphPosition !== findFreeProjectTaskGraphPosition) {
-            return window.findFreeProjectTaskGraphPosition(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
-    function ensureProjectTaskGraphPositionForTask(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.ensureProjectTaskGraphPositionForTask === 'function' && window.ensureProjectTaskGraphPositionForTask !== ensureProjectTaskGraphPositionForTask) {
-            return window.ensureProjectTaskGraphPositionForTask(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
-    function projectTaskGraphContentBounds(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.projectTaskGraphContentBounds === 'function' && window.projectTaskGraphContentBounds !== projectTaskGraphContentBounds) {
-            return window.projectTaskGraphContentBounds(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
-    function resolveProjectTaskGraphGroupBox(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.resolveProjectTaskGraphGroupBox === 'function' && window.resolveProjectTaskGraphGroupBox !== resolveProjectTaskGraphGroupBox) {
-            return window.resolveProjectTaskGraphGroupBox(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
-    function collectProjectTaskGraphGroupBoxes(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.collectProjectTaskGraphGroupBoxes === 'function' && window.collectProjectTaskGraphGroupBoxes !== collectProjectTaskGraphGroupBoxes) {
-            return window.collectProjectTaskGraphGroupBoxes(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
-    function projectTaskGraphContentViewBox(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.projectTaskGraphContentViewBox === 'function' && window.projectTaskGraphContentViewBox !== projectTaskGraphContentViewBox) {
-            return window.projectTaskGraphContentViewBox(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
-    function projectTaskGraphPositionsStorageKey(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.projectTaskGraphPositionsStorageKey === 'function' && window.projectTaskGraphPositionsStorageKey !== projectTaskGraphPositionsStorageKey) {
-            return window.projectTaskGraphPositionsStorageKey(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
-    function loadProjectTaskGraphPositions(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.loadProjectTaskGraphPositions === 'function' && window.loadProjectTaskGraphPositions !== loadProjectTaskGraphPositions) {
-            return window.loadProjectTaskGraphPositions(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return;
-    }
 
-    function saveProjectTaskGraphPositions(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.saveProjectTaskGraphPositions === 'function' && window.saveProjectTaskGraphPositions !== saveProjectTaskGraphPositions) {
-            return window.saveProjectTaskGraphPositions(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return;
-    }
 
-    function getProjectTaskGraphPositions(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.getProjectTaskGraphPositions === 'function' && window.getProjectTaskGraphPositions !== getProjectTaskGraphPositions) {
-            return window.getProjectTaskGraphPositions(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
-    function setProjectTaskGraphPositions(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.setProjectTaskGraphPositions === 'function' && window.setProjectTaskGraphPositions !== setProjectTaskGraphPositions) {
-            return window.setProjectTaskGraphPositions(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return;
-    }
 
-    function ensureProjectTaskGraphPositionsLoaded(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.ensureProjectTaskGraphPositionsLoaded === 'function' && window.ensureProjectTaskGraphPositionsLoaded !== ensureProjectTaskGraphPositionsLoaded) {
-            return window.ensureProjectTaskGraphPositionsLoaded(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
-    function projectTaskGraphViewStorageKey(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.projectTaskGraphViewStorageKey === 'function' && window.projectTaskGraphViewStorageKey !== projectTaskGraphViewStorageKey) {
-            return window.projectTaskGraphViewStorageKey(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
-    function clampProjectTaskGraphZoom(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.clampProjectTaskGraphZoom === 'function' && window.clampProjectTaskGraphZoom !== clampProjectTaskGraphZoom) {
-            return window.clampProjectTaskGraphZoom(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
-    function loadProjectTaskGraphView(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.loadProjectTaskGraphView === 'function' && window.loadProjectTaskGraphView !== loadProjectTaskGraphView) {
-            return window.loadProjectTaskGraphView(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return;
-    }
 
-    function saveProjectTaskGraphView(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.saveProjectTaskGraphView === 'function' && window.saveProjectTaskGraphView !== saveProjectTaskGraphView) {
-            return window.saveProjectTaskGraphView(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return;
-    }
 
-    function persistProjectTaskGraphView(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.persistProjectTaskGraphView === 'function' && window.persistProjectTaskGraphView !== persistProjectTaskGraphView) {
-            return window.persistProjectTaskGraphView(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return;
-    }
 
-    function projectTaskGraphSyncStorageKey(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.projectTaskGraphSyncStorageKey === 'function' && window.projectTaskGraphSyncStorageKey !== projectTaskGraphSyncStorageKey) {
-            return window.projectTaskGraphSyncStorageKey(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
     function loadTaskGraphSyncMarker(projectId) {
         try {
@@ -951,181 +447,27 @@
         } catch (error) {}
     }
 
-    function seedProjectTaskGraphFromProject(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.seedProjectTaskGraphFromProject === 'function' && window.seedProjectTaskGraphFromProject !== seedProjectTaskGraphFromProject) {
-            return window.seedProjectTaskGraphFromProject(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return;
-    }
 
-    function queueProjectTaskGraphSync(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.queueProjectTaskGraphSync === 'function' && window.queueProjectTaskGraphSync !== queueProjectTaskGraphSync) {
-            return window.queueProjectTaskGraphSync(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return;
-    }
 
-    function projectTaskGraphGroupsStorageKey(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.projectTaskGraphGroupsStorageKey === 'function' && window.projectTaskGraphGroupsStorageKey !== projectTaskGraphGroupsStorageKey) {
-            return window.projectTaskGraphGroupsStorageKey(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
-    function getProjectTaskGraphGroups(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.getProjectTaskGraphGroups === 'function' && window.getProjectTaskGraphGroups !== getProjectTaskGraphGroups) {
-            return window.getProjectTaskGraphGroups(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
-    function setProjectTaskGraphGroups(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.setProjectTaskGraphGroups === 'function' && window.setProjectTaskGraphGroups !== setProjectTaskGraphGroups) {
-            return window.setProjectTaskGraphGroups(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return;
-    }
 
-    function projectTaskGraphCheckpointStorageKey(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.projectTaskGraphCheckpointStorageKey === 'function' && window.projectTaskGraphCheckpointStorageKey !== projectTaskGraphCheckpointStorageKey) {
-            return window.projectTaskGraphCheckpointStorageKey(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
-    function projectTaskGraphCheckpointsStorageKey(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.projectTaskGraphCheckpointsStorageKey === 'function' && window.projectTaskGraphCheckpointsStorageKey !== projectTaskGraphCheckpointsStorageKey) {
-            return window.projectTaskGraphCheckpointsStorageKey(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
-    function formatProjectTaskGraphCheckpointWhen(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.formatProjectTaskGraphCheckpointWhen === 'function' && window.formatProjectTaskGraphCheckpointWhen !== formatProjectTaskGraphCheckpointWhen) {
-            return window.formatProjectTaskGraphCheckpointWhen(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
-    function pulseProjectTaskGraphCheckpointButton(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.pulseProjectTaskGraphCheckpointButton === 'function' && window.pulseProjectTaskGraphCheckpointButton !== pulseProjectTaskGraphCheckpointButton) {
-            return window.pulseProjectTaskGraphCheckpointButton(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return;
-    }
 
-    function normalizeProjectTaskGraphCheckpointEntry(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.normalizeProjectTaskGraphCheckpointEntry === 'function' && window.normalizeProjectTaskGraphCheckpointEntry !== normalizeProjectTaskGraphCheckpointEntry) {
-            return window.normalizeProjectTaskGraphCheckpointEntry(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
-    function readProjectTaskGraphCheckpoints(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.readProjectTaskGraphCheckpoints === 'function' && window.readProjectTaskGraphCheckpoints !== readProjectTaskGraphCheckpoints) {
-            return window.readProjectTaskGraphCheckpoints(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
-    function writeProjectTaskGraphCheckpoints(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.writeProjectTaskGraphCheckpoints === 'function' && window.writeProjectTaskGraphCheckpoints !== writeProjectTaskGraphCheckpoints) {
-            return window.writeProjectTaskGraphCheckpoints(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return;
-    }
 
-    function readProjectTaskGraphCheckpoint(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.readProjectTaskGraphCheckpoint === 'function' && window.readProjectTaskGraphCheckpoint !== readProjectTaskGraphCheckpoint) {
-            return window.readProjectTaskGraphCheckpoint(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
-    function getProjectTaskGraphCheckpointById(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.getProjectTaskGraphCheckpointById === 'function' && window.getProjectTaskGraphCheckpointById !== getProjectTaskGraphCheckpointById) {
-            return window.getProjectTaskGraphCheckpointById(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
-    function deleteProjectTaskGraphCheckpoint(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.deleteProjectTaskGraphCheckpoint === 'function' && window.deleteProjectTaskGraphCheckpoint !== deleteProjectTaskGraphCheckpoint) {
-            return window.deleteProjectTaskGraphCheckpoint(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return;
-    }
 
-    function flushProjectTaskGraphSync(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.flushProjectTaskGraphSync === 'function' && window.flushProjectTaskGraphSync !== flushProjectTaskGraphSync) {
-            return window.flushProjectTaskGraphSync(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return;
-    }
 
-    function collectProjectTaskGraphCheckpoint(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.collectProjectTaskGraphCheckpoint === 'function' && window.collectProjectTaskGraphCheckpoint !== collectProjectTaskGraphCheckpoint) {
-            return window.collectProjectTaskGraphCheckpoint(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
-    async function saveProjectTaskGraphCheckpoint(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.saveProjectTaskGraphCheckpoint === 'function' && window.saveProjectTaskGraphCheckpoint !== saveProjectTaskGraphCheckpoint) {
-            return window.saveProjectTaskGraphCheckpoint(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return;
-    }
 
-    async function applyProjectTaskGraphCheckpointSnapshot(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.applyProjectTaskGraphCheckpointSnapshot === 'function' && window.applyProjectTaskGraphCheckpointSnapshot !== applyProjectTaskGraphCheckpointSnapshot) {
-            return window.applyProjectTaskGraphCheckpointSnapshot(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return;
-    }
 
-    async function restoreProjectTaskGraphCheckpoint(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.restoreProjectTaskGraphCheckpoint === 'function' && window.restoreProjectTaskGraphCheckpoint !== restoreProjectTaskGraphCheckpoint) {
-            return window.restoreProjectTaskGraphCheckpoint(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
-    function renderProjectTaskGraphHistoryDialog(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.renderProjectTaskGraphHistoryDialog === 'function' && window.renderProjectTaskGraphHistoryDialog !== renderProjectTaskGraphHistoryDialog) {
-            return window.renderProjectTaskGraphHistoryDialog(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
-    function renderProjectTaskGraphScheduleHelpDialog(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.renderProjectTaskGraphScheduleHelpDialog === 'function' && window.renderProjectTaskGraphScheduleHelpDialog !== renderProjectTaskGraphScheduleHelpDialog) {
-            return window.renderProjectTaskGraphScheduleHelpDialog(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
     function refreshDeskAfterGraphMembership(projectId = '') {
         try {
@@ -1144,317 +486,44 @@
         } catch (error) {}
     }
 
-    function createProjectTaskGraphGroup(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.createProjectTaskGraphGroup === 'function' && window.createProjectTaskGraphGroup !== createProjectTaskGraphGroup) {
-            return window.createProjectTaskGraphGroup(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return;
-    }
 
-    function updateProjectTaskGraphGroup(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.updateProjectTaskGraphGroup === 'function' && window.updateProjectTaskGraphGroup !== updateProjectTaskGraphGroup) {
-            return window.updateProjectTaskGraphGroup(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return;
-    }
 
-    function deleteProjectTaskGraphGroup(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.deleteProjectTaskGraphGroup === 'function' && window.deleteProjectTaskGraphGroup !== deleteProjectTaskGraphGroup) {
-            return window.deleteProjectTaskGraphGroup(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return;
-    }
 
-    function scrubDeletedTaskFromProjectTaskGraphGroups(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.scrubDeletedTaskFromProjectTaskGraphGroups === 'function' && window.scrubDeletedTaskFromProjectTaskGraphGroups !== scrubDeletedTaskFromProjectTaskGraphGroups) {
-            return window.scrubDeletedTaskFromProjectTaskGraphGroups(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return;
-    }
 
-    function projectTaskGraphGroupMembershipWouldCycle(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.projectTaskGraphGroupMembershipWouldCycle === 'function' && window.projectTaskGraphGroupMembershipWouldCycle !== projectTaskGraphGroupMembershipWouldCycle) {
-            return window.projectTaskGraphGroupMembershipWouldCycle(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
-    function toggleProjectTaskGraphGroupMember(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.toggleProjectTaskGraphGroupMember === 'function' && window.toggleProjectTaskGraphGroupMember !== toggleProjectTaskGraphGroupMember) {
-            return window.toggleProjectTaskGraphGroupMember(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return;
-    }
 
-    function isProjectTaskGraphGroupId(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.isProjectTaskGraphGroupId === 'function' && window.isProjectTaskGraphGroupId !== isProjectTaskGraphGroupId) {
-            return window.isProjectTaskGraphGroupId(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
-    function projectGroupDependsOnIds(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.projectGroupDependsOnIds === 'function' && window.projectGroupDependsOnIds !== projectGroupDependsOnIds) {
-            return window.projectGroupDependsOnIds(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
-    function projectGroupBlocksIds(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.projectGroupBlocksIds === 'function' && window.projectGroupBlocksIds !== projectGroupBlocksIds) {
-            return window.projectGroupBlocksIds(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
-    function collectProjectTaskGraphGroupDescendantTaskIds(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.collectProjectTaskGraphGroupDescendantTaskIds === 'function' && window.collectProjectTaskGraphGroupDescendantTaskIds !== collectProjectTaskGraphGroupDescendantTaskIds) {
-            return window.collectProjectTaskGraphGroupDescendantTaskIds(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
-    function collectProjectTaskGraphGroupAbsorbedTaskIds(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.collectProjectTaskGraphGroupAbsorbedTaskIds === 'function' && window.collectProjectTaskGraphGroupAbsorbedTaskIds !== collectProjectTaskGraphGroupAbsorbedTaskIds) {
-            return window.collectProjectTaskGraphGroupAbsorbedTaskIds(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
-    function isProjectTaskGraphGroupComplete(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.isProjectTaskGraphGroupComplete === 'function' && window.isProjectTaskGraphGroupComplete !== isProjectTaskGraphGroupComplete) {
-            return window.isProjectTaskGraphGroupComplete(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
-    function isProjectGraphDependencyOpen(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.isProjectGraphDependencyOpen === 'function' && window.isProjectGraphDependencyOpen !== isProjectGraphDependencyOpen) {
-            return window.isProjectGraphDependencyOpen(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
-    function computeProjectTaskGraphGroupRollup(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.computeProjectTaskGraphGroupRollup === 'function' && window.computeProjectTaskGraphGroupRollup !== computeProjectTaskGraphGroupRollup) {
-            return window.computeProjectTaskGraphGroupRollup(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
-    function getProjectTaskGraphGroupLinkSummary(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.getProjectTaskGraphGroupLinkSummary === 'function' && window.getProjectTaskGraphGroupLinkSummary !== getProjectTaskGraphGroupLinkSummary) {
-            return window.getProjectTaskGraphGroupLinkSummary(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
-    function taskDurationHours(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.taskDurationHours === 'function' && window.taskDurationHours !== taskDurationHours) {
-            return window.taskDurationHours(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return 0;
-    }
 
-    function taskScheduleRemainingHours(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.taskScheduleRemainingHours === 'function' && window.taskScheduleRemainingHours !== taskScheduleRemainingHours) {
-            return window.taskScheduleRemainingHours(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return 0;
-    }
 
-    function sumProjectOpenWorkHours(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.sumProjectOpenWorkHours === 'function' && window.sumProjectOpenWorkHours !== sumProjectOpenWorkHours) {
-            return window.sumProjectOpenWorkHours(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return 0;
-    }
 
-    function sumProjectActualHours(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.sumProjectActualHours === 'function' && window.sumProjectActualHours !== sumProjectActualHours) {
-            return window.sumProjectActualHours(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return 0;
-    }
 
-    function computeProjectSchedule(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.computeProjectSchedule === 'function' && window.computeProjectSchedule !== computeProjectSchedule) {
-            return window.computeProjectSchedule(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return { tasks: {}, project: {} };
-    }
 
-    function formatProjectScheduleHours(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.formatProjectScheduleHours === 'function' && window.formatProjectScheduleHours !== formatProjectScheduleHours) {
-            return window.formatProjectScheduleHours(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
-    function formatProjectScheduleFloat(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.formatProjectScheduleFloat === 'function' && window.formatProjectScheduleFloat !== formatProjectScheduleFloat) {
-            return window.formatProjectScheduleFloat(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
-    function formatTaskScheduleDisplay(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.formatTaskScheduleDisplay === 'function' && window.formatTaskScheduleDisplay !== formatTaskScheduleDisplay) {
-            return window.formatTaskScheduleDisplay(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
-    function projectScheduleCalendarDate(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.projectScheduleCalendarDate === 'function' && window.projectScheduleCalendarDate !== projectScheduleCalendarDate) {
-            return window.projectScheduleCalendarDate(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return;
-    }
 
-    function formatProjectScheduleDate(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.formatProjectScheduleDate === 'function' && window.formatProjectScheduleDate !== formatProjectScheduleDate) {
-            return window.formatProjectScheduleDate(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
-    function renderProjectPlanVsBaselineStrip(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.renderProjectPlanVsBaselineStrip === 'function' && window.renderProjectPlanVsBaselineStrip !== renderProjectPlanVsBaselineStrip) {
-            return window.renderProjectPlanVsBaselineStrip(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
-    function renderProjectProgressHoursStrip(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.renderProjectProgressHoursStrip === 'function' && window.renderProjectProgressHoursStrip !== renderProjectProgressHoursStrip) {
-            return window.renderProjectProgressHoursStrip(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
-    function computeProjectTaskGraphContentFitView(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.computeProjectTaskGraphContentFitView === 'function' && window.computeProjectTaskGraphContentFitView !== computeProjectTaskGraphContentFitView) {
-            return window.computeProjectTaskGraphContentFitView(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
-    function buildProjectTaskGraphLayoutForView(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.buildProjectTaskGraphLayoutForView === 'function' && window.buildProjectTaskGraphLayoutForView !== buildProjectTaskGraphLayoutForView) {
-            return window.buildProjectTaskGraphLayoutForView(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
-    function applyProjectTaskGraphResetView(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.applyProjectTaskGraphResetView === 'function' && window.applyProjectTaskGraphResetView !== applyProjectTaskGraphResetView) {
-            return window.applyProjectTaskGraphResetView(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return;
-    }
 
-    function projectTaskGraphBoxAnchor(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.projectTaskGraphBoxAnchor === 'function' && window.projectTaskGraphBoxAnchor !== projectTaskGraphBoxAnchor) {
-            return window.projectTaskGraphBoxAnchor(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
-    function getProjectTaskGraphDocks(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.getProjectTaskGraphDocks === 'function' && window.getProjectTaskGraphDocks !== getProjectTaskGraphDocks) {
-            return window.getProjectTaskGraphDocks(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
-    function projectTaskGraphDockAlongSide(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.projectTaskGraphDockAlongSide === 'function' && window.projectTaskGraphDockAlongSide !== projectTaskGraphDockAlongSide) {
-            return window.projectTaskGraphDockAlongSide(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
-    function scoreProjectTaskGraphDockPair(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.scoreProjectTaskGraphDockPair === 'function' && window.scoreProjectTaskGraphDockPair !== scoreProjectTaskGraphDockPair) {
-            return window.scoreProjectTaskGraphDockPair(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
-    function selectProjectTaskGraphDockPair(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.selectProjectTaskGraphDockPair === 'function' && window.selectProjectTaskGraphDockPair !== selectProjectTaskGraphDockPair) {
-            return window.selectProjectTaskGraphDockPair(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
-    function buildProjectTaskGraphSeedPolyline(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.buildProjectTaskGraphSeedPolyline === 'function' && window.buildProjectTaskGraphSeedPolyline !== buildProjectTaskGraphSeedPolyline) {
-            return window.buildProjectTaskGraphSeedPolyline(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
-    function sampleProjectTaskGraphPolyline(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.sampleProjectTaskGraphPolyline === 'function' && window.sampleProjectTaskGraphPolyline !== sampleProjectTaskGraphPolyline) {
-            return window.sampleProjectTaskGraphPolyline(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
-    function projectTaskGraphPushOutOfRect(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.projectTaskGraphPushOutOfRect === 'function' && window.projectTaskGraphPushOutOfRect !== projectTaskGraphPushOutOfRect) {
-            return window.projectTaskGraphPushOutOfRect(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
-    function relaxProjectTaskGraphPolyline(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.relaxProjectTaskGraphPolyline === 'function' && window.relaxProjectTaskGraphPolyline !== relaxProjectTaskGraphPolyline) {
-            return window.relaxProjectTaskGraphPolyline(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
     function polylineToSmoothPathD(points = []) {
         const pts = (Array.isArray(points) ? points : []).filter((p) => p && Number.isFinite(p.x) && Number.isFinite(p.y));
@@ -1483,701 +552,92 @@
         return { d, midX: mid.x, midY: mid.y };
     }
 
-    function normalizeProjectTaskGraphStatusId(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.normalizeProjectTaskGraphStatusId === 'function' && window.normalizeProjectTaskGraphStatusId !== normalizeProjectTaskGraphStatusId) {
-            return window.normalizeProjectTaskGraphStatusId(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    function projectTaskGraphStatusEdgeColor(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.projectTaskGraphStatusEdgeColor === 'function' && window.projectTaskGraphStatusEdgeColor !== projectTaskGraphStatusEdgeColor) {
-            return window.projectTaskGraphStatusEdgeColor(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    function projectTaskGraphCubicEdgePath(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.projectTaskGraphCubicEdgePath === 'function' && window.projectTaskGraphCubicEdgePath !== projectTaskGraphCubicEdgePath) {
-            return window.projectTaskGraphCubicEdgePath(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    function projectTaskGraphEdgePath(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.projectTaskGraphEdgePath === 'function' && window.projectTaskGraphEdgePath !== projectTaskGraphEdgePath) {
-            return window.projectTaskGraphEdgePath(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    function projectTaskGraphEdgeAnchors(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.projectTaskGraphEdgeAnchors === 'function' && window.projectTaskGraphEdgeAnchors !== projectTaskGraphEdgeAnchors) {
-            return window.projectTaskGraphEdgeAnchors(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    function projectTaskGraphObstacleList(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.projectTaskGraphObstacleList === 'function' && window.projectTaskGraphObstacleList !== projectTaskGraphObstacleList) {
-            return window.projectTaskGraphObstacleList(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    function projectTaskGraphEdgeFanMap(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.projectTaskGraphEdgeFanMap === 'function' && window.projectTaskGraphEdgeFanMap !== projectTaskGraphEdgeFanMap) {
-            return window.projectTaskGraphEdgeFanMap(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    function formatProjectTaskGraphNodeLabel(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.formatProjectTaskGraphNodeLabel === 'function' && window.formatProjectTaskGraphNodeLabel !== formatProjectTaskGraphNodeLabel) {
-            return window.formatProjectTaskGraphNodeLabel(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    function computeProjectTaskGraphFitZoom(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.computeProjectTaskGraphFitZoom === 'function' && window.computeProjectTaskGraphFitZoom !== computeProjectTaskGraphFitZoom) {
-            return window.computeProjectTaskGraphFitZoom(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    function computeProjectTaskGraphPreviewZoom(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.computeProjectTaskGraphPreviewZoom === 'function' && window.computeProjectTaskGraphPreviewZoom !== computeProjectTaskGraphPreviewZoom) {
-            return window.computeProjectTaskGraphPreviewZoom(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    function renderProjectTaskGraphGroupNode(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.renderProjectTaskGraphGroupNode === 'function' && window.renderProjectTaskGraphGroupNode !== renderProjectTaskGraphGroupNode) {
-            return window.renderProjectTaskGraphGroupNode(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    function renderProjectTaskGraphCardNode(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.renderProjectTaskGraphCardNode === 'function' && window.renderProjectTaskGraphCardNode !== renderProjectTaskGraphCardNode) {
-            return window.renderProjectTaskGraphCardNode(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    function projectTaskGraphPortRole(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.projectTaskGraphPortRole === 'function' && window.projectTaskGraphPortRole !== projectTaskGraphPortRole) {
-            return window.projectTaskGraphPortRole(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    function resolveProjectTaskGraphWireEndpoints(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.resolveProjectTaskGraphWireEndpoints === 'function' && window.resolveProjectTaskGraphWireEndpoints !== resolveProjectTaskGraphWireEndpoints) {
-            return window.resolveProjectTaskGraphWireEndpoints(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    function readProjectTaskGraphPortCenter(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.readProjectTaskGraphPortCenter === 'function' && window.readProjectTaskGraphPortCenter !== readProjectTaskGraphPortCenter) {
-            return window.readProjectTaskGraphPortCenter(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    function resolveProjectTaskGraphLinkPreviewHost(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.resolveProjectTaskGraphLinkPreviewHost === 'function' && window.resolveProjectTaskGraphLinkPreviewHost !== resolveProjectTaskGraphLinkPreviewHost) {
-            return window.resolveProjectTaskGraphLinkPreviewHost(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    function ensureProjectTaskGraphLinkPreview(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.ensureProjectTaskGraphLinkPreview === 'function' && window.ensureProjectTaskGraphLinkPreview !== ensureProjectTaskGraphLinkPreview) {
-            return window.ensureProjectTaskGraphLinkPreview(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    function updateProjectTaskGraphLinkPreview(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.updateProjectTaskGraphLinkPreview === 'function' && window.updateProjectTaskGraphLinkPreview !== updateProjectTaskGraphLinkPreview) {
-            return window.updateProjectTaskGraphLinkPreview(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return;
-    }
-
-    function clearProjectTaskGraphLinkPreview(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.clearProjectTaskGraphLinkPreview === 'function' && window.clearProjectTaskGraphLinkPreview !== clearProjectTaskGraphLinkPreview) {
-            return window.clearProjectTaskGraphLinkPreview(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    function setProjectTaskGraphInteracting(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.setProjectTaskGraphInteracting === 'function' && window.setProjectTaskGraphInteracting !== setProjectTaskGraphInteracting) {
-            return window.setProjectTaskGraphInteracting(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return;
-    }
-
-    function scheduleProjectTaskGraphEdgeRefresh(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.scheduleProjectTaskGraphEdgeRefresh === 'function' && window.scheduleProjectTaskGraphEdgeRefresh !== scheduleProjectTaskGraphEdgeRefresh) {
-            return window.scheduleProjectTaskGraphEdgeRefresh(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    function findProjectTaskGraphLinkDropTarget(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.findProjectTaskGraphLinkDropTarget === 'function' && window.findProjectTaskGraphLinkDropTarget !== findProjectTaskGraphLinkDropTarget) {
-            return window.findProjectTaskGraphLinkDropTarget(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    function findProjectTaskGraphMembershipDropGroup(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.findProjectTaskGraphMembershipDropGroup === 'function' && window.findProjectTaskGraphMembershipDropGroup !== findProjectTaskGraphMembershipDropGroup) {
-            return window.findProjectTaskGraphMembershipDropGroup(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    function renderProjectTaskGraphEdgeGroupsHtml(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.renderProjectTaskGraphEdgeGroupsHtml === 'function' && window.renderProjectTaskGraphEdgeGroupsHtml !== renderProjectTaskGraphEdgeGroupsHtml) {
-            return window.renderProjectTaskGraphEdgeGroupsHtml(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    function renderProjectTaskGraphGroupEdgesHtml(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.renderProjectTaskGraphGroupEdgesHtml === 'function' && window.renderProjectTaskGraphGroupEdgesHtml !== renderProjectTaskGraphGroupEdgesHtml) {
-            return window.renderProjectTaskGraphGroupEdgesHtml(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    function renderProjectTaskGraphGroupDependencyEdgesHtml(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.renderProjectTaskGraphGroupDependencyEdgesHtml === 'function' && window.renderProjectTaskGraphGroupDependencyEdgesHtml !== renderProjectTaskGraphGroupDependencyEdgesHtml) {
-            return window.renderProjectTaskGraphGroupDependencyEdgesHtml(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    function readProjectTaskGraphLivePositions(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.readProjectTaskGraphLivePositions === 'function' && window.readProjectTaskGraphLivePositions !== readProjectTaskGraphLivePositions) {
-            return window.readProjectTaskGraphLivePositions(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    function escapeProjectTaskGraphAttr(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.escapeProjectTaskGraphAttr === 'function' && window.escapeProjectTaskGraphAttr !== escapeProjectTaskGraphAttr) {
-            return window.escapeProjectTaskGraphAttr(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    function patchRemoveProjectTaskGraphEdge(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.patchRemoveProjectTaskGraphEdge === 'function' && window.patchRemoveProjectTaskGraphEdge !== patchRemoveProjectTaskGraphEdge) {
-            return window.patchRemoveProjectTaskGraphEdge(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    function patchProjectTaskGraphLinkCountLabel(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.patchProjectTaskGraphLinkCountLabel === 'function' && window.patchProjectTaskGraphLinkCountLabel !== patchProjectTaskGraphLinkCountLabel) {
-            return window.patchProjectTaskGraphLinkCountLabel(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    function syncProjectTaskGraphEdgesOnly(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.syncProjectTaskGraphEdgesOnly === 'function' && window.syncProjectTaskGraphEdgesOnly !== syncProjectTaskGraphEdgesOnly) {
-            return window.syncProjectTaskGraphEdgesOnly(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return;
-    }
-
-    function renderProjectTaskGraphSvg(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.renderProjectTaskGraphSvg === 'function' && window.renderProjectTaskGraphSvg !== renderProjectTaskGraphSvg) {
-            return window.renderProjectTaskGraphSvg(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    function renderProjectTaskGraphCanvas(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.renderProjectTaskGraphCanvas === 'function' && window.renderProjectTaskGraphCanvas !== renderProjectTaskGraphCanvas) {
-            return window.renderProjectTaskGraphCanvas(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    function refreshProjectTaskGraphEdgeLines(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.refreshProjectTaskGraphEdgeLines === 'function' && window.refreshProjectTaskGraphEdgeLines !== refreshProjectTaskGraphEdgeLines) {
-            return window.refreshProjectTaskGraphEdgeLines(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    function projectTaskGraphWouldCycle(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.projectTaskGraphWouldCycle === 'function' && window.projectTaskGraphWouldCycle !== projectTaskGraphWouldCycle) {
-            return window.projectTaskGraphWouldCycle(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    function readProjectTaskGraphPan(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.readProjectTaskGraphPan === 'function' && window.readProjectTaskGraphPan !== readProjectTaskGraphPan) {
-            return window.readProjectTaskGraphPan(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    function isProjectTaskGraphScrollPanCanvas(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.isProjectTaskGraphScrollPanCanvas === 'function' && window.isProjectTaskGraphScrollPanCanvas !== isProjectTaskGraphScrollPanCanvas) {
-            return window.isProjectTaskGraphScrollPanCanvas(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    function resolveProjectTaskGraphPanSlack(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.resolveProjectTaskGraphPanSlack === 'function' && window.resolveProjectTaskGraphPanSlack !== resolveProjectTaskGraphPanSlack) {
-            return window.resolveProjectTaskGraphPanSlack(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    function clampProjectTaskGraphPan(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.clampProjectTaskGraphPan === 'function' && window.clampProjectTaskGraphPan !== clampProjectTaskGraphPan) {
-            return window.clampProjectTaskGraphPan(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    function readProjectTaskGraphScrollSurface(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.readProjectTaskGraphScrollSurface === 'function' && window.readProjectTaskGraphScrollSurface !== readProjectTaskGraphScrollSurface) {
-            return window.readProjectTaskGraphScrollSurface(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    function readProjectTaskGraphLayoutSize(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.readProjectTaskGraphLayoutSize === 'function' && window.readProjectTaskGraphLayoutSize !== readProjectTaskGraphLayoutSize) {
-            return window.readProjectTaskGraphLayoutSize(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    function projectTaskGraphScrollOffsets(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.projectTaskGraphScrollOffsets === 'function' && window.projectTaskGraphScrollOffsets !== projectTaskGraphScrollOffsets) {
-            return window.projectTaskGraphScrollOffsets(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    function readProjectTaskGraphPanSlackFromCanvas(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.readProjectTaskGraphPanSlackFromCanvas === 'function' && window.readProjectTaskGraphPanSlackFromCanvas !== readProjectTaskGraphPanSlackFromCanvas) {
-            return window.readProjectTaskGraphPanSlackFromCanvas(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    function readProjectTaskGraphPanFromScroll(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.readProjectTaskGraphPanFromScroll === 'function' && window.readProjectTaskGraphPanFromScroll !== readProjectTaskGraphPanFromScroll) {
-            return window.readProjectTaskGraphPanFromScroll(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    function ensureProjectTaskGraphScrollSurface(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.ensureProjectTaskGraphScrollSurface === 'function' && window.ensureProjectTaskGraphScrollSurface !== ensureProjectTaskGraphScrollSurface) {
-            return window.ensureProjectTaskGraphScrollSurface(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    function applyProjectTaskGraphScrollZoom(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.applyProjectTaskGraphScrollZoom === 'function' && window.applyProjectTaskGraphScrollZoom !== applyProjectTaskGraphScrollZoom) {
-            return window.applyProjectTaskGraphScrollZoom(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return;
-    }
-
-    function centerProjectTaskGraphScrollPan(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.centerProjectTaskGraphScrollPan === 'function' && window.centerProjectTaskGraphScrollPan !== centerProjectTaskGraphScrollPan) {
-            return window.centerProjectTaskGraphScrollPan(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    function applyProjectTaskGraphCanvasTransform(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.applyProjectTaskGraphCanvasTransform === 'function' && window.applyProjectTaskGraphCanvasTransform !== applyProjectTaskGraphCanvasTransform) {
-            return window.applyProjectTaskGraphCanvasTransform(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return;
-    }
-
-    function initProjectTaskGraphScrollPan(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.initProjectTaskGraphScrollPan === 'function' && window.initProjectTaskGraphScrollPan !== initProjectTaskGraphScrollPan) {
-            return window.initProjectTaskGraphScrollPan(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return;
-    }
-
-    function resolveProjectTaskGraphPanBackdrop(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.resolveProjectTaskGraphPanBackdrop === 'function' && window.resolveProjectTaskGraphPanBackdrop !== resolveProjectTaskGraphPanBackdrop) {
-            return window.resolveProjectTaskGraphPanBackdrop(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    function clientToProjectTaskGraphCoords(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.clientToProjectTaskGraphCoords === 'function' && window.clientToProjectTaskGraphCoords !== clientToProjectTaskGraphCoords) {
-            return window.clientToProjectTaskGraphCoords(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    function getProjectTaskGraphHost(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.getProjectTaskGraphHost === 'function' && window.getProjectTaskGraphHost !== getProjectTaskGraphHost) {
-            return window.getProjectTaskGraphHost(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    function projectTaskGraphMineOnlyActive(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.projectTaskGraphMineOnlyActive === 'function' && window.projectTaskGraphMineOnlyActive !== projectTaskGraphMineOnlyActive) {
-            return window.projectTaskGraphMineOnlyActive(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    function filterProjectTaskGraphVisibleTasks(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.filterProjectTaskGraphVisibleTasks === 'function' && window.filterProjectTaskGraphVisibleTasks !== filterProjectTaskGraphVisibleTasks) {
-            return window.filterProjectTaskGraphVisibleTasks(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    function resolveProjectTaskGraphScheduleScope(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.resolveProjectTaskGraphScheduleScope === 'function' && window.resolveProjectTaskGraphScheduleScope !== resolveProjectTaskGraphScheduleScope) {
-            return window.resolveProjectTaskGraphScheduleScope(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    function computeProjectTaskGraphMapSchedule(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.computeProjectTaskGraphMapSchedule === 'function' && window.computeProjectTaskGraphMapSchedule !== computeProjectTaskGraphMapSchedule) {
-            return window.computeProjectTaskGraphMapSchedule(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    function resolveProjectTaskGraphContext(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.resolveProjectTaskGraphContext === 'function' && window.resolveProjectTaskGraphContext !== resolveProjectTaskGraphContext) {
-            return window.resolveProjectTaskGraphContext(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    function buildProjectTaskGraphLayout(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.buildProjectTaskGraphLayout === 'function' && window.buildProjectTaskGraphLayout !== buildProjectTaskGraphLayout) {
-            return window.buildProjectTaskGraphLayout(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    function applyProjectTaskGraphZoom(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.applyProjectTaskGraphZoom === 'function' && window.applyProjectTaskGraphZoom !== applyProjectTaskGraphZoom) {
-            return window.applyProjectTaskGraphZoom(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return;
-    }
-
-    function syncProjectTaskGraphChrome(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.syncProjectTaskGraphChrome === 'function' && window.syncProjectTaskGraphChrome !== syncProjectTaskGraphChrome) {
-            return window.syncProjectTaskGraphChrome(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return;
-    }
-
-    function syncProjectTaskGraphGroupFocus(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.syncProjectTaskGraphGroupFocus === 'function' && window.syncProjectTaskGraphGroupFocus !== syncProjectTaskGraphGroupFocus) {
-            return window.syncProjectTaskGraphGroupFocus(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return;
-    }
-
-    function collectProjectTaskGraphNeighborIds(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.collectProjectTaskGraphNeighborIds === 'function' && window.collectProjectTaskGraphNeighborIds !== collectProjectTaskGraphNeighborIds) {
-            return window.collectProjectTaskGraphNeighborIds(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    function syncProjectTaskGraphSelection(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.syncProjectTaskGraphSelection === 'function' && window.syncProjectTaskGraphSelection !== syncProjectTaskGraphSelection) {
-            return window.syncProjectTaskGraphSelection(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return;
-    }
-
-    function buildProjectTaskGraphCanvasMarkup(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.buildProjectTaskGraphCanvasMarkup === 'function' && window.buildProjectTaskGraphCanvasMarkup !== buildProjectTaskGraphCanvasMarkup) {
-            return window.buildProjectTaskGraphCanvasMarkup(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    function syncProjectTaskGraphCanvas(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.syncProjectTaskGraphCanvas === 'function' && window.syncProjectTaskGraphCanvas !== syncProjectTaskGraphCanvas) {
-            return window.syncProjectTaskGraphCanvas(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return;
-    }
-
-    function syncProjectTaskGraphQuickCreate(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.syncProjectTaskGraphQuickCreate === 'function' && window.syncProjectTaskGraphQuickCreate !== syncProjectTaskGraphQuickCreate) {
-            return window.syncProjectTaskGraphQuickCreate(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return;
-    }
-
-    function renderProjectTaskGraphHealth(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.renderProjectTaskGraphHealth === 'function' && window.renderProjectTaskGraphHealth !== renderProjectTaskGraphHealth) {
-            return window.renderProjectTaskGraphHealth(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    function renderProjectTaskGraphRailOverview(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.renderProjectTaskGraphRailOverview === 'function' && window.renderProjectTaskGraphRailOverview !== renderProjectTaskGraphRailOverview) {
-            return window.renderProjectTaskGraphRailOverview(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    function renderProjectTaskGraphScheduleOverview(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.renderProjectTaskGraphScheduleOverview === 'function' && window.renderProjectTaskGraphScheduleOverview !== renderProjectTaskGraphScheduleOverview) {
-            return window.renderProjectTaskGraphScheduleOverview(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    function syncProjectTaskGraphSidebar(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.syncProjectTaskGraphSidebar === 'function' && window.syncProjectTaskGraphSidebar !== syncProjectTaskGraphSidebar) {
-            return window.syncProjectTaskGraphSidebar(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return;
-    }
-
-    function refreshProjectTaskGraphDialog(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.refreshProjectTaskGraphDialog === 'function' && window.refreshProjectTaskGraphDialog !== refreshProjectTaskGraphDialog) {
-            return window.refreshProjectTaskGraphDialog(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    function selectProjectTaskGraphNode(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.selectProjectTaskGraphNode === 'function' && window.selectProjectTaskGraphNode !== selectProjectTaskGraphNode) {
-            return window.selectProjectTaskGraphNode(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    async function addProjectTaskDependency(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.addProjectTaskDependency === 'function' && window.addProjectTaskDependency !== addProjectTaskDependency) {
-            return window.addProjectTaskDependency(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    async function removeProjectTaskDependency(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.removeProjectTaskDependency === 'function' && window.removeProjectTaskDependency !== removeProjectTaskDependency) {
-            return window.removeProjectTaskDependency(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    async function addProjectGraphDependency(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.addProjectGraphDependency === 'function' && window.addProjectGraphDependency !== addProjectGraphDependency) {
-            return window.addProjectGraphDependency(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    function patchLocalProjectTaskDepends(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.patchLocalProjectTaskDepends === 'function' && window.patchLocalProjectTaskDepends !== patchLocalProjectTaskDepends) {
-            return window.patchLocalProjectTaskDepends(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    async function removeProjectGraphDependency(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.removeProjectGraphDependency === 'function' && window.removeProjectGraphDependency !== removeProjectGraphDependency) {
-            return window.removeProjectGraphDependency(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    function renderProjectTaskGraphQuickCreatePopover(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.renderProjectTaskGraphQuickCreatePopover === 'function' && window.renderProjectTaskGraphQuickCreatePopover !== renderProjectTaskGraphQuickCreatePopover) {
-            return window.renderProjectTaskGraphQuickCreatePopover(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    function renderProjectTaskGraphDetailRailPlaceholder(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.renderProjectTaskGraphDetailRailPlaceholder === 'function' && window.renderProjectTaskGraphDetailRailPlaceholder !== renderProjectTaskGraphDetailRailPlaceholder) {
-            return window.renderProjectTaskGraphDetailRailPlaceholder(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    function renderProjectTaskGraphDetailRailContent(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.renderProjectTaskGraphDetailRailContent === 'function' && window.renderProjectTaskGraphDetailRailContent !== renderProjectTaskGraphDetailRailContent) {
-            return window.renderProjectTaskGraphDetailRailContent(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    function renderProjectTaskGraphGroupInspector(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.renderProjectTaskGraphGroupInspector === 'function' && window.renderProjectTaskGraphGroupInspector !== renderProjectTaskGraphGroupInspector) {
-            return window.renderProjectTaskGraphGroupInspector(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    function renderProjectTaskGraphInspector(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.renderProjectTaskGraphInspector === 'function' && window.renderProjectTaskGraphInspector !== renderProjectTaskGraphInspector) {
-            return window.renderProjectTaskGraphInspector(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    function renderProjectTaskGraphTools(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.renderProjectTaskGraphTools === 'function' && window.renderProjectTaskGraphTools !== renderProjectTaskGraphTools) {
-            return window.renderProjectTaskGraphTools(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    function detachProjectTaskGraphPanWindowListeners(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.detachProjectTaskGraphPanWindowListeners === 'function' && window.detachProjectTaskGraphPanWindowListeners !== detachProjectTaskGraphPanWindowListeners) {
-            return window.detachProjectTaskGraphPanWindowListeners(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return;
-    }
-
-    function attachProjectTaskGraphPanWindowListeners(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.attachProjectTaskGraphPanWindowListeners === 'function' && window.attachProjectTaskGraphPanWindowListeners !== attachProjectTaskGraphPanWindowListeners) {
-            return window.attachProjectTaskGraphPanWindowListeners(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return;
-    }
-
-    function isProjectTaskGraphPanButton(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.isProjectTaskGraphPanButton === 'function' && window.isProjectTaskGraphPanButton !== isProjectTaskGraphPanButton) {
-            return window.isProjectTaskGraphPanButton(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    function closeProjectTaskGraphContextMenu(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.closeProjectTaskGraphContextMenu === 'function' && window.closeProjectTaskGraphContextMenu !== closeProjectTaskGraphContextMenu) {
-            return window.closeProjectTaskGraphContextMenu(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return;
-    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     function openProjectRiskForTask(projectId, taskId) {
         const pid = text(projectId);
@@ -2191,69 +651,13 @@
         return ensureSocialWorkspaceModule().then(() => openDialog('project-risk', { projectId: pid, groupId: '', taskId: tid }));
     }
 
-    function openProjectTaskGraphContextMenu(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.openProjectTaskGraphContextMenu === 'function' && window.openProjectTaskGraphContextMenu !== openProjectTaskGraphContextMenu) {
-            return window.openProjectTaskGraphContextMenu(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
-    function bindProjectTaskGraphInteractions(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.bindProjectTaskGraphInteractions === 'function' && window.bindProjectTaskGraphInteractions !== bindProjectTaskGraphInteractions) {
-            return window.bindProjectTaskGraphInteractions(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return;
-    }
 
-    function bindProjectTaskGraphDrag(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.bindProjectTaskGraphDrag === 'function' && window.bindProjectTaskGraphDrag !== bindProjectTaskGraphDrag) {
-            return window.bindProjectTaskGraphDrag(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return;
-    }
 
-    function bindProjectTaskGraphResizeObserver(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.bindProjectTaskGraphResizeObserver === 'function' && window.bindProjectTaskGraphResizeObserver !== bindProjectTaskGraphResizeObserver) {
-            return window.bindProjectTaskGraphResizeObserver(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return;
-    }
 
-    function renderTaskDependencyGraphPreview(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.renderTaskDependencyGraphPreview === 'function' && window.renderTaskDependencyGraphPreview !== renderTaskDependencyGraphPreview) {
-            return window.renderTaskDependencyGraphPreview(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
-    function renderProjectTaskGraphLegend(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.renderProjectTaskGraphLegend === 'function' && window.renderProjectTaskGraphLegend !== renderProjectTaskGraphLegend) {
-            return window.renderProjectTaskGraphLegend(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
-    function renderProjectTaskGraphStatusMini(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.renderProjectTaskGraphStatusMini === 'function' && window.renderProjectTaskGraphStatusMini !== renderProjectTaskGraphStatusMini) {
-            return window.renderProjectTaskGraphStatusMini(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
-    function renderProjectTaskGraphFullscreen(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.renderProjectTaskGraphFullscreen === 'function' && window.renderProjectTaskGraphFullscreen !== renderProjectTaskGraphFullscreen) {
-            return window.renderProjectTaskGraphFullscreen(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
     function projectHasTaskTitle(project, title, { excludeTaskId = '' } = {}) {
         const want = text(title);
@@ -3414,6 +1818,311 @@
     }
 
 
+
+
+
+    /** Thin page stub for lazy workspace module exports (identity-stable for hasSocialWorkspaceModule checks). */
+    function createSocialWorkspaceStub(name, fallback) {
+        function stub(...args) {
+            const impl = window[name];
+            if (hasSocialWorkspaceModule() && typeof impl === 'function' && impl !== stub) {
+                return impl(...args);
+            }
+            ensureSocialWorkspaceModule().catch(() => null);
+            if (typeof fallback === 'function') return fallback(...args);
+            return fallback;
+        }
+        try {
+            Object.defineProperty(stub, 'name', { value: name, configurable: true });
+        } catch (error) {}
+        return stub;
+    }
+
+    const readProjectWeekPlansStore = createSocialWorkspaceStub('readProjectWeekPlansStore', {});
+    const readProjectWeekPlan = createSocialWorkspaceStub('readProjectWeekPlan', {});
+    const writeProjectWeekPlan = createSocialWorkspaceStub('writeProjectWeekPlan', undefined);
+    const addToProjectWeekPlan = createSocialWorkspaceStub('addToProjectWeekPlan', undefined);
+    const addManyToProjectWeekPlan = createSocialWorkspaceStub('addManyToProjectWeekPlan', undefined);
+    const removeFromProjectWeekPlan = createSocialWorkspaceStub('removeFromProjectWeekPlan', undefined);
+    const normalizeProjectWeekPlanWindow = createSocialWorkspaceStub('normalizeProjectWeekPlanWindow', undefined);
+    const shouldRenderProjectTaskGraphStack = createSocialWorkspaceStub('shouldRenderProjectTaskGraphStack', '');
+    const shouldRenderProjectHealthStack = createSocialWorkspaceStub('shouldRenderProjectHealthStack', false);
+    const renderWorkspaceOwnedDialog = createSocialWorkspaceStub('renderWorkspaceOwnedDialog', '');
+    const isProjectTaskGraphStackActive = createSocialWorkspaceStub('isProjectTaskGraphStackActive', '');
+    const getProjectTaskGraphStackAnchorDialog = createSocialWorkspaceStub('getProjectTaskGraphStackAnchorDialog', '');
+    const wrapProjectTaskGraphStack = createSocialWorkspaceStub('wrapProjectTaskGraphStack', '');
+    const wrapProjectHealthStack = createSocialWorkspaceStub('wrapProjectHealthStack', '');
+    const renderHealthStackLayers = createSocialWorkspaceStub('renderHealthStackLayers', '');
+    const maybeWrapStackedProjectDialog = createSocialWorkspaceStub('maybeWrapStackedProjectDialog', '');
+    const renderStackedProjectTaskChild = createSocialWorkspaceStub('renderStackedProjectTaskChild', '');
+    const trySyncProjectTaskGraphStackDialog = createSocialWorkspaceStub('trySyncProjectTaskGraphStackDialog', '');
+    const projectTaskGraphStackedBackdropClass = createSocialWorkspaceStub('projectTaskGraphStackedBackdropClass', '');
+    const resolveProjectTaskGraphNodeFromTarget = createSocialWorkspaceStub('resolveProjectTaskGraphNodeFromTarget', '');
+    const sortProjectBoardTasksByPriority = createSocialWorkspaceStub('sortProjectBoardTasksByPriority', function (tasks) { return Array.isArray(tasks) ? [...tasks] : []; });
+    const filterProjectBoardTasks = createSocialWorkspaceStub('filterProjectBoardTasks', function (runtime, tasks) { return Array.isArray(tasks) ? tasks : []; });
+    const projectTaskDependsOnIds = createSocialWorkspaceStub('projectTaskDependsOnIds', '');
+    const resolveDeskTaskReadiness = createSocialWorkspaceStub('resolveDeskTaskReadiness', function () { return { kind: 'ready', label: 'Ready', openDeps: [], openCount: 0 }; });
+    const orderDeskTasksByDependency = createSocialWorkspaceStub('orderDeskTasksByDependency', []);
+    const buildDeskTaskForest = createSocialWorkspaceStub('buildDeskTaskForest', []);
+    const buildProjectTaskInspectorFields = createSocialWorkspaceStub('buildProjectTaskInspectorFields', []);
+    const syncProjectTaskMatrixPreview = createSocialWorkspaceStub('syncProjectTaskMatrixPreview', undefined);
+    const computePertExpected = createSocialWorkspaceStub('computePertExpected', 0);
+    const taskHasPert = createSocialWorkspaceStub('taskHasPert', false);
+    const resolveTaskScheduleEstimate = createSocialWorkspaceStub('resolveTaskScheduleEstimate', function () { return { estimate: 0, unit: 'h', source: 'estimate' }; });
+    const resolveProjectTaskPriorityDisplay = createSocialWorkspaceStub('resolveProjectTaskPriorityDisplay', function () { return { label: 'Medium', tone: 'neutral', score: 3 }; });
+    const clampProjectTaskGraphCardHeight = createSocialWorkspaceStub('clampProjectTaskGraphCardHeight', '');
+    const estimateProjectTaskGraphCardHeight = createSocialWorkspaceStub('estimateProjectTaskGraphCardHeight', '');
+    const measureProjectTaskGraphCardHeights = createSocialWorkspaceStub('measureProjectTaskGraphCardHeights', '');
+    const normalizeProjectTaskGraphMode = createSocialWorkspaceStub('normalizeProjectTaskGraphMode', '');
+    const projectTaskGraphShowInferred = createSocialWorkspaceStub('projectTaskGraphShowInferred', '');
+    const projectTaskGraphShowCritical = createSocialWorkspaceStub('projectTaskGraphShowCritical', '');
+    const projectTaskGraphShowFlow = createSocialWorkspaceStub('projectTaskGraphShowFlow', '');
+    const projectTaskGraphVisibleEdges = createSocialWorkspaceStub('projectTaskGraphVisibleEdges', '');
+    const buildProjectTaskGraphModel = createSocialWorkspaceStub('buildProjectTaskGraphModel', '');
+    const layoutProjectTaskGraphByStatus = createSocialWorkspaceStub('layoutProjectTaskGraphByStatus', '');
+    const compareProjectTaskGraphNodes = createSocialWorkspaceStub('compareProjectTaskGraphNodes', '');
+    const hashProjectTaskGraphSeed = createSocialWorkspaceStub('hashProjectTaskGraphSeed', '');
+    const projectTaskGraphPseudoRandom = createSocialWorkspaceStub('projectTaskGraphPseudoRandom', '');
+    const getProjectTaskGraphMetrics = createSocialWorkspaceStub('getProjectTaskGraphMetrics', '');
+    const computeProjectTaskGraphStageSize = createSocialWorkspaceStub('computeProjectTaskGraphStageSize', '');
+    const computeProjectTaskGraphNodeDegree = createSocialWorkspaceStub('computeProjectTaskGraphNodeDegree', '');
+    const projectTaskGraphBoxRepulse = createSocialWorkspaceStub('projectTaskGraphBoxRepulse', '');
+    const resolveProjectTaskGraphCardOverlaps = createSocialWorkspaceStub('resolveProjectTaskGraphCardOverlaps', '');
+    const layoutProjectTaskGraphForce = createSocialWorkspaceStub('layoutProjectTaskGraphForce', '');
+    const projectTaskGraphLayoutUsesSavedPositions = createSocialWorkspaceStub('projectTaskGraphLayoutUsesSavedPositions', '');
+    const applyProjectTaskGraphSavedPositions = createSocialWorkspaceStub('applyProjectTaskGraphSavedPositions', '');
+    const projectTaskGraphRectsOverlap = createSocialWorkspaceStub('projectTaskGraphRectsOverlap', '');
+    const findFreeProjectTaskGraphPosition = createSocialWorkspaceStub('findFreeProjectTaskGraphPosition', '');
+    const ensureProjectTaskGraphPositionForTask = createSocialWorkspaceStub('ensureProjectTaskGraphPositionForTask', '');
+    const projectTaskGraphContentBounds = createSocialWorkspaceStub('projectTaskGraphContentBounds', '');
+    const resolveProjectTaskGraphGroupBox = createSocialWorkspaceStub('resolveProjectTaskGraphGroupBox', '');
+    const collectProjectTaskGraphGroupBoxes = createSocialWorkspaceStub('collectProjectTaskGraphGroupBoxes', '');
+    const projectTaskGraphContentViewBox = createSocialWorkspaceStub('projectTaskGraphContentViewBox', '');
+    const projectTaskGraphPositionsStorageKey = createSocialWorkspaceStub('projectTaskGraphPositionsStorageKey', '');
+    const loadProjectTaskGraphPositions = createSocialWorkspaceStub('loadProjectTaskGraphPositions', undefined);
+    const saveProjectTaskGraphPositions = createSocialWorkspaceStub('saveProjectTaskGraphPositions', undefined);
+    const getProjectTaskGraphPositions = createSocialWorkspaceStub('getProjectTaskGraphPositions', '');
+    const setProjectTaskGraphPositions = createSocialWorkspaceStub('setProjectTaskGraphPositions', undefined);
+    const ensureProjectTaskGraphPositionsLoaded = createSocialWorkspaceStub('ensureProjectTaskGraphPositionsLoaded', '');
+    const projectTaskGraphViewStorageKey = createSocialWorkspaceStub('projectTaskGraphViewStorageKey', '');
+    const clampProjectTaskGraphZoom = createSocialWorkspaceStub('clampProjectTaskGraphZoom', '');
+    const loadProjectTaskGraphView = createSocialWorkspaceStub('loadProjectTaskGraphView', undefined);
+    const saveProjectTaskGraphView = createSocialWorkspaceStub('saveProjectTaskGraphView', undefined);
+    const persistProjectTaskGraphView = createSocialWorkspaceStub('persistProjectTaskGraphView', undefined);
+    const projectTaskGraphSyncStorageKey = createSocialWorkspaceStub('projectTaskGraphSyncStorageKey', '');
+    const seedProjectTaskGraphFromProject = createSocialWorkspaceStub('seedProjectTaskGraphFromProject', undefined);
+    const queueProjectTaskGraphSync = createSocialWorkspaceStub('queueProjectTaskGraphSync', undefined);
+    const projectTaskGraphGroupsStorageKey = createSocialWorkspaceStub('projectTaskGraphGroupsStorageKey', '');
+    const getProjectTaskGraphGroups = createSocialWorkspaceStub('getProjectTaskGraphGroups', '');
+    const setProjectTaskGraphGroups = createSocialWorkspaceStub('setProjectTaskGraphGroups', undefined);
+    const projectTaskGraphCheckpointStorageKey = createSocialWorkspaceStub('projectTaskGraphCheckpointStorageKey', '');
+    const projectTaskGraphCheckpointsStorageKey = createSocialWorkspaceStub('projectTaskGraphCheckpointsStorageKey', '');
+    const formatProjectTaskGraphCheckpointWhen = createSocialWorkspaceStub('formatProjectTaskGraphCheckpointWhen', '');
+    const pulseProjectTaskGraphCheckpointButton = createSocialWorkspaceStub('pulseProjectTaskGraphCheckpointButton', undefined);
+    const normalizeProjectTaskGraphCheckpointEntry = createSocialWorkspaceStub('normalizeProjectTaskGraphCheckpointEntry', '');
+    const readProjectTaskGraphCheckpoints = createSocialWorkspaceStub('readProjectTaskGraphCheckpoints', '');
+    const writeProjectTaskGraphCheckpoints = createSocialWorkspaceStub('writeProjectTaskGraphCheckpoints', undefined);
+    const readProjectTaskGraphCheckpoint = createSocialWorkspaceStub('readProjectTaskGraphCheckpoint', '');
+    const getProjectTaskGraphCheckpointById = createSocialWorkspaceStub('getProjectTaskGraphCheckpointById', '');
+    const deleteProjectTaskGraphCheckpoint = createSocialWorkspaceStub('deleteProjectTaskGraphCheckpoint', undefined);
+    const flushProjectTaskGraphSync = createSocialWorkspaceStub('flushProjectTaskGraphSync', undefined);
+    const collectProjectTaskGraphCheckpoint = createSocialWorkspaceStub('collectProjectTaskGraphCheckpoint', '');
+    const saveProjectTaskGraphCheckpoint = createSocialWorkspaceStub('saveProjectTaskGraphCheckpoint', undefined);
+    const applyProjectTaskGraphCheckpointSnapshot = createSocialWorkspaceStub('applyProjectTaskGraphCheckpointSnapshot', undefined);
+    const restoreProjectTaskGraphCheckpoint = createSocialWorkspaceStub('restoreProjectTaskGraphCheckpoint', '');
+    const renderProjectTaskGraphHistoryDialog = createSocialWorkspaceStub('renderProjectTaskGraphHistoryDialog', '');
+    const renderProjectTaskGraphScheduleHelpDialog = createSocialWorkspaceStub('renderProjectTaskGraphScheduleHelpDialog', '');
+    const createProjectTaskGraphGroup = createSocialWorkspaceStub('createProjectTaskGraphGroup', undefined);
+    const updateProjectTaskGraphGroup = createSocialWorkspaceStub('updateProjectTaskGraphGroup', undefined);
+    const deleteProjectTaskGraphGroup = createSocialWorkspaceStub('deleteProjectTaskGraphGroup', undefined);
+    const scrubDeletedTaskFromProjectTaskGraphGroups = createSocialWorkspaceStub('scrubDeletedTaskFromProjectTaskGraphGroups', undefined);
+    const projectTaskGraphGroupMembershipWouldCycle = createSocialWorkspaceStub('projectTaskGraphGroupMembershipWouldCycle', '');
+    const toggleProjectTaskGraphGroupMember = createSocialWorkspaceStub('toggleProjectTaskGraphGroupMember', undefined);
+    const isProjectTaskGraphGroupId = createSocialWorkspaceStub('isProjectTaskGraphGroupId', '');
+    const projectGroupDependsOnIds = createSocialWorkspaceStub('projectGroupDependsOnIds', '');
+    const projectGroupBlocksIds = createSocialWorkspaceStub('projectGroupBlocksIds', '');
+    const collectProjectTaskGraphGroupDescendantTaskIds = createSocialWorkspaceStub('collectProjectTaskGraphGroupDescendantTaskIds', '');
+    const collectProjectTaskGraphGroupAbsorbedTaskIds = createSocialWorkspaceStub('collectProjectTaskGraphGroupAbsorbedTaskIds', '');
+    const isProjectTaskGraphGroupComplete = createSocialWorkspaceStub('isProjectTaskGraphGroupComplete', '');
+    const isProjectGraphDependencyOpen = createSocialWorkspaceStub('isProjectGraphDependencyOpen', '');
+    const computeProjectTaskGraphGroupRollup = createSocialWorkspaceStub('computeProjectTaskGraphGroupRollup', '');
+    const getProjectTaskGraphGroupLinkSummary = createSocialWorkspaceStub('getProjectTaskGraphGroupLinkSummary', '');
+    const taskDurationHours = createSocialWorkspaceStub('taskDurationHours', 0);
+    const taskScheduleRemainingHours = createSocialWorkspaceStub('taskScheduleRemainingHours', 0);
+    const sumProjectOpenWorkHours = createSocialWorkspaceStub('sumProjectOpenWorkHours', 0);
+    const sumProjectActualHours = createSocialWorkspaceStub('sumProjectActualHours', 0);
+    const computeProjectSchedule = createSocialWorkspaceStub('computeProjectSchedule', function () { return { tasks: {}, project: {} }; });
+    const formatProjectScheduleHours = createSocialWorkspaceStub('formatProjectScheduleHours', '');
+    const formatProjectScheduleFloat = createSocialWorkspaceStub('formatProjectScheduleFloat', '');
+    const formatTaskScheduleDisplay = createSocialWorkspaceStub('formatTaskScheduleDisplay', '');
+    const projectScheduleCalendarDate = createSocialWorkspaceStub('projectScheduleCalendarDate', undefined);
+    const formatProjectScheduleDate = createSocialWorkspaceStub('formatProjectScheduleDate', '');
+    const renderProjectPlanVsBaselineStrip = createSocialWorkspaceStub('renderProjectPlanVsBaselineStrip', '');
+    const renderProjectProgressHoursStrip = createSocialWorkspaceStub('renderProjectProgressHoursStrip', '');
+    const computeProjectTaskGraphContentFitView = createSocialWorkspaceStub('computeProjectTaskGraphContentFitView', '');
+    const buildProjectTaskGraphLayoutForView = createSocialWorkspaceStub('buildProjectTaskGraphLayoutForView', '');
+    const applyProjectTaskGraphResetView = createSocialWorkspaceStub('applyProjectTaskGraphResetView', undefined);
+    const projectTaskGraphBoxAnchor = createSocialWorkspaceStub('projectTaskGraphBoxAnchor', '');
+    const getProjectTaskGraphDocks = createSocialWorkspaceStub('getProjectTaskGraphDocks', '');
+    const projectTaskGraphDockAlongSide = createSocialWorkspaceStub('projectTaskGraphDockAlongSide', '');
+    const scoreProjectTaskGraphDockPair = createSocialWorkspaceStub('scoreProjectTaskGraphDockPair', '');
+    const selectProjectTaskGraphDockPair = createSocialWorkspaceStub('selectProjectTaskGraphDockPair', '');
+    const buildProjectTaskGraphSeedPolyline = createSocialWorkspaceStub('buildProjectTaskGraphSeedPolyline', '');
+    const sampleProjectTaskGraphPolyline = createSocialWorkspaceStub('sampleProjectTaskGraphPolyline', '');
+    const projectTaskGraphPushOutOfRect = createSocialWorkspaceStub('projectTaskGraphPushOutOfRect', '');
+    const relaxProjectTaskGraphPolyline = createSocialWorkspaceStub('relaxProjectTaskGraphPolyline', '');
+    const normalizeProjectTaskGraphStatusId = createSocialWorkspaceStub('normalizeProjectTaskGraphStatusId', '');
+    const projectTaskGraphStatusEdgeColor = createSocialWorkspaceStub('projectTaskGraphStatusEdgeColor', '');
+    const projectTaskGraphCubicEdgePath = createSocialWorkspaceStub('projectTaskGraphCubicEdgePath', '');
+    const projectTaskGraphEdgePath = createSocialWorkspaceStub('projectTaskGraphEdgePath', '');
+    const projectTaskGraphEdgeAnchors = createSocialWorkspaceStub('projectTaskGraphEdgeAnchors', '');
+    const projectTaskGraphObstacleList = createSocialWorkspaceStub('projectTaskGraphObstacleList', '');
+    const projectTaskGraphEdgeFanMap = createSocialWorkspaceStub('projectTaskGraphEdgeFanMap', '');
+    const formatProjectTaskGraphNodeLabel = createSocialWorkspaceStub('formatProjectTaskGraphNodeLabel', '');
+    const computeProjectTaskGraphFitZoom = createSocialWorkspaceStub('computeProjectTaskGraphFitZoom', '');
+    const computeProjectTaskGraphPreviewZoom = createSocialWorkspaceStub('computeProjectTaskGraphPreviewZoom', '');
+    const renderProjectTaskGraphGroupNode = createSocialWorkspaceStub('renderProjectTaskGraphGroupNode', '');
+    const renderProjectTaskGraphCardNode = createSocialWorkspaceStub('renderProjectTaskGraphCardNode', '');
+    const projectTaskGraphPortRole = createSocialWorkspaceStub('projectTaskGraphPortRole', '');
+    const resolveProjectTaskGraphWireEndpoints = createSocialWorkspaceStub('resolveProjectTaskGraphWireEndpoints', '');
+    const readProjectTaskGraphPortCenter = createSocialWorkspaceStub('readProjectTaskGraphPortCenter', '');
+    const resolveProjectTaskGraphLinkPreviewHost = createSocialWorkspaceStub('resolveProjectTaskGraphLinkPreviewHost', '');
+    const ensureProjectTaskGraphLinkPreview = createSocialWorkspaceStub('ensureProjectTaskGraphLinkPreview', '');
+    const updateProjectTaskGraphLinkPreview = createSocialWorkspaceStub('updateProjectTaskGraphLinkPreview', undefined);
+    const clearProjectTaskGraphLinkPreview = createSocialWorkspaceStub('clearProjectTaskGraphLinkPreview', '');
+    const setProjectTaskGraphInteracting = createSocialWorkspaceStub('setProjectTaskGraphInteracting', undefined);
+    const scheduleProjectTaskGraphEdgeRefresh = createSocialWorkspaceStub('scheduleProjectTaskGraphEdgeRefresh', '');
+    const findProjectTaskGraphLinkDropTarget = createSocialWorkspaceStub('findProjectTaskGraphLinkDropTarget', '');
+    const findProjectTaskGraphMembershipDropGroup = createSocialWorkspaceStub('findProjectTaskGraphMembershipDropGroup', '');
+    const renderProjectTaskGraphEdgeGroupsHtml = createSocialWorkspaceStub('renderProjectTaskGraphEdgeGroupsHtml', '');
+    const renderProjectTaskGraphGroupEdgesHtml = createSocialWorkspaceStub('renderProjectTaskGraphGroupEdgesHtml', '');
+    const renderProjectTaskGraphGroupDependencyEdgesHtml = createSocialWorkspaceStub('renderProjectTaskGraphGroupDependencyEdgesHtml', '');
+    const readProjectTaskGraphLivePositions = createSocialWorkspaceStub('readProjectTaskGraphLivePositions', '');
+    const escapeProjectTaskGraphAttr = createSocialWorkspaceStub('escapeProjectTaskGraphAttr', '');
+    const patchRemoveProjectTaskGraphEdge = createSocialWorkspaceStub('patchRemoveProjectTaskGraphEdge', '');
+    const patchProjectTaskGraphLinkCountLabel = createSocialWorkspaceStub('patchProjectTaskGraphLinkCountLabel', '');
+    const syncProjectTaskGraphEdgesOnly = createSocialWorkspaceStub('syncProjectTaskGraphEdgesOnly', undefined);
+    const renderProjectTaskGraphSvg = createSocialWorkspaceStub('renderProjectTaskGraphSvg', '');
+    const renderProjectTaskGraphCanvas = createSocialWorkspaceStub('renderProjectTaskGraphCanvas', '');
+    const refreshProjectTaskGraphEdgeLines = createSocialWorkspaceStub('refreshProjectTaskGraphEdgeLines', '');
+    const projectTaskGraphWouldCycle = createSocialWorkspaceStub('projectTaskGraphWouldCycle', '');
+    const readProjectTaskGraphPan = createSocialWorkspaceStub('readProjectTaskGraphPan', '');
+    const isProjectTaskGraphScrollPanCanvas = createSocialWorkspaceStub('isProjectTaskGraphScrollPanCanvas', '');
+    const resolveProjectTaskGraphPanSlack = createSocialWorkspaceStub('resolveProjectTaskGraphPanSlack', '');
+    const clampProjectTaskGraphPan = createSocialWorkspaceStub('clampProjectTaskGraphPan', '');
+    const readProjectTaskGraphScrollSurface = createSocialWorkspaceStub('readProjectTaskGraphScrollSurface', '');
+    const readProjectTaskGraphLayoutSize = createSocialWorkspaceStub('readProjectTaskGraphLayoutSize', '');
+    const projectTaskGraphScrollOffsets = createSocialWorkspaceStub('projectTaskGraphScrollOffsets', '');
+    const readProjectTaskGraphPanSlackFromCanvas = createSocialWorkspaceStub('readProjectTaskGraphPanSlackFromCanvas', '');
+    const readProjectTaskGraphPanFromScroll = createSocialWorkspaceStub('readProjectTaskGraphPanFromScroll', '');
+    const ensureProjectTaskGraphScrollSurface = createSocialWorkspaceStub('ensureProjectTaskGraphScrollSurface', '');
+    const applyProjectTaskGraphScrollZoom = createSocialWorkspaceStub('applyProjectTaskGraphScrollZoom', undefined);
+    const centerProjectTaskGraphScrollPan = createSocialWorkspaceStub('centerProjectTaskGraphScrollPan', '');
+    const applyProjectTaskGraphCanvasTransform = createSocialWorkspaceStub('applyProjectTaskGraphCanvasTransform', undefined);
+    const initProjectTaskGraphScrollPan = createSocialWorkspaceStub('initProjectTaskGraphScrollPan', undefined);
+    const resolveProjectTaskGraphPanBackdrop = createSocialWorkspaceStub('resolveProjectTaskGraphPanBackdrop', '');
+    const clientToProjectTaskGraphCoords = createSocialWorkspaceStub('clientToProjectTaskGraphCoords', '');
+    const getProjectTaskGraphHost = createSocialWorkspaceStub('getProjectTaskGraphHost', '');
+    const projectTaskGraphMineOnlyActive = createSocialWorkspaceStub('projectTaskGraphMineOnlyActive', '');
+    const filterProjectTaskGraphVisibleTasks = createSocialWorkspaceStub('filterProjectTaskGraphVisibleTasks', '');
+    const resolveProjectTaskGraphScheduleScope = createSocialWorkspaceStub('resolveProjectTaskGraphScheduleScope', '');
+    const computeProjectTaskGraphMapSchedule = createSocialWorkspaceStub('computeProjectTaskGraphMapSchedule', '');
+    const resolveProjectTaskGraphContext = createSocialWorkspaceStub('resolveProjectTaskGraphContext', '');
+    const buildProjectTaskGraphLayout = createSocialWorkspaceStub('buildProjectTaskGraphLayout', '');
+    const applyProjectTaskGraphZoom = createSocialWorkspaceStub('applyProjectTaskGraphZoom', undefined);
+    const syncProjectTaskGraphChrome = createSocialWorkspaceStub('syncProjectTaskGraphChrome', undefined);
+    const syncProjectTaskGraphGroupFocus = createSocialWorkspaceStub('syncProjectTaskGraphGroupFocus', undefined);
+    const collectProjectTaskGraphNeighborIds = createSocialWorkspaceStub('collectProjectTaskGraphNeighborIds', '');
+    const syncProjectTaskGraphSelection = createSocialWorkspaceStub('syncProjectTaskGraphSelection', undefined);
+    const buildProjectTaskGraphCanvasMarkup = createSocialWorkspaceStub('buildProjectTaskGraphCanvasMarkup', '');
+    const syncProjectTaskGraphCanvas = createSocialWorkspaceStub('syncProjectTaskGraphCanvas', undefined);
+    const syncProjectTaskGraphQuickCreate = createSocialWorkspaceStub('syncProjectTaskGraphQuickCreate', undefined);
+    const renderProjectTaskGraphHealth = createSocialWorkspaceStub('renderProjectTaskGraphHealth', '');
+    const renderProjectTaskGraphRailOverview = createSocialWorkspaceStub('renderProjectTaskGraphRailOverview', '');
+    const renderProjectTaskGraphScheduleOverview = createSocialWorkspaceStub('renderProjectTaskGraphScheduleOverview', '');
+    const syncProjectTaskGraphSidebar = createSocialWorkspaceStub('syncProjectTaskGraphSidebar', undefined);
+    const refreshProjectTaskGraphDialog = createSocialWorkspaceStub('refreshProjectTaskGraphDialog', '');
+    const selectProjectTaskGraphNode = createSocialWorkspaceStub('selectProjectTaskGraphNode', '');
+    const addProjectTaskDependency = createSocialWorkspaceStub('addProjectTaskDependency', '');
+    const removeProjectTaskDependency = createSocialWorkspaceStub('removeProjectTaskDependency', '');
+    const addProjectGraphDependency = createSocialWorkspaceStub('addProjectGraphDependency', '');
+    const patchLocalProjectTaskDepends = createSocialWorkspaceStub('patchLocalProjectTaskDepends', '');
+    const removeProjectGraphDependency = createSocialWorkspaceStub('removeProjectGraphDependency', '');
+    const renderProjectTaskGraphQuickCreatePopover = createSocialWorkspaceStub('renderProjectTaskGraphQuickCreatePopover', '');
+    const renderProjectTaskGraphDetailRailPlaceholder = createSocialWorkspaceStub('renderProjectTaskGraphDetailRailPlaceholder', '');
+    const renderProjectTaskGraphDetailRailContent = createSocialWorkspaceStub('renderProjectTaskGraphDetailRailContent', '');
+    const renderProjectTaskGraphGroupInspector = createSocialWorkspaceStub('renderProjectTaskGraphGroupInspector', '');
+    const renderProjectTaskGraphInspector = createSocialWorkspaceStub('renderProjectTaskGraphInspector', '');
+    const renderProjectTaskGraphTools = createSocialWorkspaceStub('renderProjectTaskGraphTools', '');
+    const detachProjectTaskGraphPanWindowListeners = createSocialWorkspaceStub('detachProjectTaskGraphPanWindowListeners', undefined);
+    const attachProjectTaskGraphPanWindowListeners = createSocialWorkspaceStub('attachProjectTaskGraphPanWindowListeners', undefined);
+    const isProjectTaskGraphPanButton = createSocialWorkspaceStub('isProjectTaskGraphPanButton', '');
+    const closeProjectTaskGraphContextMenu = createSocialWorkspaceStub('closeProjectTaskGraphContextMenu', undefined);
+    const openProjectTaskGraphContextMenu = createSocialWorkspaceStub('openProjectTaskGraphContextMenu', '');
+    const bindProjectTaskGraphInteractions = createSocialWorkspaceStub('bindProjectTaskGraphInteractions', undefined);
+    const bindProjectTaskGraphDrag = createSocialWorkspaceStub('bindProjectTaskGraphDrag', undefined);
+    const bindProjectTaskGraphResizeObserver = createSocialWorkspaceStub('bindProjectTaskGraphResizeObserver', undefined);
+    const renderTaskDependencyGraphPreview = createSocialWorkspaceStub('renderTaskDependencyGraphPreview', '');
+    const renderProjectTaskGraphLegend = createSocialWorkspaceStub('renderProjectTaskGraphLegend', '');
+    const renderProjectTaskGraphStatusMini = createSocialWorkspaceStub('renderProjectTaskGraphStatusMini', '');
+    const renderProjectTaskGraphFullscreen = createSocialWorkspaceStub('renderProjectTaskGraphFullscreen', '');
+    const syncProjectTabPills = createSocialWorkspaceStub('syncProjectTabPills', undefined);
+    const projectTabPaneCacheKey = createSocialWorkspaceStub('projectTabPaneCacheKey', function (projectId, tabId) { return `${text(projectId)}:${text(tabId || 'overview') || 'overview'}`; });
+    const clearProjectTabPaneCache = createSocialWorkspaceStub('clearProjectTabPaneCache', undefined);
+    const clearProjectTabPaneCacheKey = createSocialWorkspaceStub('clearProjectTabPaneCacheKey', undefined);
+    const isProjectTaskGraphDialogOpen = createSocialWorkspaceStub('isProjectTaskGraphDialogOpen', '');
+    const markProjectTaskGraphPreviewStale = createSocialWorkspaceStub('markProjectTaskGraphPreviewStale', undefined);
+    const deskTasksSurfaceReady = createSocialWorkspaceStub('deskTasksSurfaceReady', null);
+    const syncDeskToolbarFromFreshMarkup = createSocialWorkspaceStub('syncDeskToolbarFromFreshMarkup', undefined);
+    const refreshProjectTasksTabBody = createSocialWorkspaceStub('refreshProjectTasksTabBody', false);
+    const refreshProjectTasksTabPane = createSocialWorkspaceStub('refreshProjectTasksTabPane', false);
+    const rebuildActiveProjectTabPaneIfPreviewHost = createSocialWorkspaceStub('rebuildActiveProjectTabPaneIfPreviewHost', false);
+    const notifyProjectTaskGraphSurfaceChanged = createSocialWorkspaceStub('notifyProjectTaskGraphSurfaceChanged', undefined);
+    const getOrCreateProjectTabPane = createSocialWorkspaceStub('getOrCreateProjectTabPane', null);
+    const patchProjectWorkspaceTab = createSocialWorkspaceStub('patchProjectWorkspaceTab', false);
+    const revealDeskExpandTarget = createSocialWorkspaceStub('revealDeskExpandTarget', undefined);
+    const buildProjectCreateContext = createSocialWorkspaceStub('buildProjectCreateContext', function () { return { facultyOptions: [], projectFaculties: [], advisorCandidates: [] }; });
+    const renderProjectCreateInviteSection = createSocialWorkspaceStub('renderProjectCreateInviteSection', '');
+    const renderProjectTaskCard = createSocialWorkspaceStub('renderProjectTaskCard', '');
+    const renderProjectTaskDetailModal = createSocialWorkspaceStub('renderProjectTaskDetailModal', '');
+    const renderProjectColumnTasksModal = createSocialWorkspaceStub('renderProjectColumnTasksModal', '');
+    const renderProjectTaskCreateDialog = createSocialWorkspaceStub('renderProjectTaskCreateDialog', '');
+    const renderProjectHealthDialog = createSocialWorkspaceStub('renderProjectHealthDialog', '');
+    const renderProjectHealthPlanCardHtml = createSocialWorkspaceStub('renderProjectHealthPlanCardHtml', '');
+    const buildProjectHealthPlanPickModel = createSocialWorkspaceStub('buildProjectHealthPlanPickModel', { groups: [], tasks: [], horizon: 'week' });
+    const renderProjectHealthPlanPickBodyHtml = createSocialWorkspaceStub('renderProjectHealthPlanPickBodyHtml', '');
+    const renderProjectHealthPlanPickDialog = createSocialWorkspaceStub('renderProjectHealthPlanPickDialog', '');
+    const renderProjectRiskDialog = createSocialWorkspaceStub('renderProjectRiskDialog', '');
+    const renderProjectSettingsDialog = createSocialWorkspaceStub('renderProjectSettingsDialog', '');
+    const renderProjectCreateDialog = createSocialWorkspaceStub('renderProjectCreateDialog', '');
+    const renderPortfolioCreateDialog = createSocialWorkspaceStub('renderPortfolioCreateDialog', '');
+    const portfolioStatus = createSocialWorkspaceStub('portfolioStatus', '');
+    const portfolioVisibilityMode = createSocialWorkspaceStub('portfolioVisibilityMode', '');
+    const parsePortfolioTextList = createSocialWorkspaceStub('parsePortfolioTextList', []);
+    const parsePortfolioLinksInput = createSocialWorkspaceStub('parsePortfolioLinksInput', []);
+    const serializePortfolioLinks = createSocialWorkspaceStub('serializePortfolioLinks', []);
+    const portfolioAudienceLabel = createSocialWorkspaceStub('portfolioAudienceLabel', '');
+    const normalizePortfolioEntry = createSocialWorkspaceStub('normalizePortfolioEntry', null);
+    const canViewerAccessPortfolioEntry = createSocialWorkspaceStub('canViewerAccessPortfolioEntry', false);
+    const portfolioEntriesForViewer = createSocialWorkspaceStub('portfolioEntriesForViewer', []);
+    const portfolioMatchesRoleFilter = createSocialWorkspaceStub('portfolioMatchesRoleFilter', false);
+    const portfolioDraftExists = createSocialWorkspaceStub('portfolioDraftExists', false);
+    const clonePortfolioDocument = createSocialWorkspaceStub('clonePortfolioDocument', null);
+    const portfolioMakeId = createSocialWorkspaceStub('portfolioMakeId', '');
+    const getMyPortfolioDocument = createSocialWorkspaceStub('getMyPortfolioDocument', null);
+    const ensureMyPortfolioDocument = createSocialWorkspaceStub('ensureMyPortfolioDocument', null);
+    const clearPortfolioApiDeniedFlag = createSocialWorkspaceStub('clearPortfolioApiDeniedFlag', undefined);
+    const hydrateMyPortfolioDocument = createSocialWorkspaceStub('hydrateMyPortfolioDocument', null);
+    const portfolioFieldValue = createSocialWorkspaceStub('portfolioFieldValue', '');
+    const portfolioReadDateRange = createSocialWorkspaceStub('portfolioReadDateRange', undefined);
+    const portfolioCollectDocumentFromUi = createSocialWorkspaceStub('portfolioCollectDocumentFromUi', null);
+    const saveMyPortfolioDocument = createSocialWorkspaceStub('saveMyPortfolioDocument', null);
+    const renderMyPortfolioPanel = createSocialWorkspaceStub('renderMyPortfolioPanel', '');
+    const renderPortfolioEditorDialog = createSocialWorkspaceStub('renderPortfolioEditorDialog', '');
+    const renderPortfolioCustomBuilderOverlay = createSocialWorkspaceStub('renderPortfolioCustomBuilderOverlay', '');
+    const openPortfolioEditor = createSocialWorkspaceStub('openPortfolioEditor', undefined);
+    const resetPortfolioEditor = createSocialWorkspaceStub('resetPortfolioEditor', undefined);
+    const renderPortfolioProfileBlock = createSocialWorkspaceStub('renderPortfolioProfileBlock', '');
 
     function ensureSocialFeedModule() {
         if (window.__KIU_SOCIAL_FEED_MODULE_LOADED
@@ -5780,96 +4489,26 @@
     }
 
 
-    function syncProjectTabPills(pillRow, activeTab) {
-        if (hasSocialWorkspaceModule() && typeof window.syncProjectTabPills === 'function' && window.syncProjectTabPills !== syncProjectTabPills) {
-            return window.syncProjectTabPills.apply(null, arguments);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return;
-    }
 
 
-    function projectTabPaneCacheKey(projectId, tabId) {
-        if (hasSocialWorkspaceModule() && typeof window.projectTabPaneCacheKey === 'function' && window.projectTabPaneCacheKey !== projectTabPaneCacheKey) {
-            return window.projectTabPaneCacheKey.apply(null, arguments);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return `${text(projectId)}:${text(tabId || 'overview') || 'overview'}`;
-    }
 
 
-    function clearProjectTabPaneCache(projectId = '') {
-        if (hasSocialWorkspaceModule() && typeof window.clearProjectTabPaneCache === 'function' && window.clearProjectTabPaneCache !== clearProjectTabPaneCache) {
-            return window.clearProjectTabPaneCache.apply(null, arguments);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return;
-    }
 
 
-    function clearProjectTabPaneCacheKey(projectId, tabId) {
-        if (hasSocialWorkspaceModule() && typeof window.clearProjectTabPaneCacheKey === 'function' && window.clearProjectTabPaneCacheKey !== clearProjectTabPaneCacheKey) {
-            return window.clearProjectTabPaneCacheKey.apply(null, arguments);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return;
-    }
 
 
-    function isProjectTaskGraphDialogOpen(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.isProjectTaskGraphDialogOpen === 'function' && window.isProjectTaskGraphDialogOpen !== isProjectTaskGraphDialogOpen) {
-            return window.isProjectTaskGraphDialogOpen(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
-
-    function markProjectTaskGraphPreviewStale(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.markProjectTaskGraphPreviewStale === 'function' && window.markProjectTaskGraphPreviewStale !== markProjectTaskGraphPreviewStale) {
-            return window.markProjectTaskGraphPreviewStale(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return;
-    }
-
-    function deskTasksSurfaceReady(host = root(), runtime = state()) {
-        if (hasSocialWorkspaceModule() && typeof window.deskTasksSurfaceReady === 'function' && window.deskTasksSurfaceReady !== deskTasksSurfaceReady) {
-            return window.deskTasksSurfaceReady.apply(null, arguments);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return null;
-    }
 
 
-    function syncDeskToolbarFromFreshMarkup(liveRoot, freshRoot) {
-        if (hasSocialWorkspaceModule() && typeof window.syncDeskToolbarFromFreshMarkup === 'function' && window.syncDeskToolbarFromFreshMarkup !== syncDeskToolbarFromFreshMarkup) {
-            return window.syncDeskToolbarFromFreshMarkup.apply(null, arguments);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return;
-    }
+
+
 
 
     /**
      * Replace only the tasks body stack (desk packages / list / map preview).
      * Keeps Work Desk header, toolbar, and filters mounted — no opacity reveal.
      */
-    function refreshProjectTasksTabBody(reason = 'project-task-desk-body') {
-        if (hasSocialWorkspaceModule() && typeof window.refreshProjectTasksTabBody === 'function' && window.refreshProjectTasksTabBody !== refreshProjectTasksTabBody) {
-            return window.refreshProjectTasksTabBody.apply(null, arguments);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return false;
-    }
 
 
-    function refreshProjectTasksTabPane(reason = 'project-task-desk') {
-        if (hasSocialWorkspaceModule() && typeof window.refreshProjectTasksTabPane === 'function' && window.refreshProjectTasksTabPane !== refreshProjectTasksTabPane) {
-            return window.refreshProjectTasksTabPane.apply(null, arguments);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return false;
-    }
 
 
     /** Tabs that embed renderTaskDependencyGraphPreview. */
@@ -5879,43 +4518,15 @@
      * Force-rebuild the active workspace tab pane when it hosts the task-map preview.
      * Used because keep-center dialogs leave stale __projectTabPaneCache DOM in place.
      */
-    function rebuildActiveProjectTabPaneIfPreviewHost(projectId = '') {
-        if (hasSocialWorkspaceModule() && typeof window.rebuildActiveProjectTabPaneIfPreviewHost === 'function' && window.rebuildActiveProjectTabPaneIfPreviewHost !== rebuildActiveProjectTabPaneIfPreviewHost) {
-            return window.rebuildActiveProjectTabPaneIfPreviewHost.apply(null, arguments);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return false;
-    }
 
 
     /**
      * Graph data or free positions changed — drop cached tab panes so preview re-renders.
      * While the graph dialog is open, mark stale and rebuild when the dialog closes.
      */
-    function notifyProjectTaskGraphSurfaceChanged(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.notifyProjectTaskGraphSurfaceChanged === 'function' && window.notifyProjectTaskGraphSurfaceChanged !== notifyProjectTaskGraphSurfaceChanged) {
-            return window.notifyProjectTaskGraphSurfaceChanged(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return;
-    }
-
-    function getOrCreateProjectTabPane(runtime, projectId, tabId) {
-        if (hasSocialWorkspaceModule() && typeof window.getOrCreateProjectTabPane === 'function' && window.getOrCreateProjectTabPane !== getOrCreateProjectTabPane) {
-            return window.getOrCreateProjectTabPane.apply(null, arguments);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return null;
-    }
 
 
-    function patchProjectWorkspaceTab(runtime) {
-        if (hasSocialWorkspaceModule() && typeof window.patchProjectWorkspaceTab === 'function' && window.patchProjectWorkspaceTab !== patchProjectWorkspaceTab) {
-            return window.patchProjectWorkspaceTab.apply(null, arguments);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return false;
-    }
+
 
 
     /** Replaces just the 5 reaction chips of one comment with fresh counts/active state. */
@@ -7346,13 +5957,6 @@
      * center scroller so the expanded droplist is visible (native scrollIntoView
      * is unreliable under social-neo-scroll-lock).
      */
-    function revealDeskExpandTarget(el) {
-        if (hasSocialWorkspaceModule() && typeof window.revealDeskExpandTarget === 'function' && window.revealDeskExpandTarget !== revealDeskExpandTarget) {
-            return window.revealDeskExpandTarget.apply(null, arguments);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return;
-    }
 
 
     function ensureSocialCenterScrollBounds(host = root()) {
@@ -8667,13 +7271,6 @@
     }
 
 
-    function buildProjectCreateContext(runtime) {
-        if (hasSocialWorkspaceModule() && typeof window.buildProjectCreateContext === 'function') {
-            return window.buildProjectCreateContext(runtime);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return { facultyOptions: [], projectFaculties: [], advisorCandidates: [] };
-    }
 
 
     function buildProjectCreateInviteContext(runtime, baseContext) {
@@ -8694,13 +7291,6 @@
     }
 
 
-    function renderProjectCreateInviteSection(runtime, inviteContext) {
-        if (hasSocialWorkspaceModule() && typeof window.renderProjectCreateInviteSection === 'function') {
-            return window.renderProjectCreateInviteSection(runtime, inviteContext);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
 
     function resolveActiveSocialProject(runtime, projectId) {
@@ -8755,13 +7345,6 @@
     }
 
 
-    function renderProjectTaskCard(project, task, columnId = '') {
-        if (hasSocialWorkspaceModule() && typeof window.renderProjectTaskCard === 'function') {
-            return window.renderProjectTaskCard(project, task, columnId);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
 
     function renderProjectTaskColumnList(column, columnTasks, cardsHtml) {
@@ -8790,31 +7373,10 @@
     }
 
 
-    function renderProjectTaskDetailModal(runtime, project, taskId) {
-        if (hasSocialWorkspaceModule() && typeof window.renderProjectTaskDetailModal === 'function') {
-            return window.renderProjectTaskDetailModal(runtime, project, taskId);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
 
-    function renderProjectColumnTasksModal(runtime, project, columnId, columnTasks = []) {
-        if (hasSocialWorkspaceModule() && typeof window.renderProjectColumnTasksModal === 'function') {
-            return window.renderProjectColumnTasksModal(runtime, project, columnId, columnTasks);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
 
-    function renderProjectTaskCreateDialog(runtime, dialog) {
-        if (hasSocialWorkspaceModule() && typeof window.renderProjectTaskCreateDialog === 'function') {
-            return window.renderProjectTaskCreateDialog(runtime, dialog);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
 
     function parseTaskChecklistFromForm(form) {
@@ -8844,22 +7406,8 @@
         }
     }
 
-    function renderProjectHealthDialog(runtime, dialog) {
-        if (hasSocialWorkspaceModule() && typeof window.renderProjectHealthDialog === 'function') {
-            return window.renderProjectHealthDialog(runtime, dialog);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
 
-    function renderProjectHealthPlanCardHtml(runtime, project) {
-        if (hasSocialWorkspaceModule() && typeof window.renderProjectHealthPlanCardHtml === 'function') {
-            return window.renderProjectHealthPlanCardHtml(runtime, project);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
 
     function getProjectHealthDialogCard() {
@@ -8911,13 +7459,6 @@
         return '';
     }
 
-    function buildProjectHealthPlanPickModel(runtime, dialog = activeDialog()) {
-        if (hasSocialWorkspaceModule() && typeof window.buildProjectHealthPlanPickModel === 'function') {
-            return window.buildProjectHealthPlanPickModel(runtime, dialog);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return { groups: [], tasks: [], horizon: 'week' };
-    }
 
 
     function renderProjectHealthPlanPickRailHtml(model) {
@@ -8944,13 +7485,6 @@
     }
 
 
-    function renderProjectHealthPlanPickBodyHtml(model) {
-        if (hasSocialWorkspaceModule() && typeof window.renderProjectHealthPlanPickBodyHtml === 'function') {
-            return window.renderProjectHealthPlanPickBodyHtml(model);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
 
     function patchProjectHealthPlanPick(runtime = state()) {
@@ -8977,13 +7511,6 @@
         return true;
     }
 
-    function renderProjectHealthPlanPickDialog(runtime, dialog) {
-        if (hasSocialWorkspaceModule() && typeof window.renderProjectHealthPlanPickDialog === 'function') {
-            return window.renderProjectHealthPlanPickDialog(runtime, dialog);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
 
     function projectRiskOptionLabel(value, map) {
@@ -9094,31 +7621,10 @@
     }
 
 
-    function renderProjectRiskDialog(runtime, dialog) {
-        if (hasSocialWorkspaceModule() && typeof window.renderProjectRiskDialog === 'function') {
-            return window.renderProjectRiskDialog(runtime, dialog);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
 
-    function renderProjectSettingsDialog(runtime, dialog) {
-        if (hasSocialWorkspaceModule() && typeof window.renderProjectSettingsDialog === 'function') {
-            return window.renderProjectSettingsDialog(runtime, dialog);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
 
-    function renderProjectCreateDialog(runtime) {
-        if (hasSocialWorkspaceModule() && typeof window.renderProjectCreateDialog === 'function') {
-            return window.renderProjectCreateDialog(runtime);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
 
     function renderEventCreateDialog(runtime) {
@@ -9139,13 +7645,6 @@
     }
 
 
-    function renderPortfolioCreateDialog(runtime) {
-        if (hasSocialWorkspaceModule() && typeof window.renderPortfolioCreateDialog === 'function') {
-            return window.renderPortfolioCreateDialog(runtime);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
 
     function buildGroupCreateInviteContext(runtime) {
@@ -9276,221 +7775,32 @@
         ['custom', 'Custom'],
     ];
 
-    function portfolioStatus(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.portfolioStatus === 'function' && window.portfolioStatus !== portfolioStatus) {
-            return window.portfolioStatus(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
-    function portfolioVisibilityMode(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.portfolioVisibilityMode === 'function' && window.portfolioVisibilityMode !== portfolioVisibilityMode) {
-            return window.portfolioVisibilityMode(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
-    function parsePortfolioTextList(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.parsePortfolioTextList === 'function' && window.parsePortfolioTextList !== parsePortfolioTextList) {
-            return window.parsePortfolioTextList(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return [];
-    }
 
-    function parsePortfolioLinksInput(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.parsePortfolioLinksInput === 'function' && window.parsePortfolioLinksInput !== parsePortfolioLinksInput) {
-            return window.parsePortfolioLinksInput(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return [];
-    }
 
-    function serializePortfolioLinks(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.serializePortfolioLinks === 'function' && window.serializePortfolioLinks !== serializePortfolioLinks) {
-            return window.serializePortfolioLinks(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return [];
-    }
 
-    function portfolioAudienceLabel(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.portfolioAudienceLabel === 'function' && window.portfolioAudienceLabel !== portfolioAudienceLabel) {
-            return window.portfolioAudienceLabel(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
-    function normalizePortfolioEntry(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.normalizePortfolioEntry === 'function' && window.normalizePortfolioEntry !== normalizePortfolioEntry) {
-            return window.normalizePortfolioEntry(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return null;
-    }
 
-    function canViewerAccessPortfolioEntry(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.canViewerAccessPortfolioEntry === 'function' && window.canViewerAccessPortfolioEntry !== canViewerAccessPortfolioEntry) {
-            return window.canViewerAccessPortfolioEntry(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return false;
-    }
 
-    function portfolioEntriesForViewer(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.portfolioEntriesForViewer === 'function' && window.portfolioEntriesForViewer !== portfolioEntriesForViewer) {
-            return window.portfolioEntriesForViewer(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return [];
-    }
 
-    function portfolioMatchesRoleFilter(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.portfolioMatchesRoleFilter === 'function' && window.portfolioMatchesRoleFilter !== portfolioMatchesRoleFilter) {
-            return window.portfolioMatchesRoleFilter(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return false;
-    }
 
-    function portfolioDraftExists(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.portfolioDraftExists === 'function' && window.portfolioDraftExists !== portfolioDraftExists) {
-            return window.portfolioDraftExists(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return false;
-    }
 
-    function clonePortfolioDocument(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.clonePortfolioDocument === 'function' && window.clonePortfolioDocument !== clonePortfolioDocument) {
-            return window.clonePortfolioDocument(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return null;
-    }
 
-    function portfolioMakeId(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.portfolioMakeId === 'function' && window.portfolioMakeId !== portfolioMakeId) {
-            return window.portfolioMakeId(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
-    function getMyPortfolioDocument(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.getMyPortfolioDocument === 'function' && window.getMyPortfolioDocument !== getMyPortfolioDocument) {
-            return window.getMyPortfolioDocument(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return null;
-    }
 
-    function ensureMyPortfolioDocument(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.ensureMyPortfolioDocument === 'function' && window.ensureMyPortfolioDocument !== ensureMyPortfolioDocument) {
-            return window.ensureMyPortfolioDocument(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return null;
-    }
 
-    function clearPortfolioApiDeniedFlag(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.clearPortfolioApiDeniedFlag === 'function' && window.clearPortfolioApiDeniedFlag !== clearPortfolioApiDeniedFlag) {
-            return window.clearPortfolioApiDeniedFlag(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return;
-    }
 
-    async function hydrateMyPortfolioDocument(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.hydrateMyPortfolioDocument === 'function' && window.hydrateMyPortfolioDocument !== hydrateMyPortfolioDocument) {
-            return window.hydrateMyPortfolioDocument(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return null;
-    }
 
-    function portfolioFieldValue(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.portfolioFieldValue === 'function' && window.portfolioFieldValue !== portfolioFieldValue) {
-            return window.portfolioFieldValue(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return '';
-    }
 
-    function portfolioReadDateRange(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.portfolioReadDateRange === 'function' && window.portfolioReadDateRange !== portfolioReadDateRange) {
-            return window.portfolioReadDateRange(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return;
-    }
 
-    function portfolioCollectDocumentFromUi(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.portfolioCollectDocumentFromUi === 'function' && window.portfolioCollectDocumentFromUi !== portfolioCollectDocumentFromUi) {
-            return window.portfolioCollectDocumentFromUi(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return null;
-    }
 
-    async function saveMyPortfolioDocument(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.saveMyPortfolioDocument === 'function' && window.saveMyPortfolioDocument !== saveMyPortfolioDocument) {
-            return window.saveMyPortfolioDocument(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return null;
-    }
 
-    function renderMyPortfolioPanel(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.renderMyPortfolioPanel === 'function' && window.renderMyPortfolioPanel !== renderMyPortfolioPanel) {
-            return window.renderMyPortfolioPanel(...args);
-        }
-        ensureSocialWorkspaceModule().then(() => queueDeferredModuleRender('workspace-module')).catch(() => null);
-        return '';
-    }
 
-    function renderPortfolioEditorDialog(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.renderPortfolioEditorDialog === 'function' && window.renderPortfolioEditorDialog !== renderPortfolioEditorDialog) {
-            return window.renderPortfolioEditorDialog(...args);
-        }
-        ensureSocialWorkspaceModule().then(() => queueDeferredModuleRender('workspace-module')).catch(() => null);
-        return '';
-    }
 
-    function renderPortfolioCustomBuilderOverlay(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.renderPortfolioCustomBuilderOverlay === 'function' && window.renderPortfolioCustomBuilderOverlay !== renderPortfolioCustomBuilderOverlay) {
-            return window.renderPortfolioCustomBuilderOverlay(...args);
-        }
-        ensureSocialWorkspaceModule().then(() => queueDeferredModuleRender('workspace-module')).catch(() => null);
-        return '';
-    }
 
-    function openPortfolioEditor(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.openPortfolioEditor === 'function' && window.openPortfolioEditor !== openPortfolioEditor) {
-            return window.openPortfolioEditor(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return;
-    }
 
-    function resetPortfolioEditor(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.resetPortfolioEditor === 'function' && window.resetPortfolioEditor !== resetPortfolioEditor) {
-            return window.resetPortfolioEditor(...args);
-        }
-        ensureSocialWorkspaceModule().catch(() => null);
-        return;
-    }
 
-    function renderPortfolioProfileBlock(...args) {
-        if (hasSocialWorkspaceModule() && typeof window.renderPortfolioProfileBlock === 'function' && window.renderPortfolioProfileBlock !== renderPortfolioProfileBlock) {
-            return window.renderPortfolioProfileBlock(...args);
-        }
-        ensureSocialWorkspaceModule().then(() => queueDeferredModuleRender('workspace-module')).catch(() => null);
-        return '';
-    }
 
     function renderProjectsPanel() {
         if (hasSocialWorkspaceModule() && typeof window.renderProjectsPanel === 'function' && window.renderProjectsPanel !== renderProjectsPanel) {

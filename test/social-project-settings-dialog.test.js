@@ -25,7 +25,7 @@ describe('social project workspace settings dialog', () => {
         const source = readSource('assets/js/pages/social-page.js');
 
         const workspaceModule = readSource('assets/js/pages/social-workspace.js');
-        expect(source).toContain('function renderProjectSettingsDialog(');
+        expect(source).toContain("createSocialWorkspaceStub('renderProjectSettingsDialog'");
         expect(workspaceModule).toContain('function renderProjectSettingsDialog(');
         expect(readSource('assets/js/pages/social-workspace.js')).toContain("if (kind === 'project-settings')");
         expect((source + readSource('assets/js/pages/social-workspace.js'))).toContain("action === 'project-settings-open'");

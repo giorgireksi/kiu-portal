@@ -66,6 +66,8 @@ Each lazy domain module owns:
 
 `social-page.js` dispatches via `routeSocialDomain` (click/submit/input/change) and keeps shell-only handlers (`panel-*` via `beginShellPanelTabSwitch` where shared, nav, dialog-close) plus shared patch/boot glue.
 
+Workspace dual paths: ~285 pure forwarders are **`createSocialWorkspaceStub(name, fallback)`** bindings (not full reimplementations). Real workspace logic lives in `social-workspace.js`.
+
 ## Contribution rule (do not regress)
 
 **Domain logic never lands in `social-page.js`.**

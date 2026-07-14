@@ -42,7 +42,7 @@ describe('social project task compose panel + sectioned modal', () => {
         expect(classicBlock).not.toContain('mode: \'inline\'');
         expect(classicBlock).not.toContain('social-project-task-create-row');
         expect((source + readSource('assets/js/pages/social-workspace.js'))).toContain("openDialog('project-task-create'");
-        expect(source).toContain('function renderProjectTaskCreateDialog');
+        expect(source).toContain("createSocialWorkspaceStub('renderProjectTaskCreateDialog'");
         expect(readSource('assets/js/pages/social-workspace.js')).toContain('function renderProjectTaskCreateDialog');
     });
 
@@ -244,7 +244,7 @@ describe('social project task compose panel + sectioned modal', () => {
         expect(both).toContain('function sortProjectBoardTasksByPriority');
         expect(both).toMatch(/urgent:\s*0,\s*high:\s*1/);
         expect(filterBlock).toContain('sortProjectBoardTasksByPriority(filtered)');
-        expect(source).toMatch(/function filterProjectBoardTasks\([\s\S]*window\.filterProjectBoardTasks/);
+        expect(source).toContain("createSocialWorkspaceStub('filterProjectBoardTasks'");
         expect(rebuildCss).toMatch(/social-neo-dialog-card--project-column-tasks[\s\S]*1180px/);
         expect(rebuildCss).not.toMatch(/\.social-neo-btn,\s*\{/);
         expect(rebuildCss).toMatch(/social-neo-dialog-card--project-task-detail[\s\S]*max-height:\s*min\(94dvh,\s*980px\)/);

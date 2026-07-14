@@ -109,8 +109,8 @@ describe('social project task edit', () => {
         expect((source + readSource('assets/js/pages/social-workspace.js'))).toMatch(/formType === 'project-task-create'[\s\S]*?isMilestone: false/);
         expect((source + readSource('assets/js/pages/social-workspace.js'))).toMatch(/formType === 'project-task-edit'[\s\S]*?isMilestone: false/);
         expect(source).not.toContain('name="projectTaskIsMilestone"');
-        expect(source).toContain('function formatProjectScheduleDate(');
-        expect(source).toContain('function projectScheduleCalendarDate(');
+        expect(source).toContain("createSocialWorkspaceStub('formatProjectScheduleDate'");
+        expect(source).toContain("createSocialWorkspaceStub('projectScheduleCalendarDate'");
     });
 
     it('exposes the checklist CSS primitives', () => {
@@ -188,7 +188,7 @@ describe('social project task edit', () => {
         expect(readSource('assets/js/pages/social-workspace.js')).toContain('spr-group-tasks');
         expect(readSource('assets/js/pages/social-workspace.js')).toContain('Work packages');
         expect(riskFn).toContain('Tasks');
-        expect(source).toContain('function openProjectTaskGraphContextMenu(');
+        expect(source).toContain("createSocialWorkspaceStub('openProjectTaskGraphContextMenu'");
         expect(source).toContain('function openProjectRiskForTask(');
         expect(source).toContain('function countProjectRisksForTask(');
         expect(source).not.toContain('sptg-node-risks-btn');

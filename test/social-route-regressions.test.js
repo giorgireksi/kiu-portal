@@ -200,7 +200,7 @@ describe('social route regressions', () => {
         const classicBlock = (() => { const a = _wsClassic.indexOf('function renderProjectsWorkspacePanelClassic'); const b = _wsClassic.indexOf('window.renderProjectsWorkspacePanelClassic =', a); return a >= 0 && b > a ? _wsClassic.slice(a, b) : ''; })();
 
         expect(classicBlock).toContain('id="social-project-tab-panel"');
-        expect(source).toContain('function patchProjectWorkspaceTab(runtime)');
+        expect(source).toContain("createSocialWorkspaceStub('patchProjectWorkspaceTab'");
         expect((source + readSource('assets/js/pages/social-workspace.js'))).toMatch(/if \(patchProjectWorkspaceTab\(state\(\)\)\) return;/);
         expect(source).toContain('WORKSPACE_DIALOG_KEEP_CENTER');
         expect(source).toContain('function renderDialogOnlyNow()');

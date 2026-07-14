@@ -34,14 +34,14 @@ describe('social project task views', () => {
         expect(classicBlock).toContain('spt-desk-more-filters');
         expect(source).toContain('project-task-desk-link-start');
         expect(source).toContain('project-task-desk-link-pick');
-        expect(source).toContain('function refreshProjectTasksTabPane');
-        expect(source).toContain('function refreshProjectTasksTabBody');
-        expect(source).toContain('function ensureProjectTaskGraphPositionForTask');
+        expect(source).toContain("createSocialWorkspaceStub('refreshProjectTasksTabPane'");
+        expect(source).toContain("createSocialWorkspaceStub('refreshProjectTasksTabBody'");
+        expect(source).toContain("createSocialWorkspaceStub('ensureProjectTaskGraphPositionForTask'");
         expect(source).toContain('refreshDeskAfterGraphMembership');
         expect(source + readSource('assets/js/pages/social-workspace.js')).toContain('data-task-body-root');
         expect((source + readSource('assets/js/pages/social-workspace.js'))).toContain("classList.toggle('is-collapsed'");
         expect((source + readSource('assets/js/pages/social-workspace.js'))).toContain("openDialog('project-task-detail'");
-        expect(source).toContain('function renderProjectTaskDetailModal');
+        expect(source).toContain("createSocialWorkspaceStub('renderProjectTaskDetailModal'");
         expect(readSource('assets/js/pages/social-workspace.js')).toContain('function renderProjectTaskDetailModal');
         expect((source + readSource('assets/js/pages/social-workspace.js'))).toContain("refreshProjectTasksTabPane('project-task-move')");
         expect(source).not.toContain('project-task-desk-peek');

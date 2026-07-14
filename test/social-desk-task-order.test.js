@@ -162,7 +162,7 @@ describe('desk parent-first task order', () => {
         const page = readFileSync(join(process.cwd(), 'assets/js/pages/social-page.js'), 'utf8');
         const workspace = readFileSync(join(process.cwd(), 'assets/js/pages/social-workspace.js'), 'utf8');
         // Real impl lives in workspace; page keeps a thin stub.
-        expect(page).toContain('function orderDeskTasksByDependency');
+        expect(page).toContain("createSocialWorkspaceStub('orderDeskTasksByDependency'");
         expect(workspace).toContain('function orderDeskTasksByDependency');
         expect(workspace).toContain('primaryParent');
         expect(workspace).toContain('childrenOf');
@@ -176,7 +176,7 @@ describe('page source uses single DFS orderDeskTasksByDependency', () => {
         const page = readFileSync(join(process.cwd(), 'assets/js/pages/social-page.js'), 'utf8');
         const workspace = readFileSync(join(process.cwd(), 'assets/js/pages/social-workspace.js'), 'utf8');
         // One stub on page + one real impl in workspace
-        expect((page.match(/function orderDeskTasksByDependency/g) || []).length).toBe(1);
+        expect(page).toContain("createSocialWorkspaceStub('orderDeskTasksByDependency'");
         expect((workspace.match(/function orderDeskTasksByDependency/g) || []).length).toBe(1);
         expect(workspace).toContain('primaryParent');
         expect(workspace).toContain('childrenOf');
@@ -210,7 +210,7 @@ describe('desk nested droplist forest', () => {
     it('page source wires collapsible multi-level tree render', () => {
         const page = readFileSync(join(process.cwd(), 'assets/js/pages/social-page.js'), 'utf8');
         const workspace = readFileSync(join(process.cwd(), 'assets/js/pages/social-workspace.js'), 'utf8');
-        expect(page).toContain('function buildDeskTaskForest');
+        expect(page).toContain("createSocialWorkspaceStub('buildDeskTaskForest'");
         expect(workspace).toContain('function buildDeskTaskForest');
         expect(workspace).toContain('function renderDeskTaskTreeForest');
         expect(workspace).toContain('project-task-desk-tree-toggle');

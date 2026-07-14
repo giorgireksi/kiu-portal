@@ -157,7 +157,7 @@ describe('social project task graph sync', () => {
         expect(routes).toContain("app.post('/api/social/projects/:id/task-graph'");
         expect(runtime).toContain('updatePortalSocialProjectTaskGraph');
         expect(runtime).toContain('/task-graph');
-        expect(page).toContain('function queueProjectTaskGraphSync(');
+        expect(page).toContain("createSocialWorkspaceStub('queueProjectTaskGraphSync'");
         expect(page).toMatch(/setProjectTaskGraphPositions[\s\S]*?queueProjectTaskGraphSync/);
     });
 });

@@ -16,7 +16,7 @@ describe('social project create dialog regressions', () => {
         expect((source + readSource('assets/js/pages/social-workspace.js'))).toContain("if (action === 'project-create-open')");
         expect((source + readSource('assets/js/pages/social-workspace.js'))).toContain("openDialog('project-create')");
         expect(readSource('assets/js/pages/social-workspace.js')).toContain("if (kind === 'project-create')");
-        expect(source).toContain('function renderProjectCreateDialog(');
+        expect(source).toContain("createSocialWorkspaceStub('renderProjectCreateDialog'");
         expect(workspaceModule).toContain('function renderProjectCreateDialog(');
         expect(workspaceModule).toContain('data-form="create-project"');
         expect(workspaceModule).toContain('data-action="project-create-open"');
