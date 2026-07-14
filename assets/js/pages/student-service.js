@@ -5522,6 +5522,382 @@ function handleStudentServiceQaThreadClick(event) {
     return;
 }
 
+function studentServiceEventEl(event, selector, { mustBeTarget = false, container = null } = {}) {
+    const el = event.target.closest(selector);
+    if (!el) return null;
+    if (mustBeTarget && el !== event.target) return null;
+    if (container && !container.contains(el)) return null;
+    return el;
+}
+
+function handleStudentServiceEscapeKey(event) {
+    if (event.key !== 'Escape') return;
+    if (document.querySelector('[data-student-service-delete-confirm="true"]')) {
+        event.preventDefault();
+        closeStudentServiceDeleteConfirm();
+        return;
+    }
+    if (document.querySelector('[data-student-service-question-composer-modal="true"]')) {
+        event.preventDefault();
+        closeStudentServiceQuestionComposerModal();
+        return;
+    }
+    if (isStudentServiceTicketThreadModalOpen()) {
+        event.preventDefault();
+        closeStudentServiceTicketThreadModal();
+        return;
+    }
+    if (isStudentServiceQuestionThreadModalOpen()) {
+        event.preventDefault();
+        setStudentServiceOpenQuestionId('');
+        return;
+    }
+    if (isStudentServiceInboxFilterEditorOpen()) {
+        event.preventDefault();
+        closeStudentServiceInboxFilterEditorModal();
+        return;
+    }
+    if (isStudentServiceGuidanceModalOpen()) {
+        event.preventDefault();
+        closeStudentServiceGuidanceModal();
+    }
+}
+
+function handleStudentServiceModalDocumentClick(event) {
+    const modalRoot = document.getElementById('student-service-modal-root');
+    if (!modalRoot || modalRoot.hasAttribute('hidden')) return false;
+
+    const rules = [
+        { sel: '[data-student-service-dismiss-delete-modal]', mustBeTarget: true, run: () => closeStudentServiceDeleteConfirm() },
+        { sel: '[data-student-service-cancel-delete]', run: () => closeStudentServiceDeleteConfirm() },
+        {
+            sel: '[data-student-service-confirm-delete]',
+            run: (el) => deleteStudentServiceQuestionAnswer(
+                el.dataset.studentServiceQuestionId || '',
+                el.dataset.studentServiceConfirmDelete || ''
+            )
+        },
+        {
+            sel: '[data-student-service-confirm-question-delete]',
+            run: (el) => deleteStudentServiceQuestion(el.dataset.studentServiceConfirmQuestionDelete || '')
+        },
+        {
+            sel: '[data-student-service-confirm-article-delete]',
+            run: (el) => {
+                if (el.disabled) return;
+                deleteStudentServiceArticle(el.dataset.studentServiceConfirmArticleDelete || '');
+            }
+        },
+        { sel: '[data-student-service-dismiss-ticket-thread-modal]', mustBeTarget: true, run: () => closeStudentServiceTicketThreadModal() },
+        { sel: '[data-student-service-cancel-ticket-thread-modal]', run: () => closeStudentServiceTicketThreadModal() },
+        { sel: '[data-student-service-dismiss-thread-modal]', mustBeTarget: true, run: () => setStudentServiceOpenQuestionId('') },
+        { sel: '[data-student-service-cancel-thread-modal]', run: () => setStudentServiceOpenQuestionId('') },
+        { sel: '[data-student-service-dismiss-composer-modal]', mustBeTarget: true, run: () => closeStudentServiceQuestionComposerModal() },
+        { sel: '[data-student-service-cancel-composer-modal]', run: () => closeStudentServiceQuestionComposerModal() },
+        {
+            sel: '[data-student-service-draft-question-mode]',
+            run: (el) => {
+                setStudentServiceDraftQuestionField('askMode', el.dataset.studentServiceDraftQuestionMode || 'public');
+                remountStudentServiceQuestionComposerModal();
+            }
+        },
+        { sel: '[data-student-service-submit-question]', run: () => submitStudentServiceQuestion() },
+        {
+            sel: '[data-student-service-open-question]',
+            run: (el) => {
+                closeStudentServiceQuestionComposerModal();
+                openStudentServiceQuestion(el.dataset.studentServiceOpenQuestion || '');
+            }
+        },
+        { sel: '[data-student-service-dismiss-guidance-modal]', mustBeTarget: true, run: () => closeStudentServiceGuidanceModal() },
+        { sel: '[data-student-service-cancel-guidance-modal]', run: () => closeStudentServiceGuidanceModal() },
+        {
+            sel: '[data-student-service-select-hub-article]',
+            run: (el) => selectStudentHubArticle(
+                el.dataset.studentServiceSelectHubArticle || '',
+                el.dataset.studentServiceHubArea || ''
+            )
+        },
+        { sel: '[data-student-service-article-search-clear]', run: () => setStudentServiceArticleSearch('') },
+        { sel: '[data-student-service-dismiss-inbox-filter-editor-modal]', mustBeTarget: true, run: () => closeStudentServiceInboxFilterEditorModal() },
+        { sel: '[data-student-service-inbox-filter-editor-close]', run: () => closeStudentServiceInboxFilterEditorModal() },
+    ];
+
+    for (const rule of rules) {
+        const el = studentServiceEventEl(event, rule.sel, {
+            mustBeTarget: Boolean(rule.mustBeTarget),
+            container: rule.mustBeTarget ? null : modalRoot
+        });
+        // dismiss backdrop: mustBeTarget true, no container check (backdrop is target)
+        // for non-backdrop, require modalRoot.contains
+        if (!el) continue;
+        if (!rule.mustBeTarget && !modalRoot.contains(el)) continue;
+        if (rule.mustBeTarget && el !== event.target) continue;
+        event.preventDefault();
+        rule.run(el, event);
+        return true;
+    }
+
+    // Inbox filter editor actions inside modal
+    const savePersonalLayoutButton = studentServiceEventEl(event, '[data-student-service-inbox-filter-editor-save-personal]', { container: modalRoot });
+    if (savePersonalLayoutButton) {
+        event.preventDefault();
+        saveStudentServicePersonalInboxFilterLayoutFromEditor();
+        return true;
+    }
+    const saveSharedLayoutButton = studentServiceEventEl(event, '[data-student-service-inbox-filter-editor-save-shared]', { container: modalRoot });
+    if (saveSharedLayoutButton) {
+        event.preventDefault();
+        saveStudentServiceSharedInboxFilterLayoutFromEditor();
+        return true;
+    }
+    const resetPersonalLayoutButton = studentServiceEventEl(event, '[data-student-service-inbox-filter-editor-reset-personal]', { container: modalRoot });
+    if (resetPersonalLayoutButton) {
+        event.preventDefault();
+        resetStudentServicePersonalInboxFilterLayoutFromEditor();
+        return true;
+    }
+    const addFilterButton = studentServiceEventEl(event, '[data-student-service-inbox-filter-editor-add-filter]', { container: modalRoot });
+    if (addFilterButton) {
+        event.preventDefault();
+        addStudentServiceInboxFilterEditorCustomFilter();
+        return true;
+    }
+    const moveFilterButton = studentServiceEventEl(event, '[data-student-service-inbox-filter-editor-move]', { container: modalRoot });
+    if (moveFilterButton) {
+        event.preventDefault();
+        const index = Number(moveFilterButton.dataset.studentServiceInboxFilterEditorFilterIndex || -1);
+        const dir = moveFilterButton.dataset.studentServiceInboxFilterEditorMove || 'up';
+        moveStudentServiceInboxFilterEditorRow(index, dir);
+        return true;
+    }
+    const removeFilterButton = studentServiceEventEl(event, '[data-student-service-inbox-filter-editor-remove-filter]', { container: modalRoot });
+    if (removeFilterButton) {
+        event.preventDefault();
+        removeStudentServiceInboxFilterEditorFilter(Number(removeFilterButton.dataset.studentServiceInboxFilterEditorRemoveFilter || -1));
+        return true;
+    }
+    const addOptionButton = studentServiceEventEl(event, '[data-student-service-inbox-filter-editor-add-option]', { container: modalRoot });
+    if (addOptionButton) {
+        event.preventDefault();
+        addStudentServiceInboxFilterEditorOption(Number(addOptionButton.dataset.studentServiceInboxFilterEditorAddOption || -1));
+        return true;
+    }
+    const removeOptionButton = studentServiceEventEl(event, '[data-student-service-inbox-filter-editor-remove-option]', { container: modalRoot });
+    if (removeOptionButton) {
+        event.preventDefault();
+        removeStudentServiceInboxFilterEditorOption(
+            Number(removeOptionButton.dataset.studentServiceInboxFilterEditorRemoveOption || -1),
+            Number(removeOptionButton.dataset.studentServiceInboxFilterEditorOptionIndex || -1)
+        );
+        return true;
+    }
+    return false;
+}
+
+function handleStudentServiceRootClick(event) {
+    const laneButton = studentServiceEventEl(event, '[data-student-service-lane]');
+    if (laneButton) {
+        event.preventDefault();
+        setStudentServiceLane(laneButton.dataset.studentServiceLane || 'service');
+        return;
+    }
+    const studentTabButton = studentServiceEventEl(event, '[data-student-service-student-tab]');
+    if (studentTabButton) {
+        event.preventDefault();
+        switchStudentServiceStudentTab(studentTabButton.dataset.studentServiceStudentTab || 'get_help');
+        return;
+    }
+    const panelSwitchButton = studentServiceEventEl(event, '[data-student-service-panel-switch]');
+    if (panelSwitchButton) {
+        event.preventDefault();
+        switchStudentServicePanel(panelSwitchButton.dataset.studentServicePanelSwitch || 'tickets');
+        return;
+    }
+    const navigateButton = studentServiceEventEl(event, '[data-student-service-navigate]');
+    if (navigateButton) {
+        event.preventDefault();
+        if (typeof navigate === 'function') {
+            navigate(navigateButton.dataset.studentServiceNavigate || 'student-service');
+        }
+        return;
+    }
+    const openPanelButton = studentServiceEventEl(event, '[data-student-service-open-panel]');
+    if (openPanelButton) {
+        event.preventDefault();
+        openStudentServicePanel(openPanelButton.dataset.studentServiceOpenPanel || 'tickets');
+        return;
+    }
+    const openGuidanceModalButton = studentServiceEventEl(event, '[data-student-service-open-guidance-modal]');
+    if (openGuidanceModalButton) {
+        event.preventDefault();
+        openStudentServiceGuidanceModal();
+        return;
+    }
+    const ticketFilterButton = studentServiceEventEl(event, '[data-student-service-ticket-filter-field][data-student-service-ticket-filter-value]');
+    if (ticketFilterButton) {
+        event.preventDefault();
+        setStudentServiceTicketFilter(
+            ticketFilterButton.dataset.studentServiceTicketFilterField || '',
+            ticketFilterButton.dataset.studentServiceTicketFilterValue || ''
+        );
+        return;
+    }
+    const toggleInternalNotesButton = studentServiceEventEl(event, '[data-student-service-toggle-internal-notes]');
+    if (toggleInternalNotesButton) {
+        event.preventDefault();
+        toggleStudentServiceDetailSection('internalNotes');
+        return;
+    }
+    const openTicketButton = studentServiceEventEl(event, '[data-student-service-open-ticket]');
+    if (openTicketButton) {
+        event.preventDefault();
+        if (openTicketButton.dataset.studentServiceOpenTicketPanel) {
+            openStudentServicePanel(openTicketButton.dataset.studentServiceOpenTicketPanel);
+        }
+        openStudentServiceTicket(openTicketButton.dataset.studentServiceOpenTicket || '');
+        return;
+    }
+    const focusAreaButton = studentServiceEventEl(event, '[data-student-service-focus-area]');
+    if (focusAreaButton) {
+        event.preventDefault();
+        focusStudentServiceSupportArea(focusAreaButton.dataset.studentServiceFocusArea || '');
+        return;
+    }
+    const openTicketFullscreenButton = studentServiceEventEl(event, '[data-student-service-open-ticket-fullscreen]');
+    if (openTicketFullscreenButton) {
+        event.preventDefault();
+        const ui = ensureStudentServiceUiState();
+        const ticketId = ui.selectedTicketId || '';
+        if (ticketId) openStudentServiceTicket(ticketId);
+        return;
+    }
+    const retryBootstrapButton = studentServiceEventEl(event, '[data-student-service-retry-bootstrap]');
+    if (retryBootstrapButton) {
+        event.preventDefault();
+        renderStudentServicePage();
+        return;
+    }
+    const retryQaModuleButton = studentServiceEventEl(event, '[data-student-service-retry-qa-module]');
+    if (retryQaModuleButton) {
+        event.preventDefault();
+        const bodyContainer = document.getElementById('student-service-page-body');
+        const mode = retryQaModuleButton.dataset.studentServiceRetryQaModule || 'student';
+        if (bodyContainer) renderStudentServiceQaModuleLoading(bodyContainer, mode);
+        ensureStudentServiceQaModule()
+            .then(() => rerenderStudentServicePageAfterModuleLoad())
+            .catch(() => handleStudentServiceQaModuleLoadFailure(bodyContainer, mode));
+        return;
+    }
+    const retryServiceModuleButton = studentServiceEventEl(event, '[data-student-service-retry-service-module]');
+    if (retryServiceModuleButton) {
+        event.preventDefault();
+        const bodyContainer = document.getElementById('student-service-page-body');
+        const mode = retryServiceModuleButton.dataset.studentServiceRetryServiceModule || 'service';
+        if (bodyContainer) renderStudentServiceServiceModuleLoading(bodyContainer, mode);
+        ensureStudentServiceServiceModule()
+            .then(() => rerenderStudentServicePageAfterModuleLoad())
+            .catch(() => handleStudentServiceServiceModuleLoadFailure(bodyContainer, mode));
+        return;
+    }
+    const composerToggle = studentServiceEventEl(event, '[data-student-service-question-composer-toggle]');
+    if (composerToggle) {
+        event.preventDefault();
+        if (composerToggle.dataset.studentServiceQuestionComposerToggle === 'open') {
+            const ui = ensureStudentServiceUiState();
+            if (ui.serviceLane !== 'qa') {
+                ui.serviceLane = 'qa';
+                writeStudentServiceStoredLane('qa');
+            }
+            openStudentServiceQuestionComposerModal();
+        }
+        return;
+    }
+    if (handleStudentServiceQaThreadClick(event)) return;
+
+    const submitTicketButton = studentServiceEventEl(event, '[data-student-service-submit-ticket]');
+    if (submitTicketButton) {
+        event.preventDefault();
+        submitStudentServiceTicket();
+        return;
+    }
+    const editInboxFiltersButton = studentServiceEventEl(event, '[data-student-service-edit-inbox-filters]');
+    if (editInboxFiltersButton) {
+        event.preventDefault();
+        openStudentServiceInboxFilterEditorModal();
+        return;
+    }
+    const openArticleButton = studentServiceEventEl(event, '[data-student-service-open-article]');
+    if (openArticleButton) {
+        event.preventDefault();
+        openStudentServiceArticle(openArticleButton.dataset.studentServiceOpenArticle || '');
+        return;
+    }
+    const editArticleButton = studentServiceEventEl(event, '[data-student-service-edit-article]');
+    if (editArticleButton) {
+        event.preventDefault();
+        editStudentServiceArticle(editArticleButton.dataset.studentServiceEditArticle || '');
+        return;
+    }
+    const startNewArticleButton = studentServiceEventEl(event, '[data-student-service-start-new-article]');
+    if (startNewArticleButton) {
+        event.preventDefault();
+        startStudentServiceNewArticle();
+        return;
+    }
+    const assignTicketButton = studentServiceEventEl(event, '[data-student-service-assign-ticket]');
+    if (assignTicketButton) {
+        event.preventDefault();
+        assignStudentServiceTicketToCurrentUser();
+        return;
+    }
+    const attachButton = studentServiceEventEl(event, '[data-student-service-attach]');
+    if (attachButton) {
+        event.preventDefault();
+        pickStudentServiceAttachments(attachButton.dataset.studentServiceAttach || '');
+        return;
+    }
+    const removeAttachmentButton = studentServiceEventEl(event, '[data-student-service-remove-attachment]');
+    if (removeAttachmentButton) {
+        event.preventDefault();
+        removeStudentServiceDraftAttachment(
+            removeAttachmentButton.dataset.studentServiceRemoveAttachment || '',
+            removeAttachmentButton.dataset.studentServiceAttachmentId || ''
+        );
+        return;
+    }
+    const addInternalNoteButton = studentServiceEventEl(event, '[data-student-service-add-internal-note]');
+    if (addInternalNoteButton) {
+        event.preventDefault();
+        addStudentServiceInternalNote();
+        return;
+    }
+    const replyTicketButton = studentServiceEventEl(event, '[data-student-service-reply-ticket]');
+    if (replyTicketButton) {
+        event.preventDefault();
+        replyStudentServiceTicket();
+        return;
+    }
+    const saveArticleButton = studentServiceEventEl(event, '[data-student-service-save-article]');
+    if (saveArticleButton) {
+        event.preventDefault();
+        saveStudentServiceArticle(saveArticleButton.dataset.studentServiceSaveArticle === 'publish');
+        return;
+    }
+    const deleteArticleButton = studentServiceEventEl(event, '[data-student-service-delete-article]');
+    if (deleteArticleButton) {
+        event.preventDefault();
+        flashStudentServiceActionButton(deleteArticleButton, 'acting');
+        openStudentServiceDeleteArticleConfirm(deleteArticleButton.dataset.studentServiceDeleteArticle || '');
+        return;
+    }
+    const detailSectionButton = studentServiceEventEl(event, '[data-student-service-detail-section]');
+    if (detailSectionButton) {
+        event.preventDefault();
+        toggleStudentServiceDetailSection(detailSectionButton.dataset.studentServiceDetailSection || '');
+    }
+}
+
 function bindStudentServiceDelegatedInteractions() {
     const root = document.getElementById('page-student-service');
     if (!root || root.dataset.studentServiceInteractionsBound === '1') return;
@@ -5539,496 +5915,14 @@ function bindStudentServiceDelegatedInteractions() {
     if (!window.__studentServiceDeleteModalInteractionsBound) {
         window.__studentServiceDeleteModalInteractionsBound = true;
         window.__studentServiceComposerModalInteractionsBound = true;
-        document.addEventListener('keydown', (event) => {
-            if (event.key !== 'Escape') return;
-            if (document.querySelector('[data-student-service-delete-confirm="true"]')) {
-                event.preventDefault();
-                closeStudentServiceDeleteConfirm();
-                return;
-            }
-            if (document.querySelector('[data-student-service-question-composer-modal="true"]')) {
-                event.preventDefault();
-                closeStudentServiceQuestionComposerModal();
-                return;
-            }
-            if (isStudentServiceTicketThreadModalOpen()) {
-                event.preventDefault();
-                closeStudentServiceTicketThreadModal();
-                return;
-            }
-            if (isStudentServiceQuestionThreadModalOpen()) {
-                event.preventDefault();
-                setStudentServiceOpenQuestionId('');
-                return;
-            }
-            if (isStudentServiceInboxFilterEditorOpen()) {
-                event.preventDefault();
-                closeStudentServiceInboxFilterEditorModal();
-                return;
-            }
-            if (isStudentServiceGuidanceModalOpen()) {
-                event.preventDefault();
-                closeStudentServiceGuidanceModal();
-            }
-        });
+        document.addEventListener('keydown', handleStudentServiceEscapeKey);
         document.addEventListener('click', (event) => {
-            const modalRoot = document.getElementById('student-service-modal-root');
-            if (!modalRoot || modalRoot.hasAttribute('hidden')) return;
-            const deleteModalBackdrop = event.target.closest('[data-student-service-dismiss-delete-modal]');
-            if (deleteModalBackdrop && deleteModalBackdrop === event.target) {
-                event.preventDefault();
-                closeStudentServiceDeleteConfirm();
-                return;
-            }
-            const cancelDeleteButton = event.target.closest('[data-student-service-cancel-delete]');
-            if (cancelDeleteButton && modalRoot.contains(cancelDeleteButton)) {
-                event.preventDefault();
-                closeStudentServiceDeleteConfirm();
-                return;
-            }
-            const confirmDeleteButton = event.target.closest('[data-student-service-confirm-delete]');
-            if (confirmDeleteButton && modalRoot.contains(confirmDeleteButton)) {
-                event.preventDefault();
-                deleteStudentServiceQuestionAnswer(
-                    confirmDeleteButton.dataset.studentServiceQuestionId || '',
-                    confirmDeleteButton.dataset.studentServiceConfirmDelete || ''
-                );
-                return;
-            }
-            const confirmQuestionDeleteButton = event.target.closest('[data-student-service-confirm-question-delete]');
-            if (confirmQuestionDeleteButton && modalRoot.contains(confirmQuestionDeleteButton)) {
-                event.preventDefault();
-                deleteStudentServiceQuestion(confirmQuestionDeleteButton.dataset.studentServiceConfirmQuestionDelete || '');
-                return;
-            }
-            const confirmArticleDeleteButton = event.target.closest('[data-student-service-confirm-article-delete]');
-            if (confirmArticleDeleteButton && modalRoot.contains(confirmArticleDeleteButton)) {
-                event.preventDefault();
-                if (confirmArticleDeleteButton.disabled) return;
-                deleteStudentServiceArticle(confirmArticleDeleteButton.dataset.studentServiceConfirmArticleDelete || '');
-                return;
-            }
-            const ticketThreadModalBackdrop = event.target.closest('[data-student-service-dismiss-ticket-thread-modal]');
-            if (ticketThreadModalBackdrop && ticketThreadModalBackdrop === event.target) {
-                event.preventDefault();
-                closeStudentServiceTicketThreadModal();
-                return;
-            }
-            const cancelTicketThreadButton = event.target.closest('[data-student-service-cancel-ticket-thread-modal]');
-            if (cancelTicketThreadButton && modalRoot.contains(cancelTicketThreadButton)) {
-                event.preventDefault();
-                closeStudentServiceTicketThreadModal();
-                return;
-            }
-            const threadModalBackdrop = event.target.closest('[data-student-service-dismiss-thread-modal]');
-            if (threadModalBackdrop && threadModalBackdrop === event.target) {
-                event.preventDefault();
-                setStudentServiceOpenQuestionId('');
-                return;
-            }
-            const cancelThreadButton = event.target.closest('[data-student-service-cancel-thread-modal]');
-            if (cancelThreadButton && modalRoot.contains(cancelThreadButton)) {
-                event.preventDefault();
-                setStudentServiceOpenQuestionId('');
-                return;
-            }
-            const composerModalBackdrop = event.target.closest('[data-student-service-dismiss-composer-modal]');
-            if (composerModalBackdrop && composerModalBackdrop === event.target) {
-                event.preventDefault();
-                closeStudentServiceQuestionComposerModal();
-                return;
-            }
-            const cancelComposerButton = event.target.closest('[data-student-service-cancel-composer-modal]');
-            if (cancelComposerButton && modalRoot.contains(cancelComposerButton)) {
-                event.preventDefault();
-                closeStudentServiceQuestionComposerModal();
-                return;
-            }
-            const askModeButton = event.target.closest('[data-student-service-draft-question-mode]');
-            if (askModeButton && modalRoot.contains(askModeButton)) {
-                event.preventDefault();
-                setStudentServiceDraftQuestionField('askMode', askModeButton.dataset.studentServiceDraftQuestionMode || 'public');
-                remountStudentServiceQuestionComposerModal();
-                return;
-            }
-            const submitQuestionButton = event.target.closest('[data-student-service-submit-question]');
-            if (submitQuestionButton && modalRoot.contains(submitQuestionButton)) {
-                event.preventDefault();
-                submitStudentServiceQuestion();
-                return;
-            }
-            const openQuestionButton = event.target.closest('[data-student-service-open-question]');
-            if (openQuestionButton && modalRoot.contains(openQuestionButton)) {
-                event.preventDefault();
-                closeStudentServiceQuestionComposerModal();
-                openStudentServiceQuestion(openQuestionButton.dataset.studentServiceOpenQuestion || '');
-                return;
-            }
-            const guidanceModalBackdrop = event.target.closest('[data-student-service-dismiss-guidance-modal]');
-            if (guidanceModalBackdrop && guidanceModalBackdrop === event.target) {
-                event.preventDefault();
-                closeStudentServiceGuidanceModal();
-                return;
-            }
-            const cancelGuidanceModalButton = event.target.closest('[data-student-service-cancel-guidance-modal]');
-            if (cancelGuidanceModalButton && modalRoot.contains(cancelGuidanceModalButton)) {
-                event.preventDefault();
-                closeStudentServiceGuidanceModal();
-                return;
-            }
-            const selectHubArticleButton = event.target.closest('[data-student-service-select-hub-article]');
-            if (selectHubArticleButton && modalRoot.contains(selectHubArticleButton)) {
-                event.preventDefault();
-                selectStudentHubArticle(
-                    selectHubArticleButton.dataset.studentServiceSelectHubArticle || '',
-                    selectHubArticleButton.dataset.studentServiceHubArea || ''
-                );
-                return;
-            }
-            const articleSearchClearButton = event.target.closest('[data-student-service-article-search-clear]');
-            if (articleSearchClearButton && modalRoot.contains(articleSearchClearButton)) {
-                event.preventDefault();
-                setStudentServiceArticleSearch('');
-                return;
-            }
-            const inboxFilterEditorBackdrop = event.target.closest('[data-student-service-dismiss-inbox-filter-editor-modal]');
-            if (inboxFilterEditorBackdrop && inboxFilterEditorBackdrop === event.target) {
-                event.preventDefault();
-                closeStudentServiceInboxFilterEditorModal();
-                return;
-            }
-            const closeInboxFilterEditorButton = event.target.closest('[data-student-service-inbox-filter-editor-close]');
-            if (closeInboxFilterEditorButton && modalRoot.contains(closeInboxFilterEditorButton)) {
-                event.preventDefault();
-                closeStudentServiceInboxFilterEditorModal();
-                return;
-            }
-            const savePersonalInboxFiltersButton = event.target.closest('[data-student-service-inbox-filter-editor-save-personal]');
-            if (savePersonalInboxFiltersButton && modalRoot.contains(savePersonalInboxFiltersButton)) {
-                event.preventDefault();
-                saveStudentServicePersonalInboxFilterLayoutFromEditor();
-                return;
-            }
-            const saveSharedInboxFiltersButton = event.target.closest('[data-student-service-inbox-filter-editor-save-shared]');
-            if (saveSharedInboxFiltersButton && modalRoot.contains(saveSharedInboxFiltersButton)) {
-                event.preventDefault();
-                saveStudentServiceSharedInboxFilterLayoutFromEditor();
-                return;
-            }
-            const resetPersonalInboxFiltersButton = event.target.closest('[data-student-service-inbox-filter-editor-reset-personal]');
-            if (resetPersonalInboxFiltersButton && modalRoot.contains(resetPersonalInboxFiltersButton)) {
-                event.preventDefault();
-                resetStudentServicePersonalInboxFilterLayoutFromEditor();
-                return;
-            }
-            const addCustomInboxFilterButton = event.target.closest('[data-student-service-inbox-filter-editor-add-filter]');
-            if (addCustomInboxFilterButton && modalRoot.contains(addCustomInboxFilterButton)) {
-                event.preventDefault();
-                addStudentServiceInboxFilterEditorCustomFilter();
-                return;
-            }
-            const addInboxFilterOptionButton = event.target.closest('[data-student-service-inbox-filter-editor-add-option]');
-            if (addInboxFilterOptionButton && modalRoot.contains(addInboxFilterOptionButton)) {
-                event.preventDefault();
-                addStudentServiceInboxFilterEditorOption(Number(addInboxFilterOptionButton.dataset.studentServiceInboxFilterEditorAddOption));
-                return;
-            }
-            const removeInboxFilterOptionButton = event.target.closest('[data-student-service-inbox-filter-editor-remove-option]');
-            if (removeInboxFilterOptionButton && modalRoot.contains(removeInboxFilterOptionButton)) {
-                event.preventDefault();
-                removeStudentServiceInboxFilterEditorOption(
-                    Number(removeInboxFilterOptionButton.dataset.studentServiceInboxFilterEditorRemoveOption),
-                    Number(removeInboxFilterOptionButton.dataset.studentServiceInboxFilterEditorOptionIndex)
-                );
-                return;
-            }
-            const removeInboxFilterButton = event.target.closest('[data-student-service-inbox-filter-editor-remove-filter]');
-            if (removeInboxFilterButton && modalRoot.contains(removeInboxFilterButton)) {
-                event.preventDefault();
-                removeStudentServiceInboxFilterEditorFilter(Number(removeInboxFilterButton.dataset.studentServiceInboxFilterEditorRemoveFilter));
-                return;
-            }
-            const moveInboxFilterButton = event.target.closest('[data-student-service-inbox-filter-editor-move]');
-            if (moveInboxFilterButton && modalRoot.contains(moveInboxFilterButton)) {
-                event.preventDefault();
-                moveStudentServiceInboxFilterEditorRow(
-                    Number(moveInboxFilterButton.dataset.studentServiceInboxFilterEditorFilterIndex),
-                    moveInboxFilterButton.dataset.studentServiceInboxFilterEditorMove || ''
-                );
-            }
-        });
-        document.addEventListener('input', (event) => {
-            const modalRoot = document.getElementById('student-service-modal-root');
-            if (!modalRoot || modalRoot.hasAttribute('hidden')) return;
-            if (event.target.matches('[data-student-service-draft-question-field]') && modalRoot.contains(event.target)) {
-                syncDraftQuestionField(event.target);
-                return;
-            }
-            if (event.target.matches('[data-student-service-article-search-input]') && modalRoot.contains(event.target)) {
-                setStudentServiceArticleSearch(event.target.value);
-            }
-        });
-        document.addEventListener('change', (event) => {
-            const modalRoot = document.getElementById('student-service-modal-root');
-            if (!modalRoot || modalRoot.hasAttribute('hidden')) return;
-            if (event.target.matches('[data-student-service-draft-question-field]') && modalRoot.contains(event.target)) {
-                syncDraftQuestionField(event.target);
-                return;
-            }
-            if (event.target.matches('[data-student-service-article-search-input]') && modalRoot.contains(event.target)) {
-                setStudentServiceArticleSearch(event.target.value);
-            }
+            handleStudentServiceModalDocumentClick(event);
         });
     }
 
     root.addEventListener('click', (event) => {
-        const laneButton = event.target.closest('[data-student-service-lane]');
-        if (laneButton) {
-            event.preventDefault();
-            setStudentServiceLane(laneButton.dataset.studentServiceLane || '');
-            return;
-        }
-
-        const panelSwitchButton = event.target.closest('[data-student-service-panel-switch]');
-        if (panelSwitchButton) {
-            event.preventDefault();
-            switchStudentServicePanel(panelSwitchButton.dataset.studentServicePanelSwitch || 'tickets');
-            return;
-        }
-
-        const navigateButton = event.target.closest('[data-student-service-navigate]');
-        if (navigateButton) {
-            event.preventDefault();
-            if (typeof navigate === 'function') {
-                navigate(navigateButton.dataset.studentServiceNavigate || 'student-service');
-            }
-            return;
-        }
-
-        const panelButton = event.target.closest('[data-student-service-open-panel]');
-        if (panelButton) {
-            event.preventDefault();
-            openStudentServicePanel(panelButton.dataset.studentServiceOpenPanel || 'tickets');
-            return;
-        }
-
-        const studentTabButton = event.target.closest('[data-student-service-student-tab]');
-        if (studentTabButton) {
-            event.preventDefault();
-            switchStudentServiceStudentTab(studentTabButton.dataset.studentServiceStudentTab || 'get_help');
-            return;
-        }
-
-        const openTicketFullscreenButton = event.target.closest('[data-student-service-open-ticket-fullscreen]');
-        if (openTicketFullscreenButton) {
-            event.preventDefault();
-            const ui = ensureStudentServiceUiState();
-            mountStudentServiceTicketThreadModal(ui.selectedTicketId || '');
-            return;
-        }
-
-        const toggleInternalNotesButton = event.target.closest('[data-student-service-toggle-internal-notes]');
-        if (toggleInternalNotesButton) {
-            event.preventDefault();
-            toggleStudentServiceDetailSection('internalNotes');
-            return;
-        }
-
-        const openTicketButton = event.target.closest('[data-student-service-open-ticket]');
-        if (openTicketButton) {
-            event.preventDefault();
-            openStudentServiceTicket(openTicketButton.dataset.studentServiceOpenTicket || '');
-            const panel = openTicketButton.dataset.studentServiceOpenTicketPanel || '';
-            if (panel) openStudentServicePanel(panel);
-            return;
-        }
-
-        const openGuidanceModalButton = event.target.closest('[data-student-service-open-guidance-modal]');
-        if (openGuidanceModalButton) {
-            event.preventDefault();
-            openStudentServiceGuidanceModal();
-            return;
-        }
-
-        const focusAreaButton = event.target.closest('[data-student-service-focus-area]');
-        if (focusAreaButton) {
-            event.preventDefault();
-            const focusAreaId = focusAreaButton.dataset.studentServiceFocusArea || '';
-            if (getEffectiveUserRole() === USER_ROLES.STUDENT && getStudentServiceLane() === 'service') {
-                openStudentServiceGuidanceModal();
-                return;
-            }
-            focusStudentServiceSupportArea(focusAreaId);
-            return;
-        }
-
-        const selectHubArticleButton = event.target.closest('[data-student-service-select-hub-article]');
-        if (selectHubArticleButton) {
-            event.preventDefault();
-            selectStudentHubArticle(
-                selectHubArticleButton.dataset.studentServiceSelectHubArticle || '',
-                selectHubArticleButton.dataset.studentServiceHubArea || ''
-            );
-            return;
-        }
-
-        const articleSearchClearButton = event.target.closest('[data-student-service-article-search-clear]');
-        if (articleSearchClearButton) {
-            event.preventDefault();
-            setStudentServiceArticleSearch('');
-            return;
-        }
-
-        const ticketFilterButton = event.target.closest('[data-student-service-ticket-filter-field][data-student-service-ticket-filter-value]');
-        if (ticketFilterButton) {
-            event.preventDefault();
-            setStudentServiceTicketFilter(
-                ticketFilterButton.dataset.studentServiceTicketFilterField || '',
-                ticketFilterButton.dataset.studentServiceTicketFilterValue || ''
-            );
-            return;
-        }
-
-        const retryBootstrapButton = event.target.closest('[data-student-service-retry-bootstrap]');
-        if (retryBootstrapButton) {
-            event.preventDefault();
-            scheduleStudentServiceBootstrap(true);
-            return;
-        }
-
-        const retryQaModuleButton = event.target.closest('[data-student-service-retry-qa-module]');
-        if (retryQaModuleButton) {
-            event.preventDefault();
-            const bodyContainer = document.getElementById('student-service-page-body');
-            const mode = retryQaModuleButton.dataset.studentServiceRetryQaModule || 'student';
-            if (bodyContainer) renderStudentServiceQaModuleLoading(bodyContainer, mode);
-            ensureStudentServiceQaModule()
-                .then(() => rerenderStudentServicePageAfterModuleLoad())
-                .catch(() => handleStudentServiceQaModuleLoadFailure(bodyContainer, mode));
-            return;
-        }
-
-        const retryServiceModuleButton = event.target.closest('[data-student-service-retry-service-module]');
-        if (retryServiceModuleButton) {
-            event.preventDefault();
-            const bodyContainer = document.getElementById('student-service-page-body');
-            const mode = retryServiceModuleButton.dataset.studentServiceRetryServiceModule || 'service';
-            if (bodyContainer) renderStudentServiceServiceModuleLoading(bodyContainer, mode);
-            ensureStudentServiceServiceModule()
-                .then(() => rerenderStudentServicePageAfterModuleLoad())
-                .catch(() => handleStudentServiceServiceModuleLoadFailure(bodyContainer, mode));
-            return;
-        }
-
-        const composerToggle = event.target.closest('[data-student-service-question-composer-toggle]');
-        if (composerToggle) {
-            event.preventDefault();
-            if (composerToggle.dataset.studentServiceQuestionComposerToggle === 'open') {
-                const ui = ensureStudentServiceUiState();
-                if (ui.serviceLane !== 'qa') {
-                    ui.serviceLane = 'qa';
-                    writeStudentServiceStoredLane('qa');
-                }
-                openStudentServiceQuestionComposerModal();
-            }
-            return;
-        }
-
-        if (handleStudentServiceQaThreadClick(event)) return;
-
-        const submitTicketButton = event.target.closest('[data-student-service-submit-ticket]');
-        if (submitTicketButton) {
-            event.preventDefault();
-            submitStudentServiceTicket();
-            return;
-        }
-
-        const editInboxFiltersButton = event.target.closest('[data-student-service-edit-inbox-filters]');
-        if (editInboxFiltersButton) {
-            event.preventDefault();
-            openStudentServiceInboxFilterEditorModal();
-            return;
-        }
-
-        const openArticleButton = event.target.closest('[data-student-service-open-article]');
-        if (openArticleButton) {
-            event.preventDefault();
-            openStudentServiceArticle(openArticleButton.dataset.studentServiceOpenArticle || '');
-            return;
-        }
-
-        const editArticleButton = event.target.closest('[data-student-service-edit-article]');
-        if (editArticleButton) {
-            event.preventDefault();
-            editStudentServiceArticle(editArticleButton.dataset.studentServiceEditArticle || '');
-            return;
-        }
-
-        const startNewArticleButton = event.target.closest('[data-student-service-start-new-article]');
-        if (startNewArticleButton) {
-            event.preventDefault();
-            startStudentServiceNewArticle();
-            return;
-        }
-
-        const assignTicketButton = event.target.closest('[data-student-service-assign-ticket]');
-        if (assignTicketButton) {
-            event.preventDefault();
-            assignStudentServiceTicketToCurrentUser();
-            return;
-        }
-
-        const attachButton = event.target.closest('[data-student-service-attach]');
-        if (attachButton) {
-            event.preventDefault();
-            pickStudentServiceAttachments(attachButton.dataset.studentServiceAttach || '');
-            return;
-        }
-
-        const removeAttachmentButton = event.target.closest('[data-student-service-remove-attachment]');
-        if (removeAttachmentButton) {
-            event.preventDefault();
-            removeStudentServiceDraftAttachment(
-                removeAttachmentButton.dataset.studentServiceRemoveAttachment || '',
-                removeAttachmentButton.dataset.studentServiceAttachmentId || ''
-            );
-            return;
-        }
-
-        const addInternalNoteButton = event.target.closest('[data-student-service-add-internal-note]');
-        if (addInternalNoteButton) {
-            event.preventDefault();
-            addStudentServiceInternalNote();
-            return;
-        }
-
-        const replyTicketButton = event.target.closest('[data-student-service-reply-ticket]');
-        if (replyTicketButton) {
-            event.preventDefault();
-            replyStudentServiceTicket();
-            return;
-        }
-
-        const saveArticleButton = event.target.closest('[data-student-service-save-article]');
-        if (saveArticleButton) {
-            event.preventDefault();
-            saveStudentServiceArticle(saveArticleButton.dataset.studentServiceSaveArticle === 'publish');
-            return;
-        }
-
-        const deleteArticleButton = event.target.closest('[data-student-service-delete-article]');
-        if (deleteArticleButton) {
-            event.preventDefault();
-            flashStudentServiceActionButton(deleteArticleButton, 'acting');
-            openStudentServiceDeleteArticleConfirm(deleteArticleButton.dataset.studentServiceDeleteArticle || '');
-            return;
-        }
-
-        const detailSectionButton = event.target.closest('[data-student-service-detail-section]');
-        if (detailSectionButton) {
-            event.preventDefault();
-            toggleStudentServiceDetailSection(detailSectionButton.dataset.studentServiceDetailSection || '');
-        }
+        handleStudentServiceRootClick(event);
     });
 
     document.addEventListener('change', (event) => {
@@ -6043,17 +5937,14 @@ function bindStudentServiceDelegatedInteractions() {
             setStudentServiceDraftTicketField(field, event.target.value);
             return;
         }
-
         if (event.target.matches('[data-student-service-draft-question-field]')) {
             syncDraftQuestionField(event.target);
             return;
         }
-
         if (event.target.matches('[data-student-service-article-search-input]')) {
             setStudentServiceArticleSearch(event.target.value);
             return;
         }
-
         if (event.target.matches('[data-student-service-ticket-filter-input]')) {
             setStudentServiceTicketFilter(
                 event.target.dataset.studentServiceTicketFilterInput || '',
@@ -6062,7 +5953,6 @@ function bindStudentServiceDelegatedInteractions() {
             );
             return;
         }
-
         if (event.target.matches('[data-student-service-question-filter-input]')) {
             setStudentServiceQuestionFilter(
                 event.target.dataset.studentServiceQuestionFilterInput || '',
@@ -6078,12 +5968,10 @@ function bindStudentServiceDelegatedInteractions() {
             setStudentServiceDraftTicketField(field, value);
             return;
         }
-
         if (event.target.matches('[data-student-service-draft-question-field]')) {
             syncDraftQuestionField(event.target);
             return;
         }
-
         if (event.target.matches('[data-student-service-ticket-filter-input]')) {
             setStudentServiceTicketFilter(
                 event.target.dataset.studentServiceTicketFilterInput || '',
@@ -6091,17 +5979,14 @@ function bindStudentServiceDelegatedInteractions() {
             );
             return;
         }
-
         if (event.target.matches('[data-student-service-ticket-status-select]')) {
             updateStudentServiceTicketStatus(event.target.value);
             return;
         }
-
         if (event.target.matches('[data-student-service-article-search-input]')) {
             setStudentServiceArticleSearch(event.target.value);
             return;
         }
-
         if (event.target.matches('[data-student-service-question-filter-input]')) {
             setStudentServiceQuestionFilter(
                 event.target.dataset.studentServiceQuestionFilterInput || '',
@@ -6118,6 +6003,7 @@ function bindStudentServiceDelegatedInteractions() {
         });
     }
 }
+
 
 async function bootstrapStudentServicePage() {
     if (!document.getElementById('page-student-service')) return;

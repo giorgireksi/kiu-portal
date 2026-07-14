@@ -364,6 +364,8 @@ describe('Student Service split workspace regressions', () => {
         const combined = `${source}\n${qaModule}\n${serviceModule}`;
 
         expect(source).toContain('function bindStudentServiceDelegatedInteractions()');
+        expect(source).toContain('function handleStudentServiceRootClick(');
+        expect(source).toContain('function handleStudentServiceModalDocumentClick(');
         expect(source).toContain("const STUDENT_SERVICE_QA_MODULE_URL = 'assets/js/pages/student-service-qa.js?v=20260626-ssvc-qa-header-merge1';");
         expect(source).toContain("const STUDENT_SERVICE_SERVICE_MODULE_URL = 'assets/js/pages/student-service-service.js?v=20260628-ssvc-hub-merge';");
         expect(source).toContain('function bindStudentServiceRealtimeRefreshListener(');
@@ -530,8 +532,8 @@ describe('lane switcher render recovery', () => {
     it('lane switcher and chooser share the same delegated lane handler', () => {
         const source = ssvcHubAndQa();
 
-        expect(source).toContain("const laneButton = event.target.closest('[data-student-service-lane]');");
-        expect(source).toContain('setStudentServiceLane(laneButton.dataset.studentServiceLane || \'\');');
+        expect(source).toMatch(/studentServiceEventEl\(event, '\[data-student-service-lane\]'\)|event\.target\.closest\('\[data-student-service-lane\]'\)/);
+        expect(source).toMatch(/setStudentServiceLane\(laneButton\.dataset\.studentServiceLane \|\| '(?:service)?'\)/);
         expect(source).toContain('data-student-service-lane="service"');
         expect(source).toContain('data-student-service-lane="qa"');
         expect(source).toContain('function setStudentServiceLane(lane, rerender = true)');
@@ -643,7 +645,7 @@ describe('Q&A hub interaction render guardrails', () => {
     it('keeps delegated handlers for composer modal open and Q&A search input', () => {
         const source = ssvcHubAndQa();
 
-        expect(source).toContain("const composerToggle = event.target.closest('[data-student-service-question-composer-toggle]');");
+        expect(source).toMatch(/studentServiceEventEl\(event, '\[data-student-service-question-composer-toggle\]'\)|event\.target\.closest\('\[data-student-service-question-composer-toggle\]'\)/);
         expect(source).toContain('openStudentServiceQuestionComposerModal();');
         expect(source).toContain('__studentServiceComposerModalInteractionsBound');
         expect(source).not.toContain("const questionFilterButton = event.target.closest('[data-student-service-question-filter-field][data-student-service-question-filter-value]');");

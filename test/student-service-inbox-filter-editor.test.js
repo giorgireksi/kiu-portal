@@ -281,29 +281,26 @@ describe('student service inbox filter editor', () => {
 
     it('delegates inbox filter editor interactions through document modal listener', () => {
         const studentServiceJs = ssvcSources().both();
-        const documentClickStart = studentServiceJs.indexOf("document.addEventListener('click', (event) => {");
-        const documentClickEnd = studentServiceJs.indexOf("document.addEventListener('input', (event) => {", documentClickStart);
-        const documentClickBlock = studentServiceJs.slice(documentClickStart, documentClickEnd);
+        const hub = readSource('assets/js/pages/student-service.js');
 
-        expect(documentClickBlock).toContain('data-student-service-dismiss-inbox-filter-editor-modal');
-        expect(documentClickBlock).toContain('data-student-service-inbox-filter-editor-close');
-        expect(documentClickBlock).toContain('data-student-service-inbox-filter-editor-save-personal');
-        expect(documentClickBlock).toContain('data-student-service-inbox-filter-editor-save-shared');
-        expect(documentClickBlock).toContain('modalRoot.contains(closeInboxFilterEditorButton)');
+        // Modal document click is routed through a dedicated handler after Phase 5 shell polish.
+        expect(hub).toContain('function handleStudentServiceModalDocumentClick(');
+        expect(hub).toContain("document.addEventListener('click', (event) => {\n            handleStudentServiceModalDocumentClick(event);");
+        expect(hub).toContain('data-student-service-dismiss-inbox-filter-editor-modal');
+        expect(hub).toContain('data-student-service-inbox-filter-editor-close');
+        expect(hub).toContain('data-student-service-inbox-filter-editor-save-personal');
+        expect(hub).toContain('data-student-service-inbox-filter-editor-save-shared');
 
-        const pageClickStart = studentServiceJs.indexOf("root.addEventListener('click', (event) => {");
-        const pageClickEnd = studentServiceJs.indexOf("root.addEventListener('input'", pageClickStart);
-        const pageClickBlock = studentServiceJs.slice(pageClickStart, pageClickEnd);
-
+        const pageClickStart = hub.indexOf("root.addEventListener('click', (event) => {");
+        const pageClickEnd = hub.indexOf("root.addEventListener('input'", pageClickStart);
+        const pageClickBlock = hub.slice(pageClickStart, pageClickEnd);
         expect(pageClickBlock).not.toContain('data-student-service-inbox-filter-editor-save-personal');
         expect(pageClickBlock).not.toContain('data-student-service-inbox-filter-editor-close');
 
-        const keydownStart = studentServiceJs.indexOf("document.addEventListener('keydown', (event) => {");
-        const keydownEnd = studentServiceJs.indexOf("document.addEventListener('click', (event) => {", keydownStart);
-        const keydownBlock = studentServiceJs.slice(keydownStart, keydownEnd);
-
-        expect(keydownBlock).toContain('isStudentServiceInboxFilterEditorOpen()');
-        expect(keydownBlock).toContain('closeStudentServiceInboxFilterEditorModal()');
+        expect(hub).toContain('function handleStudentServiceEscapeKey(');
+        expect(hub).toContain('document.addEventListener(\'keydown\', handleStudentServiceEscapeKey)');
+        expect(hub).toContain('isStudentServiceInboxFilterEditorOpen()');
+        expect(hub).toContain('closeStudentServiceInboxFilterEditorModal()');
     });
 
     it('shows only custom dropdown filters in the editor', () => {

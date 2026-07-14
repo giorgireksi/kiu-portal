@@ -68,7 +68,7 @@ When editing a domain, prefer **one** implementation in its module. Update dual-
 3. **Phase 2** — extract attachments → `student-service-attachments.js` *(done)*  
 4. **Phase 3** — tickets/thread domain module *(done: normalize, modals, submit/reply/status/handoff)*  
 5. **Phase 4** — deepen Q&A module *(done)*  
-6. **Phase 5** — hub click-router compaction; optional articles/handoff  
+6. **Phase 5** — hub click-router compaction *(done: `studentServiceEventEl`, modal/root/escape handlers)*  
 
 ## Verification
 
