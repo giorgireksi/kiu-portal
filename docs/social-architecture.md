@@ -21,8 +21,8 @@ Render bridge: `queueRender` → `window.__kiuSocialLiteRenderPage` (`renderSoci
 
 | id | UI label | Owner |
 |----|----------|--------|
-| `feed` | Home | social-feed.js (hero + panel + **post card** `renderPost` + **comment markup** `renderCommentNode`/`Thread` + compose/attach + `renderFeedOwnedDialog` + `handleSocialFeedClick` for `post-*`/`comment-*`/`story-*`/`focus-feed`/`feed-refresh`); page thin-stubs render helpers and dispatches via `isSocialFeedClickAction`; comment DOM patches stay on page |
-| `community` | People | social-community.js (`handleSocialCommunityClick` for `connection-*`/`person-*`); page dispatches via `isSocialCommunityClickAction` |
+| `feed` | Home | social-feed.js (hero + panel + **post card** + **comment markup + dialog patches** + compose/attach + `renderFeedOwnedDialog` + handlers); page thin-stubs; dispatches via `isSocialFeedClickAction` |
+| `community` | People | social-community.js (panel + **`renderRelationshipActions`** + `handleSocialCommunityClick` for `connection-*`/`person-*`); page thin-stubs / dispatches |
 | `groups` | Groups | social-groups.js (hero + panel + create/detail/leave/invite + group-panel dialogs via `renderGroupOwnedDialog` + `handleSocialGroupsClick` for `group-*` actions); page dispatches via `isSocialGroupsClickAction` |
 | `workspace` | Projects | social-workspace.js (render stack + `handleSocialWorkspaceClick` / `Submit` / `Input` / `Change`); page dispatches domain events |
 | `projects` | Portfolio | social-workspace.js (panel/editor + shared workspace click/submit/input handlers); page keeps thin stubs + DOM patch helpers |

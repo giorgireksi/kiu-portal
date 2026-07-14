@@ -24,7 +24,6 @@
         personProfileCompleteness,
         personActivityLabel,
         personSuggestionReason,
-        renderRelationshipActions,
         inviteEligibleGroups,
         escape,
         renderCommunityHero,
@@ -61,7 +60,6 @@
         || typeof personProfileCompleteness !== 'function'
         || typeof personActivityLabel !== 'function'
         || typeof personSuggestionReason !== 'function'
-        || typeof renderRelationshipActions !== 'function'
         || typeof inviteEligibleGroups !== 'function'
         || typeof escape !== 'function'
         || typeof renderCommunityHero !== 'function'
@@ -78,6 +76,52 @@
     ) {
         throw new Error('Social community hooks are unavailable.');
     }
+
+    function renderRelationshipActions(account) {
+        const status = connectionStatusFor(account?.id);
+        if (status.state === 'connected') {
+            return `
+                <button class="social-neo-btn social-neo-btn-primary" type="button" data-action="directory-message" data-user-id="${escape(text(account.id))}">
+                    Message
+                </button>
+                <span class="social-neo-pill">Friends</span>
+            `;
+        }
+        if (status.state === 'incoming') {
+            return `
+                <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="directory-message" data-user-id="${escape(text(account.id))}">
+                    Message
+                </button>
+                <button class="social-neo-btn social-neo-btn-primary" type="button" data-action="connection-accept" data-relationship-id="${escape(text(status.relationship?.id))}">
+                    Accept friend
+                </button>
+                <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="connection-decline" data-relationship-id="${escape(text(status.relationship?.id))}">
+                    Decline
+                </button>
+            `;
+        }
+        if (status.state === 'outgoing') {
+            return `
+                <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="directory-message" data-user-id="${escape(text(account.id))}">
+                    Message
+                </button>
+                <span class="social-neo-pill">Friend request sent</span>
+                <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="connection-cancel" data-user-id="${escape(text(account.id))}">
+                    Cancel request
+                </button>
+            `;
+        }
+        return `
+            <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="directory-message" data-user-id="${escape(text(account.id))}">
+                Message
+            </button>
+            <button class="social-neo-btn social-neo-btn-primary" type="button" data-action="connection-send" data-user-id="${escape(text(account.id))}">
+                Add friend
+            </button>
+        `;
+    }
+
+    window.renderRelationshipActions = renderRelationshipActions;
 
     window.renderCommunityPanel = function renderCommunityPanel() {
         const runtime = state();

@@ -3077,6 +3077,8 @@
             window.__KIU_SOCIAL_COMMUNITY_MODULE_LOADED
             && typeof window.renderCommunityPanel === 'function'
             && window.renderCommunityPanel !== renderCommunityPanel
+            && typeof window.renderRelationshipActions === 'function'
+            && window.renderRelationshipActions !== renderRelationshipActions
         );
     }
 
@@ -3527,7 +3529,9 @@
             && typeof window.renderPost === 'function'
             && window.renderPost !== renderPost
             && typeof window.renderCommentThread === 'function'
-            && window.renderCommentThread !== renderCommentThread) {
+            && window.renderCommentThread !== renderCommentThread
+            && typeof window.findCommentInThread === 'function'
+            && window.findCommentInThread !== findCommentInThread) {
             return Promise.resolve();
         }
         const existing = document.querySelector(`script[src="${SOCIAL_FEED_MODULE_URL}"]`);
@@ -3556,7 +3560,9 @@
             && typeof window.renderPost === 'function'
             && window.renderPost !== renderPost
             && typeof window.renderCommentThread === 'function'
-            && window.renderCommentThread !== renderCommentThread);
+            && window.renderCommentThread !== renderCommentThread
+            && typeof window.findCommentInThread === 'function'
+            && window.findCommentInThread !== findCommentInThread);
     }
 
 
@@ -5878,9 +5884,13 @@
 
     /** The comment <article> for a given id inside the open comments dialog. */
     function dialogCommentEl(commentId) {
-        const thread = document.getElementById('social-neo-dialog-comment-thread');
-        return thread?.querySelector(`article.social-neo-comment[data-comment-id="${CSS.escape(text(commentId))}"]`) || null;
+        if (hasSocialFeedModule() && typeof window.dialogCommentEl === 'function' && window.dialogCommentEl !== dialogCommentEl) {
+            return window.dialogCommentEl(commentId);
+        }
+        ensureSocialFeedModule().catch(() => null);
+        return null;
     }
+
 
     function syncProjectTabPills(pillRow, activeTab) {
         if (!pillRow) return;
@@ -6228,26 +6238,23 @@
 
     /** Replaces just the 5 reaction chips of one comment with fresh counts/active state. */
     function patchCommentReactions(updatedPost, commentId) {
-        const article = dialogCommentEl(commentId);
-        if (!article) return false;
-        const span = article.querySelector(':scope > .social-neo-comment-row > .social-neo-comment-body > .social-neo-comment-actions > .social-neo-comment-reactions');
-        if (!span) return false;
-        const fresh = findCommentInThread(updatedPost?.comments, commentId);
-        if (!fresh) return false;
-        span.innerHTML = renderCommentReactionButtons(fresh, postKey(updatedPost));
-        return true;
+        if (hasSocialFeedModule() && typeof window.patchCommentReactions === 'function' && window.patchCommentReactions !== patchCommentReactions) {
+            return window.patchCommentReactions(updatedPost, commentId);
+        }
+        ensureSocialFeedModule().catch(() => null);
+        return false;
     }
+
 
     /** Window hook for runtime comment-react (dialog chips only — no center rebuild). */
     function patchCommentReactionsByIds(postId, commentId) {
-        const normalizedPostId = postKey(postId);
-        const normalizedCommentId = text(commentId);
-        if (!normalizedPostId || !normalizedCommentId) return false;
-        const feed = Array.isArray(state()?.feed) ? state().feed : [];
-        const post = feed.find((entry) => text(entry?.id) === normalizedPostId);
-        if (!post) return false;
-        return Boolean(patchCommentReactions(post, normalizedCommentId));
+        if (hasSocialFeedModule() && typeof window.patchCommentReactionsByIds === 'function' && window.patchCommentReactionsByIds !== patchCommentReactionsByIds) {
+            return window.patchCommentReactionsByIds(postId, commentId);
+        }
+        ensureSocialFeedModule().catch(() => null);
+        return false;
     }
+
 
     function patchPhotographyFeedReactions(postId) {
         const normalizedId = postKey(postId);
@@ -6603,132 +6610,61 @@
 
     /** Opens the inline reply composer under a comment without re-rendering the dialog. */
     function openInlineReply(post, commentId, authorName) {
-        const article = dialogCommentEl(commentId);
-        if (!article) return;
-        const body = article.querySelector(':scope > .social-neo-comment-row > .social-neo-comment-body');
-        if (!body) return;
-        body.querySelector(':scope > .social-neo-comment-reply-form')?.remove();
-        const comment = findCommentInThread(post?.comments, commentId) || { id: commentId, authorName };
-        const holder = document.createElement('div');
-        holder.innerHTML = renderInlineReplyForm(comment, post, 'dialog');
-        const form = holder.firstElementChild;
-        if (form) body.appendChild(form);
-        article.querySelector(':scope > .social-neo-comment-row > .social-neo-comment-body > .social-neo-comment-actions .social-neo-comment-reply-btn')?.classList.add('is-active');
-        window.requestAnimationFrame(() => {
-            relayoutCommentTrunks();
-            const input = document.getElementById(`social-reply-input-${text(commentId)}`);
-            input?.focus?.({ preventScroll: true });
-            const replyForm = body.querySelector(':scope > .social-neo-comment-reply-form');
-            replyForm?.scrollIntoView?.({ block: 'end', behavior: 'smooth' });
-        });
+        if (hasSocialFeedModule() && typeof window.openInlineReply === 'function' && window.openInlineReply !== openInlineReply) {
+            return window.openInlineReply(post, commentId, authorName);
+        }
+        ensureSocialFeedModule().catch(() => null);
     }
+
 
     /** Removes the inline reply composer under a comment. */
     function closeInlineReply(commentId) {
-        const article = dialogCommentEl(commentId);
-        if (!article) return;
-        article.querySelector(':scope > .social-neo-comment-row > .social-neo-comment-body > .social-neo-comment-reply-form')?.remove();
-        article.querySelector(':scope > .social-neo-comment-row > .social-neo-comment-body > .social-neo-comment-actions .social-neo-comment-reply-btn')?.classList.remove('is-active');
-        relayoutCommentTrunks();
+        if (hasSocialFeedModule() && typeof window.closeInlineReply === 'function' && window.closeInlineReply !== closeInlineReply) {
+            return window.closeInlineReply(commentId);
+        }
+        ensureSocialFeedModule().catch(() => null);
     }
+
 
     /** Appends a freshly-posted reply under its parent and updates the reply counter. */
     function appendReplyNode(updatedPost, parentCommentId) {
-        const article = dialogCommentEl(parentCommentId);
-        if (!article) return;
-        const parent = findCommentInThread(updatedPost?.comments, parentCommentId);
-        const replies = Array.isArray(parent?.replies) ? parent.replies : [];
-        if (!replies.length) return;
-        const newest = replies[replies.length - 1];
-        let children = article.querySelector(':scope > .social-neo-comment-children');
-        if (!children) {
-            children = document.createElement('div');
-            children.className = 'social-neo-comment-children';
-            article.appendChild(children);
+        if (hasSocialFeedModule() && typeof window.appendReplyNode === 'function' && window.appendReplyNode !== appendReplyNode) {
+            return window.appendReplyNode(updatedPost, parentCommentId);
         }
-        let parentDepth = 0;
-        for (let p = article.parentElement; p && !p.classList.contains('social-neo-comment-list'); p = p.parentElement) {
-            if (p.classList.contains('social-neo-comment-children')) parentDepth++;
-        }
-        const depth = Math.min(parentDepth + 1, 3);
-        const holder = document.createElement('div');
-        holder.innerHTML = renderCommentNode(newest, updatedPost, depth, 'dialog');
-        if (holder.firstElementChild) children.appendChild(holder.firstElementChild);
-        const label = article.querySelector(':scope > .social-neo-comment-row > .social-neo-comment-body > .social-neo-comment-actions .social-neo-comment-reply-label');
-        if (label) label.textContent = `Reply (${replies.length})`;
-        relayoutCommentTrunks();
+        ensureSocialFeedModule().catch(() => null);
     }
+
 
     /** Updates the "N comments" header count in the open comments dialog. */
     function patchCommentDialogCount(updatedPost) {
-        const card = document.querySelector('.social-neo-dialog-card--comments');
-        const heroCopy = card?.querySelector('.social-neo-surveys-hero-copy p');
-        const legacySubtitle = card?.querySelector('.social-neo-dialog-subtitle')
-            || document.querySelector('.social-photo-ig-modal .social-photo-ig-comments-subtitle');
-        const subtitle = heroCopy || legacySubtitle;
-        if (!subtitle && !card) return;
-        const collect = (list) => (Array.isArray(list) ? list : []).reduce((n, c) => n + 1 + collect(c?.replies), 0);
-        const total = collect(updatedPost?.comments);
-        if (heroCopy) {
-            heroCopy.textContent = total
-                ? `${total} comment${total === 1 ? '' : 's'} on this post.`
-                : 'Be the first to reply to this post.';
-        } else if (legacySubtitle) {
-            legacySubtitle.textContent = total ? `${total} comment${total === 1 ? '' : 's'}` : 'No comments yet';
+        if (hasSocialFeedModule() && typeof window.patchCommentDialogCount === 'function' && window.patchCommentDialogCount !== patchCommentDialogCount) {
+            return window.patchCommentDialogCount(updatedPost);
         }
-        const statStrong = card?.querySelector('.social-neo-dialog-comment-stats article:nth-child(2) strong');
-        if (statStrong) statStrong.textContent = String(total);
+        ensureSocialFeedModule().catch(() => null);
     }
+
 
     /** Deletes a comment in place (no confirm modal → no overlay re-render/flicker). */
     async function deleteCommentInline(postId, commentId) {
-        if (typeof removePortalSocialComment !== 'function') {
-            if (typeof setPortalSocialFlash === 'function') setPortalSocialFlash('Social runtime not ready.', 'danger');
-            return;
+        if (hasSocialFeedModule() && typeof window.deleteCommentInline === 'function' && window.deleteCommentInline !== deleteCommentInline) {
+            return window.deleteCommentInline(postId, commentId);
         }
-        const article = dialogCommentEl(commentId);
-        const updatedPost = await removePortalSocialComment(postId, commentId);
-        if (article?.parentNode) article.parentNode.removeChild(article);
-        const thread = document.getElementById('social-neo-dialog-comment-thread');
-        const list = thread?.querySelector('.social-neo-comment-list');
-        if (list && !list.querySelector('article.social-neo-comment')) {
-            list.remove();
-            if (!thread.querySelector('.social-neo-empty')) {
-                const empty = document.createElement('div');
-                empty.className = 'social-neo-empty';
-                empty.textContent = 'No comments yet. Be the first to reply.';
-                thread.appendChild(empty);
-            }
+        await ensureSocialFeedModule().catch(() => null);
+        if (typeof window.deleteCommentInline === 'function' && window.deleteCommentInline !== deleteCommentInline) {
+            return window.deleteCommentInline(postId, commentId);
         }
-        if (updatedPost) patchCommentDialogCount(updatedPost);
-        relayoutCommentTrunks();
     }
+
 
     /* The vertical thread line for each parent is a `::after` whose height is set
        here so it stops exactly at its LAST direct reply (CSS alone would run it
        to the bottom of the whole subtree, leaving a dangling line). */
     function relayoutCommentTrunks(scope) {
-        const root = scope || document.getElementById('social-neo-dialog-comment-thread');
-        if (!root) return;
-        root.querySelectorAll('article.social-neo-comment').forEach((comment) => {
-            const kids = comment.querySelector(':scope > .social-neo-comment-children');
-            const avatar = comment.querySelector(':scope > .social-neo-comment-row > .social-neo-avatar');
-            if (!kids || !avatar) {
-                comment.style.removeProperty('--trunk-top');
-                comment.style.removeProperty('--trunk-bottom');
-                return;
-            }
-            const lastChild = kids.querySelector(':scope > article.social-neo-comment:last-child');
-            const lastAvatar = lastChild?.querySelector(':scope > .social-neo-comment-row > .social-neo-avatar');
-            if (!lastAvatar) return;
-            const cR = comment.getBoundingClientRect();
-            const aR = avatar.getBoundingClientRect();
-            const lR = lastAvatar.getBoundingClientRect();
-            comment.style.setProperty('--trunk-top', `${Math.round(aR.bottom - cR.top + 2)}px`);
-            comment.style.setProperty('--trunk-bottom', `${Math.round(cR.bottom - (lR.top + lR.height / 2))}px`);
-        });
+        if (hasSocialFeedModule() && typeof window.relayoutCommentTrunks === 'function' && window.relayoutCommentTrunks !== relayoutCommentTrunks) {
+            return window.relayoutCommentTrunks(scope);
+        }
+        ensureSocialFeedModule().catch(() => null);
     }
-    if (typeof window !== 'undefined') window.__kiuRelayoutCommentTrunks = relayoutCommentTrunks;
 
     /**
      * Recursively searches a comment tree for a comment by ID.
@@ -6738,15 +6674,13 @@
      * @returns {Object|null} The matched comment or null.
      */
     function findCommentInThread(comments, commentId) {
-        const normalizedId = text(commentId);
-        if (!normalizedId) return null;
-        for (const comment of Array.isArray(comments) ? comments : []) {
-            if (text(comment?.id) === normalizedId) return comment;
-            const replyMatch = findCommentInThread(comment?.replies, normalizedId);
-            if (replyMatch) return replyMatch;
+        if (hasSocialFeedModule() && typeof window.findCommentInThread === 'function' && window.findCommentInThread !== findCommentInThread) {
+            return window.findCommentInThread(comments, commentId);
         }
+        ensureSocialFeedModule().catch(() => null);
         return null;
     }
+
 
     const SOCIAL_OVERLAY_PORTAL_ID = 'social-neo-overlay-portal';
     const SOCIAL_OVERLAY_REGION_IDS = [
@@ -8963,47 +8897,11 @@
     }
 
     function renderRelationshipActions(account) {
-        const status = connectionStatusFor(account?.id);
-        if (status.state === 'connected') {
-            return `
-                <button class="social-neo-btn social-neo-btn-primary" type="button" data-action="directory-message" data-user-id="${escape(text(account.id))}">
-                    Message
-                </button>
-                <span class="social-neo-pill">Friends</span>
-            `;
+        if (hasSocialCommunityModule() && typeof window.renderRelationshipActions === 'function' && window.renderRelationshipActions !== renderRelationshipActions) {
+            return window.renderRelationshipActions(account);
         }
-        if (status.state === 'incoming') {
-            return `
-                <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="directory-message" data-user-id="${escape(text(account.id))}">
-                    Message
-                </button>
-                <button class="social-neo-btn social-neo-btn-primary" type="button" data-action="connection-accept" data-relationship-id="${escape(text(status.relationship?.id))}">
-                    Accept friend
-                </button>
-                <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="connection-decline" data-relationship-id="${escape(text(status.relationship?.id))}">
-                    Decline
-                </button>
-            `;
-        }
-        if (status.state === 'outgoing') {
-            return `
-                <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="directory-message" data-user-id="${escape(text(account.id))}">
-                    Message
-                </button>
-                <span class="social-neo-pill">Friend request sent</span>
-                <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="connection-cancel" data-user-id="${escape(text(account.id))}">
-                    Cancel request
-                </button>
-            `;
-        }
-        return `
-            <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="directory-message" data-user-id="${escape(text(account.id))}">
-                Message
-            </button>
-            <button class="social-neo-btn social-neo-btn-primary" type="button" data-action="connection-send" data-user-id="${escape(text(account.id))}">
-                Add friend
-            </button>
-        `;
+        ensureSocialCommunityModule().catch(() => null);
+        return '';
     }
 
     function renderCommunityPanel() {
