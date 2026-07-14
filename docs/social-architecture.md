@@ -24,8 +24,8 @@ Render bridge: `queueRender` → `window.__kiuSocialLiteRenderPage` (`renderSoci
 | `feed` | Home | social-feed.js (hero + panel + post card + comments + **reaction/save patches** + saved-post hub helpers + compose/attach + handlers); page thin-stubs; dispatches via `isSocialFeedClickAction` |
 | `community` | People | social-community.js (panel + **`renderRelationshipActions`** + `handleSocialCommunityClick` for `connection-*`/`person-*`); page thin-stubs / dispatches |
 | `groups` | Groups | social-groups.js (hero + panel + create/detail/leave/invite + group-panel dialogs via `renderGroupOwnedDialog` + `handleSocialGroupsClick` for `group-*` actions); page dispatches via `isSocialGroupsClickAction` |
-| `workspace` | Projects | social-workspace.js (render stack + `handleSocialWorkspaceClick` / `Submit` / `Input` / `Change`); page dispatches domain events |
-| `projects` | Portfolio | social-workspace.js (panel/editor + shared workspace click/submit/input handlers); page keeps thin stubs + DOM patch helpers |
+| `workspace` | Projects | social-workspace.js (render stack + **desk readiness/filter + tab pane cache/patch + desk refresh** + `handleSocialWorkspaceClick` / `Submit` / `Input` / `Change`); page thin-stubs / dispatches |
+| `projects` | Portfolio | social-workspace.js (panel/editor + shared workspace handlers); page thin stubs for remaining shell glue |
 | `pages` | Pages | social-pages.js (hero + panel + create/post-compose/about/members via `renderPagesOwnedDialog` + `handleSocialPagesClick` for `page-*` / `pages-search-clear`); page dispatches via `isSocialPagesClickAction` |
 | `events` | Events | social-events.js (hero + panel + create/edit + `handleSocialEventsClick` for `event-*`/`events-*`); page dispatches via `isSocialEventsClickAction` |
 | `surveys` | Surveys | social-surveys.js (panel + hero + create dialog + `handleSocialSurveysClick` for `survey-*`/`surveys-*`); page dispatches via `isSocialSurveysClickAction` |
@@ -124,7 +124,7 @@ Gates: `npm run test:social` (or `node node_modules/vitest/vitest.mjs run test/s
 | Seam | What lives there | Split priority |
 |------|------------------|----------------|
 | **task-graph** | Graph SVG/canvas, edges, inspector rail, fullscreen, PERT/CPM helpers | Highest (largest surface) |
-| **task-desk** | Desk tree/cards, week plan, matrix/board views | High when editing desk UX |
+| **task-desk** | Desk tree/cards, week plan, matrix/board views; **owned:** `resolveDeskTaskReadiness`, board filter/sort, tab pane cache, `refreshProjectTasksTabBody/Pane`, `patchProjectWorkspaceTab`, `revealDeskExpandTarget` | High — first seam extracted (logic + patch helpers on module; page stubs) |
 | **budget / actuals** | Budget settings, expenses, plan vs baseline strips | Medium |
 | **risks** | Risk list/register UI | Medium |
 | **portfolio** | Portfolio discover/editor panels shared with `projects` panel | Medium |

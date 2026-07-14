@@ -236,12 +236,15 @@ describe('social project task compose panel + sectioned modal', () => {
         const source = readSource('assets/js/pages/social-page.js');
         const rebuildCss = readSource('assets/css/social-rebuild.css');
         const portfolioCss = readSource('assets/css/portfolio-editor.css');
-        const filterBlock = source.match(/function filterProjectBoardTasks\([\s\S]*?\n    \}/)?.[0] || '';
+        const workspace = readSource('assets/js/pages/social-workspace.js');
+        const both = source + workspace;
+        const filterBlock = workspace.match(/function filterProjectBoardTasks\([\s\S]*?\n    \}/)?.[0] || '';
 
-        expect(source).toContain('PROJECT_TASK_PRIORITY_RANK');
-        expect(source).toContain('function sortProjectBoardTasksByPriority');
-        expect(source).toMatch(/urgent:\s*0,\s*high:\s*1/);
+        expect(both).toContain('PROJECT_TASK_PRIORITY_RANK');
+        expect(both).toContain('function sortProjectBoardTasksByPriority');
+        expect(both).toMatch(/urgent:\s*0,\s*high:\s*1/);
         expect(filterBlock).toContain('sortProjectBoardTasksByPriority(filtered)');
+        expect(source).toMatch(/function filterProjectBoardTasks\([\s\S]*window\.filterProjectBoardTasks/);
         expect(rebuildCss).toMatch(/social-neo-dialog-card--project-column-tasks[\s\S]*1180px/);
         expect(rebuildCss).not.toMatch(/\.social-neo-btn,\s*\{/);
         expect(rebuildCss).toMatch(/social-neo-dialog-card--project-task-detail[\s\S]*max-height:\s*min\(94dvh,\s*980px\)/);

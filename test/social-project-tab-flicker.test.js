@@ -19,16 +19,18 @@ describe('social project tab flicker regressions', () => {
 
     it('patches project tabs with cached panes via replaceChildren', () => {
         const source = readSource('assets/js/pages/social-page.js');
+        const workspace = readSource('assets/js/pages/social-workspace.js');
+        const both = source + workspace;
 
-        expect(source).toContain('function patchProjectWorkspaceTab(runtime)');
-        expect(source).toContain('function getOrCreateProjectTabPane(runtime, projectId, tabId)');
-        expect(source).toContain('function clearProjectTabPaneCache(projectId = \'\')');
-        expect(source).toContain('panel.replaceChildren(pane)');
-        expect((source + readSource('assets/js/pages/social-workspace.js'))).toMatch(/if \(patchProjectWorkspaceTab\(state\(\)\)\) return;/);
-        expect(source).toContain('is-tab-switching');
-        expect((source + readSource('assets/js/pages/social-workspace.js'))).toMatch(/invalidateSocialRenderCache\(\{ center: true \}\);[\s\S]*renderSocialPageNow\('project-tab'\)/);
+        expect(both).toContain('function patchProjectWorkspaceTab(runtime)');
+        expect(both).toContain('function getOrCreateProjectTabPane(runtime, projectId, tabId)');
+        expect(both).toContain('function clearProjectTabPaneCache(projectId = \'\')');
+        expect(both).toContain('panel.replaceChildren(pane)');
+        expect(both).toMatch(/if \(patchProjectWorkspaceTab\(state\(\)\)\) return;/);
+        expect(both).toContain('is-tab-switching');
+        expect(both).toMatch(/invalidateSocialRenderCache\(\{ center: true \}\);[\s\S]*renderSocialPageNow\('project-tab'\)/);
         // Tab state is assigned then surgically patched when possible.
-        expect((source + readSource('assets/js/pages/social-workspace.js'))).toMatch(/state\(\)\.ui\.projectTab = requestedTab;[\s\S]*if \(patchProjectWorkspaceTab\(state\(\)\)\) return;/);
+        expect(both).toMatch(/state\(\)\.ui\.projectTab = requestedTab;[\s\S]*if \(patchProjectWorkspaceTab\(state\(\)\)\) return;/);
     });
 
     it('uses fastPath for project tab and mutation reasons', () => {
@@ -57,7 +59,7 @@ describe('social project tab flicker regressions', () => {
         expect((source + readSource('assets/js/pages/social-workspace.js'))).toMatch(/skipTransparencyRefresh = reason === 'project-tab'/);
         expect(source).toMatch(/!skipTransparencyRefresh && typeof window\.queueHeavySurfaceObservationRefresh/);
         expect(source).toMatch(/!skipTransparencyRefresh[\s\S]{0,600}queueLuxuryTransparencyRefresh/);
-        expect(source).toContain('window.__kiuSuppressLuxTransparencyRefresh = true');
+        expect(source + readSource('assets/js/pages/social-workspace.js')).toContain('window.__kiuSuppressLuxTransparencyRefresh = true');
         expect(utilities).toMatch(/function queueLuxuryTransparencyRefresh[\s\S]*__kiuSuppressLuxTransparencyRefresh/);
         expect(utilities).toMatch(/function refreshLuxuryTransparencySurfaces[\s\S]*__kiuSuppressLuxTransparencyRefresh/);
         expect(utilities).toMatch(/MutationObserver[\s\S]*__kiuSuppressLuxTransparencyRefresh/);
@@ -82,7 +84,7 @@ describe('social project tab flicker regressions', () => {
     it('syncs render signature after tab patch and clears pane cache on project navigation', () => {
         const source = readSource('assets/js/pages/social-page.js');
 
-        expect(source).toContain('host.__kiuLastRenderSignature = buildSocialRenderSignature');
+        expect(source + readSource('assets/js/pages/social-workspace.js')).toContain('host.__kiuLastRenderSignature = buildSocialRenderSignature');
         expect(source + readSource('assets/js/pages/social-workspace.js')).toMatch(/action === 'projects-back'[\s\S]*clearProjectTabPaneCache/);
         expect(source + readSource('assets/js/pages/social-workspace.js')).toMatch(/action === 'project-open'[\s\S]*clearProjectTabPaneCache/);
         expect(source).toMatch(/project-\(settings-saved[\s\S]*clearProjectTabPaneCache/);

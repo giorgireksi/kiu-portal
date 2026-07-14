@@ -38,7 +38,7 @@ describe('social project task views', () => {
         expect(source).toContain('function refreshProjectTasksTabBody');
         expect(source).toContain('function ensureProjectTaskGraphPositionForTask');
         expect(source).toContain('refreshDeskAfterGraphMembership');
-        expect(source).toContain('data-task-body-root');
+        expect(source + readSource('assets/js/pages/social-workspace.js')).toContain('data-task-body-root');
         expect((source + readSource('assets/js/pages/social-workspace.js'))).toContain("classList.toggle('is-collapsed'");
         expect((source + readSource('assets/js/pages/social-workspace.js'))).toContain("openDialog('project-task-detail'");
         expect(source).toContain('function renderProjectTaskDetailModal');

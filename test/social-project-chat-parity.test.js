@@ -32,7 +32,8 @@ describe('social project workspace chat parity', () => {
   });
 
   it('does not cache the chat tab pane for live thread updates', () => {
-    expect(pageSource).toContain("if (pane && text(tabId) !== 'chat' && pane.nodeType === Node.ELEMENT_NODE) return pane;");
+    const workspace = readSource('assets/js/pages/social-workspace.js');
+    expect(pageSource + workspace).toContain("if (pane && text(tabId) !== 'chat' && pane.nodeType === Node.ELEMENT_NODE) return pane;");
   });
 
   it('includes embedded project chat in center-only thread render reasons', () => {

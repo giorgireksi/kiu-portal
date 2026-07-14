@@ -335,39 +335,22 @@
     }
 
     function sortProjectBoardTasksByPriority(tasks = []) {
-        return [...tasks].sort((a, b) => {
-            const rankA = PROJECT_TASK_PRIORITY_RANK[text(a?.priority).toLowerCase()] ?? 2;
-            const rankB = PROJECT_TASK_PRIORITY_RANK[text(b?.priority).toLowerCase()] ?? 2;
-            if (rankA !== rankB) return rankA - rankB;
-            const dueA = Date.parse(text(a?.dueAt)) || Infinity;
-            const dueB = Date.parse(text(b?.dueAt)) || Infinity;
-            if (dueA !== dueB) return dueA - dueB;
-            return text(a?.title).localeCompare(text(b?.title));
-        });
+        if (hasSocialWorkspaceModule() && typeof window.sortProjectBoardTasksByPriority === 'function' && window.sortProjectBoardTasksByPriority !== sortProjectBoardTasksByPriority) {
+            return window.sortProjectBoardTasksByPriority.apply(null, arguments);
+        }
+        ensureSocialWorkspaceModule().catch(() => null);
+        return Array.isArray(tasks) ? [...tasks] : [];
     }
 
+
     function filterProjectBoardTasks(runtime, tasks = []) {
-        const searchText = text(runtime.ui?.projectTaskSearch || '').toLowerCase();
-        const filterPriority = text(runtime.ui?.projectTaskFilterPriority || 'all');
-        const filterAssignee = text(runtime.ui?.projectTaskFilterAssignee || 'all');
-        const myOnly = Boolean(runtime.ui?.projectTaskMyOnly);
-        const overdueOnly = Boolean(runtime.ui?.projectTaskFilterOverdue);
-        const userId = currentUserId();
-        const now = Date.now();
-        let filtered = Array.isArray(tasks) ? tasks : [];
-        if (myOnly) filtered = filtered.filter((t) => text(t.assigneeUserId) === userId);
-        if (overdueOnly) {
-            filtered = filtered.filter((t) => {
-                if (text(t?.status || '') === 'done') return false;
-                const dueMs = Number.isFinite(Date.parse(text(t?.dueAt || ''))) ? Date.parse(text(t.dueAt)) : null;
-                return Boolean(dueMs && dueMs < now);
-            });
+        if (hasSocialWorkspaceModule() && typeof window.filterProjectBoardTasks === 'function' && window.filterProjectBoardTasks !== filterProjectBoardTasks) {
+            return window.filterProjectBoardTasks.apply(null, arguments);
         }
-        if (searchText) filtered = filtered.filter((t) => text(t.title || '').toLowerCase().includes(searchText) || text(t.description || '').toLowerCase().includes(searchText));
-        if (filterPriority !== 'all') filtered = filtered.filter((t) => text(t.priority || 'medium').toLowerCase() === filterPriority);
-        if (filterAssignee !== 'all') filtered = filtered.filter((t) => text(t.assigneeUserId) === filterAssignee);
-        return sortProjectBoardTasksByPriority(filtered);
+        ensureSocialWorkspaceModule().catch(() => null);
+        return Array.isArray(tasks) ? tasks : [];
     }
+
 
     function renderProjectWorkspaceNavButtons(project, options = {}) {
         const projectId = escape(text(project?.id || ''));
@@ -405,46 +388,13 @@
 
     /** Desk readiness from dependsOn (graph parents) — pure read. */
     function resolveDeskTaskReadiness(task, taskById = new Map(), groups = null) {
-        const statusId = normalizeProjectTaskStatusId(task?.status);
-        if (statusId === 'done') {
-            return { kind: 'done', label: 'Done', openDeps: [], openCount: 0 };
+        if (hasSocialWorkspaceModule() && typeof window.resolveDeskTaskReadiness === 'function' && window.resolveDeskTaskReadiness !== resolveDeskTaskReadiness) {
+            return window.resolveDeskTaskReadiness.apply(null, arguments);
         }
-        const groupList = Array.isArray(groups)
-            ? groups
-            : (typeof getProjectTaskGraphGroups === 'function'
-                ? getProjectTaskGraphGroups(state(), text(task?.projectId || state().ui?.activeProjectId || ''))
-                : []);
-        const tid = text(task?.id);
-        // Task.dependsOnTaskIds plus packages that list this task in blocksIds (group→task wires).
-        const depIds = uniqueStrings([
-            ...projectTaskDependsOnIds(task),
-            ...groupList
-                .filter((g) => projectGroupBlocksIds(g).includes(tid))
-                .map((g) => text(g?.id))
-                .filter(Boolean)
-        ]);
-        const openDeps = [];
-        depIds.forEach((id) => {
-            if (isProjectTaskGraphGroupId(id)) {
-                if (isProjectGraphDependencyOpen(id, { taskById, groups: groupList })) {
-                    const g = groupList.find((entry) => text(entry?.id) === id);
-                    openDeps.push(g ? { id, title: text(g.name || 'Package'), status: 'todo', isGroup: true } : { id, title: 'Package', status: 'todo', isGroup: true });
-                }
-                return;
-            }
-            const dep = taskById.get(id) || null;
-            if (dep && normalizeProjectTaskStatusId(dep.status) !== 'done') openDeps.push(dep);
-        });
-        if (!openDeps.length) {
-            return { kind: 'ready', label: depIds.length ? 'Unblocked' : 'Ready', openDeps: [], openCount: 0 };
-        }
-        return {
-            kind: 'waiting',
-            label: 'Waiting',
-            openDeps: openDeps.slice(0, 2),
-            openCount: openDeps.length
-        };
+        ensureSocialWorkspaceModule().catch(() => null);
+        return { kind: 'ready', label: 'Ready', openDeps: [], openCount: 0 };
     }
+
 
     /**
      * Order package/ungrouped tasks parent-first (DFS preorder).
@@ -482,39 +432,13 @@
 
 
     function buildProjectTaskInspectorFields(task) {
-        const rawStatus = text(task?.status || 'todo') || 'todo';
-        const statusId = rawStatus === 'backlog' ? 'todo' : rawStatus;
-        const column = PROJECT_TASK_COLUMNS.find((entry) => entry.id === statusId) || PROJECT_TASK_COLUMNS[0];
-        const assignee = accountById(task?.assigneeUserId) || { id: task?.assigneeUserId };
-        const dueAt = text(task?.dueAt || '');
-        const dueMs = Number.isFinite(Date.parse(dueAt)) ? Date.parse(dueAt) : null;
-        const now = Date.now();
-        const isOverdue = Boolean(dueMs && dueMs < now && statusId !== 'done');
-        const isToday = Boolean(dueMs && !isOverdue && new Date(dueMs).toDateString() === new Date(now).toDateString());
-        const isSoon = Boolean(dueMs && !isOverdue && !isToday && dueMs < now + 7 * 86400000);
-        const priority = text(task?.priority || 'medium').toLowerCase() || 'medium';
-        const budgetEstimate = Number(task?.budgetEstimate);
-        const tag = text(task?.tag || task?.category || '');
-        const checklist = Array.isArray(task?.checklist) ? task.checklist : [];
-        const checklistDone = checklist.filter((item) => item?.done).length;
-        const checklistTotal = checklist.length;
-        const description = text(task?.description || '').trim();
-        return {
-            statusId,
-            column,
-            assignee,
-            dueAt,
-            isOverdue,
-            isToday,
-            isSoon,
-            priority,
-            budgetEstimate: Number.isFinite(budgetEstimate) && budgetEstimate > 0 ? budgetEstimate : 0,
-            tag,
-            checklistDone,
-            checklistTotal,
-            description
-        };
+        if (hasSocialWorkspaceModule() && typeof window.buildProjectTaskInspectorFields === 'function' && window.buildProjectTaskInspectorFields !== buildProjectTaskInspectorFields) {
+            return window.buildProjectTaskInspectorFields.apply(null, arguments);
+        }
+        ensureSocialWorkspaceModule().catch(() => null);
+        return [];
     }
+
 
     function formatProjectTaskBudgetEstimate(amount, currency = 'USD') {
         const value = Number(amount);
@@ -559,30 +483,13 @@
     }
 
     function syncProjectTaskMatrixPreview(form) {
-        if (!form) return;
-        const matrixPreview = form.querySelector('.social-project-task-matrix-preview');
-        if (matrixPreview) {
-            const score = computeTaskMatrixScore(form.projectTaskImpactScore?.value, form.projectTaskEffortScore?.value);
-            const bucket = computeTaskMatrixBucket(score);
-            const label = bucket.charAt(0).toUpperCase() + bucket.slice(1);
-            matrixPreview.textContent = `Score ${score} · ${label}`;
+        if (hasSocialWorkspaceModule() && typeof window.syncProjectTaskMatrixPreview === 'function' && window.syncProjectTaskMatrixPreview !== syncProjectTaskMatrixPreview) {
+            return window.syncProjectTaskMatrixPreview.apply(null, arguments);
         }
-        const pertPreview = form.querySelector('.social-project-task-pert-preview');
-        if (pertPreview) {
-            const o = normalizeTaskTime(form.projectTaskTimeOptimistic?.value);
-            const m = normalizeTaskTime(form.projectTaskTimeMostLikely?.value);
-            const p = normalizeTaskTime(form.projectTaskTimePessimistic?.value);
-            const unit = normalizeTaskTimeUnit(form.projectTaskTimeUnit?.value);
-            const expected = computePertExpected(o, m, p);
-            if (expected > 0 && o > 0 && m > 0 && p > 0) {
-                pertPreview.textContent = `PERT ${formatTaskTime(expected, unit)} (O=${o} · M=${m} · P=${p})`;
-            } else if (m > 0) {
-                pertPreview.textContent = `Most likely ${formatTaskTime(m, unit)} — add O and P for PERT`;
-            } else {
-                pertPreview.textContent = 'Three-point estimate drives the critical path';
-            }
-        }
+        ensureSocialWorkspaceModule().catch(() => null);
+        return;
     }
+
 
     function normalizeTaskScore1to5(value, fallback = 3) {
         const n = Math.round(Number(value));
@@ -681,25 +588,13 @@
 
     // Impact×Effort is the headline priority. Always matrix now (no manual/mode).
     function resolveProjectTaskPriorityDisplay(task) {
-        const impact = normalizeTaskScore1to5(task?.impactScore);
-        const effort = normalizeTaskScore1to5(task?.effortScore);
-        const score = computeTaskMatrixScore(impact, effort);
-        const bucket = computeTaskMatrixBucket(score);
-        const bucketLabel = bucket.charAt(0).toUpperCase() + bucket.slice(1);
-        const icon = { low: 'fa-arrow-down', medium: 'fa-minus', high: 'fa-arrow-up', urgent: 'fa-angles-up' }[bucket] || 'fa-minus';
-        return {
-            model: 'matrix',
-            bucket,
-            score,
-            maxScore: 25,
-            impact,
-            effort,
-            label: bucketLabel,
-            tooltip: `Impact ${impact}/5 · Effort ${effort}/5 · Score ${score}`,
-            icon,
-            priority: bucket
-        };
+        if (hasSocialWorkspaceModule() && typeof window.resolveProjectTaskPriorityDisplay === 'function' && window.resolveProjectTaskPriorityDisplay !== resolveProjectTaskPriorityDisplay) {
+            return window.resolveProjectTaskPriorityDisplay.apply(null, arguments);
+        }
+        ensureSocialWorkspaceModule().catch(() => null);
+        return { label: 'Medium', tone: 'neutral', score: 3 };
     }
+
 
     function clampProjectTaskGraphCardHeight(...args) {
         if (hasSocialWorkspaceModule() && typeof window.clampProjectTaskGraphCardHeight === 'function' && window.clampProjectTaskGraphCardHeight !== clampProjectTaskGraphCardHeight) {
@@ -4999,6 +4894,7 @@
         invalidateSocialRenderCache,
         setPanel,
         root,
+        buildSocialRenderSignature,
         patchProjectWorkspaceTab,
         patchProjectHealthPlanCard,
         patchProjectHealthPlanPick,
@@ -5885,41 +5781,40 @@
 
 
     function syncProjectTabPills(pillRow, activeTab) {
-        if (!pillRow) return;
-        pillRow.querySelectorAll('.social-project-tab-pill[data-project-tab]').forEach((pill) => {
-            const tabId = text(pill.getAttribute('data-project-tab'));
-            const isActive = tabId === activeTab;
-            pill.classList.toggle('is-active', isActive);
-            pill.setAttribute('aria-selected', isActive ? 'true' : 'false');
-            pill.setAttribute('tabindex', isActive ? '0' : '-1');
-        });
+        if (hasSocialWorkspaceModule() && typeof window.syncProjectTabPills === 'function' && window.syncProjectTabPills !== syncProjectTabPills) {
+            return window.syncProjectTabPills.apply(null, arguments);
+        }
+        ensureSocialWorkspaceModule().catch(() => null);
+        return;
     }
 
+
     function projectTabPaneCacheKey(projectId, tabId) {
+        if (hasSocialWorkspaceModule() && typeof window.projectTabPaneCacheKey === 'function' && window.projectTabPaneCacheKey !== projectTabPaneCacheKey) {
+            return window.projectTabPaneCacheKey.apply(null, arguments);
+        }
+        ensureSocialWorkspaceModule().catch(() => null);
         return `${text(projectId)}:${text(tabId || 'overview') || 'overview'}`;
     }
 
+
     function clearProjectTabPaneCache(projectId = '') {
-        const runtime = state();
-        const cache = runtime.ui?.__projectTabPaneCache;
-        if (!cache || typeof cache !== 'object') return;
-        const normalized = text(projectId);
-        if (!normalized) {
-            runtime.ui.__projectTabPaneCache = {};
-            return;
+        if (hasSocialWorkspaceModule() && typeof window.clearProjectTabPaneCache === 'function' && window.clearProjectTabPaneCache !== clearProjectTabPaneCache) {
+            return window.clearProjectTabPaneCache.apply(null, arguments);
         }
-        Object.keys(cache).forEach((key) => {
-            if (key.startsWith(`${normalized}:`)) delete cache[key];
-        });
+        ensureSocialWorkspaceModule().catch(() => null);
+        return;
     }
 
+
     function clearProjectTabPaneCacheKey(projectId, tabId) {
-        const runtime = state();
-        const cache = runtime.ui?.__projectTabPaneCache;
-        if (!cache || typeof cache !== 'object') return;
-        const key = projectTabPaneCacheKey(projectId, tabId);
-        delete cache[key];
+        if (hasSocialWorkspaceModule() && typeof window.clearProjectTabPaneCacheKey === 'function' && window.clearProjectTabPaneCacheKey !== clearProjectTabPaneCacheKey) {
+            return window.clearProjectTabPaneCacheKey.apply(null, arguments);
+        }
+        ensureSocialWorkspaceModule().catch(() => null);
+        return;
     }
+
 
     function isProjectTaskGraphDialogOpen(...args) {
         if (hasSocialWorkspaceModule() && typeof window.isProjectTaskGraphDialogOpen === 'function' && window.isProjectTaskGraphDialogOpen !== isProjectTaskGraphDialogOpen) {
@@ -5938,189 +5833,44 @@
     }
 
     function deskTasksSurfaceReady(host = root(), runtime = state()) {
-        if (!host) return null;
-        const panel = text(runtime?.ui?.activePanel || '');
-        const projectId = text(runtime?.ui?.activeProjectId || '');
-        const projectTab = text(runtime?.ui?.projectTab || '') || 'overview';
-        const onProjectSurface = panel === 'workspace' || panel === 'projects';
-        const tabPanel = host.querySelector('#social-project-tab-panel');
-        if (!onProjectSurface || !projectId || projectTab !== 'tasks' || !tabPanel || typeof renderProjectWorkspaceTabPanel !== 'function') {
-            return null;
+        if (hasSocialWorkspaceModule() && typeof window.deskTasksSurfaceReady === 'function' && window.deskTasksSurfaceReady !== deskTasksSurfaceReady) {
+            return window.deskTasksSurfaceReady.apply(null, arguments);
         }
-        return { host, runtime, projectId, tabPanel };
+        ensureSocialWorkspaceModule().catch(() => null);
+        return null;
     }
 
+
     function syncDeskToolbarFromFreshMarkup(liveRoot, freshRoot) {
-        if (!liveRoot || !freshRoot) return;
-        // Focus chips only (never hygiene pills — they share data-action/data-focus and corrupted className)
-        freshRoot.querySelectorAll('.spt-desk-focus-track .spt-desk-focus-chip[data-action="project-task-focus"]').forEach((btn) => {
-            const focus = text(btn.getAttribute('data-focus') || '');
-            if (!focus) return;
-            const live = liveRoot.querySelector(`.spt-desk-focus-track .spt-desk-focus-chip[data-action="project-task-focus"][data-focus="${CSS.escape(focus)}"]`);
-            if (!live) return;
-            live.className = btn.className;
-            live.setAttribute('aria-selected', btn.getAttribute('aria-selected') || 'false');
-            const count = btn.querySelector('span');
-            const liveCount = live.querySelector('span');
-            if (count && liveCount) liveCount.textContent = count.textContent;
-            const label = btn.querySelector('strong');
-            const liveLabel = live.querySelector('strong');
-            if (label && liveLabel) liveLabel.textContent = label.textContent;
-        });
-        // Time window chips (same track class; scope to window group)
-        freshRoot.querySelectorAll('.spt-desk-window [data-action="project-task-time-window"]').forEach((btn) => {
-            const win = text(btn.getAttribute('data-window') || '');
-            if (!win) return;
-            const live = liveRoot.querySelector(`.spt-desk-window [data-action="project-task-time-window"][data-window="${CSS.escape(win)}"]`);
-            if (!live) return;
-            live.className = btn.className;
-            live.setAttribute('aria-pressed', btn.getAttribute('aria-pressed') || 'false');
-        });
-        // Compact stats
-        const freshStats = freshRoot.querySelector('.social-project-task-stats-inline');
-        const liveStats = liveRoot.querySelector('.social-project-task-stats-inline');
-        if (freshStats && liveStats) liveStats.innerHTML = freshStats.innerHTML;
-        // View toggle pressed state
-        freshRoot.querySelectorAll('[data-action="project-task-view"]').forEach((btn) => {
-            const view = text(btn.getAttribute('data-view') || '');
-            if (!view) return;
-            const live = liveRoot.querySelector(`[data-action="project-task-view"][data-view="${CSS.escape(view)}"]`);
-            if (!live) return;
-            live.className = btn.className;
-            live.setAttribute('aria-pressed', btn.getAttribute('aria-pressed') || 'false');
-        });
+        if (hasSocialWorkspaceModule() && typeof window.syncDeskToolbarFromFreshMarkup === 'function' && window.syncDeskToolbarFromFreshMarkup !== syncDeskToolbarFromFreshMarkup) {
+            return window.syncDeskToolbarFromFreshMarkup.apply(null, arguments);
+        }
+        ensureSocialWorkspaceModule().catch(() => null);
+        return;
     }
+
 
     /**
      * Replace only the tasks body stack (desk packages / list / map preview).
      * Keeps Work Desk header, toolbar, and filters mounted — no opacity reveal.
      */
     function refreshProjectTasksTabBody(reason = 'project-task-desk-body') {
-        const host = root();
-        const surface = deskTasksSurfaceReady(host);
-        if (!surface) {
-            if (host) host.__kiuForceCenterOnly = true;
-            renderSocialPageNow(reason);
-            return false;
+        if (hasSocialWorkspaceModule() && typeof window.refreshProjectTasksTabBody === 'function' && window.refreshProjectTasksTabBody !== refreshProjectTasksTabBody) {
+            return window.refreshProjectTasksTabBody.apply(null, arguments);
         }
-        const { runtime, projectId, tabPanel } = surface;
-        const liveBody = tabPanel.querySelector('[data-task-body-root="1"]');
-        if (!liveBody) {
-            return refreshProjectTasksTabPane(reason);
-        }
-
-        const scrollTop = liveBody.scrollTop || 0;
-        const scrollLeft = liveBody.scrollLeft || 0;
-        window.__kiuSuppressLuxTransparencyRefresh = true;
-        const shell = host.querySelector('.social-projects-shell');
-        if (shell) shell.classList.add('is-desk-refreshing');
-
-        // Build fresh markup without attaching a new pane / without wiping cache of live shell node
-        let freshHtml = '';
-        try {
-            freshHtml = renderProjectWorkspaceTabPanel('tasks') || '';
-        } catch (error) {
-            window.__kiuSuppressLuxTransparencyRefresh = false;
-            if (shell) shell.classList.remove('is-desk-refreshing');
-            return refreshProjectTasksTabPane(reason);
-        }
-        const temp = document.createElement('div');
-        temp.innerHTML = freshHtml;
-        const freshBody = temp.querySelector('[data-task-body-root="1"]');
-        if (!freshBody) {
-            window.__kiuSuppressLuxTransparencyRefresh = false;
-            if (shell) shell.classList.remove('is-desk-refreshing');
-            return refreshProjectTasksTabPane(reason);
-        }
-
-        liveBody.innerHTML = freshBody.innerHTML;
-        liveBody.setAttribute('data-task-body', freshBody.getAttribute('data-task-body') || 'desk');
-        syncDeskToolbarFromFreshMarkup(tabPanel, temp);
-
-        // Keep pane cache in sync with live DOM so later tab switches don't restore stale node
-        const cache = runtime.ui.__projectTabPaneCache = runtime.ui.__projectTabPaneCache || {};
-        const key = projectTabPaneCacheKey(projectId, 'tasks');
-        const livePane = tabPanel.querySelector('.social-project-tab-pane') || tabPanel.firstElementChild;
-        if (livePane) cache[key] = livePane;
-
-        if (typeof window.enhanceUniversalPickers === 'function') {
-            try { window.enhanceUniversalPickers(liveBody); } catch (error) {}
-        }
-
-        host.__kiuLastRenderSignature = buildSocialRenderSignature(
-            text(runtime?.ui?.activePanel || 'workspace') || 'workspace',
-            runtime
-        );
-
-        window.requestAnimationFrame(() => {
-            liveBody.scrollTop = scrollTop;
-            liveBody.scrollLeft = scrollLeft;
-            window.__kiuSuppressLuxTransparencyRefresh = false;
-            if (shell) shell.classList.remove('is-desk-refreshing');
-        });
-        return true;
+        ensureSocialWorkspaceModule().catch(() => null);
+        return false;
     }
+
 
     function refreshProjectTasksTabPane(reason = 'project-task-desk') {
-        // Prefer body-only when shell already mounted (avoids full pane replace + picker rebind of header).
-        const host = root();
-        const surface = deskTasksSurfaceReady(host);
-        if (surface?.tabPanel?.querySelector('[data-task-body-root="1"]')) {
-            return refreshProjectTasksTabBody(reason);
+        if (hasSocialWorkspaceModule() && typeof window.refreshProjectTasksTabPane === 'function' && window.refreshProjectTasksTabPane !== refreshProjectTasksTabPane) {
+            return window.refreshProjectTasksTabPane.apply(null, arguments);
         }
-
-        if (!surface) {
-            if (host) host.__kiuForceCenterOnly = true;
-            renderSocialPageNow(reason);
-            return false;
-        }
-        const { runtime, projectId, tabPanel } = surface;
-
-        const scrollRoot = tabPanel.querySelector('.social-project-task-shell-body')
-            || tabPanel.querySelector('.spt-desk')
-            || tabPanel;
-        const scrollTop = scrollRoot?.scrollTop || 0;
-        const scrollLeft = scrollRoot?.scrollLeft || 0;
-
-        window.__kiuSuppressLuxTransparencyRefresh = true;
-        const shell = host.querySelector('.social-projects-shell');
-        if (shell) shell.classList.add('is-desk-refreshing');
-
-        clearProjectTabPaneCacheKey(projectId, 'tasks');
-        const pane = getOrCreateProjectTabPane(runtime, projectId, 'tasks');
-        if (!pane) {
-            window.__kiuSuppressLuxTransparencyRefresh = false;
-            if (shell) shell.classList.remove('is-desk-refreshing');
-            host.__kiuForceCenterOnly = true;
-            renderSocialPageNow(reason);
-            return false;
-        }
-
-        tabPanel.setAttribute('data-project-tab', 'tasks');
-        tabPanel.replaceChildren(pane);
-
-        if (typeof window.enhanceUniversalPickers === 'function') {
-            try { window.enhanceUniversalPickers(pane); } catch (error) {}
-        }
-
-        host.__kiuLastRenderSignature = buildSocialRenderSignature(
-            text(runtime?.ui?.activePanel || 'workspace') || 'workspace',
-            runtime
-        );
-
-        window.requestAnimationFrame(() => {
-            const nextScroll = tabPanel.querySelector('.social-project-task-shell-body')
-                || tabPanel.querySelector('.spt-desk')
-                || tabPanel;
-            if (nextScroll) {
-                nextScroll.scrollTop = scrollTop;
-                nextScroll.scrollLeft = scrollLeft;
-            }
-            window.__kiuSuppressLuxTransparencyRefresh = false;
-            if (shell) shell.classList.remove('is-desk-refreshing');
-        });
-        return true;
+        ensureSocialWorkspaceModule().catch(() => null);
+        return false;
     }
+
 
     /** Tabs that embed renderTaskDependencyGraphPreview. */
     const PROJECT_TABS_WITH_GRAPH_PREVIEW = new Set(['overview', 'tasks']);
@@ -6130,27 +5880,13 @@
      * Used because keep-center dialogs leave stale __projectTabPaneCache DOM in place.
      */
     function rebuildActiveProjectTabPaneIfPreviewHost(projectId = '') {
-        const runtime = state();
-        const host = root();
-        if (!host || typeof renderProjectWorkspaceTabPanel !== 'function') return false;
-        const activeProjectId = text(runtime?.ui?.activeProjectId || '');
-        const targetId = text(projectId || activeProjectId);
-        if (!targetId || (activeProjectId && activeProjectId !== targetId)) return false;
-        const activeTab = text(runtime?.ui?.projectTab || 'overview') || 'overview';
-        if (!PROJECT_TABS_WITH_GRAPH_PREVIEW.has(activeTab)) return false;
-        const panel = host.querySelector('#social-project-tab-panel');
-        if (!panel) return false;
-        clearProjectTabPaneCache(targetId);
-        const pane = getOrCreateProjectTabPane(runtime, targetId, activeTab);
-        if (!pane) return false;
-        panel.setAttribute('data-project-tab', activeTab);
-        panel.replaceChildren(pane);
-        if (typeof window.enhanceUniversalPickers === 'function') {
-            try { window.enhanceUniversalPickers(pane); } catch (error) {}
+        if (hasSocialWorkspaceModule() && typeof window.rebuildActiveProjectTabPaneIfPreviewHost === 'function' && window.rebuildActiveProjectTabPaneIfPreviewHost !== rebuildActiveProjectTabPaneIfPreviewHost) {
+            return window.rebuildActiveProjectTabPaneIfPreviewHost.apply(null, arguments);
         }
-        runtime.ui.projectTaskGraphPreviewStale = false;
-        return true;
+        ensureSocialWorkspaceModule().catch(() => null);
+        return false;
     }
+
 
     /**
      * Graph data or free positions changed — drop cached tab panes so preview re-renders.
@@ -6165,68 +5901,22 @@
     }
 
     function getOrCreateProjectTabPane(runtime, projectId, tabId) {
-        if (typeof renderProjectWorkspaceTabPanel !== 'function') return null;
-        runtime.ui.__projectTabPaneCache = runtime.ui.__projectTabPaneCache || {};
-        const key = projectTabPaneCacheKey(projectId, tabId);
-        let pane = runtime.ui.__projectTabPaneCache[key];
-        if (pane && text(tabId) !== 'chat' && pane.nodeType === Node.ELEMENT_NODE) return pane;
-        pane = document.createElement('div');
-        pane.className = 'social-project-tab-pane';
-        pane.setAttribute('data-project-tab', text(tabId));
-        pane.innerHTML = renderProjectWorkspaceTabPanel(tabId);
-        runtime.ui.__projectTabPaneCache[key] = pane;
-        return pane;
+        if (hasSocialWorkspaceModule() && typeof window.getOrCreateProjectTabPane === 'function' && window.getOrCreateProjectTabPane !== getOrCreateProjectTabPane) {
+            return window.getOrCreateProjectTabPane.apply(null, arguments);
+        }
+        ensureSocialWorkspaceModule().catch(() => null);
+        return null;
     }
 
+
     function patchProjectWorkspaceTab(runtime) {
-        const host = root();
-        if (!host || typeof renderProjectWorkspaceTabPanel !== 'function') return false;
-        const panel = host.querySelector('#social-project-tab-panel');
-        const pillRow = host.querySelector('.social-project-tab-row-rich');
-        const shell = host.querySelector('.social-projects-shell');
-        const activeProjectId = text(runtime?.ui?.activeProjectId || '');
-        if (!panel || !pillRow || !activeProjectId) return false;
-        const liveProjectId = text(pillRow.querySelector('.social-project-tab-pill')?.getAttribute('data-project-id') || '');
-        if (liveProjectId !== activeProjectId) return false;
-        const activeTab = text(runtime?.ui?.projectTab || 'overview') || 'overview';
-        const currentTab = text(panel.getAttribute('data-project-tab') || '');
-        syncProjectTabPills(pillRow, activeTab);
-        if (currentTab === activeTab) return true;
-        if (shell) {
-            shell.classList.add('is-tab-switching');
-            shell.classList.add('is-tab-reveal');
+        if (hasSocialWorkspaceModule() && typeof window.patchProjectWorkspaceTab === 'function' && window.patchProjectWorkspaceTab !== patchProjectWorkspaceTab) {
+            return window.patchProjectWorkspaceTab.apply(null, arguments);
         }
-        window.__kiuSuppressLuxTransparencyRefresh = true;
-        const pane = getOrCreateProjectTabPane(runtime, activeProjectId, activeTab);
-        if (!pane) {
-            window.__kiuSuppressLuxTransparencyRefresh = false;
-            if (shell) {
-                shell.classList.remove('is-tab-switching');
-                shell.classList.remove('is-tab-reveal');
-            }
-            return false;
-        }
-        panel.setAttribute('data-project-tab', activeTab);
-        panel.replaceChildren(pane);
-        if (typeof window.enhanceUniversalPickers === 'function') {
-            try { window.enhanceUniversalPickers(pane); } catch (error) {}
-        }
-        host.__kiuLastRenderSignature = buildSocialRenderSignature(
-            text(runtime?.ui?.activePanel || 'workspace') || 'workspace',
-            runtime
-        );
-        window.requestAnimationFrame(() => {
-            window.__kiuSuppressLuxTransparencyRefresh = false;
-            if (shell) {
-                shell.classList.remove('is-tab-switching');
-                // keep reveal class until next frame after animation start, then clear
-                window.setTimeout(() => {
-                    if (shell) shell.classList.remove('is-tab-reveal');
-                }, 260);
-            }
-        });
-        return true;
+        ensureSocialWorkspaceModule().catch(() => null);
+        return false;
     }
+
 
     /** Replaces just the 5 reaction chips of one comment with fresh counts/active state. */
     function patchCommentReactions(updatedPost, commentId) {
@@ -7657,59 +7347,13 @@
      * is unreliable under social-neo-scroll-lock).
      */
     function revealDeskExpandTarget(el) {
-        if (!el) return;
-        const run = () => {
-            const host = root();
-            try {
-                if (typeof ensureSocialCenterScrollBounds === 'function') ensureSocialCenterScrollBounds(host);
-            } catch (error) {}
-            const scroller = typeof getSocialCenterScroller === 'function' ? getSocialCenterScroller(host) : null;
-            if (!scroller || !scroller.contains(el)) {
-                try { el.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } catch (error) {}
-                return;
-            }
-            void scroller.offsetHeight;
-            void el.offsetHeight;
-            const pad = 16;
-            const scrollerRect = scroller.getBoundingClientRect();
-            const elRect = el.getBoundingClientRect();
-            const elTopAbs = elRect.top - scrollerRect.top + scroller.scrollTop;
-            const elBottomAbs = elRect.bottom - scrollerRect.top + scroller.scrollTop;
-            const viewH = scroller.clientHeight || 0;
-            if (viewH <= 0) return;
-            let nextTop = scroller.scrollTop;
-            const blockH = elBottomAbs - elTopAbs;
-            if (blockH > viewH - pad * 2) {
-                // Taller than viewport: show start of droplist.
-                nextTop = elTopAbs - pad;
-            } else {
-                // Fit whole block: fix bottom overflow first, then top.
-                if (elBottomAbs > nextTop + viewH - pad) {
-                    nextTop = elBottomAbs - viewH + pad;
-                }
-                if (elTopAbs < nextTop + pad) {
-                    nextTop = elTopAbs - pad;
-                }
-            }
-            nextTop = Math.max(0, nextTop);
-            let maxScroll = Math.max(0, (scroller.scrollHeight || 0) - viewH);
-            try {
-                const shell = host?.querySelector?.('.social-neo-shell');
-                if (typeof getSocialCenterMaxScroll === 'function') {
-                    maxScroll = Math.max(maxScroll, getSocialCenterMaxScroll(scroller, shell) || 0);
-                }
-            } catch (error) {}
-            nextTop = Math.min(nextTop, maxScroll);
-            if (Math.abs(nextTop - scroller.scrollTop) < 2) return;
-            if (typeof scrollSocialCenterTo === 'function') {
-                scrollSocialCenterTo(nextTop, 'smooth', host);
-            } else {
-                scroller.scrollTop = nextTop;
-            }
-        };
-        // Double-rAF: layout after class toggle (package-body display, tree children).
-        requestAnimationFrame(() => requestAnimationFrame(run));
+        if (hasSocialWorkspaceModule() && typeof window.revealDeskExpandTarget === 'function' && window.revealDeskExpandTarget !== revealDeskExpandTarget) {
+            return window.revealDeskExpandTarget.apply(null, arguments);
+        }
+        ensureSocialWorkspaceModule().catch(() => null);
+        return;
     }
+
 
     function ensureSocialCenterScrollBounds(host = root()) {
         if (!socialScrollLockActive()) {
