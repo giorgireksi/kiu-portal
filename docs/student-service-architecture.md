@@ -14,7 +14,7 @@ student-service.html
 → lazy: student-service-service.js   (service lane shells)
 → lazy: student-service-qa.js        (Q&A lane shells)
 → lazy: student-service-filters.js     (inbox filters + editor)
-→ planned lazy: student-service-attachments.js
+→ lazy: student-service-attachments.js  (gallery/picker/drafts)
 → planned lazy: student-service-tickets.js
 ```
 
@@ -37,7 +37,7 @@ Lane preference persists via `STUDENT_SERVICE_UI_PREFS_KEY` / `setStudentService
 | `student-service-service.js` | Service-lane shell mounts (student hub, my tickets, responder, staff workbench) |
 | `student-service-qa.js` | Q&A-lane shell mounts; growing toward full Q&A markup/handlers |
 | `student-service-filters.js` | Inbox filter layouts, published layout, dropdown/control markup, filter editor (lazy via `ensureStudentServiceFiltersModule`) |
-| `student-service-attachments.js` *(planned)* | Attachment normalize + gallery/picker markup |
+| `student-service-attachments.js` | Attachment normalize + gallery/picker markup |
 | `student-service-tickets.js` *(planned)* | Ticket/thread markup + ticket actions |
 
 ## Contribution rule (do not regress)
@@ -65,7 +65,7 @@ When editing a domain, prefer **one** implementation in its module. Update dual-
 
 1. **Phase 0** — this doc + `npm run test:student-service` gate *(done)*  
 2. **Phase 1** — extract inbox filters → `student-service-filters.js` *(done)*  
-3. **Phase 2** — extract attachments → `student-service-attachments.js`  
+3. **Phase 2** — extract attachments → `student-service-attachments.js` *(done)*  
 4. **Phase 3** — tickets/thread domain module  
 5. **Phase 4** — deepen Q&A module  
 6. **Phase 5** — hub click-router compaction; optional articles/handoff  

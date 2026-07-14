@@ -163,6 +163,8 @@ const STUDENT_SERVICE_RUNTIME = {
 const STUDENT_SERVICE_QA_MODULE_URL = 'assets/js/pages/student-service-qa.js?v=20260626-ssvc-qa-header-merge1';
 const STUDENT_SERVICE_SERVICE_MODULE_URL = 'assets/js/pages/student-service-service.js?v=20260628-ssvc-hub-merge';
 const STUDENT_SERVICE_FILTERS_MODULE_URL = 'assets/js/pages/student-service-filters.js?v=20260714-ssvc-filters1';
+const STUDENT_SERVICE_ATTACHMENTS_MODULE_URL = 'assets/js/pages/student-service-attachments.js?v=20260714-ssvc-attach1';
+
 
 
 const studentServiceUiState = {};
@@ -210,6 +212,7 @@ function removeStaleStudentServiceLazyScript(script, moduleKind = '') {
     if (moduleKind === 'qa') delete window.__KIU_STUDENT_SERVICE_QA_MODULE_LOADED;
     if (moduleKind === 'service') delete window.__KIU_STUDENT_SERVICE_SERVICE_MODULE_LOADED;
     if (moduleKind === 'filters') delete window.__KIU_STUDENT_SERVICE_FILTERS_MODULE_LOADED;
+    if (moduleKind === 'attachments') delete window.__KIU_STUDENT_SERVICE_ATTACHMENTS_MODULE_LOADED;
 }
 
 function finishStudentServiceLazyModuleLoad(resolve, reject, isReady, errorMessage) {
@@ -253,6 +256,7 @@ function isStudentServiceQaBodyStale() {
 
 function ensureStudentServiceQaModule() {
     if (hasStudentServiceQaModule()) return Promise.resolve(true);
+    ensureStudentServiceAttachmentsModule().catch(() => null);
     if (studentServiceQaModulePromise) return studentServiceQaModulePromise;
     studentServiceQaModulePromise = new Promise((resolve, reject) => {
         const isReady = () => hasStudentServiceQaModule();
@@ -361,6 +365,7 @@ function hasStudentServiceServiceModule() {
 function ensureStudentServiceServiceModule() {
     if (hasStudentServiceServiceModule()) return Promise.resolve(true);
     ensureStudentServiceFiltersModule().catch(() => null);
+    ensureStudentServiceAttachmentsModule().catch(() => null);
     if (studentServiceServiceModulePromise) return studentServiceServiceModulePromise;
     studentServiceServiceModulePromise = new Promise((resolve, reject) => {
         const isReady = () => hasStudentServiceServiceModule();
@@ -473,6 +478,72 @@ function ensureStudentServiceFiltersModule() {
     });
     return studentServiceFiltersModulePromise;
 }
+
+let studentServiceAttachmentsModulePromise = null;
+let studentServiceAttachmentsModuleLastErrorAt = 0;
+
+function hasStudentServiceAttachmentsModule() {
+    return Boolean(
+        window.__KIU_STUDENT_SERVICE_ATTACHMENTS_MODULE_LOADED
+        && typeof window.renderStudentServiceAttachmentPickerMarkup === 'function'
+        && window.renderStudentServiceAttachmentPickerMarkup !== renderStudentServiceAttachmentPickerMarkup
+        && typeof window.renderStudentServiceAttachmentGalleryMarkup === 'function'
+        && window.renderStudentServiceAttachmentGalleryMarkup !== renderStudentServiceAttachmentGalleryMarkup
+    );
+}
+
+function ensureStudentServiceAttachmentsModule() {
+    if (hasStudentServiceAttachmentsModule()) return Promise.resolve(true);
+    if (studentServiceAttachmentsModulePromise) return studentServiceAttachmentsModulePromise;
+    studentServiceAttachmentsModulePromise = new Promise((resolve, reject) => {
+        const isReady = () => hasStudentServiceAttachmentsModule();
+        const onComplete = () => finishStudentServiceLazyModuleLoad(
+            resolve,
+            reject,
+            isReady,
+            'Student Service attachments module could not be loaded.'
+        );
+        let existing = document.querySelector(`script[src="${STUDENT_SERVICE_ATTACHMENTS_MODULE_URL}"]`);
+        if (existing) {
+            if (isStudentServiceLazyScriptExecuted(existing, isReady)) {
+                onComplete();
+                return;
+            }
+            if (shouldWaitForStudentServiceLazyScriptLoad(existing)) {
+                existing.addEventListener('load', onComplete, { once: true });
+                existing.addEventListener('error', () => reject(new Error('Student Service attachments module could not be loaded.')), { once: true });
+                return;
+            }
+            if (existing.dataset.kiuLoaded === '1') {
+                onComplete();
+                return;
+            }
+            removeStaleStudentServiceLazyScript(existing, 'attachments');
+            existing = null;
+        }
+        const script = document.createElement('script');
+        script.src = STUDENT_SERVICE_ATTACHMENTS_MODULE_URL;
+        script.defer = true;
+        script.addEventListener('load', () => {
+            script.dataset.kiuLoaded = '1';
+            onComplete();
+        }, { once: true });
+        script.addEventListener('error', () => reject(new Error('Student Service attachments module could not be loaded.')), { once: true });
+        document.head.appendChild(script);
+    }).catch((error) => {
+        const now = Date.now();
+        if (now - studentServiceAttachmentsModuleLastErrorAt > 3000) {
+            studentServiceAttachmentsModuleLastErrorAt = now;
+            console.error('Student Service attachments module load failed.', error);
+        }
+        throw error;
+    }).finally(() => {
+        studentServiceAttachmentsModulePromise = null;
+    });
+    return studentServiceAttachmentsModulePromise;
+}
+
+
 
 
 
@@ -1474,25 +1545,23 @@ function normalizeStudentServiceMacro(macro = {}, index = 0) {
 }
 
 function normalizeStudentServiceAttachmentRecord(file = {}, index = 0) {
-    if (!file || typeof file !== 'object') return null;
-    const storageKey = String(file.storageKey || file.id || '').trim();
-    if (!storageKey && !String(file.dataUrl || '').trim()) return null;
-    return {
-        id: String(file.id || `svc-att-${index + 1}`).trim(),
-        name: String(file.name || 'attachment').trim(),
-        type: String(file.type || 'application/octet-stream').trim(),
-        size: Number(file.size || 0),
-        storageKey,
-        storageBackend: String(file.storageBackend || 'bridge').trim(),
-        dataUrl: String(file.dataUrl || '').trim()
-    };
+    if (hasStudentServiceAttachmentsModule()
+        && typeof window.normalizeStudentServiceAttachmentRecord === 'function'
+        && window.normalizeStudentServiceAttachmentRecord !== normalizeStudentServiceAttachmentRecord) {
+        return window.normalizeStudentServiceAttachmentRecord.apply(null, arguments);
+    }
+    ensureStudentServiceAttachmentsModule().catch(() => null);
+    return null;
 }
 
 function normalizeStudentServiceAttachments(files = []) {
-    return (Array.isArray(files) ? files : [])
-        .map((file, index) => normalizeStudentServiceAttachmentRecord(file, index))
-        .filter(Boolean)
-        .slice(0, STUDENT_SERVICE_MAX_ATTACHMENTS);
+    if (hasStudentServiceAttachmentsModule()
+        && typeof window.normalizeStudentServiceAttachments === 'function'
+        && window.normalizeStudentServiceAttachments !== normalizeStudentServiceAttachments) {
+        return window.normalizeStudentServiceAttachments.apply(null, arguments);
+    }
+    ensureStudentServiceAttachmentsModule().catch(() => null);
+    return [];
 }
 
 function normalizeStudentServiceThreadEntry(entry = {}, fallback = {}) {
@@ -1770,6 +1839,9 @@ function preloadStudentServiceWorkspaceModules() {
     if (STUDENT_SERVICE_RUNTIME.workspaceModulesPrimed) return;
     STUDENT_SERVICE_RUNTIME.workspaceModulesPrimed = true;
     ensureStudentServiceFiltersModule()
+        .then(() => scheduleStudentServiceModuleRerenderIfNeeded())
+        .catch(() => null);
+    ensureStudentServiceAttachmentsModule()
         .then(() => scheduleStudentServiceModuleRerenderIfNeeded())
         .catch(() => null);
     ensureStudentServiceServiceModule()
@@ -4811,182 +4883,153 @@ const STUDENT_SERVICE_MAX_ATTACHMENTS = 5;
 const STUDENT_SERVICE_ATTACHMENT_ACCEPT = 'image/*,video/*,.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.csv,.zip,.txt';
 
 function ensureStudentServiceAttachmentInput() {
-    let input = document.getElementById('student-service-attachment-input');
-    if (!input) {
-        input = document.createElement('input');
-        input.type = 'file';
-        input.id = 'student-service-attachment-input';
-        input.multiple = true;
-        input.accept = STUDENT_SERVICE_ATTACHMENT_ACCEPT;
-        input.hidden = true;
-        document.body.appendChild(input);
+    if (hasStudentServiceAttachmentsModule()
+        && typeof window.ensureStudentServiceAttachmentInput === 'function'
+        && window.ensureStudentServiceAttachmentInput !== ensureStudentServiceAttachmentInput) {
+        return window.ensureStudentServiceAttachmentInput.apply(null, arguments);
     }
-    return input;
+    ensureStudentServiceAttachmentsModule().catch(() => null);
+    return;
 }
 
 function ensureStudentServiceDraftAttachments(ui) {
-    if (!ui.draftAttachments || typeof ui.draftAttachments !== 'object') ui.draftAttachments = {};
-    return ui.draftAttachments;
+    if (hasStudentServiceAttachmentsModule()
+        && typeof window.ensureStudentServiceDraftAttachments === 'function'
+        && window.ensureStudentServiceDraftAttachments !== ensureStudentServiceDraftAttachments) {
+        return window.ensureStudentServiceDraftAttachments.apply(null, arguments);
+    }
+    ensureStudentServiceAttachmentsModule().catch(() => null);
+    return;
 }
 
 function getStudentServiceDraftAttachments(composerId) {
-    const ui = ensureStudentServiceUiState();
-    return Array.isArray(ensureStudentServiceDraftAttachments(ui)[composerId]) ? ui.draftAttachments[composerId] : [];
+    if (hasStudentServiceAttachmentsModule()
+        && typeof window.getStudentServiceDraftAttachments === 'function'
+        && window.getStudentServiceDraftAttachments !== getStudentServiceDraftAttachments) {
+        return window.getStudentServiceDraftAttachments.apply(null, arguments);
+    }
+    ensureStudentServiceAttachmentsModule().catch(() => null);
+    return [];
 }
 
 function getStudentServiceAnswerComposerId(questionId, parentAnswerId = '') {
-    const normalizedQuestionId = String(questionId || '').trim();
-    const normalizedParentAnswerId = String(parentAnswerId || '').trim();
-    return normalizedParentAnswerId
-        ? `qa-answer-${normalizedQuestionId}-${normalizedParentAnswerId}`
-        : `qa-answer-${normalizedQuestionId}`;
+    if (hasStudentServiceAttachmentsModule()
+        && typeof window.getStudentServiceAnswerComposerId === 'function'
+        && window.getStudentServiceAnswerComposerId !== getStudentServiceAnswerComposerId) {
+        return window.getStudentServiceAnswerComposerId.apply(null, arguments);
+    }
+    ensureStudentServiceAttachmentsModule().catch(() => null);
+    return '';
 }
 
 function addStudentServiceDraftAttachment(composerId, file) {
-    if (!file) return;
-    const ui = ensureStudentServiceUiState();
-    const drafts = ensureStudentServiceDraftAttachments(ui);
-    const current = Array.isArray(drafts[composerId]) ? drafts[composerId].slice() : [];
-    if (current.length >= STUDENT_SERVICE_MAX_ATTACHMENTS) {
-        alert(`You can attach up to ${STUDENT_SERVICE_MAX_ATTACHMENTS} files per message.`);
-        return;
+    if (hasStudentServiceAttachmentsModule()
+        && typeof window.addStudentServiceDraftAttachment === 'function'
+        && window.addStudentServiceDraftAttachment !== addStudentServiceDraftAttachment) {
+        return window.addStudentServiceDraftAttachment.apply(null, arguments);
     }
-    const reader = new FileReader();
-    reader.onload = () => {
-        current.push({
-            id: `ssvc_att_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
-            name: file.name || 'attachment',
-            type: file.type || 'application/octet-stream',
-            size: file.size || 0,
-            dataUrl: String(reader.result || '')
-        });
-        drafts[composerId] = current.slice(0, STUDENT_SERVICE_MAX_ATTACHMENTS);
-        renderStudentServicePage();
-    };
-    reader.readAsDataURL(file);
+    ensureStudentServiceAttachmentsModule().catch(() => null);
+    return;
 }
 
 function removeStudentServiceDraftAttachment(composerId, attachmentId) {
-    const ui = ensureStudentServiceUiState();
-    const drafts = ensureStudentServiceDraftAttachments(ui);
-    const current = Array.isArray(drafts[composerId]) ? drafts[composerId] : [];
-    drafts[composerId] = current.filter(item => String(item.id || '') !== String(attachmentId || ''));
-    renderStudentServicePage();
+    if (hasStudentServiceAttachmentsModule()
+        && typeof window.removeStudentServiceDraftAttachment === 'function'
+        && window.removeStudentServiceDraftAttachment !== removeStudentServiceDraftAttachment) {
+        return window.removeStudentServiceDraftAttachment.apply(null, arguments);
+    }
+    ensureStudentServiceAttachmentsModule().catch(() => null);
+    return;
 }
 
 function clearStudentServiceDraftAttachments(composerId) {
-    const ui = ensureStudentServiceUiState();
-    const drafts = ensureStudentServiceDraftAttachments(ui);
-    delete drafts[composerId];
+    if (hasStudentServiceAttachmentsModule()
+        && typeof window.clearStudentServiceDraftAttachments === 'function'
+        && window.clearStudentServiceDraftAttachments !== clearStudentServiceDraftAttachments) {
+        return window.clearStudentServiceDraftAttachments.apply(null, arguments);
+    }
+    ensureStudentServiceAttachmentsModule().catch(() => null);
+    return;
 }
 
 async function persistStudentServiceDraftAttachments(composerId) {
-    const drafts = getStudentServiceDraftAttachments(composerId);
-    if (!drafts.length) return [];
-    if (typeof uploadPortalStoredFile !== 'function') return drafts;
-    const uploaded = [];
-    for (const draft of drafts) {
-        if (draft.storageKey) {
-            uploaded.push({
-                id: draft.id,
-                name: draft.name,
-                type: draft.type,
-                size: draft.size,
-                storageKey: draft.storageKey,
-                storageBackend: draft.storageBackend || 'bridge'
-            });
-            continue;
-        }
-        const stored = await uploadPortalStoredFile(draft, 'student-service');
-        if (stored?.storageKey) {
-            uploaded.push({
-                id: draft.id || `ssvc_att_${Date.now()}`,
-                name: stored.name || draft.name,
-                type: stored.type || draft.type,
-                size: stored.size || draft.size,
-                storageKey: stored.storageKey,
-                storageBackend: stored.storageBackend || 'bridge'
-            });
-        }
+    if (hasStudentServiceAttachmentsModule()
+        && typeof window.persistStudentServiceDraftAttachments === 'function'
+        && window.persistStudentServiceDraftAttachments !== persistStudentServiceDraftAttachments) {
+        return window.persistStudentServiceDraftAttachments.apply(null, arguments);
     }
-    return uploaded.slice(0, STUDENT_SERVICE_MAX_ATTACHMENTS);
+    ensureStudentServiceAttachmentsModule().catch(() => null);
+    return [];
 }
 
 function resolveStudentServiceAttachmentUrl(file) {
-    if (!file || typeof file !== 'object') return '';
-    if (String(file.storageBackend || '').trim().toLowerCase() === 'bridge'
-        && String(file.storageKey || '').trim()
-        && typeof getPortalStoredFileUrl === 'function') {
-        return getPortalStoredFileUrl(file.storageKey);
+    if (hasStudentServiceAttachmentsModule()
+        && typeof window.resolveStudentServiceAttachmentUrl === 'function'
+        && window.resolveStudentServiceAttachmentUrl !== resolveStudentServiceAttachmentUrl) {
+        return window.resolveStudentServiceAttachmentUrl.apply(null, arguments);
     }
-    return String(file.dataUrl || '').trim();
+    ensureStudentServiceAttachmentsModule().catch(() => null);
+    return '';
 }
 
 function isStudentServiceImageAttachment(file) {
-    return /^image\//i.test(String(file?.type || ''));
+    if (hasStudentServiceAttachmentsModule()
+        && typeof window.isStudentServiceImageAttachment === 'function'
+        && window.isStudentServiceImageAttachment !== isStudentServiceImageAttachment) {
+        return window.isStudentServiceImageAttachment.apply(null, arguments);
+    }
+    ensureStudentServiceAttachmentsModule().catch(() => null);
+    return false;
 }
 
 function isStudentServiceVideoAttachment(file) {
-    return /^video\//i.test(String(file?.type || ''));
+    if (hasStudentServiceAttachmentsModule()
+        && typeof window.isStudentServiceVideoAttachment === 'function'
+        && window.isStudentServiceVideoAttachment !== isStudentServiceVideoAttachment) {
+        return window.isStudentServiceVideoAttachment.apply(null, arguments);
+    }
+    ensureStudentServiceAttachmentsModule().catch(() => null);
+    return false;
 }
 
 function renderStudentServiceAttachmentGalleryMarkup(attachments = []) {
-    const items = (Array.isArray(attachments) ? attachments : []).filter(file => resolveStudentServiceAttachmentUrl(file));
-    if (!items.length) return '';
-    return `
-        <div class="student-service-attachment-gallery">
-            ${items.map((file) => {
-                const url = resolveStudentServiceAttachmentUrl(file);
-                const name = ssEscape(file.name || 'attachment');
-                if (isStudentServiceImageAttachment(file)) {
-                    return `<a class="student-service-attachment-item student-service-attachment-image" href="${ssEscape(url)}" target="_blank" rel="noopener noreferrer"><img src="${ssEscape(url)}" alt="${name}" loading="lazy"></a>`;
-                }
-                if (isStudentServiceVideoAttachment(file)) {
-                    return `<div class="student-service-attachment-item student-service-attachment-video"><video controls preload="metadata" src="${ssEscape(url)}"></video></div>`;
-                }
-                return `<a class="student-service-attachment-item student-service-attachment-file" href="${ssEscape(url)}" target="_blank" rel="noopener noreferrer"><i class="fas fa-paperclip"></i><span>${name}</span></a>`;
-            }).join('')}
-        </div>
-    `;
+    if (hasStudentServiceAttachmentsModule()
+        && typeof window.renderStudentServiceAttachmentGalleryMarkup === 'function'
+        && window.renderStudentServiceAttachmentGalleryMarkup !== renderStudentServiceAttachmentGalleryMarkup) {
+        return window.renderStudentServiceAttachmentGalleryMarkup.apply(null, arguments);
+    }
+    ensureStudentServiceAttachmentsModule().catch(() => null);
+    return '';
 }
 
 function renderStudentServiceAttachmentChipsMarkup(composerId, drafts) {
-    if (!drafts.length) return '';
-    return `
-        <div class="student-service-attachment-chips" data-student-service-attachment-chips="${ssEscape(composerId)}">
-            ${drafts.map((file) => `
-                <span class="student-service-attachment-chip">
-                    <i class="fas ${isStudentServiceImageAttachment(file) ? 'fa-image' : isStudentServiceVideoAttachment(file) ? 'fa-video' : 'fa-file'}"></i>
-                    <span>${ssEscape(file.name || 'attachment')}</span>
-                    <button type="button" class="student-service-attachment-chip-remove" data-student-service-remove-attachment="${ssEscape(composerId)}" data-student-service-attachment-id="${ssEscape(file.id || '')}" aria-label="Remove attachment"><i class="fas fa-times"></i></button>
-                </span>
-            `).join('')}
-        </div>
-    `;
+    if (hasStudentServiceAttachmentsModule()
+        && typeof window.renderStudentServiceAttachmentChipsMarkup === 'function'
+        && window.renderStudentServiceAttachmentChipsMarkup !== renderStudentServiceAttachmentChipsMarkup) {
+        return window.renderStudentServiceAttachmentChipsMarkup.apply(null, arguments);
+    }
+    ensureStudentServiceAttachmentsModule().catch(() => null);
+    return '';
 }
 
 function renderStudentServiceAttachmentPickerMarkup(composerId, options = {}) {
-    const drafts = getStudentServiceDraftAttachments(composerId);
-    const chipsMarkup = renderStudentServiceAttachmentChipsMarkup(composerId, drafts);
-    if (options.chipsOnly) return chipsMarkup;
-    return `
-        <div class="student-service-attachment-toolbar" data-student-service-attachment-toolbar="${ssEscape(composerId)}">
-            <button type="button" class="student-service-mini-action lux-secondary-btn" data-student-service-attach="${ssEscape(composerId)}"><i class="fas fa-paperclip"></i> Attach files</button>
-            <span class="student-service-attachment-hint">Images, video, PDF, and documents · up to ${STUDENT_SERVICE_MAX_ATTACHMENTS} files</span>
-            ${chipsMarkup}
-        </div>
-    `;
+    if (hasStudentServiceAttachmentsModule()
+        && typeof window.renderStudentServiceAttachmentPickerMarkup === 'function'
+        && window.renderStudentServiceAttachmentPickerMarkup !== renderStudentServiceAttachmentPickerMarkup) {
+        return window.renderStudentServiceAttachmentPickerMarkup.apply(null, arguments);
+    }
+    ensureStudentServiceAttachmentsModule().catch(() => null);
+    return '';
 }
 
 function pickStudentServiceAttachments(composerId) {
-    const input = ensureStudentServiceAttachmentInput();
-    input.value = '';
-    input.onchange = () => {
-        const files = Array.from(input.files || []);
-        const remaining = STUDENT_SERVICE_MAX_ATTACHMENTS - getStudentServiceDraftAttachments(composerId).length;
-        files.slice(0, Math.max(0, remaining)).forEach(file => addStudentServiceDraftAttachment(composerId, file));
-    };
-    input.click();
+    if (hasStudentServiceAttachmentsModule()
+        && typeof window.pickStudentServiceAttachments === 'function'
+        && window.pickStudentServiceAttachments !== pickStudentServiceAttachments) {
+        return window.pickStudentServiceAttachments.apply(null, arguments);
+    }
+    ensureStudentServiceAttachmentsModule().catch(() => null);
+    return;
 }
 
 async function postStudentService(path, body = {}) {
