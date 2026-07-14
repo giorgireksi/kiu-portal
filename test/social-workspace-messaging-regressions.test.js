@@ -12,8 +12,8 @@ describe('social workspace messaging regressions', () => {
         const page = readSource('assets/js/pages/social-page.js');
         const html = readSource('social.html');
 
-        expect(html).toContain('assets/js/shared/social-runtime-lite.js?v=20260606-postactions6');
-        expect(html).toContain('assets/js/pages/social-page.js?v=20260606-postactions6');
+        expect(html).toContain('assets/js/shared/social-runtime-lite.js?v=20260713-post-compose1');
+        expect(html).toContain('assets/js/pages/social-page.js?v=20260713-groups-detail9');
 
         expect(runtime).toContain("portalRequest(`/api/notifications?userId=${encodeURIComponent(text(user.id))}&limit=50`)");
         expect(runtime).toContain("type: text(item.type || 'general')");

@@ -40,35 +40,35 @@ describe('social comment actions regressions', () => {
         const html = readSource('social.html');
         const serviceSource = readSource('backend/platform/domains/social-content-service.js');
 
-        expect(html).toContain('assets/js/pages/social-page.js?v=20260606-postactions6');
-        expect(html).toContain('assets/js/shared/social-runtime-lite.js?v=20260606-postactions6');
+        expect(html).toContain('assets/js/pages/social-page.js?v=20260713-groups-detail9');
+        expect(html).toContain('assets/js/shared/social-runtime-lite.js?v=20260713-post-compose1');
 
         expect(serviceSource).toContain('const stack = [...asArray(comments)]');
         expect(serviceSource).toContain('if (Array.isArray(comment.replies) && comment.replies.length)');
 
         expect(source).toContain('function focusCommentComposeInput(host, postId)');
         expect(source).toContain('function collectCommentReactionFingerprint(comments = [], limit = 12, collected = [])');
-        expect(source).toContain("renderSocialPageNow('comment-react')");
-        expect(source).toContain("openDialog('comment-report'");
-        expect(source).toContain("kind === 'comment-report'");
-        expect(source).toContain('dialog-comment-report');
-        expect(source).toContain("'comment-react'");
-        expect(source).toContain("'comment-report'");
+        expect((source + readSource('assets/js/pages/social-feed.js'))).toContain('patchCommentReactions(updatedPost, reactCommentId)');
+        expect((source + readSource('assets/js/pages/social-feed.js'))).toContain("openDialog('comment-report'");
+        expect(readSource('assets/js/pages/social-feed.js')).toContain("kind === 'comment-report'");
+        expect((source + readSource('assets/js/pages/social-feed.js'))).toContain('dialog-comment-report');
+        expect((source + readSource('assets/js/pages/social-feed.js'))).toContain("'comment-react'");
+        expect((source + readSource('assets/js/pages/social-feed.js'))).toContain("'comment-report'");
         expect(source).toContain('commentReplyFocusPostId');
         expect(source).toContain('focusCommentComposeInput(host, focusPostId)');
 
         expect(runtimeSource).toContain('function mergeFeedPost(post)');
-        expect(runtimeSource).toContain("queueRender('report-created')");
+        expect(runtimeSource).toContain('function reportSocialContent(targetEntityType, targetEntityId, reason, targetOwnerId');
         expect(runtimeSource).toContain("document.getElementById('public-social-root')");
         expect(runtimeSource).toContain('function applyOptimisticCommentReaction(post, commentId, userId, reactionType = \'like\')');
         expect(runtimeSource).toContain('function mutationRequest(path, options = {})');
         expect(runtimeSource).toContain('SOCIAL_MUTATION_TIMEOUT_MS = 12000');
-        expect(runtimeSource).toContain("queueRender('comment-react')");
+        expect(runtimeSource).toContain('reactToPortalSocialComment');
         const reactToCommentBlock = runtimeSource.match(/async function reactToComment[\s\S]*?(?=\n    async function )/)?.[0] || '';
         expect(reactToCommentBlock).not.toContain('await refreshFeed(true)');
 
         expect(source).toContain('pendingCommentReactions');
-        expect(source).toMatch(/reason === 'boot' \|\| \/\^\(comment-\|post-react\|post-save\|post-pin\)\/\./);
+        expect(source).toMatch(/reason === 'boot' \|\| \/\^\(comment-\|post-react\|post-save\|post-pin/);
 
         const apiSource = readSource('assets/js/app/api.js');
         expect(apiSource).toContain('Number(options.timeoutMs) > 0 ? Number(options.timeoutMs) : KIU_PORTAL_BACKEND_TIMEOUT_MS');

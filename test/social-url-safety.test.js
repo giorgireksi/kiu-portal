@@ -12,12 +12,15 @@ describe('social URL safety regressions', () => {
         const socialContent = readSource('backend/platform/domains/social-content-service.js');
 
         expect(socialPage).toContain('function getSafeSocialExternalUrl(value) {');
-        expect(socialPage).toContain('const safeOnlineLink = getSafeSocialExternalUrl(meeting?.onlineLink);');
-        expect(socialPage).toContain('const safePortfolioLinks = entry.externalLinks.filter');
+        // Portfolio discover feed (safe link filter) lives in workspace module
+        const socialWorkspace = readSource('assets/js/pages/social-workspace.js');
+        expect(socialWorkspace).toContain('const safePortfolioLinks = entry.externalLinks.filter');
+        expect(socialWorkspace).toContain('const safeLinkUrl = getSafeSocialExternalUrl(link?.url);');
+        // Event cards no longer render raw onlineLink hrefs in the list surface.
         expect(socialPage).not.toContain('href="${escape(text(meeting.onlineLink))}"');
         expect(socialPage).not.toContain('href="${escape(link.url)}"');
-        expect(socialContent).toContain('function normalizeSafeExternalUrl(value = \'\') {');
-        expect(socialContent).toContain('actionUrl: normalizeSafeExternalUrl(normalized.actionUrl || normalized.website || \'\'),');
-        expect(socialContent).toContain('onlineLink: normalizeSafeExternalUrl(normalized.onlineLink || \'\'),');
+        expect(socialContent).toContain("function normalizeSafeExternalUrl(value = '') {");
+        expect(socialContent).toContain("actionUrl: normalizeSafeExternalUrl(normalized.actionUrl || normalized.website || ''),");
+        expect(socialContent).toContain("onlineLink: normalizeSafeExternalUrl(normalized.onlineLink || ''),");
     });
 });

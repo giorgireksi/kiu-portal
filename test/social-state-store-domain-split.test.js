@@ -20,7 +20,11 @@ describe('social state store domain split', () => {
             'ensureSocialGroupChat',
             'ensureSocialProjectCollections',
             'getSocialBootstrap',
+            'isLostFoundItemExpired',
             'listSocialRelationshipsForUser',
+            'migrateLostFoundSocialState',
+            'normalizeLostFoundItem',
+            'normalizeLostFoundItems',
             'saveSocialMutation',
             'upsertSocialState'
         ]);
@@ -62,8 +66,19 @@ describe('social state store domain split', () => {
         expect(bootstrap.groups).toHaveLength(1);
         expect(bootstrap.relationships).toHaveLength(1);
 
-        const upserted = store.upsertSocialState({ lostFoundItems: [{ id: 'lf-1', title: 'Keys' }] }, 'owner-1', 'social-save');
+        const upserted = store.upsertSocialState({
+            lostFoundItems: [{
+                id: 'lf-1',
+                title: 'Keys',
+                kind: 'lost',
+                status: 'open',
+                facultyCode: 'ECON'
+            }]
+        }, 'owner-1', 'social-save');
         expect(upserted.lostFoundItems).toHaveLength(1);
+        expect(upserted.lostFoundItems[0].status).toBe('lost');
+        expect(upserted.lostFoundItems[0].kind).toBeUndefined();
+        expect(upserted.lostFoundItems[0].facultyCode).toBeUndefined();
 
         const chat = store.ensureSocialGroupChat('group-1', 'owner-1');
         expect(chat?.chat?.groupId).toBe('group-1');

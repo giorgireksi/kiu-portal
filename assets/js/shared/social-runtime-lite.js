@@ -23,6 +23,8 @@
             rsvps: [],
             reports: [],
             lostFoundItems: [],
+            surveys: [],
+            surveyResponses: [],
             savedPosts: []
         },
         feed: [],
@@ -96,18 +98,13 @@
             projectTaskTitle: '',
             projectTaskDescription: '',
             projectTaskAssigneeId: '',
+            projectTaskStartAt: '',
             projectTaskDueAt: '',
             projectTaskPriority: 'medium',
-            projectMilestoneTitle: '',
-            projectMilestoneDescription: '',
-            projectMilestoneDueAt: '',
-            projectDeliverableTitle: '',
-            projectDeliverableDescription: '',
-            projectDeliverableVersion: '',
-            projectDeliverableFile: null,
-            projectCheckinDone: '',
-            projectCheckinBlockers: '',
-            projectCheckinNextSteps: '',
+            projectTaskPriorityModel: 'manual',
+            projectTaskImpactScore: '3',
+            projectTaskEffortScore: '3',
+            projectTaskBudgetEstimate: '',
             projectShowcaseSummary: '',
             composerText: '',
             composerAudience: 'campus',
@@ -124,6 +121,8 @@
             pageCategory: '',
             pageTagline: '',
             pageAbout: '',
+            pageMembersSearch: '',
+            pageMembersFilter: 'all',
             pageWebsite: '',
             pageContactEmail: '',
             pageLocation: '',
@@ -161,13 +160,8 @@
             profileWebsite: '',
             profileBirthday: '',
             profileCoverFile: null,
-        lostFoundFilter: 'open',
         lostFoundSearch: '',
-        lostFoundBrowseFaculty: 'current',
-        lostFoundScope: 'current',
-        lostFoundComposerOpen: false,
-        lostFoundKind: 'lost',
-            lostFoundStatus: 'open',
+            lostFoundExpiresAt: '',
             lostFoundTitle: '',
             lostFoundDescription: '',
             lostFoundCategory: '',
@@ -175,6 +169,13 @@
             lostFoundDate: '',
             lostFoundEditId: '',
             lostFoundFile: null,
+            surveysTab: 'available',
+            surveysSearch: '',
+            surveyTakingId: '',
+            surveyResultsId: '',
+            surveyResultsPayload: null,
+            surveyDraftQuestions: [],
+            surveyDraftScope: '',
             toasts: [],
             storyViewerOpen: false,
             storyViewerIndex: 0,
@@ -227,6 +228,34 @@
         if (typeof formatRelativeTime === 'function') {
             try { return formatRelativeTime(value); } catch (error) {}
         }
+        const parsed = new Date(value);
+        if (!Number.isNaN(parsed.getTime())) {
+            const diffMs = Date.now() - parsed.getTime();
+            const absDiff = Math.abs(diffMs);
+            const future = diffMs < 0;
+            const minute = 60 * 1000;
+            const hour = 60 * minute;
+            const day = 24 * hour;
+            const week = 7 * day;
+            if (absDiff < minute) return 'Just now';
+            if (absDiff < hour) {
+                const mins = Math.floor(absDiff / minute);
+                return future ? `in ${mins}m` : `${mins}m ago`;
+            }
+            if (absDiff < day) {
+                const hrs = Math.floor(absDiff / hour);
+                return future ? `in ${hrs}h` : `${hrs}h ago`;
+            }
+            if (absDiff < week) {
+                const days = Math.floor(absDiff / day);
+                return future ? `in ${days}d` : `${days}d ago`;
+            }
+            return parsed.toLocaleDateString(undefined, {
+                month: 'short',
+                day: 'numeric',
+                year: parsed.getFullYear() !== new Date().getFullYear() ? 'numeric' : undefined
+            });
+        }
         return text(value);
     }
 
@@ -247,7 +276,19 @@
     }
 
     function currentUserId() {
-        return text(currentUser()?.id);
+        const directId = text(currentUser()?.id);
+        if (directId) return directId;
+        try {
+            if (typeof getCurrentUserId === 'function') {
+                const stateId = text(getCurrentUserId());
+                if (stateId) return stateId;
+            }
+        } catch (error) {}
+        try {
+            const sessionId = text(sessionStorage.getItem('KIU_ACTIVE_SESSION_USER_ID') || '');
+            if (sessionId) return sessionId;
+        } catch (error) {}
+        return '';
     }
 
     function currentFacultyCode() {
@@ -315,7 +356,7 @@
             return callRuntime.stream;
         } catch (error) {
             console.warn('Portal call media access failed:', error);
-            setFlash('Camera or microphone permission was denied.', 'danger');
+            setFlash('Camera or microphone permission was denied.', 'danger', { skipRender: true });
             return null;
         }
     }
@@ -478,10 +519,16 @@
     }
 
     function invalidateSocialFeedRenderCache() {
+        invalidateSocialRenderCache({ center: true });
+    }
+
+    function invalidateSocialRenderCache({ center = true } = {}) {
         const host = document.getElementById('public-social-root');
         if (host) host.__kiuLastRenderSignature = '';
-        const center = document.getElementById('social-neo-center-region');
-        if (center) delete center.__kiuLastMarkup;
+        if (center) {
+            const centerEl = document.getElementById('social-neo-center-region');
+            if (centerEl) delete centerEl.__kiuLastMarkup;
+        }
     }
 
     function mergeFeedPost(post) {
@@ -599,14 +646,14 @@
         });
     }
 
-    function setFlash(message, tone = 'info') {
+    function setFlash(message, tone = 'info', options = {}) {
         runtime.flash = message ? { message: text(message), tone: text(tone) || 'info' } : null;
-        queueRender('flash');
+        if (!options.skipRender) queueRender('flash');
         if (!message) return;
         window.setTimeout(() => {
             if (runtime.flash?.message === message) {
                 runtime.flash = null;
-                queueRender('flash-clear');
+                if (!options.skipRender) queueRender('flash-clear');
             }
         }, 2600);
     }
@@ -669,8 +716,7 @@
                 ...(Array.isArray(project?.memberIds) ? project.memberIds : []),
                 ...(Array.isArray(project?.pendingMemberIds) ? project.pendingMemberIds : []),
                 ...(project?.memberRolesByUser && typeof project.memberRolesByUser === 'object' ? Object.keys(project.memberRolesByUser) : []),
-                ...(Array.isArray(project?.tasks) ? project.tasks.map((task) => task?.assigneeUserId) : []),
-                ...(Array.isArray(project?.checkins) ? project.checkins.map((checkin) => checkin?.authorUserId) : [])
+                ...(Array.isArray(project?.tasks) ? project.tasks.map((task) => task?.assigneeUserId) : [])
             );
         });
         (Array.isArray(source.relationships) ? source.relationships : []).forEach((relationship) => {
@@ -685,10 +731,44 @@
         return unique(ids);
     }
 
-    async function loadSocialState(force = false) {
+    function ensureSocialRelationships() {
+        if (!runtime.social || typeof runtime.social !== 'object') runtime.social = {};
+        if (!Array.isArray(runtime.social.relationships)) runtime.social.relationships = [];
+        return runtime.social.relationships;
+    }
+
+    function mergeSocialRelationship(relationship) {
+        if (!relationship?.id) return;
+        const relationships = ensureSocialRelationships();
+        const relationshipId = text(relationship.id);
+        const index = relationships.findIndex((item) => text(item?.id) === relationshipId);
+        if (index >= 0) relationships[index] = { ...relationships[index], ...relationship };
+        else relationships.unshift(relationship);
+    }
+
+    function removeSocialRelationshipsBetween(userId, targetUserId) {
+        const normalizedUserId = text(userId);
+        const normalizedTargetUserId = text(targetUserId);
+        if (!normalizedUserId || !normalizedTargetUserId) return;
+        const relationships = ensureSocialRelationships();
+        runtime.social.relationships = relationships.filter((item) => {
+            const type = text(item?.type).toLowerCase();
+            const fromId = text(item?.fromId);
+            const toId = text(item?.toId);
+            if (type === 'connection' || type === 'connection-request') {
+                return !(
+                    (fromId === normalizedUserId && toId === normalizedTargetUserId)
+                    || (fromId === normalizedTargetUserId && toId === normalizedUserId)
+                );
+            }
+            return true;
+        });
+    }
+
+    async function loadSocialState(force = false, options = {}) {
         const user = currentUser();
         if (!user?.id) {
-            runtime.social = { profiles: {}, pages: [], groups: [], projects: [], relationships: [], events: [], rsvps: [], reports: [], lostFoundItems: [], savedPosts: [] };
+            runtime.social = { profiles: {}, pages: [], groups: [], projects: [], portfolios: [], relationships: [], events: [], rsvps: [], reports: [], lostFoundItems: [], surveys: [], surveyResponses: [], savedPosts: [] };
             return runtime.social;
         }
         if (runtime.socialPromise && !force) return runtime.socialPromise;
@@ -700,11 +780,19 @@
                     pages: Array.isArray(social?.pages) ? social.pages : [],
                     groups: Array.isArray(social?.groups) ? social.groups : [],
                     projects: Array.isArray(social?.projects) ? social.projects : [],
+                    portfolios: Array.isArray(social?.portfolios) ? social.portfolios : [],
                     relationships: Array.isArray(social?.relationships) ? social.relationships : [],
-                    events: Array.isArray(social?.events) ? social.events : [],
+                    events: Array.isArray(social?.events)
+                        ? social.events.map((event) => ({
+                            ...event,
+                            viewerCanEdit: Boolean(event?.viewerCanEdit || event?.viewerCanDelete)
+                        }))
+                        : [],
                     rsvps: Array.isArray(social?.rsvps) ? social.rsvps : [],
                     reports: Array.isArray(social?.reports) ? social.reports : [],
                     lostFoundItems: Array.isArray(social?.lostFoundItems) ? social.lostFoundItems : [],
+                    surveys: Array.isArray(social?.surveys) ? social.surveys : [],
+                    surveyResponses: Array.isArray(social?.surveyResponses) ? social.surveyResponses : [],
                     savedPosts: []
                 };
                 await fetchAccountsByIds(collectSocialAccountIds(runtime.social));
@@ -713,12 +801,12 @@
                 if (!text(runtime.ui?.composerAudience)) {
                     runtime.ui.composerAudience = text(currentProfile.defaultAudience || 'campus') || 'campus';
                 }
-                queueRender('social-bootstrap');
+                if (!options.skipRender) queueRender('social-bootstrap');
                 return runtime.social;
             })
             .catch((error) => {
                 runtime.error = text(error?.message || 'Social bootstrap could not be loaded.');
-                queueRender('social-bootstrap-error');
+                if (!options.skipRender) queueRender('social-bootstrap-error');
                 return runtime.social;
             })
             .finally(() => {
@@ -885,6 +973,7 @@
         runtime.error = '';
         runtime.ui.activePanel = text(readStore(PANEL_KEY, runtime.ui.activePanel || 'feed')) || 'feed';
         if (runtime.ui.activePanel === 'lost-found') runtime.ui.activePanel = 'lost-and-found';
+
         runtime.refreshPromise = Promise.all([
             loadSocialState(force),
             refreshFeed(force),
@@ -953,7 +1042,7 @@
         return runtime.toasts || [];
     }
 
-    function addToast(options) {
+    function addToast(options = {}) {
         const toast = {
             id: options.id || `toast-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
             type: options.type || 'info',
@@ -962,30 +1051,48 @@
             icon: options.icon || 'fa-bell',
             action: options.action || null,
             actionData: options.actionData || null,
-            createdAt: Date.now()
+            createdAt: Date.now(),
+            dismissing: false,
+            timeoutId: 0
         };
         runtime.toasts = runtime.toasts || [];
         runtime.toasts.push(toast);
+        if (runtime.toasts.length > 4) {
+            const dropped = runtime.toasts.slice(0, -4);
+            dropped.forEach((item) => {
+                if (item?.timeoutId) window.clearTimeout(item.timeoutId);
+            });
+            runtime.toasts = runtime.toasts.slice(-4);
+        }
         queueRender('toast-added');
         if (options.autoDismiss !== false) {
-            setTimeout(() => dismissToast(toast.id), options.duration || 5000);
+            const duration = Math.max(1000, Number(options.duration) || 5000);
+            toast.timeoutId = window.setTimeout(() => dismissToast(toast.id), duration);
         }
         return toast.id;
     }
 
     function dismissToast(id) {
-        const toast = runtime.toasts?.find((t) => t.id === id);
-        if (toast) {
-            toast.dismissing = true;
-            queueRender('toast-dismiss');
-            setTimeout(() => {
-                runtime.toasts = runtime.toasts?.filter((t) => t.id !== id) || [];
-                queueRender('toast-removed');
-            }, 200);
+        const toastId = text(id);
+        if (!toastId) return;
+        const toast = runtime.toasts?.find((t) => text(t.id) === toastId);
+        if (!toast || toast.dismissing) return;
+        if (toast.timeoutId) {
+            window.clearTimeout(toast.timeoutId);
+            toast.timeoutId = 0;
         }
+        toast.dismissing = true;
+        queueRender('toast-dismiss');
+        window.setTimeout(() => {
+            runtime.toasts = (runtime.toasts || []).filter((t) => text(t.id) !== toastId);
+            queueRender('toast-removed');
+        }, 220);
     }
 
     function clearAllToasts() {
+        (runtime.toasts || []).forEach((toast) => {
+            if (toast?.timeoutId) window.clearTimeout(toast.timeoutId);
+        });
         runtime.toasts = [];
         queueRender('toasts-cleared');
     }
@@ -1057,34 +1164,8 @@
         queueRender('story-composer-close');
     }
 
-    async function createStory(options = {}) {
-        const userId = currentUserId();
-        if (!userId) throw new Error('Session required.');
-        const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
-        const payload = await portalRequest('/api/social/stories', {
-            method: 'POST',
-            body: JSON.stringify({
-                userId,
-                mediaUrl: text(options.mediaUrl),
-                caption: text(options.caption),
-                expiresAt
-            })
-        });
-        runtime.stories = runtime.stories || [];
-        runtime.stories.unshift({
-            id: payload?.story?.id || `story-${Date.now()}`,
-            authorUserId: userId,
-            authorName: currentUser()?.displayName || 'You',
-            authorAvatar: '',
-            mediaUrl: options.mediaUrl,
-            caption: options.caption,
-            createdAt: new Date().toISOString(),
-            expiresAt
-        });
-        closeStoryComposer();
-        queueRender('story-created');
-        addToast({ type: 'success', title: 'Story added', text: 'Your story is now visible for 24h', icon: 'fa-clock' });
-        return payload?.story || null;
+    async function createStory() {
+        throw new Error('Stories are not available.');
     }
 
     async function markStoryViewed(storyId) {
@@ -1116,8 +1197,32 @@
         return true;
     }
 
+    const legacyRemovePortalNotification = typeof window.removePortalNotification === 'function'
+        ? window.removePortalNotification.bind(window)
+        : null;
+
+    async function removeNotification(notificationRef) {
+        const raw = text(notificationRef);
+        const id = raw.includes(':') ? raw.split(':').slice(1).join(':') : raw;
+        if (!id) return false;
+        runtime.notifications = (runtime.notifications || []).filter((item) => text(item.id) !== id);
+        if (legacyRemovePortalNotification) legacyRemovePortalNotification(raw);
+        try {
+            await portalRequest('/api/notifications/delete', {
+                method: 'POST',
+                body: JSON.stringify({
+                    notificationId: id,
+                    userId: currentUserId()
+                })
+            });
+        } catch (error) {
+            return false;
+        }
+        return true;
+    }
+
     function setPanel(panel) {
-        runtime.ui.activePanel = ['feed', 'community', 'projects', 'events', 'lost-and-found', 'messages', 'alerts', 'profile'].includes(text(panel)) ? text(panel) : 'feed';
+        runtime.ui.activePanel = ['feed', 'community', 'projects', 'events', 'photography', 'lost-and-found', 'surveys', 'messages', 'alerts', 'profile'].includes(text(panel)) ? text(panel) : 'feed';
         writeStore(PANEL_KEY, runtime.ui.activePanel);
         queueRender('panel');
     }
@@ -1260,8 +1365,13 @@
 
     function fileUrl(file) {
         if (!file || typeof file !== 'object') return '';
-        if (text(file.storageBackend).toLowerCase() === 'bridge' && text(file.storageKey) && typeof getPortalStoredFileUrl === 'function') {
-            return getPortalStoredFileUrl(file.storageKey);
+        const storageKey = text(file.storageKey || file.id || '');
+        const backend = text(file.storageBackend).toLowerCase();
+        if (storageKey && typeof getPortalStoredFileUrl === 'function' && (backend === 'bridge' || backend === '' || !text(file.dataUrl))) {
+            const type = text(file.type).toLowerCase();
+            const name = text(file.name).toLowerCase();
+            const forDisplay = type.startsWith('image/') || /\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(name);
+            return getPortalStoredFileUrl(storageKey, { inline: forDisplay, forDisplay });
         }
         return text(file.dataUrl);
     }
@@ -1291,18 +1401,45 @@
         return chat;
     }
 
+    function photographyPosts(feed = runtime.feed) {
+        const items = Array.isArray(feed) ? feed : [];
+        return items.filter((post) => text(post?.category) === 'Photography'
+            && Array.isArray(post?.media)
+            && post.media.some((media) => isImageFile(media)));
+    }
+
     async function createPost(body, options = {}) {
         const userId = currentUserId();
         if (!userId) throw new Error('Session required.');
         const media = [];
-        if (options.file) {
+        const sourceFile = options.file || null;
+        if (sourceFile) {
+            const fileScope = text(options.fileScope || options.scope || 'social') || 'social';
             if (typeof uploadPortalStoredFile === 'function') {
-                const uploaded = await uploadPortalStoredFile(options.file, 'social');
+                const uploaded = await uploadPortalStoredFile(sourceFile, fileScope);
                 if (uploaded?.storageKey) media.push(uploaded);
-            } else if (text(options.file.dataUrl)) {
-                media.push(options.file);
             }
+            if (!media.length) {
+                const dataUrl = text(sourceFile.dataUrl) || await readFileAsDataUrl(sourceFile);
+                if (dataUrl) {
+                    media.push({
+                        name: text(sourceFile.name || 'photo.jpg') || 'photo.jpg',
+                        type: text(sourceFile.type || 'image/jpeg') || 'image/jpeg',
+                        dataUrl
+                    });
+                }
+            }
+            if (!media.length) throw new Error('Could not attach image to post.');
         }
+        const entityLinks = Array.isArray(options.entityLinks)
+            ? options.entityLinks
+                .map((item) => ({
+                    type: text(item?.type || '').toLowerCase(),
+                    id: text(item?.id || '')
+                }))
+                .filter((item) => item.type && item.id)
+                .slice(0, 5)
+            : [];
         const payload = await portalRequest('/api/social/posts', {
             method: 'POST',
             body: JSON.stringify({
@@ -1313,17 +1450,28 @@
                 scopeName: text(options.scopeName || ''),
                 audience: text(options.audience || 'campus') || 'campus',
                 postType: text(options.postType || 'post') || 'post',
+                category: text(options.category || ''),
+                photoMeta: options.photoMeta && typeof options.photoMeta === 'object' ? options.photoMeta : undefined,
                 body: text(body),
-                media
+                media,
+                entityLinks,
+                linkedSurveyId: text(options.linkedSurveyId || entityLinks.find((item) => item.type === 'survey')?.id || '')
             })
         });
-        if (payload?.post) {
+        const created = payload?.post || null;
+        if (created) {
+            if (sourceFile) {
+                const hasImageMedia = Array.isArray(created.media) && created.media.some((item) => isImageFile(item));
+                if (!hasImageMedia) throw new Error('Photo published without an image attachment.');
+            }
+            const existing = Array.isArray(runtime.feed) ? runtime.feed : [];
+            runtime.feed = [created, ...existing.filter((item) => text(item?.id) !== text(created.id))];
             await Promise.all([loadSocialState(true), refreshFeed(true)]);
-            await fetchAccountsByIds([payload.post.authorUserId]);
-            setFlash('Post published.', 'success');
+            await fetchAccountsByIds([created.authorUserId]);
+            setFlash('Post published.', 'success', { skipRender: true });
             queueRender('post-created');
         }
-        return payload?.post || null;
+        return created;
     }
 
     async function reportSocialContent(targetEntityType, targetEntityId, reason, targetOwnerId = '') {
@@ -1342,9 +1490,8 @@
         const report = payload?.report || null;
         if (report) {
             runtime.social.reports = [report, ...(Array.isArray(runtime.social.reports) ? runtime.social.reports : [])];
-            queueRender('report-created');
         }
-        setFlash('Report submitted.', 'success');
+        setFlash('Report submitted.', 'success', { skipRender: true });
         return report;
     }
 
@@ -1379,7 +1526,7 @@
             })
         });
         await loadSocialState(true);
-        setFlash('Page created.', 'success');
+        setFlash('Page created.', 'success', { skipRender: true });
         return payload?.page || null;
     }
 
@@ -1400,7 +1547,7 @@
             })
         });
         await loadSocialState(true);
-        setFlash('Group created.', 'success');
+        setFlash('Group created.', 'success', { skipRender: true });
         return payload?.group || null;
     }
 
@@ -1446,7 +1593,7 @@
             })
         });
         await hydrateRuntime(true);
-        setFlash('Project workspace created.', 'success');
+        setFlash('Project workspace created.', 'success', { skipRender: true });
         return payload?.project || null;
     }
 
@@ -1482,6 +1629,55 @@
         return payload?.project || null;
     }
 
+    async function setProjectBaseline(projectId) {
+        const actorId = currentUserId();
+        if (!actorId || !text(projectId)) throw new Error('Project baseline could not be set.');
+        const payload = await portalRequest(`/api/social/projects/${encodeURIComponent(text(projectId))}/baseline`, {
+            method: 'POST',
+            body: JSON.stringify({ actorId })
+        });
+        await hydrateRuntime(true);
+        setFlash('Project baseline saved — plan frozen for comparison.', 'success', { skipRender: true });
+        return payload?.project || null;
+    }
+
+    function applyProjectGraphLocally(projectId, patch = {}) {
+        const normalizedProjectId = text(projectId);
+        if (!normalizedProjectId || !runtime.social || !patch || typeof patch !== 'object') return null;
+        const projects = Array.isArray(runtime.social.projects) ? runtime.social.projects : [];
+        const project = projects.find((entry) => text(entry?.id) === normalizedProjectId);
+        if (!project) return null;
+        if (Object.prototype.hasOwnProperty.call(patch, 'taskGraphPositions')) {
+            project.taskGraphPositions = patch.taskGraphPositions && typeof patch.taskGraphPositions === 'object' ? { ...patch.taskGraphPositions } : {};
+        }
+        if (Object.prototype.hasOwnProperty.call(patch, 'taskGraphView')) {
+            project.taskGraphView = patch.taskGraphView && typeof patch.taskGraphView === 'object' ? { ...patch.taskGraphView } : null;
+        }
+        if (Object.prototype.hasOwnProperty.call(patch, 'taskGraphGroups')) {
+            project.taskGraphGroups = Array.isArray(patch.taskGraphGroups) ? patch.taskGraphGroups.map((entry) => ({ ...entry })) : [];
+        }
+        if (Object.prototype.hasOwnProperty.call(patch, 'taskGraphUpdatedAt')) {
+            project.taskGraphUpdatedAt = text(patch.taskGraphUpdatedAt || '');
+        }
+        return project;
+    }
+
+    async function updateProjectTaskGraph(projectId, patch = {}) {
+        const actorId = currentUserId();
+        if (!actorId || !text(projectId)) throw new Error('Task map layout could not be updated.');
+        const body = { actorId };
+        if (Object.prototype.hasOwnProperty.call(patch, 'taskGraphPositions')) body.taskGraphPositions = patch.taskGraphPositions;
+        if (Object.prototype.hasOwnProperty.call(patch, 'taskGraphView')) body.taskGraphView = patch.taskGraphView;
+        if (Object.prototype.hasOwnProperty.call(patch, 'taskGraphGroups')) body.taskGraphGroups = patch.taskGraphGroups;
+        const payload = await portalRequest(`/api/social/projects/${encodeURIComponent(text(projectId))}/task-graph`, {
+            method: 'POST',
+            body: JSON.stringify(body)
+        });
+        const project = payload?.project || null;
+        if (project) applyProjectGraphLocally(projectId, project);
+        return project;
+    }
+
     async function deleteProject(projectId) {
         const actorId = currentUserId();
         if (!actorId || !text(projectId)) throw new Error('Project workspace could not be deleted.');
@@ -1489,7 +1685,7 @@
             method: 'DELETE'
         });
         await hydrateRuntime(true);
-        setFlash('Portfolio entry removed.', 'success');
+        setFlash('Portfolio entry removed.', 'success', { skipRender: true });
         return payload?.projectId || text(projectId);
     }
 
@@ -1505,7 +1701,7 @@
             })
         });
         await hydrateRuntime(true);
-        setFlash('Project invitation sent.', 'success');
+        setFlash('Project invitation sent.', 'success', { skipRender: true });
         return payload?.project || null;
     }
 
@@ -1547,31 +1743,84 @@
             })
         });
         await hydrateRuntime(true);
-        setFlash(text(action || 'leave') === 'leave' ? 'Workspace left.' : 'Project membership updated.', 'success');
+        setFlash(text(action || 'leave') === 'leave' ? 'Workspace left.' : 'Project membership updated.', 'success', { skipRender: true });
         return payload?.project || null;
     }
 
-    async function createProjectTask(projectId, input = {}) {
+    /**
+     * @param {object} [options]
+     * @param {boolean} [options.silent] - skip hydrate + full-page queueRender (graph quick-add)
+     */
+    async function createProjectTask(projectId, input = {}, options = {}) {
         const actorId = currentUserId();
-        if (!actorId || !text(projectId)) throw new Error('Project task could not be created.');
-        const payload = await portalRequest(`/api/social/projects/${encodeURIComponent(text(projectId))}/tasks`, {
+        const resolvedProjectId = text(projectId || input.projectId);
+        if (!actorId || !resolvedProjectId) throw new Error('Project task could not be created.');
+        const priorityModel = text(input.priorityModel || 'manual') === 'matrix' ? 'matrix' : 'manual';
+        const impactScore = Math.max(1, Math.min(5, Math.round(Number(input.impactScore) || 3)));
+        const effortScore = Math.max(1, Math.min(5, Math.round(Number(input.effortScore) || 3)));
+        let priority = text(input.priority || 'medium') || 'medium';
+        if (priorityModel === 'matrix') {
+            const score = impactScore * (6 - effortScore);
+            priority = score >= 20 ? 'urgent' : score >= 15 ? 'high' : score >= 8 ? 'medium' : 'low';
+        }
+        const payload = await portalRequest(`/api/social/projects/${encodeURIComponent(resolvedProjectId)}/tasks`, {
             method: 'POST',
             body: JSON.stringify({
                 actorId,
                 title: text(input.title),
                 description: text(input.description),
-                status: text(input.status || 'backlog') || 'backlog',
+                status: text(input.status || 'todo') || 'todo',
                 assigneeUserId: text(input.assigneeUserId || ''),
+                startAt: text(input.startAt || ''),
                 dueAt: text(input.dueAt || ''),
-                priority: text(input.priority || 'medium') || 'medium',
-                checklist: Array.isArray(input.checklist) ? input.checklist : []
+                priority,
+                priorityModel,
+                impactScore,
+                effortScore,
+                budgetEstimate: Number.isFinite(Number(input.budgetEstimate)) ? Math.max(0, Math.round(Number(input.budgetEstimate) * 100) / 100) : 0,
+                timeEstimate: Number.isFinite(Number(input.timeEstimate)) && Number(input.timeEstimate) > 0 ? Math.round(Number(input.timeEstimate) * 10) / 10 : 0,
+                timeOptimistic: Number.isFinite(Number(input.timeOptimistic)) && Number(input.timeOptimistic) > 0 ? Math.round(Number(input.timeOptimistic) * 10) / 10 : 0,
+                timeMostLikely: Number.isFinite(Number(input.timeMostLikely)) && Number(input.timeMostLikely) > 0 ? Math.round(Number(input.timeMostLikely) * 10) / 10 : 0,
+                timePessimistic: Number.isFinite(Number(input.timePessimistic)) && Number(input.timePessimistic) > 0 ? Math.round(Number(input.timePessimistic) * 10) / 10 : 0,
+                timeUnit: text(input.timeUnit).toLowerCase() === 'd' ? 'd' : 'h',
+                isMilestone: Boolean(input.isMilestone),
+                actualTime: Number.isFinite(Number(input.actualTime)) && Number(input.actualTime) > 0 ? Math.round(Number(input.actualTime) * 10) / 10 : 0,
+                actualCost: Number.isFinite(Number(input.actualCost)) ? Math.max(0, Math.round(Number(input.actualCost) * 100) / 100) : 0,
+                checklist: Array.isArray(input.checklist) ? input.checklist : [],
+                dependsOnTaskIds: Array.isArray(input.dependsOnTaskIds) ? input.dependsOnTaskIds : []
             })
         });
+        const task = payload?.task || null;
+        if (task) applyProjectTaskLocally(resolvedProjectId, task);
+        // Graph quick-add uses silent:true so hydrate does not remount the task map (flicker).
+        if (options && options.silent) return task;
         await hydrateRuntime(true);
-        return payload?.task || null;
+        return task;
     }
 
-    async function updateProjectTask(projectId, taskId, input = {}) {
+    function applyProjectTaskLocally(projectId, task) {
+        const normalizedProjectId = text(projectId);
+        const nextTask = task && typeof task === 'object' ? task : null;
+        const taskId = text(nextTask?.id);
+        if (!normalizedProjectId || !taskId || !runtime.social) return null;
+        const projects = Array.isArray(runtime.social.projects) ? runtime.social.projects : [];
+        const project = projects.find((entry) => text(entry?.id) === normalizedProjectId);
+        if (!project) return null;
+        if (!Array.isArray(project.tasks)) project.tasks = [];
+        const index = project.tasks.findIndex((entry) => text(entry?.id) === taskId);
+        if (index >= 0) {
+            project.tasks[index] = { ...project.tasks[index], ...nextTask };
+        } else {
+            project.tasks.push(nextTask);
+        }
+        return project.tasks[index >= 0 ? index : project.tasks.length - 1];
+    }
+
+    /**
+     * @param {object} [options]
+     * @param {boolean} [options.silent] - skip hydrate + full-page queueRender (graph live edits)
+     */
+    async function updateProjectTask(projectId, taskId, input = {}, options = {}) {
         const actorId = currentUserId();
         if (!actorId || !text(projectId) || !text(taskId)) throw new Error('Project task could not be updated.');
         const payload = await portalRequest(`/api/social/projects/${encodeURIComponent(text(projectId))}/tasks/${encodeURIComponent(text(taskId))}`, {
@@ -1581,8 +1830,17 @@
                 ...input
             })
         });
+        const task = payload?.task || null;
+        if (task) {
+            applyProjectTaskLocally(projectId, task);
+        } else if (options && options.silent) {
+            // Keep local graph state correct even if API omits the task body.
+            applyProjectTaskLocally(projectId, { id: text(taskId), ...input });
+        }
+        // Graph dependency edits use silent:true so hydrate does not remount the task map (flicker).
+        if (options && options.silent) return task || { id: text(taskId), ...input };
         await hydrateRuntime(true);
-        return payload?.task || null;
+        return task;
     }
 
     async function deleteProjectTask(projectId, taskId) {
@@ -1596,42 +1854,46 @@
         return payload || null;
     }
 
-    async function createProjectMilestone(projectId, input = {}) {
+    async function createProjectBudgetCategory(projectId, input = {}) {
         const actorId = currentUserId();
-        if (!actorId || !text(projectId)) throw new Error('Project milestone could not be created.');
-        const payload = await portalRequest(`/api/social/projects/${encodeURIComponent(text(projectId))}/milestones`, {
+        if (!actorId || !text(projectId)) throw new Error('Project budget category could not be created.');
+        const payload = await portalRequest(`/api/social/projects/${encodeURIComponent(text(projectId))}/budget-categories`, {
             method: 'POST',
             body: JSON.stringify({
                 actorId,
-                title: text(input.title),
-                description: text(input.description),
-                dueAt: text(input.dueAt || ''),
-                linkedTaskIds: Array.isArray(input.linkedTaskIds) ? input.linkedTaskIds : [],
-                completed: Boolean(input.completed)
+                title: text(input.title || ''),
+                description: text(input.description || ''),
+                plannedAmount: Number(input.plannedAmount || 0) || 0,
+                color: text(input.color || ''),
+                sortOrder: Number(input.sortOrder || 0) || 0
             })
         });
         await hydrateRuntime(true);
-        return payload?.milestone || null;
+        return payload?.category || null;
     }
 
-    async function updateProjectMilestone(projectId, milestoneId, input = {}) {
+    async function updateProjectBudgetCategory(projectId, categoryId, input = {}) {
         const actorId = currentUserId();
-        if (!actorId || !text(projectId) || !text(milestoneId)) throw new Error('Project milestone could not be updated.');
-        const payload = await portalRequest(`/api/social/projects/${encodeURIComponent(text(projectId))}/milestones/${encodeURIComponent(text(milestoneId))}`, {
+        if (!actorId || !text(projectId) || !text(categoryId)) throw new Error('Project budget category could not be updated.');
+        const payload = await portalRequest(`/api/social/projects/${encodeURIComponent(text(projectId))}/budget-categories/${encodeURIComponent(text(categoryId))}`, {
             method: 'POST',
             body: JSON.stringify({
                 actorId,
-                ...input
+                title: text(input.title || ''),
+                description: text(input.description || ''),
+                plannedAmount: Number(input.plannedAmount || 0) || 0,
+                color: text(input.color || ''),
+                sortOrder: Number(input.sortOrder || 0) || 0
             })
         });
         await hydrateRuntime(true);
-        return payload?.milestone || null;
+        return payload?.category || null;
     }
 
-    async function deleteProjectMilestone(projectId, milestoneId) {
+    async function deleteProjectBudgetCategory(projectId, categoryId) {
         const actorId = currentUserId();
-        if (!actorId || !text(projectId) || !text(milestoneId)) throw new Error('Project milestone could not be deleted.');
-        const payload = await portalRequest(`/api/social/projects/${encodeURIComponent(text(projectId))}/milestones/${encodeURIComponent(text(milestoneId))}?actorId=${encodeURIComponent(actorId)}`, {
+        if (!actorId || !text(projectId) || !text(categoryId)) throw new Error('Project budget category could not be deleted.');
+        const payload = await portalRequest(`/api/social/projects/${encodeURIComponent(text(projectId))}/budget-categories/${encodeURIComponent(text(categoryId))}?actorId=${encodeURIComponent(actorId)}`, {
             method: 'DELETE',
             body: JSON.stringify({ actorId })
         });
@@ -1639,62 +1901,129 @@
         return payload || null;
     }
 
-    async function createProjectDeliverable(projectId, input = {}) {
+    async function createProjectBudgetExpense(projectId, input = {}) {
         const actorId = currentUserId();
-        if (!actorId || !text(projectId)) throw new Error('Project deliverable could not be created.');
-        let preparedFile = null;
-        if (input.file) {
-            if (typeof uploadPortalStoredFile === 'function') {
-                const uploaded = await uploadPortalStoredFile(input.file, 'projects');
-                if (uploaded?.storageKey) preparedFile = uploaded;
-            } else {
-                preparedFile = {
-                    name: text(input.file.name || 'deliverable'),
-                    type: text(input.file.type || 'application/octet-stream'),
-                    dataUrl: await readFileAsDataUrl(input.file)
-                };
-            }
+        if (!actorId || !text(projectId)) throw new Error('Project budget expense could not be created.');
+        const payload = await portalRequest(`/api/social/projects/${encodeURIComponent(text(projectId))}/budget-expenses`, {
+            method: 'POST',
+            body: JSON.stringify({
+                actorId,
+                categoryId: text(input.categoryId || ''),
+                title: text(input.title || ''),
+                description: text(input.description || ''),
+                amount: Number(input.amount || 0) || 0,
+                currency: text(input.currency || ''),
+                status: text(input.status || 'draft') || 'draft',
+                incurredAt: text(input.incurredAt || '')
+            })
+        });
+        await hydrateRuntime(true);
+        return payload?.expense || null;
+    }
+
+    async function updateProjectBudgetExpense(projectId, expenseId, input = {}) {
+        const actorId = currentUserId();
+        if (!actorId || !text(projectId) || !text(expenseId)) throw new Error('Project budget expense could not be updated.');
+        const payload = await portalRequest(`/api/social/projects/${encodeURIComponent(text(projectId))}/budget-expenses/${encodeURIComponent(text(expenseId))}`, {
+            method: 'POST',
+            body: JSON.stringify({
+                actorId,
+                categoryId: text(input.categoryId || ''),
+                title: text(input.title || ''),
+                description: text(input.description || ''),
+                amount: Number(input.amount || 0) || 0,
+                currency: text(input.currency || ''),
+                status: text(input.status || ''),
+                incurredAt: text(input.incurredAt || '')
+            })
+        });
+        await hydrateRuntime(true);
+        return payload?.expense || null;
+    }
+
+    async function deleteProjectBudgetExpense(projectId, expenseId) {
+        const actorId = currentUserId();
+        if (!actorId || !text(projectId) || !text(expenseId)) throw new Error('Project budget expense could not be deleted.');
+        const payload = await portalRequest(`/api/social/projects/${encodeURIComponent(text(projectId))}/budget-expenses/${encodeURIComponent(text(expenseId))}?actorId=${encodeURIComponent(actorId)}`, {
+            method: 'DELETE',
+            body: JSON.stringify({ actorId })
+        });
+        await hydrateRuntime(true);
+        return payload || null;
+    }
+
+    async function createProjectRisk(projectId, input = {}) {
+        const actorId = currentUserId();
+        if (!actorId || !text(projectId)) throw new Error('Project risk could not be created.');
+        const payload = await portalRequest(`/api/social/projects/${encodeURIComponent(text(projectId))}/risks`, {
+            method: 'POST',
+            body: JSON.stringify({
+                actorId,
+                groupId: text(input.groupId || ''),
+                title: text(input.title || ''),
+                description: text(input.description || ''),
+                likelihood: (() => {
+                    const raw = text(input.likelihood ?? '3');
+                    if (raw === 'low') return 1;
+                    if (raw === 'medium' || raw === 'med') return 3;
+                    if (raw === 'high') return 5;
+                    const n = Math.round(Number(raw));
+                    return Number.isFinite(n) && n >= 1 && n <= 5 ? n : 3;
+                })(),
+                impact: (() => {
+                    const raw = text(input.impact ?? '3');
+                    if (raw === 'low') return 1;
+                    if (raw === 'medium' || raw === 'med') return 3;
+                    if (raw === 'high') return 5;
+                    const n = Math.round(Number(raw));
+                    return Number.isFinite(n) && n >= 1 && n <= 5 ? n : 3;
+                })(),
+                status: text(input.status || 'open') || 'open',
+                response: text(input.response || 'mitigate') || 'mitigate',
+                ownerUserId: text(input.ownerUserId || ''),
+                mitigation: text(input.mitigation || ''),
+                linkedTaskIds: Array.isArray(input.linkedTaskIds) ? input.linkedTaskIds.map((id) => text(id)).filter(Boolean) : []
+            })
+        });
+        await hydrateRuntime(true);
+        return payload?.risk || null;
+    }
+
+    async function updateProjectRisk(projectId, riskId, input = {}) {
+        const actorId = currentUserId();
+        if (!actorId || !text(projectId) || !text(riskId)) throw new Error('Project risk could not be updated.');
+        const body = {
+            actorId,
+            groupId: text(input.groupId || ''),
+            title: text(input.title || ''),
+            description: text(input.description || ''),
+            likelihood: text(input.likelihood || '') || undefined,
+            impact: text(input.impact || '') || undefined,
+            status: text(input.status || '') || undefined,
+            response: text(input.response || '') || undefined,
+            ownerUserId: text(input.ownerUserId || ''),
+            mitigation: text(input.mitigation || '')
+        };
+        if (Array.isArray(input.linkedTaskIds)) {
+            body.linkedTaskIds = input.linkedTaskIds.map((id) => text(id)).filter(Boolean);
         }
-        const payload = await portalRequest(`/api/social/projects/${encodeURIComponent(text(projectId))}/deliverables`, {
+        const payload = await portalRequest(`/api/social/projects/${encodeURIComponent(text(projectId))}/risks/${encodeURIComponent(text(riskId))}`, {
             method: 'POST',
-            body: JSON.stringify({
-                actorId,
-                title: text(input.title),
-                description: text(input.description),
-                versionLabel: text(input.versionLabel || ''),
-                reviewStatus: text(input.reviewStatus || 'draft') || 'draft',
-                file: preparedFile
-            })
+            body: JSON.stringify(body)
         });
         await hydrateRuntime(true);
-        return payload?.deliverable || null;
+        return payload?.risk || null;
     }
 
-    async function deleteProjectDeliverable(projectId, deliverableId) {
+    async function deleteProjectRisk(projectId, riskId) {
         const actorId = currentUserId();
-        if (!actorId || !text(projectId) || !text(deliverableId)) throw new Error('Project deliverable could not be deleted.');
-        const payload = await portalRequest(`/api/social/projects/${encodeURIComponent(text(projectId))}/deliverables/${encodeURIComponent(text(deliverableId))}?actorId=${encodeURIComponent(actorId)}`, {
+        if (!actorId || !text(projectId) || !text(riskId)) throw new Error('Project risk could not be deleted.');
+        const payload = await portalRequest(`/api/social/projects/${encodeURIComponent(text(projectId))}/risks/${encodeURIComponent(text(riskId))}?actorId=${encodeURIComponent(actorId)}`, {
             method: 'DELETE',
             body: JSON.stringify({ actorId })
         });
         await hydrateRuntime(true);
         return payload || null;
-    }
-
-    async function createProjectCheckin(projectId, input = {}) {
-        const actorId = currentUserId();
-        if (!actorId || !text(projectId)) throw new Error('Project check-in could not be created.');
-        const payload = await portalRequest(`/api/social/projects/${encodeURIComponent(text(projectId))}/checkins`, {
-            method: 'POST',
-            body: JSON.stringify({
-                actorId,
-                whatDone: text(input.whatDone || ''),
-                blockers: text(input.blockers || ''),
-                nextSteps: text(input.nextSteps || '')
-            })
-        });
-        await hydrateRuntime(true);
-        return payload?.checkin || null;
     }
 
     async function publishProjectShowcase(projectId) {
@@ -1705,7 +2034,7 @@
             body: JSON.stringify({ actorId })
         });
         await hydrateRuntime(true);
-        setFlash('Project showcase published.', 'success');
+        setFlash('Project showcase published.', 'success', { skipRender: true });
         return payload?.project || null;
     }
 
@@ -1723,7 +2052,7 @@
         await loadSocialState(true);
         if (payload?.group?.chatId) await hydrateRuntime(true);
         else queueRender('group-membership');
-        setFlash(action === 'leave' ? 'Group left.' : 'Group membership updated.', 'success');
+        setFlash(action === 'leave' ? 'Group left.' : 'Group membership updated.', 'success', { skipRender: true });
         return payload?.group || null;
     }
 
@@ -1740,7 +2069,7 @@
         await loadSocialState(true);
         if (payload?.group?.chatId) await hydrateRuntime(true);
         else queueRender('group-request');
-        setFlash(accept ? 'Membership approved.' : 'Membership declined.', 'success');
+        setFlash(accept ? 'Membership approved.' : 'Membership declined.', 'success', { skipRender: true });
         return payload?.group || null;
     }
 
@@ -1754,9 +2083,10 @@
                 toUserId: text(userId)
             })
         });
-        await loadSocialState(true);
-        setFlash('Connection request sent.', 'success');
-        return payload?.relationship || null;
+        const relationship = payload?.relationship || null;
+        if (relationship?.id) mergeSocialRelationship(relationship);
+        setFlash('Connection request sent.', 'success', { skipRender: true });
+        return relationship;
     }
 
     async function respondConnection(relationshipId, accept = true) {
@@ -1769,8 +2099,9 @@
                 accept: accept !== false
             })
         });
-        await loadSocialState(true);
-        setFlash(accept ? 'Connection accepted.' : 'Connection declined.', 'success');
+        if (payload?.request?.id) mergeSocialRelationship(payload.request);
+        if (payload?.connection?.id) mergeSocialRelationship(payload.connection);
+        setFlash(accept ? 'Connection accepted.' : 'Connection declined.', 'success', { skipRender: true });
         return payload;
     }
 
@@ -1784,8 +2115,8 @@
                 targetUserId: text(userId)
             })
         });
-        await loadSocialState(true);
-        setFlash('Connection removed.', 'success');
+        removeSocialRelationshipsBetween(actorId, text(userId));
+        setFlash('Connection removed.', 'success', { skipRender: true });
         return true;
     }
 
@@ -1797,7 +2128,7 @@
             body: JSON.stringify({ actorId })
         });
         await hydrateRuntime(true);
-        setFlash('Chat hidden from inbox.', 'success');
+        setFlash('Chat hidden from inbox.', 'success', { skipRender: true });
         return payload?.chat || null;
     }
 
@@ -1829,6 +2160,8 @@
         const social = payload?.social && typeof payload.social === 'object' ? payload.social : null;
         if (social) {
             if (Array.isArray(social.lostFoundItems)) runtime.social.lostFoundItems = social.lostFoundItems;
+            if (Array.isArray(social.surveys)) runtime.social.surveys = social.surveys;
+            if (Array.isArray(social.surveyResponses)) runtime.social.surveyResponses = social.surveyResponses;
             queueRender('social-state-persist');
         }
         return social;
@@ -1852,7 +2185,46 @@
         return runtime.notificationsPromise;
     }
 
-    async function toggleFollow(targetType, targetId) {
+    function applyFollowMutationLocally(targetType, targetId, payload = {}) {
+        const userId = currentUserId();
+        const normalizedType = text(targetType) === 'profile' ? 'profile' : text(targetType);
+        const normalizedTargetId = text(targetId);
+        if (!userId || !normalizedType || !normalizedTargetId) return;
+        if (!runtime.social || typeof runtime.social !== 'object') runtime.social = {};
+        if (!Array.isArray(runtime.social.relationships)) runtime.social.relationships = [];
+        const nextFollowing = Boolean(payload?.following);
+        runtime.social.relationships = runtime.social.relationships.filter((item) => !(
+            text(item?.type).toLowerCase() === 'follow'
+            && text(item?.fromId) === userId
+            && text(item?.toType).toLowerCase() === normalizedType
+            && text(item?.toId) === normalizedTargetId
+        ));
+        if (nextFollowing) {
+            const relationship = payload?.relationship && typeof payload.relationship === 'object'
+                ? payload.relationship
+                : {
+                    id: text(makeId?.('rel') || `rel_${Date.now()}`),
+                    type: 'follow',
+                    fromId: userId,
+                    toType: normalizedType,
+                    toId: normalizedTargetId,
+                    status: 'accepted'
+                };
+            runtime.social.relationships.unshift(relationship);
+        }
+        if (normalizedType === 'page' && Array.isArray(runtime.social.pages)) {
+            const page = runtime.social.pages.find((entry) => text(entry?.id) === normalizedTargetId);
+            if (page) {
+                const wasFollowing = Boolean(page.isFollowing);
+                page.isFollowing = nextFollowing;
+                if (wasFollowing !== nextFollowing) {
+                    page.followerCount = Math.max(0, Number(page.followerCount || 0) + (nextFollowing ? 1 : -1));
+                }
+            }
+        }
+    }
+
+    async function toggleFollow(targetType, targetId, options = {}) {
         const userId = currentUserId();
         if (!userId || !text(targetType) || !text(targetId)) throw new Error('Follow state could not be updated.');
         const payload = await portalRequest('/api/social/follows/toggle', {
@@ -1863,8 +2235,13 @@
                 targetId: text(targetId)
             })
         });
-        await loadSocialState(true);
-        setFlash(payload?.following ? 'Now following.' : 'Follow removed.', 'success');
+        applyFollowMutationLocally(targetType, targetId, payload);
+        if (options.skipBootstrap) {
+            loadSocialState(true, { skipRender: true }).catch(() => null);
+        } else {
+            await loadSocialState(true);
+        }
+        setFlash(payload?.following ? 'Now following.' : 'Follow removed.', 'success', { skipRender: true });
         return payload;
     }
 
@@ -1879,7 +2256,7 @@
             })
         });
         await Promise.all([loadSocialState(true), refreshFeed(true)]);
-        setFlash('Post updated.', 'success');
+        setFlash('Post updated.', 'success', { skipRender: true });
         return payload?.post || null;
     }
 
@@ -1891,7 +2268,7 @@
             body: JSON.stringify({ actorId })
         });
         await Promise.all([loadSocialState(true), refreshFeed(true)]);
-        setFlash('Post deleted.', 'success');
+        setFlash('Post deleted.', 'success', { skipRender: true });
         return payload?.ok !== false;
     }
 
@@ -1907,7 +2284,7 @@
             })
         });
         await Promise.all([loadSocialState(true), refreshFeed(true)]);
-        setFlash('Post shared.', 'success');
+        setFlash('Post shared.', 'success', { skipRender: true });
         return payload?.post || null;
     }
 
@@ -1919,9 +2296,13 @@
         const post = (Array.isArray(runtime.feed) ? runtime.feed : []).find((entry) => text(entry?.id) === normalizedPostId);
         const rollbackPost = post ? cloneFeedPost(post) : null;
         const optimisticPost = post ? applyOptimisticPostReaction(post, userId, normalizedReactionType) : null;
+        const patchOrQueue = (id) => {
+            if (typeof window.__kiuSocialPatchPostReactions === 'function' && window.__kiuSocialPatchPostReactions(id)) return;
+            queueRender('post-react');
+        };
         if (optimisticPost?.id) {
             mergeFeedPost(optimisticPost);
-            queueRender('post-react');
+            patchOrQueue(normalizedPostId);
         }
         try {
             const payload = await mutationRequest(`/api/social/posts/${encodeURIComponent(normalizedPostId)}/reactions`, {
@@ -1934,16 +2315,13 @@
             const updatedPost = payload?.post || null;
             if (updatedPost?.id) {
                 mergeFeedPost(updatedPost);
-                queueRender('post-react');
-            }
-            if (post && text(post.authorUserId) !== text(userId)) {
-                addToast({ type: 'like', title: 'Liked', text: `You liked ${post.authorName || 'a post'}`, icon: 'fa-heart' });
+                patchOrQueue(normalizedPostId);
             }
             return updatedPost;
         } catch (error) {
             if (rollbackPost?.id) {
                 mergeFeedPost(rollbackPost);
-                queueRender('post-react');
+                patchOrQueue(normalizedPostId);
             }
             throw error;
         }
@@ -1958,9 +2336,17 @@
         const post = (Array.isArray(runtime.feed) ? runtime.feed : []).find((entry) => text(entry?.id) === normalizedPostId);
         const rollbackPost = post ? cloneFeedPost(post) : null;
         const optimisticPost = post ? applyOptimisticCommentReaction(post, normalizedCommentId, userId, normalizedReactionType) : null;
+        const patchOrQueue = () => {
+            // Surgical chip update in open comments dialog — never rebuild the feed/photo card behind.
+            if (typeof window.__kiuSocialPatchCommentReactions === 'function'
+                && window.__kiuSocialPatchCommentReactions(normalizedPostId, normalizedCommentId)) {
+                return;
+            }
+            queueRender('comment-react');
+        };
         if (optimisticPost?.id) {
             mergeFeedPost(optimisticPost);
-            queueRender('comment-react');
+            patchOrQueue();
         }
         try {
             const payload = await mutationRequest(`/api/social/posts/${encodeURIComponent(normalizedPostId)}/comments/${encodeURIComponent(normalizedCommentId)}/reactions`, {
@@ -1973,13 +2359,13 @@
             const updatedPost = payload?.post || null;
             if (updatedPost?.id) {
                 mergeFeedPost(updatedPost);
-                queueRender('comment-react');
+                patchOrQueue();
             }
             return updatedPost;
         } catch (error) {
             if (rollbackPost?.id) {
                 mergeFeedPost(rollbackPost);
-                queueRender('comment-react');
+                patchOrQueue();
             }
             throw error;
         }
@@ -1998,11 +2384,31 @@
                 replyToCommentId: text(options.replyToCommentId || options.parentCommentId || '')
             })
         });
-        if (post && text(post.authorUserId) !== text(authorUserId)) {
-            addToast({ type: 'comment', title: 'Comment added', text: `You commented on ${post.authorName || 'a post'}`, icon: 'fa-comment' });
+        // No toast for the actor's own comment/reply actions.
+        const updatedPost = payload?.post || null;
+        if (updatedPost && text(updatedPost.id)) {
+            mergeFeedPost(updatedPost);
+            if (!options.skipRender) queueRender('comment-created');
+        } else {
+            await refreshFeed(true);
         }
-        await refreshFeed(true);
-        return payload?.post || null;
+        return updatedPost;
+    }
+
+    async function removeComment(postId, commentId) {
+        const authorUserId = currentUserId();
+        if (!authorUserId || !text(postId) || !text(commentId)) throw new Error('Comment could not be removed.');
+        const payload = await portalRequest(
+            `/api/social/posts/${encodeURIComponent(text(postId))}/comments/${encodeURIComponent(text(commentId))}`,
+            { method: 'DELETE' }
+        );
+        const updatedPost = payload?.post || null;
+        if (updatedPost && text(updatedPost.id)) {
+            mergeFeedPost(updatedPost);
+        } else {
+            await refreshFeed(true);
+        }
+        return updatedPost;
     }
 
     async function resolveSocialReport(reportId, action = 'dismiss', resolutionNote = '') {
@@ -2017,7 +2423,7 @@
             })
         });
         await loadSocialState(true);
-        setFlash('Report updated.', 'success');
+        setFlash('Report updated.', 'success', { skipRender: true });
         return payload?.report || null;
     }
 
@@ -2035,20 +2441,6 @@
         });
         await refreshFeed(true);
         return payload?.post || null;
-    }
-
-    async function sendConnectionRequest(targetUserId) {
-        const userId = currentUserId();
-        if (!userId || !text(targetUserId)) throw new Error('Connection could not be requested.');
-        const payload = await portalRequest('/api/social/connections', {
-            method: 'POST',
-            body: JSON.stringify({
-                fromUserId: userId,
-                toUserId: text(targetUserId)
-            })
-        });
-        queueRender('connection-sent');
-        return payload?.connection || null;
     }
 
     async function createEvent(input = {}) {
@@ -2078,26 +2470,171 @@
             })
         });
         await loadSocialState(true);
-        setFlash('Event created.', 'success');
+        setFlash('Event created.', 'success', { skipRender: true });
+        queueRender('event-created');
         return payload?.event || null;
+    }
+
+    async function updateEvent(eventId, input = {}) {
+        const actorId = currentUserId();
+        if (!actorId || !text(eventId)) throw new Error('Event could not be updated.');
+        const body = {
+            title: text(input.title),
+            description: text(input.description),
+            startsAt: text(input.startsAt),
+            endsAt: text(input.endsAt || input.startsAt),
+            location: text(input.location),
+            isOnline: Boolean(input.isOnline),
+            onlineLink: text(input.onlineLink),
+            joinMode: text(input.joinMode || 'open') || 'open',
+            category: text(input.category || 'social') || 'social',
+            maxSeats: input.maxSeats ? Number(input.maxSeats) : null,
+            isRecurring: Boolean(input.isRecurring),
+            isOfficial: Boolean(input.isOfficial),
+            scopeType: text(input.scopeType || 'profile') || 'profile',
+            scopeId: text(input.scopeId || actorId) || actorId
+        };
+        if (text(input.imageUrl)) body.imageUrl = text(input.imageUrl);
+        const payload = await portalRequest(`/api/social/events/${encodeURIComponent(text(eventId))}`, {
+            method: 'PATCH',
+            body: JSON.stringify(body)
+        });
+        await loadSocialState(true);
+        setFlash('Event updated.', 'success', { skipRender: true });
+        queueRender('event-updated');
+        return payload?.event || null;
+    }
+
+    async function createSurvey(input = {}) {
+        const actorId = currentUserId();
+        if (!actorId) throw new Error('Session required.');
+        const payload = await portalRequest('/api/social/surveys', {
+            method: 'POST',
+            body: JSON.stringify({
+                title: text(input.title),
+                description: text(input.description),
+                closesAt: text(input.closesAt),
+                allowAnonymous: Boolean(input.allowAnonymous),
+                audience: text(input.audience || 'campus') || 'campus',
+                visibility: text(input.visibility || 'public') || 'public',
+                scopeType: text(input.scopeType || 'profile') || 'profile',
+                scopeId: text(input.scopeId || actorId) || actorId,
+                scopeName: text(input.scopeName || ''),
+                promoteToFeed: Boolean(input.promoteToFeed),
+                resultsVisibility: text(input.resultsVisibility || 'public_after_close') || 'public_after_close',
+                isOfficial: Boolean(input.isOfficial),
+                questions: Array.isArray(input.questions) ? input.questions : []
+            })
+        });
+        await loadSocialState(true);
+        await refreshFeed(true).catch(() => null);
+        setFlash('Survey published.', 'success', { skipRender: true });
+        return payload?.survey || null;
+    }
+
+    async function closeSurvey(surveyId) {
+        const actorId = currentUserId();
+        if (!actorId) throw new Error('Session required.');
+        const payload = await portalRequest(`/api/social/surveys/${encodeURIComponent(text(surveyId))}/close`, {
+            method: 'POST',
+            body: JSON.stringify({})
+        });
+        await loadSocialState(true);
+        setFlash('Survey closed.', 'success', { skipRender: true });
+        return payload?.survey || null;
+    }
+
+    async function respondSurvey(surveyId, answers = []) {
+        const actorId = currentUserId();
+        if (!actorId) throw new Error('Session required.');
+        const payload = await portalRequest(`/api/social/surveys/${encodeURIComponent(text(surveyId))}/respond`, {
+            method: 'POST',
+            body: JSON.stringify({ answers })
+        });
+        await loadSocialState(true);
+        setFlash('Survey response submitted.', 'success', { skipRender: true });
+        return payload?.survey || null;
+    }
+
+    async function loadSurveyResults(surveyId) {
+        const actorId = currentUserId();
+        if (!actorId) throw new Error('Session required.');
+        const payload = await portalRequest(`/api/social/surveys/${encodeURIComponent(text(surveyId))}/results`);
+        return payload?.results || null;
+    }
+
+    async function deleteSurvey(surveyId) {
+        const actorId = currentUserId();
+        if (!actorId) throw new Error('Session required.');
+        await portalRequest(`/api/social/surveys/${encodeURIComponent(text(surveyId))}`, { method: 'DELETE' });
+        await loadSocialState(true);
+        setFlash('Survey removed.', 'success', { skipRender: true });
+        return true;
+    }
+
+    function patchEventRsvp(eventId, status) {
+        const normalizedId = text(eventId);
+        const normalizedStatus = text(status || 'going') || 'going';
+        const events = Array.isArray(runtime.social?.events) ? runtime.social.events : [];
+        const eventItem = events.find((entry) => text(entry?.id) === normalizedId);
+        if (!eventItem) {
+            return { eventId: normalizedId, rollback: () => {} };
+        }
+        const previousStatus = text(eventItem.viewerRsvpStatus);
+        const previousSummary = {
+            going: Number(eventItem?.attendeeSummary?.going || 0),
+            interested: Number(eventItem?.attendeeSummary?.interested || 0)
+        };
+        if (!eventItem.attendeeSummary || typeof eventItem.attendeeSummary !== 'object') {
+            eventItem.attendeeSummary = { going: 0, interested: 0 };
+        }
+        if (previousStatus === 'going') eventItem.attendeeSummary.going = Math.max(0, eventItem.attendeeSummary.going - 1);
+        if (previousStatus === 'interested') eventItem.attendeeSummary.interested = Math.max(0, eventItem.attendeeSummary.interested - 1);
+        if (normalizedStatus === 'going') eventItem.attendeeSummary.going = eventItem.attendeeSummary.going + 1;
+        if (normalizedStatus === 'interested') eventItem.attendeeSummary.interested = eventItem.attendeeSummary.interested + 1;
+        eventItem.viewerRsvpStatus = normalizedStatus;
+        return {
+            eventId: normalizedId,
+            rollback: () => {
+                eventItem.viewerRsvpStatus = previousStatus;
+                eventItem.attendeeSummary = { ...previousSummary };
+            }
+        };
     }
 
     async function respondEventRsvp(eventId, status = 'going') {
         const userId = currentUserId();
         if (!userId || !text(eventId)) throw new Error('RSVP could not be updated.');
-        const payload = await portalRequest(`/api/social/events/${encodeURIComponent(text(eventId))}/rsvp`, {
-            method: 'POST',
-            body: JSON.stringify({
-                userId,
-                status: text(status || 'going') || 'going'
-            })
-        });
-        await loadSocialState(true);
-        setFlash('Event response updated.', 'success');
-        return payload?.event || null;
+        const patch = patchEventRsvp(eventId, status);
+        if (typeof window.__kiuSocialPatchEventRsvp === 'function' && window.__kiuSocialPatchEventRsvp(eventId)) {
+            // patched inline
+        } else {
+            queueRender('event-rsvp-optimistic');
+        }
+        try {
+            const payload = await portalRequest(`/api/social/events/${encodeURIComponent(text(eventId))}/rsvp`, {
+                method: 'POST',
+                body: JSON.stringify({
+                    userId,
+                    status: text(status || 'going') || 'going'
+                })
+            });
+            await loadSocialState(true);
+            setFlash('Event response updated.', 'success', { skipRender: true });
+            return payload?.event || null;
+        } catch (error) {
+            patch.rollback();
+            if (typeof window.__kiuSocialPatchEventRsvp === 'function') {
+                window.__kiuSocialPatchEventRsvp(eventId);
+            } else {
+                queueRender('event-rsvp-rollback');
+            }
+            setFlash('Could not save RSVP. Try again.', 'error', { skipRender: true });
+            throw error;
+        }
     }
 
-    async function openGroupChat(groupId) {
+    async function openGroupChat(groupId, options = {}) {
         const actorId = currentUserId();
         if (!actorId || !text(groupId)) throw new Error('Group chat is not available.');
         const payload = await portalRequest('/api/social/group-chat', {
@@ -2110,7 +2647,7 @@
         if (payload?.chat) {
             upsertChat(payload.chat, true);
             await loadSocialState(true);
-            routeToSocial('messages', text(payload.chat.id));
+            if (!options?.skipRoute) routeToSocial('messages', text(payload.chat.id));
         }
         return payload?.chat || null;
     }
@@ -2551,7 +3088,7 @@
             body: JSON.stringify({ actorId })
         });
         await hydrateRuntime(true);
-        setFlash('Group deleted.', 'success');
+        setFlash('Group deleted.', 'success', { skipRender: true });
         return payload || null;
     }
 
@@ -2563,7 +3100,8 @@
             body: JSON.stringify({ actorId })
         });
         await loadSocialState(true);
-        setFlash('Event deleted.', 'success');
+        setFlash('Event deleted.', 'success', { skipRender: true });
+        queueRender('event-deleted');
         return payload || null;
     }
 
@@ -2575,7 +3113,7 @@
             body: JSON.stringify({ actorId })
         });
         if (payload?.chat) upsertChat(payload.chat, true);
-        setFlash('Message removed.', 'success');
+        setFlash('Message removed.', 'success', { skipRender: true });
         return payload?.chat || null;
     }
 
@@ -2607,6 +3145,7 @@
         getPortalNotificationItemsForUser: notificationsForUser,
         getPortalNotificationUnreadCount: notificationUnread,
         markPortalNotificationRead: markNotificationRead,
+        removePortalNotification: removeNotification,
         resolvePortalSocialAvatarSource: avatarSource,
         resolvePortalSocialAvatarFallback: avatarFallback,
         resolvePortalSocialFileUrl: fileUrl,
@@ -2618,10 +3157,13 @@
         loadPortalSocialDirectory: loadDirectory,
         openPortalDirectChat: openDirectChat,
         submitSocialPost: createPost,
+        getPortalPhotographyPosts: photographyPosts,
         createPortalSocialPage: createPage,
         createPortalSocialGroup: createGroup,
         createPortalSocialProject: createProject,
         updatePortalSocialProject: updateProject,
+        setPortalSocialProjectBaseline: setProjectBaseline,
+        updatePortalSocialProjectTaskGraph: updateProjectTaskGraph,
         deletePortalSocialProject: deleteProject,
         invitePortalSocialProjectMember: inviteProjectMember,
         updatePortalSocialProjectMemberRole: updateProjectMemberRole,
@@ -2630,12 +3172,15 @@
         createPortalSocialProjectTask: createProjectTask,
         updatePortalSocialProjectTask: updateProjectTask,
         deletePortalSocialProjectTask: deleteProjectTask,
-        createPortalSocialProjectMilestone: createProjectMilestone,
-        updatePortalSocialProjectMilestone: updateProjectMilestone,
-        deletePortalSocialProjectMilestone: deleteProjectMilestone,
-        createPortalSocialProjectDeliverable: createProjectDeliverable,
-        deletePortalSocialProjectDeliverable: deleteProjectDeliverable,
-        createPortalSocialProjectCheckin: createProjectCheckin,
+        createPortalSocialProjectBudgetCategory: createProjectBudgetCategory,
+        updatePortalSocialProjectBudgetCategory: updateProjectBudgetCategory,
+        deletePortalSocialProjectBudgetCategory: deleteProjectBudgetCategory,
+        createPortalSocialProjectBudgetExpense: createProjectBudgetExpense,
+        updatePortalSocialProjectBudgetExpense: updateProjectBudgetExpense,
+        deletePortalSocialProjectBudgetExpense: deleteProjectBudgetExpense,
+        createPortalSocialProjectRisk: createProjectRisk,
+        updatePortalSocialProjectRisk: updateProjectRisk,
+        deletePortalSocialProjectRisk: deleteProjectRisk,
         publishPortalSocialProjectShowcase: publishProjectShowcase,
         setPortalSocialGroupMembership: setGroupMembership,
         respondPortalSocialGroupMembership: respondGroupMembership,
@@ -2652,12 +3197,19 @@
         sharePortalSocialPost: sharePost,
         reactToPortalSocialPost: reactToPost,
         reactToPortalSocialComment: reactToComment,
+        removePortalSocialComment: removeComment,
         commentOnPortalSocialPost: addComment,
         reportPortalSocialContent: reportSocialContent,
         resolvePortalSocialReport: resolveSocialReport,
         pinPortalSocialPost: pinSocialPost,
         loadPortalSavedSocialPosts: loadSavedPosts,
         createPortalSocialEvent: createEvent,
+        updatePortalSocialEvent: updateEvent,
+        createPortalSocialSurvey: createSurvey,
+        closePortalSocialSurvey: closeSurvey,
+        respondPortalSocialSurvey: respondSurvey,
+        loadPortalSocialSurveyResults: loadSurveyResults,
+        deletePortalSocialSurvey: deleteSurvey,
         respondPortalSocialEventRsvp: respondEventRsvp,
         openPortalSocialGroupChat: openGroupChat,
         updatePortalSocialPage: updateSocialPage,
@@ -2702,6 +3254,7 @@
         togglePortalCallMic: toggleCallMic,
         togglePortalCallCamera: toggleCallCamera,
         setPortalSocialFlash: setFlash,
+        invalidatePortalSocialRenderCache: invalidateSocialRenderCache,
         getPortalSocialProfileById: getProfileById,
         loadPortalSocialProfileForUser: loadProfileForUser,
         savePortalSocialProfileEdits: saveProfileEdits,

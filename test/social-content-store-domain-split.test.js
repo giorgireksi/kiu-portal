@@ -37,4 +37,29 @@ describe('social content store domain split', () => {
         expect(store.resolveSocialMentionUserIds('Hello @user-a and @user-b')).toEqual(['user-a', 'user-b']);
         expect(store.getSocialRelationshipRecord('rel-1')?.fromId).toBe('user-a');
     });
+
+    it('deletes managed groups and drops scoped posts and chats', () => {
+        const store = new PlatformStore({});
+        store.state.accounts['user-a'] = { id: 'user-a', displayName: 'User A', email: 'a@example.com', role: 'student', facultyCode: 'ECON' };
+        store.state.social.groups = [{
+            id: 'group-1',
+            name: 'Study',
+            ownerUserId: 'user-a',
+            adminIds: ['user-a'],
+            memberIds: ['user-a'],
+            chatId: 'chat-group-1',
+            visibility: 'public'
+        }];
+        store.state.social.posts = [
+            { id: 'post-1', scopeType: 'group', scopeId: 'group-1', authorUserId: 'user-a', body: 'hi' },
+            { id: 'post-2', scopeType: 'profile', scopeId: 'user-a', authorUserId: 'user-a', body: 'keep' }
+        ];
+        store.state.chats = { 'chat-group-1': { id: 'chat-group-1', type: 'group', members: ['user-a'] } };
+
+        expect(store.deleteSocialGroup('group-1', 'user-a')).toEqual({ groupId: 'group-1' });
+        expect(store.state.social.groups).toHaveLength(0);
+        expect(store.state.social.posts.map((p) => p.id)).toEqual(['post-2']);
+        expect(store.state.chats['chat-group-1']).toBeUndefined();
+        expect(store.deleteSocialGroup('missing', 'user-a')).toBeNull();
+    });
 });

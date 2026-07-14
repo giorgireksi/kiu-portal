@@ -1,0 +1,957 @@
+(function initSocialPhotographyModule() {
+    if (window.__KIU_SOCIAL_PHOTOGRAPHY_MODULE_LOADED) return;
+    window.__KIU_SOCIAL_PHOTOGRAPHY_MODULE_LOADED = true;
+
+    const hooks = window.__kiuSocialPhotographyHooks || {};
+    const {
+        state,
+        currentUser,
+        currentUserId,
+        text,
+        escape,
+        when,
+        avatar,
+        displayName,
+        accountById,
+        accountSubtitle,
+        currentFacultyCode,
+        photographyPosts,
+        relationshipBuckets,
+        fileUrl,
+        isImage,
+        renderCommentNode,
+        renderCommentThread,
+        renderPostReactionMetrics,
+        reactionEmoji,
+        reactionLabel,
+        postKey,
+        isPostSaved,
+        controlId,
+        setPanel,
+        openDialog,
+        closeDialog,
+        renderSocialPageNow,
+        withBusy,
+        activeDialog,
+        openPhotographyUploadFilePicker,
+        patchPhotographyFollowButtons,
+        photographyUploadForm,
+        reactToPortalSocialPost,
+        refreshPhotographyPanelStage,
+        renderPhotographyUploadDialogNow,
+        revokePhotographyUploadPreview,
+        togglePortalSocialFollow,
+        submitSocialPost,
+        applyPhotographyUploadFile
+    } = hooks;
+
+    if (
+        typeof state !== 'function'
+        || typeof photographyPosts !== 'function'
+        || typeof text !== 'function'
+        || typeof escape !== 'function'
+        || typeof setPanel !== 'function'
+        || typeof openDialog !== 'function'
+        || typeof closeDialog !== 'function'
+        || typeof renderSocialPageNow !== 'function'
+        || typeof withBusy !== 'function'
+        || typeof activeDialog !== 'function'
+        || typeof openPhotographyUploadFilePicker !== 'function'
+        || typeof patchPhotographyFollowButtons !== 'function'
+        || typeof photographyUploadForm !== 'function'
+        || typeof reactToPortalSocialPost !== 'function'
+        || typeof refreshPhotographyPanelStage !== 'function'
+        || typeof renderPhotographyUploadDialogNow !== 'function'
+        || typeof revokePhotographyUploadPreview !== 'function'
+        || typeof togglePortalSocialFollow !== 'function'
+        || typeof submitSocialPost !== 'function'
+    ) {
+        throw new Error('Social photography hooks are unavailable.');
+    }
+
+    function profileFollowerCount() {
+        const userId = currentUserId();
+        const relationships = Array.isArray(state().social?.relationships) ? state().social.relationships : [];
+        return relationships.filter((rel) => (
+            text(rel?.type).toLowerCase() === 'follow'
+            && text(rel?.toType) === 'profile'
+            && text(rel?.toId) === userId
+        )).length;
+    }
+
+    function normalizePhotoTab(raw) {
+        const tab = text(raw || 'explore') || 'explore';
+        if (tab === 'grid') return 'grid';
+        if (tab === 'following') return 'following';
+        return 'explore';
+    }
+
+    function photoTab() {
+        return normalizePhotoTab(state().ui?.photographyTab);
+    }
+
+    function photoSearch() {
+        return text(state().ui?.photographySearch || '').toLowerCase();
+    }
+
+    function postImage(post) {
+        const media = (Array.isArray(post?.media) ? post.media : []).find((item) => isImage(item));
+        return media || null;
+    }
+
+    function postImageSrc(post) {
+        const media = postImage(post);
+        return media ? fileUrl(media) : '';
+    }
+
+    function isFollowingProfile(userId) {
+        const { follows } = relationshipBuckets();
+        return follows.some((rel) => text(rel.toType) === 'profile' && text(rel.toId) === text(userId));
+    }
+
+    function filterPosts(posts) {
+        const query = photoSearch();
+        const tab = photoTab();
+        const { follows } = relationshipBuckets();
+        const followedIds = new Set(
+            follows
+                .filter((rel) => text(rel.toType) === 'profile')
+                .map((rel) => text(rel.toId))
+        );
+
+        let items = posts.slice().sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+
+        if (tab === 'following') {
+            items = items.filter((post) => followedIds.has(text(post.authorUserId)));
+        }
+
+        if (query) {
+            items = items.filter((post) => {
+                const author = accountById(post.authorUserId);
+                const blob = `${text(post.body)} ${displayName(author)} ${text(post.photoMeta?.location)} ${(post.photoMeta?.tags || []).join(' ')}`.toLowerCase();
+                return blob.includes(query);
+            });
+        }
+
+        return items;
+    }
+
+    function discoverPhotographers(allPosts) {
+        const counts = new Map();
+        allPosts.forEach((post) => {
+            const id = text(post.authorUserId);
+            if (!id) return;
+            counts.set(id, (counts.get(id) || 0) + 1);
+        });
+
+        const directory = Array.isArray(state().social?.directory) ? state().social.directory : [];
+        const seen = new Set();
+        const people = [];
+
+        directory.forEach((entry) => {
+            const id = text(entry?.id);
+            if (!id || id === currentUserId() || !counts.has(id) || seen.has(id)) return;
+            seen.add(id);
+            people.push({ account: entry, postCount: counts.get(id) || 0, suggested: false });
+        });
+
+        counts.forEach((postCount, id) => {
+            if (seen.has(id) || id === currentUserId()) return;
+            const account = accountById(id);
+            if (!account) return;
+            people.push({ account, postCount, suggested: false });
+        });
+
+        if (people.length) {
+            return people
+                .sort((a, b) => {
+                    const aFollowed = isFollowingProfile(a.account.id) ? 1 : 0;
+                    const bFollowed = isFollowingProfile(b.account.id) ? 1 : 0;
+                    if (aFollowed !== bFollowed) return aFollowed - bFollowed;
+                    return b.postCount - a.postCount;
+                })
+                .slice(0, 12);
+        }
+
+        return directory
+            .filter((entry) => {
+                const id = text(entry?.id);
+                return id && id !== currentUserId();
+            })
+            .slice(0, 8)
+            .map((account) => ({ account, postCount: 0, suggested: true }));
+    }
+
+    function renderDiscoverStrip(people) {
+        if (!people.length) return '';
+        const suggested = people.every((person) => person.suggested);
+        return `
+            <section class="social-photo-discover-strip">
+                ${suggested ? '<p class="social-photo-discover-label social-photo-mono">Campus photographers to follow</p>' : ''}
+                <div class="social-photo-discover-track">
+                    ${people.map(({ account, postCount, suggested: isSuggested }) => `
+                        <article class="social-photo-discover-card">
+                            <button class="social-photo-discover-profile" type="button" data-action="photography-view-profile" data-user-id="${escape(text(account.id))}">
+                                ${avatar(account, 'social-photo-discover-avatar')}
+                                <span class="social-photo-discover-name">${escape(displayName(account))}</span>
+                                <span class="social-photo-mono">${isSuggested ? 'New' : `${escape(postCount)} photo${postCount === 1 ? '' : 's'}`}</span>
+                            </button>
+                            ${text(account.id) !== currentUserId() ? `
+                                <button class="social-neo-btn social-neo-btn-sm ${isFollowingProfile(account.id) ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'}" type="button" data-action="photography-follow" data-user-id="${escape(text(account.id))}">
+                                    ${isFollowingProfile(account.id) ? 'Following' : 'Follow'}
+                                </button>
+                            ` : ''}
+                        </article>
+                    `).join('')}
+                </div>
+            </section>
+        `;
+    }
+
+    function renderGridSkeleton() {
+        return `
+            <div class="social-photo-grid-skeleton" aria-hidden="true">
+                ${Array.from({ length: 9 }, (_, index) => `<span class="social-photo-grid-skeleton-tile" style="--photo-skeleton-i:${index}"></span>`).join('')}
+            </div>
+        `;
+    }
+
+    function renderPhotoFeedCard(post) {
+        const author = accountById(post.authorUserId) || { id: post.authorUserId, displayName: post.authorUserId };
+        const src = postImageSrc(post);
+        const normalizedPostId = typeof postKey === 'function' ? postKey(post) : text(post.id);
+        const viewerReaction = text(post.viewerReaction || '');
+        const hasViewerReaction = Boolean(viewerReaction);
+        const reactionCounts = post?.reactionCounts || {};
+        const comments = Array.isArray(post.comments) ? post.comments : [];
+        const commentTotal = comments.length + Number(post.replyCount || 0);
+        const shareCount = Number(post?.shareCount || 0);
+        const saved = typeof isPostSaved === 'function' ? isPostSaved(post.id) : false;
+        const caption = text(post.body || '');
+        const authorHandle = escape(displayName(author));
+        const reactionPicker = ['like', 'love', 'laugh', 'wow', 'support'].map((reactionType) => `
+            <button class="social-neo-btn social-neo-btn-sm social-neo-post-reaction-btn ${viewerReaction === reactionType ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'}" type="button" data-action="post-react" data-post-id="${escape(normalizedPostId)}" data-reaction-type="${escape(reactionType)}" title="${escape(reactionType)}" aria-label="${escape(reactionType)}">
+                <span>${typeof reactionEmoji === 'function' ? reactionEmoji(reactionType) : reactionType}</span>
+            </button>
+        `).join('');
+
+        return `
+            <article class="social-neo-card social-neo-post-card social-photo-feed-card">
+                <div class="social-neo-post-head social-photo-feed-head">
+                    <button class="social-neo-post-author social-neo-clickable" type="button" data-action="photography-view-profile" data-user-id="${escape(text(author.id))}">
+                        ${avatar(author)}
+                        <div class="social-neo-post-author-copy">
+                            <strong class="social-neo-post-author-name">${authorHandle}</strong>
+                            <span class="social-neo-post-author-meta">${escape(when(post.createdAt))}</span>
+                        </div>
+                    </button>
+                    ${text(author.id) !== currentUserId() ? `
+                        <button class="social-neo-btn social-neo-btn-sm ${isFollowingProfile(author.id) ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'}" type="button" data-action="photography-follow" data-user-id="${escape(text(author.id))}">
+                            ${isFollowingProfile(author.id) ? 'Following' : 'Follow'}
+                        </button>
+                    ` : ''}
+                </div>
+                ${src ? `
+                    <button class="social-photo-feed-media" type="button" data-action="photography-open-comments" data-post-id="${escape(normalizedPostId)}" aria-label="View photo and comments">
+                        <img src="${escape(src)}" alt="${escape(caption || 'Campus photo')}" loading="lazy">
+                    </button>
+                ` : ''}
+                ${caption ? `
+                    <div class="social-photo-feed-editorial">
+                        <p class="social-photo-feed-caption">${escape(caption)}</p>
+                    </div>
+                ` : ''}
+                <div class="social-neo-inline-metrics social-neo-post-metrics social-photo-feed-metrics">
+                    ${typeof renderPostReactionMetrics === 'function' ? renderPostReactionMetrics(reactionCounts) : ''}
+                    ${commentTotal ? `<span class="social-neo-post-metric">${escape(commentTotal)} repl${commentTotal === 1 ? 'y' : 'ies'}</span>` : ''}
+                    ${shareCount > 0 ? `<span class="social-neo-post-metric">${escape(shareCount)} share${shareCount !== 1 ? 's' : ''}</span>` : ''}
+                </div>
+                <div class="social-neo-post-actions social-neo-post-action-row social-photo-feed-actions" role="toolbar" aria-label="Photo actions">
+                    <button class="social-neo-btn social-neo-post-action-btn ${hasViewerReaction ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'}" type="button" data-action="post-react" data-post-id="${escape(normalizedPostId)}" data-reaction-type="${escape(viewerReaction || 'like')}">
+                        ${hasViewerReaction && typeof reactionEmoji === 'function' && typeof reactionLabel === 'function'
+                            ? `<span>${reactionEmoji(viewerReaction)}</span> ${escape(reactionLabel(viewerReaction))}`
+                            : '<span aria-hidden="true">👍</span> Appreciate'}
+                    </button>
+                    <button class="social-neo-btn social-neo-btn-ghost social-neo-post-action-btn" type="button" data-action="photography-open-comments" data-post-id="${escape(normalizedPostId)}">
+                        <i class="fas fa-comment"></i> Comment${commentTotal ? ` (${escape(commentTotal)})` : ''}
+                    </button>
+                    <button class="social-neo-btn social-neo-btn-ghost social-neo-post-action-btn" type="button" data-action="post-share" data-post-id="${escape(normalizedPostId)}">
+                        <i class="fas fa-share"></i> Share
+                    </button>
+                    <div class="social-neo-reaction-picker social-photo-feed-reactions" aria-label="Quick reactions">
+                        ${reactionPicker}
+                    </div>
+                    <span class="social-neo-flex-spacer"></span>
+                    <button class="social-neo-btn social-neo-post-save-btn ${saved ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'} social-neo-btn-sm" type="button" data-action="post-save" data-post-id="${escape(normalizedPostId)}">
+                        <i class="fas fa-bookmark"></i> ${saved ? 'Saved' : 'Keep'}
+                    </button>
+                </div>
+            </article>
+        `;
+    }
+
+    function renderPhotoExploreTile(post) {
+        const src = postImageSrc(post);
+        if (!src) return '';
+        const normalizedPostId = typeof postKey === 'function' ? postKey(post) : text(post.id);
+        const author = accountById(post.authorUserId) || { id: post.authorUserId, displayName: post.authorUserId };
+        const reactionCounts = post?.reactionCounts || {};
+        const likeTotal = Object.values(reactionCounts).reduce((sum, value) => sum + Number(value || 0), 0);
+
+        const caption = text(post.body || 'Campus photo');
+        return `
+            <button class="social-photo-grid-tile" type="button" data-action="photography-open-comments" data-post-id="${escape(normalizedPostId)}" aria-label="View photo by ${escape(displayName(author))}${caption ? `: ${escape(caption)}` : ''}">
+                <img src="${escape(src)}" alt="" loading="lazy" decoding="async" onerror="this.hidden=true;this.closest('.social-photo-grid-tile')?.classList.add('is-broken')">
+                <span class="social-photo-grid-tile-fallback" aria-hidden="true"><i class="fas fa-image"></i></span>
+                <span class="social-photo-grid-tile-overlay">
+                    <span class="social-photo-grid-tile-author">${escape(displayName(author))}</span>
+                    ${likeTotal ? `<span class="social-photo-grid-tile-likes social-photo-mono">${escape(likeTotal)} appreciations</span>` : ''}
+                </span>
+            </button>
+        `;
+    }
+
+    function renderPhotoExploreGrid(posts) {
+        const tiles = posts.map((post) => renderPhotoExploreTile(post)).filter(Boolean);
+        if (!tiles.length) return renderPhotoEmpty('explore');
+        return `
+            <section class="social-photo-explore-grid" aria-label="Campus photo gallery">
+                ${tiles.join('')}
+            </section>
+        `;
+    }
+
+    function renderPhotoFeedList(posts) {
+        return `
+            <section class="social-photo-feed-list">
+                ${posts.map((post) => renderPhotoFeedCard(post)).join('')}
+            </section>
+        `;
+    }
+
+    function renderPhotoEmpty(tab) {
+        const emptyCopy = tab === 'following'
+            ? { title: 'No photos from people you follow', hint: 'Follow campus photographers above, then their shots will appear here.', cta: '' }
+            : { title: 'No campus photos yet', hint: 'Share the quad, library, sunset, or any campus moment. Your gallery starts with one photo.', cta: 'Share a photo' };
+        return `
+            <div class="social-photo-content-stage is-empty">
+                <div class="social-neo-empty-hero social-photo-empty">
+                    <i class="fas fa-camera-retro"></i>
+                    <strong class="social-photo-display">${escape(emptyCopy.title)}</strong>
+                    <span>${escape(emptyCopy.hint)}</span>
+                    ${emptyCopy.cta ? `<button class="social-neo-btn social-neo-btn-primary" type="button" data-action="photography-upload-open">${escape(emptyCopy.cta)}</button>` : ''}
+                </div>
+            </div>
+        `;
+    }
+
+    function renderPhotoFeed(posts, tab) {
+        if (!posts.length) return renderPhotoEmpty(tab);
+        if (tab === 'explore') return `<div class="social-photo-content-stage">${renderPhotoFeedList(posts)}</div>`;
+        return `<div class="social-photo-content-stage">${renderPhotoExploreGrid(posts)}</div>`;
+    }
+
+    function renderMyProfileTab(posts) {
+        const myId = currentUserId();
+        const myPosts = posts.filter((post) => text(post.authorUserId) === text(myId));
+        if (!myPosts.length) return `
+            <div class="social-photo-content-stage is-empty">
+                <div class="social-neo-empty-hero social-photo-empty">
+                    <i class="fas fa-camera-retro"></i>
+                    <strong class="social-photo-display">No photos yet</strong>
+                    <span>Share your first campus moment.</span>
+                    <button class="social-neo-btn social-neo-btn-primary" type="button" data-action="photography-upload-open">Share a photo</button>
+                </div>
+            </div>
+        `;
+        return `<div class="social-photo-content-stage">${renderPhotoExploreGrid(myPosts)}</div>`;
+    }
+
+    function renderMySavedTab() {
+        const savedPosts = Array.isArray(state().social?.savedPosts) ? state().social.savedPosts : [];
+        const photoSaved = savedPosts.filter((post) => {
+            const media = Array.isArray(post?.media) ? post.media : [];
+            return media.some((item) => isImage(item));
+        });
+        if (!photoSaved.length) return `
+            <div class="social-photo-content-stage is-empty">
+                <div class="social-neo-empty-hero social-photo-empty">
+                    <i class="fas fa-bookmark"></i>
+                    <strong class="social-photo-display">No saved photos</strong>
+                    <span>Tap the bookmark icon on any photo to save it here.</span>
+                </div>
+            </div>
+        `;
+        return `<div class="social-photo-content-stage">${renderPhotoExploreGrid(photoSaved)}</div>`;
+    }
+
+    function renderMyTaggedTab() {
+        return `
+            <div class="social-photo-content-stage is-empty">
+                <div class="social-neo-empty-hero social-photo-empty">
+                    <i class="fas fa-tags"></i>
+                    <strong class="social-photo-display">No tagged photos</strong>
+                    <span>Photos you're tagged in will appear here.</span>
+                </div>
+            </div>
+        `;
+    }
+
+    function renderMyProfile(allPosts) {
+        const user = currentUser();
+        const account = user || {};
+        const myId = currentUserId();
+        const myPosts = allPosts.filter((post) => text(post.authorUserId) === text(myId));
+        const savedCount = (Array.isArray(state().social?.savedPosts) ? state().social.savedPosts : [])
+            .filter((post) => (Array.isArray(post?.media) ? post.media : []).some((item) => isImage(item))).length;
+        const profileTab = text(state().ui?.photographyMyProfileTab || 'posts') || 'posts';
+
+        let content = '';
+        if (profileTab === 'saved') content = renderMySavedTab();
+        else if (profileTab === 'tagged') content = renderMyTaggedTab();
+        else content = renderMyProfileTab(allPosts);
+
+        return `
+            <div class="social-photo-shell social-neo-community-panel social-photo-shell--my-profile">
+                <button class="social-photo-back social-photo-mono" type="button" data-action="photography-my-profile-close">&larr; Back to Exposé</button>
+                <header class="social-neo-card social-photo-my-header social-photo-my-hero">
+                    <div class="social-photo-my-head">
+                        <span class="social-photo-my-avatar">${avatar(account, 'social-photo-my-avatar-img')}</span>
+                        <div class="social-photo-my-info">
+                            <h2 class="social-photo-display">${escape(displayName(account))}</h2>
+                            <p class="social-photo-mono">${escape(accountSubtitle(account))}</p>
+                        </div>
+                        <div class="social-photo-my-stats">
+                            <article class="social-photo-my-stat">
+                                <strong>${myPosts.length}</strong>
+                                <span class="social-photo-mono">Posts</span>
+                            </article>
+                            <article class="social-photo-my-stat">
+                                <strong>${savedCount}</strong>
+                                <span class="social-photo-mono">Saved</span>
+                            </article>
+                        </div>
+                    </div>
+                </header>
+                <nav class="social-photo-my-tabs" role="tablist" aria-label="Profile sections">
+                    <button class="social-photo-my-tab ${profileTab === 'posts' ? 'is-active' : ''}" type="button" role="tab" data-action="photography-my-profile-tab" data-my-profile-tab="posts">
+                        <i class="fas fa-th"></i> Posts
+                    </button>
+                    <button class="social-photo-my-tab ${profileTab === 'saved' ? 'is-active' : ''}" type="button" role="tab" data-action="photography-my-profile-tab" data-my-profile-tab="saved">
+                        <i class="fas fa-bookmark"></i> Saved
+                    </button>
+                    <button class="social-photo-my-tab ${profileTab === 'tagged' ? 'is-active' : ''}" type="button" role="tab" data-action="photography-my-profile-tab" data-my-profile-tab="tagged">
+                        <i class="fas fa-tags"></i> Tagged
+                    </button>
+                </nav>
+                ${content}
+            </div>
+        `;
+    }
+
+    function renderProfileView(userId, posts) {
+        const account = accountById(userId) || { id: userId, displayName: userId };
+        const userPosts = posts.filter((post) => text(post.authorUserId) === text(userId));
+        const isSelf = text(userId) === currentUserId();
+        return `
+            <div class="social-photo-profile-shell">
+                <button class="social-photo-back social-photo-mono" type="button" data-action="photography-profile-back">&larr; Back</button>
+                <header class="social-neo-card social-photo-profile-hero">
+                    <div class="social-photo-profile-head">
+                        <span class="social-photo-profile-avatar">${avatar(account, 'social-photo-profile-avatar-img')}</span>
+                        <div>
+                            <h2 class="social-photo-display">${escape(displayName(account))}</h2>
+                            <p class="social-photo-mono">${escape(accountSubtitle(account))}</p>
+                            <p class="social-photo-mono">${escape(userPosts.length)} photo${userPosts.length === 1 ? '' : 's'}</p>
+                        </div>
+                        ${isSelf
+                            ? `<button class="social-neo-btn social-neo-btn-primary" type="button" data-action="photography-upload-open">Develop a photo</button>`
+                            : `<button class="social-neo-btn ${isFollowingProfile(userId) ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'}" type="button" data-action="photography-follow" data-user-id="${escape(text(userId))}">${isFollowingProfile(userId) ? 'Following' : 'Follow'}</button>`}
+                    </div>
+                </header>
+                ${renderPhotoFeed(userPosts, 'explore')}
+            </div>
+        `;
+    }
+
+    window.renderPhotographyPanel = function renderPhotographyPanel() {
+        const runtime = state();
+        const allPosts = photographyPosts();
+
+        if (runtime.ui?.photographyMyProfile) return renderMyProfile(allPosts);
+
+        const profileUserId = text(runtime.ui?.photographyProfileUserId || '');
+        if (profileUserId) return renderProfileView(profileUserId, allPosts);
+
+        const tab = photoTab();
+        const posts = filterPosts(allPosts);
+        const discover = discoverPhotographers(allPosts);
+        const searchId = controlId ? controlId('photography-search') : 'photography-search';
+        const user = currentUser();
+
+        const hasCatalog = allPosts.length > 0;
+        const searchMarkup = hasCatalog ? `
+            <label class="social-photo-search" for="${escape(searchId)}">
+                <i class="fas fa-search"></i>
+                <input id="${escape(searchId)}" type="search" placeholder="Search photos..." value="${escape(text(runtime.ui?.photographySearch || ''))}" data-action="photography-search-input">
+            </label>
+        ` : '';
+        const uploadFabMarkup = hasCatalog ? `
+            <button class="social-photo-upload-fab" type="button" data-action="photography-upload-open" aria-label="Share a photo" title="Share a photo">
+                <i class="fas fa-plus"></i>
+            </button>
+        ` : '';
+        const myProfileBtn = user ? `
+            <button class="social-photo-my-profile-btn" type="button" data-action="photography-my-profile-open" aria-label="My profile" title="My profile">
+                ${avatar(user, 'social-photo-my-profile-btn-avatar')}
+            </button>
+        ` : '';
+        const tabTitles = {
+            explore: 'Campus Exposé',
+            grid: 'Photo grid',
+            following: 'Following feed',
+        };
+        const tabCopy = {
+            explore: 'Discover campus photography from students, clubs, and events.',
+            grid: 'Browse the full campus photo grid in a compact layout.',
+            following: 'Photos from photographers you follow across campus.',
+        };
+        return `
+            <div class="social-photo-shell social-neo-community-panel">
+                <header class="social-photo-chrome">
+                    <div class="social-photo-chrome-row">
+                        <h1 class="social-photo-display social-photo-chrome-title">${escape(tabTitles[tab] || tabTitles.explore)}</h1>
+                        <div class="social-photo-chrome-actions">
+                            ${searchMarkup}
+                            ${uploadFabMarkup}
+                            ${myProfileBtn}
+                        </div>
+                    </div>
+                    <nav class="social-photo-tab-segment" role="tablist" aria-label="Photo feed tabs">
+                        <button class="social-photo-tab ${tab === 'explore' ? 'is-active' : ''}" type="button" role="tab" aria-selected="${tab === 'explore' ? 'true' : 'false'}" data-action="photography-tab" data-photography-tab="explore">Explore</button>
+                        <button class="social-photo-tab ${tab === 'grid' ? 'is-active' : ''}" type="button" role="tab" aria-selected="${tab === 'grid' ? 'true' : 'false'}" data-action="photography-tab" data-photography-tab="grid">Grid</button>
+                        <button class="social-photo-tab ${tab === 'following' ? 'is-active' : ''}" type="button" role="tab" aria-selected="${tab === 'following' ? 'true' : 'false'}" data-action="photography-tab" data-photography-tab="following">Following</button>
+                    </nav>
+                </header>
+                ${renderDiscoverStrip(discover)}
+                ${renderPhotoFeed(posts, tab)}
+            </div>
+        `;
+    };
+
+    function findPhotographyPost(postId) {
+        const normalizedId = text(postId);
+        return photographyPosts().find((item) => text(item.id) === normalizedId)
+            || (Array.isArray(state().feed) ? state().feed : []).find((item) => text(item.id) === normalizedId)
+            || null;
+    }
+
+    window.refreshPhotographyFeedStage = function refreshPhotographyFeedStage() {
+        const host = document.getElementById('social-neo-center-region');
+        const shell = host?.querySelector('.social-photo-shell');
+        if (!shell) return false;
+
+        // Profile sub-views have different chrome — fall back to full render.
+        if (shell.querySelector('.social-photo-my-profile, .social-photo-profile-view, [data-action="photography-profile-back"]')) {
+            return false;
+        }
+
+        const tab = photoTab();
+        const allPosts = photographyPosts();
+        const posts = filterPosts(allPosts);
+        const discover = discoverPhotographers(allPosts);
+
+        const tabTitles = {
+            explore: 'Campus Exposé',
+            grid: 'Photo grid',
+            following: 'Following feed'
+        };
+        const titleEl = shell.querySelector('.social-photo-chrome-title');
+        if (titleEl) titleEl.textContent = tabTitles[tab] || tabTitles.explore;
+
+        shell.querySelectorAll('.social-photo-tab[data-photography-tab]').forEach((btn) => {
+            const value = text(btn.getAttribute('data-photography-tab') || '');
+            const active = value === tab;
+            btn.classList.toggle('is-active', active);
+            btn.setAttribute('aria-selected', active ? 'true' : 'false');
+        });
+
+        const nextDiscover = renderDiscoverStrip(discover);
+        const discoverEl = shell.querySelector('.social-photo-discover-strip');
+        if (nextDiscover) {
+            if (discoverEl) discoverEl.outerHTML = nextDiscover;
+            else {
+                const chrome = shell.querySelector('.social-photo-chrome');
+                if (chrome) chrome.insertAdjacentHTML('afterend', nextDiscover);
+            }
+        } else if (discoverEl) {
+            discoverEl.remove();
+        }
+
+        const nextFeed = renderPhotoFeed(posts, tab);
+        const stageEl = shell.querySelector('.social-photo-content-stage');
+        if (stageEl) {
+            stageEl.outerHTML = nextFeed;
+        } else {
+            shell.insertAdjacentHTML('beforeend', nextFeed);
+        }
+        return true;
+    };
+
+    window.renderPhotographyCommentsDialog = function renderPhotographyCommentsDialog(dialog = {}) {
+        const postId = text(dialog.postId || '');
+        const post = findPhotographyPost(postId);
+        if (!post) return '';
+        const commentAuthor = typeof currentUser === 'function' ? currentUser() : null;
+        const dialogComments = Array.isArray(post.comments) ? post.comments : [];
+        const dialogNormalizedPostId = typeof postKey === 'function' ? postKey(post) : text(post.id);
+        const dialogCommentDraft = String(state().ui?.commentDraftByPost?.[dialogNormalizedPostId] || '');
+        const dialogCommentInputId = controlId ? controlId('commentBody', dialogNormalizedPostId) : `commentBody-${dialogNormalizedPostId}`;
+        const dialogCommentTotal = dialogComments.length + Number(post.replyCount || 0);
+        const src = postImageSrc(post);
+        const caption = text(post.body || '');
+        const threadMarkup = typeof renderCommentThread === 'function'
+            ? renderCommentThread(dialogComments, post, 'dialog')
+            : '';
+
+        return `
+            <div class="social-neo-dialog-backdrop social-photo-ig-backdrop" data-action="dialog-close">
+                <div class="social-photo-ig-modal" data-action="noop">
+                    <div class="social-photo-ig-modal-body">
+                        <div class="social-photo-ig-media-pane">
+                            ${src ? `<img src="${escape(src)}" alt="${escape(caption || 'Campus photo')}">` : ''}
+                        </div>
+                        <div class="social-photo-ig-comments-pane">
+                            <div class="social-photo-ig-sheet-handle" aria-hidden="true"></div>
+                            <div class="social-neo-section-head social-neo-dialog-head social-photo-ig-comments-head">
+                                <div class="social-neo-dialog-heading">
+                                    <strong class="social-neo-dialog-title">Comments</strong>
+                                    <span class="social-neo-dialog-subtitle social-photo-ig-comments-subtitle">${dialogCommentTotal ? `${dialogCommentTotal} comment${dialogCommentTotal === 1 ? '' : 's'}` : 'No comments yet'}</span>
+                                </div>
+                                <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-close-btn" type="button" data-action="dialog-close"><i class="fas fa-times"></i></button>
+                            </div>
+                            <div class="social-photo-ig-comment-scroll">
+                                <div class="social-neo-dialog-comment-thread social-photo-ig-comment-thread" id="social-neo-dialog-comment-thread">
+                                    ${threadMarkup || '<div class="social-neo-empty">No comments yet. Be the first to reply.</div>'}
+                                </div>
+                            </div>
+                            <form class="social-neo-dialog-comment-compose social-photo-ig-comment-compose" data-form="dialog-comment" data-post-id="${escape(dialogNormalizedPostId)}">
+                                ${commentAuthor ? avatar(commentAuthor, 'social-neo-avatar-sm') : ''}
+                                <div class="social-neo-dialog-comment-compose-main">
+                                    <div class="social-neo-inline social-neo-comment-compose-row">
+                                        <input class="social-neo-input" id="${escape(dialogCommentInputId)}" type="text" name="commentBody" placeholder="Add a comment..." aria-label="Add a comment" value="${escape(dialogCommentDraft)}">
+                                        <button class="social-neo-btn social-neo-btn-primary" type="submit">Post</button>
+                                    </div>
+                                </div>
+                                <input type="hidden" name="postId" value="${escape(dialogNormalizedPostId)}">
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    };
+
+    window.renderPhotographyUploadDialog = function renderPhotographyUploadDialog(dialog = {}) {
+        const runtime = state();
+        const step = Number(dialog.step || runtime.ui?.photographyUploadStep || 1);
+        const draft = runtime.ui?.photographyUploadDraft || {};
+        const preview = text(draft.previewUrl || '');
+        const hasFile = Boolean(draft.file || text(draft.fileName || ''));
+        const stepDots = [1, 2, 3].map((n) => `<span class="social-photo-step-dot ${n <= step ? 'is-on' : ''}"></span>`).join('');
+
+        let body = '';
+        if (step === 1) {
+            body = `
+                <div class="social-photo-upload-step1">
+                    <label class="social-photo-upload-dropzone social-neo-btn-pointer${hasFile || preview ? ' has-preview' : ''}" data-photography-drop tabindex="0">
+                        <input class="social-photo-upload-file-input" type="file" name="photographyUploadFile" accept="image/*" tabindex="-1" aria-hidden="true">
+                        <div class="social-photo-viewfinder"></div>
+                        ${preview
+                            ? `<img src="${escape(preview)}" alt="Preview" class="social-photo-upload-preview">`
+                            : hasFile
+                                ? `<p class="social-photo-mono">${escape(text(draft.fileName || 'Image selected'))}</p>`
+                                : '<p>Drop an image here</p><p class="social-photo-mono">JPG · PNG · WEBP · max 25MB</p>'}
+                        <span class="social-photo-upload-choose-btn social-neo-btn social-neo-btn-primary">${hasFile || preview ? 'Replace image' : 'Choose image'}</span>
+                    </label>
+                </div>
+            `;
+        } else if (step === 2) {
+            body = `
+                <label class="social-photo-field social-photo-mono">Caption
+                    <textarea class="social-neo-textarea" name="photographyCaption" rows="3" placeholder="Describe this campus moment...">${escape(text(draft.caption || ''))}</textarea>
+                </label>
+                <label class="social-photo-field social-photo-mono">Tags
+                    <input class="social-neo-input" type="text" name="photographyTags" value="${escape(text(draft.tags || ''))}" placeholder="sunset, library, quad">
+                </label>
+                <label class="social-photo-field social-photo-mono">Location
+                    <input class="social-neo-input" type="text" name="photographyLocation" value="${escape(text(draft.location || ''))}" placeholder="Library quad">
+                </label>
+            `;
+        } else {
+            body = `
+                <div class="social-photo-upload-review">
+                    ${preview ? `<div class="social-photo-feed-media"><img src="${escape(preview)}" alt="Review"></div>` : ''}
+                    <p class="social-photo-feed-caption">${escape(text(draft.caption || 'No caption'))}</p>
+                    <p class="social-photo-mono">Faculty: ${escape(currentFacultyCode())} · Audience: Campus</p>
+                </div>
+            `;
+        }
+
+        return `
+            <div class="social-neo-dialog-backdrop social-photo-upload-backdrop" data-action="dialog-close">
+                <form class="social-neo-dialog-card social-neo-dialog-card--lms-create social-photo-upload-card photo-panel" data-form="photography-upload" data-action="noop" data-lux-transparency-exempt="1">
+                    <div class="social-photo-upload-head">
+                        <div>
+                            <strong class="social-photo-display">${step === 1 ? 'Capture' : step === 2 ? 'Caption' : 'Publish'}</strong>
+                            <div class="social-photo-step-dots">${stepDots}</div>
+                        </div>
+                        <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="dialog-close"><i class="fas fa-times"></i></button>
+                    </div>
+                    ${body}
+                    <div class="social-photo-upload-actions">
+                        ${step > 1 ? `<button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="photography-upload-back">Back</button>` : `<button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="dialog-close">Cancel</button>`}
+                        ${step < 3
+                            ? `<button class="social-neo-btn social-neo-btn-primary" type="button" data-action="photography-upload-next" ${step === 1 && !hasFile ? 'disabled' : ''}>Next</button>`
+                            : `<button class="social-neo-btn social-neo-btn-primary" type="submit">Publish</button>`}
+                    </div>
+                </form>
+            </div>
+        `;
+    };
+
+    function isSocialPhotographyClickAction(action) {
+        const a = text(action || '');
+        return Boolean(a) && a.startsWith('photography-');
+    }
+
+    function handleSocialPhotographyClick(action, trigger) {
+        if (!isSocialPhotographyClickAction(action)) return false;
+        if (action === 'photography-tab') {
+            const rawTab = text(trigger.getAttribute('data-photography-tab') || 'explore') || 'explore';
+            state().ui.photographyTab = rawTab === 'gallery' || rawTab === 'contact' ? 'explore' : rawTab;
+            if (refreshPhotographyPanelStage()) return;
+            return renderSocialPageNow('photography-tab');
+        }
+
+        if (action === 'photography-my-profile-open') {
+            state().ui.photographyMyProfile = true;
+            state().ui.photographyMyProfileTab = state().ui.photographyMyProfileTab || 'posts';
+            return renderSocialPageNow('photography-my-profile');
+        }
+
+        if (action === 'photography-my-profile-close') {
+            state().ui.photographyMyProfile = false;
+            return renderSocialPageNow('photography-my-profile');
+        }
+
+        if (action === 'photography-my-profile-tab') {
+            state().ui.photographyMyProfileTab = text(trigger.getAttribute('data-my-profile-tab') || 'posts');
+            return renderSocialPageNow('photography-my-profile-tab');
+        }
+
+        if (action === 'photography-upload-open') {
+            setPanel('photography');
+            revokePhotographyUploadPreview(state().ui?.photographyUploadDraft);
+            state().ui.photographyUploadDraft = {};
+            state().ui.photographyUploadStep = 1;
+            return openDialog('photography-upload', { step: 1 });
+        }
+
+        if (action === 'photography-upload-pick') {
+            event.stopPropagation();
+            openPhotographyUploadFilePicker();
+            return;
+        }
+
+        if (action === 'photography-upload-next') {
+            const dialog = activeDialog();
+            const step = Number(state().ui?.photographyUploadStep || dialog?.step || 1);
+            if (step === 1) {
+                const draft = state().ui?.photographyUploadDraft || {};
+                if (!draft.file && !text(draft.fileName || '')) {
+                    if (typeof setPortalSocialFlash === 'function') setPortalSocialFlash('Choose an image before continuing.', 'danger');
+                    return;
+                }
+            }
+            if (step === 2) {
+                const form = photographyUploadForm();
+                state().ui.photographyUploadDraft = state().ui.photographyUploadDraft || {};
+                state().ui.photographyUploadDraft.caption = text(form?.photographyCaption?.value || '');
+                state().ui.photographyUploadDraft.tags = text(form?.photographyTags?.value || '');
+                state().ui.photographyUploadDraft.location = text(form?.photographyLocation?.value || '');
+            }
+            const nextStep = Math.min(3, step + 1);
+            state().ui.photographyUploadStep = nextStep;
+            state().ui.socialDialog = { type: 'photography-upload', step: nextStep };
+            renderPhotographyUploadDialogNow();
+            return;
+        }
+
+        if (action === 'photography-upload-back') {
+            const currentStep = Number(state().ui?.photographyUploadStep || activeDialog()?.step || 1);
+            if (currentStep === 2) {
+                const form = photographyUploadForm();
+                state().ui.photographyUploadDraft = state().ui.photographyUploadDraft || {};
+                state().ui.photographyUploadDraft.caption = text(form?.photographyCaption?.value || '');
+                state().ui.photographyUploadDraft.tags = text(form?.photographyTags?.value || '');
+                state().ui.photographyUploadDraft.location = text(form?.photographyLocation?.value || '');
+            }
+            const step = Math.max(1, currentStep - 1);
+            state().ui.photographyUploadStep = step;
+            state().ui.socialDialog = { type: 'photography-upload', step };
+            renderPhotographyUploadDialogNow();
+            return;
+        }
+
+        if (action === 'photography-open-comments' || action === 'photography-view-photo') {
+            const postId = text(trigger.getAttribute('data-post-id'));
+            if (!postId) return;
+            return openDialog('photography-comments', { postId });
+        }
+
+        if (action === 'photography-view-profile') {
+            state().ui.photographyProfileUserId = text(trigger.getAttribute('data-user-id'));
+            setPanel('photography');
+            closeDialog();
+            return renderSocialPageNow('photography-view-profile');
+        }
+
+        if (action === 'photography-profile-back') {
+            state().ui.photographyProfileUserId = '';
+            return renderSocialPageNow('photography-profile-back');
+        }
+
+        if (action === 'photography-appreciate') {
+            const postId = text(trigger.getAttribute('data-post-id'));
+            return withBusy(() => reactToPortalSocialPost(postId, 'like'));
+        }
+
+        if (action === 'photography-share') {
+            const postId = text(trigger.getAttribute('data-post-id'));
+            return openDialog('post-share', { postId });
+        }
+
+        if (action === 'photography-follow') {
+            const userId = text(trigger.getAttribute('data-user-id'));
+            return withBusy(async () => {
+                if (typeof togglePortalSocialFollow !== 'function') return;
+                const payload = await togglePortalSocialFollow('profile', userId, { skipBootstrap: true });
+                const following = Boolean(payload?.following);
+                if (!patchPhotographyFollowButtons(userId, following)) {
+                    renderSocialPageNow('photography-follow');
+                    return;
+                }
+                // Following tab membership can change — refresh only the feed stage.
+                if (text(state().ui?.photographyTab || '') === 'following') {
+                    if (!refreshPhotographyPanelStage()) renderSocialPageNow('photography-follow');
+                }
+            });
+        }
+        return false;
+    }
+
+    window.handleSocialPhotographyClick = handleSocialPhotographyClick;
+    window.isSocialPhotographyClickAction = isSocialPhotographyClickAction;
+
+    function isSocialPhotographySubmitForm(formType) {
+        return text(formType || '') === 'photography-upload';
+    }
+
+    function handleSocialPhotographySubmit(formType, form, runtime, event) {
+        if (!isSocialPhotographySubmitForm(formType)) return false;
+        if (formType === 'photography-upload') {
+            return withBusy(async () => {
+                const draft = runtime.ui?.photographyUploadDraft || {};
+                const file = draft.file || null;
+                const caption = text(draft.caption || form.photographyCaption?.value || '');
+                if (!file) throw new Error('Choose an image before publishing.');
+                if (typeof submitSocialPost !== 'function') throw new Error('Photo publishing is unavailable.');
+                const tags = text(draft.tags || form.photographyTags?.value || '')
+                    .split(',')
+                    .map((tag) => text(tag).replace(/^#/, ''))
+                    .filter(Boolean);
+                const published = await submitSocialPost(caption, {
+                    postType: 'photo',
+                    category: 'Photography',
+                    file,
+                    fileScope: 'social',
+                    photoMeta: {
+                        tags,
+                        location: text(draft.location || form.photographyLocation?.value || ''),
+                        facultyCode: currentFacultyCode()
+                    }
+                });
+                if (!published) throw new Error('Photo could not be published.');
+                revokePhotographyUploadPreview(runtime.ui.photographyUploadDraft);
+                runtime.ui.photographyUploadDraft = {};
+                runtime.ui.photographyUploadStep = 1;
+                runtime.ui.photographyTab = 'explore';
+                closeDialog();
+                setPanel('photography');
+                const host = root();
+                if (host) host.__kiuLastRenderSignature = '';
+                renderSocialPageNow('photography-upload-submit');
+            });
+        }
+        return false;
+    }
+
+    window.handleSocialPhotographySubmit = handleSocialPhotographySubmit;
+    window.isSocialPhotographySubmitForm = isSocialPhotographySubmitForm;
+
+    function isSocialPhotographyInputTarget(target) {
+        if (!target || typeof target.matches !== 'function') return false;
+        try {
+
+        if (target.matches('[data-action="photography-search-input"]')) return true;
+
+        } catch (e) {}
+        return false;
+    }
+
+    function handleSocialPhotographyInput(target, runtime, event) {
+        if (!isSocialPhotographyInputTarget(target)) return false;
+        if (target.matches('[data-action="photography-search-input"]')) {
+            runtime.ui.photographySearch = target.value;
+            if (photographySearchTimer) window.clearTimeout(photographySearchTimer);
+            photographySearchTimer = window.setTimeout(() => {
+                photographySearchTimer = 0;
+                if (!refreshPhotographyPanelStage()) renderSocialPageNow('photography-search-input');
+            }, 220);
+            return;
+        }
+
+        return true;
+    }
+
+    function isSocialPhotographyChangeTarget(target) {
+        if (!target || typeof target.matches !== 'function') return false;
+        try {
+
+        if (target.matches('input[name="photographyUploadFile"]')) return true;
+
+        } catch (e) {}
+        return false;
+    }
+
+    function handleSocialPhotographyChange(target, runtime, event) {
+        if (!isSocialPhotographyChangeTarget(target)) return false;
+        if (target.matches('input[name="photographyUploadFile"]')) {
+            event.__kiuSocialChangeHandled = true;
+            if (typeof applyPhotographyUploadFile === 'function') {
+                applyPhotographyUploadFile(target.files?.[0] || null);
+            }
+            return true;
+        }
+        return false;
+
+        return true;
+    }
+
+    window.handleSocialPhotographyInput = handleSocialPhotographyInput;
+    window.isSocialPhotographyInputTarget = isSocialPhotographyInputTarget;
+    window.handleSocialPhotographyChange = handleSocialPhotographyChange;
+    window.isSocialPhotographyChangeTarget = isSocialPhotographyChangeTarget;
+
+})();

@@ -17,10 +17,10 @@ describe('Social Lost & Found regressions', () => {
         const socialRuntimeJs = readAsset('assets/js/shared/social-runtime-lite.js');
 
         expect(stateJs).toContain('lostFoundItems');
-        expect(stateJs).toContain('lostFoundComposerOpen');
+        expect(stateJs).not.toContain('lostFoundComposerOpen');
         expect(initialStateJs).toContain('lostFoundItems');
         expect(socialRuntimeJs).toContain('lostFoundItems');
-        expect(socialRuntimeJs).toContain('lostFoundScope');
+        expect(socialRuntimeJs).not.toContain('lostFoundScope');
     });
 
     it('exposes the Lost & Found panel in the social shell and mobile shell', () => {
@@ -34,11 +34,11 @@ describe('Social Lost & Found regressions', () => {
         const appJs = readAsset('assets/js/app/app.js');
         const socialHtml = readAsset('social.html');
 
-        expect(socialPageJs).toContain("const SOCIAL_COMMUNITY_MODULE_URL = 'assets/js/pages/social-community.js?v=20260516-socialcommunity-module1';");
-        expect(socialPageJs).toContain("const SOCIAL_LOST_FOUND_MODULE_URL = 'assets/js/pages/social-lost-found.js?v=20260604-lfnative1';");
-        expect(socialPageJs).toContain("const SOCIAL_ALERTS_MODULE_URL = 'assets/js/pages/social-alerts.js?v=20260604-alertcats1';");
-        expect(socialPageJs).toContain("const SOCIAL_MESSAGES_MODULE_URL = 'assets/js/pages/social-messages.js?v=20260516-socialmessages-module1';");
-        expect(socialPageJs).toContain("const SOCIAL_PROFILE_MODULE_URL = 'assets/js/pages/social-profile.js?v=20260516-socialprofile-module1';");
+        expect(socialPageJs).toContain("const SOCIAL_COMMUNITY_MODULE_URL = 'assets/js/pages/social-community.js?v=20260714-community-click1';");
+        expect(socialPageJs).toContain("const SOCIAL_LOST_FOUND_MODULE_URL = 'assets/js/pages/social-lost-found.js?v=20260714-lf-click1';");
+        expect(socialPageJs).toContain("const SOCIAL_ALERTS_MODULE_URL = 'assets/js/pages/social-alerts.js?v=20260714-alerts-click1';");
+        expect(socialPageJs).toContain("const SOCIAL_MESSAGES_MODULE_URL = 'assets/js/pages/social-messages.js?v=20260714-messages-click1';");
+        expect(socialPageJs).toContain("const SOCIAL_PROFILE_MODULE_URL = 'assets/js/pages/social-profile.js?v=20260714-profile-click1';");
         expect(socialPageJs).toContain('function ensureSocialCommunityModule()');
         expect(socialPageJs).toContain('function ensureSocialLostFoundModule()');
         expect(socialPageJs).toContain('function ensureSocialAlertsModule()');
@@ -56,26 +56,44 @@ describe('Social Lost & Found regressions', () => {
         expect(socialPageJs).not.toContain('host.innerHTML = markup;');
         expect(socialPageJs).toContain('lost-and-found');
         expect(socialPageJs).toContain('panel-lost-found');
-        expect(communityModuleJs).toContain('Community overview');
-        expect(communityModuleJs).toContain('directory-study-chat');
+        expect(communityModuleJs).toContain('renderCommunityHero(runtime, activeCommunityTab, communityStats, activeBody');
+        expect(communityModuleJs).not.toContain('renderDirectorySection');
+        expect(socialPageJs).toContain('is-merged');
+        expect(socialPageJs).toContain('social-neo-community-hero-divider');
+        expect(communityModuleJs).not.toContain('directory-study-chat');
+        expect(communityModuleJs).not.toContain('person-mention');
         expect(communityModuleJs).toContain('person-group-invite');
         expect(communityModuleJs).toContain("items.join(' / ')");
-        expect(lostFoundModuleJs).toContain('name="lostFoundFaculty"');
+        expect(socialPageJs).not.toContain('name="lostFoundFaculty"');
+        expect(socialPageJs).not.toContain('name="lostFoundKind"');
+        expect(socialPageJs).not.toContain('name="lostFoundScope"');
+        expect((socialPageJs + lostFoundModuleJs)).toContain('lost-found-create-open');
         expect(lostFoundModuleJs).toContain('lost-found-delete');
-        expect(lostFoundModuleJs).toContain('lost-found-compose-toggle');
+        expect(lostFoundModuleJs).toContain('lost-found-mark-found');
+        expect(lostFoundModuleJs).toContain('function renderLostFoundHero');
+        expect(lostFoundModuleJs).toContain('social-neo-lost-found-hero');
+        expect(lostFoundModuleJs).toContain('social-neo-lost-found-hero-divider');
+        expect(lostFoundModuleJs).toContain('is-merged');
+        expect(lostFoundModuleJs).toContain('window.renderLostFoundHero = renderLostFoundHero');
+        expect(lostFoundModuleJs).toContain('social-neo-lost-found-shell');
+        expect(lostFoundModuleJs).toContain('bodyHtml: listingsBody');
+        expect(socialPageJs).toMatch(/\$\{escape\(family\)\}-stat/);
+        expect(socialPageJs).toContain('is-merged');
+        expect(lostFoundModuleJs).not.toContain('<section class="social-neo-stack social-neo-lf-listings">');
         expect(alertsModuleJs).toContain('Moderation queue');
-        expect(alertsModuleJs).toContain('notification-read');
+        expect(alertsModuleJs).toContain('notification-mark-read');
+        expect(alertsModuleJs).toContain('notification-follow');
         expect(alertsModuleJs).toContain('report-resolve');
         expect(messagesModuleJs).toContain('window.renderMessagesPanel = function renderMessagesPanel()');
-        expect(messagesModuleJs).toContain('group-thread-search-open');
+        expect((socialPageJs + readAsset('assets/js/pages/social-groups.js'))).toContain('group-thread-search-open');
         expect(messagesModuleJs).toContain('group-call-join');
         expect(profileModuleJs).toContain('window.renderSocialProfilePanel = renderProfilePageBody;');
         expect(profileModuleJs).toContain('Edit Profile');
         expect(socialMobileJs).toContain('lost-and-found');
-        expect(appJs).toContain('social-runtime-lite.js?v=20260606-postactions6');
-        expect(appJs).toContain('assets/js/pages/social-page.js?v=20260606-postactions6');
-        expect(appJs).toContain('window.__KIU_SOCIAL_PAGE_REBUILT');
-        expect(appJs).toContain('window.__KIU_SOCIAL_MOBILE_SHELL_INIT');
+        expect(socialHtml).toContain('social-runtime-lite.js?v=20260713-post-compose1');
+        expect(socialHtml).toContain('assets/js/pages/social-page.js?v=20260713-groups-detail9');
+        expect(socialPageJs).toContain('window.__KIU_SOCIAL_PAGE_REBUILT');
+        expect(socialMobileJs).toContain('window.__KIU_SOCIAL_MOBILE_SHELL_INIT');
         expect(socialHtml).not.toContain('assets/js/app/app.js?v=20260430-portfoliolux1');
         expect(socialHtml).toContain('mob-nav-lost-found');
         expect(socialHtml).toContain('assets/js/features/ui.js');
@@ -98,14 +116,18 @@ describe('Social Lost & Found regressions', () => {
         const runtimeJs = readAsset('assets/js/shared/social-runtime-lite.js');
         const storeJs = readAsset('backend/platform/store.js');
 
-        expect(socialPageJs).toContain('Student Portfolio');
-        expect(socialPageJs).toContain('portfolio-contact');
-        expect(socialPageJs).toContain('projectVisibleFacultyCodesRaw');
+        const workspaceModule = readAsset('assets/js/pages/social-workspace.js');
+        expect(workspaceModule).toContain('Build my portfolio');
+        expect((socialPageJs + workspaceModule)).toContain('portfolio-contact');
+        expect((socialPageJs + workspaceModule)).toContain('projectVisibleFacultyCodesRaw');
         expect(socialPageJs).toContain('renderPortfolioProfileBlock');
         expect(socialMobileJs).toContain('Portfolio');
         expect(runtimeJs).toContain('projectDiscoverSearch');
         expect(runtimeJs).toContain('deletePortalSocialProject');
-        expect(storeJs).toContain('normalizeProjectVisibilityMode');
+        // Project visibility helpers live in social-projects-service after domain split.
+        const projectsService = readAsset('backend/platform/domains/social-projects-service.js');
+        expect(projectsService).toContain('normalizeProjectVisibilityMode');
+        expect(projectsService).toContain('deleteSocialProject');
         expect(storeJs).toContain('deleteSocialProject');
     });
 
@@ -117,12 +139,7 @@ describe('Social Lost & Found regressions', () => {
         expect(countOccurrences(socialPageJs, 'function renderPagesPanel()')).toBe(1);
         expect(countOccurrences(socialPageJs, 'function renderEventsPanel()')).toBe(1);
         expect(countOccurrences(socialPageJs, 'function renderAlertsPanel()')).toBe(1);
-        expect(socialPageJs).toContain('function renderProjectsWorkspacePanelLegacy()');
         expect(socialPageJs).toContain('function renderProjectsWorkspacePanelClassic()');
-        expect(socialPageJs).toContain('function renderGroupsPanelLegacy()');
-        expect(socialPageJs).toContain('function renderPagesPanelLegacy()');
-        expect(socialPageJs).toContain('function renderEventsPanelLegacy()');
-        expect(socialPageJs).toContain('function renderAlertsPanelLegacy()');
     });
 
     it('adds efficient-tier surface fallbacks for the heavy social route chrome', () => {
@@ -150,25 +167,38 @@ describe('Social Lost & Found regressions', () => {
         expect(navigationJs).toContain("if (PORTAL_STANDALONE_ROUTE_IDS.has(normalizedPageId)) return 'standalone';");
     });
 
-    it('keeps the story viewer/composer and social muted helper slice on explicit classes', () => {
+    it('keeps lost-found item mutations in the render signature and force-render allowlist', () => {
         const socialPageJs = readAsset('assets/js/pages/social-page.js');
-        const socialCss = readAsset('assets/css/social-rebuild.css');
+        const lostFoundModuleJs = readAsset('assets/js/pages/social-lost-found.js');
 
-        expect(socialPageJs).toContain('class="social-neo-muted social-neo-muted-mt-6"');
-        expect(socialPageJs).toContain('class="social-neo-btn social-neo-btn-ghost social-neo-story-close-btn"');
-        expect(socialPageJs).toContain('class="social-neo-story-caption"');
-        expect(socialPageJs).toContain('class="social-neo-story-compose-copy"');
-        expect(socialPageJs).toContain('class="social-neo-btn social-neo-btn-ghost social-neo-story-upload-btn social-neo-story-upload-shell"');
-        expect(socialPageJs).not.toContain('style="margin-top:6px"');
-        expect(socialPageJs).not.toContain('style="margin-left:auto"');
-        expect(socialPageJs).not.toContain('style="position:absolute;bottom:60px;left:12px;right:12px;');
-        expect(socialPageJs).not.toContain('style="color:var(--sn-txt2);font-size:13px;margin:8px 0"');
-        expect(socialPageJs).not.toContain('style="cursor:pointer;justify-content:center"');
-        expect(socialCss).toContain('.social-neo-muted-mt-6');
-        expect(socialCss).toContain('.social-neo-story-close-btn');
-        expect(socialCss).toContain('.social-neo-story-caption');
-        expect(socialCss).toContain('.social-neo-story-compose-copy');
-        expect(socialCss).toContain('.social-neo-story-upload-btn');
-        expect(socialCss).toContain('.social-neo-story-upload-shell');
+        expect(socialPageJs).toContain('function buildLostFoundFingerprint(runtime)');
+        expect(socialPageJs).toContain('buildLostFoundFingerprint(runtime)');
+        expect(socialPageJs).toContain('function lostFoundActiveCount()');
+        expect(socialPageJs).toContain('function lostFoundRecoveredCount()');
+        expect(socialPageJs).toContain('lost-found-delete|lost-found-mark-found|lost-found-save');
+        expect(socialPageJs).toContain('lost-found-created|lost-found-updated|lost-found-deleted|lost-found-marked-found');
+        expect((socialPageJs + lostFoundModuleJs)).toContain("renderSocialPageNow('lost-found-delete')");
+        expect((socialPageJs + lostFoundModuleJs)).toContain("renderSocialPageNow('lost-found-mark-found')");
+        expect((socialPageJs + lostFoundModuleJs)).toContain("renderSocialPageNow('lost-found-save')");
+        expect(socialPageJs).not.toContain('lost-found-filter');
+        expect(socialPageJs).not.toContain('data-lost-found-filter');
+        expect(lostFoundModuleJs).toContain('function renderLostFoundActionConfirmDialog(kind, item)');
+        expect(lostFoundModuleJs).toContain('confirmLostFoundDelete');
+        expect(lostFoundModuleJs).toContain('confirmLostFoundMarkFound');
+        expect((socialPageJs + lostFoundModuleJs)).toContain("'dialog-lost-found-delete'");
+        expect((socialPageJs + lostFoundModuleJs)).toContain("'dialog-lost-found-mark-found'");
+        expect((socialPageJs + lostFoundModuleJs)).toContain("openDialog('lost-found-delete', { itemId })");
+        expect((socialPageJs + lostFoundModuleJs)).toContain("openDialog('lost-found-mark-found', { itemId })");
     });
+    it('retires half-built stories UI (no dead-end story product surface)', () => {
+        const socialPageJs = readAsset('assets/js/pages/social-page.js');
+        const runtimeJs = readAsset('assets/js/shared/social-runtime-lite.js');
+
+        expect(socialPageJs).toContain("function renderStoryViewer() {");
+        expect(socialPageJs).toContain("function renderStoryComposer() {");
+        expect(socialPageJs).not.toContain('data-action="story-add"');
+        expect(socialPageJs).not.toContain('Your Story');
+        expect(runtimeJs).toContain("throw new Error('Stories are not available.')");
+    });
+
 });

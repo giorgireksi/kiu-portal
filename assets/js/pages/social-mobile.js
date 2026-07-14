@@ -152,15 +152,17 @@
     function getActiveSocialPanel() {
         const runtime = getSocialRuntime();
         const panel = normalizeSocialPanel(runtime?.ui?.activePanel || 'feed');
-        return ['feed', 'community', 'workspace', 'projects', 'events', 'lost-and-found', 'messages', 'alerts', 'profile'].includes(panel) ? panel : 'feed';
+        return ['feed', 'community', 'workspace', 'projects', 'events', 'photography', 'lost-and-found', 'surveys', 'messages', 'alerts', 'profile'].includes(panel) ? panel : 'feed';
     }
 
     function activeMobileNavKey(panel = getActiveSocialPanel()) {
         const normalizedPanel = normalizeSocialPanel(panel);
         if (normalizedPanel === 'community') return 'community';
         if (normalizedPanel === 'workspace' || normalizedPanel === 'projects' || normalizedPanel === 'profile') return 'more';
+        if (normalizedPanel === 'photography') return 'photography';
         if (normalizedPanel === 'events') return 'events';
         if (normalizedPanel === 'lost-and-found') return 'lost-and-found';
+        if (normalizedPanel === 'surveys') return 'more';
         if (normalizedPanel === 'messages' || normalizedPanel === 'alerts') return 'inbox';
         return 'home';
     }
@@ -380,6 +382,10 @@
                         <i class="fas fa-stream"></i>
                         <span>Feed</span>
                     </button>
+                    <button class="mob-sheet-nav-btn" type="button" data-social-panel="photography">
+                        <i class="fas fa-camera-retro"></i>
+                        <span>Exposé</span>
+                    </button>
                     <button class="mob-sheet-nav-btn" type="button" data-social-panel="workspace">
                         <i class="fas fa-diagram-project"></i>
                         <span>Projects</span>
@@ -391,6 +397,10 @@
                     <button class="mob-sheet-nav-btn" type="button" data-social-panel="lost-and-found">
                         <i class="fas fa-magnifying-glass-location"></i>
                         <span>Lost & Found</span>
+                    </button>
+                    <button class="mob-sheet-nav-btn" type="button" data-social-panel="surveys">
+                        <i class="fas fa-clipboard-list"></i>
+                        <span>Surveys</span>
                     </button>
                     <button class="mob-sheet-nav-btn" type="button" data-social-panel="profile" data-social-profile-tab="saved">
                         <i class="fas fa-bookmark"></i>

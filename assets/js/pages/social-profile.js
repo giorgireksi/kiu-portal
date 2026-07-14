@@ -25,7 +25,20 @@
         savedPostRecords,
         currentSocialProfileSettings,
         renderPortfolioProfileBlock,
-        escape
+        escape,
+        renderFileChip,
+        setPanel,
+        openDialog,
+        renderSocialPageNow,
+        withBusy,
+        root,
+        invalidateSocialRenderCache,
+        hydrateMyPortfolioDocument,
+        openPortalDirectChat,
+        setActiveChat,
+        closeDialog,
+        updatePortalSocialProfile,
+        readFileAsDataUrl
     } = hooks;
 
     if (
@@ -50,6 +63,19 @@
         || typeof currentSocialProfileSettings !== 'function'
         || typeof renderPortfolioProfileBlock !== 'function'
         || typeof escape !== 'function'
+        || typeof renderFileChip !== 'function'
+        || typeof setPanel !== 'function'
+        || typeof openDialog !== 'function'
+        || typeof renderSocialPageNow !== 'function'
+        || typeof withBusy !== 'function'
+        || typeof root !== 'function'
+        || typeof invalidateSocialRenderCache !== 'function'
+        || typeof hydrateMyPortfolioDocument !== 'function'
+        || typeof openPortalDirectChat !== 'function'
+        || typeof setActiveChat !== 'function'
+        || typeof closeDialog !== 'function'
+        || typeof updatePortalSocialProfile !== 'function'
+        || typeof readFileAsDataUrl !== 'function'
     ) {
         throw new Error('Social profile hooks are unavailable.');
     }
@@ -352,5 +378,206 @@
     }
 
 
+    
+    const PROFILE_OWNED_DIALOG_KINDS = new Set(['profile-cover']);
+
+    function renderProfileOwnedDialog(runtime, dialog) {
+        if (!dialog) return '';
+        const kind = text(dialog.type);
+        if (!PROFILE_OWNED_DIALOG_KINDS.has(kind)) return '';
+        if (kind === 'profile-cover') {
+            return `<div class="social-neo-dialog-backdrop" data-action="dialog-close">
+                <form class="social-neo-dialog-card" data-form="dialog-profile-cover" data-action="noop">
+                    <div class="social-neo-section-head social-neo-dialog-head">
+                        <div class="social-neo-dialog-heading"><strong class="social-neo-dialog-title">Update cover photo</strong><span class="social-neo-dialog-subtitle">Paste an image URL or upload a file for your profile banner.</span></div>
+                        <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-close-btn" type="button" data-action="dialog-close"><i class="fas fa-times"></i></button>
+                    </div>
+                    <input class="social-neo-input" name="coverImageUrl" type="url" placeholder="https://..." value="${escape(text(dialog.coverImage || ''))}">
+                    ${renderFileChip(state().ui?.coverImageFile, 'Cover image ready')}
+                    <div class="social-neo-inline social-neo-quick-actions">
+                        <label class="social-neo-btn social-neo-btn-ghost social-neo-btn-pointer">
+                            <i class="fas fa-image"></i> Upload image
+                            <input name="coverImageFile" type="file" accept="image/*" hidden>
+                        </label>
+                    </div>
+                    <div class="social-neo-form-actions social-neo-dialog-actions">
+                        <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-cancel-btn" type="button" data-action="dialog-close">Cancel</button>
+                        <button class="social-neo-btn social-neo-btn-primary social-neo-dialog-submit-btn" type="submit">Update cover</button>
+                    </div>
+                </form>
+            </div>`;
+        }
+        return '';
+    }
+
     window.renderSocialProfilePanel = renderProfilePageBody;
+    window.renderProfileOwnedDialog = renderProfileOwnedDialog;
+    window.PROFILE_OWNED_DIALOG_KINDS = PROFILE_OWNED_DIALOG_KINDS;
+
+    function isSocialProfileClickAction(action) {
+        const a = text(action || '');
+        return Boolean(a) && a.startsWith('profile-');
+    }
+
+    function handleSocialProfileClick(action, trigger) {
+        if (!isSocialProfileClickAction(action)) return false;
+        if (action === 'profile-portfolio-open') {
+            state().ui.activeProjectId = '';
+            state().ui.projectTab = 'overview';
+            state().ui.portfolioPanelTab = 'mine';
+            setPanel('projects');
+            if (state().ui.portfolioPanelTab === 'mine') {
+                return withBusy(async () => {
+                    await hydrateMyPortfolioDocument(true);
+                    renderSocialPageNow('profile-portfolio-open');
+                });
+            }
+            return renderSocialPageNow('profile-portfolio-open');
+        }
+
+if (action === 'profile-tab-posts') { state().ui.profileTab = 'posts'; return renderSocialPageNow('profile-tab'); }
+
+if (action === 'profile-tab-friends') { state().ui.profileTab = 'friends'; return renderSocialPageNow('profile-tab'); }
+
+if (action === 'profile-tab-saved') { state().ui.profileTab = 'saved'; return renderSocialPageNow('profile-tab'); }
+
+if (action === 'profile-tab-about') { state().ui.profileTab = 'about'; return renderSocialPageNow('profile-tab'); }
+
+if (action === 'profile-tab-following') { state().ui.profileTab = 'following'; return renderSocialPageNow('profile-tab'); }
+
+        if (action === 'profile-view') {
+            const userId = trigger.getAttribute('data-user-id');
+            state().ui.activeProfileUserId = text(userId || currentUserId());
+            state().ui.profileTab = 'posts';
+            setPanel('profile');
+            invalidateSocialRenderCache({ center: true });
+            return renderSocialPageNow('profile-view');
+        }
+
+        if (action === 'profile-edit') {
+            state().ui.editProfileMode = true;
+            state().ui.profileTab = 'about';
+            renderSocialPageNow('profile-edit');
+            window.requestAnimationFrame(() => {
+                root()?.querySelector('[data-profile-tab="about"], .social-neo-profile-about, form[data-form="profile"]')
+                    ?.scrollIntoView?.({ block: 'nearest', behavior: 'smooth' });
+            });
+            return;
+        }
+
+        if (action === 'profile-edit-cancel') { state().ui.editProfileMode = false; return renderSocialPageNow('profile-cancel'); }
+
+        if (action === 'profile-edit-cover') return openDialog('profile-cover', { coverImage: profileCover(profileAccount(currentUserId())) });
+
+        if (action === 'profile-message') {
+            return withBusy(async () => {
+                const chat = await openPortalDirectChat(trigger.getAttribute('data-user-id'));
+                if (chat?.id) { setActiveChat(chat.id); setPanel('messages'); }
+            });
+        }
+        return false;
+    }
+
+    window.handleSocialProfileClick = handleSocialProfileClick;
+    window.isSocialProfileClickAction = isSocialProfileClickAction;
+
+    function isSocialProfileSubmitForm(formType) {
+        const f = text(formType || '');
+        return f === 'edit-profile' || f === 'dialog-profile-cover';
+    }
+
+    function handleSocialProfileSubmit(formType, form, runtime, event) {
+        if (!isSocialProfileSubmitForm(formType)) return false;
+        if (formType === 'edit-profile') {
+            return withBusy(async () => {
+                const payload = {
+                    displayName: text(form.profileDisplayName?.value || runtime.ui?.profileDisplayName),
+                    bio: text(form.profileBio?.value || runtime.ui?.profileBio),
+                    location: text(form.profileLocation?.value || runtime.ui?.profileLocation),
+                    website: text(form.profileWebsite?.value || runtime.ui?.profileWebsite),
+                    interests: text(form.profileInterests?.value || runtime.ui?.profileInterests),
+                    availability: text(form.profileAvailability?.value || runtime.ui?.profileAvailability),
+                    officeHours: text(form.profileOfficeHours?.value || runtime.ui?.profileOfficeHours),
+                    birthday: text(form.profileBirthday?.value || runtime.ui?.profileBirthday),
+                    coverImage: text(runtime.ui?.profileCoverImage || profileCover(profileAccount(currentUserId()))),
+                    visibility: text(form.profileVisibility?.value || runtime.ui?.profileVisibility || currentSocialProfileSettings().visibility || 'campus') || 'campus',
+                    defaultAudience: text(form.profileDefaultAudience?.value || runtime.ui?.profileDefaultAudience || currentSocialProfileSettings().defaultAudience || 'campus') || 'campus',
+                    digestFrequency: text(form.profileDigestFrequency?.value || runtime.ui?.profileDigestFrequency || currentSocialProfileSettings().digestFrequency || 'daily') || 'daily',
+                    eventReminderLeadHours: Number(form.profileEventReminderLeadHours?.value || runtime.ui?.profileEventReminderLeadHours || currentSocialProfileSettings().eventReminderLeadHours || 24)
+                };
+                await updatePortalSocialProfile(payload);
+                runtime.ui.editProfileMode = false;
+                renderSocialPageNow('profile-saved');
+            });
+        }
+
+        if (formType === 'dialog-profile-cover') {
+            return withBusy(async () => {
+                const coverImage = text(form.coverImageUrl?.value || '') || await readFileAsDataUrl(runtime.ui?.coverImageFile || null);
+                if (!coverImage) throw new Error('Provide an image URL or upload a cover image first.');
+                await updatePortalSocialProfile({ coverImage });
+                runtime.ui.coverImageFile = null;
+                runtime.ui.profileCoverImage = coverImage;
+                closeDialog();
+            });
+        }
+        return false;
+    }
+
+    window.handleSocialProfileSubmit = handleSocialProfileSubmit;
+    window.isSocialProfileSubmitForm = isSocialProfileSubmitForm;
+
+    function isSocialProfileInputTarget(target) {
+        if (!target || typeof target.matches !== 'function') return false;
+        try {
+
+        if (target.closest && target.closest('form[data-form="edit-profile"]')) return true;
+
+        } catch (e) {}
+        return false;
+    }
+
+    function handleSocialProfileInput(target, runtime, event) {
+        if (!isSocialProfileInputTarget(target)) return false;
+        if (target.matches('form[data-form="edit-profile"] [name="profileDisplayName"]')) runtime.ui.profileDisplayName = target.value;
+        if (target.matches('form[data-form="edit-profile"] [name="profileBio"]')) runtime.ui.profileBio = target.value;
+        if (target.matches('form[data-form="edit-profile"] [name="profileLocation"]')) runtime.ui.profileLocation = target.value;
+        if (target.matches('form[data-form="edit-profile"] [name="profileWebsite"]')) runtime.ui.profileWebsite = target.value;
+        if (target.matches('form[data-form="edit-profile"] [name="profileBirthday"]')) runtime.ui.profileBirthday = target.value;
+        if (target.matches('form[data-form="edit-profile"] [name="profileInterests"]')) runtime.ui.profileInterests = target.value;
+        if (target.matches('form[data-form="edit-profile"] [name="profileAvailability"]')) runtime.ui.profileAvailability = target.value;
+        if (target.matches('form[data-form="edit-profile"] [name="profileOfficeHours"]')) runtime.ui.profileOfficeHours = target.value;
+        if (target.matches('form[data-form="edit-profile"] [name="profileVisibility"]')) runtime.ui.profileVisibility = target.value;
+        if (target.matches('form[data-form="edit-profile"] [name="profileDefaultAudience"]')) runtime.ui.profileDefaultAudience = target.value;
+        if (target.matches('form[data-form="edit-profile"] [name="profileDigestFrequency"]')) runtime.ui.profileDigestFrequency = target.value;
+        if (target.matches('form[data-form="edit-profile"] [name="profileEventReminderLeadHours"]')) runtime.ui.profileEventReminderLeadHours = target.value;
+
+        return true;
+    }
+
+    function isSocialProfileChangeTarget(target) {
+        if (!target || typeof target.matches !== 'function') return false;
+        try {
+
+        if (target.name === 'coverImageFile') return true;
+
+        } catch (e) {}
+        return false;
+    }
+
+    function handleSocialProfileChange(target, runtime, event) {
+        if (!isSocialProfileChangeTarget(target)) return false;
+        if (target.name === 'coverImageFile') {
+            runtime.ui.coverImageFile = target.files?.[0] || null;
+            renderSocialPageNow('cover-image-file');
+        }
+
+        return true;
+    }
+
+    window.handleSocialProfileInput = handleSocialProfileInput;
+    window.isSocialProfileInputTarget = isSocialProfileInputTarget;
+    window.handleSocialProfileChange = handleSocialProfileChange;
+    window.isSocialProfileChangeTarget = isSocialProfileChangeTarget;
+
 })();

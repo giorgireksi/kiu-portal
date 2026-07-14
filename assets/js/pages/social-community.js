@@ -26,7 +26,18 @@
         personSuggestionReason,
         renderRelationshipActions,
         inviteEligibleGroups,
-        escape
+        escape,
+        renderCommunityHero,
+        openDialog,
+        renderSocialPageNow,
+        withBusy,
+        root,
+        invalidateSocialRenderCache,
+        rememberInteractionAnchor,
+        sendPortalSocialConnectionRequest,
+        respondPortalSocialConnectionRequest,
+        removePortalSocialConnection,
+        queueDirectoryRefresh
     } = hooks;
 
     if (
@@ -53,6 +64,17 @@
         || typeof renderRelationshipActions !== 'function'
         || typeof inviteEligibleGroups !== 'function'
         || typeof escape !== 'function'
+        || typeof renderCommunityHero !== 'function'
+        || typeof openDialog !== 'function'
+        || typeof renderSocialPageNow !== 'function'
+        || typeof withBusy !== 'function'
+        || typeof root !== 'function'
+        || typeof invalidateSocialRenderCache !== 'function'
+        || typeof rememberInteractionAnchor !== 'function'
+        || typeof sendPortalSocialConnectionRequest !== 'function'
+        || typeof respondPortalSocialConnectionRequest !== 'function'
+        || typeof removePortalSocialConnection !== 'function'
+        || typeof queueDirectoryRefresh !== 'function'
     ) {
         throw new Error('Social community hooks are unavailable.');
     }
@@ -61,21 +83,18 @@
         const runtime = state();
         const directory = Array.isArray(runtime.directory) ? runtime.directory : [];
         const { incoming, outgoing, connections } = relationshipBuckets();
-        const activeCommunityTab = text(runtime.ui?.communityTab || 'people') || 'people';
+        const rawCommunityTab = text(runtime.ui?.communityTab || 'people') || 'people';
+        const activeCommunityTab = rawCommunityTab === 'suggested' ? 'people' : rawCommunityTab;
         const directorySearchId = controlId('directorySearch');
         const directoryRoleId = controlId('directoryRole');
-        const suggestions = [...directory]
-            .filter((account) => connectionStatusFor(account?.id).state === 'none')
-            .sort((left, right) => personSuggestionScore(right) - personSuggestionScore(left))
-            .slice(0, 18);
         const staff = directory.filter(isStaffAccount);
         const connectionAccounts = connections
             .map((relationship) => text(relationship.fromId) === currentUserId() ? text(relationship.toId) : text(relationship.fromId))
             .map((userId) => accountById(userId) || directory.find((entry) => text(entry.id) === userId) || { id: userId });
         const communityStats = {
             profiles: directory.length,
-            suggested: suggestions.length,
             requests: incoming.length + outgoing.length,
+            connections: connectionAccounts.length,
             staff: staff.length
         };
 
@@ -97,7 +116,7 @@
             const completeness = personProfileCompleteness(account);
             const showInvite = inviteEligibleGroups().length > 0 && connectionStatusFor(account?.id).state !== 'incoming';
             return `
-                <article class="social-neo-card social-neo-directory-item social-neo-card-pad-16 social-neo-community-card">
+                <article class="social-neo-card social-neo-directory-item social-neo-card-pad-16 social-neo-community-card" data-user-id="${escape(text(account.id))}">
                     <div class="social-neo-person social-neo-person-start-gap-12 social-neo-community-person">
                         ${avatar(account)}
                         <div class="social-neo-field-flex-1-260 social-neo-community-copy">
@@ -139,102 +158,197 @@
                             <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="profile-view" data-user-id="${escape(text(account.id))}">
                                 <i class="fas fa-user"></i> View profile
                             </button>
-                            <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="person-mention" data-user-id="${escape(text(account.id))}">
-                                <i class="fas fa-at"></i> Mention
-                            </button>
                             ${showInvite ? `<button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="person-group-invite" data-user-id="${escape(text(account.id))}">
                                 <i class="fas fa-user-plus"></i> Invite to group
                             </button>` : ''}
-                            <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="directory-study-chat" data-user-id="${escape(text(account.id))}">
-                                <i class="fas fa-book-open"></i> Study chat
-                            </button>
                         </div>
                     </div>
                 </article>
             `;
         };
 
-        const renderRequestBoard = () => `
-            <section class="social-neo-card">
-                <div class="social-neo-section-head">
-                    <div><strong>Connection requests</strong><span>Respond quickly so the network stays active.</span></div>
-                    <span class="social-neo-pill"><strong>${escape(incoming.length + outgoing.length)}</strong><span>Total</span></span>
-                </div>
-                <div class="social-neo-grid-2 social-neo-grid-tight">
-                    <div>
-                        <span class="social-neo-label">Incoming</span>
-                        <div class="social-neo-list">
-                            ${incoming.length ? incoming.map((relationship) => {
-                                const account = accountById(relationship.fromId) || { id: relationship.fromId };
-                                return renderPersonCard(account, { showSuggestion: true });
-                            }).join('') : `<div class="social-neo-empty">No incoming requests.</div>`}
-                        </div>
-                    </div>
-                    <div>
-                        <span class="social-neo-label">Outgoing</span>
-                        <div class="social-neo-list">
-                            ${outgoing.length ? outgoing.map((relationship) => {
-                                const account = accountById(relationship.toId) || { id: relationship.toId };
-                                return renderPersonCard(account, { showSuggestion: true });
-                            }).join('') : `<div class="social-neo-empty">No outgoing requests.</div>`}
-                        </div>
+        const renderRequestBody = () => `
+            <div class="social-neo-section-head">
+                <div><strong>Connection requests</strong><span>Respond quickly so the network stays active.</span></div>
+                <span class="social-neo-pill"><strong>${escape(incoming.length + outgoing.length)}</strong><span>Total</span></span>
+            </div>
+            <div class="social-neo-grid-2 social-neo-grid-tight">
+                <div>
+                    <span class="social-neo-label">Incoming</span>
+                    <div class="social-neo-list">
+                        ${incoming.length ? incoming.map((relationship) => {
+                            const account = accountById(relationship.fromId) || { id: relationship.fromId };
+                            return renderPersonCard(account, { showSuggestion: true });
+                        }).join('') : `<div class="social-neo-empty">No incoming requests.</div>`}
                     </div>
                 </div>
-            </section>
+                <div>
+                    <span class="social-neo-label">Outgoing</span>
+                    <div class="social-neo-list">
+                        ${outgoing.length ? outgoing.map((relationship) => {
+                            const account = accountById(relationship.toId) || { id: relationship.toId };
+                            return renderPersonCard(account, { showSuggestion: true });
+                        }).join('') : `<div class="social-neo-empty">No outgoing requests.</div>`}
+                    </div>
+                </div>
+            </div>
         `;
 
-        const renderDirectorySection = (title, subtitle, items, options = {}) => `
-            <section class="social-neo-card social-neo-community-panel is-featured ${escape(text(options.panelClass || ''))}">
-                <div class="social-neo-section-head">
-                    <div><strong>${escape(title)}</strong><span>${escape(subtitle)}</span></div>
-                    <span class="social-neo-pill"><strong>${escape(items.length)}</strong><span>Profiles</span></span>
-                </div>
-                <div class="social-neo-directory-filters">
-                    <input class="social-neo-input" id="${escape(directorySearchId)}" name="directorySearch" type="search" placeholder="Search people..." data-bind="directory-search" value="${escape(text(runtime.ui?.directorySearch || ''))}">
-                    <select class="social-neo-select" id="${escape(directoryRoleId)}" name="directoryRole" data-bind="directory-role">
-                        <option value="all" ${text(runtime.ui?.directoryRole || 'all') === 'all' ? 'selected' : ''}>All roles</option>
-                        <option value="student" ${text(runtime.ui?.directoryRole) === 'student' ? 'selected' : ''}>Students</option>
-                        <option value="professor" ${text(runtime.ui?.directoryRole) === 'professor' ? 'selected' : ''}>Professors</option>
-                        <option value="ta" ${text(runtime.ui?.directoryRole) === 'ta' ? 'selected' : ''}>Teaching Assistants</option>
-                        <option value="admin" ${text(runtime.ui?.directoryRole) === 'admin' ? 'selected' : ''}>Admins</option>
-                    </select>
-                </div>
-                <div class="social-neo-stat-grid">
-                    <div><strong>${escape(communityStats.profiles)}</strong><span>Profiles</span></div>
-                    <div><strong>${escape(communityStats.suggested)}</strong><span>Suggested</span></div>
-                    <div><strong>${escape(communityStats.staff)}</strong><span>Staff</span></div>
-                </div>
-                <div class="social-neo-directory">
-                    ${items.length ? items.map((account) => renderPersonCard(account, options)).join('') : `<div class="social-neo-empty">${escape(options.emptyText || 'No people matched the current filter.')}</div>`}
-                </div>
-            </section>
+        const renderDirectoryBody = (items, options = {}) => `
+            <div class="social-neo-directory-filters">
+                <input class="social-neo-input" id="${escape(directorySearchId)}" name="directorySearch" type="search" placeholder="Search people..." data-bind="directory-search" value="${escape(text(runtime.ui?.directorySearch || ''))}">
+                <select class="social-neo-select" id="${escape(directoryRoleId)}" name="directoryRole" data-bind="directory-role" data-lux-picker>
+                    <option value="all" ${text(runtime.ui?.directoryRole || 'all') === 'all' ? 'selected' : ''}>All roles</option>
+                    <option value="student" ${text(runtime.ui?.directoryRole) === 'student' ? 'selected' : ''}>Students</option>
+                    <option value="professor" ${text(runtime.ui?.directoryRole) === 'professor' ? 'selected' : ''}>Professors</option>
+                    <option value="ta" ${text(runtime.ui?.directoryRole) === 'ta' ? 'selected' : ''}>Teaching Assistants</option>
+                    <option value="admin" ${text(runtime.ui?.directoryRole) === 'admin' ? 'selected' : ''}>Admins</option>
+                </select>
+            </div>
+            <div class="social-neo-directory">
+                ${items.length ? items.map((account) => renderPersonCard(account, options)).join('') : `<div class="social-neo-empty">${escape(options.emptyText || 'No people matched the current filter.')}</div>`}
+            </div>
         `;
 
-        const activeView = activeCommunityTab === 'suggested'
-            ? renderDirectorySection('Suggested people', 'Shared context, recent activity, and likely connections.', suggestions, { panelClass: 'social-neo-community-panel--suggested', showSuggestion: true, emptyText: 'No suggestions available right now.' })
-            : activeCommunityTab === 'requests'
-                ? renderRequestBoard()
-                : activeCommunityTab === 'connections'
-                    ? renderDirectorySection('Connections', 'People already in your campus network.', connectionAccounts, { panelClass: 'social-neo-community-panel--connections', showSuggestion: true, showConnectionControls: true, emptyText: 'No campus connections yet.' })
-                    : activeCommunityTab === 'staff'
-                        ? renderDirectorySection('Faculty and staff', 'Verified staff accounts with academic context and contact metadata.', staff, { panelClass: 'social-neo-community-panel--staff', showSuggestion: true, showStaffMeta: true, emptyText: 'No staff profiles matched the current filter.' })
-                        : renderDirectorySection('People', 'Find classmates, staff, and collaborators with shared context.', directory, { panelClass: 'social-neo-community-panel--directory', showSuggestion: true, emptyText: 'No people matched the current filter.' });
+        let activeBody = '';
+        let panelClass = 'social-neo-community-panel--directory';
+        if (activeCommunityTab === 'requests') {
+            activeBody = renderRequestBody();
+            panelClass = 'social-neo-community-panel--requests';
+        } else if (activeCommunityTab === 'connections') {
+            activeBody = renderDirectoryBody(connectionAccounts, { showSuggestion: true, showConnectionControls: true, emptyText: 'No campus connections yet.' });
+            panelClass = 'social-neo-community-panel--connections';
+        } else if (activeCommunityTab === 'staff') {
+            activeBody = renderDirectoryBody(staff, { showSuggestion: true, showStaffMeta: true, emptyText: 'No staff profiles matched the current filter.' });
+            panelClass = 'social-neo-community-panel--staff';
+        } else {
+            activeBody = renderDirectoryBody(directory, { showSuggestion: true, emptyText: 'No people matched the current filter.' });
+        }
 
         return `
-            <div class="social-neo-stack social-neo-community-layout">
-                <section class="social-neo-card">
-                    <div class="social-neo-section-head">
-                        <div><strong><i class="fas fa-user-friends social-neo-community-overview-icon"></i> Community overview</strong><span>People suggestions, verified staff, and shared-context shortcuts in one place.</span></div>
-                    </div>
-                    <div class="social-neo-stat-grid">
-                        <div><strong>${escape(directory.length)}</strong><span>Profiles</span></div>
-                        <div><strong>${escape(suggestions.length)}</strong><span>Suggested</span></div>
-                        <div><strong>${escape(incoming.length + outgoing.length)}</strong><span>Requests</span></div>
-                        <div><strong>${escape(connectionAccounts.length)}</strong><span>Connections</span></div>
-                    </div>
-                </section>
-                ${activeView}
+            <div class="social-neo-stack social-neo-community-shell">
+                ${renderCommunityHero(runtime, activeCommunityTab, communityStats, activeBody, { panelClass })}
             </div>
         `;
     };
+
+    function isSocialCommunityClickAction(action) {
+        const a = text(action || '');
+        if (!a) return false;
+        return a.startsWith('connection-') || a.startsWith('person-');
+    }
+
+    function handleSocialCommunityClick(action, trigger) {
+        if (!isSocialCommunityClickAction(action)) return false;
+        if (action === 'person-group-invite') {
+            const targetUserId = text(trigger.getAttribute('data-user-id'));
+            const targetAccount = accountById(targetUserId) || { id: targetUserId };
+            const firstGroup = inviteEligibleGroups()[0];
+            return openDialog('group-invite', {
+                targetUserId,
+                targetUserName: displayName(targetAccount),
+                groupId: text(firstGroup?.id || ''),
+                note: ''
+            });
+        }
+
+        if (action === 'connection-send') {
+            rememberInteractionAnchor(root(), trigger);
+            return withBusy(async () => {
+                await sendPortalSocialConnectionRequest(trigger.getAttribute('data-user-id'));
+                invalidateSocialRenderCache({ center: true });
+                renderSocialPageNow('connection-send');
+            });
+        }
+
+        if (action === 'connection-accept') {
+            rememberInteractionAnchor(root(), trigger);
+            return withBusy(async () => {
+                await respondPortalSocialConnectionRequest(trigger.getAttribute('data-relationship-id'), true);
+                invalidateSocialRenderCache({ center: true });
+                renderSocialPageNow('connection-accept');
+            });
+        }
+
+        if (action === 'connection-decline') {
+            rememberInteractionAnchor(root(), trigger);
+            return withBusy(async () => {
+                await respondPortalSocialConnectionRequest(trigger.getAttribute('data-relationship-id'), false);
+                invalidateSocialRenderCache({ center: true });
+                renderSocialPageNow('connection-decline');
+            });
+        }
+
+        if (action === 'connection-cancel') {
+            rememberInteractionAnchor(root(), trigger);
+            return withBusy(async () => {
+                await removePortalSocialConnection(trigger.getAttribute('data-user-id'));
+                invalidateSocialRenderCache({ center: true });
+                renderSocialPageNow('connection-cancel');
+            });
+        }
+
+        if (action === 'connection-remove') {
+            rememberInteractionAnchor(root(), trigger);
+            return withBusy(async () => {
+                await removePortalSocialConnection(trigger.getAttribute('data-user-id'));
+                invalidateSocialRenderCache({ center: true });
+                renderSocialPageNow('connection-remove');
+            });
+        }
+        return false;
+    }
+
+    window.handleSocialCommunityClick = handleSocialCommunityClick;
+    window.isSocialCommunityClickAction = isSocialCommunityClickAction;
+
+    function isSocialCommunityInputTarget(target) {
+        if (!target || typeof target.matches !== 'function') return false;
+        try {
+
+        if (target.matches('[data-bind="directory-search"]')) return true;
+
+        } catch (e) {}
+        return false;
+    }
+
+    function handleSocialCommunityInput(target, runtime, event) {
+        if (!isSocialCommunityInputTarget(target)) return false;
+        if (target.matches('[data-bind="directory-search"]')) {
+            runtime.ui.directorySearch = target.value;
+            invalidateSocialRenderCache({ center: true });
+            renderSocialPageNow('directory-search');
+            queueDirectoryRefresh();
+        }
+
+        return true;
+    }
+
+    function isSocialCommunityChangeTarget(target) {
+        if (!target || typeof target.matches !== 'function') return false;
+        try {
+
+        if (target.matches('[data-bind="directory-role"]')) return true;
+
+        } catch (e) {}
+        return false;
+    }
+
+    function handleSocialCommunityChange(target, runtime, event) {
+        if (!isSocialCommunityChangeTarget(target)) return false;
+        if (target.matches('[data-bind="directory-role"]')) {
+            runtime.ui.directoryRole = text(target.value || 'all') || 'all';
+            invalidateSocialRenderCache({ center: true });
+            renderSocialPageNow('directory-role');
+            queueDirectoryRefresh();
+        }
+
+        return true;
+    }
+
+    window.handleSocialCommunityInput = handleSocialCommunityInput;
+    window.isSocialCommunityInputTarget = isSocialCommunityInputTarget;
+    window.handleSocialCommunityChange = handleSocialCommunityChange;
+    window.isSocialCommunityChangeTarget = isSocialCommunityChangeTarget;
+
 })();

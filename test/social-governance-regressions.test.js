@@ -22,6 +22,8 @@ describe('social governance regressions', () => {
         expect(routeModule).toContain('const post = store.createSocialPost(request.body || {}, actorUserId);');
         expect(routeModule).toContain("app.post('/api/social/events'");
         expect(routeModule).toContain('const event = store.createSocialEvent(request.body || {}, actorUserId);');
+        expect(routeModule).toContain("app.patch('/api/social/events/:id'");
+        expect(routeModule).toContain('const event = store.updateSocialEvent(request.params.id, request.body || {}, actorUserId);');
         expect(routeModule).not.toContain("const page = store.createSocialPage(request.body || {}, request.body?.actorId || '');");
         expect(routeModule).not.toContain("const group = store.createSocialGroup(request.body || {}, request.body?.actorId || '');");
         expect(routeModule).not.toContain("const project = store.createSocialProject(request.body || {}, request.body?.actorId || '');");

@@ -32,7 +32,6 @@
         renderLinkedMessageText,
         groupAvatar,
         groupBanner,
-        groupMemberPreviewNames,
         groupNotificationPreference,
         chatTitle,
         chatPreview,
@@ -41,7 +40,27 @@
         facultyLabel,
         roleLabel,
         isIncomingCall,
-        escape
+        escape,
+        unreadNotifications,
+        setPanel,
+        openDialog,
+        renderSocialPageNow,
+        withBusy,
+        root,
+        setActiveChat,
+        hidePortalMessengerChat,
+        openPortalDirectChat,
+        startPortalCall,
+        acceptPortalCall,
+        declinePortalCall,
+        endPortalCall,
+        togglePortalCallMic,
+        togglePortalCallCamera,
+        closeDialog,
+        sendPortalMessage,
+        deletePortalChatMessage,
+        invalidateSocialRenderCache,
+        activeChat
     } = hooks;
 
     if (
@@ -73,7 +92,6 @@
         || typeof renderLinkedMessageText !== 'function'
         || typeof groupAvatar !== 'function'
         || typeof groupBanner !== 'function'
-        || typeof groupMemberPreviewNames !== 'function'
         || typeof groupNotificationPreference !== 'function'
         || typeof chatTitle !== 'function'
         || typeof chatPreview !== 'function'
@@ -83,81 +101,84 @@
         || typeof roleLabel !== 'function'
         || typeof isIncomingCall !== 'function'
         || typeof escape !== 'function'
+        || typeof setPanel !== 'function'
+        || typeof openDialog !== 'function'
+        || typeof renderSocialPageNow !== 'function'
+        || typeof withBusy !== 'function'
+        || typeof root !== 'function'
+        || typeof setActiveChat !== 'function'
+        || typeof hidePortalMessengerChat !== 'function'
+        || typeof openPortalDirectChat !== 'function'
+        || typeof startPortalCall !== 'function'
+        || typeof acceptPortalCall !== 'function'
+        || typeof declinePortalCall !== 'function'
+        || typeof endPortalCall !== 'function'
+        || typeof togglePortalCallMic !== 'function'
+        || typeof togglePortalCallCamera !== 'function'
+        || typeof closeDialog !== 'function'
+        || typeof sendPortalMessage !== 'function'
+        || typeof deletePortalChatMessage !== 'function'
+        || typeof invalidateSocialRenderCache !== 'function'
+        || typeof activeChat !== 'function'
     ) {
         throw new Error('Social messages hooks are unavailable.');
     }
 
-    window.renderMessagesPanel = function renderMessagesPanel() {
+    window.renderMessagesThreadShell = function renderMessagesThreadShell(chat, options = {}) {
+        const emptyCopy = text(options?.emptyCopy || '') || 'Pick a thread to open the conversation. Alerts stay one tap away from the inbox.';
+        if (!chat) {
+            return `<section class="social-neo-messages__thread-shell"><div class="social-neo-empty">${escape(emptyCopy)}</div></section>`;
+        }
         const runtime = state();
-        const chats = activeChats();
-        const messagesFilter = text(runtime.ui?.messagesFilter || 'all') || 'all';
-        const visibleChats = messagesFilter === 'unread' ? chats.filter((entry) => unreadMessages(entry) > 0) : chats;
-        const activeChatId = text(runtime.ui?.activeChatId || '');
-        const chat = visibleChats.find((entry) => text(entry.id) === activeChatId) || visibleChats[0] || null;
-        const call = chat ? callForChat(chat.id) : currentCall();
-        const messageDraft = chat ? text(runtime.ui?.messageDraftByChat?.[chat.id] || '') : '';
-        const messageFile = chat ? runtime.ui?.messageFileByChat?.[chat.id] || null : null;
-        const messageBodyId = controlId('messageBody', text(chat?.id || 'thread'));
-        const messageFileId = controlId('messageFile', text(chat?.id || 'thread'));
+        const call = callForChat(chat.id) || currentCall();
+        const messageDraft = text(runtime.ui?.messageDraftByChat?.[chat.id] || '');
+        const messageFile = runtime.ui?.messageFileByChat?.[chat.id] || null;
+        const messageBodyId = controlId('messageBody', text(chat.id || 'thread'));
+        const messageFileId = controlId('messageFile', text(chat.id || 'thread'));
         const group = groupForChat(chat);
-        const isGroupThread = Boolean(chat && text(chat?.type || '') === 'group' && group);
-        const railOpen = runtime.ui?.groupThreadRailOpen !== false;
-        const activeGroupPanel = chat ? text(runtime.ui?.groupThreadPanelByChat?.[chat.id] || '') : '';
-        const assets = isGroupThread ? groupMessageAssets(chat) : { files: [], media: [], links: [] };
-        const searchQuery = chat ? text(runtime.ui?.groupThreadSearchByChat?.[chat.id] || '') : '';
-        const searchResults = isGroupThread ? searchGroupMessages(chat, searchQuery).slice(0, 18) : [];
-        const jumpMessageId = chat ? text(runtime.ui?.groupThreadJumpMessageByChat?.[chat.id] || '') : '';
+        const isGroupThread = Boolean(text(chat?.type || '') === 'group' && group);
+        const activeGroupPanel = text(runtime.ui?.groupThreadPanelByChat?.[chat.id] || '');
+        const searchQuery = text(runtime.ui?.groupThreadSearchByChat?.[chat.id] || '');
+        const searchResults = isGroupThread ? searchGroupMessages(chat, searchQuery) : [];
+        const searchIndex = Number(runtime.ui?.groupThreadSearchIndexByChat?.[chat.id] || 0);
+        const searchMatchMessageIds = new Set(searchResults.map((r) => text(r.message?.id || '')));
+        const searchActiveMessageId = searchResults.length && searchIndex < searchResults.length ? text(searchResults[searchIndex]?.message?.id || '') : '';
+        const jumpMessageId = text(runtime.ui?.groupThreadJumpMessageByChat?.[chat.id] || '');
         const bannerUrl = groupBanner(group);
         const currentParticipants = currentCallParticipants(call);
         const inCurrentCall = viewerInCall(call);
-        const inviteSearch = chat ? text(runtime.ui?.groupThreadInviteSearchByChat?.[chat.id] || '').trim().toLowerCase() : '';
-        const inviteFaculty = chat ? text(runtime.ui?.groupThreadInviteFacultyByChat?.[chat.id] || 'all') || 'all' : 'all';
         const memberIds = Array.isArray(group?.memberIds) ? group.memberIds : [];
-        const pendingMemberIds = Array.isArray(group?.pendingMemberIds) ? group.pendingMemberIds : [];
-        const inviteCandidates = isGroupThread
-            ? Object.values(runtime.accountsById || {})
-                .filter((account) => text(account?.id) && !memberIds.includes(text(account.id)) && !pendingMemberIds.includes(text(account.id)) && text(account.id) !== currentUserId())
-                .filter((account) => inviteFaculty === 'all' || text(account?.facultyCode || account?.faculty || '') === inviteFaculty)
-                .filter((account) => {
-                    if (!inviteSearch) return true;
-                    const haystack = [displayName(account), account?.email, account?.facultyCode, account?.faculty, roleLabel(account?.role)].filter(Boolean).join(' ').toLowerCase();
-                    return haystack.includes(inviteSearch);
-                })
-                .slice(0, 8)
-            : [];
-        const inviteFacultyOptions = isGroupThread
-            ? ['all', ...new Set(Object.values(runtime.accountsById || {}).map((account) => text(account?.facultyCode || account?.faculty || '')).filter(Boolean).sort())]
-            : ['all'];
         const messageCardHeadClass = 'social-neo-inline social-neo-inline-between-gap-8-wrap social-neo-msg-card-head';
         const messageCardMetaClass = 'social-neo-inline social-neo-inline-gap-8-wrap social-neo-msg-card-meta';
-        const messagePanelRowClass = 'social-neo-inline social-neo-inline-items-end social-neo-inline-gap-8-wrap social-neo-msg-panel-row';
-        const messagePanelFieldClass = 'social-neo-field-flex-1-220 social-neo-msg-panel-field';
-        const messagePanelFixedFieldClass = 'social-neo-field-fixed-220 social-neo-msg-panel-field social-neo-msg-panel-field-fixed';
-        const messageUploadTriggerClass = 'social-neo-btn social-neo-btn-ghost social-neo-btn-pointer social-neo-msg-upload-trigger';
-        const messageSettingsFooterClass = 'social-neo-inline social-neo-inline-gap-10-wrap social-neo-msg-settings-footer';
-        const messageSettingsCopyClass = 'social-neo-muted social-neo-flex-spacer social-neo-msg-settings-copy';
         const messageComposeFormClass = 'social-neo-thread-compose social-neo-msg-compose-form';
         const messageComposeRowClass = 'social-neo-comment-compose social-neo-msg-compose-row';
         const messageComposeInputClass = 'social-neo-input social-neo-input-flex-1-180 social-neo-msg-compose-input';
-        const renderChatAvatar = (entry) => {
-            const entryGroup = groupForChat(entry);
-            if (text(entry?.type || '') === 'group' && entryGroup) return groupAvatar(entryGroup, 'social-neo-avatar-sm');
-            return avatar(accountById((Array.isArray(entry?.members) ? entry.members : []).find((memberId) => text(memberId) !== currentUserId()) || '') || { displayName: chatTitle(entry) }, 'social-neo-avatar-sm');
+        const truncateText = (value, max = 72) => {
+            const raw = text(value);
+            if (!raw) return '';
+            return raw.length > max ? `${raw.slice(0, max - 1)}…` : raw;
         };
         const renderMessageCard = (message) => {
             const own = text(message.senderId) === currentUserId();
             const sender = accountById(message.senderId) || { id: message.senderId };
             const links = messageLinks(message);
             const seenByOthers = (Array.isArray(message?.seenBy) ? message.seenBy : []).filter((userId) => text(userId) !== text(message.senderId));
+            const isSearchMatch = searchMatchMessageIds.has(text(message.id));
+            const isSearchActive = searchActiveMessageId === text(message.id);
             return `
-                <article class="social-neo-message ${own ? 'is-own' : ''} ${jumpMessageId === text(message.id) ? 'is-highlighted' : ''}" id="${escape(messageAnchorId(chat.id, message.id))}">
-                    <div class="${messageCardHeadClass}">
-                        <div class="${messageCardMetaClass}">
-                            <strong>${escape(displayName(sender))}</strong>
-                            ${presencePill(sender)}
+                <article class="social-neo-message ${own ? 'is-own' : ''} ${jumpMessageId === text(message.id) ? 'is-highlighted' : ''} ${isSearchMatch ? 'is-search-match' : ''} ${isSearchActive ? 'is-search-active' : ''}" id="${escape(messageAnchorId(chat.id, message.id))}" data-msg-id="${escape(text(message.id))}">
+                    ${isGroupThread ? `
+                        <div class="${messageCardHeadClass}">
+                            <div class="${messageCardMetaClass}">
+                                <strong class="social-neo-message__sender">${escape(displayName(sender))}</strong>
+                            </div>
+                            ${own ? `<button class="social-neo-link-btn social-neo-message__remove" type="button" data-action="message-delete-open" data-chat-id="${escape(text(chat.id))}" data-message-id="${escape(text(message.id))}" aria-label="Remove message"><i class="fas fa-trash"></i></button>` : ''}
                         </div>
-                        ${own ? `<button class="social-neo-link-btn" type="button" data-action="message-delete-open" data-chat-id="${escape(text(chat.id))}" data-message-id="${escape(text(message.id))}"><i class="fas fa-trash"></i> Remove</button>` : ''}
-                    </div>
+                    ` : own ? `
+                        <div class="${messageCardHeadClass}">
+                            <button class="social-neo-link-btn social-neo-message__remove" type="button" data-action="message-delete-open" data-chat-id="${escape(text(chat.id))}" data-message-id="${escape(text(message.id))}" aria-label="Remove message"><i class="fas fa-trash"></i></button>
+                        </div>
+                    ` : ''}
                     ${message.text ? `<p>${renderLinkedMessageText(message.text)}</p>` : ''}
                     ${message.file ? filePreview(message.file) : ''}
                     ${links.length ? `<div class="social-neo-link-row">${links.map((url) => `<a class="social-neo-link-btn" href="${escape(url)}" target="_blank" rel="noopener"><i class="fas fa-link"></i> ${escape(url.replace(/^https?:\/\//i, ''))}</a>`).join('')}</div>` : ''}
@@ -166,7 +187,7 @@
             `;
         };
         const renderGroupCallCard = () => {
-            if (!call || text(call.mode || '') !== 'group' || text(call.chatId) !== text(chat?.id)) return '';
+            if (!call || text(call.mode || '') !== 'group' || text(call.chatId) !== text(chat.id)) return '';
             return `
                 <div class="social-neo-call-card social-neo-call-card-group">
                     <div class="social-neo-section-head">
@@ -203,277 +224,203 @@
                 </div>
             `;
         };
-        const renderGroupPanelBody = () => {
-            if (!isGroupThread || !activeGroupPanel) return '';
-            if (activeGroupPanel === 'search') {
-                return `
-                    <section class="social-neo-group-thread-section">
-                        <div class="social-neo-section-head">
-                            <div><strong>Search in conversation</strong><span>Messages, files, and links.</span></div>
-                            <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="group-thread-panel-close" data-chat-id="${escape(text(chat.id))}"><i class="fas fa-times"></i></button>
-                        </div>
-                        <div class="${messagePanelRowClass}">
-                            <label class="${messagePanelFieldClass}">
-                                <span class="social-neo-label">Search</span>
-                                <input class="social-neo-input" type="search" data-bind="group-thread-search" data-chat-id="${escape(text(chat.id))}" placeholder="Search this group..." value="${escape(searchQuery)}">
-                            </label>
-                            <button class="social-neo-btn social-neo-btn-primary" type="button" data-action="group-thread-search-submit" data-chat-id="${escape(text(chat.id))}"><i class="fas fa-search"></i> Search</button>
-                        </div>
-                        <div class="social-neo-list">
-                            ${searchQuery ? (searchResults.length ? searchResults.map((result) => `
-                                <article class="social-neo-entity-card">
-                                    <div>
-                                        <strong>${escape(result.type === 'link' ? 'Link match' : result.type === 'file' ? 'File match' : result.type === 'media' ? 'Image match' : 'Message match')}</strong>
-                                        <span>${escape(displayName(accountById(result.senderId) || { id: result.senderId }))} • ${escape(when(result.sentAt))}</span>
-                                    </div>
-                                    <div class="social-neo-stack">
-                                        <span>${escape(text(result.match || ''))}</span>
-                                        <button class="social-neo-link-btn" type="button" data-action="group-thread-search-open" data-chat-id="${escape(text(chat.id))}" data-message-id="${escape(text(result.message?.id || ''))}">Jump to message</button>
-                                    </div>
-                                </article>
-                            `).join('') : '<div class="social-neo-empty">No results match the current search.</div>') : '<div class="social-neo-empty">Search this group to find messages, shared files, and links.</div>'}
-                        </div>
-                    </section>
-                `;
-            }
-            if (activeGroupPanel === 'media') {
-                return `
-                    <section class="social-neo-group-thread-section">
-                        <div class="social-neo-section-head">
-                            <div><strong>Shared media</strong><span>${escape(assets.media.length)} image attachment${assets.media.length === 1 ? '' : 's'}</span></div>
-                            <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="group-thread-panel-close" data-chat-id="${escape(text(chat.id))}"><i class="fas fa-times"></i></button>
-                        </div>
-                        <div class="social-neo-list">
-                            ${assets.media.length ? assets.media.slice(0, 8).map((entry) => `
-                                <article class="social-neo-entity-card">
-                                    <div class="social-neo-person">
-                                        ${avatar(accountById(entry.senderId) || { id: entry.senderId }, 'social-neo-avatar-sm')}
-                                        <div><strong>${escape(text(entry.file?.name || 'Image'))}</strong><span>${escape(when(entry.sentAt))}</span></div>
-                                    </div>
-                                    ${filePreview(entry.file)}
-                                </article>
-                            `).join('') : '<div class="social-neo-empty">No shared media yet.</div>'}
-                        </div>
-                    </section>
-                `;
-            }
-            if (activeGroupPanel === 'files') {
-                return `
-                    <section class="social-neo-group-thread-section">
-                        <div class="social-neo-section-head">
-                            <div><strong>Shared files</strong><span>${escape(assets.files.length)} file${assets.files.length === 1 ? '' : 's'}</span></div>
-                            <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="group-thread-panel-close" data-chat-id="${escape(text(chat.id))}"><i class="fas fa-times"></i></button>
-                        </div>
-                        <div class="social-neo-list">
-                            ${assets.files.length ? assets.files.slice(0, 10).map((entry) => `
-                                <article class="social-neo-entity-card">
-                                    <div><strong>${escape(text(entry.file?.name || 'Attachment'))}</strong><span>${escape(displayName(accountById(entry.senderId) || { id: entry.senderId }))} • ${escape(when(entry.sentAt))}</span></div>
-                                    ${filePreview(entry.file)}
-                                </article>
-                            `).join('') : '<div class="social-neo-empty">No shared files yet.</div>'}
-                        </div>
-                    </section>
-                `;
-            }
-            if (activeGroupPanel === 'links') {
-                return `
-                    <section class="social-neo-group-thread-section">
-                        <div class="social-neo-section-head">
-                            <div><strong>Shared links</strong><span>${escape(assets.links.length)} link${assets.links.length === 1 ? '' : 's'}</span></div>
-                            <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="group-thread-panel-close" data-chat-id="${escape(text(chat.id))}"><i class="fas fa-times"></i></button>
-                        </div>
-                        <div class="social-neo-list">
-                            ${assets.links.length ? assets.links.slice(0, 10).map((entry) => `
-                                <article class="social-neo-entity-card">
-                                    <div><strong>${escape(entry.url.replace(/^https?:\/\//i, ''))}</strong><span>${escape(displayName(accountById(entry.senderId) || { id: entry.senderId }))} • ${escape(when(entry.sentAt))}</span></div>
-                                    <div class="social-neo-inline">
-                                        <a class="social-neo-link-btn" href="${escape(entry.url)}" target="_blank" rel="noopener">Open link</a>
-                                        <button class="social-neo-link-btn" type="button" data-action="group-thread-search-open" data-chat-id="${escape(text(chat.id))}" data-message-id="${escape(text(entry.message?.id || ''))}">Jump</button>
-                                    </div>
-                                </article>
-                            `).join('') : '<div class="social-neo-empty">No links have been shared yet.</div>'}
-                        </div>
-                    </section>
-                `;
-            }
-            if (activeGroupPanel === 'members') {
-                return `
-                    <section class="social-neo-group-thread-section">
-                        <div class="social-neo-section-head">
-                            <div><strong>Members</strong><span>${escape(memberIds.length)} active • ${escape(pendingMemberIds.length)} pending</span></div>
-                            <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="group-thread-panel-close" data-chat-id="${escape(text(chat.id))}"><i class="fas fa-times"></i></button>
-                        </div>
-                        <div class="social-neo-list">
-                            ${memberIds.map((memberId) => {
-                                const member = accountById(memberId) || { id: memberId };
-                                return `
-                                    <article class="social-neo-entity-card social-neo-group-member-row">
-                                        <div class="social-neo-person">
-                                            ${avatar(member, 'social-neo-avatar-sm')}
-                                            <div><strong>${escape(displayName(member))}</strong><span>${escape(accountSubtitle(member))}</span></div>
-                                        </div>
-                                        <div class="social-neo-inline">
-                                            ${presencePill(member)}
-                                            <button class="social-neo-link-btn" type="button" data-action="profile-view" data-user-id="${escape(text(memberId))}">Profile</button>
-                                            ${text(memberId) !== currentUserId() ? `<button class="social-neo-link-btn" type="button" data-action="directory-message" data-user-id="${escape(text(memberId))}">Message</button>` : ''}
-                                            ${group?.isManager && text(memberId) !== currentUserId() ? `<button class="social-neo-link-btn" type="button" data-action="group-member-remove" data-group-id="${escape(text(group.id))}" data-member-id="${escape(text(memberId))}">Remove</button>` : ''}
-                                        </div>
-                                    </article>
-                                `;
-                            }).join('') || '<div class="social-neo-empty">No members found.</div>'}
-                        </div>
-                    </section>
-
-                    ${group?.isManager ? `
-                        <section class="social-neo-group-thread-section">
-                            <div class="social-neo-section-head">
-                                <div><strong>Pending requests</strong><span>${escape(pendingMemberIds.length)} waiting for review</span></div>
-                            </div>
-                            <div class="social-neo-list">
-                                ${pendingMemberIds.length ? pendingMemberIds.map((memberId) => {
-                                    const member = accountById(memberId) || { id: memberId };
-                                    return `
-                                        <article class="social-neo-entity-card social-neo-group-member-row">
-                                            <div class="social-neo-person">
-                                                ${avatar(member, 'social-neo-avatar-sm')}
-                                                <div><strong>${escape(displayName(member))}</strong><span>${escape(accountSubtitle(member))}</span></div>
-                                            </div>
-                                            <div class="social-neo-inline">
-                                                <button class="social-neo-link-btn" type="button" data-action="group-approve" data-group-id="${escape(text(group.id))}" data-member-id="${escape(text(memberId))}">Approve</button>
-                                                <button class="social-neo-link-btn" type="button" data-action="group-decline" data-group-id="${escape(text(group.id))}" data-member-id="${escape(text(memberId))}">Decline</button>
-                                            </div>
-                                        </article>
-                                    `;
-                                }).join('') : '<div class="social-neo-empty">No pending requests right now.</div>'}
-                            </div>
-                        </section>
-                    ` : ''}
-                `;
-            }
-            if (activeGroupPanel === 'invite') {
-                return `
-                    <section class="social-neo-group-thread-section">
-                        <div class="social-neo-section-head">
-                            <div><strong>Invite people</strong><span>Grow the chat after creation.</span></div>
-                            <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="group-thread-panel-close" data-chat-id="${escape(text(chat.id))}"><i class="fas fa-times"></i></button>
-                        </div>
-                        <div class="${messagePanelRowClass}">
-                            <label class="${messagePanelFieldClass}">
-                                <span class="social-neo-label">Search people</span>
-                                <input class="social-neo-input" type="search" data-bind="group-thread-invite-search" data-chat-id="${escape(text(chat.id))}" placeholder="Search people to invite..." value="${escape(text(runtime.ui?.groupThreadInviteSearchByChat?.[chat.id] || ''))}">
-                            </label>
-                            <label class="${messagePanelFixedFieldClass}">
-                                <span class="social-neo-label">Faculty</span>
-                                <select class="social-neo-select" data-bind="group-thread-invite-faculty" data-chat-id="${escape(text(chat.id))}">
-                                    ${inviteFacultyOptions.map((faculty) => `<option value="${escape(faculty)}" ${inviteFaculty === faculty ? 'selected' : ''}>${escape(faculty === 'all' ? 'All faculties' : facultyLabel(faculty))}</option>`).join('')}
-                                </select>
-                            </label>
-                            <button class="social-neo-btn social-neo-btn-primary" type="button" data-action="group-thread-invite-search" data-chat-id="${escape(text(chat.id))}"><i class="fas fa-search"></i> Search</button>
-                        </div>
-                        <div class="social-neo-list">
-                            ${inviteCandidates.length ? inviteCandidates.map((candidate) => `
-                                <article class="social-neo-entity-card social-neo-group-member-row">
-                                    <div class="social-neo-person">
-                                        ${avatar(candidate, 'social-neo-avatar-sm')}
-                                        <div><strong>${escape(displayName(candidate))}</strong><span>${escape(accountSubtitle(candidate))}</span></div>
-                                    </div>
-                                    <button class="social-neo-btn social-neo-btn-primary social-neo-btn-sm" type="button" data-action="group-thread-invite-add" data-group-id="${escape(text(group.id))}" data-user-id="${escape(text(candidate.id))}"><i class="fas fa-user-plus"></i> Invite</button>
-                                </article>
-                            `).join('') : '<div class="social-neo-empty">No invite candidates match the current filters.</div>'}
-                        </div>
-                    </section>
-                `;
-            }
-            if (activeGroupPanel === 'settings') {
-                return `
-                    <section class="social-neo-group-thread-section">
-                        <div class="social-neo-section-head">
-                            <div><strong>Notification settings</strong><span>Local preference for this group.</span></div>
-                            <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="group-thread-panel-close" data-chat-id="${escape(text(chat.id))}"><i class="fas fa-times"></i></button>
-                        </div>
-                        <label class="${messagePanelFieldClass}">
-                            <span class="social-neo-label">Notifications</span>
-                            <select class="social-neo-select" data-bind="group-thread-notify" data-group-id="${escape(text(group.id))}">
-                                <option value="all" ${groupNotificationPreference(group) === 'all' ? 'selected' : ''}>All messages</option>
-                                <option value="mentions" ${groupNotificationPreference(group) === 'mentions' ? 'selected' : ''}>Mentions only</option>
-                                <option value="mute" ${groupNotificationPreference(group) === 'mute' ? 'selected' : ''}>Mute</option>
-                            </select>
-                        </label>
-                    </section>
-
-                    ${group?.isManager ? `
-                        <section class="social-neo-group-thread-section">
-                            <div class="social-neo-section-head">
-                                <div><strong>Group settings</strong><span>Rename the room and update its visuals.</span></div>
-                            </div>
-                            <form class="social-neo-stack" data-form="group-settings" data-group-id="${escape(text(group.id))}" data-chat-id="${escape(text(chat.id))}">
-                                <input class="social-neo-input" type="text" name="groupName" placeholder="Group name" value="${escape(text(runtime.ui?.groupThreadNameByChat?.[chat.id] || group.name || ''))}">
-                                <textarea class="social-neo-textarea" rows="3" name="groupDescription" placeholder="What is this group for?">${escape(text(runtime.ui?.groupThreadDescriptionByChat?.[chat.id] || group.description || ''))}</textarea>
-                                <select class="social-neo-select" name="groupVisibility">
-                                    <option value="public" ${text(runtime.ui?.groupThreadVisibilityByChat?.[chat.id] || group.visibility || 'public') === 'public' ? 'selected' : ''}>Public</option>
-                                    <option value="private" ${text(runtime.ui?.groupThreadVisibilityByChat?.[chat.id] || group.visibility || '') === 'private' ? 'selected' : ''}>Private</option>
-                                </select>
-                                <input class="social-neo-input" type="url" name="groupAvatarUrl" placeholder="Avatar image URL" value="${escape(text(runtime.ui?.groupThreadAvatarUrlByChat?.[chat.id] || group.avatarImage || ''))}">
-                                ${renderFileChip(runtime.ui?.groupThreadAvatarFileByChat?.[chat.id] || null, 'Avatar image ready')}
-                                <label class="${messageUploadTriggerClass}">
-                                    <i class="fas fa-image"></i> Upload avatar
-                                    <input name="groupAvatarFile" data-chat-id="${escape(text(chat.id))}" type="file" accept="image/*" hidden>
-                                </label>
-                                <input class="social-neo-input" type="url" name="groupBannerUrl" placeholder="Banner image URL" value="${escape(text(runtime.ui?.groupThreadBannerUrlByChat?.[chat.id] || group.bannerImage || ''))}">
-                                ${renderFileChip(runtime.ui?.groupThreadBannerFileByChat?.[chat.id] || null, 'Banner image ready')}
-                                <label class="${messageUploadTriggerClass}">
-                                    <i class="fas fa-panorama"></i> Upload banner
-                                    <input name="groupBannerFile" data-chat-id="${escape(text(chat.id))}" type="file" accept="image/*" hidden>
-                                </label>
-                                <div class="social-neo-form-actions">
-                                    <button class="social-neo-btn social-neo-btn-primary" type="submit">Save group settings</button>
+        return `
+            <section class="social-neo-messages__thread-shell">
+                <div class="social-neo-messages__thread-chrome">
+                    ${isGroupThread ? `
+                        <div class="social-neo-thread-head social-neo-messages__thread-head is-group">
+                            ${bannerUrl ? `
+                                <div class="social-neo-thread-head__banner" aria-hidden="true">
+                                    <img src="${escape(bannerUrl)}" alt="">
+                                    <span class="social-neo-thread-head__banner-overlay"></span>
                                 </div>
-                            </form>
-                            <div class="social-neo-divider"></div>
-                            <div class="${messageSettingsFooterClass}">
-                                <span class="${messageSettingsCopyClass}">Leaving keeps the group and its chat history available for the remaining members.</span>
-                                <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="group-leave-open" data-group-id="${escape(text(group.id))}"><i class="fas fa-sign-out-alt"></i> Leave group</button>
+                            ` : ''}
+                            <div class="social-neo-thread-head__main">
+                                <div class="social-neo-person">
+                                    ${groupAvatar(group, 'social-neo-avatar-md')}
+                                    <div class="social-neo-thread-head__meta">
+                                        <strong>${escape(text(group.name || chatTitle(chat)))}</strong>
+                                        <span class="social-neo-thread-head__subtitle">${escape(memberIds.length)} members${group.description ? ` · ${escape(truncateText(group.description))}` : ''}</span>
+                                    </div>
+                                </div>
+                                <div class="social-neo-inline social-neo-messages__thread-actions">
+                                    ${activeMessages(chat).length > 8 ? `<button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="thread-jump-latest" data-chat-id="${escape(text(chat.id))}"><i class="fas fa-arrow-down"></i></button>` : ''}
+                                    <button class="social-neo-btn ${call && text(call.mode || '') === 'group' && call.active && !inCurrentCall ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'} social-neo-btn-sm" type="button" data-action="${call && text(call.mode || '') === 'group' && call.active && inCurrentCall ? 'group-call-leave' : 'group-call-join'}" data-chat-id="${escape(text(chat.id))}"><i class="fas fa-video"></i> ${call && text(call.mode || '') === 'group' && call.active ? (inCurrentCall ? 'Leave' : 'Join') : 'Call'}</button>
+                                </div>
                             </div>
-                        </section>
+                        </div>
+                        <div class="social-neo-group-thread-toolbar is-compact" role="toolbar" aria-label="Group thread tools">
+                            <button class="social-neo-btn ${activeGroupPanel === 'search' ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'} social-neo-btn-sm" type="button" data-action="group-thread-panel-toggle" data-chat-id="${escape(text(chat.id))}" data-panel="search" aria-label="Search" title="Search"><i class="fas fa-search"></i></button>
+                            <button class="social-neo-btn ${activeGroupPanel === 'media' ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'} social-neo-btn-sm" type="button" data-action="group-thread-panel-toggle" data-chat-id="${escape(text(chat.id))}" data-panel="media" aria-label="Media" title="Media"><i class="fas fa-image"></i></button>
+                            <button class="social-neo-btn ${activeGroupPanel === 'members' ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'} social-neo-btn-sm" type="button" data-action="group-thread-panel-toggle" data-chat-id="${escape(text(chat.id))}" data-panel="members" aria-label="Members" title="Members"><i class="fas fa-users"></i></button>
+                            <button class="social-neo-btn ${activeGroupPanel === 'files' ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'} social-neo-btn-sm" type="button" data-action="group-thread-panel-toggle" data-chat-id="${escape(text(chat.id))}" data-panel="files" aria-label="Files" title="Files"><i class="fas fa-folder-open"></i></button>
+                            <button class="social-neo-btn ${activeGroupPanel === 'links' ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'} social-neo-btn-sm" type="button" data-action="group-thread-panel-toggle" data-chat-id="${escape(text(chat.id))}" data-panel="links" aria-label="Links" title="Links"><i class="fas fa-link"></i></button>
+                            <button class="social-neo-btn ${activeGroupPanel === 'invite' ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'} social-neo-btn-sm" type="button" data-action="group-thread-panel-toggle" data-chat-id="${escape(text(chat.id))}" data-panel="invite" aria-label="Invite" title="Invite"><i class="fas fa-user-plus"></i></button>
+                            <button class="social-neo-btn ${activeGroupPanel === 'settings' ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'} social-neo-btn-sm" type="button" data-action="group-thread-panel-toggle" data-chat-id="${escape(text(chat.id))}" data-panel="settings" aria-label="Settings" title="Settings"><i class="fas fa-sliders"></i></button>
+                        </div>
+                        ${activeGroupPanel === 'search' ? `
+                        <div class="social-neo-search-bar" role="search" aria-label="Search in conversation">
+                            <i class="fas fa-search social-neo-search-bar-icon" aria-hidden="true"></i>
+                            <input class="social-neo-search-bar-input" type="search" data-bind="group-thread-search" data-chat-id="${escape(text(chat.id))}" placeholder="Search messages..." value="${escape(searchQuery)}" autofocus>
+                            ${searchQuery && searchResults.length ? `<span class="social-neo-search-bar-counter">${escape(searchIndex + 1)} of ${escape(searchResults.length)}</span>` : searchQuery ? '<span class="social-neo-search-bar-counter social-neo-search-bar-counter-empty">0 results</span>' : ''}
+                            ${searchResults.length > 1 ? `
+                                <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-xs" type="button" data-action="group-thread-search-prev" data-chat-id="${escape(text(chat.id))}" aria-label="Previous match" title="Previous"><i class="fas fa-chevron-up"></i></button>
+                                <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-xs" type="button" data-action="group-thread-search-next" data-chat-id="${escape(text(chat.id))}" aria-label="Next match" title="Next"><i class="fas fa-chevron-down"></i></button>
+                            ` : ''}
+                            <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-xs" type="button" data-action="group-thread-search-clear" data-chat-id="${escape(text(chat.id))}" aria-label="Close search" title="Close"><i class="fas fa-times"></i></button>
+                        </div>
+                        ` : ''}
+                    ` : `
+                        <div class="social-neo-thread-head social-neo-messages__thread-head">
+                            <div class="social-neo-person">
+                                ${avatar(accountById((Array.isArray(chat.members) ? chat.members : []).find((memberId) => text(memberId) !== currentUserId()) || '') || { displayName: chatTitle(chat) }, 'social-neo-avatar-sm')}
+                                <div>
+                                    <strong>${escape(chatTitle(chat))}</strong>
+                                    <span>${escape('Direct conversation')}</span>
+                                    ${(() => {
+                                        const peer = accountById((Array.isArray(chat.members) ? chat.members : []).find((memberId) => text(memberId) !== currentUserId()) || '');
+                                        return peer ? `<small>${escape(accountPresenceLabel(peer))}</small>` : '';
+                                    })()}
+                                </div>
+                            </div>
+                            <div class="social-neo-inline social-neo-messages__thread-actions">
+                                ${activeMessages(chat).length > 8 ? `<button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="thread-jump-latest" data-chat-id="${escape(text(chat.id))}"><i class="fas fa-arrow-down"></i> Latest</button>` : ''}
+                                <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="call-start" data-chat-id="${escape(text(chat.id))}"><i class="fas fa-video"></i> Call</button>
+                                <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="chat-hide-open" data-chat-id="${escape(text(chat.id))}"><i class="fas fa-eye-slash"></i></button>
+                            </div>
+                        </div>
+                    `}
+                </div>
+                <div class="social-neo-messages__thread-scroll">
+                    <div class="social-neo-thread-messages social-neo-messages__thread-stream" data-lux-transparency-exempt="1">
+                        ${activeMessages(chat).length ? activeMessages(chat).map(renderMessageCard).join('') : `<div class="social-neo-empty">No messages yet.</div>`}
+                    </div>
+                    ${isGroupThread ? renderGroupCallCard() : ''}
+                    ${!isGroupThread && call && (text(call.chatId) === text(chat.id) || text(state().ui?.activeCallChatId) === text(chat.id)) ? `
+                        <div class="social-neo-call-card">
+                            <div>
+                                <strong>Call status</strong>
+                                <span>${escape(text(state().ui?.callMessage || call.status || 'Ready'))}</span>
+                            </div>
+                            <div class="social-neo-call-actions">
+                                ${isIncomingCall(call)
+                                    ? `<button class="social-neo-btn social-neo-btn-primary" type="button" data-action="call-accept" data-chat-id="${escape(text(chat.id))}">Accept</button>
+                                       <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="call-decline" data-chat-id="${escape(text(chat.id))}">Decline</button>`
+                                    : `<button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="call-end" data-chat-id="${escape(text(chat.id))}">End</button>`
+                                }
+                            </div>
+                            ${state().ui?.callOpen ? `
+                                <div class="social-neo-call-stage">
+                                    <div class="social-neo-call-video">
+                                        <video id="portal-call-remote-video" autoplay playsinline></video>
+                                        <span>Remote video</span>
+                                    </div>
+                                    <div class="social-neo-call-video">
+                                        <video id="portal-call-local-video" autoplay playsinline muted></video>
+                                        <span>Local preview</span>
+                                    </div>
+                                </div>
+                                <div class="social-neo-inline">
+                                    <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="call-mic">${state().ui?.callMicEnabled ? 'Mute mic' : 'Unmute mic'}</button>
+                                    <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="call-camera">${state().ui?.callCameraEnabled ? 'Hide camera' : 'Show camera'}</button>
+                                </div>
+                            ` : ''}
+                        </div>
                     ` : ''}
-                `;
-            }
-            return '';
-        };
-        const totalUnread = visibleChats.reduce((total, entry) => total + unreadMessages(entry), 0);
-        const inboxSummary = messagesFilter === 'unread'
-            ? 'Showing conversations that still need attention.'
-            : 'Direct chats and group rooms in one controlled inbox.';
+                </div>
+                <form class="${messageComposeFormClass} social-neo-messages__composer" data-form="send-message" data-chat-id="${escape(text(chat.id))}">
+                    ${renderFileChip(messageFile)}
+                    <div class="${messageComposeRowClass}">
+                        <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="message-attach" data-chat-id="${escape(text(chat.id))}"><i class="fas fa-paperclip"></i></button>
+                        <input class="${messageComposeInputClass}" id="${escape(messageBodyId)}" name="messageBody" placeholder="Aa" value="${escape(messageDraft)}">
+                        <button class="social-neo-btn social-neo-btn-primary social-neo-btn-sm" type="submit"><i class="fas fa-paper-plane"></i></button>
+                    </div>
+                    <input id="${escape(messageFileId)}" name="messageFile" type="file" hidden>
+                </form>
+            </section>
+        `;
+    };
 
+    window.renderMessagesPanel = function renderMessagesPanel() {
+        const runtime = state();
+        const chats = activeChats();
+        const messagesFilter = text(runtime.ui?.messagesFilter || 'all') || 'all';
+        const visibleChats = messagesFilter === 'unread' ? chats.filter((entry) => unreadMessages(entry) > 0) : chats;
+        const activeChatId = text(runtime.ui?.activeChatId || '');
+        const chat = visibleChats.find((entry) => text(entry.id) === activeChatId) || visibleChats[0] || null;
+        const group = groupForChat(chat);
+        const isGroupThread = Boolean(chat && text(chat?.type || '') === 'group' && group);
+        const railOpen = runtime.ui?.groupThreadRailOpen !== false;
+        const renderChatAvatar = (entry) => {
+            const entryGroup = groupForChat(entry);
+            if (text(entry?.type || '') === 'group' && entryGroup) return groupAvatar(entryGroup, 'social-neo-avatar-sm');
+            return avatar(accountById((Array.isArray(entry?.members) ? entry.members : []).find((memberId) => text(memberId) !== currentUserId()) || '') || { displayName: chatTitle(entry) }, 'social-neo-avatar-sm');
+        };
+        const chatCount = chats.length;
+        const totalUnreadAll = chats.reduce((total, entry) => total + unreadMessages(entry), 0);
+        const inboxSubtitle = messagesFilter === 'unread'
+            ? (totalUnreadAll ? `${totalUnreadAll} unread conversations` : "You're caught up")
+            : `${chatCount} conversations`;
+        const inboxEmptyTitle = messagesFilter === 'unread' ? "You're caught up" : 'No conversations yet';
+        const inboxEmptyCopy = messagesFilter === 'unread'
+            ? 'No unread messages right now.'
+            : 'Start one from Community.';
+        const totalUnreadAlerts = typeof unreadNotifications === 'function' ? unreadNotifications() : 0;
+        const alertsBadgeLabel = totalUnreadAlerts > 9 ? '9+' : String(totalUnreadAlerts);
+        const alertsAriaLabel = totalUnreadAlerts
+            ? `Open alerts, ${totalUnreadAlerts > 9 ? '9 plus' : totalUnreadAlerts} unread`
+            : 'Open alerts';
         return `
             <div class="social-neo-messages ${isGroupThread ? 'social-neo-messages-group' : ''} ${railOpen ? 'is-group-rail-open' : 'is-group-rail-closed'}">
-                <section class="social-neo-card social-neo-chat-list social-neo-messages__inbox">
-                    <div class="social-neo-section-head social-neo-messages__inbox-head">
-                        <div class="social-neo-messages__inbox-copy">
-                            <strong class="social-neo-messages__section-title">Inbox</strong>
-                            <span class="social-neo-messages__section-copy">${escape(inboxSummary)}</span>
+                <section class="social-neo-chat-list social-neo-messages__inbox">
+                    <header class="social-neo-messages__inbox-header">
+                        <div class="social-neo-messages__inbox-toolbar">
+                            <div class="social-neo-messages__inbox-title-block">
+                                <strong class="social-neo-messages__section-title">Inbox</strong>
+                                <span class="social-neo-messages__inbox-subtitle">${escape(inboxSubtitle)}</span>
+                            </div>
+                            <div class="social-neo-messages__inbox-toolbar-actions">
+                                <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm social-neo-btn-icon" type="button" aria-label="Find people" data-action="panel-community" data-community-tab="people"><i class="fas fa-search" aria-hidden="true"></i></button>
+                                <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm social-neo-btn-icon social-neo-messages__inbox-alerts-btn" type="button" data-action="panel-alerts" data-alerts-filter="unread" aria-label="${escape(alertsAriaLabel)}"><i class="fas fa-bell" aria-hidden="true"></i>${totalUnreadAlerts ? `<span class="social-neo-messages__inbox-alerts-badge" aria-hidden="true">${escape(alertsBadgeLabel)}</span>` : ''}</button>
+                            </div>
                         </div>
-                        <span class="social-neo-pill social-neo-messages__count-pill">${escape(totalUnread)} unread</span>
-                    </div>
-                    <div class="social-neo-badge-row social-neo-messages__status-strip">
-                        <span class="social-neo-pill">${escape(visibleChats.length)} threads</span>
-                        <span class="social-neo-pill">${escape(chats.length)} total conversations</span>
-                        ${call ? '<span class="social-neo-pill">Call active</span>' : ''}
-                    </div>
-                    <div class="social-neo-section-head social-neo-messages__inbox-toolbar">
-                        <div><strong>Inbox view</strong></div>
-                        <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="panel-community" data-community-tab="people"><i class="fas fa-search"></i> Find</button>
-                    </div>
-                    <div class="social-neo-chat-items">
-                        ${visibleChats.length ? visibleChats.map((entry) => `
-                            <button class="social-neo-chat-item ${chat && text(chat.id) === text(entry.id) ? 'is-active' : ''}" type="button" data-action="chat-open" data-chat-id="${escape(text(entry.id))}">
+                        <div class="social-neo-messages__inbox-tabs-row">
+                            <div class="social-neo-messages__inbox-filters" role="tablist" aria-label="Inbox filters">
+                                <button class="social-neo-tab ${messagesFilter === 'all' ? 'is-active' : ''}" type="button" role="tab" aria-selected="${messagesFilter === 'all' ? 'true' : 'false'}" aria-pressed="${messagesFilter === 'all' ? 'true' : 'false'}" data-action="panel-messages" data-messages-filter="all">Chats</button>
+                                <button class="social-neo-tab ${messagesFilter === 'unread' ? 'is-active' : ''}" type="button" role="tab" aria-selected="${messagesFilter === 'unread' ? 'true' : 'false'}" aria-pressed="${messagesFilter === 'unread' ? 'true' : 'false'}" data-action="panel-messages" data-messages-filter="unread">Unread${totalUnreadAll ? `<span class="social-neo-tab-badge">${escape(totalUnreadAll > 9 ? '9+' : totalUnreadAll)}</span>` : ''}</button>
+                            </div>
+                        </div>
+                    </header>
+                    <div class="social-neo-chat-items" data-lux-transparency-exempt="1">
+                        ${visibleChats.length ? visibleChats.map((entry) => {
+                            const unreadCount = unreadMessages(entry);
+                            const unreadLabel = unreadCount > 9 ? '9+' : String(unreadCount);
+                            return `
+                            <button class="social-neo-chat-item ${chat && text(chat.id) === text(entry.id) ? 'is-active' : ''} ${unreadCount ? 'is-unread' : ''}" type="button" data-action="chat-open" data-chat-id="${escape(text(entry.id))}">
                                 <div class="social-neo-person">
                                     ${renderChatAvatar(entry)}
                                     <div>
                                         <strong>${escape(chatTitle(entry))}</strong>
                                         <span>${escape(chatPreview(entry))}</span>
                                         ${text(entry.type || '') === 'group'
-                                            ? `<small>${escape(groupMemberPreviewNames((groupForChat(entry)?.memberIds || entry.members || []), 3).join(', ') || 'Members listed in thread')}</small>`
+                                            ? `<small>${escape((() => {
+                                                const ids = groupForChat(entry)?.memberIds || entry.members || [];
+                                                const counts = {};
+                                                (Array.isArray(ids) ? ids : []).forEach((id) => {
+                                                    let label = roleLabel(accountById(id)?.role);
+                                                    if (label === 'Teaching Assistant') label = 'TA';
+                                                    if (!label || label === 'Portal User') label = 'Other';
+                                                    counts[label] = (counts[label] || 0) + 1;
+                                                });
+                                                const parts = Object.keys(counts).map((label) => {
+                                                    const n = counts[label];
+                                                    const word = n > 1 && label !== 'TA'
+                                                        ? (label === 'Other' ? 'Others' : `${label}s`)
+                                                        : label;
+                                                    return `${n} ${word}`;
+                                                });
+                                                return parts.join(' · ') || 'Group chat';
+                                            })())}</small>`
                                             : `${(() => {
                                                 const peer = accountById((Array.isArray(entry.members) ? entry.members : []).find((memberId) => text(memberId) !== currentUserId()) || '');
                                                 return peer ? `<small>${escape(accountPresenceLabel(peer))}</small>` : '';
@@ -481,121 +428,273 @@
                                         }
                                     </div>
                                 </div>
-                                <div class="social-neo-stack-compact">
-                                    <span>${escape(chatTime(entry))}</span>
-                                    ${unreadMessages(entry) ? `<span class="social-neo-pill">${escape(unreadMessages(entry))} new</span>` : ''}
+                                <div class="social-neo-chat-item__aside">
+                                    <span class="social-neo-chat-item__time">${escape(chatTime(entry))}</span>
+                                    ${unreadCount ? `<span class="social-neo-messages__unread-badge" aria-label="${escape(unreadCount)} unread">${escape(unreadLabel)}</span>` : ''}
                                 </div>
                             </button>
-                        `).join('') : `<div class="social-neo-empty">No conversations match this inbox view yet.</div>`}
+                        `;
+                        }).join('') : `
+                            <div class="social-neo-messages__inbox-empty" role="status">
+                                <strong class="social-neo-messages__inbox-empty-title">${escape(inboxEmptyTitle)}</strong>
+                                <p class="social-neo-messages__inbox-empty-copy">${escape(inboxEmptyCopy)}</p>
+                                <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="panel-community" data-community-tab="people">Find people</button>
+                            </div>
+                        `}
                     </div>
                 </section>
 
-                <section class="social-neo-card social-neo-messages__thread-shell">
-                    ${chat ? `
-                        ${isGroupThread ? `
-                            <div class="social-neo-thread-group-hero">
-                                ${bannerUrl ? `<img class="social-neo-thread-group-hero-img" src="${escape(bannerUrl)}" alt="${escape(text(group.name || 'Group banner'))}">` : ''}
-                                <div class="social-neo-thread-group-hero-overlay"></div>
-                                <div class="social-neo-thread-group-hero-content">
-                                    ${groupAvatar(group)}
-                                    <div>
-                                        <strong>${escape(text(group.name || chatTitle(chat)))}</strong>
-                                        <span>${escape(text(group.description || 'Group conversation'))}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        ` : ''}
-                        <div class="social-neo-thread-head social-neo-messages__thread-head">
-                            <div class="social-neo-person">
-                                ${isGroupThread
-                                    ? groupAvatar(group, 'social-neo-avatar-sm')
-                                    : avatar(accountById((Array.isArray(chat.members) ? chat.members : []).find((memberId) => text(memberId) !== currentUserId()) || '') || { displayName: chatTitle(chat) }, 'social-neo-avatar-sm')}
-                                <div>
-                                    <strong>${escape(chatTitle(chat))}</strong>
-                                    <span>${escape(text(chat.type || 'direct') === 'group' ? `${memberIds.length} members in this room` : 'Direct conversation')}</span>
-                                    ${text(chat.type || '') !== 'group' ? `${(() => {
-                                        const peer = accountById((Array.isArray(chat.members) ? chat.members : []).find((memberId) => text(memberId) !== currentUserId()) || '');
-                                        return peer ? `<small>${escape(accountPresenceLabel(peer))}</small>` : '';
-                                    })()}` : ''}
-                                </div>
-                            </div>
-                            <div class="social-neo-inline social-neo-messages__thread-actions">
-                                ${activeMessages(chat).length > 8 ? `<button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="thread-jump-latest" data-chat-id="${escape(text(chat.id))}"><i class="fas fa-arrow-down"></i> Latest</button>` : ''}
-                                ${isGroupThread
-                                    ? `<button class="social-neo-btn ${call && text(call.mode || '') === 'group' && call.active && !inCurrentCall ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'}" type="button" data-action="${call && text(call.mode || '') === 'group' && call.active && inCurrentCall ? 'group-call-leave' : 'group-call-join'}" data-chat-id="${escape(text(chat.id))}"><i class="fas fa-video"></i> ${call && text(call.mode || '') === 'group' && call.active ? (inCurrentCall ? 'Leave Call' : 'Join Call') : 'Start Call'}</button>
-                                       <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="group-thread-panel-toggle" data-chat-id="${escape(text(chat.id))}" data-panel="members"><i class="fas fa-circle-info"></i></button>`
-                                    : `<button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="call-start" data-chat-id="${escape(text(chat.id))}"><i class="fas fa-video"></i> Call</button>
-                                       <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="chat-hide-open" data-chat-id="${escape(text(chat.id))}"><i class="fas fa-eye-slash"></i> Hide from inbox</button>`}
-                            </div>
-                        </div>
-                        ${isGroupThread ? `
-                            <div class="social-neo-group-thread-toolbar">
-                                <button class="social-neo-btn ${activeGroupPanel === 'search' ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'} social-neo-btn-sm" type="button" data-action="group-thread-panel-toggle" data-chat-id="${escape(text(chat.id))}" data-panel="search"><i class="fas fa-search"></i> Search</button>
-                                <button class="social-neo-btn ${activeGroupPanel === 'media' ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'} social-neo-btn-sm" type="button" data-action="group-thread-panel-toggle" data-chat-id="${escape(text(chat.id))}" data-panel="media"><i class="fas fa-image"></i> Media</button>
-                                <button class="social-neo-btn ${activeGroupPanel === 'files' ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'} social-neo-btn-sm" type="button" data-action="group-thread-panel-toggle" data-chat-id="${escape(text(chat.id))}" data-panel="files"><i class="fas fa-folder-open"></i> Files</button>
-                                <button class="social-neo-btn ${activeGroupPanel === 'links' ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'} social-neo-btn-sm" type="button" data-action="group-thread-panel-toggle" data-chat-id="${escape(text(chat.id))}" data-panel="links"><i class="fas fa-link"></i> Links</button>
-                                <button class="social-neo-btn ${activeGroupPanel === 'members' ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'} social-neo-btn-sm" type="button" data-action="group-thread-panel-toggle" data-chat-id="${escape(text(chat.id))}" data-panel="members"><i class="fas fa-users"></i> Members</button>
-                                <button class="social-neo-btn ${activeGroupPanel === 'invite' ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'} social-neo-btn-sm" type="button" data-action="group-thread-panel-toggle" data-chat-id="${escape(text(chat.id))}" data-panel="invite"><i class="fas fa-user-plus"></i> Invite</button>
-                                <button class="social-neo-btn ${activeGroupPanel === 'settings' ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'} social-neo-btn-sm" type="button" data-action="group-thread-panel-toggle" data-chat-id="${escape(text(chat.id))}" data-panel="settings"><i class="fas fa-sliders"></i> Settings</button>
-                            </div>
-                            <div class="social-neo-group-thread-toolbar-summary">
-                                <span class="social-neo-pill">${escape(memberIds.length)} members</span>
-                                <span class="social-neo-pill">${escape(assets.files.length)} files</span>
-                                <span class="social-neo-pill">${escape(assets.media.length)} media</span>
-                                <span class="social-neo-pill">${escape(assets.links.length)} links</span>
-                            </div>
-                            ${activeGroupPanel ? `<div class="social-neo-group-thread-panel">${renderGroupPanelBody()}</div>` : ''}
-                        ` : ''}
-                        <div class="social-neo-thread-messages social-neo-messages__thread-stream">
-                            ${activeMessages(chat).length ? activeMessages(chat).map(renderMessageCard).join('') : `<div class="social-neo-empty">No messages yet.</div>`}
-                        </div>
-                        ${isGroupThread ? renderGroupCallCard() : ''}
-                        ${!isGroupThread && call && (text(call.chatId) === text(chat.id) || text(state().ui?.activeCallChatId) === text(chat.id)) ? `
-                            <div class="social-neo-call-card">
-                                <div>
-                                    <strong>Call status</strong>
-                                    <span>${escape(text(state().ui?.callMessage || call.status || 'Ready'))}</span>
-                                </div>
-                                <div class="social-neo-call-actions">
-                                    ${isIncomingCall(call)
-                                        ? `<button class="social-neo-btn social-neo-btn-primary" type="button" data-action="call-accept" data-chat-id="${escape(text(chat.id))}">Accept</button>
-                                           <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="call-decline" data-chat-id="${escape(text(chat.id))}">Decline</button>`
-                                        : `<button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="call-end" data-chat-id="${escape(text(chat.id))}">End</button>`
-                                    }
-                                </div>
-                                ${state().ui?.callOpen ? `
-                                    <div class="social-neo-call-stage">
-                                        <div class="social-neo-call-video">
-                                            <video id="portal-call-remote-video" autoplay playsinline></video>
-                                            <span>Remote video</span>
-                                        </div>
-                                        <div class="social-neo-call-video">
-                                            <video id="portal-call-local-video" autoplay playsinline muted></video>
-                                            <span>Local preview</span>
-                                        </div>
-                                    </div>
-                                    <div class="social-neo-inline">
-                                        <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="call-mic">${state().ui?.callMicEnabled ? 'Mute mic' : 'Unmute mic'}</button>
-                                        <button class="social-neo-btn social-neo-btn-ghost" type="button" data-action="call-camera">${state().ui?.callCameraEnabled ? 'Hide camera' : 'Show camera'}</button>
-                                    </div>
-                                ` : ''}
-                            </div>
-                        ` : ''}
-                        <form class="${messageComposeFormClass} social-neo-messages__composer" data-form="send-message" data-chat-id="${escape(text(chat.id))}">
-                            ${renderFileChip(messageFile)}
-                            <div class="${messageComposeRowClass}">
-                                <button class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm" type="button" data-action="message-attach" data-chat-id="${escape(text(chat.id))}"><i class="fas fa-paperclip"></i></button>
-                                <input class="${messageComposeInputClass}" id="${escape(messageBodyId)}" name="messageBody" placeholder="Aa" value="${escape(messageDraft)}">
-                                <button class="social-neo-btn social-neo-btn-primary social-neo-btn-sm" type="submit"><i class="fas fa-paper-plane"></i></button>
-                            </div>
-                            <input id="${escape(messageFileId)}" name="messageFile" type="file" hidden>
-                        </form>
-                    ` : `<div class="social-neo-empty">Pick a thread to open the conversation. Alerts stay one tap away from the inbox.</div>`}
-                </section>
+                ${renderMessagesThreadShell(chat)}
             </div>
         `;
     }
 
 
-})();
+    const MESSAGES_OWNED_DIALOG_KINDS = new Set(['message-delete', 'chat-hide']);
 
+    function renderMessagesOwnedDialog(runtime, dialog) {
+        if (!dialog) return '';
+        const kind = text(dialog.type);
+        if (!MESSAGES_OWNED_DIALOG_KINDS.has(kind)) return '';
+        const dialogChat = ['message-delete', 'chat-hide'].includes(kind)
+            ? activeChats().find((item) => text(item.id) === text(dialog.chatId))
+            : null;
+        const dialogMessage = kind === 'message-delete' && Array.isArray(dialogChat?.messages)
+            ? dialogChat.messages.find((item) => text(item.id) === text(dialog.messageId))
+            : null;
+        if (kind === 'message-delete') {
+            if (!dialogChat || !dialogMessage) return '';
+            return `<div class="social-neo-dialog-backdrop" data-action="dialog-close">
+                <form class="social-neo-dialog-card" data-form="dialog-message-delete" data-action="noop">
+                    <div class="social-neo-section-head social-neo-dialog-head">
+                        <div class="social-neo-dialog-heading"><strong class="social-neo-dialog-title">Remove message</strong><span class="social-neo-dialog-subtitle">This will delete the message from the chat thread.</span></div>
+                        <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-close-btn" type="button" data-action="dialog-close"><i class="fas fa-times"></i></button>
+                    </div>
+                    <div class="social-neo-dialog-preview">
+                        ${escape(text(dialogMessage.text || dialogMessage.file?.name || 'Message attachment'))}
+                    </div>
+                    <label class="social-neo-item-line social-neo-dialog-checkbox-line">
+                        <input type="checkbox" name="confirmMessageDelete" value="yes">
+                        <span class="social-neo-dialog-checkbox-copy">Remove this message from the conversation.</span>
+                    </label>
+                    <div class="social-neo-form-actions social-neo-dialog-actions">
+                        <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-cancel-btn" type="button" data-action="dialog-close">Cancel</button>
+                        <button class="social-neo-btn social-neo-btn-primary social-neo-dialog-submit-btn" type="submit">Remove message</button>
+                    </div>
+                    <input type="hidden" name="chatId" value="${escape(text(dialogChat.id))}">
+                    <input type="hidden" name="messageId" value="${escape(text(dialogMessage.id))}">
+                </form>
+            </div>`;
+        }
+        if (kind === 'chat-hide') {
+            if (!dialogChat) return '';
+            return `<div class="social-neo-dialog-backdrop" data-action="dialog-close">
+                <form class="social-neo-dialog-card" data-form="dialog-chat-hide" data-action="noop">
+                    <div class="social-neo-section-head social-neo-dialog-head">
+                        <div class="social-neo-dialog-heading"><strong class="social-neo-dialog-title">Hide conversation</strong><span class="social-neo-dialog-subtitle">This only removes the chat from your inbox view.</span></div>
+                        <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-close-btn" type="button" data-action="dialog-close"><i class="fas fa-times"></i></button>
+                    </div>
+                    <div class="social-neo-dialog-preview">
+                        <strong class="social-neo-dialog-preview-title">${escape(chatTitle(dialogChat))}</strong>
+                        <div class="social-neo-muted social-neo-muted-mt-6">${escape(chatPreview(dialogChat))}</div>
+                    </div>
+                    <div class="social-neo-dialog-preview social-neo-dialog-preview-danger">
+                        Chat history will stay saved. This only hides the conversation from your inbox until you open it again or a new message arrives.
+                    </div>
+                    <div class="social-neo-form-actions social-neo-dialog-actions">
+                        <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-cancel-btn" type="button" data-action="dialog-close">Cancel</button>
+                        <button class="social-neo-btn social-neo-btn-primary social-neo-dialog-submit-btn" type="submit">Hide from inbox</button>
+                    </div>
+                    <input type="hidden" name="chatId" value="${escape(text(dialogChat.id))}">
+                </form>
+            </div>`;
+        }
+        return '';
+    }
+
+window.renderMessagesOwnedDialog = renderMessagesOwnedDialog;
+    window.MESSAGES_OWNED_DIALOG_KINDS = MESSAGES_OWNED_DIALOG_KINDS;
+
+    function isSocialMessagesClickAction(action) {
+        const a = text(action || '');
+        if (!a) return false;
+        if (a === 'directory-message' || a === 'message-start') return true;
+        return a.startsWith('message-') || a.startsWith('chat-') || a.startsWith('call-') || a.startsWith('thread-');
+    }
+
+    function handleSocialMessagesClick(action, trigger) {
+        if (!isSocialMessagesClickAction(action)) return false;
+        if (action === 'message-delete-open') {
+            return openDialog('message-delete', {
+                chatId: text(trigger.getAttribute('data-chat-id')),
+                messageId: text(trigger.getAttribute('data-message-id'))
+            });
+        }
+
+        if (action === 'message-attach') return root()?.querySelector('input[name="messageFile"]')?.click();
+
+        if (action === 'chat-open') {
+            setActiveChat(trigger.getAttribute('data-chat-id'));
+            return setPanel('messages');
+        }
+
+        if (action === 'chat-hide-open') {
+            return openDialog('chat-hide', {
+                chatId: text(trigger.getAttribute('data-chat-id'))
+            });
+        }
+
+        if (action === 'chat-hide') {
+            return withBusy(async () => {
+                if (typeof hidePortalMessengerChat !== 'function') throw new Error('Chat hiding is unavailable.');
+                const chatId = text(trigger.getAttribute('data-chat-id'));
+                await hidePortalMessengerChat(chatId);
+                const remainingChats = activeChats().filter((entry) => text(entry.id) !== chatId);
+                state().ui.activeChatId = text(remainingChats[0]?.id || '');
+                renderSocialPageNow('chat-hide');
+            });
+        }
+
+        if (action === 'thread-jump-latest') {
+            const chatId = text(trigger.getAttribute('data-chat-id'));
+            const chat = activeChats().find((entry) => text(entry.id) === chatId);
+            const lastMessage = Array.isArray(chat?.messages) ? chat.messages[chat.messages.length - 1] : null;
+            if (lastMessage) {
+                state().ui.groupThreadJumpMessageByChat = state().ui.groupThreadJumpMessageByChat || {};
+                state().ui.groupThreadJumpMessageByChat[chatId] = text(lastMessage.id);
+            }
+            return renderSocialPageNow('thread-jump-latest');
+        }
+
+        if (action === 'directory-message' || action === 'message-start') {
+            return withBusy(async () => {
+                const chat = await openPortalDirectChat(trigger.getAttribute('data-user-id'));
+                if (chat?.id) {
+                    setActiveChat(chat.id);
+                    setPanel('messages');
+                }
+            });
+        }
+
+        if (action === 'call-start') return withBusy(() => startPortalCall(trigger.getAttribute('data-chat-id')));
+
+        if (action === 'call-accept') return withBusy(() => acceptPortalCall(trigger.getAttribute('data-chat-id')));
+
+        if (action === 'call-decline') return withBusy(() => declinePortalCall(trigger.getAttribute('data-chat-id')));
+
+        if (action === 'call-end') return withBusy(() => endPortalCall(trigger.getAttribute('data-chat-id')));
+
+        if (action === 'call-mic') {
+            if (typeof togglePortalCallMic === 'function') togglePortalCallMic();
+            return;
+        }
+
+        if (action === 'call-camera') {
+            if (typeof togglePortalCallCamera === 'function') togglePortalCallCamera();
+            return;
+        }
+        return false;
+    }
+
+    window.handleSocialMessagesClick = handleSocialMessagesClick;
+    window.isSocialMessagesClickAction = isSocialMessagesClickAction;
+
+    function isSocialMessagesSubmitForm(formType) {
+        const f = text(formType || '');
+        return f === 'send-message' || f === 'dialog-message-delete' || f === 'dialog-chat-hide';
+    }
+
+    function handleSocialMessagesSubmit(formType, form, runtime, event) {
+        if (!isSocialMessagesSubmitForm(formType)) return false;
+        if (formType === 'send-message') {
+            return withBusy(async () => {
+                const chatId = text(form.getAttribute('data-chat-id'));
+                const body = text(form.messageBody?.value || runtime.ui?.messageDraftByChat?.[chatId]);
+                const file = runtime.ui?.messageFileByChat?.[chatId] || null;
+                if (!body && !file) throw new Error('Write a message or attach a file first.');
+                await sendPortalMessage(chatId, body, file);
+                runtime.ui.messageDraftByChat[chatId] = '';
+                runtime.ui.messageFileByChat[chatId] = null;
+                renderSocialPageNow('message-sent');
+            });
+        }
+
+        if (formType === 'dialog-message-delete') {
+            return withBusy(async () => {
+                if (!form.confirmMessageDelete?.checked) throw new Error('Confirm message removal first.');
+                await deletePortalChatMessage(text(form.chatId?.value), text(form.messageId?.value));
+                closeDialog();
+                invalidateSocialRenderCache({ center: true });
+                renderSocialPageNow('message-delete');
+            });
+        }
+
+        if (formType === 'dialog-chat-hide') {
+            return withBusy(async () => {
+                if (typeof hidePortalMessengerChat !== 'function') throw new Error('Chat hiding is unavailable.');
+                const chatId = text(form.chatId?.value);
+                await hidePortalMessengerChat(chatId);
+                const remainingChats = activeChats().filter((entry) => text(entry.id) !== chatId);
+                state().ui.activeChatId = text(remainingChats[0]?.id || '');
+                closeDialog();
+                renderSocialPageNow('chat-hide');
+            });
+        }
+        return false;
+    }
+
+    window.handleSocialMessagesSubmit = handleSocialMessagesSubmit;
+    window.isSocialMessagesSubmitForm = isSocialMessagesSubmitForm;
+
+    function isSocialMessagesInputTarget(target) {
+        if (!target || typeof target.matches !== 'function') return false;
+        try {
+
+        if (target.closest && target.closest('form[data-form="send-message"]')) return true;
+
+        } catch (e) {}
+        return false;
+    }
+
+    function handleSocialMessagesInput(target, runtime, event) {
+        if (!isSocialMessagesInputTarget(target)) return false;
+        const messageForm = target.closest('form[data-form="send-message"]');
+        if (messageForm && target.name === 'messageBody') {
+            runtime.ui.messageDraftByChat = runtime.ui.messageDraftByChat || {};
+            runtime.ui.messageDraftByChat[text(messageForm.getAttribute('data-chat-id'))] = target.value;
+        }
+
+        return true;
+    }
+
+    function isSocialMessagesChangeTarget(target) {
+        if (!target || typeof target.matches !== 'function') return false;
+        try {
+
+        if (target.name === 'messageFile') return true;
+
+        } catch (e) {}
+        return false;
+    }
+
+    function handleSocialMessagesChange(target, runtime, event) {
+        if (!isSocialMessagesChangeTarget(target)) return false;
+        if (target.name === 'messageFile') {
+            const form = target.closest('form[data-form="send-message"]');
+            const chatId = text(form?.getAttribute('data-chat-id') || '') || text(activeChat()?.id || '');
+            if (chatId) {
+                runtime.ui.messageFileByChat = runtime.ui.messageFileByChat || {};
+                runtime.ui.messageFileByChat[chatId] = target.files?.[0] || null;
+                renderSocialPageNow('message-file');
+            }
+        }
+
+        return true;
+    }
+
+    window.handleSocialMessagesInput = handleSocialMessagesInput;
+    window.isSocialMessagesInputTarget = isSocialMessagesInputTarget;
+    window.handleSocialMessagesChange = handleSocialMessagesChange;
+    window.isSocialMessagesChangeTarget = isSocialMessagesChangeTarget;
+
+})();

@@ -8,97 +8,89 @@
     <meta http-equiv="Expires" content="0">
     <title>KIU Campus Social Network</title>
     <meta name="description" content="Connect with fellow students, join study groups, share updates, and stay engaged with your campus community at KIU.">
-<script>
-(function resetLocalPortalWorkerForSocialRoute() {
-    try {
-        const host = String(window.location.hostname || '').toLowerCase();
-        if (host !== '127.0.0.1' && host !== 'localhost') return;
-        if (!('serviceWorker' in navigator) || typeof caches === 'undefined') return;
-        const marker = 'KIU_SOCIAL_ROUTE_SW_RESET_20260606-postactions6';
-        if (sessionStorage.getItem(marker) === '1') return;
-        sessionStorage.setItem(marker, '1');
-        Promise.all([
-            navigator.serviceWorker.getRegistrations().then((registrations) =>
-                Promise.all((registrations || []).map((registration) => registration.unregister().catch(() => false)))
-            ).catch(() => null),
-            caches.keys().then((keys) =>
-                Promise.all((keys || []).filter((key) => String(key || '').startsWith('kiu-portal-shell-')).map((key) => caches.delete(key)))
-            ).catch(() => null)
-        ]).finally(() => {
-            window.location.replace(`${window.location.pathname}?swreset=${Date.now()}`);
-        });
-    } catch (error) {}
-})();
-</script>
+
+    <!-- Vendor -->
     <link rel="stylesheet" href="assets/vendor/fontawesome/css/all.min.css?v=1776604822083">
+
+    <!-- Platform stylesheets -->
     <link rel="stylesheet" href="assets/css/kiu-fonts.css?v=20260515-fonts1">
-    <link rel="stylesheet" href="assets/css/base.css?v=20260427-socialfix1">
-    <link rel="stylesheet" href="assets/css/layout.css?v=20260528-layoutfix2">
-    <link rel="stylesheet" href="assets/css/lux-tokens.css?v=20260606-luxscrollbar1">
-    <link rel="stylesheet" href="assets/css/lux-surfaces.css?v=20260527-profcss1">
-    <link rel="stylesheet" href="assets/css/lux-controls.css?v=20260606-pickerscroll1">
-    <link rel="stylesheet" href="assets/css/lux-layout-primitives.css?v=20260606-luxscrollbar1">
-    <link rel="stylesheet" href="assets/css/index-luxury.css?v=20260531-routeglass1">
-    <link rel="stylesheet" href="assets/css/mobile-responsive.css?v=20260427-socialfix1">
-    <script src="assets/js/theme-primer.js?v=20260604-styleguard2"></script>
-<script src="assets/js/app/social-standalone-bootstrap.js?v=20260527-socialglobals1"></script>
-<link rel="stylesheet" href="assets/css/social-rebuild.css?v=20260604-alertcats1">
-<link rel="stylesheet" href="assets/css/social-projects-lms.css?v=20260603-scrollfix1">
+    <link rel="stylesheet" href="assets/css/base.css?v=20260713-accentborder2">
+    <link rel="stylesheet" href="assets/css/layout.css?v=20260713-accentborder2">
+    <link rel="stylesheet" href="assets/css/lux-tokens.css?v=20260713-accentborder2">
+    <link rel="stylesheet" href="assets/css/lux-surfaces.css?v=20260713-accentborder2">
+    <link rel="stylesheet" href="assets/css/lux-controls.css?v=20260713-accentborder2">
+    <link rel="stylesheet" href="assets/css/lux-layout-primitives.css?v=20260713-accentborder2">
+    <link rel="stylesheet" href="assets/css/index-luxury.css?v=20260713-accentborder2">
+    <link rel="stylesheet" href="assets/css/mobile-responsive.css?v=20260713-accentborder2">
+
+    <!-- Social route stylesheets -->
+    <link rel="stylesheet" href="assets/css/social-rebuild.css?v=20260713-accentborder2">
+    <link rel="stylesheet" href="assets/css/social-projects-lms.css?v=20260713-accentborder2">
+    <link rel="stylesheet" href="assets/css/portfolio-editor.css?v=20260710-asd10-social3">
+    <link rel="stylesheet" href="assets/css/social-photography-lms.css?v=20260710-photo-borders1">
+    <link rel="stylesheet" href="assets/css/social-surveys-lms.css?v=20260710-comments-dialog-glass1">
+
+    <!-- Bootstrap scripts (blocking — must run before body) -->
+    <script src="assets/js/theme-primer.js?v=20260709-glasslock1"></script>
+    <script src="assets/js/app/social-standalone-bootstrap.js?v=20260608-groups-create2"></script>
 </head>
 <body class="kiu-shell-loading lux-nonhome-page lux-route-social lux-unified-shell" data-faculty="ECON">
-<!-- Navigation stubs (hidden, for JS compatibility) -->
-<nav id="prof-nav" aria-label="Professor navigation stub"></nav>
-<nav id="top-nav" aria-label="Top navigation stub"></nav>
-<nav id="admin-nav" aria-label="Admin navigation stub"></nav>
+
+    <!-- Navigation stubs (hidden, for JS compatibility) -->
+    <nav id="prof-nav" aria-label="Professor navigation stub"></nav>
+    <nav id="top-nav" aria-label="Top navigation stub"></nav>
+    <nav id="admin-nav" aria-label="Admin navigation stub"></nav>
 
     <main id="app-content">
-    <section id="page-social" class="page-section active-page social-route-standalone-shell">
-        <div id="public-social-root">
-            <div id="social-neo-root" class="social-neo social-neo-facebook" data-panel="feed">
-                <div id="social-neo-flash-region"></div>
-                <div id="social-neo-topbar-region"></div>
-                <div id="social-neo-command-region"></div>
-                <div class="social-neo-shell">
-                    <div id="social-neo-workspace-nav-region"></div>
-                    <div class="social-neo-center" id="social-neo-center-region">
-                        <section class="social-neo-card">
-                            <div class="social-neo-empty-hero">
-                                <i class="fas fa-comments"></i>
-                                <strong>Preparing campus social</strong>
-                                <span>The live workspace shell is loading in place.</span>
-                            </div>
-                        </section>
+        <section id="page-social" class="page-section active-page social-route-standalone-shell">
+            <div id="public-social-root">
+                <div id="social-neo-root" class="social-neo social-neo-facebook" data-panel="feed">
+                    <div id="social-neo-flash-region"></div>
+                    <div id="social-neo-topbar-region"></div>
+                    <div id="social-neo-command-region"></div>
+                    <div class="social-neo-shell">
+                        <div id="social-neo-workspace-nav-region"></div>
+                        <div class="social-neo-center" id="social-neo-center-region">
+                            <section class="social-neo-card">
+                                <div class="social-neo-empty-hero">
+                                    <i class="fas fa-comments"></i>
+                                    <strong>Preparing campus social</strong>
+                                    <span>The live workspace shell is loading in place.</span>
+                                </div>
+                            </section>
+                        </div>
+
                     </div>
-                    <div id="social-neo-rail-region"></div>
+                    <div id="social-neo-drawer-region"></div>
+                    <div id="social-neo-mobile-tab-region"></div>
+                    <div id="social-neo-toast-region"></div>
                 </div>
-                <div id="social-neo-drawer-region"></div>
-                <div id="social-neo-mobile-tab-region"></div>
-                <div id="social-neo-toast-region"></div>
-                <div id="social-neo-dialog-region"></div>
-                <div id="social-neo-story-viewer-region"></div>
-                <div id="social-neo-story-composer-region"></div>
             </div>
-        </div>
-    </section>
+        </section>
     </main>
 
+    <!-- Mobile bottom navigation -->
     <nav id="mobile-bottom-nav" aria-label="Mobile navigation" hidden>
-        <div class="mobile-nav-row">
+        <div class="mobile-nav-row mobile-nav-row--seven">
             <button class="mobile-nav-btn is-active" data-social-nav="home" data-social-panel="feed" type="button" id="mob-nav-home">
                 <i class="fas fa-house"></i>
                 <span>Home</span>
             </button>
             <button class="mobile-nav-btn" data-social-nav="community" data-social-panel="community" type="button" id="mob-nav-community">
                 <i class="fas fa-user-group"></i>
-                <span>Community</span>
+                <span>People</span>
+            </button>
+            <button class="mobile-nav-btn" data-social-nav="photography" data-social-panel="photography" type="button" id="mob-nav-photography">
+                <i class="fas fa-camera-retro"></i>
+                <span>Exposé</span>
             </button>
             <button class="mobile-nav-btn" data-social-nav="events" data-social-panel="events" type="button" id="mob-nav-events">
                 <i class="fas fa-calendar-days"></i>
                 <span>Events</span>
             </button>
-<button class="mobile-nav-btn" data-social-nav="lost-and-found" data-social-panel="lost-and-found" type="button" id="mob-nav-lost-found">
+            <button class="mobile-nav-btn" data-social-nav="lost-and-found" data-social-panel="lost-and-found" type="button" id="mob-nav-lost-found">
                 <i class="fas fa-magnifying-glass-location"></i>
-                <span>Lost &amp; Found</span>
+                <span>Lost</span>
             </button>
             <button class="mobile-nav-btn" data-social-nav="inbox" type="button" id="mob-nav-inbox">
                 <i class="fas fa-inbox"></i>
@@ -112,6 +104,7 @@
         </div>
     </nav>
 
+    <!-- Mobile action sheet -->
     <div id="mobile-action-sheet" class="mob-sheet" hidden role="dialog" aria-modal="true" aria-label="Mobile quick actions">
         <div class="mob-sheet-backdrop" id="mob-sheet-backdrop"></div>
         <div class="mob-sheet-panel">
@@ -147,26 +140,38 @@
         </div>
     </div>
 
-    <script defer src="assets/js/app/api.js?v=20260527-socialrouteboot1"></script>
-<script defer src="assets/js/app/auth.js?v=20260429-authfix2"></script>
-<script defer src="assets/js/data/initial-state.js?v=20260429-lostfound3"></script>
-<script defer src="assets/js/shared/faculty.js?v=20260527-socialglobals1"></script>
-<script defer src="assets/js/app/state.js?v=20260430-portfoliolux1"></script>
-<script defer src="assets/js/shared/faculty-core.js?v=1776604822083"></script>
-<script defer src="assets/js/shared/utilities.js?v=20260605-blurfix1"></script>
-<script defer src="assets/js/features/navigation.js?v=20260527-socialshell1"></script>
-<script defer src="assets/js/features/ui.js?v=20260527-socialshell1"></script>
-<script defer src="assets/js/features/index-luxury.js?v=20260605-blurfix1"></script>
-<script type="module" src="assets/js/features/luxury-particle-background.js?v=20260603-partbg9"></script>
-<script defer src="assets/js/features/luxury-shell-chrome.js?v=20260606-pickerscroll1"></script>
-<script defer src="assets/js/shared/social-runtime-lite.js?v=20260606-postactions6"></script>
-<script defer src="assets/js/pages/social-mobile.js?v=20260603-projects1"></script>
-<script defer src="assets/js/pages/social-page.js?v=20260606-postactions6"></script>
+    <!-- Overlay portals (dialogs, story viewer, story composer) -->
+    <div id="social-neo-overlay-portal" class="social-neo-overlay-portal" hidden aria-hidden="true">
+        <div id="social-neo-dialog-region"></div>
+        <div id="social-neo-story-viewer-region"></div>
+        <div id="social-neo-story-composer-region"></div>
+    </div>
+
+    <!-- Application scripts -->
+    <script defer src="assets/js/app/api.js?v=20260710-social-images-fix1"></script>
+    <script defer src="assets/js/app/auth.js?v=20260429-authfix2"></script>
+    <script defer src="assets/js/data/initial-state.js?v=20260429-lostfound3"></script>
+    <script defer src="assets/js/shared/faculty.js?v=20260527-socialglobals1"></script>
+    <script defer src="assets/js/app/state.js?v=20260616-admin-view-accounts1"></script>
+    <script defer src="assets/js/shared/faculty-core.js?v=1776604822083"></script>
+    <script defer src="assets/js/shared/input-autocomplete-guard.js?v=20260627-autocomplete-guard1"></script>
+    <script defer src="assets/js/shared/utilities.js?v=20260713-accentborder3"></script>
+    <script defer src="assets/js/features/navigation.js?v=20260625-ssvc-workspace-nav2"></script>
+    <script defer src="assets/js/features/ui.js?v=20260527-socialshell1"></script>
+    <script defer src="assets/js/features/luxury-index-runtime.js?v=20260709-glasslock1"></script>
+    <script defer src="assets/js/features/index-luxury.js?v=20260709-glasslock1"></script>
+    <script type="module" src="assets/js/features/luxury-background.js?v=20260712-brave-static"></script>
+    <script defer src="assets/js/features/luxury-shell-chrome.js?v=20260710-picker-input-event1"></script>
+    <script defer src="assets/js/shared/social-runtime-lite.js?v=20260713-post-compose1"></script>
+    <script defer src="assets/js/pages/social-mobile.js?v=20260624-event-edit2"></script>
+    <script defer src="assets/js/shared/lux-scroll-rail.js?v=20260611-scrollrail1"></script>
+    <script defer src="assets/js/portfolio/portfolio-section-templates.js?v=20260621-portfolio1"></script>
+    <script defer src="assets/js/portfolio/portfolio-model.js?v=20260621-portfolio1"></script>
+    <script defer src="assets/js/portfolio/portfolio-api.js?v=20260621-portfolio1"></script>
+    <script defer src="assets/js/portfolio/portfolio-publish.js?v=20260621-portfolio1"></script>
+    <script defer src="assets/js/portfolio/portfolio-custom-builder.js?v=20260621-portfolio1"></script>
+    <script defer src="assets/js/portfolio/portfolio-editor.js?v=20260621-portfolio1"></script>
+    <script defer src="assets/js/pages/social-render-plan.js?v=20260714-renderplan1"></script>
+    <script defer src="assets/js/pages/social-page.js?v=20260713-groups-detail9"></script>
 </body>
 </html>
-
-
-
-
-
-
