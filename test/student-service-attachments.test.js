@@ -141,7 +141,8 @@ describe('student service attachments', () => {
 
     it('wires attachment pickers and galleries across student service composers', () => {
         const source = readSource('assets/js/pages/student-service.js')
-            + readSource('assets/js/pages/student-service-attachments.js');
+            + readSource('assets/js/pages/student-service-attachments.js')
+            + readSource('assets/js/pages/student-service-tickets.js');
         const serviceSource = readSource('assets/js/pages/student-service-service.js');
         const css = readSource('assets/css/student-service-route.css');
 

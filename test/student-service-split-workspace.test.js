@@ -599,10 +599,10 @@ describe('student service bootstrap and module recovery guardrails', () => {
         expect(apiPaths).toContain('ticketHandoff: (ticketId) =>');
         expect(apiPaths).toContain('/internal-notes');
         expect(apiPaths).toContain('/handoff');
-        expect(source).toContain('STUDENT_SERVICE_API_PATHS.ticketInternalNotes(ticket.id)');
-        expect(source).toContain('STUDENT_SERVICE_API_PATHS.ticketHandoff(ticket.id)');
-        expect(source).toContain('async function addStudentServiceInternalNote()');
-        expect(source).toContain('async function updateStudentServiceHandoff()');
+        expect(source + readAsset('assets/js/pages/student-service-tickets.js')).toContain('STUDENT_SERVICE_API_PATHS.ticketInternalNotes(ticket.id)');
+        expect(source + readAsset('assets/js/pages/student-service-tickets.js')).toContain('STUDENT_SERVICE_API_PATHS.ticketHandoff(ticket.id)');
+        expect(source + readAsset('assets/js/pages/student-service-tickets.js')).toContain('async function addStudentServiceInternalNote()');
+        expect(source + readAsset('assets/js/pages/student-service-tickets.js')).toContain('async function updateStudentServiceHandoff()');
         expect(source).not.toMatch(/['"`]\/api\/student-service\/tickets\/[^'"`]+\/internal-notes['"`]/);
         expect(source).not.toMatch(/['"`]\/api\/student-service\/tickets\/[^'"`]+\/handoff['"`]/);
     });
