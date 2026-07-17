@@ -3,10 +3,10 @@ import { readFileSync, readdirSync } from 'fs';
 import { join } from 'path';
 
 describe('index-luxury size budget (dashboard-only consumer)', () => {
-    it('stays under 50% of pre-peel megafile (10110 → ≤5055)', () => {
+    it('stays under under 30% of pre-peel megafile (10110 → ≤3000)', () => {
         const css = readFileSync(join(process.cwd(), 'assets/css/index-luxury.css'), 'utf8');
         const lines = css.split('\n').length;
-        expect(lines).toBeLessThanOrEqual(5055);
+        expect(lines).toBeLessThanOrEqual(3000);
         expect(css).toMatch(/#lux-topbar|lux-topbar-shell/);
         const shell = readFileSync(join(process.cwd(), 'assets/css/lux-shell-full-paint.css'), 'utf8');
         expect(shell).toContain('TOPBAR SOFT-CHROME SSOT');

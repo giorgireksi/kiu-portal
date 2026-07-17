@@ -1,4 +1,47 @@
+/* exact LMS focus contract: structure in lux-focus-panel.css; home only soft-chrome material */
 /* Route-owned home dashboard and builder styles extracted from index-luxury.css. */
+
+
+/* Home hero stage — LMS focus layout (material from lux-focus-panel / soft-chrome). */
+#page-home #lux-home-shell .lms-hero-v2-grid,
+#page-home #lux-home-shell .lux-hero-stage {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.85fr);
+    gap: 18px;
+    align-items: stretch;
+}
+
+#page-home #lux-home-shell .lms-hero-v2-left,
+#page-home #lux-home-shell .lux-hero-main {
+    min-width: 0;
+}
+
+/* Soft-chrome children own the surface; kill role-tint glass bleed */
+#page-home #lux-home-shell .lux-soft-chrome,
+#page-home #lux-home-shell .lux-focus-panel,
+#page-home #lux-home-shell .lms-hero-focus.lux-hero-side {
+    background-image: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+/* Nested hero shells stay transparent so soft-chrome/focus paint once */
+#page-home #lux-home-shell .lux-grid-widget > .lux-grid-widget-body > .lux-builder-hero,
+#page-home #lux-home-shell .lux-grid-widget > .lux-grid-widget-body > .page-hero,
+#page-home #lux-home-shell .lux-grid-widget > .lux-grid-widget-body > .lms-hero-v2,
+#page-home #lux-home-shell .lux-builder-hero.lux-soft-chrome,
+#page-home #lux-home-shell .page-hero.lms-hero-v2.lux-soft-chrome {
+    /* surface from soft-chrome material block below; no extra glass layer */
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+@media (max-width: 900px) {
+    #page-home #lux-home-shell .lms-hero-v2-grid,
+    #page-home #lux-home-shell .lux-hero-stage {
+        grid-template-columns: 1fr;
+    }
+}
 
 #page-home.page-section {
     max-width: none;
@@ -520,7 +563,7 @@ body.lux-dashboard-gesture-active .lux-dashboard-canvas.is-editing .lux-grid-wid
     flex: 1 1 auto;
     min-width: 0;
     overflow: auto;
-    overflow-y: scroll;
+    overflow-y: auto;
 }
 
 .lux-grid-widget-body>* {
@@ -1239,55 +1282,1433 @@ body.lux-light-mode #lux-topbar .lux-topbar-editor-btn,
     }
 }
 
-/* Dashboard view fades: big home widgets across student,
-staff,
-service,
-and admin dashboard views. */
+
+/* Focus panel matte — keep selector near props for parity (structure in lux-focus-panel.css). */
+#page-home #lux-home-shell .lms-hero-focus.lux-hero-side {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+
+/* Inner dashboard chips — same soft-chrome matte as LMS focus (no engine glass) */
+#page-home #lux-home-shell :is(.lux-stat, .lux-quick-btn, .lux-list-row, .lux-admin-op-card, .lux-pill, .lux-alert).lux-soft-chrome {
+    background: var(--lux-soft-chrome-surface, var(--lux-focus-fill, var(--lux-panel-surface-soft))) !important;
+    border: 1px solid var(--lux-soft-chrome-border, var(--lux-focus-border, var(--lux-panel-border-soft))) !important;
+    box-shadow: var(--lux-soft-chrome-shadow, var(--lux-focus-shadow, var(--lux-panel-shadow-soft))) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background-image: none !important;
+}
+
+#page-home #lux-home-shell .lux-stat.lux-soft-chrome {
+    border-radius: 16px;
+    padding: 12px 14px;
+}
+
+#page-home #lux-home-shell .lux-quick-btn.lux-soft-chrome {
+    border-radius: 20px;
+}
+
+#page-home #lux-home-shell .lux-list-row.lux-soft-chrome {
+    border-radius: 16px;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    gap: 12px;
+    align-items: flex-start;
+}
+
+#page-home #lux-home-shell .lux-list-row.lux-soft-chrome:last-child {
+    margin-bottom: 0;
+}
+
+#page-home #lux-home-shell .lux-list-row.lux-soft-chrome i {
+    width: 36px;
+    height: 36px;
+    border-radius: 12px;
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+    background: color-mix(in srgb, var(--lux-accent, #d7aa56) 16%, transparent);
+    color: var(--lux-accent, #d7aa56);
+    border: 1px solid color-mix(in srgb, var(--lux-accent, #d7aa56) 28%, transparent);
+}
+
+
+/* Dashboard orbital gem scrollbar — high-visibility framed rail (SCROLL UI) */
+#page-home #lux-home-shell .lux-grid-widget-body,
+#page-home #lux-home-shell .lux-dashboard-canvas .lux-grid-widget-body,
+#page-home #lux-home-shell .lux-grid-widget-body > .lux-dashboard-section,
+#page-home #lux-home-shell .lux-grid-widget-body > .lux-panel,
+#page-home #lux-home-shell .lux-grid-widget-body > .lux-card,
+#page-home #lux-home-shell .lux-builder-card,
+#page-home #lux-home-shell .lux-dashboard-section {
+    scrollbar-width: auto;
+    scrollbar-color: var(--lux-home-scroll-thumb-solid, var(--lux-accent)) #070b10;
+}
+
+#page-home #lux-home-shell .lux-grid-widget-body::-webkit-scrollbar,
+#page-home #lux-home-shell .lux-dashboard-canvas .lux-grid-widget-body::-webkit-scrollbar,
+#page-home #lux-home-shell .lux-grid-widget-body > .lux-dashboard-section::-webkit-scrollbar,
+#page-home #lux-home-shell .lux-grid-widget-body > .lux-panel::-webkit-scrollbar,
+#page-home #lux-home-shell .lux-grid-widget-body > .lux-card::-webkit-scrollbar,
+#page-home #lux-home-shell .lux-builder-card::-webkit-scrollbar,
+#page-home #lux-home-shell .lux-dashboard-section::-webkit-scrollbar {
+    width: var(--lux-home-scroll-size, 14px) !important;
+    height: var(--lux-home-scroll-size, 14px) !important;
+}
+
+#page-home #lux-home-shell .lux-grid-widget-body::-webkit-scrollbar-track,
+#page-home #lux-home-shell .lux-dashboard-canvas .lux-grid-widget-body::-webkit-scrollbar-track,
+#page-home #lux-home-shell .lux-grid-widget-body > .lux-dashboard-section::-webkit-scrollbar-track,
+#page-home #lux-home-shell .lux-grid-widget-body > .lux-panel::-webkit-scrollbar-track,
+#page-home #lux-home-shell .lux-grid-widget-body > .lux-card::-webkit-scrollbar-track,
+#page-home #lux-home-shell .lux-builder-card::-webkit-scrollbar-track,
+#page-home #lux-home-shell .lux-dashboard-section::-webkit-scrollbar-track {
+    background: #070b10 !important;
+    border-radius: 999px !important;
+    margin: 14px 3px !important;
+    box-shadow:
+        0 0 0 1px var(--lux-home-scroll-track-outer, color-mix(in srgb, var(--lux-accent) 40%, #000)),
+        inset 0 0 0 1.5px var(--lux-home-scroll-track-edge, var(--lux-accent)),
+        inset 0 0 0 3px rgba(0, 0, 0, 0.65),
+        inset 0 2px 10px rgba(0, 0, 0, 0.55) !important;
+}
+
+#page-home #lux-home-shell .lux-grid-widget-body::-webkit-scrollbar-thumb,
+#page-home #lux-home-shell .lux-dashboard-canvas .lux-grid-widget-body::-webkit-scrollbar-thumb,
+#page-home #lux-home-shell .lux-grid-widget-body > .lux-dashboard-section::-webkit-scrollbar-thumb,
+#page-home #lux-home-shell .lux-grid-widget-body > .lux-panel::-webkit-scrollbar-thumb,
+#page-home #lux-home-shell .lux-grid-widget-body > .lux-card::-webkit-scrollbar-thumb,
+#page-home #lux-home-shell .lux-builder-card::-webkit-scrollbar-thumb,
+#page-home #lux-home-shell .lux-dashboard-section::-webkit-scrollbar-thumb {
+    background: var(--lux-home-scroll-thumb, var(--lux-accent)) !important;
+    background-color: var(--lux-home-scroll-thumb-solid, var(--lux-accent)) !important;
+    border-radius: 999px !important;
+    border: 2px solid #070b10 !important;
+    box-shadow:
+        var(--lux-home-scroll-glow, 0 0 16px rgba(var(--lux-accent-rgb), 0.65)),
+        var(--lux-home-scroll-thumb-inset, inset 0 1px 0 rgba(255, 255, 255, 0.55)),
+        0 0 0 1px color-mix(in srgb, var(--lux-accent) 55%, transparent) !important;
+    min-height: 48px !important;
+}
+
+#page-home #lux-home-shell .lux-grid-widget-body::-webkit-scrollbar-thumb:hover,
+#page-home #lux-home-shell .lux-dashboard-canvas .lux-grid-widget-body::-webkit-scrollbar-thumb:hover,
+#page-home #lux-home-shell .lux-grid-widget-body > .lux-dashboard-section::-webkit-scrollbar-thumb:hover,
+#page-home #lux-home-shell .lux-grid-widget-body > .lux-panel::-webkit-scrollbar-thumb:hover,
+#page-home #lux-home-shell .lux-grid-widget-body > .lux-card::-webkit-scrollbar-thumb:hover,
+#page-home #lux-home-shell .lux-builder-card::-webkit-scrollbar-thumb:hover,
+#page-home #lux-home-shell .lux-dashboard-section::-webkit-scrollbar-thumb:hover {
+    background: var(--lux-home-scroll-thumb-hover, var(--lux-accent)) !important;
+    background-color: var(--lux-home-scroll-thumb-hover-solid, var(--lux-accent)) !important;
+    box-shadow:
+        var(--lux-home-scroll-glow-hover, 0 0 24px rgba(var(--lux-accent-rgb), 0.9)),
+        inset 0 1px 0 rgba(255, 255, 255, 0.75),
+        0 0 0 1px color-mix(in srgb, var(--lux-accent) 75%, #fff 10%) !important;
+}
+
+#page-home #lux-home-shell .lux-grid-widget-body::-webkit-scrollbar-thumb:active,
+#page-home #lux-home-shell .lux-dashboard-canvas .lux-grid-widget-body::-webkit-scrollbar-thumb:active,
+#page-home #lux-home-shell .lux-grid-widget-body > .lux-dashboard-section::-webkit-scrollbar-thumb:active,
+#page-home #lux-home-shell .lux-grid-widget-body > .lux-panel::-webkit-scrollbar-thumb:active,
+#page-home #lux-home-shell .lux-grid-widget-body > .lux-card::-webkit-scrollbar-thumb:active,
+#page-home #lux-home-shell .lux-builder-card::-webkit-scrollbar-thumb:active,
+#page-home #lux-home-shell .lux-dashboard-section::-webkit-scrollbar-thumb:active {
+    background-color: color-mix(in srgb, var(--lux-accent) 92%, #fff 8%) !important;
+}
+
+#page-home #lux-home-shell .lux-grid-widget-body::-webkit-scrollbar-button,
+#page-home #lux-home-shell .lux-dashboard-canvas .lux-grid-widget-body::-webkit-scrollbar-button,
+#page-home #lux-home-shell .lux-grid-widget-body > .lux-dashboard-section::-webkit-scrollbar-button,
+#page-home #lux-home-shell .lux-grid-widget-body > .lux-panel::-webkit-scrollbar-button,
+#page-home #lux-home-shell .lux-grid-widget-body > .lux-card::-webkit-scrollbar-button,
+#page-home #lux-home-shell .lux-builder-card::-webkit-scrollbar-button,
+#page-home #lux-home-shell .lux-dashboard-section::-webkit-scrollbar-button {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+}
+
+#page-home #lux-home-shell .lux-grid-widget-body::-webkit-scrollbar-corner,
+#page-home #lux-home-shell .lux-dashboard-canvas .lux-grid-widget-body::-webkit-scrollbar-corner,
+#page-home #lux-home-shell .lux-grid-widget-body > .lux-dashboard-section::-webkit-scrollbar-corner,
+#page-home #lux-home-shell .lux-grid-widget-body > .lux-panel::-webkit-scrollbar-corner,
+#page-home #lux-home-shell .lux-grid-widget-body > .lux-card::-webkit-scrollbar-corner,
+#page-home #lux-home-shell .lux-builder-card::-webkit-scrollbar-corner,
+#page-home #lux-home-shell .lux-dashboard-section::-webkit-scrollbar-corner {
+    background: transparent !important;
+}
+
+
+/* Dashboard list cards — soft-chrome layout polish */
+#page-home #lux-home-shell .lux-builder-card.lux-soft-chrome {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 16px 18px;
+    min-height: 0;
+}
+
+#page-home #lux-home-shell .lux-builder-card .lux-card-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    padding: 0;
+}
+
+#page-home #lux-home-shell .lux-builder-card .lux-card-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--lux-text);
+}
+
+#page-home #lux-home-shell .lux-builder-card .lux-builder-copy {
+    margin-top: 4px;
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--lux-text-muted);
+}
+
+#page-home #lux-home-shell .lux-builder-card .lux-card-meta {
+    flex: 0 0 auto;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--lux-text-soft, var(--lux-text-muted));
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+}
+
+#page-home #lux-home-shell .lux-list {
+    display: grid;
+    gap: 8px;
+    min-width: 0;
+    /* list stack; scrollbar owned by widget-body lumen rail */
+}
+
+#page-home #lux-home-shell .lux-list-row.lux-soft-chrome {
+    border-bottom: none !important;
+    margin: 0;
+}
+
+#page-home #lux-home-shell .lux-list-row.lux-soft-chrome strong {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--lux-text);
+}
+
+#page-home #lux-home-shell .lux-list-row.lux-soft-chrome span {
+    margin-top: 3px;
+    font-size: 12px;
+    line-height: 1.45;
+    color: var(--lux-text-muted);
+}
+
+#page-home #lux-home-shell .lux-builder-card-foot {
+    margin-top: auto;
+    padding-top: 4px;
+    display: flex;
+    justify-content: flex-start;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+}
+
+
+
+#page-home #lux-home-shell .lux-pill.lux-soft-chrome {
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    line-height: 1.2;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Dashboard action buttons — polished framed capsule (match lux-primary-btn) */
+#page-home #lux-home-shell :is(.lux-primary-btn, .lux-secondary-btn, .lux-ghost-btn, .lux-admin-op-btn),
+body.lux-route-home #page-home :is(.lux-primary-btn, .lux-secondary-btn, .lux-ghost-btn, .lux-admin-op-btn) {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: var(--lux-primary-btn-min-height, 46px);
+    padding: 0 26px !important;
+    border-radius: var(--lux-btn-pill-radius, 999px) !important;
+    border-style: solid !important;
+    border-color: transparent !important;
+    border-width: var(--lux-btn-frame-width, 2.5px) !important;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 0.03em;
+    line-height: 1.2;
+    color: var(--lux-btn-label, #f7fbff) !important;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.35);
+    cursor: pointer;
+    overflow: hidden;
+    isolation: isolate;
+    background:
+        var(--lux-btn-well),
+        var(--lux-btn-frame-metal) !important;
+    background-origin: border-box !important;
+    background-clip: padding-box, border-box !important;
+    box-shadow: var(--lux-btn-frame-shadow) !important;
+    -webkit-backdrop-filter: var(--lux-btn-glass-blur, none);
+    backdrop-filter: var(--lux-btn-glass-blur, none);
+    transition:
+        transform 0.38s cubic-bezier(0.22, 1, 0.36, 1),
+        box-shadow 0.38s cubic-bezier(0.22, 1, 0.36, 1),
+        filter 0.38s ease !important;
+}
+
+#page-home #lux-home-shell :is(.lux-primary-btn, .lux-secondary-btn, .lux-ghost-btn, .lux-admin-op-btn)::before,
+body.lux-route-home #page-home :is(.lux-primary-btn, .lux-secondary-btn, .lux-ghost-btn, .lux-admin-op-btn)::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    z-index: 1;
+    background: linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.16) 0%,
+        rgba(255, 255, 255, 0.04) 28%,
+        transparent 48%
+    );
+    opacity: 1;
+    mix-blend-mode: normal;
+}
+
+#page-home #lux-home-shell :is(.lux-primary-btn, .lux-secondary-btn, .lux-ghost-btn, .lux-admin-op-btn)::after,
+body.lux-route-home #page-home :is(.lux-primary-btn, .lux-secondary-btn, .lux-ghost-btn, .lux-admin-op-btn)::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    z-index: 2;
+    background: var(--lux-btn-sheen);
+    transform: translateX(-130%) skewX(-14deg);
+    opacity: 0;
+    transition:
+        transform 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+        opacity 0.2s ease;
+    display: block !important;
+}
+
+#page-home #lux-home-shell :is(.lux-primary-btn, .lux-secondary-btn, .lux-ghost-btn, .lux-admin-op-btn):hover::after,
+#page-home #lux-home-shell :is(.lux-primary-btn, .lux-secondary-btn, .lux-ghost-btn, .lux-admin-op-btn):focus-visible::after,
+body.lux-route-home #page-home :is(.lux-primary-btn, .lux-secondary-btn, .lux-ghost-btn, .lux-admin-op-btn):hover::after,
+body.lux-route-home #page-home :is(.lux-primary-btn, .lux-secondary-btn, .lux-ghost-btn, .lux-admin-op-btn):focus-visible::after {
+    transform: translateX(130%) skewX(-14deg);
+    opacity: 1;
+}
+
+#page-home #lux-home-shell :is(.lux-primary-btn, .lux-secondary-btn, .lux-ghost-btn, .lux-admin-op-btn) > *,
+body.lux-route-home #page-home :is(.lux-primary-btn, .lux-secondary-btn, .lux-ghost-btn, .lux-admin-op-btn) > * {
+    position: relative;
+    z-index: 3;
+}
+
+#page-home #lux-home-shell :is(.lux-primary-btn, .lux-secondary-btn, .lux-ghost-btn, .lux-admin-op-btn):hover,
+#page-home #lux-home-shell :is(.lux-primary-btn, .lux-secondary-btn, .lux-ghost-btn, .lux-admin-op-btn):focus-visible,
+body.lux-route-home #page-home :is(.lux-primary-btn, .lux-secondary-btn, .lux-ghost-btn, .lux-admin-op-btn):hover,
+body.lux-route-home #page-home :is(.lux-primary-btn, .lux-secondary-btn, .lux-ghost-btn, .lux-admin-op-btn):focus-visible {
+    transform: translateY(-2px);
+    filter: brightness(1.05);
+    color: var(--lux-btn-label, #f7fbff) !important;
+    box-shadow: var(--lux-btn-frame-shadow-hover) !important;
+    background:
+        var(--lux-btn-well),
+        var(--lux-btn-frame-metal) !important;
+    background-origin: border-box !important;
+    background-clip: padding-box, border-box !important;
+}
+
+#page-home #lux-home-shell :is(.lux-primary-btn, .lux-secondary-btn, .lux-ghost-btn, .lux-admin-op-btn):active,
+body.lux-route-home #page-home :is(.lux-primary-btn, .lux-secondary-btn, .lux-ghost-btn, .lux-admin-op-btn):active {
+    transform: translateY(0) scale(0.985);
+    filter: brightness(0.97);
+}
+
+#page-home #lux-home-shell .lux-home-toolbar :is(.lux-primary-btn, .lux-secondary-btn, .lux-ghost-btn) {
+    min-height: 42px;
+    padding: 0 18px !important;
+}
+
+html[data-lux-transparency="0"] #page-home #lux-home-shell :is(.lux-primary-btn, .lux-secondary-btn, .lux-ghost-btn, .lux-admin-op-btn) {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #page-home #lux-home-shell :is(.lux-primary-btn, .lux-secondary-btn, .lux-ghost-btn, .lux-admin-op-btn) {
+        transition: box-shadow .15s ease, filter .15s ease !important;
+    }
+
+    #page-home #lux-home-shell :is(.lux-primary-btn, .lux-secondary-btn, .lux-ghost-btn, .lux-admin-op-btn)::after {
+        display: none !important;
+    }
+
+    #page-home #lux-home-shell :is(.lux-primary-btn, .lux-secondary-btn, .lux-ghost-btn, .lux-admin-op-btn):hover,
+    #page-home #lux-home-shell :is(.lux-primary-btn, .lux-secondary-btn, .lux-ghost-btn, .lux-admin-op-btn):focus-visible,
+    #page-home #lux-home-shell :is(.lux-primary-btn, .lux-secondary-btn, .lux-ghost-btn, .lux-admin-op-btn):active {
+        transform: none;
+        filter: none;
+    }
+}
+
+
+/* Dashboard alert — soft-chrome parity with other home panels (tone on icon only) */
+#page-home #lux-home-shell .lux-alert.lux-soft-chrome,
+body.lux-route-home #page-home #lux-home-shell .lux-alert {
+    display: flex !important;
+    align-items: center !important;
+    gap: 14px !important;
+    padding: 16px 18px !important;
+    border-radius: var(--lux-radius, 18px) !important;
+    background: var(--lux-soft-chrome-surface, var(--lux-focus-fill, var(--lux-panel-surface-soft))) !important;
+    background-image: none !important;
+    border: 1px solid var(--lux-soft-chrome-border, var(--lux-focus-border, var(--lux-panel-border-soft))) !important;
+    box-shadow: var(--lux-soft-chrome-shadow, var(--lux-focus-shadow, var(--lux-panel-shadow-soft))) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    color: var(--lux-text) !important;
+}
+
+/* kill luxury green/warm full-panel washes on home */
+#page-home #lux-home-shell .lux-alert.is-green,
+#page-home #lux-home-shell .lux-alert.is-blue,
+#page-home #lux-home-shell .lux-alert.is-royal,
+#page-home #lux-home-shell .lux-alert.is-support,
+#page-home #lux-home-shell .lux-alert.is-warm {
+    background: var(--lux-soft-chrome-surface, var(--lux-panel-surface-soft)) !important;
+    background-image: none !important;
+    border-color: var(--lux-soft-chrome-border, var(--lux-panel-border-soft)) !important;
+}
+
+/* optional thin tone edge via box-shadow inset */
+#page-home #lux-home-shell .lux-alert.is-green {
+    box-shadow:
+        var(--lux-soft-chrome-shadow, var(--lux-panel-shadow-soft)),
+        inset 3px 0 0 color-mix(in srgb, var(--lux-green, #48bf86) 70%, transparent) !important;
+}
+#page-home #lux-home-shell .lux-alert.is-warm {
+    box-shadow:
+        var(--lux-soft-chrome-shadow, var(--lux-panel-shadow-soft)),
+        inset 3px 0 0 color-mix(in srgb, var(--lux-accent) 65%, transparent) !important;
+}
+#page-home #lux-home-shell .lux-alert.is-royal,
+#page-home #lux-home-shell .lux-alert.is-blue {
+    box-shadow:
+        var(--lux-soft-chrome-shadow, var(--lux-panel-shadow-soft)),
+        inset 3px 0 0 color-mix(in srgb, var(--lux-accent) 60%, transparent) !important;
+}
+#page-home #lux-home-shell .lux-alert.is-support {
+    box-shadow:
+        var(--lux-soft-chrome-shadow, var(--lux-panel-shadow-soft)),
+        inset 3px 0 0 color-mix(in srgb, var(--lux-green, #48bf86) 55%, transparent) !important;
+}
+
+#page-home #lux-home-shell .lux-alert-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 14px;
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+    background: color-mix(in srgb, var(--lux-soft-chrome-surface, var(--lux-panel-surface-soft)) 70%, transparent);
+    border: 1px solid var(--lux-soft-chrome-border, var(--lux-panel-border-soft));
+    color: var(--lux-accent);
+    box-shadow: none !important;
+}
+
+#page-home #lux-home-shell .lux-alert.is-green .lux-alert-icon {
+    color: var(--lux-green, #48bf86);
+    border-color: color-mix(in srgb, var(--lux-green, #48bf86) 35%, var(--lux-soft-chrome-border, transparent));
+    background: color-mix(in srgb, var(--lux-green, #48bf86) 12%, var(--lux-soft-chrome-surface, transparent));
+}
+#page-home #lux-home-shell .lux-alert.is-warm .lux-alert-icon {
+    color: var(--lux-accent);
+    border-color: color-mix(in srgb, var(--lux-accent) 35%, var(--lux-soft-chrome-border, transparent));
+    background: color-mix(in srgb, var(--lux-accent) 12%, var(--lux-soft-chrome-surface, transparent));
+}
+#page-home #lux-home-shell .lux-alert.is-royal .lux-alert-icon,
+#page-home #lux-home-shell .lux-alert.is-blue .lux-alert-icon {
+    color: var(--lux-accent-2, var(--lux-accent));
+    border-color: color-mix(in srgb, var(--lux-accent) 35%, var(--lux-soft-chrome-border, transparent));
+    background: color-mix(in srgb, var(--lux-accent) 12%, var(--lux-soft-chrome-surface, transparent));
+}
+#page-home #lux-home-shell .lux-alert.is-support .lux-alert-icon {
+    color: var(--lux-green, #48bf86);
+    border-color: color-mix(in srgb, var(--lux-green, #48bf86) 30%, var(--lux-soft-chrome-border, transparent));
+    background: color-mix(in srgb, var(--lux-green, #48bf86) 10%, var(--lux-soft-chrome-surface, transparent));
+}
+
+#page-home #lux-home-shell .lux-alert-copy {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+#page-home #lux-home-shell .lux-alert-copy strong {
+    display: block;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--lux-text) !important;
+}
+#page-home #lux-home-shell .lux-alert-copy span {
+    display: block;
+    margin-top: 4px;
+    font-size: 12px;
+    line-height: 1.45;
+    color: var(--lux-text-muted) !important;
+}
+
+#page-home #lux-home-shell .lux-alert .lux-primary-btn {
+    flex: 0 0 auto;
+    margin-left: auto;
+}
+
+@media (max-width: 720px) {
+    #page-home #lux-home-shell .lux-alert.lux-soft-chrome {
+        flex-wrap: wrap;
+    }
+    #page-home #lux-home-shell .lux-alert .lux-primary-btn {
+        width: 100%;
+        margin-left: 0;
+    }
+}
+
+/* Kill role-tint glass bleed on soft-chrome quick tiles */
+#page-home #lux-home-shell .lux-home-grid .lux-quick-btn.lux-soft-chrome {
+    background-image: none !important;
+}
+
+/* Dashboard material: LMS soft-chrome / focus-panel SSOT (no nested mega-glass). */
 body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell .lux-home-toolbar,
+body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell .lux-soft-chrome,
+body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell .lux-focus-panel,
+body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell .lms-hero-focus.lux-hero-side,
 body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell .lux-home-grid > .lux-panel,
 body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell .lux-home-grid > .lux-card,
 body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell .lux-home-grid > .lux-hero,
-body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell .lux-dashboard-canvas .lux-grid-widget,
 body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell .lux-grid-widget > .lux-grid-widget-body > .lux-dashboard-section,
 body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell .lux-grid-widget > .lux-grid-widget-body > .lux-panel,
 body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell .lux-grid-widget > .lux-grid-widget-body > .lux-card,
 body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell .lux-grid-widget > .lux-grid-widget-body > .lux-hero {
-    background:
-        radial-gradient(circle at 6% 0%, rgba(255, 255, 255, calc(var(--lux-color-fade-alpha, .92) * .08)), transparent 32%),
-        radial-gradient(circle at 74% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .28)), transparent 42%),
-        radial-gradient(circle at 100% 96%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .92) * .18)), transparent 40%),
-        linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .10)), rgba(10, 15, 24, calc(var(--lux-transparency-alpha, .92) * .89)) 44%, rgba(7, 10, 18, calc(var(--lux-transparency-alpha, .92) * .80))) !important;
-    border-color: rgba(var(--lux-accent-rgb), 0.22) !important;
-    box-shadow:
-        0 24px 58px rgba(0, 0, 0, 0.24),
-        inset 0 1px 0 rgba(255, 255, 255, 0.08),
-        0 0 0 1px rgba(var(--lux-accent-rgb), 0.04) !important;
-    backdrop-filter: blur(var(--lux-transparency-blur, 20px)) saturate(var(--lux-transparency-saturate, 145%)) !important;
-    -webkit-backdrop-filter: blur(var(--lux-transparency-blur, 20px)) saturate(var(--lux-transparency-saturate, 145%)) !important;
+    background: var(--lux-focus-fill, var(--lux-soft-chrome-surface, var(--lux-panel-surface))) !important;
+    border-color: var(--lux-focus-border, var(--lux-soft-chrome-border, var(--lux-panel-border))) !important;
+    box-shadow: var(--lux-focus-shadow, var(--lux-soft-chrome-shadow, var(--lux-panel-shadow))) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+/* Outer widget frame stays transparent so soft-chrome children own the surface */
+body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell .lux-dashboard-canvas .lux-grid-widget {
+    background: transparent !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
 }
 
 body.lux-light-mode.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell .lux-home-toolbar,
+body.lux-light-mode.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell .lux-soft-chrome,
+body.lux-light-mode.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell .lux-focus-panel,
+body.lux-light-mode.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell .lms-hero-focus.lux-hero-side,
 body.lux-light-mode.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell .lux-home-grid > .lux-panel,
 body.lux-light-mode.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell .lux-home-grid > .lux-card,
 body.lux-light-mode.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell .lux-home-grid > .lux-hero,
-body.lux-light-mode.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell .lux-dashboard-canvas .lux-grid-widget,
 body.lux-light-mode.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell .lux-grid-widget > .lux-grid-widget-body > .lux-dashboard-section,
 body.lux-light-mode.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell .lux-grid-widget > .lux-grid-widget-body > .lux-panel,
 body.lux-light-mode.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell .lux-grid-widget > .lux-grid-widget-body > .lux-card,
 body.lux-light-mode.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell .lux-grid-widget > .lux-grid-widget-body > .lux-hero,
 html.lux-light-mode body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell .lux-home-toolbar,
+html.lux-light-mode body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell .lux-soft-chrome,
+html.lux-light-mode body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell .lux-focus-panel,
+html.lux-light-mode body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell .lms-hero-focus.lux-hero-side,
 html.lux-light-mode body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell .lux-home-grid > .lux-panel,
 html.lux-light-mode body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell .lux-home-grid > .lux-card,
 html.lux-light-mode body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell .lux-home-grid > .lux-hero,
-html.lux-light-mode body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell .lux-dashboard-canvas .lux-grid-widget,
 html.lux-light-mode body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell .lux-grid-widget > .lux-grid-widget-body > .lux-dashboard-section,
 html.lux-light-mode body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell .lux-grid-widget > .lux-grid-widget-body > .lux-panel,
 html.lux-light-mode body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell .lux-grid-widget > .lux-grid-widget-body > .lux-card,
 html.lux-light-mode body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell .lux-grid-widget > .lux-grid-widget-body > .lux-hero {
+    background: var(--lux-focus-fill, var(--lux-soft-chrome-surface, var(--lux-panel-surface))) !important;
+    border-color: var(--lux-focus-border, var(--lux-soft-chrome-border, var(--lux-panel-border))) !important;
+    box-shadow: var(--lux-focus-shadow, var(--lux-soft-chrome-shadow, var(--lux-panel-shadow))) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+body.lux-light-mode.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell .lux-dashboard-canvas .lux-grid-widget,
+html.lux-light-mode body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell .lux-dashboard-canvas .lux-grid-widget {
+    background: transparent !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+/* Topbar EXACT same material as Official updates builder-card.lux-soft-chrome */
+body.lux-route-home.lux-unified-shell #lux-topbar .lux-topbar-shell,
+body.lux-route-home.lux-unified-shell #lux-topbar .lux-topbar-shell.lux-soft-chrome,
+body.lux-route-home.lux-unified-shell #lux-topbar .lux-topbar-shell.lux-panel,
+body.lux-full-paint.lux-unified-shell.lux-route-home #lux-topbar .lux-topbar-shell {
+    /* identical vars chain as home soft-chrome / builder-card */
+    background: var(--lux-focus-fill, var(--lux-soft-chrome-surface, var(--lux-panel-surface))) !important;
+    border: 1px solid var(--lux-focus-border, var(--lux-soft-chrome-border, var(--lux-panel-border))) !important;
+    border-radius: var(--lux-radius, 18px) !important;
+    box-shadow: var(--lux-focus-shadow, var(--lux-soft-chrome-shadow, var(--lux-panel-shadow))) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background-image: none !important;
+    color: var(--lux-text) !important;
+    padding: 16px 18px !important;
+    gap: 14px !important;
+    min-height: 76px !important;
+}
+
+/* Nested chips = same matte as .lux-list-row.lux-soft-chrome */
+body.lux-route-home.lux-unified-shell #lux-topbar :is(
+    .lux-picker-btn,
+    .lux-picker-btn.lux-soft-chrome,
+    .lux-icon-btn,
+    .lux-icon-btn.lux-soft-chrome,
+    .lux-user-chip,
+    .lux-user-chip.lux-soft-chrome,
+    .lux-search input
+) {
+    background: var(--lux-soft-chrome-surface, var(--lux-focus-fill, var(--lux-panel-surface-soft))) !important;
+    border: 1px solid var(--lux-soft-chrome-border, var(--lux-focus-border, var(--lux-panel-border-soft))) !important;
+    box-shadow: var(--lux-soft-chrome-shadow, var(--lux-focus-shadow, var(--lux-panel-shadow-soft))) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background-image: none !important;
+    color: var(--lux-text) !important;
+}
+
+body.lux-route-home.lux-unified-shell #lux-topbar .lux-search {
+    position: relative;
+    width: min(420px, 36vw);
+    min-width: 160px;
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+body.lux-route-home.lux-unified-shell #lux-topbar .lux-search.lux-soft-chrome {
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+}
+body.lux-route-home.lux-unified-shell #lux-topbar .lux-search input {
+    width: 100%;
+    min-height: 44px !important;
+    padding: 10px 14px 10px 38px !important;
+    border-radius: 16px !important;
+}
+body.lux-route-home.lux-unified-shell #lux-topbar .lux-search i {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 1;
+    color: var(--lux-text-muted);
+    pointer-events: none;
+}
+body.lux-route-home.lux-unified-shell #lux-topbar .lux-search input:focus {
+    border-color: color-mix(in srgb, var(--lux-accent) 45%, var(--lux-soft-chrome-border, transparent)) !important;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--lux-accent) 16%, transparent) !important;
+}
+
+body.lux-route-home.lux-unified-shell #lux-topbar .lux-picker-btn {
+    min-width: 168px;
+    min-height: 48px !important;
+    padding: 8px 14px !important;
+    border-radius: 16px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 12px !important;
+}
+body.lux-route-home.lux-unified-shell #lux-topbar .lux-picker-caption {
+    display: block;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--lux-text-muted) !important;
+}
+body.lux-route-home.lux-unified-shell #lux-topbar .lux-picker-btn strong {
+    display: block;
+    margin-top: 3px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--lux-text) !important;
+}
+body.lux-route-home.lux-unified-shell #lux-topbar .lux-picker-btn:hover,
+body.lux-route-home.lux-unified-shell #lux-topbar .lux-picker-btn[aria-expanded="true"] {
+    border-color: color-mix(in srgb, var(--lux-accent) 40%, var(--lux-soft-chrome-border, transparent)) !important;
+}
+
+body.lux-route-home.lux-unified-shell #lux-topbar .lux-icon-btn {
+    width: 44px !important;
+    height: 44px !important;
+    border-radius: 14px !important;
+    display: inline-grid !important;
+    place-items: center !important;
+    color: var(--lux-text-muted) !important;
+    padding: 0 !important;
+}
+body.lux-route-home.lux-unified-shell #lux-topbar .lux-icon-btn:hover {
+    color: var(--lux-text) !important;
+    border-color: color-mix(in srgb, var(--lux-accent) 40%, var(--lux-soft-chrome-border, transparent)) !important;
+    background: color-mix(in srgb, var(--lux-soft-chrome-surface, var(--lux-panel-surface-soft)) 82%, var(--lux-accent) 18%) !important;
+}
+
+body.lux-route-home.lux-unified-shell #lux-topbar .lux-user-chip {
+    border-radius: 999px !important;
+    min-height: 44px !important;
+    padding: 5px 12px 5px 6px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+}
+body.lux-route-home.lux-unified-shell #lux-topbar .lux-avatar {
+    border: 1.5px solid color-mix(in srgb, var(--lux-accent) 45%, transparent) !important;
+}
+
+body.lux-route-home.lux-unified-shell #lux-topbar .lux-breadcrumb {
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    color: var(--lux-text-muted) !important;
+    padding: 0 4px !important;
+}
+body.lux-route-home.lux-unified-shell #lux-topbar .lux-breadcrumb strong {
+    color: var(--lux-text) !important;
+}
+
+/* Topbar text CTAs — EXACT same framed recipe as Open Orders / home primary */
+body.lux-route-home.lux-unified-shell #lux-topbar :is(
+    .lux-sidebar-toggle-btn,
+    .lux-topbar-editor-btn,
+    .lux-secondary-btn.lux-sidebar-toggle-btn,
+    .lux-secondary-btn.lux-topbar-editor-btn,
+    .lux-primary-btn,
+    .lux-secondary-btn,
+    .lux-ghost-btn
+) {
+    position: relative !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    min-height: var(--lux-primary-btn-min-height, 46px) !important;
+    padding: 0 26px !important;
+    border-radius: var(--lux-btn-pill-radius, 999px) !important;
+    border-style: solid !important;
+    border-color: transparent !important;
+    border-width: var(--lux-btn-frame-width, 2.5px) !important;
+    font-weight: 700 !important;
+    font-size: 13px !important;
+    letter-spacing: 0.03em !important;
+    line-height: 1.2 !important;
+    color: var(--lux-btn-label, #f7fbff) !important;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.35) !important;
+    cursor: pointer !important;
+    overflow: hidden !important;
+    isolation: isolate !important;
     background:
-        radial-gradient(circle at 6% 0%, rgba(255, 255, 255, calc(var(--lux-color-fade-alpha, .86) * .88)), transparent 34%),
-        radial-gradient(circle at 74% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .24)), transparent 42%),
-        radial-gradient(circle at 100% 96%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .86) * .14)), transparent 40%),
-        linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .065)), rgba(255, 255, 255, calc(var(--lux-transparency-alpha, .86) * .84)) 44%, rgba(247, 241, 232, calc(var(--lux-transparency-alpha, .86) * .70))) !important;
-    border-color: rgba(var(--lux-accent-rgb), 0.16) !important;
+        var(--lux-btn-well),
+        var(--lux-btn-frame-metal) !important;
+    background-image:
+        var(--lux-btn-well),
+        var(--lux-btn-frame-metal) !important;
+    background-origin: border-box !important;
+    background-clip: padding-box, border-box !important;
+    box-shadow: var(--lux-btn-frame-shadow) !important;
+    backdrop-filter: var(--lux-btn-glass-blur, none) !important;
+    -webkit-backdrop-filter: var(--lux-btn-glass-blur, none) !important;
+    transition:
+        transform 0.38s cubic-bezier(0.22, 1, 0.36, 1),
+        box-shadow 0.38s cubic-bezier(0.22, 1, 0.36, 1),
+        filter 0.38s ease !important;
+}
+body.lux-route-home.lux-unified-shell #lux-topbar :is(
+    .lux-sidebar-toggle-btn,
+    .lux-topbar-editor-btn,
+    .lux-secondary-btn,
+    .lux-ghost-btn,
+    .lux-primary-btn
+)::before {
+    content: '' !important;
+    position: absolute !important;
+    inset: 0 !important;
+    border-radius: inherit !important;
+    pointer-events: none !important;
+    z-index: 1 !important;
+    background: linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.16) 0%,
+        rgba(255, 255, 255, 0.04) 28%,
+        transparent 48%
+    ) !important;
+    opacity: 1 !important;
+}
+body.lux-route-home.lux-unified-shell #lux-topbar :is(
+    .lux-sidebar-toggle-btn,
+    .lux-topbar-editor-btn,
+    .lux-secondary-btn,
+    .lux-ghost-btn,
+    .lux-primary-btn
+)::after {
+    content: '' !important;
+    position: absolute !important;
+    inset: 0 !important;
+    border-radius: inherit !important;
+    pointer-events: none !important;
+    z-index: 2 !important;
+    background: var(--lux-btn-sheen) !important;
+    transform: translateX(-130%) skewX(-14deg) !important;
+    opacity: 0 !important;
+    transition:
+        transform 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+        opacity 0.2s ease !important;
+    display: block !important;
+}
+body.lux-route-home.lux-unified-shell #lux-topbar :is(
+    .lux-sidebar-toggle-btn,
+    .lux-topbar-editor-btn,
+    .lux-secondary-btn,
+    .lux-ghost-btn,
+    .lux-primary-btn
+) > * {
+    position: relative !important;
+    z-index: 3 !important;
+}
+body.lux-route-home.lux-unified-shell #lux-topbar :is(
+    .lux-sidebar-toggle-btn,
+    .lux-topbar-editor-btn,
+    .lux-secondary-btn,
+    .lux-ghost-btn,
+    .lux-primary-btn
+):hover,
+body.lux-route-home.lux-unified-shell #lux-topbar :is(
+    .lux-sidebar-toggle-btn,
+    .lux-topbar-editor-btn,
+    .lux-secondary-btn,
+    .lux-ghost-btn,
+    .lux-primary-btn
+):focus-visible {
+    transform: translateY(-2px) !important;
+    filter: brightness(1.05) !important;
+    box-shadow: var(--lux-btn-frame-shadow-hover) !important;
+    color: var(--lux-btn-label, #f7fbff) !important;
+    background:
+        var(--lux-btn-well),
+        var(--lux-btn-frame-metal) !important;
+    background-image:
+        var(--lux-btn-well),
+        var(--lux-btn-frame-metal) !important;
+    background-origin: border-box !important;
+    background-clip: padding-box, border-box !important;
+}
+body.lux-route-home.lux-unified-shell #lux-topbar :is(
+    .lux-sidebar-toggle-btn,
+    .lux-topbar-editor-btn,
+    .lux-secondary-btn,
+    .lux-ghost-btn,
+    .lux-primary-btn
+):hover::after,
+body.lux-route-home.lux-unified-shell #lux-topbar :is(
+    .lux-sidebar-toggle-btn,
+    .lux-topbar-editor-btn,
+    .lux-secondary-btn,
+    .lux-ghost-btn,
+    .lux-primary-btn
+):focus-visible::after {
+    transform: translateX(130%) skewX(-14deg) !important;
+    opacity: 1 !important;
+}
+
+
+/* ── extracted from index-luxury (Phase 4 home) ── */
+.lux-card,
+.lux-subcard,
+.lux-panel,
+.lux-grid-widget,
+.lux-summary-surface,
+.surface-card,
+.content-box,
+.page-card,
+.section-card,
+.dashboard-card,
+.page-hero,
+.lux-person-card,
+.orders-detail-card,
+.orders-list-card,
+.orders-inbox-hero {
+    contain: layout style;
+    content-visibility: auto;
+    contain-intrinsic-size: auto 320px;
+}
+html[data-lux-transparency="0"] .lux-card,
+html[data-lux-transparency="0"] .lux-panel,
+html[data-lux-transparency="0"] .lux-subcard,
+html[data-lux-transparency="0"] .lux-page-shell,
+html[data-lux-transparency="0"] .lux-dashboard-section,
+html[data-lux-transparency="0"] .lux-grid-widget,
+html[data-lux-transparency="0"] .lux-home-card,
+html[data-lux-transparency="0"] .lux-builder-card,
+html[data-lux-transparency="0"] .lux-stat-card,
+html[data-lux-transparency="0"] .lux-stat,
+html[data-lux-transparency="0"] .lux-hero,
+html[data-lux-transparency="0"] .surface-card,
+html[data-lux-transparency="0"] .content-box,
+html[data-lux-transparency="0"] .kiu-card,
+html[data-lux-transparency="0"] .page-card,
+html[data-lux-transparency="0"] .page-hero,
+html[data-lux-transparency="0"] .lux-modern-surface,
+html[data-lux-transparency="1"] .lux-card,
+html[data-lux-transparency="1"] .lux-panel,
+html[data-lux-transparency="1"] .lux-subcard,
+html[data-lux-transparency="1"] .lux-page-shell,
+html[data-lux-transparency="1"] .lux-dashboard-section,
+html[data-lux-transparency="1"] .lux-grid-widget,
+html[data-lux-transparency="1"] .lux-home-card,
+html[data-lux-transparency="1"] .lux-stat-card,
+html[data-lux-transparency="1"] .lux-stat,
+html[data-lux-transparency="1"] .lux-hero,
+html[data-lux-transparency="1"] .surface-card,
+html[data-lux-transparency="1"] .content-box,
+html[data-lux-transparency="1"] .page-hero,
+html[data-lux-transparency="1"] .lux-modern-surface {
+    background: linear-gradient(180deg, rgba(14,20,33, 0.94), rgba(8,12,21, 0.72)) !important;
+    backdrop-filter: blur(24px) saturate(145%) !important;
+    -webkit-backdrop-filter: blur(24px) saturate(145%) !important;
+}
+html[data-lux-transparency="0"].lux-light-mode .lux-card,
+html[data-lux-transparency="0"].lux-light-mode .lux-panel,
+html[data-lux-transparency="0"].lux-light-mode .lux-subcard,
+html[data-lux-transparency="0"].lux-light-mode .lux-page-shell,
+html[data-lux-transparency="0"].lux-light-mode .lux-dashboard-section,
+html[data-lux-transparency="0"].lux-light-mode .lux-grid-widget,
+html[data-lux-transparency="0"].lux-light-mode .lux-home-card,
+html[data-lux-transparency="0"].lux-light-mode .lux-stat-card,
+html[data-lux-transparency="0"].lux-light-mode .lux-stat,
+html[data-lux-transparency="0"].lux-light-mode .lux-hero,
+html[data-lux-transparency="0"].lux-light-mode .surface-card,
+html[data-lux-transparency="0"].lux-light-mode .content-box,
+html[data-lux-transparency="0"].lux-light-mode .page-hero,
+html[data-lux-transparency="0"].lux-light-mode .lux-modern-surface,
+html[data-lux-transparency="1"].lux-light-mode .lux-card,
+html[data-lux-transparency="1"].lux-light-mode .lux-panel,
+html[data-lux-transparency="1"].lux-light-mode .lux-subcard,
+html[data-lux-transparency="1"].lux-light-mode .lux-page-shell,
+html[data-lux-transparency="1"].lux-light-mode .lux-dashboard-section,
+html[data-lux-transparency="1"].lux-light-mode .lux-grid-widget,
+html[data-lux-transparency="1"].lux-light-mode .lux-home-card,
+html[data-lux-transparency="1"].lux-light-mode .lux-stat-card,
+html[data-lux-transparency="1"].lux-light-mode .lux-stat,
+html[data-lux-transparency="1"].lux-light-mode .lux-hero,
+html[data-lux-transparency="1"].lux-light-mode .surface-card,
+html[data-lux-transparency="1"].lux-light-mode .content-box,
+html[data-lux-transparency="1"].lux-light-mode .page-hero,
+html[data-lux-transparency="99"].lux-light-mode .lux-modern-surface {
+    background: linear-gradient(180deg, rgba(255,255,255, 0.56), rgba(245,239,229, 0.37)) !important;
+    backdrop-filter: blur(24px) saturate(145%) !important;
+    -webkit-backdrop-filter: blur(24px) saturate(145%) !important;
+}
+.lux-home-columns {
+    display: grid;
+    grid-template-columns: 1.15fr 1fr 0.95fr;
+    gap: 16px;
+}
+body:not(.lux-light-mode) .lux-panel,
+body:not(.lux-light-mode) .lux-alert,
+body:not(.lux-light-mode) .lux-studio-panel,
+body:not(.lux-light-mode) .lux-widget-toolbar,
+body:not(.lux-light-mode):not(.lux-route-admin-library) .lux-hero,
+body:not(.lux-light-mode):not(.lux-route-admin-library) .lux-hero-side,
+body:not(.lux-light-mode) .lux-stat,
+body:not(.lux-light-mode):not(.lux-route-staff):not(.lux-route-admin-library) .lux-strip-card,
+body:not(.lux-light-mode) .lux-quick-btn,
+body:not(.lux-light-mode) .lux-utility-item,
+body:not(.lux-light-mode):not(.lux-route-admin-library) .lux-hero-signal,
+body:not(.lux-light-mode) .lux-pill,
+body:not(.lux-light-mode) .lux-card,
+body:not(.lux-light-mode) .lux-builder-card,
+body:not(.lux-light-mode) .lux-builder-section,
+body:not(.lux-light-mode) .lux-builder-hero,
+body:not(.lux-light-mode) .lux-control-btn,
+body:not(.lux-light-mode) .lux-mode-btn,
+body:not(.lux-light-mode) .lux-bg-mode-btn,
+body:not(.lux-light-mode) .lux-studio-close,
+body:not(.lux-light-mode) .lux-editor-field input,
+body:not(.lux-light-mode) .lux-editor-field select,
+body:not(.lux-light-mode) .lux-grid-widget {
+    background:
+        linear-gradient(180deg, rgba(5, 10, 19, calc(var(--lux-panel-fill-alpha) + 0.032)), rgba(1, 5, 11, var(--lux-panel-fill-alpha))),
+        radial-gradient(circle at top right, rgba(var(--lux-bg-glow-rgb), 0.028), transparent 34%) !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    box-shadow:
+        0 24px 56px rgba(0, 0, 0, 0.34),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08),
+        0 0 0 1px rgba(var(--lux-bg-glow-rgb), 0.04);
+}
+body:not(.lux-light-mode):not(.lux-route-admin-library) .lux-hero-side,
+body:not(.lux-light-mode):not(.lux-route-admin-library) .lux-hero-signal,
+body:not(.lux-light-mode) .lux-stat,
+body:not(.lux-light-mode) .lux-pill,
+body:not(.lux-light-mode) .lux-quick-btn,
+body:not(.lux-light-mode) .lux-card,
+body:not(.lux-light-mode) .lux-builder-card,
+body:not(.lux-light-mode) .lux-builder-section,
+body:not(.lux-light-mode) .lux-utility-item {
+    background:
+        linear-gradient(180deg, rgba(7, 12, 22, calc(var(--lux-raised-fill-alpha) + 0.026)), rgba(2, 6, 13, var(--lux-raised-fill-alpha))),
+        radial-gradient(circle at top right, rgba(var(--lux-bg-glow-rgb), 0.022), transparent 30%) !important;
+}
+.lux-home-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+}
+.lux-hero,
+.lux-hero-side,
+.lux-stat,
+.lux-strip-card,
+.lux-quick-btn,
+.lux-utility-item,
+.lux-hero-signal,
+.lux-pill,
+.lux-card,
+.lux-builder-card,
+.lux-builder-section,
+.lux-builder-hero,
+.lux-control-btn,
+.lux-mode-btn,
+.lux-bg-mode-btn,
+.lux-studio-close,
+.lux-editor-field input,
+.lux-editor-field select,
+.lux-grid-widget {
+    background:
+        linear-gradient(180deg,
+            rgba(var(--lux-glass-tint-rgb), calc(var(--lux-raised-fill-alpha) + var(--lux-glass-highlight-alpha))),
+            rgba(var(--lux-glass-tint-rgb), var(--lux-raised-fill-alpha))) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(calc(var(--lux-glass-blur) - 2px)) saturate(150%);
+    -webkit-backdrop-filter: blur(calc(var(--lux-glass-blur) - 2px)) saturate(150%);
+}
+body.lux-light-mode .lux-panel,
+body.lux-light-mode .lux-alert,
+body.lux-light-mode .lux-studio-panel,
+body.lux-light-mode .lux-widget-toolbar,
+body.lux-light-mode .lux-hero,
+body.lux-light-mode .lux-hero-side,
+body.lux-light-mode .lux-stat,
+body.lux-light-mode .lux-strip-card,
+body.lux-light-mode .lux-quick-btn,
+body.lux-light-mode .lux-utility-item,
+body.lux-light-mode .lux-hero-signal,
+body.lux-light-mode .lux-pill,
+body.lux-light-mode .lux-card,
+body.lux-light-mode .lux-builder-card,
+body.lux-light-mode .lux-builder-section,
+body.lux-light-mode .lux-builder-hero,
+body.lux-light-mode .lux-control-btn,
+body.lux-light-mode .lux-mode-btn,
+body.lux-light-mode .lux-bg-mode-btn,
+body.lux-light-mode .lux-studio-close,
+body.lux-light-mode .lux-editor-field input,
+body.lux-light-mode .lux-editor-field select,
+body.lux-light-mode .lux-grid-widget {
+    background:
+        linear-gradient(180deg,
+            rgba(var(--lux-glass-tint-rgb), calc(var(--lux-raised-fill-alpha) + var(--lux-glass-highlight-alpha))),
+            rgba(var(--lux-glass-tint-rgb), var(--lux-raised-fill-alpha))) !important;
+}
+body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-admin-orders):not(.lux-route-profile-view) input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='color']),
+body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-admin-orders):not(.lux-route-profile-view) select,
+body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-admin-orders):not(.lux-route-profile-view) textarea,
+body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-admin-orders):not(.lux-route-profile-view) .kiu-btn-outline,
+body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-admin-orders):not(.lux-route-profile-view) .kiu-btn,
+body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-admin-orders):not(.lux-route-profile-view) .tab,
+body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-admin-orders):not(.lux-route-profile-view) .reg-tab,
+body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-admin-orders):not(.lux-route-profile-view) .pv-tab,
+body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-admin-orders):not(.lux-route-profile-view):not(.lux-route-admin-library) .lux-hero,
+body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-admin-orders):not(.lux-route-profile-view):not(.lux-route-admin-library) .lux-hero-side,
+body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-admin-orders):not(.lux-route-profile-view):not(.lux-route-admin-library) .lux-stat,
+body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-admin-orders):not(.lux-route-profile-view):not(.lux-route-admin-library):not(.lux-route-staff) .lux-strip-card,
+body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-profile):not(.lux-route-admin-orders) .lux-quick-btn,
+body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-profile):not(.lux-route-admin-orders) .lux-utility-item,
+body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-profile):not(.lux-route-admin-orders):not(.lux-route-admin-library) .lux-hero-signal,
+body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-profile):not(.lux-route-admin-orders) .lux-pill,
+body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-profile):not(.lux-route-admin-orders) .lux-card,
+body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-profile):not(.lux-route-admin-orders) .lux-builder-card,
+body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-profile):not(.lux-route-admin-orders) .lux-builder-section,
+body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-profile):not(.lux-route-admin-orders) .lux-builder-hero,
+body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-profile):not(.lux-route-admin-orders) .lux-control-btn,
+body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-profile):not(.lux-route-admin-orders) .lux-mode-btn,
+body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-profile):not(.lux-route-admin-orders) .lux-bg-mode-btn,
+body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-profile):not(.lux-route-admin-orders) .lux-studio-close,
+body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-profile):not(.lux-route-admin-orders) .lux-editor-field input,
+body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-profile):not(.lux-route-admin-orders) .lux-editor-field select,
+body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-profile):not(.lux-route-admin-orders) .lux-grid-widget {
+    background:
+        linear-gradient(180deg,
+            rgba(var(--lux-glass-tint-rgb), calc(var(--lux-raised-fill-alpha) + var(--lux-glass-highlight-alpha))),
+            rgba(var(--lux-glass-tint-rgb), var(--lux-raised-fill-alpha))) !important;
+    border: 1px solid var(--lux-border) !important;
+    color: var(--lux-text) !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
+    backdrop-filter: blur(calc(var(--lux-glass-blur) - 2px)) saturate(150%);
+    -webkit-backdrop-filter: blur(calc(var(--lux-glass-blur) - 2px)) saturate(150%);
+}
+html.transparency-test-off .lux-pill,
+html.transparency-test-off .lux-stat,
+html.transparency-test-off .lux-mode-btn,
+html.transparency-test-off .lux-bg-mode-btn,
+html.transparency-test-off .lux-studio-section,
+html.transparency-test-off .lux-builder-card,
+html.transparency-test-off .lux-builder-section {
+    background: var(--lux-surface-2) !important;
+    border: 1px solid rgba(255, 255, 255, 0.10) !important;
+    backdrop-filter: none !important;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.16) !important;
+}
+.lux-card:focus-within,
+.lux-panel:focus-within,
+.lux-subcard:focus-within,
+.lux-table-shell:focus-within,
+.lux-section-card:focus-within,
+.lux-calendar-board:focus-within,
+.lux-hero:focus-within,
+.lux-grid-widget:focus-within,
+.lux-grid-widget-body:focus-within,
+.lux-timetable-stage:focus-within,
+.page-section:focus-within,
+.lux-page-shell:focus-within,
+/* Also release overflow if the dropdown is explicitly marked open via JS */
+.lux-card:has(.is-open),
+.lux-panel:has(.is-open),
+.lux-subcard:has(.is-open),
+.lux-table-shell:has(.is-open),
+.lux-section-card:has(.is-open) {
+    overflow: visible !important;
+    contain: layout style !important; /* Force override of any rogue contain: paint */
+    z-index: 900 !important; /* Force to the very front so it overlaps siblings */
+}
+
+/* ── Rebuilt Home Dashboard (from luxury Phase 4) ── */
+/* Rebuilt Home Dashboard */.lux-picker-wrap {
+    position: relative;
+}.lux-universal-native-select {
+    display: none !important;
+}.lux-picker-field {
+    position: relative;
+    width: 100%;
+    min-width: 0;
+    display: grid;
+    gap: 8px;
+}.lux-universal-picker-field {
+    width: 100%;
+}.lux-picker-label {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--lux-text-soft);
+    padding-left: 4px;
+}.lux-picker-field>.lux-picker-btn {
+    width: 100%;
+    min-width: 0;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 14px 12px 16px;
+    border-radius: 18px;
+}.lux-picker-field>.lux-picker-panel {
+    left: 0;
+    right: auto;
+    width: 100%;
+    min-width: 0;
+    top: calc(100% + 8px);
+}.lux-search input {
+    min-height: 48px;
+    border-radius: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, calc(var(--lux-raised-alpha) + 0.02)), rgba(255, 255, 255, calc(var(--lux-glass-alpha) + 0.01)));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07);
+}.lux-picker-btn {
+    min-width: 192px;
+    min-height: 50px;
+    padding: 10px 16px;
+    border-radius: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: var(--lux-text);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    cursor: pointer;
+    text-align: left;
+    transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+}.lux-picker-btn:hover,
+.lux-picker-btn.is-active {
+    transform: translateY(-1px);
+    border-color: rgba(var(--lux-accent-rgb), 0.38);
+    box-shadow: 0 14px 30px rgba(var(--lux-accent-rgb), 0.12);
+}.lux-picker-caption {
+    display: block;
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--lux-text-soft);
+}.lux-picker-btn strong {
+    display: block;
+    margin-top: 4px;
+    font-size: 14px;
+    line-height: 1.2;
+    color: var(--lux-text);
+    font-weight: 600;
+}.lux-picker-btn i {
+    color: var(--lux-text-soft);
+    font-size: 11px;
+}.lux-picker-panel {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    width: min(320px, calc(100vw - 32px));
+    padding: 10px;
+    border-radius: 22px;
+    display: grid;
+    gap: 8px;
+    opacity: 0;
+    transform: translateY(8px);
+    pointer-events: none;
+    transition: opacity 0.18s ease, transform 0.18s ease;
+    z-index: 90;
+}.lux-picker-panel.is-open {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}.lux-picker-option {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: transparent;
+    color: var(--lux-text);
+    display: grid;
+    gap: 4px;
+    text-align: left;
+    cursor: pointer;
+    transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+}.lux-picker-option strong {
+    font-size: 13px;
+    font-weight: 600;
+}.lux-picker-option span {
+    font-size: 11px;
+    color: var(--lux-text-muted);
+    line-height: 1.45;
+}.lux-picker-option:hover,
+.lux-picker-option.is-active {
+    transform: translateY(-1px);
+    border-color: rgba(var(--lux-accent-rgb), 0.34);
+    background: rgba(var(--lux-accent-rgb), 0.08);
+}.lux-hero,
+.lux-hero-side,
+.lux-stat,
+.lux-strip-card,
+.lux-quick-btn,
+.lux-utility-item,
+.lux-picker-btn,
+.lux-control-btn,
+.lux-mode-btn,
+.lux-bg-mode-btn,
+.lux-studio-close {
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, calc(var(--lux-raised-alpha) + 0.02)), rgba(255, 255, 255, calc(var(--lux-glass-alpha) + 0.01))) !important;
+    backdrop-filter: blur(20px) saturate(145%);
+    -webkit-backdrop-filter: blur(20px) saturate(145%);
+}#lux-bg-canvas {
+    opacity: var(--lux-canvas-opacity) !important;
+}#lux-bg-overlay {
+    opacity: var(--lux-overlay-opacity);
+    background:
+        radial-gradient(circle at 50% 10%, rgba(var(--lux-accent-rgb), calc(var(--lux-hero-glow) * 0.78)), transparent 32%),
+        linear-gradient(180deg, rgba(7, 9, 16, 0.02), rgba(7, 9, 16, 0.18));
+}body.lux-light-mode .lux-hero,
+body.lux-light-mode .lux-hero-side,
+body.lux-light-mode .lux-stat,
+body.lux-light-mode .lux-strip-card,
+body.lux-light-mode .lux-quick-btn,
+body.lux-light-mode .lux-utility-item,
+body.lux-light-mode .lux-picker-btn,
+body.lux-light-mode .lux-control-btn,
+body.lux-light-mode .lux-mode-btn,
+body.lux-light-mode .lux-bg-mode-btn,
+body.lux-light-mode .lux-studio-close,
+body.lux-light-mode .lux-search input,
+body.lux-light-mode .lux-editor-field input,
+body.lux-light-mode .lux-editor-field select {
+    background:
+        linear-gradient(180deg,
+            rgba(var(--lux-glass-tint-rgb), calc(var(--lux-raised-fill-alpha) + var(--lux-glass-highlight-alpha))),
+            rgba(var(--lux-glass-tint-rgb), var(--lux-raised-fill-alpha))) !important;
+}body.lux-light-mode #lux-bg-overlay {
+    background:
+        radial-gradient(circle at 50% 12%, rgba(var(--lux-accent-rgb), calc(var(--lux-hero-glow) * 0.55)), transparent 28%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(239, 235, 228, 0.1));
+}body.lux-light-mode::before {
+    background:
+        radial-gradient(circle at 18% 10%, rgba(var(--lux-accent-rgb), 0.08), transparent 28%),
+        radial-gradient(circle at 84% 84%, rgba(var(--lux-accent-rgb), 0.05), transparent 24%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0));
+}@media (max-width:980px) {
+    #lux-topbar {
+        padding: 12px 14px 0;
+    }
+
+    .lux-topbar-main,
+.lux-home-toolbar {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .lux-picker-wrap,
+.lux-picker-btn,
+.lux-topbar-editor-btn {
+        width: 100%;
+    }
+
+}/* Dashboard Builder Overrides */:root {
+    --lux-panel-fill-alpha: 0.08;
+    --lux-raised-fill-alpha: 0.045;
+    --lux-utility-fill-alpha: 0.11;
+    --lux-glass-highlight-alpha: 0.05;
+    --lux-glass-blur: 18px;
+    --lux-grid-row-height: 28px;
+    --lux-glass-tint-rgb: 16, 23, 38;
+    --lux-topbar-tint-rgb: 11, 18, 32;
+    --lux-topbar-fill-alpha: 0.78;
+    --lux-topbar-raised-alpha: 0.18;
+    --lux-bg-particle-rgb: 216, 170, 86;
+    --lux-bg-line-rgb: 200, 130, 42;
+    --lux-bg-glow-rgb: 216, 170, 86;
+    --lux-bg-haze-rgb: 200, 130, 42;
+}body>header,
+body>#prof-nav,
+body>#admin-nav {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    margin: -1px !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    clip-path: inset(50%) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+}#faculty-select,
+#role-switcher-select,
+.faculty-switcher,
+.role-switcher {
+    position: absolute !important;
+    left: -10000px !important;
+    top: auto !important;
+    width: 1px !important;
+    height: 1px !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}#lux-bg-overlay {
+    opacity: var(--lux-overlay-opacity);
+    background:
+        radial-gradient(circle at 18% 12%, rgba(var(--lux-bg-glow-rgb), 0.22), transparent 28%),
+        radial-gradient(circle at 82% 78%, rgba(var(--lux-bg-haze-rgb), 0.14), transparent 34%),
+        linear-gradient(180deg, rgba(6, 8, 14, 0), rgba(6, 8, 14, 0.04));
+}body[data-lux-background-animation="off"] #lux-bg-canvas,
+body[data-lux-background-animation="off"] #lux-bg-overlay {
+    opacity: 0 !important;
+    pointer-events: none !important;
+}body[data-lux-background-animation="on"] #lux-bg-canvas {
+    opacity: 1 !important;
+    filter: none !important;
+}body[data-lux-background-animation="on"] #lux-bg-overlay {
+    opacity: 0 !important;
+    background: transparent !important;
+    pointer-events: none !important;
+}.lux-panel,
+.lux-alert,
+.lux-studio-panel,
+.lux-widget-toolbar {
+    background:
+        linear-gradient(180deg,
+            rgba(var(--lux-glass-tint-rgb), calc(var(--lux-panel-fill-alpha) + var(--lux-glass-highlight-alpha))),
+            rgba(var(--lux-glass-tint-rgb), var(--lux-panel-fill-alpha))) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    backdrop-filter: blur(var(--lux-glass-blur)) saturate(150%);
+    -webkit-backdrop-filter: blur(var(--lux-glass-blur)) saturate(150%);
+    box-shadow:
+        0 22px 54px rgba(0, 0, 0, 0.28),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08),
+        0 0 0 1px rgba(var(--lux-bg-glow-rgb), 0.03);
+}/* Portal-wide luxury rollout */:root {
+    --lux-sidebar-offset: var(--lux-sidebar-width);
+}body.lux-family-admin .page-section,
+body.lux-family-admin main {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 auto 28px !important;
+}body.lux-light-mode .portal-msg-panel,
+body.lux-light-mode .portal-msg-group-modal,
+body.lux-light-mode .portal-call-window {
+    background:
+        radial-gradient(circle at top right, rgba(var(--lux-accent-rgb), 0.08), transparent 34%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(245, 239, 231, 0.98)) !important;
+    border-color: rgba(48, 34, 22, 0.10) !important;
+    color: var(--lux-text) !important;
+}body.lux-light-mode .portal-msg-pill,
+body.lux-light-mode .portal-msg-chip,
+body.lux-light-mode .portal-msg-card,
+body.lux-light-mode .portal-msg-chat-item,
+body.lux-light-mode .portal-msg-bubble,
+body.lux-light-mode .portal-msg-thread-empty-wrap,
+body.lux-light-mode .portal-msg-request-banner,
+body.lux-light-mode .portal-msg-bubble-reply,
+body.lux-light-mode .portal-call-card,
+body.lux-light-mode .portal-call-control {
+    background: rgba(255, 255, 255, 0.72) !important;
+    border-color: rgba(48, 34, 22, 0.10) !important;
+    color: var(--lux-text) !important;
+}body.lux-light-mode .portal-msg-chip.is-active,
+body.lux-light-mode .portal-msg-pill.is-role {
+    background: linear-gradient(135deg, rgba(var(--lux-accent-rgb), 0.84), rgba(var(--lux-home-secondary-rgb), 0.78));
+    color: #fff8ef !important;
+}body.lux-light-mode .portal-msg-bubble.is-mine {
+    background: linear-gradient(135deg, rgba(var(--lux-accent-rgb), 0.14), rgba(255, 255, 255, 0.75));
+}/* ghost hover remains SSOT in lux-controls *//* Social glass SSoT: --social-fade-* tokens + surface lock-in live in social-rebuild.css */255,
+255,
+0.9)'],
+255,
+255,
+0.94)'],
+#f8fbff'],
+#eff6ff'] {
+    background: rgba(255, 255, 255, 0.03) !important;
 }

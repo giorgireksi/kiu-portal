@@ -63,3 +63,14 @@ Dashboard: `lux-shell-full-paint` (topbar SSOT) + slim `index-luxury` + `index-h
 After hard-clean, **only `index.html` links** `index-luxury.css`. Dead multi-route islands
 were peeled (student-service, admin, social, …). Target: keep shrinking toward shell extract
 + home-dashboard ownership; do not re-add non-home product CSS here.
+
+
+## Luxury slim progress (dashboard-only)
+
+| File | Role | ~LOC |
+|------|------|-----:|
+| `lux-shell-full-paint.css` | Full-paint topbar + shell chrome | ~750 |
+| `index-home-dashboard.css` | Home widgets + extracted home rules | ~2.7k |
+| `index-luxury.css` | FOUC/HT/glass glue only (still shrinking) | ~2.7k |
+
+Started at **10110** LOC luxury; peel dead routes + extract shell/home.
