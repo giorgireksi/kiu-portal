@@ -1,0 +1,479 @@
+/* lux-page-bare.css — nuclear flatten for pages without full paint.
+   Full paint whitelist: dashboard only (index.html + lux-full-paint).
+   Bare routes (timetable, LMS, social, …): solid surfaces, no glass / soft-chrome /
+   framed CTAs / focus rails. Redesign later from shared tokens + soft-chrome. */
+
+/* ---- Kill decorative glass everywhere under bare ---- */
+body.lux-page-bare .lux-soft-chrome,
+body.lux-page-bare .lux-panel-pro,
+body.lux-page-bare .lux-panel,
+body.lux-page-bare .lux-card,
+body.lux-page-bare .lux-subcard,
+body.lux-page-bare .lux-stat-card,
+body.lux-page-bare .lux-person-card,
+body.lux-page-bare .lux-summary-surface,
+body.lux-page-bare .lux-summary-surface--hero,
+body.lux-page-bare .lux-summary-surface--panel,
+body.lux-page-bare .lux-strip-card,
+body.lux-page-bare .wave2-summary-card,
+body.lux-page-bare .content-box,
+body.lux-page-bare .surface-card,
+body.lux-page-bare .admin-card,
+body.lux-page-bare .page-card,
+body.lux-page-bare .section-card,
+body.lux-page-bare .panel-card,
+body.lux-page-bare .kiu-card,
+body.lux-page-bare .dashboard-card,
+body.lux-page-bare .filter-shell,
+body.lux-page-bare .tabs-container,
+body.lux-page-bare .reg-tabs,
+body.lux-page-bare .modal-content,
+body.lux-page-bare .page-hero,
+body.lux-page-bare .lux-page-shell,
+body.lux-page-bare .lux-hero,
+body.lux-page-bare .lux-timetable-command,
+body.lux-page-bare .lux-timetable-stage,
+body.lux-page-bare .lux-timetable-filters,
+body.lux-page-bare .lux-timetable-hero-focus,
+body.lux-page-bare .lux-queue-item,
+body.lux-page-bare .lux-thread-entry,
+body.lux-page-bare .lux-table-shell,
+body.lux-page-bare main .card,
+body.lux-page-bare main [class*="-card"],
+body.lux-page-bare main [class*="-panel"],
+body.lux-page-bare main [class*="-shell"] {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    box-shadow: none !important;
+    background-image: none !important;
+    background: var(--lux-surface, rgba(15, 23, 42, 0.92)) !important;
+    border: 1px solid var(--lux-border, rgba(255, 255, 255, 0.10)) !important;
+    border-radius: 10px;
+}
+
+body.lux-page-bare .lux-summary-surface::after,
+body.lux-page-bare .page-hero::before,
+body.lux-page-bare .lux-card::before,
+body.lux-page-bare .lux-card::after {
+    display: none !important;
+    content: none !important;
+}
+
+/* Nested chips / soft fills stay flat, slightly elevated only via fill */
+body.lux-page-bare .lux-pill,
+body.lux-page-bare .lux-status-pill,
+body.lux-page-bare .lux-chip,
+body.lux-page-bare .tab,
+body.lux-page-bare .reg-tab,
+body.lux-page-bare .pv-tab {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    box-shadow: none !important;
+    background-image: none !important;
+    background: var(--lux-surface-2, rgba(255, 255, 255, 0.04)) !important;
+    border: 1px solid var(--lux-border, rgba(255, 255, 255, 0.10)) !important;
+}
+
+/* ---- Light mode flats ---- */
+body.lux-page-bare.lux-light-mode .lux-soft-chrome,
+body.lux-page-bare.lux-light-mode .lux-card,
+body.lux-page-bare.lux-light-mode .content-box,
+body.lux-page-bare.lux-light-mode .surface-card,
+body.lux-page-bare.lux-light-mode .filter-shell,
+body.lux-page-bare.lux-light-mode .modal-content,
+body.lux-page-bare.lux-light-mode .page-hero,
+body.lux-page-bare.lux-light-mode main [class*="-card"],
+body.lux-page-bare.lux-light-mode main [class*="-panel"] {
+    background: #fff !important;
+    border-color: rgba(26, 36, 51, 0.12) !important;
+}
+
+/* ---- Shell nav: solid only (layout.css owns geometry) ---- */
+body.lux-page-bare #lux-topbar,
+body.lux-page-bare .lux-topbar-shell,
+body.lux-page-bare .lux-sidebar {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    box-shadow: none !important;
+    background-image: none !important;
+}
+
+body.lux-page-bare #lux-topbar,
+body.lux-page-bare .lux-topbar-shell {
+    background: var(--lux-surface, rgba(15, 23, 42, 0.96)) !important;
+    border-bottom: 1px solid var(--lux-border, rgba(255, 255, 255, 0.08));
+}
+
+body.lux-page-bare .lux-sidebar {
+    background: var(--lux-surface, rgba(12, 18, 32, 0.98)) !important;
+    border-right: 1px solid var(--lux-border, rgba(255, 255, 255, 0.08));
+}
+
+/* ---- Page frame / type ---- */
+body.lux-page-bare main,
+body.lux-page-bare .lux-page-shell,
+body.lux-page-bare #page-content,
+body.lux-page-bare .content-area {
+    min-width: 0;
+}
+
+body.lux-page-bare .lux-page-shell,
+body.lux-page-bare .page-hero {
+    display: grid;
+    gap: 12px;
+    padding: 12px 0;
+}
+
+body.lux-page-bare .lux-page-title,
+body.lux-page-bare h1 {
+    color: var(--lux-text, #f8fafc);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+    margin: 0;
+}
+
+body.lux-page-bare .lux-page-copy,
+body.lux-page-bare .page-hero p,
+body.lux-page-bare .lux-page-kicker {
+    color: var(--lux-text-muted, rgba(248, 250, 252, 0.65));
+    line-height: 1.5;
+    margin: 0;
+}
+
+/* ---- Layout utilities (structure only) ---- */
+body.lux-page-bare .lux-stack,
+body.lux-page-bare .lux-layout-mainrail {
+    display: grid;
+    gap: 12px;
+}
+
+body.lux-page-bare .lux-layout-split {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(240px, 0.85fr);
+    gap: 14px;
+    align-items: start;
+}
+
+body.lux-page-bare .lux-field-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+
+body.lux-page-bare .lux-field-grid.cols-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+body.lux-page-bare .lux-field {
+    display: grid;
+    gap: 6px;
+    min-width: 0;
+}
+
+body.lux-page-bare .lux-field label,
+body.lux-page-bare .lux-overline {
+    color: var(--lux-text-muted, rgba(248, 250, 252, 0.65));
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+body.lux-page-bare .lux-stat-grid,
+body.lux-page-bare .lux-subcards,
+body.lux-page-bare .lux-person-grid,
+body.lux-page-bare .lux-strip-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 10px;
+}
+
+body.lux-page-bare .lux-pill-row,
+body.lux-page-bare .lux-card-actions,
+body.lux-page-bare .lux-actions-between {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+/* ---- Tables ---- */
+body.lux-page-bare table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+body.lux-page-bare table th,
+body.lux-page-bare table td {
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--lux-border, rgba(255, 255, 255, 0.08));
+    text-align: left;
+    vertical-align: top;
+}
+
+body.lux-page-bare table thead th {
+    color: var(--lux-text-muted, rgba(248, 250, 252, 0.65));
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+body.lux-page-bare .lux-empty-state {
+    display: grid;
+    gap: 8px;
+    place-items: center;
+    padding: 24px 16px;
+    text-align: center;
+    color: var(--lux-text-muted, rgba(248, 250, 252, 0.65));
+}
+
+body.lux-page-bare .lux-queue-list,
+body.lux-page-bare .lux-thread {
+    display: grid;
+    gap: 8px;
+}
+
+@media (max-width: 920px) {
+    body.lux-page-bare .lux-layout-split,
+    body.lux-page-bare .lux-field-grid,
+    body.lux-page-bare .lux-field-grid.cols-2 {
+        grid-template-columns: 1fr;
+    }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════
+   NUCLEAR flatten (2026-07 hard-clean) — beats lux-controls / focus /
+   luxury leftovers still loaded on bare routes.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* Broader surface kill — high specificity */
+body.lux-page-bare.lux-unified-shell :is(
+    .lux-soft-chrome,
+    .lux-focus-panel,
+    .lux-panel-pro,
+    .lux-panel,
+    .lux-card,
+    .lux-subcard,
+    .lux-stat,
+    .lux-stat-card,
+    .lux-person-card,
+    .lux-summary-surface,
+    .lux-summary-surface--hero,
+    .lux-summary-surface--panel,
+    .lux-strip-card,
+    .lux-builder-card,
+    .lux-hero,
+    .lux-hero-side,
+    .page-hero,
+    .surface-card,
+    .content-box,
+    .filter-shell,
+    .lux-page-shell,
+    .lux-timetable-page,
+    .lux-timetable-hero,
+    .lux-timetable-hero-focus,
+    .lux-timetable-command,
+    .lux-timetable-stage,
+    .lux-timetable-filters,
+    .lux-timetable-view-switcher,
+    .lux-timetable-week-nav,
+    .lux-timetable-overview-row,
+    .lux-timetable-day-section,
+    .lux-timetable-session-card,
+    .lux-timetable-grid-shell,
+    .schedule-day-section,
+    .schedule-session-card,
+    .schedule-view-switcher,
+    .schedule-week-nav,
+    .schedule-overview-row,
+    .schedule-toolbar,
+    .schedule-grid-shell,
+    .sch-sidebar,
+    .sch-main,
+    .sch-rail-hero,
+    .sch-rail-section,
+    .sch-event,
+    .lms-route-stage,
+    .lms-route-panel,
+    .lms-route-card,
+    .lms-clean-hero,
+    .lms-hero-focus,
+    .lms-clean-subject-card,
+    .lux-lms-subject-card,
+    .lux-lms-group-card,
+    .lms-live-panel,
+    .lms-route-workspace-chrome
+) {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    box-shadow: none !important;
+    background-image: none !important;
+    filter: none !important;
+    background: var(--lux-surface, rgba(15, 23, 42, 0.94)) !important;
+    border: 1px solid var(--lux-border, rgba(255, 255, 255, 0.10)) !important;
+    border-radius: 8px !important;
+}
+
+/* Pseudo chrome off (focus rail, sheen, card glows) */
+body.lux-page-bare.lux-unified-shell :is(
+    .lux-soft-chrome,
+    .lux-focus-panel,
+    .lux-timetable-hero-focus,
+    .lms-hero-focus,
+    .lux-card,
+    .lux-panel,
+    .lux-hero,
+    .page-hero,
+    .lux-summary-surface,
+    .lux-primary-btn,
+    .lux-secondary-btn,
+    .lux-ghost-btn,
+    .lux-admin-op-btn
+)::before,
+body.lux-page-bare.lux-unified-shell :is(
+    .lux-soft-chrome,
+    .lux-focus-panel,
+    .lux-timetable-hero-focus,
+    .lms-hero-focus,
+    .lux-card,
+    .lux-panel,
+    .lux-hero,
+    .page-hero,
+    .lux-summary-surface,
+    .lux-primary-btn,
+    .lux-secondary-btn,
+    .lux-ghost-btn,
+    .lux-admin-op-btn
+)::after {
+    display: none !important;
+    content: none !important;
+    background: none !important;
+    box-shadow: none !important;
+    opacity: 0 !important;
+}
+
+/* Framed luxury CTAs → flat buttons */
+body.lux-page-bare.lux-unified-shell :is(
+    .lux-primary-btn,
+    .lux-secondary-btn,
+    .lux-ghost-btn,
+    .lux-admin-op-btn,
+    .schedule-view-switcher-btn,
+    .lux-timetable-view-switcher-btn,
+    .schedule-week-arrow,
+    .lux-timetable-week-arrow
+) {
+    background: var(--lux-surface-2, rgba(255, 255, 255, 0.06)) !important;
+    background-image: none !important;
+    border: 1px solid var(--lux-border, rgba(255, 255, 255, 0.12)) !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    filter: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    color: var(--lux-text, #f8fafc) !important;
+    min-height: 36px !important;
+    padding: 0 12px !important;
+    transform: none !important;
+}
+
+body.lux-page-bare.lux-unified-shell :is(
+    .lux-primary-btn,
+    .lux-secondary-btn,
+    .lux-ghost-btn,
+    .schedule-view-switcher-btn,
+    .lux-timetable-view-switcher-btn
+).is-active,
+body.lux-page-bare.lux-unified-shell :is(
+    .lux-primary-btn,
+    .lux-secondary-btn
+)[aria-pressed="true"] {
+    background: color-mix(in srgb, var(--lux-accent, #d7aa56) 22%, var(--lux-surface, #0f172a)) !important;
+    border-color: color-mix(in srgb, var(--lux-accent, #d7aa56) 40%, transparent) !important;
+}
+
+body.lux-page-bare.lux-unified-shell :is(
+    .lux-primary-btn,
+    .lux-secondary-btn,
+    .lux-ghost-btn,
+    .schedule-view-switcher-btn
+):hover {
+    transform: none !important;
+    filter: none !important;
+    box-shadow: none !important;
+}
+
+/* Topbar / pickers / icons on bare — flat (not soft-chrome / framed) */
+body.lux-page-bare.lux-unified-shell #lux-topbar .lux-topbar-shell,
+body.lux-page-bare.lux-unified-shell #lux-topbar :is(
+    .lux-search input,
+    .lux-picker-btn,
+    .lux-icon-btn,
+    .lux-user-chip,
+    .lux-sidebar-toggle-btn,
+    .lux-topbar-editor-btn,
+    .lux-secondary-btn
+) {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    box-shadow: none !important;
+    background-image: none !important;
+    filter: none !important;
+    background: var(--lux-surface, rgba(15, 23, 42, 0.96)) !important;
+    border: 1px solid var(--lux-border, rgba(255, 255, 255, 0.10)) !important;
+    border-radius: 8px !important;
+    color: var(--lux-text, #f8fafc) !important;
+    text-shadow: none !important;
+}
+
+body.lux-page-bare.lux-unified-shell #lux-topbar :is(
+    .lux-sidebar-toggle-btn,
+    .lux-topbar-editor-btn
+)::before,
+body.lux-page-bare.lux-unified-shell #lux-topbar :is(
+    .lux-sidebar-toggle-btn,
+    .lux-topbar-editor-btn
+)::after {
+    display: none !important;
+    content: none !important;
+}
+
+/* Ambient motion backgrounds off on bare */
+body.lux-page-bare #lux-bg-canvas,
+body.lux-page-bare #lux-bg-overlay,
+body.lux-page-bare #lux-bg-fog {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    display: none !important;
+}
+
+/* Light mode solid */
+body.lux-page-bare.lux-light-mode.lux-unified-shell :is(
+    .lux-soft-chrome,
+    .lux-focus-panel,
+    .lux-card,
+    .lux-panel,
+    .lux-hero,
+    .surface-card,
+    .lux-timetable-command,
+    .lux-timetable-stage,
+    .schedule-session-card
+) {
+    background: #fff !important;
+    border-color: rgba(26, 36, 51, 0.12) !important;
+}
+
+body.lux-page-bare.lux-light-mode.lux-unified-shell :is(
+    .lux-primary-btn,
+    .lux-secondary-btn,
+    .lux-ghost-btn
+) {
+    background: #f3f4f6 !important;
+    color: #111827 !important;
+    border-color: rgba(26, 36, 51, 0.14) !important;
+}

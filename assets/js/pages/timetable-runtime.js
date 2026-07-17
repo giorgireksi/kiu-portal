@@ -2,6 +2,8 @@
 
 // --- TIMETABLE ENGINE ---
 const SCHEDULE_VIEW_STORAGE_KEY_PREFIX = 'KIU_SCHEDULE_VIEW_PREF';
+const STUDENT_ADMIN_SCHEDULE_WEEK_STORAGE_KEY = 'KIU_STUDENT_ADMIN_SCHEDULE_WEEK';
+const STUDENT_ADMIN_SCHEDULE_VIEW_PREFIX = 'KIU_STUDENT_ADMIN_SCHEDULE_VIEW';
 let timetablePageOpenedOnCurrentWeek = false;
 const SCHEDULE_SESSION_MARKER_TYPES = {
     quiz: { label: 'Quiz', icon: 'fa-pen-to-square', tone: 'warning' },
@@ -107,8 +109,9 @@ function getScheduleViewStorageKey() {
     return `${SCHEDULE_VIEW_STORAGE_KEY_PREFIX}_${roleKey}_${userKey}`;
 }
 
-function getStoredScheduleView(defaultView = 'sessions') {
-    const stored = String(localStorage.getItem(getScheduleViewStorageKey()) || '').trim().toLowerCase();
+function getStoredScheduleView(defaultView = 'sessions', storageKeyOverride = '') {
+    const key = storageKeyOverride || getScheduleViewStorageKey();
+    const stored = String(localStorage.getItem(key) || '').trim().toLowerCase();
     return stored === 'timetable' ? 'timetable' : (stored === 'sessions' ? 'sessions' : defaultView);
 }
 
@@ -131,12 +134,44 @@ function refreshScheduleSurfaces() {
     if (typeof refreshFacultyScheduleUI === 'function' && document.getElementById('faculty-schedule-page-list')) {
         refreshFacultyScheduleUI();
     }
+    const studentAdminControls = document.getElementById('student-academic-schedule-controls');
+    const studentId = studentAdminControls?.dataset?.scheduleStudentId || '';
+    if (studentId && typeof renderStudentAdminScheduleEmbed === 'function') {
+        renderStudentAdminScheduleEmbed(studentId);
+    }
+}
+
+function getStudentAdminScheduleWeekKey(studentId) {
+    const safeId = String(studentId || '').replace(/[^a-z0-9_-]+/gi, '_');
+    return `${STUDENT_ADMIN_SCHEDULE_WEEK_STORAGE_KEY}_${safeId}`;
+}
+
+function getStudentAdminScheduleViewKey(studentId) {
+    const safeId = String(studentId || 'anonymous').replace(/[^a-z0-9_-]+/gi, '_').toLowerCase();
+    return `${STUDENT_ADMIN_SCHEDULE_VIEW_PREFIX}_${safeId}`;
+}
+
+function getStoredStudentAdminScheduleView(studentId, defaultView = 'timetable') {
+    return getStoredScheduleView(defaultView, getStudentAdminScheduleViewKey(studentId));
+}
+
+function setStudentAdminScheduleViewPreference(studentId, view) {
+    const normalized = view === 'timetable' ? 'timetable' : 'sessions';
+    localStorage.setItem(getStudentAdminScheduleViewKey(studentId), normalized);
+    renderStudentAdminScheduleEmbed(studentId);
 }
 
 function handlePlannerScheduleSurfaceClick(event) {
+    const scopeRoot = event.target.closest('[data-schedule-surface-scope="student-admin"]');
+    const scopedStudentId = scopeRoot?.dataset?.scheduleStudentId || '';
+
     const viewTrigger = event.target.closest('[data-schedule-view]');
     if (viewTrigger) {
         event.preventDefault();
+        if (scopedStudentId) {
+            setStudentAdminScheduleViewPreference(scopedStudentId, viewTrigger.getAttribute('data-schedule-view'));
+            return;
+        }
         setScheduleViewPreference(viewTrigger.getAttribute('data-schedule-view'));
         return;
     }
@@ -144,6 +179,16 @@ function handlePlannerScheduleSurfaceClick(event) {
     const shiftTrigger = event.target.closest('[data-timetable-week-shift]');
     if (shiftTrigger) {
         event.preventDefault();
+        if (scopedStudentId) {
+            const weekKey = getStudentAdminScheduleWeekKey(scopedStudentId);
+            const nextWeek = shiftWeekStartISO(
+                getStoredWeekStart(weekKey),
+                Number(shiftTrigger.getAttribute('data-timetable-week-shift')) || 0
+            );
+            setStoredWeekStart(weekKey, nextWeek);
+            renderStudentAdminScheduleEmbed(scopedStudentId);
+            return;
+        }
         changeTimetableWeek(Number(shiftTrigger.getAttribute('data-timetable-week-shift')) || 0);
         return;
     }
@@ -151,6 +196,11 @@ function handlePlannerScheduleSurfaceClick(event) {
     const currentWeekTrigger = event.target.closest('[data-schedule-current-week], [data-timetable-action="current-week"]');
     if (currentWeekTrigger) {
         event.preventDefault();
+        if (scopedStudentId) {
+            setStoredWeekStart(getStudentAdminScheduleWeekKey(scopedStudentId), getCurrentWeekStartISO());
+            renderStudentAdminScheduleEmbed(scopedStudentId);
+            return;
+        }
         jumpTimetableToCurrentWeek();
         return;
     }
@@ -185,7 +235,7 @@ function renderScheduleControls(containerId, weekStart, items, options = {}) {
     const container = document.getElementById(containerId);
     if (!container) return;
     const normalizedWeek = formatLocalDateISO(getWeekStartDate(parseLocalDate(weekStart) || new Date()));
-    const view = getStoredScheduleView(options.defaultView || 'sessions');
+    const view = getStoredScheduleView(options.defaultView || 'sessions', options.viewStorageKey || '');
     const isCurrent = normalizedWeek === getCurrentWeekStartISO();
     const overview = getScheduleOverview(items);
     const labelId = options.labelId || '';
@@ -245,31 +295,69 @@ function renderScheduleControls(containerId, weekStart, items, options = {}) {
         return;
     }
 
+    const buildViewButton = (viewKey, label, iconClass, activeView) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = getTimetableViewButtonClass(activeView === viewKey);
+        button.dataset.scheduleView = viewKey;
+        button.setAttribute('aria-pressed', activeView === viewKey ? 'true' : 'false');
+        button.innerHTML = `<i class="fas ${iconClass}" aria-hidden="true"></i> ${escapeHtml(label)}`;
+        return button;
+    };
+
+    if (options.compactEmbed) {
+        container.classList.add('schedule-controls-embed-compact');
+        container.setAttribute('data-lux-transparency-exempt', '1');
+        container.innerHTML = '';
+
+        const toolbar = document.createElement('div');
+        toolbar.className = 'schedule-toolbar schedule-toolbar-embed-compact';
+
+        const weekNav = document.createElement('div');
+        weekNav.className = 'schedule-week-nav schedule-week-nav-embed-compact';
+        const currentWeekButtonMarkup = isCurrent ? '' : currentButtonMarkup;
+        weekNav.innerHTML = localizeHtmlMarkup(`
+            <button type="button" class="schedule-week-arrow lux-timetable-week-arrow" data-timetable-week-shift="-1" aria-label="Previous Week">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            ${weekLabelMarkup}
+            <button type="button" class="schedule-week-arrow lux-timetable-week-arrow" data-timetable-week-shift="1" aria-label="Next Week">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+            ${currentWeekButtonMarkup}
+        `);
+
+        if (options.timetableOnly) {
+            toolbar.append(weekNav);
+        } else {
+            const toggle = document.createElement('div');
+            toggle.className = 'schedule-view-switcher schedule-view-switcher-embed-compact';
+            toggle.setAttribute('role', 'group');
+            toggle.setAttribute('aria-label', 'Schedule View');
+            toggle.appendChild(buildViewButton('sessions', 'Sessions', 'fa-calendar-day', view));
+            toggle.appendChild(buildViewButton('timetable', 'Timetable', 'fa-table-cells-large', view));
+            toolbar.append(toggle, weekNav);
+        }
+        container.appendChild(toolbar);
+        return;
+    }
+
+    container.classList.remove('schedule-controls-embed-compact');
     container.innerHTML = '';
 
     const toolbar = document.createElement('div');
     toolbar.className = 'schedule-toolbar';
 
     const toggle = document.createElement('div');
-    toggle.className = 'schedule-view-switcher lux-timetable-view-switcher surface-card lux-panel lux-card lux-builder-card lux-summary-surface lux-summary-surface--panel';
+    toggle.className = 'schedule-view-switcher lux-timetable-view-switcher';
     toggle.setAttribute('role', 'group');
     toggle.setAttribute('aria-label', 'Schedule View');
 
-    const buildViewButton = (viewKey, label, iconClass) => {
-        const button = document.createElement('button');
-        button.type = 'button';
-        button.className = getTimetableViewButtonClass(view === viewKey);
-        button.dataset.scheduleView = viewKey;
-        button.setAttribute('aria-pressed', view === viewKey ? 'true' : 'false');
-        button.innerHTML = `<i class="fas ${iconClass}" aria-hidden="true"></i> ${escapeHtml(label)}`;
-        return button;
-    };
-
-    toggle.appendChild(buildViewButton('sessions', 'Sessions', 'fa-calendar-day'));
-    toggle.appendChild(buildViewButton('timetable', 'Timetable', 'fa-table-cells-large'));
+    toggle.appendChild(buildViewButton('sessions', 'Sessions', 'fa-calendar-day', view));
+    toggle.appendChild(buildViewButton('timetable', 'Timetable', 'fa-table-cells-large', view));
 
     const weekNav = document.createElement('div');
-    weekNav.className = 'schedule-week-nav lux-timetable-week-nav surface-card lux-panel lux-card lux-builder-card lux-summary-surface lux-summary-surface--panel';
+    weekNav.className = 'schedule-week-nav lux-timetable-week-nav';
     weekNav.innerHTML = localizeHtmlMarkup(`
         <button type="button" class="schedule-week-arrow lux-timetable-week-arrow" data-timetable-week-shift="-1" aria-label="Previous Week">
             <i class="fas fa-chevron-left"></i>
@@ -286,7 +374,7 @@ function renderScheduleControls(containerId, weekStart, items, options = {}) {
     toggleRow.appendChild(toggle);
 
     const overviewRow = document.createElement('div');
-    overviewRow.className = 'schedule-overview-row lux-timetable-overview-row surface-card lux-panel lux-card lux-builder-card lux-summary-surface lux-summary-surface--panel';
+    overviewRow.className = 'schedule-overview-row lux-timetable-overview-row';
     overviewRow.innerHTML = localizeHtmlMarkup(`
         <span class="schedule-chip lux-status-pill lux-timetable-chip"><i class="fas fa-layer-group"></i> ${overview.sessionCount} sessions</span>
         <span class="schedule-chip lux-status-pill lux-timetable-chip"><i class="fas fa-calendar-week"></i> ${overview.dayCount} active days</span>
@@ -749,7 +837,7 @@ function showScheduleSurfaceFrame(container) {
 }
 
 function renderScheduleSessionDaySection(section, entry, dayItems, facultyActionsEnabled) {
-    section.className = 'schedule-day-section lux-timetable-day-section surface-card lux-panel lux-card lux-builder-card lux-summary-surface lux-summary-surface--panel';
+    section.className = 'schedule-day-section lux-timetable-day-section';
     section.dataset.scheduleDay = entry.en.toLowerCase();
     section.innerHTML = localizeHtmlMarkup(`
         <div class="schedule-day-heading lux-timetable-day-heading">
@@ -766,7 +854,7 @@ function renderScheduleSessionDaySection(section, entry, dayItems, facultyAction
                     const markerMeta = marker ? getScheduleSessionMarkerTypeMeta(marker.type) : null;
                     const markerClass = marker ? ` has-session-marker marker-${scheduleMarkerClassToken(marker.type)}` : '';
                     return `
-                    <article class="schedule-session-card lux-timetable-session-card lux-strip-card surface-card lux-panel lux-card lux-builder-card lux-summary-surface lux-summary-surface--panel${markerClass}">
+                    <article class="schedule-session-card lux-timetable-session-card${markerClass}">
                         <div class="schedule-session-card-header lux-timetable-session-card-header">
                             <div>
                                 <div class="schedule-session-code-row lux-timetable-session-code-row">
@@ -858,7 +946,9 @@ function renderScheduleSessionsView(container, items, options = {}) {
 
 function renderScheduleSurfaceInto(container, items, options = {}) {
     if (!container) return;
-    const view = getStoredScheduleView(options.defaultView || 'sessions');
+    const view = options.timetableOnly
+        ? 'timetable'
+        : getStoredScheduleView(options.defaultView || 'sessions', options.viewStorageKey || '');
     container.dataset.scheduleSurfaceView = view;
     if (view === 'timetable') {
         renderUnifiedWeeklyScheduleGrid(container, items, options);
@@ -890,6 +980,9 @@ function renderUnifiedWeeklyScheduleGrid(container, items, options = {}) {
     const normalizedItems = (items || []).map(item => normalizeScheduleSurfaceItem(item, weekStart));
     const columns = getWeeklyScheduleColumns(normalizedItems, weekStart);
     const slotHeight = options.slotHeight || 100;
+    const shellHeaderPad = options.shellHeaderPad ?? 100;
+    const minEventHeight = options.minEventHeight ?? 42;
+    const eventHeightInset = options.eventHeightInset ?? 6;
     const emptyMessage = options.emptyMessage || `No schedule sessions found for ${formatWeekRangeLabel(weekStart)}.`;
     const profileMode = options.profileMode === true;
     const { frame } = showScheduleSurfaceFrame(container);
@@ -898,9 +991,9 @@ function renderUnifiedWeeklyScheduleGrid(container, items, options = {}) {
         shell = document.createElement('div');
         frame.replaceChildren(shell);
     }
-    shell.className = `schedule-grid-shell lux-timetable-grid-shell lux-card${profileMode ? ' is-profile' : ''}`;
+    shell.className = `schedule-grid-shell lux-timetable-grid-shell${profileMode ? ' is-profile' : ''}`;
     shell.dataset.ttGrid = '1';
-    shell.style.setProperty('--sch-shell-min-height', `${timeSlots.length * slotHeight + 100}px`);
+    shell.style.setProperty('--sch-shell-min-height', `${timeSlots.length * slotHeight + shellHeaderPad}px`);
 
     let headerRow = shell.querySelector(':scope > .sch-header-row');
     if (!headerRow) {
@@ -946,6 +1039,11 @@ function renderUnifiedWeeklyScheduleGrid(container, items, options = {}) {
     timeLabels.innerHTML = localizeHtmlMarkup(timeLabelHtml);
 
     let lanesHtml = '';
+    const scheduleStartMinutes = convertTimeToMinutes(timeSlots[0]);
+    const scheduleEndMinutes = convertTimeToMinutes(timeSlots[timeSlots.length - 1]) + 60;
+    const todayColumnIndex = new Date().getDay() === 0 ? 6 : new Date().getDay() - 1;
+    const now = new Date();
+    const nowMinutes = now.getHours() * 60 + now.getMinutes();
 
     columns.forEach((column, columnIndex) => {
         lanesHtml += `<div class="sch-lane lux-timetable-lane">`;
@@ -953,22 +1051,17 @@ function renderUnifiedWeeklyScheduleGrid(container, items, options = {}) {
             lanesHtml += `<div class="sch-slot-bg lux-timetable-slot-bg" style="--sch-slot-height:${slotHeight}px;"></div>`;
         });
 
-        const todayColumnIndex = new Date().getDay() === 0 ? 6 : new Date().getDay() - 1;
-        const scheduleStartMinutes = convertTimeToMinutes(timeSlots[0]);
-        const scheduleEndMinutes = convertTimeToMinutes(timeSlots[timeSlots.length - 1]) + 60;
-        const now = new Date();
-        const nowMinutes = now.getHours() * 60 + now.getMinutes();
-        if (isCurrentWeek && columnIndex === todayColumnIndex && nowMinutes >= scheduleStartMinutes && nowMinutes <= scheduleEndMinutes) {
+        if (options.showNowLine !== false && isCurrentWeek && columnIndex === todayColumnIndex && nowMinutes >= scheduleStartMinutes && nowMinutes <= scheduleEndMinutes) {
             const nowTopPx = ((nowMinutes - scheduleStartMinutes) / 60) * slotHeight;
             const nowLabel = minutesToTimeString(nowMinutes);
             lanesHtml += `<div class="schedule-now-line" style="--sch-now-top:${nowTopPx}px;"><span>${escapeHtml(nowLabel)}</span></div>`;
         }
 
         column.forEach(item => {
-            const startMin = convertTimeToMinutes(item.startTime || item.time) - (9 * 60);
+            const startMin = convertTimeToMinutes(item.startTime || item.time) - scheduleStartMinutes;
             const topPx = (startMin / 60) * slotHeight;
             const durMin = parseInt(String(item.durationMinutes || item.duration || '110').match(/\d+/)?.[0] || '110', 10);
-            const heightPx = Math.max(42, (durMin / 60) * slotHeight - 6);
+            const heightPx = Math.max(minEventHeight, (durMin / 60) * slotHeight - eventHeightInset);
             const facultyCode = normalizeFacultyCode(item.facultyCode || item.faculty || deriveFacultyFromSubjectId(item.courseId));
             const toneAttr = buildScheduleToneDataAttribute(facultyCode);
             const subjectLabel = escapeHtml(item.courseCode || item.courseId || 'Subject');
@@ -1098,3 +1191,73 @@ function renderStudentCalendarSchedule() {
     });
 }
 
+function getStudentScheduleItemsForWeek(studentId, weekStart, options = {}) {
+    const normalizedId = String(studentId || '').trim();
+    if (!normalizedId) return [];
+    const schedule = typeof normalizeStudentScheduleValue === 'function'
+        ? normalizeStudentScheduleValue(KIU_STATE?.studentSchedulesByStudent?.[normalizedId])
+        : (Array.isArray(KIU_STATE?.studentSchedulesByStudent?.[normalizedId]) ? KIU_STATE.studentSchedulesByStudent[normalizedId] : []);
+    const targetSemester = options.semester ? parseInt(options.semester, 10) : null;
+    const items = [];
+    schedule.forEach((scheduleItem) => {
+        const groupObj = typeof resolveScheduledGroupForWeek === 'function'
+            ? resolveScheduledGroupForWeek(scheduleItem.courseId, scheduleItem.groupId, weekStart)
+            : scheduleItem;
+        if (!groupObj) return;
+        const normalizedSemester = parseInt(groupObj.semester || scheduleItem.semester || 0, 10) || null;
+        if (targetSemester && normalizedSemester && normalizedSemester !== targetSemester) return;
+        items.push({
+            ...groupObj,
+            courseId: scheduleItem.courseId,
+            courseName: scheduleItem.courseName || groupObj.courseName || scheduleItem.courseId,
+            groupId: scheduleItem.groupId,
+            semester: normalizedSemester || groupObj.semester || scheduleItem.semester || null,
+            sessionType: scheduleItem.sessionType || groupObj.sessionType || 'lecture',
+            faculty: scheduleItem.faculty || groupObj.faculty
+        });
+    });
+    return items;
+}
+
+const STUDENT_ADMIN_EMBED_TIME_SLOTS = ['09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00', '23:00', '24:00'];
+
+function renderStudentAdminScheduleEmbed(studentId) {
+    const controls = document.getElementById('student-academic-schedule-controls');
+    const canvas = document.getElementById('student-academic-schedule-canvas');
+    if (!controls || !canvas || !studentId) return;
+    const weekKey = getStudentAdminScheduleWeekKey(studentId);
+    const weekStart = getStoredWeekStart(weekKey);
+    const items = getStudentScheduleItemsForWeek(studentId, weekStart);
+    const viewStorageKey = getStudentAdminScheduleViewKey(studentId);
+    const defaultView = 'timetable';
+    const embedSurfaceOptions = {
+        weekStart,
+        defaultView,
+        viewStorageKey,
+        timetableOnly: true,
+        showNowLine: false,
+        slotHeight: 36,
+        shellHeaderPad: 52,
+        minEventHeight: 28,
+        eventHeightInset: 4,
+        timeSlots: STUDENT_ADMIN_EMBED_TIME_SLOTS,
+        profileMode: true,
+        emptyTitle: 'No sessions for the selected week',
+        emptyMessage: `No timetable sessions found for ${formatWeekRangeLabel(weekStart)}.`
+    };
+    renderScheduleControls('student-academic-schedule-controls', weekStart, items, {
+        compactEmbed: true,
+        timetableOnly: true,
+        defaultView,
+        viewStorageKey,
+        roleLabel: 'Student schedule'
+    });
+    renderScheduleSurfaceInto(canvas, items, embedSurfaceOptions);
+    const gridShell = canvas.querySelector('.lux-timetable-grid-shell');
+    if (typeof window.queueLuxuryTransparencyRefresh === 'function') {
+        window.queueLuxuryTransparencyRefresh(undefined, gridShell ? { roots: [gridShell] } : undefined);
+    }
+}
+
+window.getStudentScheduleItemsForWeek = getStudentScheduleItemsForWeek;
+window.renderStudentAdminScheduleEmbed = renderStudentAdminScheduleEmbed;

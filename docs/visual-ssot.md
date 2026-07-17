@@ -38,3 +38,10 @@ LMS + timetable design CSS lives under:
 - Do not add new `*-route.css` glass recipes.
 - Do not link `_archive/` from live HTML.
 - One material change → `lux-tokens.css` after redesign lands.
+
+
+## Bare = nuclear flatten
+
+`lux-page-bare` routes still load shared kernel CSS (`index-luxury`, `lux-controls`, `lux-focus-panel`).
+Bare CSS **forces** solid surfaces, flat buttons, no focus rail, no ambient canvas.
+Do not re-add `lux-soft-chrome` dual-write on bare pages until shared redesign.

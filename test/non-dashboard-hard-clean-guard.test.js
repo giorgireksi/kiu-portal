@@ -59,4 +59,25 @@ describe('non-dashboard hard-clean (archive route skins)', () => {
             }
         }
     });
+
+    it('bare CSS nuclear-flattens focus rails and framed buttons', () => {
+        const bare = read('assets/css/lux-page-bare.css');
+        expect(bare).toContain('NUCLEAR flatten');
+        expect(bare).toContain('Full paint whitelist: dashboard only');
+        expect(bare).toMatch(/lux-primary-btn[\s\S]{0,200}lux-secondary-btn/);
+        expect(bare).toContain('#lux-bg-canvas');
+    });
+
+    it('luxury experimental glass is gated off lux-page-bare', () => {
+        const luxury = read('assets/css/index-luxury.css');
+        expect(luxury).toContain(
+            'body.lux-site-modernized.lux-unified-shell:not(.lux-page-bare) :where('
+        );
+    });
+
+    it('timetable markup no longer dual-writes lux-soft-chrome', () => {
+        expect(read('timetable.html')).not.toContain('lux-soft-chrome');
+        expect(read('assets/js/pages/timetable-runtime.js')).not.toContain('lux-soft-chrome');
+    });
+
 });

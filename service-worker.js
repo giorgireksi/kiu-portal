@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kiu-portal-shell-v20260606-postactions6';
+const CACHE_NAME = 'kiu-portal-shell-v20260717-nuclearbare1';
 const CACHE_PREFIX = 'kiu-portal-shell-';
 const SHELL_ASSETS = [
   '/',
@@ -9,9 +9,15 @@ const SHELL_ASSETS = [
   '/login.html',
   '/assets/css/base.css?v=20260604-styleguard2',
   '/assets/css/layout.css?v=1776604822083',
-  '/assets/css/index-luxury.css?v=20260604-styleguard2',
-  '/assets/css/students-admin-lms.css?v=20260604-styleguard2',
-  '/assets/css/mobile-responsive.css?v=20260419-libsync1'
+  '/assets/css/lux-tokens.css?v=20260608-topbar-clear4',
+  '/assets/css/index-luxury.css?v=20260717-nuclearbare1',
+  '/assets/css/index-home-dashboard.css?v=20260714-homeglass2',
+  '/assets/css/mobile-responsive.css?v=20260608-topbar-clear4',
+  '/assets/js/theme-primer.js?v=20260609-bootguard1',
+  '/assets/js/features/navigation.js?v=20260609-bootguard1',
+  '/assets/js/features/luxury-index-runtime.js?v=20260714-homeglass2',
+  '/assets/js/features/index-luxury.js?v=20260714-homeglass2',
+  '/assets/js/features/luxury-background.js?v=20260716-glassmax1'
 ];
 
 async function deleteLegacyPortalCaches() {
@@ -155,21 +161,22 @@ async function handleNavigationRequest(request) {
 }
 
 async function handleStaticAssetRequest(request, event) {
+  // NETWORK-FIRST (was stale-while-revalidate, which served the OLD cached
+  // asset first and only updated in the background — so code/CSS changes never
+  // showed until a later reload, and behind a versioned URL could stay stale
+  // indefinitely). Always fetch fresh when online; fall back to cache only when
+  // the network is unavailable (offline). The dev server is no-store, so this
+  // makes edits appear immediately without any manual cache clearing.
   const cache = await caches.open(CACHE_NAME);
+  try {
+    const networkResponse = await fetch(request);
+    if (networkResponse && networkResponse.ok) {
+      event.waitUntil(cacheResponse(request, networkResponse.clone()).catch(() => {}));
+      return networkResponse;
+    }
+  } catch (error) {}
   const cached = await cache.match(request);
-  const networkPromise = fetch(request)
-    .then((response) => cacheResponse(request, response))
-    .catch(() => null);
-
-  if (cached) {
-    event.waitUntil(networkPromise);
-    return cached;
-  }
-
-  const networkResponse = await networkPromise;
-  if (networkResponse) return networkResponse;
-  const fallback = await caches.match(request);
-  if (fallback) return fallback;
+  if (cached) return cached;
   return buildOfflineAssetResponse(request);
 }
 
