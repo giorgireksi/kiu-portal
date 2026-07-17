@@ -6,110 +6,126 @@
     <title>KIU - Student Portal</title>
     <link rel="stylesheet" href="assets/vendor/fontawesome/css/all.min.css?v=1776604822079">
     <link rel="stylesheet" href="assets/css/kiu-fonts.css?v=20260515-fonts1">
-    <link rel="stylesheet" href="assets/css/base.css?v=20260419-libsync1">
-    <link rel="stylesheet" href="assets/css/layout.css?v=20260528-layoutfix2">
-    <link rel="stylesheet" href="assets/css/lux-tokens.css?v=20260606-luxscrollbar1">
-    <link rel="stylesheet" href="assets/css/lux-surfaces.css?v=20260527-profcss1">
-    <link rel="stylesheet" href="assets/css/lux-controls.css?v=20260606-pickerscroll1">
-    <link rel="stylesheet" href="assets/css/lux-layout-primitives.css?v=20260606-luxscrollbar1">
-    <link rel="stylesheet" href="assets/css/index-luxury.css?v=20260531-partbg4">
-<link rel="stylesheet" href="assets/css/mobile-responsive.css?v=20260419-libsync1">
-    <link rel="stylesheet" href="assets/css/programs-route.css?v=20260530-progglass1">
-    <script src="assets/js/theme-primer.js?v=20260605-initvisual2"></script>
+    <link rel="stylesheet" href="assets/css/base.css?v=20260713-accentborder2">
+    <link rel="stylesheet" href="assets/css/layout.css?v=20260713-accentborder2">
+    <link rel="stylesheet" href="assets/css/lux-tokens.css?v=20260717-panelpaint9">
+    <link rel="stylesheet" href="assets/css/lux-focus-panel.css?v=20260715-focus1">
+    <link rel="stylesheet" href="assets/css/lux-controls.css?v=20260713-accentborder2">
+    <link rel="stylesheet" href="assets/css/lux-layout-primitives.css?v=20260713-accentborder2">
+    <link rel="stylesheet" href="assets/css/lux-modals.css?v=20260710-warmglass-social-scope1">
+    <link rel="stylesheet" href="assets/css/lux-shell-nav.css?v=20260717-topbarrow1">
+    <link rel="stylesheet" href="assets/css/lux-page-bare.css?v=20260717-topbarrow1">
+    <link rel="stylesheet" href="assets/css/mobile-responsive.css?v=20260713-accentborder2">
+    <script src="assets/js/theme-primer.js?v=20260709-glasslock1"></script>
 </head>
-<body class="lux-unified-shell kiu-shell-loading lux-nonhome-page lux-route-programs">
+<body class="lux-unified-shell kiu-shell-loading lux-nonhome-page lux-route-programs lux-page-bare">
 <!-- Navigation stubs (hidden, for JS compatibility) -->
 <nav id="prof-nav" aria-label="Professor navigation stub"></nav>
 <nav id="top-nav" aria-label="Top navigation stub"></nav>
 <nav id="admin-nav" aria-label="Admin navigation stub"></nav>
 
     <main id="app-content">
-        <div id="page-programs" class="page-section active-page">
-            <div class="page-hero lux-program-hero">
-                <div class="page-hero-title" id="programs-hero-title">Academic Programs</div>
-                <div class="page-hero-copy" id="programs-hero-copy">Review the official program structure, semester placement, ECTS credits, and prerequisites in a clear student planning workspace.</div>
-                <div class="page-hero-meta" id="programs-hero-meta">
-                    <span class="page-hero-badge wave2-chip wave2-chip--hero lux-program-hero-chip"><i class="fas fa-layer-group"></i> Module structure</span>
-                    <span class="page-hero-badge wave2-chip wave2-chip--hero lux-program-hero-chip"><i class="fas fa-filter"></i> Semester search</span>
-                    <span class="page-hero-badge wave2-chip wave2-chip--hero lux-program-hero-chip" id="programs-hero-faculty-badge"><i class="fas fa-university"></i> Active faculty</span>
-                </div>
-            </div>
-            <div class="filter-shell lux-program-filter-shell">
-                <div class="filter-shell-title">Program Scope</div>
-                <div class="lux-program-filter-row">
-                    <div class="lux-program-publish-pill">
-                        <i class="fas fa-graduation-cap"></i>
-                        <span>
-                            <strong>Official curriculum</strong>
-                            <em>Published by your faculty</em>
-                        </span>
+        <div id="page-programs" class="page-section lux-page-shell active-page">
+            <section class="lux-program-command-deck">
+                <div class="lux-prog-toolbar">
+                    <div class="lux-prog-intro">
+                        <div class="lux-page-kicker"><i class="fas fa-compass"></i> Academic planning</div>
+                        <h1 id="programs-hero-title" class="lux-prog-title">Academic Programs</h1>
                     </div>
-                    <div class="lux-program-filter-controls">
-                        <label class="lux-program-field lux-program-select-wrap">
-                            <span>Semester filter</span>
-                            <select id="student-program-semester-filter" name="student_program_semester_filter" data-programs-semester-filter="1">
-                                <option value="all">All Semesters</option>
-                                <option value="1">Semester 1</option>
-                                <option value="2">Semester 2</option>
-                                <option value="3">Semester 3</option>
-                                <option value="4">Semester 4</option>
-                                <option value="5">Semester 5</option>
-                                <option value="6">Semester 6</option>
-                                <option value="7">Semester 7</option>
-                                <option value="8">Semester 8</option>
-                                <option value="9">Semester 9</option>
-                                <option value="10">Semester 10</option>
-                                <option value="11">Semester 11</option>
-                                <option value="12">Semester 12</option>
-                            </select>
-                        </label>
-                        <div class="lux-program-field lux-program-search-wrap">
-                            <span>Search subjects</span>
-                            <i class="fas fa-search"></i>
-                            <input id="student-program-search" name="student_program_search" type="search" autocomplete="off" spellcheck="false" placeholder="Search subject code, title, prerequisite..." value="" data-programs-search="1" data-programs-faculty="">
-                            <button type="button" class="lux-program-clear-search" id="student-program-search-clear" data-programs-clear-search="1" data-programs-faculty="" aria-label="Clear program search" hidden>
-                                <i class="fas fa-times"></i>
-                            </button>
-                        </div>
+
+                </div>
+
+                <div class="lux-prog-control-band">
+                    <label class="lux-program-field lux-program-select-wrap">
+                        <span>Semester filter</span>
+                        <select id="student-program-semester-filter" name="student_program_semester_filter" data-programs-semester-filter="1">
+                            <option value="all">All Semesters</option>
+                            <option value="1">Semester 1</option>
+                            <option value="2">Semester 2</option>
+                            <option value="3">Semester 3</option>
+                            <option value="4">Semester 4</option>
+                            <option value="5">Semester 5</option>
+                            <option value="6">Semester 6</option>
+                            <option value="7">Semester 7</option>
+                            <option value="8">Semester 8</option>
+                            <option value="9">Semester 9</option>
+                            <option value="10">Semester 10</option>
+                            <option value="11">Semester 11</option>
+                            <option value="12">Semester 12</option>
+                        </select>
+                    </label>
+                    <div class="lux-program-field lux-program-search-wrap">
+                        <span>Search subjects</span>
+                        <i class="fas fa-search"></i>
+                        <input id="student-program-search" name="student_program_search" type="search" autocomplete="off" spellcheck="false" placeholder="Search subject code, title, prerequisite..." value="" data-programs-search="1" data-programs-faculty="">
+                        <button type="button" class="lux-program-clear-search" id="student-program-search-clear" data-programs-clear-search="1" data-programs-faculty="" aria-label="Clear program search" hidden>
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+
+                </div>
+
+                <div class="lux-prog-ops-panel">
+                    <div class="lux-prog-ops-head">
+                        <strong>Program Snapshot</strong>
+                        <span id="programs-ops-note">Official curriculum for your faculty.</span>
+                    </div>
+                    <div class="lux-prog-ops-grid" id="programs-ops-grid">
+                        <article class="lux-prog-ops-tile">
+                            <span>Total credits</span>
+                            <strong id="programs-ops-total-ects">0</strong>
+                            <em id="programs-ops-total-ects-note">ECTS in program</em>
+                        </article>
+                        <article class="lux-prog-ops-tile">
+                            <span>Visible credits</span>
+                            <strong id="programs-ops-visible-ects">0</strong>
+                            <em id="programs-ops-visible-ects-note">Current filter</em>
+                        </article>
+                        <article class="lux-prog-ops-tile">
+                            <span>Modules</span>
+                            <strong id="programs-ops-modules">0</strong>
+                            <em id="programs-ops-modules-note">Curriculum blocks</em>
+                        </article>
+                        <article class="lux-prog-ops-tile">
+                            <span>Prerequisites</span>
+                            <strong id="programs-ops-prerequisites">0</strong>
+                            <em id="programs-ops-prerequisites-note">Subjects with requirements</em>
+                        </article>
+                        <article class="lux-prog-ops-tile">
+                            <span>Module load</span>
+                            <strong id="programs-ops-module-load">--</strong>
+                            <em id="programs-ops-module-load-note">Selected module capacity</em>
+                        </article>
                     </div>
                 </div>
-                <div id="student-program-filter-note" class="lux-program-filter-note">Use the semester filter to focus the current academic slice.</div>
-            </div>
-            <div class="content-box surface-card lux-program-stage">
-                <div id="student-educational-program-root"></div>
-            </div>
+
+                <div class="lux-prog-workspace">
+                    <div id="student-educational-program-root"></div>
+                </div>
+            </section>
         </div>
     </main>
 
-<script defer src="assets/js/app/app.js?v=20260426-reset3"></script>
+<script defer src="assets/js/app/app.js?v=20260716-glassmax2"></script>
     <script defer src="assets/js/app/api.js?v=20260426-sessionfix3"></script>
 <script defer src="assets/js/app/auth.js?v=20260429-authfix2"></script>
     <script defer src="assets/js/data/initial-state.js?v=1776604822079"></script>
-    <script defer src="assets/js/app/state.js?v=20260429-statestackfix1"></script>
-    <script defer src="assets/js/shared/utilities.js?v=20260605-initvisual2"></script>
+    <script defer src="assets/js/app/state.js?v=20260616-admin-view-accounts1"></script>
+    <script defer src="assets/js/shared/input-autocomplete-guard.js?v=20260627-autocomplete-guard1"></script>
+<script defer src="assets/js/shared/utilities.js?v=20260717-panelpaint8"></script>
 <script defer src="assets/js/shared/faculty.js?v=20260429-peopleisolation1"></script>
-<script defer src="assets/js/features/navigation.js?v=20260604-standaloneboot2"></script>
+<script defer src="assets/js/features/navigation.js?v=20260609-bootguard1"></script>
     <script defer src="assets/js/features/ui.js?v=20260429-peopleisolation1"></script>
-<script defer src="assets/js/features/index-luxury.js?v=20260605-initvisual2"></script>
-<script type="module" src="assets/js/features/luxury-particle-background.js?v=20260531-partbg8"></script>
-<script defer src="assets/js/features/luxury-shell-chrome.js?v=20260606-pickerscroll1"></script>
+<script defer src="assets/js/features/luxury-index-runtime.js?v=20260709-glasslock1"></script>
+<script defer src="assets/js/features/index-luxury.js?v=20260709-glasslock1"></script>
+<script type="module" src="assets/js/features/luxury-background.js?v=20260717-lazythree1"></script>
+<script defer src="assets/js/features/luxury-shell-chrome.js?v=20260717-bgparams1"></script>
 <script defer src="assets/js/features/luxury-home-model.js?v=20260518-luxhome1"></script>
-    <script defer src="assets/js/pages/programs-page.js?v=20260515-programs-page1"></script>
+    <script defer src="assets/js/shared/curriculum-library-model.js?v=20260715-asd23port1"></script>
+    <script defer src="assets/js/pages/programs-page.js?v=20260715-asd23port1"></script>
 <script>
 /* Boot academic programs view on standalone load */
 (function() {
-    function ensureProgramsRouteVisualState() {
-        var body = document.body;
-        if (!body) return;
-        body.classList.remove('kiu-shell-loading', 'lux-home-page');
-        body.classList.add('lux-nonhome-page', 'lux-route-programs', 'lux-unified-shell', 'lux-site-modernized');
-        body.dataset.luxPage = 'programs';
-        body.dataset.luxEntry = 'programs';
-        if (!body.dataset.luxBackgroundMode) {
-            body.dataset.luxBackgroundMode = localStorage.getItem('kiuLuxuryBackgroundMode') || 'peak';
-        }
-        document.documentElement.dataset.luxPage = 'programs';
-    }
     function initStandaloneProgramsRoute() {
         if (typeof window.bootStandaloneDesktopRoute !== 'function') return;
         window.bootStandaloneDesktopRoute({
@@ -152,7 +168,7 @@
         <div class="mob-sheet-section"><div class="mob-sheet-label">Quick Actions</div><div class="mob-sheet-grid">
             <button class="mob-sheet-btn" id="mob-act-admin" type="button"><span class="mob-sheet-icon"><i class="fas fa-user-shield"></i></span><span>Admin View</span></button>
             <button class="mob-sheet-btn" id="mob-act-theme" type="button"><span class="mob-sheet-icon"><i class="fas fa-palette"></i></span><span>Theme</span></button>
-            <button class="mob-sheet-btn" id="mob-act-profile" type="button"><span class="mob-sheet-icon"><i class="fas fa-user-circle"></i></span><span>Profile</span></button>
+            <button class="mob-sheet-btn" id="mob-act-profile" type="button"><span class="mob-sheet-icon"><i class="far fa-user"></i></span><span>Personal Data</span></button>
             <button class="mob-sheet-btn" id="mob-act-lightmode" type="button"><span class="mob-sheet-icon"><i class="fas fa-sun"></i></span><span>Light Mode</span></button>
         </div></div>
         <!-- Dynamic role-aware navigation will be injected here -->
@@ -225,5 +241,4 @@ window.__KIU_STANDALONE_MOBILE_SHELL_CONFIG = {
 <script defer src="assets/js/pages/standalone-mobile-shell.js?v=20260520-programs-mobile1"></script>
 </body>
 </html>
-
 

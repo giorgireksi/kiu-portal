@@ -6,19 +6,19 @@
     <title>KIU - Student Portal</title>
     <link rel="stylesheet" href="assets/vendor/fontawesome/css/all.min.css?v=1776604822068">
     <link rel="stylesheet" href="assets/css/kiu-fonts.css?v=20260515-fonts1">
-    <link rel="stylesheet" href="assets/css/base.css?v=20260419-libsync1">
-    <link rel="stylesheet" href="assets/css/layout.css?v=20260528-layoutfix2">
-    <link rel="stylesheet" href="assets/css/lux-tokens.css?v=20260606-luxscrollbar1">
-    <link rel="stylesheet" href="assets/css/lux-surfaces.css?v=20260527-profcss1">
-    <link rel="stylesheet" href="assets/css/lux-controls.css?v=20260606-pickerscroll1">
-    <link rel="stylesheet" href="assets/css/lux-layout-primitives.css?v=20260606-luxscrollbar1">
-    <link rel="stylesheet" href="assets/css/index-luxury.css?v=20260531-partbg4">
-    <link rel="stylesheet" href="assets/css/mobile-responsive.css?v=20260419-libsync1">
-    <script src="assets/js/theme-primer.js?v=20260604-styleguard2"></script>
-    <link rel="stylesheet" href="assets/css/personal-data-route.css?v=20260531-mobility1">
-
+    <link rel="stylesheet" href="assets/css/base.css?v=20260713-accentborder2">
+    <link rel="stylesheet" href="assets/css/layout.css?v=20260713-accentborder2">
+    <link rel="stylesheet" href="assets/css/lux-tokens.css?v=20260717-panelpaint9">
+    <link rel="stylesheet" href="assets/css/lux-focus-panel.css?v=20260715-focus1">
+    <link rel="stylesheet" href="assets/css/lux-controls.css?v=20260713-accentborder2">
+    <link rel="stylesheet" href="assets/css/lux-layout-primitives.css?v=20260713-accentborder2">
+    <link rel="stylesheet" href="assets/css/lux-modals.css?v=20260710-warmglass-social-scope1">
+    <link rel="stylesheet" href="assets/css/lux-shell-nav.css?v=20260717-topbarrow1">
+    <link rel="stylesheet" href="assets/css/lux-page-bare.css?v=20260717-topbarrow1">
+    <link rel="stylesheet" href="assets/css/mobile-responsive.css?v=20260713-accentborder2">
+    <script src="assets/js/theme-primer.js?v=20260709-glasslock1"></script>
 </head>
-<body class="lux-unified-shell kiu-shell-loading lux-nonhome-page lux-route-personal-data">
+<body class="lux-unified-shell kiu-shell-loading lux-nonhome-page lux-route-personal-data lux-page-bare">
 <!-- Navigation stubs (hidden, for JS compatibility) -->
 <nav id="prof-nav" aria-label="Professor navigation stub"></nav>
 <nav id="top-nav" aria-label="Top navigation stub"></nav>
@@ -27,25 +27,14 @@
     <!-- MAIN CONTENT -->
     <main id="app-content">
         <div id="page-personal-data" class="page-section active-page">
-            <section class="page-hero personal-data-hero">
+            <section class="page-hero personal-data-hero lux-hero lux-summary-surface--hero lux-soft-chrome">
                 <div class="personal-data-hero-copy lux-hero-main">
                     <div class="page-hero-kicker"><i class="far fa-id-card"></i> Personal Data</div>
                     <div class="page-hero-title personal-data-hero-title">Official Student Record</div>
-                    <div class="page-hero-copy">A clean view of identity, enrollment, academic standing, and university record details used across the LMS.</div>
-                    <div class="page-hero-meta">
-                        <span class="page-hero-badge"><i class="far fa-user"></i> Identity</span>
-                        <span class="page-hero-badge"><i class="fas fa-chart-line"></i> Academic status</span>
-                        <span class="page-hero-badge"><i class="fas fa-shield-alt"></i> Enrollment record</span>
-                    </div>
-                </div>
-                <div class="personal-data-hero-panel lux-hero-side">
-                    <span>Record source</span>
-                    <strong>University profile center</strong>
-                    <em>Synced with study card, registration, timetable, and academic history.</em>
                 </div>
             </section>
 
-            <div class="filter-shell personal-data-command personal-data-toolbar">
+            <div class="filter-shell personal-data-command personal-data-toolbar lux-soft-chrome">
                 <div class="personal-data-command-context personal-data-toolbar-copy">
                     <div class="filter-shell-title"><i class="fas fa-graduation-cap"></i> Program Context</div>
                     <p>Current academic program used for this record.</p>
@@ -60,7 +49,7 @@
 
             <div class="personal-data-workspace personal-data-layout">
                 <aside class="personal-data-rail" aria-label="Student profile">
-                    <section class="profile-card surface-card lux-summary-surface lux-summary-surface--panel personal-data-identity-card">
+                    <section class="profile-card surface-card lux-summary-surface lux-summary-surface--panel personal-data-identity-card lux-soft-chrome">
                         <div class="personal-data-card-kicker"><i class="far fa-id-badge"></i> Identity</div>
                         <div class="personal-data-profile-row">
                             <div class="personal-data-avatar-shell">
@@ -72,43 +61,68 @@
                             </div>
                         </div>
                         <div id="personal-data-program" class="personal-data-card-copy">Loading...</div>
-                        <div class="personal-data-id-grid">
-                            <div class="personal-data-card-meta lux-meta-pair-card lux-summary-surface lux-summary-surface--panel"><span>Student ID</span><strong id="personal-data-id">-</strong></div>
-                            <div class="personal-data-card-meta lux-meta-pair-card lux-summary-surface lux-summary-surface--panel"><span>Record state</span><strong id="personal-data-record-state">-</strong></div>
+
+                        <div class="pd-divider"></div>
+
+                        <div class="pd-block">
+                            <div class="personal-data-card-kicker"><i class="far fa-address-card"></i> Contact &amp; IDs</div>
+                            <div class="pd-contact-grid">
+                                <div class="pd-contact-row"><span>Student ID</span><strong id="personal-data-id">-</strong></div>
+                                <div class="pd-contact-row"><span>ID number</span><strong id="personal-data-national-id">—</strong></div>
+                                <div class="pd-contact-row"><span>Phone</span><strong id="personal-data-phone">—</strong></div>
+                                <div class="pd-contact-row"><span>Email</span><strong id="personal-data-email">—</strong></div>
+                                <div class="pd-contact-row"><span>Record state</span><strong id="personal-data-record-state">-</strong></div>
+                            </div>
+                        </div>
+
+                        <div class="pd-divider"></div>
+
+                        <div class="pd-block pd-security">
+                            <div class="personal-data-card-kicker"><i class="fas fa-lock"></i> Security</div>
+                            <form id="personal-data-password-form" class="pd-password-form" autocomplete="off">
+                                <label class="pd-field"><span>Current password</span>
+                                    <input type="password" name="currentPassword" autocomplete="current-password" required></label>
+                                <label class="pd-field"><span>New password</span>
+                                    <input type="password" name="newPassword" autocomplete="new-password" minlength="8" required></label>
+                                <label class="pd-field"><span>Confirm new password</span>
+                                    <input type="password" name="confirmPassword" autocomplete="new-password" minlength="8" required></label>
+                                <div class="pd-password-msg" id="personal-data-password-msg" role="status" aria-live="polite"></div>
+                                <button type="submit" class="lux-btn lux-btn--primary pd-password-submit"><i class="fas fa-key"></i> Change password</button>
+                            </form>
                         </div>
                     </section>
                 </aside>
 
                 <div class="personal-data-main">
-                    <section class="surface-card lux-summary-surface lux-summary-surface--panel personal-data-overview personal-data-stats-card" aria-labelledby="personal-data-overview-heading">
+                    <section class="surface-card lux-summary-surface lux-summary-surface--panel personal-data-merged lux-soft-chrome" aria-labelledby="personal-data-overview-heading">
                         <div class="personal-data-section-head">
                             <div class="personal-data-card-kicker" id="personal-data-overview-heading"><i class="fas fa-chart-line"></i> Academic Snapshot</div>
                             <div id="personal-data-level-heading" class="personal-data-level-heading">Loading...</div>
                             <p class="personal-data-card-copy">Current academic progress and standing at a glance.</p>
                         </div>
                         <div class="kpi-row lux-strip-grid lux-strip-grid--adaptive personal-data-kpi-row">
-                            <div class="personal-data-kpi-card lux-data-card lux-metric-card lux-strip-card lux-summary-surface lux-summary-surface--panel">
+                            <div class="personal-data-kpi-card lux-data-card lux-metric-card lux-strip-card lux-summary-surface lux-summary-surface--panel lux-soft-chrome">
                                 <div class="personal-data-metric-icon lux-data-icon"><i class="fas fa-layer-group"></i></div>
                                 <div>
                                     <div class="personal-data-kpi-label">Semester</div>
                                     <div class="personal-data-kpi-value" id="personal-data-kpi-semester">-</div>
                                 </div>
                             </div>
-                            <div class="personal-data-kpi-card lux-data-card lux-metric-card lux-strip-card lux-summary-surface lux-summary-surface--panel">
+                            <div class="personal-data-kpi-card lux-data-card lux-metric-card lux-strip-card lux-summary-surface lux-summary-surface--panel lux-soft-chrome">
                                 <div class="personal-data-metric-icon lux-data-icon"><i class="fas fa-chart-simple"></i></div>
                                 <div>
                                     <div class="personal-data-kpi-label">GPA</div>
                                     <div class="personal-data-kpi-value" id="personal-data-kpi-gpa">-</div>
                                 </div>
                             </div>
-                            <div class="personal-data-kpi-card lux-data-card lux-metric-card lux-strip-card lux-summary-surface lux-summary-surface--panel">
+                            <div class="personal-data-kpi-card lux-data-card lux-metric-card lux-strip-card lux-summary-surface lux-summary-surface--panel lux-soft-chrome">
                                 <div class="personal-data-metric-icon lux-data-icon"><i class="fas fa-award"></i></div>
                                 <div>
                                     <div class="personal-data-kpi-label">ECTS</div>
                                     <div class="personal-data-kpi-value" id="personal-data-kpi-ects">-</div>
                                 </div>
                             </div>
-                            <div class="personal-data-kpi-card lux-data-card lux-metric-card lux-strip-card lux-summary-surface lux-summary-surface--panel">
+                            <div class="personal-data-kpi-card lux-data-card lux-metric-card lux-strip-card lux-summary-surface lux-summary-surface--panel lux-soft-chrome">
                                 <div class="personal-data-metric-icon lux-data-icon"><i class="fas fa-shield-alt"></i></div>
                                 <div>
                                     <div class="personal-data-kpi-label">Standing</div>
@@ -116,120 +130,43 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="pd-progress">
+                            <div class="pd-progress-head"><span>Programme progress</span><strong id="personal-data-progress-label">0 / 0 ECTS</strong></div>
+                            <div class="pd-progress-track"><div class="pd-progress-fill" id="personal-data-progress-fill" style="width:0%"></div></div>
+                        </div>
+
+                        <div class="pd-divider"></div>
+
+                        <div class="personal-data-section-head">
+                            <div class="personal-data-card-kicker" id="personal-data-subjects-heading"><i class="fas fa-book-open"></i> Subjects &amp; Enrollments</div>
+                            <p class="personal-data-card-copy">Subjects you are studying now, the staff running them, and any subjects awaiting a retake.</p>
+                        </div>
+                        <div id="personal-data-subjects-root" class="personal-data-subjects-root" aria-live="polite">
+                            <div class="personal-data-subjects-loading">Loading subjects...</div>
+                        </div>
                     </section>
-
-                    <div class="personal-data-detail-grid">
-                        <section class="surface-card lux-summary-surface lux-summary-surface--panel personal-data-enrollment personal-data-facts-card" aria-labelledby="personal-data-enrollment-heading">
-                            <div class="personal-data-section-head">
-                                <div class="personal-data-card-kicker" id="personal-data-enrollment-heading"><i class="fas fa-clipboard-list"></i> <span id="personal-data-records-title">Record Snapshot</span></div>
-                                <p class="personal-data-card-copy">Enrollment facts used by registration and student services.</p>
-                            </div>
-
-                            <div class="personal-data-enrollment-group">
-                                <div class="personal-data-enrollment-group-title">Program</div>
-                                <div class="personal-data-record-grid lux-strip-grid lux-strip-grid--adaptive">
-                                    <article class="personal-data-mini lux-data-card lux-info-card lux-strip-card lux-summary-surface lux-summary-surface--panel">
-                                        <span>Faculty</span>
-                                        <strong id="personal-data-faculty">-</strong>
-                                    </article>
-                                    <article class="personal-data-mini lux-data-card lux-info-card lux-strip-card lux-summary-surface lux-summary-surface--panel">
-                                        <span>Program</span>
-                                        <strong id="personal-data-program-name">-</strong>
-                                    </article>
-                                </div>
-                            </div>
-
-                            <div class="personal-data-enrollment-group">
-                                <div class="personal-data-enrollment-group-title">Timeline</div>
-                                <div class="personal-data-record-grid lux-strip-grid lux-strip-grid--adaptive">
-                                    <article class="personal-data-mini lux-data-card lux-info-card lux-strip-card lux-summary-surface lux-summary-surface--panel">
-                                        <span>Entry date</span>
-                                        <strong id="personal-data-entry-date">-</strong>
-                                    </article>
-                                    <article class="personal-data-mini lux-data-card lux-info-card lux-strip-card lux-summary-surface lux-summary-surface--panel">
-                                        <span>Current term</span>
-                                        <strong id="personal-data-current-term">-</strong>
-                                    </article>
-                                </div>
-                            </div>
-
-                            <div class="personal-data-enrollment-group">
-                                <div class="personal-data-enrollment-group-title">Compliance</div>
-                                <div class="personal-data-record-grid lux-strip-grid lux-strip-grid--adaptive">
-                                    <article class="personal-data-mini lux-data-card lux-info-card lux-strip-card lux-summary-surface lux-summary-surface--panel">
-                                        <span>Tuition hold</span>
-                                        <strong id="personal-data-hold">-</strong>
-                                    </article>
-                                    <article class="personal-data-mini lux-data-card lux-info-card lux-strip-card lux-summary-surface lux-summary-surface--panel">
-                                        <span>Probation</span>
-                                        <strong id="personal-data-probation">-</strong>
-                                    </article>
-                                    <article class="personal-data-mini lux-data-card lux-info-card lux-strip-card lux-summary-surface lux-summary-surface--panel">
-                                        <span>Course load</span>
-                                        <strong id="personal-data-load">-</strong>
-                                    </article>
-                                </div>
-                            </div>
-
-                            <div class="personal-data-enrollment-group personal-data-mobility-group" id="personal-data-mobility-group">
-                                <div class="personal-data-enrollment-group-title">Mobility</div>
-                                <p class="personal-data-mobility-muted" id="personal-data-mobility-muted" hidden>Regular degree-seeking student</p>
-                                <div class="personal-data-record-grid lux-strip-grid lux-strip-grid--adaptive" id="personal-data-mobility-fields">
-                                    <article class="personal-data-mini lux-data-card lux-info-card lux-strip-card lux-summary-surface lux-summary-surface--panel">
-                                        <span>Status</span>
-                                        <strong id="personal-data-mobility-status">-</strong>
-                                    </article>
-                                    <article class="personal-data-mini lux-data-card lux-info-card lux-strip-card lux-summary-surface lux-summary-surface--panel" id="personal-data-home-institution-wrap">
-                                        <span>Home institution</span>
-                                        <strong id="personal-data-home-institution">-</strong>
-                                    </article>
-                                    <article class="personal-data-mini lux-data-card lux-info-card lux-strip-card lux-summary-surface lux-summary-surface--panel" id="personal-data-mobility-period-wrap">
-                                        <span>Mobility period</span>
-                                        <strong id="personal-data-mobility-period">-</strong>
-                                    </article>
-                                    <article class="personal-data-mini lux-data-card lux-info-card lux-strip-card lux-summary-surface lux-summary-surface--panel" id="personal-data-agreement-wrap">
-                                        <span>Agreement</span>
-                                        <strong id="personal-data-agreement-ref">-</strong>
-                                    </article>
-                                    <article class="personal-data-mini lux-data-card lux-info-card lux-strip-card lux-summary-surface lux-summary-surface--panel" id="personal-data-internal-from-wrap" hidden>
-                                        <span>Internal transfer from</span>
-                                        <strong id="personal-data-internal-from">-</strong>
-                                    </article>
-                                </div>
-                            </div>
-                        </section>
-
-                        <section class="surface-card lux-summary-surface lux-summary-surface--panel personal-data-university-record personal-data-record-card" aria-labelledby="personal-data-university-record-heading">
-                            <div class="personal-data-section-head">
-                                <div class="personal-data-card-kicker" id="personal-data-university-record-heading"><i class="fas fa-folder-open"></i> Academic Record</div>
-                                <p class="personal-data-card-copy">Detailed profile fields from the active university record.</p>
-                            </div>
-                            <div id="personal-data-records-body" class="personal-data-record-list">
-                                <div class="personal-data-record-item lux-data-card lux-info-card lux-summary-surface lux-summary-surface--panel">
-                                    <span class="personal-data-record-label">Loading</span>
-                                    <span class="personal-data-record-value lux-record-card-value">Loading...</span>
-                                </div>
-                            </div>
-                        </section>
-                    </div>
                 </div>
             </div>
         </div>
     </main>
 
-<script defer src="assets/js/app/app.js?v=20260426-reset3"></script>
+<script defer src="assets/js/app/app.js?v=20260716-glassmax2"></script>
 <script defer src="assets/js/app/api.js?v=20260426-sessionfix3"></script>
 <script defer src="assets/js/app/auth.js?v=20260429-authfix2"></script>
 <script defer src="assets/js/data/initial-state.js?v=1776604822068"></script>
-<script defer src="assets/js/app/state.js?v=20260429-statestackfix1"></script>
-<script defer src="assets/js/shared/utilities.js?v=20260605-blurfix1"></script>
+<script defer src="assets/js/app/state.js?v=20260616-admin-view-accounts1"></script>
+<script defer src="assets/js/shared/input-autocomplete-guard.js?v=20260627-autocomplete-guard1"></script>
+<script defer src="assets/js/shared/utilities.js?v=20260717-panelpaint8"></script>
 <script defer src="assets/js/shared/faculty.js?v=20260429-peopleisolation1"></script>
-<script defer src="assets/js/pages/personal-data-page.js?v=20260531-mobility1"></script>
-<script defer src="assets/js/features/navigation.js?v=20260604-standaloneboot2"></script>
+<script defer src="assets/js/shared/student-academic-helpers.js?v=20260705-student-academic2"></script>
+<script defer src="assets/js/pages/student-academic-runtime.js?v=20260713-personal-data-redesign1"></script>
+<script defer src="assets/js/pages/personal-data-page.js?v=20260713-personal-data-redesign1"></script>
+<script defer src="assets/js/features/navigation.js?v=20260609-bootguard1"></script>
 <script defer src="assets/js/features/ui.js?v=20260429-peopleisolation1"></script>
-<script defer src="assets/js/features/index-luxury.js?v=20260605-blurfix1"></script>
-<script type="module" src="assets/js/features/luxury-particle-background.js?v=20260531-partbg8"></script>
-<script defer src="assets/js/features/luxury-shell-chrome.js?v=20260606-pickerscroll1"></script>
+<script defer src="assets/js/features/luxury-index-runtime.js?v=20260709-glasslock1"></script>
+<script defer src="assets/js/features/index-luxury.js?v=20260709-glasslock1"></script>
+<script type="module" src="assets/js/features/luxury-background.js?v=20260717-lazythree1"></script>
+<script defer src="assets/js/features/luxury-shell-chrome.js?v=20260717-bgparams1"></script>
 <script defer src="assets/js/features/luxury-home-model.js?v=20260518-luxhome1"></script>
 <!-- MOBILE BOTTOM NAVIGATION (v2) -->
 <nav id="mobile-bottom-nav" aria-label="Mobile navigation" hidden>
@@ -248,7 +185,7 @@
         <div class="mob-sheet-section"><div class="mob-sheet-label">Quick Actions</div><div class="mob-sheet-grid">
             <button class="mob-sheet-btn" id="mob-act-admin" type="button"><span class="mob-sheet-icon"><i class="fas fa-user-shield"></i></span><span>Admin View</span></button>
             <button class="mob-sheet-btn" id="mob-act-theme" type="button"><span class="mob-sheet-icon"><i class="fas fa-palette"></i></span><span>Theme</span></button>
-            <button class="mob-sheet-btn" id="mob-act-profile" type="button"><span class="mob-sheet-icon"><i class="fas fa-user-circle"></i></span><span>Profile</span></button>
+            <button class="mob-sheet-btn" id="mob-act-profile" type="button"><span class="mob-sheet-icon"><i class="far fa-user"></i></span><span>Personal Data</span></button>
             <button class="mob-sheet-btn" id="mob-act-lightmode" type="button"><span class="mob-sheet-icon"><i class="fas fa-sun"></i></span><span>Light Mode</span></button>
         </div></div>
         <div id="mob-sheet-dynamic-nav"></div>

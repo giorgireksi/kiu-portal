@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -5,18 +6,19 @@
     <title>KIU - News</title>
     <link rel="stylesheet" href="assets/vendor/fontawesome/css/all.min.css?v=1776604822079">
     <link rel="stylesheet" href="assets/css/kiu-fonts.css?v=20260515-fonts1">
-    <link rel="stylesheet" href="assets/css/base.css?v=20260419-libsync1">
-    <link rel="stylesheet" href="assets/css/layout.css?v=20260528-layoutfix2">
-    <link rel="stylesheet" href="assets/css/lux-tokens.css?v=20260606-luxscrollbar1">
-    <link rel="stylesheet" href="assets/css/lux-surfaces.css?v=20260527-profcss1">
-    <link rel="stylesheet" href="assets/css/lux-controls.css?v=20260606-pickerscroll1">
-    <link rel="stylesheet" href="assets/css/lux-layout-primitives.css?v=20260606-luxscrollbar1">
-    <link rel="stylesheet" href="assets/css/index-luxury.css?v=20260531-partbg4">
-    <link rel="stylesheet" href="assets/css/mobile-responsive.css?v=20260419-libsync1">
-    <link rel="stylesheet" href="assets/css/news-route.css?v=20260530-newsfx1">
-    <script src="assets/js/theme-primer.js?v=20260604-styleguard2"></script>
+    <link rel="stylesheet" href="assets/css/base.css?v=20260713-accentborder2">
+    <link rel="stylesheet" href="assets/css/layout.css?v=20260713-accentborder2">
+    <link rel="stylesheet" href="assets/css/lux-tokens.css?v=20260717-panelpaint9">
+    <link rel="stylesheet" href="assets/css/lux-focus-panel.css?v=20260715-focus1">
+    <link rel="stylesheet" href="assets/css/lux-controls.css?v=20260713-accentborder2">
+    <link rel="stylesheet" href="assets/css/lux-layout-primitives.css?v=20260713-accentborder2">
+    <link rel="stylesheet" href="assets/css/lux-modals.css?v=20260710-warmglass-social-scope1">
+    <link rel="stylesheet" href="assets/css/lux-shell-nav.css?v=20260717-topbarrow1">
+    <link rel="stylesheet" href="assets/css/lux-page-bare.css?v=20260717-topbarrow1">
+    <link rel="stylesheet" href="assets/css/mobile-responsive.css?v=20260713-accentborder2">
+    <script src="assets/js/theme-primer.js?v=20260709-glasslock1"></script>
 </head>
-<body class="lux-unified-shell kiu-shell-loading lux-nonhome-page lux-route-news">
+<body class="lux-unified-shell kiu-shell-loading lux-nonhome-page lux-route-news lux-page-bare">
 <nav id="prof-nav" aria-label="Professor navigation stub"></nav>
 <nav id="top-nav" aria-label="Top navigation stub"></nav>
 <nav id="admin-nav" aria-label="Admin navigation stub"></nav>
@@ -27,20 +29,46 @@
         </div>
     </main>
 
-<script defer src="assets/js/app/app.js?v=20260426-reset3"></script>
+<div id="newsx-publisher-overlay" class="modal-overlay newsx-modal-overlay" data-lux-modal-overlay aria-hidden="true">
+    <div id="newsx-publisher-modal" class="modal-content lux-panel newsx-publisher-modal" role="dialog" aria-modal="true" aria-label="News publisher" data-lux-transparency-exempt="1">
+        <div id="newsx-publisher-panel"></div>
+    </div>
+</div>
+
+<div id="newsx-confirm-overlay" class="modal-overlay newsx-modal-overlay" data-lux-modal-overlay aria-hidden="true">
+    <div id="newsx-confirm-modal" class="modal-content lux-panel newsx-confirm-modal" role="alertdialog" aria-modal="true" aria-label="Confirm news action" data-lux-transparency-exempt="1">
+        <div id="newsx-confirm-panel"></div>
+    </div>
+</div>
+
+<div id="newsx-sections-overlay" class="modal-overlay newsx-modal-overlay" data-lux-modal-overlay aria-hidden="true">
+    <div id="newsx-sections-modal" class="modal-content lux-panel newsx-sections-modal" role="dialog" aria-modal="true" aria-label="Manage news sections" data-lux-transparency-exempt="1">
+        <div id="newsx-sections-panel"></div>
+    </div>
+</div>
+
+<script defer src="assets/js/app/app.js?v=20260716-glassmax2"></script>
 <script defer src="assets/js/app/api.js?v=20260426-sessionfix3"></script>
 <script defer src="assets/js/app/auth.js?v=20260429-authfix2"></script>
 <script defer src="assets/js/data/initial-state.js?v=1776604822079"></script>
-<script defer src="assets/js/app/state.js?v=20260429-statestackfix1"></script>
-<script defer src="assets/js/shared/utilities.js?v=20260605-blurfix1"></script>
+<script defer src="assets/js/app/state.js?v=20260616-admin-view-accounts1"></script>
+<script defer src="assets/js/shared/input-autocomplete-guard.js?v=20260627-autocomplete-guard1"></script>
+<script defer src="assets/js/shared/utilities.js?v=20260717-panelpaint8"></script>
+<script defer src="assets/js/shared/news-home.js?v=20260714-news-modules1"></script>
 <script defer src="assets/js/shared/faculty.js?v=20260429-peopleisolation1"></script>
-<script defer src="assets/js/features/navigation.js?v=20260604-standaloneboot2"></script>
+<script defer src="assets/js/features/navigation.js?v=20260625-ssvc-workspace-nav2"></script>
 <script defer src="assets/js/features/ui.js?v=20260429-peopleisolation1"></script>
-<script defer src="assets/js/features/index-luxury.js?v=20260605-blurfix1"></script>
-<script type="module" src="assets/js/features/luxury-particle-background.js?v=20260531-partbg8"></script>
-<script defer src="assets/js/features/luxury-shell-chrome.js?v=20260606-pickerscroll1"></script>
-<script defer src="assets/js/features/luxury-home-model.js?v=20260518-luxhome1"></script>
-<script defer src="assets/js/pages/news.js?v=20260516-newsroute3"></script>
+<script defer src="assets/js/features/luxury-index-runtime.js?v=20260709-glasslock1"></script>
+<script defer src="assets/js/features/index-luxury.js?v=20260709-glasslock1"></script>
+<script type="module" src="assets/js/features/luxury-background.js?v=20260717-lazythree1"></script>
+<script defer src="assets/js/features/luxury-shell-chrome.js?v=20260717-bgparams1"></script>
+<script defer src="assets/js/pages/news/news-runtime.js?v=20260714-news-modules1"></script>
+<script defer src="assets/js/pages/news/news-api.js?v=20260714-news-modules1"></script>
+<script defer src="assets/js/pages/news/news-replies.js?v=20260714-news-modules1"></script>
+<script defer src="assets/js/pages/news/news-feed-render.js?v=20260714-news-modules1"></script>
+<script defer src="assets/js/pages/news/news-publisher.js?v=20260714-news-modules1"></script>
+<script defer src="assets/js/pages/news/news-events.js?v=20260714-news-modules1"></script>
+<script defer src="assets/js/pages/news.js?v=20260714-news-modules1"></script>
 <script>
 function initStandaloneNewsRoute() {
     if (typeof window.bootStandaloneDesktopRoute !== 'function') return;
@@ -54,7 +82,9 @@ function initStandaloneNewsRoute() {
             }
         },
         routeRefresh: function refreshNewsRoute() {
-            if (typeof window.renderNewsWorkspace === 'function') {
+            if (typeof window.refreshNewsWorkspace === 'function') {
+                window.refreshNewsWorkspace();
+            } else if (typeof window.renderNewsWorkspace === 'function') {
                 window.renderNewsWorkspace();
             }
         }

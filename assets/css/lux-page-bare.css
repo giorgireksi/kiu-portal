@@ -519,3 +519,32 @@ body.lux-page-bare.lux-unified-shell :is(
     text-transform: none !important;
     letter-spacing: normal !important;
 }
+
+/* Topbar flex layout wins over bare surface flatten (shell-nav owns structure) */
+body.lux-page-bare #lux-topbar .lux-topbar-shell,
+body.lux-page-bare #lux-topbar .lux-topbar-main,
+body.lux-page-bare #lux-topbar .lux-topbar-actions {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+}
+body.lux-page-bare #lux-topbar .lux-topbar-shell {
+    flex-wrap: nowrap !important;
+}
+body.lux-page-bare #lux-topbar :is(
+    .lux-picker-btn, .lux-icon-btn, .lux-user-chip, .lux-search,
+    .lux-sidebar-toggle-btn, .lux-topbar-editor-btn, .lux-secondary-btn,
+    .lux-utility-wrap, .lux-picker-wrap, .lux-breadcrumb
+) {
+    /* keep solid paint from nuclear bare; do not force block stacking */
+    width: auto !important;
+    max-width: none;
+}
+body.lux-page-bare #lux-topbar .lux-search {
+    width: min(320px, 28vw) !important;
+}
+body.lux-page-bare #lux-topbar .lux-icon-btn {
+    width: 40px !important;
+    height: 40px !important;
+}
+

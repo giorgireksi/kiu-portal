@@ -9,18 +9,19 @@
     <title>KIU - Student Portal</title>
     <link rel="stylesheet" href="assets/vendor/fontawesome/css/all.min.css?v=20260605-regpicker3">
     <link rel="stylesheet" href="assets/css/kiu-fonts.css?v=20260605-regpicker3">
-    <link rel="stylesheet" href="assets/css/base.css?v=20260605-regpicker3">
-    <link rel="stylesheet" href="assets/css/layout.css?v=20260605-regpicker3">
-<link rel="stylesheet" href="assets/css/lux-tokens.css?v=20260606-luxscrollbar1">
-    <link rel="stylesheet" href="assets/css/lux-surfaces.css?v=20260605-regpicker3">
-    <link rel="stylesheet" href="assets/css/lux-controls.css?v=20260606-pickerscroll1">
-    <link rel="stylesheet" href="assets/css/lux-layout-primitives.css?v=20260606-luxscrollbar1">
-    <link rel="stylesheet" href="assets/css/index-luxury.css?v=20260605-regpicker3">
-<link rel="stylesheet" href="assets/css/mobile-responsive.css?v=20260605-regpicker3">
-    <link rel="stylesheet" href="assets/css/registration-route.css?v=20260605-regtabs1">
-    <script src="assets/js/theme-primer.js?v=20260605-regpicker3"></script>
+    <link rel="stylesheet" href="assets/css/base.css?v=20260713-accentborder2">
+    <link rel="stylesheet" href="assets/css/layout.css?v=20260713-accentborder2">
+<link rel="stylesheet" href="assets/css/lux-tokens.css?v=20260717-panelpaint9">
+    <link rel="stylesheet" href="assets/css/lux-focus-panel.css?v=20260715-focus1">
+    <link rel="stylesheet" href="assets/css/lux-controls.css?v=20260713-accentborder2">
+    <link rel="stylesheet" href="assets/css/lux-layout-primitives.css?v=20260713-accentborder2">
+    <link rel="stylesheet" href="assets/css/lux-modals.css?v=20260710-warmglass-social-scope1">
+    <link rel="stylesheet" href="assets/css/lux-shell-nav.css?v=20260717-topbarrow1">
+    <link rel="stylesheet" href="assets/css/lux-page-bare.css?v=20260717-topbarrow1">
+    <link rel="stylesheet" href="assets/css/mobile-responsive.css?v=20260713-accentborder2">
+    <script src="assets/js/theme-primer.js?v=20260715-reg-tt-blur7"></script>
 </head>
-<body class="lux-unified-shell kiu-shell-loading lux-nonhome-page lux-route-registration">
+<body class="lux-unified-shell kiu-shell-loading lux-nonhome-page lux-route-registration lux-page-bare">
 <!-- Navigation stubs (hidden, for JS compatibility) -->
 <nav id="prof-nav" aria-label="Professor navigation stub"></nav>
 <nav id="top-nav" aria-label="Top navigation stub"></nav>
@@ -29,112 +30,100 @@
     <!-- MAIN CONTENT -->
     <main id="app-content">
         <div id="page-registration" class="page-section active-page registration-page">
-            <section class="admin-hero registration-hero lux-summary-surface lux-summary-surface--hero">
-                <div class="registration-hero-copy lux-hero-main">
-                    <div class="admin-page-kicker"><i class="fas fa-check-square"></i> Academic registration</div>
-                    <div class="admin-hero-title">Registration Studio</div>
-                    <div class="admin-hero-subtitle">Review your semester load, verify prerequisites, choose teaching groups, and keep the timetable in view while you work.</div>
-                    <div class="page-hero-meta registration-hero-meta">
-                        <span class="admin-chip wave2-chip wave2-chip--hero" id="registration-hero-status">Registration status</span>
-                        <span class="admin-chip wave2-chip wave2-chip--hero" id="registration-hero-semester">Semester</span>
-                        <span class="admin-chip wave2-chip wave2-chip--hero" id="registration-hero-faculty">Faculty</span>
-                        <span class="admin-chip wave2-chip wave2-chip--hero" id="registration-hero-ects">0 / 36 ECTS</span>
-                    </div>
-                    <div class="admin-hero-actions registration-hero-actions">
-                        <button class="lux-primary-btn wave2-action-btn wave2-action-btn--primary" type="button" data-reg-tab="program"><i class="fas fa-layer-group"></i> Continue registration</button>
-                        <button class="lux-primary-btn wave2-action-btn wave2-action-btn--primary" type="button" data-reg-tab="selected"><i class="fas fa-list-check"></i> Review selections</button>
-                        <button class="lux-primary-btn wave2-action-btn wave2-action-btn--primary" type="button" data-registration-nav="timetable"><i class="fas fa-calendar-week"></i> Open timetable</button>
-                    </div>
-                </div>
-                <div class="registration-hero-focus lux-hero-side">
-                    <div class="registration-focus-card registration-summary-card registration-summary-card--hero lux-hero-side-head">
-                        <span class="registration-focus-label registration-summary-label">Current load</span>
-                        <strong class="registration-focus-value registration-summary-value" id="registration-hero-load">0 selected</strong>
-                        <span class="registration-focus-copy registration-summary-copy">ECTS budget and registration progress update live as you choose sections.</span>
-                    </div>
-                    <div class="registration-hero-focus-grid lux-hero-signal-list">
-                        <div class="registration-mini-metric registration-signal-card registration-signal-card--hold lux-hero-signal">
-                            <span>Hold</span>
-                            <strong id="registration-hero-hold">Clear</strong>
-                        </div>
-                        <div class="registration-mini-metric registration-signal-card registration-signal-card--next-step lux-hero-signal">
-                            <span>Next step</span>
-                            <strong id="registration-hero-next-step">Open program module</strong>
-                        </div>
-                        <div class="registration-mini-metric registration-signal-card registration-signal-card--selected lux-hero-signal">
-                            <span>Selected</span>
-                            <strong id="registration-hero-selected">0 sections</strong>
-                        </div>
-                    </div>
-                </div>
-            </section>
+            <!-- Multi-panel stack (timetable model): discrete soft shells, no continuous mega-glass -->
+            <div class="lux-page-shell registration-page-shell registration-page-stack">
 
-            <section class="registration-control-row">
-                <div class="filter-shell registration-term-shell">
-                    <div class="filter-shell-title">Registration term</div>
-                    <select id="registration-term-select" aria-label="Registration term">
-                        <option value="current">2025 / 2026 Spring</option>
-                    </select>
-                </div>
-                <div class="registration-mini-actions">
-                    <button class="lux-secondary-btn wave2-action-btn wave2-action-btn--secondary" type="button" data-registration-nav="timetable"><i class="fas fa-calendar-week"></i> Open timetable</button>
-                    <button class="lux-secondary-btn wave2-action-btn wave2-action-btn--secondary" type="button" data-reg-tab="selected"><i class="fas fa-list-check"></i> View selected</button>
-                    <button class="lux-secondary-btn wave2-action-btn wave2-action-btn--secondary" type="button" data-reg-tab="program"><i class="fas fa-broom"></i> Focus current lane</button>
-                </div>
-            </section>
+                <!-- TT class names: same shell recipe as timetable hero/command/stage -->
+                <section class="lux-hero lux-timetable-hero registration-hero-shell lux-summary-surface--hero" aria-label="Registration studio hero">
+                    <div class="lux-hero-stage lux-timetable-hero-top registration-hero-top registration-hero">
+                        <div class="lux-timetable-hero-main lux-hero-main registration-hero-copy">
+                            <div class="admin-page-kicker lux-page-kicker"><i class="fas fa-check-square"></i> Academic registration</div>
+                            <div class="admin-hero-title page-hero-title lux-page-title">Registration Studio</div>
+                            <div class="admin-hero-subtitle page-hero-copy lux-page-copy">Review your semester load, verify prerequisites, choose teaching groups, and keep the timetable in view while you work.</div>
+                            <div class="page-hero-meta registration-hero-meta lux-pill-row">
+                                <span class="page-hero-badge lux-pill admin-chip wave2-chip wave2-chip--hero" id="registration-hero-status">Registration status</span>
+                                <span class="page-hero-badge lux-pill admin-chip wave2-chip wave2-chip--hero" id="registration-hero-semester">Semester</span>
+                                <span class="page-hero-badge lux-pill admin-chip wave2-chip wave2-chip--hero" id="registration-hero-faculty">Faculty</span>
+                                <span class="page-hero-badge lux-pill admin-chip wave2-chip wave2-chip--hero" id="registration-hero-ects">0 / 36 ECTS</span>
+                            </div>
+                        </div>
+                        <aside class="lux-timetable-hero-focus lux-hero-side registration-hero-aside lux-focus-panel" aria-label="Registration load">
+                            <div class="lux-timetable-focus-head">
+                                <div class="lux-timetable-focus-kicker registration-focus-label" id="timetable-hero-focus-label">Current load</div>
+                                <span class="lux-timetable-focus-time" id="timetable-hero-focus-time" aria-label="ECTS load">--:--</span>
+                            </div>
+                            <div class="lux-timetable-focus-body">
+                                <div class="lux-timetable-focus-title registration-focus-value" id="registration-hero-load">0 selected</div>
+                                <p class="lux-timetable-focus-copy registration-focus-copy lux-timetable-focus-subline" id="timetable-hero-focus-copy">ECTS budget and registration progress update live as you choose sections.</p>
+                                <ul class="lux-timetable-focus-facts" id="timetable-hero-focus-facts" aria-label="Session details"></ul>
+                            </div>
+                            <div class="lux-timetable-focus-meta" id="timetable-hero-focus-meta"><span><i class="fas fa-check-circle"></i> Loading...</span></div>
+                        </aside>
+                    </div>
+                </section>
 
-            <section class="registration-insight-grid lux-strip-grid lux-strip-grid--adaptive">
-                <article class="registration-insight-card registration-summary-card registration-summary-card--hold lux-summary-surface lux-summary-surface--panel lux-strip-card surface-card">
-                    <div class="registration-insight-label registration-summary-label">Hold status</div>
-                    <div class="registration-insight-value registration-summary-value" id="registration-hero-hold-card">Clear</div>
-                    <div class="registration-insight-copy registration-summary-copy">No finance or academic hold is blocking registration right now.</div>
-                </article>
-                <article class="registration-insight-card registration-summary-card registration-summary-card--ects lux-summary-surface lux-summary-surface--panel lux-strip-card surface-card">
-                    <div class="registration-insight-label registration-summary-label">ECTS budget</div>
-                    <div class="registration-insight-value registration-summary-value" id="registration-hero-ects-card">0 / 36</div>
-                    <div class="registration-insight-copy registration-summary-copy">Track your current load and stop before you exceed the term cap.</div>
-                </article>
-                <article class="registration-insight-card registration-summary-card registration-summary-card--selected lux-summary-surface lux-summary-surface--panel lux-strip-card surface-card">
-                    <div class="registration-insight-label registration-summary-label">Selected sections</div>
-                    <div class="registration-insight-value registration-summary-value" id="registration-hero-selected-card">0</div>
-                    <div class="registration-insight-copy registration-summary-copy">These are the subjects already locked into your current registration plan.</div>
-                </article>
-                <article class="registration-insight-card registration-summary-card registration-summary-card--next-step lux-summary-surface lux-summary-surface--panel lux-strip-card surface-card">
-                    <div class="registration-insight-label registration-summary-label">Next action</div>
-                    <div class="registration-insight-value registration-summary-value" id="registration-hero-next-step-card">Choose a program module</div>
-                    <div class="registration-insight-copy registration-summary-copy">The next useful move will update as you switch tabs and choose sections.</div>
-                </article>
-            </section>
+                <div class="registration-metrics-band lux-strip-grid lux-strip-grid--adaptive lux-soft-chrome">
+                    <article class="lux-card lux-soft-chrome registration-insight-card registration-summary-card registration-summary-card--hold">
+                        <div class="registration-insight-label registration-summary-label">Hold status</div>
+                        <div class="registration-insight-value registration-summary-value" id="registration-hero-hold-card">Clear</div>
+                        <div class="registration-insight-copy registration-summary-copy">No finance or academic hold is blocking registration right now.</div>
+                    </article>
+                    <article class="lux-card lux-soft-chrome registration-insight-card registration-summary-card registration-summary-card--ects">
+                        <div class="registration-insight-label registration-summary-label">ECTS budget</div>
+                        <div class="registration-insight-value registration-summary-value" id="registration-hero-ects-card">0 / 36</div>
+                        <div class="registration-insight-copy registration-summary-copy">Track your current load and stop before you exceed the term cap.</div>
+                    </article>
+                    <article class="lux-card lux-soft-chrome registration-insight-card registration-summary-card registration-summary-card--selected">
+                        <div class="registration-insight-label registration-summary-label">Selected sections</div>
+                        <div class="registration-insight-value registration-summary-value" id="registration-hero-selected-card">0</div>
+                        <div class="registration-insight-copy registration-summary-copy">These are the subjects already locked into your current registration plan.</div>
+                    </article>
+                    <article class="lux-card lux-soft-chrome registration-insight-card registration-summary-card registration-summary-card--next-step">
+                        <div class="registration-insight-label registration-summary-label">Next action</div>
+                        <div class="registration-insight-value registration-summary-value" id="registration-hero-next-step-card">Choose a program module</div>
+                        <div class="registration-insight-copy registration-summary-copy">The next useful move will update as you switch tabs and choose sections.</div>
+                    </article>
+                </div>
 
-            <div class="reg-tabs reg-tabs--plain" role="tablist" aria-label="Registration lanes">
-                <button type="button" class="reg-tab active" role="tab" aria-selected="true" data-reg-tab="program">My<br>Program</button>
-                <button type="button" class="reg-tab" role="tab" aria-selected="false" data-reg-tab="free">Free<br>Credits</button>
-                <button type="button" class="reg-tab" role="tab" aria-selected="false" data-reg-tab="concentration">Concentration</button>
-                <button type="button" class="reg-tab" role="tab" aria-selected="false" data-reg-tab="minor">Minor</button>
-                <button type="button" class="reg-tab" role="tab" aria-selected="false" data-reg-tab="history">History</button>
-                <button type="button" class="reg-tab" role="tab" aria-selected="false" data-reg-tab="selected">Selected<br>Courses</button>
+                <div class="lux-card lux-timetable-command registration-command-band lux-soft-chrome">
+                    <div class="registration-term-toolbar filter-shell registration-term-shell lux-timetable-filters lux-soft-chrome">
+                        <div class="filter-shell-title lux-timetable-filter-title">Registration term</div>
+                        <select id="registration-term-select" class="lux-control" aria-label="Registration term">
+                            <option value="current">2025 / 2026 Spring</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="reg-tabs reg-tabs--plain" role="tablist" aria-label="Registration lanes">
+                    <button type="button" class="reg-tab active" role="tab" aria-selected="true" data-reg-tab="program">My<br>Program</button>
+                    <button type="button" class="reg-tab" role="tab" aria-selected="false" data-reg-tab="free">Free<br>Credits</button>
+                    <button type="button" class="reg-tab" role="tab" aria-selected="false" data-reg-tab="concentration">Concentration</button>
+                    <button type="button" class="reg-tab" role="tab" aria-selected="false" data-reg-tab="minor">Minor</button>
+                    <button type="button" class="reg-tab" role="tab" aria-selected="false" data-reg-tab="history">History</button>
+                    <button type="button" class="reg-tab" role="tab" aria-selected="false" data-reg-tab="selected">Selected<br>Courses</button>
+                </div>
+
+                <section class="lux-card lux-timetable-stage registration-workspace" aria-label="Registration workspace">
+                    <div class="registration-workspace-head">
+                        <div>
+                            <div class="registration-workspace-kicker">Study lane</div>
+                            <div class="registration-workspace-title">Choose modules and finish your term plan.</div>
+                        </div>
+                        <div class="registration-workspace-note registration-helper-note" id="registration-next-step">Open a module, compare prerequisites, and keep the timetable clean.</div>
+                    </div>
+                    <div id="student-reg-content-container" class="registration-workspace-body">
+                        <!-- Dynamically rendered via renderStudentRegStructures() -->
+                    </div>
+                </section>
             </div>
 
-            <div class="content-box surface-card registration-workspace">
-                <div class="registration-workspace-head">
-                    <div>
-                        <div class="registration-workspace-kicker">Study lane</div>
-                        <div class="registration-workspace-title">Choose modules and finish your term plan.</div>
-                    </div>
-                    <div class="registration-workspace-note registration-helper-note" id="registration-next-step">Open a module, compare prerequisites, and keep the timetable clean.</div>
-                </div>
-                <div id="student-reg-content-container" class="registration-workspace-body">
-                    <!-- Dynamically rendered via renderStudentRegStructures() -->
-                </div>
-            </div>
-
-            <div class="only-student registration-footer-bar registration-footer-bar-shell registration-progress-shell">
+            <div class="only-student lux-card registration-footer-bar registration-footer-bar-shell registration-progress-shell">
                 <div class="registration-footer-bar-metrics registration-progress-metrics">
                     <div class="registration-footer-bar-label registration-progress-label">ECTS Budget:</div>
                     <div class="registration-footer-progress-track registration-progress-track">
-<div id="ects-progress-bar" class="registration-progress-bar"></div>
+                        <div id="ects-progress-bar" class="registration-progress-bar"></div>
                     </div>
-<div id="ects-text" class="registration-progress-value">0 / 36</div>
+                    <div id="ects-text" class="registration-progress-value">0 / 36</div>
                 </div>
                 <button class="lux-primary-btn registration-progress-submit wave2-action-btn wave2-action-btn--primary" type="button"><i class="fas fa-paper-plane"></i> Submit Registration</button>
             </div>
@@ -144,25 +133,28 @@
     <!-- MODALS -->
     <div id="modal-overlay" class="modal-overlay"></div>
 
-<script defer src="assets/js/app/app.js?v=20260605-regpicker3"></script>
+<script>window.REGISTRATION_PICKER_BUILD = '20260608-regfix1';</script>
+<script defer src="assets/js/app/app.js?v=20260716-glassmax2"></script>
 <script defer src="assets/js/app/api.js?v=20260605-regpicker3"></script>
 <script defer src="assets/js/app/auth.js?v=20260605-regpicker3"></script>
 <script defer src="assets/js/data/initial-state.js?v=20260605-regpicker3"></script>
-<script defer src="assets/js/app/state.js?v=20260605-regpicker3"></script>
-<script defer src="assets/js/shared/utilities.js?v=20260605-regpicker3"></script>
+<script defer src="assets/js/app/state.js?v=20260616-admin-view-accounts1"></script>
+<script defer src="assets/js/shared/input-autocomplete-guard.js?v=20260627-autocomplete-guard1"></script>
+<script defer src="assets/js/shared/utilities.js?v=20260717-panelpaint8"></script>
 <script defer src="assets/js/shared/faculty.js?v=20260605-regpicker3"></script>
 <script defer src="assets/js/shared/messenger.js?v=20260605-regpicker3"></script>
-<script defer src="assets/js/features/navigation.js?v=20260605-regpicker3"></script>
+<script defer src="assets/js/features/navigation.js?v=20260609-bootguard1"></script>
 <script defer src="assets/js/features/ui.js?v=20260605-regpicker3"></script>
-<script defer src="assets/js/features/index-luxury.js?v=20260605-regpicker3"></script>
-<script type="module" src="assets/js/features/luxury-particle-background.js?v=20260605-regpicker3"></script>
-<script defer src="assets/js/features/luxury-shell-chrome.js?v=20260606-pickerscroll1"></script>
+<script defer src="assets/js/features/luxury-index-runtime.js?v=20260709-glasslock1"></script>
+<script defer src="assets/js/features/index-luxury.js?v=20260709-glasslock1"></script>
+<script type="module" src="assets/js/features/luxury-background.js?v=20260717-lazythree1"></script>
+<script defer src="assets/js/features/luxury-shell-chrome.js?v=20260717-bgparams1"></script>
 <script defer src="assets/js/features/luxury-home-model.js?v=20260605-regpicker3"></script>
-<script defer src="assets/js/pages/timetable-runtime.js?v=20260605-regpicker3"></script>
-<script defer src="assets/js/pages/registration-shared.js?v=20260606-regtrack1"></script>
-<script defer src="assets/js/pages/registration-enrollment.js?v=20260606-regtrack1"></script>
-<script defer src="assets/js/pages/student-registration.js?v=20260606-regtrack1"></script>
-<script defer src="assets/js/pages/registration-student-route.js?v=20260606-regtrack1"></script>
+<script defer src="assets/js/pages/timetable-runtime.js?v=20260608-regfix1" data-kiu-static="1"></script>
+<script defer src="assets/js/pages/registration-shared.js?v=20260608-regfix1" data-kiu-static="1"></script>
+<script defer src="assets/js/pages/registration-enrollment.js?v=20260608-regfix1" data-kiu-static="1"></script>
+<script defer src="assets/js/pages/student-registration.js?v=20260608-regfix1" data-kiu-static="1"></script>
+<script defer src="assets/js/pages/registration-student-route.js?v=20260608-regfix1" data-kiu-static="1"></script>
 <!-- MOBILE BOTTOM NAVIGATION (v2) -->
 <nav id="mobile-bottom-nav" aria-label="Mobile navigation" hidden>
     <div class="mobile-nav-row">
@@ -180,7 +172,7 @@
         <div class="mob-sheet-section"><div class="mob-sheet-label">Quick Actions</div><div class="mob-sheet-grid">
 <button class="mob-sheet-btn" type="button" id="mob-act-admin"><span class="mob-sheet-icon"><i class="fas fa-user-shield"></i></span><span>Admin View</span></button>
 <button class="mob-sheet-btn" type="button" id="mob-act-theme"><span class="mob-sheet-icon"><i class="fas fa-palette"></i></span><span>Theme</span></button>
-<button class="mob-sheet-btn" type="button" id="mob-act-profile"><span class="mob-sheet-icon"><i class="fas fa-user-circle"></i></span><span>Profile</span></button>
+<button class="mob-sheet-btn" type="button" id="mob-act-profile"><span class="mob-sheet-icon"><i class="far fa-user"></i></span><span>Personal Data</span></button>
 <button class="mob-sheet-btn" type="button" id="mob-act-lightmode"><span class="mob-sheet-icon"><i class="fas fa-sun"></i></span><span>Light Mode</span></button>
         </div></div>
         <!-- Dynamic role-aware navigation will be injected here -->
