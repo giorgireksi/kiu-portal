@@ -1,19 +1,11 @@
 /* lux-shell.css — ONE shell for dashboard (full-paint) + bare pages.
    Structure: shared. Paint: body.lux-full-paint = glass/soft topbar; else solid (bare).
-   Phase A shared stack. */
-
-/* ═══ 1. Shared structure + bare/solid defaults (from lux-shell-nav) ═══ */
-:root {
+   Phase A shared stack. *//* ═══ 1. Shared structure + bare/solid defaults (from lux-shell-nav) ═══ */:root {
     --lux-sidebar-width: 200px;
     --lux-sidebar-offset: 200px;
-}
-
-body.lux-sidebar-collapsed {
+}body.lux-sidebar-collapsed {
     --lux-sidebar-offset: 0px;
-}
-
-/* ---- Left rail ---- */
-#lux-shell {
+}/* ---- Left rail ---- */#lux-shell {
     position: fixed;
     inset: 0 auto 0 0;
     width: var(--lux-sidebar-width, 200px);
@@ -27,29 +19,21 @@ body.lux-sidebar-collapsed {
     opacity: 1;
     pointer-events: auto;
     contain: layout style;
-}
-
-body.lux-sidebar-collapsed #lux-shell {
+}body.lux-sidebar-collapsed #lux-shell {
     transform: translateX(calc(-100% - 20px));
     opacity: 0;
     pointer-events: none;
     transition: transform 0.24s ease, opacity 0.18s ease;
-}
-
-body:not(.lux-sidebar-collapsed) #lux-shell {
+}body:not(.lux-sidebar-collapsed) #lux-shell {
     transition: transform 0.24s ease, opacity 0.18s ease;
-}
-
-.lux-brand {
+}.lux-brand {
     display: flex;
     align-items: center;
     gap: 12px;
     padding: 22px 18px 18px;
     border-bottom: 1px solid var(--lux-border, rgba(255, 255, 255, 0.1));
     flex-shrink: 0;
-}
-
-.lux-brand-mark {
+}.lux-brand-mark {
     width: 38px;
     height: 38px;
     border-radius: 11px;
@@ -61,44 +45,32 @@ body:not(.lux-sidebar-collapsed) #lux-shell {
     font-size: 18px;
     font-weight: 700;
     flex-shrink: 0;
-}
-
-.lux-brand-name {
+}.lux-brand-name {
     font-size: 14px;
     font-weight: 700;
     letter-spacing: 0.06em;
     color: var(--lux-text, #f8fafc);
-}
-
-.lux-brand-sub {
+}.lux-brand-sub {
     margin-top: 2px;
     font-size: 10px;
     letter-spacing: 0.18em;
     text-transform: uppercase;
     color: var(--lux-text-soft, rgba(248, 250, 252, 0.55));
-}
-
-.lux-nav {
+}.lux-nav {
     flex: 1;
     overflow-y: auto;
     padding: 12px 10px 16px;
     min-height: 0;
-}
-
-.lux-nav::-webkit-scrollbar {
+}.lux-nav::-webkit-scrollbar {
     width: 0;
-}
-
-.lux-nav-group {
+}.lux-nav-group {
     padding: 14px 10px 6px;
     font-size: 9px;
     font-weight: 700;
     letter-spacing: 0.16em;
     text-transform: uppercase;
     color: var(--lux-text-soft, rgba(248, 250, 252, 0.55));
-}
-
-.lux-nav-item {
+}.lux-nav-item {
     width: 100%;
     display: flex;
     align-items: center;
@@ -115,52 +87,32 @@ body:not(.lux-sidebar-collapsed) #lux-shell {
     text-align: left;
     text-decoration: none;
     box-sizing: border-box;
-}
-
-.lux-nav-item:hover {
+}.lux-nav-item:hover {
     color: var(--lux-text, #fff);
     background: rgba(255, 255, 255, 0.06);
-}
-
-.lux-nav-item.is-active {
+}.lux-nav-item.is-active {
     color: #fff;
     background: rgba(var(--lux-accent-rgb, 124, 92, 255), 0.85);
-}
-
-.lux-nav-item i {
+}.lux-nav-item i {
     width: 16px;
     text-align: center;
     flex-shrink: 0;
-}
-
-/* light */
-body.lux-light-mode #lux-shell {
+}/* light */body.lux-light-mode #lux-shell {
     background: #f7f3ec;
     border-right-color: rgba(26, 36, 51, 0.12);
     color: #1a2433;
-}
-
-body.lux-light-mode #lux-shell .lux-brand-name,
+}body.lux-light-mode #lux-shell .lux-brand-name,
 body.lux-light-mode #lux-shell .lux-nav-item {
     color: #1a2433;
-}
-
-body.lux-light-mode #lux-shell .lux-brand-sub,
+}body.lux-light-mode #lux-shell .lux-brand-sub,
 body.lux-light-mode #lux-shell .lux-nav-group {
     color: rgba(26, 36, 51, 0.55);
-}
-
-body.lux-light-mode #lux-shell .lux-nav-item:hover {
+}body.lux-light-mode #lux-shell .lux-nav-item:hover {
     background: rgba(26, 36, 51, 0.06);
-}
-
-body.lux-light-mode #lux-shell .lux-nav-item.is-active {
+}body.lux-light-mode #lux-shell .lux-nav-item.is-active {
     color: #fff;
     background: rgba(var(--lux-accent-rgb, 124, 92, 255), 0.9);
-}
-
-/* ---- Topbar: horizontal shell (bare + any page using shell-nav) ---- */
-#lux-topbar {
+}/* ---- Topbar: horizontal shell (bare + any page using shell-nav) ---- */#lux-topbar {
     position: fixed;
     top: 12px;
     left: calc(var(--lux-sidebar-width, 200px) + 16px);
@@ -175,13 +127,9 @@ body.lux-light-mode #lux-shell .lux-nav-item.is-active {
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
     pointer-events: none;
-}
-
-body.lux-sidebar-collapsed #lux-topbar {
+}body.lux-sidebar-collapsed #lux-topbar {
     left: 16px !important;
-}
-
-#lux-topbar .lux-topbar-shell {
+}#lux-topbar .lux-topbar-shell {
     pointer-events: auto;
     display: flex !important;
     flex-direction: row !important;
@@ -199,16 +147,11 @@ body.lux-sidebar-collapsed #lux-topbar {
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
     overflow: visible;
-}
-
-body.lux-light-mode #lux-topbar .lux-topbar-shell {
+}body.lux-light-mode #lux-topbar .lux-topbar-shell {
     background: #fff !important;
     border-color: rgba(26, 36, 51, 0.12) !important;
     color: #1a2433 !important;
-}
-
-/* Left cluster: toggle + breadcrumb + search */
-#lux-topbar .lux-topbar-main {
+}/* Left cluster: toggle + breadcrumb + search */#lux-topbar .lux-topbar-main {
     display: flex !important;
     flex-direction: row !important;
     flex-wrap: nowrap !important;
@@ -216,19 +159,14 @@ body.lux-light-mode #lux-topbar .lux-topbar-shell {
     gap: 10px !important;
     min-width: 0;
     flex: 1 1 auto;
-}
-
-#lux-topbar .lux-topbar-spacer {
+}#lux-topbar .lux-topbar-spacer {
     flex: 1 1 auto;
     min-width: 8px;
     height: 1px;
     background: transparent !important;
     border: 0 !important;
     box-shadow: none !important;
-}
-
-/* Right cluster: pickers + icons + user */
-#lux-topbar .lux-topbar-actions {
+}/* Right cluster: pickers + icons + user */#lux-topbar .lux-topbar-actions {
     display: flex !important;
     flex-direction: row !important;
     flex-wrap: nowrap !important;
@@ -236,9 +174,7 @@ body.lux-light-mode #lux-topbar .lux-topbar-shell {
     gap: 8px !important;
     flex: 0 0 auto;
     margin-left: auto;
-}
-
-#lux-topbar .lux-utility-wrap,
+}#lux-topbar .lux-utility-wrap,
 #lux-topbar .lux-picker-wrap {
     display: inline-flex !important;
     flex-direction: row !important;
@@ -249,10 +185,7 @@ body.lux-light-mode #lux-topbar .lux-topbar-shell {
     border: 0 !important;
     box-shadow: none !important;
     padding: 0 !important;
-}
-
-/* Breadcrumb — text only */
-#lux-topbar .lux-breadcrumb {
+}/* Breadcrumb — text only */#lux-topbar .lux-breadcrumb {
     display: inline-flex !important;
     align-items: center !important;
     gap: 6px !important;
@@ -264,15 +197,10 @@ body.lux-light-mode #lux-topbar .lux-topbar-shell {
     border: 0 !important;
     box-shadow: none !important;
     padding: 0 4px !important;
-}
-
-#lux-topbar .lux-breadcrumb strong {
+}#lux-topbar .lux-breadcrumb strong {
     color: var(--lux-text, #f8fafc) !important;
     font-weight: 700;
-}
-
-/* Search field */
-#lux-topbar .lux-search {
+}/* Search field */#lux-topbar .lux-search {
     position: relative;
     display: block !important;
     width: min(320px, 28vw);
@@ -283,9 +211,7 @@ body.lux-light-mode #lux-topbar .lux-topbar-shell {
     border: 0 !important;
     box-shadow: none !important;
     padding: 0 !important;
-}
-
-#lux-topbar .lux-search i {
+}#lux-topbar .lux-search i {
     position: absolute;
     left: 12px;
     top: 50%;
@@ -294,9 +220,7 @@ body.lux-light-mode #lux-topbar .lux-topbar-shell {
     font-size: 12px;
     color: var(--lux-text-muted, rgba(248, 250, 252, 0.55));
     pointer-events: none;
-}
-
-#lux-topbar .lux-search input {
+}#lux-topbar .lux-search input {
     width: 100%;
     min-height: 40px !important;
     padding: 8px 12px 8px 34px !important;
@@ -309,14 +233,9 @@ body.lux-light-mode #lux-topbar .lux-topbar-shell {
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
     font-size: 13px;
-}
-
-#lux-topbar .lux-search input::placeholder {
+}#lux-topbar .lux-search input::placeholder {
     color: var(--lux-text-muted, rgba(248, 250, 252, 0.45));
-}
-
-/* Pickers */
-#lux-topbar .lux-picker-btn {
+}/* Pickers */#lux-topbar .lux-picker-btn {
     display: inline-flex !important;
     flex-direction: column !important;
     align-items: flex-start !important;
@@ -334,26 +253,19 @@ body.lux-light-mode #lux-topbar .lux-topbar-shell {
     backdrop-filter: none !important;
     cursor: pointer;
     text-align: left;
-}
-
-#lux-topbar .lux-picker-caption {
+}#lux-topbar .lux-picker-caption {
     display: block;
     font-size: 9px;
     font-weight: 700;
     letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--lux-text-muted, rgba(248, 250, 252, 0.55)) !important;
-}
-
-#lux-topbar .lux-picker-btn strong {
+}#lux-topbar .lux-picker-btn strong {
     display: block;
     font-size: 12px;
     font-weight: 700;
     color: var(--lux-text, #f8fafc) !important;
-}
-
-/* Icon buttons + text CTAs */
-#lux-topbar .lux-icon-btn {
+}/* Icon buttons + text CTAs */#lux-topbar .lux-icon-btn {
     display: inline-grid !important;
     place-items: center !important;
     width: 40px !important;
@@ -367,9 +279,7 @@ body.lux-light-mode #lux-topbar .lux-topbar-shell {
     box-shadow: none !important;
     cursor: pointer;
     flex: 0 0 auto;
-}
-
-#lux-topbar .lux-sidebar-toggle-btn,
+}#lux-topbar .lux-sidebar-toggle-btn,
 #lux-topbar .lux-topbar-editor-btn,
 #lux-topbar .lux-secondary-btn {
     display: inline-flex !important;
@@ -389,9 +299,7 @@ body.lux-light-mode #lux-topbar .lux-topbar-shell {
     cursor: pointer;
     white-space: nowrap;
     flex: 0 0 auto;
-}
-
-#lux-topbar .lux-sidebar-toggle-btn::before,
+}#lux-topbar .lux-sidebar-toggle-btn::before,
 #lux-topbar .lux-topbar-editor-btn::before,
 #lux-topbar .lux-secondary-btn::before,
 #lux-topbar .lux-sidebar-toggle-btn::after,
@@ -399,10 +307,7 @@ body.lux-light-mode #lux-topbar .lux-topbar-shell {
 #lux-topbar .lux-secondary-btn::after {
     display: none !important;
     content: none !important;
-}
-
-/* User chip */
-#lux-topbar .lux-user-chip {
+}/* User chip */#lux-topbar .lux-user-chip {
     display: inline-flex !important;
     flex-direction: row !important;
     align-items: center !important;
@@ -417,23 +322,17 @@ body.lux-light-mode #lux-topbar .lux-topbar-shell {
     box-shadow: none !important;
     cursor: pointer;
     flex: 0 0 auto;
-}
-
-#lux-topbar .lux-user-chip-copy {
+}#lux-topbar .lux-user-chip-copy {
     display: flex !important;
     flex-direction: column !important;
     align-items: flex-start !important;
     gap: 0 !important;
     min-width: 0;
     line-height: 1.2;
-}
-
-#lux-topbar .lux-user-chip-copy small {
+}#lux-topbar .lux-user-chip-copy small {
     font-size: 10px;
     color: var(--lux-text-muted, rgba(248, 250, 252, 0.55)) !important;
-}
-
-#lux-topbar .lux-avatar {
+}#lux-topbar .lux-avatar {
     width: 32px;
     height: 32px;
     border-radius: 50%;
@@ -445,18 +344,13 @@ body.lux-light-mode #lux-topbar .lux-topbar-shell {
     background: var(--lux-accent, #7c5cff);
     color: #fff;
     border: 1.5px solid color-mix(in srgb, var(--lux-accent, #7c5cff) 40%, transparent);
-}
-
-.lux-sidebar-toggle-btn,
+}.lux-sidebar-toggle-btn,
 .lux-sidebar-close-btn {
     display: inline-flex;
     align-items: center;
     gap: 8px;
     cursor: pointer;
-}
-
-/* Narrow screens: allow wrap without vertical stack of entire shell */
-@media (max-width: 1100px) {
+}/* Narrow screens: allow wrap without vertical stack of entire shell */@media (max-width: 1100px) {
     #lux-topbar .lux-search {
         width: min(220px, 22vw);
         min-width: 120px;
@@ -464,9 +358,7 @@ body.lux-light-mode #lux-topbar .lux-topbar-shell {
     #lux-topbar .lux-picker-btn {
         min-width: 110px;
     }
-}
-
-@media (max-width: 820px) {
+}@media (max-width: 820px) {
     #lux-topbar .lux-topbar-shell {
         flex-wrap: wrap !important;
         align-items: flex-start !important;
@@ -483,45 +375,24 @@ body.lux-light-mode #lux-topbar .lux-topbar-shell {
         max-width: none;
         flex: 1 1 100%;
     }
-}
-
-/* Content clearance under fixed topbar */
-
-
-/* ---- Main content offset ---- */
-#app-content {
+}/* Content clearance under fixed topbar *//* ---- Main content offset ---- */#app-content {
     margin-left: var(--lux-sidebar-width, 200px);
     min-width: 0;
     box-sizing: border-box;
-}
-
-body.lux-sidebar-collapsed #app-content {
+}body.lux-sidebar-collapsed #app-content {
     margin-left: 0 !important;
     padding-left: 16px !important;
     padding-right: 16px !important;
-}
-
-
-
-/* Ensure shell above bare content flatten */
-body.lux-page-bare #lux-shell,
+}/* Ensure shell above bare content flatten */body.lux-page-bare #lux-shell,
 body.lux-page-bare #lux-shell * {
     /* do not inherit main content border-radius hacks */
-}
-
-body.lux-page-bare #lux-shell {
+}body.lux-page-bare #lux-shell {
     border-radius: 0 !important;
     box-shadow: none !important;
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
-}
-
-
-/* ═══ 2. Full-paint glass + soft topbar (from lux-shell-full-paint, gated) ═══ */
-/* lux-shell-full-paint.css — floating topbar + shell chrome for dashboard only.
-   Loaded only by index.html (body.lux-full-paint). Paint complements lux-controls full-paint topbar. */
-
-/* ═══════════════════════════════════════════════════════════════════
+}/* ═══ 2. Full-paint glass + soft topbar (from lux-shell-full-paint, gated) ═══ *//* lux-shell-full-paint.css — floating topbar + shell chrome for dashboard only.
+   Loaded only by index.html (body.lux-full-paint). Paint complements lux-controls full-paint topbar. *//* ═══════════════════════════════════════════════════════════════════
    TOPBAR SOFT-CHROME SSOT (must stay at EOF — beats luxury glass restates)
    Matches dashboard builder-card lux-soft-chrome material.
    ═══════════════════════════════════════════════════════════════════ */body.lux-full-paint.lux-unified-shell #lux-topbar .lux-topbar-shell,
@@ -626,19 +497,13 @@ body.lux-full-paint.lux-unified-shell #lux-topbar .lux-topbar-editor-btn:hover {
     color: var(--lux-text-muted) !important;
 }body.lux-full-paint.lux-unified-shell #lux-topbar .lux-breadcrumb strong {
     color: var(--lux-text) !important;
-}
-
-
-/* ── extracted from index-luxury (Phase 4 shell) ── */
-body.lux-full-paint #lux-shell {
+}/* ── extracted from index-luxury (Phase 4 shell) ── */body.lux-full-paint #lux-shell {
     will-change: transform;
     contain: layout style;
-}
-body.lux-full-paint #lux-topbar {
+}body.lux-full-paint #lux-topbar {
     will-change: transform;
     contain: layout style;
-}
-body.lux-full-paint .lux-card,
+}body.lux-full-paint .lux-card,
 body.lux-full-paint .lux-quick-btn,
 body.lux-full-paint .lux-stat,
 body.lux-full-paint .lux-alert,
@@ -647,8 +512,7 @@ body.lux-full-paint .lux-pill,
 body.lux-full-paint .lux-picker-panel,
 body.lux-full-paint .lux-utility-panel {
     isolation: auto;
-}
-body.lux-full-paint #lux-shell {
+}body.lux-full-paint #lux-shell {
     position: fixed;
     inset: 0 auto 0 0;
     width: var(--lux-sidebar-width);
@@ -666,15 +530,13 @@ body.lux-full-paint #lux-shell {
     flex-direction: column;
     will-change: transform;
     transform: translateZ(0);
-}
-body.lux-full-paint .lux-brand {
+}body.lux-full-paint .lux-brand {
     display: flex;
     align-items: center;
     gap: 12px;
     padding: 22px 18px 18px;
     border-bottom: 1px solid var(--lux-border);
-}
-body.lux-full-paint .lux-brand-mark {
+}body.lux-full-paint .lux-brand-mark {
     width: 38px;
     height: 38px;
     border-radius: 11px;
@@ -687,37 +549,31 @@ body.lux-full-paint .lux-brand-mark {
     font-size: 18px;
     font-weight: 700;
     box-shadow: 0 12px 30px rgba(var(--lux-accent-rgb), 0.24);
-}
-body.lux-full-paint .lux-brand-name {
+}body.lux-full-paint .lux-brand-name {
     font-size: 14px;
     font-weight: 700;
     letter-spacing: 0.06em;
     color: var(--lux-text);
-}
-body.lux-full-paint .lux-brand-sub {
+}body.lux-full-paint .lux-brand-sub {
     margin-top: 2px;
     font-size: 10px;
     letter-spacing: 0.18em;
     text-transform: uppercase;
     color: var(--lux-text-soft);
-}
-body.lux-full-paint .lux-nav {
+}body.lux-full-paint .lux-nav {
     flex: 1;
     overflow-y: auto;
     padding: 12px 10px 16px;
-}
-body.lux-full-paint .lux-nav::-webkit-scrollbar {
+}body.lux-full-paint .lux-nav::-webkit-scrollbar {
     width: 0;
-}
-body.lux-full-paint .lux-nav-group {
+}body.lux-full-paint .lux-nav-group {
     padding: 14px 10px 6px;
     font-size: 9px;
     font-weight: 700;
     letter-spacing: 0.16em;
     text-transform: uppercase;
     color: var(--lux-text-soft);
-}
-body.lux-full-paint .lux-nav-item {
+}body.lux-full-paint .lux-nav-item {
     width: 100%;
     display: flex;
     align-items: center;
@@ -733,40 +589,31 @@ body.lux-full-paint .lux-nav-item {
     font-size: 14px;
     font-weight: 500;
     text-align: left;
-}
-body.lux-full-paint .lux-nav-item:hover {
+}body.lux-full-paint .lux-nav-item:hover {
     color: var(--lux-text);
     background: transparent;
-}
-body.lux-full-paint .lux-nav-item.is-active {
+}body.lux-full-paint .lux-nav-item.is-active {
     color: #fff7ff;
     border: 0;
     background: linear-gradient(90deg, rgba(var(--lux-accent-rgb), 0.92), rgba(var(--lux-home-secondary-rgb), 0.82));
     box-shadow: 0 12px 26px rgba(var(--lux-accent-rgb), 0.20);
-}
-body.lux-full-paint .lux-nav-item i {
+}body.lux-full-paint .lux-nav-item i {
     width: 16px;
     text-align: center;
     flex-shrink: 0;
-}
-body.lux-full-paint.lux-light-mode #lux-shell .lux-brand-sub,
+}body.lux-full-paint.lux-light-mode #lux-shell .lux-brand-sub,
 body.lux-full-paint.lux-light-mode #lux-shell .lux-nav-group,
 body.lux-full-paint.lux-light-mode #lux-shell .lux-user-role {
     color: var(--lux-text-muted) !important;
-}
-body.lux-full-paint.lux-light-mode #lux-shell .lux-nav-item {
+}body.lux-full-paint.lux-light-mode #lux-shell .lux-nav-item {
     color: var(--lux-text) !important;
-}
-body.lux-full-paint.lux-light-mode #lux-shell .lux-nav-item:hover {
+}body.lux-full-paint.lux-light-mode #lux-shell .lux-nav-item:hover {
     color: var(--lux-text) !important;
-}
-body.lux-full-paint.lux-light-mode #lux-shell .lux-nav-item i {
+}body.lux-full-paint.lux-light-mode #lux-shell .lux-nav-item i {
     color: currentColor;
-}
-body.lux-full-paint.lux-light-mode #lux-shell .lux-nav-item.is-active {
+}body.lux-full-paint.lux-light-mode #lux-shell .lux-nav-item.is-active {
     color: #fff8ef !important;
-}
-body.lux-full-paint .lux-nav-badge {
+}body.lux-full-paint .lux-nav-badge {
     margin-left: auto;
     min-width: 18px;
     height: 18px;
@@ -779,27 +626,23 @@ body.lux-full-paint .lux-nav-badge {
     padding: 0 6px;
     font-size: 9px;
     font-weight: 700;
-}
-.lux-shell-footer {
+}.lux-shell-footer {
     padding: 14px 12px;
     border-top: 1px solid var(--lux-border);
     display: flex;
     align-items: center;
     gap: 10px;
-}
-.lux-user-name {
+}.lux-user-name {
     font-size: 12px;
     font-weight: 600;
     color: var(--lux-text);
-}
-.lux-user-role {
+}.lux-user-role {
     font-size: 10px;
     color: var(--lux-text-soft);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-}
-body.lux-full-paint #lux-topbar {
+}body.lux-full-paint #lux-topbar {
     position: fixed;
     top: 0;
     left: var(--lux-sidebar-width);
@@ -819,8 +662,7 @@ body.lux-full-paint #lux-topbar {
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
     contain: layout style;
-}
-body.lux-full-paint .lux-search input,
+}body.lux-full-paint .lux-search input,
 body.lux-full-paint .lux-topbar select {
     background: rgba(var(--lux-glass-tint-rgb), 0.34);
     border: 1px solid var(--lux-border);
@@ -830,31 +672,24 @@ body.lux-full-paint .lux-topbar select {
     font-family: inherit;
     outline: none;
     transition: border-color 0.18s ease, background 0.18s ease;
-}
-body.lux-full-paint .lux-topbar select {
+}body.lux-full-paint .lux-topbar select {
     height: 38px;
     padding: 0 12px;
-}
-body.lux-full-paint .lux-search input:focus,
+}body.lux-full-paint .lux-search input:focus,
 body.lux-full-paint .lux-topbar select:focus {
     border-color: rgba(var(--lux-accent-rgb), 0.28);
     background: rgba(var(--lux-glass-tint-rgb), 0.44);
-}
-body.lux-full-paint .lux-topbar-spacer {
+}body.lux-full-paint .lux-topbar-spacer {
     flex: 1;
-}
-body.lux-full-paint .lux-topbar-actions {
+}body.lux-full-paint .lux-topbar-actions {
     display: flex;
     align-items: center;
     gap: 8px;
-}
-body.lux-full-paint.lux-light-mode #lux-shell {
+}body.lux-full-paint.lux-light-mode #lux-shell {
     background: linear-gradient(180deg, rgba(245, 240, 233, 0.96), rgba(236, 229, 219, 0.98));
-}
-body.lux-full-paint.lux-light-mode #lux-topbar {
+}body.lux-full-paint.lux-light-mode #lux-topbar {
     background: rgba(247, 243, 236, 0.82);
-}
-body.lux-full-paint:not(.lux-light-mode) #lux-topbar .lux-topbar-shell,
+}body.lux-full-paint:not(.lux-light-mode) #lux-topbar .lux-topbar-shell,
 body.lux-full-paint:not(.lux-light-mode) .lux-user-chip,
 body.lux-full-paint:not(.lux-light-mode) .lux-user-menu,
 body.lux-full-paint:not(.lux-light-mode) .lux-utility-panel,
@@ -865,22 +700,19 @@ body.lux-full-paint:not(.lux-light-mode) .lux-picker-panel {
             rgba(var(--lux-topbar-tint-rgb), var(--lux-topbar-fill-alpha))),
         radial-gradient(circle at top right, rgba(var(--lux-bg-glow-rgb), 0.07), transparent 30%) !important;
     border: 1px solid rgba(255, 255, 255, 0.1) !important;
-}
-body.lux-full-paint:not(.lux-light-mode) #lux-topbar .lux-search input,
+}body.lux-full-paint:not(.lux-light-mode) #lux-topbar .lux-search input,
 body.lux-full-paint:not(.lux-light-mode) #lux-topbar .lux-picker-btn,
 body.lux-full-paint:not(.lux-light-mode) #lux-topbar .lux-topbar-editor-btn,
 body.lux-full-paint:not(.lux-light-mode) #lux-topbar .lux-icon-btn {
     background:
         linear-gradient(180deg, rgba(8, 14, 24, 0.34), rgba(2, 7, 14, 0.2)) !important;
     border-color: rgba(255, 255, 255, 0.12) !important;
-}
-body.lux-full-paint #lux-shell {
+}body.lux-full-paint #lux-shell {
     background:
         linear-gradient(180deg, rgba(11, 16, 28, 0.9), rgba(7, 10, 18, 0.94)),
         radial-gradient(circle at top, rgba(var(--lux-accent-rgb), 0.12), transparent 34%);
     box-shadow: 24px 0 60px rgba(0, 0, 0, 0.22);
-}
-body.lux-full-paint #lux-topbar {
+}body.lux-full-paint #lux-topbar {
     position: fixed;
     top: 18px;
     left: calc(var(--lux-sidebar-width) + 24px);
@@ -891,8 +723,7 @@ body.lux-full-paint #lux-topbar {
     padding: 0;
     background: transparent;
     border: none;
-}
-body.lux-full-paint .lux-topbar-shell {
+}body.lux-full-paint .lux-topbar-shell {
     display: flex;
     align-items: center;
     gap: 18px;
@@ -907,57 +738,47 @@ body.lux-full-paint .lux-topbar-shell {
         0 24px 70px rgba(0, 0, 0, 0.24),
         inset 0 1px 0 rgba(255, 255, 255, 0.08);
     backdrop-filter: blur(24px);
-}
-body.lux-full-paint .lux-topbar-main {
+}body.lux-full-paint .lux-topbar-main {
     display: flex;
     align-items: center;
     gap: 16px;
     min-width: 0;
-}
-body.lux-full-paint .lux-search input,
+}body.lux-full-paint .lux-search input,
 body.lux-full-paint .lux-topbar select {
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.11);
     border-radius: 16px;
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
-}
-body.lux-full-paint .lux-topbar select {
+}body.lux-full-paint .lux-topbar select {
     min-height: 44px;
     padding: 0 14px;
-}
-body.lux-full-paint .lux-search input:focus,
+}body.lux-full-paint .lux-search input:focus,
 body.lux-full-paint .lux-topbar select:focus {
     border-color: rgba(var(--lux-accent-rgb), 0.34);
     box-shadow: 0 0 0 4px rgba(var(--lux-accent-rgb), 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.08);
-}
-body.lux-full-paint .lux-topbar-actions {
+}body.lux-full-paint .lux-topbar-actions {
     gap: 10px;
-}
-body.lux-full-paint.lux-light-mode #lux-topbar {
+}body.lux-full-paint.lux-light-mode #lux-topbar {
     background: transparent;
-}
-body.lux-full-paint.lux-light-mode .lux-topbar-shell,
+}body.lux-full-paint.lux-light-mode .lux-topbar-shell,
 body.lux-full-paint.lux-light-mode .lux-utility-panel {
     background:
         linear-gradient(180deg,
             rgba(var(--lux-topbar-tint-rgb), calc(var(--lux-topbar-fill-alpha) + 0.08)),
             rgba(var(--lux-topbar-tint-rgb), var(--lux-topbar-fill-alpha))),
         radial-gradient(circle at top right, rgba(var(--lux-accent-rgb), 0.08), transparent 30%);
-}
-body.lux-full-paint .lux-topbar-shell {
+}body.lux-full-paint .lux-topbar-shell {
     background:
         linear-gradient(135deg, rgba(15, 21, 35, var(--lux-utility-alpha)), rgba(9, 13, 22, calc(var(--lux-utility-alpha) - 0.06))),
         radial-gradient(circle at top right, rgba(var(--lux-accent-rgb), 0.12), transparent 32%);
-}
-body.lux-full-paint #lux-topbar {
+}body.lux-full-paint #lux-topbar {
     height: auto;
     padding: 14px 18px 0;
     background: transparent !important;
     border: none !important;
     backdrop-filter: none !important;
     pointer-events: none;
-}
-body.lux-full-paint #lux-topbar .lux-topbar-shell {
+}body.lux-full-paint #lux-topbar .lux-topbar-shell {
     pointer-events: auto;
     min-height: 76px;
     padding: 14px 18px;
@@ -965,15 +786,13 @@ body.lux-full-paint #lux-topbar .lux-topbar-shell {
     border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 28px;
     box-shadow: 0 20px 52px rgba(0, 0, 0, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.08);
-}
-body.lux-full-paint .lux-topbar-main {
+}body.lux-full-paint .lux-topbar-main {
     display: flex;
     align-items: center;
     gap: 18px;
     min-width: 0;
     flex: 1 1 auto;
-}
-body.lux-full-paint .lux-sidebar-toggle-btn {
+}body.lux-full-paint .lux-sidebar-toggle-btn {
     min-height: 50px;
     padding: 0 16px;
     display: inline-flex;
@@ -981,23 +800,19 @@ body.lux-full-paint .lux-sidebar-toggle-btn {
     gap: 10px;
     white-space: nowrap;
     flex-shrink: 0;
-}
-body.lux-full-paint .lux-sidebar-toggle-btn i {
+}body.lux-full-paint .lux-sidebar-toggle-btn i {
     font-size: 13px;
-}
-body.lux-full-paint #lux-topbar select,
+}body.lux-full-paint #lux-topbar select,
 body.lux-full-paint .lux-topbar select {
     display: none !important;
-}
-body.lux-full-paint .lux-topbar-editor-btn {
+}body.lux-full-paint .lux-topbar-editor-btn {
     min-height: 50px;
     padding: 0 16px;
     display: inline-flex;
     align-items: center;
     gap: 10px;
     white-space: nowrap;
-}
-body.lux-full-paint .lux-topbar-shell,
+}body.lux-full-paint .lux-topbar-shell,
 body.lux-full-paint .lux-user-chip,
 body.lux-full-paint .lux-user-menu,
 body.lux-full-paint .lux-utility-panel,
@@ -1012,8 +827,7 @@ body.lux-full-paint .lux-widget-toolbar {
     -webkit-backdrop-filter: blur(24px) saturate(145%);
     border-color: rgba(255, 255, 255, 0.12) !important;
     box-shadow: 0 20px 52px rgba(0, 0, 0, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.08);
-}
-body.lux-full-paint.lux-light-mode #lux-topbar .lux-topbar-shell,
+}body.lux-full-paint.lux-light-mode #lux-topbar .lux-topbar-shell,
 body.lux-full-paint.lux-light-mode .lux-user-chip,
 body.lux-full-paint.lux-light-mode .lux-user-menu,
 body.lux-full-paint.lux-light-mode .lux-utility-panel,
@@ -1033,8 +847,7 @@ body.lux-full-paint.lux-light-mode .modal-content {
             rgba(var(--lux-glass-tint-rgb), var(--lux-panel-fill-alpha))) !important;
     border-color: rgba(77, 52, 31, 0.12) !important;
     box-shadow: 0 18px 46px rgba(73, 48, 25, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.72);
-}
-body.lux-full-paint #lux-topbar .lux-topbar-shell,
+}body.lux-full-paint #lux-topbar .lux-topbar-shell,
 body.lux-full-paint .lux-user-chip,
 body.lux-full-paint .lux-user-menu,
 body.lux-full-paint .lux-utility-panel,
@@ -1051,8 +864,7 @@ body.lux-full-paint .lux-picker-panel {
         0 22px 54px rgba(0, 0, 0, 0.28),
         inset 0 1px 0 rgba(255, 255, 255, 0.08),
         0 0 0 1px rgba(var(--lux-bg-glow-rgb), 0.03);
-}
-body.lux-full-paint #lux-topbar .lux-search input,
+}body.lux-full-paint #lux-topbar .lux-search input,
 body.lux-full-paint #lux-topbar .lux-picker-btn,
 body.lux-full-paint #lux-topbar .lux-topbar-editor-btn,
 body.lux-full-paint #lux-topbar .lux-icon-btn {
@@ -1064,8 +876,7 @@ body.lux-full-paint #lux-topbar .lux-icon-btn {
     backdrop-filter: blur(calc(var(--lux-glass-blur) - 2px)) saturate(150%);
     -webkit-backdrop-filter: blur(calc(var(--lux-glass-blur) - 2px)) saturate(150%);
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
-}
-body.lux-full-paint.lux-light-mode #lux-topbar .lux-topbar-shell,
+}body.lux-full-paint.lux-light-mode #lux-topbar .lux-topbar-shell,
 body.lux-full-paint.lux-light-mode .lux-user-chip,
 body.lux-full-paint.lux-light-mode .lux-user-menu,
 body.lux-full-paint.lux-light-mode .lux-utility-panel,
@@ -1078,63 +889,43 @@ body.lux-full-paint.lux-light-mode .lux-widget-toolbar {
     box-shadow:
         0 20px 44px rgba(93, 71, 47, 0.12),
         inset 0 1px 0 rgba(255, 255, 255, 0.72);
-}
-body.lux-full-paint.lux-light-mode #lux-topbar .lux-icon-btn {
+}body.lux-full-paint.lux-light-mode #lux-topbar .lux-icon-btn {
     border-color: rgba(86, 62, 36, 0.14) !important;
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
-}
-body.lux-full-paint.lux-sidebar-collapsed #lux-shell {
+}body.lux-full-paint.lux-sidebar-collapsed #lux-shell {
     transform: translateX(calc(-100% - 20px));
     opacity: 0;
     pointer-events: none;
     transition: transform 0.24s ease, opacity 0.18s ease;
-}
-body.lux-full-paint:not(.lux-sidebar-collapsed) #lux-shell {
+}body.lux-full-paint:not(.lux-sidebar-collapsed) #lux-shell {
     transform: translateX(0);
     opacity: 1;
     transition: transform 0.24s ease, opacity 0.18s ease;
-}
-body.lux-full-paint.lux-sidebar-collapsed #lux-topbar {
+}body.lux-full-paint.lux-sidebar-collapsed #lux-topbar {
     left: 18px !important;
     transition: left 0.24s ease;
-}
-body.lux-full-paint:not(.lux-sidebar-collapsed) #lux-topbar {
+}body.lux-full-paint:not(.lux-sidebar-collapsed) #lux-topbar {
     transition: left 0.24s ease;
-}
-body.lux-full-paint.lux-sidebar-collapsed #app-content {
+}body.lux-full-paint.lux-sidebar-collapsed #app-content {
     margin-left: 0 !important;
     padding-left: 18px !important;
     padding-right: 18px !important;
     transition: margin-left 0.24s cubic-bezier(0.4, 0, 0.2, 1), padding 0.24s cubic-bezier(0.4, 0, 0.2, 1);
-}
-body.lux-full-paint:not(.lux-sidebar-collapsed) #app-content {
+}body.lux-full-paint:not(.lux-sidebar-collapsed) #app-content {
     transition: margin-left 0.24s cubic-bezier(0.4, 0, 0.2, 1), padding 0.24s cubic-bezier(0.4, 0, 0.2, 1);
-}
-body.lux-full-paint.lux-sidebar-collapsed .page-section {
+}body.lux-full-paint.lux-sidebar-collapsed .page-section {
     max-width: none;
     width: 100%;
     margin: 0;
-}
-body.lux-full-paint.lux-sidebar-collapsed {
+}body.lux-full-paint.lux-sidebar-collapsed {
     --lux-home-viewport-width: calc(100vw - 36px);
-}
-body.lux-full-paint.lux-sidebar-collapsed {
+}body.lux-full-paint.lux-sidebar-collapsed {
     --lux-sidebar-offset: 0px;
-}
-
-
-
-
-
-
-
-
-html.transparency-test-off .lux-topbar-shell {
+}html.transparency-test-off .lux-topbar-shell {
     background: var(--lux-surface) !important;
     border: 1px solid rgba(255, 255, 255, 0.10) !important;
     backdrop-filter: none !important;
-}
-body.lux-full-paint .lux-card,
+}body.lux-full-paint .lux-card,
 body.lux-full-paint .lux-panel,
 body.lux-full-paint #lux-shell,
 body.lux-full-paint #lux-topbar,
@@ -1142,18 +933,15 @@ body.lux-full-paint .lux-picker-panel {
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
     transform: translateZ(0);
-}
-body.lux-full-paint.lux-is-animating .lux-card,
+}body.lux-full-paint.lux-is-animating .lux-card,
 body.lux-full-paint.lux-is-animating .lux-panel,
 body.lux-full-paint.lux-is-animating #lux-shell {
     background: rgba(18, 22, 28, 0.95) !important;
-}
-body.lux-full-paint.lux-is-animating.lux-light-mode .lux-card,
+}body.lux-full-paint.lux-is-animating.lux-light-mode .lux-card,
 body.lux-full-paint.lux-is-animating.lux-light-mode .lux-panel,
 body.lux-full-paint.lux-is-animating.lux-light-mode #lux-shell {
     background: rgba(245, 240, 230, 0.95) !important;
-}
-body.lux-full-paint .lux-nav-item,
+}body.lux-full-paint .lux-nav-item,
 body.lux-full-paint .lux-quick-btn,
 body.lux-full-paint .lux-stat,
 body.lux-full-paint .lux-alert,
@@ -1167,30 +955,24 @@ body.lux-full-paint .lux-breadcrumb,
 body.lux-full-paint button.lux-glass-btn {
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
-}
-body.lux-full-paint #lux-shell,
+}body.lux-full-paint #lux-shell,
 body.lux-full-paint #lux-topbar,
 body.lux-full-paint .lux-card {
     will-change: transform, filter;
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
     transform: translateZ(0);
-}
-body.lux-full-paint #lux-topbar {
+}body.lux-full-paint #lux-topbar {
     z-index: 1000 !important;
-}
-body.lux-full-paint #lux-topbar,
+}body.lux-full-paint #lux-topbar,
 body.lux-full-paint .lux-card-head,
 body.lux-full-paint .lux-nav-item {
     overflow: visible !important;
-}
-body.lux-full-paint.lux-studio-open #lux-topbar {
+}body.lux-full-paint.lux-studio-open #lux-topbar {
     opacity: 0;
     visibility: hidden;
     pointer-events: none !important;
     transform: translateY(-14px);
-}
-body.lux-full-paint.lux-studio-open #lux-topbar .lux-topbar-shell {
+}body.lux-full-paint.lux-studio-open #lux-topbar .lux-topbar-shell {
     pointer-events: none !important;
 }
-

@@ -1,7 +1,7 @@
-/* lux-fouc-ht.css — FOUC + high-transparency + atmosphere/studio glue (dashboard only).
-   Phase A slim ex-index-luxury. */
+/* lux-fouc-ht.css — FOUC + HT + atmosphere/studio (dashboard). Safe-diet slim. */
 
-/* ═══════════════════════════════════════════════
+/* lux-fouc-ht.css — FOUC + high-transparency + atmosphere/studio glue (dashboard only).
+   Phase A slim ex-index-luxury. *//* ═══════════════════════════════════════════════
    FOUC + HIGH-TRANSPARENCY (dashboard luxury glue)
    theme-primer sets classes; updateTransparency clears FOUC.
    Dedupe: one host list, one dark/light fill via tokens.
@@ -71,9 +71,6 @@ body {
     background-image:
         linear-gradient(180deg, rgba(255, 255, 255, calc(var(--lux-raised-alpha) + 0.01)), rgba(255, 255, 255, var(--lux-glass-alpha))),
         radial-gradient(circle at top right, rgba(var(--lux-accent-rgb), calc(0.08 + var(--lux-card-glow-alpha))), transparent 34%);
-}.lux-summary-surface > * {
-    position: relative;
-    z-index: 1;
 }body.lux-light-mode .lux-summary-surface,
 html.lux-light-mode body .lux-summary-surface {
     background-image:
@@ -90,36 +87,7 @@ html.lux-light-mode body .lux-summary-surface {
    PERFORMANCE: Mobile/laptop optimizations
    Reduce backdrop-filter intensity on weaker GPUs
    without changing the visual appearance noticeably.
-   ═══════════════════════════════════════════════ */@media (max-width: 1024px) {
-    /* Lower blur radius = less GPU work, still looks glassy */
-    .lux-card, .lux-subcard, .lux-panel, .lux-nav-item,
-    .lux-quick-btn, .lux-stat, .lux-alert, .lux-pill,
-    .lux-user-menu, .lux-picker-panel, .lux-utility-panel {
-        backdrop-filter: blur(12px) saturate(120%) !important;
-        -webkit-backdrop-filter: blur(12px) saturate(120%) !important;
-    }
-}@media (max-width: 768px) {
-    /* Even less blur on phones — 8px is still visually glassy */
-    .lux-card,
-.lux-subcard,
-.lux-panel,
-.lux-nav-item,
-.lux-quick-btn,
-.lux-stat,
-.lux-alert,
-.lux-pill,
-.lux-user-menu,
-.lux-picker-panel,
-.lux-utility-panel {
-        backdrop-filter: blur(8px) saturate(110%) !important;
-        -webkit-backdrop-filter: blur(8px) saturate(110%) !important;
-    }
-    /* Remove glow box-shadows on mobile (saves paint ops) */
-    .lux-card::before,
-.lux-quick-btn::before {
-        display: none !important;
-    }
-}@media (prefers-reduced-motion: reduce) {
+   ═══════════════════════════════════════════════ */@media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
         animation-duration: 0.01ms !important;
         animation-iteration-count: 1 !important;
@@ -133,176 +101,6 @@ html.lux-light-mode body .lux-summary-surface {
         backdrop-filter: none !important;
         -webkit-backdrop-filter: none !important;
     }
-}:root  {
-    --lux-bg: #070910;
-    --lux-shell-background: var(--lux-bg);
-    --lux-bg-soft: #0e1220;
-    --lux-surface: #101726;
-    --lux-surface-2: #151d2e;
-    --lux-surface-3: #1b2539;
-
-    /* Palette gradient backgrounds — rich, visible tinted backgrounds */
-    --palette-obsidian-dark:
-        radial-gradient(ellipse at 18% 12%, rgba(200, 130, 42, 0.22), transparent 42%),
-        radial-gradient(ellipse at 78% 82%, rgba(216, 170, 86, 0.14), transparent 36%),
-        radial-gradient(circle at 52% 48%, rgba(139, 90, 30, 0.08), transparent 55%),
-        linear-gradient(168deg, #140f08 0%, #1a1308 40%, #0f0c06 100%);
-    --palette-obsidian-light:
-        radial-gradient(ellipse at 18% 12%, rgba(200, 130, 42, 0.14), transparent 42%),
-        radial-gradient(ellipse at 78% 82%, rgba(216, 170, 86, 0.10), transparent 36%),
-        radial-gradient(circle at 52% 48%, rgba(255, 210, 140, 0.08), transparent 55%),
-        linear-gradient(168deg, #faf5ec 0%, #f4eadb 40%, #eee0cc 100%);
-
-    --palette-slate-dark:
-        radial-gradient(ellipse at 22% 8%, rgba(66, 108, 218, 0.24), transparent 40%),
-        radial-gradient(ellipse at 76% 86%, rgba(100, 160, 255, 0.14), transparent 34%),
-        radial-gradient(circle at 48% 50%, rgba(30, 58, 138, 0.10), transparent 52%),
-        linear-gradient(168deg, #0a0e1e 0%, #0e142c 40%, #080c18 100%);
-    --palette-slate-light:
-        radial-gradient(ellipse at 22% 8%, rgba(66, 108, 218, 0.14), transparent 40%),
-        radial-gradient(ellipse at 76% 86%, rgba(120, 170, 255, 0.10), transparent 34%),
-        radial-gradient(circle at 48% 50%, rgba(180, 210, 255, 0.08), transparent 52%),
-        linear-gradient(168deg, #eef3fc 0%, #e2ecfa 40%, #d8e4f6 100%);
-
-    --palette-pine-dark:
-        radial-gradient(ellipse at 16% 14%, rgba(22, 160, 100, 0.24), transparent 40%),
-        radial-gradient(ellipse at 82% 80%, rgba(80, 220, 160, 0.12), transparent 34%),
-        radial-gradient(circle at 50% 46%, rgba(10, 100, 60, 0.10), transparent 50%),
-        linear-gradient(168deg, #081410 0%, #0c1c14 40%, #06100c 100%);
-    --palette-pine-light:
-        radial-gradient(ellipse at 16% 14%, rgba(22, 160, 100, 0.14), transparent 40%),
-        radial-gradient(ellipse at 82% 80%, rgba(80, 220, 160, 0.10), transparent 34%),
-        radial-gradient(circle at 50% 46%, rgba(160, 240, 200, 0.08), transparent 50%),
-        linear-gradient(168deg, #eefaf3 0%, #e0f5ea 40%, #d4f0de 100%);
-
-    --palette-burgundy-dark:
-        radial-gradient(ellipse at 20% 10%, rgba(180, 40, 60, 0.22), transparent 40%),
-        radial-gradient(ellipse at 78% 84%, rgba(220, 80, 80, 0.12), transparent 34%),
-        radial-gradient(circle at 50% 50%, rgba(120, 20, 30, 0.10), transparent 50%),
-        linear-gradient(168deg, #160a0c 0%, #1e0e10 40%, #100608 100%);
-    --palette-burgundy-light:
-        radial-gradient(ellipse at 20% 10%, rgba(200, 50, 70, 0.12), transparent 40%),
-        radial-gradient(ellipse at 78% 84%, rgba(240, 100, 100, 0.08), transparent 34%),
-        radial-gradient(circle at 50% 50%, rgba(255, 180, 180, 0.08), transparent 50%),
-        linear-gradient(168deg, #fceff0 0%, #f8e2e4 40%, #f2d4d8 100%);
-
-    --palette-sand-dark:
-        radial-gradient(ellipse at 18% 12%, rgba(190, 150, 90, 0.22), transparent 40%),
-        radial-gradient(ellipse at 80% 82%, rgba(220, 190, 140, 0.12), transparent 34%),
-        radial-gradient(circle at 50% 48%, rgba(140, 100, 50, 0.08), transparent 50%),
-        linear-gradient(168deg, #14100a 0%, #1a1610 40%, #0e0c08 100%);
-    --palette-sand-light:
-        radial-gradient(ellipse at 18% 12%, rgba(200, 170, 110, 0.12), transparent 40%),
-        radial-gradient(ellipse at 80% 82%, rgba(230, 210, 160, 0.10), transparent 34%),
-        radial-gradient(circle at 50% 48%, rgba(245, 230, 190, 0.08), transparent 50%),
-        linear-gradient(168deg, #faf8f2 0%, #f5f0e4 40%, #efe8d6 100%);
-
-    --palette-ink-dark:
-        radial-gradient(ellipse at 24% 12%, rgba(130, 60, 200, 0.24), transparent 40%),
-        radial-gradient(ellipse at 74% 84%, rgba(180, 100, 220, 0.12), transparent 34%),
-        radial-gradient(circle at 46% 52%, rgba(80, 20, 150, 0.10), transparent 50%),
-        linear-gradient(168deg, #100a18 0%, #160e22 40%, #0a060e 100%);
-    --palette-ink-light:
-        radial-gradient(ellipse at 24% 12%, rgba(140, 70, 190, 0.14), transparent 40%),
-        radial-gradient(ellipse at 74% 84%, rgba(180, 110, 220, 0.10), transparent 34%),
-        radial-gradient(circle at 46% 52%, rgba(210, 160, 240, 0.08), transparent 50%),
-        linear-gradient(168deg, #f6f0fc 0%, #efe4f8 40%, #e6d8f2 100%);
-
-    --palette-ocean-dark:
-        radial-gradient(ellipse at 20% 15%, rgba(0, 140, 140, 0.24), transparent 40%),
-        radial-gradient(ellipse at 80% 80%, rgba(40, 180, 170, 0.14), transparent 34%),
-        radial-gradient(circle at 50% 50%, rgba(0, 90, 80, 0.10), transparent 50%),
-        linear-gradient(168deg, #081214 0%, #0c1a1c 40%, #060e10 100%);
-    --palette-ocean-light:
-        radial-gradient(ellipse at 20% 15%, rgba(0, 160, 150, 0.14), transparent 40%),
-        radial-gradient(ellipse at 80% 80%, rgba(60, 210, 220, 0.10), transparent 34%),
-        radial-gradient(circle at 50% 50%, rgba(150, 235, 240, 0.08), transparent 50%),
-        linear-gradient(168deg, #ecfafa 0%, #dff4f5 40%, #d2eef0 100%);
-
-    --lux-border: rgba(255, 255, 255, 0.08);
-    --lux-border-strong: rgba(255, 255, 255, 0.16);
-    --lux-text: #fbfaf6;
-    --lux-text-muted: rgba(251, 250, 246, 0.74);
-    --lux-text-soft: rgba(251, 250, 246, 0.42);
-    --lux-accent: #c8822a;
-    --lux-accent-2: #d8aa56;
-    --lux-accent-rgb: 200, 130, 42;
-    --lux-shell-start-rgb: 20, 25, 38;
-    --lux-shell-end-rgb: 8, 11, 19;
-    --lux-shell-glow-rgb: 216, 170, 86;
-    --lux-glass-tint-rgb: 16, 23, 38;
-    --lux-topbar-tint-rgb: 11, 18, 32;
-    --lux-home-secondary-rgb: 216, 170, 86;
-    --lux-green: #48bf86;
-    --lux-blue: #5c90f5;
-    --lux-red: #de6262;
-    --lux-sidebar-width: 200px;
-    --lux-topbar-height: 78px;
-    --lux-radius: 16px;
-    --lux-radius-lg: 24px;
-    --lux-shadow: 0 22px 60px rgba(0, 0, 0, 0.38);
-    --lux-home-viewport-width: calc(100vw - var(--lux-sidebar-width) - 48px);
-
-    /* Transparency Mode Control */
-    --lux-transparency-mode: on;
-    --lux-border-solid-dark: rgba(255, 255, 255, 0.20);
-    --lux-border-solid-light: rgba(255, 255, 255, 0.20);
-}body.palette-obsidian-amber {
-    background: var(--palette-obsidian-dark) !important;
-}body.palette-obsidian-amber.lux-light-mode {
-    background: var(--palette-obsidian-light) !important;
-}body.palette-slate-sapphire {
-    background: var(--palette-slate-dark) !important;
-}body.palette-slate-sapphire.lux-light-mode {
-    background: var(--palette-slate-light) !important;
-}body.palette-pine-jade {
-    background: var(--palette-pine-dark) !important;
-}body.palette-pine-jade.lux-light-mode {
-    background: var(--palette-pine-light) !important;
-}body.palette-burgundy-rose {
-    background: var(--palette-burgundy-dark) !important;
-}body.palette-burgundy-rose.lux-light-mode {
-    background: var(--palette-burgundy-light) !important;
-}body.palette-sand-pearl {
-    background: var(--palette-sand-dark) !important;
-}body.palette-sand-pearl.lux-light-mode {
-    background: var(--palette-sand-light) !important;
-}body.palette-ink-orchid {
-    background: var(--palette-ink-dark) !important;
-}body.palette-ink-orchid.lux-light-mode {
-    background: var(--palette-ink-light) !important;
-}body.palette-ocean-teal {
-    background: var(--palette-ocean-dark) !important;
-}body.palette-ocean-teal.lux-light-mode {
-    background: var(--palette-ocean-light) !important;
-}body.palette-obsidian-amber {
-    --lux-shell-background: var(--palette-obsidian-dark);
-}body.palette-obsidian-amber.lux-light-mode {
-    --lux-shell-background: var(--palette-obsidian-light);
-}body.palette-slate-sapphire {
-    --lux-shell-background: var(--palette-slate-dark);
-}body.palette-slate-sapphire.lux-light-mode {
-    --lux-shell-background: var(--palette-slate-light);
-}body.palette-pine-jade {
-    --lux-shell-background: var(--palette-pine-dark);
-}body.palette-pine-jade.lux-light-mode {
-    --lux-shell-background: var(--palette-pine-light);
-}body.palette-burgundy-rose {
-    --lux-shell-background: var(--palette-burgundy-dark);
-}body.palette-burgundy-rose.lux-light-mode {
-    --lux-shell-background: var(--palette-burgundy-light);
-}body.palette-sand-pearl {
-    --lux-shell-background: var(--palette-sand-dark);
-}body.palette-sand-pearl.lux-light-mode {
-    --lux-shell-background: var(--palette-sand-light);
-}body.palette-ink-orchid {
-    --lux-shell-background: var(--palette-ink-dark);
-}body.palette-ink-orchid.lux-light-mode {
-    --lux-shell-background: var(--palette-ink-light);
-}body.palette-ocean-teal {
-    --lux-shell-background: var(--palette-ocean-dark);
-}body.palette-ocean-teal.lux-light-mode {
-    --lux-shell-background: var(--palette-ocean-light);
 }body::before {
     content: '';
     position: fixed;
@@ -348,70 +146,6 @@ html.lux-light-mode body .lux-summary-surface {
     background:
         linear-gradient(115deg, rgba(255, 255, 255, 0.18), transparent 35%),
         linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(239, 235, 228, 0.24));
-}body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-admin-orders):not(.lux-route-staff):is(.role-professor, .role-ta, .role-admin, .role-student_service) .content-box,
-body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-admin-orders):not(.lux-route-staff):is(.role-professor, .role-ta, .role-admin, .role-student_service) .surface-card,
-body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-admin-orders):not(.lux-route-staff):is(.role-professor, .role-ta, .role-admin, .role-student_service) .page-card,
-body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-admin-orders):not(.lux-route-staff):is(.role-professor, .role-ta, .role-admin, .role-student_service) .section-card,
-body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-admin-orders):not(.lux-route-staff):is(.role-professor, .role-ta, .role-admin, .role-student_service) .panel-card,
-body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-admin-orders):not(.lux-route-staff):is(.role-professor, .role-ta, .role-admin, .role-student_service) .kiu-card,
-body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-admin-orders):not(.lux-route-staff):is(.role-professor, .role-ta, .role-admin, .role-student_service) .dashboard-card,
-body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-admin-orders):not(.lux-route-staff):is(.role-professor, .role-ta, .role-admin, .role-student_service) .tabs-container,
-body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-admin-orders):not(.lux-route-staff):is(.role-professor, .role-ta, .role-admin, .role-student_service) .modal-content,
-body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-admin-orders):not(.lux-route-staff):is(.role-professor, .role-ta, .role-admin, .role-student_service) .page-hero {
-    background:
-        linear-gradient(180deg, rgba(14, 20, 33, calc(var(--lux-panel-alpha) * 0.94)), rgba(8, 12, 21, calc(var(--lux-panel-alpha) * 0.72))) !important;
-    border: 1px solid rgba(255, 255, 255, 0.10) !important;
-    color: var(--lux-text) !important;
-    box-shadow: 0 20px 52px rgba(0, 0, 0, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
-    backdrop-filter: blur(24px) saturate(145%);
-    -webkit-backdrop-filter: blur(24px) saturate(145%);
-}body.lux-unified-shell.lux-light-mode:not(.lux-route-students-admin):not(.lux-route-admin-orders):is(.role-professor, .role-ta, .role-admin, .role-student_service) .content-box,
-body.lux-unified-shell.lux-light-mode:not(.lux-route-students-admin):not(.lux-route-admin-orders):is(.role-professor, .role-ta, .role-admin, .role-student_service) .surface-card,
-body.lux-unified-shell.lux-light-mode:not(.lux-route-students-admin):not(.lux-route-admin-orders):is(.role-professor, .role-ta, .role-admin, .role-student_service) .page-card,
-body.lux-unified-shell.lux-light-mode:not(.lux-route-students-admin):not(.lux-route-admin-orders):is(.role-professor, .role-ta, .role-admin, .role-student_service) .section-card,
-body.lux-unified-shell.lux-light-mode:not(.lux-route-students-admin):not(.lux-route-admin-orders):is(.role-professor, .role-ta, .role-admin, .role-student_service) .panel-card,
-body.lux-unified-shell.lux-light-mode:not(.lux-route-students-admin):not(.lux-route-admin-orders):is(.role-professor, .role-ta, .role-admin, .role-student_service) .kiu-card,
-body.lux-unified-shell.lux-light-mode:not(.lux-route-students-admin):not(.lux-route-admin-orders):is(.role-professor, .role-ta, .role-admin, .role-student_service) .dashboard-card,
-body.lux-unified-shell.lux-light-mode:not(.lux-route-students-admin):not(.lux-route-admin-orders):is(.role-professor, .role-ta, .role-admin, .role-student_service) .tabs-container,
-body.lux-unified-shell.lux-light-mode:not(.lux-route-students-admin):not(.lux-route-admin-orders):is(.role-professor, .role-ta, .role-admin, .role-student_service) .modal-content,
-body.lux-unified-shell.lux-light-mode:not(.lux-route-students-admin):not(.lux-route-admin-orders):is(.role-professor, .role-ta, .role-admin, .role-student_service) .page-hero {
-    background:
-        linear-gradient(180deg, rgba(255, 255, 255, calc(0.08 + var(--lux-panel-alpha) * 0.48)), rgba(245, 239, 229, calc(0.03 + var(--lux-glass-alpha) * 0.34))) !important;
-    border: 1px solid rgba(77, 52, 31, 0.12) !important;
-    color: var(--lux-text) !important;
-    box-shadow: 0 18px 46px rgba(73, 48, 25, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.72) !important;
-}body.lux-unified-shell.palette-slate-sapphire  {
-    background: var(--palette-slate-dark) !important;
-}body.lux-unified-shell.palette-slate-sapphire.lux-light-mode  {
-    background: var(--palette-slate-light) !important;
-}body.lux-unified-shell.palette-slate-sapphire[data-faculty]  {
-    background: var(--palette-slate-dark) !important;
-}body.lux-unified-shell.palette-slate-sapphire.lux-light-mode[data-faculty]  {
-    background: var(--palette-slate-light) !important;
-}body.lux-unified-shell.palette-pine-jade  {
-    background: var(--palette-pine-dark) !important;
-}body.lux-unified-shell.palette-pine-jade.lux-light-mode  {
-    background: var(--palette-pine-light) !important;
-}body.lux-unified-shell.palette-pine-jade[data-faculty]  {
-    background: var(--palette-pine-dark) !important;
-}body.lux-unified-shell.palette-pine-jade.lux-light-mode[data-faculty]  {
-    background: var(--palette-pine-light) !important;
-}body.lux-unified-shell.palette-sand-pearl  {
-    background: var(--palette-sand-dark) !important;
-}body.lux-unified-shell.palette-sand-pearl.lux-light-mode  {
-    background: var(--palette-sand-light) !important;
-}body.lux-unified-shell.palette-sand-pearl[data-faculty]  {
-    background: var(--palette-sand-dark) !important;
-}body.lux-unified-shell.palette-sand-pearl.lux-light-mode[data-faculty]  {
-    background: var(--palette-sand-light) !important;
-}body.lux-unified-shell.palette-ink-orchid  {
-    background: var(--palette-ink-dark) !important;
-}body.lux-unified-shell.palette-ink-orchid.lux-light-mode  {
-    background: var(--palette-ink-light) !important;
-}body.lux-unified-shell.palette-ink-orchid[data-faculty]  {
-    background: var(--palette-ink-dark) !important;
-}body.lux-unified-shell.palette-ink-orchid.lux-light-mode[data-faculty]  {
-    background: var(--palette-ink-light) !important;
 }.lux-user-menu {
     position: absolute;
     top: calc(100% + 10px);
@@ -516,43 +250,6 @@ body.lux-unified-shell.lux-light-mode:not(.lux-route-students-admin):not(.lux-ro
     text-transform: uppercase;
     color: var(--lux-text-soft);
     margin-bottom: 12px;
-}.lux-palette-grid  {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
-}.lux-palette-chip  {
-    min-height: 88px;
-    border-radius: 16px;
-    border: 1px solid transparent;
-    display: flex;
-    align-items: flex-end;
-    justify-content: flex-start;
-    padding: 12px;
-    color: #fff;
-    cursor: pointer;
-    position: relative;
-    overflow: hidden;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
-}.lux-palette-chip span  {
-    position: relative;
-    z-index: 1;
-    font-size: 11px;
-    font-weight: 700;
-    line-height: 1.35;
-    text-shadow: 0 1px 8px rgba(0, 0, 0, 0.48);
-}.lux-palette-chip::after  {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.22));
-}.lux-palette-chip.is-active  {
-    border-color: rgba(255, 255, 255, 0.64);
-    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.18);
-}.lux-mode-btn:hover,
-.lux-bg-mode-btn:hover,
-.lux-palette-chip:hover  {
-    transform: translateY(-1px);
-    border-color: var(--lux-border-strong);
 }body.lux-light-mode .lux-user-menu,
 body.lux-light-mode .lux-studio-panel {
     background: linear-gradient(180deg, rgba(252, 249, 245, 0.98), rgba(241, 235, 226, 0.98));
@@ -690,11 +387,6 @@ body.lux-light-mode .lux-utility-item {
         radial-gradient(circle at 18% 14%, rgba(var(--lux-bg-glow-rgb), 0.08), transparent 26%),
         radial-gradient(circle at 76% 82%, rgba(var(--lux-bg-haze-rgb), 0.06), transparent 34%),
         linear-gradient(180deg, rgba(7, 10, 18, 0), rgba(2, 5, 11, 0.24));
-}body:not(.lux-light-mode) .lux-widget-toolbar {
-    background:
-        linear-gradient(180deg, rgba(7, 12, 22, calc(var(--lux-utility-fill-alpha) + 0.024)), rgba(2, 6, 13, var(--lux-utility-fill-alpha))) !important;
-}.lux-utility-wrap {
-    position: relative;
 }.lux-utility-panel {
     position: absolute;
     top: calc(100% + 14px);
@@ -711,83 +403,6 @@ body.lux-light-mode .lux-utility-item {
     display: none;
 }.lux-utility-panel.is-open {
     display: block;
-}.lux-utility-head {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 14px;
-    padding: 6px 6px 12px;
-}.lux-utility-head strong {
-    display: block;
-    font-family: 'Playfair Display', Georgia, serif;
-    font-size: 22px;
-    line-height: 1;
-    color: var(--lux-text);
-}.lux-utility-head span {
-    display: block;
-    margin-top: 5px;
-    font-size: 11px;
-    color: var(--lux-text-muted);
-}.lux-utility-list {
-    display: grid;
-    gap: 8px;
-}.lux-utility-item {
-    width: 100%;
-    display: grid;
-    grid-template-columns: 40px minmax(0, 1fr) auto;
-    gap: 12px;
-    align-items: center;
-    padding: 12px;
-    border-radius: 18px;
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    background: rgba(255, 255, 255, 0.03);
-    color: var(--lux-text);
-    cursor: pointer;
-    transition: transform .18s ease, background .18s ease, border-color .18s ease;
-}.lux-utility-item:hover {
-    transform: translateY(-1px);
-    background: rgba(255, 255, 255, 0.05);
-    border-color: rgba(var(--lux-accent-rgb), 0.18);
-}.lux-utility-item-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(135deg, rgba(var(--lux-accent-rgb), 0.24), rgba(255, 255, 255, 0.04));
-    color: var(--lux-accent-2);
-}.lux-utility-item-copy {
-    min-width: 0;
-}.lux-utility-item-copy strong {
-    display: block;
-    font-size: 12px;
-    color: var(--lux-text);
-}.lux-utility-item-copy span {
-    display: block;
-    margin-top: 4px;
-    font-size: 10px;
-    line-height: 1.5;
-    color: var(--lux-text-muted);
-}.lux-utility-item em {
-    font-style: normal;
-    font-size: 10px;
-    color: var(--lux-accent-2);
-}.lux-utility-empty {
-    padding: 18px 14px;
-    border-radius: 18px;
-    border: 1px dashed rgba(255, 255, 255, 0.1);
-    background: rgba(255, 255, 255, 0.02);
-}.lux-utility-empty strong {
-    display: block;
-    font-size: 12px;
-    color: var(--lux-text);
-}.lux-utility-empty span {
-    display: block;
-    margin-top: 5px;
-    font-size: 10px;
-    line-height: 1.55;
-    color: var(--lux-text-muted);
 }#app-content {
     padding: 118px 28px 42px !important;
 }.lux-hero {
@@ -817,43 +432,6 @@ body.lux-light-mode .lux-utility-item {
     .lux-quick-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
-}@media (max-width:620px) {
-    #lux-topbar {
-        margin: 12px 12px 0;
-    }
-
-    .lux-topbar-shell {
-        padding: 14px;
-        border-radius: 22px;
-    }
-
-    .lux-topbar-main {
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-    .lux-topbar-actions {
-        justify-content: stretch;
-    }
-
-    .lux-topbar select {
-        width: 100%;
-    }
-
-    .lux-utility-panel {
-        right: auto;
-        left: 0;
-        width: min(100vw - 24px, 390px);
-    }
-
-    .lux-quick-grid,
-.lux-stat-row {
-        grid-template-columns: 1fr;
-    }
-
-    .lux-hero {
-        padding: 20px;
-    }
 }:root {
     --lux-raised-alpha: 0.09;
     --lux-glass-alpha: 0.06;
@@ -863,8 +441,6 @@ body.lux-light-mode .lux-utility-item {
     background:
         linear-gradient(180deg, rgba(15, 20, 33, var(--lux-utility-alpha)), rgba(8, 12, 20, calc(var(--lux-utility-alpha) + 0.02))),
         radial-gradient(circle at top right, rgba(var(--lux-accent-rgb), 0.12), transparent 28%);
-}.lux-utility-item {
-    background: rgba(255, 255, 255, var(--lux-glass-alpha));
 }.lux-alert {
     background: linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(0.12 + var(--lux-card-glow-alpha))), rgba(255, 255, 255, var(--lux-glass-alpha)));
 }.lux-alert.is-royal {
@@ -877,41 +453,6 @@ body.lux-light-mode .lux-utility-item {
     background:
         radial-gradient(circle at 72% 0%, rgba(var(--lux-accent-rgb), var(--lux-hero-glow)), transparent 30%),
         linear-gradient(135deg, rgba(255, 255, 255, var(--lux-raised-alpha)), rgba(255, 255, 255, var(--lux-glass-alpha)));
-}.lux-hero-side,
-.lux-stat,
-.lux-strip-card,
-.lux-quick-btn,
-.lux-hero-signal,
-.lux-pill,
-.lux-quick-meta-badge,
-.lux-control-btn,
-.lux-mode-btn,
-.lux-bg-mode-btn {
-    background: linear-gradient(180deg, rgba(255, 255, 255, var(--lux-raised-alpha)), rgba(255, 255, 255, var(--lux-glass-alpha)));
-}@media (max-width:768px) {
-    .lux-admin-tools-hero {
-        padding: 20px;
-    }
-
-    .lux-admin-tools-hero h1 {
-        font-size: 28px;
-    }
-
-    .lux-subcards {
-        grid-template-columns: 1fr;
-    }
-
-    .lux-field-grid {
-        grid-template-columns: 1fr;
-    }
-
-    body:not(.lux-route-admin-tools) #curriculum-library-modules-root>div {
-        grid-template-columns: 1fr;
-    }
-
-    .lux-hero-signal-list {
-        grid-template-columns: 1fr;
-    }
 }body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-staff):not(.lux-route-profile-view) .content-box,
 body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-staff):not(.lux-route-profile-view) .surface-card,
 body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-staff):not(.lux-route-profile-view) .admin-card,
@@ -984,17 +525,6 @@ body.lux-light-mode:not([data-lux-background-mode]) #lux-bg-overlay {
 }html.transparency-test-off #lux-bg-overlay {
     backdrop-filter: none !important;
     background: rgba(0, 0, 0, 0.20) !important;
-}html.transparency-test-off .lux-utility-panel {
-    background: var(--lux-surface) !important;
-    border: 1px solid rgba(255, 255, 255, 0.10) !important;
-    backdrop-filter: none !important;
-    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.28) !important;
-}html.transparency-test-off .lux-user-menu,
-html.transparency-test-off .kiu-table,
-html.transparency-test-off table {
-    background: var(--lux-surface) !important;
-    border: 1px solid rgba(255, 255, 255, 0.10) !important;
-    backdrop-filter: none !important;
 }body[data-lux-performance='efficient'] {
     --lux-glass-blur: 14px;
     --lux-transparency-blur: 12px;
@@ -1028,11 +558,6 @@ html.transparency-test-off table {
 
     /* Disable complex box-shadows during animations */
     box-shadow: none !important;
-}@media (max-width: 1024px) {
-    #lux-shell, #lux-topbar, .lux-card, .lux-panel, .lux-subcard {
-        backdrop-filter: blur(8px) saturate(110%) !important;
-        -webkit-backdrop-filter: blur(8px) saturate(110%) !important;
-    }
 }.lux-picker-panel,
 .lux-user-menu,
 .lux-dropdown,
@@ -1040,13 +565,6 @@ html.transparency-test-off table {
 .lux-action-sheet,
 .lux-context-menu {
     z-index: 9999 !important;
-}.lux-card:hover,
-.lux-card:focus-within,
-.lux-panel:hover,
-.lux-panel:focus-within,
-.lux-subcard:hover,
-.lux-subcard:focus-within {
-    z-index: 500 !important;
 }.lux-picker-panel,
 .lux-dropdown-menu,
 .lux-user-menu,
@@ -1054,28 +572,7 @@ html.transparency-test-off table {
     z-index: 99999 !important;
 }body.lux-studio-open #lux-studio-backdrop {
     z-index: 2000 !important;
-}@media (max-width: 1024px) {
-    body.lux-site-modernized.lux-unified-shell:not(.lux-page-bare) :where(
-        .page-hero,
-        .lux-hero,
-        .lux-dashboard-section,
-        .registration-hero,
-        .registration-workspace,
-        .lux-timetable-command,
-        .lux-timetable-stage,
-        .lms-route-hero,
-        .lms-route-card,
-        .lms-live-panel,
-        .sch-main,
-        .library-page-hero
-    ) {
-        -webkit-backdrop-filter: blur(10px) saturate(118%) !important;
-        backdrop-filter: blur(10px) saturate(118%) !important;
-    }
 }body.lux-is-animating * {
     backdrop-filter: none !important;
     box-shadow: none !important;
-}body.lux-is-animating .lux-card,
-body.lux-is-animating .lux-subcard {
-    transition: none !important;
 }
