@@ -1,0 +1,109 @@
+/* lux-shell-full-paint.css — floating topbar + shell chrome for dashboard only.
+   Loaded only by index.html (body.lux-full-paint). Paint complements lux-controls full-paint topbar. */
+
+/* ═══════════════════════════════════════════════════════════════════
+   TOPBAR SOFT-CHROME SSOT (must stay at EOF — beats luxury glass restates)
+   Matches dashboard builder-card lux-soft-chrome material.
+   ═══════════════════════════════════════════════════════════════════ */body.lux-full-paint.lux-unified-shell #lux-topbar .lux-topbar-shell,
+body.lux-full-paint.lux-unified-shell:not(.lux-light-mode) #lux-topbar .lux-topbar-shell,
+body.lux-full-paint.lux-unified-shell.lux-light-mode #lux-topbar .lux-topbar-shell,
+html.lux-light-mode body.lux-full-paint.lux-unified-shell #lux-topbar .lux-topbar-shell {
+    border: 1px solid var(--lux-focus-border, var(--lux-soft-chrome-border, var(--lux-panel-border))) !important;
+    border-radius: var(--lux-radius, 18px) !important;
+    background: var(--lux-focus-fill, var(--lux-soft-chrome-surface, var(--lux-panel-surface))) !important;
+    background-image: none !important;
+    box-shadow: var(--lux-focus-shadow, var(--lux-soft-chrome-shadow, var(--lux-panel-shadow))) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    color: var(--lux-text) !important;
+}body.lux-full-paint.lux-unified-shell #lux-topbar .lux-search input,
+body.lux-full-paint.lux-unified-shell:not(.lux-light-mode) #lux-topbar .lux-search input,
+body.lux-full-paint.lux-unified-shell #lux-topbar .lux-picker-btn,
+body.lux-full-paint.lux-unified-shell:not(.lux-light-mode) #lux-topbar .lux-picker-btn,
+body.lux-full-paint.lux-unified-shell #lux-topbar .lux-icon-btn,
+body.lux-full-paint.lux-unified-shell:not(.lux-light-mode) #lux-topbar .lux-icon-btn,
+body.lux-full-paint.lux-unified-shell #lux-topbar .lux-user-chip,
+body.lux-full-paint.lux-unified-shell:not(.lux-light-mode) #lux-topbar .lux-user-chip {
+    background: var(--lux-soft-chrome-surface, var(--lux-panel-surface-soft)) !important;
+    background-image: none !important;
+    border-color: var(--lux-soft-chrome-border, var(--lux-panel-border-soft)) !important;
+    box-shadow: var(--lux-soft-chrome-shadow, var(--lux-elev-2)) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    color: var(--lux-text) !important;
+}body.lux-full-paint.lux-unified-shell #lux-topbar .lux-search input {
+    border-radius: 16px !important;
+    min-height: 44px !important;
+    color: var(--lux-text) !important;
+}body.lux-full-paint.lux-unified-shell #lux-topbar .lux-search input:focus {
+    border-color: color-mix(in srgb, var(--lux-accent) 45%, var(--lux-soft-chrome-border, transparent)) !important;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--lux-accent) 16%, transparent) !important;
+}body.lux-full-paint.lux-unified-shell #lux-topbar .lux-picker-btn {
+    border-radius: 16px !important;
+    min-height: 48px !important;
+}body.lux-full-paint.lux-unified-shell #lux-topbar .lux-picker-btn:hover,
+body.lux-full-paint.lux-unified-shell #lux-topbar .lux-picker-btn.is-active,
+body.lux-full-paint.lux-unified-shell #lux-topbar .lux-picker-btn[aria-expanded="true"] {
+    border-color: color-mix(in srgb, var(--lux-accent) 40%, var(--lux-soft-chrome-border, transparent)) !important;
+    box-shadow:
+        var(--lux-soft-chrome-shadow, var(--lux-elev-2)),
+        0 0 0 1px color-mix(in srgb, var(--lux-accent) 18%, transparent) !important;
+}body.lux-full-paint.lux-unified-shell #lux-topbar .lux-picker-btn strong {
+    color: var(--lux-text) !important;
+}body.lux-full-paint.lux-unified-shell #lux-topbar .lux-picker-caption {
+    color: var(--lux-text-muted) !important;
+}body.lux-full-paint.lux-unified-shell #lux-topbar .lux-icon-btn {
+    border-radius: 14px !important;
+    width: 44px !important;
+    height: 44px !important;
+    color: var(--lux-text-muted) !important;
+}body.lux-full-paint.lux-unified-shell #lux-topbar .lux-icon-btn:hover,
+body.lux-full-paint.lux-unified-shell #lux-topbar .lux-icon-btn.is-active {
+    color: var(--lux-text) !important;
+    border-color: color-mix(in srgb, var(--lux-accent) 40%, var(--lux-soft-chrome-border, transparent)) !important;
+    background: color-mix(in srgb, var(--lux-soft-chrome-surface, var(--lux-panel-surface-soft)) 82%, var(--lux-accent) 18%) !important;
+    background-image: none !important;
+}body.lux-full-paint.lux-unified-shell #lux-topbar .lux-user-chip {
+    border-radius: 999px !important;
+    min-height: 44px !important;
+}body.lux-full-paint.lux-unified-shell #lux-topbar .lux-user-chip:hover,
+body.lux-full-paint.lux-unified-shell #lux-topbar .lux-user-chip[aria-expanded="true"] {
+    border-color: color-mix(in srgb, var(--lux-accent) 40%, var(--lux-soft-chrome-border, transparent)) !important;
+}body.lux-full-paint.lux-unified-shell #lux-topbar .lux-avatar {
+    border: 1.5px solid color-mix(in srgb, var(--lux-accent) 45%, transparent) !important;
+}/* Framed CTAs — same recipe as dashboard primary buttons */body.lux-full-paint.lux-unified-shell #lux-topbar .lux-sidebar-toggle-btn,
+body.lux-full-paint.lux-unified-shell #lux-topbar .lux-topbar-editor-btn,
+body.lux-full-paint.lux-unified-shell:not(.lux-light-mode) #lux-topbar .lux-topbar-editor-btn,
+body.lux-full-paint.lux-unified-shell:not(.lux-light-mode) #lux-topbar .lux-sidebar-toggle-btn {
+    border-radius: var(--lux-btn-pill-radius, 999px) !important;
+    border-width: var(--lux-btn-frame-width, 2.5px) !important;
+    border-style: solid !important;
+    border-color: transparent !important;
+    min-height: 42px !important;
+    padding: 0 16px !important;
+    color: var(--lux-btn-label, #f7fbff) !important;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.35) !important;
+    background:
+        var(--lux-btn-well),
+        var(--lux-btn-frame-metal) !important;
+    background-image:
+        var(--lux-btn-well),
+        var(--lux-btn-frame-metal) !important;
+    background-origin: border-box !important;
+    background-clip: padding-box, border-box !important;
+    box-shadow: var(--lux-btn-frame-shadow) !important;
+    backdrop-filter: var(--lux-btn-glass-blur, none) !important;
+    -webkit-backdrop-filter: var(--lux-btn-glass-blur, none) !important;
+}body.lux-full-paint.lux-unified-shell #lux-topbar .lux-sidebar-toggle-btn:hover,
+body.lux-full-paint.lux-unified-shell #lux-topbar .lux-topbar-editor-btn:hover {
+    filter: brightness(1.05);
+    box-shadow: var(--lux-btn-frame-shadow-hover) !important;
+    color: var(--lux-btn-label, #f7fbff) !important;
+}body.lux-full-paint.lux-unified-shell #lux-topbar .lux-breadcrumb {
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    color: var(--lux-text-muted) !important;
+}body.lux-full-paint.lux-unified-shell #lux-topbar .lux-breadcrumb strong {
+    color: var(--lux-text) !important;
+}

@@ -55,7 +55,7 @@ Bare routes must **not** load `index-luxury.css`, `lux-surfaces.css`, or `lux-fo
 tokens → controls → layout-primitives → [modals] → lux-shell-nav → lux-page-bare → mobile
 ```
 
-Dashboard alone keeps `index-luxury` + `index-home-dashboard` + `lux-full-paint`.
+Dashboard: `lux-shell-full-paint` (topbar SSOT) + slim `index-luxury` + `index-home-dashboard` + `lux-full-paint`.
 
 
 ## index-luxury.css (dashboard-only)

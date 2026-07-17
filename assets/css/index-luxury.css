@@ -13,30 +13,12 @@ html.lux-transparency-pending .lux-stat,
 html.lux-transparency-pending .lux-stat-card,
 html.lux-transparency-pending .lux-hero,
 html.lux-transparency-pending .lux-grid-widget,
-html.lux-transparency-pending .lux-admin-ops-card,
 html.lux-transparency-pending .lux-builder-card,
 html.lux-transparency-pending .surface-card,
 html.lux-transparency-pending .content-box,
 html.lux-transparency-pending .kiu-card,
 html.lux-transparency-pending .page-card,
 html.lux-transparency-pending .page-hero,
-html.lux-transparency-pending .registration-hero,
-html.lux-transparency-pending .registration-workspace,
-html.lux-transparency-pending .registration-insight-card,
-html.lux-transparency-pending .registration-focus-card,
-html.lux-transparency-pending .registration-state-card,
-html.lux-transparency-pending .registration-module-list-card,
-html.lux-transparency-pending .registration-module-pane-card,
-html.lux-transparency-pending .registration-track-card,
-html.lux-transparency-pending .registration-mini-metric,
-html.lux-transparency-pending .lms-clean-stat,
-html.lux-transparency-pending .lms-clean-signal-panel,
-html.lux-transparency-pending .lms-clean-metric-card,
-html.lux-transparency-pending .lms-clean-subject-card,
-html.lux-transparency-pending .sch-sidebar,
-html.lux-transparency-pending .sch-main,
-html.lux-transparency-pending .sch-rail-hero,
-html.lux-transparency-pending .sch-rail-section,
 html.lux-transparency-pending .lux-modern-surface,
 html.lux-transparency-pending .lux-utility-panel {
     background: transparent !important;
@@ -55,7 +37,6 @@ html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(
 html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode) .lux-stat-card,
 html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode) .lux-home-card,
 html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode) .lux-grid-widget,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode) .lux-admin-ops-card,
 html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode) .lux-builder-card,
 html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode) .lux-dashboard-section,
 html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode) .lux-page-shell,
@@ -65,29 +46,7 @@ html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(
 html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode) .page-card,
 html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode) .page-hero {
     background: linear-gradient(180deg, rgba(14, 20, 33, var(--lux-panel-alpha, 0.92)), rgba(8, 12, 21, var(--lux-panel-alpha, 0.92))) !important;
-}/* Dark mode: Registration page surfaces */html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode) .registration-hero,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode) .registration-workspace,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode) .registration-insight-card,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode) .registration-focus-card,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode) .registration-state-card,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode) .registration-module-list-card,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode) .registration-module-pane-card,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode) .registration-track-card,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode) .registration-mini-metric {
-    background: linear-gradient(180deg, rgba(14, 20, 33, var(--lux-panel-alpha, 0.92)), rgba(8, 12, 21, var(--lux-panel-alpha, 0.92))) !important;
-}/* Dark mode: LMS surfaces */html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode) .lms-clean-stat,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode) .lms-clean-signal-panel,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode) .lms-clean-metric-card,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode) .lms-clean-subject-card {
-    background: linear-gradient(180deg, rgba(14, 20, 33, var(--lux-panel-alpha, 0.92)), rgba(8, 12, 21, var(--lux-panel-alpha, 0.92))) !important;
-}/* Dark mode: Scheduler surfaces */html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode) .sch-sidebar,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode) .sch-main,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode) .sch-rail-hero,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode) .sch-rail-section {
-    background: linear-gradient(180deg, rgba(14, 20, 33, var(--lux-panel-alpha, 0.92)), rgba(8, 12, 21, var(--lux-panel-alpha, 0.92))) !important;
-}/* Dark mode: Social surfaces (route-owned on lux-route-social) */html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode):not(.lux-route-social) .social-neo-card,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode):not(.lux-route-social) .social-neo-alert,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode) .lux-modern-surface,
+}/* Dark mode: Registration page surfaces *//* Dark mode: LMS surfaces *//* Dark mode: Scheduler surfaces *//* Dark mode: Social surfaces (route-owned on lux-route-social) */html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode) .lux-modern-surface,
 html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode) .lux-utility-panel {
     background: linear-gradient(180deg, rgba(14, 20, 33, var(--lux-panel-alpha, 0.92)), rgba(8, 12, 21, var(--lux-panel-alpha, 0.92))) !important;
 }/* Dark mode: Sidebar + body pseudo-element (background glow) */html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode)::before {
@@ -103,7 +62,6 @@ html.lux-high-transparency.lux-high-transparency.lux-high-transparency body.lux-
 html.lux-high-transparency.lux-high-transparency.lux-high-transparency body.lux-light-mode .lux-stat-card,
 html.lux-high-transparency.lux-high-transparency.lux-high-transparency body.lux-light-mode .lux-home-card,
 html.lux-high-transparency.lux-high-transparency.lux-high-transparency body.lux-light-mode .lux-grid-widget,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body.lux-light-mode .lux-admin-ops-card,
 html.lux-high-transparency.lux-high-transparency.lux-high-transparency body.lux-light-mode .lux-builder-card,
 html.lux-high-transparency.lux-high-transparency.lux-high-transparency body.lux-light-mode .lux-dashboard-section,
 html.lux-high-transparency.lux-high-transparency.lux-high-transparency body.lux-light-mode .lux-page-shell,
@@ -112,25 +70,6 @@ html.lux-high-transparency.lux-high-transparency.lux-high-transparency body.lux-
 html.lux-high-transparency.lux-high-transparency.lux-high-transparency body.lux-light-mode .kiu-card,
 html.lux-high-transparency.lux-high-transparency.lux-high-transparency body.lux-light-mode .page-card,
 html.lux-high-transparency.lux-high-transparency.lux-high-transparency body.lux-light-mode .page-hero,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body.lux-light-mode .registration-hero,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body.lux-light-mode .registration-workspace,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body.lux-light-mode .registration-insight-card,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body.lux-light-mode .registration-focus-card,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body.lux-light-mode .registration-state-card,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body.lux-light-mode .registration-module-list-card,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body.lux-light-mode .registration-module-pane-card,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body.lux-light-mode .registration-track-card,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body.lux-light-mode .registration-mini-metric,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body.lux-light-mode .lms-clean-stat,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body.lux-light-mode .lms-clean-signal-panel,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body.lux-light-mode .lms-clean-metric-card,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body.lux-light-mode .lms-clean-subject-card,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body.lux-light-mode .sch-sidebar,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body.lux-light-mode .sch-main,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body.lux-light-mode .sch-rail-hero,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body.lux-light-mode .sch-rail-section,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body.lux-light-mode:not(.lux-route-social) .social-neo-card,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body.lux-light-mode:not(.lux-route-social) .social-neo-alert,
 html.lux-high-transparency.lux-high-transparency.lux-high-transparency body.lux-light-mode .lux-modern-surface,
 html.lux-high-transparency.lux-high-transparency.lux-high-transparency body.lux-light-mode .lux-utility-panel {
     background: linear-gradient(180deg, rgba(252, 249, 244, var(--lux-panel-alpha, 0.92)), rgba(248, 244, 237, var(--lux-panel-alpha, 0.92))) !important;
@@ -149,13 +88,8 @@ html.lux-high-transparency.lux-high-transparency.lux-high-transparency body.lux-
     --lux-hero-glow: 0;
     --lux-glow-scale: 0;
     --lux-card-glow-alpha: 0;
-}/* Route-specific page card overrides (these use hardcoded accent values) */html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode) .library-page-hero,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode) .library-catalog-card,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode) .lux-person-card,
+}/* Route-specific page card overrides (these use hardcoded accent values) */html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode) .lux-person-card,
 html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode) .lux-section-card,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode) .personal-data-layout,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode) .personal-data-stats-card,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode) .personal-data-facts-card,
 html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode) .profile-card,
 html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode):not(.lux-route-social) .social-hero,
 html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode):not(.lux-route-social) .social-card,
@@ -209,25 +143,9 @@ body {
 .dashboard-card,
 .page-hero,
 .lux-person-card,
-.social-neo-card,
-.newsx-panel,
-.student-service-panel,
-.student-service-area-card,
-.student-service-ticket-card,
-.student-service-home-card,
-.library-catalog-card,
-.sch-rail-section,
-.sch-main,
-.sch-sidebar,
-.ex2-card,
-.ex2-panel,
-.ex2-side-card,
 .orders-detail-card,
 .orders-list-card,
-.orders-inbox-hero,
-.lux-program-stage,
-.lux-program-overview-card,
-.lux-program-focus-panel {
+.orders-inbox-hero {
     contain: layout style;
     content-visibility: auto;
     contain-intrinsic-size: auto 320px;
@@ -346,7 +264,6 @@ html[data-lux-transparency="0"] .lux-page-shell,
 html[data-lux-transparency="0"] .lux-dashboard-section,
 html[data-lux-transparency="0"] .lux-grid-widget,
 html[data-lux-transparency="0"] .lux-home-card,
-html[data-lux-transparency="0"] .lux-admin-ops-card,
 html[data-lux-transparency="0"] .lux-builder-card,
 html[data-lux-transparency="0"] .lux-stat-card,
 html[data-lux-transparency="0"] .lux-stat,
@@ -356,23 +273,6 @@ html[data-lux-transparency="0"] .content-box,
 html[data-lux-transparency="0"] .kiu-card,
 html[data-lux-transparency="0"] .page-card,
 html[data-lux-transparency="0"] .page-hero,
-html[data-lux-transparency="0"] .registration-hero,
-html[data-lux-transparency="0"] .registration-workspace,
-html[data-lux-transparency="0"] .registration-insight-card,
-html[data-lux-transparency="0"] .registration-focus-card,
-html[data-lux-transparency="0"] .registration-state-card,
-html[data-lux-transparency="0"] .registration-module-list-card,
-html[data-lux-transparency="0"] .registration-module-pane-card,
-html[data-lux-transparency="0"] .registration-track-card,
-html[data-lux-transparency="0"] .registration-mini-metric,
-html[data-lux-transparency="0"] .lms-clean-stat,
-html[data-lux-transparency="0"] .lms-clean-signal-panel,
-html[data-lux-transparency="0"] .lms-clean-metric-card,
-html[data-lux-transparency="0"] .lms-clean-subject-card,
-html[data-lux-transparency="0"] .sch-sidebar,
-html[data-lux-transparency="0"] .sch-main,
-html[data-lux-transparency="0"] .sch-rail-hero,
-html[data-lux-transparency="0"] .sch-rail-section,
 html[data-lux-transparency="0"] .lux-modern-surface,
 html[data-lux-transparency="1"] .lux-card,
 html[data-lux-transparency="1"] .lux-panel,
@@ -381,26 +281,12 @@ html[data-lux-transparency="1"] .lux-page-shell,
 html[data-lux-transparency="1"] .lux-dashboard-section,
 html[data-lux-transparency="1"] .lux-grid-widget,
 html[data-lux-transparency="1"] .lux-home-card,
-html[data-lux-transparency="1"] .lux-admin-ops-card,
 html[data-lux-transparency="1"] .lux-stat-card,
 html[data-lux-transparency="1"] .lux-stat,
 html[data-lux-transparency="1"] .lux-hero,
 html[data-lux-transparency="1"] .surface-card,
 html[data-lux-transparency="1"] .content-box,
 html[data-lux-transparency="1"] .page-hero,
-html[data-lux-transparency="1"] .registration-hero,
-html[data-lux-transparency="1"] .registration-workspace,
-html[data-lux-transparency="1"] .registration-insight-card,
-html[data-lux-transparency="1"] .registration-focus-card,
-html[data-lux-transparency="1"] .registration-state-card,
-html[data-lux-transparency="1"] .registration-module-list-card,
-html[data-lux-transparency="1"] .registration-module-pane-card,
-html[data-lux-transparency="1"] .registration-track-card,
-html[data-lux-transparency="1"] .lms-clean-stat,
-html[data-lux-transparency="1"] .lms-clean-signal-panel,
-html[data-lux-transparency="1"] .lms-clean-metric-card,
-html[data-lux-transparency="1"] .sch-sidebar,
-html[data-lux-transparency="1"] .sch-main,
 html[data-lux-transparency="1"] .lux-modern-surface {
     background: linear-gradient(180deg, rgba(14,20,33, 0.94), rgba(8,12,21, 0.72)) !important;
     backdrop-filter: blur(24px) saturate(145%) !important;
@@ -412,27 +298,12 @@ html[data-lux-transparency="0"].lux-light-mode .lux-page-shell,
 html[data-lux-transparency="0"].lux-light-mode .lux-dashboard-section,
 html[data-lux-transparency="0"].lux-light-mode .lux-grid-widget,
 html[data-lux-transparency="0"].lux-light-mode .lux-home-card,
-html[data-lux-transparency="0"].lux-light-mode .lux-admin-ops-card,
 html[data-lux-transparency="0"].lux-light-mode .lux-stat-card,
 html[data-lux-transparency="0"].lux-light-mode .lux-stat,
 html[data-lux-transparency="0"].lux-light-mode .lux-hero,
 html[data-lux-transparency="0"].lux-light-mode .surface-card,
 html[data-lux-transparency="0"].lux-light-mode .content-box,
 html[data-lux-transparency="0"].lux-light-mode .page-hero,
-html[data-lux-transparency="0"].lux-light-mode .registration-hero,
-html[data-lux-transparency="0"].lux-light-mode .registration-workspace,
-html[data-lux-transparency="0"].lux-light-mode .registration-insight-card,
-html[data-lux-transparency="0"].lux-light-mode .registration-focus-card,
-html[data-lux-transparency="0"].lux-light-mode .registration-state-card,
-html[data-lux-transparency="0"].lux-light-mode .registration-module-list-card,
-html[data-lux-transparency="0"].lux-light-mode .registration-module-pane-card,
-html[data-lux-transparency="0"].lux-light-mode .registration-track-card,
-html[data-lux-transparency="0"].lux-light-mode .registration-mini-metric,
-html[data-lux-transparency="0"].lux-light-mode .lms-clean-stat,
-html[data-lux-transparency="0"].lux-light-mode .lms-clean-signal-panel,
-html[data-lux-transparency="0"].lux-light-mode .lms-clean-metric-card,
-html[data-lux-transparency="0"].lux-light-mode .sch-sidebar,
-html[data-lux-transparency="0"].lux-light-mode .sch-main,
 html[data-lux-transparency="0"].lux-light-mode .lux-modern-surface,
 html[data-lux-transparency="1"].lux-light-mode .lux-card,
 html[data-lux-transparency="1"].lux-light-mode .lux-panel,
@@ -447,17 +318,6 @@ html[data-lux-transparency="1"].lux-light-mode .lux-hero,
 html[data-lux-transparency="1"].lux-light-mode .surface-card,
 html[data-lux-transparency="1"].lux-light-mode .content-box,
 html[data-lux-transparency="1"].lux-light-mode .page-hero,
-html[data-lux-transparency="1"].lux-light-mode .registration-hero,
-html[data-lux-transparency="1"].lux-light-mode .registration-workspace,
-html[data-lux-transparency="1"].lux-light-mode .registration-insight-card,
-html[data-lux-transparency="1"].lux-light-mode .registration-focus-card,
-html[data-lux-transparency="1"].lux-light-mode .registration-state-card,
-html[data-lux-transparency="1"].lux-light-mode .registration-module-list-card,
-html[data-lux-transparency="1"].lux-light-mode .registration-module-pane-card,
-html[data-lux-transparency="1"].lux-light-mode .lms-clean-stat,
-html[data-lux-transparency="99"].lux-light-mode .lms-clean-signal-panel,
-html[data-lux-transparency="99"].lux-light-mode .sch-sidebar,
-html[data-lux-transparency="99"].lux-light-mode .sch-main,
 html[data-lux-transparency="99"].lux-light-mode .lux-modern-surface {
     background: linear-gradient(180deg, rgba(255,255,255, 0.56), rgba(245,239,229, 0.37)) !important;
     backdrop-filter: blur(24px) saturate(145%) !important;
@@ -1690,12 +1550,6 @@ body.lux-light-mode #lux-shell .lux-user-role {
     display: grid !important;
     gap: 16px !important;
     grid-template-columns: minmax(340px, 0.95fr) minmax(0, 1.25fr) !important;
-}.admin-card-title-text,
-.admin-hero-title,
-.admin-card-title,
-.admin-table-toolbar>div:first-child,
-.portal-section-title strong {
-    color: var(--lux-text) !important;
 }input,
 select,
 textarea {
@@ -1725,18 +1579,6 @@ textarea::placeholder {
 }body.lux-light-mode .lux-user-menu,
 body.lux-light-mode .lux-studio-panel {
     background: linear-gradient(180deg, rgba(252, 249, 245, 0.98), rgba(241, 235, 226, 0.98));
-}body.lux-light-mode .lux-panel,
-body.lux-light-mode .content-box,
-body.lux-light-mode .registration-cms-container,
-body.lux-light-mode .admin-hero,
-body.lux-light-mode #exams-page-shell,
-body.lux-light-mode .modal-content,
-body.lux-light-mode .lux-quick-btn,
-body.lux-light-mode .dash-btn {
-    background:
-        linear-gradient(180deg,
-            rgba(var(--lux-glass-tint-rgb), calc(var(--lux-raised-fill-alpha) + var(--lux-glass-highlight-alpha))),
-            rgba(var(--lux-glass-tint-rgb), var(--lux-raised-fill-alpha))) !important;
 }body.lux-light-mode .lux-pill,
 body.lux-light-mode .lux-stat,
 body.lux-light-mode .lux-mode-btn,
@@ -1910,8 +1752,6 @@ body:not(.lux-light-mode) .lux-picker-panel {
 body:not(.lux-light-mode) .lux-alert,
 body:not(.lux-light-mode) .lux-studio-panel,
 body:not(.lux-light-mode) .lux-widget-toolbar,
-body:not(.lux-light-mode) .lux-admin-tools-hero,
-body:not(.lux-light-mode) .lux-admin-op-card,
 body:not(.lux-light-mode):not(.lux-route-admin-library) .lux-hero,
 body:not(.lux-light-mode):not(.lux-route-admin-library) .lux-hero-side,
 body:not(.lux-light-mode) .lux-stat,
@@ -1927,7 +1767,6 @@ body:not(.lux-light-mode) .lux-builder-hero,
 body:not(.lux-light-mode) .lux-control-btn,
 body:not(.lux-light-mode) .lux-mode-btn,
 body:not(.lux-light-mode) .lux-bg-mode-btn,
-body:not(.lux-light-mode) .lux-admin-op-btn,
 body:not(.lux-light-mode) .lux-studio-close,
 body:not(.lux-light-mode) .lux-editor-field input,
 body:not(.lux-light-mode) .lux-editor-field select,
@@ -2468,16 +2307,6 @@ body.lux-light-mode .lux-utility-panel {
             rgba(var(--lux-topbar-tint-rgb), calc(var(--lux-topbar-fill-alpha) + 0.08)),
             rgba(var(--lux-topbar-tint-rgb), var(--lux-topbar-fill-alpha))),
         radial-gradient(circle at top right, rgba(var(--lux-accent-rgb), 0.08), transparent 30%);
-}body.lux-light-mode .lux-panel,
-body.lux-light-mode .content-box,
-body.lux-light-mode .registration-cms-container,
-body.lux-light-mode .admin-hero,
-body.lux-light-mode #exams-page-shell,
-body.lux-light-mode .modal-content {
-    background:
-        linear-gradient(180deg,
-            rgba(var(--lux-glass-tint-rgb), calc(var(--lux-panel-fill-alpha) + var(--lux-glass-highlight-alpha))),
-            rgba(var(--lux-glass-tint-rgb), var(--lux-panel-fill-alpha))) !important;
 }body.lux-light-mode .lux-quick-btn,
 body.lux-light-mode .lux-strip-card,
 body.lux-light-mode .lux-hero-side,
@@ -2607,61 +2436,6 @@ body.lux-light-mode .lux-utility-item {
     background: linear-gradient(180deg, rgba(255, 255, 255, var(--lux-raised-alpha)), rgba(255, 255, 255, var(--lux-glass-alpha)));
 }.lux-quick-meter {
     background: rgba(255, 255, 255, calc(var(--lux-glass-alpha) + 0.04));
-}.lux-admin-ops-panel {
-    padding: 18px;
-}.lux-admin-ops-head {
-    align-items: flex-start;
-    margin-bottom: 16px;
-}.lux-admin-ops-copy {
-    margin-top: 6px;
-    font-size: 12px;
-    line-height: 1.6;
-    color: var(--lux-text-muted);
-}.lux-admin-ops-grid {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 14px;
-}.lux-admin-op-card {
-    padding: 16px;
-    border-radius: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    background: linear-gradient(180deg, rgba(255, 255, 255, var(--lux-raised-alpha)), rgba(255, 255, 255, var(--lux-glass-alpha)));
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
-}.lux-admin-op-head strong {
-    display: block;
-    font-family: 'Playfair Display', Georgia, serif;
-    font-size: 22px;
-    line-height: 1.04;
-    color: var(--lux-text);
-}.lux-admin-op-head span {
-    display: block;
-    margin-top: 8px;
-    font-size: 11px;
-    line-height: 1.55;
-    color: var(--lux-text-muted);
-}.lux-admin-op-actions {
-    display: grid;
-    gap: 10px;
-    margin-top: 16px;
-}.lux-admin-op-btn {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 12px 14px;
-    border-radius: 16px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    background: rgba(255, 255, 255, var(--lux-glass-alpha));
-    color: var(--lux-text);
-    cursor: pointer;
-    transition: transform .18s ease, border-color .18s ease, background .18s ease;
-}.lux-admin-op-btn:hover {
-    transform: translateY(-2px);
-    border-color: rgba(var(--lux-accent-rgb), 0.22);
-    background: rgba(255, 255, 255, calc(var(--lux-raised-alpha) + 0.01));
-}.lux-admin-op-btn i {
-    width: 18px;
-    color: var(--lux-accent-2);
 }/* ═══════════════════════════════════════════════════════════
    ADMIN TOOLS — Complete Redesign (Dark Mode Professional)
    ═══════════════════════════════════════════════════════════ *//* ── Hero Section ── *//* ── Live Overview Panel ── */.lux-hero-side-head {
@@ -3169,9 +2943,7 @@ not purple *//* ── Buttons ── (defer paint/motion to lux-controls soft-c
 .lux-panel,
 .lux-alert,
 .lux-studio-panel,
-.lux-widget-toolbar,
-.lux-admin-tools-hero,
-.lux-admin-op-card {
+.lux-widget-toolbar {
     background:
         linear-gradient(180deg, rgba(14, 20, 33, calc(var(--lux-panel-alpha) * 0.94)), rgba(8, 12, 21, calc(var(--lux-panel-alpha) * 0.72))) !important;
     backdrop-filter: blur(24px) saturate(145%);
@@ -3188,7 +2960,6 @@ not purple *//* ── Buttons ── (defer paint/motion to lux-controls soft-c
 .lux-control-btn,
 .lux-mode-btn,
 .lux-bg-mode-btn,
-.lux-admin-op-btn,
 .lux-studio-close {
     background:
         linear-gradient(180deg, rgba(255, 255, 255, calc(var(--lux-raised-alpha) + 0.02)), rgba(255, 255, 255, calc(var(--lux-glass-alpha) + 0.01))) !important;
@@ -3210,8 +2981,6 @@ body.lux-light-mode .lux-panel,
 body.lux-light-mode .lux-alert,
 body.lux-light-mode .lux-studio-panel,
 body.lux-light-mode .lux-widget-toolbar,
-body.lux-light-mode .lux-admin-tools-hero,
-body.lux-light-mode .lux-admin-op-card,
 body.lux-light-mode .content-box,
 body.lux-light-mode .registration-cms-container,
 body.lux-light-mode .admin-hero,
@@ -3233,7 +3002,6 @@ body.lux-light-mode .lux-picker-btn,
 body.lux-light-mode .lux-control-btn,
 body.lux-light-mode .lux-mode-btn,
 body.lux-light-mode .lux-bg-mode-btn,
-body.lux-light-mode .lux-admin-op-btn,
 body.lux-light-mode .lux-studio-close,
 body.lux-light-mode .lux-search input,
 body.lux-light-mode .lux-editor-field input,
@@ -3343,10 +3111,7 @@ body[data-lux-background-animation="off"] #lux-bg-overlay {
 }.lux-panel,
 .lux-alert,
 .lux-studio-panel,
-.lux-widget-toolbar,
-.lux-admin-tools-hero,
-.lux-admin-op-card,
-.lux-admin-tools-page .admin-reg-tab {
+.lux-widget-toolbar {
     background:
         linear-gradient(180deg,
             rgba(var(--lux-glass-tint-rgb), calc(var(--lux-panel-fill-alpha) + var(--lux-glass-highlight-alpha))),
@@ -3373,7 +3138,6 @@ body[data-lux-background-animation="off"] #lux-bg-overlay {
 .lux-control-btn,
 .lux-mode-btn,
 .lux-bg-mode-btn,
-.lux-admin-op-btn,
 .lux-studio-close,
 .lux-editor-field input,
 .lux-editor-field select,
@@ -3405,10 +3169,7 @@ body.lux-light-mode .lux-picker-panel,
 body.lux-light-mode .lux-panel,
 body.lux-light-mode .lux-alert,
 body.lux-light-mode .lux-studio-panel,
-body.lux-light-mode .lux-widget-toolbar,
-body.lux-light-mode .lux-admin-tools-hero,
-body.lux-light-mode .lux-admin-op-card,
-body.lux-light-mode .lux-admin-tools-page .admin-reg-tab {
+body.lux-light-mode .lux-widget-toolbar {
     border-color: rgba(68, 49, 30, 0.12) !important;
     box-shadow:
         0 20px 44px rgba(93, 71, 47, 0.12),
@@ -3420,8 +3181,6 @@ body.lux-light-mode .lux-admin-tools-page .admin-reg-tab {
 body.lux-light-mode .lux-alert,
 body.lux-light-mode .lux-studio-panel,
 body.lux-light-mode .lux-widget-toolbar,
-body.lux-light-mode .lux-admin-tools-hero,
-body.lux-light-mode .lux-admin-op-card,
 body.lux-light-mode .lux-hero,
 body.lux-light-mode .lux-hero-side,
 body.lux-light-mode .lux-stat,
@@ -3437,7 +3196,6 @@ body.lux-light-mode .lux-builder-hero,
 body.lux-light-mode .lux-control-btn,
 body.lux-light-mode .lux-mode-btn,
 body.lux-light-mode .lux-bg-mode-btn,
-body.lux-light-mode .lux-admin-op-btn,
 body.lux-light-mode .lux-studio-close,
 body.lux-light-mode .lux-editor-field input,
 body.lux-light-mode .lux-editor-field select,
@@ -3964,10 +3722,7 @@ body.lux-family-admin .lux-field-grid.cols-2 {
    CALENDAR — Light Mode Overrides
    ═══════════════════════════════════════════════════════════ *//* Scheduler grid header row - light mode (layout/color only; paint owned by route CSS) *//* ═══════════════════════════════════════════════════════════════
    Student Service Center — Luxury Editorial Dark-Mode Overrides
-   ═══════════════════════════════════════════════════════════════ *//* ── Page shell ── *//* ── Hero section ── *//* ── Workflow strip ── *//* ── Summary stat cards ── *//* ── Zone panels (glass cards) ── *//* ── Mini action buttons (ghost) ── *//* ── Pills / chips ── *//* ── Status badge ── *//* ── Lane / topic cards ── *//* ── Search bar ── *//* ── Ticket card list ── *//* ── Ticket detail / thread ── *//* ── Thread entries ── *//* ── Thread reply area ── *//* ── Stat track cards ── *//* ── Article preview ── *//* ── Action rows ── *//* ── Request form ── *//* ── Form elements (dark mode) ── *//* ── Staff filter rows ── *//* ── Staff panel switch ── *//* ── Inbox / article list ── *//* ── Staff grid ── *//* ── Track panel ── *//* ── Empty states ── *//* ── Operations strip (student_service role) ── *//* ── Overview section ── *//* ── Home workbench (student_service desk) ── */.student-service-home-workbench {
-    display: grid;
-    gap: 18px;
-}/* ── Canvas body ── *//* ── Override legacy light-mode inline styles on this route ── *//* ══════════════════════════════════════════════════════════════
+   ═══════════════════════════════════════════════════════════════ *//* ── Page shell ── *//* ── Hero section ── *//* ── Workflow strip ── *//* ── Summary stat cards ── *//* ── Zone panels (glass cards) ── *//* ── Mini action buttons (ghost) ── *//* ── Pills / chips ── *//* ── Status badge ── *//* ── Lane / topic cards ── *//* ── Search bar ── *//* ── Ticket card list ── *//* ── Ticket detail / thread ── *//* ── Thread entries ── *//* ── Thread reply area ── *//* ── Stat track cards ── *//* ── Article preview ── *//* ── Action rows ── *//* ── Request form ── *//* ── Form elements (dark mode) ── *//* ── Staff filter rows ── *//* ── Staff panel switch ── *//* ── Inbox / article list ── *//* ── Staff grid ── *//* ── Track panel ── *//* ── Empty states ── *//* ── Operations strip (student_service role) ── *//* ── Overview section ── *//* ── Home workbench (student_service desk) ── *//* ── Canvas body ── *//* ── Override legacy light-mode inline styles on this route ── *//* ══════════════════════════════════════════════════════════════
    CRITICAL: Kill hardcoded blue from base.css + layout.css
    The .admin-hero in layout.css uses !important blue gradients.
    We MUST outspecify with body prefix + !important to win.
@@ -4008,9 +3763,6 @@ body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-staff):not(
 body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-staff):not(.lux-route-profile-view) .lux-alert,
 body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-staff):not(.lux-route-profile-view) .lux-studio-panel,
 body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-staff):not(.lux-route-profile-view) .lux-widget-toolbar,
-body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-staff):not(.lux-route-profile-view) .lux-admin-tools-hero,
-body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-staff):not(.lux-route-profile-view) .lux-admin-op-card,
-body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-staff):not(.lux-route-profile-view) .lux-admin-tools-page .admin-reg-tab,
 body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-staff):not(.lux-route-profile-view) .scheduler-wrap>*,
 body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-admin-orders):not(.lux-route-staff):not(.lux-route-profile-view) #admin-orders-root>* {
     background:
@@ -4047,7 +3799,6 @@ body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-profile):no
 body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-profile):not(.lux-route-admin-orders) .lux-control-btn,
 body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-profile):not(.lux-route-admin-orders) .lux-mode-btn,
 body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-profile):not(.lux-route-admin-orders) .lux-bg-mode-btn,
-body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-profile):not(.lux-route-admin-orders) .lux-admin-op-btn,
 body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-profile):not(.lux-route-admin-orders) .lux-studio-close,
 body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-profile):not(.lux-route-admin-orders) .lux-editor-field input,
 body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-profile):not(.lux-route-admin-orders) .lux-editor-field select,
@@ -4134,20 +3885,7 @@ body.lux-light-mode:not([data-lux-background-mode]) #lux-bg-overlay {
     -webkit-backdrop-filter: blur(calc(var(--lux-glass-blur) - 2px)) saturate(150%);
 }/* ════════════════════════════════════════════════════════════════════════════
    TESTING: Transparency OFF Mode - Visualization for lms.html widget style
-   ════════════════════════════════════════════════════════════════════════════ *//* Main panels and containers */html.transparency-test-off .lux-panel,
-html.transparency-test-off .content-box,
-html.transparency-test-off .registration-cms-container,
-html.transparency-test-off .admin-hero,
-html.transparency-test-off .modal-content,
-html.transparency-test-off .lux-card,
-html.transparency-test-off .lux-quick-btn,
-html.transparency-test-off .dashboard-admin>.content-box,
-html.transparency-test-off .dashboard-admin .admin-card {
-    background: var(--lux-surface) !important;
-    border: 1px solid rgba(255, 255, 255, 0.10) !important;
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.20) !important;
-    backdrop-filter: none !important;
-}/* Hero sections with gradient *//* Pills,
+   ════════════════════════════════════════════════════════════════════════════ *//* Main panels and containers *//* Hero sections with gradient *//* Pills,
 stats,
 mode buttons - secondary surfaces */html.transparency-test-off .lux-pill,
 html.transparency-test-off .lux-stat,
@@ -4181,8 +3919,7 @@ html.transparency-test-off textarea:focus {
 }/* Modal overlay */html.transparency-test-off .modal-overlay {
     background: rgba(4, 8, 16, 0.72) !important;
     backdrop-filter: none !important;
-}/* Admin operation cards */html.transparency-test-off .lux-admin-op-card,
-html.transparency-test-off .lux-utility-item,
+}/* Admin operation cards */html.transparency-test-off .lux-utility-item,
 html.transparency-test-off .lux-person-card,
 html.transparency-test-off .lux-subcard,
 html.transparency-test-off .lux-stack,
@@ -4325,19 +4062,16 @@ so they don't need their own blur! */.lux-nav-item,
 .lux-utility-btn,
 .lux-chip,
 .lux-mini-row,
-.lux-admin-op-card,
 .lux-widget-tile,
 .lux-breadcrumb,
 button.lux-glass-btn {
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
 }/* Ensure these items still look good against their parent by boosting alpha slightly */body.lux-light-mode .lux-quick-btn,
-body.lux-light-mode .lux-stat,
-body.lux-light-mode .lux-admin-op-card {
+body.lux-light-mode .lux-stat {
     background: rgba(255, 255, 255, 0.4) !important;
 }body:not(.lux-light-mode) .lux-quick-btn,
-body:not(.lux-light-mode) .lux-stat,
-body:not(.lux-light-mode) .lux-admin-op-card {
+body:not(.lux-light-mode) .lux-stat {
     background: rgba(0, 0, 0, 0.25) !important;
 }/* Force Firefox to render the remaining large glass panels on the GPU */@-moz-document url-prefix() {
     .lux-card, .lux-panel, #lux-shell, #lux-topbar, .lux-subcard {
@@ -4385,7 +4119,9 @@ they create their own stacking contexts.
 .lux-subcard:hover,
 .lux-subcard:focus-within {
     z-index: 500 !important;
-}/* 4. Ensure overflow is visible so menus don't get chopped off inside their containers */#lux-topbar, .lux-card-head, .lux-nav-item {
+}/* 4. Ensure overflow is visible so menus don't get chopped off inside their containers */#lux-topbar,
+.lux-card-head,
+.lux-nav-item {
     overflow: visible !important;
 }/* ==========================================================================
    UNIVERSAL DROPDOWN OVERFLOW & STACKING FIX
@@ -4397,11 +4133,9 @@ or sections get chopped off
 .lux-panel:focus-within,
 .lux-subcard:focus-within,
 .lux-table-shell:focus-within,
-.library-table:focus-within,
 .lux-section-card:focus-within,
 .lux-calendar-board:focus-within,
 .lux-hero:focus-within,
-.lux-program-focus-panel:focus-within,
 .lux-grid-widget:focus-within,
 .lux-grid-widget-body:focus-within,
 .lux-timetable-stage:focus-within,
@@ -4412,12 +4146,13 @@ or sections get chopped off
 .lux-panel:has(.is-open),
 .lux-subcard:has(.is-open),
 .lux-table-shell:has(.is-open),
-.library-table:has(.is-open),
 .lux-section-card:has(.is-open) {
     overflow: visible !important;
     contain: layout style !important; /* Force override of any rogue contain: paint */
     z-index: 900 !important; /* Force to the very front so it overlaps siblings */
-}/* Ensure the table wrappers themselves don't clip dropdowns in the last row */.lux-table-wrap, .lux-modern-table-wrap, .table-responsive {
+}/* Ensure the table wrappers themselves don't clip dropdowns in the last row */.lux-table-wrap,
+.lux-modern-table-wrap,
+.table-responsive {
     overflow: visible !important;
 }/* Ensure dropdown menus ALWAYS have maximum priority */.lux-picker-panel,
 .lux-dropdown-menu,
@@ -4437,48 +4172,7 @@ or sections get chopped off
     z-index: 2000 !important;
 }/* ==========================================================================
    ADMIN TOOLS STABILITY + LIGHT MODE
-   ========================================================================== */body.lux-light-mode:not(.lux-route-admin-tools) #curriculum-library-modules-root .lux-surface,
-body.lux-light-mode:not(.lux-route-admin-tools) #admin-reg-content-container .lux-surface {
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(244, 238, 229, 0.72)) !important;
-    border-color: rgba(77, 52, 31, 0.12) !important;
-    box-shadow: 0 18px 34px rgba(73, 48, 25, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.82) !important;
-}body.lux-light-mode:not(.lux-route-admin-tools) #curriculum-library-modules-root .lux-surface[data-style*="min-height"],
-body.lux-light-mode:not(.lux-route-admin-tools) #admin-reg-content-container .lux-empty-state,
-body.lux-light-mode:not(.lux-route-admin-tools) #curriculum-library-modules-root .lux-empty-state,
-body.lux-light-mode:not(.lux-route-admin-tools) #admin-reg-content-container > div > div:last-child > div[style*="box-shadow"] {
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.76), rgba(246, 240, 231, 0.68)) !important;
-    border-color: rgba(77, 52, 31, 0.12) !important;
-}body.lux-light-mode:not(.lux-route-admin-tools) #curriculum-library-modules-root label[data-style*="radio"],
-body.lux-light-mode:not(.lux-route-admin-tools) #admin-reg-content-container label[data-style*="radio"] {
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.78), rgba(245, 239, 230, 0.68)) !important;
-    border-color: rgba(77, 52, 31, 0.12) !important;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.74);
-}body.lux-light-mode:not(.lux-route-admin-tools) #curriculum-library-modules-root label[data-style*="radio"]:hover,
-body.lux-light-mode:not(.lux-route-admin-tools) #admin-reg-content-container label[data-style*="radio"]:hover {
-    border-color: rgba(var(--lux-accent-rgb), 0.24) !important;
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(243, 237, 228, 0.76)) !important;
-}body.lux-light-mode:not(.lux-route-admin-tools) #curriculum-library-modules-root label[data-style*="radio"]:has(input:checked),
-body.lux-light-mode:not(.lux-route-admin-tools) #admin-reg-content-container label[data-style*="radio"]:has(input:checked) {
-    background: linear-gradient(180deg, rgba(var(--lux-accent-rgb), 0.18), rgba(255, 255, 255, 0.92)) !important;
-    border-color: rgba(var(--lux-accent-rgb), 0.28) !important;
-}body.lux-light-mode:not(.lux-route-admin-tools) #curriculum-library-modules-root .lux-empty-state,
-body.lux-light-mode:not(.lux-route-admin-tools) #admin-reg-content-container .lux-empty-state {
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.82);
-}/* Admin scheduler dropdown layout rules *//* LMS lecture/workshop and class-call workspace */html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode) .lms-section-switch,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode) .lms-call-create,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode) .lms-call-card,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode) .lms-call-stage,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode) .lms-call-side-card,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode) .lms-call-collab-panel {
-    background: linear-gradient(180deg, rgba(14, 20, 33, var(--lux-panel-alpha, 0.92)), rgba(8, 12, 21, var(--lux-panel-alpha, 0.92))) !important;
-}html.lux-high-transparency.lux-high-transparency.lux-high-transparency body.lux-light-mode .lms-section-switch,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body.lux-light-mode .lms-call-create,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body.lux-light-mode .lms-call-card,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body.lux-light-mode .lms-call-stage,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body.lux-light-mode .lms-call-side-card,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body.lux-light-mode .lms-call-collab-panel {
-    background: rgba(255, 255, 255, var(--lux-panel-alpha, 0.92)) !important;
-}/* LMS session markers and timetable highlights *//* Shared session-marker palette (LMS composer + timetable + marked cards) *//* Experimental global glass fade for large widgets and page sections only. */@media (max-width: 1024px) {
+   ========================================================================== *//* Admin scheduler dropdown layout rules *//* LMS lecture/workshop and class-call workspace *//* LMS session markers and timetable highlights *//* Shared session-marker palette (LMS composer + timetable + marked cards) *//* Experimental global glass fade for large widgets and page sections only. */@media (max-width: 1024px) {
     body.lux-site-modernized.lux-unified-shell:not(.lux-page-bare) :where(
         .page-hero,
         .lux-hero,
@@ -4497,88 +4191,7 @@ html.lux-high-transparency.lux-high-transparency.lux-high-transparency body.lux-
         backdrop-filter: blur(10px) saturate(118%) !important;
     }
 }/* Programs final workspace pass: one academic planner surface,
-not stacked squares. *//* Professional admin directories: shared staff + student administration surface. */.admin-hero-metrics,
-.admin-summary-grid {
-    display: grid !important;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)) !important;
-    gap: 12px !important;
-}.admin-hero-metrics article {
-    min-width: 0 !important;
-    padding: 18px !important;
-    border: 1px solid rgba(var(--lux-accent-rgb), 0.18) !important;
-    border-radius: 20px !important;
-    background:
-        radial-gradient(circle at 88% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, .92) * .18)), transparent 36%),
-        rgba(7, 10, 18, calc(var(--lux-transparency-alpha, .92) * .44)) !important;
-}.admin-hero-metrics span,
-.admin-mini-grid span {
-    display: block !important;
-    color: var(--lux-text-muted) !important;
-    font-size: 11px !important;
-    font-weight: 800 !important;
-    letter-spacing: .06em !important;
-    line-height: 1.25 !important;
-    text-transform: uppercase !important;
-}.admin-hero-metrics strong {
-    display: block !important;
-    margin-top: 8px !important;
-    color: var(--lux-text) !important;
-    font-size: clamp(22px, 3vw, 38px) !important;
-    line-height: 1 !important;
-}.admin-directory-filter-grid {
-    grid-template-columns: minmax(260px, 1.4fr) repeat(2, minmax(190px, .8fr)) !important;
-    gap: 14px !important;
-    margin-top: 18px !important;
-}.admin-record-strip,
-.admin-saved-views {
-    display: flex !important;
-    flex-wrap: wrap !important;
-    gap: 8px !important;
-}.admin-saved-views {
-    margin: 18px 0 !important;
-}.admin-saved-views button {
-    min-height: 36px !important;
-    padding: 8px 14px !important;
-    border: 1px solid rgba(var(--lux-accent-rgb), 0.18) !important;
-    border-radius: 999px !important;
-    background: rgba(255, 255, 255, calc(var(--lux-transparency-alpha, .92) * .05)) !important;
-    color: var(--lux-text) !important;
-    font-size: 12px !important;
-    font-weight: 800 !important;
-    cursor: pointer !important;
-}.admin-saved-views button:hover {
-    border-color: rgba(var(--lux-accent-rgb), 0.34) !important;
-    transform: translateY(-1px) !important;
-}.admin-mini-grid {
-    display: grid !important;
-    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-    gap: 10px !important;
-}.admin-mini-grid > div {
-    min-width: 0 !important;
-    padding: 14px !important;
-    border: 1px solid rgba(var(--lux-accent-rgb), 0.15) !important;
-    border-radius: 16px !important;
-    background: rgba(255, 255, 255, calc(var(--lux-transparency-alpha, .92) * .045)) !important;
-}.admin-mini-grid strong {
-    display: block !important;
-    color: var(--lux-text) !important;
-    font-size: 20px !important;
-    line-height: 1.05 !important;
-}.admin-table-head {
-    margin: 0 0 18px !important;
-}.admin-table-scroll {
-    width: 100% !important;
-    overflow-x: auto !important;
-    border: 1px solid rgba(var(--lux-accent-rgb), 0.12) !important;
-    border-radius: 22px !important;
-}body.lux-light-mode .admin-hero-metrics article,
-html.lux-light-mode body .admin-hero-metrics article,
-body.lux-light-mode .admin-mini-grid > div,
-html.lux-light-mode body .admin-mini-grid > div,
-body.lux-light-mode .admin-saved-views button,
-html.lux-light-mode body .admin-saved-views button {
-    background: rgba(255, 255, 255, calc(var(--lux-transparency-alpha, .86) * .62)) !important;
-}@media (max-width: 1120px) {
+not stacked squares. *//* Professional admin directories: shared staff + student administration surface. */@media (max-width: 1120px) {
 
 .admin-directory-filter-grid {
         grid-template-columns: 1fr !important;
@@ -4595,109 +4208,4 @@ html.lux-light-mode body .admin-saved-views button {
 }body.lux-is-animating .lux-card,
 body.lux-is-animating .lux-subcard {
     transition: none !important;
-}/* Notification dock stubs *//* Calendar UI stubs *//* ═══════════════════════════════════════════════════════════════════
-   TOPBAR SOFT-CHROME SSOT (must stay at EOF — beats luxury glass restates)
-   Matches dashboard builder-card lux-soft-chrome material.
-   ═══════════════════════════════════════════════════════════════════ */body.lux-full-paint.lux-unified-shell #lux-topbar .lux-topbar-shell,
-body.lux-full-paint.lux-unified-shell:not(.lux-light-mode) #lux-topbar .lux-topbar-shell,
-body.lux-full-paint.lux-unified-shell.lux-light-mode #lux-topbar .lux-topbar-shell,
-html.lux-light-mode body.lux-full-paint.lux-unified-shell #lux-topbar .lux-topbar-shell {
-    border: 1px solid var(--lux-focus-border, var(--lux-soft-chrome-border, var(--lux-panel-border))) !important;
-    border-radius: var(--lux-radius, 18px) !important;
-    background: var(--lux-focus-fill, var(--lux-soft-chrome-surface, var(--lux-panel-surface))) !important;
-    background-image: none !important;
-    box-shadow: var(--lux-focus-shadow, var(--lux-soft-chrome-shadow, var(--lux-panel-shadow))) !important;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-    color: var(--lux-text) !important;
-}body.lux-full-paint.lux-unified-shell #lux-topbar .lux-search input,
-body.lux-full-paint.lux-unified-shell:not(.lux-light-mode) #lux-topbar .lux-search input,
-body.lux-full-paint.lux-unified-shell #lux-topbar .lux-picker-btn,
-body.lux-full-paint.lux-unified-shell:not(.lux-light-mode) #lux-topbar .lux-picker-btn,
-body.lux-full-paint.lux-unified-shell #lux-topbar .lux-icon-btn,
-body.lux-full-paint.lux-unified-shell:not(.lux-light-mode) #lux-topbar .lux-icon-btn,
-body.lux-full-paint.lux-unified-shell #lux-topbar .lux-user-chip,
-body.lux-full-paint.lux-unified-shell:not(.lux-light-mode) #lux-topbar .lux-user-chip {
-    background: var(--lux-soft-chrome-surface, var(--lux-panel-surface-soft)) !important;
-    background-image: none !important;
-    border-color: var(--lux-soft-chrome-border, var(--lux-panel-border-soft)) !important;
-    box-shadow: var(--lux-soft-chrome-shadow, var(--lux-elev-2)) !important;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-    color: var(--lux-text) !important;
-}body.lux-full-paint.lux-unified-shell #lux-topbar .lux-search input {
-    border-radius: 16px !important;
-    min-height: 44px !important;
-    color: var(--lux-text) !important;
-}body.lux-full-paint.lux-unified-shell #lux-topbar .lux-search input:focus {
-    border-color: color-mix(in srgb, var(--lux-accent) 45%, var(--lux-soft-chrome-border, transparent)) !important;
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--lux-accent) 16%, transparent) !important;
-}body.lux-full-paint.lux-unified-shell #lux-topbar .lux-picker-btn {
-    border-radius: 16px !important;
-    min-height: 48px !important;
-}body.lux-full-paint.lux-unified-shell #lux-topbar .lux-picker-btn:hover,
-body.lux-full-paint.lux-unified-shell #lux-topbar .lux-picker-btn.is-active,
-body.lux-full-paint.lux-unified-shell #lux-topbar .lux-picker-btn[aria-expanded="true"] {
-    border-color: color-mix(in srgb, var(--lux-accent) 40%, var(--lux-soft-chrome-border, transparent)) !important;
-    box-shadow:
-        var(--lux-soft-chrome-shadow, var(--lux-elev-2)),
-        0 0 0 1px color-mix(in srgb, var(--lux-accent) 18%, transparent) !important;
-}body.lux-full-paint.lux-unified-shell #lux-topbar .lux-picker-btn strong {
-    color: var(--lux-text) !important;
-}body.lux-full-paint.lux-unified-shell #lux-topbar .lux-picker-caption {
-    color: var(--lux-text-muted) !important;
-}body.lux-full-paint.lux-unified-shell #lux-topbar .lux-icon-btn {
-    border-radius: 14px !important;
-    width: 44px !important;
-    height: 44px !important;
-    color: var(--lux-text-muted) !important;
-}body.lux-full-paint.lux-unified-shell #lux-topbar .lux-icon-btn:hover,
-body.lux-full-paint.lux-unified-shell #lux-topbar .lux-icon-btn.is-active {
-    color: var(--lux-text) !important;
-    border-color: color-mix(in srgb, var(--lux-accent) 40%, var(--lux-soft-chrome-border, transparent)) !important;
-    background: color-mix(in srgb, var(--lux-soft-chrome-surface, var(--lux-panel-surface-soft)) 82%, var(--lux-accent) 18%) !important;
-    background-image: none !important;
-}body.lux-full-paint.lux-unified-shell #lux-topbar .lux-user-chip {
-    border-radius: 999px !important;
-    min-height: 44px !important;
-}body.lux-full-paint.lux-unified-shell #lux-topbar .lux-user-chip:hover,
-body.lux-full-paint.lux-unified-shell #lux-topbar .lux-user-chip[aria-expanded="true"] {
-    border-color: color-mix(in srgb, var(--lux-accent) 40%, var(--lux-soft-chrome-border, transparent)) !important;
-}body.lux-full-paint.lux-unified-shell #lux-topbar .lux-avatar {
-    border: 1.5px solid color-mix(in srgb, var(--lux-accent) 45%, transparent) !important;
-}/* Framed CTAs — same recipe as dashboard primary buttons */body.lux-full-paint.lux-unified-shell #lux-topbar .lux-sidebar-toggle-btn,
-body.lux-full-paint.lux-unified-shell #lux-topbar .lux-topbar-editor-btn,
-body.lux-full-paint.lux-unified-shell:not(.lux-light-mode) #lux-topbar .lux-topbar-editor-btn,
-body.lux-full-paint.lux-unified-shell:not(.lux-light-mode) #lux-topbar .lux-sidebar-toggle-btn {
-    border-radius: var(--lux-btn-pill-radius, 999px) !important;
-    border-width: var(--lux-btn-frame-width, 2.5px) !important;
-    border-style: solid !important;
-    border-color: transparent !important;
-    min-height: 42px !important;
-    padding: 0 16px !important;
-    color: var(--lux-btn-label, #f7fbff) !important;
-    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.35) !important;
-    background:
-        var(--lux-btn-well),
-        var(--lux-btn-frame-metal) !important;
-    background-image:
-        var(--lux-btn-well),
-        var(--lux-btn-frame-metal) !important;
-    background-origin: border-box !important;
-    background-clip: padding-box, border-box !important;
-    box-shadow: var(--lux-btn-frame-shadow) !important;
-    backdrop-filter: var(--lux-btn-glass-blur, none) !important;
-    -webkit-backdrop-filter: var(--lux-btn-glass-blur, none) !important;
-}body.lux-full-paint.lux-unified-shell #lux-topbar .lux-sidebar-toggle-btn:hover,
-body.lux-full-paint.lux-unified-shell #lux-topbar .lux-topbar-editor-btn:hover {
-    filter: brightness(1.05);
-    box-shadow: var(--lux-btn-frame-shadow-hover) !important;
-    color: var(--lux-btn-label, #f7fbff) !important;
-}body.lux-full-paint.lux-unified-shell #lux-topbar .lux-breadcrumb {
-    background: transparent !important;
-    border: 0 !important;
-    box-shadow: none !important;
-    color: var(--lux-text-muted) !important;
-}body.lux-full-paint.lux-unified-shell #lux-topbar .lux-breadcrumb strong {
-    color: var(--lux-text) !important;
-}
+}/* Notification dock stubs *//* Calendar UI stubs */
