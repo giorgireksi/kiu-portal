@@ -1,76 +1,52 @@
-# Visual SSOT (hard-clean era)
+# Visual SSOT (Phase A shared stack)
+
+## Aim
+
+1. Clean legacy visual CSS first.
+2. Small shared files that work.
+3. Later: all pages share dashboard materials (Phase B/C).
 
 ## Live design
 
 | Surface | Status |
 |---------|--------|
-| **Dashboard** (`index.html` + `index-home-dashboard.css`) | Only polished full-paint product UI |
-| **Auth** (login / protected-launch / redirect) | Keep usable shells |
-| **All other portal pages** | **Bare**: shared kernel + `lux-page-bare` only |
+| **Dashboard** | Polished full-paint (`lux-full-paint` + home-dashboard) |
+| **Bare portal pages** | Flat wireframe + shared **lux-shell** (not luxury megafile) |
+| **Auth** | login / protected-launch / redirect route CSS |
 
-## Shared kernel (every page)
-
-```
-kiu-fonts → base → layout → lux-tokens → lux-surfaces
-→ lux-focus-panel → lux-controls → lux-layout-primitives
-→ lux-modals (if needed) → index-luxury → mobile-responsive
-→ [auth] login/protected/redirect route CSS
-→ [dashboard only] index-home-dashboard
-```
-
-## Archived route skins
-
-LMS + timetable design CSS lives under:
-
-`assets/css/_archive/2026-07-strip-non-dashboard/`
-
-**Not linked.** Layout will look broken until redesigned onto shared primitives.
-
-## Future shared redesign
-
-1. Keep dashboard soft-chrome / framed buttons as the material language.
-2. Promote materials into tokens + `lux-focus-panel` + `lux-controls`.
-3. Redesign each page with shared classes (`lux-soft-chrome`, `lux-focus-panel`, `lux-*-btn`) + optional thin layout CSS.
-4. Cherry-pick layout from archive; never re-link full archived skins.
-
-## Contract
-
-- Do not add new `*-route.css` glass recipes.
-- Do not link `_archive/` from live HTML.
-- One material change → `lux-tokens.css` after redesign lands.
-
-
-## Bare = nuclear flatten
-
-`lux-page-bare` routes still load shared kernel CSS (`index-luxury`, `lux-controls`, `lux-focus-panel`).
-Bare CSS **forces** solid surfaces, flat buttons, no focus rail, no ambient canvas.
-Do not re-add `lux-soft-chrome` dual-write on bare pages until shared redesign.
-
-
-## Bare page CSS stack (minimal)
-
-Bare routes must **not** load `index-luxury.css`, `lux-surfaces.css`, or `lux-focus-panel.css`.
+## Dashboard stack
 
 ```
-tokens → controls → layout-primitives → [modals] → lux-shell-nav → lux-page-bare → mobile
+kiu-fonts → base → layout → lux-tokens
+→ lux-surfaces → lux-focus-panel → lux-controls
+→ lux-layout-primitives → lux-modals
+→ lux-shell.css          (structure + full-paint paint gated)
+→ lux-fouc-ht.css        (FOUC/HT/atmosphere/studio — dashboard only)
+→ mobile-responsive
+→ index-home-dashboard   (widgets / soft-chrome polish)
 ```
 
-Dashboard: `lux-shell-full-paint` (topbar SSOT) + slim `index-luxury` + `index-home-dashboard` + `lux-full-paint`.
+## Bare stack
 
+```
+kiu-fonts → base → layout → lux-tokens
+→ lux-controls → lux-layout-primitives → [modals]
+→ lux-shell.css → lux-page-bare → mobile
+```
 
-## index-luxury.css (dashboard-only)
+**Do not** link `index-luxury.css`, `lux-shell-nav.css`, `lux-shell-full-paint.css`, or `_archive/`.
 
-After hard-clean, **only `index.html` links** `index-luxury.css`. Dead multi-route islands
-were peeled (student-service, admin, social, …). Target: keep shrinking toward shell extract
-+ home-dashboard ownership; do not re-add non-home product CSS here.
+## Retired
 
+| Old | New |
+|-----|-----|
+| `lux-shell-nav` + `lux-shell-full-paint` | **`lux-shell.css`** |
+| `index-luxury.css` (megafile) | **`lux-fouc-ht.css`** (slim) or stub |
 
-## Luxury slim progress (dashboard-only)
+## Archive
 
-| File | Role | ~LOC |
-|------|------|-----:|
-| `lux-shell-full-paint.css` | Full-paint topbar + shell chrome | ~750 |
-| `index-home-dashboard.css` | Home widgets + extracted home rules | ~2.7k |
-| `index-luxury.css` | FOUC/HT/glass glue only (still shrinking) | ~2.7k |
+`assets/css/_archive/2026-07-strip-non-dashboard/` — LMS/TT skins, unlinked.
 
-Started at **10110** LOC luxury; peel dead routes + extract shell/home.
+## Phase B/C (later)
+
+Share soft-chrome + framed materials on bare pages using this same shell + tokens stack.

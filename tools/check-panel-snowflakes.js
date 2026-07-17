@@ -13,7 +13,7 @@ const CSS_DIR = path.resolve(__dirname, '../assets/css');
 // Re-baselined after counting route/home fade aliases as tokenized (not only lux-panel/elev).
 // After HEAD structure restore + fade→panel aliases only (no exact-dup merges).
 // Ratcheted down after 2026-07 hard-clean (LMS+timetable skins archived out of live path).
-const BASELINE = { boxShadow: 218, backdropFilter: 115 };
+const BASELINE = { boxShadow: 183, backdropFilter: 107 };
 
 function listLiveCssFiles(dir) {
   const out = [];

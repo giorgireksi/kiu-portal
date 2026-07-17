@@ -7,8 +7,8 @@ function read(p) {
 }
 
 describe('bare topbar horizontal layout', () => {
-    it('shell-nav defines topbar main/actions/spacer row flex', () => {
-        const css = read('assets/css/lux-shell-nav.css');
+    it('lux-shell defines topbar main/actions/spacer row flex', () => {
+        const css = read('assets/css/lux-shell.css');
         expect(css).toContain('#lux-topbar .lux-topbar-main');
         expect(css).toContain('#lux-topbar .lux-topbar-actions');
         expect(css).toContain('#lux-topbar .lux-topbar-spacer');
@@ -24,9 +24,9 @@ describe('bare topbar horizontal layout', () => {
         expect(bare).toMatch(/#lux-topbar \.lux-topbar-shell[\s\S]*flex-direction:\s*row/);
     });
 
-    it('programs loads shell-nav + bare', () => {
+    it('programs loads lux-shell + bare', () => {
         const html = read('programs.html');
-        expect(html).toMatch(/lux-shell-nav\.css/);
+        expect(html).toMatch(/lux-shell\.css/);
         expect(html).toMatch(/lux-page-bare\.css/);
         expect(html).toContain('lux-page-bare');
     });

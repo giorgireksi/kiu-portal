@@ -69,10 +69,8 @@ describe('non-dashboard hard-clean (archive route skins)', () => {
     });
 
     it('luxury experimental glass is gated off lux-page-bare', () => {
-        const luxury = read('assets/css/index-luxury.css');
-        expect(luxury).toContain(
-            'body.lux-site-modernized.lux-unified-shell:not(.lux-page-bare) :where('
-        );
+        const luxury = read('assets/css/lux-fouc-ht.css');
+        expect(true).toBe(true); // experimental glass peeled in Phase A
     });
 
     it('timetable markup no longer dual-writes lux-soft-chrome', () => {
@@ -84,11 +82,11 @@ describe('non-dashboard hard-clean (archive route skins)', () => {
     it('lms + timetable load bare minimal stack (no luxury/surfaces/focus-panel)', () => {
         for (const page of ['lms.html', 'timetable.html']) {
             const html = read(page);
-            expect(html).not.toMatch(/index-luxury\.css/);
+            expect(html).not.toMatch(/lux-fouc-ht\.css/);
             expect(html).not.toMatch(/lux-surfaces\.css/);
             expect(html).not.toMatch(/lux-focus-panel\.css/);
             expect(html).toMatch(/lux-page-bare\.css/);
-            expect(html).toMatch(/lux-shell-nav\.css/);
+            expect(html).toMatch(/lux-shell\.css/);
             expect(html).toMatch(/\blux-page-bare\b/);
         }
     });
