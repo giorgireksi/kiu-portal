@@ -56,3 +56,10 @@ tokens → controls → layout-primitives → [modals] → lux-shell-nav → lux
 ```
 
 Dashboard alone keeps `index-luxury` + `index-home-dashboard` + `lux-full-paint`.
+
+
+## index-luxury.css (dashboard-only)
+
+After hard-clean, **only `index.html` links** `index-luxury.css`. Dead multi-route islands
+were peeled (student-service, admin, social, …). Target: keep shrinking toward shell extract
++ home-dashboard ownership; do not re-add non-home product CSS here.
