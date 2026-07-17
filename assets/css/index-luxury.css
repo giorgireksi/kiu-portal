@@ -1,112 +1,43 @@
 /* ═══════════════════════════════════════════════
-   FOUC PREVENTION: Hide card backgrounds until JS
-   applies correct transparency inline styles.
-   Set by theme-primer.js,
-removed by updateTransparency().
-   ═══════════════════════════════════════════════ */html.lux-transparency-pending .lux-card,
-html.lux-transparency-pending .lux-panel,
-html.lux-transparency-pending .lux-subcard,
-html.lux-transparency-pending .lux-page-shell,
-html.lux-transparency-pending .lux-dashboard-section,
-html.lux-transparency-pending .lux-home-card,
-html.lux-transparency-pending .lux-stat,
-html.lux-transparency-pending .lux-stat-card,
-html.lux-transparency-pending .lux-hero,
-html.lux-transparency-pending .lux-grid-widget,
-html.lux-transparency-pending .lux-builder-card,
-html.lux-transparency-pending .surface-card,
-html.lux-transparency-pending .content-box,
-html.lux-transparency-pending .kiu-card,
-html.lux-transparency-pending .page-card,
-html.lux-transparency-pending .page-hero,
-html.lux-transparency-pending .lux-modern-surface,
-html.lux-transparency-pending .lux-utility-panel {
+   FOUC + HIGH-TRANSPARENCY (dashboard luxury glue)
+   theme-primer sets classes; updateTransparency clears FOUC.
+   Dedupe: one host list, one dark/light fill via tokens.
+   ═══════════════════════════════════════════════ *//* Shared surface hosts used on home full-paint */html.lux-transparency-pending :is(
+    .lux-card, .lux-panel, .lux-subcard, .lux-page-shell, .lux-dashboard-section,
+    .lux-home-card, .lux-stat, .lux-stat-card, .lux-hero, .lux-grid-widget,
+    .lux-builder-card, .surface-card, .content-box, .kiu-card, .page-card,
+    .page-hero, .lux-modern-surface, .lux-utility-panel
+) {
     background: transparent !important;
-}/* ═══════════════════════════════════════════════
-   HIGH-TRANSPARENCY CSS OVERRIDES (≥80%)
-   Pure CSS fix — no JS timing dependency.
-   Class set by theme-primer.js (before paint) and
-   managed by updateTransparency().
-   Suppresses ALL accent radial gradients on surfaces,
-replacing them with solid dark/light backgrounds.
-   ═══════════════════════════════════════════════ *//* Dark mode: solid navy backgrounds */html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode) .lux-card,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode) .lux-panel,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode) .lux-subcard,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode) .lux-hero,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode) .lux-stat,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode) .lux-stat-card,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode) .lux-home-card,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode) .lux-grid-widget,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode) .lux-builder-card,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode) .lux-dashboard-section,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode) .lux-page-shell,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode) .surface-card,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode) .content-box,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode) .kiu-card,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode) .page-card,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode) .page-hero {
-    background: linear-gradient(180deg, rgba(14, 20, 33, var(--lux-panel-alpha, 0.92)), rgba(8, 12, 21, var(--lux-panel-alpha, 0.92))) !important;
-}/* Dark mode: Registration page surfaces *//* Dark mode: LMS surfaces *//* Dark mode: Scheduler surfaces *//* Dark mode: Social surfaces (route-owned on lux-route-social) */html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode) .lux-modern-surface,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode) .lux-utility-panel {
-    background: linear-gradient(180deg, rgba(14, 20, 33, var(--lux-panel-alpha, 0.92)), rgba(8, 12, 21, var(--lux-panel-alpha, 0.92))) !important;
-}/* Dark mode: Sidebar + body pseudo-element (background glow) */html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode)::before {
-    background:
-        linear-gradient(180deg, rgba(12, 17, 26, var(--lux-panel-alpha, 0.92)), rgba(7, 10, 16, var(--lux-panel-alpha, 0.92))) !important;
-}html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode) .lux-sidebar {
-    background: linear-gradient(180deg, rgba(10, 14, 22, var(--lux-panel-alpha, 0.92)), rgba(6, 9, 15, var(--lux-panel-alpha, 0.92))) !important;
-}/* Light mode: solid warm cream backgrounds */html.lux-high-transparency.lux-high-transparency.lux-high-transparency body.lux-light-mode .lux-card,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body.lux-light-mode .lux-panel,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body.lux-light-mode .lux-subcard,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body.lux-light-mode .lux-hero,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body.lux-light-mode .lux-stat,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body.lux-light-mode .lux-stat-card,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body.lux-light-mode .lux-home-card,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body.lux-light-mode .lux-grid-widget,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body.lux-light-mode .lux-builder-card,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body.lux-light-mode .lux-dashboard-section,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body.lux-light-mode .lux-page-shell,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body.lux-light-mode .surface-card,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body.lux-light-mode .content-box,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body.lux-light-mode .kiu-card,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body.lux-light-mode .page-card,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body.lux-light-mode .page-hero,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body.lux-light-mode .lux-modern-surface,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body.lux-light-mode .lux-utility-panel {
-    background: linear-gradient(180deg, rgba(252, 249, 244, var(--lux-panel-alpha, 0.92)), rgba(248, 244, 237, var(--lux-panel-alpha, 0.92))) !important;
-}/* ═══════════════════════════════════════════════
-   NUCLEAR ACCENT NEUTRALIZER (high-transparency)
-   Override --lux-accent-rgb on surfaces so ALL 153
-   accent radial-gradient rules render as background-
-   matching colors. Zero JS timing dependency.
-   ═══════════════════════════════════════════════ */html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode) {
+}/* HT solid fills — prefer panel tokens over hand-written navy/cream gradients */html.lux-high-transparency body:not(.lux-light-mode) :is(
+    .lux-card, .lux-panel, .lux-subcard, .lux-hero, .lux-stat, .lux-stat-card,
+    .lux-home-card, .lux-grid-widget, .lux-builder-card, .lux-dashboard-section,
+    .lux-page-shell, .surface-card, .content-box, .kiu-card, .page-card, .page-hero,
+    .lux-modern-surface, .lux-utility-panel, .lux-topbar-shell, .lux-quick-btn
+),
+html.lux-high-transparency body:not(.lux-light-mode) :is(
+    #lux-shell, .lux-sidebar
+) {
+    background: var(--lux-panel-surface, linear-gradient(180deg, rgba(14, 20, 33, var(--lux-panel-alpha, 0.92)), rgba(8, 12, 21, var(--lux-panel-alpha, 0.92)))) !important;
+    background-image: none !important;
+}html.lux-high-transparency body.lux-light-mode :is(
+    .lux-card, .lux-panel, .lux-subcard, .lux-hero, .lux-stat, .lux-stat-card,
+    .lux-home-card, .lux-grid-widget, .lux-builder-card, .lux-dashboard-section,
+    .lux-page-shell, .surface-card, .content-box, .kiu-card, .page-card, .page-hero,
+    .lux-modern-surface, .lux-utility-panel
+) {
+    background: var(--lux-panel-surface, linear-gradient(180deg, rgba(252, 249, 244, var(--lux-panel-alpha, 0.92)), rgba(248, 244, 237, var(--lux-panel-alpha, 0.92)))) !important;
+    background-image: none !important;
+}/* Kill accent radial noise at high transparency */html.lux-high-transparency body:not(.lux-light-mode) {
     --lux-accent-surface-rgb: 14, 20, 33;
     --lux-hero-glow: 0;
     --lux-glow-scale: 0;
     --lux-card-glow-alpha: 0;
-}html.lux-high-transparency.lux-high-transparency.lux-high-transparency body.lux-light-mode {
+}html.lux-high-transparency body.lux-light-mode {
     --lux-accent-surface-rgb: 252, 249, 244;
     --lux-hero-glow: 0;
     --lux-glow-scale: 0;
     --lux-card-glow-alpha: 0;
-}/* Route-specific page card overrides (these use hardcoded accent values) */html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode) .lux-person-card,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode) .lux-section-card,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode) .profile-card,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode):not(.lux-route-social) .social-hero,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode):not(.lux-route-social) .social-card,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode):not(.lux-route-social) .social-app-shell,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode):not(.lux-route-social) .social-rail,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode) .filter-shell,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode) .study-card-semester-table,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode) .sch-stat-card,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode) .sch-palette-card,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode) .sch-board-hero,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode) .scheduler-wrap,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode):not(.lux-route-staff):not(.lux-route-admin-library) .lux-strip-card,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode) .lux-quick-btn,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode) .lux-topbar-shell,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode) .portal-msg-page-top,
-html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode) .portal-notif-modal-head {
-    background: linear-gradient(180deg, rgba(14, 20, 33, var(--lux-panel-alpha, 0.92)), rgba(8, 12, 21, var(--lux-panel-alpha, 0.92))) !important;
 }/* ═══════════════════════════════════════════════
    ANTI-SCROLL-SHAKE: Force stable scroll rendering
    ═══════════════════════════════════════════════ */html {
@@ -224,7 +155,7 @@ html.lux-light-mode body .lux-summary-surface {
    (before JS updateTransparency runs) so there's no
    flash of accent-colored gradient backgrounds.
    data-lux-transparency is set by theme-primer.js.
-   ═══════════════════════════════════════════════ *//* Light mode variant */:root {
+   ═══════════════════════════════════════════════ *//* Light mode variant */:root  {
     --lux-bg: #070910;
     --lux-shell-background: var(--lux-bg);
     --lux-bg-soft: #0e1220;
@@ -497,7 +428,8 @@ body.lux-light-mode[data-faculty=""] {
 #service-nav,
 body>footer {
     display: none !important;
-}body.lux-unified-shell:not(.lux-route-students-admin):is(.role-professor, .role-ta, .role-admin, .role-student_service) {
+}body.lux-unified-shell:not(.lux-route-students-admin):is(.role-professor, .role-ta, .role-admin, .role-student_service),
+body.lux-unified-shell.lux-light-mode:not(.lux-route-students-admin):is(.role-professor, .role-ta, .role-admin, .role-student_service) {
     background: var(--lux-shell-background, var(--lux-bg)) !important;
     color: var(--lux-text) !important;
 }body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-admin-orders):not(.lux-route-staff):is(.role-professor, .role-ta, .role-admin, .role-student_service) .content-box,
@@ -560,9 +492,6 @@ body.lux-unified-shell:not(.lux-route-students-admin):is(.role-professor, .role-
     color: var(--lux-text) !important;
     border: 1px solid rgba(255, 255, 255, 0.10) !important;
     box-shadow: none !important;
-}body.lux-unified-shell.lux-light-mode:not(.lux-route-students-admin):is(.role-professor, .role-ta, .role-admin, .role-student_service) {
-    background: var(--lux-shell-background, var(--lux-bg)) !important;
-    color: var(--lux-text) !important;
 }body.lux-unified-shell.lux-light-mode:not(.lux-route-students-admin):not(.lux-route-admin-orders):is(.role-professor, .role-ta, .role-admin, .role-student_service) .content-box,
 body.lux-unified-shell.lux-light-mode:not(.lux-route-students-admin):not(.lux-route-admin-orders):is(.role-professor, .role-ta, .role-admin, .role-student_service) .surface-card,
 body.lux-unified-shell.lux-light-mode:not(.lux-route-students-admin):not(.lux-route-admin-orders):is(.role-professor, .role-ta, .role-admin, .role-student_service) .page-card,
@@ -606,53 +535,37 @@ body.lux-unified-shell.lux-light-mode:not(.lux-route-students-admin):is(.role-pr
    COLOUR PALETTE SUPPORT - Simple Background Colors
    ═════════════════════════════════════════════════════════ *//* Light Mode - Faculty Backgrounds - REMOVED *//* ═════════════════════════════════════════════════════════
    PALETTE BACKGROUNDS - Now controlled by palette selection only
-   ═════════════════════════════════════════════════════════ *//* Obsidian & Amber Palette */body.lux-unified-shell.palette-obsidian-amber {
-    background: var(--palette-obsidian-dark) !important;
-}body.lux-unified-shell.palette-obsidian-amber.lux-light-mode {
-    background: var(--palette-obsidian-light) !important;
-}body.lux-unified-shell.palette-obsidian-amber[data-faculty] {
-    background: var(--palette-obsidian-dark) !important;
-}body.lux-unified-shell.palette-obsidian-amber.lux-light-mode[data-faculty] {
-    background: var(--palette-obsidian-light) !important;
-}/* Slate & Sapphire Palette */body.lux-unified-shell.palette-slate-sapphire {
+   ═════════════════════════════════════════════════════════ *//* Obsidian & Amber Palette *//* Slate & Sapphire Palette */body.lux-unified-shell.palette-slate-sapphire  {
     background: var(--palette-slate-dark) !important;
-}body.lux-unified-shell.palette-slate-sapphire.lux-light-mode {
+}body.lux-unified-shell.palette-slate-sapphire.lux-light-mode  {
     background: var(--palette-slate-light) !important;
-}body.lux-unified-shell.palette-slate-sapphire[data-faculty] {
+}body.lux-unified-shell.palette-slate-sapphire[data-faculty]  {
     background: var(--palette-slate-dark) !important;
-}body.lux-unified-shell.palette-slate-sapphire.lux-light-mode[data-faculty] {
+}body.lux-unified-shell.palette-slate-sapphire.lux-light-mode[data-faculty]  {
     background: var(--palette-slate-light) !important;
-}/* Pine & Jade Palette */body.lux-unified-shell.palette-pine-jade {
+}/* Pine & Jade Palette */body.lux-unified-shell.palette-pine-jade  {
     background: var(--palette-pine-dark) !important;
-}body.lux-unified-shell.palette-pine-jade.lux-light-mode {
+}body.lux-unified-shell.palette-pine-jade.lux-light-mode  {
     background: var(--palette-pine-light) !important;
-}body.lux-unified-shell.palette-pine-jade[data-faculty] {
+}body.lux-unified-shell.palette-pine-jade[data-faculty]  {
     background: var(--palette-pine-dark) !important;
-}body.lux-unified-shell.palette-pine-jade.lux-light-mode[data-faculty] {
+}body.lux-unified-shell.palette-pine-jade.lux-light-mode[data-faculty]  {
     background: var(--palette-pine-light) !important;
-}/* Burgundy & Rose Palette */body.lux-unified-shell.palette-burgundy-rose {
-    background: var(--palette-burgundy-dark) !important;
-}body.lux-unified-shell.palette-burgundy-rose.lux-light-mode {
-    background: var(--palette-burgundy-light) !important;
-}body.lux-unified-shell.palette-burgundy-rose[data-faculty] {
-    background: var(--palette-burgundy-dark) !important;
-}body.lux-unified-shell.palette-burgundy-rose.lux-light-mode[data-faculty] {
-    background: var(--palette-burgundy-light) !important;
-}/* Sand & Pearl Palette */body.lux-unified-shell.palette-sand-pearl {
+}/* Burgundy & Rose Palette *//* Sand & Pearl Palette */body.lux-unified-shell.palette-sand-pearl  {
     background: var(--palette-sand-dark) !important;
-}body.lux-unified-shell.palette-sand-pearl.lux-light-mode {
+}body.lux-unified-shell.palette-sand-pearl.lux-light-mode  {
     background: var(--palette-sand-light) !important;
-}body.lux-unified-shell.palette-sand-pearl[data-faculty] {
+}body.lux-unified-shell.palette-sand-pearl[data-faculty]  {
     background: var(--palette-sand-dark) !important;
-}body.lux-unified-shell.palette-sand-pearl.lux-light-mode[data-faculty] {
+}body.lux-unified-shell.palette-sand-pearl.lux-light-mode[data-faculty]  {
     background: var(--palette-sand-light) !important;
-}/* Ink & Orchid Palette */body.lux-unified-shell.palette-ink-orchid {
+}/* Ink & Orchid Palette */body.lux-unified-shell.palette-ink-orchid  {
     background: var(--palette-ink-dark) !important;
-}body.lux-unified-shell.palette-ink-orchid.lux-light-mode {
+}body.lux-unified-shell.palette-ink-orchid.lux-light-mode  {
     background: var(--palette-ink-light) !important;
-}body.lux-unified-shell.palette-ink-orchid[data-faculty] {
+}body.lux-unified-shell.palette-ink-orchid[data-faculty]  {
     background: var(--palette-ink-dark) !important;
-}body.lux-unified-shell.palette-ink-orchid.lux-light-mode[data-faculty] {
+}body.lux-unified-shell.palette-ink-orchid.lux-light-mode[data-faculty]  {
     background: var(--palette-ink-light) !important;
 }/* ═════════════════════════════════════════════════════════ */.lux-avatar {
     width: 34px;
@@ -1052,11 +965,11 @@ body.lux-unified-shell.lux-light-mode:not(.lux-route-students-admin):is(.role-pr
     text-transform: uppercase;
     color: var(--lux-text-soft);
     margin-bottom: 12px;
-}.lux-palette-grid {
+}.lux-palette-grid  {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
-}.lux-palette-chip {
+}.lux-palette-chip  {
     min-height: 88px;
     border-radius: 16px;
     border: 1px solid transparent;
@@ -1069,19 +982,19 @@ body.lux-unified-shell.lux-light-mode:not(.lux-route-students-admin):is(.role-pr
     position: relative;
     overflow: hidden;
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
-}.lux-palette-chip span {
+}.lux-palette-chip span  {
     position: relative;
     z-index: 1;
     font-size: 11px;
     font-weight: 700;
     line-height: 1.35;
     text-shadow: 0 1px 8px rgba(0, 0, 0, 0.48);
-}.lux-palette-chip::after {
+}.lux-palette-chip::after  {
     content: '';
     position: absolute;
     inset: 0;
     background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.22));
-}.lux-palette-chip.is-active {
+}.lux-palette-chip.is-active  {
     border-color: rgba(255, 255, 255, 0.64);
     box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.18);
 }.lux-mode-row,
@@ -1156,7 +1069,7 @@ body.lux-unified-shell.lux-light-mode:not(.lux-route-students-admin):is(.role-pr
     line-height: 1.45;
 }.lux-mode-btn:hover,
 .lux-bg-mode-btn:hover,
-.lux-palette-chip:hover {
+.lux-palette-chip:hover  {
     transform: translateY(-1px);
     border-color: var(--lux-border-strong);
 }.lux-mode-btn.is-active,
@@ -1306,7 +1219,12 @@ body.lux-light-mode .lux-mode-btn,
 body.lux-light-mode .lux-bg-mode-btn,
 body.lux-light-mode .lux-studio-section,
 body.lux-light-mode .lux-user-chip,
-body.lux-light-mode .lux-icon-btn {
+body.lux-light-mode .lux-icon-btn,
+body.lux-light-mode .lux-quick-btn,
+body.lux-light-mode .lux-strip-card,
+body.lux-light-mode .lux-hero-side,
+body.lux-light-mode .lux-stat,
+body.lux-light-mode .lux-utility-item {
     background:
         linear-gradient(180deg,
             rgba(var(--lux-glass-tint-rgb), calc(var(--lux-raised-fill-alpha) + var(--lux-glass-highlight-alpha))),
@@ -1318,12 +1236,6 @@ body.lux-light-mode textarea {
         linear-gradient(180deg,
             rgba(var(--lux-glass-tint-rgb), calc(var(--lux-raised-fill-alpha) + var(--lux-glass-highlight-alpha))),
             rgba(var(--lux-glass-tint-rgb), var(--lux-raised-fill-alpha))) !important;
-}.portal-notif-fab-stack {
-    left: calc(var(--lux-sidebar-width) + 24px) !important;
-    bottom: 24px !important;
-}.portal-msg-fab-stack {
-    left: calc(var(--lux-sidebar-width) + 24px) !important;
-    bottom: 106px !important;
 }@media (max-width:1180px) {
     .lux-quick-grid {
         grid-template-columns: repeat(3, minmax(0, 1fr))
@@ -1904,18 +1816,6 @@ body.lux-light-mode textarea {
     border-color: rgba(var(--lux-accent-rgb), 0.24);
     background: linear-gradient(135deg, rgba(var(--lux-accent-rgb), 0.16), rgba(255, 255, 255, 0.03));
     box-shadow: 0 18px 34px rgba(0, 0, 0, 0.16);
-}.portal-notif-fab-stack,
-.portal-msg-fab-stack {
-    display: none !important;
-}body.lux-light-mode .lux-quick-btn,
-body.lux-light-mode .lux-strip-card,
-body.lux-light-mode .lux-hero-side,
-body.lux-light-mode .lux-stat,
-body.lux-light-mode .lux-utility-item {
-    background:
-        linear-gradient(180deg,
-            rgba(var(--lux-glass-tint-rgb), calc(var(--lux-raised-fill-alpha) + var(--lux-glass-highlight-alpha))),
-            rgba(var(--lux-glass-tint-rgb), var(--lux-raised-fill-alpha)));
 }@media (max-width:1180px) {
     #lux-topbar {
         left: calc(var(--lux-sidebar-width) + 18px);
@@ -2229,14 +2129,7 @@ body.lux-light-mode .lux-utility-item {
     font-size: 10px;
     color: #fff;
     font-weight: 700;
-}/* Save button *//* ── Registration Structure Tabs ── *//* ── Empty States ── */body.lux-unified-shell .filter-shell-title {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}body.lux-unified-shell .filter-shell-title i {
-    color: rgba(var(--lux-accent-rgb), 0.7);
-    font-size: 12px;
-}.lux-empty-state {
+}/* Save button *//* ── Registration Structure Tabs ── *//* ── Empty States ── */.lux-empty-state {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -2327,7 +2220,6 @@ copy ── *//* ── All lux-primary-btn on this route: accent gradient ─�
 not blue ── *//* ── Student service overview section: use CSS variable ── *//* ensure responsive collapse */body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-staff):not(.lux-route-profile-view) .content-box,
 body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-staff):not(.lux-route-profile-view) .surface-card,
 body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-staff):not(.lux-route-profile-view) .admin-card,
-body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-staff):not(.lux-route-profile-view) .filter-shell,
 body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-staff):not(.lux-route-profile-view) .tabs-container,
 body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-staff):not(.lux-route-profile-view) .reg-tabs,
 body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-staff):not(.lux-route-profile-view) .page-card,
@@ -2340,9 +2232,7 @@ body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-staff):not(
 body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-staff):not(.lux-route-profile-view) .lux-panel,
 body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-staff):not(.lux-route-profile-view) .lux-alert,
 body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-staff):not(.lux-route-profile-view) .lux-studio-panel,
-body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-staff):not(.lux-route-profile-view) .lux-widget-toolbar,
-body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-staff):not(.lux-route-profile-view) .scheduler-wrap>*,
-body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-admin-orders):not(.lux-route-staff):not(.lux-route-profile-view) #admin-orders-root>* {
+body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-staff):not(.lux-route-profile-view) .lux-widget-toolbar {
     background:
         linear-gradient(180deg,
             rgba(var(--lux-glass-tint-rgb), calc(var(--lux-panel-fill-alpha) + var(--lux-glass-highlight-alpha))),
@@ -2431,7 +2321,8 @@ body.lux-light-mode:not([data-lux-background-mode]) #lux-bg-overlay {
 stats,
 mode buttons - secondary surfaces *//* Topbar shell *//* Form elements */html.transparency-test-off input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='color']),
 html.transparency-test-off select,
-html.transparency-test-off textarea {
+html.transparency-test-off textarea,
+html.transparency-test-off .lux-icon-btn {
     background: rgba(255, 255, 255, 0.04) !important;
     border: 1px solid rgba(255, 255, 255, 0.10) !important;
     backdrop-filter: none !important;
@@ -2452,7 +2343,8 @@ html.transparency-test-off .lux-subcard,
 html.transparency-test-off .lux-stack,
 html.transparency-test-off .lux-person-head,
 html.transparency-test-off .lux-inline-meta,
-html.transparency-test-off .lux-card-actions {
+html.transparency-test-off .lux-card-actions,
+html.transparency-test-off .lux-user-chip {
     background: var(--lux-surface-2) !important;
     border: 1px solid rgba(255, 255, 255, 0.10) !important;
     backdrop-filter: none !important;
@@ -2461,24 +2353,13 @@ html.transparency-test-off .lux-card-actions {
     border: 1px solid rgba(255, 255, 255, 0.10) !important;
     backdrop-filter: none !important;
     box-shadow: 0 16px 48px rgba(0, 0, 0, 0.28) !important;
-}/* User chip */html.transparency-test-off .lux-user-chip {
-    background: var(--lux-surface-2) !important;
-    border: 1px solid rgba(255, 255, 255, 0.10) !important;
-    backdrop-filter: none !important;
-}/* User menu */html.transparency-test-off .lux-user-menu {
-    background: var(--lux-surface) !important;
-    border: 1px solid rgba(255, 255, 255, 0.10) !important;
-    backdrop-filter: none !important;
-}/* Icon buttons */html.transparency-test-off .lux-icon-btn {
-    background: rgba(255, 255, 255, 0.04) !important;
-    border: 1px solid rgba(255, 255, 255, 0.10) !important;
-    backdrop-filter: none !important;
-}/* Tables */html.transparency-test-off .kiu-table,
+}/* User chip *//* User menu */html.transparency-test-off .lux-user-menu,
+html.transparency-test-off .kiu-table,
 html.transparency-test-off table {
     background: var(--lux-surface) !important;
     border: 1px solid rgba(255, 255, 255, 0.10) !important;
     backdrop-filter: none !important;
-}html.transparency-test-off .kiu-table thead th,
+}/* Icon buttons *//* Tables */html.transparency-test-off .kiu-table thead th,
 html.transparency-test-off table thead th {
     background: var(--lux-surface-2) !important;
     border-color: rgba(255, 255, 255, 0.10) !important;
