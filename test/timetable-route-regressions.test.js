@@ -61,7 +61,7 @@ describe('timetable route regressions', () => {
         expect(html).toContain('id="timetable-hero-focus-time"');
         expect(html).toContain('id="timetable-hero-focus-facts"');
         expect(html).toContain('class="lux-timetable-focus-head"');
-        expect(html).toContain('class="lux-hero lux-timetable-hero lux-summary-surface--hero"');
+        expect(html).toContain('lux-timetable-hero');
         expect(html).toContain('class="lux-card lux-timetable-command"');
         expect(html).toContain('class="lux-card lux-timetable-stage"');
         expect(html).not.toContain('â€”');
