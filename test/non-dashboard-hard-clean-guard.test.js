@@ -80,4 +80,29 @@ describe('non-dashboard hard-clean (archive route skins)', () => {
         expect(read('assets/js/pages/timetable-runtime.js')).not.toContain('lux-soft-chrome');
     });
 
+
+    it('lms + timetable load bare minimal stack (no luxury/surfaces/focus-panel)', () => {
+        for (const page of ['lms.html', 'timetable.html']) {
+            const html = read(page);
+            expect(html).not.toMatch(/index-luxury\.css/);
+            expect(html).not.toMatch(/lux-surfaces\.css/);
+            expect(html).not.toMatch(/lux-focus-panel\.css/);
+            expect(html).toMatch(/lux-page-bare\.css/);
+            expect(html).toMatch(/lux-shell-nav\.css/);
+            expect(html).toMatch(/\blux-page-bare\b/);
+        }
+    });
+
+    it('framed CTAs are full-paint only; bare skips topbar soft dual-write', () => {
+        const controls = read('assets/css/lux-controls.css');
+        expect(controls).toContain('body.lux-full-paint.lux-unified-shell .lux-primary-btn');
+        expect(controls).not.toMatch(
+            /body\.lux-unified-shell \.lux-primary-btn:not\(\.admin-glass-btn\),\s*\nbody\.lux-unified-shell \.lux-secondary-btn/
+        );
+        const luxJs = read('assets/js/features/index-luxury.js');
+        expect(luxJs).toContain("classList?.contains('lux-page-bare')");
+        const lmsJs = read('assets/js/pages/lms.js');
+        expect(lmsJs).toContain("classList?.contains('lux-page-bare')");
+    });
+
 });

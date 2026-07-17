@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kiu-portal-shell-v20260717-nuclearbare1';
+const CACHE_NAME = 'kiu-portal-shell-v20260717-baremin1';
 const CACHE_PREFIX = 'kiu-portal-shell-';
 const SHELL_ASSETS = [
   '/',
@@ -11,6 +11,7 @@ const SHELL_ASSETS = [
   '/assets/css/layout.css?v=1776604822083',
   '/assets/css/lux-tokens.css?v=20260608-topbar-clear4',
   '/assets/css/index-luxury.css?v=20260717-nuclearbare1',
+  '/assets/css/lux-page-bare.css?v=20260717-baremin1',
   '/assets/css/index-home-dashboard.css?v=20260714-homeglass2',
   '/assets/css/mobile-responsive.css?v=20260608-topbar-clear4',
   '/assets/js/theme-primer.js?v=20260609-bootguard1',

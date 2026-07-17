@@ -120,17 +120,6 @@ function _modalField(id) {
     return all.length > 0 ? all[all.length - 1] : null;
 }
 
-function switchAdminPanelTab(tab) {
-    ['identity', 'docs', 'finance', 'reg'].forEach(t => {
-        const tabEl = document.getElementById('apt-' + t);
-        const contentEl = document.getElementById('apc-' + t);
-        if (!tabEl || !contentEl) return;
-        const active = t === tab;
-        tabEl.classList.toggle('active', active);
-        tabEl.setAttribute('aria-selected', active ? 'true' : 'false');
-        contentEl.hidden = !active;
-    });
-}
 
 function updateSubjectCodePreview() {
     if (typeof refreshSemesterDropdowns === 'function') refreshSemesterDropdowns();
@@ -936,9 +925,6 @@ function switchFacultyTheme(faculty, options = {}) {
     }
 }
 
-function updateNavigationMenu(role) {
-    // Top nav visibility can be refined here if there are specific nav-items
-}
 
 function syncRoleSwitcherOptions(roleSelect) {
     if (!roleSelect) return;
@@ -1295,7 +1281,6 @@ const SOCIAL_NEO_TRANSPARENCY_SURFACE_SELECTORS = [
     '.social-neo-pages-hero',
     '.social-neo-pages-wizard',
     '.social-neo-pages-wizard-step',
-    '.social-neo-pages-hero-stats > article',
     '.social-neo-page-card',
     '.social-neo-page-card-rich',
     '.social-neo-page-card-support',
@@ -1310,6 +1295,7 @@ const SOCIAL_NEO_TRANSPARENCY_SURFACE_SELECTORS = [
     '.social-neo-call-stage',
     '.social-neo-call-video',
     '.social-neo-dialog-card',
+    '.social-neo-dialog-card--project-create',
     '.social-neo-dialog-preview',
     '.social-neo-toast',
     '.social-neo-mobile-tabbar',
@@ -1352,11 +1338,6 @@ const SOCIAL_NEO_TRANSPARENCY_SURFACE_CLASSES = SOCIAL_NEO_TRANSPARENCY_SURFACE_
     .filter((selector) => selector.charAt(0) === '.' && !/[ >:+~#\[]/.test(selector))
     .map((selector) => selector.slice(1));
 const SOCIAL_NEO_SMALL_TRANSPARENCY_SURFACE_CLASSES = [
-    'social-mini-card',
-    'social-comment-card',
-    'social-notif-item',
-    'social-story-card',
-    'social-file-preview',
     'social-neo-chat-item',
     'social-neo-directory-item',
     'social-neo-entity-card',
@@ -1403,20 +1384,6 @@ const STAFF_ROUTE_TRANSPARENCY_SURFACE_SELECTORS = [
     '.admin-directory-card'
 ];
 
-const STAFF_ROUTE_SMALL_TRANSPARENCY_SURFACE_CLASSES = [
-    'staff-hub-metric-card',
-    'staff-hub-command-card',
-    'staff-hub-info-card',
-    'staff-hub-warning',
-    'staff-hub-list-item',
-    'staff-hub-mini-card',
-    'staff-hub-focus-card',
-    'lux-data-card',
-    'lux-subcard',
-    'lux-person-head',
-    'lux-inline-meta'
-];
-
 const STUDENTS_ADMIN_ROUTE_TRANSPARENCY_SURFACE_SELECTORS = [
     '.students-lms-hero',
     '.students-lms-profile-header',
@@ -1426,12 +1393,6 @@ const STUDENTS_ADMIN_ROUTE_TRANSPARENCY_SURFACE_SELECTORS = [
     '.students-lms-table-shell',
     '.students-lms-list-item',
     '.students-lms-modal-card'
-];
-
-const STUDENTS_ADMIN_ROUTE_SMALL_TRANSPARENCY_SURFACE_CLASSES = [
-    'students-lms-stat-card',
-    'students-lms-profile-card',
-    'students-lms-list-item'
 ];
 
 const SOCIAL_BLUR_HOST_CLASSES = new Set([
@@ -1450,10 +1411,6 @@ const SOCIAL_BLUR_HOST_CLASSES = new Set([
     'social-neo-story-composer-card',
     'social-neo-call-card',
     'social-neo-empty',
-    'social-card',
-    'social-post-card',
-    'social-detail-card',
-    'social-hero',
     'social-project-detail-hero-rich',
     'social-project-tab-shell',
     'social-project-rich-panel',
@@ -1475,86 +1432,694 @@ function isSocialBlurHost(el) {
 // recipe + blur; wrappers stay on their flat CSS background so glass never stacks.
 function isSocialPaintSurface(el) {
     if (!el?.classList) return false;
-    if (SOCIAL_NEO_TRANSPARENCY_SURFACE_CLASSES.some((className) => el.classList.contains(className))) {
-        return true;
-    }
-    return (
-        el.classList.contains('social-hero') ||
-        el.classList.contains('social-card') ||
-        el.classList.contains('social-post-card') ||
-        el.classList.contains('social-mini-card') ||
-        el.classList.contains('social-detail-card') ||
-        el.classList.contains('social-neo-card')
-    );
+    return SOCIAL_NEO_TRANSPARENCY_SURFACE_CLASSES.some((className) => el.classList.contains(className));
 }
 
 function shouldKeepSocialFadeCssBackground(el) {
     if (!document.body.classList.contains('lux-route-social')) return false;
     if (!el?.classList) return false;
-    // Curated social surfaces are painted with the admin-tools glass recipe;
-    // everything else inside the shell (layout wrappers) keeps its flat CSS bg.
-    if (isSocialPaintSurface(el)) return false;
-    return Boolean(el.closest?.('#page-social'));
+    if (!el.closest?.('#page-social, #public-social-root')) return false;
+    // CSS owns --social-fade-* → panel tokens on curated surfaces (timetable model).
+    return isSocialPaintSurface(el) || isSocialBlurHost(el);
 }
 
-function shouldKeepAdminLibraryFadeCssBackground(_el) {
-    return false;
+function shouldKeepAdminLibraryFadeCssBackground(el) {
+    if (!document.body.classList.contains('lux-route-admin-library') &&
+        !document.body.classList.contains('lux-entry-admin-library')) {
+        return false;
+    }
+    if (!el?.classList) return false;
+    if (!el.closest?.('#page-library') && !el.classList.contains('admin-library-modal')) return false;
+    return (
+        el.classList.contains('lux-panel') ||
+        el.classList.contains('lux-strip-card') ||
+        el.classList.contains('admin-library-modal') ||
+        el.classList.contains('lux-stat-card') ||
+        el.classList.contains('lux-pill') ||
+        el.classList.contains('admin-library-chip') ||
+        el.classList.contains('admin-library-param-group') ||
+        el.classList.contains('library-catalog-card') ||
+        el.classList.contains('library-filter-shell') ||
+        el.classList.contains('library-page-hero') ||
+        el.classList.contains('alib-panel') ||
+        el.classList.contains('lux-control')
+    );
+}
+
+function shouldKeepLibraryFadeCssBackground(el) {
+    if (!document.body.classList.contains('lux-route-library')) return false;
+    if (!el?.classList) return false;
+    if (!el.closest?.('#page-library')) return false;
+    return (
+        el.classList.contains('library-page-hero') ||
+        el.classList.contains('library-filter-shell') ||
+        el.classList.contains('library-catalog-card') ||
+        el.classList.contains('library-tabs') ||
+        el.classList.contains('library-picker-panel') ||
+        el.classList.contains('library-catalog-foot') ||
+        el.classList.contains('library-overview-card') ||
+        el.classList.contains('library-hero-metric') ||
+        el.classList.contains('library-hero-signal-card') ||
+        el.classList.contains('lux-strip-card') ||
+        el.classList.contains('lux-hero-signal') ||
+        el.classList.contains('lux-picker-btn') ||
+        el.classList.contains('lux-control')
+    );
+}
+
+function shouldKeepExamsFadeCssBackground(el) {
+    if (!document.body.classList.contains('lux-route-exams') &&
+        !document.body.classList.contains('lux-route-exam')) {
+        return false;
+    }
+    if (document.body.classList.contains('lux-route-exam')) {
+        return shouldKeepExamPortalFadeCssBackground(el);
+    }
+    if (!el?.classList) return false;
+    return (
+        el.classList.contains('ex2-hero') ||
+        el.classList.contains('ex2-workspace-panel') ||
+        el.classList.contains('ex2-workspace-head') ||
+        el.classList.contains('ex2-workspace-section') ||
+        el.classList.contains('ex2-stat-chip') ||
+        el.classList.contains('ex2-panel') ||
+        el.classList.contains('ex2-toolbar') ||
+        el.classList.contains('ex2-card') ||
+        el.classList.contains('ex2-stat-card') ||
+        el.classList.contains('ex2-cohort-card') ||
+        el.classList.contains('ex2-session-card') ||
+        el.classList.contains('ex2-list-card') ||
+        el.classList.contains('ex2-question-card') ||
+        el.classList.contains('ex2-review-card') ||
+        el.classList.contains('ex2-side-card') ||
+        el.classList.contains('ex2-select-card') ||
+        el.classList.contains('ex2-live-sidebar') ||
+        el.classList.contains('ex2-q-card') ||
+        el.classList.contains('ex2-q-card-head') ||
+        el.classList.contains('ex2-empty-state') ||
+        el.classList.contains('ex2-timeline-card') ||
+        el.classList.contains('ex2-split-box') ||
+        el.classList.contains('ex2-auto-gen-box') ||
+        el.classList.contains('ex2-qnav-bar') ||
+        el.classList.contains('ex2-progress-step') ||
+        el.parentElement?.classList?.contains('ex2-mini-grid')
+    );
+}
+
+function shouldKeepAdminToolsFadeCssBackground(el) {
+    if (!document.body.classList.contains('lux-route-admin-tools')) return false;
+    if (!el?.classList) return false;
+    if (!el.closest?.('#lux-admin-tools-shell')) return false;
+    return (
+        el.classList.contains('lux-admin-tools-index-hero') ||
+        el.classList.contains('lux-admin-tools-index-panel') ||
+        el.classList.contains('lux-admin-tools-hero') ||
+        el.classList.contains('lux-admin-op-card') ||
+        el.classList.contains('lux-admin-ops-panel') ||
+        el.classList.contains('lux-admin-provision-card') ||
+        el.classList.contains('lux-admin-tools-index-summary') ||
+        el.classList.contains('lux-admin-tools-index-command') ||
+        el.classList.contains('lux-admin-tools-index-command-card') ||
+        el.classList.contains('lux-admin-tools-index-subpanel') ||
+        el.classList.contains('lux-panel') ||
+        el.classList.contains('lux-card') ||
+        el.classList.contains('lux-subcard') ||
+        el.classList.contains('lux-stat-card') ||
+        el.classList.contains('lux-grid-widget') ||
+        el.classList.contains('lux-strip-card') ||
+        el.classList.contains('lux-control') ||
+        el.classList.contains('lux-picker-btn') ||
+        el.id === 'admin-reg-content-container' ||
+        el.id === 'curriculum-library-modules-root'
+    );
+}
+
+function shouldKeepAdminOrdersFadeCssBackground(el) {
+    if (!document.body.classList.contains('lux-route-admin-orders')) return false;
+    if (!el?.classList) return false;
+    if (!el.closest?.('#admin-orders-root, #modal-studio')) return false;
+    return (
+        el.classList.contains('orders-admin-shell') ||
+        el.classList.contains('orders-admin-hero') ||
+        el.classList.contains('orders-admin-panel') ||
+        el.classList.contains('orders-admin-hero-side') ||
+        el.classList.contains('orders-detail-panel') ||
+        el.classList.contains('orders-admin-table-wrap') ||
+        el.classList.contains('admin-orders-studio') ||
+        el.classList.contains('orders-metric-card') ||
+        el.classList.contains('orders-recipient-row') ||
+        el.classList.contains('orders-recipient-card') ||
+        el.classList.contains('orders-attachment-card') ||
+        el.classList.contains('orders-detail-empty') ||
+        el.classList.contains('orders-detail-card') ||
+        el.classList.contains('lux-hero-signal') ||
+        el.classList.contains('lux-stat-card') ||
+        el.classList.contains('admin-orders-studio-card') ||
+        el.classList.contains('lux-control') ||
+        el.classList.contains('lux-status-pill')
+    );
+}
+
+function shouldKeepSchedulerFadeCssBackground(el) {
+    if (!document.body.classList.contains('lux-route-admin-scheduler')) return false;
+    if (!el?.classList) return false;
+    if (!el.closest?.('#page-admin-scheduler')) return false;
+    return (
+        el.classList.contains('sch-rail-hero') ||
+        el.classList.contains('sch-rail-section') ||
+        el.classList.contains('sch-grid-shell') ||
+        el.classList.contains('sch-modal') ||
+        el.classList.contains('sch-stat-card') ||
+        el.classList.contains('palette-card') ||
+        el.classList.contains('sch-grid-tag') ||
+        el.classList.contains('sch-empty-state') ||
+        el.classList.contains('sch-grid-empty') ||
+        el.classList.contains('sch-week-arrow') ||
+        el.classList.contains('lux-strip-card') ||
+        el.classList.contains('lux-control') ||
+        ((el.tagName === 'SELECT' || el.tagName === 'INPUT') &&
+            Boolean(el.closest?.('.sch-control-group, .sch-search-shell, .sch-modal')))
+    );
+}
+
+/** Faculty gradebook: CSS owns --fg-fade-* → panel tokens. */
+function shouldKeepFacultyGradebookFadeCssBackground(el) {
+    if (!document.body.classList.contains('lux-route-faculty-gradebook')) return false;
+    if (!el?.classList) return false;
+    if (!el.closest?.('.lux-faculty-gradebook-page, #page-faculty-gradebook')) return false;
+    return (
+        el.classList.contains('lux-faculty-hero') ||
+        el.classList.contains('lux-faculty-command-deck') ||
+        el.classList.contains('lux-faculty-hero-focus') ||
+        el.classList.contains('lux-faculty-command') ||
+        el.classList.contains('lux-faculty-stage') ||
+        el.classList.contains('lux-faculty-insight') ||
+        el.classList.contains('lux-faculty-filters') ||
+        el.classList.contains('lux-faculty-controls') ||
+        el.classList.contains('lux-fg-control-band') ||
+        el.classList.contains('lux-fg-ops-panel') ||
+        el.classList.contains('lux-fg-ops-tile') ||
+        el.classList.contains('lux-fg-workspace') ||
+        el.classList.contains('lux-status-pill') ||
+        el.classList.contains('lux-primary-btn') ||
+        el.classList.contains('lux-secondary-btn') ||
+        el.classList.contains('lux-card') ||
+        el.classList.contains('lux-control') ||
+        [...el.classList].some((className) => className.startsWith('gb-') || className.startsWith('lux-fg-'))
+    );
+}
+
+/** Timetable: CSS owns --tt-fade-* → panel tokens (also covered by isStructuralSurface). */
+function shouldKeepTimetableFadeCssBackground(el) {
+    if (!document.body.classList.contains('lux-route-timetable')) return false;
+    if (!el?.classList) return false;
+    return (
+        el.classList.contains('lux-timetable-hero') ||
+        el.classList.contains('lux-timetable-command') ||
+        el.classList.contains('lux-timetable-stage') ||
+        el.classList.contains('lux-timetable-hero-focus') ||
+        el.classList.contains('lux-timetable-filters') ||
+        el.classList.contains('lux-timetable-view-switcher') ||
+        el.classList.contains('lux-timetable-week-nav') ||
+        el.classList.contains('lux-timetable-overview-row') ||
+        el.classList.contains('lux-timetable-insight') ||
+        el.classList.contains('lux-timetable-grid-shell') ||
+        el.classList.contains('lux-timetable-canvas') ||
+        el.classList.contains('lux-timetable-day-section') ||
+        el.classList.contains('lux-timetable-session-card') ||
+        el.classList.contains('schedule-day-section') ||
+        el.classList.contains('schedule-session-card') ||
+        el.classList.contains('schedule-view-switcher') ||
+        el.classList.contains('schedule-week-nav') ||
+        el.classList.contains('schedule-overview-row') ||
+        el.classList.contains('schedule-chip') ||
+        el.classList.contains('lux-status-pill') ||
+        el.classList.contains('lux-control') ||
+        el.classList.contains('filter-shell')
+    );
+}
+
+/** Exam portal (lux-route-exam) + exams studio share panel glass. */
+function shouldKeepExamPortalFadeCssBackground(el) {
+    if (!document.body.classList.contains('lux-route-exam')) return false;
+    if (!el?.classList) return false;
+    return (
+        el.classList.contains('lms-route-panel') ||
+        el.classList.contains('lms-route-card') ||
+        el.classList.contains('page-hero') ||
+        el.classList.contains('lux-card') ||
+        el.classList.contains('lux-panel') ||
+        el.classList.contains('lux-control') ||
+        el.classList.contains('lux-status-pill')
+    );
+}
+
+
+/** Profile view: CSS owns --pv-fade-* → panel tokens. */
+function shouldKeepProfileViewFadeCssBackground(el) {
+    if (!document.body.classList.contains('lux-route-profile-view')) return false;
+    if (!el?.classList) return false;
+    // Shell host is painted by route CSS tokens; do not force engine fade keep.
+    if (el.classList.contains('pv-shell')) return false;
+    return (
+        el.classList.contains('pv-hero') ||
+        el.classList.contains('pv-meta') ||
+        el.classList.contains('pv-left') ||
+        el.classList.contains('pv-right') ||
+        el.classList.contains('pv-stat-card') ||
+        el.classList.contains('pv-tab') ||
+        el.classList.contains('pv-modal-card') ||
+        el.classList.contains('pv-profile-edit-card') ||
+        el.classList.contains('pv-session-list-row') ||
+        el.classList.contains('pv-document-card') ||
+        el.classList.contains('pv-course-row') ||
+        el.classList.contains('pv-financial-status-card') ||
+        el.classList.contains('upload-zone') ||
+        el.classList.contains('surface-card') ||
+        el.classList.contains('lux-summary-surface') ||
+        el.classList.contains('lux-strip-card') ||
+        el.classList.contains('lux-inline-card') ||
+        el.classList.contains('lux-data-card') ||
+        el.classList.contains('lux-info-card') ||
+        el.classList.contains('lux-status-pill') ||
+        el.classList.contains('lux-control') ||
+        el.classList.contains('lux-select-card') ||
+        [...el.classList].some((className) => className.startsWith('pv-'))
+    );
+}
+
+/** True when route CSS owns glass (strip inline; do not invent paint). */
+function shouldKeepRouteFadeCssBackground(el) {
+    return (
+        shouldKeepPersonalDataFadeCssBackground(el) ||
+        shouldKeepNewsFadeCssBackground(el) ||
+        shouldKeepLmsFadeCssBackground(el) ||
+        shouldKeepStaffFadeCssBackground(el) ||
+        shouldKeepStudentsAdminFadeCssBackground(el) ||
+        shouldKeepStudyCardFadeCssBackground(el) ||
+        shouldKeepProgramsFadeCssBackground(el) ||
+        shouldKeepChancelleryFadeCssBackground(el) ||
+        shouldKeepStudentServiceFadeCssBackground(el) ||
+        shouldKeepOrdersFadeCssBackground(el) ||
+        shouldKeepLibraryFadeCssBackground(el) ||
+        shouldKeepAdminLibraryFadeCssBackground(el) ||
+        shouldKeepExamsFadeCssBackground(el) ||
+        shouldKeepAdminToolsFadeCssBackground(el) ||
+        shouldKeepAdminOrdersFadeCssBackground(el) ||
+        shouldKeepSchedulerFadeCssBackground(el) ||
+        shouldKeepSocialFadeCssBackground(el) ||
+        shouldKeepFacultyGradebookFadeCssBackground(el) ||
+        shouldKeepTimetableFadeCssBackground(el) ||
+        shouldKeepExamPortalFadeCssBackground(el) ||
+        shouldKeepProfileViewFadeCssBackground(el) ||
+        shouldKeepRegistrationFadeCssBackground(el)
+    );
+}
+
+/** Personal-data panels are CSS-owned focus soft-shell (engine inline !important otherwise wins). */
+function shouldKeepPersonalDataFadeCssBackground(el) {
+    if (!document.body.classList.contains('lux-route-personal-data')) return false;
+    if (!el?.classList) return false;
+    if (!el.closest?.('#page-personal-data')) return false;
+    return (
+        el.classList.contains('page-hero') ||
+        el.classList.contains('personal-data-hero') ||
+        el.classList.contains('filter-shell') ||
+        el.classList.contains('personal-data-command') ||
+        el.classList.contains('personal-data-toolbar') ||
+        el.classList.contains('profile-card') ||
+        el.classList.contains('personal-data-identity-card') ||
+        el.classList.contains('personal-data-merged') ||
+        el.classList.contains('personal-data-kpi-card') ||
+        el.classList.contains('personal-data-stats-card') ||
+        el.classList.contains('personal-data-facts-card') ||
+        el.classList.contains('personal-data-record-card') ||
+        el.classList.contains('personal-data-hero-panel') ||
+        el.classList.contains('lux-summary-surface') ||
+        el.classList.contains('lux-data-card') ||
+        el.classList.contains('lux-metric-card') ||
+        el.classList.contains('lux-strip-card') ||
+        el.classList.contains('lux-status-pill') ||
+        el.classList.contains('lux-modern-surface') ||
+        el.classList.contains('lux-modern-table') ||
+        el.classList.contains('personal-data-subjects-table') ||
+        el.classList.contains('personal-data-subjects-table-wrap') ||
+        el.classList.contains('lux-soft-chrome') ||
+        el.classList.contains('lux-control') ||
+        el.tagName === 'SELECT' ||
+        el.tagName === 'TABLE' ||
+        el.tagName === 'INPUT'
+    );
+}
+
+/** Registration shells/panels are CSS-owned focus soft-shell (opacity vars + engine otherwise wins). */
+function shouldKeepRegistrationFadeCssBackground(el) {
+    if (!document.body.classList.contains('lux-route-registration')) return false;
+    if (!el?.classList) return false;
+    if (!el.closest?.('#page-registration, .registration-structured-modal-card, .registration-section-picker-dialog, .modal-content')) {
+        return false;
+    }
+    return (
+        el.classList.contains('registration-page-stack') ||
+        el.classList.contains('registration-page-shell') ||
+        el.classList.contains('registration-hero-shell') ||
+        el.classList.contains('registration-command-band') ||
+        el.classList.contains('registration-metrics-band') ||
+        el.classList.contains('registration-studio-panel') ||
+        el.classList.contains('registration-footer-bar') ||
+        el.classList.contains('registration-progress-shell') ||
+        el.classList.contains('registration-hero') ||
+        el.classList.contains('registration-workspace') ||
+        el.classList.contains('registration-insight-card') ||
+        el.classList.contains('registration-focus-card') ||
+        el.classList.contains('registration-summary-card') ||
+        el.classList.contains('registration-state-card') ||
+        el.classList.contains('registration-track-card') ||
+        el.classList.contains('registration-module-list-card') ||
+        el.classList.contains('registration-module-pane-card') ||
+        el.classList.contains('registration-module-choice') ||
+        el.classList.contains('registration-course-row') ||
+        el.classList.contains('registration-track-group') ||
+        el.classList.contains('registration-term-shell') ||
+        el.classList.contains('filter-shell') ||
+        el.classList.contains('registration-shell-empty') ||
+        el.classList.contains('registration-empty-state') ||
+        el.classList.contains('registration-render-error') ||
+        el.classList.contains('registration-hero-aside') ||
+        el.classList.contains('registration-mini-metric') ||
+        el.classList.contains('registration-structured-modal-card') ||
+        el.classList.contains('registration-section-picker-dialog') ||
+        el.classList.contains('lux-soft-chrome') ||
+        el.matches?.('.lms-hero-focus, .lux-focus-panel') ||
+        el.classList.contains('lux-focus-panel') ||
+        el.classList.contains('lux-timetable-hero') ||
+        el.classList.contains('lux-timetable-hero-top') ||
+        el.classList.contains('lux-timetable-hero-focus') ||
+        el.classList.contains('lux-timetable-command') ||
+        el.classList.contains('lux-timetable-stage') ||
+        el.classList.contains('lux-timetable-filters') ||
+        el.classList.contains('lux-modern-surface') ||
+        el.classList.contains('admin-chip') ||
+        el.classList.contains('wave2-chip') ||
+        el.classList.contains('lux-status-pill') ||
+        el.classList.contains('lux-pill') ||
+        el.classList.contains('reg-tab') ||
+        el.classList.contains('lux-control') ||
+        el.tagName === 'SELECT' ||
+        el.tagName === 'INPUT'
+    );
+}
+
+/** News shells/panels are CSS-owned focus soft-shell (engine inline !important otherwise wins). */
+function shouldKeepNewsFadeCssBackground(el) {
+    if (!document.body.classList.contains('lux-route-news')) return false;
+    if (!el?.classList) return false;
+    const inNews =
+        el.closest?.('#page-news, #portal-news-root, #newsx-publisher-modal, #newsx-confirm-modal, #newsx-sections-modal, .newsx-modal-overlay');
+    if (!inNews) return false;
+    return (
+        el.classList.contains('newsx-shell') ||
+        el.classList.contains('newsx-panel') ||
+        el.classList.contains('newsx-feed-card') ||
+        el.classList.contains('newsx-post-card--editorial') ||
+        el.classList.contains('newsx-section-btn') ||
+        el.classList.contains('newsx-stat') ||
+        el.classList.contains('newsx-private-item') ||
+        el.classList.contains('newsx-account-card') ||
+        el.classList.contains('newsx-check') ||
+        el.classList.contains('newsx-empty') ||
+        el.classList.contains('newsx-error') ||
+        el.classList.contains('newsx-hero') ||
+        el.classList.contains('newsx-filter') ||
+        el.classList.contains('newsx-sidebar') ||
+        el.classList.contains('newsx-rail') ||
+        el.classList.contains('newsx-section') ||
+        el.classList.contains('newsx-pane-btn') ||
+        el.classList.contains('newsx-publisher-modal') ||
+        el.classList.contains('newsx-confirm-modal') ||
+        el.classList.contains('newsx-sections-modal') ||
+        el.classList.contains('lux-panel') ||
+        el.classList.contains('lux-modern-surface') ||
+        el.classList.contains('lux-soft-chrome') ||
+        el.id === 'newsx-publisher-modal' ||
+        el.id === 'newsx-confirm-modal' ||
+        el.id === 'newsx-sections-modal'
+    );
+}
+
+/* LMS: keep the glass CSS-owned (same as registration → no flicker). The JS
+   transparency engine setting/re-applying inline backdrop-filter on the LMS
+   wrapper is what re-rasterizes over the moving canvas and flickers. Routing
+   these through the keep-CSS path makes JS STRIP its inline backdrop and let
+   the stable CSS rule own the frost — exactly why registration doesn't flicker. */
+function shouldKeepLmsFadeCssBackground(el) {
+    if (!document.body.classList.contains('lux-route-lms')) return false;
+    if (!el?.classList) return false;
+    if (!el.closest?.('#page-lms')) return false;
+    // CSS owns glass via --lms-fade-* → --lux-panel-*; strip inline paint (timetable model).
+    return (
+        el.classList.contains('lux-page-shell') ||
+        el.classList.contains('lms-route-stage') ||
+        el.classList.contains('lms-route-panel') ||
+        el.classList.contains('lms-route-card') ||
+        el.classList.contains('lms-route-workspace-chrome') ||
+        el.classList.contains('lms-route-tab-strip') ||
+        el.classList.contains('page-hero') ||
+        el.classList.contains('lux-lms-hero') ||
+        el.classList.contains('lms-clean-hero') ||
+        el.classList.contains('lms-hero-v2') ||
+        el.classList.contains('lms-hero-focus') ||
+        el.classList.contains('lux-focus-panel') ||
+        el.classList.contains('lms-clean-subjects') ||
+        el.classList.contains('lms-clean-subject-card') ||
+        el.classList.contains('lux-lms-subject-card') ||
+        el.classList.contains('lux-lms-group-card') ||
+        el.classList.contains('lms-route-empty') ||
+        el.classList.contains('lux-card') ||
+        el.classList.contains('lux-panel') ||
+        el.classList.contains('surface-card') ||
+        el.classList.contains('lux-status-pill')
+    );
+}
+
+/** Staff hub: CSS owns --staff-fade-* → panel tokens. */
+function shouldKeepStaffFadeCssBackground(el) {
+    if (!document.body.classList.contains('lux-route-staff')) return false;
+    if (!el?.classList) return false;
+    if (!el.closest?.('#staff-content')) return false;
+    return (
+        el.classList.contains('page-hero') ||
+        el.classList.contains('staff-hub-controls') ||
+        el.classList.contains('staff-hub-directory-panel') ||
+        el.classList.contains('staff-hub-profile') ||
+        el.classList.contains('staff-hub-form-settings-head') ||
+        el.classList.contains('staff-hub-builder-rail') ||
+        el.classList.contains('staff-hub-builder-canvas') ||
+        el.classList.contains('staff-hub-filter-deck') ||
+        el.classList.contains('staff-hub-info-card') ||
+        el.classList.contains('staff-hub-warning') ||
+        el.classList.contains('staff-hub-list-item') ||
+        el.classList.contains('staff-hub-modal') ||
+        el.classList.contains('lux-card') ||
+        el.classList.contains('lux-person-card') ||
+        el.classList.contains('lux-strip-card') ||
+        el.classList.contains('lux-control') ||
+        el.classList.contains('lux-status-pill')
+    );
+}
+
+/** Students admin: CSS owns --sadmin-fade-* → panel tokens. */
+function shouldKeepStudentsAdminFadeCssBackground(el) {
+    if (!document.body.classList.contains('lux-route-students-admin')) return false;
+    if (!el?.classList) return false;
+    if (!el.closest?.('#students-content')) return false;
+    return (
+        el.classList.contains('page-hero') ||
+        el.classList.contains('students-hub-controls') ||
+        el.classList.contains('students-hub-directory-panel') ||
+        el.classList.contains('students-hub-profile') ||
+        el.classList.contains('students-hub-form-settings-head') ||
+        el.classList.contains('students-hub-builder-rail') ||
+        el.classList.contains('students-hub-builder-canvas') ||
+        el.classList.contains('students-hub-filter-deck') ||
+        el.classList.contains('students-hub-info-card') ||
+        el.classList.contains('students-hub-warning') ||
+        el.classList.contains('students-hub-list-item') ||
+        el.classList.contains('students-hub-modal') ||
+        el.classList.contains('lux-card') ||
+        el.classList.contains('lux-person-card') ||
+        el.classList.contains('lux-strip-card') ||
+        el.classList.contains('lux-control') ||
+        el.classList.contains('lux-status-pill')
+    );
+}
+
+function stripInlineGlassPaint(el, transparencySignature) {
+    el.style.removeProperty('background-color');
+    el.style.removeProperty('background');
+    el.style.removeProperty('backdrop-filter');
+    el.style.removeProperty('-webkit-backdrop-filter');
+    el.dataset.luxTransparencySignature = transparencySignature;
+}
+
+/** Study card: CSS owns --sc-fade-* → panel tokens. */
+function shouldKeepStudyCardFadeCssBackground(el) {
+    if (!document.body.classList.contains('lux-route-study-card')) return false;
+    if (!el?.classList) return false;
+    if (!el.closest?.('#page-study-card, #study-card-container, .study-card-page-shell')) return false;
+    return (
+        el.classList.contains('study-card-page-shell') ||
+        el.classList.contains('study-card-workspace') ||
+        el.classList.contains('study-card-page-head') ||
+        el.classList.contains('study-card-title-row') ||
+        el.classList.contains('study-card-control-band') ||
+        el.classList.contains('study-card-control-actions') ||
+        el.id === 'study-card-container' ||
+        el.classList.contains('study-card-semester-table') ||
+        el.classList.contains('study-card-summary-stage') ||
+        el.classList.contains('study-card-term-row') ||
+        el.classList.contains('study-card-term-header') ||
+        el.classList.contains('study-card-assessment-window') ||
+        el.classList.contains('study-card-assessment-window__card') ||
+        el.classList.contains('study-card-assessment-window__chip') ||
+        el.classList.contains('study-card-assessment-panel') ||
+        el.classList.contains('study-card-assessment-layout') ||
+        el.classList.contains('study-card-assessment-pill') ||
+        el.classList.contains('study-card-grade-circle') ||
+        el.classList.contains('lux-strip-card') ||
+        el.classList.contains('lux-status-pill') ||
+        el.classList.contains('lux-control')
+    );
+}
+
+/** Programs: CSS owns --prog-fade-* → panel tokens. */
+function shouldKeepProgramsFadeCssBackground(el) {
+    if (!document.body.classList.contains('lux-route-programs')) return false;
+    if (!el?.classList) return false;
+    if (!el.closest?.('#page-programs')) return false;
+    return (
+        el.classList.contains('lux-program-command-deck') ||
+        el.classList.contains('lux-program-hero') ||
+        el.classList.contains('lux-program-filter-shell') ||
+        el.classList.contains('lux-program-stage') ||
+        el.classList.contains('lux-program-overview-card') ||
+        el.classList.contains('lux-program-focus-panel') ||
+        el.classList.contains('lux-prog-control-band') ||
+        el.classList.contains('lux-prog-ops-panel') ||
+        el.classList.contains('lux-prog-ops-tile') ||
+        el.classList.contains('lux-prog-workspace') ||
+        el.classList.contains('lux-prog-toolbar') ||
+        el.classList.contains('lux-program-shell-section--module-rail') ||
+        el.classList.contains('lux-program-shell-section--subject-panel') ||
+        el.classList.contains('lux-program-module-option') ||
+        el.classList.contains('lux-module-option') ||
+        el.classList.contains('lux-program-subject-card') ||
+        el.classList.contains('lux-subject-row') ||
+        el.classList.contains('lux-program-empty-state') ||
+        el.classList.contains('lux-program-summary-card') ||
+        el.classList.contains('lux-program-metric') ||
+        el.classList.contains('lux-program-publish-pill') ||
+        el.classList.contains('lux-status-pill') ||
+        el.classList.contains('lux-control') ||
+        el.classList.contains('surface-card')
+    );
+}
+
+/** Chancellery: CSS owns --chan-fade-* → panel tokens. */
+function shouldKeepChancelleryFadeCssBackground(el) {
+    if (!document.body.classList.contains('lux-route-chancellery')) return false;
+    if (!el?.classList) return false;
+    if (!el.closest?.('#page-chancellery')) return false;
+    return (
+        el.classList.contains('page-hero') ||
+        el.classList.contains('lux-chancellery-hero-card') ||
+        el.classList.contains('lux-chancellery-command-bar') ||
+        el.classList.contains('filter-shell') ||
+        el.classList.contains('lux-chancellery-snapshot-card') ||
+        el.classList.contains('lux-chancellery-subcard') ||
+        el.classList.contains('lux-chancellery-queue-item') ||
+        el.classList.contains('lux-chancellery-thread-entry') ||
+        el.classList.contains('lux-chancellery-main-panel') ||
+        el.classList.contains('lux-queue-item') ||
+        el.classList.contains('lux-thread-entry') ||
+        el.classList.contains('lux-card') ||
+        el.classList.contains('lux-stat-card') ||
+        el.classList.contains('lux-subcard') ||
+        el.classList.contains('lux-strip-card') ||
+        el.classList.contains('lux-hero-signal') ||
+        el.classList.contains('lux-control') ||
+        el.classList.contains('lux-status-pill')
+    );
+}
+
+/** Student service: CSS owns --ssvc-fade-* → panel tokens. */
+function shouldKeepStudentServiceFadeCssBackground(el) {
+    if (!document.body.classList.contains('lux-route-student-service')) return false;
+    if (!el?.classList) return false;
+    if (!el.closest?.('#page-student-service, .student-service-shell')) return false;
+    return (
+        el.classList.contains('student-service-command-bar-shell') ||
+        el.classList.contains('student-service-canvas') ||
+        el.classList.contains('student-service-zone') ||
+        el.classList.contains('student-service-article-card') ||
+        el.classList.contains('student-service-ticket-row') ||
+        el.classList.contains('student-service-lane-card') ||
+        el.classList.contains('student-service-ticket-card') ||
+        el.classList.contains('student-service-ops-card') ||
+        el.classList.contains('student-service-track-card') ||
+        el.classList.contains('student-service-home-panel') ||
+        el.classList.contains('student-service-home-card') ||
+        el.classList.contains('student-service-home-ticket') ||
+        el.classList.contains('student-service-lane-choice-card') ||
+        el.classList.contains('lux-card') ||
+        el.classList.contains('lux-control') ||
+        el.classList.contains('lux-status-pill')
+    );
+}
+
+/** Student orders inbox: CSS owns --orders-fade-* → panel tokens. */
+function shouldKeepOrdersFadeCssBackground(el) {
+    if (!document.body.classList.contains('lux-route-orders') && !el.closest?.('#page-orders, #orders-inbox-root')) {
+        return false;
+    }
+    if (document.body.classList.contains('lux-route-admin-orders')) return false;
+    if (!el?.classList) return false;
+    if (!el.closest?.('#page-orders, #orders-inbox-root')) return false;
+    return (
+        el.classList.contains('orders-inbox-shell') ||
+        el.classList.contains('orders-inbox-hero') ||
+        el.classList.contains('orders-list-card') ||
+        el.classList.contains('orders-detail-card') ||
+        el.classList.contains('orders-inbox-hero-side') ||
+        el.classList.contains('orders-list-wrap') ||
+        el.classList.contains('orders-status-filter') ||
+        el.classList.contains('orders-item') ||
+        el.classList.contains('orders-metric-card') ||
+        el.classList.contains('orders-attachment-card') ||
+        el.classList.contains('orders-recipient-card') ||
+        el.classList.contains('orders-detail-panel') ||
+        el.classList.contains('orders-detail-empty') ||
+        el.classList.contains('lux-hero-signal') ||
+        el.classList.contains('lux-control') ||
+        el.classList.contains('lux-status-pill') ||
+        el.classList.contains('lux-card')
+    );
 }
 
 function buildHomeStyleSurfaceBackground(lightMode, amount) {
+    // Home remains special-cased; still amount-scaled. Prefer CSS --home-fade-* when possible.
     if (lightMode) {
         return `radial-gradient(circle at 6% 0%, rgba(255,255,255, ${(amount * 0.88).toFixed(2)}), transparent 34%), radial-gradient(circle at 74% 0%, rgba(var(--lux-accent-rgb), ${(amount * 0.24).toFixed(2)}), transparent 42%), radial-gradient(circle at 100% 96%, rgba(var(--lux-home-secondary-rgb), ${(amount * 0.14).toFixed(2)}), transparent 40%), linear-gradient(135deg, rgba(var(--lux-accent-rgb), ${(amount * 0.065).toFixed(2)}), rgba(255,255,255, ${(amount * 0.84).toFixed(2)}) 44%, rgba(247,241,232, ${(amount * 0.70).toFixed(2)}))`;
     }
     return `radial-gradient(circle at 6% 0%, rgba(255,255,255, ${(amount * 0.08).toFixed(2)}), transparent 32%), radial-gradient(circle at 74% 0%, rgba(var(--lux-accent-rgb), ${(amount * 0.28).toFixed(2)}), transparent 42%), radial-gradient(circle at 100% 96%, rgba(var(--lux-home-secondary-rgb), ${(amount * 0.18).toFixed(2)}), transparent 40%), linear-gradient(135deg, rgba(var(--lux-accent-rgb), ${(amount * 0.10).toFixed(2)}), rgba(10,15,24, ${(amount * 0.89).toFixed(2)}) 44%, rgba(7,10,18, ${(amount * 0.80).toFixed(2)}))`;
 }
 
+/** Non-home route glass: CSS tokens only (timetable blueprint). lightMode kept for call-site compat. */
 function buildLuxuryRoutePanelGradient(lightMode, isSmallSurface) {
-    if (lightMode) {
-        if (isSmallSurface) {
-            return 'radial-gradient(circle at 8% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .88) * .88)), transparent 34%), ' +
-                'radial-gradient(circle at 72% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .88) * .16)), transparent 38%), ' +
-                'radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .88) * .13)), transparent 38%), ' +
-                'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .88) * .075)), rgba(255,255,255, calc(var(--lux-transparency-alpha, .88) * .88)) 44%, rgba(247,241,232, calc(var(--lux-transparency-alpha, .88) * .72)))';
-        }
-        return 'radial-gradient(circle at 8% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .88) * .88)), transparent 34%), ' +
-            'radial-gradient(circle at 72% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .88) * .20)), transparent 38%), ' +
-            'radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .88) * .13)), transparent 38%), ' +
-            'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .88) * .075)), rgba(255,255,255, calc(var(--lux-transparency-alpha, .88) * .88)) 44%, rgba(247,241,232, calc(var(--lux-transparency-alpha, .88) * .72)))';
-    }
-    if (isSmallSurface) {
-        return 'radial-gradient(circle at 8% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .92) * .075)), transparent 32%), ' +
-            'radial-gradient(circle at 72% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .16)), transparent 38%), ' +
-            'radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .92) * .14)), transparent 38%), ' +
-            'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .10)), rgba(10,15,24, calc(var(--lux-transparency-alpha, .92) * .91)) 44%, rgba(7,10,18, calc(var(--lux-transparency-alpha, .92) * .84)))';
-    }
-    return 'radial-gradient(circle at 8% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .92) * .075)), transparent 32%), ' +
-        'radial-gradient(circle at 72% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .24)), transparent 38%), ' +
-        'radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .92) * .14)), transparent 38%), ' +
-        'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .10)), rgba(10,15,24, calc(var(--lux-transparency-alpha, .92) * .91)) 44%, rgba(7,10,18, calc(var(--lux-transparency-alpha, .92) * .84)))';
+    return isSmallSurface
+        ? 'var(--lux-panel-surface-soft)'
+        : 'var(--lux-panel-surface)';
 }
-
-// Mirrors --staff-fade-control token in staff-command-center.css.
-// Panels and cards now share the students-admin painter (buildLuxuryRoutePanelGradient).
-function buildStaffFadeBackground(lightMode, tier) {
-    if (tier === 'control') {
-        if (lightMode) {
-            return 'linear-gradient(180deg, rgba(255,255,255, 0.82), rgba(248,244,237, 0.62)), ' +
-                'radial-gradient(circle at top right, rgba(var(--lux-accent-rgb), 0.10), transparent 32%)';
-        }
-        return 'linear-gradient(180deg, rgba(255,255,255, calc(0.04 + var(--lux-glass-alpha, .06))), rgba(255,255,255, 0.02)), ' +
-            'radial-gradient(circle at top right, rgba(var(--lux-accent-rgb), 0.10), transparent 32%)';
-    }
-    return buildLuxuryRoutePanelGradient(lightMode, false);
-}
-
-const STAFF_ROUTE_CONTROL_TRANSPARENCY_SURFACE_CLASSES = [
-    'staff-hub-control',
-    'lux-control',
-    'staff-hub-tab',
-    'lux-tab-btn',
-    'lux-picker-btn',
-    'staff-hub-command-badge'
-];
 
 const SHARED_TRANSPARENCY_OBSERVER_SELECTORS = [
     '.lux-card', '.lux-panel', '.lux-person-card', '.lux-subcard',
@@ -1568,13 +2133,15 @@ const SHARED_TRANSPARENCY_OBSERVER_SELECTORS = [
     '.lux-card-body', '.lux-panel-body',
     '.lux-page-shell', '.lux-stat-card', '.lux-stat',
     '.lux-page-kicker', '.lux-status-pill', '.lux-control',
-    '.lux-faculty-command', '.lux-faculty-command-head', '.lux-faculty-command-grid',
+    '.lux-faculty-command', '.lux-faculty-command-deck', '.lux-faculty-command-head', '.lux-faculty-command-grid',
     '.lux-faculty-insight', '.lux-faculty-insight-grid', '.lux-faculty-insight-label',
     '.lux-faculty-insight-value', '.lux-faculty-insight-list',
     '.lux-faculty-stage', '.lux-faculty-stage-head', '.lux-faculty-hero-focus',
     '.lux-faculty-hero-main', '.lux-faculty-hero-top', '.lux-faculty-filters',
     '.lux-faculty-controls', '.lux-faculty-controls-row', '.lux-faculty-overview-row',
     '.lux-faculty-filter-title',
+    '.lux-fg-control-band', '.lux-fg-filters', '.lux-fg-ops-panel', '.lux-fg-ops-grid',
+    '.lux-fg-ops-tile', '.lux-fg-workspace', '.lux-fg-action-band', '.lux-fg-toolbar',
     '.schedule-chip', '.schedule-view-switcher', '.schedule-week-arrow',
     '.schedule-toolbar-host', '.schedule-toolbar', '.schedule-week-nav',
     '.schedule-overview-row', '.schedule-view-row',
@@ -1763,19 +2330,7 @@ const HIGH_TRANSPARENCY_SURFACE_SELECTORS = [
     '.lux-utility-panel',
     '.lux-person-card',
     '.lux-stack',
-    '.registration-hero',
-    '.registration-workspace',
-    '.registration-insight-card',
-    '.registration-focus-card',
-    '.registration-state-card',
-    '.registration-module-list-card',
-    '.registration-module-pane-card',
-    '.registration-track-card',
-    '.registration-footer-bar',
-    '.registration-mini-metric',
-    '.registration-course-row',
-    '.registration-module-choice',
-    '.registration-track-group',
+    /* registration soft shells: owned by registration-route.css (skip high-trans flat wash) */
     '#page-admin-scheduler .sch-rail-hero',
     '#page-admin-scheduler .sch-rail-section',
     '#page-admin-scheduler .sch-grid-shell',
@@ -1795,11 +2350,9 @@ const HIGH_TRANSPARENCY_SURFACE_SELECTORS = [
     '.lms-banner',
     '.lux-lms-group-card',
     '.lms-route-panel',
-    '.lms-clean-summary',
-    '.lms-route-hero',
+        '.lms-route-hero',
     '.lms-clean-hero',
-    '.lms-clean-subview-hero',
-    '.portal-msg-page-top',
+        '.portal-msg-page-top',
     '.portal-msg-panel',
     '.portal-msg-group-modal',
     '.admin-hero',
@@ -1946,8 +2499,8 @@ function updateTransparency(value, options = {}) {
         var _isLight = isLightTheme;
         var _panelA = transparencyModel.panelAlpha;
         var _pa = _panelA.toFixed(3);
-        var _darkBg = 'linear-gradient(180deg,rgba(14,20,33,' + _pa + '),rgba(8,12,21,' + _pa + '))';
-        var _lightBg = 'linear-gradient(180deg,rgba(252,249,244,' + _pa + '),rgba(248,244,237,' + _pa + '))';
+        var _darkBg = 'var(--lux-panel-ht-surface)';
+        var _lightBg = 'var(--lux-panel-ht-surface)';
         var _bg = _isLight ? _lightBg : _darkBg;
         var _bodySelector = _isLight ? 'body.lux-light-mode' : 'body:not(.lux-light-mode)';
         var _bodyBg = _isLight
@@ -2190,15 +2743,21 @@ function updateTransparency(value, options = {}) {
         (document.body.classList.contains('lux-route-faculty-gradebook') && (
             Boolean(el.closest?.('.lux-faculty-gradebook-page')) && (
                 el.classList.contains('lux-faculty-hero') ||
+                el.classList.contains('lux-faculty-command-deck') ||
                 el.classList.contains('lux-faculty-hero-focus') ||
                 el.classList.contains('lux-faculty-command') ||
                 el.classList.contains('lux-faculty-stage') ||
                 el.classList.contains('lux-faculty-insight') ||
                 el.classList.contains('lux-faculty-filters') ||
                 el.classList.contains('lux-faculty-controls') ||
+                el.classList.contains('lux-fg-control-band') ||
+                el.classList.contains('lux-fg-ops-panel') ||
+                el.classList.contains('lux-fg-ops-tile') ||
+                el.classList.contains('lux-fg-workspace') ||
                 el.classList.contains('lux-status-pill') ||
                 el.classList.contains('lux-primary-btn') ||
-                el.classList.contains('lux-secondary-btn')
+                el.classList.contains('lux-secondary-btn') ||
+                [...el.classList].some((className) => className.startsWith('lux-fg-'))
             )
         )) ||
         (document.body.classList.contains('lux-route-faculty-gradebook') && (
@@ -2229,15 +2788,45 @@ function updateTransparency(value, options = {}) {
             el.classList.contains('schedule-chip') ||
             el.classList.contains('lux-status-pill')
         )) ||
+        /* Registration: same structural strip path as timetable (CSS --tt-fade-surface-soft owns fill) */
+        (document.body.classList.contains('lux-route-registration') && (
+            el.classList.contains('lux-timetable-hero') ||
+            el.classList.contains('lux-timetable-command') ||
+            el.classList.contains('lux-timetable-stage') ||
+            el.classList.contains('lux-timetable-hero-focus') ||
+            el.classList.contains('lux-timetable-filters') ||
+            el.classList.contains('registration-hero-shell') ||
+            el.classList.contains('registration-hero-aside') ||
+            el.classList.contains('registration-insight-card') ||
+            el.classList.contains('registration-workspace') ||
+            el.classList.contains('registration-term-shell') ||
+            el.classList.contains('registration-footer-bar') ||
+            el.classList.contains('registration-progress-shell') ||
+            el.classList.contains('registration-module-list-card') ||
+            el.classList.contains('registration-module-pane-card') ||
+            el.classList.contains('registration-state-card') ||
+            el.classList.contains('registration-track-card') ||
+            el.classList.contains('registration-course-row') ||
+            el.classList.contains('registration-module-choice') ||
+            el.classList.contains('registration-shell-empty') ||
+            el.classList.contains('filter-shell') ||
+            el.classList.contains('lux-card') ||
+            el.classList.contains('lux-status-pill') ||
+            el.classList.contains('lux-pill')
+        )) ||
         (document.body.classList.contains('lux-route-chancellery') && Boolean(el.closest?.('#page-chancellery')) && (
             el.classList.contains('page-hero') ||
             el.classList.contains('lux-chancellery-hero') ||
+            el.classList.contains('lux-chancellery-hero-card') ||
+            el.classList.contains('lux-chancellery-command-bar') ||
+            el.classList.contains('filter-shell') ||
             el.classList.contains('lux-chancellery-focus-card') ||
             el.classList.contains('lux-chancellery-snapshot-card') ||
             el.classList.contains('lux-chancellery-subcard') ||
             el.classList.contains('lux-chancellery-queue-item') ||
             el.classList.contains('lux-chancellery-thread-entry') ||
             el.classList.contains('lux-chancellery-focus-row') ||
+            el.classList.contains('lux-chancellery-main-panel') ||
             el.classList.contains('lux-card') ||
             el.classList.contains('lux-subcard') ||
             el.classList.contains('lux-stat-card') ||
@@ -2249,40 +2838,6 @@ function updateTransparency(value, options = {}) {
             el.classList.contains('lux-strip-card') ||
             el.classList.contains('surface-card') ||
             el.classList.contains('content-box')
-        )) ||
-        (document.body.classList.contains('lux-route-profile') && Boolean(el.closest?.('#page-profile')) && (
-            el.classList.contains('page-hero') ||
-            el.classList.contains('profile-shell-nav-card') ||
-            el.classList.contains('profile-shell-card') ||
-            el.classList.contains('profile-shell-messenger') ||
-            el.classList.contains('profile-shell-messenger-shell') ||
-            el.classList.contains('profile-summary-strip') ||
-            el.classList.contains('lux-strip-card') ||
-            el.classList.contains('lux-hero-side') ||
-            el.classList.contains('lux-hero-signal') ||
-            el.classList.contains('lux-mini-panel') ||
-            el.classList.contains('surface-card') ||
-            el.classList.contains('content-box') ||
-            el.classList.contains('lux-card') ||
-            el.classList.contains('profile-shell-tab') ||
-            el.classList.contains('lux-rail-tab') ||
-            el.classList.contains('lux-control') ||
-            el.classList.contains('profile-shell-input') ||
-            el.classList.contains('profile-shell-action') ||
-            el.classList.contains('profile-password-toggle') ||
-            el.classList.contains('lux-status-pill') ||
-            el.classList.contains('portal-msg-panel') ||
-            el.classList.contains('portal-msg-page-shell') ||
-            el.classList.contains('portal-msg-shell') ||
-            el.classList.contains('portal-msg-chip') ||
-            el.classList.contains('sch-header-row') ||
-            el.classList.contains('sch-time-col') ||
-            el.classList.contains('sch-time-labels') ||
-            el.classList.contains('sch-day-col') ||
-            el.classList.contains('sch-time-slot') ||
-            el.classList.contains('sch-lane') ||
-            el.classList.contains('sch-slot-bg') ||
-            el.classList.contains('sch-event')
         )) ||
         (document.body.classList.contains('lux-route-profile-view') && (
             el.classList.contains('pv-hero') ||
@@ -2309,346 +2864,14 @@ function updateTransparency(value, options = {}) {
             el.classList.contains('lux-select-card')
         )) ||
         (document.body.classList.contains('lux-route-profile-view') && (
-            [...el.classList].some((className) => className.startsWith('pv-')) ||
+            ([...el.classList].some((className) => className.startsWith('pv-') && className !== 'pv-shell')) ||
             (Boolean(el.closest?.('.pv-financial-table')) && (
                 el.tagName === 'TD' || el.tagName === 'TH' || el.tagName === 'TR'
             ))
         ))
     );
     const buildDynamicSurfaceBackground = (el, lightMode, amount) => {
-        // FIX: At high transparency (>=80%), NEVER add accent radial gradients.
-        // These inline !important styles were overriding ALL CSS overrides.
-        var _isHighTransBg = percentage >= 80;
-        const isRegistrationRoute = document.body.classList.contains('lux-route-registration');
-        const isRegistrationLargeSurface = isRegistrationRoute && (
-            el.classList.contains('registration-hero') ||
-            el.classList.contains('registration-workspace') ||
-            el.classList.contains('registration-module-list-card') ||
-            el.classList.contains('registration-module-pane-card')
-        );
-        const isRegistrationSoftSurface = isRegistrationRoute && !isRegistrationLargeSurface && (
-            el.classList.contains('registration-insight-card') ||
-            el.classList.contains('registration-focus-card') ||
-            el.classList.contains('registration-state-card') ||
-            el.classList.contains('registration-track-card') ||
-            el.classList.contains('registration-track-group') ||
-            el.classList.contains('registration-footer-bar') ||
-            el.classList.contains('registration-mini-metric') ||
-            el.classList.contains('registration-course-row') ||
-            el.classList.contains('registration-module-choice')
-        );
-        const isProgramsRoute = document.body.classList.contains('lux-route-programs');
-        const isProgramsLargeSurface = isProgramsRoute && (
-            el.classList.contains('lux-program-hero') ||
-            el.classList.contains('lux-program-filter-shell') ||
-            el.classList.contains('lux-program-stage') ||
-            el.classList.contains('lux-program-overview-card') ||
-            el.classList.contains('lux-program-focus-panel') ||
-            el.classList.contains('lux-program-shell-section--module-rail') ||
-            el.classList.contains('lux-program-shell-section--subject-panel')
-        );
-        const isProgramsSoftSurface = isProgramsRoute && !isProgramsLargeSurface && (
-            el.classList.contains('lux-program-publish-pill') ||
-            el.classList.contains('lux-program-metric') ||
-            el.classList.contains('lux-program-focus-stat') ||
-            el.classList.contains('lux-program-semester-chip') ||
-            el.classList.contains('lux-program-semester-timeline__chip') ||
-            el.classList.contains('lux-module-option') ||
-            el.classList.contains('lux-program-module-option') ||
-            el.classList.contains('lux-subject-row') ||
-            el.classList.contains('lux-program-subject-card') ||
-            el.classList.contains('lux-program-summary-card') ||
-            el.classList.contains('lux-status-pill') ||
-            el.classList.contains('page-hero-badge')
-        );
-        const isStudyCardRoute = document.body.classList.contains('lux-route-study-card');
-        const isStudyCardLargeSurface = isStudyCardRoute && (
-            el.classList.contains('page-hero') ||
-            el.classList.contains('filter-shell') ||
-            el.id === 'study-card-container' ||
-            el.classList.contains('study-card-semester-table') ||
-            el.classList.contains('study-card-summary-stage')
-        );
-        const isStudyCardSoftSurface = isStudyCardRoute && !isStudyCardLargeSurface && (
-            el.classList.contains('lux-strip-card') ||
-            el.classList.contains('study-card-grade-circle') ||
-            el.classList.contains('study-card-assessment-window__chip') ||
-            el.classList.contains('study-card-assessment-window__card') ||
-            el.classList.contains('study-card-assessment-pill') ||
-            el.classList.contains('study-card-term-header') ||
-            el.classList.contains('study-card-term-row') ||
-            el.classList.contains('study-card-history-section') ||
-            el.classList.contains('study-card-history-entry') ||
-            el.classList.contains('study-card-history-row') ||
-            (el.classList.contains('lux-status-pill') && el.closest?.('#study-card-container, #page-study-card'))
-        );
-        const isPersonalDataRoute = document.body.classList.contains('lux-route-personal-data');
-        const isPersonalDataLargeSurface = isPersonalDataRoute && (
-            el.classList.contains('page-hero') ||
-            el.classList.contains('personal-data-toolbar') ||
-            el.classList.contains('profile-card') ||
-            el.classList.contains('personal-data-stats-card') ||
-            el.classList.contains('personal-data-facts-card') ||
-            el.classList.contains('personal-data-record-card')
-        );
-        const isPersonalDataSoftSurface = isPersonalDataRoute && !isPersonalDataLargeSurface && (
-            el.classList.contains('personal-data-kpi-card') ||
-            el.classList.contains('personal-data-mini') ||
-            el.classList.contains('personal-data-record-item') ||
-            el.classList.contains('personal-data-card-meta') ||
-            el.classList.contains('lux-meta-pair-card') ||
-            el.classList.contains('personal-data-hero-panel') ||
-            (el.classList.contains('lux-strip-card') && el.closest?.('#page-personal-data')) ||
-            (el.classList.contains('lux-status-pill') && el.closest?.('#page-personal-data'))
-        );
-        const isNewsRoute = document.body.classList.contains('lux-route-news');
-        const isNewsSurface = isNewsRoute && (
-            el.classList.contains('newsx-panel') ||
-            el.classList.contains('newsx-hero') ||
-            el.classList.contains('newsx-feed-card') ||
-            el.classList.contains('newsx-filter') ||
-            el.classList.contains('newsx-sidebar') ||
-            el.classList.contains('newsx-rail') ||
-            el.classList.contains('newsx-section') ||
-            el.classList.contains('newsx-stat') ||
-            el.classList.contains('newsx-private-item') ||
-            el.classList.contains('newsx-check') ||
-            el.classList.contains('newsx-account-card') ||
-            el.classList.contains('newsx-section-btn') ||
-            el.classList.contains('newsx-pane-btn')
-        );
-        const isStudentServiceRoute = document.body.classList.contains('lux-route-student-service');
-        const isStudentServiceLargeSurface = isStudentServiceRoute && (
-            el.classList.contains('student-service-hero') ||
-            el.classList.contains('student-service-hero-aside') ||
-            el.classList.contains('student-service-workflow-strip') ||
-            el.classList.contains('student-service-workflow-step') ||
-            el.classList.contains('student-service-summary-card') ||
-            el.classList.contains('student-service-overview') ||
-            el.classList.contains('student-service-canvas') ||
-            el.classList.contains('student-service-panel') ||
-            el.classList.contains('student-service-zone') ||
-            el.classList.contains('student-service-area-card') ||
-            el.classList.contains('student-service-article-card') ||
-            el.classList.contains('student-service-ticket-row') ||
-            el.classList.contains('student-service-lane-card') ||
-            el.classList.contains('student-service-ticket-card') ||
-            el.classList.contains('student-service-ops-card') ||
-            el.classList.contains('student-service-track-panel') ||
-            el.classList.contains('student-service-article-preview') ||
-            el.classList.contains('student-service-ticket-stat') ||
-            el.classList.contains('student-service-track-card') ||
-            el.classList.contains('student-service-ops-ticket') ||
-            el.classList.contains('student-service-ops-lane') ||
-            el.classList.contains('student-service-ticket-focus') ||
-            el.classList.contains('student-service-ticket-thread') ||
-            el.classList.contains('student-service-home-panel') ||
-            el.classList.contains('student-service-home-card') ||
-            el.classList.contains('student-service-home-ticket') ||
-            el.classList.contains('student-service-home-topic') ||
-            el.classList.contains('student-service-lane-choice-card')
-        );
-        const isSocialRoute = document.body.classList.contains('lux-route-social');
-        const isSocialLargeSurface = isSocialRoute && (
-            el.classList.contains('social-hero') ||
-            el.classList.contains('social-entity-cover') ||
-            el.classList.contains('social-app-shell') ||
-            el.classList.contains('social-rail') ||
-            el.classList.contains('social-card') ||
-            el.classList.contains('social-post-card') ||
-            el.classList.contains('social-mini-card') ||
-            el.classList.contains('social-detail-card') ||
-            el.classList.contains('social-empty') ||
-            el.classList.contains('social-shared-card') ||
-            el.classList.contains('social-comment-card') ||
-            el.classList.contains('social-notif-item') ||
-            el.classList.contains('social-story-card') ||
-            el.classList.contains('social-file-preview') ||
-            el.classList.contains('social-poll-option') ||
-            el.classList.contains('social-neo-card') ||
-            SOCIAL_NEO_TRANSPARENCY_SURFACE_CLASSES.some((className) => el.classList.contains(className)) ||
-            el.parentElement?.classList?.contains('social-neo-stat-grid') ||
-            [...el.classList].some((className) =>
-                className.startsWith('social-neo-') ||
-                className.startsWith('social-project') ||
-                className.startsWith('social-portfolio')
-            )
-        );
-        const isStaffRoute = document.body.classList.contains('lux-route-staff');
-        const isStaffInContent = isStaffRoute && Boolean(el.closest?.('#staff-content'));
-        const isStaffLargeSurface = isStaffInContent && (
-            el.classList.contains('page-hero') ||
-            el.classList.contains('staff-hub-hero') ||
-            el.classList.contains('staff-hub-command-panel') ||
-            el.classList.contains('staff-hub-command-card') ||
-            el.classList.contains('staff-hub-focus-card') ||
-            el.classList.contains('staff-hub-mini-card') ||
-            el.classList.contains('staff-hub-metric-card') ||
-            el.classList.contains('staff-hub-controls') ||
-            el.classList.contains('staff-hub-directory-panel') ||
-            el.classList.contains('staff-hub-profile') ||
-            el.classList.contains('staff-hub-info-card') ||
-            el.classList.contains('staff-hub-warning') ||
-            el.classList.contains('staff-hub-modal') ||
-            el.classList.contains('staff-hub-list-item') ||
-            el.classList.contains('admin-directory-hero') ||
-            el.classList.contains('admin-directory-controls') ||
-            el.classList.contains('admin-directory-card') ||
-            el.classList.contains('lux-card') ||
-            el.classList.contains('lux-person-card') ||
-            el.classList.contains('lux-subcard') ||
-            el.classList.contains('surface-card') ||
-            el.classList.contains('content-box')
-        );
-        const isStudentsAdminRoute = document.body.classList.contains('lux-route-students-admin');
-        const isStudentsAdminInContent = isStudentsAdminRoute &&
-            Boolean(el.closest?.('#students-content')) &&
-            !el.closest?.('#students-admin-lms-modal');
-        const isStudentsAdminLargeSurface = isStudentsAdminInContent && (
-            el.classList.contains('students-lms-hero') ||
-            el.classList.contains('students-lms-profile-header') ||
-            el.classList.contains('students-lms-panel') ||
-            el.classList.contains('students-lms-stat-card') ||
-            el.classList.contains('students-lms-profile-card') ||
-            el.classList.contains('students-lms-table-shell') ||
-            el.classList.contains('students-lms-list-item') ||
-            el.classList.contains('students-lms-modal-card')
-        );
-        const isLibraryRoute = document.body.classList.contains('lux-route-library');
-        const isLibraryLargeSurface = isLibraryRoute && (
-            el.classList.contains('library-page-hero') ||
-            el.classList.contains('library-filter-shell') ||
-            el.classList.contains('library-catalog-card') ||
-            el.classList.contains('library-tabs') ||
-            el.classList.contains('library-picker-panel') ||
-            el.classList.contains('library-catalog-foot') ||
-            el.classList.contains('alib-panel')
-        );
-        const isLibrarySoftSurface = isLibraryRoute && !isLibraryLargeSurface && (
-            el.classList.contains('library-overview-card') ||
-            el.classList.contains('library-hero-metric') ||
-            el.classList.contains('library-hero-summary-card') ||
-            el.classList.contains('library-hero-signal-card') ||
-            el.classList.contains('admin-library-metric-card') ||
-            el.classList.contains('admin-library-hero-summary-card') ||
-            el.classList.contains('admin-library-param-group') ||
-            el.classList.contains('admin-library-chip') ||
-            (el.classList.contains('lux-strip-card') && el.closest?.('#page-library')) ||
-            (el.classList.contains('lux-hero-signal') && el.closest?.('#page-library')) ||
-            (el.classList.contains('lux-picker-btn') && el.closest?.('.library-filter-shell')) ||
-            (el.classList.contains('lux-control') && el.closest?.('.library-filter-shell'))
-        );
-        const isExamsRoute = document.body.classList.contains('lux-route-exams');
-        const isExamsSurface = isExamsRoute && (
-            el.classList.contains('ex2-hero') ||
-            el.classList.contains('ex2-panel') ||
-            el.classList.contains('ex2-toolbar') ||
-            el.classList.contains('ex2-card') ||
-            el.classList.contains('ex2-stat-card') ||
-            el.classList.contains('ex2-cohort-card') ||
-            el.classList.contains('ex2-session-card') ||
-            el.classList.contains('ex2-list-card') ||
-            el.classList.contains('ex2-question-card') ||
-            el.classList.contains('ex2-review-card') ||
-            el.classList.contains('ex2-side-card') ||
-            el.classList.contains('ex2-select-card') ||
-            el.classList.contains('ex2-live-sidebar') ||
-            el.classList.contains('ex2-q-card') ||
-            el.classList.contains('ex2-q-card-head') ||
-            el.classList.contains('ex2-empty-state') ||
-            el.classList.contains('ex2-timeline-card') ||
-            el.classList.contains('ex2-split-box') ||
-            el.classList.contains('ex2-auto-gen-box') ||
-            el.classList.contains('ex2-qnav-bar') ||
-            el.classList.contains('ex2-progress-step') ||
-            el.parentElement?.classList?.contains('ex2-mini-grid')
-        );
-        const isAdminToolsRoute = document.body.classList.contains('lux-route-admin-tools');
-        const isAdminToolsInShell = isAdminToolsRoute && Boolean(el.closest?.('#lux-admin-tools-shell'));
-        const isAdminToolsLargeSurface = isAdminToolsInShell && (
-            el.classList.contains('lux-admin-tools-index-hero') ||
-            el.classList.contains('lux-admin-tools-index-panel') ||
-            el.classList.contains('lux-admin-tools-hero') ||
-            el.classList.contains('lux-admin-op-card') ||
-            el.classList.contains('lux-admin-ops-panel') ||
-            el.classList.contains('lux-admin-provision-card') ||
-            el.classList.contains('lux-panel') ||
-            el.classList.contains('lux-card') ||
-            el.id === 'admin-reg-content-container' ||
-            el.id === 'curriculum-library-modules-root'
-        );
-        const isAdminToolsSoftSurface = isAdminToolsInShell && !isAdminToolsLargeSurface && (
-            el.classList.contains('lux-admin-tools-index-summary') ||
-            el.classList.contains('lux-admin-tools-index-command') ||
-            el.classList.contains('lux-admin-tools-index-command-card') ||
-            el.classList.contains('lux-admin-tools-index-subpanel') ||
-            el.classList.contains('lux-subcard') ||
-            el.classList.contains('lux-stat-card') ||
-            el.classList.contains('lux-grid-widget') ||
-            (el.classList.contains('admin-reg-tab') && !el.classList.contains('is-active') && el.getAttribute('aria-pressed') !== 'true') ||
-            (el.classList.contains('lux-strip-card') && el.classList.contains('surface-card'))
-        );
-        const isAdminToolsControlSurface = isAdminToolsInShell && (
-            el.classList.contains('lux-control') ||
-            el.classList.contains('lux-picker-btn')
-        );
-        const isAdminToolsSurface = isAdminToolsLargeSurface || isAdminToolsSoftSurface || isAdminToolsControlSurface;
-        const isAdminLibraryRoute = document.body.classList.contains('lux-route-admin-library') ||
-            document.body.classList.contains('lux-entry-admin-library');
-        const isAdminLibraryInPage = isAdminLibraryRoute && Boolean(el.closest?.('#page-library') || el.classList.contains('admin-library-modal'));
-        const isAdminLibraryLargeSurface = isAdminLibraryInPage && (
-            el.classList.contains('lux-panel') ||
-            (el.classList.contains('lux-strip-card') && Boolean(el.closest?.('#page-library'))) ||
-            el.classList.contains('admin-library-modal')
-        );
-        const isAdminLibrarySoftSurface = isAdminLibraryInPage && !isAdminLibraryLargeSurface && (
-            el.classList.contains('lux-stat-card') ||
-            el.classList.contains('lux-pill') ||
-            el.classList.contains('admin-library-chip') ||
-            el.classList.contains('admin-library-param-group')
-        );
-        const isAdminLibrarySurface = isAdminLibraryLargeSurface || isAdminLibrarySoftSurface;
-        const isAdminOrdersRoute = document.body.classList.contains('lux-route-admin-orders');
-        // Scope to the admin-orders workspace + the Colour & Motion Studio modal
-        // only, so the shared non-admin orders.html (lux-route-orders, its own
-        // inbox shell) is never touched here.
-        const isAdminOrdersInScope = isAdminOrdersRoute &&
-            Boolean(el.closest?.('#admin-orders-root, #modal-studio'));
-        const isAdminOrdersLargeSurface = isAdminOrdersInScope && (
-            el.classList.contains('orders-admin-shell') ||
-            el.classList.contains('orders-admin-hero') ||
-            el.classList.contains('orders-admin-panel') ||
-            el.classList.contains('orders-admin-hero-side') ||
-            el.classList.contains('orders-detail-panel') ||
-            el.classList.contains('orders-admin-table-wrap') ||
-            el.classList.contains('admin-orders-studio')
-        );
-        const isAdminOrdersSoftSurface = isAdminOrdersInScope && !isAdminOrdersLargeSurface && (
-            el.classList.contains('orders-metric-card') ||
-            el.classList.contains('orders-recipient-row') ||
-            el.classList.contains('orders-recipient-card') ||
-            el.classList.contains('orders-attachment-card') ||
-            el.classList.contains('orders-detail-empty') ||
-            el.classList.contains('orders-detail-card') ||
-            el.classList.contains('orders-recipient-list-shell') ||
-            el.classList.contains('orders-recipient-list-empty') ||
-            el.classList.contains('lux-hero-side-head') ||
-            el.classList.contains('lux-hero-signal') ||
-            el.classList.contains('lux-stat-card') ||
-            el.classList.contains('admin-orders-studio-card') ||
-            el.classList.contains('admin-orders-palette-option') ||
-            el.classList.contains('admin-orders-mode-btn') ||
-            el.classList.contains('admin-orders-background-btn')
-        );
-        const isAdminOrdersControlSurface = isAdminOrdersInScope && (
-            el.classList.contains('lux-control') ||
-            el.classList.contains('lux-status-pill') ||
-            el.classList.contains('lux-primary-btn') ||
-            el.classList.contains('lux-secondary-btn') ||
-            el.classList.contains('admin-orders-apply-btn')
-        );
-        const isOrdersSurface = isAdminOrdersLargeSurface || isAdminOrdersSoftSurface ||
-            isAdminOrdersControlSurface;
+        // Home dashboard keeps amount-scaled recipe (exception).
         const isHomeDashboardSurface = Boolean(el.matches?.(
             '#page-home #lux-home-shell .lux-home-toolbar, ' +
             '#page-home #lux-home-shell .lux-home-grid > .lux-panel, ' +
@@ -2660,407 +2883,25 @@ function updateTransparency(value, options = {}) {
             '#page-home #lux-home-shell .lux-grid-widget > .lux-grid-widget-body > .lux-card, ' +
             '#page-home #lux-home-shell .lux-grid-widget > .lux-grid-widget-body > .lux-hero'
         ));
-        const isSchedulerRoute = document.body.classList.contains('lux-route-admin-scheduler');
-        const isSchedulerInPage = isSchedulerRoute && Boolean(el.closest?.('#page-admin-scheduler'));
-        const isSchedulerHeroSurface = isSchedulerInPage && el.classList.contains('sch-rail-hero');
-        const isSchedulerLargeSurface = isSchedulerInPage && !isSchedulerHeroSurface && (
-            el.classList.contains('sch-rail-section') ||
-            el.classList.contains('sch-grid-shell') ||
-            el.classList.contains('sch-modal')
-        );
-        const isSchedulerSoftSurface = isSchedulerInPage && !isSchedulerHeroSurface && !isSchedulerLargeSurface && (
-            el.classList.contains('sch-stat-card') ||
-            el.classList.contains('palette-card') ||
-            el.classList.contains('sch-grid-tag') ||
-            el.classList.contains('sch-empty-state') ||
-            el.classList.contains('sch-grid-empty') ||
-            el.classList.contains('sch-week-arrow') ||
-            (el.classList.contains('lux-strip-card') && el.classList.contains('surface-card'))
-        );
-        const isSchedulerControlSurface = isSchedulerInPage && (
-            (el.tagName === 'SELECT' || el.tagName === 'INPUT') &&
-            el.closest?.('.sch-control-group, .sch-search-shell, .sch-modal')
-        );
-        const isSchedulerSurface = isSchedulerHeroSurface || isSchedulerLargeSurface ||
-            isSchedulerSoftSurface || isSchedulerControlSurface;
         if (isHomeDashboardSurface) {
             return buildHomeStyleSurfaceBackground(lightMode, amount);
         }
-        if (isSchedulerSurface) {
-            const isSmallSchedulerSurface = isSchedulerSoftSurface || isSchedulerControlSurface;
-            if (lightMode) {
-                if (isSmallSchedulerSurface) {
-                    return 'radial-gradient(circle at 12% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .86) * .62)), transparent 30%), ' +
-                        'radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .14)), transparent 34%), ' +
-                        'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .045)), rgba(255,255,255, calc(var(--lux-transparency-alpha, .86) * .84)) 46%, rgba(247,241,232, calc(var(--lux-transparency-alpha, .86) * .72)))';
-                }
-                if (isSchedulerHeroSurface) {
-                    return 'radial-gradient(circle at 6% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .86) * .88)), transparent 34%), ' +
-                        'radial-gradient(circle at 74% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .24)), transparent 42%), ' +
-                        'radial-gradient(circle at 100% 96%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .86) * .14)), transparent 40%), ' +
-                        'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .065)), rgba(255,255,255, calc(var(--lux-transparency-alpha, .86) * .84)) 44%, rgba(247,241,232, calc(var(--lux-transparency-alpha, .86) * .70)))';
-                }
-                return 'radial-gradient(circle at 8% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .86) * .88)), transparent 34%), ' +
-                    'radial-gradient(circle at 72% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .22)), transparent 38%), ' +
-                    'radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .86) * .13)), transparent 38%), ' +
-                    'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .075)), rgba(255,255,255, calc(var(--lux-transparency-alpha, .86) * .88)) 44%, rgba(247,241,232, calc(var(--lux-transparency-alpha, .86) * .72)))';
-            }
-            if (isSmallSchedulerSurface) {
-                return 'radial-gradient(circle at 12% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .92) * .055)), transparent 30%), ' +
-                    'radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .14)), transparent 34%), ' +
-                    'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .065)), rgba(10,15,24, calc(var(--lux-transparency-alpha, .92) * .88)) 46%, rgba(7,10,18, calc(var(--lux-transparency-alpha, .92) * .80)))';
-            }
-            if (isSchedulerHeroSurface) {
-                return 'radial-gradient(circle at 6% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .92) * .08)), transparent 32%), ' +
-                    'radial-gradient(circle at 74% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .28)), transparent 42%), ' +
-                    'radial-gradient(circle at 100% 96%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .92) * .18)), transparent 40%), ' +
-                    'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .10)), rgba(10,15,24, calc(var(--lux-transparency-alpha, .92) * .89)) 44%, rgba(7,10,18, calc(var(--lux-transparency-alpha, .92) * .80)))';
-            }
-            return 'radial-gradient(circle at 8% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .92) * .075)), transparent 32%), ' +
-                'radial-gradient(circle at 72% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .24)), transparent 38%), ' +
-                'radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .92) * .14)), transparent 38%), ' +
-                'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .10)), rgba(10,15,24, calc(var(--lux-transparency-alpha, .92) * .91)) 44%, rgba(7,10,18, calc(var(--lux-transparency-alpha, .92) * .84)))';
+        // CSS-owned route glass: do not invent inline paint
+        if (shouldKeepRouteFadeCssBackground(el)) {
+            return '';
         }
-        if (isRegistrationLargeSurface) {
-            if (lightMode) {
-                return 'radial-gradient(circle at 12% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .86) * .86)), transparent 34%), ' +
-                    'radial-gradient(circle at 74% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .20)), transparent 36%), ' +
-                    'radial-gradient(circle at 100% 90%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .86) * .12)), transparent 38%), ' +
-                    'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .08)), rgba(255,255,255, calc(var(--lux-transparency-alpha, .86) * .88)) 42%, rgba(247,241,232, calc(var(--lux-transparency-alpha, .86) * .72)))';
-            }
-            return 'radial-gradient(circle at 12% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .92) * .075)), transparent 32%), ' +
-                'radial-gradient(circle at 74% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .24)), transparent 38%), ' +
-                'radial-gradient(circle at 100% 90%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .92) * .14)), transparent 38%), ' +
-                'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .11)), rgba(12,17,26, calc(var(--lux-transparency-alpha, .92) * .91)) 42%, rgba(8,12,19, calc(var(--lux-transparency-alpha, .92) * .84)))';
-        }
-        if (isRegistrationSoftSurface) {
-            if (lightMode) {
-                return 'radial-gradient(circle at 12% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .86) * .72)), transparent 32%), ' +
-                    'radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .14)), transparent 36%), ' +
-                    'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .05)), rgba(255,255,255, calc(var(--lux-transparency-alpha, .86) * .82)) 46%, rgba(247,241,232, calc(var(--lux-transparency-alpha, .86) * .66)))';
-            }
-            return 'radial-gradient(circle at 12% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .92) * .06)), transparent 30%), ' +
-                'radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .16)), transparent 36%), ' +
-                'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .07)), rgba(12,18,30, calc(var(--lux-transparency-alpha, .92) * .82)) 46%, rgba(8,12,21, calc(var(--lux-transparency-alpha, .92) * .72)))';
-        }
-        if (isProgramsLargeSurface) {
-            if (lightMode) {
-                return 'radial-gradient(circle at 8% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .86) * .86)), transparent 34%), ' +
-                    'radial-gradient(circle at 74% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .20)), transparent 36%), ' +
-                    'radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .86) * .12)), transparent 38%), ' +
-                    'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .08)), rgba(255,255,255, calc(var(--lux-transparency-alpha, .86) * .88)) 42%, rgba(247,241,232, calc(var(--lux-transparency-alpha, .86) * .72)))';
-            }
-            return 'radial-gradient(circle at 8% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .92) * .075)), transparent 32%), ' +
-                'radial-gradient(circle at 74% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .26)), transparent 42%), ' +
-                'radial-gradient(circle at 100% 96%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .92) * .16)), transparent 40%), ' +
-                'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .095)), rgba(10,15,24, calc(var(--lux-transparency-alpha, .92) * .90)) 44%, rgba(7,10,18, calc(var(--lux-transparency-alpha, .92) * .80)))';
-        }
-        if (isProgramsSoftSurface) {
-            if (lightMode) {
-                return 'radial-gradient(circle at 12% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .86) * .72)), transparent 32%), ' +
-                    'radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .14)), transparent 36%), ' +
-                    'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .05)), rgba(255,255,255, calc(var(--lux-transparency-alpha, .86) * .82)) 46%, rgba(247,241,232, calc(var(--lux-transparency-alpha, .86) * .66)))';
-            }
-            return 'radial-gradient(circle at 12% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .92) * .06)), transparent 30%), ' +
-                'radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .16)), transparent 36%), ' +
-                'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .07)), rgba(12,18,30, calc(var(--lux-transparency-alpha, .92) * .82)) 46%, rgba(8,12,21, calc(var(--lux-transparency-alpha, .92) * .72)))';
-        }
-        if (isStudyCardLargeSurface) {
-            if (lightMode) {
-                return 'radial-gradient(circle at 8% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .86) * .88)), transparent 34%), ' +
-                    'radial-gradient(circle at 72% 4%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .19)), transparent 38%), ' +
-                    'radial-gradient(circle at 100% 92%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .86) * .13)), transparent 38%), ' +
-                    'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .075)), rgba(255,255,255, calc(var(--lux-transparency-alpha, .86) * .88)) 44%, rgba(247,241,232, calc(var(--lux-transparency-alpha, .86) * .72)))';
-            }
-            return 'radial-gradient(circle at 8% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .92) * .075)), transparent 32%), ' +
-                'radial-gradient(circle at 72% 4%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .23)), transparent 38%), ' +
-                'radial-gradient(circle at 100% 92%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .92) * .15)), transparent 38%), ' +
-                'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .10)), rgba(10,15,24, calc(var(--lux-transparency-alpha, .92) * .91)) 44%, rgba(7,10,18, calc(var(--lux-transparency-alpha, .92) * .84)))';
-        }
-        if (isStudyCardSoftSurface) {
-            if (lightMode) {
-                return 'radial-gradient(circle at 12% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .86) * .72)), transparent 32%), ' +
-                    'radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .14)), transparent 36%), ' +
-                    'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .05)), rgba(255,255,255, calc(var(--lux-transparency-alpha, .86) * .82)) 46%, rgba(247,241,232, calc(var(--lux-transparency-alpha, .86) * .66)))';
-            }
-            return 'radial-gradient(circle at 12% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .92) * .06)), transparent 30%), ' +
-                'radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .16)), transparent 36%), ' +
-                'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .07)), rgba(12,18,30, calc(var(--lux-transparency-alpha, .92) * .82)) 46%, rgba(8,12,21, calc(var(--lux-transparency-alpha, .92) * .72)))';
-        }
-        if (isPersonalDataLargeSurface) {
-            if (lightMode) {
-                return 'radial-gradient(circle at 8% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .86) * .88)), transparent 34%), ' +
-                    'radial-gradient(circle at 76% 2%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .18)), transparent 38%), ' +
-                    'radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .86) * .13)), transparent 38%), ' +
-                    'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .075)), rgba(255,255,255, calc(var(--lux-transparency-alpha, .86) * .88)) 44%, rgba(247,241,232, calc(var(--lux-transparency-alpha, .86) * .72)))';
-            }
-            return 'radial-gradient(circle at 8% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .92) * .075)), transparent 32%), ' +
-                'radial-gradient(circle at 76% 2%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .22)), transparent 38%), ' +
-                'radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .92) * .14)), transparent 38%), ' +
-                'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .10)), rgba(10,15,24, calc(var(--lux-transparency-alpha, .92) * .91)) 44%, rgba(7,10,18, calc(var(--lux-transparency-alpha, .92) * .84)))';
-        }
-        if (isPersonalDataSoftSurface) {
-            if (lightMode) {
-                return 'radial-gradient(circle at 12% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .86) * .72)), transparent 32%), ' +
-                    'radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .14)), transparent 36%), ' +
-                    'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .05)), rgba(255,255,255, calc(var(--lux-transparency-alpha, .86) * .82)) 46%, rgba(247,241,232, calc(var(--lux-transparency-alpha, .86) * .66)))';
-            }
-            return 'radial-gradient(circle at 12% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .92) * .06)), transparent 30%), ' +
-                'radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .16)), transparent 36%), ' +
-                'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .07)), rgba(12,18,30, calc(var(--lux-transparency-alpha, .92) * .82)) 46%, rgba(8,12,21, calc(var(--lux-transparency-alpha, .92) * .72)))';
-        }
-        if (isNewsSurface) {
-            const isSmallNewsControl = (
-                el.classList.contains('newsx-stat') ||
-                el.classList.contains('newsx-private-item') ||
-                el.classList.contains('newsx-check') ||
-                el.classList.contains('newsx-account-card') ||
-                el.classList.contains('newsx-section-btn') ||
-                el.classList.contains('newsx-pane-btn')
-            );
-            if (lightMode) {
-                if (isSmallNewsControl) {
-                    return 'radial-gradient(circle at 12% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .86) * .62)), transparent 30%), ' +
-                        'radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .14)), transparent 34%), ' +
-                        'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .045)), rgba(255,255,255, calc(var(--lux-transparency-alpha, .86) * .84)) 46%, rgba(247,241,232, calc(var(--lux-transparency-alpha, .86) * .72)))';
-                }
-                return 'radial-gradient(circle at 8% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .86) * .88)), transparent 34%), ' +
-                    'radial-gradient(circle at 74% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .22)), transparent 38%), ' +
-                    'radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .86) * .13)), transparent 38%), ' +
-                    'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .075)), rgba(255,255,255, calc(var(--lux-transparency-alpha, .86) * .88)) 44%, rgba(247,241,232, calc(var(--lux-transparency-alpha, .86) * .72)))';
-            }
-            if (isSmallNewsControl) {
-                return 'radial-gradient(circle at 12% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .92) * .055)), transparent 30%), ' +
-                    'radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .14)), transparent 34%), ' +
-                    'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .065)), rgba(10,15,24, calc(var(--lux-transparency-alpha, .92) * .88)) 46%, rgba(7,10,18, calc(var(--lux-transparency-alpha, .92) * .80)))';
-            }
-            return 'radial-gradient(circle at 8% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .92) * .075)), transparent 32%), ' +
-                'radial-gradient(circle at 74% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .24)), transparent 38%), ' +
-                'radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .92) * .14)), transparent 38%), ' +
-                'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .10)), rgba(10,15,24, calc(var(--lux-transparency-alpha, .92) * .91)) 44%, rgba(7,10,18, calc(var(--lux-transparency-alpha, .92) * .84)))';
-        }
-        if (isStudentServiceLargeSurface) {
-            const isSmallServiceSurface = (
-                el.classList.contains('student-service-workflow-step') ||
-                el.classList.contains('student-service-summary-card') ||
-                el.classList.contains('student-service-home-card') ||
-                el.classList.contains('student-service-area-card') ||
-                el.classList.contains('student-service-ticket-row') ||
-                el.classList.contains('student-service-track-card') ||
-                el.classList.contains('student-service-lane-card') ||
-                el.classList.contains('student-service-ticket-card')
-            );
-            if (lightMode) {
-                if (isSmallServiceSurface) {
-                    return 'radial-gradient(circle at 8% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .88) * .88)), transparent 34%), ' +
-                        'radial-gradient(circle at 72% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .88) * .16)), transparent 38%), ' +
-                        'radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .88) * .13)), transparent 38%), ' +
-                        'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .88) * .075)), rgba(255,255,255, calc(var(--lux-transparency-alpha, .88) * .88)) 44%, rgba(247,241,232, calc(var(--lux-transparency-alpha, .88) * .72)))';
-                }
-                return 'radial-gradient(circle at 8% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .88) * .88)), transparent 34%), ' +
-                    'radial-gradient(circle at 72% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .88) * .20)), transparent 38%), ' +
-                    'radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .88) * .13)), transparent 38%), ' +
-                    'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .88) * .075)), rgba(255,255,255, calc(var(--lux-transparency-alpha, .88) * .88)) 44%, rgba(247,241,232, calc(var(--lux-transparency-alpha, .88) * .72)))';
-            }
-            if (isSmallServiceSurface) {
-                return 'radial-gradient(circle at 8% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .92) * .075)), transparent 32%), ' +
-                    'radial-gradient(circle at 72% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .16)), transparent 38%), ' +
-                    'radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .92) * .14)), transparent 38%), ' +
-                    'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .10)), rgba(10,15,24, calc(var(--lux-transparency-alpha, .92) * .91)) 44%, rgba(7,10,18, calc(var(--lux-transparency-alpha, .92) * .84)))';
-            }
-            return 'radial-gradient(circle at 8% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .92) * .075)), transparent 32%), ' +
-                'radial-gradient(circle at 72% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .24)), transparent 38%), ' +
-                'radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .92) * .14)), transparent 38%), ' +
-                'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .10)), rgba(10,15,24, calc(var(--lux-transparency-alpha, .92) * .91)) 44%, rgba(7,10,18, calc(var(--lux-transparency-alpha, .92) * .84)))';
-        }
-        if (isSocialLargeSurface) {
-            const isSmallSocialSurface =
-                SOCIAL_NEO_SMALL_TRANSPARENCY_SURFACE_CLASSES.some((className) => el.classList.contains(className)) ||
-                el.classList.contains('social-mini-card') ||
-                el.classList.contains('social-comment-card') ||
-                el.classList.contains('social-notif-item') ||
-                el.classList.contains('social-story-card') ||
-                el.classList.contains('social-file-preview') ||
-                Boolean(el.parentElement?.classList?.contains('social-neo-stat-grid'));
-            return buildLuxuryRoutePanelGradient(lightMode, isSmallSocialSurface);
-        }
-        if (isStaffLargeSurface) {
-            if (el.classList.contains('staff-hub-metric-card')) {
-                return buildLuxuryRoutePanelGradient(lightMode, true);
-            }
-            if (STAFF_ROUTE_CONTROL_TRANSPARENCY_SURFACE_CLASSES.some(
-                (className) => el.classList.contains(className)
-            )) {
-                return buildStaffFadeBackground(lightMode, 'control');
-            }
-            const isSmallStaffSurface = STAFF_ROUTE_SMALL_TRANSPARENCY_SURFACE_CLASSES.some(
-                (className) => el.classList.contains(className)
-            );
-            return buildLuxuryRoutePanelGradient(lightMode, isSmallStaffSurface);
-        }
-        if (isStudentsAdminLargeSurface) {
-            const isSmallStudentsAdminSurface = STUDENTS_ADMIN_ROUTE_SMALL_TRANSPARENCY_SURFACE_CLASSES.some(
-                (className) => el.classList.contains(className)
-            );
-            return buildLuxuryRoutePanelGradient(lightMode, isSmallStudentsAdminSurface);
-        }
-        if (isLibraryLargeSurface || isLibrarySoftSurface) {
-            const libraryStrength = (
-                isLibrarySoftSurface ||
-                el.classList.contains('library-tabs') ||
-                el.classList.contains('library-catalog-foot')
-            ) ? 0.14 : 0.24;
-            if (lightMode) {
-                if (libraryStrength < 0.2) {
-                    return 'radial-gradient(circle at 12% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .86) * .62)), transparent 30%), ' +
-                        'radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .14)), transparent 34%), ' +
-                        'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .045)), rgba(255,255,255, calc(var(--lux-transparency-alpha, .86) * .84)) 46%, rgba(247,241,232, calc(var(--lux-transparency-alpha, .86) * .72)))';
-                }
-                return 'radial-gradient(circle at 8% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .86) * .88)), transparent 34%), ' +
-                    'radial-gradient(circle at 72% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .22)), transparent 38%), ' +
-                    'radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .86) * .13)), transparent 38%), ' +
-                    'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .075)), rgba(255,255,255, calc(var(--lux-transparency-alpha, .86) * .88)) 44%, rgba(247,241,232, calc(var(--lux-transparency-alpha, .86) * .72)))';
-            }
-            if (libraryStrength < 0.2) {
-                return 'radial-gradient(circle at 12% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .92) * .055)), transparent 30%), ' +
-                    'radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .14)), transparent 34%), ' +
-                    'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .065)), rgba(10,15,24, calc(var(--lux-transparency-alpha, .92) * .88)) 46%, rgba(7,10,18, calc(var(--lux-transparency-alpha, .92) * .80)))';
-            }
-            return 'radial-gradient(circle at 8% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .92) * .075)), transparent 32%), ' +
-                'radial-gradient(circle at 72% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .24)), transparent 38%), ' +
-                'radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .92) * .14)), transparent 38%), ' +
-                'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .10)), rgba(10,15,24, calc(var(--lux-transparency-alpha, .92) * .91)) 44%, rgba(7,10,18, calc(var(--lux-transparency-alpha, .92) * .84)))';
-        }
-        if (isExamsSurface) {
-            const isSmallExamSurface = (
-                el.classList.contains('ex2-stat-card') ||
-                el.classList.contains('ex2-q-card') ||
-                el.classList.contains('ex2-q-card-head') ||
-                el.classList.contains('ex2-timeline-card') ||
-                el.classList.contains('ex2-split-box') ||
-                el.classList.contains('ex2-progress-step') ||
-                el.parentElement?.classList?.contains('ex2-mini-grid')
-            );
-            if (lightMode) {
-                if (isSmallExamSurface) {
-                    return 'radial-gradient(circle at 10% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .86) * .78)), transparent 32%), ' +
-                        'radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .14)), transparent 34%), ' +
-                        'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .055)), rgba(255,255,255, calc(var(--lux-transparency-alpha, .86) * .82)) 46%, rgba(247,241,232, calc(var(--lux-transparency-alpha, .86) * .66)))';
-                }
-                return 'radial-gradient(circle at 8% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .86) * .88)), transparent 34%), ' +
-                    'radial-gradient(circle at 74% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .22)), transparent 38%), ' +
-                    'radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .86) * .13)), transparent 38%), ' +
-                    'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .075)), rgba(255,255,255, calc(var(--lux-transparency-alpha, .86) * .88)) 44%, rgba(247,241,232, calc(var(--lux-transparency-alpha, .86) * .72)))';
-            }
-            if (isSmallExamSurface) {
-                return 'radial-gradient(circle at 12% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .92) * .055)), transparent 30%), ' +
-                    'radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .14)), transparent 34%), ' +
-                    'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .065)), rgba(10,15,24, calc(var(--lux-transparency-alpha, .92) * .88)) 46%, rgba(7,10,18, calc(var(--lux-transparency-alpha, .92) * .80)))';
-            }
-            return 'radial-gradient(circle at 8% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .92) * .075)), transparent 32%), ' +
-                'radial-gradient(circle at 74% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .24)), transparent 38%), ' +
-                'radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .92) * .14)), transparent 38%), ' +
-                'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .10)), rgba(10,15,24, calc(var(--lux-transparency-alpha, .92) * .91)) 44%, rgba(7,10,18, calc(var(--lux-transparency-alpha, .92) * .84)))';
-        }
-        if (isAdminToolsSurface || isAdminLibrarySurface) {
-            const isSmallAdminToolsSurface = isAdminToolsSoftSurface || isAdminToolsControlSurface || isAdminLibrarySoftSurface || (
-                el.classList.contains('lux-admin-tools-index-summary') ||
-                el.classList.contains('lux-admin-tools-index-command') ||
-                el.classList.contains('lux-admin-tools-index-command-card') ||
-                el.classList.contains('lux-admin-tools-index-subpanel') ||
-                el.classList.contains('lux-subcard') ||
-                el.classList.contains('lux-stat-card') ||
-                el.classList.contains('lux-grid-widget') ||
-                (el.classList.contains('admin-reg-tab') && !el.classList.contains('is-active') && el.getAttribute('aria-pressed') !== 'true') ||
-                (el.classList.contains('lux-strip-card') && el.closest?.('#lux-admin-tools-shell'))
-            );
-            if (lightMode) {
-                if (isSmallAdminToolsSurface) {
-                    return 'radial-gradient(circle at 12% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .86) * .62)), transparent 30%), ' +
-                        'radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .14)), transparent 34%), ' +
-                        'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .045)), rgba(255,255,255, calc(var(--lux-transparency-alpha, .86) * .84)) 46%, rgba(247,241,232, calc(var(--lux-transparency-alpha, .86) * .72)))';
-                }
-                return 'radial-gradient(circle at 8% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .86) * .88)), transparent 34%), ' +
-                    'radial-gradient(circle at 72% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .22)), transparent 38%), ' +
-                    'radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .86) * .13)), transparent 38%), ' +
-                    'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .075)), rgba(255,255,255, calc(var(--lux-transparency-alpha, .86) * .88)) 44%, rgba(247,241,232, calc(var(--lux-transparency-alpha, .86) * .72)))';
-            }
-            if (isSmallAdminToolsSurface) {
-                return 'radial-gradient(circle at 12% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .92) * .055)), transparent 30%), ' +
-                    'radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .14)), transparent 34%), ' +
-                    'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .065)), rgba(10,15,24, calc(var(--lux-transparency-alpha, .92) * .88)) 46%, rgba(7,10,18, calc(var(--lux-transparency-alpha, .92) * .80)))';
-            }
-            return 'radial-gradient(circle at 8% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .92) * .075)), transparent 32%), ' +
-                'radial-gradient(circle at 72% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .24)), transparent 38%), ' +
-                'radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .92) * .14)), transparent 38%), ' +
-                'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .10)), rgba(10,15,24, calc(var(--lux-transparency-alpha, .92) * .91)) 44%, rgba(7,10,18, calc(var(--lux-transparency-alpha, .92) * .84)))';
-        }
-        if (isOrdersSurface) {
-            const isOrdersSoftSurface = isAdminOrdersSoftSurface || isAdminOrdersControlSurface;
-            if (lightMode) {
-                if (isOrdersSoftSurface) {
-                    return 'radial-gradient(circle at 12% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .86) * .62)), transparent 30%), ' +
-                        'radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .14)), transparent 34%), ' +
-                        'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .045)), rgba(255,255,255, calc(var(--lux-transparency-alpha, .86) * .84)) 46%, rgba(247,241,232, calc(var(--lux-transparency-alpha, .86) * .72)))';
-                }
-                return 'radial-gradient(circle at 8% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .86) * .88)), transparent 34%), ' +
-                    'radial-gradient(circle at 72% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .22)), transparent 38%), ' +
-                    'radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .86) * .13)), transparent 38%), ' +
-                    'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .075)), rgba(255,255,255, calc(var(--lux-transparency-alpha, .86) * .88)) 44%, rgba(247,241,232, calc(var(--lux-transparency-alpha, .86) * .72)))';
-            }
-            if (isOrdersSoftSurface) {
-                return 'radial-gradient(circle at 12% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .92) * .055)), transparent 30%), ' +
-                    'radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .14)), transparent 34%), ' +
-                    'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .065)), rgba(10,15,24, calc(var(--lux-transparency-alpha, .92) * .88)) 46%, rgba(7,10,18, calc(var(--lux-transparency-alpha, .92) * .80)))';
-            }
-            return 'radial-gradient(circle at 8% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .92) * .075)), transparent 32%), ' +
-                'radial-gradient(circle at 72% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .24)), transparent 38%), ' +
-                'radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .92) * .14)), transparent 38%), ' +
-                'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .10)), rgba(10,15,24, calc(var(--lux-transparency-alpha, .92) * .91)) 44%, rgba(7,10,18, calc(var(--lux-transparency-alpha, .92) * .84)))';
-        }
-        if (!_isHighTransBg && isLmsRoute && (
-            el.classList.contains('page-hero') ||
-            el.classList.contains('lux-card') ||
+        // Residual hosts still on the engine list (not yet keep-listed): shared panel tokens
+        const softChrome = (
             el.classList.contains('lux-status-pill') ||
-            el.classList.contains('lux-lms-group-card') ||
-            lmsGlassClasses.some((className) => el.classList.contains(className)) ||
-            (Boolean(el.closest?.('.lms-quiz-builder')) &&
-                lmsQuizBuilderGlassClasses.some((className) => el.classList.contains(className)))
-        )) {
-            // Match the dashboard color-fade/glow: white highlight radial + accent glow
-            // radial + secondary glow radial + linear depth. Smaller LMS chrome (status
-            // pills / signal pills) uses a lighter "soft" fade so it does not overpower.
-            const isSmallLmsSurface = (
-                el.classList.contains('lux-status-pill') ||
-                el.classList.contains('lms-clean-signal-pill') ||
-                el.classList.contains('lms-clean-mini') ||
-                el.classList.contains('lms-clean-action-secondary')
-            );
-            if (lightMode) {
-                if (isSmallLmsSurface) {
-                    return 'radial-gradient(circle at 12% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .86) * .62)), transparent 30%), ' +
-                        'radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .14)), transparent 34%), ' +
-                        'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .045)), rgba(255,255,255, calc(var(--lux-transparency-alpha, .86) * .84)) 46%, rgba(247,241,232, calc(var(--lux-transparency-alpha, .86) * .72)))';
-                }
-                return 'radial-gradient(circle at 6% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .86) * .88)), transparent 34%), ' +
-                    'radial-gradient(circle at 74% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .24)), transparent 42%), ' +
-                    'radial-gradient(circle at 100% 96%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .86) * .14)), transparent 40%), ' +
-                    'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * .065)), rgba(255,255,255, calc(var(--lux-transparency-alpha, .86) * .84)) 44%, rgba(247,241,232, calc(var(--lux-transparency-alpha, .86) * .70)))';
-            }
-            if (isSmallLmsSurface) {
-                return 'radial-gradient(circle at 12% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .92) * .055)), transparent 30%), ' +
-                    'radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .16)), transparent 36%), ' +
-                    'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .07)), rgba(12,18,30, calc(var(--lux-transparency-alpha, .92) * .82)) 46%, rgba(8,12,21, calc(var(--lux-transparency-alpha, .92) * .72)))';
-            }
-            return 'radial-gradient(circle at 6% 0%, rgba(255,255,255, calc(var(--lux-color-fade-alpha, .92) * .08)), transparent 32%), ' +
-                'radial-gradient(circle at 74% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .28)), transparent 42%), ' +
-                'radial-gradient(circle at 100% 96%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .92) * .18)), transparent 40%), ' +
-                'linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * .10)), rgba(10,15,24, calc(var(--lux-transparency-alpha, .92) * .91)) 44%, rgba(7,10,18, calc(var(--lux-transparency-alpha, .92) * .84)))';
-        }
-        if (lightMode) {
-            return `linear-gradient(180deg, rgba(255,255,255, ${(0.08 + amount * 0.48).toFixed(2)}), rgba(245,239,229, ${(0.03 + amount * 0.34).toFixed(2)}))`;
-        }
-        return `linear-gradient(180deg, rgba(14,20,33, ${(amount * 0.94).toFixed(2)}), rgba(8,12,21, ${(amount * 0.72).toFixed(2)}))`;
+            el.classList.contains('lux-control') ||
+            el.classList.contains('lux-strip-card') ||
+            el.classList.contains('lux-subcard') ||
+            el.classList.contains('lux-stat-card') ||
+            el.classList.contains('lux-pill') ||
+            el.classList.contains('lux-picker-btn') ||
+            SOCIAL_NEO_SMALL_TRANSPARENCY_SURFACE_CLASSES.some((className) => el.classList.contains(className))
+        );
+        return buildLuxuryRoutePanelGradient(lightMode, softChrome);
     };
     const shouldApplyDynamicBackground = (el) =>
         el.classList.contains('lux-card') ||
@@ -3095,9 +2936,6 @@ function updateTransparency(value, options = {}) {
         el.classList.contains('study-card-assessment-pill') ||
         el.classList.contains('study-card-term-header') ||
         el.classList.contains('study-card-term-row') ||
-        el.classList.contains('study-card-history-section') ||
-        el.classList.contains('study-card-history-entry') ||
-        el.classList.contains('study-card-history-row') ||
         el.classList.contains('personal-data-toolbar') ||
         el.classList.contains('profile-card') ||
         el.classList.contains('personal-data-stats-card') ||
@@ -3122,28 +2960,18 @@ function updateTransparency(value, options = {}) {
         el.classList.contains('newsx-account-card') ||
         el.classList.contains('newsx-section-btn') ||
         el.classList.contains('newsx-pane-btn') ||
-        el.classList.contains('student-service-hero') ||
-        el.classList.contains('student-service-hero-aside') ||
-        el.classList.contains('student-service-workflow-strip') ||
-        el.classList.contains('student-service-workflow-step') ||
-        el.classList.contains('student-service-summary-card') ||
-        el.classList.contains('student-service-overview') ||
         el.classList.contains('student-service-canvas') ||
-        el.classList.contains('student-service-panel') ||
         el.classList.contains('student-service-zone') ||
-        el.classList.contains('student-service-area-card') ||
         el.classList.contains('student-service-article-card') ||
         el.classList.contains('student-service-ticket-row') ||
         el.classList.contains('student-service-lane-card') ||
         el.classList.contains('student-service-ticket-card') ||
         el.classList.contains('student-service-ops-card') ||
-        el.classList.contains('student-service-track-panel') ||
         el.classList.contains('student-service-article-preview') ||
         el.classList.contains('student-service-ticket-stat') ||
         el.classList.contains('student-service-track-card') ||
         el.classList.contains('student-service-ops-ticket') ||
         el.classList.contains('student-service-ops-lane') ||
-        el.classList.contains('student-service-ticket-focus') ||
         el.classList.contains('student-service-ticket-thread') ||
         el.classList.contains('student-service-home-panel') ||
         el.classList.contains('student-service-home-card') ||
@@ -3159,10 +2987,8 @@ function updateTransparency(value, options = {}) {
         el.classList.contains('alib-panel') ||
         el.classList.contains('library-overview-card') ||
         el.classList.contains('library-hero-metric') ||
-        el.classList.contains('library-hero-summary-card') ||
         el.classList.contains('library-hero-signal-card') ||
         el.classList.contains('admin-library-metric-card') ||
-        el.classList.contains('admin-library-hero-summary-card') ||
         el.classList.contains('admin-library-param-group') ||
         el.classList.contains('admin-library-chip') ||
         (document.body.classList.contains('lux-route-library') && (
@@ -3172,6 +2998,10 @@ function updateTransparency(value, options = {}) {
             (el.classList.contains('lux-control') && el.closest?.('.library-filter-shell'))
         )) ||
         el.classList.contains('ex2-hero') ||
+        el.classList.contains('ex2-workspace-panel') ||
+        el.classList.contains('ex2-workspace-head') ||
+        el.classList.contains('ex2-workspace-section') ||
+        el.classList.contains('ex2-stat-chip') ||
         el.classList.contains('ex2-panel') ||
         el.classList.contains('ex2-toolbar') ||
         el.classList.contains('ex2-card') ||
@@ -3246,13 +3076,7 @@ function updateTransparency(value, options = {}) {
             el.classList.contains('admin-orders-background-btn') ||
             el.classList.contains('admin-orders-apply-btn')
         )) ||
-        (document.body.classList.contains('lux-route-social') && (
-            el.classList.contains('social-hero') ||
-            el.classList.contains('social-card') ||
-            el.classList.contains('social-post-card') ||
-            el.classList.contains('social-mini-card') ||
-            el.classList.contains('social-detail-card') ||
-            el.classList.contains('social-neo-card') ||
+        (document.body.classList.contains('lux-route-social') && (            el.classList.contains('social-neo-card') ||
             SOCIAL_NEO_TRANSPARENCY_SURFACE_CLASSES.some((className) => el.classList.contains(className)) ||
             el.parentElement?.classList?.contains('social-neo-stat-grid') ||
             [...el.classList].some((className) =>
@@ -3262,23 +3086,14 @@ function updateTransparency(value, options = {}) {
             )
         )) ||
         (document.body.classList.contains('lux-route-staff') && Boolean(el.closest?.('#staff-content')) && (
-            el.classList.contains('staff-hub-hero') ||
-            el.classList.contains('staff-hub-command-panel') ||
-            el.classList.contains('staff-hub-command-card') ||
-            el.classList.contains('staff-hub-focus-card') ||
-            el.classList.contains('staff-hub-mini-card') ||
-            el.classList.contains('staff-hub-metric-card') ||
-            el.classList.contains('staff-hub-controls') ||
+                                    el.classList.contains('staff-hub-controls') ||
             el.classList.contains('staff-hub-directory-panel') ||
             el.classList.contains('staff-hub-profile') ||
             el.classList.contains('staff-hub-info-card') ||
             el.classList.contains('staff-hub-warning') ||
             el.classList.contains('staff-hub-modal') ||
             el.classList.contains('staff-hub-list-item') ||
-            el.classList.contains('admin-directory-hero') ||
-            el.classList.contains('admin-directory-controls') ||
-            el.classList.contains('admin-directory-card') ||
-            el.classList.contains('lux-card') ||
+                        el.classList.contains('lux-card') ||
             el.classList.contains('lux-person-card') ||
             el.classList.contains('lux-subcard') ||
             el.classList.contains('surface-card') ||
@@ -3365,13 +3180,15 @@ function updateTransparency(value, options = {}) {
         '.lux-program-focus-stat', '.lux-program-semester-chip',
         '.lux-module-option', '.lux-subject-row',
 
+        // Profile view surfaces
+        '#profile-view-root .pv-shell', '.pv-hero', '.pv-meta', '.pv-left', '.pv-right',
+
         // Study Card surfaces
         '#study-card-container', '.study-card-semester-table', '.study-card-summary-stage',
         '.study-card-grade-circle', '.study-card-assessment-window__chip',
         '.study-card-assessment-window__card', '.study-card-assessment-pill',
         '.study-card-term-header', '.study-card-term-row',
-        '.study-card-history-section', '.study-card-history-entry', '.study-card-history-row',
-        '#study-card-container .lux-strip-card',
+                '#study-card-container .lux-strip-card',
 
         // Personal Data surfaces
         '.personal-data-toolbar', '.profile-card', '.personal-data-stats-card',
@@ -3386,25 +3203,21 @@ function updateTransparency(value, options = {}) {
         '.newsx-private-item', '.newsx-check', '.newsx-account-card',
         '.newsx-section-btn', '.newsx-pane-btn',
 
-        // Student Service large surfaces
-        '.student-service-hero', '.student-service-hero-aside',
-        '.student-service-workflow-strip', '.student-service-workflow-step',
-        '.student-service-summary-card', '.student-service-overview',
-        '.student-service-canvas', '.student-service-panel', '.student-service-zone',
-        '.student-service-area-card', '.student-service-article-card',
+        // Student Service large surfaces (CSS-owned via --ssvc-fade-*)
+        '.student-service-command-bar-shell',
+        '.student-service-canvas', '.student-service-zone',
+        '.student-service-article-card',
         '.student-service-ticket-row',
         '.student-service-lane-card', '.student-service-ticket-card',
-        '.student-service-ops-card', '.student-service-track-panel',
-        '.student-service-article-preview', '.student-service-ticket-stat',
+        '.student-service-ops-card',         '.student-service-article-preview', '.student-service-ticket-stat',
         '.student-service-track-card', '.student-service-ops-ticket',
-        '.student-service-ops-lane', '.student-service-ticket-focus',
-        '.student-service-ticket-thread', '.student-service-home-panel',
+        '.student-service-ops-lane',         '.student-service-home-panel',
         '.student-service-home-card', '.student-service-home-ticket',
-        '.student-service-home-topic',         '.student-service-lane-choice-card',
+        '.student-service-home-topic', '.student-service-lane-choice-card',
 
         // Social large surfaces
-        '.social-hero', '.social-card', '.social-post-card', '.social-mini-card',
-        '.social-detail-card', '.social-neo-card',
+        
+        '.social-neo-card',
         ...SOCIAL_NEO_TRANSPARENCY_SURFACE_SELECTORS,
 
         // Staff command center surfaces
@@ -3422,14 +3235,14 @@ function updateTransparency(value, options = {}) {
         '.library-tabs', '.library-picker-panel', '.library-catalog-foot',
         '.alib-panel',
         '#page-library .alib-panel', '#page-library .lux-strip-card', '.library-overview-card',
-        '.library-hero-metric', '.library-hero-summary-card', '.library-hero-signal-card',
-        '.admin-library-metric-card', '.admin-library-hero-summary-card',
-        '.admin-library-param-group', '.admin-library-chip',
+        '.library-hero-metric', '.library-hero-signal-card',
+        '.admin-library-metric-card',         '.admin-library-param-group', '.admin-library-chip',
         '.library-filter-shell .lux-picker-btn', '.library-filter-shell .lux-control',
 
         // Exams large surfaces
-        '.ex2-hero', '.ex2-panel', '.ex2-toolbar', '.ex2-card',
-        '.ex2-stat-card', '.ex2-cohort-card', '.ex2-session-card',
+        '.ex2-hero', '.ex2-workspace-panel', '.ex2-workspace-head', '.ex2-workspace-section',
+        '.ex2-panel', '.ex2-toolbar', '.ex2-card',
+        '.ex2-stat-card', '.ex2-stat-chip', '.ex2-cohort-card', '.ex2-session-card',
         '.ex2-list-card', '.ex2-question-card', '.ex2-review-card',
         '.ex2-side-card', '.ex2-select-card', '.ex2-live-sidebar',
         '.ex2-q-card', '.ex2-q-card-head', '.ex2-empty-state',
@@ -3496,15 +3309,6 @@ function updateTransparency(value, options = {}) {
     surfaceElements.forEach(el => {
         // Skip if element is hidden
         if (el.offsetParent === null && el.style.display === 'none') return;
-        const isCareerMarketSurface = Boolean(el.closest?.('#page-career-market'));
-        if (isCareerMarketSurface) {
-            el.style.removeProperty('background-color');
-            el.style.removeProperty('background');
-            el.style.removeProperty('backdrop-filter');
-            el.style.removeProperty('-webkit-backdrop-filter');
-            delete el.dataset.luxTransparencySignature;
-            return;
-        }
         const isOrdersInboxSurface = Boolean(el.closest?.(
             '#page-orders .orders-inbox-shell, #orders-inbox-root .orders-inbox-shell, #admin-orders-root .orders-inbox-shell'
         ));
@@ -3596,11 +3400,85 @@ function updateTransparency(value, options = {}) {
             }
             if (!forceRefresh && el.dataset.luxTransparencySignature === transparencySignature) return;
             if (isStructuralSurface(el)) {
+                /* Registration full-opacity override: force solid inline bg at >=99% so
+                   no canvas particles bleed through (cloned from timetable behaviour). */
+                if (percentage >= 99 && document.body.classList.contains('lux-route-registration') && el.closest?.('#page-registration')) {
+                    const isFocusPanel = el.classList.contains('lux-timetable-hero-focus') || el.classList.contains('registration-hero-aside');
+                    var _solidBg = isFocusPanel
+                        ? (isLightMode
+                            ? 'var(--lux-panel-surface)'
+                            : 'var(--lux-panel-surface)')
+                        : (isLightMode
+                            ? 'var(--lux-panel-surface-soft)'
+                            : 'var(--lux-panel-surface-soft)');
+                    el.style.setProperty('background', _solidBg, 'important');
+                    el.style.setProperty('backdrop-filter', 'none', 'important');
+                    el.style.setProperty('-webkit-backdrop-filter', 'none', 'important');
+                    el.dataset.luxTransparencySignature = transparencySignature;
+                    return;
+                }
                 el.style.removeProperty('background-color');
                 el.style.removeProperty('background');
                 el.style.removeProperty('backdrop-filter');
                 el.style.removeProperty('-webkit-backdrop-filter');
                 el.dataset.luxTransparencySignature = transparencySignature;
+                return;
+            }
+            // Registration full-opacity: solid base under panel tokens (particle bleed guard)
+            if (percentage >= 99 && shouldKeepRegistrationFadeCssBackground(el) && el.closest?.('#page-registration')) {
+                const isFocusPanel = el.classList.contains('lux-timetable-hero-focus') || el.classList.contains('registration-hero-aside');
+                var _solidBg2 = isFocusPanel
+                    ? (isLightMode
+                        ? 'var(--lux-panel-surface)'
+                        : 'var(--lux-panel-surface)')
+                    : (isLightMode
+                        ? 'var(--lux-panel-surface-soft)'
+                        : 'var(--lux-panel-surface-soft)');
+                el.style.setProperty('background', _solidBg2, 'important');
+                el.style.setProperty('backdrop-filter', 'none', 'important');
+                el.style.setProperty('-webkit-backdrop-filter', 'none', 'important');
+                el.dataset.luxTransparencySignature = transparencySignature;
+                return;
+            }
+            // Bare pages: never invent glass; strip any inline paint
+            if (document.body?.classList?.contains('lux-page-bare')) {
+                stripInlineGlassPaint(el, transparencySignature);
+                return;
+            }
+            // Soft-chrome / focus-panel / liquid glass CTAs: CSS owns material + transparency tokens
+            // Topbar shell + controls always match builder-card soft-chrome (no engine glass).
+            const isTopbarSoftChromeSurface = (
+                el.id === 'lux-topbar' ||
+                el.classList.contains('lux-topbar-shell') ||
+                (
+                    Boolean(el.closest?.('#lux-topbar')) &&
+                    (
+                        el.classList.contains('lux-picker-btn') ||
+                        el.classList.contains('lux-icon-btn') ||
+                        el.classList.contains('lux-user-chip') ||
+                        el.classList.contains('lux-search') ||
+                        el.classList.contains('lux-sidebar-toggle-btn') ||
+                        el.classList.contains('lux-topbar-editor-btn') ||
+                        (el.tagName === 'INPUT' && Boolean(el.closest?.('.lux-search')))
+                    )
+                )
+            );
+            if (
+                isTopbarSoftChromeSurface ||
+                el.classList.contains('lux-soft-chrome') ||
+                el.classList.contains('lux-focus-panel') ||
+                el.classList.contains('lms-hero-focus') ||
+                el.classList.contains('lux-timetable-hero-focus') ||
+                el.classList.contains('lux-primary-btn') ||
+                el.classList.contains('lux-secondary-btn') ||
+                el.classList.contains('lux-ghost-btn') ||
+                el.classList.contains('lux-admin-op-btn')
+            ) {
+                stripInlineGlassPaint(el, transparencySignature);
+                return;
+            }
+            if (shouldKeepRouteFadeCssBackground(el)) {
+                stripInlineGlassPaint(el, transparencySignature);
                 return;
             }
 
@@ -3619,10 +3497,21 @@ function updateTransparency(value, options = {}) {
             const keepAdminLibraryFadeCss = shouldKeepAdminLibraryFadeCssBackground(el);
             // Real social surfaces now frost like admin-tools; only layout
             // wrappers (non-paint surfaces) keep blur suppressed.
-            const suppressBlur = isSocialRouteSurface &&
+            // Single-wrapper frost (registration model) for routes whose glass
+            // uses the shared .lux-page-shell wrapper: blur ONLY that wrapper,
+            // suppress blur on inner panels. Registration blurs one wrapper and
+            // reads clean; timetable/LMS were ALSO blurring inner panels (e.g.
+            // the LMS hero) on top of the wrapper — a nested double-blur that
+            // looks heavier/different. Suppressing it makes them match
+            // registration: one clean frost, panels just tint the pre-blurred
+            // backdrop. Scoped to these routes so other pages are untouched.
+            const isWrapperFrostRoute = document.body.classList.contains('lux-route-timetable')
+                || document.body.classList.contains('lux-route-lms');
+            const isWrapperInnerPanel = isWrapperFrostRoute && Boolean(el.closest?.('.lux-page-shell')) && !el.classList.contains('lux-page-shell');
+            const suppressBlur = isWrapperInnerPanel || (isSocialRouteSurface &&
                 shouldApplyDynamicBackground(el) &&
                 !isSocialPaintSurface(el) &&
-                !isSocialBlurHost(el);
+                !isSocialBlurHost(el));
             const backdropValue = (suppressBlur || keepSocialFadeCss || keepAdminLibraryFadeCss)
                 ? 'none'
                 : `blur(${blurAmount}px) saturate(${saturateAmount}%)`;
@@ -3635,16 +3524,9 @@ function updateTransparency(value, options = {}) {
                 // CRITICAL FIX: Override hardcoded gradient backgrounds with dynamic alpha
                 // This handles .lux-card and similar elements that use hardcoded alpha values
                 if (shouldApplyDynamicBackground(el) && !keepSocialFadeCss && !keepAdminLibraryFadeCss) {
-                    if (isLightMode) {
-                        // Light mode: warm cream gradient with dynamic alpha
-                        el.style.setProperty('background',
-                            buildDynamicSurfaceBackground(el, true, surfaceFillAmount),
-                            'important');
-                    } else {
-                        // Dark mode: navy gradient with dynamic alpha
-                        el.style.setProperty('background',
-                            buildDynamicSurfaceBackground(el, false, surfaceFillAmount),
-                            'important');
+                    {
+                        const _dynBg = buildDynamicSurfaceBackground(el, isLightMode, surfaceFillAmount);
+                        if (_dynBg) el.style.setProperty('background', _dynBg, 'important');
                     }
                 }
             } else {
@@ -3665,14 +3547,9 @@ function updateTransparency(value, options = {}) {
                         shouldApplyDynamicBackground(el)
                     )
                 ) {
-                    if (isLightMode) {
-                        el.style.setProperty('background',
-                            buildDynamicSurfaceBackground(el, true, surfaceFillAmount),
-                            'important');
-                    } else {
-                        el.style.setProperty('background',
-                            buildDynamicSurfaceBackground(el, false, surfaceFillAmount),
-                            'important');
+                    {
+                        const _dynBg2 = buildDynamicSurfaceBackground(el, isLightMode, surfaceFillAmount);
+                        if (_dynBg2) el.style.setProperty('background', _dynBg2, 'important');
                     }
                 }
             }

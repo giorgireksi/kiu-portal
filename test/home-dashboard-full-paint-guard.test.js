@@ -16,12 +16,15 @@ describe('dashboard + keep routes full paint', () => {
         expect(existsSync(join(process.cwd(), 'assets/css/index-home-dashboard.css'))).toBe(true);
     });
 
-    it('timetable / lms are bare (hard-clean); social stays bare', () => {
+    it('timetable / lms are bare minimal stack; social stays bare', () => {
         for (const page of ['timetable.html', 'lms.html']) {
             const html = read(page);
-            expect(html).toMatch(/href=["'][^"']*index-luxury\.css/);
+            expect(html).not.toMatch(/index-luxury\.css/);
+            expect(html).not.toMatch(/lux-surfaces\.css/);
+            expect(html).not.toMatch(/lux-focus-panel\.css/);
             expect(html).toContain('lux-page-bare');
             expect(html).toMatch(/lux-page-bare\.css/);
+            expect(html).toMatch(/lux-shell-nav\.css/);
             expect(html).not.toContain('lux-full-paint');
         }
         expect(read('timetable.html')).not.toMatch(/timetable-route\.css/);

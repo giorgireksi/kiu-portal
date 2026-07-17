@@ -10,7 +10,7 @@
     var root = document.documentElement;
     var validShellRoles = ['student', 'professor', 'ta', 'admin', 'student_service'];
     var PORTAL_CACHE_RESET_KEY = 'KIU_PORTAL_CACHE_RESET_VERSION';
-    var PORTAL_CACHE_RESET_VERSION = '20260606-postactions6';
+    var PORTAL_CACHE_RESET_VERSION = '20260609-bootguard1';
     var LUXURY_VISUAL_DEFAULTS_VERSION_KEY = 'KIU_LUXURY_VISUAL_DEFAULTS_VERSION';
     var LUXURY_VISUAL_DEFAULTS_VERSION = '20260605-oceanteal-defaults1';
     var DEFAULT_LUXURY_THEME_MODE = 'dark';
@@ -38,8 +38,16 @@
             if (requestedRole) return requestedRole;
         } catch (e) {}
         try {
+            var pendingRole = normalizeRole(localStorage.getItem('KIU_PENDING_ROLE_SWITCH_ROLE'));
+            if (pendingRole) return pendingRole;
+        } catch (e) {}
+        try {
             var storedRole = normalizeRole(localStorage.getItem('currentUserRole'));
             if (storedRole) return storedRole;
+        } catch (e) {}
+        try {
+            var path = String(window.location.pathname || '');
+            if (path.endsWith('student-service.html')) return 'student_service';
         } catch (e) {}
         return 'student';
     }
@@ -65,6 +73,71 @@
         styleEl.textContent = cssText || ':root{}';
         document.head.appendChild(styleEl);
     }
+
+    root.classList.add('kiu-shell-loading');
+    root.classList.remove('kiu-shell-ready');
+
+    appendLateStyle('kiu-shell-boot-guard', '' +
+        'html.kiu-shell-loading{' +
+            'background:#08120f!important;' +
+            'color-scheme:dark;' +
+        '}' +
+        'html.kiu-shell-loading.lux-light-mode{' +
+            'background:#f3efe7!important;' +
+            'color-scheme:light;' +
+        '}' +
+        'html.kiu-shell-loading body.kiu-shell-loading{' +
+            'background:var(--lux-shell-background,var(--lux-bg,#070910))!important;' +
+            'overflow-x:hidden;' +
+        '}' +
+        'html.kiu-shell-loading.lux-light-mode body.kiu-shell-loading,' +
+        'html.kiu-shell-loading body.lux-light-mode.kiu-shell-loading{' +
+            'background:var(--lux-shell-background,#f5f0e8)!important;' +
+        '}' +
+        'body.kiu-shell-loading::before{' +
+            'content:"";' +
+            'position:fixed;' +
+            'inset:0;' +
+            'z-index:2147483000;' +
+            'pointer-events:none;' +
+            'backface-visibility:hidden;' +
+            'transform:translateZ(0);' +
+            'background:radial-gradient(circle at 22% 18%,rgba(15,118,110,.16),transparent 36%),' +
+                'radial-gradient(circle at 78% 20%,rgba(184,134,63,.12),transparent 34%),' +
+                'linear-gradient(135deg,#07110f 0%,#0b111c 58%,#07120f 100%)!important;' +
+            'opacity:1!important;' +
+            'transition:none!important;' +
+        '}' +
+        'html.lux-light-mode body.kiu-shell-loading::before,' +
+        'body.lux-light-mode.kiu-shell-loading::before{' +
+            'background:radial-gradient(circle at 20% 18%,rgba(28,137,129,.14),transparent 35%),' +
+                'radial-gradient(circle at 82% 16%,rgba(184,134,63,.14),transparent 32%),' +
+                'linear-gradient(135deg,#f8f5ee 0%,#f1ede5 58%,#eef6f5 100%)!important;' +
+        '}' +
+        'body.kiu-shell-loading #app-content,' +
+        'body.kiu-shell-loading #lux-shell,' +
+        'body.kiu-shell-loading #lux-topbar,' +
+        'body.kiu-shell-loading #mobile-bottom-nav,' +
+        'body.kiu-shell-loading #mobile-action-sheet{' +
+            'opacity:0!important;' +
+            'pointer-events:none!important;' +
+        '}' +
+        'html.kiu-shell-ready body:not(.kiu-shell-loading) #app-content,' +
+        'html.kiu-shell-ready body:not(.kiu-shell-loading) #lux-shell,' +
+        'html.kiu-shell-ready body:not(.kiu-shell-loading) #lux-topbar{' +
+            'opacity:1;' +
+            'transition:opacity .12s ease-out;' +
+        '}'
+    );
+
+    (function preloadSharedShellRuntime() {
+        if (!document.head || document.querySelector('link[rel="preload"][href*="assets/js/features/navigation.js"]')) return;
+        var preload = document.createElement('link');
+        preload.rel = 'preload';
+        preload.as = 'script';
+        preload.href = 'assets/js/features/navigation.js?v=20260609-bootguard1';
+        document.head.appendChild(preload);
+    })();
 
     function hasCurrentLuxuryVisualDefaultsVersion() {
         try {
@@ -284,9 +357,8 @@
             '.lux-hero',
             '.lux-stat',
             '.lux-stat-card',
-            '.lux-home-card',
-            '.lux-grid-widget',
-            '.lux-admin-ops-card',
+                        '.lux-grid-widget',
+            '.lux-admin-op-card',
             '.lux-builder-card',
             '.lux-builder-section',
             '.lux-dashboard-section',
@@ -306,19 +378,7 @@
             '.lux-utility-panel',
             '.lux-person-card',
             '.lux-stack',
-            '.registration-hero',
-            '.registration-workspace',
-            '.registration-insight-card',
-            '.registration-focus-card',
-            '.registration-state-card',
-            '.registration-module-list-card',
-            '.registration-module-pane-card',
-            '.registration-track-card',
-            '.registration-footer-bar',
-            '.registration-mini-metric',
-            '.registration-course-row',
-            '.registration-module-choice',
-            '.registration-track-group',
+            /* registration soft shells owned by registration-route.css — not flat wash */
             '.sch-sidebar',
             '.sch-main',
             '.sch-rail-hero',
@@ -331,23 +391,13 @@
             '.sch-legend-pill',
             '.sch-empty-state',
             '.sch-grid-empty',
-            '.lms-clean-stat',
-            '.lms-clean-signal-panel',
-            '.lms-clean-mini',
-            '.lms-clean-metric-card',
-            '.lms-clean-subject-card',
-            '.lms-clean-empty',
-            '.lms-banner',
             '.lux-lms-group-card',
             '.lms-route-panel',
-            '.lms-clean-summary',
             '.lms-route-hero',
             '.lms-clean-hero',
-            '.lms-clean-subview-hero',
-            '.lux-faculty-command',
-            '.lux-faculty-insight',
-            '.lux-faculty-stage',
-            '.lux-faculty-hero-focus',
+            '.lux-faculty-command-deck',
+            '.lux-fg-ops-panel',
+            '.lux-fg-ops-tile',
             '.lux-timetable-command',
             '.lux-timetable-insight',
             '.lux-timetable-stage',
@@ -356,9 +406,9 @@
             '.lux-timetable-filters',
             '.filter-shell',
             '.lux-timetable-hero-focus',
-            '.social-card',
-            '.social-post-card',
-            '.social-mini-card',
+            '.lux-focus-panel',
+            '.lux-soft-chrome',
+            '.lms-hero-focus',
             '.social-comment-card',
             '.social-notif-item',
             '.social-story-card',
@@ -393,13 +443,8 @@
         var shell = 'html body.lux-unified-shell.lux-unified-shell:not(.lux-route-students-admin)';
         var clearSurfaces = [
             '.page-hero',
-            '.admin-hero',
             '.portal-msg-page-top',
-            '.registration-hero',
-            '.registration-hero-focus',
-            '.lux-faculty-hero-focus',
-            '.lux-timetable-hero-focus',
-            '.lms-clean-summary',
+            /* do NOT clear focus/soft shells — washes registration + shared focus panels */
             '.lms-route-hero',
             '.lms-clean-hero',
             '.adlib-hero'
@@ -407,26 +452,12 @@
         var softSurfaces = [
             '.content-box',
             '.surface-card',
-            '.filter-shell',
             '.portal-msg-panel',
             '.portal-msg-group-modal',
-            '.registration-focus-card',
-            '.registration-mini-metric',
-            '.registration-insight-card',
-            '.registration-workspace',
-            '.registration-term-shell',
-            '.lux-faculty-command',
-            '.lux-faculty-insight',
-            '.lux-faculty-stage',
-            '.lux-timetable-command',
-            '.lux-timetable-insight',
-            '.lux-timetable-stage',
-            '.lms-clean-stat',
-            '.lms-clean-signal-panel',
-            '.lms-clean-metric-card',
-            '.lms-clean-subject-card',
-            '.lms-clean-mini',
-            '.lms-clean-subview-hero',
+            /* filter-shell / soft-chrome / focus: route CSS owns density (reg + timetable) */
+            '.lux-faculty-command-deck',
+            '.lux-fg-ops-panel',
+            '.lux-fg-ops-tile',
             '.lms-route-panel',
             '.course-card',
             '.accordion-item',
@@ -464,14 +495,27 @@
 
     function shouldSkipFlatSurfaceOverrides() {
         if (!document.body) return false;
+        // Bare pages want flat surfaces (hard-clean); do not treat as glass hosts.
+        if (document.body.classList.contains('lux-page-bare')) return false;
         return document.body.classList.contains('lux-route-timetable')
+            || document.body.classList.contains('lux-route-registration')
             || document.body.classList.contains('lux-route-lms')
             || document.body.classList.contains('lux-route-admin-library')
-            || document.body.classList.contains('lux-entry-admin-library');
+            || document.body.classList.contains('lux-entry-admin-library')
+            || document.body.classList.contains('lux-route-admin-orders')
+            || document.body.classList.contains('lux-entry-admin-orders')
+            || document.body.classList.contains('lux-route-staff');
     }
 
     function applyFlatSurfaceOverrides() {
-        if (shouldSkipFlatSurfaceOverrides()) return;
+        if (shouldSkipFlatSurfaceOverrides()) {
+            /* Drop leftover flat wash from a previous route / early inject */
+            var stale = document.getElementById('lux-flat-surface-overrides');
+            if (stale) {
+                try { stale.textContent = ':root{}'; } catch (e) {}
+            }
+            return;
+        }
         appendLateStyle('lux-flat-surface-overrides', getFlatSurfaceOverrideCss());
     }
 
@@ -513,18 +557,34 @@
     if (savedTransparency) {
         root.dataset.luxTransparency = savedTransparency;
         var transInt = parseInt(savedTransparency, 10);
-        var transAlpha = transInt / 100;
+        var fillRatio = (transInt + 1) / 101;
         root.style.setProperty('--lux-transparency-percentage', savedTransparency + '%');
-        root.style.setProperty('--lux-transparency-alpha', transAlpha.toFixed(2));
+        root.style.setProperty('--lux-transparency-alpha', fillRatio.toFixed(3));
         var isLight = savedMode === 'light';
         var panelAlpha = isLight
-            ? Math.max(0.12, 0.12 + (transAlpha * 0.83))
-            : Math.max(0.08, 0.08 + (transAlpha * 0.84));
+            ? Math.max(0.12, 0.12 + (fillRatio * 0.83))
+            : Math.max(0.08, 0.08 + (fillRatio * 0.84));
         root.style.setProperty('--lux-panel-alpha', panelAlpha.toFixed(3));
-        root.style.setProperty('--lux-color-fade-alpha', Math.max(
-            isLight ? 0.46 : 0.42,
-            Math.min(1, 0.34 + (transAlpha * 0.68))
-        ).toFixed(3));
+        var panelFillAlpha = isLight
+            ? 0.04 + (fillRatio * 0.20)
+            : 0.03 + (fillRatio * 0.16);
+        root.style.setProperty('--lux-panel-fill-alpha', panelFillAlpha.toFixed(3));
+        var colorFadeAlpha = isLight
+            ? Math.max(0.40, Math.min(1, fillRatio * 0.92))
+            : Math.max(0.01, Math.min(1, fillRatio * 0.92));
+        root.style.setProperty('--lux-color-fade-alpha', colorFadeAlpha.toFixed(3));
+        var blurAmount = transInt === 0 ? 0 : Math.min(14, fillRatio * 16);
+        var saturateAmount = transInt === 0 ? 100 : 100 + (fillRatio * 45);
+        var blurPx = blurAmount.toFixed(3) + 'px';
+        var satPct = saturateAmount.toFixed(1) + '%';
+        root.style.setProperty('--lux-transparency-blur', blurPx);
+        root.style.setProperty('--lux-glass-blur', blurPx);
+        root.style.setProperty('--lux-transparency-saturate', satPct);
+        if (document.body) {
+            document.body.style.setProperty('--lux-transparency-blur', blurPx);
+            document.body.style.setProperty('--lux-glass-blur', blurPx);
+            document.body.style.setProperty('--lux-transparency-saturate', satPct);
+        }
 
         // FOUC PREVENTION: When user has a non-default transparency,
         // hide card backgrounds until updateTransparency() applies correct inline styles.
@@ -549,7 +609,9 @@
             var _sidebarBg = _isLight
                 ? 'linear-gradient(180deg,rgba(248,244,237,' + _pa + '),rgba(242,237,228,' + _pa + '))'
                 : 'linear-gradient(180deg,rgba(10,14,22,' + _pa + '),rgba(6,9,15,' + _pa + '))';
-            var _bodySelector = _isLight ? 'body.lux-light-mode' : 'body:not(.lux-light-mode)';
+            var _bodySelector = _isLight
+                ? 'body.lux-light-mode:not(.lux-route-social)'
+                : 'body:not(.lux-light-mode):not(.lux-route-social)';
 
             var css = '' +
                 // Zero ALL glow variables with !important — prevents JS from re-enabling them
@@ -580,9 +642,12 @@
         root.dataset.luxBackgroundAnimation = 'off';
     }
 
-    // 2. Sidebar collapsed state
+    // 2. Sidebar collapsed state — desktop overlay shell defaults hidden at first paint
     var collapsed = false;
     try { collapsed = localStorage.getItem('kiuLuxurySidebarCollapsed') === '1'; } catch (e) {}
+    if (typeof window !== 'undefined' && window.innerWidth >= 1181) {
+        collapsed = true;
+    }
     if (collapsed) {
         root.classList.add('lux-sidebar-collapsed');
     }
@@ -604,7 +669,11 @@
         var requestedRole = getRequestedShellRole();
 
         // Mark as luxury shell immediately — hides old header/nav/footer via CSS
+        root.classList.add('kiu-shell-loading');
+        root.classList.remove('kiu-shell-ready');
         b.classList.add('lux-unified-shell');
+        b.classList.add('kiu-shell-loading');
+        b.classList.remove('kiu-shell-ready');
         b.classList.remove('role-student', 'role-professor', 'role-ta', 'role-admin', 'role-student_service');
         b.classList.add('role-' + requestedRole);
         b.dataset.shellRole = requestedRole;
@@ -620,10 +689,17 @@
         }
         b.dataset.luxBackgroundAnimation = backgroundAnimationsEnabled ? 'on' : 'off';
 
-        // Sidebar
+        // Sidebar — unified shell on desktop starts collapsed for overlay layout
+        if (typeof window !== 'undefined' && window.innerWidth >= 1181) {
+            collapsed = true;
+            root.classList.add('lux-sidebar-collapsed');
+        }
         if (collapsed) {
             b.classList.add('lux-sidebar-collapsed');
             b.dataset.luxSidebar = 'collapsed';
+        } else {
+            b.classList.remove('lux-sidebar-collapsed');
+            b.dataset.luxSidebar = 'expanded';
         }
 
         // Palette (only if it's a valid preset, not 'custom')
@@ -632,26 +708,24 @@
             b.classList.add('palette-' + savedPalette);
         }
 
-        // ═══════════════════════════════════════════════════════
-        // SAFETY NET: Remove kiu-shell-loading after a timeout.
-        // This guarantees the page becomes visible even if
-        // navigation.js or other deferred scripts fail to load.
-        // The normal path removes it via markPortalShellReady()
-        // in navigation.js, but if that never fires, this
-        // timeout ensures the user isn't stuck on a blank page.
-        // ═══════════════════════════════════════════════════════
+        // Safety net: reveal after a short deadline if deferred scripts fail.
+        // Normal routes call markPortalShellReady() after route content renders.
         var revealPollMs = 50;
-        var revealDeadlineMs = 400;
+        var revealDeadlineMs = 1400;
         var revealElapsedMs = 0;
         function forceRevealPage() {
+            root.classList.add('kiu-shell-ready');
             root.classList.remove('kiu-shell-loading');
             if (document.body) {
+                document.body.classList.add('kiu-shell-ready');
                 document.body.classList.remove('kiu-shell-loading');
             }
         }
         function tryRevealPageEarly() {
             var navRoot = document.getElementById('lux-nav');
-            if (navRoot && navRoot.children && navRoot.children.length > 0) {
+            var body = document.body;
+            var canRevealFromNav = body && body.classList.contains('lux-route-home');
+            if (canRevealFromNav && navRoot && navRoot.children && navRoot.children.length > 0) {
                 forceRevealPage();
                 return;
             }

@@ -31,7 +31,9 @@ describe('timetable route regressions', () => {
         expect(html).toContain('lux-page-bare');
         expect(html).toContain('assets/js/theme-primer.js?v=20260604-styleguard2');
         expect(html).toMatch(/lux-page-bare\.css/);
-        expect(html).toContain('assets/css/index-luxury.css?v=');
+        expect(html).not.toContain('index-luxury.css');
+        expect(html).toContain('lux-shell-nav.css');
+        expect(html).toContain('lux-page-bare.css');
         expect(html).toContain('assets/js/shared/utilities.js?v=');
         expect(html).toContain('assets/js/pages/timetable-runtime.js?v=20260717-softchrome1');
         expect(html).toContain('assets/js/features/navigation.js?v=20260605-ttboot1');
@@ -53,7 +55,7 @@ describe('timetable route regressions', () => {
         expect(html).toContain('class="schedule-week-nav lux-timetable-week-nav lux-card"');
         expect(html).not.toContain('lux-timetable-next-compact');
         expect(html).not.toContain('id="timetable-insight-next"');
-        expect(html).toContain('class="lux-timetable-hero-focus lux-hero-side lux-focus-panel"');
+        expect(html).toContain('class="lux-timetable-hero-focus lux-hero-side"');
         expect(html).toContain('Your next class');
         expect(html).toContain('lux-timetable-focus-subline');
         expect(html).toContain('id="timetable-hero-focus-time"');

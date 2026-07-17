@@ -477,3 +477,45 @@ body.lux-page-bare.lux-light-mode.lux-unified-shell :is(
     color: #111827 !important;
     border-color: rgba(26, 36, 51, 0.14) !important;
 }
+
+
+/* ── BARE STACK DEMOTE (minimal shell, no product hero language) ── */
+body.lux-page-bare.lux-unified-shell :is(
+    .lux-hero-stage,
+    .lms-hero-v2-grid,
+    .lux-timetable-hero-top
+) {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+}
+
+body.lux-page-bare.lux-unified-shell :is(
+    .lux-page-title,
+    .page-hero-title,
+    .lux-focus-panel__title,
+    .lux-timetable-focus-title,
+    .lms-hero-focus .lux-focus-panel__title,
+    [id$="-focus-title"]
+) {
+    font-family: inherit !important;
+    font-size: 1.35rem !important;
+    font-weight: 700 !important;
+    letter-spacing: normal !important;
+}
+
+body.lux-page-bare.lux-unified-shell :is(
+    .lux-status-pill,
+    .lux-pill,
+    .page-hero-badge,
+    .lms-hero-focus-chip,
+    .lux-timetable-focus-time,
+    [id$="-focus-chip"]
+) {
+    background: var(--lux-surface-2, rgba(255, 255, 255, 0.06)) !important;
+    color: var(--lux-text, #f8fafc) !important;
+    border: 1px solid var(--lux-border, rgba(255, 255, 255, 0.12)) !important;
+    box-shadow: none !important;
+    text-transform: none !important;
+    letter-spacing: normal !important;
+}

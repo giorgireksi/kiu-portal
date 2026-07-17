@@ -1,7 +1,5 @@
 /* LMS page logic extracted from the legacy core.js bundle. Active routes now load split files directly. */
-
 // --- LMS LOGIC ---
-
 let currentCourseId = '';
 let currentLmsSectionType = '';
 let lmsBulkGroupContext = { subjectId: '', subjectTitle: '', groups: [] };
@@ -24,7 +22,6 @@ let activeKiuBlueHeartbeatInterval = null;
 let activeKiuBlueDisconnectInterval = null;
 let activeLmsQuizCountdownInterval = null;
 let activeLmsPostSubmitLockInterval = null;
-
 function getSimulatedUserName() {
     const user = typeof getCurrentUser === 'function' ? getCurrentUser() : (window.currentUser || window.authenticatedUser || null);
     if (!user) return 'Unknown User';
@@ -33,7 +30,6 @@ function getSimulatedUserName() {
     }
     return user.nameEn || user.name || user.email || user.id || 'Unknown User';
 }
-
 function normalizeSubjectTitleKey(value) {
     const repair = typeof cleanupEncodingArtifacts === 'function'
         ? cleanupEncodingArtifacts
@@ -48,7 +44,6 @@ function normalizeSubjectTitleKey(value) {
         .replace(/\s+/g, ' ')
         .trim();
 }
-
 function getAllCurriculumSubjects() {
     const profiles = KIU_STATE?.facultyProfiles || window.KIU_EMPTY_STATE?.facultyProfiles || {};
     const subjects = [];
@@ -59,7 +54,6 @@ function getAllCurriculumSubjects() {
         seen.add(key);
         subjects.push(subject);
     };
-
     Object.keys(profiles || {}).forEach((faculty) => {
         const facultySubjects = typeof getActiveCurriculum === 'function'
             ? getActiveCurriculum(faculty)
@@ -69,35 +63,28 @@ function getAllCurriculumSubjects() {
     (Array.isArray(KIU_STATE?.curriculum) ? KIU_STATE.curriculum : []).forEach(addSubject);
     return subjects;
 }
-
 function findCurriculumSubjectByIdOrTitle(subjectId, subjectTitle = '', preferredFaculty = null) {
     const targetKey = canonicalCourseKey(subjectId);
     const titleKey = normalizeSubjectTitleKey(subjectTitle);
     const allSubjects = getAllCurriculumSubjects();
-
     if (targetKey && preferredFaculty && typeof getActiveCurriculum === 'function') {
         const preferredById = (getActiveCurriculum(preferredFaculty) || [])
             .find(subject => canonicalCourseKey(subject?.id) === targetKey);
         if (preferredById) return preferredById;
     }
-
     if (targetKey) {
         const exactById = allSubjects.find(subject => canonicalCourseKey(subject?.id || subject?.courseId || subject?.subjectId) === targetKey);
         if (exactById) return exactById;
     }
-
     if (titleKey && preferredFaculty && typeof getActiveCurriculum === 'function') {
         const preferredByTitle = (getActiveCurriculum(preferredFaculty) || [])
             .find(subject => normalizeSubjectTitleKey(subject?.name || subject?.title) === titleKey);
         if (preferredByTitle) return preferredByTitle;
     }
-
     if (!titleKey) return null;
     return allSubjects.find(subject => normalizeSubjectTitleKey(subject?.name || subject?.title) === titleKey) || null;
 }
-
 const LMS_STUDENT_SEMESTER_STORAGE_KEY = 'kiuLmsStudentSemester';
-
 function normalizeLmsStudentScheduleEntries(scheduleValue) {
     if (Array.isArray(scheduleValue)) return scheduleValue.filter(Boolean);
     if (scheduleValue && typeof scheduleValue === 'object') {
@@ -108,12 +95,10 @@ function normalizeLmsStudentScheduleEntries(scheduleValue) {
     }
     return [];
 }
-
 function isLmsStudentViewer() {
     return typeof getEffectiveUserRole === 'function'
         && getEffectiveUserRole() === USER_ROLES.STUDENT;
 }
-
 function resolveLmsStudentSemesterNumber(student) {
     if (typeof getCurrentStudentSemesterNumber === 'function') {
         return getCurrentStudentSemesterNumber(student);
@@ -124,7 +109,6 @@ function resolveLmsStudentSemesterNumber(student) {
     if (Number.isFinite(activeSemester) && activeSemester > 0) return activeSemester;
     return 1;
 }
-
 function getLmsStudentSelectedSemester() {
     try {
         const stored = parseInt(localStorage.getItem(LMS_STUDENT_SEMESTER_STORAGE_KEY), 10);
@@ -132,7 +116,6 @@ function getLmsStudentSelectedSemester() {
     } catch (error) {}
     return resolveLmsStudentSemesterNumber(typeof getCurrentUser === 'function' ? getCurrentUser() : null);
 }
-
 function setLmsStudentSelectedSemester(semester) {
     const normalized = parseInt(semester, 10);
     if (!Number.isFinite(normalized) || normalized <= 0) return;
@@ -146,7 +129,6 @@ function setLmsStudentSelectedSemester(semester) {
         window.renderLmsSubjectDeck();
     }
 }
-
 function resolveScheduleEntrySemester(entry, preferredFaculty = null) {
     const fromEntry = parseInt(entry?.enrollmentSemester ?? entry?.semester, 10);
     if (Number.isFinite(fromEntry) && fromEntry > 0) return fromEntry;
@@ -164,7 +146,6 @@ function resolveScheduleEntrySemester(entry, preferredFaculty = null) {
     if (Number.isFinite(fromGroup) && fromGroup > 0) return fromGroup;
     return resolveLmsStudentSemesterNumber(typeof getCurrentUser === 'function' ? getCurrentUser() : null);
 }
-
 function getStudentLmsScheduleEntries(semester = null) {
     const schedule = typeof getCurrentStudentSchedule === 'function'
         ? getCurrentStudentSchedule()
@@ -176,7 +157,6 @@ function getStudentLmsScheduleEntries(semester = null) {
     const faculty = typeof getCurrentFaculty === 'function' ? getCurrentFaculty() : '';
     return schedule.filter(entry => resolveScheduleEntrySemester(entry, faculty) === targetSemester);
 }
-
 function getStudentLmsSemesterOptions() {
     const schedule = typeof getCurrentStudentSchedule === 'function'
         ? getCurrentStudentSchedule()
@@ -191,7 +171,6 @@ function getStudentLmsSemesterOptions() {
     if (Number.isFinite(selected) && selected > 0) semesters.add(selected);
     return [...semesters].sort((a, b) => a - b);
 }
-
 function getStudentLmsEnrolledSubjects(semester = null) {
     const entries = getStudentLmsScheduleEntries(semester);
     const faculty = typeof getCurrentFaculty === 'function' ? getCurrentFaculty() : '';
@@ -223,7 +202,6 @@ function getStudentLmsEnrolledSubjects(semester = null) {
     });
     return subjects;
 }
-
 function openLmsStudentEnrolledSubject(card) {
     if (!card) return;
     const courseKey = card.getAttribute('data-course-key') || '';
@@ -240,7 +218,6 @@ function openLmsStudentEnrolledSubject(card) {
     }
     if (typeof openLMSGroupsFromCard === 'function') openLMSGroupsFromCard(card);
 }
-
 const LMS_DEFAULT_WEEKS = Array.from({ length: 14 }, (_, index) => `Week ${index + 1}`);
 const LMS_SESSION_MARKER_TYPES = {
     quiz: { label: 'Quiz', icon: 'fa-pen-to-square', tone: 'warning' },
@@ -254,7 +231,6 @@ const LMS_SESSION_MARKER_TYPES = {
 };
 const LMS_FILE_STORAGE_DB_NAME = 'KIU_LMS_FILE_STORAGE';
 const LMS_FILE_STORAGE_STORE_NAME = 'files';
-
 function splitLmsTopLevel(source, delimiter) {
     const parts = [];
     let current = '';
@@ -294,7 +270,6 @@ function splitLmsTopLevel(source, delimiter) {
     if (current.trim()) parts.push(current.trim());
     return parts.filter(Boolean);
 }
-
 function resolveLmsPropertyPath(pathExpression) {
     const parts = String(pathExpression || '').trim().split('.').filter(Boolean);
     if (!parts.length) return undefined;
@@ -305,7 +280,6 @@ function resolveLmsPropertyPath(pathExpression) {
     }
     return current;
 }
-
 function decodeLmsStringLiteral(value) {
     const raw = String(value || '');
     const quote = raw[0];
@@ -322,7 +296,6 @@ function decodeLmsStringLiteral(value) {
         .replace(/\\"/g, '"')
         .replace(/\\\\/g, '\\');
 }
-
 function resolveLmsDelegatedExpression(expression, event, element) {
     const normalized = String(expression || '').trim();
     if (!normalized) return undefined;
@@ -361,7 +334,6 @@ function resolveLmsDelegatedExpression(expression, event, element) {
     }
     return resolveLmsPropertyPath(normalized);
 }
-
 function executeLmsDelegatedStatement(statement, event, element) {
     const normalized = String(statement || '').trim();
     if (!normalized) return undefined;
@@ -396,7 +368,6 @@ function executeLmsDelegatedStatement(statement, event, element) {
         : [];
     return target.apply(element, args);
 }
-
 function runLmsDelegatedMarkupAction(code, event, element) {
     const normalizedCode = String(code || '').trim();
     if (!normalizedCode) return;
@@ -417,11 +388,9 @@ function runLmsDelegatedMarkupAction(code, event, element) {
         return undefined;
     }
 }
-
 function bindLmsDelegatedMarkupActions() {
     if (typeof document === 'undefined' || window.__lmsDelegatedMarkupActionsBound) return;
     window.__lmsDelegatedMarkupActionsBound = true;
-
     const bindDelegatedEvent = (eventName, attributeName) => {
         document.addEventListener(eventName, (event) => {
             const rawTarget = event.target;
@@ -432,12 +401,10 @@ function bindLmsDelegatedMarkupActions() {
             runLmsDelegatedMarkupAction(code, event, actionTarget);
         });
     };
-
     bindDelegatedEvent('click', 'data-lms-click');
     bindDelegatedEvent('change', 'data-lms-change');
     bindDelegatedEvent('input', 'data-lms-input');
 }
-
 function repairLmsDisplayText(value, fallback = '') {
     const raw = String(value == null ? '' : value).trim();
     if (!raw) return String(fallback || '').trim();
@@ -460,7 +427,6 @@ function repairLmsDisplayText(value, fallback = '') {
     }
     return cleaned;
 }
-
 function buildLmsTimeBadge(dayValue, timeValue) {
     const repairedDay = typeof normalizeScheduleDayLabel === 'function'
         ? normalizeScheduleDayLabel(dayValue || '', '')
@@ -474,7 +440,6 @@ function buildLmsTimeBadge(dayValue, timeValue) {
     if (!repairedTime || repairedDay.includes(repairedTime)) return repairedDay;
     return `${repairedDay} ${repairedTime}`.trim();
 }
-
 function openLMSGroupsFromCard(card) {
     if (!card) return;
     const subjectId = card.getAttribute('data-subject-id') || '';
@@ -482,23 +447,28 @@ function openLMSGroupsFromCard(card) {
     const iconClass = card.getAttribute('data-icon-class') || 'fas fa-book-reader';
     openLMSGroups(subjectId, subjectTitle, iconClass);
 }
-
 function openLMSCourseFromCard(card) {
     if (!card) return;
     const courseKey = card.getAttribute('data-course-key') || '';
     const courseTitle = card.getAttribute('data-course-title') || courseKey;
     openLMSCourse(courseKey, courseTitle);
 }
-
 function isAntiCheatBrowserRuntime() {
     const userAgent = String(window.navigator?.userAgent || '').toLowerCase();
     return userAgent.includes('anticheatbrowser') || Boolean(window.antiCheat);
 }
-
 function canManageLmsGroupContent() {
     return [USER_ROLES.PROFESSOR, USER_ROLES.TA, USER_ROLES.ADMIN].includes(getEffectiveUserRole());
 }
-
+function canPostLmsInteractionAnnouncement() {
+    return canManageLmsGroupContent();
+}
+function isLmsInteractionMessageFromStaff(message) {
+    return Boolean(message?.isProf || message?.isStaff);
+}
+function canReplyToLmsInteractionPost(message) {
+    return Boolean(message && message.id);
+}
 function getLmsRoleLabel(role = getEffectiveUserRole()) {
     const labels = {
         [USER_ROLES.STUDENT]: 'Student',
@@ -509,7 +479,6 @@ function getLmsRoleLabel(role = getEffectiveUserRole()) {
     };
     return labels[role] || 'Student';
 }
-
 function syncLmsCourseContext(title = '', courseKey = '') {
     const context = document.getElementById('lms-course-context');
     if (!context) return;
@@ -525,7 +494,6 @@ function syncLmsCourseContext(title = '', courseKey = '') {
         : '';
     context.innerHTML = [titlePill, nextSessionPill].filter(Boolean).join('');
 }
-
 function syncLmsNextSessionContext(courseKey = '') {
     const resolvedKey = courseKey
         || (typeof window !== 'undefined' ? window.currentCourseId : '')
@@ -535,26 +503,21 @@ function syncLmsNextSessionContext(courseKey = '') {
     const title = titleNode?.innerText || '';
     syncLmsCourseContext(title, resolvedKey);
 }
-
 function getLmsRouteThemeMode() {
     return document.body?.classList.contains('lux-light-mode') ? 'light' : 'dark';
 }
-
 function hasLegacyLmsLayoutStyle(styleText = '') {
     return /(display|grid-template-columns|grid-template-rows|grid-auto-|gap|padding|margin|min-|max-|width|height|flex|justify-content|align-items|position|inset|top|right|bottom|left|overflow|aspect-ratio|white-space|text-align)\s*:/i.test(String(styleText || ''));
 }
-
 function collectLegacyLmsStyleContracts(styleText = '', options = {}) {
     const style = String(styleText || '').trim();
     if (!style) return [];
-
     const contracts = new Set();
     const isPrimaryButton = options.isPrimaryButton === true;
     const isSecondaryButton = options.isSecondaryButton === true;
     const isInputField = options.isInputField === true;
     const isBadge = options.isBadge === true;
     const isHero = options.isHero === true;
-
     if (/(background|background-color)\s*:\s*(white|#ffffff|#f8fafc|#f8fbff|#f4f7f6|var\(--lux-surface\)|var\(--lux-bg-soft\)|rgba\(255,\s*255,\s*255,\s*0\.(?:05|06|08|12)\))/i.test(style)) {
         contracts.add('lms-legacy-surface-soft');
     }
@@ -576,39 +539,22 @@ function collectLegacyLmsStyleContracts(styleText = '', options = {}) {
     if (/grid-template-columns\s*:\s*(repeat\((?:2|3|4)|minmax\(220px,\s*260px\)|minmax\(0,\s*1fr\)\s*minmax\(0,\s*1fr\)\s*minmax\(120px,\s*160px\))/i.test(style)) {
         contracts.add('lms-legacy-grid-collapse');
     }
-    if (isBadge || /border-radius\s*:\s*999px/i.test(style)) {
-        contracts.add('lms-legacy-pill');
-    }
-    if (isHero) {
-        contracts.add('lms-legacy-hero-surface');
-    }
-    if (isPrimaryButton || isSecondaryButton) {
-        contracts.add('lms-legacy-button-reset');
-    }
-    if (isInputField) {
-        contracts.add('lms-legacy-field-reset');
-    }
-
     return [...contracts];
 }
-
 function sanitizeLegacyLmsMarkup(markup = '') {
     if (typeof document === 'undefined') return String(markup || '');
-
     const host = document.createElement('div');
     host.innerHTML = String(markup || '');
-
     host.querySelectorAll('*').forEach(node => {
         const tag = String(node.tagName || '').toUpperCase();
         const classes = Array.from(node.classList || []);
         const style = node.getAttribute('style') || '';
         const type = String(node.getAttribute('type') || '').toLowerCase();
-        const isPrimaryButton = classes.includes('kiu-btn-blue') || classes.includes('lux-primary-btn');
-        const isSecondaryButton = classes.includes('kiu-btn-outline') || classes.includes('lux-secondary-btn') || classes.includes('portal-msg-mini-badge');
+        const isPrimaryButton = classes.includes('lux-primary-btn');
+        const isSecondaryButton = classes.includes('lux-secondary-btn') || classes.includes('portal-msg-mini-badge');
         const isInputField = ['INPUT', 'TEXTAREA', 'SELECT'].includes(tag) && !['checkbox', 'radio'].includes(type);
         const isBadge = tag === 'SPAN' && /border-radius\s*:\s*999px/i.test(style);
         const isHero = /linear-gradient\(135deg,\s*(rgba\(15,\s*23,\s*42|var\(--kiu-navy\))/i.test(style);
-
         if (tag === 'INPUT' && !['checkbox', 'radio'].includes(type)) {
             node.classList.add('lms-route-input');
         } else if (tag === 'TEXTAREA') {
@@ -616,11 +562,9 @@ function sanitizeLegacyLmsMarkup(markup = '') {
         } else if (tag === 'SELECT') {
             node.classList.add('lms-route-select');
         }
-
         if ((classes.includes('accordion-item') || classes.includes('course-card') || classes.includes('surface-card')) && !node.classList.contains('lms-route-card')) {
             node.classList.add('lms-route-card');
         }
-
         if (style) {
             collectLegacyLmsStyleContracts(style, {
                 isPrimaryButton,
@@ -629,41 +573,32 @@ function sanitizeLegacyLmsMarkup(markup = '') {
                 isBadge,
                 isHero
             }).forEach((contract) => node.classList.add(contract));
-
             const canStripPresentationOnlyStyle = !hasLegacyLmsLayoutStyle(style);
             if ((canStripPresentationOnlyStyle && !isBadge && !isHero) || isPrimaryButton || isSecondaryButton || isInputField) {
                 node.removeAttribute('style');
             }
         }
     });
-
     return host.innerHTML;
 }
 function upgradeLmsLegacyMarkup(markup = '') {
+    if (typeof document !== 'undefined' && document.body?.classList?.contains('lux-page-bare')) {
+        return String(markup || '');
+    }
     const themeMode = getLmsRouteThemeMode();
     const isLight = themeMode === 'light';
-    const blurChain = 'backdrop-filter:blur(var(--lux-transparency-blur,24px)) saturate(var(--lux-transparency-saturate,145%));-webkit-backdrop-filter:blur(var(--lux-transparency-blur,24px)) saturate(var(--lux-transparency-saturate,145%))';
-    const surface = isLight
-        ? `radial-gradient(circle at top right, rgba(var(--lux-accent-rgb), calc(0.06 + var(--lux-card-glow-alpha, 0.06))), transparent 34%), linear-gradient(180deg, rgba(255,255,255, calc(0.08 + var(--lux-panel-alpha, 0.74) * 0.48)), rgba(245,239,229, calc(0.03 + var(--lux-glass-alpha, 0.06) * 0.34))); ${blurChain}`
-        : `radial-gradient(circle at top right, rgba(var(--lux-accent-rgb), calc(0.05 + var(--lux-card-glow-alpha, 0.06))), transparent 34%), linear-gradient(180deg, rgba(14,20,33, calc(var(--lux-panel-alpha, 0.74) * 0.94)), rgba(8,12,21, calc(var(--lux-panel-alpha, 0.74) * 0.72))); ${blurChain}`;
-    const surfaceSoft = isLight
-        ? `linear-gradient(180deg, rgba(255,255,255, calc(0.06 + var(--lux-panel-alpha, 0.74) * 0.44)), rgba(248,242,233, calc(0.04 + var(--lux-glass-alpha, 0.06) * 0.26))); ${blurChain}`
-        : `linear-gradient(180deg, rgba(18,25,39, calc(0.18 + var(--lux-panel-alpha, 0.74) * 0.56)), rgba(10,15,25, calc(0.12 + var(--lux-glass-alpha, 0.26) * 0.58))); ${blurChain}`;
-    const surfaceMuted = isLight
-        ? `linear-gradient(180deg, rgba(255,255,255, calc(0.05 + var(--lux-panel-alpha, 0.74) * 0.36)), rgba(244,238,229, calc(0.04 + var(--lux-glass-alpha, 0.06) * 0.22))); ${blurChain}`
-        : `linear-gradient(180deg, rgba(21,29,45, calc(0.12 + var(--lux-panel-alpha, 0.74) * 0.46)), rgba(12,18,29, calc(0.10 + var(--lux-glass-alpha, 0.26) * 0.44))); ${blurChain}`;
-    const surfaceTertiary = isLight
-        ? `linear-gradient(180deg, rgba(248,243,234, calc(0.14 + var(--lux-panel-alpha, 0.74) * 0.34)), rgba(255,255,255, calc(0.04 + var(--lux-glass-alpha, 0.06) * 0.24))); ${blurChain}`
-        : `linear-gradient(180deg, rgba(16,23,36, calc(0.16 + var(--lux-panel-alpha, 0.74) * 0.42)), rgba(11,16,26, calc(0.12 + var(--lux-glass-alpha, 0.26) * 0.46))); ${blurChain}`;
-    const border = 'var(--lux-border)';
+    const blurChain = 'backdrop-filter:var(--lms-fade-blur);-webkit-backdrop-filter:var(--lms-fade-blur)';
+    const surface = `var(--lms-fade-surface); ${blurChain}`;
+    const surfaceSoft = `var(--lms-fade-surface-soft); ${blurChain}`;
+    const surfaceMuted = `var(--lms-fade-surface-soft); ${blurChain}`;
+    const surfaceTertiary = `var(--lms-fade-surface-soft); ${blurChain}`;
+    const border = 'var(--lms-fade-border-soft)';
     const text = 'var(--lux-text)';
     const muted = 'var(--lux-text-muted)';
     const accentGradient = isLight
         ? `linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(0.18 + var(--lux-card-glow-alpha, 0.06))), rgba(255,248,239, calc(0.18 + var(--lux-glass-alpha, 0.06)))); ${blurChain}`
         : `linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(0.18 + var(--lux-card-glow-alpha, 0.06))), rgba(var(--lux-accent-2-rgb), calc(0.12 + var(--lux-glass-alpha, 0.26)))); ${blurChain}`;
-    const heroSurface = isLight
-        ? `linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(0.16 + var(--lux-card-glow-alpha, 0.06))), rgba(255, 249, 241, calc(0.26 + var(--lux-glass-alpha, 0.06)))); ${blurChain}`
-        : `linear-gradient(135deg, rgba(15,23,42, calc(0.84 + var(--lux-glass-alpha, 0.04))), rgba(var(--lux-accent-rgb), calc(0.30 + var(--lux-card-glow-alpha, 0.06)))); ${blurChain}`;
+    const heroSurface = `var(--lms-fade-surface); ${blurChain}`;
     const whiteText = isLight ? `color:${text}` : 'color:#ffffff';
     const whiteTextSoft = isLight ? `color:${muted}` : 'color:#ffffff';
     const replacements = [
@@ -723,7 +658,6 @@ function upgradeLmsLegacyMarkup(markup = '') {
         ['background:rgba(255,255,255,0.02)', `background:${surfaceTertiary}`]
     ];
     let output = replacements.reduce((nextOutput, [search, replacement]) => nextOutput.split(search).join(replacement), String(markup || ''));
-
     output = output
         .replace(/background:\s*(#ffffff|white)\b/gi, `background:${surface}`)
         .replace(/background:\s*#f8fbff\b/gi, `background:${surfaceSoft}`)
@@ -742,31 +676,70 @@ function upgradeLmsLegacyMarkup(markup = '') {
         .replace(/border-bottom:\s*1px solid rgba\(148,\s*163,\s*184,\s*0\.18\)/gi, `border-bottom:1px solid ${border}`)
         .replace(/box-shadow:\s*0 2px 4px rgba\(0,\s*0,\s*0,\s*0\.05\)/gi, 'box-shadow:0 16px 32px rgba(0,0,0,0.18)')
         .replace(/box-shadow:\s*0 10px 24px rgba\(15,\s*23,\s*42,\s*0\.04\)/gi, 'box-shadow:0 14px 28px rgba(0,0,0,0.16)');
-
         output = sanitizeLegacyLmsMarkup(output);
-
 return output.includes('class="lms-theme-sync"') ? output : `<div class="lms-theme-sync">${output}</div>`;
 }
-
+function renderLmsGlassDialogHead({
+    title = '',
+    icon = 'fa-layer-group',
+    subtitle = '',
+    headExtra = '',
+    closeLabel = 'Close',
+    closeAttr = 'data-lms-click="closeLmsQuizAccessDialog()"'
+} = {}) {
+    const subtitleHtml = subtitle
+        ? `<span class="social-neo-dialog-subtitle">${subtitle}</span>`
+        : '';
+    return `
+        <div class="social-neo-section-head social-neo-dialog-head">
+            <div class="social-neo-dialog-heading">
+                <strong class="social-neo-dialog-title"><i class="fas ${icon}" aria-hidden="true"></i> ${escapeHtml(title)}</strong>
+                ${subtitleHtml}
+            </div>
+            ${headExtra}
+            <button type="button" class="social-neo-btn social-neo-btn-ghost social-neo-dialog-close-btn" aria-label="${escapeHtml(closeLabel)}" ${closeAttr}><i class="fas fa-times"></i></button>
+        </div>
+    `;
+}
+function renderLmsGlassDialogCard({
+    hookClass = '',
+    bodyClass = '',
+    headHtml = '',
+    bodyHtml = '',
+    actionsHtml = '',
+    title,
+    icon,
+    subtitle,
+    headExtra = '',
+    closeLabel,
+    closeAttr
+} = {}) {
+    const head = headHtml || renderLmsGlassDialogHead({ title, icon, subtitle, headExtra, closeLabel, closeAttr });
+    return `
+        <div class="social-neo-dialog-card social-neo-dialog-card--form social-neo-dialog-card--lms-create ${hookClass}" role="dialog" aria-modal="true" data-lux-transparency-exempt="1">
+            ${head}
+            <div class="social-neo-dialog-body ${bodyClass}">${bodyHtml}</div>
+            ${actionsHtml ? `<div class="social-neo-form-actions social-neo-dialog-actions">${actionsHtml}</div>` : ''}
+        </div>
+    `;
+}
+window.renderLmsGlassDialogHead = renderLmsGlassDialogHead;
+window.renderLmsGlassDialogCard = renderLmsGlassDialogCard;
 function toDomToken(value) {
     return String(value || '').replace(/[^a-zA-Z0-9_-]+/g, '_');
 }
-
 function normalizeLmsSectionType(value) {
     const normalized = String(value || '').trim().toLowerCase();
     return LMS_SECTION_TYPES.includes(normalized) ? normalized : '';
 }
-
 function getDefaultLmsSectionTypeForRole(role = getEffectiveUserRole()) {
     return role === USER_ROLES.TA ? 'workshop' : 'lecture';
 }
-
 function getCurrentLmsSectionType() {
     currentLmsSectionType = normalizeLmsSectionType(currentLmsSectionType)
         || getDefaultLmsSectionTypeForRole();
     return currentLmsSectionType;
 }
-
 function getLmsSectionMeta(sectionType = getCurrentLmsSectionType()) {
     const normalized = normalizeLmsSectionType(sectionType) || 'lecture';
     if (normalized === 'workshop') {
@@ -786,12 +759,10 @@ function getLmsSectionMeta(sectionType = getCurrentLmsSectionType()) {
         copy: 'Professor-led lessons, core materials, assessments, and lecture recordings.'
     };
 }
-
 function getLmsSectionSuffix(sectionType) {
     const normalized = normalizeLmsSectionType(sectionType);
     return normalized ? `${LMS_SECTION_SUFFIX_PREFIX}${normalized}` : '';
 }
-
 function stripLmsSectionSuffix(groupId) {
     const rawGroupId = String(groupId || '').trim();
     const markerIndex = rawGroupId.lastIndexOf(LMS_SECTION_SUFFIX_PREFIX);
@@ -805,7 +776,6 @@ function stripLmsSectionSuffix(groupId) {
         sectionType
     };
 }
-
 function parseLmsCourseKey(courseKey) {
     const raw = String(courseKey || '').trim();
     if (!raw.includes('::')) {
@@ -820,8 +790,46 @@ function parseLmsCourseKey(courseKey) {
         sectionType: sectionParts.sectionType
     };
 }
+const LMS_PERSONAL_BOARD_MARKER = '__personal__';
+
+function isLmsPersonalBoardKey(resourceKey = '') {
+    return String(resourceKey || '').includes(LMS_PERSONAL_BOARD_MARKER);
+}
+
+function getLmsPersonalBoardOwnerId(resourceKey = '') {
+    const raw = String(resourceKey || '').trim();
+    const markerIndex = raw.indexOf(LMS_PERSONAL_BOARD_MARKER);
+    if (markerIndex < 0) return '';
+    return raw.slice(markerIndex + LMS_PERSONAL_BOARD_MARKER.length).trim();
+}
+
+function isLmsPersonalBoardOwner(resourceKey = '') {
+    const ownerId = getLmsPersonalBoardOwnerId(resourceKey);
+    const userId = String(typeof getCurrentUserId === 'function' ? getCurrentUserId() || '' : '').trim();
+    return Boolean(ownerId && userId && ownerId === userId);
+}
+
+function buildLmsPersonalBoardKey(courseKey = currentCourseId, userId = '') {
+    const scopeKey = typeof getLmsSectionResourceKey === 'function'
+        ? getLmsSectionResourceKey(courseKey)
+        : String(courseKey || '').trim();
+    const ownerId = String(userId || (typeof getCurrentUserId === 'function' ? getCurrentUserId() || '' : '')).trim();
+    if (!scopeKey || !ownerId) return '';
+    return `${scopeKey}${LMS_PERSONAL_BOARD_MARKER}${ownerId}`;
+}
+
+function getLmsPersonalDashboardCourseId(courseKey = currentCourseId) {
+    if (typeof getLmsSubjectIdFromResourceKey === 'function') {
+        const subjectId = getLmsSubjectIdFromResourceKey(courseKey);
+        if (subjectId) return String(subjectId).trim();
+    }
+    const parsed = parseLmsCourseKey(courseKey);
+    return String(parsed.courseId || courseKey || '').trim();
+}
 
 function resolveCanonicalLmsResourceKey(resourceKey) {
+    const raw = String(resourceKey || '').trim();
+    if (isLmsPersonalBoardKey(raw)) return raw;
     const parsed = parseLmsCourseKey(resourceKey);
     if (!parsed.courseId || !parsed.groupId) return parsed.resourceKey || String(resourceKey || '');
     const targetCourseKey = canonicalCourseKey(parsed.courseId);
@@ -838,7 +846,8 @@ function resolveCanonicalLmsResourceKey(resourceKey) {
         ...(Object.keys(KIU_STATE.groupConceptRatings || {})),
         ...(Object.keys(KIU_STATE.groupWeekConfigs || {})),
         ...(Object.keys(KIU_STATE.lmsClassSessions || {})),
-        ...(Object.keys(KIU_STATE.lmsLiveQuizzes || {}))
+        ...(Object.keys(KIU_STATE.lmsLiveQuizzes || {})),
+        ...(Object.keys(KIU_STATE.lmsWhiteboards || {}))
     ]);
     for (const candidate of candidates) {
         const p = parseLmsCourseKey(candidate);
@@ -856,28 +865,36 @@ function resolveCanonicalLmsResourceKey(resourceKey) {
     const resolvedGroupId = availableGroups.find(group => canonicalCourseKey(group?.id) === targetGroupKey)?.id || parsed.groupId;
     return `${resolvedCourseId}::${resolvedGroupId}${getLmsSectionSuffix(targetSectionType)}`;
 }
-
 function joinLmsMeta(parts = []) {
     return parts
         .filter(part => part !== null && part !== undefined && String(part).trim())
         .map(part => escapeHtml(String(part)))
         .join('  -  ');
 }
-
 function getLmsSectionResourceKey(courseKey = currentCourseId, sectionType = getCurrentLmsSectionType()) {
     const parsed = parseLmsCourseKey(courseKey);
     if (!parsed.courseId || !parsed.groupId) return parsed.resourceKey || String(courseKey || '');
     return resolveCanonicalLmsResourceKey(`${parsed.courseId}::${parsed.groupId}${getLmsSectionSuffix(sectionType)}`);
 }
-
 function isLmsSectionScopedTab(tab) {
-    return ['calls', 'workspace', 'materials', 'concepts', 'live-quiz', 'quiz', 'monitoring', 'attendance'].includes(String(tab || ''));
+    return ['calls', 'workspace', 'materials', 'concepts', 'live-quiz', 'quiz', 'monitoring', 'attendance', 'whiteboard'].includes(String(tab || ''));
 }
-
+function getLmsQuizGroupResourceKey(courseKey = currentCourseId) {
+    const parsed = parseLmsCourseKey(resolveCanonicalLmsResourceKey(courseKey));
+    if (!parsed.courseId || !parsed.groupId) return parsed.resourceKey || String(courseKey || '');
+    return resolveCanonicalLmsResourceKey(`${parsed.courseId}::${parsed.groupId}`);
+}
+function getLmsSubjectIdFromResourceKey(resourceKey) {
+    const parsed = parseLmsCourseKey(getLmsQuizGroupResourceKey(resourceKey));
+    return parsed.courseId || '';
+}
 function getLmsTabCourseKey(tab) {
+    const normalizedTab = String(tab || '');
+    if (normalizedTab === 'quiz' || normalizedTab === 'monitoring') {
+        return getLmsQuizGroupResourceKey(currentCourseId);
+    }
     return isLmsSectionScopedTab(tab) ? getLmsSectionResourceKey(currentCourseId) : currentCourseId;
 }
-
 function syncLmsSectionSwitchPresentation() {
     const switchEl = document.getElementById('lms-section-switch');
     if (!switchEl) return;
@@ -896,17 +913,16 @@ function syncLmsSectionSwitchPresentation() {
         button.title = getLmsSectionMeta(type).copy;
     });
 }
-
 function setLmsActiveSection(sectionType) {
     const normalized = normalizeLmsSectionType(sectionType);
     if (!normalized) return;
     if (currentLmsSectionType === normalized) return;
     currentLmsSectionType = normalized;
     syncLmsSectionSwitchPresentation();
+    if (typeof handleLmsPersonalDashboardSectionSwitch === 'function') handleLmsPersonalDashboardSectionSwitch();
     const activeTab = document.querySelector('#page-lms-inner [data-lms-tab].is-active')?.id?.replace(/^tab-/, '') || 'interaction';
     switchLMSTab(activeTab, { force: true });
 }
-
 function renderLmsRouteEmptyState(title, copy, icon = 'fa-inbox') {
     return `
         <div class="lms-route-empty">
@@ -916,7 +932,17 @@ function renderLmsRouteEmptyState(title, copy, icon = 'fa-inbox') {
         </div>
     `;
 }
-
+function renderLmsWeekPanelEmptyState(title, copy, icon = 'fa-inbox') {
+    return `
+        <div class="lms-week-accordion-empty">
+            <div class="lms-route-empty lms-route-empty--week-panel">
+                <div class="lms-route-empty-icon"><i class="fas ${escapeHtml(icon)}"></i></div>
+                <div class="lms-route-empty-title">${escapeHtml(title)}</div>
+                <div class="lms-route-empty-copy">${escapeHtml(copy)}</div>
+            </div>
+        </div>
+    `;
+}
 function renderLmsRouteStats(stats = []) {
     if (!Array.isArray(stats) || !stats.length) return '';
     return `
@@ -931,7 +957,6 @@ function renderLmsRouteStats(stats = []) {
         </div>
     `;
 }
-
 function renderLmsRouteKv(label, value) {
     return `
         <div class="lms-route-kv">
@@ -940,24 +965,25 @@ function renderLmsRouteKv(label, value) {
         </div>
     `;
 }
-
 function renderLmsRouteWeekAccordion(title, subtitle, body, isOpen = false) {
     return `
-        <div class="accordion-item">
-            <div class="accordion-header" data-lms-click="toggleAccordion(this)">
-                <div class="lms-route-card-stack lms-route-card-stack-tight">
-                    <div class="lms-route-card-title lms-route-card-title-16">${escapeHtml(title || 'No Week / General')}</div>
-                    ${subtitle ? `<div class="lms-route-meta lms-route-meta-12">${escapeHtml(subtitle)}</div>` : ''}
+        <section class="lms-route-panel lms-route-panel-compact lms-week-accordion-panel${isOpen ? '' : ' is-collapsed'}">
+            <button type="button" class="lms-week-accordion-head" data-lms-click="toggleAccordion(this)" aria-expanded="${isOpen ? 'true' : 'false'}">
+                <div class="lms-week-accordion-head-main">
+                    <div class="lms-week-accordion-icon" aria-hidden="true"><i class="fas fa-calendar-week"></i></div>
+                    <div class="lms-route-card-stack lms-route-card-stack-tight">
+                        <div class="lms-route-card-title lms-route-card-title-16">${escapeHtml(title || 'No Week / General')}</div>
+                        ${subtitle ? `<div class="lms-route-meta lms-route-meta-12">${escapeHtml(subtitle)}</div>` : ''}
+                    </div>
                 </div>
-                <i class="fas fa-chevron-down"></i>
-            </div>
-            <div class="accordion-content ${isOpen ? 'active' : ''}"${isOpen ? '' : ' hidden'}>
+                <i class="fas fa-chevron-${isOpen ? 'up' : 'down'}" aria-hidden="true"></i>
+            </button>
+            <div class="lms-week-accordion-body"${isOpen ? '' : ' hidden'}>
                 ${body}
             </div>
-        </div>
+        </section>
     `;
 }
-
 function ensureLmsGradebookShell() {
     const wrapper = document.getElementById('lms-gradebook-wrapper');
     if (!wrapper) return null;
@@ -987,7 +1013,7 @@ function ensureLmsGradebookShell() {
                         <div id="dynamic-gb-title" class="lms-route-title lms-route-title-26 lms-route-copy-mt-8">Open a roster to begin</div>
                         <div class="lms-route-copy lms-route-copy-mt-6">Quiz scores, assessments, and combined grades for this group</div>
                     </div>
-                    <button type="button" class="kiu-btn-outline lms-route-btn-compact" data-lms-click="closeGradebookSpreadsheet()">
+                    <button type="button" class="lux-secondary-btn lms-route-btn-compact" data-lms-click="closeGradebookSpreadsheet()">
                         <i class="fas fa-arrow-left"></i> Back
                     </button>
                 </div>
@@ -1006,19 +1032,17 @@ function ensureLmsGradebookShell() {
     wrapper.dataset.shellReady = '1';
     return wrapper;
 }
-
 function normalizeLmsDraftStorageKey(kind, key) {
     if (['material', 'assignment', 'concept'].includes(String(kind || '').toLowerCase())) {
         return resolveCanonicalLmsResourceKey(key);
     }
     return String(key || '');
 }
-
 function resolveActiveLmsQuizContext(courseKey = currentLmsQuizCourseKey || currentCourseId, faculty = getCurrentFaculty()) {
     const rawKey = String(courseKey || '').trim();
     if (!rawKey) return null;
     const normalizedFaculty = normalizeFacultyCode(faculty, 'ECON');
-    const resourceKey = resolveCanonicalLmsResourceKey(rawKey);
+    const resourceKey = getLmsQuizGroupResourceKey(resolveCanonicalLmsResourceKey(rawKey));
     const parsed = parseLmsCourseKey(resourceKey);
     if (!parsed.courseId || !parsed.groupId) return null;
     const subject = findCurriculumSubjectByIdOrTitle(parsed.courseId, '', normalizedFaculty)
@@ -1038,7 +1062,6 @@ function resolveActiveLmsQuizContext(courseKey = currentLmsQuizCourseKey || curr
         weeks: ensureLmsWeeksForKey(resourceKey)
     };
 }
-
 function ensureLmsStores() {
     if (!KIU_STATE.groupAssignments || typeof KIU_STATE.groupAssignments !== 'object') KIU_STATE.groupAssignments = {};
     if (!KIU_STATE.groupMaterials || typeof KIU_STATE.groupMaterials !== 'object') KIU_STATE.groupMaterials = {};
@@ -1049,14 +1072,16 @@ function ensureLmsStores() {
     if (!KIU_STATE.groupQuizzes || typeof KIU_STATE.groupQuizzes !== 'object') KIU_STATE.groupQuizzes = {};
     if (!KIU_STATE.groupQuizSubmissions || typeof KIU_STATE.groupQuizSubmissions !== 'object') KIU_STATE.groupQuizSubmissions = {};
     if (!KIU_STATE.lmsQuizBuilder || typeof KIU_STATE.lmsQuizBuilder !== 'object') KIU_STATE.lmsQuizBuilder = {};
+    if (!KIU_STATE.lmsSubjectQuizBank || typeof KIU_STATE.lmsSubjectQuizBank !== 'object') KIU_STATE.lmsSubjectQuizBank = {};
     if (!KIU_STATE.lmsClassSessions || typeof KIU_STATE.lmsClassSessions !== 'object') KIU_STATE.lmsClassSessions = {};
+    if (!KIU_STATE._lmsQuizMigrationRunning) {
+        migrateLmsQuizSectionWorkspaces();
+    }
     if (!KIU_STATE.lmsSessionMarkers || typeof KIU_STATE.lmsSessionMarkers !== 'object') KIU_STATE.lmsSessionMarkers = {};
     if (!KIU_STATE.lmsLiveQuizzes || typeof KIU_STATE.lmsLiveQuizzes !== 'object') KIU_STATE.lmsLiveQuizzes = {};
-    if (!KIU_STATE.lmsInteractionModeration || typeof KIU_STATE.lmsInteractionModeration !== 'object') KIU_STATE.lmsInteractionModeration = {};
     if (!KIU_STATE.assignments || typeof KIU_STATE.assignments !== 'object') KIU_STATE.assignments = {};
     if (!KIU_STATE.submissions || typeof KIU_STATE.submissions !== 'object') KIU_STATE.submissions = {};
 }
-
 function normalizeLmsQuizStoredRecord(quiz = {}) {
     const normalizedStatus = ['draft', 'published', 'closed'].includes(String(quiz?.status || '').trim().toLowerCase())
         ? String(quiz.status).trim().toLowerCase()
@@ -1100,7 +1125,6 @@ function normalizeLmsQuizStoredRecord(quiz = {}) {
         attendanceGateEnabled: quiz.attendanceGateEnabled !== false
     };
 }
-
 function normalizeLmsQuizQuestion(question = {}, options = {}) {
     const questionType = String(question?.type || 'mcq') === 'written' ? 'written' : 'mcq';
     const optionCount = questionType === 'written'
@@ -1122,22 +1146,18 @@ function normalizeLmsQuizQuestion(question = {}, options = {}) {
         expectedAnswer: String(question?.expectedAnswer || '')
     };
 }
-
 function normalizeLmsQuizQuestionList(questions = [], options = {}) {
     return Array.isArray(questions) ? questions.map(question => normalizeLmsQuizQuestion(question, options)) : [];
 }
-
 function cloneLmsQuizQuestionForVariant(question = {}) {
     return normalizeLmsQuizQuestion({
         ...JSON.parse(JSON.stringify(question || {})),
         sourceQuestionId: question?.sourceQuestionId || question?.id || null
     }, { variantClone: true });
 }
-
 function getDefaultLmsQuizVariantLabel(index = 0) {
     return `Variant ${String.fromCharCode(65 + Math.max(0, Number(index || 0)))}`;
 }
-
 function normalizeLmsQuizVariantRecord(variant = {}, index = 0) {
     return {
         id: String(variant?.id || makeAdminExamEntityId('lms-variant')),
@@ -1147,11 +1167,9 @@ function normalizeLmsQuizVariantRecord(variant = {}, index = 0) {
         questions: normalizeLmsQuizQuestionList(variant?.questions, { variantClone: true })
     };
 }
-
 function normalizeLmsQuizVariantList(variants = []) {
     return Array.isArray(variants) ? variants.map((variant, index) => normalizeLmsQuizVariantRecord(variant, index)) : [];
 }
-
 function normalizeLmsQuizStudentVariantMap(studentVariantMap = {}, variants = []) {
     const allowedVariantIds = new Set((variants || []).map(variant => String(variant.id)));
     if (!studentVariantMap || typeof studentVariantMap !== 'object') return {};
@@ -1163,7 +1181,6 @@ function normalizeLmsQuizStudentVariantMap(studentVariantMap = {}, variants = []
         return accumulator;
     }, {});
 }
-
 function shuffleLmsQuizItems(items = []) {
     const copy = [...items];
     for (let index = copy.length - 1; index > 0; index -= 1) {
@@ -1172,7 +1189,6 @@ function shuffleLmsQuizItems(items = []) {
     }
     return copy;
 }
-
 function calculateLmsQuizVariantQuestionMix(baseQuestions = [], questionsPerVariant = 1) {
     const safeQuestionsPerVariant = Math.max(1, Number(questionsPerVariant || 1));
     const writtenCount = baseQuestions.filter(question => String(question?.type || 'mcq') === 'written').length;
@@ -1196,7 +1212,6 @@ function calculateLmsQuizVariantQuestionMix(baseQuestions = [], questionsPerVari
     }
     return { mcq: desiredMcq, written: desiredWritten };
 }
-
 function pickLmsQuizVariantQuestionsFromPool(pool = [], count = 0, usedSourceIds = new Set()) {
     if (!count) return [];
     const shuffled = shuffleLmsQuizItems(pool);
@@ -1212,7 +1227,6 @@ function pickLmsQuizVariantQuestionsFromPool(pool = [], count = 0, usedSourceIds
     }
     return selection.slice(0, count);
 }
-
 function buildLmsQuizVariantQuestionSet(baseQuestions = [], questionsPerVariant = 1, variantCount = 1) {
     const safeBaseQuestions = normalizeLmsQuizQuestionList(baseQuestions);
     const safeQuestionsPerVariant = Math.max(1, parseInt(questionsPerVariant, 10) || 1);
@@ -1223,14 +1237,12 @@ function buildLmsQuizVariantQuestionSet(baseQuestions = [], questionsPerVariant 
     const usedSourceIds = new Set();
     const variants = [];
     let overlapFallbackUsed = false;
-
     for (let index = 0; index < safeVariantCount; index += 1) {
         const desiredWritten = Math.min(mix.written, safeQuestionsPerVariant);
         const desiredMcq = Math.max(0, safeQuestionsPerVariant - desiredWritten);
         const writtenSelection = pickLmsQuizVariantQuestionsFromPool(writtenPool, desiredWritten, usedSourceIds);
         const mcqSelection = pickLmsQuizVariantQuestionsFromPool(mcqPool, desiredMcq, usedSourceIds);
         const selected = [...writtenSelection, ...mcqSelection];
-
         if (selected.length < safeQuestionsPerVariant) {
             overlapFallbackUsed = true;
             const fallbackPool = shuffleLmsQuizItems(safeBaseQuestions);
@@ -1240,7 +1252,6 @@ function buildLmsQuizVariantQuestionSet(baseQuestions = [], questionsPerVariant 
                 selected.push(question);
             });
         }
-
         selected.forEach(question => usedSourceIds.add(String(question?.sourceQuestionId || question?.id || '')));
         variants.push(normalizeLmsQuizVariantRecord({
             id: makeAdminExamEntityId('lms-variant'),
@@ -1250,27 +1261,11 @@ function buildLmsQuizVariantQuestionSet(baseQuestions = [], questionsPerVariant 
             questions: shuffleLmsQuizItems(selected).map(cloneLmsQuizQuestionForVariant)
         }, index));
     }
-
     return {
         variants,
         overlapFallbackUsed
     };
 }
-
-function buildLmsQuizStudentVariantMap(quiz = {}, allowedStudentIds = []) {
-    const variants = normalizeLmsQuizVariantList(quiz?.variants);
-    const studentIds = Array.isArray(allowedStudentIds) ? allowedStudentIds.map(id => String(id)) : [];
-    if (!variants.length || !studentIds.length) return {};
-    const balancedVariants = shuffleLmsQuizItems(variants);
-    return studentIds.reduce((accumulator, studentId, index) => {
-        const assigned = balancedVariants[index % balancedVariants.length];
-        if (assigned?.id) {
-            accumulator[String(studentId)] = String(assigned.id);
-        }
-        return accumulator;
-    }, {});
-}
-
 function reconcileLmsQuizStudentVariantMap(quiz = {}, allowedStudentIds = []) {
     const variants = normalizeLmsQuizVariantList(quiz?.variants);
     const validVariantIds = new Set(variants.map(variant => String(variant.id)));
@@ -1282,7 +1277,6 @@ function reconcileLmsQuizStudentVariantMap(quiz = {}, allowedStudentIds = []) {
         return accumulator;
     }, {});
     const nextMap = {};
-
     selectedIds.forEach(studentId => {
         const existingVariantId = existingMap[String(studentId)];
         if (existingVariantId && validVariantIds.has(existingVariantId)) {
@@ -1290,7 +1284,6 @@ function reconcileLmsQuizStudentVariantMap(quiz = {}, allowedStudentIds = []) {
             variantCounts[existingVariantId] = (variantCounts[existingVariantId] || 0) + 1;
         }
     });
-
     selectedIds.forEach(studentId => {
         const normalizedStudentId = String(studentId);
         if (nextMap[normalizedStudentId]) return;
@@ -1304,16 +1297,13 @@ function reconcileLmsQuizStudentVariantMap(quiz = {}, allowedStudentIds = []) {
         nextMap[normalizedStudentId] = String(nextVariant.id);
         variantCounts[String(nextVariant.id)] = (variantCounts[String(nextVariant.id)] || 0) + 1;
     });
-
     return nextMap;
 }
-
 function getLmsQuizVariantById(quiz = {}, variantId = '') {
     const normalizedId = String(variantId || '').trim();
     if (!normalizedId) return null;
     return normalizeLmsQuizVariantList(quiz?.variants).find(variant => String(variant.id) === normalizedId) || null;
 }
-
 function getLmsQuizAssignedVariant(quiz = {}, studentId = '') {
     if (quiz?.variantEnabled !== true) return null;
     const normalizedStudentId = String(studentId || '').trim();
@@ -1321,7 +1311,6 @@ function getLmsQuizAssignedVariant(quiz = {}, studentId = '') {
     const variantId = quiz?.studentVariantMap?.[normalizedStudentId];
     return getLmsQuizVariantById(quiz, variantId);
 }
-
 function getLmsQuizQuestionsForStudent(quiz = {}, studentId = '', submission = null) {
     if (submission?.variantId) {
         const variantFromSubmission = getLmsQuizVariantById(quiz, submission.variantId);
@@ -1331,16 +1320,13 @@ function getLmsQuizQuestionsForStudent(quiz = {}, studentId = '', submission = n
     if (assignedVariant?.questions?.length) return assignedVariant.questions;
     return normalizeLmsQuizQuestionList(quiz?.questions);
 }
-
 function getLmsQuizQuestionCount(quiz = {}, studentId = '', submission = null) {
     return getLmsQuizQuestionsForStudent(quiz, studentId, submission).length;
 }
-
 function getLmsQuizVariantSummary(quiz = {}) {
     if (quiz?.variantEnabled !== true || !Array.isArray(quiz?.variants) || !quiz.variants.length) return '';
     return `${quiz.variants.length} variants  -  ${Math.max(1, Number(quiz.questionsPerVariant || quiz.variants[0]?.questions?.length || 0))} questions each`;
 }
-
 function getLmsQuizVariantAssignmentSummary(quiz = {}) {
     if (quiz?.variantEnabled !== true || !Array.isArray(quiz?.variants) || !quiz.variants.length) return [];
     const counts = (quiz.variants || []).reduce((accumulator, variant) => {
@@ -1359,19 +1345,187 @@ function getLmsQuizVariantAssignmentSummary(quiz = {}) {
         count: counts[String(variant.id)] || 0
     }));
 }
-
 function getLmsQuizWorkspaceBucketName(status = 'draft') {
     const normalized = String(status || 'draft').trim().toLowerCase();
     if (normalized === 'published') return 'published';
     if (normalized === 'closed') return 'closed';
     return 'drafts';
 }
-
+function extractLmsQuizContentRecord(quiz = {}, subjectId = '') {
+    const normalized = normalizeLmsQuizStoredRecord(quiz);
+    return {
+        id: String(quiz.id || normalized.id || makeAdminExamEntityId('lms-quiz')),
+        subjectId: String(subjectId || quiz.subjectId || normalized.subjectId || ''),
+        subjectName: String(quiz.subjectName || normalized.subjectName || subjectId || ''),
+        title: String(quiz.title || normalized.title || '').trim(),
+        assessmentType: normalized.assessmentType,
+        assessmentNumber: normalizeAssessmentNumber(quiz.assessmentNumber ?? normalized.assessmentNumber, 1),
+        weekLabel: normalized.weekLabel,
+        instructions: String(quiz.instructions || ''),
+        questions: normalized.questions,
+        variantEnabled: normalized.variantEnabled,
+        variantCount: normalized.variantCount,
+        questionsPerVariant: normalized.questionsPerVariant,
+        variantAssignmentMode: normalized.variantAssignmentMode,
+        variantGenerationMode: normalized.variantGenerationMode,
+        variantOverlapPolicy: normalized.variantOverlapPolicy,
+        variants: normalized.variants,
+        studentVariantMap: normalized.studentVariantMap,
+        durationMinutes: normalized.durationMinutes,
+        availableFrom: String(quiz.availableFrom || ''),
+        availableUntil: String(quiz.availableUntil || ''),
+        createdInGroupId: String(quiz.createdInGroupId || normalized.createdInGroupId || quiz.groupId || quiz.assignedGroupId || '').trim(),
+        createdInGroupName: String(quiz.createdInGroupName || normalized.createdInGroupName || quiz.groupName || quiz.assignedGroupName || '').trim(),
+        createdAt: quiz.createdAt || new Date().toISOString(),
+        updatedAt: quiz.updatedAt || new Date().toISOString()
+    };
+}
+function snapshotLmsQuizContentForDeployment(contentQuiz = {}) {
+    const snapshot = extractLmsQuizContentRecord(contentQuiz, contentQuiz.subjectId || '');
+    return JSON.parse(JSON.stringify({
+        ...snapshot,
+        snapshottedAt: new Date().toISOString()
+    }));
+}
+function extractLmsQuizDeploymentRecord(quiz = {}, resourceKey = '') {
+    const normalized = normalizeLmsQuizStoredRecord(quiz);
+    const groupKey = getLmsQuizGroupResourceKey(resourceKey);
+    const parsed = parseLmsCourseKey(groupKey);
+    return {
+        quizId: String(quiz.id || normalized.id),
+        resourceKey: groupKey,
+        groupId: String(quiz.groupId || quiz.assignedGroupId || parsed.groupId || ''),
+        groupName: String(quiz.groupName || quiz.assignedGroupName || ''),
+        assignedGroupId: String(quiz.assignedGroupId || quiz.groupId || parsed.groupId || ''),
+        assignedGroupName: String(quiz.assignedGroupName || quiz.groupName || ''),
+        status: normalized.status,
+        isPublished: normalized.isPublished,
+        allowedStudentIds: normalized.allowedStudentIds,
+        publishedAt: normalized.publishedAt,
+        publishedBy: normalized.publishedBy,
+        publishMode: normalized.publishMode,
+        lockedAfterPublish: normalized.lockedAfterPublish,
+        attendanceMode: normalized.attendanceMode,
+        attendanceRequired: normalized.attendanceRequired,
+        attendanceGateEnabled: normalized.attendanceGateEnabled,
+        requiresBlueExamNetwork: normalized.requiresBlueExamNetwork,
+        blueSessionMode: normalized.blueSessionMode,
+        antiCheatPolicy: quiz.antiCheatPolicy || null,
+        examSessionId: normalized.examSessionId,
+        submissionsVisible: normalized.submissionsVisible,
+        contentSnapshot: quiz.contentSnapshot && typeof quiz.contentSnapshot === 'object'
+            ? JSON.parse(JSON.stringify(quiz.contentSnapshot))
+            : null,
+        updatedAt: quiz.updatedAt || new Date().toISOString()
+    };
+}
+function mergeLmsQuizWithDeployment(contentQuiz, deployment = null, resourceKey = '') {
+    if (!contentQuiz) return null;
+    const groupKey = getLmsQuizGroupResourceKey(resourceKey || deployment?.resourceKey || '');
+    if (!deployment) {
+        return normalizeLmsQuizStoredRecord({
+            ...contentQuiz,
+            resourceKey: groupKey,
+            status: 'draft',
+            isPublished: false,
+            allowedStudentIds: [],
+            publishedAt: null,
+            publishedBy: '',
+            publishMode: 'manual'
+        });
+    }
+    const deploymentStatus = String(deployment.status || 'draft').toLowerCase();
+    const useSnapshot = ['published', 'closed'].includes(deploymentStatus)
+        && deployment.contentSnapshot
+        && typeof deployment.contentSnapshot === 'object';
+    const contentBase = useSnapshot
+        ? {
+            ...contentQuiz,
+            ...deployment.contentSnapshot,
+            id: contentQuiz.id,
+            subjectId: contentQuiz.subjectId,
+            subjectName: contentQuiz.subjectName
+        }
+        : contentQuiz;
+    const { contentSnapshot: _snapshot, quizId: _quizId, ...deploymentFields } = deployment;
+    const merged = normalizeLmsQuizStoredRecord({
+        ...contentBase,
+        ...deploymentFields,
+        id: contentQuiz.id,
+        resourceKey: groupKey || deployment.resourceKey
+    });
+    delete merged.contentSnapshot;
+    return merged;
+}
+function ensureLmsSubjectQuizBank(subjectId) {
+    ensureLmsStores();
+    const key = String(subjectId || '').trim();
+    if (!key) return { drafts: [] };
+    KIU_STATE.lmsSubjectQuizBank[key] = KIU_STATE.lmsSubjectQuizBank[key] || {};
+    const bank = KIU_STATE.lmsSubjectQuizBank[key];
+    bank.drafts = Array.isArray(bank.drafts) ? bank.drafts.map(item => extractLmsQuizContentRecord(item, key)) : [];
+    return bank;
+}
+function getLmsSubjectQuizDrafts(subjectId) {
+    return sortLmsQuizzes(ensureLmsSubjectQuizBank(subjectId).drafts);
+}
+function getLmsSubjectQuizById(subjectId, quizId) {
+    return getLmsSubjectQuizDrafts(subjectId).find(item => String(item.id) === String(quizId)) || null;
+}
+function saveLmsSubjectQuizRecord(subjectId, quiz, options = {}) {
+    const bank = ensureLmsSubjectQuizBank(subjectId);
+    const normalized = extractLmsQuizContentRecord(quiz, subjectId);
+    const quizId = String(normalized.id);
+    const index = bank.drafts.findIndex(item => String(item.id) === quizId);
+    if (index >= 0 && options.preserveIfNewer) {
+        const existing = bank.drafts[index];
+        const existingTime = new Date(existing.updatedAt || 0).getTime();
+        const newTime = new Date(normalized.updatedAt || 0).getTime();
+        if (Number.isFinite(existingTime) && Number.isFinite(newTime) && newTime < existingTime) {
+            return existing;
+        }
+    }
+    if (index >= 0) {
+        const existing = bank.drafts[index];
+        normalized.createdInGroupId = existing.createdInGroupId || normalized.createdInGroupId;
+        normalized.createdInGroupName = existing.createdInGroupName || normalized.createdInGroupName;
+    } else if (!normalized.createdInGroupId) {
+        normalized.createdInGroupId = String(quiz.groupId || quiz.assignedGroupId || '').trim();
+        normalized.createdInGroupName = String(quiz.groupName || quiz.assignedGroupName || normalized.createdInGroupId).trim();
+    }
+    if (index >= 0) bank.drafts[index] = normalized;
+    else bank.drafts.unshift(normalized);
+    bank.drafts = sortLmsQuizzes(bank.drafts);
+    return normalized;
+}
+function removeLmsSubjectQuizRecord(subjectId, quizId) {
+    const bank = ensureLmsSubjectQuizBank(subjectId);
+    bank.drafts = bank.drafts.filter(item => String(item.id) !== String(quizId));
+}
+function isLmsSubjectQuizPublishedAnywhere(subjectId, quizId) {
+    const normalizedSubjectId = canonicalCourseKey(subjectId);
+    const normalizedQuizId = String(quizId || '');
+    if (!normalizedSubjectId || !normalizedQuizId) return false;
+    const builder = KIU_STATE.lmsQuizBuilder || {};
+    return Object.keys(builder).some(resourceKey => {
+        const parsed = parseLmsCourseKey(resourceKey);
+        if (canonicalCourseKey(parsed.courseId) !== normalizedSubjectId) return false;
+        const workspace = builder[resourceKey];
+        const deployment = workspace?.deployments?.[normalizedQuizId];
+        if (deployment && ['published', 'closed'].includes(String(deployment.status || '').toLowerCase())) {
+            return true;
+        }
+        return ['published', 'closed'].some(bucket =>
+            (workspace?.[bucket] || []).some(item => String(item.id) === normalizedQuizId)
+        );
+    });
+}
 function ensureLmsQuizBuilderWorkspace(resourceKey) {
-    resourceKey = resolveCanonicalLmsResourceKey(resourceKey);
+    resourceKey = getLmsQuizGroupResourceKey(resourceKey);
     ensureLmsStores();
     KIU_STATE.lmsQuizBuilder[resourceKey] = KIU_STATE.lmsQuizBuilder[resourceKey] || {};
     const workspace = KIU_STATE.lmsQuizBuilder[resourceKey];
+    workspace.deployments = workspace.deployments && typeof workspace.deployments === 'object' ? workspace.deployments : {};
     workspace.drafts = Array.isArray(workspace.drafts) ? workspace.drafts.map(normalizeLmsQuizStoredRecord) : [];
     workspace.published = Array.isArray(workspace.published) ? workspace.published.map(normalizeLmsQuizStoredRecord) : [];
     workspace.closed = Array.isArray(workspace.closed) ? workspace.closed.map(normalizeLmsQuizStoredRecord) : [];
@@ -1379,27 +1533,141 @@ function ensureLmsQuizBuilderWorkspace(resourceKey) {
     workspace.ui = workspace.ui && typeof workspace.ui === 'object' ? workspace.ui : {};
     return workspace;
 }
-
-function getAllLmsQuizWorkspaceRecords(resourceKey) {
+function getLmsQuizGroupDeployment(resourceKey, quizId) {
     const workspace = ensureLmsQuizBuilderWorkspace(resourceKey);
-    return [...workspace.drafts, ...workspace.published, ...workspace.closed];
+    return workspace.deployments[String(quizId)] || null;
 }
-
-function saveLmsQuizWorkspaceRecord(resourceKey, quiz) {
-    resourceKey = resolveCanonicalLmsResourceKey(resourceKey);
+function saveLmsQuizGroupDeployment(resourceKey, deployment = {}) {
     const workspace = ensureLmsQuizBuilderWorkspace(resourceKey);
-    const normalized = normalizeLmsQuizStoredRecord(quiz);
-    ['drafts', 'published', 'closed'].forEach(bucket => {
-        workspace[bucket] = workspace[bucket].filter(item => String(item.id) !== String(normalized.id));
-    });
-    const targetBucket = getLmsQuizWorkspaceBucketName(normalized.status);
-    workspace[targetBucket].unshift(normalized);
-    workspace[targetBucket] = sortLmsQuizzes(workspace[targetBucket]);
+    const normalized = extractLmsQuizDeploymentRecord(deployment, resourceKey);
+    workspace.deployments[String(normalized.quizId)] = normalized;
     return normalized;
 }
-
+function removeLmsQuizGroupDeployment(resourceKey, quizId) {
+    const workspace = ensureLmsQuizBuilderWorkspace(resourceKey);
+    if (workspace.deployments && workspace.deployments[quizId]) {
+        delete workspace.deployments[quizId];
+    }
+}
+function getLmsQuizGroupBucketCounts(resourceKey) {
+    const records = getAllLmsQuizWorkspaceRecords(resourceKey);
+    return {
+        drafts: records.filter(quiz => String(quiz.status || 'draft') === 'draft'),
+        published: records.filter(quiz => String(quiz.status || '') === 'published'),
+        closed: records.filter(quiz => String(quiz.status || '') === 'closed')
+    };
+}
+function hoistLegacyLmsQuizGroupBuckets() {
+    if (!KIU_STATE.lmsQuizBuilder || typeof KIU_STATE.lmsQuizBuilder !== 'object') return;
+    const builder = KIU_STATE.lmsQuizBuilder;
+    Object.keys(builder).forEach(resourceKey => {
+        const groupKey = getLmsQuizGroupResourceKey(resourceKey);
+        if (resourceKey !== groupKey) return;
+        const parsed = parseLmsCourseKey(groupKey);
+        if (!parsed.courseId || !parsed.groupId) return;
+        const workspace = builder[groupKey];
+        if (!workspace || typeof workspace !== 'object') return;
+        const subjectId = parsed.courseId;
+        const bucketStatus = { drafts: 'draft', published: 'published', closed: 'closed' };
+        ['drafts', 'published', 'closed'].forEach(bucket => {
+            const items = Array.isArray(workspace[bucket]) ? workspace[bucket] : [];
+            if (!items.length) return;
+            items.forEach(quiz => {
+                saveLmsSubjectQuizRecord(subjectId, {
+                    ...quiz,
+                    subjectId,
+                    groupId: quiz.groupId || quiz.assignedGroupId || parsed.groupId,
+                    groupName: quiz.groupName || quiz.assignedGroupName || parsed.groupId
+                }, { preserveIfNewer: true });
+                saveLmsQuizGroupDeployment(groupKey, {
+                    ...quiz,
+                    status: bucketStatus[bucket] || quiz.status || 'draft'
+                });
+            });
+            workspace[bucket] = [];
+        });
+    });
+}
+function migrateLmsQuizSectionWorkspaces() {
+    hoistLegacyLmsQuizGroupBuckets();
+    if (KIU_STATE.meta?.lmsSubjectQuizMigrated) return;
+    if (!KIU_STATE.lmsQuizBuilder || typeof KIU_STATE.lmsQuizBuilder !== 'object') KIU_STATE.lmsQuizBuilder = {};
+    if (!KIU_STATE.lmsSubjectQuizBank || typeof KIU_STATE.lmsSubjectQuizBank !== 'object') KIU_STATE.lmsSubjectQuizBank = {};
+    KIU_STATE._lmsQuizMigrationRunning = true;
+    try {
+        const builder = KIU_STATE.lmsQuizBuilder || {};
+        const keysToProcess = [...Object.keys(builder)];
+        keysToProcess.forEach(resourceKey => {
+            const workspace = builder[resourceKey];
+            if (!workspace || typeof workspace !== 'object') return;
+            const parsed = parseLmsCourseKey(resourceKey);
+            if (!parsed.courseId) return;
+            const subjectId = parsed.courseId;
+            const groupKey = getLmsQuizGroupResourceKey(resourceKey);
+            const bucketStatus = { drafts: 'draft', published: 'published', closed: 'closed' };
+            ['drafts', 'published', 'closed'].forEach(bucket => {
+                (workspace[bucket] || []).forEach(quiz => {
+                    saveLmsSubjectQuizRecord(subjectId, { ...quiz, subjectId }, { preserveIfNewer: true });
+                    saveLmsQuizGroupDeployment(groupKey, {
+                        ...quiz,
+                        status: bucketStatus[bucket] || quiz.status || 'draft'
+                    });
+                });
+                workspace[bucket] = [];
+            });
+            if (resourceKey !== groupKey && workspace.submissions && typeof workspace.submissions === 'object') {
+                const groupWorkspace = ensureLmsQuizBuilderWorkspace(groupKey);
+                Object.entries(workspace.submissions).forEach(([quizId, submissionMap]) => {
+                    groupWorkspace.submissions[quizId] = {
+                        ...(groupWorkspace.submissions[quizId] || {}),
+                        ...(submissionMap || {})
+                    };
+                });
+                delete workspace.submissions;
+            }
+            if (resourceKey !== groupKey && parsed.sectionType) {
+                delete builder[resourceKey];
+            }
+        });
+        KIU_STATE.meta = KIU_STATE.meta && typeof KIU_STATE.meta === 'object' ? KIU_STATE.meta : {};
+        KIU_STATE.meta.lmsSubjectQuizMigrated = true;
+    } finally {
+        delete KIU_STATE._lmsQuizMigrationRunning;
+    }
+}
+function getAllLmsQuizWorkspaceRecords(resourceKey) {
+    resourceKey = getLmsQuizGroupResourceKey(resourceKey);
+    const subjectId = getLmsSubjectIdFromResourceKey(resourceKey);
+    if (!subjectId) {
+        const workspace = ensureLmsQuizBuilderWorkspace(resourceKey);
+        return [...workspace.drafts, ...workspace.published, ...workspace.closed];
+    }
+    return getLmsSubjectQuizDrafts(subjectId).map(content =>
+        mergeLmsQuizWithDeployment(content, getLmsQuizGroupDeployment(resourceKey, content.id), resourceKey)
+    );
+}
+function saveLmsQuizWorkspaceRecord(resourceKey, quiz) {
+    resourceKey = getLmsQuizGroupResourceKey(resourceKey);
+    const subjectId = getLmsSubjectIdFromResourceKey(resourceKey) || quiz.subjectId;
+    if (!subjectId) {
+        const workspace = ensureLmsQuizBuilderWorkspace(resourceKey);
+        const normalized = normalizeLmsQuizStoredRecord(quiz);
+        ['drafts', 'published', 'closed'].forEach(bucket => {
+            workspace[bucket] = workspace[bucket].filter(item => String(item.id) !== String(normalized.id));
+        });
+        const targetBucket = getLmsQuizWorkspaceBucketName(normalized.status);
+        workspace[targetBucket].unshift(normalized);
+        workspace[targetBucket] = sortLmsQuizzes(workspace[targetBucket]);
+        return normalized;
+    }
+    const content = saveLmsSubjectQuizRecord(subjectId, { ...quiz, subjectId });
+    const deployment = saveLmsQuizGroupDeployment(resourceKey, quiz);
+    return mergeLmsQuizWithDeployment(content, deployment, resourceKey);
+}
 function removeLmsQuizWorkspaceRecord(resourceKey, quizId) {
-    resourceKey = resolveCanonicalLmsResourceKey(resourceKey);
+    resourceKey = getLmsQuizGroupResourceKey(resourceKey);
+    const subjectId = getLmsSubjectIdFromResourceKey(resourceKey);
+    removeLmsQuizGroupDeployment(resourceKey, quizId);
     const workspace = ensureLmsQuizBuilderWorkspace(resourceKey);
     ['drafts', 'published', 'closed'].forEach(bucket => {
         workspace[bucket] = workspace[bucket].filter(item => String(item.id) !== String(quizId));
@@ -1407,8 +1675,17 @@ function removeLmsQuizWorkspaceRecord(resourceKey, quizId) {
     if (workspace.submissions && workspace.submissions[quizId]) {
         delete workspace.submissions[quizId];
     }
+    if (subjectId && !isLmsSubjectQuizPublishedAnywhere(subjectId, quizId)) {
+        const hasOtherDeployments = Object.keys(KIU_STATE.lmsQuizBuilder || {}).some(key => {
+            const parsed = parseLmsCourseKey(key);
+            if (canonicalCourseKey(parsed.courseId) !== canonicalCourseKey(subjectId)) return false;
+            return Boolean(KIU_STATE.lmsQuizBuilder[key]?.deployments?.[String(quizId)]);
+        });
+        if (!hasOtherDeployments) {
+            removeLmsSubjectQuizRecord(subjectId, quizId);
+        }
+    }
 }
-
 function cloneStoredFile(file) {
     if (!file) return null;
     return {
@@ -1422,7 +1699,6 @@ function cloneStoredFile(file) {
         uploadedAt: file.uploadedAt || new Date().toISOString()
     };
 }
-
 function cloneLmsDraftFile(file) {
     if (!file) return null;
     return {
@@ -1430,7 +1706,6 @@ function cloneLmsDraftFile(file) {
         blob: file.blob instanceof Blob ? file.blob : null
     };
 }
-
 
 function normalizeLmsQuizAssessmentType(value = 'quiz') {
     const normalized = String(value || 'quiz').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
@@ -1447,7 +1722,6 @@ function normalizeLmsQuizAssessmentType(value = 'quiz') {
     };
     return aliases[normalized] || 'quiz';
 }
-
 function getLmsQuizAssessmentMeta(type = 'quiz') {
     const normalized = normalizeLmsQuizAssessmentType(type);
     const meta = {
@@ -1459,30 +1733,32 @@ function getLmsQuizAssessmentMeta(type = 'quiz') {
     };
     return meta[normalized] || meta.quiz;
 }
-
 function ensureLmsQuizzesForKey(resourceKey) {
-    resourceKey = resolveCanonicalLmsResourceKey(resourceKey);
+    resourceKey = getLmsQuizGroupResourceKey(resourceKey);
     return getAllLmsQuizWorkspaceRecords(resourceKey);
 }
-
 function ensureLmsQuizSubmissionStore(resourceKey, quizId) {
-    resourceKey = resolveCanonicalLmsResourceKey(resourceKey);
+    resourceKey = getLmsQuizGroupResourceKey(resourceKey);
     const workspace = ensureLmsQuizBuilderWorkspace(resourceKey);
     workspace.submissions[quizId] = workspace.submissions[quizId] || {};
     return workspace.submissions[quizId];
 }
-
 function getLmsQuizById(resourceKey, quizId) {
-    resourceKey = resolveCanonicalLmsResourceKey(resourceKey);
+    resourceKey = getLmsQuizGroupResourceKey(resourceKey);
+    const subjectId = getLmsSubjectIdFromResourceKey(resourceKey);
+    if (subjectId) {
+        const content = getLmsSubjectQuizById(subjectId, quizId);
+        if (content) {
+            return mergeLmsQuizWithDeployment(content, getLmsQuizGroupDeployment(resourceKey, quizId), resourceKey);
+        }
+    }
     return ensureLmsQuizzesForKey(resourceKey).find(item => String(item.id) === String(quizId)) || null;
 }
-
 function getLmsQuizDisplayLabel(quiz) {
     const meta = getLmsQuizAssessmentMeta(quiz?.assessmentType || 'quiz');
     const number = normalizeAssessmentNumber(quiz?.assessmentNumber, 1);
     return `${meta.label} ${number}`;
 }
-
 function compareLmsQuizRecords(left, right) {
     const leftWeek = normalizeLmsWeekLabel(left?.weekLabel || '');
     const rightWeek = normalizeLmsWeekLabel(right?.weekLabel || '');
@@ -1494,14 +1770,14 @@ function compareLmsQuizRecords(left, right) {
     if (numberDiff !== 0) return numberDiff;
     return new Date(left?.createdAt || 0) - new Date(right?.createdAt || 0);
 }
-
 function sortLmsQuizzes(quizzes = []) {
     return [...quizzes].sort(compareLmsQuizRecords);
 }
-
 function getNextLmsQuizAssessmentNumber(resourceKey, assessmentType, editingQuizId = null) {
     const targetType = normalizeLmsQuizAssessmentType(assessmentType);
-    const existing = ensureLmsQuizzesForKey(resourceKey)
+    const subjectId = getLmsSubjectIdFromResourceKey(resourceKey);
+    const sourceQuizzes = subjectId ? getLmsSubjectQuizDrafts(subjectId) : ensureLmsQuizzesForKey(resourceKey);
+    const existing = sourceQuizzes
         .filter(quiz => String(quiz.id) !== String(editingQuizId || ''))
         .filter(quiz => normalizeLmsQuizAssessmentType(quiz.assessmentType) === targetType)
         .map(quiz => normalizeAssessmentNumber(quiz.assessmentNumber, 1));
@@ -1509,12 +1785,10 @@ function getNextLmsQuizAssessmentNumber(resourceKey, assessmentType, editingQuiz
     while (existing.includes(next)) next += 1;
     return next;
 }
-
 function getLmsQuizSubmission(resourceKey, quizId, studentId) {
     const store = ensureLmsQuizSubmissionStore(resourceKey, quizId);
     return store[String(studentId)] || null;
 }
-
 function syncLmsQuizSubmissionVariant(quiz, submission, studentId) {
     if (!quiz || !submission) return submission;
     if (quiz.variantEnabled !== true) {
@@ -1527,7 +1801,6 @@ function syncLmsQuizSubmissionVariant(quiz, submission, studentId) {
     submission.variantLabel = String(assignedVariant?.label || '');
     return submission;
 }
-
 function ensureLmsQuizSubmissionShell(resourceKey, quizId, student) {
     const store = ensureLmsQuizSubmissionStore(resourceKey, quizId);
     const key = String(student?.id || '');
@@ -1597,7 +1870,6 @@ function ensureLmsQuizSubmissionShell(resourceKey, quizId, student) {
     store[key].variantLabel = String(store[key].variantLabel || '');
     return store[key];
 }
-
 function ensureLmsStudentQuizAttemptActive(resourceKey, quiz, studentMeta = {}) {
     const submission = ensureLmsQuizSubmissionShell(resourceKey, quiz?.id, studentMeta);
     if (!submission) return null;
@@ -1619,12 +1891,10 @@ function ensureLmsStudentQuizAttemptActive(resourceKey, quiz, studentMeta = {}) 
     }
     return submission;
 }
-
 function getLmsQuizExamSession(quiz = null) {
     const sessionId = String(quiz?.examSessionId || '').trim();
     return sessionId ? getExamSessionById(sessionId) : null;
 }
-
 function getLmsQuizExamSessionAttendance(session, studentId) {
     const targetId = String(studentId || '');
     if (!session || !targetId) return { status: '', verifiedAt: null, verifiedBy: '' };
@@ -1637,11 +1907,9 @@ function getLmsQuizExamSessionAttendance(session, studentId) {
         }
         : { status: '', verifiedAt: null, verifiedBy: '' };
 }
-
 function isLmsExamSessionAttendanceQualified(status) {
     return ['present', 'late'].includes(String(status || '').trim().toLowerCase());
 }
-
 function getLmsQuizExamSessionGateStatus(resourceKey, quiz, submission, studentId) {
     const session = getLmsQuizExamSession(quiz);
     const targetId = String(studentId || '');
@@ -1699,7 +1967,6 @@ function getLmsQuizExamSessionGateStatus(resourceKey, quiz, submission, studentI
         disconnectElapsedMs: expired && Number.isFinite(endsAt) ? Math.max(0, now - endsAt) : 0
     };
 }
-
 function syncLmsQuizExamSessionSubmissionState(resourceKey, quiz, submission, studentMeta = {}) {
     if (!submission) return null;
     const sessionGate = getLmsQuizExamSessionGateStatus(resourceKey, quiz, submission, studentMeta?.id || submission.studentId);
@@ -1724,7 +1991,6 @@ function syncLmsQuizExamSessionSubmissionState(resourceKey, quiz, submission, st
     submission.attendanceVerifiedBy = '';
     return submission;
 }
-
 function getLmsExamSessionMonitorStats(session, resourceKey, quiz) {
     if (!session || !quiz) {
         return {
@@ -1767,13 +2033,11 @@ function getLmsExamSessionMonitorStats(session, resourceKey, quiz) {
         notStartedCount
     };
 }
-
 function getKiuBlueHelperBaseUrl() {
     return String(window.KIU_BLUE_HELPER_URL || localStorage.getItem('KIU_BLUE_HELPER_URL') || KIU_BLUE_HELPER_DEFAULT_URL)
         .trim()
         .replace(/\/+$/, '');
 }
-
 function getKiuBlueExamRuntime() {
     if (!window.__kiuBlueExamRuntime || typeof window.__kiuBlueExamRuntime !== 'object') {
         window.__kiuBlueExamRuntime = {
@@ -1792,18 +2056,15 @@ function getKiuBlueExamRuntime() {
     }
     return window.__kiuBlueExamRuntime;
 }
-
 function getKiuBlueSessionStudents() {
     const sessionStudents = getKiuBlueExamRuntime().activeSession?.students;
     return Array.isArray(sessionStudents) ? sessionStudents : [];
 }
-
 function getKiuBlueStudentSessionEntry(studentId) {
     const targetId = String(studentId || '');
     if (!targetId) return null;
     return getKiuBlueSessionStudents().find(entry => String(entry?.studentId || '') === targetId) || null;
 }
-
 function mergeKiuBlueHelperState(payload = {}) {
     const runtime = getKiuBlueExamRuntime();
     runtime.helperReachable = true;
@@ -1818,7 +2079,6 @@ function mergeKiuBlueHelperState(payload = {}) {
     runtime.totalBoundStudentCount = Number(payload?.totalBoundStudentCount || 0);
     return runtime;
 }
-
 async function fetchKiuBlueHelperJson(path, options = {}) {
     const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
     const timeoutId = controller ? setTimeout(() => controller.abort(), 4000) : null;
@@ -1842,7 +2102,6 @@ async function fetchKiuBlueHelperJson(path, options = {}) {
         if (timeoutId) clearTimeout(timeoutId);
     }
 }
-
 async function refreshKiuBlueHelperState(options = {}) {
     const runtime = getKiuBlueExamRuntime();
     const force = options.force === true;
@@ -1867,18 +2126,15 @@ async function refreshKiuBlueHelperState(options = {}) {
         runtime.pending = false;
     }
 }
-
 function isLmsQuizBlueExamRequired(quiz = {}) {
     return false;
 }
-
 function isLmsQuizAttendanceQualified(submission = {}, quiz = {}) {
     if (!isLmsQuizBlueExamRequired(quiz) || quiz?.attendanceGateEnabled === false) {
         return true;
     }
     return ['present', 'late'].includes(String(submission?.attendanceStatus || '').trim().toLowerCase());
 }
-
 function getLmsQuizOutsideActionCount(submission) {
     const outsideEventTypes = new Set([
         'left-tab',
@@ -1889,18 +2145,15 @@ function getLmsQuizOutsideActionCount(submission) {
     ]);
     return (submission?.proctorEvents || []).filter(event => outsideEventTypes.has(String(event?.type || ''))).length;
 }
-
 function formatLmsDurationLabel(ms) {
     if (!Number.isFinite(Number(ms)) || Number(ms) <= 0) return '00:00';
     return formatCountdownDuration(Number(ms));
 }
-
 function getLmsQuizBlueDisconnectElapsedMs(submission = {}) {
     const accumulated = Number(submission?.blueDisconnectAccumulatedMs || 0);
     const activeDisconnect = submission?.blueDisconnectedAt ? Math.max(0, Date.now() - new Date(submission.blueDisconnectedAt).getTime()) : 0;
     return accumulated + activeDisconnect;
 }
-
 function getLmsQuizBlueGateStatus(resourceKey, quiz, submission, studentId) {
     const required = isLmsQuizBlueExamRequired(quiz);
     if (!required) {
@@ -1951,7 +2204,6 @@ function getLmsQuizBlueGateStatus(resourceKey, quiz, submission, studentId) {
         disconnectElapsedMs: getLmsQuizBlueDisconnectElapsedMs(submission)
     };
 }
-
 function syncLmsQuizBlueSubmissionState(resourceKey, quiz, submission, studentMeta) {
     if (!submission || !isLmsQuizBlueExamRequired(quiz)) return false;
     const runtime = getKiuBlueExamRuntime();
@@ -1976,7 +2228,6 @@ function syncLmsQuizBlueSubmissionState(resourceKey, quiz, submission, studentMe
     setField('blueConnected', Boolean(runtime.helperReachable && runtime.activeSession?.id && rosterEntry?.connected));
     setField('blueLastHeartbeatAt', rosterEntry?.lastHeartbeatAt || null);
     setField('outsideActionCount', getLmsQuizOutsideActionCount(submission));
-
     if (rosterEntry?.present !== undefined) {
         if (submission.attendanceStatus !== rosterEntry.presentStatus && rosterEntry.presentStatus) {
             submission.attendanceStatus = rosterEntry.presentStatus;
@@ -1991,7 +2242,6 @@ function syncLmsQuizBlueSubmissionState(resourceKey, quiz, submission, studentMe
             changed = true;
         }
     }
-
     if (String(submission.status || '') === 'in-progress') {
         if (submission.blueConnected) {
             if (submission.blueDisconnectedAt) {
@@ -2019,21 +2269,18 @@ function syncLmsQuizBlueSubmissionState(resourceKey, quiz, submission, studentMe
             );
         }
     }
-
     if (changed) {
         submission.outsideActionCount = getLmsQuizOutsideActionCount(submission);
         saveState();
     }
     return changed;
 }
-
 function clearKiuBlueDisconnectInterval() {
     if (activeKiuBlueDisconnectInterval) {
         clearInterval(activeKiuBlueDisconnectInterval);
         activeKiuBlueDisconnectInterval = null;
     }
 }
-
 function updateVisibleKiuBlueDisconnectTimer() {
     const timerEl = document.getElementById('lms-blue-disconnect-timer');
     if (!timerEl) return;
@@ -2045,7 +2292,6 @@ function updateVisibleKiuBlueDisconnectTimer() {
     const submission = getLmsQuizSubmission(resourceKey, quizId, studentId);
     timerEl.textContent = formatLmsDurationLabel(getLmsQuizBlueDisconnectElapsedMs(submission));
 }
-
 function buildLmsQuizBlueGateKey(gateStatus = {}) {
     return JSON.stringify({
         required: gateStatus.required === true,
@@ -2057,7 +2303,6 @@ function buildLmsQuizBlueGateKey(gateStatus = {}) {
         message: String(gateStatus.message || '')
     });
 }
-
 async function unregisterKiuBlueStudentSession(studentMeta = {}) {
     const studentId = String(studentMeta?.id || '');
     if (!studentId) return;
@@ -2078,7 +2323,6 @@ async function unregisterKiuBlueStudentSession(studentMeta = {}) {
         runtime.lastError = error?.message || 'Exam verification helper is unreachable.';
     }
 }
-
 async function syncKiuBlueAttendanceToHelper(resourceKey, quizId, studentId, submission = {}) {
     const normalizedStudentId = String(studentId || '').trim();
     if (!normalizedStudentId) return null;
@@ -2107,7 +2351,6 @@ async function syncKiuBlueAttendanceToHelper(resourceKey, quizId, studentId, sub
         return null;
     }
 }
-
 function stopKiuBlueStudentHeartbeat(options = {}) {
     const runtime = getKiuBlueExamRuntime();
     if (activeKiuBlueHeartbeatInterval) {
@@ -2122,7 +2365,6 @@ function stopKiuBlueStudentHeartbeat(options = {}) {
         unregisterKiuBlueStudentSession(target.studentMeta);
     }
 }
-
 function ensureKiuBlueStatusSoon() {
     refreshKiuBlueHelperState({ force: false }).then(() => {
         if (document.getElementById('lms-content-area')) {
@@ -2130,7 +2372,6 @@ function ensureKiuBlueStatusSoon() {
         }
     });
 }
-
 function ensureKiuBlueStudentHeartbeat(resourceKey, quiz, studentMeta, subject = null, group = null) {
     if (!isLmsQuizBlueExamRequired(quiz) || !studentMeta?.id) {
         stopKiuBlueStudentHeartbeat();
@@ -2153,7 +2394,6 @@ function ensureKiuBlueStudentHeartbeat(resourceKey, quiz, studentMeta, subject =
         subject,
         group
     };
-
     const tick = async () => {
         const currentTarget = runtime.heartbeatTarget;
         if (!currentTarget || currentTarget.key !== targetKey) return;
@@ -2190,24 +2430,20 @@ function ensureKiuBlueStudentHeartbeat(resourceKey, quiz, studentMeta, subject =
             runtime.lastStudentGateKey = gateKey;
         }
     };
-
     const initialTickPromise = tick();
     activeKiuBlueHeartbeatInterval = setInterval(tick, KIU_BLUE_HEARTBEAT_MS);
     return initialTickPromise;
 }
-
 function getLmsQuizQuestionManualMax(question = {}) {
     return String(question.type || 'mcq') === 'written'
         ? Math.max(0, parseFloat(question.score) || 0)
         : 0;
 }
-
 function getLmsQuizLifecycleStatus(quiz = {}) {
     const normalized = String(quiz?.status || '').trim().toLowerCase();
     if (['draft', 'published', 'closed'].includes(normalized)) return normalized;
     return quiz?.isPublished === false ? 'draft' : 'published';
 }
-
 function isLmsQuizVisibleToStudentsNow(quiz = {}, now = new Date()) {
     if (getLmsQuizLifecycleStatus(quiz) === 'draft' || quiz?.isPublished === false) return false;
     const publishMode = String(quiz?.publishMode || 'manual').trim().toLowerCase();
@@ -2222,7 +2458,6 @@ function isLmsQuizVisibleToStudentsNow(quiz = {}, now = new Date()) {
     }
     return true;
 }
-
 function recordLmsQuizProctorEvent(resourceKey, quizId, studentMeta, type, note) {
     resourceKey = resolveCanonicalLmsResourceKey(resourceKey);
     const studentId = String(studentMeta?.id || '');
@@ -2253,16 +2488,13 @@ function recordLmsQuizProctorEvent(resourceKey, quizId, studentMeta, type, note)
     }).catch(() => null);
     return event;
 }
-
 function getLmsQuizLatestProctorEvent(submission) {
     const events = Array.isArray(submission?.proctorEvents) ? submission.proctorEvents : [];
     return events.length ? events[events.length - 1] : null;
 }
-
 function getLmsQuizProctorAlertCount(submission) {
     return (submission?.proctorEvents || []).filter(event => String(event?.type || '') !== 'returned-to-quiz' && String(event?.type || '') !== 'fullscreen-restored').length;
 }
-
 function getLmsQuizFocusProtectionConfig(quiz = {}) {
     const antiCheat = quiz?.antiCheat && typeof quiz.antiCheat === 'object' ? quiz.antiCheat : {};
     return {
@@ -2274,7 +2506,6 @@ function getLmsQuizFocusProtectionConfig(quiz = {}) {
         blockBeforeUnload: antiCheat.blockBeforeUnload !== false
     };
 }
-
 function isLmsQuizEditableTarget(target) {
     if (!target) return false;
     if (target.isContentEditable) return true;
@@ -2283,7 +2514,6 @@ function isLmsQuizEditableTarget(target) {
     return typeof target.closest === 'function'
         && Boolean(target.closest('input, textarea, select, [contenteditable="true"], [contenteditable=""], .ql-editor'));
 }
-
 function getLmsQuizBlockedShortcutMeta(event) {
     const key = String(event?.key || '').toLowerCase();
     const ctrlOrMeta = Boolean(event?.ctrlKey || event?.metaKey);
@@ -2332,7 +2562,6 @@ function getLmsQuizBlockedShortcutMeta(event) {
     }
     return null;
 }
-
 function getLmsQuizAutoSubmitNotice(submission, needsManualReview, reviewerLabel = 'Staff') {
     const baseMessage = needsManualReview
         ? `Your answers were submitted. ${reviewerLabel} still need to review the written part before the final score appears.`
@@ -2345,7 +2574,6 @@ function getLmsQuizAutoSubmitNotice(submission, needsManualReview, reviewerLabel
     }
     return `${baseMessage} Time expired, so the system submitted the quiz automatically.`;
 }
-
 function getLmsQuizEligibleStudents(resourceKey, options = {}) {
     const strictRoster = options?.strictRoster === true;
     resourceKey = resolveCanonicalLmsResourceKey(resourceKey);
@@ -2383,20 +2611,17 @@ function getLmsQuizEligibleStudents(resourceKey, options = {}) {
     }
     return students;
 }
-
 function getLmsQuizAllowedStudentIds(resourceKey, quiz = {}) {
     resourceKey = resolveCanonicalLmsResourceKey(resourceKey);
     const explicit = Array.isArray(quiz?.allowedStudentIds) ? quiz.allowedStudentIds.map(id => String(id)) : [];
     if (explicit.length > 0) return explicit;
     return getLmsQuizEligibleStudents(resourceKey).map(student => String(student.id));
 }
-
 function isStudentAllowedForLmsQuiz(resourceKey, quiz, studentId) {
     const targetId = String(studentId || '');
     if (!targetId) return false;
     return getLmsQuizAllowedStudentIds(resourceKey, quiz).includes(targetId);
 }
-
 function resolveLmsQuizStudentMeta(resourceKey, quiz = null) {
     resourceKey = resolveCanonicalLmsResourceKey(resourceKey);
     const currentViewer = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
@@ -2412,7 +2637,6 @@ function resolveLmsQuizStudentMeta(resourceKey, quiz = null) {
     const allowedIds = new Set((quiz
         ? getLmsQuizAllowedStudentIds(resourceKey, quiz)
         : eligibleStudents.map(student => student.id)).map(id => String(id)));
-
     const resolveCandidate = (candidateId, fallbackName = '') => {
         const normalizedId = String(candidateId || '');
         if (!normalizedId) return null;
@@ -2431,10 +2655,8 @@ function resolveLmsQuizStudentMeta(resourceKey, quiz = null) {
         }
         return null;
     };
-
     const currentMatch = resolveCandidate(currentId, currentName);
     if (currentMatch) return currentMatch;
-
     if (typeof getEffectiveUserRole === 'function' && getEffectiveUserRole() === USER_ROLES.STUDENT) {
         const preferredImpersonatedStudent = typeof getPreferredImpersonationUserForRole === 'function'
             ? getPreferredImpersonationUserForRole(
@@ -2447,7 +2669,6 @@ function resolveLmsQuizStudentMeta(resourceKey, quiz = null) {
             preferredImpersonatedStudent?.nameEn || preferredImpersonatedStudent?.name || ''
         );
         if (impersonatedMatch) return impersonatedMatch;
-
         const fallbackStudent = eligibleStudents.find(student => allowedIds.size === 0 || allowedIds.has(student.id)) || eligibleStudents[0] || null;
         if (fallbackStudent) {
             return {
@@ -2462,14 +2683,12 @@ function resolveLmsQuizStudentMeta(resourceKey, quiz = null) {
             };
         }
     }
-
     const normalizedId = String(currentId || '').trim();
     return {
         id: normalizedId,
         name: currentName
     };
 }
-
 function syncLmsImpersonatedStudentSession(resourceKey, quiz = null) {
     if (typeof isAdminImpersonationMode !== 'function' || !isAdminImpersonationMode()) return null;
     const studentMeta = resolveLmsQuizStudentMeta(resourceKey, quiz);
@@ -2501,7 +2720,6 @@ function syncLmsImpersonatedStudentSession(resourceKey, quiz = null) {
         name: targetUser.nameEn || targetUser.name || studentMeta.name
     };
 }
-
 function getLmsQuizSubmissionStats(resourceKey, quiz) {
     resourceKey = resolveCanonicalLmsResourceKey(resourceKey);
     const allowedIds = new Set(getLmsQuizAllowedStudentIds(resourceKey, quiz));
@@ -2563,7 +2781,6 @@ function getLmsQuizSubmissionStats(resourceKey, quiz) {
         blueDisconnectedCount
     };
 }
-
 function getLmsQuizSubmissionManualScoreTotal(submission, quiz = null) {
     if (!submission || typeof submission !== 'object') return 0;
     const perQuestion = submission.manualScoresByQuestion;
@@ -2578,15 +2795,12 @@ function getLmsQuizSubmissionManualScoreTotal(submission, quiz = null) {
     }
     return Number(submission.manualScoreRaw || 0);
 }
-
 function getLmsQuizManualMax(quiz = {}) {
     return (quiz.questions || []).reduce((sum, question) => sum + getLmsQuizQuestionManualMax(question), 0);
 }
-
 function getLmsQuizObjectiveMax(quiz = {}, studentId = '', submission = null) {
     return getLmsQuizQuestionsForStudent(quiz, studentId, submission).reduce((sum, question) => sum + (String(question.type || 'mcq') === 'written' ? 0 : (parseFloat(question.score) || 0)), 0);
 }
-
 function calculateLmsQuizAutoScore(quiz, answers = {}, studentId = '', submission = null) {
     let autoScore = 0;
     let requiresManualReview = false;
@@ -2608,7 +2822,6 @@ function calculateLmsQuizAutoScore(quiz, answers = {}, studentId = '', submissio
         requiresManualReview
     };
 }
-
 function buildLmsQuizSubmissionQuestionResults(quiz, answers = {}, studentId = '', submission = null, manualScoresByQuestion = {}, reviewMeta = {}) {
     const questions = getLmsQuizQuestionsForStudent(quiz, studentId, submission);
     const reviewed = reviewMeta.reviewed === true;
@@ -2657,7 +2870,6 @@ function buildLmsQuizSubmissionQuestionResults(quiz, answers = {}, studentId = '
         };
     });
 }
-
 function buildLmsQuizSubmissionResponseSummary(questionResults = []) {
     const results = Array.isArray(questionResults) ? questionResults : [];
     const written = results.filter(item => item.type === 'written');
@@ -2676,7 +2888,6 @@ function buildLmsQuizSubmissionResponseSummary(questionResults = []) {
         needsManualReview: written.some(item => item.needsManualReview === true)
     };
 }
-
 function finalizeLmsQuizSubmission(resourceKey, quiz, submission, studentId, studentName, mode = 'manual-submit') {
     if (!quiz || !submission) return null;
     syncLmsQuizSubmissionVariant(quiz, submission, studentId);
@@ -2711,7 +2922,6 @@ function finalizeLmsQuizSubmission(resourceKey, quiz, submission, studentId, stu
         updatedAt: actionTime,
         updatedBy: studentName || `Student ${studentId}`
     });
-
     if (evaluation.requiresManualReview) {
         submission.status = mode === 'auto-submit' ? 'auto-submitted' : 'submitted';
         submission.manualScoresByQuestion = {};
@@ -2749,7 +2959,6 @@ function finalizeLmsQuizSubmission(resourceKey, quiz, submission, studentId, stu
     }).catch(() => null);
     return submission;
 }
-
 function autoSubmitExpiredLmsQuizAttempt(resourceKey, quiz, student) {
     if (!quiz || !student?.id) return false;
     const submission = getLmsQuizSubmission(resourceKey, quiz.id, student.id);
@@ -2759,7 +2968,6 @@ function autoSubmitExpiredLmsQuizAttempt(resourceKey, quiz, student) {
     finalizeLmsQuizSubmission(resourceKey, quiz, submission, student.id, student.name || `Student ${student.id}`, 'auto-submit');
     return true;
 }
-
 function getLmsQuizEffectiveEndAt(quiz, submission = null) {
     const absoluteEnd = quiz?.availableUntil ? new Date(quiz.availableUntil) : null;
     const sessionEnd = submission?.sessionEndsAt ? new Date(submission.sessionEndsAt) : null;
@@ -2770,7 +2978,6 @@ function getLmsQuizEffectiveEndAt(quiz, submission = null) {
     if (!candidates.length) return null;
     return candidates.reduce((earliest, current) => current.getTime() < earliest.getTime() ? current : earliest);
 }
-
 function getLmsQuizPostSubmitLockUntil(submission = null) {
     if (!submission || !['submitted', 'auto-submitted', 'graded'].includes(String(submission.status || ''))) return null;
     const explicitLock = submission.postSubmitLockUntil ? new Date(submission.postSubmitLockUntil) : null;
@@ -2782,19 +2989,16 @@ function getLmsQuizPostSubmitLockUntil(submission = null) {
     if (!(submittedTime instanceof Date) || Number.isNaN(submittedTime.getTime())) return null;
     return new Date(submittedTime.getTime() + LMS_POST_SUBMIT_LOCK_MS);
 }
-
 function isLmsQuizPostSubmitLocked(submission = null, now = new Date()) {
     const lockUntil = getLmsQuizPostSubmitLockUntil(submission);
     if (!lockUntil) return false;
     return now.getTime() < lockUntil.getTime();
 }
-
 function getLmsQuizPostSubmitLockMessage(submission = null, now = new Date()) {
     const lockUntil = getLmsQuizPostSubmitLockUntil(submission);
     if (!lockUntil || now.getTime() >= lockUntil.getTime()) return '';
     return `Quiz access is locked for ${formatCountdownDuration(lockUntil.getTime() - now.getTime())} after submission.`;
 }
-
 function getLmsQuizAvailabilityState(quiz, submission = null, now = new Date()) {
     const start = quiz?.availableFrom ? new Date(quiz.availableFrom) : null;
     const effectiveEnd = getLmsQuizEffectiveEndAt(quiz, submission);
@@ -2807,7 +3011,6 @@ function getLmsQuizAvailabilityState(quiz, submission = null, now = new Date()) 
     if (submission?.status === 'in-progress') return 'in-progress';
     return 'open';
 }
-
 function formatCountdownDuration(ms) {
     const safe = Math.max(0, Math.floor(ms / 1000));
     const hours = Math.floor(safe / 3600);
@@ -2818,7 +3021,6 @@ function formatCountdownDuration(ms) {
     }
     return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 }
-
 function updateLmsExamSessionSummary(sessionId) {
     const session = getExamSessionById(sessionId);
     if (!session) return null;
@@ -2835,77 +3037,6 @@ function updateLmsExamSessionSummary(sessionId) {
     session.updatedAt = new Date().toISOString();
     return session;
 }
-
-function createLmsExamSessionFromTemplate(templateQuizId, targetGroupId, faculty = getCurrentFaculty()) {
-    const normalizedFaculty = normalizeFacultyCode(faculty, 'ECON');
-    const facultyState = ensureAdminExamState(normalizedFaculty);
-    const templateQuiz = facultyState.quizzes.find(item => String(item.id) === String(templateQuizId));
-    if (!templateQuiz) {
-        alert('Choose a saved exam template first.');
-        return null;
-    }
-    const targetGroup = getAdminQuizGroupsForSubject(templateQuiz.subjectId, normalizedFaculty)
-        .find(group => canonicalCourseKey(group.id) === canonicalCourseKey(targetGroupId));
-    if (!targetGroup) {
-        alert('Choose a valid target group for this exam session.');
-        return null;
-    }
-    const resourceKey = resolveCanonicalLmsResourceKey(`${templateQuiz.subjectId}::${targetGroup.id}`);
-    const roster = getLmsQuizEligibleStudents(resourceKey);
-    if (!roster.length) {
-        alert('No enrolled students were found for this group yet.');
-        return null;
-    }
-    const sessionId = makeAdminExamEntityId('exam-session');
-    const publishedAt = new Date().toISOString();
-    const quizPayload = normalizeLmsQuizStoredRecord({
-        ...JSON.parse(JSON.stringify(templateQuiz)),
-        id: makeAdminExamEntityId('quiz'),
-        examSessionId: sessionId,
-        assignedGroupId: targetGroup.id,
-        assignedGroupName: targetGroup.name || targetGroup.id,
-        availableFrom: '',
-        availableUntil: '',
-        status: 'published',
-        isPublished: true,
-        publishMode: 'manual',
-        publishedAt,
-        publishedBy: getSimulatedUserName(),
-        updatedAt: publishedAt,
-        createdAt: publishedAt,
-        requiresBlueExamNetwork: false,
-        attendanceGateEnabled: false,
-        allowedStudentIds: roster.map(student => String(student.id)),
-        attendanceMode: 'manual-access-list',
-        attendanceRequired: true,
-        lockedAfterPublish: true
-    });
-    saveLmsQuizWorkspaceRecord(resourceKey, quizPayload);
-    syncLmsQuizRoster(resourceKey, quizPayload);
-    const sessions = ensureExamSessionStore();
-    sessions[sessionId] = normalizeExamSessionRecord({
-        id: sessionId,
-        title: `${templateQuiz.title || 'Lab Exam'}  -  ${targetGroup.name || targetGroup.id}`,
-        templateQuizId: templateQuiz.id,
-        quizId: quizPayload.id,
-        quizTitle: templateQuiz.title || getLmsQuizDisplayLabel(templateQuiz),
-        resourceKey,
-        courseId: templateQuiz.subjectId,
-        groupId: targetGroup.id,
-        faculty: normalizedFaculty,
-        status: 'waiting',
-        allowedStudentIds: quizPayload.allowedStudentIds,
-        blockedStudentIds: [],
-        attendanceByStudentId: {},
-        durationMinutes: quizPayload.durationMinutes || templateQuiz.durationMinutes || 20,
-        createdAt: publishedAt,
-        updatedAt: publishedAt
-    });
-    updateLmsExamSessionSummary(sessionId);
-    saveState();
-    return sessions[sessionId];
-}
-
 function startLmsExamSession(sessionId) {
     const session = getExamSessionById(sessionId);
     if (!session) return;
@@ -2933,7 +3064,6 @@ function startLmsExamSession(sessionId) {
     updateLmsExamSessionSummary(sessionId);
     saveState();
 }
-
 function closeLmsExamSession(sessionId, reason = 'Exam session closed by staff') {
     const session = getExamSessionById(sessionId);
     if (!session) return;
@@ -2964,7 +3094,6 @@ function closeLmsExamSession(sessionId, reason = 'Exam session closed by staff')
     updateLmsExamSessionSummary(sessionId);
     saveState();
 }
-
 function syncLmsQuizWorkspaceLifecycle(resourceKey) {
     if (!resourceKey) return;
     // Ensure quiz state arrays exist for this resource key
@@ -2974,7 +3103,6 @@ function syncLmsQuizWorkspaceLifecycle(resourceKey) {
         try { syncLmsExamSessionLifecycle(quiz); } catch (e) { console.warn('Quiz lifecycle sync skipped:', e); }
     });
 }
-
 function syncLmsExamSessionLifecycle(quiz) {
     const session = getLmsQuizExamSession(quiz);
     if (!session) return null;
@@ -2987,17 +3115,20 @@ function syncLmsExamSessionLifecycle(quiz) {
     }
     return session;
 }
-
 bindLmsDelegatedMarkupActions();
-
 window.isLmsStudentViewer = isLmsStudentViewer;
 window.getLmsStudentSelectedSemester = getLmsStudentSelectedSemester;
 window.setLmsStudentSelectedSemester = setLmsStudentSelectedSemester;
 window.getStudentLmsEnrolledSubjects = getStudentLmsEnrolledSubjects;
 window.getStudentLmsSemesterOptions = getStudentLmsSemesterOptions;
 window.openLmsStudentEnrolledSubject = openLmsStudentEnrolledSubject;
-window.resolveScheduleEntrySemester = resolveScheduleEntrySemester;
 window.syncLmsNextSessionContext = syncLmsNextSessionContext;
 window.syncLmsCourseContext = syncLmsCourseContext;
-
+window.canPostLmsInteractionAnnouncement = canPostLmsInteractionAnnouncement;
+window.isLmsInteractionMessageFromStaff = isLmsInteractionMessageFromStaff;
+window.canReplyToLmsInteractionPost = canReplyToLmsInteractionPost;
+window.isLmsPersonalBoardKey = isLmsPersonalBoardKey;
+window.isLmsPersonalBoardOwner = isLmsPersonalBoardOwner;
+window.buildLmsPersonalBoardKey = buildLmsPersonalBoardKey;
+window.getLmsPersonalDashboardCourseId = getLmsPersonalDashboardCourseId;
 
