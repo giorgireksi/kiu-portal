@@ -45,3 +45,14 @@ LMS + timetable design CSS lives under:
 `lux-page-bare` routes still load shared kernel CSS (`index-luxury`, `lux-controls`, `lux-focus-panel`).
 Bare CSS **forces** solid surfaces, flat buttons, no focus rail, no ambient canvas.
 Do not re-add `lux-soft-chrome` dual-write on bare pages until shared redesign.
+
+
+## Bare page CSS stack (minimal)
+
+Bare routes must **not** load `index-luxury.css`, `lux-surfaces.css`, or `lux-focus-panel.css`.
+
+```
+tokens → controls → layout-primitives → [modals] → lux-shell-nav → lux-page-bare → mobile
+```
+
+Dashboard alone keeps `index-luxury` + `index-home-dashboard` + `lux-full-paint`.
