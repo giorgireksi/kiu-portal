@@ -3,48 +3,51 @@ const path = require('path');
 const ROOT = path.resolve(__dirname, '..');
 
 const routeVisualClassification = {
-    'admin-library.html': { category: 'standard-shell', dedicatedCss: ['assets/css/admin-library-route.css'], mobileShell: 'shared-standalone' },
-    'admin-orders.html': { category: 'standard-shell', dedicatedCss: ['assets/css/admin-orders-route.css'], mobileShell: 'shared-standalone' },
-    'admin-scheduler.html': { category: 'special-surface', dedicatedCss: ['assets/css/admin-scheduler-route.css'], mobileShell: 'shared-standalone' },
-    'admin-tools.html': { category: 'special-surface', dedicatedCss: ['assets/css/admin-tools-luxury.css'], mobileShell: 'shared-standalone' },
+    'admin-library.html': { category: 'standard-shell', dedicatedCss: ['assets/css/lux-page-bare.css'], mobileShell: 'shared-standalone' },
+    'admin-orders.html': { category: 'standard-shell', dedicatedCss: ['assets/css/lux-page-bare.css'], mobileShell: 'shared-standalone' },
+    'admin-scheduler.html': { category: 'special-surface', dedicatedCss: ['assets/css/lux-page-bare.css'], mobileShell: 'shared-standalone' },
+    'admin-tools.html': { category: 'special-surface', dedicatedCss: ['assets/css/lux-page-bare.css'], mobileShell: 'shared-standalone' },
     'calendar.html': { category: 'excluded-route', dedicatedCss: ['assets/css/redirect-route.css'], mobileShell: 'none' },
-    'career-market.html': { category: 'special-surface', dedicatedCss: ['assets/css/career-market-route.css'], mobileShell: 'none' },
-    'chancellery.html': { category: 'standard-shell', dedicatedCss: ['assets/css/chancellery-route.css'], mobileShell: 'shared-standalone' },
-    'exam-portal.html': { category: 'excluded-route', dedicatedCss: ['assets/css/exam-portal-route.css'], mobileShell: 'none' },
-    'exams.html': { category: 'special-surface', dedicatedCss: ['assets/css/exam-studio.css'], mobileShell: 'shared-standalone' },
-    'faculty-gradebook.html': { category: 'standard-shell', dedicatedCss: ['assets/css/faculty-gradebook-route.css'], mobileShell: 'shared-standalone' },
+    'chancellery.html': { category: 'standard-shell', dedicatedCss: ['assets/css/lux-page-bare.css'], mobileShell: 'shared-standalone' },
+    'exam-portal.html': { category: 'excluded-route', dedicatedCss: ['assets/css/lux-page-bare.css'], mobileShell: 'none' },
+    'exams.html': { category: 'special-surface', dedicatedCss: ['assets/css/lux-page-bare.css'], mobileShell: 'shared-standalone' },
+    'faculty-gradebook.html': { category: 'standard-shell', dedicatedCss: ['assets/css/lux-page-bare.css'], mobileShell: 'shared-standalone' },
     'faculty-schedule.html': { category: 'excluded-route', dedicatedCss: ['assets/css/redirect-route.css'], mobileShell: 'none' },
     'gradebook.html': { category: 'excluded-route', dedicatedCss: ['assets/css/redirect-route.css'], mobileShell: 'none' },
-    'index.html': { category: 'standard-shell', dedicatedCss: ['assets/css/index-home-dashboard.css', 'assets/css/news-route.css'], mobileShell: 'index-shared' },
-    'library.html': { category: 'standard-shell', dedicatedCss: ['assets/css/library-route.css'], mobileShell: 'none' },
-    'lms.html': { category: 'standard-shell', dedicatedCss: ['assets/css/lms-route.css'], mobileShell: 'shared-standalone' },
+    'index.html': { category: 'standard-shell', dedicatedCss: ['assets/css/index-home-dashboard.css'], mobileShell: 'index-shared' },
+    'library.html': { category: 'standard-shell', dedicatedCss: ['assets/css/lux-page-bare.css'], mobileShell: 'none' },
+    'lms.html': {
+        category: 'standard-shell',
+        dedicatedCss: ['assets/css/lux-page-bare.css'],
+        mobileShell: 'shared-standalone'
+    },
     'login.html': { category: 'excluded-route', dedicatedCss: ['assets/css/login-route.css'], mobileShell: 'none' },
-    'news.html': { category: 'standard-shell', dedicatedCss: ['assets/css/news-route.css'], mobileShell: 'none' },
-    'orders.html': { category: 'standard-shell', dedicatedCss: ['assets/css/orders-route.css'], mobileShell: 'none' },
-    'personal-data.html': { category: 'standard-shell', dedicatedCss: ['assets/css/personal-data-route.css'], mobileShell: 'shared-standalone' },
-    'profile.html': { category: 'standard-shell', dedicatedCss: ['assets/css/profile-route.css'], mobileShell: 'shared-standalone' },
-    'profile-view.html': { category: 'standard-shell', dedicatedCss: ['assets/css/profile-view-route.css'], mobileShell: 'shared-standalone' },
-    'programs.html': { category: 'standard-shell', dedicatedCss: ['assets/css/programs-route.css'], mobileShell: 'shared-standalone' },
+    'news.html': { category: 'standard-shell', dedicatedCss: ['assets/css/lux-page-bare.css'], mobileShell: 'none' },
+    'orders.html': { category: 'standard-shell', dedicatedCss: ['assets/css/lux-page-bare.css'], mobileShell: 'none' },
+    'personal-data.html': { category: 'standard-shell', dedicatedCss: ['assets/css/lux-page-bare.css'], mobileShell: 'shared-standalone' },
+    'profile.html': { category: 'excluded-route', dedicatedCss: ['assets/css/redirect-route.css'], mobileShell: 'none' },
+    'profile-view.html': { category: 'standard-shell', dedicatedCss: ['assets/css/lux-page-bare.css'], mobileShell: 'shared-standalone' },
+    'programs.html': { category: 'standard-shell', dedicatedCss: ['assets/css/lux-page-bare.css'], mobileShell: 'shared-standalone' },
     'protected-launch.html': { category: 'excluded-route', dedicatedCss: ['assets/css/protected-launch-route.css'], mobileShell: 'none' },
-    'registration.html': { category: 'standard-shell', dedicatedCss: ['assets/css/registration-route.css'], mobileShell: 'shared-standalone' },
-    'social.html': { category: 'special-surface', dedicatedCss: ['assets/css/social-rebuild.css'], mobileShell: 'social-shared' },
-    'staff.html': { category: 'special-surface', dedicatedCss: ['assets/css/staff-command-center.css'], mobileShell: 'shared-standalone' },
-    'students-admin.html': { category: 'special-surface', dedicatedCss: ['assets/css/students-admin-lms.css'], mobileShell: 'shared-standalone' },
-    'student-service.html': { category: 'standard-shell', dedicatedCss: ['assets/css/student-service-route.css'], mobileShell: 'none' },
-    'study-card.html': { category: 'standard-shell', dedicatedCss: ['assets/css/study-card-route.css'], mobileShell: 'shared-standalone' },
-    'timetable.html': { category: 'standard-shell', dedicatedCss: ['assets/css/timetable-route.css'], mobileShell: 'shared-standalone' }
+    'registration.html': { category: 'standard-shell', dedicatedCss: ['assets/css/lux-page-bare.css'], mobileShell: 'shared-standalone' },
+    'social.html': { category: 'special-surface', dedicatedCss: ['assets/css/social-rebuild.css', 'assets/css/social-projects-lms.css', 'assets/css/social-photography-lms.css', 'assets/css/social-surveys-lms.css', 'assets/css/portfolio-editor.css'], mobileShell: 'social-shared' },
+    'staff.html': { category: 'special-surface', dedicatedCss: ['assets/css/lux-page-bare.css'], mobileShell: 'shared-standalone' },
+    'students-admin.html': { category: 'special-surface', dedicatedCss: ['assets/css/lux-page-bare.css'], mobileShell: 'shared-standalone' },
+    'student-service.html': { category: 'standard-shell', dedicatedCss: ['assets/css/lux-page-bare.css'], mobileShell: 'none' },
+    'study-card.html': { category: 'standard-shell', dedicatedCss: ['assets/css/lux-page-bare.css'], mobileShell: 'shared-standalone' },
+    'timetable.html': { category: 'standard-shell', dedicatedCss: ['assets/css/lux-page-bare.css'], mobileShell: 'shared-standalone' },
+    'wifi-setup.html': { category: 'excluded-route', dedicatedCss: [], mobileShell: 'none' }
 };
 
 const allowedLuxuryShellInlineStylePages = new Set();
 
 const routeCssSharedSelectorZeroBudgetFiles = new Set([
-    'assets/css/news-route.css',
-    'assets/css/profile-route.css',
-    'assets/css/personal-data-route.css',
-    'assets/css/timetable-route.css',
-    'assets/css/admin-library-route.css',
-    'assets/css/admin-orders-route.css',
-    'assets/css/profile-view-route.css'
+    'assets/css/lux-page-bare.css',
+    'assets/css/lux-page-bare.css',
+    'assets/css/lux-page-bare.css',
+    'assets/css/lux-page-bare.css',
+    'assets/css/lux-page-bare.css',
+    'assets/css/lux-page-bare.css'
 ]);
 
 const sharedRouteCssOverridePatterns = [
@@ -71,7 +74,7 @@ const activeWebsiteJsDynamicAuditFiles = {
         'assets/js/pages/social-profile.js'
     ],
     'assets/js/pages/staff-command-center.js': [
-        'assets/js/pages/directories.js'
+        'assets/js/pages/staff-directory-filters-runtime.js'
     ],
     'assets/js/pages/student-service.js': [
         'assets/js/pages/student-service-service.js'
@@ -81,8 +84,7 @@ const activeWebsiteJsDynamicAuditFiles = {
 const mobileShellRuntimeAuditFiles = [
     'assets/js/pages/index-mobile-shell.js',
     'assets/js/pages/standalone-mobile-shell.js',
-    'assets/js/pages/social-mobile.js',
-    'assets/js/pages/staff-mobile-shell.js'
+    'assets/js/pages/social-mobile.js'
 ];
 
 const alwaysAuditedWebsiteJsFiles = [...mobileShellRuntimeAuditFiles];
@@ -105,13 +107,6 @@ const websiteJsInlineStyleAllowlist = {
     'assets/js/pages/social-page.js': [
         {
             description: 'Social project chart/workload widths expressed as percentages.',
-            allowedProperties: ['width'],
-            valuePattern: /%/
-        }
-    ],
-    'assets/js/pages/students-admin-lms.js': [
-        {
-            description: 'Students-admin completion bars expressed as percentage widths.',
             allowedProperties: ['width'],
             valuePattern: /%/
         }
@@ -232,6 +227,8 @@ function getDedicatedRouteCss(source) {
             'assets/css/lux-surfaces.css',
             'assets/css/lux-controls.css',
             'assets/css/lux-layout-primitives.css',
+            'assets/css/lux-focus-panel.css',
+            'assets/css/lux-modals.css',
             'assets/css/index-luxury.css',
             'assets/css/mobile-responsive.css'
         ].includes(href))

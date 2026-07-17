@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 import { JSDOM } from 'jsdom';
 
@@ -78,8 +78,13 @@ describe('lms mobile shell migration', () => {
     expect(source).toContain('assets/js/pages/standalone-mobile-shell.js');
     expect(source).not.toContain('(function initMobileExperience(){');
 
-    expect(classificationScriptSource).toContain("'lms.html': { category: 'standard-shell', dedicatedCss: ['assets/css/lms-route.css'], mobileShell: 'shared-standalone' }");
-    expect(classificationSource).toContain("| `lms.html` | `standard-shell` |");
+    expect(classificationScriptSource).toContain("'assets/css/lux-page-bare.css'");
+    expect(classificationScriptSource).not.toContain("'assets/css/lms-whiteboard-catalog.css'");
+    expect(classificationScriptSource).toContain("mobileShell: 'shared-standalone'");
+    expect(classificationSource).toContain('| `lms.html` | `standard-shell` |');
+    expect(classificationSource).toContain('lux-page-bare.css');
+    expect(classificationSource).not.toContain('lms-route-core.css');
+    expect(classificationSource).not.toContain('lms-whiteboard-catalog.css');
   });
 
   it('uses the shared standalone shell on first tap and clears the default home active state', () => {

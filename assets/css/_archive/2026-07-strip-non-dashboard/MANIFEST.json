@@ -1,0 +1,15 @@
+{
+  "archivedAt": "2026-07-17",
+  "reason": "hard-clean non-dashboard; dashboard-only visual SSOT",
+  "sourcePages": ["lms.html", "timetable.html"],
+  "files": [
+    { "name": "lms-route-core.css", "formerPath": "assets/css/lms-route-core.css", "pages": ["lms.html"] },
+    { "name": "lms-quiz.css", "formerPath": "assets/css/lms-quiz.css", "pages": ["lms.html"] },
+    { "name": "lms-quiz-live.css", "formerPath": "assets/css/lms-quiz-live.css", "pages": ["lms.html"] },
+    { "name": "lms-workspace-chrome.css", "formerPath": "assets/css/lms-workspace-chrome.css", "pages": ["lms.html"] },
+    { "name": "lms-interaction.css", "formerPath": "assets/css/lms-interaction.css", "pages": ["lms.html"] },
+    { "name": "lms-gradebook-misc.css", "formerPath": "assets/css/lms-gradebook-misc.css", "pages": ["lms.html"] },
+    { "name": "lms-whiteboard-catalog.css", "formerPath": "assets/css/lms-whiteboard-catalog.css", "pages": ["lms.html"] },
+    { "name": "timetable-route.css", "formerPath": "assets/css/timetable-route.css", "pages": ["timetable.html"] }
+  ]
+}

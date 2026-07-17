@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 import { JSDOM } from 'jsdom';
 
@@ -78,7 +78,7 @@ describe('timetable mobile shell migration', () => {
     expect(source).toContain('assets/js/pages/standalone-mobile-shell.js');
     expect(source).not.toContain('(function initMobileExperience(){');
 
-    expect(classificationModuleSource).toContain("'timetable.html': { category: 'standard-shell', dedicatedCss: ['assets/css/timetable-route.css'], mobileShell: 'shared-standalone' }");
+    expect(classificationModuleSource).toContain("'timetable.html': { category: 'standard-shell', dedicatedCss: ['assets/css/lux-page-bare.css'], mobileShell: 'shared-standalone' }");
     expect(classificationSource).toContain("| `timetable.html` | `standard-shell` |");
   });
 

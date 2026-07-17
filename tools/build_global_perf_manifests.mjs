@@ -19,7 +19,9 @@ const IMPORT_STATUS_OVERRIDES = {
         'assets/js/pages/login-runtime.js': 'required at first paint'
     },
     'faculty-gradebook.html': {
-        'assets/js/pages/gradebook.js': 'required at first paint',
+        'assets/js/pages/gradebook-model.js': 'required at first paint',
+        'assets/js/pages/gradebook-workspace.js': 'required at first paint',
+        'assets/js/pages/gradebook-staff.js': 'required at first paint',
         'assets/js/app/app.js': 'required at first paint',
         'assets/js/app/api.js': 'required at first paint',
         'assets/js/app/auth.js': 'required at first paint',
@@ -43,22 +45,20 @@ const IMPORT_STATUS_OVERRIDES = {
         'assets/js/pages/exam-portal.js': 'required at first paint'
     },
     'staff.html': {
-        'assets/js/pages/staff-command-center.js': 'required at first paint',
-        'assets/js/pages/staff-route-bootstrap.js': 'required at first paint'
+        'assets/js/pages/staff-command-center.js': 'required at first paint'
     },
     'student-service.html': {
         'assets/js/pages/student-service.js': 'required at first paint'
     },
     'profile-view.html': {
-        'assets/js/pages/directories.js': 'required at first paint'
+        'assets/js/pages/profile-view-admin-actions.js': 'required at first paint'
     },
     'profile.html': {
-        'assets/js/pages/registration.js': 'required at first paint',
-        'assets/js/pages/planner.js': 'required at first paint'
+        'assets/js/pages/registration.js': 'required at first paint'
     },
     'timetable.html': {
-        'assets/js/pages/planner.js': 'required at first paint',
-        'assets/css/timetable-route.css': 'required at first paint'
+        'assets/js/pages/timetable-runtime.js': 'required at first paint',
+        'assets/css/lux-page-bare.css': 'required at first paint (timetable bare)'
     },
     'social.html': {
         'assets/js/pages/social-mobile.js': 'required at first paint',
@@ -66,18 +66,8 @@ const IMPORT_STATUS_OVERRIDES = {
     },
     'registration.html': {
         'assets/js/shared/messenger.js': 'unknown',
-        'assets/js/pages/gradebook.js': 'unknown',
-        'assets/js/pages/lms.js': 'unknown',
         'assets/js/pages/registration.js': 'required at first paint',
-        'assets/js/pages/planner.js': 'unknown',
-        'assets/js/pages/directories.js': 'unknown',
-        'assets/js/pages/student-registration.js': 'unknown',
-        'assets/js/pages/admin-registration.js': 'unknown'
-    },
-    'career-market.html': {
-        'assets/js/shared/messenger.js': 'unknown',
-        'assets/js/features/ui.js': 'unknown',
-        'assets/js/features/index-luxury.js': 'unknown'
+        'assets/js/pages/student-registration.js': 'required at first paint'
     }
 };
 
@@ -118,8 +108,8 @@ function classifyImport(fileName, normalizedPath, type) {
     if (/theme-primer\.js$/i.test(normalizedPath)) return 'required at first paint';
     if (/^https?:\/\//i.test(normalizedPath)) return 'unknown';
     if (/\/pages\/.+\.js$/i.test(normalizedPath)) return 'required at first paint';
+    if (/\/shared\/orders-inbox\.js$/i.test(normalizedPath)) return 'required at first paint';
     if (/\/shared\/orders-workspace\.js$/i.test(normalizedPath)) return 'required at first paint';
-    if (/\/pages\/staff-route-bootstrap\.js$/i.test(normalizedPath)) return 'required at first paint';
     if (/\/shared\/messenger\.js$/i.test(normalizedPath)) return 'unknown';
     if (/\/features\/ui\.js$/i.test(normalizedPath)) return 'unknown';
     if (/\/features\/index-luxury\.js$/i.test(normalizedPath)) return 'required at first paint';

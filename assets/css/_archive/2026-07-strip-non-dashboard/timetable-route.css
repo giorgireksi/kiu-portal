@@ -5,34 +5,21 @@ body.lux-route-timetable {
     --lux-glass-alpha: 0.10;
     --lux-glass-blur: 24px;
     --tt-fade-surface:
-        radial-gradient(circle at 6% 0%, rgba(255, 255, 255, calc(var(--lux-color-fade-alpha, .92) * 0.08)), transparent 32%),
-        radial-gradient(circle at 74% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * 0.28)), transparent 42%),
-        radial-gradient(circle at 100% 96%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .92) * 0.18)), transparent 40%),
-        linear-gradient(135deg,
-            rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * 0.10)),
-            rgba(10, 15, 24, calc(var(--lux-transparency-alpha, .92) * 0.89)) 44%,
-            rgba(7, 10, 18, calc(var(--lux-transparency-alpha, .92) * 0.80)));
+       var(--lux-panel-surface);
     --tt-fade-surface-soft:
-        radial-gradient(circle at 12% 0%, rgba(255, 255, 255, calc(var(--lux-color-fade-alpha, .92) * 0.055)), transparent 30%),
-        radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * 0.14)), transparent 34%),
-        linear-gradient(135deg,
-            rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * 0.065)),
-            rgba(10, 15, 24, calc(var(--lux-transparency-alpha, .92) * 0.88)) 46%,
-            rgba(7, 10, 18, calc(var(--lux-transparency-alpha, .92) * 0.80)));
+       var(--lux-panel-surface-soft);
     --tt-fade-control:
-        linear-gradient(180deg, rgba(255, 255, 255, calc(0.04 + var(--lux-glass-alpha, .06))), rgba(255, 255, 255, 0.02)),
-        radial-gradient(circle at top right, rgba(var(--lux-accent-rgb), 0.10), transparent 32%);
+       var(--lux-panel-control);
     --tt-fade-chip: var(--tt-fade-surface-soft);
-    --tt-fade-border: rgba(var(--lux-accent-rgb), 0.22);
-    --tt-fade-border-soft: rgba(var(--lux-accent-rgb), 0.12);
+    --tt-fade-border:var(--lux-panel-border);
+    --tt-fade-border-soft:var(--lux-panel-border-soft);
     --tt-fade-shadow:
-        0 24px 58px rgba(0, 0, 0, 0.24),
-        inset 0 1px 0 rgba(255, 255, 255, 0.08),
-        0 0 0 1px rgba(var(--lux-accent-rgb), 0.04);
+       var(--lux-panel-shadow);
     --tt-fade-shadow-soft:
-        0 14px 32px rgba(0, 0, 0, 0.18),
-        inset 0 1px 0 rgba(255, 255, 255, 0.06);
-    --tt-fade-blur: blur(var(--lux-transparency-blur, 20px)) saturate(var(--lux-transparency-saturate, 145%));
+       var(--lux-panel-shadow-soft);
+    --tt-fade-surface-matte: var(--tt-fade-surface-soft);
+    --tt-fade-border-matte: var(--tt-fade-border-soft);
+    --tt-fade-blur:var(--lux-panel-blur-filter);
     --tt-fade-row: rgba(var(--lux-glass-tint-rgb, 16, 23, 38), calc(var(--lux-raised-fill-alpha, 0.045) + 0.04));
     --tt-fade-row-hover: rgba(var(--lux-accent-rgb), calc(0.04 + var(--lux-transparency-alpha, 0.92) * 0.06));
     --tt-grid-header-bg: rgba(var(--lux-glass-tint-rgb, 16, 23, 38), 0.92);
@@ -51,32 +38,19 @@ body.lux-route-timetable {
 body.lux-light-mode.lux-route-timetable,
 html.lux-light-mode body.lux-route-timetable {
     --tt-fade-surface:
-        radial-gradient(circle at 6% 0%, rgba(255, 255, 255, calc(var(--lux-color-fade-alpha, .86) * 0.88)), transparent 34%),
-        radial-gradient(circle at 74% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * 0.24)), transparent 42%),
-        radial-gradient(circle at 100% 96%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .86) * 0.14)), transparent 40%),
-        linear-gradient(135deg,
-            rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * 0.065)),
-            rgba(255, 255, 255, calc(var(--lux-transparency-alpha, .86) * 0.84)) 44%,
-            rgba(247, 241, 232, calc(var(--lux-transparency-alpha, .86) * 0.70)));
+       var(--lux-panel-surface);
     --tt-fade-surface-soft:
-        radial-gradient(circle at 12% 0%, rgba(255, 255, 255, calc(var(--lux-color-fade-alpha, .86) * 0.62)), transparent 30%),
-        radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * 0.14)), transparent 34%),
-        linear-gradient(135deg,
-            rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * 0.045)),
-            rgba(255, 255, 255, calc(var(--lux-transparency-alpha, .86) * 0.84)) 46%,
-            rgba(247, 241, 232, calc(var(--lux-transparency-alpha, .86) * 0.72)));
+       var(--lux-panel-surface-soft);
     --tt-fade-control:
-        linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(248, 244, 237, 0.62)),
-        radial-gradient(circle at top right, rgba(var(--lux-accent-rgb), 0.10), transparent 32%);
-    --tt-fade-border: rgba(var(--lux-accent-rgb), 0.16);
-    --tt-fade-border-soft: rgba(var(--lux-accent-rgb), 0.11);
+       var(--lux-panel-control);
+    --tt-fade-border:var(--lux-panel-border);
+    --tt-fade-border-soft:var(--lux-panel-border-soft);
     --tt-fade-shadow:
-        0 22px 48px rgba(107, 91, 62, 0.13),
-        inset 0 1px 0 rgba(255, 255, 255, 0.74),
-        0 0 0 1px rgba(var(--lux-accent-rgb), 0.035);
+       var(--lux-panel-shadow);
     --tt-fade-shadow-soft:
-        0 14px 30px rgba(107, 91, 62, 0.10),
-        inset 0 1px 0 rgba(255, 255, 255, 0.62);
+       var(--lux-panel-shadow-soft);
+    --tt-fade-surface-matte: var(--tt-fade-surface-soft);
+    --tt-fade-border-matte: var(--tt-fade-border-soft);
     --tt-fade-row: rgba(255, 255, 255, calc(var(--lux-raised-fill-alpha, 0.06) + 0.48));
     --tt-fade-row-hover: rgba(var(--lux-accent-rgb), calc(0.03 + var(--lux-transparency-alpha, 0.86) * 0.05));
     --tt-grid-header-bg: rgba(255, 255, 255, 0.92);
@@ -125,26 +99,42 @@ body.lux-route-timetable :is(
     -webkit-backdrop-filter: var(--tt-fade-blur) !important;
 }
 
-/* Soft chrome */
+/* Soft chrome / focus matte — LMS soft-chrome contract (no nested blur) */
 body.lux-route-timetable :is(
+    .lux-soft-chrome,
+    .lux-focus-panel,
     .lux-timetable-hero-focus,
     .lux-timetable-filters,
     .lux-timetable-view-switcher,
     .lux-timetable-week-nav,
     .lux-timetable-overview-row,
     .lux-timetable-insight,
-
     .schedule-day-section,
     .lux-timetable-day-section,
     .schedule-session-card,
     .lux-timetable-session-card
 ) {
-    background: var(--tt-fade-surface-soft) !important;
-    border: 1px solid var(--tt-fade-border-soft) !important;
+    background: var(--lux-soft-chrome-surface, var(--tt-fade-surface-matte, var(--tt-fade-surface-soft))) !important;
+    border: 1px solid var(--lux-soft-chrome-border, var(--tt-fade-border-matte, var(--tt-fade-border-soft))) !important;
     color: var(--lux-text) !important;
-    box-shadow: var(--tt-fade-shadow-soft) !important;
-    backdrop-filter: var(--tt-fade-blur) !important;
-    -webkit-backdrop-filter: var(--tt-fade-blur) !important;
+    box-shadow: var(--lux-soft-chrome-shadow, var(--tt-fade-shadow-soft)) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+/* Large shells that dual-wrote soft-chrome follow matte (beats large-panel blur rule) */
+body.lux-route-timetable :is(
+    .lux-timetable-hero.lux-soft-chrome,
+    .lux-timetable-command.lux-soft-chrome,
+    .lux-timetable-stage.lux-soft-chrome,
+    .lux-timetable-grid-shell.lux-soft-chrome,
+    .schedule-grid-shell.lux-soft-chrome
+) {
+    background: var(--lux-soft-chrome-surface, var(--tt-fade-surface-matte, var(--tt-fade-surface-soft))) !important;
+    border: 1px solid var(--lux-soft-chrome-border, var(--tt-fade-border-matte, var(--tt-fade-border-soft))) !important;
+    box-shadow: var(--lux-soft-chrome-shadow, var(--tt-fade-shadow-soft)) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
 }
 
 body.lux-route-timetable #app-content {
@@ -1425,4 +1415,180 @@ html.lux-light-mode body.lux-route-timetable .lux-timetable-grid-shell .lux-time
         padding-bottom: 10px;
         margin-bottom: 2px;
     }
+}
+
+/* ===== Session-marker palette (peeled from index-luxury) ===== */
+/* Shared session-marker palette (LMS composer + timetable + marked cards) */
+body.lux-route-timetable{
+    --marker-color-quiz: #EAB308;
+    --marker-color-oral_quiz: #14B8A6;
+    --marker-color-exam: #EF4444;
+    --marker-color-presentation: #22C55E;
+    --marker-color-project: #84CC16;
+    --marker-color-lab: #A855F7;
+    --marker-color-deadline: #FB923C;
+    --marker-color-important: #EC4899;
+}
+
+body.lux-route-timetable .marker-quiz{
+    --session-marker-accent: var(--marker-color-quiz);
+    --session-marker-soft: color-mix(in srgb, var(--marker-color-quiz) 22%, transparent);
+}
+
+body.lux-route-timetable .marker-oral_quiz{
+    --session-marker-accent: var(--marker-color-oral_quiz);
+    --session-marker-soft: color-mix(in srgb, var(--marker-color-oral_quiz) 22%, transparent);
+}
+
+body.lux-route-timetable .marker-exam{
+    --session-marker-accent: var(--marker-color-exam);
+    --session-marker-soft: color-mix(in srgb, var(--marker-color-exam) 22%, transparent);
+}
+
+body.lux-route-timetable .marker-presentation{
+    --session-marker-accent: var(--marker-color-presentation);
+    --session-marker-soft: color-mix(in srgb, var(--marker-color-presentation) 22%, transparent);
+}
+
+body.lux-route-timetable .marker-project{
+    --session-marker-accent: var(--marker-color-project);
+    --session-marker-soft: color-mix(in srgb, var(--marker-color-project) 22%, transparent);
+}
+
+body.lux-route-timetable .marker-lab{
+    --session-marker-accent: var(--marker-color-lab);
+    --session-marker-soft: color-mix(in srgb, var(--marker-color-lab) 22%, transparent);
+}
+
+body.lux-route-timetable .marker-deadline{
+    --session-marker-accent: var(--marker-color-deadline);
+    --session-marker-soft: color-mix(in srgb, var(--marker-color-deadline) 22%, transparent);
+}
+
+body.lux-route-timetable .marker-important{
+    --session-marker-accent: var(--marker-color-important);
+    --session-marker-soft: color-mix(in srgb, var(--marker-color-important) 22%, transparent);
+}
+
+body.lux-route-timetable .schedule-session-pill.important,
+body.lux-route-timetable .schedule-marker-badge{
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border-radius: 999px;
+    background: var(--session-marker-soft);
+    color: var(--session-marker-accent);
+    border: 1px solid color-mix(in srgb, var(--session-marker-accent) 26%, transparent);
+    font-size: 11px;
+    font-weight: 900;
+}
+
+body.lux-route-timetable .schedule-session-card.has-session-marker,
+body.lux-route-timetable .sch-event.has-session-marker{
+    --session-marker-accent: var(--lux-accent);
+    --session-marker-soft: rgba(var(--lux-accent-rgb),0.18);
+    border-color: color-mix(in srgb, var(--session-marker-accent) 52%, var(--lux-border)) !important;
+    box-shadow: var(--lux-elev-3);
+}
+
+body.lux-route-timetable .schedule-session-card.has-session-marker::before{
+    background: linear-gradient(180deg, var(--session-marker-accent), color-mix(in srgb, var(--session-marker-accent) 35%, transparent)) !important;
+    opacity: 0.95;
+    width: 4px;
+}
+
+body.lux-route-timetable .schedule-session-pill.important{
+    padding: 4px 8px;
+}
+
+body.lux-route-timetable .schedule-session-marker-banner{
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    padding: 11px 12px;
+    margin-top: 12px;
+    border-radius: 8px;
+    background: var(--session-marker-soft);
+    border: 1px solid color-mix(in srgb, var(--session-marker-accent) 28%, transparent);
+    color: var(--lux-text);
+}
+
+body.lux-route-timetable .schedule-session-marker-banner > i{
+    color: var(--session-marker-accent);
+    margin-top: 2px;
+}
+
+body.lux-route-timetable .schedule-session-marker-banner div{
+    display: grid;
+    gap: 3px;
+}
+
+body.lux-route-timetable .schedule-session-marker-banner strong{
+    color: var(--lux-text);
+    font-size: 13px;
+}
+
+body.lux-route-timetable .schedule-session-marker-banner span,
+body.lux-route-timetable .schedule-grid-marker-note{
+    color: var(--lux-text-muted) !important;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+body.lux-route-timetable .sch-event.has-session-marker{
+    background:
+        linear-gradient(135deg, color-mix(in srgb, var(--session-marker-accent) 14%, transparent), transparent 48%),
+        radial-gradient(circle at top right, var(--session-marker-soft), transparent 38%),
+        rgba(255,255,255,0.08) !important;
+}
+
+body.lux-route-timetable .schedule-marker-badge{
+    padding: 4px 7px;
+    width: max-content;
+    max-width: calc(100% - 12px);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+body.lux-light-mode.lux-route-timetable .sch-event.has-session-marker,
+html.lux-light-mode body.lux-route-timetable .sch-event.has-session-marker{
+    background:
+        linear-gradient(135deg, color-mix(in srgb, var(--session-marker-accent) 10%, transparent), transparent 48%),
+        radial-gradient(circle at top right, var(--session-marker-soft), transparent 38%),
+        rgba(255,255,255,0.92) !important;
+}
+
+@media (max-width: 720px){
+    body.lux-route-lms .lms-session-marker-card {
+        grid-template-columns: 1fr;
+    }
+
+    body.lux-route-lms .lms-session-marker-slot {
+        grid-template-columns: auto minmax(0, 1fr);
+    }
+
+    body.lux-route-lms .lms-session-marker-slot-remove {
+        grid-column: 2;
+        justify-self: end;
+    }
+
+    body.lux-route-lms .lms-session-marker-actions,
+    body.lux-route-lms .lms-session-marker-remove {
+        width: 100%;
+    }
+
+    body.lux-route-lms .lms-session-marker-actions button,
+    body.lux-route-lms .lms-session-marker-remove {
+        justify-content: center;
+        width: 100%;
+    }
+}
+
+/* Efficient mode: keep focus/soft-chrome matte (never re-blur) */
+body[data-lux-performance='efficient'].lux-route-timetable .lux-timetable-hero-focus,
+body[data-lux-performance='efficient'].lux-route-timetable .lux-soft-chrome,
+body[data-lux-performance='efficient'].lux-route-timetable .lux-focus-panel {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
 }

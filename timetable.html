@@ -17,17 +17,17 @@
     <link rel="stylesheet" href="assets/css/kiu-fonts.css?v=20260515-fonts1">
     <link rel="stylesheet" href="assets/css/base.css?v=20260419-libsync1">
     <link rel="stylesheet" href="assets/css/layout.css?v=20260528-layoutfix2">
-    <link rel="stylesheet" href="assets/css/lux-tokens.css?v=20260606-luxscrollbar1">
+    <link rel="stylesheet" href="assets/css/lux-tokens.css?v=20260717-panelpaint9">
     <link rel="stylesheet" href="assets/css/lux-surfaces.css?v=20260527-profcss1">
-    <link rel="stylesheet" href="assets/css/lux-controls.css?v=20260606-pickerscroll1">
+    <link rel="stylesheet" href="assets/css/lux-focus-panel.css?v=20260717-softchrome1">
+    <link rel="stylesheet" href="assets/css/lux-controls.css?v=20260717-topbarssot2">
     <link rel="stylesheet" href="assets/css/lux-layout-primitives.css?v=20260606-luxscrollbar1">
-    <link rel="stylesheet" href="assets/css/index-luxury.css?v=20260531-partbg4">
+    <link rel="stylesheet" href="assets/css/index-luxury.css?v=20260717-topbarssot2">
     <link rel="stylesheet" href="assets/css/mobile-responsive.css?v=20260419-libsync1">
+    <link rel="stylesheet" href="assets/css/lux-page-bare.css?v=20260717-hardclean1">
     <script src="assets/js/theme-primer.js?v=20260604-styleguard2"></script>
-
-    <link rel="stylesheet" href="assets/css/timetable-route.css?v=20260606-ttcompact1">
 </head>
-<body class="kiu-shell-loading lux-nonhome-page lux-route-timetable lux-unified-shell" data-faculty="ECON">
+<body class="kiu-shell-loading lux-nonhome-page lux-route-timetable lux-unified-shell lux-page-bare" data-faculty="ECON">
 <!-- Navigation stubs (hidden, for JS compatibility) -->
 <nav id="prof-nav" aria-label="Professor navigation stub"></nav>
 <nav id="top-nav" aria-label="Top navigation stub"></nav>
@@ -37,7 +37,7 @@
     <main id="app-content">
         <div id="page-timetable" class="page-section active-page">
             <div class="lux-page-shell lux-timetable-page">
-                <section class="lux-hero lux-timetable-hero lux-summary-surface--hero">
+                <section class="lux-hero lux-timetable-hero lux-summary-surface--hero lux-soft-chrome">
                     <div class="lux-hero-stage lux-timetable-hero-top">
                     <div class="lux-timetable-hero-main lux-hero-main">
                         <div id="timetable-page-kicker" class="lux-page-kicker"><i class="fas fa-calendar-week"></i> Student timetable</div>
@@ -49,7 +49,7 @@
                             <span class="page-hero-badge lux-pill lux-timetable-hero-badge" id="timetable-hero-sem-badge"><i class="fas fa-graduation-cap"></i> Semester 1</span>
                         </div>
                     </div>
-                    <aside class="lux-timetable-hero-focus lux-hero-side">
+                    <aside class="lux-timetable-hero-focus lux-hero-side lux-focus-panel lux-soft-chrome">
                         <div class="lux-timetable-focus-head">
                             <div class="lux-timetable-focus-kicker" id="timetable-hero-focus-label">Your next class</div>
                             <span class="lux-timetable-focus-time" id="timetable-hero-focus-time" aria-label="Session time">--:--</span>
@@ -63,7 +63,7 @@
                     </aside>
                     </div>
 
-                <div class="lux-card lux-timetable-command">
+                <div class="lux-card lux-timetable-command lux-soft-chrome">
                     <div class="lux-timetable-command-head">
                         <div>
                             <div class="lux-card-title lux-timetable-command-title">Schedule Tools</div>
@@ -72,7 +72,7 @@
                     </div>
 
                     <div class="lux-timetable-command-grid">
-                        <div class="lux-card lux-timetable-filters" id="timetable-filters">
+                        <div class="lux-card lux-timetable-filters lux-soft-chrome" id="timetable-filters">
                             <div class="filter-shell-title lux-timetable-filter-title"><i class="fas fa-filter"></i> Filters</div>
                             <div class="lux-field-stack">
                                 <label for="tt-filter-sem">Semester</label>
@@ -94,7 +94,7 @@
 
                         <div id="timetable-schedule-controls" class="schedule-toolbar-host lux-timetable-controls">
                             <div class="schedule-view-row lux-timetable-view-row">
-                                <div class="lux-timetable-view-switcher lux-card" role="group" aria-label="Schedule View">
+                                <div class="lux-timetable-view-switcher lux-card lux-soft-chrome" role="group" aria-label="Schedule View">
                                     <button type="button" id="timetable-view-sessions" class="lux-primary-btn schedule-view-switcher-btn lux-timetable-view-switcher-btn is-active" data-schedule-view="sessions" aria-pressed="true">
                                         <i class="fas fa-calendar-day" aria-hidden="true"></i> Sessions
                                     </button>
@@ -104,7 +104,7 @@
                                 </div>
                             </div>
                             <div class="schedule-toolbar">
-                                <div class="schedule-week-nav lux-timetable-week-nav lux-card">
+                                <div class="schedule-week-nav lux-timetable-week-nav lux-card lux-soft-chrome">
                                     <button type="button" class="schedule-week-arrow lux-timetable-week-arrow" data-timetable-week-shift="-1" aria-label="Previous Week">
                                         <i class="fas fa-chevron-left"></i>
                                     </button>
@@ -114,7 +114,7 @@
                                     </button>
                                     <button type="button" id="timetable-week-current" class="lux-primary-btn schedule-current-week-btn lux-timetable-current-week-btn" data-schedule-current-week="1">Current Week</button>
                                 </div>
-                                <div class="lux-card lux-timetable-overview-row schedule-overview-row">
+                                <div class="lux-card lux-timetable-overview-row schedule-overview-row lux-soft-chrome">
                                     <span id="timetable-overview-sessions" class="schedule-chip lux-status-pill lux-timetable-chip"><i class="fas fa-layer-group"></i> 0 sessions</span>
                                     <span id="timetable-overview-days" class="schedule-chip lux-status-pill lux-timetable-chip"><i class="fas fa-calendar-week"></i> 0 active days</span>
                                     <span id="timetable-overview-hours" class="schedule-chip lux-status-pill lux-timetable-chip"><i class="far fa-clock"></i> 0.0 planned hours</span>
@@ -125,7 +125,7 @@
                 </div>
                 </section>
 
-                <section class="lux-card lux-timetable-stage">
+                <section class="lux-card lux-timetable-stage lux-soft-chrome">
                     <div class="lux-timetable-stage-head">
                         <div>
                             <div class="lux-card-title lux-timetable-stage-title">Weekly Timetable</div>
@@ -141,21 +141,21 @@
         </div>
     </main>
 
-<script defer src="assets/js/app/app.js?v=20260426-reset3"></script>
+<script defer src="assets/js/app/app.js?v=20260716-glassmax2"></script>
 <script defer src="assets/js/app/api.js?v=20260426-sessionfix3"></script>
 <script defer src="assets/js/app/auth.js?v=20260429-authfix2"></script>
 <script defer src="assets/js/data/initial-state.js?v=20260430-lmssessions1"></script>
 <script defer src="assets/js/app/state.js?v=20260429-statestackfix1"></script>
 <script defer src="assets/js/shared/faculty.js?v=20260505-authglobals1"></script>
 <script defer src="assets/js/shared/messenger.js?v=20260429-peopleisolation1"></script>
-<script defer src="assets/js/shared/utilities.js?v=20260605-blurfix1"></script>
+<script defer src="assets/js/shared/utilities.js?v=20260717-panelpaint8"></script>
 <script defer src="assets/js/features/navigation.js?v=20260605-ttboot1"></script>
 <script defer src="assets/js/features/ui.js?v=20260429-peopleisolation1"></script>
 <script defer src="assets/js/features/index-luxury.js?v=20260605-blurfix1"></script>
-<script type="module" src="assets/js/features/luxury-particle-background.js?v=20260531-partbg8"></script>
-<script defer src="assets/js/features/luxury-shell-chrome.js?v=20260606-pickerscroll1"></script>
+<script type="module" src="assets/js/features/luxury-background.js?v=20260717-lazythree1"></script>
+<script defer src="assets/js/features/luxury-shell-chrome.js?v=20260717-bgparams1"></script>
 <script defer src="assets/js/features/luxury-home-model.js?v=20260518-luxhome1"></script>
-<script defer src="assets/js/pages/timetable-runtime.js?v=20260606-ttcompact1"></script>
+<script defer src="assets/js/pages/timetable-runtime.js?v=20260717-softchrome1"></script>
 
 <script defer>
 function bindTimetableStaticControls() {

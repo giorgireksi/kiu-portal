@@ -1,4 +1,9 @@
 <!DOCTYPE html>
+<!--
+  LMS (hard-clean non-dashboard): shared kernel + lux-page-bare only.
+  Route skins archived: assets/css/_archive/2026-07-strip-non-dashboard/
+  Feature scripts unchanged; layout unstyled until shared redesign (docs/visual-ssot.md).
+-->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -10,109 +15,24 @@
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230B192C'/%3E%3Ctext x='32' y='41' text-anchor='middle' font-family='Arial, sans-serif' font-size='24' font-weight='700' fill='white'%3EK%3C/text%3E%3C/svg%3E">
     <link rel="stylesheet" href="assets/vendor/fontawesome/css/all.min.css?v=1776604822059">
     <link rel="stylesheet" href="assets/css/kiu-fonts.css?v=20260515-fonts1">
-    <script src="assets/js/theme-primer.js?v=20260604-styleguard2"></script>
-    <link rel="stylesheet" href="assets/css/base.css?v=20260419-libsync1">
-    <link rel="stylesheet" href="assets/css/layout.css?v=20260528-layoutfix2">
-    <link rel="stylesheet" href="assets/css/lux-tokens.css?v=20260606-luxscrollbar1">
-    <link rel="stylesheet" href="assets/css/lux-surfaces.css?v=20260527-profcss1">
-    <link rel="stylesheet" href="assets/css/lux-controls.css?v=20260606-pickerscroll1">
-    <link rel="stylesheet" href="assets/css/lux-layout-primitives.css?v=20260606-luxscrollbar1">
-    <link rel="stylesheet" href="assets/css/index-luxury.css?v=20260531-routeglass15">
-    <link rel="stylesheet" href="assets/css/mobile-responsive.css?v=20260419-libsync1">
-    <link rel="stylesheet" href="assets/css/lms-route.css?v=20260531-lmsscheme8">
-    <script>
-        (function initLmsExportLibraryLoader() {
-            const exportSources = {
-                jspdf: 'assets/vendor/export-libs/jspdf.umd.min.js',
-                docx: 'assets/vendor/export-libs/docx.iife.js',
-                fileSaver: 'assets/vendor/export-libs/FileSaver.min.js'
-            };
-            const pendingLoads = {};
-            const isReady = {
-                jspdf: () => typeof window.jspdf !== 'undefined' || typeof window.jsPDF !== 'undefined',
-                docx: () => typeof window.docx !== 'undefined',
-                fileSaver: () => typeof window.saveAs === 'function'
-            };
-            function loadScriptOnce(key) {
-                if (isReady[key]?.()) return Promise.resolve();
-                if (pendingLoads[key]) return pendingLoads[key];
-                pendingLoads[key] = new Promise((resolve, reject) => {
-                    const script = document.createElement('script');
-                    script.src = exportSources[key];
-                    script.async = true;
-                    script.onload = () => resolve();
-                    script.onerror = () => reject(new Error(`Could not load ${key} export library.`));
-                    document.head.appendChild(script);
-                });
-                return pendingLoads[key];
-            }
-            window.ensureLmsExportLibraries = function ensureLmsExportLibraries(format) {
-                const normalized = String(format || '').toLowerCase();
-                if (normalized === 'pdf') return loadScriptOnce('jspdf');
-                if (normalized === 'docx') return Promise.all([loadScriptOnce('docx'), loadScriptOnce('fileSaver')]);
-                return Promise.resolve();
-            };
-            function ensureLmsExportRuntime() {
-                if (typeof window.ensurePortalRegistrationRuntimeLoaded === 'function') {
-                    return Promise.resolve(window.ensurePortalRegistrationRuntimeLoaded()).catch(() => false);
-                }
-                return Promise.resolve(true);
-            }
-            function wrapExportFunction(name, formatIndex) {
-                const original = window[name];
-                if (typeof original !== 'function' || original.__lmsLazyExportWrapped) return false;
-                window[name] = async function lmsLazyExportWrapper() {
-                    const args = Array.from(arguments);
-                    const format = args[formatIndex];
-                    try {
-                        await window.ensureLmsExportLibraries(format);
-                    } catch (error) {
-                        alert('The export library could not be loaded. Please check your connection and try again.');
-                        return undefined;
-                    }
-                    return original.apply(this, args);
-                };
-                window[name].__lmsLazyExportWrapped = true;
-                return true;
-            }
-            function installExportStub(name, formatIndex) {
-                if (typeof window[name] === 'function') return;
-                const stub = async function lmsLazyExportStub() {
-                    const args = Array.from(arguments);
-                    const format = args[formatIndex];
-                    await ensureLmsExportRuntime();
-                    try {
-                        await window.ensureLmsExportLibraries(format);
-                    } catch (error) {
-                        alert('The export library could not be loaded. Please try again.');
-                        return undefined;
-                    }
-                    const realExport = window[name];
-                    if (typeof realExport === 'function' && realExport !== stub) {
-                        return realExport.apply(this, args);
-                    }
-                    alert('The quiz export tools are still loading. Please try again in a moment.');
-                    return undefined;
-                };
-                stub.__lmsLazyExportWrapped = true;
-                window[name] = stub;
-            }
-            function installExportWrappers() {
-                installExportStub('exportLmsQuizDraft', 0);
-                installExportStub('exportLmsQuizById', 1);
-                const wrappedDraft = wrapExportFunction('exportLmsQuizDraft', 0);
-                const wrappedById = wrapExportFunction('exportLmsQuizById', 1);
-                return wrappedDraft && wrappedById;
-            }
-            [0, 200, 800, 1800].forEach((delay) => {
-                window.setTimeout(installExportWrappers, delay);
-            });
-            document.addEventListener('DOMContentLoaded', installExportWrappers, { once: true });
-            window.addEventListener('load', installExportWrappers, { once: true });
-        })();
-    </script>
+    <script src="assets/js/theme-primer.js?v=20260714-lmspro2"></script>
+    <link rel="stylesheet" href="assets/css/base.css?v=20260713-accentborder2">
+    <link rel="stylesheet" href="assets/css/layout.css?v=20260713-accentborder2">
+    <link rel="stylesheet" href="assets/css/lux-tokens.css?v=20260717-panelpaint9">
+    <link rel="stylesheet" href="assets/css/lux-surfaces.css?v=20260713-accentborder2">
+    <link rel="stylesheet" href="assets/css/lux-focus-panel.css?v=20260715-focus1">
+    <link rel="stylesheet" href="assets/css/lux-controls.css?v=20260717-topbarssot2">
+    <link rel="stylesheet" href="assets/css/lux-layout-primitives.css?v=20260713-accentborder2">
+    <link rel="stylesheet" href="assets/css/lux-modals.css?v=20260710-warmglass-social-scope1">
+    <link rel="stylesheet" href="assets/css/index-luxury.css?v=20260717-topbarssot2">
+    <link rel="stylesheet" href="assets/css/mobile-responsive.css?v=20260713-accentborder2">
+    <link rel="stylesheet" href="assets/css/lux-page-bare.css?v=20260717-hardclean1">
+    <script defer src="assets/js/pages/lms-export-libs.js?v=20260714-lmspro2"></script>
 </head>
-<body class="kiu-shell-loading lux-nonhome-page lux-route-lms lux-unified-shell">
+<body class="kiu-shell-loading lux-nonhome-page lux-route-lms lux-unified-shell lux-page-bare">
+    <div id="lux-bg-fog" aria-hidden="true"></div>
+    <canvas id="lux-bg-canvas" aria-hidden="true"></canvas>
+    <div id="lux-bg-overlay" aria-hidden="true"></div>
     <!-- MAIN CONTENT -->
 <!-- Navigation stubs (hidden, for JS compatibility) -->
 <nav id="prof-nav" aria-label="Professor navigation stub"></nav>
@@ -122,61 +42,28 @@
         <!-- HOME: Subject list -->
         <div id="page-lms" class="page-section active-page">
             <div class="lux-page-shell lms-route-stage">
-                <section class="page-hero lux-lms-hero lms-clean-hero lms-hero-v2">
+                <section class="page-hero lux-lms-hero lms-clean-hero lms-hero-v2 lux-summary-surface--hero lux-soft-chrome">
                     <div class="lms-hero-v2-grid lux-hero-stage">
                         <div class="lms-hero-v2-left lux-hero-main">
                             <div class="lms-clean-kicker"><i class="fas fa-book-reader"></i> Learning Management System</div>
-                            <div class="page-hero-title lms-hero-v2-title" id="lms-hero-greeting">Learning Workspace</div>
+                            <div class="page-hero-title lms-hero-v2-title">Learning Workspace</div>
                             <div class="page-hero-copy">Open the right faculty subject, choose your group, and continue work in a focused LMS built for students, teaching staff, and administrators.</div>
                         </div>
-                        <div class="lms-hero-v2-right lux-hero-side" id="lms-subject-anchor">
-                            <div class="lms-hero-v2-stats">
-                                <div class="lms-hero-v2-stat">
-                                    <div class="lms-hero-v2-stat-icon"><i class="fas fa-building"></i></div>
-                                    <div>
-                                        <div class="lms-hero-v2-stat-value" id="lms-hero-faculty">Computer Science</div>
-                                        <div class="lms-hero-v2-stat-label">Active Faculty</div>
-                                    </div>
-                                </div>
-                                <div class="lms-hero-v2-stat">
-                                    <div class="lms-hero-v2-stat-icon"><i class="fas fa-book-open"></i></div>
-                                    <div>
-                                        <div class="lms-hero-v2-stat-value" id="lms-hero-subject-count">0</div>
-                                        <div class="lms-hero-v2-stat-label">Subjects</div>
-                                    </div>
-                                </div>
-                                <div class="lms-hero-v2-stat">
-                                    <div class="lms-hero-v2-stat-icon"><i class="fas fa-users"></i></div>
-                                    <div>
-                                        <div class="lms-hero-v2-stat-value" id="lms-hero-group-count">0</div>
-                                        <div class="lms-hero-v2-stat-label" id="lms-hero-group-label">Groups</div>
-                                    </div>
-                                </div>
+                        <aside class="lms-hero-focus lux-hero-side lux-focus-panel lux-soft-chrome" id="lms-subject-anchor" aria-label="Workspace status">
+                            <div class="lms-hero-focus-head">
+                                <div class="lms-hero-focus-kicker" id="lms-focus-kicker">Workspace status</div>
+                                <span class="lms-hero-focus-chip" id="lms-focus-chip" aria-label="Subject count">0 subjects</span>
                             </div>
-                            <div class="lms-hero-v2-meta">
-                                <span class="lux-status-pill is-muted" id="lms-active-faculty-badge"><i class="fas fa-building"></i> Faculty: Computer Science</span>
+                            <div class="lms-hero-focus-body">
+                                <div class="lms-hero-focus-title" id="lms-focus-title">Waiting for registration</div>
+                                <p class="lms-hero-focus-copy" id="lms-focus-copy">No enrolled subjects for this semester yet. Register for courses to populate your LMS workspace.</p>
                             </div>
-                        </div>
+                            <div class="lms-hero-focus-meta">
+                                <span><i class="fas fa-building"></i> <span id="lms-focus-meta-text">Faculty</span></span>
+                            </div>
+                        </aside>
                     </div>
-                    <!-- Hidden elements for JS compatibility -->
-                    <div hidden>
-                        <span id="lms-subject-scope-title"></span>
-                        <span id="lms-subject-scope-copy"></span>
-                        <span id="lms-hero-next-step"></span>
-                        <span id="lms-hero-next-copy"></span>
-                        <span id="lms-signal-lane"></span>
-                        <span id="lms-signal-role"></span>
-                        <span id="lms-signal-state"></span>
-                        <span id="lms-signal-copy"></span>
-                        <span id="lms-signal-pill"></span>
-                        <span id="lms-ribbon-faculty"></span>
-                        <span id="lms-ribbon-theme"></span>
-                        <span id="lms-ribbon-subjects"></span>
-                    </div>
-                </section>
-
-
-                <section class="lux-card lms-clean-subjects">
+                    <div class="lms-clean-subjects lms-clean-subjects--merged">
                     <div class="lux-card-body">
                         <div id="lms-student-semester-bar" class="lms-student-semester-bar" hidden>
                             <div class="lms-student-semester-label">Semester</div>
@@ -194,6 +81,7 @@
                             <div class="lms-route-copy lms-route-meta-12" id="lms-empty-guidance">Subject cards update automatically when faculty changes in the topbar.</div>
                         </div>
                     <div id="lms-subject-grid" class="lms-clean-subject-grid"></div>
+                </div>
                 </div>
                 </section>
             </div>
@@ -231,31 +119,38 @@
         <div id="page-lms-inner" class="page-section" hidden>
             <div class="lux-page-shell lms-route-stage">
                 <section class="lms-route-panel lms-route-panel-compact">
+                    <div class="lms-route-workspace-chrome">
                     <div class="lms-route-card-head">
                         <div>
                             <div class="lms-clean-kicker"><i class="fas fa-graduation-cap"></i> Course workspace</div>
                             <div class="lms-route-title lms-route-title-26" id="lms-course-title">Course title</div>
                             <div class="lms-role-context" id="lms-course-context"></div>
                             <div class="lms-section-switch" id="lms-section-switch" role="group" aria-label="Class type">
-                                <button type="button" class="lms-section-option active" id="lms-section-lecture" data-lms-section="lecture">
+                                <button type="button" class="lms-section-option active" data-lms-section="lecture">
                                     <i class="fas fa-chalkboard-user"></i>
                                     <span>Lecture</span>
                                 </button>
-                                <button type="button" class="lms-section-option" id="lms-section-workshop" data-lms-section="workshop">
+                                <button type="button" class="lms-section-option" data-lms-section="workshop">
                                     <i class="fas fa-screwdriver-wrench"></i>
                                     <span>Workshop</span>
                                 </button>
                             </div>
                         </div>
-                        <button type="button" class="lms-clean-action-secondary" data-lms-action="back-to-groups">
-                            <i class="fas fa-arrow-left"></i> Back to groups
-                        </button>
+                        <div class="lms-route-card-head-actions">
+                            <button type="button" class="lux-secondary-btn lms-personal-dashboard-trigger" data-lms-action="open-personal-dashboard" hidden>
+                                <i class="fas fa-user-pen"></i> My Workspace
+                            </button>
+                            <button type="button" class="lms-clean-action-secondary" data-lms-action="back-to-groups">
+                                <i class="fas fa-arrow-left"></i> Back to groups
+                            </button>
+                        </div>
                     </div>
                     <div class="lms-route-tab-strip" role="group" aria-label="Course workspace navigation">
                         <button type="button" class="lms-route-tab" id="tab-sessions" data-lms-tab="sessions" aria-pressed="false"><i class="fas fa-calendar-check"></i> Sessions</button>
                         <button type="button" class="lms-route-tab" id="tab-live-quiz" data-lms-tab="live-quiz" aria-pressed="false"><i class="fas fa-bolt"></i> Live Quiz</button>
                         <button type="button" class="lms-route-tab is-active" id="tab-interaction" data-lms-tab="interaction" aria-pressed="true"><i class="fas fa-comments"></i> Interaction</button>
                         <button type="button" class="lms-route-tab" id="tab-calls" data-lms-tab="calls" aria-pressed="false"><i class="fas fa-video"></i> Calls</button>
+                        <button type="button" class="lms-route-tab" id="tab-whiteboard" data-lms-tab="whiteboard" aria-pressed="false" title="Collaborative class whiteboard"><i class="fas fa-chalkboard"></i> Whiteboard</button>
                         <button type="button" class="lms-route-tab" id="tab-members" data-lms-tab="members" aria-pressed="false"><i class="fas fa-users"></i> Members</button>
                         <button type="button" class="lms-route-tab" id="tab-workspace" data-lms-tab="workspace" aria-pressed="false"><i class="fas fa-clipboard-list"></i> Assignments</button>
                         <button type="button" class="lms-route-tab" id="tab-materials" data-lms-tab="materials" aria-pressed="false"><i class="fas fa-folder-open"></i> Materials</button>
@@ -263,6 +158,7 @@
                         <button type="button" class="lms-route-tab" id="tab-quiz" data-lms-tab="quiz" aria-pressed="false"><i class="fas fa-pen-to-square"></i> Quiz</button>
                         <button type="button" class="lms-route-tab" id="tab-monitoring" data-lms-tab="monitoring" aria-pressed="false"><i class="fas fa-shield-halved"></i> Monitoring</button>
                         <button type="button" class="lms-route-tab" id="tab-gradebook" data-lms-tab="gradebook" aria-pressed="false"><i class="fas fa-chart-bar"></i> Grades</button>
+                    </div>
                     </div>
                     <div id="lms-content-area"></div>
                     <div id="lms-gradebook-wrapper" class="lms-gradebook-wrapper-shell" hidden></div>
@@ -272,578 +168,25 @@
     </main>
 
     <!-- Page scripts -->
-    <script defer src="assets/js/app/app.js?v=20260505-authglobals1"></script>
-    <script defer src="assets/js/app/api.js?v=20260507-livequiz1"></script>
+    <script defer src="assets/js/app/app.js?v=20260716-glassmax2"></script>
+    <script defer src="assets/js/app/api.js?v=20260710-personal-autosave1"></script>
     <script defer src="assets/js/app/auth.js?v=20260604-realtime4291"></script>
     <script defer src="assets/js/data/initial-state.js?v=20260430-lmssessions1"></script>
-    <script defer src="assets/js/app/state.js?v=20260505-authglobals1"></script>
-    <script defer src="assets/js/shared/utilities.js?v=20260605-blurfix1"></script>
+    <script defer src="assets/js/app/state.js?v=20260616-admin-view-accounts1"></script>
+    <script defer src="assets/js/shared/input-autocomplete-guard.js?v=20260627-autocomplete-guard1"></script>
+<script defer src="assets/js/shared/utilities.js?v=20260717-panelpaint8"></script>
+<script defer src="assets/js/shared/lux-scroll-rail.js?v=20260705-scrollrail1"></script>
     <script defer src="assets/js/shared/faculty.js?v=20260505-authglobals1"></script>
-    <script defer src="assets/js/shared/messenger.js?v=20260429-peopleisolation1"></script>
-    <script defer src="assets/js/features/navigation.js?v=20260604-standaloneboot2"></script>
+    <script defer src="assets/js/shared/messenger.js?v=20260609-interaction-direct1"></script>
+    <script defer src="assets/js/features/navigation.js?v=20260609-bootguard1"></script>
     <script defer src="assets/js/features/ui.js?v=20260429-peopleisolation1"></script>
-    <script defer src="assets/js/features/index-luxury.js?v=20260605-blurfix1"></script>
-<script type="module" src="assets/js/features/luxury-particle-background.js?v=20260531-partbg8"></script>
-<script defer src="assets/js/features/luxury-shell-chrome.js?v=20260606-pickerscroll1"></script>
-<script defer src="assets/js/features/luxury-home-model.js?v=20260518-luxhome1"></script>
-    <script defer src="assets/js/pages/gradebook.js?v=20260531-lmsscheme10"></script>
-    <script defer src="assets/js/pages/lms-live-quiz-workspace-runtime.js?v=20260604-livequiz-uxfix5"></script>
-    <script defer src="assets/js/pages/lms-live-quiz-ui-runtime.js?v=20260604-livequiz-uxfix5"></script>
-    <script defer src="assets/js/pages/lms-grade-sync-runtime.js?v=20260518-lmsgrade1"></script>
-    <script defer src="assets/js/pages/lms-file-storage-runtime.js?v=20260518-lmsfiles1"></script>
-    <script defer src="assets/js/pages/lms-calls-runtime.js?v=20260518-lmscalls1"></script>
-    <script defer src="assets/js/pages/lms-content-library-runtime.js?v=20260518-lmscontent1"></script>
-    <script defer src="assets/js/pages/lms-materials-runtime.js?v=20260518-lmsmaterials1"></script>
-    <script defer src="assets/js/pages/lms-assignments-runtime.js?v=20260518-lmsassignments1"></script>
-    <script defer src="assets/js/pages/lms-protected-quiz-runtime.js?v=20260604-lmsprotected2"></script>
-    <script defer src="assets/js/pages/lms-quiz-workspace-runtime.js?v=20260518-lmsquizworkspace1"></script>
-    <script defer src="assets/js/pages/lms-classroom-tabs-runtime.js?v=20260531-lmsscheme2"></script>
-    <script defer src="assets/js/pages/lms.js?v=20260604-livequiz-rolefix1"></script>
-    <script>
-        (function () {
-            function safeHtml(value) {
-                if (typeof escapeHtml === 'function') return escapeHtml(String(value == null ? '' : value));
-                return String(value == null ? '' : value)
-                    .replace(/&/g, '&amp;')
-                    .replace(/</g, '&lt;')
-                    .replace(/>/g, '&gt;')
-                    .replace(/"/g, '&quot;')
-                    .replace(/'/g, '&#39;');
-            }
-            function repairLmsDisplayText(value, fallback = '') {
-                const raw = String(value == null ? '' : value).trim();
-                if (!raw) return String(fallback || '').trim();
-                const shouldRepair = ((typeof looksLikeMojibake === 'function' && looksLikeMojibake(raw))
-                    || /[\u00A0-\uFFFF]/.test(raw)
-                    || /[\u10A0-\u10FF]/.test(raw));
-                if (!shouldRepair) return raw;
-                let cleaned = raw;
-                try {
-                    if (typeof cleanupEncodingArtifacts === 'function') cleaned = cleanupEncodingArtifacts(cleaned);
-                } catch (error) {}
-                try {
-                    if (typeof toEnglishText === 'function') cleaned = toEnglishText(cleaned);
-                } catch (error) {}
-                cleaned = String(cleaned == null ? '' : cleaned).trim();
-                return cleaned || raw || String(fallback || '').trim();
-            }
-            function getLmsActiveFacultyCode() {
-                const storedFaculty = localStorage.getItem('currentFaculty');
-                const fallback = typeof getCurrentFaculty === 'function' ? getCurrentFaculty() : 'ECON';
-                return typeof normalizeFacultyCode === 'function'
-                    ? normalizeFacultyCode(storedFaculty || fallback, fallback)
-                    : (storedFaculty || fallback || 'ECON');
-            }
-            function getLmsSubjectName(subject) {
-                return repairLmsDisplayText(subject?.name || subject?.title || subject?.subjectName || subject?.label, 'Untitled Course');
-            }
-            function getLmsSubjectId(subject, index) {
-                return subject?.id || subject?.subjectId || subject?.courseId || `lms-subject-${index}`;
-            }
-            function getLmsSubjectFaculty(subject) {
-                return subject?.faculty || subject?.facultyCode || '';
-            }
-            function isLmsStudentHomeViewer() {
-                return typeof isLmsStudentViewer === 'function' && isLmsStudentViewer();
-            }
-            function getLmsSubjectSource() {
-                if (isLmsStudentHomeViewer() && typeof getStudentLmsEnrolledSubjects === 'function') {
-                    return getStudentLmsEnrolledSubjects(
-                        typeof getLmsStudentSelectedSemester === 'function' ? getLmsStudentSelectedSemester() : null
-                    );
-                }
-                const facultyCode = getLmsActiveFacultyCode();
-                const normalizedFaculty = typeof normalizeFacultyCode === 'function'
-                    ? normalizeFacultyCode(facultyCode, facultyCode || 'ECON')
-                    : facultyCode;
-                const matchesFaculty = (subject) => {
-                    const subjectFaculty = getLmsSubjectFaculty(subject);
-                    const normalizedSubjectFaculty = typeof normalizeFacultyCode === 'function'
-                        ? normalizeFacultyCode(subjectFaculty || normalizedFaculty, normalizedFaculty || 'ECON')
-                        : subjectFaculty;
-                    return normalizedSubjectFaculty === normalizedFaculty;
-                };
-                const facultyCurriculum = typeof getActiveCurriculum === 'function'
-                    ? (getActiveCurriculum(normalizedFaculty) || [])
-                    : [];
-                const flatCurriculum = Array.isArray(window.KIU_STATE?.curriculum)
-                    ? window.KIU_STATE.curriculum.filter(matchesFaculty)
-                    : [];
-                const profileCurriculum = Array.isArray(window.KIU_STATE?.facultyProfiles?.[normalizedFaculty]?.curriculum)
-                    ? window.KIU_STATE.facultyProfiles[normalizedFaculty].curriculum.filter(matchesFaculty)
-                    : [];
-                const merged = [].concat(facultyCurriculum, flatCurriculum, profileCurriculum);
-                const seen = new Set();
-                return merged.filter((subject, index) => {
-                    if (!matchesFaculty(subject)) return false;
-                    const subjectId = getLmsSubjectId(subject, index);
-                    if (seen.has(subjectId)) return false;
-                    seen.add(subjectId);
-                    return true;
-                });
-            }
-            function getLmsSubjectGroupCount(subject, subjectId) {
-                const directGroups = Array.isArray(subject?.groups) ? subject.groups : [];
-                if (directGroups.length) return directGroups.length;
-                if (typeof getAvailableGroupsForSubject === 'function') return getAvailableGroupsForSubject(subjectId).length;
-                return Array.isArray(window.KIU_STATE?.availableGroups?.[subjectId])
-                    ? window.KIU_STATE.availableGroups[subjectId].length
-                    : 0;
-            }
-            function scrollToLmsSubjects() {
-                const anchor = document.getElementById('lms-subject-anchor');
-                anchor?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-            function openSubjectByPredicate(predicate) {
-                const subjects = getLmsSubjectSource();
-                const subject = subjects.find(predicate) || subjects[0];
-                if (!subject) { scrollToLmsSubjects(); return; }
-                if (isLmsStudentHomeViewer() && subject.courseKey && typeof openLMSCourse === 'function') {
-                    openLMSCourse(subject.courseKey, getLmsSubjectName(subject));
-                    return;
-                }
-                openLMSGroups(getLmsSubjectId(subject, 0), getLmsSubjectName(subject), subject.icon || 'fas fa-book-reader');
-            }
-            function renderLmsStudentSemesterBar() {
-                const bar = document.getElementById('lms-student-semester-bar');
-                const optionsHost = document.getElementById('lms-student-semester-options');
-                if (!bar || !optionsHost) return;
-                const isStudent = isLmsStudentHomeViewer();
-                bar.hidden = !isStudent;
-                if (!isStudent) return;
-                const semesters = typeof getStudentLmsSemesterOptions === 'function'
-                    ? getStudentLmsSemesterOptions()
-                    : [];
-                const selected = typeof getLmsStudentSelectedSemester === 'function'
-                    ? getLmsStudentSelectedSemester()
-                    : 1;
-                const semesterChoices = semesters.length ? semesters : [selected];
-                optionsHost.innerHTML = semesterChoices.map((semesterValue) => {
-                    const active = Number(semesterValue) === Number(selected);
-                    return `<button
-                        type="button"
-                        class="lux-status-pill lms-student-semester-option${active ? ' is-active' : ''}"
-                        data-lms-semester="${safeHtml(String(semesterValue))}"
-                        role="tab"
-                        aria-selected="${active ? 'true' : 'false'}">Semester ${safeHtml(String(semesterValue))}</button>`;
-                }).join('');
-            }
-            function syncLmsStudentModePresentation() {
-                const isStudent = isLmsStudentHomeViewer();
-                document.body?.classList.toggle('lms-student-mode', isStudent);
-                const sectionTitle = document.getElementById('lms-subjects-section-title');
-                const sectionCopy = document.getElementById('lms-subjects-section-copy');
-                const heroCopy = document.querySelector('.lms-hero-v2-left .page-hero-copy');
-                if (sectionTitle) {
-                    sectionTitle.textContent = isStudent ? 'My enrolled subjects' : 'Published faculty subjects';
-                }
-                if (sectionCopy) {
-                    sectionCopy.textContent = isStudent
-                        ? 'Subjects you registered for in the selected semester. Open one to continue in your course workspace.'
-                        : 'Published subjects for the selected faculty, ready to open by group.';
-                }
-                if (heroCopy) {
-                    heroCopy.textContent = isStudent
-                        ? 'Review subjects you chose during registration, switch semesters, and open your enrolled course workspace.'
-                        : 'Open the right faculty subject, choose your group, and continue work in a focused LMS built for students, teaching staff, and administrators.';
-                }
-                renderLmsStudentSemesterBar();
-                if (typeof syncLmsCourseBackButtonLabel === 'function') syncLmsCourseBackButtonLabel();
-            }
-            function openFirstLmsSubject() { openSubjectByPredicate(() => true); }
-            function getLmsSubjectSemesterValue(subject) {
-                const semester = subject?.semester ?? subject?.semesterNumber ?? null;
-                const normalized = Number.parseInt(semester, 10);
-                if (Number.isFinite(normalized) && normalized > 0) return normalized;
-                const fallback = String(semester || '').trim();
-                return fallback || '';
-            }
-            function getLmsSubjectCourseValue(subject) {
-                const directCourse = subject?.course ?? null;
-                const normalizedCourse = Number.parseInt(directCourse, 10);
-                if (Number.isFinite(normalizedCourse) && normalizedCourse > 0) return normalizedCourse;
-                const directCourseLabel = String(directCourse || '').trim();
-                if (directCourseLabel) return directCourseLabel;
-                const semesterValue = getLmsSubjectSemesterValue(subject);
-                const normalizedSemester = Number.parseInt(semesterValue, 10);
-                return Number.isFinite(normalizedSemester) && normalizedSemester > 0
-                    ? Math.ceil(normalizedSemester / 2)
-                    : '';
-            }
-            function buildLmsSubjectMetaBadges(subject) {
-                const badges = [];
-                const semesterValue = getLmsSubjectSemesterValue(subject);
-                if (semesterValue) {
-                    badges.push(`<span class="lux-status-pill is-muted"><i class="fas fa-calendar-week"></i> Semester ${safeHtml(String(semesterValue))}</span>`);
-                }
-                const courseValue = getLmsSubjectCourseValue(subject);
-                if (courseValue) {
-                    badges.push(`<span class="lux-status-pill is-muted"><i class="fas fa-graduation-cap"></i> Course ${safeHtml(String(courseValue))}</span>`);
-                }
-                return badges.length ? `<div class="lms-clean-subject-meta">${badges.join('')}</div>` : '';
-            }
-            function renderLmsHeroSummary(subjects) {
-                const facultyCode = getLmsActiveFacultyCode();
-                const facultyLabel = typeof getFacultyLabel === 'function' ? getFacultyLabel(facultyCode) : facultyCode;
-                const isStudent = isLmsStudentHomeViewer();
-                const groupCount = isStudent
-                    ? subjects.length
-                    : subjects.reduce((sum, subject, index) => sum + getLmsSubjectGroupCount(subject, getLmsSubjectId(subject, index)), 0);
-                const heroFaculty = document.getElementById('lms-hero-faculty');
-                if (heroFaculty) heroFaculty.textContent = facultyLabel;
-                const heroSubjectCount = document.getElementById('lms-hero-subject-count');
-                if (heroSubjectCount) heroSubjectCount.textContent = String(subjects.length);
-                const heroGroupCount = document.getElementById('lms-hero-group-count');
-                if (heroGroupCount) heroGroupCount.textContent = String(groupCount);
-                const heroGroupLabel = document.getElementById('lms-hero-group-label');
-                if (heroGroupLabel) heroGroupLabel.textContent = isStudent ? 'Enrolled' : 'Groups';
-                const ribbonFaculty = document.getElementById('lms-ribbon-faculty');
-                if (ribbonFaculty) ribbonFaculty.textContent = facultyLabel;
-                const ribbonTheme = document.getElementById('lms-ribbon-theme');
-                if (ribbonTheme) ribbonTheme.textContent = document.body?.classList.contains('lux-light-mode') ? 'Light' : 'Dark';
-                const ribbonSubjects = document.getElementById('lms-ribbon-subjects');
-                if (ribbonSubjects) ribbonSubjects.textContent = String(subjects.length);
-                const signalLane = document.getElementById('lms-signal-lane');
-                if (signalLane) signalLane.textContent = facultyLabel;
-                const signalState = document.getElementById('lms-signal-state');
-                if (signalState) signalState.textContent = subjects.length ? 'Ready' : 'Waiting';
-                const signalCopy = document.getElementById('lms-signal-copy');
-                if (signalCopy) {
-                    signalCopy.textContent = isStudent
-                        ? (subjects.length
-                            ? `${subjects.length} enrolled subject${subjects.length === 1 ? '' : 's'} are available for this semester.`
-                            : 'No enrolled subjects for this semester yet. Register for courses to populate your LMS workspace.')
-                        : (subjects.length
-                            ? `${subjects.length} subjects and ${groupCount} groups are ready in this faculty scope.`
-                            : 'No published LMS subjects yet. This faculty route is waiting for content.');
-                }
-                const signalPill = document.getElementById('lms-signal-pill');
-                if (signalPill) {
-                    signalPill.innerHTML = subjects.length
-                        ? (isStudent
-                            ? '<i class="fas fa-check-circle"></i> Enrolled subjects ready'
-                            : '<i class="fas fa-check-circle"></i> Faculty scope live')
-                        : (isStudent
-                            ? '<i class="fas fa-bolt"></i> Waiting for registration'
-                            : '<i class="fas fa-bolt"></i> Waiting for publication');
-                }
-            }
-            function buildLmsSubjectDeckSignature(subjects, facultyCode, isStudent) {
-                return JSON.stringify({
-                    facultyCode: String(facultyCode || ''),
-                    role: isStudent ? 'student' : (typeof getEffectiveUserRole === 'function' ? getEffectiveUserRole() : ''),
-                    semester: isStudent && typeof getLmsStudentSelectedSemester === 'function' ? getLmsStudentSelectedSemester() : '',
-                    subjects: subjects.map((subject, index) => ({
-                        id: getLmsSubjectId(subject, index),
-                        name: getLmsSubjectName(subject),
-                        courseKey: String(subject?.courseKey || ''),
-                        groupId: String(subject?.groupId || '')
-                    }))
-                });
-            }
-            function renderLmsSubjectDeck(options = {}) {
-                const grid = document.getElementById('lms-subject-grid');
-                if (!grid) return;
-                syncLmsStudentModePresentation();
-                const facultyCode = getLmsActiveFacultyCode();
-                const facultyLabel = typeof getFacultyLabel === 'function' ? getFacultyLabel(facultyCode) : facultyCode;
-                const isStudent = isLmsStudentHomeViewer();
-                const subjects = getLmsSubjectSource().slice(0, isStudent ? 48 : 18);
-                const nextSignature = buildLmsSubjectDeckSignature(subjects, facultyCode, isStudent);
-                const forceRefresh = options && options.force === true;
-                renderLmsHeroSummary(subjects);
-                const badge = document.getElementById('lms-active-faculty-badge');
-                if (badge) badge.innerHTML = `<i class="fas fa-building"></i> Faculty: ${safeHtml(facultyLabel)}`;
-                const scopeTitle = document.getElementById('lms-subject-scope-title');
-                if (scopeTitle) scopeTitle.textContent = `${facultyLabel} subject scope`;
-                const scopeCopy = document.getElementById('lms-subject-scope-copy');
-                if (scopeCopy) {
-                    scopeCopy.textContent = isStudent
-                        ? 'Only subjects you registered for appear here. Open a subject to enter your course workspace.'
-                        : `Only subjects published for ${facultyLabel} appear here. Open one to access groups, tabs, and the workspace.`;
-                }
-                const laneChip = document.getElementById('lms-lane-chip');
-                if (laneChip) {
-                    laneChip.innerHTML = isStudent
-                        ? '<i class="fas fa-user-graduate"></i> My LMS'
-                        : `<i class="fas fa-book-open"></i> ${safeHtml(facultyLabel)} LMS`;
-                }
-                const emptyGuidance = document.getElementById('lms-empty-guidance');
-                if (emptyGuidance) {
-                    emptyGuidance.textContent = subjects.length
-                        ? (isStudent
-                            ? `${subjects.length} enrolled subject${subjects.length === 1 ? '' : 's'} are listed for semester ${safeHtml(String(typeof getLmsStudentSelectedSemester === 'function' ? getLmsStudentSelectedSemester() : ''))}.`
-                            : `${subjects.length} published subjects are currently available for ${facultyLabel}.`)
-                        : (isStudent
-                            ? 'You have not registered for any subjects in this semester yet. Use Registration to choose your courses.'
-                            : `No subjects are published for ${facultyLabel} yet. Use the admin workspace to publish courses.`);
-                }
-                if (!forceRefresh && grid.dataset.lmsSubjectDeckSignature === nextSignature) {
-                    return;
-                }
-                grid.innerHTML = subjects.map((subject, index) => {
-                    const subjectId = getLmsSubjectId(subject, index);
-                    const subjectName = getLmsSubjectName(subject);
-                    const groupCount = getLmsSubjectGroupCount(subject, subjectId);
-                    const icon = subject.icon || 'fas fa-book-reader';
-                    const courseKey = subject.courseKey || '';
-                    const groupId = subject.groupId || '';
-                    const groupName = subject.groupName || '';
-                    const kickerLabel = isStudent ? 'Enrolled' : 'Published';
-                    const resolvedCourseKey = courseKey || (groupId && subjectId ? `${subjectId}::${groupId}` : '');
-                    const nextSessionLine = resolvedCourseKey && typeof window.renderLmsNextSessionHtml === 'function' && typeof window.getLmsNextSessionForGroup === 'function'
-                        ? window.renderLmsNextSessionHtml(window.getLmsNextSessionForGroup(resolvedCourseKey), 'compact')
-                        : '';
-                    const metaHtml = isStudent
-                        ? `<div class="lms-clean-card-meta is-compact">
-                            <span class="lux-status-pill is-muted"><i class="fas fa-door-open"></i> ${safeHtml(groupName || 'Your section')}</span>
-                           </div>${nextSessionLine}`
-                        : `<div class="lms-clean-card-meta is-compact">
-                            <span class="lux-status-pill is-muted"><i class="fas fa-users"></i> ${groupCount} group${groupCount !== 1 ? 's' : ''}</span>
-                           </div>`;
-                    return `<button
-                        type="button"
-                        class="lux-strip-card lux-lms-subject-card"
-                        data-subject-id="${safeHtml(subjectId)}"
-                        data-subject-title="${safeHtml(subjectName)}"
-                        data-icon-class="${safeHtml(icon)}"
-                        data-course-key="${safeHtml(courseKey)}"
-                        data-group-id="${safeHtml(groupId)}"
-                        data-lms-subject-card="true">
-                        <div class="lux-card-body">
-                            <div class="lms-clean-card-kicker"><i class="${safeHtml(icon)}"></i> ${safeHtml(kickerLabel)}</div>
-                            <div class="lms-clean-card-title">${safeHtml(subjectName)}</div>
-                            ${buildLmsSubjectMetaBadges(subject)}
-                            ${metaHtml}
-                        </div>
-                    </button>`;
-                }).join('') || `<div class="lms-route-empty lms-route-empty--full-span">
-                    <div class="lms-route-empty-icon"><i class="fas fa-book-open"></i></div>
-                    <div class="lms-route-empty-title lms-route-copy-mt-12">${isStudent ? 'No enrolled subjects yet' : 'No subjects yet'}</div>
-                    <div class="lms-route-empty-copy">${isStudent
-                        ? 'Register for subjects on the Registration page. After you choose your group, they will appear here for the matching semester.'
-                        : `Publish subjects for the ${safeHtml(facultyLabel)} faculty from the admin workspace, then they appear here automatically.`}</div>
-                </div>`;
-                grid.dataset.lmsSubjectDeckSignature = nextSignature;
-            }
-            window.renderLmsSubjectDeck = renderLmsSubjectDeck;
-            window.renderLMSSubjects = renderLmsSubjectDeck;
-            function isLmsSubjectDeckVisible() {
-                const page = document.getElementById('page-lms');
-                return Boolean(page) && !page.hidden;
-            }
-            function isLmsCourseWorkspaceVisibleStandalone() {
-                const workspace = document.getElementById('page-lms-inner');
-                const courseKey = String(window.currentCourseId || '').trim();
-                return Boolean(workspace) && !workspace.hidden && Boolean(courseKey);
-            }
-            function refreshLmsFacultyScopedView() {
-                ensureLmsRouteVisualState();
-                refreshStandaloneLmsShellContext({ refreshSubjectDeck: true, forceSubjectDeck: true });
-            }
-            window.refreshLmsFacultyScopedView = refreshLmsFacultyScopedView;
-            window.scrollToLmsSubjects = scrollToLmsSubjects;
-            window.openFirstLmsSubject = openFirstLmsSubject;
-            function ensureLmsExtendedRuntimeForTab(tabId) {
-                const normalized = String(tabId || '').toLowerCase();
-                const needsExtendedRuntime = ['quiz', 'monitoring', 'gradebook', 'live-quiz'].includes(normalized);
-                if (!needsExtendedRuntime || typeof window.ensurePortalRegistrationRuntimeLoaded !== 'function') {
-                    return Promise.resolve(true);
-                }
-                return Promise.resolve(window.ensurePortalRegistrationRuntimeLoaded()).catch(() => false);
-            }
-            window.ensureLmsExtendedRuntimeForTab = ensureLmsExtendedRuntimeForTab;
-            function bindLmsDelegatedActions() {
-                if (document.body?.dataset.lmsDelegatedActionsBound === '1') return;
-                if (document.body) document.body.dataset.lmsDelegatedActionsBound = '1';
-                document.addEventListener('click', async (event) => {
-                    const semesterButton = event.target.closest?.('[data-lms-semester]');
-                    if (semesterButton) {
-                        event.preventDefault();
-                        const semesterValue = parseInt(semesterButton.getAttribute('data-lms-semester'), 10);
-                        if (Number.isFinite(semesterValue) && semesterValue > 0 && typeof setLmsStudentSelectedSemester === 'function') {
-                            setLmsStudentSelectedSemester(semesterValue);
-                        }
-                        return;
-                    }
-                    const subjectCard = event.target.closest?.('[data-lms-subject-card="true"]');
-                    if (subjectCard) {
-                        event.preventDefault();
-                        if (isLmsStudentHomeViewer() && typeof window.openLmsStudentEnrolledSubject === 'function') {
-                            window.openLmsStudentEnrolledSubject(subjectCard);
-                        } else if (typeof window.openLMSGroupsFromCard === 'function') {
-                            window.openLMSGroupsFromCard(subjectCard);
-                        }
-                        return;
-                    }
-                    const actionButton = event.target.closest?.('[data-lms-action]');
-                    if (actionButton) {
-                        event.preventDefault();
-                        const action = actionButton.dataset.lmsAction;
-                        if (action === 'close-groups' && typeof window.closeLMSGroups === 'function') window.closeLMSGroups();
-                        if (action === 'back-to-groups' && typeof window.backToLMSGroups === 'function') window.backToLMSGroups();
-                        return;
-                    }
-                    const sectionButton = event.target.closest?.('[data-lms-section]');
-                    if (sectionButton) {
-                        event.preventDefault();
-                        if (typeof window.setLmsActiveSection === 'function') window.setLmsActiveSection(sectionButton.dataset.lmsSection);
-                        return;
-                    }
-                    const tabButton = event.target.closest?.('[data-lms-tab]');
-                    if (tabButton) {
-                        event.preventDefault();
-                        const tabId = tabButton.dataset.lmsTab;
-                        await ensureLmsExtendedRuntimeForTab(tabId);
-                        if (typeof window.switchLMSTab === 'function') window.switchLMSTab(tabId);
-                    }
-                });
-            }
-            function ensureLmsRouteVisualState() {
-                const body = document.body;
-                if (!body) return;
-                body.classList.remove('kiu-shell-loading', 'lux-home-page');
-                body.classList.add('lux-nonhome-page', 'lux-route-lms', 'lux-unified-shell', 'lux-site-modernized');
-                body.dataset.luxPage = 'lms';
-                body.dataset.luxEntry = 'lms';
-                if (!body.dataset.luxBackgroundMode) {
-                    body.dataset.luxBackgroundMode = localStorage.getItem('kiuLuxuryBackgroundMode') || 'peak';
-                }
-                document.documentElement.dataset.luxPage = 'lms';
-                Array.from(body.classList).forEach((className) => {
-                    if (/^lux-route-/.test(className) && className !== 'lux-route-lms') {
-                        body.classList.remove(className);
-                    }
-                });
-            }
-            window.ensureLmsRouteVisualState = ensureLmsRouteVisualState;
-            function isLmsVisualContextActive() {
-                const lmsSection = document.getElementById('page-lms');
-                if (!lmsSection) return true;
-                return lmsSection.classList.contains('active-page')
-                    || document.body.classList.contains('lux-route-lms');
-            }
-            function syncLmsVisualShell() {
-                ensureLmsRouteVisualState();
-                if (typeof window.updateTransparency === 'function') {
-                    const savedTransparency = parseInt(localStorage.getItem('kiuLuxurySurfaceTransparency') || '13', 10);
-                    if (!Number.isNaN(savedTransparency)) {
-                        const lmsInner = document.getElementById('page-lms-inner');
-                        const appContent = document.getElementById('app-content');
-                        const roots = lmsInner ? [lmsInner] : (appContent ? [appContent] : []);
-                        if (roots.length) {
-                            window.updateTransparency(savedTransparency, { roots });
-                        } else {
-                            window.updateTransparency(savedTransparency);
-                        }
-                    }
-                } else if (typeof window.refreshLuxuryTransparencySurfaces === 'function') {
-                    window.refreshLuxuryTransparencySurfaces();
-                }
-                const activeBackgroundMode = document.body?.dataset.luxBackgroundMode
-                    || localStorage.getItem('kiuLuxuryBackgroundMode')
-                    || 'peak';
-                if (typeof window.__kiuRefreshLuxuryBackground === 'function') {
-                    window.__kiuRefreshLuxuryBackground(activeBackgroundMode);
-                }
-            }
-            let lmsVisualSyncFrame = 0;
-            let lmsVisualSyncTimer = 0;
-            let lmsLastVisualSyncAt = 0;
-            function runScheduledLmsVisualShellSync() {
-                lmsVisualSyncFrame = 0;
-                lmsVisualSyncTimer = 0;
-                if (!isLmsVisualContextActive()) return;
-                lmsLastVisualSyncAt = Date.now();
-                ensureLmsRouteVisualState();
-                syncLmsVisualShell();
-            }
-            function scheduleLmsVisualShellSync() {
-                if (!isLmsVisualContextActive()) return;
-                ensureLmsRouteVisualState();
-                if (lmsVisualSyncFrame || lmsVisualSyncTimer) return;
-                const contentArea = document.getElementById('lms-content-area');
-                const isQuizTabActive = contentArea?.dataset?.activeLmsTab === 'quiz';
-                const baseDelay = isQuizTabActive ? 300 : 140;
-                const elapsed = Date.now() - lmsLastVisualSyncAt;
-                const delay = elapsed > baseDelay ? 0 : baseDelay - elapsed;
-                if (delay > 0) {
-                    lmsVisualSyncTimer = window.setTimeout(() => {
-                        lmsVisualSyncTimer = 0;
-                        lmsVisualSyncFrame = requestAnimationFrame(runScheduledLmsVisualShellSync);
-                    }, delay);
-                    return;
-                }
-                lmsVisualSyncFrame = requestAnimationFrame(runScheduledLmsVisualShellSync);
-            }
-            window.scheduleLmsVisualShellSync = scheduleLmsVisualShellSync;
-            function refreshStandaloneLmsShellContext(options = {}) {
-                ensureLmsRouteVisualState();
-                if (typeof window.renderNav === 'function') window.renderNav();
-                if (typeof window.syncTopbar === 'function') window.syncTopbar();
-                if (typeof window.populateFacultySwitcher === 'function') window.populateFacultySwitcher();
-                if (typeof window.populateRoleSwitcher === 'function') window.populateRoleSwitcher();
-                const refreshSubjectDeck = options.refreshSubjectDeck === true
-                    || (options.refreshSubjectDeck !== false && isLmsSubjectDeckVisible());
-                if (refreshSubjectDeck) {
-                    renderLmsSubjectDeck({ force: options.forceSubjectDeck === true });
-                }
-                if (options.refreshActiveTab === true && isLmsCourseWorkspaceVisibleStandalone()) {
-                    const activeTab = document.querySelector('#page-lms-inner [data-lms-tab].is-active')?.dataset?.lmsTab || 'sessions';
-                    if (typeof window.switchLMSTab === 'function') {
-                        window.switchLMSTab(activeTab, { force: true });
-                    }
-                }
-                scheduleLmsVisualShellSync();
-            }
-            window.refreshStandaloneLmsShellContext = refreshStandaloneLmsShellContext;
-            window.refreshStandaloneDesktopRouteShellContext = function refreshStandaloneDesktopRouteShellContext(options = {}) {
-                refreshStandaloneLmsShellContext({
-                    refreshSubjectDeck: options.refreshSubjectDeck !== false,
-                    forceSubjectDeck: options.forceSubjectDeck === true,
-                    refreshActiveTab: options.refreshActiveRoute === true || options.refreshActiveTab === true
-                });
-            };
-            window.refreshStandaloneDesktopShellChrome = function refreshStandaloneDesktopShellChrome() {
-                refreshStandaloneLmsShellContext({ refreshSubjectDeck: false });
-            };
-
-            function initLmsPage() {
-                ensureLmsRouteVisualState();
-                if (typeof markPortalShellReady === 'function') {
-                    markPortalShellReady();
-                }
-                if (typeof bindStandaloneGradebookShell === 'function') {
-                    bindStandaloneGradebookShell();
-                }
-                bindLmsDelegatedActions();
-                const bootLmsContent = async () => {
-                    const restored = typeof window.restoreLmsReturnContextIfPresent === 'function'
-                        && await window.restoreLmsReturnContextIfPresent();
-                    if (!restored) {
-                        renderLmsSubjectDeck();
-                    }
-                    scheduleLmsVisualShellSync();
-                };
-                if (typeof scheduleRouteContentRender === 'function') {
-                    scheduleRouteContentRender(bootLmsContent);
-                    return;
-                }
-                void bootLmsContent();
-            }
-
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', initLmsPage);
-            } else {
-                initLmsPage();
-            }
-            window.addEventListener('pageshow', scheduleLmsVisualShellSync);
-            window.addEventListener('focus', scheduleLmsVisualShellSync);
-            document.addEventListener('visibilitychange', () => {
-                if (!document.hidden) scheduleLmsVisualShellSync();
-            });
-        })();
-    </script>
+    <script defer src="assets/js/features/luxury-index-runtime.js?v=20260709-glasslock1"></script>
+<script defer src="assets/js/features/index-luxury.js?v=20260709-glasslock1"></script>
+<script type="module" src="assets/js/features/luxury-background.js?v=20260717-lazythree1"></script>
+<script defer src="assets/js/features/luxury-shell-chrome.js?v=20260717-bgparams1"></script>
+    <script defer src="assets/js/pages/lms-classroom-tabs-runtime.js?v=20260715-lms-lazy7"></script>
+    <script defer src="assets/js/pages/lms.js?v=20260714-lmspro2"></script>
+    <script defer src="assets/js/pages/lms-route-boot.js?v=20260715-lms-lazy5"></script>
 <!-- MOBILE BOTTOM NAVIGATION (v2) -->
 <nav id="mobile-bottom-nav" aria-label="Mobile navigation" hidden>
     <div class="mobile-nav-row">
@@ -854,14 +197,14 @@
         <button class="mobile-nav-btn" type="button" id="mob-nav-more" data-action="more"><i class="fas fa-grip-horizontal"></i><span>More</span></button>
     </div>
 </nav>
-<div id="mobile-action-sheet" class="mob-sheet" hidden role="dialog" aria-modal="true">
+<div id="mobile-action-sheet" class="mob-sheet lms-glass-dialog-overlay" hidden role="dialog" aria-modal="true">
     <div class="mob-sheet-backdrop" id="mob-sheet-backdrop"></div>
     <div class="mob-sheet-panel">
         <div class="mob-sheet-handle"><span></span></div>
         <div class="mob-sheet-section"><div class="mob-sheet-label">Quick Actions</div><div class="mob-sheet-grid">
             <button class="mob-sheet-btn" type="button" id="mob-act-admin"><span class="mob-sheet-icon"><i class="fas fa-user-shield"></i></span><span>Admin View</span></button>
             <button class="mob-sheet-btn" type="button" id="mob-act-theme"><span class="mob-sheet-icon"><i class="fas fa-palette"></i></span><span>Theme</span></button>
-            <button class="mob-sheet-btn" type="button" id="mob-act-profile"><span class="mob-sheet-icon"><i class="fas fa-user-circle"></i></span><span>Profile</span></button>
+            <button class="mob-sheet-btn" type="button" id="mob-act-profile"><span class="mob-sheet-icon"><i class="far fa-user"></i></span><span>Personal Data</span></button>
             <button class="mob-sheet-btn" type="button" id="mob-act-lightmode"><span class="mob-sheet-icon"><i class="fas fa-sun"></i></span><span>Light Mode</span></button>
         </div></div>
         <!-- Dynamic role-aware navigation will be injected here -->
