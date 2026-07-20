@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'fs';
+
+import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
 function readSource(relativePath) {
@@ -11,9 +12,10 @@ describe('LMS live quiz UI module split', () => {
         const lmsHtml = readSource('lms.html');
         const lmsSource = readSource('assets/js/pages/lms.js');
         const liveQuizUiSource = readSource('assets/js/pages/lms-live-quiz-ui-runtime.js');
-        const routeCss = readSource('assets/css/lms-route.css');
-
-        expect(lmsHtml).toContain('assets/js/pages/lms-live-quiz-ui-runtime.js?v=20260604-livequiz-uxfix5');
+        expect(lmsHtml).not.toContain('assets/js/pages/lms-live-quiz-ui-runtime.js');
+        const classroomSource = readSource('assets/js/pages/lms-classroom-tabs-runtime.js');
+        expect(classroomSource).toContain('assets/js/pages/lms-live-quiz-ui-runtime.js?v=20260609-livequiz-timerfix1');
+        expect(classroomSource).toContain('function ensureLmsLiveQuizRuntime()');
         expect(liveQuizUiSource).toContain('function getLmsLiveStudentId()');
         expect(liveQuizUiSource).toContain('function canManageLmsLiveQuiz(resourceKey = currentCourseId)');
         expect(liveQuizUiSource).toContain('function renderLmsLiveScoreList(session = null, limit = 8)');
@@ -25,6 +27,9 @@ describe('LMS live quiz UI module split', () => {
         expect(liveQuizUiSource).toContain('class="lms-live-copy lms-live-copy-mt-2 lms-route-meta-11"');
         expect(liveQuizUiSource).toContain('style="--lms-live-breakdown-width:');
         expect(liveQuizUiSource).toContain('class="lms-live-pill-row lms-live-pill-row--center"');
+        expect(liveQuizUiSource).toContain('class="lms-live-broadcast-header"');
+        expect(liveQuizUiSource).toContain('class="lms-live-broadcast-question-card"');
+        expect(liveQuizUiSource).toContain('class="lms-live-broadcast-control-deck"');
         expect(liveQuizUiSource).toContain('class="lms-live-score-list lms-live-score-list--wide lms-live-summary-list"');
         expect(liveQuizUiSource).toContain('class="lms-live-stage lms-live-summary-shell"');
         expect(liveQuizUiSource).toContain('class="lms-live-question-text lms-live-summary-title"');
@@ -36,7 +41,7 @@ describe('LMS live quiz UI module split', () => {
         expect(liveQuizUiSource).toContain('lms-live-wait-icon');
         expect(liveQuizUiSource).toContain('class="lms-live-score-list lms-live-score-list-mt-12"');
         expect(liveQuizUiSource).toContain('class="lms-live-form-grid lms-live-form-grid-mt-12"');
-        expect(liveQuizUiSource).toContain('class="kiu-btn-outline lms-live-import-btn-mt-10"');
+        expect(liveQuizUiSource).toContain('class="lux-secondary-btn lms-live-import-btn-mt-10"');
         expect(liveQuizUiSource).toContain('class="lms-live-breakdown-wrap-mt-12"');
         expect(liveQuizUiSource).toContain('class="lms-live-copy lms-live-copy-auto-center lms-live-copy-waiting"');
         expect(liveQuizUiSource).toContain('class="lms-live-title lms-live-title-responsive"');
@@ -80,40 +85,6 @@ describe('LMS live quiz UI module split', () => {
         expect(liveQuizUiSource).not.toContain('style="max-width:620px;margin:10px auto 0;"');
         expect(liveQuizUiSource).not.toContain('style="font-size:clamp(22px,5vw,34px);"');
         expect(liveQuizUiSource).not.toContain('style="min-height:320px;"');
-        expect(routeCss).toContain('.lms-live-score-main');
-        expect(routeCss).toContain('.lms-live-score-name');
-        expect(routeCss).toContain('.lms-live-copy-mt-2');
-        expect(routeCss).toContain('.lms-live-copy-mt-10');
-        expect(routeCss).toContain('.lms-live-copy-auto-center');
-        expect(routeCss).toContain('.lms-live-copy-waiting');
-        expect(routeCss).toContain('.lms-live-copy-center');
-        expect(routeCss).toContain('.lms-live-pill-row--center');
-        expect(routeCss).toContain('.lms-live-pill-row--end');
-        expect(routeCss).toContain('.lms-live-score-list--wide');
-        expect(routeCss).toContain('.lms-live-summary-title,');
-        expect(routeCss).toContain('.lms-live-summary-list,');
-        expect(routeCss).toContain('.lms-live-stage-wait-shell {');
-        expect(routeCss).toContain('.lms-live-score-list-mt-12');
-        expect(routeCss).toContain('.lms-live-sync-card');
-        expect(routeCss).toContain('.lms-live-question-head');
-        expect(routeCss).toContain('.lms-live-question-main');
-        expect(routeCss).toContain('.lms-live-question-title');
-        expect(routeCss).toContain('.lms-live-breakdown-wrap-mt-12');
-        expect(routeCss).toContain('.lms-live-wait-icon');
-        expect(routeCss).toContain('.lms-live-queue-panel {');
-        expect(routeCss).toContain('.lms-live-queue-head {');
-        expect(routeCss).toContain('.lms-live-queue-actions {');
-        expect(routeCss).toContain('.lms-live-queue-list {');
-        expect(routeCss).toContain('.lms-live-queue-empty-card {');
-        expect(routeCss).toContain('.lms-live-queue-empty-copy {');
-        expect(routeCss).toContain('.lms-live-form-grid-mt-12');
-        expect(routeCss).toContain('.lms-live-import-btn-mt-10');
-        expect(routeCss).toContain('.lms-live-card-title-mt-5');
-        expect(routeCss).toContain('.lms-live-title-responsive');
-        expect(routeCss).toContain('.lms-live-stage-min-320');
-        expect(routeCss).toContain('.lms-live-label--left');
-        expect(routeCss).toContain('.lms-live-label-mb-7');
-        expect(routeCss).toContain('width: var(--lms-live-breakdown-width, 0%);');
         expect(lmsSource).not.toContain('function getLmsLiveStudentId()');
         expect(lmsSource).not.toContain('function canManageLmsLiveQuiz(resourceKey = currentCourseId)');
         expect(lmsSource).not.toContain('function renderLmsLiveScoreList(session = null, limit = 8)');

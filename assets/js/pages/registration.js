@@ -1,12 +1,7 @@
 /* Study card, registration, profile, chancellery, and admin curriculum page logic extracted from the legacy core.js bundle. Active routes now load split files directly. */
 
 // --- STUDY CARD ---
-function toggleGradeDetails(btn) {
-    const popover = btn.nextElementSibling;
-    popover.classList.toggle('show');
-}
 
-// --- REGISTRATION ---
 function switchRegTab(tab, triggerElement = null) {
     document.querySelectorAll('.reg-tab').forEach(el => el.classList.remove('active'));
     const targetTabTrigger = document.querySelector(`.reg-tab[data-reg-tab="${tab}"]`);
@@ -98,23 +93,6 @@ function handleRegistrationLegacyClick(event) {
         if (action === 'submit-staff-reply') return submitChancelleryStaffReply();
     }
 
-    const programClear = event.target.closest('[data-student-program-clear-search]');
-    if (programClear) {
-        event.preventDefault();
-        setStudentEducationalProgramSearchQuery('', String(programClear.getAttribute('data-program-faculty') || getCurrentFaculty()));
-        return;
-    }
-
-    const programSemester = event.target.closest('[data-student-program-semester]');
-    if (programSemester) {
-        event.preventDefault();
-        const semester = String(programSemester.getAttribute('data-student-program-semester') || 'all');
-        const filter = document.getElementById('student-program-semester-filter');
-        if (filter) filter.value = semester;
-        renderStudentEducationalProgramPage();
-        return;
-    }
-
     const provisionAction = event.target.closest('[data-provision-action]');
     if (provisionAction) {
         event.preventDefault();
@@ -131,11 +109,16 @@ function handleRegistrationLegacyClick(event) {
             return;
         }
         if (action === 'open-profile') {
-            openProfilePage(
-                String(provisionAction.getAttribute('data-profile-role') || ''),
-                String(provisionAction.getAttribute('data-profile-id') || ''),
-                String(provisionAction.getAttribute('data-profile-faculty') || '')
-            );
+            const profileId = String(provisionAction.getAttribute('data-profile-id') || '');
+            if (profileId) {
+                const url = new URL('profile-view.html', window.location.href);
+                url.searchParams.set('id', profileId);
+                const role = String(provisionAction.getAttribute('data-profile-role') || '');
+                const faculty = String(provisionAction.getAttribute('data-profile-faculty') || '');
+                if (role) url.searchParams.set('role', role);
+                if (faculty) url.searchParams.set('faculty', faculty);
+                window.location.href = url.pathname + url.search;
+            }
             return;
         }
         if (action === 'open-student-registration') return openStudentRegistration();
@@ -167,7 +150,7 @@ function handleRegistrationLegacyClick(event) {
         }
     }
 
-    const curriculumAction = event.target.closest('[data-curriculum-add-module], [data-curriculum-edit-module], [data-curriculum-delete-module], [data-curriculum-focus-builder], [data-curriculum-delete-subject]');
+    const curriculumAction = event.target.closest('[data-curriculum-add-module], [data-curriculum-edit-module], [data-curriculum-delete-module], [data-curriculum-focus-builder], [data-curriculum-edit-subject], [data-curriculum-delete-subject]');
     if (curriculumAction) {
         event.preventDefault();
         if (curriculumAction.hasAttribute('data-curriculum-add-module')) return addCurriculumLibraryModule();
@@ -177,7 +160,10 @@ function handleRegistrationLegacyClick(event) {
         if (curriculumAction.hasAttribute('data-curriculum-delete-module')) {
             return deleteCurriculumLibraryModule(String(curriculumAction.getAttribute('data-curriculum-delete-module') || ''));
         }
-        if (curriculumAction.hasAttribute('data-curriculum-focus-builder')) return focusCurriculumSubjectBuilder();
+        if (curriculumAction.hasAttribute('data-curriculum-focus-builder')) return openCurriculumSubjectBuilderModal();
+        if (curriculumAction.hasAttribute('data-curriculum-edit-subject')) {
+            return openCurriculumSubjectBuilderModalForEdit(String(curriculumAction.getAttribute('data-curriculum-edit-subject') || ''));
+        }
         if (curriculumAction.hasAttribute('data-curriculum-delete-subject')) {
             return deleteSubjectById(String(curriculumAction.getAttribute('data-curriculum-delete-subject') || ''));
         }
@@ -335,19 +321,6 @@ function handleRegistrationLegacyChange(event) {
         );
     }
 
-    if (target.matches('[data-student-program-semester-filter]')) {
-        renderStudentEducationalProgramPage();
-        return;
-    }
-
-    if (target.matches('[data-student-program-module-select]')) {
-        setStudentEducationalProgramModuleSelection(
-            String(target.getAttribute('data-student-program-module-select') || ''),
-            String(target.getAttribute('data-program-faculty') || getCurrentFaculty())
-        );
-        return;
-    }
-
     if (target.matches('[data-curriculum-module-select]')) {
         setCurriculumLibraryModuleSelection(
             String(target.getAttribute('data-curriculum-module-select') || ''),
@@ -395,11 +368,8 @@ function handleRegistrationLegacyInput(event) {
     const target = event.target;
     if (!(target instanceof HTMLElement)) return;
 
-    if (target.matches('[data-student-program-search]')) {
-        syncStudentEducationalProgramSearchQuery(
-            target.value,
-            String(target.getAttribute('data-program-faculty') || getCurrentFaculty())
-        );
+    if (target.matches('[data-curriculum-search]')) {
+        syncCurriculumLibrarySearchQuery(target.value, getCurrentFaculty());
         return;
     }
 
@@ -451,58 +421,6 @@ function toggleCustomSelect(id, event) {
     items.classList.toggle('show');
 }
 
-// --- PROFILE TABS ---
-function ensureProfileTabContent(tab) {
-    const panel = document.getElementById(`profile-tab-${tab}`);
-    if (!panel || panel.dataset.profileMounted === '1') return panel;
-    const template = document.getElementById(`profile-tab-template-${tab}`);
-    if (!template) return panel;
-    panel.innerHTML = template.innerHTML;
-    panel.dataset.profileMounted = '1';
-    return panel;
-}
-
-function switchProfileTab(tab, element) {
-    document.querySelectorAll('#page-profile .tab').forEach(el => {
-        el.classList.remove('active');
-    });
-    element.classList.add('active');
-
-    const setProfilePanelShown = (panel, shown, displayValue = 'block') => {
-        if (!panel) return;
-        panel.hidden = !shown;
-        panel.style.display = shown ? displayValue : 'none';
-    };
-
-    setProfilePanelShown(document.getElementById('profile-tab-info'), false);
-    setProfilePanelShown(document.getElementById('profile-tab-email'), false);
-    setProfilePanelShown(document.getElementById('profile-tab-password'), false);
-    const calendarTab = document.getElementById('profile-tab-calendar');
-    setProfilePanelShown(calendarTab, false);
-    const messengerTab = document.getElementById('profile-tab-messenger');
-    setProfilePanelShown(messengerTab, false);
-    const targetPanel = ensureProfileTabContent(tab) || document.getElementById(`profile-tab-${tab}`);
-    setProfilePanelShown(targetPanel, true, 'block');
-    
-    // Render calendar when calendar tab is clicked
-    if (tab === 'calendar') {
-        setTimeout(() => renderProfileCalendar(), 50);
-    }
-    if (tab === 'messenger' && typeof renderPortalMessengerWorkspace === 'function') {
-        setTimeout(() => renderPortalMessengerWorkspace(), 50);
-    }
-}
-
-if (!window.__profileTabDelegatesBound) {
-    window.__profileTabDelegatesBound = true;
-    document.addEventListener('click', (event) => {
-        const trigger = event.target.closest('[data-profile-tab]');
-        if (!trigger) return;
-        event.preventDefault();
-        switchProfileTab(trigger.dataset.profileTab || 'info', trigger);
-    });
-}
-
 // --- CHANCELLERY LOGIC ---
 
 const setChancellerySelectedCase = (...args) => window.setChancellerySelectedCase?.(...args);
@@ -516,131 +434,6 @@ const renderFinancialLedger = (...args) => window.renderFinancialLedger?.(...arg
 const applyScholarship = (...args) => window.applyScholarship?.(...args);
 const toggleProbation = (...args) => window.toggleProbation?.(...args);
 
-function renderRecentlyCreatedLegacy() {
-    const list = document.getElementById('recently-created-list');
-    if (!list) return;
-    const recent = (KIU_STATE.users || []).slice(-8).reverse();
-    if (recent.length === 0) { list.innerHTML = '<div class="admin-recent-empty">No accounts created yet.</div>'; return; }
-    const accentTone = getFacultyThemeTone(getCurrentFaculty(), {
-        useCurrentPalette: true,
-        softAlpha: 0.12,
-        borderAlpha: 0.24
-    });
-    
-    list.innerHTML = recent.map(u => {
-        const c = getFacultyThemeTone(u.faculty, { useCurrentPalette: false }).accent;
-        const roleLabel = u.role === USER_ROLES.STUDENT
-            ? 'STUDENT'
-            : u.role === USER_ROLES.PROFESSOR
-                ? 'PROFESSOR'
-                : u.role === USER_ROLES.TA
-                    ? 'TA'
-                    : u.role === USER_ROLES.STUDENT_SERVICE
-                        ? 'STUDENT SERVICE'
-                        : 'ADMIN';
-        const profileRole = u.role === USER_ROLES.STUDENT
-            ? 'student'
-            : u.role === USER_ROLES.PROFESSOR
-                ? 'professor'
-                : u.role === USER_ROLES.TA
-                    ? 'ta'
-                    : '';
-        const statusTone = u.activationRequired || u.accountStatus === 'pending-activation'
-            ? { bg: '#fff7ed', border: '#fdba74', text: '#c2410c', label: 'Pending activation' }
-            : u.mustChangePassword || u.accountStatus === 'active-temp-password'
-                ? { bg: accentTone.softBg, border: accentTone.border, text: accentTone.accent, label: 'Initial password issued' }
-            : { bg: '#ecfdf5', border: '#86efac', text: '#166534', label: 'Active account' };
-        const statusClass = u.activationRequired || u.accountStatus === 'pending-activation'
-            ? 'is-pending'
-            : u.mustChangePassword || u.accountStatus === 'active-temp-password'
-                ? 'is-issued'
-                : 'is-active';
-        return `
-        <div class="admin-recent-card">
-            <img class="admin-recent-avatar-img" src="${escapeHtml(getRegistrationAvatarSrc(u, { background: c, size: 40 }))}" alt="${escapeHtml(u.name || 'Account')}">
-            <div class="admin-recent-card-main">
-                <div class="admin-recent-card-title">${u.name}</div>
-                <div class="admin-recent-card-role">${roleLabel} / ${u.faculty}</div>
-                <div class="admin-recent-card-copy">
-                    <div><strong>Email:</strong> ${u.email || 'Not assigned'}</div>
-                    <div><strong>Registration ID:</strong> ${u.id}</div>
-                    ${u.temporaryPassword ? `<div><strong>Initial Password:</strong> ${u.temporaryPassword}</div>` : ''}
-                </div>
-                <div class="admin-recent-status ${statusClass}">
-                    <i class="fas ${u.activationRequired || u.accountStatus === 'pending-activation' ? 'fa-user-clock' : u.mustChangePassword || u.accountStatus === 'active-temp-password' ? 'fa-key' : 'fa-check-circle'}"></i> ${statusTone.label}
-                </div>
-            </div>
-            <div class="admin-recent-id-badge ${profileRole ? 'is-clickable' : ''}" ${profileRole ? `data-provision-action="open-profile" data-profile-role="${profileRole}" data-profile-id="${escapeHtml(u.id)}" data-profile-faculty="${escapeHtml(u.faculty || '')}"` : ''}>${u.id}</div>
-        </div>`;
-    }).join('');
-}
-
-function renderRecentlyCreated() {
-    const list = document.getElementById('recently-created-list');
-    if (!list) return;
-
-    const recent = (KIU_STATE.users || []).slice(-8).reverse();
-    if (!recent.length) {
-        list.innerHTML = `
-            <div class="lux-empty-state">
-                <i class="fas fa-users"></i>
-                <strong>No accounts yet</strong>
-                <span>Created accounts will appear here. Use the buttons above to get started.</span>
-            </div>
-        `;
-        return;
-    }
-
-    const accentTone = getFacultyThemeTone(getCurrentFaculty(), {
-        useCurrentPalette: true,
-        softAlpha: 0.12,
-        borderAlpha: 0.24
-    });
-    list.innerHTML = recent.map((u) => {
-        const c = getFacultyThemeTone(u.faculty, { useCurrentPalette: false }).accent;
-        const roleLabel = u.role === USER_ROLES.STUDENT
-            ? 'Student'
-            : u.role === USER_ROLES.PROFESSOR
-                ? 'Professor'
-                : u.role === USER_ROLES.TA
-                    ? 'TA'
-                    : u.role === USER_ROLES.STUDENT_SERVICE
-                        ? 'Service Agent'
-                        : 'Admin';
-        const profileRole = u.role === USER_ROLES.STUDENT
-            ? 'student'
-            : u.role === USER_ROLES.PROFESSOR
-                ? 'professor'
-                : u.role === USER_ROLES.TA
-                    ? 'ta'
-                    : '';
-        const statusClass = u.activationRequired || u.accountStatus === 'pending-activation'
-            ? 'status-pending'
-            : u.mustChangePassword || u.accountStatus === 'active-temp-password'
-                ? 'status-issued'
-                : 'status-active';
-        const statusLabel = u.activationRequired || u.accountStatus === 'pending-activation'
-            ? 'Pending'
-            : u.mustChangePassword || u.accountStatus === 'active-temp-password'
-                ? 'Password Set'
-                : 'Active';
-
-        return `
-            <button type="button" class="lux-list-row admin-recent-row ${profileRole ? 'is-clickable' : ''}" ${profileRole ? `data-provision-action="open-profile" data-profile-role="${profileRole}" data-profile-id="${escapeHtml(u.id)}" data-profile-faculty="${escapeHtml(u.faculty || '')}"` : ''}>
-                <div class="lux-avatar admin-recent-avatar-initial">
-                    ${escapeHtml(String(u.name || 'U').slice(0, 2).toUpperCase())}
-                </div>
-                <div>
-                    <strong>${escapeHtml(u.name || 'Unnamed account')}</strong>
-                    <span>${escapeHtml(roleLabel)} / ${escapeHtml(u.faculty || 'N/A')}</span>
-                </div>
-                <div>
-                    <span class="lux-pill ${statusClass}">${statusLabel}</span>
-                </div>
-            </button>
-        `;
-    }).join('');
-}
 
 const ADMIN_ACCOUNT_FLOW_KEY = 'KIU_PENDING_ADMIN_ACCOUNT_FLOW';
 
@@ -663,7 +456,7 @@ function consumePendingAdminAccountFlow() {
     const pending = localStorage.getItem(ADMIN_ACCOUNT_FLOW_KEY);
     if (!pending) return;
 
-    if (pending === 'student' && document.getElementById('student-register-overlay')) {
+    if (pending === 'student' && typeof openStudentRegistration === 'function') {
         localStorage.removeItem(ADMIN_ACCOUNT_FLOW_KEY);
         setTimeout(() => openStudentRegistration(), 0);
         return;
@@ -1152,302 +945,28 @@ function renderSelectedCoursesTab() {
 const MAX_SEMESTER_DROPDOWN = 12;
 const CUSTOM_SEMESTER_OPTION = '__custom_semester__';
 
-function normalizeSemesterList(value) {
-    const source = Array.isArray(value) ? value : [value];
-    return [...new Set(source
-        .map((entry) => toRegistrationPositiveInt(entry, 0))
-        .filter((entry) => entry > 0))]
-        .sort((left, right) => left - right);
-}
-
-function normalizeSubjectSemesters(subject) {
-    if (!subject) return [];
-    if (Array.isArray(subject.semesters) && subject.semesters.length) {
-        return normalizeSemesterList(subject.semesters);
-    }
-    return normalizeSemesterList(subject.semester);
-}
-
-function subjectMatchesSemesterFilter(subject, filter) {
-    if (!filter || filter === 'all') return true;
-    const target = toRegistrationPositiveInt(filter, 0);
-    if (!target) return true;
-    return normalizeSubjectSemesters(subject).includes(target);
-}
-
-function formatSubjectSemestersLabel(semesters) {
-    const list = normalizeSemesterList(semesters);
-    if (!list.length) return 'No semesters';
-    if (list.length === 1) return `Semester ${list[0]}`;
-    return `Semesters ${list.join(', ')}`;
-}
-
-function formatCurriculumSubjectDisplayName(subject) {
-    const name = String(subject?.name || '').trim();
-    const code = String(subject?.id || '').trim();
-    if (name && name.length > 2 && !/^\d+$/.test(name)) return name;
-    if (name && /^\d+$/.test(name)) return `Course ${name}`;
-    return code || name || 'Untitled Subject';
-}
-
-function formatCurriculumSubjectSubtitle(subject) {
-    const name = String(subject?.name || '').trim();
-    const code = String(subject?.id || '').trim();
-    if (!code) return '';
-    if (name && (/^\d+$/.test(name) || name.length <= 2)) return code;
-    return '';
-}
-
-function getBuilderSubjectSemesters() {
-    const hidden = document.getElementById('new-subject-semesters');
-    if (!hidden) return [1];
-    try {
-        const parsed = JSON.parse(hidden.value || '[]');
-        const list = normalizeSemesterList(parsed);
-        return list.length ? list : [1];
-    } catch (error) {
-        return [1];
-    }
-}
-
-function setBuilderSubjectSemesters(semesters) {
-    const hidden = document.getElementById('new-subject-semesters');
-    const list = normalizeSemesterList(semesters);
-    const resolved = list.length ? list : [1];
-    if (hidden) hidden.value = JSON.stringify(resolved);
-    return resolved;
-}
-
-function getPrimarySemesterFromBuilder() {
-    const semesters = getBuilderSubjectSemesters();
-    return semesters[0] || 1;
-}
-
-function getSemesterParityDescriptionForSemesters(semesters) {
-    const list = normalizeSemesterList(semesters);
-    if (!list.length) {
-        return 'Select at least one semester to see the availability rule.';
-    }
-    const parities = new Set(list.map((semester) => semester % 2));
-    if (parities.size > 1) {
-        return `Semesters ${list.join(', ')} span odd and even tracks. Use the override below if students in both tracks should see this subject.`;
-    }
-    return getSemesterParityDescription(list[0]);
-}
-
-function toRegistrationPositiveInt(value, fallback = 0) {
-    const parsed = parseInt(String(value == null ? '' : value).trim(), 10);
-    return Number.isFinite(parsed) && parsed >= 0 ? parsed : fallback;
-}
-
-function populateSemesterSelectOptions(control, config = {}) {
-    const selectEl = typeof control === 'string' ? document.getElementById(control) : control;
-    if (!(selectEl instanceof HTMLSelectElement)) return;
-
-    const includeAll = config.includeAll === true;
-    const includeCustom = config.includeCustom === true;
-    const numberPrefix = config.numberPrefix || 'Semester';
-    const previousValue = String(selectEl.value || selectEl.dataset.previousSemesterValue || (includeAll ? 'all' : '1'));
-    const customValue = parseInt(selectEl.dataset.customSemesterValue || '', 10);
-    const customLabel = Number.isFinite(customValue) && customValue > MAX_SEMESTER_DROPDOWN
-        ? `${numberPrefix} ${customValue}`
-        : null;
-
-    const options = [];
-    if (includeAll) options.push({ value: 'all', label: 'All Semesters' });
-    for (let semester = 1; semester <= MAX_SEMESTER_DROPDOWN; semester += 1) {
-        options.push({ value: String(semester), label: `${numberPrefix} ${semester}` });
-    }
-    if (customLabel) {
-        options.push({ value: String(customValue), label: customLabel });
-    }
-    if (includeCustom) {
-        options.push({ value: CUSTOM_SEMESTER_OPTION, label: 'Custom Semester...' });
-    }
-
-    selectEl.innerHTML = options.map((option) => `<option value="${escapeHtml(option.value)}">${escapeHtml(option.label)}</option>`).join('');
-    const resolvedValue = options.some((option) => option.value === previousValue)
-        ? previousValue
-        : (includeAll ? 'all' : '1');
-    selectEl.value = resolvedValue;
-    selectEl.dataset.previousSemesterValue = resolvedValue;
-
-    if (!selectEl.dataset.customSemesterBound && includeCustom) {
-        selectEl.addEventListener('change', () => {
-            if (selectEl.value !== CUSTOM_SEMESTER_OPTION) {
-                selectEl.dataset.previousSemesterValue = selectEl.value;
-                return;
-            }
-
-            const entered = prompt('Enter a semester number:', selectEl.dataset.customSemesterValue || String(MAX_SEMESTER_DROPDOWN + 1));
-            const fallbackValue = selectEl.dataset.previousSemesterValue || (includeAll ? 'all' : '1');
-            const parsed = parseInt(String(entered || '').trim(), 10);
-            if (!Number.isFinite(parsed) || parsed < 1) {
-                selectEl.value = fallbackValue;
-                return;
-            }
-
-            if (parsed > MAX_SEMESTER_DROPDOWN) {
-                selectEl.dataset.customSemesterValue = String(parsed);
-            } else {
-                delete selectEl.dataset.customSemesterValue;
-            }
-
-            populateSemesterSelectOptions(selectEl, config);
-            selectEl.value = String(parsed);
-            selectEl.dataset.previousSemesterValue = selectEl.value;
-            selectEl.dispatchEvent(new Event('change'));
-        });
-        selectEl.dataset.customSemesterBound = '1';
-    }
-}
-
-function getSemesterNumberFromControl(control, fallback = 1) {
-    const selectEl = typeof control === 'string' ? document.getElementById(control) : control;
-    if (!(selectEl instanceof HTMLSelectElement)) return fallback;
-    const rawValue = selectEl.value === CUSTOM_SEMESTER_OPTION
-        ? (selectEl.dataset.customSemesterValue || fallback)
-        : (selectEl.value || fallback);
-    const parsed = parseInt(String(rawValue).trim(), 10);
-    return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
-}
-
-function getSemesterParityDescription(semesterValue) {
-    const semester = parseInt(semesterValue, 10);
-    if (!Number.isFinite(semester) || semester <= 0) {
-        return 'Select a semester to see the availability rule.';
-    }
-    return semester % 2 === 1
-        ? `Semester ${semester} is odd. This subject is visible in odd semesters unless the override is enabled.`
-        : `Semester ${semester} is even. This subject is visible in even semesters unless the override is enabled.`;
-}
-
-function refreshSemesterDropdowns() {
-    [
-        { id: 'filter-curriculum-semester', includeAll: true, includeCustom: true, numberPrefix: 'Sem' },
-        { id: 'admin-active-semester', includeCustom: true, numberPrefix: 'Semester' },
-        { id: 'admin-tt-semester', includeCustom: true, numberPrefix: 'Sem' },
-        { id: 'admin-generate-semester', includeCustom: true, numberPrefix: 'Sem' },
-        { id: 'stu-reg-semester', includeCustom: true, numberPrefix: 'Semester' },
-        { id: 'new-user-semester', includeCustom: true, numberPrefix: 'Semester' }
-    ].forEach((cfg) => {
-        document.querySelectorAll(`#${cfg.id}`).forEach((selectEl) => populateSemesterSelectOptions(selectEl, cfg));
-    });
-}
-
-function ensureSubjectSemesterParityHint() {
-    refreshSemesterDropdowns();
-    const hint = document.getElementById('new-subject-semester-parity-hint');
-    const hiddenSemesters = document.getElementById('new-subject-semesters');
-    if (!hint) return;
-    hint.classList.add('lux-admin-tools-parity-callout');
-
-    let exceptionWrap = document.getElementById('new-subject-semester-parity-exception-wrap');
-    if (!exceptionWrap) {
-        exceptionWrap = document.createElement('div');
-        exceptionWrap.id = 'new-subject-semester-parity-exception-wrap';
-        exceptionWrap.className = 'registration-parity-exception lux-admin-tools-parity-exception';
-        exceptionWrap.innerHTML = `
-            <input id="new-subject-parity-both-checkbox" class="registration-parity-exception-checkbox" type="checkbox">
-            <label for="new-subject-parity-both-checkbox" class="registration-parity-exception-label">Make this subject available in both odd and even semesters</label>
-        `;
-        hint.insertAdjacentElement('afterend', exceptionWrap);
-    }
-
-    const exceptionCheckbox = document.getElementById('new-subject-parity-both-checkbox');
-    const updateHint = () => {
-        const semesters = getBuilderSubjectSemesters();
-        const extra = exceptionCheckbox instanceof HTMLInputElement && exceptionCheckbox.checked
-            ? ' Override enabled: students in both parity tracks can see this subject.'
-            : '';
-        hint.textContent = `${getSemesterParityDescriptionForSemesters(semesters)}${extra}`;
-    };
-
-    if (hiddenSemesters && !hiddenSemesters.dataset.parityHintBound) {
-        hiddenSemesters.addEventListener('change', updateHint);
-        hiddenSemesters.dataset.parityHintBound = '1';
-    }
-    if (exceptionCheckbox instanceof HTMLInputElement && !exceptionCheckbox.dataset.parityHintBound) {
-        exceptionCheckbox.addEventListener('change', updateHint);
-        exceptionCheckbox.dataset.parityHintBound = '1';
-    }
-
-    updateHint();
-}
-
-function toggleConditionBox() {
-    const checkbox = document.getElementById('has-condition-checkbox');
-    const container = document.getElementById('condition-box-container');
-    if (!(checkbox instanceof HTMLInputElement) || !container) return;
-    if (checkbox.checked) {
-        container.hidden = false;
-        container.style.removeProperty('display');
-        filterSubjects('');
-    } else {
-        container.hidden = true;
-        clearConditionSelection();
-    }
-}
-
-function getSelectedConditionEntries() {
-    const badge = document.getElementById('selected-condition-badge');
-    if (!badge) return [];
-    try {
-        const parsed = JSON.parse(badge.dataset.conditions || '[]');
-        return Array.isArray(parsed) ? parsed.filter((entry) => entry && entry.code) : [];
-    } catch (_) {
-        return [];
-    }
-}
-
-function renderSelectedConditionEntries(entries) {
-    const badge = document.getElementById('selected-condition-badge');
-    const text = document.getElementById('selected-condition-text');
-    const input = document.getElementById('subject-search-input');
-    if (!badge || !text) return;
-
-    const normalized = [...new Map((entries || [])
-        .map((entry) => [String(entry.code || '').trim(), { code: String(entry.code || '').trim(), name: String(entry.name || entry.code || '').trim() }]))
-        .values()]
-        .filter((entry) => entry.code);
-
-    badge.classList.add('registration-condition-badge');
-    badge.dataset.conditions = JSON.stringify(normalized);
-    badge.dataset.value = normalized.length > 0
-        ? normalized.map((entry) => `[REQ] ${entry.code}`).join(', ')
-        : 'None';
-    badge.hidden = normalized.length === 0;
-    text.innerHTML = normalized.map((entry) => `
-        <span class="registration-condition-chip">
-            <span>[${escapeHtml(entry.code)}] ${escapeHtml(entry.name)}</span>
-            <button type="button" class="registration-condition-chip-remove" data-condition-action="remove" data-subject-code="${escapeHtml(entry.code)}">&times;</button>
-        </span>
-    `).join('');
-    if (input) input.hidden = false;
-}
-
-function addConditionSelection(code, name) {
-    const normalizedCode = String(code || '').trim();
-    if (!normalizedCode) return;
-    const entries = getSelectedConditionEntries();
-    if (!entries.some((entry) => entry.code === normalizedCode)) {
-        entries.push({ code: normalizedCode, name: String(name || normalizedCode).trim() || normalizedCode });
-    }
-    renderSelectedConditionEntries(entries);
-}
-
-function removeConditionSelection(code) {
-    const normalizedCode = String(code || '').trim();
-    renderSelectedConditionEntries(getSelectedConditionEntries().filter((entry) => entry.code !== normalizedCode));
-}
-
-function clearConditionSelection() {
-    renderSelectedConditionEntries([]);
-    const input = document.getElementById('subject-search-input');
-    if (input) input.value = '';
-    const list = document.getElementById('subject-search-results');
-    if (list) list.hidden = true;
-}
+const normalizeSemesterList = window.normalizeSemesterList;
+const normalizeSubjectSemesters = window.normalizeSubjectSemesters;
+const subjectMatchesSemesterFilter = window.subjectMatchesSemesterFilter;
+const formatSubjectSemestersLabel = window.formatSubjectSemestersLabel;
+const formatCurriculumSubjectDisplayName = window.formatCurriculumSubjectDisplayName;
+const formatCurriculumSubjectSubtitle = window.formatCurriculumSubjectSubtitle;
+const getBuilderSubjectSemesters = window.getBuilderSubjectSemesters;
+const setBuilderSubjectSemesters = window.setBuilderSubjectSemesters;
+const getPrimarySemesterFromBuilder = window.getPrimarySemesterFromBuilder;
+const getSemesterParityDescriptionForSemesters = window.getSemesterParityDescriptionForSemesters;
+const toRegistrationPositiveInt = window.toRegistrationPositiveInt;
+const populateSemesterSelectOptions = window.populateSemesterSelectOptions;
+const getSemesterNumberFromControl = window.getSemesterNumberFromControl;
+const getSemesterParityDescription = window.getSemesterParityDescription;
+const refreshSemesterDropdowns = window.refreshSemesterDropdowns;
+const ensureSubjectSemesterParityHint = window.ensureSubjectSemesterParityHint;
+const toggleConditionBox = window.toggleConditionBox;
+const getSelectedConditionEntries = window.getSelectedConditionEntries;
+const renderSelectedConditionEntries = window.renderSelectedConditionEntries;
+const addConditionSelection = window.addConditionSelection;
+const removeConditionSelection = window.removeConditionSelection;
+const clearConditionSelection = window.clearConditionSelection;
 
 function filterSubjects(query = '') {
     const list = document.getElementById('subject-search-results');
@@ -1490,7 +1009,7 @@ function getSelectedAntiReqCodes() {
     if (!picker) return [];
     try {
         const parsed = JSON.parse(picker.dataset.selected || '[]');
-        return Array.isArray(parsed) ? parsed.filter(Boolean) : [];
+        return Array.isArray(parsed) ? parsed.filter((code) => code && code !== 'None') : [];
     } catch (_) {
         return [];
     }
@@ -1499,7 +1018,7 @@ function getSelectedAntiReqCodes() {
 function setSelectedAntiReqCodes(codes) {
     const picker = document.getElementById('new-subject-antireq-picker');
     if (!picker) return;
-    const normalized = [...new Set((codes || []).map((code) => String(code || '').trim()).filter(Boolean))];
+    const normalized = [...new Set((codes || []).map((code) => String(code || '').trim()).filter((code) => code && code !== 'None'))];
     picker.dataset.selected = JSON.stringify(normalized);
     const hidden = document.getElementById('new-subject-antireq');
     if (hidden) hidden.value = normalized.join(', ');
@@ -1542,24 +1061,22 @@ function populateAntiReqDropdown() {
         .slice()
         .sort((left, right) => String(left?.name || '').localeCompare(String(right?.name || '')));
 
-    picker.className = 'lux-admin-tools-antireq-picker';
+    picker.className = 'social-neo-dialog-field lux-admin-tools-antireq-picker';
     picker.innerHTML = `
-        <div class="lux-admin-tools-antireq-head">
-            <span class="lux-admin-tools-antireq-head-title"><i class="fas fa-ban" aria-hidden="true"></i> Anti-requisites</span>
-            <span class="lux-admin-tools-antireq-head-meta">Block enrollment when another course is taken</span>
-        </div>
-        <div data-role="selected-anti-row" class="registration-antireq-selected-row lux-admin-tools-antireq-selected">
+        <span class="social-neo-label">Anti-requisites</span>
+        <span class="lux-admin-tools-antireq-hint">Block enrollment when another course is taken</span>
+        <div data-role="selected-anti-row" class="registration-antireq-selected-row lux-admin-tools-antireq-selected${selectedValues.length > 0 ? '' : ' is-empty'}">
             ${selectedValues.length > 0
                 ? selectedValues.map((code) => `
                     <span class="registration-antireq-chip">
                         <span>${escapeHtml(code)}</span>
-                        <button type="button" class="registration-antireq-chip-remove" data-antireq-action="toggle" data-anti-code="${escapeHtml(code)}">&times;</button>
+                        <button type="button" class="registration-antireq-chip-remove" data-antireq-action="toggle" data-anti-code="${escapeHtml(code)}" aria-label="Remove ${escapeHtml(code)}">&times;</button>
                     </span>
                 `).join('')
                 : '<span class="registration-antireq-empty">No anti-requisites selected</span>'}
         </div>
         <div class="registration-antireq-toolbar">
-            <button type="button" data-antireq-action="clear" class="lux-secondary-btn registration-antireq-clear-btn">Clear All</button>
+            <button type="button" data-antireq-action="clear" class="social-neo-btn social-neo-btn-ghost social-neo-btn-sm registration-antireq-clear-btn">Clear all</button>
         </div>
         <div class="registration-antireq-options lux-admin-tools-antireq-options">
             ${subjects.length === 0
@@ -1576,62 +1093,6 @@ function populateAntiReqDropdown() {
     `;
 
     setSelectedAntiReqCodes(selectedValues);
-}
-
-function getCurriculumLibraryModules(faculty = getCurrentFaculty()) {
-    const normalizedFaculty = normalizeFacultyCode(faculty, getCurrentFaculty());
-    if (!KIU_STATE.curriculumLibraryModulesByFaculty || typeof KIU_STATE.curriculumLibraryModulesByFaculty !== 'object') {
-        KIU_STATE.curriculumLibraryModulesByFaculty = {};
-    }
-    if (!Array.isArray(KIU_STATE.curriculumLibraryModulesByFaculty[normalizedFaculty])) {
-        KIU_STATE.curriculumLibraryModulesByFaculty[normalizedFaculty] = [];
-    }
-    return KIU_STATE.curriculumLibraryModulesByFaculty[normalizedFaculty];
-}
-
-function buildDefaultCurriculumModule(faculty, subjectIds = []) {
-    const normalizedFaculty = normalizeFacultyCode(faculty, getCurrentFaculty());
-    return {
-        id: `CLM-${normalizedFaculty}-GENERAL`,
-        letter: 'A',
-        name: 'General Curriculum',
-        maxEcts: subjectIds.reduce((sum, subjectId) => {
-            const subject = (typeof getActiveCurriculum === 'function' ? getActiveCurriculum(normalizedFaculty) : []).find((item) => item.id === subjectId);
-            return sum + (toRegistrationPositiveInt(subject?.ects, 0) || 0);
-        }, 0),
-        subjectIds: [...new Set(subjectIds)],
-        systemDefault: true
-    };
-}
-
-function ensureCurriculumLibraryModules(faculty = getCurrentFaculty()) {
-    const normalizedFaculty = normalizeFacultyCode(faculty, getCurrentFaculty());
-    const modules = getCurriculumLibraryModules(normalizedFaculty);
-    const subjects = typeof getActiveCurriculum === 'function' ? getActiveCurriculum(normalizedFaculty) : [];
-    const validSubjectIds = new Set(subjects.map((subject) => subject.id));
-
-    modules.forEach((module, index) => {
-        module.id = module.id || `CLM-${normalizedFaculty}-${Date.now()}-${index}`;
-        module.letter = String.fromCharCode(65 + (index % 26));
-        module.name = module.name || `Module ${index + 1}`;
-        module.maxEcts = toRegistrationPositiveInt(module.maxEcts, 0);
-        module.subjectIds = [...new Set((module.subjectIds || []).filter((subjectId) => validSubjectIds.has(subjectId)))];
-    });
-
-    if (modules.length === 0 && subjects.length > 0) {
-        modules.push(buildDefaultCurriculumModule(normalizedFaculty, subjects.map((subject) => subject.id)));
-    }
-
-    const assigned = new Set(modules.flatMap((module) => module.subjectIds || []));
-    const missing = subjects.map((subject) => subject.id).filter((subjectId) => !assigned.has(subjectId));
-    if (missing.length > 0) {
-        const fallback = modules.find((module) => module.systemDefault) || buildDefaultCurriculumModule(normalizedFaculty, []);
-        if (!modules.includes(fallback)) modules.unshift(fallback);
-        fallback.subjectIds = [...new Set([...(fallback.subjectIds || []), ...missing])];
-        fallback.maxEcts = Math.max(toRegistrationPositiveInt(fallback.maxEcts, 0), getCurriculumModuleEctsTotal(fallback, normalizedFaculty));
-    }
-
-    return modules;
 }
 
 function getSelectedCurriculumLibraryModule(faculty = getCurrentFaculty()) {
@@ -1656,28 +1117,6 @@ function setCurriculumLibraryModuleSelection(moduleId, faculty = getCurrentFacul
     curriculumLibraryUiState.selectedModulesByFaculty[normalizedFaculty] = String(moduleId);
 }
 
-function getCurriculumLibraryModuleSubjects(module, faculty = getCurrentFaculty(), semesterFilter = 'all') {
-    if (!module) return [];
-    const normalizedFaculty = normalizeFacultyCode(faculty, getCurrentFaculty());
-    const subjectsById = new Map((typeof getActiveCurriculum === 'function' ? getActiveCurriculum(normalizedFaculty) : []).map((subject) => [subject.id, subject]));
-    return (module.subjectIds || [])
-        .map((subjectId) => subjectsById.get(subjectId))
-        .filter(Boolean)
-        .filter((subject) => subjectMatchesSemesterFilter(subject, semesterFilter))
-        .sort((left, right) => {
-            const leftSemesters = normalizeSubjectSemesters(left);
-            const rightSemesters = normalizeSubjectSemesters(right);
-            const semesterDiff = (leftSemesters[0] || 99) - (rightSemesters[0] || 99);
-            if (semesterDiff !== 0) return semesterDiff;
-            return String(left.name || '').localeCompare(String(right.name || ''));
-        });
-}
-
-function getCurriculumModuleEctsTotal(module, faculty = getCurrentFaculty()) {
-    return getCurriculumLibraryModuleSubjects(module, faculty, 'all')
-        .reduce((sum, subject) => sum + toRegistrationPositiveInt(subject?.ects, 0), 0);
-}
-
 function syncCurriculumSubjectBuilderTarget(faculty = getCurrentFaculty()) {
     const badge = document.getElementById('curriculum-form-module-target');
     const help = document.getElementById('curriculum-form-module-help');
@@ -1686,8 +1125,8 @@ function syncCurriculumSubjectBuilderTarget(faculty = getCurrentFaculty()) {
 
     if (badge) {
         badge.innerHTML = selectedModule
-            ? `<i class="fas fa-layer-group"></i><span>Target Module: ${escapeHtml(selectedModule.name)}</span>`
-            : '<i class="fas fa-layer-group"></i><span>Target Module: No module selected</span>';
+            ? `<i class="fas fa-layer-group" aria-hidden="true"></i><span>${escapeHtml(selectedModule.name)}</span>`
+            : '<i class="fas fa-layer-group" aria-hidden="true"></i><span>No module selected</span>';
     }
     if (help) {
         help.textContent = selectedModule
@@ -1700,140 +1139,514 @@ function syncCurriculumSubjectBuilderTarget(faculty = getCurrentFaculty()) {
     }
 }
 
-function focusCurriculumSubjectBuilder() {
-    const builder = document.getElementById('curriculum-subject-builder-card');
-    if (builder) {
-        builder.scrollIntoView({ behavior: 'smooth', block: 'start' });
+function closeBuilderSemesterPickerPanel() {
+    const panel = document.getElementById('new-subject-semester-lux-panel');
+    if (!panel?.classList.contains('is-open')) return;
+    if (typeof window.closePickerPanels === 'function') {
+        window.closePickerPanels();
+        return;
     }
-    document.getElementById('new-subject-name')?.focus();
+    const button = document.getElementById('new-subject-semester-lux-btn');
+    panel.classList.remove('is-open');
+    panel.setAttribute('aria-hidden', 'true');
+    if (button) button.setAttribute('aria-expanded', 'false');
+}
+
+function resetCurriculumSubjectBuilderForm() {
+    if (!curriculumLibraryUiState.editingSubjectId) {
+        syncCurriculumSubjectBuilderModalCopy('create');
+    }
+    const nameInput = document.getElementById('new-subject-name');
+    if (nameInput) nameInput.value = '';
+    const codePreview = document.getElementById('new-subject-code-preview');
+    if (codePreview) codePreview.value = '';
+    const conditionCheckbox = document.getElementById('has-condition-checkbox');
+    if (conditionCheckbox instanceof HTMLInputElement) conditionCheckbox.checked = false;
+    clearConditionSelection();
+    toggleConditionBox();
+    setSelectedAntiReqCodes([]);
+    const parityCheckbox = document.getElementById('new-subject-parity-both-checkbox');
+    if (parityCheckbox instanceof HTMLInputElement) parityCheckbox.checked = false;
+    setBuilderSubjectSemesters([1]);
+    if (typeof window.syncCurriculumSemesterPickerUi === 'function') {
+        window.syncCurriculumSemesterPickerUi();
+    }
+    ensureSubjectSemesterParityHint();
+    if (typeof updateSubjectCodePreview === 'function') updateSubjectCodePreview();
+}
+
+function closeCurriculumSubjectBuilderModal() {
+    const modal = document.getElementById('kiu-subject-builder-modal');
+    if (!modal || modal.hidden) return;
+    closeBuilderSemesterPickerPanel();
+    curriculumLibraryUiState.editingSubjectId = null;
+    modal.hidden = true;
+    modal.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+}
+
+function syncCurriculumSubjectBuilderModalCopy(mode = 'create') {
+    const title = document.getElementById('subject-builder-modal-title');
+    const titleIcon = document.querySelector('#kiu-subject-builder-modal .social-neo-dialog-title i');
+    const subtitle = document.querySelector('#kiu-subject-builder-modal .social-neo-dialog-subtitle');
+    const saveBtn = document.getElementById('save-curriculum-subject-btn');
+    const isEdit = mode === 'edit';
+    if (title) title.textContent = isEdit ? 'Edit Subject' : 'Add Subject';
+    if (titleIcon) {
+        titleIcon.className = isEdit ? 'fas fa-pen' : 'fas fa-book-open';
+        titleIcon.setAttribute('aria-hidden', 'true');
+    }
+    if (subtitle) {
+        subtitle.textContent = isEdit
+            ? 'Update course details for the active faculty.'
+            : 'Create a new course for the active faculty.';
+    }
+    if (saveBtn) {
+        saveBtn.innerHTML = isEdit
+            ? '<i class="fas fa-save"></i> Update Subject'
+            : '<i class="fas fa-plus"></i> Save Subject';
+    }
+}
+
+function openCurriculumSubjectBuilderModal() {
+    const modal = document.getElementById('kiu-subject-builder-modal');
+    if (!modal) return;
+    closeBuilderSemesterPickerPanel();
+    curriculumLibraryUiState.editingSubjectId = null;
+    resetCurriculumSubjectBuilderForm();
+    syncCurriculumSubjectBuilderModalCopy('create');
+    syncCurriculumSubjectBuilderTarget(getCurrentFaculty());
+    if (!modal.hasAttribute('data-lux-transparency-exempt')) {
+        modal.setAttribute('data-lux-transparency-exempt', '1');
+    }
+    modal.hidden = false;
+    modal.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+    if (document.body.classList.contains('lux-route-admin-tools')) {
+        modal.dataset.luxStructuredModal = '1';
+        if (typeof window.queueLuxuryTransparencyRefresh === 'function') {
+            window.queueLuxuryTransparencyRefresh(undefined, { roots: [modal] });
+        }
+    }
+    setTimeout(() => document.getElementById('new-subject-name')?.focus(), 0);
+}
+
+function parseCurriculumRequirementTokens(value, prefix) {
+    return String(value || '')
+        .split(',')
+        .map((part) => part.trim())
+        .filter(Boolean)
+        .map((part) => {
+            const match = part.match(new RegExp(`\\[${prefix}\\]\\s*(.+)$`, 'i'));
+            return match ? match[1].trim() : part.replace(/^\[.*?\]\s*/, '').trim();
+        })
+        .filter(Boolean);
+}
+
+function populateCurriculumSubjectBuilderForEdit(subject) {
+    if (!subject) return;
+    const nameInput = document.getElementById('new-subject-name');
+    if (nameInput) nameInput.value = String(subject.name || '');
+    const codePreview = document.getElementById('new-subject-code-preview');
+    if (codePreview) codePreview.value = String(subject.id || '');
+    const ectsInput = document.getElementById('new-subject-ects');
+    if (ectsInput) ectsInput.value = String(toRegistrationPositiveInt(subject.ects, 6) || 6);
+    const parityCheckbox = document.getElementById('new-subject-parity-both-checkbox');
+    if (parityCheckbox instanceof HTMLInputElement) {
+        parityCheckbox.checked = String(subject.parityMode || '').toLowerCase() === 'both';
+    }
+
+    const semesters = normalizeSubjectSemesters(subject);
+    setBuilderSubjectSemesters(semesters.length ? semesters : [1]);
+    if (typeof window.syncCurriculumSemesterPickerUi === 'function') {
+        window.syncCurriculumSemesterPickerUi();
+    }
+
+    const prerequisiteCodes = parseCurriculumRequirementTokens(subject.cond, 'REQ')
+        .filter((code) => code && code !== 'None');
+    const antiReqCodes = parseCurriculumRequirementTokens(subject.antireq, 'ANTI')
+        .filter((code) => code && code !== 'None');
+    const conditionCheckbox = document.getElementById('has-condition-checkbox');
+    if (conditionCheckbox instanceof HTMLInputElement) {
+        conditionCheckbox.checked = prerequisiteCodes.length > 0;
+    }
+    toggleConditionBox();
+    if (prerequisiteCodes.length > 0) {
+        const subjectsById = new Map((typeof getActiveCurriculum === 'function' ? getActiveCurriculum(getCurrentFaculty()) : [])
+            .map((entry) => [entry.id, entry]));
+        renderSelectedConditionEntries(prerequisiteCodes.map((code) => ({
+            code,
+            name: subjectsById.get(code)?.name || code
+        })));
+    } else {
+        clearConditionSelection();
+    }
+    setSelectedAntiReqCodes(antiReqCodes);
+    ensureSubjectSemesterParityHint();
+    if (typeof updateSubjectCodePreview === 'function') updateSubjectCodePreview();
+}
+
+function openCurriculumSubjectBuilderModalForEdit(subjectId) {
+    const normalizedSubjectId = String(subjectId || '').trim();
+    if (!normalizedSubjectId) return;
+    const faculty = getCurrentFaculty();
+    const subject = (typeof getActiveCurriculum === 'function' ? getActiveCurriculum(faculty) : [])
+        .find((entry) => entry.id === normalizedSubjectId);
+    if (!subject) return;
+
+    const modal = document.getElementById('kiu-subject-builder-modal');
+    if (!modal) return;
+    closeBuilderSemesterPickerPanel();
+    curriculumLibraryUiState.editingSubjectId = normalizedSubjectId;
+    resetCurriculumSubjectBuilderForm();
+    populateCurriculumSubjectBuilderForEdit(subject);
+    syncCurriculumSubjectBuilderModalCopy('edit');
+    syncCurriculumSubjectBuilderTarget(faculty);
+    modal.hidden = false;
+    modal.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+    if (document.body.classList.contains('lux-route-admin-tools')) {
+        modal.dataset.luxStructuredModal = '1';
+        if (typeof window.queueLuxuryTransparencyRefresh === 'function') {
+            window.queueLuxuryTransparencyRefresh(undefined, { roots: [modal] });
+        }
+    }
+    setTimeout(() => document.getElementById('new-subject-name')?.focus(), 0);
+}
+
+function focusCurriculumSubjectBuilder() {
+    openCurriculumSubjectBuilderModal();
+}
+
+function getCurriculumLibrarySearchQuery(faculty = getCurrentFaculty()) {
+    const normalizedFaculty = normalizeFacultyCode(faculty, getCurrentFaculty());
+    curriculumLibraryUiState.searchQueryByFaculty = curriculumLibraryUiState.searchQueryByFaculty || {};
+    return String(curriculumLibraryUiState.searchQueryByFaculty[normalizedFaculty] || '').trim();
+}
+
+function setCurriculumLibrarySearchQuery(value, faculty = getCurrentFaculty(), shouldRender = true) {
+    const normalizedFaculty = normalizeFacultyCode(faculty, getCurrentFaculty());
+    curriculumLibraryUiState.searchQueryByFaculty = curriculumLibraryUiState.searchQueryByFaculty || {};
+    curriculumLibraryUiState.searchQueryByFaculty[normalizedFaculty] = String(value || '').trim();
+    if (shouldRender) renderCurriculumTable();
+}
+
+function syncCurriculumLibrarySearchQuery(value, faculty = getCurrentFaculty()) {
+    const normalizedFaculty = normalizeFacultyCode(faculty, getCurrentFaculty());
+    curriculumLibraryUiState.searchQueryByFaculty = curriculumLibraryUiState.searchQueryByFaculty || {};
+    curriculumLibraryUiState.searchQueryByFaculty[normalizedFaculty] = String(value || '').trim();
+    if (curriculumLibraryUiState.searchDebounceTimer) {
+        window.clearTimeout(curriculumLibraryUiState.searchDebounceTimer);
+    }
+    curriculumLibraryUiState.searchDebounceTimer = window.setTimeout(() => {
+        renderCurriculumTable();
+    }, 120);
+}
+
+function filterCurriculumLibrarySubjects(subjects, faculty, searchQuery = '') {
+    const normalizedQuery = String(searchQuery || '').trim().toLowerCase();
+    if (!normalizedQuery) return Array.isArray(subjects) ? subjects : [];
+    return (Array.isArray(subjects) ? subjects : []).filter((subject) => {
+        const searchFields = [
+            subject?.id,
+            subject?.name,
+            subject?.cond,
+            subject?.antireq,
+            subject?.semester,
+            subject?.ects,
+            typeof getFacultyLabel === 'function' ? getFacultyLabel(subject?.faculty || faculty) : subject?.faculty
+        ];
+        return searchFields.some((value) => String(value || '').toLowerCase().includes(normalizedQuery));
+    });
+}
+
+function buildCurriculumLibraryRenderContext(faculty = getCurrentFaculty()) {
+    const normalizedFaculty = normalizeFacultyCode(faculty, getCurrentFaculty());
+    const semesterFilterSelect = document.getElementById('filter-curriculum-semester');
+    const searchInput = document.getElementById('admin-curriculum-search');
+    const preservedSemesterFilter = semesterFilterSelect?.value || 'all';
+    const preservedSearchQuery = searchInput?.value || getCurriculumLibrarySearchQuery(normalizedFaculty);
+
+    if (searchInput && searchInput.value !== preservedSearchQuery) searchInput.value = preservedSearchQuery;
+
+    setCurriculumLibrarySearchQuery(preservedSearchQuery, normalizedFaculty, false);
+
+    const semesterFilter = semesterFilterSelect?.value || preservedSemesterFilter;
+    const searchQuery = getCurriculumLibrarySearchQuery(normalizedFaculty);
+    const modules = ensureCurriculumLibraryModules(normalizedFaculty);
+    const selectedModule = getSelectedCurriculumLibraryModule(normalizedFaculty);
+    const selectedModuleSubjectsAll = getCurriculumLibraryModuleSubjects(selectedModule, normalizedFaculty, 'all');
+    const semesterFilteredSubjects = getCurriculumLibraryModuleSubjects(selectedModule, normalizedFaculty, semesterFilter);
+    const moduleSubjects = filterCurriculumLibrarySubjects(semesterFilteredSubjects, normalizedFaculty, searchQuery);
+    const facultyLabel = typeof getFacultyLabel === 'function' ? getFacultyLabel(normalizedFaculty) : normalizedFaculty;
+    const selectedModuleName = selectedModule ? `${selectedModule.letter || ''}. ${selectedModule.name || 'Untitled Module'}`.trim() : 'No module selected';
+    const selectedModuleEcts = selectedModule ? getCurriculumModuleEctsTotal(selectedModule, normalizedFaculty) : 0;
+    const selectedModuleLimit = toRegistrationPositiveInt(selectedModule?.maxEcts, 0);
+    const selectedModuleLoad = selectedModuleLimit > 0 ? Math.min(100, Math.round((selectedModuleEcts / selectedModuleLimit) * 100)) : 0;
+    const semesterLabel = semesterFilter === 'all' ? 'All semesters' : `Semester ${semesterFilter}`;
+    const searchLabel = searchQuery
+        ? `${moduleSubjects.length} search result${moduleSubjects.length === 1 ? '' : 's'}`
+        : `${moduleSubjects.length} subject${moduleSubjects.length === 1 ? '' : 's'} in current filter`;
+
+    const allProgramSubjectsById = new Map();
+    modules.forEach((module) => {
+        getCurriculumLibraryModuleSubjects(module, normalizedFaculty, 'all').forEach((subject) => {
+            if (subject?.id) allProgramSubjectsById.set(subject.id, subject);
+        });
+    });
+    const allProgramSubjects = Array.from(allProgramSubjectsById.values());
+    const totalProgramEcts = allProgramSubjects.reduce((sum, subject) => sum + toRegistrationPositiveInt(subject?.ects, 0), 0);
+    const visibleEcts = moduleSubjects.reduce((sum, subject) => sum + toRegistrationPositiveInt(subject?.ects, 0), 0);
+    const totalPrerequisiteSubjects = countSubjectsWithPrerequisites(allProgramSubjects);
+
+    return {
+        allProgramSubjects,
+        faculty: normalizedFaculty,
+        facultyLabel,
+        moduleSubjects,
+        modules,
+        searchLabel,
+        searchQuery,
+        selectedModule,
+        selectedModuleEcts,
+        selectedModuleLimit,
+        selectedModuleLoad,
+        selectedModuleName,
+        selectedModuleSubjectsAll,
+        semesterFilter,
+        semesterLabel,
+        totalPrerequisiteSubjects,
+        totalProgramEcts,
+        visibleEcts
+    };
+}
+
+function syncCurriculumLibraryCommandDeck(context) {
+    const setText = (id, value) => {
+        const node = document.getElementById(id);
+        if (node) node.textContent = value;
+    };
+
+    setText('curriculum-ops-total-ects', String(context.totalProgramEcts));
+    setText('curriculum-ops-visible-ects', String(context.visibleEcts));
+    setText('curriculum-ops-modules', String(context.modules.length));
+    setText('curriculum-ops-prerequisites', String(context.totalPrerequisiteSubjects));
+
+    const moduleLoadValue = context.selectedModule && context.selectedModuleLimit
+        ? `${context.selectedModuleLoad}%`
+        : (context.selectedModule ? `${context.selectedModuleEcts} ECTS` : '--');
+    setText('curriculum-ops-module-load', moduleLoadValue);
+
+    setText('curriculum-ops-total-ects-note', `${context.allProgramSubjects.length} subjects in program`);
+    setText('curriculum-ops-visible-ects-note', context.semesterLabel);
+    setText('curriculum-ops-modules-note', context.selectedModuleName);
+    setText('curriculum-ops-prerequisites-note', 'Subjects with requirements');
+    setText('curriculum-ops-module-load-note', context.selectedModule && context.selectedModuleLimit
+        ? `${context.selectedModuleEcts}/${context.selectedModuleLimit} ECTS capacity`
+        : (context.selectedModule ? context.searchLabel : 'Select a module'));
+}
+
+function ensureCurriculumLibraryWorkspaceShell(root) {
+    if (!root || root.dataset.curriculumWorkspaceShell === '1') return;
+    root.dataset.curriculumWorkspaceShell = '1';
+    root.setAttribute('data-lux-transparency-exempt', '1');
+    root.innerHTML = `
+        <div class="lux-program-shell lux-admin-curriculum-shell lux-admin-tools-index-panel-shell">
+            <div class="lux-program-grid lux-admin-curriculum-grid">
+                <section id="curriculum-module-rail-region" class="lux-section-card lux-program-shell-section lux-program-shell-section--module-rail lux-admin-tools-index-subpanel"></section>
+                <section id="curriculum-subject-panel-region" class="lux-section-card lux-program-shell-section lux-program-shell-section--subject-panel lux-admin-tools-index-subpanel"></section>
+            </div>
+        </div>
+    `;
+}
+
+function refreshCurriculumLibraryPresentation() {
+    const workspaceRoot = document.getElementById('curriculum-library-workspace-root');
+    if (workspaceRoot) {
+        workspaceRoot.setAttribute('data-lux-transparency-exempt', '1');
+    }
+    document.querySelectorAll(
+        '#curriculum-module-rail-region, #curriculum-subject-panel-region, .lux-admin-curriculum-control-band, .lux-admin-curriculum-ops-panel'
+    ).forEach((node) => {
+        node.classList.add('lux-admin-tools-index-subpanel');
+    });
+}
+
+function renderCurriculumModuleRailRegion(context) {
+    return `
+        <div class="lux-section-card__body lux-program-shell-body lux-program-shell-body--module-rail">
+            <div class="lux-program-section-head curriculum-library-head">
+                <div class="lux-section-kicker"><i class="fas fa-layer-group"></i> Curriculum modules</div>
+                <button type="button" class="lux-ghost-btn curriculum-library-btn" data-curriculum-add-module="1"><i class="fas fa-layer-group"></i> Add Module</button>
+            </div>
+            <div class="lux-module-rail lux-program-module-rail curriculum-library-list" data-preserve-scroll-key="curriculum-library-modules">
+                ${context.modules.length === 0 ? `
+                    <div class="lux-empty-state lux-program-empty-state">
+                        <i class="fas fa-layer-group"></i>
+                        <strong class="lux-empty-state__title">No curriculum modules yet</strong>
+                        <span class="lux-empty-state__copy">Create a module to start organizing subjects.</span>
+                        <button type="button" class="lux-primary-btn curriculum-library-empty-state-action" data-curriculum-add-module="1"><i class="fas fa-plus"></i> Create Module</button>
+                    </div>
+                ` : context.modules.map((module) => {
+                    const active = context.selectedModule && module.id === context.selectedModule.id;
+                    const moduleSubjectsForFaculty = getCurriculumLibraryModuleSubjects(module, context.faculty, 'all');
+                    const ectsTotal = getCurriculumModuleEctsTotal(module, context.faculty);
+                    const subjectCount = getCurriculumLibraryModuleSubjects(module, context.faculty, context.semesterFilter).length;
+                    const limit = toRegistrationPositiveInt(module.maxEcts, 0);
+                    const load = limit > 0 ? Math.min(100, Math.round((ectsTotal / limit) * 100)) : 0;
+                    const moduleSemesters = getCurriculumSemesterCoverage(moduleSubjectsForFaculty);
+                    return `
+                        <label class="lux-module-option lux-program-module-option curriculum-library-module-option${active ? ' is-active' : ''}">
+                            <span class="lux-module-option__main curriculum-library-module-option-head">
+                                <input class="curriculum-library-module-option-radio" type="radio" name="curriculum-library-module" value="${escapeHtml(module.id)}" ${active ? 'checked' : ''} data-curriculum-module-select="${escapeHtml(module.id)}">
+                                <span class="lux-module-option__text">
+                                    <span class="lux-module-option__title curriculum-library-module-option-title">${escapeHtml(`${module.letter || ''}. ${module.name || 'Untitled Module'}`.trim())}</span>
+                                    <span class="lux-module-option__meta curriculum-library-module-option-meta">${subjectCount} subjects in current filter / ${escapeHtml(moduleSemesters)}</span>
+                                </span>
+                            </span>
+                            <span class="lux-module-option__right">
+                                <span class="lux-status-pill wave2-chip wave2-chip--pill lux-admin-curriculum-ects-pill">ECTS: ${ectsTotal}${limit ? `/${limit}` : ''}</span>
+                                <span class="lux-module-option__meter"><span class="lux-module-option__meter-bar" style="--lux-program-module-load:${load}%"></span></span>
+                            </span>
+                        </label>
+                    `;
+                }).join('')}
+            </div>
+        </div>
+    `;
+}
+
+function renderCurriculumSubjectPanelRegion(context) {
+    return `
+        <div class="lux-section-card__body lux-program-shell-body lux-program-shell-body--subject-panel lux-program-subject-panel curriculum-library-panel curriculum-library-panel--detail">
+            ${context.selectedModule ? `
+                <div class="lux-program-section-head lux-program-detail-head curriculum-library-detail-head">
+                    <div class="curriculum-library-detail-summary">
+                        <div class="lux-section-title lux-program-module-title curriculum-library-detail-title">${escapeHtml(context.selectedModule.name)}</div>
+                        <div class="lux-card-meta curriculum-library-detail-meta">${getCurriculumLibraryModuleSubjects(context.selectedModule, context.faculty, 'all').length} subjects / ${getCurriculumModuleEctsTotal(context.selectedModule, context.faculty)} ECTS</div>
+                    </div>
+                    <div class="curriculum-library-detail-actions">
+                        <button type="button" class="lux-ghost-btn curriculum-library-btn curriculum-library-btn--compact" data-curriculum-add-module="1"><i class="fas fa-layer-group"></i> Add Module</button>
+                        <button type="button" class="lux-ghost-btn curriculum-library-btn curriculum-library-btn--compact" data-curriculum-edit-module="${escapeHtml(context.selectedModule.id)}"><i class="fas fa-edit"></i> Edit</button>
+                        <button type="button" class="lux-ghost-btn curriculum-library-btn curriculum-library-btn--compact curriculum-library-btn--danger" data-curriculum-delete-module="${escapeHtml(context.selectedModule.id)}"><i class="fas fa-trash"></i></button>
+                        <button type="button" class="lux-primary-btn curriculum-library-btn curriculum-library-btn--primary" data-curriculum-focus-builder="1"><i class="fas fa-plus"></i> Add Subject</button>
+                    </div>
+                </div>
+                <div class="lux-program-column-head lux-program-detail-columns" aria-hidden="true">
+                    <div class="lux-program-column-code">Code</div>
+                    <div class="lux-program-column-subject">Subject title / requirements</div>
+                    <div class="lux-program-column-ects">ECTS / actions</div>
+                </div>
+                <div class="lux-program-subject-list lux-program-detail-list curriculum-library-row-list" id="curriculum-subject-row-list" aria-label="Module subjects">
+                    ${renderCurriculumLibraryModuleRows(context.selectedModule, context.moduleSubjects, context.faculty, context.searchQuery ? 'search' : context.semesterFilter)}
+                </div>
+            ` : `
+                <div class="lux-empty-state lux-program-empty-state lux-program-empty-state--panel curriculum-library-empty-state">
+                    <i class="fas fa-layer-group"></i>
+                    <strong class="lux-empty-state__title">Select or create a module</strong>
+                    <span class="lux-empty-state__copy">Choose a module from the list or create one now to start organizing subjects.</span>
+                    <button type="button" class="lux-primary-btn curriculum-library-empty-state-action" data-curriculum-add-module="1"><i class="fas fa-plus"></i> Create Module</button>
+                </div>
+            `}
+        </div>
+    `;
 }
 
 function renderCurriculumLibraryModuleRows(module, subjects, faculty, semesterFilter) {
     if (!module || !subjects.length) {
-        const emptyText = semesterFilter === 'all'
-            ? 'No subjects are assigned to this module yet.'
-            : 'No subjects in this module match the selected semester filter.';
-        return `<div class="lux-empty-block">${escapeHtml(emptyText)}</div>`;
+        const emptyText = semesterFilter === 'search'
+            ? 'No subjects match the current search query.'
+            : semesterFilter === 'all'
+                ? 'No subjects are assigned to this module yet.'
+                : 'No subjects in this module match the selected semester filter.';
+        return `
+            <div class="lux-empty-state lux-program-empty-state lux-program-empty-state--subjects">
+                <i class="fas fa-book-open"></i>
+                <strong class="lux-empty-state__title">Nothing to show</strong>
+                <span class="lux-empty-state__copy">${escapeHtml(emptyText)}</span>
+            </div>
+        `;
     }
 
     return subjects.map((subject, index) => {
         const prerequisite = subject.cond && subject.cond !== 'None' ? subject.cond : 'None';
         const antiReq = subject.antireq && subject.antireq !== 'None' ? subject.antireq : '';
+        const hasPrerequisite = prerequisite !== 'None';
         const semesters = normalizeSubjectSemesters(subject);
         const facultyLabel = typeof getFacultyLabel === 'function'
             ? getFacultyLabel(subject.faculty || faculty)
             : String(subject.faculty || faculty || '');
         const semesterChips = semesters.length
-            ? semesters.map((semester) => `<span class="lux-status-pill lux-curriculum-subject-card__semester">S${escapeHtml(String(semester))}</span>`).join('')
-            : '<span class="lux-status-pill lux-curriculum-subject-card__semester is-muted">No semester</span>';
+            ? semesters.map((semester) => `<span class="lux-status-pill wave2-chip wave2-chip--pill">Semester ${escapeHtml(String(semester))}</span>`).join('')
+            : '<span class="lux-status-pill wave2-chip wave2-chip--pill is-muted">No semester</span>';
         const subtitle = formatCurriculumSubjectSubtitle(subject);
         return `
-            <article class="lux-curriculum-subject-card ${prerequisite !== 'None' ? 'has-prerequisite' : 'is-open'}">
-                <header class="lux-curriculum-subject-card__head">
-                    <div class="lux-curriculum-subject-card__code-wrap">
-                        <span class="lux-curriculum-subject-card__code">${escapeHtml(subject.id)}</span>
-                        <span class="lux-curriculum-subject-card__index">#${index + 1}</span>
-                    </div>
-                    <button type="button" class="lux-secondary-btn curriculum-library-subject-delete-btn lux-curriculum-subject-card__delete" data-curriculum-delete-subject="${escapeHtml(subject.id)}" aria-label="Delete ${escapeHtml(subject.id)}"><i class="fas fa-trash"></i></button>
-                </header>
-                <div class="lux-curriculum-subject-card__body">
-                    <h3 class="lux-curriculum-subject-card__title">${escapeHtml(formatCurriculumSubjectDisplayName(subject))}</h3>
-                    ${subtitle ? `<p class="lux-curriculum-subject-card__subtitle">${escapeHtml(subtitle)}</p>` : ''}
-                    <p class="lux-curriculum-subject-card__faculty">${escapeHtml(facultyLabel)}</p>
-                    <div class="lux-curriculum-subject-card__chips">
-                        ${semesterChips}
-                        <span class="lux-status-pill lux-curriculum-subject-card__ects">${escapeHtml(String(subject.ects || 0))} ECTS</span>
+            <article class="lux-subject-row lux-program-subject-card ${hasPrerequisite ? 'has-prerequisite' : 'is-open'}">
+                <div class="lux-subject-row__code">
+                    <div>${escapeHtml(subject.id)}</div>
+                    <div class="lux-subject-row__meta">#${index + 1}</div>
+                </div>
+                <div class="lux-subject-row__body">
+                    <div class="lux-subject-row__title">${escapeHtml(formatCurriculumSubjectDisplayName(subject))}</div>
+                    <div class="lux-subject-row__secondary">
+                        ${subtitle ? `<div class="lux-subject-row__meta">${escapeHtml(subtitle)}</div>` : ''}
+                        <div class="lux-subject-row__meta">${escapeHtml(facultyLabel)}</div>
+                        <div class="lux-subject-row__chips">
+                            ${semesterChips}
+                            <span class="lux-status-pill wave2-chip wave2-chip--pill">${escapeHtml(String(subject.ects || 0))} ECTS</span>
+                        </div>
+                        <div class="lux-subject-row__detail" title="${escapeHtml(prerequisite)}"><strong>Prerequisite:</strong> ${escapeHtml(prerequisite)}</div>
+                        ${antiReq ? `<div class="lux-subject-row__detail is-soft" title="${escapeHtml(antiReq)}"><strong>Anti-requisite:</strong> ${escapeHtml(antiReq)}</div>` : ''}
                     </div>
                 </div>
-                <footer class="lux-curriculum-subject-card__footer">
-                    <div class="lux-curriculum-subject-card__detail"><strong>Prerequisite:</strong> ${escapeHtml(prerequisite)}</div>
-                    ${antiReq ? `<div class="lux-curriculum-subject-card__detail is-soft"><strong>Anti-requisite:</strong> ${escapeHtml(antiReq)}</div>` : ''}
-                </footer>
+                <div class="lux-subject-row__stats">
+                    <span class="lux-program-requirement ${hasPrerequisite ? 'is-locked' : 'is-open'}">
+                        <i class="fas ${hasPrerequisite ? 'fa-link' : 'fa-check'}"></i>
+                        ${hasPrerequisite ? 'Requires' : 'Open'}
+                    </span>
+                    <div class="lux-subject-row__actions curriculum-library-subject-actions" role="group" aria-label="Subject actions">
+                        <button type="button" class="curriculum-library-subject-action-btn admin-reg-icon-action" data-curriculum-edit-subject="${escapeHtml(subject.id)}" aria-label="Edit ${escapeHtml(subject.id)}"><i class="fas fa-pen" aria-hidden="true"></i></button>
+                        <button type="button" class="curriculum-library-subject-action-btn admin-reg-icon-action admin-reg-icon-action--danger" data-curriculum-delete-subject="${escapeHtml(subject.id)}" aria-label="Delete ${escapeHtml(subject.id)}"><i class="fas fa-trash-alt" aria-hidden="true"></i></button>
+                    </div>
+                </div>
             </article>
         `;
     }).join('');
 }
 
 function renderCurriculumTable() {
-    const root = document.getElementById('curriculum-library-modules-root');
+    const workspaceRoot = document.getElementById('curriculum-library-workspace-root');
+    const legacyRoot = document.getElementById('curriculum-library-modules-root');
     const tbody = document.getElementById('curriculum-table-body');
-    if (!root && !tbody) return;
+    if (!workspaceRoot && !legacyRoot && !tbody) return;
 
     const faculty = getCurrentFaculty();
-    const semesterFilter = document.getElementById('filter-curriculum-semester')?.value || 'all';
     if (typeof syncCurriculumFacultyBadge === 'function') syncCurriculumFacultyBadge(faculty);
     ensureSubjectSemesterParityHint();
-
-    const modules = ensureCurriculumLibraryModules(faculty);
-    const selectedModule = getSelectedCurriculumLibraryModule(faculty);
     syncCurriculumSubjectBuilderTarget(faculty);
 
-    if (root) {
-        root.innerHTML = `
-            <div class="curriculum-library-layout">
-                <div class="lux-surface curriculum-library-panel">
-                    <div class="curriculum-library-head">
-                        <div>
-                            <div class="lux-card-title">Curriculum Modules</div>
-                            <div class="lux-card-meta">${modules.length} module${modules.length === 1 ? '' : 's'} in ${escapeHtml(typeof getFacultyLabel === 'function' ? getFacultyLabel(faculty) : faculty)}</div>
-                        </div>
-                        <button type="button" class="lux-ghost-btn curriculum-library-btn" data-curriculum-add-module="1"><i class="fas fa-layer-group"></i> Add Module</button>
-                    </div>
-                    <div class="lux-scrollbar curriculum-library-list" data-preserve-scroll-key="curriculum-library-modules">
-                        ${modules.length === 0 ? '<div class="lux-empty-block">No modules are available yet.</div>' : modules.map((module) => {
-                            const active = selectedModule && module.id === selectedModule.id;
-                            const subjectCount = getCurriculumLibraryModuleSubjects(module, faculty, 'all').length;
-                            return `
-                                <label class="curriculum-library-module-option${active ? ' is-active' : ''}">
-                                    <span class="curriculum-library-module-option-head">
-                                        <input class="curriculum-library-module-option-radio" type="radio" name="curriculum-library-module" value="${escapeHtml(module.id)}" ${active ? 'checked' : ''} data-curriculum-module-select="${escapeHtml(module.id)}">
-                                        <span class="curriculum-library-module-option-title">${escapeHtml(`${module.letter || ''}. ${module.name || 'Untitled Module'}`.trim())}</span>
-                                    </span>
-                                    <span class="curriculum-library-module-option-meta">${subjectCount} subjects / ${getCurriculumModuleEctsTotal(module, faculty)} ECTS</span>
-                                </label>
-                            `;
-                        }).join('')}
-                    </div>
+    if (workspaceRoot || legacyRoot) {
+        const context = buildCurriculumLibraryRenderContext(faculty);
+        syncCurriculumLibraryCommandDeck(context);
+
+        if (workspaceRoot) {
+            ensureCurriculumLibraryWorkspaceShell(workspaceRoot);
+            const moduleRailRegion = document.getElementById('curriculum-module-rail-region');
+            const subjectPanelRegion = document.getElementById('curriculum-subject-panel-region');
+            if (moduleRailRegion) moduleRailRegion.innerHTML = renderCurriculumModuleRailRegion(context);
+            if (subjectPanelRegion) subjectPanelRegion.innerHTML = renderCurriculumSubjectPanelRegion(context);
+            refreshCurriculumLibraryPresentation();
+        } else if (legacyRoot) {
+            legacyRoot.innerHTML = `
+                <div class="curriculum-library-layout">
+                    <div class="lux-surface curriculum-library-panel">${renderCurriculumModuleRailRegion(context)}</div>
+                    <div class="lux-surface">${renderCurriculumSubjectPanelRegion(context)}</div>
                 </div>
-                <div class="lux-surface curriculum-library-panel curriculum-library-panel--detail">
-                    ${selectedModule ? `
-                        <div class="curriculum-library-detail-head">
-                            <div class="curriculum-library-detail-summary">
-                                <div class="curriculum-library-detail-title">${escapeHtml(selectedModule.name)}</div>
-                                <div class="curriculum-library-detail-meta">${getCurriculumLibraryModuleSubjects(selectedModule, faculty, 'all').length} subjects / ${getCurriculumModuleEctsTotal(selectedModule, faculty)} ECTS</div>
-                            </div>
-                            <div class="curriculum-library-detail-actions">
-                                <button type="button" class="lux-ghost-btn curriculum-library-btn curriculum-library-btn--compact" data-curriculum-add-module="1"><i class="fas fa-layer-group"></i> Add Module</button>
-                                <button type="button" class="lux-ghost-btn curriculum-library-btn curriculum-library-btn--compact" data-curriculum-edit-module="${escapeHtml(selectedModule.id)}"><i class="fas fa-edit"></i> Edit</button>
-                                <button type="button" class="lux-ghost-btn curriculum-library-btn curriculum-library-btn--compact curriculum-library-btn--danger" data-curriculum-delete-module="${escapeHtml(selectedModule.id)}"><i class="fas fa-trash"></i></button>
-                                <button type="button" class="lux-primary-btn curriculum-library-btn curriculum-library-btn--primary" data-curriculum-focus-builder="1"><i class="fas fa-plus"></i> Add Subject</button>
-                            </div>
-                        </div>
-                        <div class="lux-scroll-rail curriculum-library-row-scroll" data-lux-scroll-rail data-curriculum-subject-scroll>
-                            <div class="lux-scroll-rail__controls curriculum-library-scroll-controls" aria-hidden="true">
-                                <div class="lux-scroll-rail__dock" role="group" aria-label="Scroll subjects">
-                                    <button type="button" class="lux-scroll-rail__btn curriculum-library-scroll-btn" data-lux-scroll="up" data-curriculum-scroll="up" aria-label="Scroll subjects up"><i class="fas fa-chevron-up" aria-hidden="true"></i></button>
-                                    <span class="lux-scroll-rail__spine" aria-hidden="true"></span>
-                                    <button type="button" class="lux-scroll-rail__btn curriculum-library-scroll-btn" data-lux-scroll="down" data-curriculum-scroll="down" aria-label="Scroll subjects down"><i class="fas fa-chevron-down" aria-hidden="true"></i></button>
-                                </div>
-                            </div>
-                            <div class="lux-scrollbar lux-scroll-rail__viewport curriculum-library-row-list" id="curriculum-subject-row-list" aria-label="Module subjects">
-                                ${renderCurriculumLibraryModuleRows(selectedModule, getCurriculumLibraryModuleSubjects(selectedModule, faculty, semesterFilter), faculty, semesterFilter)}
-                            </div>
-                        </div>
-                    ` : `
-                        <div class="lux-empty-state curriculum-library-empty-state">
-                            <i class="fas fa-arrow-left"></i>
-                            <strong>Select or create a module</strong>
-                            <span>Choose a module from the list or create one now to start organizing subjects.</span>
-                            <button type="button" class="lux-primary-btn curriculum-library-empty-state-action" data-curriculum-add-module="1"><i class="fas fa-plus"></i> Create Module</button>
-                        </div>
-                    `}
-                </div>
-            </div>
-        `;
+            `;
+            if (typeof initCurriculumLibraryRowScroll === 'function') initCurriculumLibraryRowScroll(legacyRoot);
+        }
+
         populateAntiReqDropdown();
-        if (typeof initCurriculumLibraryRowScroll === 'function') initCurriculumLibraryRowScroll(root);
         if (typeof initCurriculumSemesterPicker === 'function') {
             initCurriculumSemesterPicker({
                 onChange: () => {
@@ -1858,7 +1671,7 @@ function renderCurriculumTable() {
                     <td>${escapeHtml(formatSubjectSemestersLabel(normalizeSubjectSemesters(subject)))}</td>
                     <td>${escapeHtml(subject.cond || 'None')}</td>
                     <td>${escapeHtml(subject.antireq || 'None')}</td>
-                    <td><button type="button" data-curriculum-delete-subject="${escapeHtml(subject.id)}" class="lux-secondary-btn curriculum-library-table-delete-btn"><i class="fas fa-trash"></i></button></td>
+                    <td><button type="button" data-curriculum-delete-subject="${escapeHtml(subject.id)}" class="curriculum-library-subject-action-btn admin-reg-icon-action admin-reg-icon-action--danger curriculum-library-table-delete-btn" aria-label="Delete ${escapeHtml(subject.id)}"><i class="fas fa-trash-alt" aria-hidden="true"></i></button></td>
                 </tr>
             `).join('');
     }
@@ -1866,35 +1679,61 @@ function renderCurriculumTable() {
 
 function addCurriculumLibraryModule() {
     const faculty = getCurrentFaculty();
-    const name = String(prompt('Module name:', '') || '').trim();
-    if (!name) return;
-    const maxEcts = toRegistrationPositiveInt(prompt('Maximum ECTS:', '30'), 30);
-    const modules = ensureCurriculumLibraryModules(faculty);
-    const nextModule = {
-        id: `CLM-${normalizeFacultyCode(faculty, 'ECON')}-${Date.now()}`,
-        letter: String.fromCharCode(65 + (modules.length % 26)),
-        name,
-        maxEcts,
-        subjectIds: [],
-        systemDefault: false
-    };
-    modules.push(nextModule);
-    setCurriculumLibraryModuleSelection(nextModule.id, faculty);
-    saveState();
-    renderCurriculumTable();
+    openStructuredFormModal({
+        title: 'Add Module',
+        subtitle: 'Create a curriculum module for the active faculty.',
+        submitLabel: 'Create Module',
+        titleIcon: 'fa-layer-group',
+        fields: [
+            { name: 'moduleName', label: 'Module Name', placeholder: 'Enter module name', value: '' },
+            { name: 'maxEcts', label: 'Maximum ECTS', type: 'number', min: 0, step: 1, value: 30 }
+        ],
+        onSave: (values, close) => {
+            const name = String(values.moduleName || '').trim();
+            if (!name) return;
+            const maxEcts = toRegistrationPositiveInt(values.maxEcts, 30);
+            const modules = ensureCurriculumLibraryModules(faculty);
+            const nextModule = {
+                id: `CLM-${normalizeFacultyCode(faculty, 'ECON')}-${Date.now()}`,
+                letter: String.fromCharCode(65 + (modules.length % 26)),
+                name,
+                maxEcts,
+                subjectIds: [],
+                systemDefault: false
+            };
+            modules.push(nextModule);
+            setCurriculumLibraryModuleSelection(nextModule.id, faculty);
+            saveState();
+            close();
+            renderCurriculumTable();
+        }
+    });
 }
 
 function editCurriculumLibraryModule(moduleId) {
     const faculty = getCurrentFaculty();
     const module = ensureCurriculumLibraryModules(faculty).find((item) => item.id === moduleId);
     if (!module) return;
-    const nextName = String(prompt('Module name:', module.name || '') || '').trim();
-    if (!nextName) return;
-    const nextMaxEcts = toRegistrationPositiveInt(prompt('Maximum ECTS:', String(module.maxEcts || 0)), toRegistrationPositiveInt(module.maxEcts, 0));
-    module.name = nextName;
-    module.maxEcts = nextMaxEcts;
-    saveState();
-    renderCurriculumTable();
+    openStructuredFormModal({
+        title: 'Edit Module',
+        subtitle: 'Change the module name and maximum credit limit.',
+        submitLabel: 'Save Changes',
+        titleIcon: 'fa-pen',
+        fields: [
+            { name: 'moduleName', label: 'Module Name', value: module.name || '', placeholder: 'Enter module name' },
+            { name: 'maxEcts', label: 'Maximum ECTS', type: 'number', min: 0, step: 1, value: module.maxEcts || 0 }
+        ],
+        onSave: (values, close) => {
+            const nextName = String(values.moduleName || '').trim();
+            if (!nextName) return;
+            const nextMaxEcts = toRegistrationPositiveInt(values.maxEcts, toRegistrationPositiveInt(module.maxEcts, 0));
+            module.name = nextName;
+            module.maxEcts = nextMaxEcts;
+            saveState();
+            close();
+            renderCurriculumTable();
+        }
+    });
 }
 
 function attachSubjectToCurriculumLibraryModule(subjectId, faculty = getCurrentFaculty()) {
@@ -1912,165 +1751,4 @@ function attachSubjectToCurriculumLibraryModule(subjectId, faculty = getCurrentF
         module.maxEcts = Math.max(toRegistrationPositiveInt(module.maxEcts, 0), getCurriculumModuleEctsTotal(module, faculty));
     }
 }
-
-function deleteCurriculumLibraryModule(moduleId) {
-    const faculty = getCurrentFaculty();
-    const modules = ensureCurriculumLibraryModules(faculty);
-    const module = modules.find((item) => item.id === moduleId);
-    if (!module) return;
-    if (!confirm(`Remove module \"${module.name}\"? Its subjects will remain in the faculty curriculum.`)) return;
-
-    let fallback = modules.find((item) => item.id !== moduleId && item.systemDefault) || modules.find((item) => item.id !== moduleId) || null;
-    if (!fallback && (module.subjectIds || []).length > 0) {
-        fallback = buildDefaultCurriculumModule(faculty, []);
-        modules.push(fallback);
-    }
-    if (fallback) {
-        fallback.subjectIds = [...new Set([...(fallback.subjectIds || []), ...(module.subjectIds || [])])];
-        fallback.maxEcts = Math.max(toRegistrationPositiveInt(fallback.maxEcts, 0), getCurriculumModuleEctsTotal(fallback, faculty));
-    }
-
-    KIU_STATE.curriculumLibraryModulesByFaculty[normalizeFacultyCode(faculty, getCurrentFaculty())] = modules.filter((item) => item.id !== moduleId);
-    setCurriculumLibraryModuleSelection(fallback?.id || null, faculty);
-    saveState();
-    renderCurriculumTable();
-}
-
-function deleteSubjectById(subjectId) {
-    if (!confirm('Remove this subject from the curriculum?')) return;
-    Object.keys(KIU_STATE.facultyProfiles || {}).forEach((facultyCode) => {
-        const profile = KIU_STATE.facultyProfiles[facultyCode];
-        if (Array.isArray(profile?.curriculum)) {
-            profile.curriculum = profile.curriculum.filter((subject) => subject.id !== subjectId);
-        }
-    });
-    Object.keys(KIU_STATE.curriculumLibraryModulesByFaculty || {}).forEach((facultyCode) => {
-        (KIU_STATE.curriculumLibraryModulesByFaculty[facultyCode] || []).forEach((module) => {
-            module.subjectIds = (module.subjectIds || []).filter((entry) => entry !== subjectId);
-        });
-    });
-    if (typeof syncCanonicalCurriculumState === 'function') {
-        syncCanonicalCurriculumState();
-    }
-    saveState();
-    renderCurriculumTable();
-    populateAntiReqDropdown();
-}
-
-function addSubjectToSystem() {
-    const name = String(document.getElementById('new-subject-name')?.value || '').trim();
-    const ects = toRegistrationPositiveInt(document.getElementById('new-subject-ects')?.value, 6) || 6;
-    const faculty = getCurrentFaculty();
-    const semesters = getBuilderSubjectSemesters();
-    if (!semesters.length) {
-        alert('Please select at least one semester for this subject.');
-        return;
-    }
-    const semester = semesters[0];
-    const selectedModule = getSelectedCurriculumLibraryModule(faculty);
-    const usePrerequisite = document.getElementById('has-condition-checkbox')?.checked === true;
-    const prerequisiteEntries = getSelectedConditionEntries();
-    const antiReqEntries = getSelectedAntiReqCodes();
-    const customCode = String(document.getElementById('new-subject-code-preview')?.value || '').trim().toUpperCase().replace(/\\s+/g, '-');
-    const allowBothParity = document.getElementById('new-subject-parity-both-checkbox')?.checked === true;
-
-    if (!name) {
-        alert('Please enter a subject name.');
-        return;
-    }
-    if (!selectedModule) {
-        alert('Please create or select a curriculum module first.');
-        syncCurriculumSubjectBuilderTarget(faculty);
-        return;
-    }
-    if (usePrerequisite && prerequisiteEntries.length === 0) {
-        alert('Please select at least one prerequisite or turn off the prerequisite toggle.');
-        return;
-    }
-
-    if (!KIU_STATE.facultyProfiles) {
-        KIU_STATE.facultyProfiles = JSON.parse(JSON.stringify(KIU_EMPTY_STATE.facultyProfiles));
-    }
-    if (!KIU_STATE.facultyProfiles[faculty]) {
-        KIU_STATE.facultyProfiles[faculty] = { curriculum: [], professors: [], tas: [], students: [] };
-    }
-    if (!Array.isArray(KIU_STATE.facultyProfiles[faculty].curriculum)) {
-        KIU_STATE.facultyProfiles[faculty].curriculum = [];
-    }
-
-    const existing = typeof getAllCurriculumSubjects === 'function' ? getAllCurriculumSubjects() : [];
-    const generatedId = customCode || `${normalizeFacultyCode(faculty, 'ECON')}-${String(semester).padStart(2, '0')}-${String(existing.length + 1).padStart(3, '0')}`;
-    if (existing.some((subject) => typeof canonicalCourseKey === 'function' ? canonicalCourseKey(subject.id) === canonicalCourseKey(generatedId) : subject.id === generatedId)) {
-        alert(`Subject code \"${generatedId}\" already exists.`);
-        return;
-    }
-
-    const newSubject = {
-        id: generatedId,
-        name,
-        ects,
-        faculty,
-        semester,
-        semesters,
-        icon: 'fas fa-book',
-        code: generatedId.toLowerCase(),
-        cond: usePrerequisite ? prerequisiteEntries.map((entry) => `[REQ] ${entry.code}`).join(', ') : 'None',
-        antireq: antiReqEntries.length > 0 ? antiReqEntries.map((entry) => `[ANTI] ${entry}`).join(', ') : 'None',
-        parityMode: allowBothParity ? 'both' : 'auto'
-    };
-
-    KIU_STATE.facultyProfiles[faculty].curriculum.push(newSubject);
-    if (typeof syncCanonicalCurriculumState === 'function') {
-        syncCanonicalCurriculumState();
-    }
-    attachSubjectToCurriculumLibraryModule(generatedId, faculty);
-    saveState();
-    renderCurriculumTable();
-    populateAntiReqDropdown();
-    if (typeof updateSubjectCodePreview === 'function') updateSubjectCodePreview();
-
-    document.getElementById('new-subject-name').value = '';
-    const codePreview = document.getElementById('new-subject-code-preview');
-    if (codePreview) codePreview.value = '';
-    const conditionCheckbox = document.getElementById('has-condition-checkbox');
-    if (conditionCheckbox instanceof HTMLInputElement) {
-        conditionCheckbox.checked = false;
-    }
-    clearConditionSelection();
-    toggleConditionBox();
-    setSelectedAntiReqCodes([]);
-    const parityCheckbox = document.getElementById('new-subject-parity-both-checkbox');
-    if (parityCheckbox instanceof HTMLInputElement) parityCheckbox.checked = false;
-    setBuilderSubjectSemesters([1]);
-    if (typeof window.syncCurriculumSemesterPickerUi === 'function') {
-        window.syncCurriculumSemesterPickerUi();
-    }
-    ensureSubjectSemesterParityHint();
-    focusCurriculumSubjectBuilder();
-}
-
-window.normalizeSubjectSemesters = normalizeSubjectSemesters;
-window.subjectMatchesSemesterFilter = subjectMatchesSemesterFilter;
-window.formatSubjectSemestersLabel = formatSubjectSemestersLabel;
-window.getBuilderSubjectSemesters = getBuilderSubjectSemesters;
-window.setBuilderSubjectSemesters = setBuilderSubjectSemesters;
-window.getSemesterParityDescriptionForSemesters = getSemesterParityDescriptionForSemesters;
-window.MAX_SEMESTER_DROPDOWN = MAX_SEMESTER_DROPDOWN;
-
-// Ensure registration state is correctly drawn when the app starts
-window.addEventListener('DOMContentLoaded', () => {
-    if (!document.getElementById('page-registration')) return;
-    // FIX: Removed forced dark mode override - respect user's saved theme preference.
-    // FIX: Removed 500ms setTimeout - render immediately, then apply transparency.
-    initializeRegistrationShellInteractions();
-    refreshSemesterDropdowns();
-    refreshRegistrationUI();
-
-    // CRITICAL: Re-apply transparency AFTER registration cards are rendered.
-    if (typeof updateTransparency === 'function') {
-        var _t = localStorage.getItem('kiuLuxurySurfaceTransparency');
-        if (_t) updateTransparency(parseInt(_t, 10));
-    }
-});
-
 

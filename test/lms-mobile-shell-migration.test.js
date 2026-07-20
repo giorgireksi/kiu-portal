@@ -78,7 +78,7 @@ describe('lms mobile shell migration', () => {
     expect(source).toContain('assets/js/pages/standalone-mobile-shell.js');
     expect(source).not.toContain('(function initMobileExperience(){');
 
-    expect(classificationScriptSource).toContain("'assets/css/lux-page-bare.css'");
+    expect(classificationScriptSource).toContain("'assets/css/lux-page-bare-lite.css'");
     expect(classificationScriptSource).not.toContain("'assets/css/lms-whiteboard-catalog.css'");
     expect(classificationScriptSource).toContain("mobileShell: 'shared-standalone'");
     expect(classificationSource).toContain('| `lms.html` | `standard-shell` |');

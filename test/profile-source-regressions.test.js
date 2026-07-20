@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
 function readSource(relativePath) {
@@ -7,21 +7,23 @@ function readSource(relativePath) {
 }
 
 describe('profile source regressions', () => {
-    it('keeps the self-profile route free of mojibake in the visible shell templates', () => {
-        const html = readSource('profile.html');
+    it('keeps the legacy profile alias and personal-data password shell free of mojibake', () => {
+        const profileHtml = readSource('profile.html');
+        const personalDataHtml = readSource('personal-data.html');
 
-        expect(html).not.toContain('Ãƒ');
-        expect(html).not.toContain('ï¿½');
-        expect(html).toContain('<i class="fas fa-user profile-shell-tab-user-icon"></i> Profile');
-        expect(html).toContain('<i class="fas fa-envelope profile-shell-tab-default-icon"></i> Email');
-        expect(html).toContain('<i class="fas fa-lock profile-shell-tab-default-icon"></i> Password Change');
-        expect(html).toContain('<i class="fas fa-calendar profile-shell-tab-default-icon"></i> My Timetable');
-        expect(html).toContain('id="profile-section-title" class="profile-section-title">Profile</div>');
-        expect(html).toContain('placeholder="Current password"');
-        expect(html).toContain('placeholder="New password, min. 6 characters"');
-        expect(html).toContain('placeholder="Repeat password"');
-        expect(html).toContain('Password recovery uses your registered mobile number.');
-        expect(html).toContain('Contact KIU support if you need an SMS reset code.');
-        expect(html).toContain('<button class="lux-disabled-btn profile-shell-disabled-action" type="button" aria-disabled="true" disabled>Update</button>');
+        expect(profileHtml).not.toContain('Ãƒ');
+        expect(profileHtml).not.toContain('ï¿½');
+        expect(profileHtml).toContain("window.location.replace('personal-data.html')");
+        expect(profileHtml).toContain('Redirecting to Personal Data');
+        expect(profileHtml).not.toContain('page-profile');
+        expect(profileHtml).not.toContain('profile-shell-tab');
+
+        expect(personalDataHtml).not.toContain('Ãƒ');
+        expect(personalDataHtml).not.toContain('ï¿½');
+        expect(personalDataHtml).toContain('Current password');
+        expect(personalDataHtml).toContain('New password');
+        expect(personalDataHtml).toContain('Confirm new password');
+        expect(personalDataHtml).toContain('Change password');
+        expect(personalDataHtml).toContain('id="personal-data-password-form"');
     });
 });

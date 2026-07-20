@@ -1,134 +1,243 @@
-/* LMS classroom tabs runtime extracted from lms.js. */
+/* FINDABILITY: LMS classroom tabs / lazy modules — see docs/findability-index.md#lms-tabs */
+/* LMS classroom tabs — Wave 25 KiuLmsClassroomTabs */
+window.KiuLmsClassroomTabs=window.KiuLmsClassroomTabs||{};const __kiuLmsTabsApi=window.KiuLmsClassroomTabs;window.__kiuLmsTabsApi=__kiuLmsTabsApi;
+function __kiuLmsTabsExpose(map){Object.keys(map).forEach((k)=>{__kiuLmsTabsApi[k]=map[k];window[k]=map[k];});}
 
-function isLmsElementShown(element) {
-    return Boolean(element) && !element.hidden;
-}
 
-function setLmsElementShown(element, shown, displayMode = '') {
-    if (!element) return;
-    element.hidden = !shown;
-    if (shown && displayMode) {
-        element.style.display = displayMode;
-    } else if (!shown) {
-        element.style.display = 'none';
-    } else {
-        element.style.removeProperty('display');
-    }
-}
+/* Tab-owned heavy modules: load on first Grades / Live Quiz / Whiteboard / Quiz / Calls / Interaction use. */
+const LMS_GRADEBOOK_MODULE_URLS = Object.freeze([
+    'assets/js/pages/gradebook-history-ui-runtime.js?v=20260720-gbsize1',
+    'assets/js/pages/gradebook-quiz-map-runtime.js?v=20260720-h2b',
+    'assets/js/pages/gradebook-model.js?v=20260720-gbsize1',
+    'assets/js/pages/gradebook-weights-runtime.js?v=20260720-gbsize1',
+    'assets/js/pages/gradebook-components-runtime.js?v=20260720-h2b',
+    'assets/js/pages/gradebook-workspace.js?v=20260720-gbsize1',
+    'assets/js/pages/gradebook-staff.js?v=20260720-gbsize1'
+]);
+const LMS_LIVE_QUIZ_MODULE_URLS = Object.freeze([
+    'assets/js/pages/lms-workspace-sync-timing.js?v=20260718-lmssync1',
+    'assets/js/pages/lms-live-quiz-access-runtime.js?v=20260720-w18',
+    'assets/js/pages/lms-live-quiz-workspace-runtime.js?v=20260714-lmspro2',
+    'assets/js/pages/lms-live-quiz-podium-runtime.js?v=20260609-livequiz-podium1',
+    'assets/js/pages/lms-live-quiz-session-runtime.js?v=20260720-lqsession1',
+    'assets/js/pages/lms-live-quiz-ui-staff-runtime.js?v=20260720-w18',
+    'assets/js/pages/lms-live-quiz-ui-runtime.js?v=20260609-livequiz-timerfix1'
+]);
+const LMS_WHITEBOARD_MODULE_URLS = Object.freeze([
+    'assets/js/pages/lms-workspace-sync-timing.js?v=20260718-lmssync1',
+    'assets/js/pages/lms-whiteboard-workspace-runtime.js?v=20260710-personal-autosave1',
+    'assets/js/pages/lms-whiteboard-collab-runtime.js?v=20260708-wb-shapes-v4',
+    'assets/js/pages/lms-whiteboard-history-runtime.js?v=20260708-wb-shapes-v4',
+    'assets/js/pages/lms-whiteboard-minimap-runtime.js?v=20260708-wb-shapes-v4',
+    'assets/js/pages/lms-whiteboard-document-runtime.js?v=20260708-wb-shapes-v4',
+    'assets/js/pages/lms-whiteboard-model.js?v=20260720-w25wb1',
+    'assets/js/pages/lms-whiteboard-model-bridge.js?v=20260720-w25wb1',
+    'assets/js/pages/lms-whiteboard-pointer-runtime.js?v=20260719-wbchrome1',
+    'assets/js/pages/lms-whiteboard-paint-runtime.js?v=20260719-wbchrome1',
+    'assets/js/pages/lms-whiteboard-chrome-runtime.js?v=20260719-wbchrome1',
+    'assets/js/pages/lms-whiteboard-session-runtime.js?v=20260720-wbsession1',
+    'assets/js/pages/lms-whiteboard-selection-runtime.js?v=20260720-w18',
+    'assets/js/pages/lms-whiteboard-runtime.js?v=20260720-wbsession1'
+]);
+const LMS_QUIZ_MODULE_URLS = Object.freeze([
+    'assets/js/pages/lms-grade-sync-runtime.js?v=20260518-lmsgrade1',
+    'assets/js/pages/lms-quiz-model.js?v=20260720-w25quiz1',
+    'assets/js/pages/lms-quiz-model-bridge.js?v=20260720-w25quiz1',
+    'assets/js/pages/lms-quiz-blue-runtime.js?v=20260719-lmsblue1',
+    'assets/js/pages/lms-quiz-focus-runtime.js?v=20260719-quizfocus1',
+    'assets/js/pages/lms-quiz-workspace-session-runtime.js?v=20260720-quizsess1',
+    'assets/js/pages/lms-quiz-workspace-review-runtime.js?v=20260720-w18',
+    'assets/js/pages/lms-quiz-workspace-runtime.js?v=20260720-quizsess1',
+    'assets/js/pages/lms-protected-quiz-runtime.js?v=20260714-lmspro2'
+]);
+const LMS_CALLS_MODULE_URLS = Object.freeze([
+    'assets/js/pages/lms-calls-runtime.js?v=20260518-lmscalls1'
+]);
+const LMS_INTERACTION_MODULE_URLS = Object.freeze([
+    'assets/js/shared/messenger-gradebook-runtime.js?v=20260720-msgrgb1',
+    'assets/js/shared/messenger-chrome-runtime.js?v=20260720-w18',
+    'assets/js/shared/messenger.js?v=20260720-msgrgb1',
+    'assets/js/pages/lms-interaction-messages-runtime.js?v=20260714-lmspro2'
+]);
+const LMS_CONTENT_MODULE_URLS = Object.freeze([
+    'assets/js/pages/lms-file-storage-runtime.js?v=20260518-lmsfiles1',
+    'assets/js/pages/lms-week-store-runtime.js?v=20260714-lmspro2',
+    'assets/js/pages/lms-content-library-runtime.js?v=20260714-lmspro2',
+    'assets/js/pages/lms-materials-runtime.js?v=20260714-lmspro2',
+    'assets/js/pages/lms-assignments-runtime.js?v=20260714-lmspro2'
+]);
+const LMS_PERSONAL_DASHBOARD_MODULE_URLS = Object.freeze([
+    'assets/js/pages/lms-personal-dashboard-runtime.js?v=20260715-lms-lazy2'
+]);
 
-function setLmsWorkspacePanel(active) {
-    const contentArea = document.getElementById('lms-content-area');
-    const gbWrapper = document.getElementById('lms-gradebook-wrapper');
-    const isGradebook = active === 'gradebook';
-    setLmsElementShown(contentArea, !isGradebook, 'block');
-    setLmsElementShown(gbWrapper, isGradebook, 'block');
-}
+const lmsRuntimeEnsurePromises = Object.create(null);
 
-function setLmsPageSectionShown(section, shown) {
-    if (!section) return;
-    section.classList.toggle('active-page', Boolean(shown));
-    setLmsElementShown(section, shown);
-}
-
-function openLMSGroups(subjectId, titleString, iconClass) {
-    setLmsPageSectionShown(document.getElementById('page-lms'), false);
-    setLmsPageSectionShown(document.getElementById('page-lms-inner'), false);
-    setLmsPageSectionShown(document.getElementById('page-lms-groups'), true);
-    const subjectTitle = repairLmsDisplayText(titleString, 'Subject');
-    document.getElementById('dynamic-subject-title').innerText = subjectTitle;
-
-    const weekStart = typeof getCurrentWeekStartISO === 'function' ? getCurrentWeekStartISO() : null;
-    const realGroups = (KIU_STATE.availableGroups?.[subjectId] || []).map(group => {
-        const normalizedGroup = typeof getEffectiveGroupForWeek === 'function'
-            ? (getEffectiveGroupForWeek(subjectId, group, weekStart) || group)
-            : (typeof normalizeScheduleGroup === 'function' ? (normalizeScheduleGroup(subjectId, group) || group) : group);
-        return {
-            id: normalizedGroup.id || group.id,
-            title: subjectTitle,
-            group: repairLmsDisplayText(normalizedGroup.name || group.name || group.id, group.id || 'Group'),
-            timeDay: buildLmsTimeBadge(
-                normalizedGroup.day || group.day || normalizedGroup.timeDay || group.timeDay || '',
-                normalizedGroup.time || group.time || ''
-            ),
-            stdCount: normalizedGroup.capacity || group.capacity || 30,
-            room: repairLmsDisplayText(normalizedGroup.room || group.room || 'TBD', 'TBD'),
-            faculty: normalizedGroup.faculty || group.faculty || getCurrentFaculty()
-        };
+function loadLmsScriptOnce(url) {
+    return new Promise((resolve, reject) => {
+        const existing = document.querySelector(`script[src="${url}"]`);
+        if (existing) {
+            if (existing.dataset.kiuLoaded === '1'
+                || existing.readyState === 'complete'
+                || existing.readyState === 'loaded') {
+                existing.dataset.kiuLoaded = '1';
+                resolve();
+                return;
+            }
+            existing.addEventListener('load', () => {
+                existing.dataset.kiuLoaded = '1';
+                resolve();
+            }, { once: true });
+            existing.addEventListener('error', () => {
+                reject(new Error(`Could not load LMS module: ${url}`));
+            }, { once: true });
+            return;
+        }
+        const script = document.createElement('script');
+        script.src = url;
+        script.async = false;
+        // Wave 25: pure model leaves load as ESM; classic bridges follow in MODULE_URLS.
+        if (/\/(lms-quiz-model|lms-whiteboard-model)\.js(\?|$)/.test(url)) {
+            script.type = 'module';
+        }
+        script.addEventListener('load', () => {
+            script.dataset.kiuLoaded = '1';
+            resolve();
+        }, { once: true });
+        script.addEventListener('error', () => {
+            reject(new Error(`Could not load LMS module: ${url}`));
+        }, { once: true });
+        document.head.appendChild(script);
     });
-    const groupsToRender = realGroups;
-    renderLmsBulkGroupTools(subjectId, subjectTitle, groupsToRender);
-    
-    const grid = document.getElementById('dynamic-groups-grid');
-    grid.innerHTML = '';
-    
-    if (!groupsToRender.length) {
-        grid.innerHTML = `
-            <div class="lux-empty-state lms-route-empty-state--centered">
-                <div>
-                    <div class="lux-card-title">No published groups in this faculty yet</div>
-                    <div class="lux-card-copy lms-route-copy-mt-10">Switch faculty in the topbar or add course groups for this subject to populate the workspace.</div>
-                </div>
-            </div>
-        `;
-        if (typeof scheduleLmsVisualShellSync === 'function') scheduleLmsVisualShellSync();
-        return;
-    }
-    groupsToRender.forEach(g => {
-        const courseTitle = `${g.title} | ${g.timeDay} (${g.group})`;
-        const canBulkSelect = canManageLmsGroupContent();
-        const facultyLabel = typeof getFacultyLabel === 'function'
-            ? getFacultyLabel(g.faculty || getCurrentFaculty())
-            : (g.faculty || '');
-        const groupIconClass = /\bfa[rsb]?\b/.test(String(iconClass || ''))
-            ? String(iconClass || 'fas fa-book-reader')
-            : `fas ${String(iconClass || 'fa-book-reader')}`;
-            const liveSummary = getLmsLiveGroupSummary(subjectId, g.id);
-            const groupCourseKey = `${subjectId}::${g.id}`;
-            const nextSessionHtml = renderLmsNextSessionHtml(
-                getLmsNextSessionForGroup(groupCourseKey),
-                'compact'
-            );
-            grid.innerHTML += `
-            <article
-                class="lms-route-card lms-route-panel-compact lux-strip-card lux-lms-group-card"
-                role="button"
-                tabindex="0"
-                data-group-id="${escapeHtml(String(g.id))}"
-                data-course-key="${escapeHtml(`${subjectId}::${g.id}`)}"
-                data-course-title="${escapeHtml(courseTitle)}"
-                data-lms-click="openLMSCourseFromCard(this)"
-                onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openLMSCourseFromCard(this);}">
-                ${canBulkSelect ? `
-                    <label class="lms-bulk-group-select lms-group-tile-select" data-lms-click="event.stopPropagation();">
-                        <input type="checkbox" data-lms-bulk-group-check="true" data-group-id="${escapeHtml(String(g.id))}" data-lms-change="updateLmsBulkSelectionCount()">
-                        <span>Bulk</span>
-                    </label>
-                ` : ''}
-                <div class="lms-group-tile-top">
-                    <div class="lms-group-tile-head">
-                        <div class="lms-route-min-w-0">
-                            <div class="lms-clean-card-kicker"><i class="${escapeHtml(groupIconClass)}"></i> ${escapeHtml(facultyLabel || 'Course')}</div>
-                            <div class="lms-group-tile-title">${escapeHtml(g.group)}</div>
-                        </div>
-                        <span class="lms-group-tile-action" aria-label="Open group"><i class="fas fa-arrow-right"></i></span>
-                    </div>
-                    <div class="lms-group-tile-subject">${escapeHtml(g.title)}</div>
-                </div>
-                <div class="lms-group-tile-meta">
-                    <span class="page-hero-badge"><i class="far fa-clock"></i> ${escapeHtml(g.timeDay)}</span>
-                    <span class="page-hero-badge"><i class="fas fa-users"></i> ${escapeHtml(String(g.stdCount))} seats</span>
-                    <span class="page-hero-badge"><i class="fas fa-door-open"></i> ${escapeHtml(g.room)}</span>
-                </div>
-                ${nextSessionHtml}
-                <div class="lms-group-live-strip ${liveSummary.isLive ? 'is-live' : ''}">
-                    <span><i class="fas fa-bolt"></i> Live Quiz</span>
-                    <span>${escapeHtml(liveSummary.label)}${liveSummary.questionCount ? ` - ${escapeHtml(String(liveSummary.questionCount))} questions` : ''}</span>
-                </div>
-            </article>
-        `;
-    });
-    updateLmsBulkSelectionCount();
-    if (typeof scheduleLmsVisualShellSync === 'function') scheduleLmsVisualShellSync();
+}
+
+function ensureLmsRuntimeModules(key, urls, isReady, label) {
+    if (typeof isReady === 'function' && isReady()) return Promise.resolve(true);
+    if (lmsRuntimeEnsurePromises[key]) return lmsRuntimeEnsurePromises[key];
+
+    lmsRuntimeEnsurePromises[key] = urls
+        .reduce((chain, url) => chain.then(() => loadLmsScriptOnce(url)), Promise.resolve())
+        .then(() => {
+            if (typeof isReady === 'function' && !isReady()) {
+                throw new Error(`${label} runtime loaded without expected exports.`);
+            }
+            return true;
+        })
+        .catch((error) => {
+            console.error(`LMS ${label} runtime load failed.`, error);
+            throw error;
+        })
+        .finally(() => {
+            lmsRuntimeEnsurePromises[key] = null;
+        });
+
+    return lmsRuntimeEnsurePromises[key];
+}
+
+function isLmsGradebookRuntimeReady() {
+    return typeof window.openGradebookSection === 'function'
+        || typeof window.renderGradebookRosterSelection === 'function'
+        || typeof window.initStaffModernGradebook === 'function';
+}
+
+function isLmsLiveQuizRuntimeReady() {
+    return typeof window.renderLmsLiveQuizSection === 'function';
+}
+
+function isLmsWhiteboardRuntimeReady() {
+    return typeof window.renderLmsWhiteboardSection === 'function'
+        || typeof window.ensureLmsWhiteboardWorkspace === 'function';
+}
+
+function isLmsQuizRuntimeReady() {
+    return typeof window.renderLmsQuizSection === 'function'
+        && typeof window.resolveLmsQuizWorkspace === 'function';
+}
+
+function isLmsCallsRuntimeReady() {
+    return typeof window.renderLmsCallsSection === 'function';
+}
+
+function isLmsInteractionRuntimeReady() {
+    return typeof window.ensureLmsInteractionUiState === 'function'
+        && typeof window.renderLmsInteractionBodyMarkup === 'function';
+}
+
+function isLmsContentRuntimeReady() {
+    return typeof window.ensureLmsWeeksForKey === 'function'
+        && typeof window.renderLmsMaterialsLibrary === 'function'
+        && typeof window.renderLmsConceptsLibrary === 'function'
+        && typeof window.renderWorkspace === 'function';
+}
+
+function isLmsPersonalDashboardRuntimeReady() {
+    return typeof window.openLmsPersonalDashboard === 'function'
+        && typeof window.bindLmsPersonalDashboardChromeButton === 'function';
+}
+
+function ensureLmsGradebookRuntime() {
+    return ensureLmsRuntimeModules('gradebook', LMS_GRADEBOOK_MODULE_URLS, isLmsGradebookRuntimeReady, 'gradebook');
+}
+
+function ensureLmsLiveQuizRuntime() {
+    return ensureLmsRuntimeModules('live-quiz', LMS_LIVE_QUIZ_MODULE_URLS, isLmsLiveQuizRuntimeReady, 'live-quiz');
+}
+
+function ensureLmsWhiteboardRuntime() {
+    return ensureLmsRuntimeModules('whiteboard', LMS_WHITEBOARD_MODULE_URLS, isLmsWhiteboardRuntimeReady, 'whiteboard');
+}
+
+function ensureLmsQuizRuntime() {
+    return ensureLmsRuntimeModules('quiz', LMS_QUIZ_MODULE_URLS, isLmsQuizRuntimeReady, 'quiz');
+}
+
+function ensureLmsCallsRuntime() {
+    return ensureLmsRuntimeModules('calls', LMS_CALLS_MODULE_URLS, isLmsCallsRuntimeReady, 'calls');
+}
+
+function ensureLmsInteractionRuntime() {
+    return ensureLmsRuntimeModules('interaction', LMS_INTERACTION_MODULE_URLS, isLmsInteractionRuntimeReady, 'interaction');
+}
+
+function ensureLmsContentRuntime() {
+    return ensureLmsRuntimeModules('content', LMS_CONTENT_MODULE_URLS, isLmsContentRuntimeReady, 'content');
+}
+
+function ensureLmsPersonalDashboardRuntime() {
+    return ensureLmsRuntimeModules(
+        'personal-dashboard',
+        LMS_PERSONAL_DASHBOARD_MODULE_URLS,
+        isLmsPersonalDashboardRuntimeReady,
+        'personal-dashboard'
+    );
+}
+
+function syncLmsPersonalDashboardChromeButtonLite() {
+    const button = document.querySelector('[data-lms-action="open-personal-dashboard"]');
+    const pageInner = document.getElementById('page-lms-inner');
+    if (!button) return;
+    button.hidden = !(pageInner && !pageInner.hidden);
+}
+
+__kiuLmsTabsExpose({
+    isLmsGradebookRuntimeReady,
+    ensureLmsGradebookRuntime,
+    isLmsLiveQuizRuntimeReady,
+    ensureLmsLiveQuizRuntime,
+    isLmsWhiteboardRuntimeReady,
+    ensureLmsWhiteboardRuntime,
+    isLmsQuizRuntimeReady,
+    ensureLmsQuizRuntime,
+    isLmsCallsRuntimeReady,
+    ensureLmsCallsRuntime,
+    isLmsInteractionRuntimeReady,
+    ensureLmsInteractionRuntime,
+    isLmsContentRuntimeReady,
+    ensureLmsContentRuntime,
+    isLmsPersonalDashboardRuntimeReady,
+    ensureLmsPersonalDashboardRuntime,
+});
+if (typeof window.syncLmsPersonalDashboardChromeButton !== 'function') {
+    window['syncLmsPersonalDashboardChromeButton'] = syncLmsPersonalDashboardChromeButtonLite;
 }
 
 function closeLMSGroups() {
@@ -137,6 +246,8 @@ function closeLMSGroups() {
 }
 
 function backToLMSGroups() {
+    if (typeof closeLmsPersonalDashboard === 'function') closeLmsPersonalDashboard();
+    if (typeof syncLmsPersonalDashboardChromeButton === 'function') syncLmsPersonalDashboardChromeButton();
     setLmsPageSectionShown(document.getElementById('page-lms-inner'), false);
     if (typeof isLmsStudentViewer === 'function' && isLmsStudentViewer()) {
         setLmsPageSectionShown(document.getElementById('page-lms-groups'), false);
@@ -203,13 +314,17 @@ function getLmsBulkSelectedWeeks() {
 function buildLmsBulkWeekOptions(subjectId, groups = []) {
     const labels = new Set(LMS_DEFAULT_WEEKS);
     const defaultSection = getDefaultLmsSectionTypeForRole(getEffectiveUserRole()) || 'lecture';
-    (groups || []).forEach(group => {
-        const resourceKey = buildLmsBulkGroupSectionResourceKey(subjectId, group.id, defaultSection);
-        ensureLmsWeeksForKey(resourceKey).forEach(week => labels.add(week));
-    });
+    const ensureWeeks = typeof ensureLmsWeeksForKey === 'function' ? ensureLmsWeeksForKey : null;
+    if (ensureWeeks) {
+        (groups || []).forEach(group => {
+            const resourceKey = buildLmsBulkGroupSectionResourceKey(subjectId, group.id, defaultSection);
+            ensureWeeks(resourceKey).forEach(week => labels.add(week));
+        });
+    }
+    const sortWeeks = typeof sortLmsWeekLabels === 'function' ? sortLmsWeekLabels : ((list) => list);
     return [
         '<option value="">No Week / General</option>',
-        ...sortLmsWeekLabels([...labels]).map(week => `<option value="${escapeHtml(week)}">${escapeHtml(week)}</option>`)
+        ...sortWeeks([...labels]).map(week => `<option value="${escapeHtml(week)}">${escapeHtml(week)}</option>`)
     ].join('');
 }
 
@@ -219,6 +334,22 @@ function renderLmsBulkGroupTools(subjectId, subjectTitle, groups = []) {
     lmsBulkGroupContext = { subjectId, subjectTitle, groups: Array.isArray(groups) ? groups : [] };
     if (!canManageLmsGroupContent() || !groups.length) {
         host.innerHTML = '';
+        return;
+    }
+    if (typeof ensureLmsWeeksForKey !== 'function' && typeof ensureLmsContentRuntime === 'function') {
+        if (host.dataset.lmsContentLoading !== '1') {
+            host.dataset.lmsContentLoading = '1';
+            host.innerHTML = '<div class="lms-route-empty lms-route-empty--full-span"><div class="lms-route-empty-title">Loading group tools…</div></div>';
+            ensureLmsContentRuntime()
+                .then(() => {
+                    delete host.dataset.lmsContentLoading;
+                    renderLmsBulkGroupTools(subjectId, subjectTitle, groups);
+                })
+                .catch(() => {
+                    delete host.dataset.lmsContentLoading;
+                    host.innerHTML = '<div class="lms-live-copy is-danger">Group tools failed to load.</div>';
+                });
+        }
         return;
     }
     const bulkKey = getLmsBulkDraftKey(subjectId);
@@ -244,7 +375,8 @@ function renderLmsBulkGroupTools(subjectId, subjectTitle, groups = []) {
             idPrefix: 'lms-bulk-',
             totalId: 'lms-bulk-scheme-total-points',
             schemeShellId: 'lms-bulk-grading-scheme-shell',
-            shellLabel: 'Max points per component'
+            shellLabel: 'Max points per component',
+            subjectId
         })
         : '';
     host.innerHTML = `
@@ -260,10 +392,10 @@ function renderLmsBulkGroupTools(subjectId, subjectTitle, groups = []) {
                 <div class="lms-bulk-head-actions">
                     <span id="lms-bulk-selected-count" class="lms-bulk-selection">0 selected</span>
                     <div class="lms-bulk-selection-actions">
-                        <button type="button" class="kiu-btn-outline" data-lms-click="setLmsBulkGroupSelection(true)"><i class="fas fa-check"></i> All</button>
-                        <button type="button" class="kiu-btn-outline" data-lms-click="setLmsBulkGroupSelection(false)"><i class="fas fa-xmark"></i> Clear</button>
+                        <button type="button" class="lux-secondary-btn" data-lms-click="setLmsBulkGroupSelection(true)"><i class="fas fa-check"></i> All</button>
+                        <button type="button" class="lux-secondary-btn" data-lms-click="setLmsBulkGroupSelection(false)"><i class="fas fa-xmark"></i> Clear</button>
                     </div>
-                    <button type="button" class="kiu-btn-outline lms-bulk-toggle" data-lms-click="toggleLmsBulkToolsPanel(this)" aria-expanded="false">
+                    <button type="button" class="lux-secondary-btn lms-bulk-toggle" data-lms-click="toggleLmsBulkToolsPanel(this)" aria-expanded="false">
                         <i class="fas fa-sliders"></i>
                         <span>Show tools</span>
                     </button>
@@ -279,7 +411,7 @@ function renderLmsBulkGroupTools(subjectId, subjectTitle, groups = []) {
                         <textarea id="lms-bulk-message-text" class="lms-route-textarea" rows="3" placeholder="Write the message students should see..."></textarea>
                         <div class="lms-bulk-actions">
                             <span class="lms-bulk-copy">Sender: ${escapeHtml(getSimulatedUserName())}</span>
-                            <button type="button" class="kiu-btn-blue" data-lms-bulk-requires-selection="true" data-lms-click="sendLmsBulkGroupMessage()"><i class="fas fa-paper-plane"></i> Send</button>
+                            <button type="button" class="lux-primary-btn" data-lms-bulk-requires-selection="true" data-lms-click="sendLmsBulkGroupMessage()"><i class="fas fa-paper-plane"></i> Send</button>
                         </div>
                     </div>
                     <div class="lms-route-card lms-route-panel-compact lms-bulk-card">
@@ -313,8 +445,8 @@ function renderLmsBulkGroupTools(subjectId, subjectTitle, groups = []) {
                             <input id="lms-bulk-material-description" class="lms-route-input" type="text" placeholder="Optional student-facing note">
                         </div>
                         <div class="lms-bulk-actions">
-                            <button type="button" class="kiu-btn-outline" data-lms-click="pickLocalLmsFile('material', ${lmsInlineArg(bulkKey)}, ${lmsInlineArg(fileLabelId)})"><i class="fas fa-paperclip"></i> Choose</button>
-                            <button type="button" class="kiu-btn-blue" data-lms-bulk-requires-selection="true" data-lms-click="createLmsBulkMaterialUpload()"><i class="fas fa-cloud-upload-alt"></i> Upload</button>
+                            <button type="button" class="lux-secondary-btn" data-lms-click="pickLocalLmsFile('material', ${lmsInlineArg(bulkKey)}, ${lmsInlineArg(fileLabelId)})"><i class="fas fa-paperclip"></i> Choose</button>
+                            <button type="button" class="lux-primary-btn" data-lms-bulk-requires-selection="true" data-lms-click="createLmsBulkMaterialUpload()"><i class="fas fa-cloud-upload-alt"></i> Upload</button>
                         </div>
                     </div>
                     <div class="lms-route-card lms-route-panel-compact lms-bulk-card lms-bulk-card--grading-scheme">
@@ -399,22 +531,24 @@ function sendLmsBulkGroupMessage() {
     selected.forEach(group => {
         const courseKey = buildLmsBulkGroupCourseKey(lmsBulkGroupContext.subjectId, group.id);
         if (!Array.isArray(KIU_STATE.messages[courseKey])) KIU_STATE.messages[courseKey] = [];
-        KIU_STATE.messages[courseKey].push({
-            sender: getSimulatedUserName(),
-            text,
-            time: timeStr,
-            isProf: true,
+        KIU_STATE.messages[courseKey].push(buildLmsInteractionMessagePayload(text, {
+            type: 'announcement',
             bulk: true,
-            createdAt: now.toISOString(),
             targetGroupId: group.id,
             targetGroupName: group.group || group.name || group.id
-        });
+        }));
     });
     saveState();
     const input = document.getElementById('lms-bulk-message-text');
     if (input) input.value = '';
     if (selected.some(group => buildLmsBulkGroupCourseKey(lmsBulkGroupContext.subjectId, group.id) === resolveCanonicalLmsResourceKey(currentCourseId)) && getCurrentLmsActiveTab() === 'interaction') {
-        renderLmsInteractionSection(currentCourseId);
+        const resourceKey = resolveCanonicalLmsResourceKey(currentCourseId);
+        if (!updateLmsInteractionStreamUi(resourceKey)) {
+            renderLmsInteractionSection(currentCourseId);
+        } else {
+            const stream = document.getElementById('lms-interaction-stream');
+            if (stream) scrollLmsInteractionStreamToBottom(stream);
+        }
     }
     alert(`Message sent to ${selected.length} group${selected.length === 1 ? '' : 's'}.`);
 }
@@ -729,247 +863,18 @@ function getLmsSessionMarkerContext(courseKey = currentCourseId) {
     };
 }
 
-function getLmsSessionScheduleForWeek(courseKey = currentCourseId, weekStart = getCurrentWeekStartISO()) {
-    const context = getLmsSessionMarkerContext(courseKey);
-    if (!context) return null;
-    const normalizedWeek = normalizeLmsSessionMarkerWeekStart(weekStart);
-    const effectiveGroup = typeof resolveScheduledGroupForWeek === 'function'
-        ? resolveScheduledGroupForWeek(context.courseId, context.groupId, normalizedWeek)
-        : null;
-    const normalizedGroup = effectiveGroup
-        || (typeof normalizeScheduleGroup === 'function' ? normalizeScheduleGroup(context.courseId, context.group) : context.group)
-        || {};
-    const entries = typeof getWeekDateEntries === 'function' ? getWeekDateEntries(normalizedWeek) : [];
-    const rawDay = typeof normalizeScheduleDayLabel === 'function'
-        ? normalizeScheduleDayLabel(normalizedGroup.day || normalizedGroup.timeDay || '', '')
-        : String(normalizedGroup.day || normalizedGroup.timeDay || '').trim();
-    const dayEntry = entries.find(entry => {
-        const lowered = rawDay.toLowerCase();
-        return String(entry.en || '').toLowerCase() === lowered || String(entry.ge || '').toLowerCase() === lowered;
-    }) || null;
-    const startTime = normalizeTimeString(normalizedGroup.startTime || normalizedGroup.time || '', 'TBD');
-    const endTime = normalizeTimeString(normalizedGroup.endTime || '', '') || (startTime === 'TBD'
-        ? 'TBD'
-        : minutesToTimeString(convertTimeToMinutes(startTime) + parseInt(String(normalizedGroup.duration || '110').match(/\d+/)?.[0] || '110', 10)));
-    return {
-        ...context,
-        weekStart: normalizedWeek,
-        weekLabel: typeof formatWeekRangeLabel === 'function' ? formatWeekRangeLabel(normalizedWeek) : normalizedWeek,
-        dateLabel: dayEntry?.shortDate || '',
-        day: repairLmsDisplayText(dayEntry?.en || rawDay || 'Day TBD', 'Day TBD'),
-        time: startTime,
-        endTime,
-        room: repairLmsDisplayText(normalizedGroup.room || 'Room TBD', 'Room TBD'),
-        instructor: repairLmsDisplayText(normalizedGroup.prof || normalizedGroup.ta || 'Instructor TBA', 'Instructor TBA'),
-        active: Boolean(effectiveGroup || normalizedGroup?.id)
-    };
-}
-
-function buildLmsNextSessionDatesFromSchedule(schedule) {
-    if (!schedule?.active || !schedule.day || schedule.time === 'TBD') return null;
-    const entries = typeof getWeekDateEntries === 'function' ? getWeekDateEntries(schedule.weekStart) : [];
-    const dayLower = String(schedule.day || '').toLowerCase();
-    const entry = entries.find(candidate => {
-        const en = String(candidate.en || '').toLowerCase();
-        const ge = String(candidate.ge || '').toLowerCase();
-        return en === dayLower || ge === dayLower;
-    });
-    if (!entry?.iso) return null;
-    const startDate = new Date(`${entry.iso}T${schedule.time}:00`);
-    if (Number.isNaN(startDate.getTime())) return null;
-    let endDate = null;
-    if (schedule.endTime && schedule.endTime !== 'TBD') {
-        endDate = new Date(`${entry.iso}T${schedule.endTime}:00`);
-        if (Number.isNaN(endDate.getTime())) endDate = null;
-    }
-    return { startDate, endDate, isoDate: entry.iso };
-}
-
-function getLmsNextSessionForGroup(courseKey = currentCourseId, options = {}) {
-    if (!getLmsSessionMarkerContext(courseKey)) return null;
-    const now = options.now instanceof Date ? options.now : new Date(options.now || Date.now());
-    const maxWeeks = Number.isFinite(options.maxWeeks) ? options.maxWeeks : 16;
-    let weekStart = normalizeLmsSessionMarkerWeekStart(
-        options.fromWeekStart || (typeof getCurrentWeekStartISO === 'function' ? getCurrentWeekStartISO() : new Date())
-    );
-    const candidates = [];
-    for (let weekIndex = 0; weekIndex < maxWeeks; weekIndex += 1) {
-        const schedule = getLmsSessionScheduleForWeek(courseKey, weekStart);
-        const dates = schedule ? buildLmsNextSessionDatesFromSchedule(schedule) : null;
-        if (schedule && dates) {
-            const { startDate, endDate } = dates;
-            const sessionEnded = endDate ? endDate < now : startDate < now;
-            if (!sessionEnded) {
-                const isHappeningNow = startDate <= now && (!endDate || endDate >= now);
-                candidates.push({
-                    ...schedule,
-                    startDate,
-                    endDate,
-                    isoDate: dates.isoDate,
-                    isHappeningNow
-                });
-            }
-        }
-        weekStart = typeof shiftWeekStartISO === 'function' ? shiftWeekStartISO(weekStart, 1) : weekStart;
-    }
-    candidates.sort((left, right) => left.startDate - right.startDate);
-    const next = candidates[0] || null;
-    if (!next) return null;
-    return {
-        ...next,
-        relativeLabel: formatLmsNextSessionRelative(next.startDate, now, next.isHappeningNow)
-    };
-}
-
-function formatLmsNextSessionRelative(startDate, now = new Date(), isHappeningNow = false) {
-    if (isHappeningNow) return 'Happening now';
-    const start = startDate instanceof Date ? startDate : new Date(startDate);
-    if (Number.isNaN(start.getTime())) return '';
-    const dayMs = 86400000;
-    const startDay = new Date(start.getFullYear(), start.getMonth(), start.getDate());
-    const nowDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const diffDays = Math.round((startDay - nowDay) / dayMs);
-    if (diffDays === 0) return 'Today';
-    if (diffDays === 1) return 'Tomorrow';
-    if (diffDays > 1 && diffDays < 7) {
-        return start.toLocaleDateString('en-GB', { weekday: 'long' });
-    }
-    return start.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
-}
-
-function renderLmsNextSessionHtml(model, variant = 'hero') {
-    if (!model) {
-        const emptyCopy = 'No upcoming session scheduled';
-        if (variant === 'compact') {
-            return `<div class="lms-group-next-session is-empty"><i class="far fa-clock"></i> ${escapeHtml(emptyCopy)}</div>`;
-        }
-        if (variant === 'inline') {
-            return `<span class="lms-next-session-inline is-empty"><i class="far fa-clock"></i> ${escapeHtml(emptyCopy)}</span>`;
-        }
-        return `
-            <div class="lms-route-card lms-route-panel-compact lms-session-official-card lms-next-session-card is-empty">
-                <div class="lms-route-field-label">Next session</div>
-                <strong>${escapeHtml(emptyCopy)}</strong>
-            </div>
-        `;
-    }
-    const relative = model.relativeLabel || formatLmsNextSessionRelative(model.startDate, new Date(), model.isHappeningNow);
-    const dayLine = `${model.day || 'Day TBD'}${model.dateLabel ? ` ${model.dateLabel}` : ''}`;
-    const timeLine = `${model.time || 'TBD'} - ${model.endTime || 'TBD'} · ${model.room || 'Room TBD'}`;
-    const instructorLine = model.instructor || 'Instructor TBA';
-    const badgeClass = model.isHappeningNow ? 'is-live' : (relative === 'Today' ? 'is-today' : '');
-    if (variant === 'compact') {
-        return `<div class="lms-group-next-session"><i class="far fa-clock"></i> <span class="lms-next-session-badge ${badgeClass}">${escapeHtml(relative)}</span> · ${escapeHtml(dayLine)} · ${escapeHtml(model.time || 'TBD')} · ${escapeHtml(model.room || 'Room TBD')}</div>`;
-    }
-    if (variant === 'inline') {
-        return `<span class="lms-next-session-inline"><i class="far fa-clock"></i> Next session · <span class="lms-next-session-badge ${badgeClass}">${escapeHtml(relative)}</span> · ${escapeHtml(model.day || 'Day TBD')} ${escapeHtml(model.time || 'TBD')}</span>`;
-    }
-    return `
-        <div class="lms-route-card lms-route-panel-compact lms-session-official-card lms-next-session-card">
-            <div class="lms-route-field-label">Next session</div>
-            <span class="lms-next-session-badge ${badgeClass}">${escapeHtml(relative)}</span>
-            <strong>${escapeHtml(dayLine)}</strong>
-            <div>${escapeHtml(timeLine)}</div>
-            <div>${escapeHtml(instructorLine)}</div>
-        </div>
-    `;
-}
-
-function getLmsSessionMarkerComposerOptions(courseKey = currentCourseId) {
-    const weekInput = document.getElementById('lms-session-marker-week-input');
-    const sectionFilter = document.getElementById('lms-session-marker-section-filter')?.value || 'all';
-    const weekNumbers = parseLmsWeekNumberInput(weekInput?.value || '1,2,3,4,5');
-    return { weekNumbers, sectionType: sectionFilter };
-}
-
-function renderLmsSessionMarkerPreviewHtml(courseKey = currentCourseId) {
-    const { weekNumbers, sectionType } = getLmsSessionMarkerComposerOptions(courseKey);
-    if (!weekNumbers.length) {
-        return '<div class="lms-session-marker-preview-empty">Enter week numbers (e.g. 1,2,3 or 1-5) to load schedule slots.</div>';
-    }
-    const candidates = buildLmsMarkerSessionCandidates(courseKey, weekNumbers, {
-        sectionType: sectionType === 'all' ? 'all' : sectionType
-    });
-    if (!candidates.length) {
-        return '<div class="lms-session-marker-preview-empty">No matching sessions for this filter.</div>';
-    }
-    return `
-        <div class="lms-session-marker-preview-grid">
-            ${candidates.map(candidate => {
-                const sectionMeta = getLmsSectionMeta(candidate.sectionType);
-                const typeMeta = candidate.existingMarker ? getLmsSessionMarkerTypeMeta(candidate.existingMarker.type) : null;
-                const markerClass = candidate.existingMarker ? ` marker-${lmsSessionMarkerClassToken(candidate.existingMarker.type)}` : '';
-                return `
-                    <label class="lms-session-marker-slot${candidate.disabled ? ' is-disabled' : ''}${candidate.existingMarker ? ' is-marked' : ''}${markerClass}">
-                        <input type="checkbox" class="lms-session-marker-slot-check" value="${escapeHtml(candidate.sessionKey)}" data-session-key="${escapeHtml(candidate.sessionKey)}" ${candidate.disabled ? 'disabled' : ''} ${candidate.existingMarker ? 'checked' : ''}>
-                        <div class="lms-session-marker-slot-body">
-                            <div class="lms-session-marker-slot-head">
-                                <span class="lms-session-marker-slot-week">Week ${escapeHtml(String(candidate.weekNumber))} · ${escapeHtml(candidate.weekLabel || '')}</span>
-                                <span class="lms-session-marker-slot-type">${escapeHtml(sectionMeta.label)}</span>
-                            </div>
-                            ${candidate.active ? `
-                                <div class="lms-session-marker-slot-schedule">
-                                    <span><i class="fas fa-calendar-day"></i> ${escapeHtml(candidate.day || 'Day TBD')}${candidate.dateLabel ? ` · ${escapeHtml(candidate.dateLabel)}` : ''}</span>
-                                    <span><i class="far fa-clock"></i> ${escapeHtml(candidate.startTime || 'TBD')}-${escapeHtml(candidate.endTime || 'TBD')}</span>
-                                    <span><i class="fas fa-location-dot"></i> ${escapeHtml(candidate.room || 'Room TBD')}</span>
-                                </div>
-                            ` : '<div class="lms-session-marker-slot-schedule is-muted">No scheduled session this week</div>'}
-                            ${candidate.existingMarker ? `
-                                <div class="lms-session-marker-slot-badge marker-${lmsSessionMarkerClassToken(candidate.existingMarker.type)}">
-                                    <i class="fas ${escapeHtml(typeMeta.icon)}"></i> ${escapeHtml(candidate.existingMarker.title || typeMeta.label)}
-                                </div>
-                            ` : ''}
-                        </div>
-                        ${candidate.existingMarker && canManageLmsGroupContent() ? `
-                            <button type="button" class="kiu-btn-outline lms-session-marker-slot-remove" data-lms-click="deleteLmsSessionMarker(${lmsInlineArg(candidate.existingMarker.id)}, ${lmsInlineArg(courseKey)})" title="Remove marker"><i class="fas fa-trash"></i></button>
-                        ` : ''}
-                    </label>
-                `;
-            }).join('')}
-        </div>
-    `;
-}
-
-function refreshLmsSessionMarkerPreview(courseKey = currentCourseId) {
-    const preview = document.getElementById('lms-session-marker-preview');
-    if (!preview) return;
-    preview.innerHTML = renderLmsSessionMarkerPreviewHtml(courseKey);
-}
-
-function setLmsSessionMarkerType(type) {
-    const normalized = normalizeLmsSessionMarkerType(type);
-    const input = document.getElementById('lms-session-marker-type');
-    if (input) input.value = normalized;
-    const typeMeta = getLmsSessionMarkerTypeMeta(normalized);
-    document.querySelectorAll('.lms-session-marker-type-chip').forEach(chip => {
-        const isActive = chip.dataset.markerType === normalized;
-        chip.classList.toggle('is-active', isActive);
-        chip.setAttribute('aria-pressed', isActive ? 'true' : 'false');
-        if (isActive) {
-            chip.classList.remove('is-picking');
-            void chip.offsetWidth;
-            chip.classList.add('is-picking');
-            window.setTimeout(() => chip.classList.remove('is-picking'), 360);
-        }
-    });
-    const titleInput = document.getElementById('lms-session-marker-title');
-    if (titleInput) {
-        titleInput.placeholder = typeMeta.label;
-    }
-}
-
-function setLmsSessionMarkerWeekPreset(preset, courseKey = currentCourseId) {
-    const input = document.getElementById('lms-session-marker-week-input');
-    if (!input) return;
-    if (preset === 'this') input.value = '1';
-    else if (preset === 'next4') input.value = '1-4';
-    else if (preset === 'clear') input.value = '';
-    refreshLmsSessionMarkerPreview(courseKey);
-}
-
-function clearLmsSessionMarkerWeekInput(courseKey = currentCourseId) {
-    setLmsSessionMarkerWeekPreset('clear', courseKey);
-}
+/* Session schedule/next-session helpers: lms-classroom-sessions-runtime.js */
+const getLmsSessionScheduleForWeek = window.getLmsSessionScheduleForWeek;
+const buildLmsNextSessionDatesFromSchedule = window.buildLmsNextSessionDatesFromSchedule;
+const getLmsNextSessionForGroup = window.getLmsNextSessionForGroup;
+const formatLmsNextSessionRelative = window.formatLmsNextSessionRelative;
+const renderLmsNextSessionHtml = window.renderLmsNextSessionHtml;
+const getLmsSessionMarkerComposerOptions = window.getLmsSessionMarkerComposerOptions;
+const renderLmsSessionMarkerPreviewHtml = window.renderLmsSessionMarkerPreviewHtml;
+const refreshLmsSessionMarkerPreview = window.refreshLmsSessionMarkerPreview;
+const setLmsSessionMarkerType = window.setLmsSessionMarkerType;
+const setLmsSessionMarkerWeekPreset = window.setLmsSessionMarkerWeekPreset;
+const clearLmsSessionMarkerWeekInput = window.clearLmsSessionMarkerWeekInput;
 
 function renderLmsSessionMarkerCards(courseKey = currentCourseId) {
     const markers = getLmsSessionMarkersForGroup(courseKey);
@@ -1002,7 +907,7 @@ function renderLmsSessionMarkerCards(courseKey = currentCourseId) {
                             ${marker.note ? `<p>${escapeHtml(marker.note)}</p>` : ''}
                         </div>
                         ${canManage ? `
-                            <button type="button" class="kiu-btn-outline lms-session-marker-remove" data-lms-click="deleteLmsSessionMarker(${lmsInlineArg(marker.id)}, ${lmsInlineArg(courseKey)})">
+                            <button type="button" class="lux-secondary-btn lms-session-marker-remove" data-lms-click="deleteLmsSessionMarker(${lmsInlineArg(marker.id)}, ${lmsInlineArg(courseKey)})">
                                 <i class="fas fa-trash"></i> Remove
                             </button>
                         ` : ''}
@@ -1056,7 +961,7 @@ function renderLmsSessionsSection(courseId = currentCourseId) {
                                 <div class="lms-route-copy lms-route-copy-mt-4">Pick real schedule slots, then mark quiz, exam, presentation, and other important sessions for the student timetable.</div>
                             </div>
                         </div>
-                        <button type="button" class="kiu-btn-outline lms-session-marker-toggle" data-lms-click="toggleLmsSessionMarkerComposer(this)" aria-expanded="true">
+                        <button type="button" class="lux-secondary-btn lms-session-marker-toggle" data-lms-click="toggleLmsSessionMarkerComposer(this)" aria-expanded="true">
                             <i class="fas fa-chevron-up"></i>
                             <span>Hide marker</span>
                         </button>
@@ -1089,9 +994,9 @@ function renderLmsSessionsSection(courseId = currentCourseId) {
                                         <input id="lms-session-marker-week-input" class="lms-route-input" type="text" value="1,2,3,4,5" placeholder="1,2,3 or 1-5" data-lms-change="refreshLmsSessionMarkerPreview(${lmsInlineArg(courseId)})">
                                     </label>
                                     <div class="lms-session-marker-week-chips">
-                                        <button type="button" class="kiu-btn-outline lms-session-marker-week-chip" data-lms-click="setLmsSessionMarkerWeekPreset('this', ${lmsInlineArg(courseId)})">This week</button>
-                                        <button type="button" class="kiu-btn-outline lms-session-marker-week-chip" data-lms-click="setLmsSessionMarkerWeekPreset('next4', ${lmsInlineArg(courseId)})">Next 4 weeks</button>
-                                        <button type="button" class="kiu-btn-outline lms-session-marker-week-chip" data-lms-click="clearLmsSessionMarkerWeekInput(${lmsInlineArg(courseId)})">Clear</button>
+                                        <button type="button" class="lux-secondary-btn lms-session-marker-week-chip" data-lms-click="setLmsSessionMarkerWeekPreset('this', ${lmsInlineArg(courseId)})">This week</button>
+                                        <button type="button" class="lux-secondary-btn lms-session-marker-week-chip" data-lms-click="setLmsSessionMarkerWeekPreset('next4', ${lmsInlineArg(courseId)})">Next 4 weeks</button>
+                                        <button type="button" class="lux-secondary-btn lms-session-marker-week-chip" data-lms-click="clearLmsSessionMarkerWeekInput(${lmsInlineArg(courseId)})">Clear</button>
                                     </div>
                                     <label class="lms-route-field lms-session-marker-section-filter-field">
                                         <span class="lms-route-field-label">Class type</span>
@@ -1109,7 +1014,7 @@ function renderLmsSessionsSection(courseId = currentCourseId) {
                                 </div>
                             </div>
                             <div class="lms-session-marker-actions">
-                                <button type="button" class="kiu-btn-blue" data-lms-click="createLmsSessionMarkers(${lmsInlineArg(courseId)})"><i class="fas fa-calendar-plus"></i> Mark selected sessions</button>
+                                <button type="button" class="lux-primary-btn" data-lms-click="createLmsSessionMarkers(${lmsInlineArg(courseId)})"><i class="fas fa-calendar-plus"></i> Mark selected sessions</button>
                             </div>
                         </div>
                     </div>
@@ -1210,20 +1115,22 @@ function deleteLmsSessionMarker(markerId, courseId = currentCourseId) {
     renderLmsSessionsSection(courseId);
 }
 
-window.renderLmsSessionsSection = renderLmsSessionsSection;
-window.createLmsSessionMarkers = createLmsSessionMarkers;
-window.deleteLmsSessionMarker = deleteLmsSessionMarker;
-window.parseLmsWeekNumberInput = parseLmsWeekNumberInput;
-window.buildLmsSessionMarkerSessionKey = buildLmsSessionMarkerSessionKey;
-window.buildLmsMarkerSessionCandidates = buildLmsMarkerSessionCandidates;
-window.normalizeLmsSessionMarker = normalizeLmsSessionMarker;
-window.refreshLmsSessionMarkerPreview = refreshLmsSessionMarkerPreview;
-window.setLmsSessionMarkerType = setLmsSessionMarkerType;
-window.setLmsSessionMarkerWeekPreset = setLmsSessionMarkerWeekPreset;
-window.clearLmsSessionMarkerWeekInput = clearLmsSessionMarkerWeekInput;
-window.getLmsNextSessionForGroup = getLmsNextSessionForGroup;
-window.formatLmsNextSessionRelative = formatLmsNextSessionRelative;
-window.renderLmsNextSessionHtml = renderLmsNextSessionHtml;
+__kiuLmsTabsExpose({
+    renderLmsSessionsSection,
+    createLmsSessionMarkers,
+    deleteLmsSessionMarker,
+    parseLmsWeekNumberInput,
+    buildLmsSessionMarkerSessionKey,
+    buildLmsMarkerSessionCandidates,
+    normalizeLmsSessionMarker,
+    refreshLmsSessionMarkerPreview,
+    setLmsSessionMarkerType,
+    setLmsSessionMarkerWeekPreset,
+    clearLmsSessionMarkerWeekInput,
+    getLmsNextSessionForGroup,
+    formatLmsNextSessionRelative,
+    renderLmsNextSessionHtml,
+});
 
 
 function openLMSCourse(courseKey, titleString) {
@@ -1242,13 +1149,19 @@ function openLMSCourse(courseKey, titleString) {
     if (document.getElementById('lms-course-title')) {
         document.getElementById('lms-course-title').innerText = cleanTitle;
     }
-    if (typeof window !== 'undefined') window.currentCourseId = courseKey;
+    if (typeof window !== 'undefined') window['currentCourseId'] = courseKey;
     if (typeof syncLmsCourseContext === 'function') syncLmsCourseContext(cleanTitle, courseKey);
     else if (typeof syncLmsNextSessionContext === 'function') syncLmsNextSessionContext(courseKey);
     syncLmsSectionSwitchPresentation();
     syncLmsCourseBackButtonLabel();
 
     switchLMSTab('sessions');
+    if (typeof handleLmsPersonalDashboardSectionSwitch === 'function') handleLmsPersonalDashboardSectionSwitch();
+    if (typeof syncLmsPersonalDashboardChromeButton === 'function') syncLmsPersonalDashboardChromeButton();
+    if (typeof bindLmsPersonalDashboardChromeButton === 'function') bindLmsPersonalDashboardChromeButton();
+    if (typeof scheduleLmsVisualShellSync === 'function') scheduleLmsVisualShellSync();
+    if (typeof window.syncChromeBottom === 'function') window.syncChromeBottom();
+    requestAnimationFrame(() => syncLmsWorkspaceChromeOffset());
 }
 
 function refreshLmsQuizTabPresentation() {
@@ -1301,7 +1214,7 @@ function renderLmsMembersSection(courseId) {
     const currentViewerId = String(getCurrentUserId() || '');
     const professorUser = resolveUserFromName(domain?.usersById, group?.prof);
     const taUser = resolveUserFromName(domain?.usersById, group?.ta);
-    const totalMembers = students.length + (group?.prof ? 1 : 0) + (group?.ta ? 1 : 0);
+    const canViewMemberDetails = typeof canManageLmsGroupContent === 'function' && canManageLmsGroupContent();
 
     const buildRolePill = (label, tone) => `
         <span class="lms-route-pill ${tone}">
@@ -1309,7 +1222,7 @@ function renderLmsMembersSection(courseId) {
         </span>
     `;
 
-    const buildMemberCard = (member, roleLabel, tone, fallbackName) => {
+    const buildMemberRow = (member, roleLabel, tone, fallbackName) => {
         const displayName = member?.nameEn || member?.name || fallbackName || 'Unknown member';
         const initials = String(displayName || '?').trim().charAt(0).toUpperCase() || '?';
         const memberId = member?.id || '';
@@ -1318,46 +1231,66 @@ function renderLmsMembersSection(courseId) {
         const youBadge = currentViewerId && String(memberId || '') === currentViewerId
             ? '<span class="lms-route-pill is-you">You</span>'
             : '';
+        const metaParts = [
+            facultyLabel,
+            memberId || 'Not listed',
+            memberEmail || 'Not listed'
+        ];
+        const metaLine = metaParts.map(part => escapeHtml(String(part))).join(' · ');
+        const detailsMeta = canViewMemberDetails
+            ? `<div class="lms-member-row__meta" title="${metaLine}">${metaLine}</div>`
+            : '';
         return `
-            <div class="lms-route-card lms-route-panel-compact lms-member-card">
-                <div class="lms-route-card-head lms-route-card-head-mb-14 lms-member-card-head">
-                    <div class="lms-route-inline lms-route-inline-gap-12 lms-route-inline-center">
-                        <div class="lms-route-avatar lms-member-card-avatar ${tone}">
-                            ${escapeHtml(initials)}
-                        </div>
-                        <div class="lms-route-member-main lms-member-card-main">
-                            <div class="lms-route-card-title lms-member-card-title">${escapeHtml(displayName)}</div>
-                            <div class="lms-route-inline lms-route-inline-gap-8 lms-route-copy-mt-8 lms-member-card-meta-row">
-                                ${buildRolePill(roleLabel, tone)}
-                                ${youBadge}
-                            </div>
-                        </div>
+            <article class="lms-member-row">
+                <div class="lms-member-row__person">
+                    <div class="lms-route-avatar lms-member-row__avatar ${tone}" aria-hidden="true">
+                        ${escapeHtml(initials)}
+                    </div>
+                    <div class="lms-member-row__copy">
+                        <div class="lms-member-row__name">${escapeHtml(displayName)}</div>
+                        ${detailsMeta}
                     </div>
                 </div>
-                <div class="lms-route-kv-grid lms-member-card-kv-grid">
-                    ${renderLmsRouteKv('Faculty', facultyLabel)}
-                    ${renderLmsRouteKv('ID', memberId || 'Not listed')}
-                    ${renderLmsRouteKv('Email', memberEmail || 'Not listed')}
+                <div class="lms-member-row__badges">
+                    ${buildRolePill(roleLabel, tone)}
+                    ${youBadge}
                 </div>
-            </div>
+            </article>
         `;
     };
 
-    const studentCards = students.length
-        ? students.map(student => {
+    const sortedStudents = [...students].sort((left, right) => {
+        const leftName = String(left?.name || left?.nameEn || '').trim();
+        const rightName = String(right?.name || right?.nameEn || '').trim();
+        return leftName.localeCompare(rightName, undefined, { sensitivity: 'base' });
+    });
+
+    const studentRows = sortedStudents.length
+        ? sortedStudents.map(student => {
             const studentUser = domain?.usersById?.[student.id] || null;
-            return buildMemberCard(studentUser ? { ...studentUser, id: student.id } : { id: student.id, name: student.name }, 'Student', 'is-student', student.name);
+            return buildMemberRow(
+                studentUser ? { ...studentUser, id: student.id } : { id: student.id, name: student.name },
+                'Student',
+                'is-student',
+                student.name
+            );
         }).join('')
-        : renderLmsRouteEmptyState('No Students Yet', 'No students are enrolled in this group yet.', 'fa-user-graduate');
+        : '<div class="lms-member-empty-note"><i class="fas fa-user-graduate"></i> No students are enrolled in this group yet.</div>';
 
-    const professorCard = buildMemberCard(professorUser, 'Professor', 'is-professor', group?.prof || 'Professor');
+    const professorRow = group?.prof
+        ? buildMemberRow(professorUser, 'Professor', 'is-professor', group.prof || 'Professor')
+        : '<div class="lms-member-empty-note"><i class="fas fa-user-tie"></i> No professor is assigned to this group yet.</div>';
 
-    const taCard = group?.ta
-        ? buildMemberCard(taUser, 'Teaching Assistant', 'is-ta', group.ta)
-        : renderLmsRouteEmptyState('No Teaching Assistant', 'No teaching assistant is assigned to this group yet.', 'fa-user-plus');
+    const taRow = group?.ta
+        ? buildMemberRow(taUser, 'Teaching Assistant', 'is-ta', group.ta)
+        : '<div class="lms-member-empty-note"><i class="fas fa-user-plus"></i> No teaching assistant is assigned to this group yet.</div>';
+
+    const studentSectionCopy = canViewMemberDetails
+        ? 'Roster for admin, professor, TA, and student group views.'
+        : 'Your classmates and teaching staff in this group.';
 
     contentArea.innerHTML = `
-        <div class="lms-route-stack">
+        <div class="lms-route-stack lms-member-stack">
             <div class="lms-route-panel lms-member-overview-panel">
                 <div class="lms-route-card-head lms-member-overview-head">
                     <div class="lms-route-inline lms-route-inline-gap-12 lms-route-inline-center">
@@ -1373,1069 +1306,443 @@ function renderLmsMembersSection(courseId) {
                     </div>
                 </div>
             </div>
-            <div class="lms-route-card-grid">
-                ${professorCard}
-                ${taCard}
-            </div>
-            <div class="lms-route-panel">
-                <div class="lms-route-card-head lms-route-card-head-mb-18">
+            <section class="lms-member-section">
+                <div class="lms-member-section-head">
                     <div>
-                        <div class="lms-route-card-title">Students in This Group</div>
-                        <div class="lms-route-copy lms-route-copy-mt-6">Visible in admin, professor, TA, and student group views.</div>
+                        <div class="lms-member-section-title">Teaching Staff</div>
+                        <div class="lms-route-copy lms-member-section-copy">Professor and teaching assistant for this group.</div>
+                    </div>
+                </div>
+                <div class="lms-member-row-list">
+                    ${professorRow}
+                    ${taRow}
+                </div>
+            </section>
+            <section class="lms-member-section">
+                <div class="lms-member-section-head">
+                    <div>
+                        <div class="lms-member-section-title">Students in This Group</div>
+                        <div class="lms-route-copy lms-member-section-copy">${escapeHtml(studentSectionCopy)}</div>
                     </div>
                     <span class="lms-route-pill"><i class="fas fa-users"></i> ${students.length} student${students.length === 1 ? '' : 's'}</span>
                 </div>
-                <div class="lms-route-card-grid">
-                    ${studentCards}
+                <div class="lms-member-row-list">
+                    ${studentRows}
                 </div>
-            </div>
+            </section>
         </div>
     `;
 }
 
-function renderLmsInteractionSection(courseId = currentCourseId) {
-    const contentArea = document.getElementById('lms-content-area');
-    if (!contentArea) return;
-    prepareLmsContentAreaForTab('interaction', contentArea);
-    const resourceKey = resolveCanonicalLmsResourceKey(courseId || currentCourseId || '');
-    const ctx = getLmsSectionEnhancementContext('interaction', resourceKey);
-    const messages = Array.isArray(KIU_STATE.messages?.[resourceKey]) ? KIU_STATE.messages[resourceKey] : [];
-    const moderationItems = ctx.moderation.filter(item => !item.hidden);
-    const pinned = moderationItems.filter(item => item.pinned);
-    const currentName = getSimulatedUserName();
-    const canManage = canManageLmsGroupContent();
-    const rows = messages.length ? messages.map(message => {
-        const isMe = message.sender === currentName;
-        const isStaff = Boolean(message.isProf || message.isStaff);
-        return `
-            <article class="lms-route-chat-row ${isMe ? 'is-me' : ''}">
-                <div class="lms-route-chat-meta">
-                    ${escapeHtml(message.sender || 'Unknown')} &middot; ${isStaff ? 'Staff' : 'Student'} &middot; ${escapeHtml(message.time || formatLmsDateTime(message.createdAt))}
-                    ${message.bulk ? ' &middot; Multi-group' : ''}
-                </div>
-                <div class="lms-route-chat-bubble">${escapeHtml(message.text || '')}</div>
-            </article>
-        `;
-    }).join('') : `
-        <div class="lms-route-empty">
-            <div class="lms-route-empty-title">No discussion yet</div>
-            <div class="lms-route-empty-copy">Questions, announcements, and replies for this group will appear here.</div>
-        </div>
-    `;
-    const pinnedMarkup = pinned.length ? pinned.slice(0, 4).map(item => `
-        <div class="lms-route-kv">
-            <div class="lms-route-kv-label">${escapeHtml(item.status === 'answered' ? 'Answered' : 'Pinned')}</div>
-            <div class="lms-route-copy lms-route-copy-mt-6">${escapeHtml(item.text || item.question || item.title || 'Pinned class item')}</div>
-        </div>
-    `).join('') : renderLmsRouteEmptyState('No pinned items', 'Staff can pin important questions and replies for the whole group.', 'fa-thumbtack');
-
-    contentArea.innerHTML = `
-        <div class="lms-route-stack">
-            <section class="lms-route-hero">
-                <div class="lms-route-hero-grid">
-                    <div>
-                        <div class="lms-route-eyebrow">Interaction</div>
-                        <div class="lms-route-title lms-route-copy-mt-10"><i class="fas fa-comments"></i> Classroom Interaction</div>
-                        <div class="lms-route-copy lms-route-copy-mt-12">A clean group feed for seminar questions, professor announcements, TA replies, and pinned discussion items.</div>
-                    </div>
-                    ${renderLmsRouteStats([
-                        { label: 'Messages', value: messages.length },
-                        { label: 'Pinned', value: pinned.length },
-                        { label: 'Open Questions', value: moderationItems.filter(item => item.status === 'new').length },
-                        { label: 'Mode', value: canManage ? 'Staff' : 'Student' }
-                    ])}
-                </div>
-            </section>
-            <section class="lms-route-split lms-route-split--chat">
-                <div class="lms-route-panel lms-route-chat-board">
-                    <div class="lms-route-card-head">
-                        <div>
-                            <div class="lms-route-card-title">Group Feed</div>
-                            <div class="lms-route-copy lms-route-copy-mt-6">Messages stay scoped to this LMS group.</div>
-                        </div>
-                        <span class="lms-route-pill"><i class="fas fa-circle lms-route-pill-icon-live"></i> Live</span>
-                    </div>
-                    <div id="chat-history-container" class="lms-route-chat-list">${rows}</div>
-                    <div class="lms-route-inline lms-route-inline-gap-10 lms-route-inline-center">
-                        <button class="kiu-btn-outline" type="button" title="Attach file"><i class="fas fa-paperclip"></i></button>
-                        <input type="text" id="chat-input-text" class="lms-route-input lms-route-input-flex-240" placeholder="${canManage ? 'Post an announcement or answer...' : 'Ask a question or reply...'}">
-                        <button class="kiu-btn-blue" type="button" data-lms-click="sendLmsInteractionMessage(${lmsInlineArg(resourceKey)})"><i class="fas fa-paper-plane"></i> Send</button>
-                    </div>
-                </div>
-                <aside class="lms-route-panel">
-                    <div class="lms-route-card-head lms-route-card-head-mb-14">
-                        <div>
-                            <div class="lms-route-card-title">Pinned Board</div>
-                            <div class="lms-route-copy lms-route-copy-mt-6">Important class items stay visible here.</div>
-                        </div>
-                        <i class="fas fa-thumbtack lms-route-icon-accent"></i>
-                    </div>
-                    <div class="lms-route-stack lms-route-stack-gap-10">${pinnedMarkup}</div>
-                </aside>
-            </section>
-        </div>
-    `;
-    const historyBox = document.getElementById('chat-history-container');
-    if (historyBox) historyBox.scrollTop = historyBox.scrollHeight;
-    const input = document.getElementById('chat-input-text');
-    if (input) {
-        input.addEventListener('keyup', event => {
-            if (event.key === 'Enter') sendLmsInteractionMessage(resourceKey);
-        });
-    }
+function createLmsInteractionMessageId() {
+    return `msg_${Date.now()}_${Math.random().toString(16).slice(2, 10)}`;
 }
 
-function sendLmsInteractionMessage(courseId = currentCourseId) {
-    const resourceKey = resolveCanonicalLmsResourceKey(courseId || currentCourseId || '');
-    const input = document.getElementById('chat-input-text');
-    const text = String(input?.value || '').trim();
-    if (!resourceKey || !text) return;
+function normalizeLmsInteractionMessages(resourceKey) {
+    const canonicalKey = resolveCanonicalLmsResourceKey(resourceKey);
     if (!KIU_STATE.messages || typeof KIU_STATE.messages !== 'object') KIU_STATE.messages = {};
-    if (!Array.isArray(KIU_STATE.messages[resourceKey])) KIU_STATE.messages[resourceKey] = [];
-    const now = new Date();
-    KIU_STATE.messages[resourceKey].push({
-        sender: getSimulatedUserName(),
-        text,
-        time: `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`,
-        createdAt: now.toISOString(),
-        isStaff: canManageLmsGroupContent(),
-        isProf: [USER_ROLES.PROFESSOR, USER_ROLES.TA, USER_ROLES.ADMIN].includes(getEffectiveUserRole())
-    });
-    saveState();
-    renderLmsInteractionSection(resourceKey);
-}
-
-function renderLmsAttendanceSection(courseId = currentCourseId) {
-    const contentArea = document.getElementById('lms-content-area');
-    if (!contentArea) return;
-    prepareLmsContentAreaForTab('attendance', contentArea);
-    const parsed = parseLmsCourseKey(courseId || currentCourseId || '');
-    const resourceKey = resolveCanonicalLmsResourceKey(parsed.resourceKey || courseId || currentCourseId || '');
-    const today = new Date().toISOString().split('T')[0];
-    if (!KIU_STATE.attendance || typeof KIU_STATE.attendance !== 'object') KIU_STATE.attendance = {};
-    if (!KIU_STATE.attendance[resourceKey]) KIU_STATE.attendance[resourceKey] = {};
-    if (!KIU_STATE.attendance[resourceKey][today]) KIU_STATE.attendance[resourceKey][today] = {};
-    const students = parsed.courseId && parsed.groupId
-        ? getEnrolledStudentsForGroup(parsed.courseId, parsed.groupId)
-        : getGradebookGroupsForCurrentUser().flatMap(group => getEnrolledStudentsForGroup(group.courseId, group.groupId));
-    const canManage = canManageLmsGroupContent();
-    const attendance = KIU_STATE.attendance[resourceKey][today] || {};
-    const counts = students.reduce((acc, student) => {
-        const status = attendance[student.id] || 'Unmarked';
-        acc[status] = (acc[status] || 0) + 1;
-        return acc;
-    }, { Present: 0, Late: 0, Absent: 0, Unmarked: 0 });
-    const studentRows = students.length ? students.map(student => {
-        const status = attendance[student.id] || '';
-        const statusLabel = status || 'Unmarked';
-        const statusTone = status === 'Present'
-            ? 'is-present'
-            : status === 'Late'
-                ? 'is-late'
-                : status === 'Absent'
-                    ? 'is-absent'
-                    : 'is-unmarked';
-        return `
-            <tr>
-                <td class="lms-attendance-student-cell">
-                    <div class="lms-attendance-student-main">
-                        <strong class="lms-attendance-student-name">${escapeHtml(student.name || student.nameEn || student.id)}</strong>
-                        <span class="lms-attendance-student-id">${escapeHtml(student.id || '')}</span>
-                    </div>
-                </td>
-                <td class="lms-attendance-status-cell">
-                    <span class="lms-attendance-status-badge ${statusTone}">${escapeHtml(statusLabel)}</span>
-                </td>
-                <td class="lms-attendance-mark-cell">
-                    <select class="lms-route-select lms-attendance-select" ${canManage ? '' : 'disabled'} data-lms-change="markLmsAttendanceStatus(${lmsInlineArg(resourceKey)}, ${lmsInlineArg(today)}, ${lmsInlineArg(student.id)}, this.value)">
-                        <option value="" ${status === '' ? 'selected' : ''}>Unmarked</option>
-                        <option value="Present" ${status === 'Present' ? 'selected' : ''}>Present</option>
-                        <option value="Late" ${status === 'Late' ? 'selected' : ''}>Late</option>
-                        <option value="Absent" ${status === 'Absent' ? 'selected' : ''}>Absent</option>
-                    </select>
-                </td>
-            </tr>
-        `;
-    }).join('') : `<tr><td colspan="3">No students found for this group.</td></tr>`;
-    contentArea.innerHTML = `
-        <div class="lms-route-stack">
-            <section class="lms-route-hero">
-                <div class="lms-route-hero-grid">
-                    <div>
-                        <div class="lms-route-eyebrow">Attendance</div>
-                        <div class="lms-route-title lms-route-title-mt-10"><i class="fas fa-user-check"></i> Daily Attendance</div>
-                        <div class="lms-route-copy lms-route-copy-mt-12">Record today&apos;s class presence for this LMS group with the same native LMS interface.</div>
-                    </div>
-                    ${renderLmsRouteStats([
-                        { label: 'Present', value: counts.Present || 0 },
-                        { label: 'Late', value: counts.Late || 0 },
-                        { label: 'Absent', value: counts.Absent || 0 },
-                        { label: 'Unmarked', value: counts.Unmarked || 0 }
-                    ])}
-                </div>
-            </section>
-            <section class="lms-route-panel lms-attendance-panel">
-                <div class="lms-route-card-head lms-route-card-head-mb-16">
-                    <div>
-                        <div class="lms-route-card-title">${escapeHtml(today)}</div>
-                        <div class="lms-route-copy lms-route-copy-mt-6">${canManage ? 'Staff can update attendance.' : 'Students can view their recorded attendance.'}</div>
-                    </div>
-                    <span class="lms-route-pill"><i class="fas fa-users"></i> ${students.length} students</span>
-                </div>
-                <div class="lms-route-table-shell lms-attendance-table-shell">
-                    <table class="kiu-table lms-attendance-table">
-                        <thead><tr><th>Student</th><th>Status</th><th>Mark</th></tr></thead>
-                        <tbody>${studentRows}</tbody>
-                    </table>
-                </div>
-            </section>
-        </div>
-    `;
-}
-
-function markLmsAttendanceStatus(resourceKey, date, studentId, status) {
-    if (!canManageLmsGroupContent()) {
-        alert('Only professor, TA, or admin users can update attendance.');
-        return;
-    }
-    const key = resolveCanonicalLmsResourceKey(resourceKey || currentCourseId || '');
-    if (!KIU_STATE.attendance || typeof KIU_STATE.attendance !== 'object') KIU_STATE.attendance = {};
-    if (!KIU_STATE.attendance[key]) KIU_STATE.attendance[key] = {};
-    if (!KIU_STATE.attendance[key][date]) KIU_STATE.attendance[key][date] = {};
-    if (status) KIU_STATE.attendance[key][date][studentId] = status;
-    else delete KIU_STATE.attendance[key][date][studentId];
-    saveState();
-    renderLmsAttendanceSection(key);
-}
-
-function getLmsSectionEnhancementContext(tab, courseId = currentCourseId) {
-    const parsed = parseLmsCourseKey(courseId);
-    const resourceKey = resolveCanonicalLmsResourceKey(getLmsTabCourseKey(tab) || courseId || '');
-    const role = getEffectiveUserRole();
-    const isStaff = [USER_ROLES.PROFESSOR, USER_ROLES.TA, USER_ROLES.ADMIN].includes(role);
-    const subject = parsed.courseId ? (getDomain().subjectsById?.[parsed.courseId] || KIU_STATE.curriculum?.find(item => item.id === parsed.courseId)) : null;
-    const group = parsed.courseId && parsed.groupId ? (KIU_STATE.availableGroups?.[parsed.courseId] || []).find(item => item.id === parsed.groupId) : null;
-    const students = parsed.courseId && parsed.groupId ? getEnrolledStudentsForGroup(parsed.courseId, parsed.groupId) : [];
-    const assignments = resourceKey ? ensureLmsAssignmentsForKey(resourceKey) : [];
-    const materials = resourceKey ? ensureLmsMaterialsForKey(resourceKey) : [];
-    const concepts = resourceKey ? ensureLmsConceptsForKey(resourceKey) : [];
-    const quizzes = resourceKey ? ensureLmsQuizzesForKey(resourceKey) : [];
-    const liveSessions = resourceKey ? getLmsLiveSessions(resourceKey) : [];
-    const classCalls = resourceKey ? ensureLmsClassSessionsForKey(resourceKey) : [];
-    const markers = resourceKey ? getLmsSessionMarkersForGroup(resourceKey) : [];
-    const moderation = resourceKey ? ensureLmsInteractionModerationForKey(resourceKey) : [];
-    return {
-        tab,
-        courseId,
-        resourceKey,
-        role,
-        isStaff,
-        subjectLabel: repairLmsDisplayText(subject?.name || parsed.courseId || 'LMS Group', 'LMS Group'),
-        groupLabel: repairLmsDisplayText(group?.name || parsed.groupId || 'Group', 'Group'),
-        students,
-        assignments,
-        materials,
-        concepts,
-        quizzes,
-        liveSessions,
-        classCalls,
-        markers,
-        moderation
-    };
-}
-
-function getLmsSectionEnhancementConfig(ctx) {
-    const submittedAssignments = ctx.assignments.filter(item => item.submissions && Object.keys(item.submissions).length > 0).length;
-    const pendingQuizReviews = ctx.quizzes.reduce((sum, quiz) => {
-        const workspace = ensureLmsQuizBuilderWorkspace(ctx.resourceKey);
-        const store = workspace.submissions?.[quiz.id] || {};
-        return sum + Object.values(store).filter(submission => submission?.requiresManualReview === true && ['submitted', 'auto-submitted'].includes(String(submission.status || ''))).length;
-    }, 0);
-    const liveQuiz = ctx.liveSessions.find(session => session.status === 'live');
-    const liveCall = ctx.classCalls.find(session => session.status === 'active');
-    const base = {
-        sessions: {
-            icon: 'fa-calendar-check',
-            title: 'Class Sessions',
-            copy: 'Timeline for seminars, lectures, marked activities, attendance moments, and linked classroom work.',
-            stats: [
-                ['Markers', ctx.markers.length],
-                ['Students', ctx.students.length],
-                ['Live quiz', liveQuiz ? 'Active' : 'None'],
-                ['Upcoming', ctx.markers.filter(marker => new Date(marker.date || marker.startsAt || 0).getTime() > Date.now()).length]
-            ],
-            actions: ctx.isStaff ? ['Start attendance', 'Attach material', 'Link quiz'] : ['Today', 'Materials', 'Quiz status']
-        },
-        'live-quiz': {
-            icon: 'fa-bolt',
-            title: 'Live Quiz Control Room',
-            copy: ctx.isStaff ? 'Run seminar questions, reveal one question at a time, monitor participation, and review results.' : 'Join live classroom questions when the professor or TA reveals them.',
-            stats: [
-                ['Sessions', ctx.liveSessions.length],
-                ['Live now', liveQuiz ? 'Yes' : 'No'],
-                ['Participants', ctx.students.length],
-                ['Pending reviews', pendingQuizReviews]
-            ],
-            actions: ctx.isStaff ? ['Question queue', 'Response heatmap', 'Leaderboard'] : ['Waiting room', 'Timer', 'Results']
-        },
-        interaction: {
-            icon: 'fa-comments',
-            title: 'Classroom Interaction Feed',
-            copy: 'Questions, announcements, polls, and staff replies should stay organized like a professional seminar feed.',
-            stats: [
-                ['Members', ctx.students.length],
-                ['Staff tools', ctx.isStaff ? 'Enabled' : 'Read only'],
-                ['Pinned items', ctx.moderation.filter(item => item.pinned && !item.hidden).length],
-                ['Open questions', ctx.moderation.filter(item => item.status === 'new' && !item.hidden).length]
-            ],
-            actions: ctx.isStaff ? ['Pin question', 'Mark answered', 'Post announcement'] : ['Ask question', 'Follow replies', 'View pinned']
-        },
-        calls: {
-            icon: 'fa-video',
-            title: 'Class Calls Hub',
-            copy: 'Live classroom calls, recordings, attendance signals, and session history in one place.',
-            stats: [
-                ['Calls', ctx.classCalls.length],
-                ['Live call', liveCall ? 'Active' : 'None'],
-                ['Recordings', ctx.classCalls.filter(call => call.recordingUrl).length],
-                ['Students', ctx.students.length]
-            ],
-            actions: ctx.isStaff ? ['Start call', 'Recordings', 'Attendance'] : ['Join call', 'Waiting status', 'Recordings']
-        },
-        members: {
-            icon: 'fa-users',
-            title: 'Group Members',
-            copy: 'Roster with students, staff, participation risk, grade context, and quick profile actions.',
-            stats: [
-                ['Students', ctx.students.length],
-                ['Professor', '1'],
-                ['TA', '1'],
-                ['Grade risk', 'Tracked']
-            ],
-            actions: ctx.isStaff ? ['Message', 'View grades', 'Attendance'] : ['Classmates', 'Staff contacts', 'Group']
-        },
-        materials: {
-            icon: 'fa-folder-open',
-            title: 'Learning Materials',
-            copy: 'Week-based library for slides, readings, files, links, recordings, and pinned resources.',
-            stats: [
-                ['Files', ctx.materials.length],
-                ['Weeks', new Set(ctx.materials.map(item => item.weekLabel).filter(Boolean)).size],
-                ['Pinned', ctx.materials.filter(item => item.pinned).length],
-                ['Staff upload', ctx.isStaff ? 'Enabled' : 'Hidden']
-            ],
-            actions: ctx.isStaff ? ['Upload', 'Pin', 'Attach to session'] : ['Preview', 'Download', 'By week']
-        },
-        concepts: {
-            icon: 'fa-lightbulb',
-            title: 'Concept Wiki',
-            copy: 'Student and staff explanations, examples, peer scores, and approved learning notes.',
-            stats: [
-                ['Concepts', ctx.concepts.length],
-                ['Reviewed', ctx.concepts.filter(item => item.reviewed || item.approved).length],
-                ['Student posts', ctx.concepts.filter(item => item.authorRole === USER_ROLES.STUDENT).length],
-                ['Quality', 'Peer rated']
-            ],
-            actions: ctx.isStaff ? ['Approve', 'Pin', 'Correct'] : ['Submit concept', 'Rate', 'Study']
-        },
-        assignments: {
-            icon: 'fa-clipboard-list',
-            title: 'Assignment Workflow',
-            copy: 'Draft, open, submitted, late, graded, and feedback states for homework and classroom tasks.',
-            stats: [
-                ['Assignments', ctx.assignments.length],
-                ['Submitted', submittedAssignments],
-                ['Open', ctx.assignments.filter(item => item.status !== 'closed').length],
-                ['Needs feedback', submittedAssignments]
-            ],
-            actions: ctx.isStaff ? ['Grade queue', 'Rubrics', 'Feedback'] : ['Due dates', 'Submit', 'Feedback']
-        },
-        quiz: {
-            icon: 'fa-pen-to-square',
-            title: ctx.isStaff ? 'Quiz Studio' : 'My Quizzes',
-            copy: ctx.isStaff ? 'Build protected quizzes, variants, review pending written answers, and inspect results.' : 'Upcoming, live, submitted, pending-review, and graded quizzes in one place.',
-            stats: [
-                ['Quizzes', ctx.quizzes.length],
-                ['Published', ctx.quizzes.filter(quiz => quiz.status === 'published' || quiz.published).length],
-                ['Pending reviews', pendingQuizReviews],
-                ['Anti-cheat', ctx.quizzes.filter(quiz => quiz.protectedDelivery !== false).length]
-            ],
-            actions: ctx.isStaff ? ['Builder', 'Review queue', 'Analytics'] : ['Open safely', 'Pending result', 'Final score']
-        },
-        gradebook: {
-            icon: 'fa-chart-bar',
-            title: 'Grades',
-            copy: 'Transcript, weighted contribution, pending review, final score, and staff grade management.',
-            stats: [
-                ['Students', ctx.students.length],
-                ['Quizzes', ctx.quizzes.length],
-                ['Pending reviews', pendingQuizReviews],
-                ['Published state', 'Tracked']
-            ],
-            actions: ctx.isStaff ? ['Grade queue', 'Export', 'Finalize'] : ['Transcript', 'Weights', 'History']
+    if (!Array.isArray(KIU_STATE.messages[canonicalKey])) KIU_STATE.messages[canonicalKey] = [];
+    let changed = false;
+    KIU_STATE.messages[canonicalKey] = KIU_STATE.messages[canonicalKey].map(message => {
+        const normalized = { ...message };
+        if (!normalized.id) {
+            normalized.id = createLmsInteractionMessageId();
+            changed = true;
         }
-    };
-    return base[ctx.tab] || base.sessions;
-}
-
-function renderLmsProfessionalSectionHero(ctx, config) {
-    return `
-        <section class="lms-pro-hero" data-lms-pro-hero="${escapeHtml(ctx.tab)}">
-            <div class="lms-pro-hero-main">
-                <div class="lms-pro-icon"><i class="fas ${escapeHtml(config.icon)}"></i></div>
-                <div>
-                    <div class="lms-pro-kicker">${escapeHtml(ctx.subjectLabel)} / ${escapeHtml(ctx.groupLabel)}</div>
-                    <h2>${escapeHtml(config.title)}</h2>
-                    <p>${escapeHtml(config.copy)}</p>
-                </div>
-            </div>
-            <div class="lms-pro-actions">
-                ${(config.actions || []).map(action => `<span>${escapeHtml(action)}</span>`).join('')}
-            </div>
-            <div class="lms-pro-stat-grid">
-                ${(config.stats || []).map(([label, value]) => `
-                    <div class="lms-pro-stat">
-                        <span>${escapeHtml(label)}</span>
-                        <strong>${escapeHtml(String(value))}</strong>
-                    </div>
-                `).join('')}
-            </div>
-        </section>
-    `;
-}
-
-function ensureLmsInteractionModerationForKey(resourceKey) {
-    ensureLmsStores();
-    const canonicalKey = resolveCanonicalLmsResourceKey(resourceKey);
-    if (!Array.isArray(KIU_STATE.lmsInteractionModeration[canonicalKey])) {
-        KIU_STATE.lmsInteractionModeration[canonicalKey] = [];
-    }
-    KIU_STATE.lmsInteractionModeration[canonicalKey] = KIU_STATE.lmsInteractionModeration[canonicalKey].map(item => ({
-        id: String(item.id || `mod_${Date.now()}_${Math.random().toString(16).slice(2)}`),
-        type: item.type || 'question',
-        text: repairLmsDisplayText(item.text || '', ''),
-        authorId: String(item.authorId || ''),
-        authorName: item.authorName || 'Student',
-        status: ['new', 'answered', 'pinned', 'hidden'].includes(String(item.status)) ? String(item.status) : 'new',
-        answer: item.answer || '',
-        pinned: Boolean(item.pinned || item.status === 'pinned'),
-        hidden: Boolean(item.hidden || item.status === 'hidden'),
-        createdAt: item.createdAt || new Date().toISOString(),
-        updatedAt: item.updatedAt || item.createdAt || new Date().toISOString(),
-        handledBy: item.handledBy || ''
-    })).sort((a, b) => {
-        if (Boolean(b.pinned) !== Boolean(a.pinned)) return Number(Boolean(b.pinned)) - Number(Boolean(a.pinned));
-        return String(b.createdAt || '').localeCompare(String(a.createdAt || ''));
-    });
-    return KIU_STATE.lmsInteractionModeration[canonicalKey];
-}
-
-function createLmsInteractionQuestion(resourceKey) {
-    const canonicalKey = resolveCanonicalLmsResourceKey(resourceKey);
-    const token = toDomToken(canonicalKey);
-    const input = document.getElementById(`lms-interaction-question-${token}`);
-    const text = input?.value?.trim() || '';
-    if (!text) {
-        alert('Please write a question first.');
-        return;
-    }
-    const user = getCurrentUser?.() || {};
-    ensureLmsInteractionModerationForKey(canonicalKey).unshift({
-        id: `mod_${Date.now()}_${Math.random().toString(16).slice(2)}`,
-        type: 'question',
-        text,
-        authorId: String(getCurrentUserId?.() || user.id || 'student'),
-        authorName: user.nameEn || user.name || user.email || 'Student',
-        status: 'new',
-        answer: '',
-        pinned: false,
-        hidden: false,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-    });
-    if (input) input.value = '';
-    saveState();
-    rerenderCurrentLmsTab();
-}
-
-function updateLmsInteractionModerationItem(resourceKey, itemId, action = 'answered') {
-    const canonicalKey = resolveCanonicalLmsResourceKey(resourceKey);
-    const item = ensureLmsInteractionModerationForKey(canonicalKey).find(entry => String(entry.id) === String(itemId));
-    if (!item) return;
-    if (!canManageLmsGroupContent()) {
-        alert('Only admins, professors, and teaching assistants can moderate interaction items.');
-        return;
-    }
-    if (action === 'answer') {
-        const answer = prompt('Staff answer', item.answer || '');
-        if (answer === null) return;
-        item.answer = answer.trim();
-        item.status = item.answer ? 'answered' : 'new';
-        item.hidden = false;
-    } else if (action === 'pin') {
-        item.pinned = !item.pinned;
-        item.status = item.pinned ? 'pinned' : (item.answer ? 'answered' : 'new');
-        item.hidden = false;
-    } else if (action === 'hide') {
-        item.hidden = !item.hidden;
-        item.status = item.hidden ? 'hidden' : (item.pinned ? 'pinned' : item.answer ? 'answered' : 'new');
-    }
-    item.handledBy = getSimulatedUserName();
-    item.updatedAt = new Date().toISOString();
-    saveState();
-    rerenderCurrentLmsTab();
-}
-
-function computeLmsQuizAnalytics(resourceKey) {
-    const workspace = ensureLmsQuizBuilderWorkspace(resourceKey);
-    const quizzes = ensureLmsQuizzesForKey(resourceKey);
-    const submissions = quizzes.flatMap(quiz => Object.values(workspace.submissions?.[quiz.id] || {}).map(submission => ({ quiz, submission })));
-    const completed = submissions.filter(entry => ['submitted', 'auto-submitted', 'graded'].includes(String(entry.submission.status || '')));
-    const pending = completed.filter(entry => entry.submission.requiresManualReview === true).length;
-    const scores = completed.map(entry => Number(entry.submission.gradebookScore ?? entry.submission.finalScoreRaw ?? entry.submission.autoScoreRaw)).filter(Number.isFinite);
-    const average = scores.length ? Math.round(scores.reduce((sum, value) => sum + value, 0) / scores.length) : 0;
-    const questionResults = completed.flatMap(entry => Array.isArray(entry.submission.questionResults) ? entry.submission.questionResults : []);
-    const correct = questionResults.filter(result => result.isCorrect === true).length;
-    const accuracy = questionResults.length ? Math.round((correct / questionResults.length) * 100) : 0;
-    return {
-        quizzes: quizzes.length,
-        submissions: completed.length,
-        pending,
-        average,
-        accuracy,
-        questionResults
-    };
-}
-
-function computeLmsMemberRisk(student, ctx) {
-    const studentId = String(student.id || '');
-    const assignmentTotal = ctx.assignments.length;
-    const submittedAssignments = ctx.assignments.filter(item => getLmsAssignmentSubmissions(ctx.resourceKey, item.id)?.[studentId]).length;
-    const missingAssignments = Math.max(0, assignmentTotal - submittedAssignments);
-    const attendedCalls = ctx.classCalls.filter(call => Array.isArray(call.participantIds) && call.participantIds.map(String).includes(studentId)).length;
-    const endedCalls = ctx.classCalls.filter(call => call.status === 'ended').length;
-    const quizAnalytics = ensureLmsQuizzesForKey(ctx.resourceKey).map(quiz => ensureLmsQuizBuilderWorkspace(ctx.resourceKey).submissions?.[quiz.id]?.[studentId]).filter(Boolean);
-    const pendingReviews = quizAnalytics.filter(submission => submission.requiresManualReview === true).length;
-    let risk = 0;
-    if (assignmentTotal && missingAssignments / assignmentTotal >= 0.5) risk += 35;
-    if (endedCalls >= 2 && attendedCalls === 0) risk += 25;
-    if (pendingReviews) risk += 15;
-    if (!quizAnalytics.length && ctx.quizzes.length) risk += 20;
-    const level = risk >= 55 ? 'High risk' : risk >= 25 ? 'Watch' : 'Stable';
-    return {
-        level,
-        risk,
-        missingAssignments,
-        attendedCalls,
-        endedCalls,
-        pendingReviews,
-        tone: risk >= 55 ? 'danger' : risk >= 25 ? 'pending' : 'success'
-    };
-}
-
-function renderLmsDeepToolkitCard(title, value, copy = '', icon = 'fa-circle-info', tone = 'info') {
-    return `
-        <div class="lms-route-card lms-route-panel-compact lms-deep-card is-${escapeHtml(tone)}">
-            <div class="lms-deep-card-icon"><i class="fas ${escapeHtml(icon)}"></i></div>
-            <div>
-                <strong>${escapeHtml(String(value))}</strong>
-                <span>${escapeHtml(title)}</span>
-                ${copy ? `<p>${escapeHtml(copy)}</p>` : ''}
-            </div>
-        </div>
-    `;
-}
-
-function renderLmsDeepToolkitList(items = [], emptyTitle = 'Nothing here yet') {
-    if (!items.length) {
-        return `
-            <div class="lms-deep-empty">
-                <i class="fas fa-inbox"></i>
-                <strong>${escapeHtml(emptyTitle)}</strong>
-                <span>This panel will update automatically when the group has activity.</span>
-            </div>
-        `;
-    }
-    return items.map(item => `
-        <div class="lms-deep-list-row">
-            <div>
-                <strong>${escapeHtml(item.title || 'Untitled')}</strong>
-                <span>${escapeHtml(item.meta || '')}</span>
-            </div>
-            <em class="is-${escapeHtml(item.tone || 'info')}">${escapeHtml(item.status || 'Ready')}</em>
-        </div>
-    `).join('');
-}
-
-function renderLmsDeepWorkflowBoard(columns = []) {
-    return `
-        <div class="lms-deep-board">
-            ${columns.map(column => `
-                <section class="lms-route-card lms-route-panel-compact lms-deep-column">
-                    <div class="lms-deep-column-head">
-                        <strong>${escapeHtml(column.title)}</strong>
-                        <span>${Array.isArray(column.items) ? column.items.length : 0}</span>
-                    </div>
-                    <div class="lms-deep-column-body">
-                        ${renderLmsDeepToolkitList(column.items || [], column.empty || `No ${column.title.toLowerCase()} items`)}
-                    </div>
-                </section>
-            `).join('')}
-        </div>
-    `;
-}
-
-function renderLmsDeepSectionToolkit(ctx) {
-    const now = Date.now();
-    const quizAnalytics = computeLmsQuizAnalytics(ctx.resourceKey);
-    const moderationItems = (ctx.moderation || []).filter(item => !item.hidden || ctx.isStaff).slice(0, 8).map(item => ({
-        title: item.text || 'Classroom question',
-        meta: joinLmsMeta([item.authorName || 'Student', item.answer ? `Answer: ${item.answer}` : 'Waiting for staff response']),
-        status: item.hidden ? 'Hidden' : item.pinned ? 'Pinned' : item.status === 'answered' ? 'Answered' : 'New',
-        tone: item.hidden ? 'danger' : item.pinned || item.status === 'answered' ? 'success' : 'pending',
-        raw: item
-    }));
-    const assignmentColumns = [
-        {
-            title: 'Open',
-            items: ctx.assignments.filter(item => String(item.status || 'open') !== 'closed').map(item => ({
-                title: item.title || 'Assignment',
-                meta: joinLmsMeta([item.weekLabel || 'General', item.dueAt ? `Due ${formatLmsDateTime(item.dueAt)}` : 'No due date']),
-                status: 'Open',
-                tone: 'info'
-            }))
-        },
-        {
-            title: 'Submitted',
-            items: ctx.assignments.filter(item => item.submissions && Object.keys(item.submissions).length > 0).map(item => ({
-                title: item.title || 'Assignment',
-                meta: `${Object.keys(item.submissions || {}).length} submission${Object.keys(item.submissions || {}).length === 1 ? '' : 's'}`,
-                status: 'Review',
-                tone: 'pending'
-            }))
-        },
-        {
-            title: 'Late / Missing',
-            items: ctx.assignments.filter(item => item.dueAt && new Date(item.dueAt).getTime() < now && !(item.submissions && Object.keys(item.submissions).length)).map(item => ({
-                title: item.title || 'Assignment',
-                meta: item.dueAt ? `Was due ${formatLmsDateTime(item.dueAt)}` : 'No due date',
-                status: 'Late',
-                tone: 'danger'
-            }))
-        },
-        {
-            title: 'Graded',
-            items: ctx.assignments.filter(item => item.graded || item.status === 'graded').map(item => ({
-                title: item.title || 'Assignment',
-                meta: item.weekLabel || 'General',
-                status: 'Graded',
-                tone: 'success'
-            }))
+        if (normalized.parentId == null && !normalized.type) {
+            normalized.type = 'announcement';
+            changed = true;
         }
-    ];
-    const materialItems = ctx.materials.slice(0, 8).map(item => ({
-        title: item.title || item.file?.name || 'Material',
-        meta: joinLmsMeta([item.weekLabel || 'General', item.file?.name || 'Attachment', item.uploadedBy || 'Course staff']),
-        status: item.pinned ? 'Pinned' : 'Published',
-        tone: item.pinned ? 'success' : 'info'
-    }));
-    const conceptItems = ctx.concepts.slice(0, 8).map(item => {
-        const stats = computeLmsConceptScoreSummary(ctx.resourceKey, item.id);
-        return {
-            title: item.title || 'Concept',
-            meta: joinLmsMeta([item.weekLabel || 'General', `${stats.average || 0}/10 avg`, `${stats.count || 0} rating${stats.count === 1 ? '' : 's'}`]),
-            status: item.approved || item.reviewed ? 'Reviewed' : 'Needs review',
-            tone: item.approved || item.reviewed ? 'success' : 'pending'
-        };
+        if (!normalized.type) {
+            normalized.type = normalized.parentId ? 'reply' : 'announcement';
+            changed = true;
+        }
+        if (!normalized.createdAt) {
+            normalized.createdAt = new Date().toISOString();
+            changed = true;
+        }
+        return normalized;
     });
-    const quizItems = ctx.quizzes.slice(0, 8).map(quiz => {
-        const workspace = ensureLmsQuizBuilderWorkspace(ctx.resourceKey);
-        const submissions = Object.values(workspace.submissions?.[quiz.id] || {});
-        const pending = submissions.filter(submission => submission?.requiresManualReview === true && ['submitted', 'auto-submitted'].includes(String(submission.status || ''))).length;
-        return {
-            title: quiz.title || getLmsQuizDisplayLabel(quiz),
-            meta: joinLmsMeta([getLmsQuizDisplayLabel(quiz), `${submissions.length} submission${submissions.length === 1 ? '' : 's'}`, quiz.protectedDelivery === false ? 'Standard' : 'Anti-cheat']),
-            status: pending ? `${pending} pending` : (submissions.length ? 'Results' : 'Ready'),
-            tone: pending ? 'pending' : 'success'
-        };
-    });
-    const memberItems = ctx.students.slice(0, 10).map(student => ({
-        title: student.name || student.id,
-        meta: (() => {
-            const risk = computeLmsMemberRisk(student, ctx);
-            return joinLmsMeta([student.id, student.email || student.facultyLabel || 'Student', `${risk.missingAssignments} missing`, `${risk.attendedCalls}/${risk.endedCalls} calls`]);
-        })(),
-        status: computeLmsMemberRisk(student, ctx).level,
-        tone: computeLmsMemberRisk(student, ctx).tone
-    }));
-    const callItems = ctx.classCalls.slice(0, 6).map(call => ({
-        title: call.title || 'Class call',
-        meta: joinLmsMeta([call.status || 'scheduled', call.scheduledAt ? formatLmsDateTime(call.scheduledAt) : '', `${call.participantIds?.length || 0} joined`, call.studyPackage?.recordingStatus || (call.roomSettings?.recording ? 'Recording marked' : 'No recording')]),
-        status: call.status === 'ended' && call.studyPackage?.recordingStatus ? call.studyPackage.recordingStatus : (call.status || 'Ready'),
-        tone: call.status === 'active' ? 'success' : call.status === 'ended' ? 'info' : 'pending'
-    }));
-    const sessionItems = ctx.markers.slice(0, 8).map(marker => ({
-        title: marker.title || marker.label || LMS_SESSION_MARKER_TYPES[marker.type]?.label || 'Session marker',
-        meta: joinLmsMeta([marker.weekLabel || 'General', marker.date || marker.startsAt || '', marker.description || '']),
-        status: LMS_SESSION_MARKER_TYPES[marker.type]?.label || 'Marked',
-        tone: LMS_SESSION_MARKER_TYPES[marker.type]?.tone || 'info'
-    }));
+    if (changed) saveState();
+    return KIU_STATE.messages[canonicalKey];
+}
 
-    const tabPanels = {
-        sessions: `
-            <div class="lms-deep-grid">
-                ${renderLmsDeepToolkitCard('Upcoming markers', sessionItems.length, 'Session timeline entries and classroom moments.', 'fa-calendar-days', 'info')}
-                ${renderLmsDeepToolkitCard('Attendance roster', ctx.students.length, 'Available for staff-controlled class tracking.', 'fa-user-check', 'success')}
-                ${renderLmsDeepToolkitCard('Linked quizzes', ctx.quizzes.length, 'Quizzes can be connected to session milestones.', 'fa-pen-to-square', 'pending')}
+function getLmsInteractionAnnouncements(resourceKey) {
+    const messages = normalizeLmsInteractionMessages(resourceKey);
+    return messages.filter(message => message.parentId == null || message.type === 'announcement');
+}
+
+function getLmsInteractionMessengerStats(resourceKey) {
+    const announcements = getLmsInteractionAnnouncements(resourceKey).filter(isLmsInteractionMessageFromStaff);
+    const replies = announcements.reduce((sum, post) => sum + getLmsInteractionRepliesForPost(resourceKey, post.id).length, 0);
+    return {
+        announcements: announcements.length,
+        replies
+    };
+}
+
+function getLmsInteractionRepliesForPost(resourceKey, parentId) {
+    const messages = normalizeLmsInteractionMessages(resourceKey);
+    return messages.filter(message => String(message.parentId || '') === String(parentId || ''));
+}
+
+function getLmsInteractionChildReplies(resourceKey, replyId) {
+    const messages = normalizeLmsInteractionMessages(resourceKey);
+    return messages.filter(message => String(message.parentId || '') === String(replyId || ''));
+}
+
+function getLmsInteractionStaffRoleLabel(message) {
+    if (message?.isProf) return 'Professor';
+    if (message?.isStaff) return 'TA';
+    return 'Staff';
+}
+
+function renderLmsInteractionAvatar(name, tone = 'is-student') {
+    const initials = String(name || '?').trim().charAt(0).toUpperCase() || '?';
+    return `<div class="lms-interaction-avatar lms-route-avatar ${tone}" aria-hidden="true">${escapeHtml(initials)}</div>`;
+}
+
+function renderLmsInteractionRolePill(message) {
+    const label = getLmsInteractionStaffRoleLabel(message);
+    const tone = label === 'Professor' ? 'is-professor' : 'is-ta';
+    return `<span class="lms-interaction-role-pill lms-route-pill ${tone}">${escapeHtml(label)}</span>`;
+}
+
+function renderLmsInteractionReplyComposer(resourceKey, parentId) {
+    const inputId = `lms-interaction-reply-${toDomToken(resourceKey)}-${toDomToken(parentId)}`;
+    return `
+        <div class="lms-interaction-reply-compose">
+            <input
+                id="${inputId}"
+                class="lms-interaction-compose-input"
+                type="text"
+                placeholder="Write a reply…"
+                data-lms-interaction-reply-input="${escapeHtml(parentId)}"
+            >
+            <button
+                class="lms-interaction-compose-send lux-secondary-btn"
+                type="button"
+                data-lms-click="sendLmsInteractionReply(${lmsInlineArg(resourceKey)}, ${lmsInlineArg(parentId)})"
+                aria-label="Send reply"
+            ><i class="fas fa-paper-plane"></i></button>
+        </div>
+    `;
+}
+
+function renderLmsInteractionReply(reply, currentName, resourceKey, depth = 0) {
+    const isMe = reply.sender === currentName;
+    const tone = 'is-student';
+    const childReplies = resourceKey ? getLmsInteractionChildReplies(resourceKey, reply.id) : [];
+    const canReply = canReplyToLmsInteractionPost(reply);
+    const meClass = depth === 0 && isMe ? ' is-me' : '';
+    const nestedChildren = childReplies.length
+        ? `<div class="lms-thread-lines">${childReplies.map(child => renderLmsInteractionReply(child, currentName, resourceKey, depth + 1)).join('')}</div>`
+        : '';
+    const inlineCompose = canReply
+        ? `<div class="lms-interaction-inline-compose" data-lms-interaction-inline-compose="${escapeHtml(reply.id)}" hidden>
+            <div class="lms-interaction-reply-compose lms-interaction-reply-compose--inline">
+                <input class="lms-interaction-compose-input" type="text" placeholder="Write a reply…" data-lms-interaction-reply-input="${escapeHtml(reply.id)}" id="lms-interaction-reply-${toDomToken(resourceKey)}-${toDomToken(reply.id)}">
+                <button class="lms-interaction-compose-submit" type="button" data-lms-click="sendLmsInteractionReply(${lmsInlineArg(resourceKey)}, ${lmsInlineArg(reply.id)})">Comment</button>
+                <button class="lms-interaction-compose-cancel" type="button" data-lms-click="toggleLmsInteractionInlineReply(${lmsInlineArg(reply.id)})">Cancel</button>
             </div>
-            <div class="lms-route-card lms-route-panel-compact lms-deep-panel">${renderLmsDeepToolkitList(sessionItems, 'No session markers yet')}</div>
-        `,
-        'live-quiz': `
-            <div class="lms-deep-grid">
-                ${renderLmsDeepToolkitCard('Quiz bank', ctx.quizzes.length, 'Reusable protected and standard quizzes.', 'fa-layer-group', 'info')}
-                ${renderLmsDeepToolkitCard('Average score', `${quizAnalytics.average}%`, `${quizAnalytics.submissions} completed submissions.`, 'fa-chart-line', quizAnalytics.average ? 'success' : 'info')}
-                ${renderLmsDeepToolkitCard('Question accuracy', `${quizAnalytics.accuracy}%`, `${quizAnalytics.pending} written reviews pending.`, 'fa-fire', quizAnalytics.pending ? 'pending' : 'success')}
-            </div>
-            <div class="lms-route-card lms-route-panel-compact lms-deep-panel">${renderLmsDeepToolkitList(quizItems, 'No quizzes created yet')}</div>
-        `,
-        interaction: `
-            <div class="lms-deep-grid">
-                ${renderLmsDeepToolkitCard('Open questions', ctx.moderation.filter(item => item.status === 'new' && !item.hidden).length, 'Needs staff response.', 'fa-circle-question', 'pending')}
-                ${renderLmsDeepToolkitCard('Answered', ctx.moderation.filter(item => item.status === 'answered' || item.answer).length, 'Resolved classroom questions.', 'fa-comments', 'success')}
-                ${renderLmsDeepToolkitCard('Pinned FAQ', ctx.moderation.filter(item => item.pinned && !item.hidden).length, 'Important answers promoted for the class.', 'fa-thumbtack', 'info')}
-            </div>
-            <div class="lms-route-card lms-route-panel-compact lms-deep-panel">
-                <div class="lms-deep-question-composer">
-                    <input id="lms-interaction-question-${toDomToken(ctx.resourceKey)}" class="lms-route-input" type="text" placeholder="Ask a classroom question">
-                    <button class="kiu-btn-blue" data-lms-click="createLmsInteractionQuestion('${ctx.resourceKey}')"><i class="fas fa-paper-plane"></i> Ask</button>
-                </div>
-                ${moderationItems.length ? moderationItems.map(item => `
-                    <div class="lms-deep-list-row">
-                        <div>
-                            <strong>${escapeHtml(item.title)}</strong>
-                            <span>${escapeHtml(item.meta || '')}</span>
-                            ${ctx.isStaff ? `<div class="lms-deep-row-actions">
-                                <button data-lms-click="updateLmsInteractionModerationItem('${ctx.resourceKey}', '${item.raw.id}', 'answer')">Answer</button>
-                                <button data-lms-click="updateLmsInteractionModerationItem('${ctx.resourceKey}', '${item.raw.id}', 'pin')">${item.raw.pinned ? 'Unpin' : 'Pin'}</button>
-                                <button data-lms-click="updateLmsInteractionModerationItem('${ctx.resourceKey}', '${item.raw.id}', 'hide')">${item.raw.hidden ? 'Show' : 'Hide'}</button>
-                            </div>` : ''}
+        </div>`
+        : '';
+    return `
+        <article class="lms-interaction-reply${meClass}" data-lms-interaction-reply-id="${escapeHtml(reply.id)}">
+            <div class="lms-interaction-reply-main">
+                ${renderLmsInteractionAvatar(reply.sender, tone)}
+                <div class="lms-interaction-body">
+                    <div class="lms-interaction-bubble-wrap">
+                        <div class="lms-interaction-bubble-meta">
+                            ${isMe ? 'You' : escapeHtml(reply.sender || 'Unknown')}
+                            &middot; ${escapeHtml(reply.time || formatLmsDateTime(reply.createdAt))}
                         </div>
-                        <em class="is-${escapeHtml(item.tone || 'info')}">${escapeHtml(item.status || 'Ready')}</em>
+                        <div class="lms-interaction-bubble lms-interaction-bubble--reply">${escapeHtml(reply.text || '')}</div>
+                        <div class="lms-interaction-reply-actions">
+                            ${canReply ? `<button class="lms-interaction-reply-btn" type="button" data-lms-click="toggleLmsInteractionInlineReply(${lmsInlineArg(reply.id)})"><i class="fas fa-reply"></i> Reply</button>` : ''}
+                        </div>
                     </div>
-                `).join('') : renderLmsDeepToolkitList([], 'No classroom questions yet')}
-            </div>
-        `,
-        calls: `
-            <div class="lms-deep-grid">
-                ${renderLmsDeepToolkitCard('Calls', ctx.classCalls.length, 'Scheduled, live, and ended classroom calls.', 'fa-video', 'info')}
-                ${renderLmsDeepToolkitCard('Live now', ctx.classCalls.some(call => call.status === 'active') ? 'Active' : 'None', 'Students see join/waiting state clearly.', 'fa-signal', 'success')}
-                ${renderLmsDeepToolkitCard('Recordings', ctx.classCalls.filter(call => call.recordingUrl).length, 'Recording links appear after class.', 'fa-record-vinyl', 'pending')}
-            </div>
-            <div class="lms-route-card lms-route-panel-compact lms-deep-panel">${renderLmsDeepToolkitList(callItems, 'No calls scheduled yet')}</div>
-        `,
-        members: `
-            <div class="lms-deep-grid">
-                ${renderLmsDeepToolkitCard('Students', ctx.students.length, 'Roster, grade risk, attendance, and participation.', 'fa-users', 'info')}
-                ${renderLmsDeepToolkitCard('High risk', memberItems.filter(item => item.tone === 'danger').length, 'Missing work, attendance, and quiz signals.', 'fa-triangle-exclamation', memberItems.some(item => item.tone === 'danger') ? 'danger' : 'success')}
-                ${renderLmsDeepToolkitCard('Watch list', memberItems.filter(item => item.tone === 'pending').length, 'Students needing early attention.', 'fa-filter', 'pending')}
-            </div>
-            <div class="lms-route-card lms-route-panel-compact lms-deep-panel">${renderLmsDeepToolkitList(memberItems, 'No enrolled members found')}</div>
-        `,
-        materials: `
-            <div class="lms-deep-grid">
-                ${renderLmsDeepToolkitCard('Files', ctx.materials.length, 'Slides, readings, recordings, and attachments.', 'fa-folder-open', 'info')}
-                ${renderLmsDeepToolkitCard('Weeks', new Set(ctx.materials.map(item => item.weekLabel).filter(Boolean)).size, 'Materials are organized by teaching week.', 'fa-calendar-week', 'success')}
-                ${renderLmsDeepToolkitCard('Pinned resources', ctx.materials.filter(item => item.pinned).length, 'Important material can stay visible.', 'fa-thumbtack', 'pending')}
-            </div>
-            <div class="lms-route-card lms-route-panel-compact lms-deep-panel">${renderLmsDeepToolkitList(materialItems, 'No materials uploaded yet')}</div>
-        `,
-        concepts: `
-            <div class="lms-deep-grid">
-                ${renderLmsDeepToolkitCard('Concept notes', ctx.concepts.length, 'Shared definitions and explanations.', 'fa-lightbulb', 'info')}
-                ${renderLmsDeepToolkitCard('Reviewed', ctx.concepts.filter(item => item.reviewed || item.approved).length, 'Staff-approved explanations.', 'fa-circle-check', 'success')}
-                ${renderLmsDeepToolkitCard('Peer scoring', '5-10', 'Students can rate helpful concepts.', 'fa-star', 'pending')}
-            </div>
-            <div class="lms-route-card lms-route-panel-compact lms-deep-panel">${renderLmsDeepToolkitList(conceptItems, 'No concepts shared yet')}</div>
-        `,
-        assignments: renderLmsDeepWorkflowBoard(assignmentColumns),
-        quiz: `
-            <div class="lms-deep-grid">
-                ${renderLmsDeepToolkitCard('Quiz studio', ctx.quizzes.length, 'Draft, publish, review, and result boards.', 'fa-pen-to-square', 'info')}
-                ${renderLmsDeepToolkitCard('Manual reviews', quizItems.filter(item => item.tone === 'pending').length, 'Written answers wait for staff grading.', 'fa-user-pen', 'pending')}
-                ${renderLmsDeepToolkitCard('Anti-cheat ready', ctx.quizzes.filter(quiz => quiz.protectedDelivery !== false).length, 'Protected delivery is tracked per quiz.', 'fa-shield-halved', 'success')}
-            </div>
-            <div class="lms-route-card lms-route-panel-compact lms-deep-panel">${renderLmsDeepToolkitList(quizItems, 'No quizzes available yet')}</div>
-        `
-    };
-    const panel = tabPanels[ctx.tab];
-    if (!panel) return '';
-    return `
-        <section class="lms-route-panel lms-route-panel-compact lms-deep-toolkit" data-lms-deep-toolkit="${escapeHtml(ctx.tab)}">
-            <div class="lms-deep-head">
-                <div>
-                    <div class="lms-pro-kicker">Operational Workspace</div>
-                    <h3>${escapeHtml(getLmsSectionEnhancementConfig(ctx).title)} tools</h3>
+                    ${inlineCompose}
+                    ${nestedChildren}
                 </div>
-                <span>${ctx.isStaff ? 'Staff workflow' : 'Student workflow'}</span>
             </div>
-            ${panel}
-        </section>
+        </article>
     `;
 }
 
-function cleanupLmsInjectedEnhancementBlocks(contentArea = document.getElementById('lms-content-area')) {
+function renderLmsInteractionThread(post, resourceKey, currentName) {
+    const replies = getLmsInteractionRepliesForPost(resourceKey, post.id);
+    const staffTone = post.isProf ? 'is-professor' : 'is-ta';
+    return `
+        <article class="lms-interaction-thread" data-lms-interaction-thread="${escapeHtml(post.id)}">
+            <div class="lms-interaction-announcement">
+                ${renderLmsInteractionAvatar(post.sender, staffTone)}
+                <div class="lms-interaction-bubble-wrap">
+                    <div class="lms-interaction-bubble-head">
+                        <strong class="lms-interaction-sender">${escapeHtml(post.sender || 'Staff')}</strong>
+                        ${renderLmsInteractionRolePill(post)}
+                        ${post.bulk ? '<span class="lms-interaction-bulk-pill lms-route-pill">Multi-group</span>' : ''}
+                    </div>
+                    <div class="lms-interaction-bubble lms-interaction-bubble--staff">${escapeHtml(post.text || '')}</div>
+                    <div class="lms-interaction-bubble-meta">${escapeHtml(post.time || formatLmsDateTime(post.createdAt))}</div>
+                </div>
+            </div>
+            ${replies.length ? `<div class="lms-thread-lines">${replies.map(reply => renderLmsInteractionReply(reply, currentName, resourceKey, 0)).join('')}</div>` : ''}
+            ${canReplyToLmsInteractionPost(post) ? `
+                <div class="lms-interaction-reply-compose lms-interaction-reply-compose--inline">
+                    <input class="lms-interaction-compose-input" type="text" placeholder="Write a reply…" data-lms-interaction-reply-input="${escapeHtml(post.id)}" id="lms-interaction-reply-${toDomToken(resourceKey)}-${toDomToken(post.id)}">
+                    <button class="lms-interaction-compose-submit" type="button" data-lms-click="sendLmsInteractionReply(${lmsInlineArg(resourceKey)}, ${lmsInlineArg(post.id)})">Comment</button>
+                </div>
+            ` : ''}
+        </article>
+    `;
+}
+
+function renderLmsInteractionStreamMarkup(resourceKey) {
+    const announcements = getLmsInteractionAnnouncements(resourceKey).filter(isLmsInteractionMessageFromStaff);
+    const currentName = getSimulatedUserName();
+    const canManage = canPostLmsInteractionAnnouncement();
+    if (!announcements.length) {
+        const studentCta = canManage
+            ? ''
+            : `
+                <button type="button" class="lux-secondary-btn lms-interaction-empty-cta" data-lms-interaction-mode="messages">Open class chat</button>
+            `;
+        return `
+            <div class="lms-interaction-empty lms-route-empty lms-route-empty--interaction">
+                <div class="lms-interaction-empty-icon lms-route-empty-icon"><i class="fas fa-comments"></i></div>
+                <div class="lms-route-empty-title">${canManage ? 'No announcements yet' : 'Waiting for staff updates'}</div>
+                <div class="lms-route-empty-copy">${canManage
+                    ? 'Post an update for your class using the composer below.'
+                    : 'Your professor or TA will post updates here. You can reply to their messages.'}</div>
+                ${studentCta}
+            </div>
+        `;
+    }
+    return announcements.map(post => renderLmsInteractionThread(post, resourceKey, currentName)).join('');
+}
+
+function renderLmsInteractionComposerMarkup(resourceKey) {
+    if (!canPostLmsInteractionAnnouncement()) {
+        return `
+            <div class="lms-interaction-student-hint">
+                <i class="fas fa-info-circle" aria-hidden="true"></i>
+                <span>Switch to Messages for class chat and attachments. Only your professor or TA can start new announcements here. Reply under their posts above.</span>
+            </div>
+        `;
+    }
+    return `
+        <div class="lms-interaction-compose-row">
+            <input
+                id="lms-interaction-announce-input"
+                class="lms-interaction-compose-input"
+                type="text"
+                placeholder="Post an announcement for your class…"
+            >
+            <button
+                class="lms-interaction-compose-send lux-secondary-btn"
+                type="button"
+                data-lms-click="sendLmsInteractionMessage(${lmsInlineArg(resourceKey)})"
+            ><i class="fas fa-paper-plane"></i> Send</button>
+        </div>
+    `;
+}
+
+function bindLmsInteractionComposerEvents(resourceKey) {
+    if (typeof bindLmsInteractionDelegatedEvents === 'function') {
+        bindLmsInteractionDelegatedEvents(document.getElementById('lms-content-area'));
+    }
+}
+
+function scrollLmsInteractionStreamToBottom(stream) {
+    if (!stream) return;
+    stream.scrollTop = stream.scrollHeight;
+}
+
+function updateLmsInteractionStreamUi(resourceKey) {
+    const stream = document.querySelector('[data-lms-interaction-region="stream"]');
+    if (!stream) return false;
+    const atBottom = stream.scrollHeight - stream.scrollTop - stream.clientHeight < 48;
+    stream.innerHTML = renderLmsInteractionStreamMarkup(resourceKey);
+    if (atBottom) scrollLmsInteractionStreamToBottom(stream);
+    syncLmsInteractionTabCacheFromDom(resourceKey);
+    return true;
+}
+
+function updateLmsInteractionComposerUi(resourceKey) {
+    const composer = document.querySelector('[data-lms-interaction-region="composer"]');
+    if (!composer) return false;
+    composer.innerHTML = renderLmsInteractionComposerMarkup(resourceKey);
+    bindLmsInteractionComposerEvents(resourceKey);
+    return true;
+}
+
+function syncLmsWorkspaceChromeOffset(contentArea = document.getElementById('lms-content-area')) {
     if (!contentArea) return;
-    contentArea.querySelectorAll('[data-lms-pro-hero], [data-lms-deep-toolkit]').forEach(node => node.remove());
+    const workspaceChrome = document.querySelector('#page-lms-inner .lms-route-workspace-chrome');
+    let panelChrome = 0;
+    if (workspaceChrome) {
+        panelChrome = Math.ceil(workspaceChrome.getBoundingClientRect().height);
+    } else {
+        const cardHead = document.querySelector('#page-lms-inner .lms-route-card-head');
+        const tabStrip = document.querySelector('#page-lms-inner .lms-route-tab-strip');
+        if (cardHead) panelChrome += Math.ceil(cardHead.getBoundingClientRect().height);
+        if (tabStrip) panelChrome += Math.ceil(tabStrip.getBoundingClientRect().height);
+    }
+    if (panelChrome > 0) {
+        contentArea.style.setProperty('--lms-interaction-panel-chrome', `${panelChrome}px`);
+        contentArea.style.setProperty('--lms-workspace-panel-chrome', `${panelChrome}px`);
+    } else {
+        contentArea.style.removeProperty('--lms-interaction-panel-chrome');
+        contentArea.style.removeProperty('--lms-workspace-panel-chrome');
+    }
+    const pageInner = document.getElementById('page-lms-inner');
+    if (contentArea.dataset.activeLmsTab === 'whiteboard') {
+        const shell = document.body?.classList?.contains('kiu-lms-whiteboard-focus-active')
+            ? (document.querySelector('.lms-whiteboard-shell[data-lms-whiteboard-fullscreen-mounted="1"]')
+                || (typeof getActiveLmsWhiteboardShell === 'function' ? getActiveLmsWhiteboardShell() : null)
+                || contentArea.querySelector('.lms-whiteboard-shell'))
+            : contentArea.querySelector('.lms-whiteboard-shell');
+        const layout = shell?.querySelector('.lms-whiteboard-layout');
+        const panel = document.querySelector('#page-lms-inner .lms-route-panel-compact');
+        const contentTop = Math.max(0, Math.ceil(contentArea.getBoundingClientRect().top));
+        const panelTop = panel ? Math.max(0, Math.ceil(panel.getBoundingClientRect().top)) : contentTop;
+        const prevContentTop = Number(contentArea.dataset.lmsWhiteboardContentTop || NaN);
+        const prevPanelTop = Number(contentArea.dataset.lmsWhiteboardPanelTop || NaN);
+        if (shell && layout) {
+            const shellChrome = Math.max(0, Math.ceil(layout.getBoundingClientRect().top - shell.getBoundingClientRect().top));
+            contentArea.style.setProperty('--lms-whiteboard-shell-chrome', `${shellChrome}px`);
+        } else {
+            contentArea.style.removeProperty('--lms-whiteboard-shell-chrome');
+        }
+        if (!Number.isFinite(prevContentTop) || Math.abs(contentTop - prevContentTop) >= 2) {
+            contentArea.dataset.lmsWhiteboardContentTop = String(contentTop);
+            contentArea.style.setProperty('--lms-whiteboard-content-top', `${contentTop}px`);
+            if (pageInner) pageInner.style.setProperty('--lms-whiteboard-content-top', `${contentTop}px`);
+        }
+        if (!Number.isFinite(prevPanelTop) || Math.abs(panelTop - prevPanelTop) >= 2) {
+            contentArea.dataset.lmsWhiteboardPanelTop = String(panelTop);
+            if (pageInner) pageInner.style.setProperty('--lms-whiteboard-panel-top', `${panelTop}px`);
+        }
+    } else {
+        contentArea.style.removeProperty('--lms-whiteboard-shell-chrome');
+        contentArea.style.removeProperty('--lms-whiteboard-content-top');
+        delete contentArea.dataset.lmsWhiteboardContentTop;
+        delete contentArea.dataset.lmsWhiteboardPanelTop;
+        if (pageInner) {
+            pageInner.style.removeProperty('--lms-whiteboard-content-top');
+            pageInner.style.removeProperty('--lms-whiteboard-panel-top');
+        }
+    }
 }
 
-let lmsTabRenderSequence = 0;
-const LMS_TAB_RENDER_CACHE = Object.create(null);
-
-function buildLmsTabRenderCacheKey(tab, courseKey, sectionType) {
-    const role = typeof getEffectiveUserRole === 'function'
-        ? getEffectiveUserRole()
-        : (typeof currentUserRole !== 'undefined' ? currentUserRole : 'student');
-    return `${String(tab || '')}::${String(courseKey || '')}::${String(sectionType || '')}::${role}`;
+function syncLmsInteractionChromeOffset(contentArea = document.getElementById('lms-content-area')) {
+    return syncLmsWorkspaceChromeOffset(contentArea);
 }
 
-function clearLmsTabRenderCache() {
-    Object.keys(LMS_TAB_RENDER_CACHE).forEach((key) => {
-        delete LMS_TAB_RENDER_CACHE[key];
+let lmsWorkspaceChromeResizeBound = false;
+
+function bindLmsWorkspaceChromeResizeSync() {
+    if (lmsWorkspaceChromeResizeBound) return;
+    lmsWorkspaceChromeResizeBound = true;
+    const scheduleSync = () => {
+        requestAnimationFrame(() => syncLmsWorkspaceChromeOffset());
+    };
+    if (typeof ResizeObserver === 'function') {
+        const observer = new ResizeObserver(scheduleSync);
+        const watch = (node) => {
+            if (node) observer.observe(node);
+        };
+        watch(document.getElementById('lms-content-area'));
+        watch(document.querySelector('#page-lms-inner .lms-route-workspace-chrome'));
+    }
+    window.addEventListener('resize', scheduleSync, { passive: true });
+}
+
+bindLmsWorkspaceChromeResizeSync();
+
+function removeOrphanLmsInteractionMessengerSections(contentArea = document.getElementById('lms-content-area')) {
+    if (!contentArea) return;
+    document.querySelectorAll('#page-lms-inner .lms-interaction-messenger').forEach(section => {
+        if (!contentArea.contains(section)) section.remove();
     });
 }
 
-function invalidateLmsLiveQuizTabCache(resourceKey = '') {
-    const courseKey = typeof getLmsTabCourseKey === 'function'
-        ? (resourceKey || getLmsTabCourseKey('live-quiz'))
-        : (resourceKey || currentCourseId || '');
-    const sectionType = typeof getCurrentLmsSectionType === 'function'
-        ? getCurrentLmsSectionType()
-        : (normalizeLmsSectionType(currentLmsSectionType) || 'lecture');
-    const normalizedCourseKey = String(
-        typeof resolveCanonicalLmsResourceKey === 'function'
-            ? resolveCanonicalLmsResourceKey(courseKey)
-            : courseKey
-    );
-    const cacheKey = buildLmsTabRenderCacheKey('live-quiz', normalizedCourseKey, sectionType);
-    delete LMS_TAB_RENDER_CACHE[cacheKey];
-}
-
-function prepareLmsContentAreaForTab(tab, contentArea = document.getElementById('lms-content-area')) {
-    if (!contentArea) return 0;
-    cleanupLmsInjectedEnhancementBlocks(contentArea);
-    lmsTabRenderSequence += 1;
-    contentArea.dataset.activeLmsTab = String(tab || '');
-    contentArea.dataset.lmsRenderToken = String(lmsTabRenderSequence);
-    contentArea.classList.remove('lms-tab-sessions', 'lms-tab-live-quiz', 'lms-tab-interaction', 'lms-tab-calls', 'lms-tab-members', 'lms-tab-materials', 'lms-tab-concepts', 'lms-tab-quiz', 'lms-tab-monitoring', 'lms-tab-workspace', 'lms-tab-attendance');
-    if (tab) contentArea.classList.add(`lms-tab-${String(tab).replace(/[^a-z0-9-]/gi, '-')}`);
-    return lmsTabRenderSequence;
-}
-
-function isLmsRenderCurrent(tab, token, contentArea = document.getElementById('lms-content-area')) {
-    if (!contentArea) return false;
-    return contentArea.dataset.activeLmsTab === String(tab || '') && contentArea.dataset.lmsRenderToken === String(token || '');
-}
-
-function syncLmsTabRenderCacheFromDom(tab, courseKey, sectionType) {
-    const contentArea = document.getElementById('lms-content-area');
-    if (!contentArea || tab === 'gradebook') return;
-    const cacheKey = buildLmsTabRenderCacheKey(tab, courseKey, sectionType);
-    LMS_TAB_RENDER_CACHE[cacheKey] = contentArea.innerHTML;
-}
-
-function enhanceLmsTabExperience(tab, courseId = currentCourseId) {
-    const contentArea = document.getElementById('lms-content-area');
-    if (!contentArea || tab === 'gradebook') return;
-    cleanupLmsInjectedEnhancementBlocks(contentArea);
-    // Quiz and live-quiz tabs own their shells; pro-hero/toolkit cause double paint.
-    if (tab === 'quiz' || tab === 'live-quiz') {
-        contentArea.dataset.enhancedLmsTab = String(tab || '');
-        return;
-    }
-    contentArea.dataset.enhancedLmsTab = String(tab || '');
-    const ctx = getLmsSectionEnhancementContext(tab, courseId);
-    if (ctx) {
-        const config = getLmsSectionEnhancementConfig(ctx);
-        const heroMarkup = renderLmsProfessionalSectionHero(ctx, config);
-        const toolkitMarkup = renderLmsDeepSectionToolkit(ctx);
-        const injectedMarkup = `${heroMarkup || ''}${toolkitMarkup || ''}`.trim();
-        if (injectedMarkup) {
-            contentArea.insertAdjacentHTML('afterbegin', injectedMarkup);
-        }
-    }
-    contentArea.querySelectorAll('.lms-route-empty').forEach(empty => empty.classList.add('lms-pro-empty'));
-    contentArea.querySelectorAll('.lms-route-panel, .lms-route-card, .course-card').forEach(card => card.classList.add('lms-pro-surface'));
-}
-
-function switchLMSTab(tab, options = {}) {
-    const forceRender = options.force === true;
-    const contentAreaBeforeSwitch = document.getElementById('lms-content-area');
-    const leavingLiveQuiz = contentAreaBeforeSwitch?.dataset?.activeLmsTab === 'live-quiz' && tab !== 'live-quiz';
-    if (leavingLiveQuiz && typeof flushLmsLiveQuizSync === 'function') {
-        const flushKey = typeof getLmsTabCourseKey === 'function' ? getLmsTabCourseKey('live-quiz') : currentCourseId;
-        const shouldFlush = typeof shouldSyncLmsLiveQuizWorkspace === 'function'
-            ? shouldSyncLmsLiveQuizWorkspace(flushKey)
-            : true;
-        if (shouldFlush) {
-            flushLmsLiveQuizSync(flushKey);
-        }
-    }
-    closeLmsQuizOverlays();
-    refreshLmsQuizTabPresentation();
-    syncLmsSectionSwitchPresentation();
-    const effectiveRole = getEffectiveUserRole();
-    if (tab === 'monitoring' && ![USER_ROLES.PROFESSOR, USER_ROLES.TA, USER_ROLES.ADMIN].includes(effectiveRole)) {
-        alert('Only professors, teaching assistants, and admins can open this tab.');
-        return;
-    }
-    if (tab !== 'quiz') {
-        currentLmsQuizCourseKey = '';
-    }
-    document.querySelectorAll('#page-lms-inner [data-lms-tab]').forEach(el => {
-        el.classList.remove('is-active');
-        el.setAttribute('aria-pressed', 'false');
-    });
-    const tabEl = document.getElementById(`tab-${tab}`);
-    if (tabEl) {
-        tabEl.classList.add('is-active');
-        tabEl.setAttribute('aria-pressed', 'true');
-        tabEl.scrollIntoView?.({ block: 'nearest', inline: 'center' });
-    }
-    
-    const contentArea = document.getElementById('lms-content-area');
-    const gbWrapper = ensureLmsGradebookShell();
-    const tabCourseKey = getLmsTabCourseKey(tab);
-    const normalizedCourseKey = String(tabCourseKey || currentCourseId || '');
-    const activeSectionType = typeof getCurrentLmsSectionType === 'function'
-        ? getCurrentLmsSectionType()
-        : normalizeLmsSectionType(currentLmsSectionType) || 'lecture';
-    const cacheKey = buildLmsTabRenderCacheKey(tab, normalizedCourseKey, activeSectionType);
-    const gradebookVisible = isLmsElementShown(gbWrapper);
-    const contentVisible = isLmsElementShown(contentArea);
-    if (
-        !forceRender
-        && contentArea
-        && contentArea.dataset.activeLmsTab === String(tab || '')
-        && contentArea.dataset.activeLmsCourseKey === normalizedCourseKey
-        && contentArea.dataset.activeLmsSectionType === activeSectionType
-        && ((tab === 'gradebook' && gradebookVisible) || (tab !== 'gradebook' && contentVisible))
-    ) {
-        const currentTabButton = document.getElementById(`tab-${tab}`);
-        if (currentTabButton) {
-            currentTabButton.classList.add('is-active');
-            currentTabButton.setAttribute('aria-pressed', 'true');
-            currentTabButton.scrollIntoView?.({ block: 'nearest', inline: 'center' });
-        }
-        return;
-    }
-
-    if (tab === 'gradebook') {
-        setLmsWorkspacePanel('gradebook');
-        if (typeof bindStandaloneGradebookShell === 'function') {
-            bindStandaloneGradebookShell();
-        }
-        if (gbWrapper) {
-            const parsed = parseLmsCourseKey(currentCourseId);
-            if (parsed.courseId && parsed.groupId) {
-                openGradebookSection(parsed.courseId, parsed.groupId, document.getElementById('lms-course-title')?.innerText || 'Grades');
-            } else if (typeof renderGradebookRosterSelection === 'function') {
-                const spreadsheetShell = typeof resolveGradebookSpreadsheetShell === 'function'
-                    ? resolveGradebookSpreadsheetShell()
-                    : document.getElementById('gradebook-spreadsheet-view');
-                setLmsElementShown(spreadsheetShell, false);
-                setLmsElementShown(document.getElementById('gradebook-roster-selection'), true, 'block');
-                renderGradebookRosterSelection();
-            }
-        }
-        if (contentArea) {
-            contentArea.dataset.activeLmsTab = 'gradebook';
-            contentArea.dataset.activeLmsCourseKey = normalizedCourseKey;
-            contentArea.dataset.activeLmsSectionType = activeSectionType;
-        }
-        return;
-    }
-
-    setLmsWorkspacePanel('content');
-    prepareLmsContentAreaForTab(tab, contentArea);
-    if (contentArea) {
-        contentArea.dataset.activeLmsCourseKey = normalizedCourseKey;
-        contentArea.dataset.activeLmsSectionType = activeSectionType;
-        if (forceRender) {
-            delete LMS_TAB_RENDER_CACHE[cacheKey];
-        }
-        if (!forceRender && tab !== 'live-quiz' && LMS_TAB_RENDER_CACHE[cacheKey]) {
-            contentArea.innerHTML = LMS_TAB_RENDER_CACHE[cacheKey];
-            enhanceLmsTabExperience(tab, tabCourseKey || currentCourseId);
-            return;
-        }
-        if (tab === 'live-quiz') {
-            delete LMS_TAB_RENDER_CACHE[cacheKey];
-        }
-    }
-
-    if (tab === 'sessions') {
-        renderLmsSessionsSection(currentCourseId);
-    } else if (tab === 'live-quiz') {
-        renderLmsLiveQuizSection(tabCourseKey);
-    } else if (tab === 'interaction') {
-        renderLmsInteractionSection(tabCourseKey || currentCourseId);
-    } else if (tab === 'calls') {
-        renderLmsCallsSection(tabCourseKey);
-    } else if (tab === 'members') {
-        renderLmsMembersSection(currentCourseId);
-    } else if (tab === 'materials') {
-        if (contentArea) {
-            prepareLmsContentAreaForTab('materials', contentArea);
-            contentArea.innerHTML = renderLmsMaterialsLibrary(tabCourseKey);
-        }
-    } else if (tab === 'concepts') {
-        renderLmsConceptsLibrary(tabCourseKey);
-    } else if (tab === 'quiz') {
-        if (effectiveRole === USER_ROLES.STUDENT) {
-            const studentQuizKey = resolveLmsQuizWorkspace(tabCourseKey)?.resourceKey
-                || resolveCanonicalLmsResourceKey(tabCourseKey || '');
-            if (studentQuizKey) {
-                ensureLmsQuizUiState(studentQuizKey).studentQuizId = null;
-            }
-        }
-        renderLmsQuizSection(tabCourseKey);
-    } else if (tab === 'monitoring') {
-        renderLmsMonitoringSection(tabCourseKey);
-    } else if (tab === 'workspace') {
-        renderWorkspace(tabCourseKey);
-    } else if (tab === 'attendance') {
-        renderLmsAttendanceSection(tabCourseKey || currentCourseId);
-    }
-    if (contentArea) {
-        LMS_TAB_RENDER_CACHE[cacheKey] = contentArea.innerHTML;
-        contentArea.dataset.activeLmsSectionType = activeSectionType;
-    }
-    enhanceLmsTabExperience(tab, tabCourseKey || currentCourseId);
-}
-
+const renderLmsInteractionSection = window.renderLmsInteractionSection;
+const buildLmsInteractionMessagePayload = window.buildLmsInteractionMessagePayload;
+const sendLmsInteractionMessage = window.sendLmsInteractionMessage;
+const toggleLmsInteractionInlineReply = window.toggleLmsInteractionInlineReply;
+const sendLmsInteractionReply = window.sendLmsInteractionReply;
+const renderLmsAttendanceSection = window.renderLmsAttendanceSection;
+const markLmsAttendanceStatus = window.markLmsAttendanceStatus;
+const getLmsSectionEnhancementContext = window.getLmsSectionEnhancementContext;
+const getLmsSectionEnhancementConfig = window.getLmsSectionEnhancementConfig;
+const renderLmsProfessionalSectionHero = window.renderLmsProfessionalSectionHero;
+const computeLmsMemberRisk = window.computeLmsMemberRisk;
+const renderLmsDeepToolkitCard = window.renderLmsDeepToolkitCard;
+const renderLmsDeepToolkitList = window.renderLmsDeepToolkitList;
+const renderLmsDeepSectionToolkit = window.renderLmsDeepSectionToolkit;
+const cleanupLmsInjectedEnhancementBlocks = window.cleanupLmsInjectedEnhancementBlocks;
+const buildLmsTabRenderCacheKey = window.buildLmsTabRenderCacheKey;
+const clearLmsTabRenderCache = window.clearLmsTabRenderCache;
+const invalidateLmsLiveQuizTabCache = window.invalidateLmsLiveQuizTabCache;
+const invalidateLmsWhiteboardTabCache = window.invalidateLmsWhiteboardTabCache;
+const invalidateLmsInteractionTabCache = window.invalidateLmsInteractionTabCache;
+const syncLmsInteractionTabCacheFromDom = window.syncLmsInteractionTabCacheFromDom;
+const prepareLmsContentAreaForTab = window.prepareLmsContentAreaForTab;
+const isLmsRenderCurrent = window.isLmsRenderCurrent;
+const syncLmsTabRenderCacheFromDom = window.syncLmsTabRenderCacheFromDom;
+const enhanceLmsTabExperience = window.enhanceLmsTabExperience;
+const switchLMSTab = window.switchLMSTab;
 function lmsInlineArg(value) {
     return escapeHtml(JSON.stringify(String(value == null ? '' : value)));
 }
 
 function toggleAccordion(element) {
+    const weekPanel = element.closest('.lms-week-accordion-panel');
+    if (weekPanel) {
+        const content = weekPanel.querySelector('.lms-week-accordion-body');
+        const icon = element.querySelector('i.fas');
+        if (!content) return;
+        const isCollapsed = weekPanel.classList.toggle('is-collapsed');
+        content.hidden = isCollapsed;
+        if (icon) icon.className = isCollapsed ? 'fas fa-chevron-down' : 'fas fa-chevron-up';
+        element.setAttribute('aria-expanded', isCollapsed ? 'false' : 'true');
+        return;
+    }
     const content = element.nextElementSibling;
     const icon = element.querySelector('i');
     if (!content) return;
     if (!content.hidden || content.classList.contains('active')) {
         content.hidden = true;
         content.classList.remove('active');
-        icon.className = "fas fa-chevron-down";
+        if (icon) icon.className = 'fas fa-chevron-down';
     } else {
         content.hidden = false;
         content.classList.add('active');
-        icon.className = "fas fa-chevron-up";
+        if (icon) icon.className = 'fas fa-chevron-up';
     }
 }
 
-window.switchLMSTab = switchLMSTab;
-window.clearLmsTabRenderCache = clearLmsTabRenderCache;
-window.buildLmsTabRenderCacheKey = buildLmsTabRenderCacheKey;
-window.syncLmsTabRenderCacheFromDom = syncLmsTabRenderCacheFromDom;
-window.invalidateLmsLiveQuizTabCache = invalidateLmsLiveQuizTabCache;
-window.cleanupLmsInjectedEnhancementBlocks = cleanupLmsInjectedEnhancementBlocks;
-window.applyLmsBulkSubjectGradeWeights = applyLmsBulkSubjectGradeWeights;
+__kiuLmsTabsExpose({
+    sendLmsInteractionMessage,
+    sendLmsInteractionReply,
+    updateLmsInteractionStreamUi,
+    updateLmsInteractionComposerUi,
+    switchLMSTab,
+    clearLmsTabRenderCache,
+    buildLmsTabRenderCacheKey,
+    syncLmsTabRenderCacheFromDom,
+    invalidateLmsLiveQuizTabCache,
+    invalidateLmsWhiteboardTabCache,
+    invalidateLmsInteractionTabCache,
+    syncLmsInteractionTabCacheFromDom,
+    syncLmsWorkspaceChromeOffset,
+    syncLmsInteractionChromeOffset,
+    cleanupLmsInjectedEnhancementBlocks,
+    renderLmsBulkGroupTools,
+});
+window['refreshLmsBulkGroupTools'] = function refreshLmsBulkGroupTools() {
+    if (typeof lmsBulkGroupContext === 'undefined' || !lmsBulkGroupContext) return;
+    renderLmsBulkGroupTools(lmsBulkGroupContext.subjectId, lmsBulkGroupContext.subjectTitle, lmsBulkGroupContext.groups);
+};

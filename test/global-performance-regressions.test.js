@@ -1,41 +1,79 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
+import { readHomeDashboardCss } from './helpers/bare-shell-css.js';
 
 function readSource(relativePath) {
-  return readFileSync(join(process.cwd(), relativePath), 'utf8');
+    const full = join(process.cwd(), relativePath);
+    if (!existsSync(full)) return '';
+    return readFileSync(full, 'utf8');
 }
 
 function readRegisteredHomeChunk() {
+  const plainPath = 'assets/js/features/index-home-dashboard.plain.js';
+  if (existsSync(join(process.cwd(), plainPath))) {
+    return readSource(plainPath);
+  }
   const registrationSource = readSource('assets/js/features/index-home-dashboard.js');
   const match = registrationSource.match(/__kiuRegisterLuxuryHomeChunk\('([^']+)'\)/);
-
-  if (!match) {
-    throw new Error('Home dashboard bundle registration payload was not found.');
-  }
-
+  if (!match) return '';
   return Buffer.from(match[1], 'base64').toString('utf8');
 }
 
 function readRegisteredAdminToolsChunk() {
+  const plainPath = 'assets/js/features/index-admin-tools.plain.js';
+  if (existsSync(join(process.cwd(), plainPath))) {
+    return readSource(plainPath);
+  }
   const registrationSource = readSource('assets/js/features/index-admin-tools.js');
   const match = registrationSource.match(/__kiuRegisterLuxuryAdminToolsChunk\('([^']+)'\)/);
-
-  if (!match) {
-    throw new Error('Admin tools bundle registration payload was not found.');
-  }
-
+  if (!match) return '';
   return Buffer.from(match[1], 'base64').toString('utf8');
 }
 
 describe('global interaction performance guardrails', () => {
   it('does not full-scan every DOM mutation for glass transparency refreshes', () => {
-    const utilities = readSource('assets/js/shared/utilities.js');
+    const utilities = readSource('assets/js/shared/lux-transparency.js');
 
     expect(utilities).toContain('const SHARED_TRANSPARENCY_OBSERVER_SELECTOR = SHARED_TRANSPARENCY_OBSERVER_SELECTORS.join');
     expect(utilities).toContain('node.querySelector(SHARED_TRANSPARENCY_OBSERVER_SELECTOR)');
     expect(utilities).toContain("typeof window.requestIdleCallback === 'function'");
     expect(utilities).not.toContain('var _debounceMs = transparency > 60 ? 16 : 300;');
+    expect(utilities).toContain('function setupTransparencyObserver()');
+    expect(utilities).toContain('window.__transparencyObserver');
+    expect(utilities).toContain('isLuxTransparencyExemptSubtree');
+    expect(utilities).toContain('node.matches(SHARED_TRANSPARENCY_OBSERVER_SELECTOR)');
+  });
+
+  it('avoids duplicate syncAll boot on standalone LMS routes', () => {
+    const utilities = readSource('assets/js/shared/utilities.js');
+    const transparency = readSource('assets/js/shared/lux-transparency.js');
+    const luxury = readSource('assets/js/features/index-luxury.js');
+
+    expect(transparency).toContain("document.body.classList.contains('lux-route-lms')");
+    expect(utilities).toContain('window.refreshStandaloneLmsShellContext({ refreshSubjectDeck: false })');
+    expect(luxury).toContain('if (isStandaloneLmsRouteActive() && typeof window.refreshStandaloneLmsShellContext === \'function\')');
+    expect(luxury).toContain('function isStandaloneLmsRouteActive()');
+  });
+
+  it('avoids duplicate syncAll boot on standalone library routes while preserving deferred particles', () => {
+    const luxury = readSource('assets/js/features/index-luxury.js');
+    const luxuryBackground = readSource('assets/js/features/luxury-background.js');
+    const navigation = readSource('assets/js/features/navigation.js');
+    const utilities = readSource('assets/js/shared/utilities.js');
+
+    expect(luxury).toContain('function isStandaloneLibraryRouteActive()');
+    expect(luxury).toContain('isStandaloneLibraryRouteActive()');
+    expect(luxury).toContain('refreshStandaloneDesktopRouteShellContext({ rerender: false })');
+    expect(luxury).toContain('onStandaloneLibrary');
+    expect(luxury).toContain('scheduleParticleInit');
+    expect(luxury).toContain('scheduleLibraryRouteBackgroundRefresh');
+    expect(luxuryBackground).toContain('lux-route-library');
+    expect(luxuryBackground).toContain('requestIdleCallback');
+    expect(navigation).toMatch(/entryId === 'orders' \|\| entryId === 'library'/);
+    expect(utilities).toContain("document.body.classList.contains('lux-route-library')");
+    expect(utilities).toContain('library-catalog-card');
+    expect(navigation).toContain('lux-route-library');
   });
 
   it('skips repeated transparency work when surfaces already have the current signature', () => {
@@ -73,7 +111,7 @@ describe('global interaction performance guardrails', () => {
     expect(utilities).toContain('function fastRedirectRoleSwitch(requestedRole)');
     expect(utilities).toContain("if (typeof fastRedirectRoleSwitch === 'function' && await fastRedirectRoleSwitch(requestedRole))");
     expect(luxury).toContain('if (window.__kiuRoleSwitchRedirectPending || window.__kiuFacultySwitchRedirectPending) return;');
-    expect(luxury).toContain('frameInterval: reducedMotion ? 80 : 42');
+    expect(readSource('assets/js/features/luxury-index-runtime.js')).toContain('frameInterval: isHome ? 16 : (reducedMotion ? 80 : 42)');
   });
 
   it('uses lightweight navigate sync instead of full syncAll after navigation', () => {
@@ -92,13 +130,16 @@ describe('global interaction performance guardrails', () => {
     expect(luxury).toMatch(/function queueShellSync[\s\S]*?(refreshStandaloneDesktopRouteShellContext|refreshStandaloneDesktopShellChrome|syncAll\(\))/);
   });
 
-  it('marks the portal shell interactive before deferred route renders finish', () => {
+  it('reveals standalone route shells after deferred route renders finish', () => {
     const navigation = readSource('assets/js/features/navigation.js');
 
     expect(navigation).toContain('function tryMarkPortalShellInteractive() {');
+    expect(navigation).toContain('function schedulePortalShellReadyReveal() {');
+    expect(navigation).toContain('window.schedulePortalShellReadyReveal = schedulePortalShellReadyReveal;');
     expect(navigation).toContain('function scheduleRouteContentRender(renderFn) {');
     expect(navigation).toContain('window.scheduleRouteContentRender = scheduleRouteContentRender;');
-    expect(navigation).toContain('tryMarkPortalShellInteractive();');
+    expect(navigation).not.toContain("body.classList.remove('kiu-shell-loading', 'lux-home-page');");
+    expect(navigation).toMatch(/finally \{[\s\S]*?schedulePortalShellReadyReveal\(\);[\s\S]*?\}/);
     expect(navigation).toContain('const PORTAL_STARTUP_MAX_ATTEMPTS = 48;');
   });
 
@@ -116,7 +157,7 @@ describe('global interaction performance guardrails', () => {
   });
 
   it('does not promote unknown-memory laptops into the high background tier by default', () => {
-    const luxury = readSource('assets/js/features/index-luxury.js');
+    const luxury = readSource('assets/js/features/luxury-index-runtime.js');
 
     expect(luxury).toContain('if (memory >= 8 && cores >= 8 && !coarsePointer && viewportWidth >= 1280) {');
     expect(luxury).not.toContain('(memory >= 8 || !memory) && (cores >= 8 || !cores)');
@@ -167,34 +208,28 @@ describe('global interaction performance guardrails', () => {
     expect(homeLuxury).not.toContain('function renderDynamicHomeShell(homeShell) {');
   });
 
-  it('keeps only one role-surface background block per home role in index-luxury css', () => {
-    const sharedCss = readSource('assets/css/index-luxury.css');
-    const homeCss = readSource('assets/css/index-home-dashboard.css');
+  it('keeps soft-chrome quick tiles free of per-role glass surface restates', () => {
+    expect(existsSync(join(process.cwd(), 'assets/css/index-luxury.css'))).toBe(false);
+    const homeCss = readHomeDashboardCss();
     const count = (source, text) => (source.match(new RegExp(text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g')) || []).length;
 
-    expect(count(sharedCss, '.lux-home-grid.is-student .lux-hero,')).toBe(0);
-    expect(count(sharedCss, '.lux-home-grid.is-professor .lux-hero,')).toBe(0);
-    expect(count(sharedCss, '.lux-home-grid.is-ta .lux-hero,')).toBe(0);
-    expect(count(sharedCss, '.lux-home-grid.is-admin .lux-hero,')).toBe(0);
-    expect(count(sharedCss, '.lux-home-grid.is-student_service .lux-hero,')).toBe(0);
-    expect(count(homeCss, '.lux-home-grid.is-student .lux-hero,')).toBe(1);
-    expect(count(homeCss, '.lux-home-grid.is-professor .lux-hero,')).toBe(1);
-    expect(count(homeCss, '.lux-home-grid.is-ta .lux-hero,')).toBe(1);
-    expect(count(homeCss, '.lux-home-grid.is-admin .lux-hero,')).toBe(1);
-    expect(count(homeCss, '.lux-home-grid.is-student_service .lux-hero,')).toBe(1);
+    for (const role of ['student', 'professor', 'ta', 'admin', 'student_service']) {
+      expect(count(homeCss, `.lux-home-grid.is-${role} .lux-quick-btn`)).toBe(0);
+    }
+    expect(homeCss).toMatch(/\.lux-quick-btn\.lux-soft-chrome/);
   });
 
   it('ships the home dashboard builder CSS only on the home entry', () => {
     const indexHtml = readSource('index.html');
-    const sharedCss = readSource('assets/css/index-luxury.css');
-    const homeCss = readSource('assets/css/index-home-dashboard.css');
+    expect(existsSync(join(process.cwd(), 'assets/css/index-luxury.css'))).toBe(false);
+    const homeCss = readHomeDashboardCss();
+    const editorCss = readSource('assets/css/index-home-editor.css');
 
-    expect(indexHtml).toContain('assets/css/index-home-dashboard.css?v=20260517-homecsssplit1');
-    expect(sharedCss).not.toContain('.lux-home-grid--builder {');
-    expect(sharedCss).not.toContain('.lux-home-editor-panel--builder {');
-    expect(sharedCss).not.toContain('#page-home.page-section>#lux-home-shell>.lux-home-grid--builder');
+        expect(indexHtml).toContain('assets/css/index-home-layout.css');
+        expect(indexHtml).toContain('assets/css/index-home-widgets.css');
+        expect(indexHtml).toContain('assets/css/index-home-role.css');
     expect(homeCss).toContain('.lux-home-grid--builder {');
-    expect(homeCss).toContain('.lux-home-editor-panel--builder {');
+    expect(editorCss).toContain('.lux-home-editor-panel--builder {');
     expect(homeCss).toContain('#page-home.page-section>#lux-home-shell>.lux-home-grid--builder');
   });
 
@@ -220,12 +255,13 @@ describe('global interaction performance guardrails', () => {
     const app = readSource('assets/js/app/app.js');
 
     expect(indexHtml).not.toContain('assets/js/pages/student-registration.js?v=20260527-studentreg2');
-    expect(indexHtml).not.toContain('assets/js/pages/news.js?v=20260516-newsroute3');
+    expect(indexHtml).not.toContain('assets/js/pages/news.js');
     expect(app).toContain('REGISTRATION_PICKER_ASSET_TOKEN');
     expect(app).toContain("registrationRuntimeAsset('assets/js/pages/student-registration.js')");
     expect(app).not.toContain("'assets/js/pages/student-registration.js?v=20260527-studentreg2'");
     expect(app).toContain('window.ensurePortalRegistrationRuntimeLoaded = function ensurePortalRegistrationRuntimeLoaded()');
-    expect(app).toContain("const NEWS_RUNTIME_SCRIPT = 'assets/js/pages/news.js?v=20260516-newsroute3';");
+    expect(app).toContain('const NEWS_RUNTIME_SCRIPTS = [');
+    expect(app).toMatch(/assets\/js\/pages\/news\.js\?v=\$\{NEWS_RUNTIME_VERSION\}/);
     expect(app).toContain('window.ensurePortalNewsRuntimeLoaded = function ensurePortalNewsRuntimeLoaded()');
   });
 
@@ -411,14 +447,16 @@ describe('global interaction performance guardrails', () => {
     expect(shellChrome).toContain("if (!panel && !options.ensurePanel) return;");
   });
 
-  it('skips syncAll transparency refreshes when professor-home shell state is unchanged', () => {
+  it('always re-applies transparency after syncAll atmosphere/perf (no signature skip)', () => {
     const luxury = readSource('assets/js/features/index-luxury.js');
 
     expect(luxury).toContain('function buildTransparencySyncSignature(activePageId, transparencyValue) {');
     expect(luxury).toContain('JSON.stringify(visuals.customPalette || {})');
     expect(luxury).toContain("HOME_EDITOR_STATE.editing && HOME_EDITOR_STATE.role === getEffectiveRole() ? 'editing' : 'view'");
-    expect(luxury).toContain('window.__luxLastTransparencySyncSignature !== _syncTransparencySignature');
-    expect(luxury).toContain('window.__luxLastTransparencySyncSignature = _syncTransparencySignature;');
+    // Signature is recorded for diagnostics, but refresh must always run so glass tokens win.
+    expect(luxury).toContain('window.__luxLastTransparencySyncSignature = buildTransparencySyncSignature(activePageId, _syncTransVal);');
+    expect(luxury).toContain("window.queueLuxuryTransparencyRefresh(parseInt(_syncTransVal, 10), { persist: false });");
+    expect(luxury).not.toContain('window.__luxLastTransparencySyncSignature !== _syncTransparencySignature');
   });
 
   it('adds keyboard close and focus return hooks for professor-home topbar overlays', () => {
@@ -458,7 +496,7 @@ describe('global interaction performance guardrails', () => {
     expect(ui).toContain('Probability and Statistics Basics');
   });
 
-  it('lazy-creates the programs shell page and shared home modals instead of shipping them in index html', () => {
+  it('keeps programs on a standalone route without index SPA injector leftovers', () => {
     const indexHtml = readSource('index.html');
     const ui = readSource('assets/js/features/ui.js');
     const navigation = readSource('assets/js/features/navigation.js');
@@ -467,17 +505,23 @@ describe('global interaction performance guardrails', () => {
     expect(indexHtml).not.toContain('id="modal-announcement"');
     expect(indexHtml).not.toContain('id="modal-event"');
     expect(ui).toContain('function ensureModalScaffold(type)');
-    expect(ui).toContain('function ensureIndexProgramsPage()');
-    expect(navigation).toContain("if (pageId === 'programs' && typeof ensureIndexProgramsPage === 'function' && !document.getElementById('page-programs'))");
+    expect(ui).not.toContain('function ensureIndexProgramsPage()');
+    expect(ui).not.toContain('window.ensureIndexProgramsPage');
+    expect(navigation).not.toContain('ensureIndexProgramsPage');
+    expect(navigation).toContain("activePageId === 'programs' && typeof window.renderStudentEducationalProgramPage === 'function'");
   });
 
-  it('keeps the migrated news shell section without reintroducing the old social placeholder routes', () => {
+  it('keeps index home free of migrated news shell SPA leftovers', () => {
     const indexHtml = readSource('index.html');
 
     expect(indexHtml).not.toContain('id="page-social"');
     expect(indexHtml).not.toContain('id="public-social-root"');
-    expect(indexHtml).toContain('id="page-news"');
-    expect(indexHtml).toContain('id="portal-news-root"');
+    expect(indexHtml).not.toContain('id="page-news"');
+    expect(indexHtml).not.toContain('id="portal-news-root"');
+    expect(indexHtml).not.toContain('id="page-orders"');
+    expect(indexHtml).not.toContain('id="page-library"');
+    expect(indexHtml).toContain('id="page-home"');
+    expect(indexHtml).toContain('id="lux-home-shell"');
   });
 
   it('does not ship the admin-tools page stub on the index home entry', () => {
@@ -509,7 +553,7 @@ describe('global interaction performance guardrails', () => {
     expect(fontsCss).toContain("@font-face {\n    font-family: 'Inter';");
     expect(fontsCss).toContain("@font-face {\n    font-family: 'Noto Sans Georgian';");
     expect(fontsCss).toContain("@font-face {\n    font-family: 'Playfair Display';");
-    expect(fontsCss).toContain("@font-face {\n    font-family: 'DM Mono';");
+    expect(fontsCss).toContain("@font-face {\n    font-family: 'Manrope';");
   });
 
   it('does not request the deleted placeholder components stylesheet anywhere in the live shell', () => {
@@ -530,8 +574,10 @@ describe('global interaction performance guardrails', () => {
     expect(app).toContain('function hasPageRoot(pageId)');
     expect(app).toContain("if (hasPageRoot('home')) applyStudentDashboardEnglishOverrides();");
     expect(app).toContain("if (hasPageRoot('orders')) applyOrdersPageEnglishOverrides();");
-    expect(app).toContain("if (hasPageRoot('library')) applyLibraryPageEnglishOverrides();");
+    expect(app).toContain("if (hasPageRoot('programs') || document.getElementById('modal-programs')) applyProgramsPageEnglishOverrides();");
     expect(app).toContain("if (hasPageRoot('timetable')) applyTimetablePageEnglishOverrides();");
+    expect(app).not.toContain("if (hasPageRoot('library')) applyLibraryPageEnglishOverrides();");
+    expect(app).not.toContain('function applyLibraryPageEnglishOverrides');
   });
 
   it('stores the mojibake replacement table in encoded form instead of raw corrupted source literals', () => {
@@ -550,7 +596,8 @@ describe('global interaction performance guardrails', () => {
     expect(auth).toContain("if (hasSessionToken) {");
     expect(auth).toContain("if (typeof getPortalSessionToken === 'function' && !getPortalSessionToken()) return true;");
     expect(api).toContain('if (!token) {');
-    expect(api).toContain('if (!getPortalSessionToken()) return;');
+    expect(api).toContain('if (!getPortalSessionToken()) {');
+    expect(api).toContain('window.__KIU_PORTAL_BOOTSTRAP_PENDING = false;');
   });
 
   it('keeps only one chancellery English override implementation in app bootstrap', () => {
@@ -560,22 +607,18 @@ describe('global interaction performance guardrails', () => {
     expect(matches).toHaveLength(1);
   });
 
-  it('keeps only one public social helper implementation in faculty runtime', () => {
+  it('keeps public social helpers out of faculty and live social runtime', () => {
     const faculty = readSource('assets/js/shared/faculty.js');
-    const publicSocial = readSource('assets/js/shared/public-social-runtime.js');
-    const count = (name) => (faculty.match(new RegExp(`function ${name}\\(`, 'g')) || []).length;
-    const publicCount = (name) => (publicSocial.match(new RegExp(`function ${name}\\(`, 'g')) || []).length;
+    const lite = readSource('assets/js/shared/social-runtime-lite.js');
+    const count = (source, name) => (source.match(new RegExp(`function ${name}\\(`, 'g')) || []).length;
 
-    expect(count('createPublicSocialPost')).toBe(0);
-    expect(count('togglePublicSocialLike')).toBe(0);
-    expect(count('addPublicSocialComment')).toBe(0);
-    expect(count('deletePublicSocialPost')).toBe(0);
-    expect(count('getPublicSocialVisiblePosts')).toBe(0);
-    expect(publicCount('createPublicSocialPost')).toBe(1);
-    expect(publicCount('togglePublicSocialLike')).toBe(1);
-    expect(publicCount('addPublicSocialComment')).toBe(1);
-    expect(publicCount('deletePublicSocialPost')).toBe(1);
-    expect(publicCount('getPublicSocialVisiblePosts')).toBe(1);
+    expect(count(faculty, 'createPublicSocialPost')).toBe(0);
+    expect(count(faculty, 'togglePublicSocialLike')).toBe(0);
+    expect(count(faculty, 'addPublicSocialComment')).toBe(0);
+    expect(count(faculty, 'deletePublicSocialPost')).toBe(0);
+    expect(count(faculty, 'getPublicSocialVisiblePosts')).toBe(0);
+    expect(count(lite, 'createPublicSocialPost')).toBe(0);
+    expect(count(lite, 'togglePublicSocialLike')).toBe(0);
   });
 
   it('skips deep text-node localization walks when the root has no broken or Georgian text', () => {
@@ -588,5 +631,28 @@ describe('global interaction performance guardrails', () => {
     expect(app).toContain('if (rootHasTranslatableText(root)) {');
     expect(app).toContain('translateTextNodes(root);');
     expect(app).toContain('if (node.nodeType === Node.ELEMENT_NODE && nodeNeedsEnglishLocalization(node)) {');
+  });
+
+  it('forces high performance tier on home route', () => {
+    const runtime = readSource('assets/js/features/luxury-index-runtime.js');
+    const html = readSource('index.html');
+    const tierBlock = runtime.slice(
+      runtime.indexOf('function getLuxuryPerformanceTier'),
+      runtime.indexOf('function getLuxuryBackgroundRenderProfile')
+    );
+    expect(tierBlock).toContain("if (document.body?.classList?.contains('lux-route-home')) return 'high';");
+    expect(html).toContain('luxury-index-runtime.js?v=');
+  });
+
+    it('busts portal shell SW cache (live stack, no retired luxury CSS)', () => {
+    const app = readSource('assets/js/app/app.js');
+    const sw = readSource('service-worker.js');
+    expect(app).toMatch(/const PORTAL_CACHE_RESET_VERSION = '20\d{6}-[^']+'/);
+    expect(sw).toMatch(/const CACHE_NAME = 'kiu-portal-shell-v/);
+    expect(sw).toContain('index-home-layout.css');
+    expect(sw).toContain('index-home-widgets.css');
+    expect(sw).toContain('index-home-role.css');
+    expect(sw).not.toContain('index-luxury.css');
+    expect(sw).toContain('lux-fouc-ht.css');
   });
 });

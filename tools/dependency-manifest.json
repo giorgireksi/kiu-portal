@@ -1,0 +1,294 @@
+{
+  "version": 1,
+  "wave": "H3",
+  "routes": [
+    {
+      "id": "social",
+      "html": "social.html",
+      "eagerHubs": [
+        "assets/js/shared/social-runtime-lite.js",
+        "assets/js/pages/social-mobile.js",
+        "assets/js/pages/social-overlay-chrome.js",
+        "assets/js/pages/social-shell-nav.js",
+        "assets/js/pages/social-page.js"
+      ],
+      "lazyChains": [
+        {
+          "id": "social.feed",
+          "loader": "assets/js/pages/social-page.js",
+          "urls": [
+            "assets/js/pages/social-feed-comments-runtime.js",
+            "assets/js/pages/social-feed.js"
+          ]
+        },
+        {
+          "id": "social.alerts",
+          "loader": "assets/js/pages/social-page.js",
+          "urls": [
+            "assets/js/pages/social-alerts.js"
+          ]
+        },
+        {
+          "id": "social.community",
+          "loader": "assets/js/pages/social-page.js",
+          "urls": [
+            "assets/js/pages/social-community.js"
+          ]
+        },
+        {
+          "id": "social.events",
+          "loader": "assets/js/pages/social-page.js",
+          "urls": [
+            "assets/js/pages/social-events.js"
+          ]
+        },
+        {
+          "id": "social.groups",
+          "loader": "assets/js/pages/social-page.js",
+          "urls": [
+            "assets/js/pages/social-groups.js"
+          ]
+        },
+        {
+          "id": "social.lost-found",
+          "loader": "assets/js/pages/social-page.js",
+          "urls": [
+            "assets/js/pages/social-lost-found.js"
+          ]
+        },
+        {
+          "id": "social.messages",
+          "loader": "assets/js/pages/social-page.js",
+          "urls": [
+            "assets/js/pages/social-messages.js"
+          ]
+        },
+        {
+          "id": "social.pages",
+          "loader": "assets/js/pages/social-page.js",
+          "urls": [
+            "assets/js/pages/social-pages.js"
+          ]
+        },
+        {
+          "id": "social.photography",
+          "loader": "assets/js/pages/social-page.js",
+          "urls": [
+            "assets/js/pages/social-photography.js"
+          ]
+        },
+        {
+          "id": "social.profile",
+          "loader": "assets/js/pages/social-page.js",
+          "urls": [
+            "assets/js/pages/social-profile.js"
+          ]
+        },
+        {
+          "id": "social.surveys",
+          "loader": "assets/js/pages/social-page.js",
+          "urls": [
+            "assets/js/pages/social-surveys.js"
+          ]
+        },
+        {
+          "id": "social.workspace",
+          "loader": "assets/js/pages/social-page.js",
+          "urls": [
+            "assets/js/pages/social-workspace.js"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lms",
+      "html": "lms.html",
+      "eagerHubs": [
+        "assets/js/pages/lms-classroom-tabs-runtime.js",
+        "assets/js/pages/lms-quiz-blue-runtime.js",
+        "assets/js/pages/lms.js",
+        "assets/js/pages/lms-route-boot.js"
+      ],
+      "lazyChains": [
+        {
+          "id": "lms.gradebook",
+          "loader": "assets/js/pages/lms-classroom-tabs-runtime.js",
+          "urls": [
+            "assets/js/pages/gradebook-history-ui-runtime.js",
+            "assets/js/pages/gradebook-quiz-map-runtime.js",
+            "assets/js/pages/gradebook-model.js",
+            "assets/js/pages/gradebook-weights-runtime.js",
+            "assets/js/pages/gradebook-components-runtime.js",
+            "assets/js/pages/gradebook-workspace.js",
+            "assets/js/pages/gradebook-staff.js"
+          ]
+        },
+        {
+          "id": "lms.live-quiz",
+          "loader": "assets/js/pages/lms-classroom-tabs-runtime.js",
+          "urls": [
+            "assets/js/pages/lms-workspace-sync-timing.js",
+            "assets/js/pages/lms-live-quiz-access-runtime.js",
+            "assets/js/pages/lms-live-quiz-workspace-runtime.js",
+            "assets/js/pages/lms-live-quiz-podium-runtime.js",
+            "assets/js/pages/lms-live-quiz-session-runtime.js",
+            "assets/js/pages/lms-live-quiz-ui-staff-runtime.js",
+            "assets/js/pages/lms-live-quiz-ui-runtime.js"
+          ]
+        },
+        {
+          "id": "lms.whiteboard",
+          "loader": "assets/js/pages/lms-classroom-tabs-runtime.js",
+          "urls": [
+            "assets/js/pages/lms-workspace-sync-timing.js",
+            "assets/js/pages/lms-whiteboard-workspace-runtime.js",
+            "assets/js/pages/lms-whiteboard-collab-runtime.js",
+            "assets/js/pages/lms-whiteboard-history-runtime.js",
+            "assets/js/pages/lms-whiteboard-minimap-runtime.js",
+            "assets/js/pages/lms-whiteboard-document-runtime.js",
+            "assets/js/pages/lms-whiteboard-model.js",
+            "assets/js/pages/lms-whiteboard-model-bridge.js",
+            "assets/js/pages/lms-whiteboard-pointer-runtime.js",
+            "assets/js/pages/lms-whiteboard-paint-runtime.js",
+            "assets/js/pages/lms-whiteboard-chrome-runtime.js",
+            "assets/js/pages/lms-whiteboard-session-runtime.js",
+            "assets/js/pages/lms-whiteboard-selection-runtime.js",
+            "assets/js/pages/lms-whiteboard-runtime.js"
+          ]
+        },
+        {
+          "id": "lms.quiz",
+          "loader": "assets/js/pages/lms-classroom-tabs-runtime.js",
+          "urls": [
+            "assets/js/pages/lms-grade-sync-runtime.js",
+            "assets/js/pages/lms-quiz-model.js",
+            "assets/js/pages/lms-quiz-model-bridge.js",
+            "assets/js/pages/lms-quiz-blue-runtime.js",
+            "assets/js/pages/lms-quiz-focus-runtime.js",
+            "assets/js/pages/lms-quiz-workspace-session-runtime.js",
+            "assets/js/pages/lms-quiz-workspace-review-runtime.js",
+            "assets/js/pages/lms-quiz-workspace-runtime.js",
+            "assets/js/pages/lms-protected-quiz-runtime.js"
+          ]
+        },
+        {
+          "id": "lms.calls",
+          "loader": "assets/js/pages/lms-classroom-tabs-runtime.js",
+          "urls": [
+            "assets/js/pages/lms-calls-runtime.js"
+          ]
+        },
+        {
+          "id": "lms.interaction",
+          "loader": "assets/js/pages/lms-classroom-tabs-runtime.js",
+          "urls": [
+            "assets/js/shared/messenger-gradebook-runtime.js",
+            "assets/js/shared/messenger-chrome-runtime.js",
+            "assets/js/shared/messenger.js",
+            "assets/js/pages/lms-interaction-messages-runtime.js"
+          ]
+        },
+        {
+          "id": "lms.content",
+          "loader": "assets/js/pages/lms-classroom-tabs-runtime.js",
+          "urls": [
+            "assets/js/pages/lms-file-storage-runtime.js",
+            "assets/js/pages/lms-week-store-runtime.js",
+            "assets/js/pages/lms-content-library-runtime.js",
+            "assets/js/pages/lms-materials-runtime.js",
+            "assets/js/pages/lms-assignments-runtime.js"
+          ]
+        },
+        {
+          "id": "lms.personal-dashboard",
+          "loader": "assets/js/pages/lms-classroom-tabs-runtime.js",
+          "urls": [
+            "assets/js/pages/lms-personal-dashboard-runtime.js"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "student-service",
+      "html": "student-service.html",
+      "eagerHubs": [
+        "assets/js/pages/student-service-modules-runtime.js",
+        "assets/js/pages/student-service-ops-runtime.js",
+        "assets/js/pages/student-service-bootstrap-runtime.js",
+        "assets/js/pages/student-service.js"
+      ],
+      "lazyChains": [
+        {
+          "id": "ss.qa",
+          "loader": "assets/js/pages/student-service-modules-runtime.js",
+          "urls": [
+            "assets/js/pages/student-service-qa.js"
+          ]
+        },
+        {
+          "id": "ss.service",
+          "loader": "assets/js/pages/student-service-modules-runtime.js",
+          "urls": [
+            "assets/js/pages/student-service-service.js"
+          ]
+        },
+        {
+          "id": "ss.filters",
+          "loader": "assets/js/pages/student-service-modules-runtime.js",
+          "urls": [
+            "assets/js/pages/student-service-filters.js"
+          ]
+        },
+        {
+          "id": "ss.attachments",
+          "loader": "assets/js/pages/student-service-modules-runtime.js",
+          "urls": [
+            "assets/js/pages/student-service-attachments.js"
+          ]
+        },
+        {
+          "id": "ss.tickets",
+          "loader": "assets/js/pages/student-service-modules-runtime.js",
+          "urls": [
+            "assets/js/pages/student-service-tickets.js"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "registration",
+      "html": "registration.html",
+      "eagerHubs": [
+        "assets/js/pages/registration-shared.js",
+        "assets/js/pages/registration-enrollment.js",
+        "assets/js/pages/student-registration.js",
+        "assets/js/pages/registration-student-route.js"
+      ],
+      "lazyChains": []
+    },
+    {
+      "id": "index",
+      "html": "index.html",
+      "eagerHubs": [
+        "assets/js/app/app.js",
+        "assets/js/features/navigation.js",
+        "assets/js/features/index-luxury.js",
+        "assets/js/features/luxury-shell-chrome.js",
+        "assets/js/features/index-home-dashboard.js"
+      ],
+      "lazyChains": []
+    },
+    {
+      "id": "news",
+      "html": "news.html",
+      "eagerHubs": [
+        "assets/js/pages/news/news-runtime.js",
+        "assets/js/pages/news/news-api.js",
+        "assets/js/pages/news/news-feed-render.js",
+        "assets/js/pages/news/news-events.js",
+        "assets/js/pages/news.js"
+      ],
+      "lazyChains": []
+    }
+  ]
+}

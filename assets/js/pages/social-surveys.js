@@ -108,7 +108,6 @@
         throw new Error('Social surveys hooks are unavailable.');
     }
 
-
     function renderSurveysHero(runtime, metrics = {}, options = {}) {
         const openCount = Number(metrics.open || 0);
         const respondedCount = Number(metrics.responded || 0);
@@ -614,7 +613,6 @@
         `;
     }
 
-
     function surveyDraftReadyQuestionCount(draft = []) {
         return (Array.isArray(draft) ? draft : []).filter((question) => text(question.prompt)).length;
     }
@@ -1008,7 +1006,6 @@
             </form>
         </div>`;
     }
-
 
     window.renderSurveyDraftDeleteConfirmDialog = renderSurveyDraftDeleteConfirmDialog;
     window.renderSurveyCreateDialog = renderSurveyCreateDialog;

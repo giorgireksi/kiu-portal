@@ -1,15 +1,18 @@
 import { describe, expect, it, vi } from 'vitest';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 import { JSDOM } from 'jsdom';
 
 function readSource(relativePath) {
-  return readFileSync(join(process.cwd(), relativePath), 'utf8');
+    const full = join(process.cwd(), relativePath);
+    if (!existsSync(full)) return '';
+    return readFileSync(full, 'utf8');
 }
 
 function bootShellChromeRuntime() {
   const dom = new JSDOM(
     `<!DOCTYPE html><html><head></head><body>
+      <aside id="lux-shell"><button id="lux-sidebar-close" type="button"></button></aside>
       <div id="lux-topbar">
         <button id="lux-sidebar-toggle" type="button"></button>
         <button id="lux-faculty-picker-btn" type="button"></button>
@@ -72,17 +75,15 @@ function bootShellChromeRuntime() {
 }
 
 describe('luxury shell chrome runtime bindings', () => {
-  it('keeps one shared topbar visual contract for picker, utility, and user-chip states on standard routes', () => {
-    const css = readSource('assets/css/index-luxury.css');
+  it('keeps full-paint topbar control paint in shell-dashboard-paint (index-luxury retired)', () => {
+    expect(existsSync(join(process.cwd(), 'assets/css/index-luxury.css'))).toBe(false);
+    const css = readSource('assets/css/lux-shell.css');
 
-    expect(css).toContain("body.lux-nonhome-page:not(.lux-route-students-admin) #lux-topbar .lux-picker-btn,");
-    expect(css).toContain("body.lux-nonhome-page:not(.lux-route-students-admin) #lux-topbar .lux-topbar-editor-btn,");
-    expect(css).toContain("body.lux-nonhome-page:not(.lux-route-students-admin) #lux-topbar .lux-icon-btn,");
-    expect(css).toContain("body.lux-nonhome-page:not(.lux-route-students-admin) #lux-topbar .lux-user-chip {");
-    expect(css).toContain("body.lux-nonhome-page:not(.lux-route-students-admin) #lux-topbar .lux-picker-btn:hover,");
-    expect(css).toContain("body.lux-nonhome-page:not(.lux-route-students-admin) #lux-topbar .lux-icon-btn.is-active,");
-    expect(css).toContain("body.lux-light-mode.lux-nonhome-page:not(.lux-route-students-admin) #lux-topbar .lux-picker-btn,");
-    expect(css).toContain("body.lux-light-mode.lux-nonhome-page:not(.lux-route-students-admin) #lux-topbar .lux-icon-btn.is-active {");
+    expect(css).toContain('body.lux-full-paint.lux-unified-shell #lux-topbar .lux-picker-btn');
+    expect(css).toContain('body.lux-full-paint.lux-unified-shell #lux-topbar .lux-icon-btn');
+    expect(css).toContain('body.lux-full-paint.lux-unified-shell #lux-topbar .lux-user-chip');
+    expect(css).toContain('body.lux-full-paint.lux-unified-shell #lux-topbar .lux-picker-btn:hover');
+    expect(css).toContain('body.lux-full-paint.lux-unified-shell #lux-topbar .lux-icon-btn.is-active');
   });
 
   it('self-initializes topbar and user-menu bindings when the shell already exists', () => {
@@ -90,6 +91,7 @@ describe('luxury shell chrome runtime bindings', () => {
     const doc = dom.window.document;
 
     expect(doc.getElementById('lux-sidebar-toggle')?.dataset.bound).toBe('1');
+    expect(doc.getElementById('lux-sidebar-close')?.dataset.bound).toBe('1');
     expect(doc.getElementById('lux-faculty-picker-btn')?.dataset.bound).toBe('1');
     expect(doc.getElementById('lux-role-picker-btn')?.dataset.bound).toBe('1');
     expect(doc.getElementById('lux-notification-btn')?.dataset.bound).toBe('1');
@@ -103,6 +105,15 @@ describe('luxury shell chrome runtime bindings', () => {
     const doc = dom.window.document;
 
     doc.getElementById('lux-sidebar-toggle')?.dispatchEvent(new dom.window.MouseEvent('click', { bubbles: true }));
+
+    expect(dom.window.toggleSidebar).toHaveBeenCalledTimes(1);
+  });
+
+  it('uses the shared global sidebar toggle when the shell hide button is clicked', () => {
+    const dom = bootShellChromeRuntime();
+    const doc = dom.window.document;
+
+    doc.getElementById('lux-sidebar-close')?.dispatchEvent(new dom.window.MouseEvent('click', { bubbles: true }));
 
     expect(dom.window.toggleSidebar).toHaveBeenCalledTimes(1);
   });
@@ -130,5 +141,22 @@ describe('luxury shell chrome runtime bindings', () => {
     const dom = bootShellChromeRuntime();
 
     expect(() => dom.window.syncTopbar()).not.toThrow();
+  });
+
+  it('does not open the home editor when buildHomeModel is unavailable on trimmed routes', () => {
+    const dom = bootShellChromeRuntime();
+    const doc = dom.window.document;
+    const openHomeEditor = vi.fn();
+    const showToast = vi.fn();
+
+    dom.window.isHomeEditorAvailable = () => true;
+    dom.window.buildHomeModel = undefined;
+    dom.window.openHomeEditor = openHomeEditor;
+    dom.window.showToast = showToast;
+
+    doc.getElementById('lux-dashboard-edit-btn')?.dispatchEvent(new dom.window.MouseEvent('click', { bubbles: true }));
+
+    expect(openHomeEditor).not.toHaveBeenCalled();
+    expect(showToast).toHaveBeenCalledWith('Dashboard editing opens from the home page.');
   });
 });

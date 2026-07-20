@@ -18,25 +18,33 @@ function countStylesheets(source) {
     return [...source.matchAll(/<link\b[^>]*\brel=["']stylesheet["'][^>]*>/gi)].length;
 }
 
+function expectRedirectDietStack(html) {
+    expect(countStylesheets(html)).toBe(3);
+    expect(html).toContain('assets/css/lux-tokens.css');
+    expect(html).toContain('assets/css/lux-controls.css');
+    expect(html).toContain('assets/css/redirect-route.css');
+    expect(html).not.toContain('assets/css/lux-surfaces.css');
+    expect(html).not.toContain('assets/css/lux-focus-panel.css');
+    expect(html).not.toContain('lux-summary-surface');
+    expect(html).not.toContain('lux-status-pill');
+    expect(html).not.toContain('assets/css/lux-layout-primitives.css');
+}
+
 describe('Redirect wrapper regressions', () => {
     it('keeps calendar.html as a zero-runtime alias to timetable.html', () => {
         const calendarHtml = readAsset('calendar.html');
         const navigationJs = readAsset('assets/js/features/navigation.js');
         const stateJs = readAsset('assets/js/app/state.js');
 
-        expect(navigationJs).toContain("'calendar': 'calendar.html'");
+        expect(navigationJs).toContain("if (normalizedPageId === 'calendar') return 'timetable';");
+        expect(navigationJs).toContain("'calendar': 'alias-redirect'");
         expect(stateJs).not.toContain("'calendar'");
         expect(calendarHtml).toContain('url=timetable.html');
         expect(calendarHtml).toContain("window.location.replace('timetable.html');");
         expect(countInlineScripts(calendarHtml)).toBe(1);
         expect(countExternalScripts(calendarHtml)).toBe(0);
-        expect(countStylesheets(calendarHtml)).toBe(5);
+        expectRedirectDietStack(calendarHtml);
         expect(calendarHtml).not.toContain('assets/js/');
-        expect(calendarHtml).toContain('assets/css/lux-tokens.css');
-        expect(calendarHtml).toContain('assets/css/lux-surfaces.css');
-        expect(calendarHtml).toContain('assets/css/lux-controls.css');
-        expect(calendarHtml).toContain('assets/css/lux-layout-primitives.css');
-        expect(calendarHtml).toContain('assets/css/redirect-route.css');
         expect(calendarHtml).not.toContain('fonts.googleapis.com');
         expect(calendarHtml).not.toContain('fontawesome');
         expect(calendarHtml).not.toContain('lux-unified-shell');
@@ -55,13 +63,8 @@ describe('Redirect wrapper regressions', () => {
         expect(gradebookHtml).toContain("window.location.replace('faculty-gradebook.html');");
         expect(countInlineScripts(gradebookHtml)).toBe(1);
         expect(countExternalScripts(gradebookHtml)).toBe(0);
-        expect(countStylesheets(gradebookHtml)).toBe(5);
+        expectRedirectDietStack(gradebookHtml);
         expect(gradebookHtml).not.toContain('assets/js/');
-        expect(gradebookHtml).toContain('assets/css/lux-tokens.css');
-        expect(gradebookHtml).toContain('assets/css/lux-surfaces.css');
-        expect(gradebookHtml).toContain('assets/css/lux-controls.css');
-        expect(gradebookHtml).toContain('assets/css/lux-layout-primitives.css');
-        expect(gradebookHtml).toContain('assets/css/redirect-route.css');
         expect(gradebookHtml).not.toContain('fonts.googleapis.com');
         expect(gradebookHtml).not.toContain('fontawesome');
         expect(gradebookHtml).not.toContain('lux-unified-shell');
@@ -84,13 +87,8 @@ describe('Redirect wrapper regressions', () => {
         expect(facultyScheduleHtml).toContain("window.location.replace('timetable.html');");
         expect(countInlineScripts(facultyScheduleHtml)).toBe(1);
         expect(countExternalScripts(facultyScheduleHtml)).toBe(0);
-        expect(countStylesheets(facultyScheduleHtml)).toBe(5);
+        expectRedirectDietStack(facultyScheduleHtml);
         expect(facultyScheduleHtml).not.toContain('assets/js/');
-        expect(facultyScheduleHtml).toContain('assets/css/lux-tokens.css');
-        expect(facultyScheduleHtml).toContain('assets/css/lux-surfaces.css');
-        expect(facultyScheduleHtml).toContain('assets/css/lux-controls.css');
-        expect(facultyScheduleHtml).toContain('assets/css/lux-layout-primitives.css');
-        expect(facultyScheduleHtml).toContain('assets/css/redirect-route.css');
         expect(facultyScheduleHtml).not.toContain('fonts.googleapis.com');
         expect(facultyScheduleHtml).not.toContain('fontawesome');
         expect(facultyScheduleHtml).not.toContain('lux-unified-shell');
@@ -98,5 +96,14 @@ describe('Redirect wrapper regressions', () => {
         expect(facultyScheduleHtml).not.toContain('mobile-bottom-nav');
         expect(facultyScheduleHtml).not.toContain('mobile-action-sheet');
         expect(facultyScheduleHtml).not.toContain('id="prof-nav"');
+    });
+
+    it('keeps profile.html as a zero-runtime alias to personal-data.html', () => {
+        const profileHtml = readAsset('profile.html');
+        expect(profileHtml).toContain('url=personal-data.html');
+        expect(profileHtml).toContain("window.location.replace('personal-data.html');");
+        expect(countInlineScripts(profileHtml)).toBe(1);
+        expect(countExternalScripts(profileHtml)).toBe(0);
+        expectRedirectDietStack(profileHtml);
     });
 });

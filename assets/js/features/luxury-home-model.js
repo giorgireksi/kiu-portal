@@ -101,6 +101,79 @@ function sortScheduleItems(items) {
     });
 }
 
+function formatScheduleTimeRange(item) {
+    const start = String(item?.startTime || '').trim();
+    const end = String(item?.endTime || '').trim();
+    if (start && end) return `${start}–${end}`;
+    const raw = String(item?.time || '').trim();
+    if (!raw || raw === 'TBD') return '--:--';
+    if (/[–-]/.test(raw)) {
+        const parts = raw.split(/[–-]/).map((part) => part.trim()).filter(Boolean);
+        if (parts.length >= 2) return `${parts[0]}–${parts[1]}`;
+    }
+    return raw;
+}
+
+function buildStudentHeroAside(rawSchedule = [], facultyName = '') {
+    const sorted = sortScheduleItems(rawSchedule);
+    const next = sorted[0] || null;
+    const weekStart = typeof getCurrentWeekStartISO === 'function' ? getCurrentWeekStartISO() : '';
+    const weekLabel = typeof formatWeekRangeLabel === 'function' && weekStart
+        ? formatWeekRangeLabel(weekStart)
+        : 'this week';
+
+    if (!next) {
+        return {
+            kicker: 'Your next class',
+            chip: 'Quiet week',
+            headline: 'No sessions this week',
+            copy: `Nothing is scheduled for ${weekLabel} yet.`,
+            meta: { icon: 'fa-building', text: cleanupUiText(facultyName, 'Faculty') }
+        };
+    }
+
+    const dayLabel = cleanupUiText(next.day || 'Day TBD', 'Day TBD');
+    const roomLabel = cleanupUiText(next.room || 'Room TBD', 'Room TBD');
+    const groupLabel = cleanupUiText(next.groupName || next.groupId || 'Section', 'Section');
+
+    return {
+        kicker: 'Your next class',
+        chip: formatScheduleTimeRange(next),
+        headline: getSubjectLabel(next.courseId, next.courseName),
+        copy: `${dayLabel} · ${roomLabel} · ${groupLabel}`,
+        meta: { icon: 'fa-location-dot', text: roomLabel }
+    };
+}
+
+function buildFacultyHeroAside({ role, scheduleRows, rawSchedule, facultyName, sectionCount, studentCount }) {
+    const nextRaw = sortScheduleItems(rawSchedule)[0] || null;
+    const nextRow = scheduleRows[0] || null;
+    const kicker = role === 'ta' ? 'Section overview' : 'Teaching overview';
+
+    if (!nextRow && !nextRaw) {
+        return {
+            kicker,
+            chip: 'No session',
+            headline: 'No session assigned',
+            copy: 'Scheduled classes appear here as soon as the faculty timetable is available.',
+            meta: { icon: 'fa-building', text: cleanupUiText(facultyName, 'Faculty') }
+        };
+    }
+
+    const dayLabel = cleanupUiText(nextRaw?.day || 'Day TBD', 'Day TBD');
+    const roomLabel = cleanupUiText(nextRaw?.room || 'Room TBD', 'Room TBD');
+    const groupLabel = cleanupUiText(nextRaw?.groupName || nextRaw?.groupId || nextRaw?.name || 'Section', 'Section');
+    const headline = nextRow?.title || cleanupUiText(nextRaw?.subjectName || nextRaw?.courseId, 'Scheduled session');
+
+    return {
+        kicker,
+        chip: nextRaw ? formatScheduleTimeRange(nextRaw) : 'Next session',
+        headline,
+        copy: `${dayLabel} · ${roomLabel} · ${groupLabel}`,
+        meta: { icon: 'fa-building', text: cleanupUiText(facultyName, 'Faculty') }
+    };
+}
+
 function getOrdersSnapshot(user) {
     const orders = typeof getOrdersForUser === 'function' ? getOrdersForUser(user) : [];
     const unread = orders.filter((order) => typeof isOrderReadByUser === 'function' ? !isOrderReadByUser(order.id, user?.id) : false).length;
@@ -127,6 +200,25 @@ function getNotificationSnapshot(user) {
     return { items, unread };
 }
 
+function getNewsHomeSnapshotSafe() {
+    return typeof window.getNewsHomeSnapshot === 'function'
+        ? window.getNewsHomeSnapshot()
+        : { items: [], unread: 0, fetchedAt: 0 };
+}
+
+function buildNewsHomeQuickTile(unread = 0) {
+    const snapshot = getNewsHomeSnapshotSafe();
+    const topTitle = snapshot.items?.[0]?.title || 'Campus announcements';
+    return buildQuickTile(
+        'news',
+        'Campus News',
+        'fas fa-newspaper',
+        unread > 0 ? `${topTitle} and other official university updates.` : 'Official university announcements for your role and faculty.',
+        unread > 0 ? `${unread} new` : `${snapshot.items.length || 0} featured`,
+        unread > 0 ? 'Read new announcements' : 'Open news workspace',
+        deriveProgressFromCount(unread || snapshot.items.length, 18, 14));
+}
+
 function getRecentHomeUpdates(user, limit = 4) {
     const notifications = getNotificationSnapshot(user).items.map((item) => ({
         icon: item.source === 'social' ? 'fas fa-comments' : 'fas fa-bell',
@@ -140,7 +232,13 @@ function getRecentHomeUpdates(user, limit = 4) {
         copy: cleanupUiText(order.type || 'Official order published.', 'Official order published.'),
         when: formatRelativeTime(order.createdAt || order.createdDate)
     }));
-    return [...notifications, ...orders].slice(0, limit);
+    const newsItems = (getNewsHomeSnapshotSafe().items || []).map((post) => ({
+        icon: 'fas fa-newspaper',
+        title: cleanupUiText(post.title || 'University update', 'University update'),
+        copy: cleanupUiText(post.sectionLabel || 'Campus News', 'Campus News'),
+        when: formatRelativeTime(post.publishedAt || post.updatedAt || post.createdAt)
+    }));
+    return [...newsItems, ...notifications, ...orders].slice(0, limit);
 }
 
 function clampPercent(value, fallback = 0) {
@@ -153,8 +251,8 @@ function deriveProgressFromCount(count, base = 18, step = 16) {
     return clampPercent(base + Number(count || 0) * step, base);
 }
 
-function buildQuickTile(pageId, label, icon, copy, meta, status, progress, tone = 'default') {
-    return { pageId, label, icon, copy, meta, status, progress: clampPercent(progress), tone };
+function buildQuickTile(pageId, label, icon, copy, meta, status, progress) {
+    return { pageId, label, icon, copy, meta, status, progress: clampPercent(progress) };
 }
 
 function getMessengerSnapshot(user) {
@@ -227,51 +325,56 @@ function getRoleActions(role, context) {
 function getRoleShortcuts(role, context) {
     if (role === 'student') {
         return [
-            buildQuickTile('lms', 'LMS', 'fas fa-book-reader', 'Classes, assignments, materials, and live course updates.', `${context.unreadUpdates} updates`, context.unreadUpdates > 0 ? 'Check latest course activity' : 'All quiet for now', deriveProgressFromCount(context.unreadUpdates, 22, 15), 'warm'),
-            buildQuickTile('registration', 'Registration', 'fas fa-check-square', context.registrationOpen ? 'Registration is open for section, elective, and free-credit choices.' : 'Registration is closed. Review your current academic selections.', context.registrationOpen ? 'Open now' : 'Closed', context.registrationOpen ? 'Continue registration' : 'Review selections', context.registrationOpen ? 86 : 24, 'warm'),
-            buildQuickTile('timetable', 'Timetable', 'fas fa-chalkboard', context.nextClass ? `Next class: ${context.nextClass.title}.` : 'See your weekly teaching schedule, rooms, and times.', context.nextClass ? 'Live schedule' : 'Awaiting sections', context.nextClass ? 'Ready for the next block' : 'Choose sections first', context.nextClass ? 68 : 14, 'calm'),
-            buildQuickTile('study-card', 'Study Card', 'far fa-address-card', `${context.completedEcts} completed ECTS with transcript and progress records in one place.`, `${context.completedEcts} ECTS`, context.performanceLabel ? `${context.performanceLabel}: ${context.performanceValue}` : 'Academic record', context.progressPct, 'royal'),
-            buildQuickTile('orders', 'Orders', 'fas fa-book-open', `${formatCountLabel(context.ordersCount, 'official order')} available in your archive.`, `${context.ordersCount} total`, `${context.ordersUnread} unread`, deriveProgressFromCount(context.ordersCount, 16, 19), 'ink'),
-            buildQuickTile('student-service', 'Student Service', 'fas fa-headset', 'Support requests, guidance articles, and support.', `${context.supportCount} open`, 'Speak with Student Service', deriveProgressFromCount(context.supportCount, 14, 22), 'support')
+            buildQuickTile('lms', 'LMS', 'fas fa-book-reader', 'Classes, assignments, materials, and live course updates.', `${context.unreadUpdates} updates`, context.unreadUpdates > 0 ? 'Check latest course activity' : 'All quiet for now', deriveProgressFromCount(context.unreadUpdates, 22, 15)),
+            buildQuickTile('registration', 'Registration', 'fas fa-check-square', context.registrationOpen ? 'Registration is open for section, elective, and free-credit choices.' : 'Registration is closed. Review your current academic selections.', context.registrationOpen ? 'Open now' : 'Closed', context.registrationOpen ? 'Continue registration' : 'Review selections', context.registrationOpen ? 86 : 24),
+            buildQuickTile('timetable', 'Timetable', 'fas fa-chalkboard', context.nextClass ? `Next class: ${context.nextClass.title}.` : 'See your weekly teaching schedule, rooms, and times.', context.nextClass ? 'Live schedule' : 'Awaiting sections', context.nextClass ? 'Ready for the next block' : 'Choose sections first', context.nextClass ? 68 : 14),
+            buildQuickTile('study-card', 'Study Card', 'far fa-address-card', `${context.completedEcts} completed ECTS with transcript and progress records in one place.`, `${context.completedEcts} ECTS`, context.performanceLabel ? `${context.performanceLabel}: ${context.performanceValue}` : 'Academic record', context.progressPct),
+            buildQuickTile('orders', 'Orders', 'fas fa-book-open', `${formatCountLabel(context.ordersCount, 'official order')} available in your archive.`, `${context.ordersCount} total`, `${context.ordersUnread} unread`, deriveProgressFromCount(context.ordersCount, 16, 19)),
+            buildQuickTile('student-service', 'Student Service', 'fas fa-headset', 'Support requests, guidance articles, and support.', `${context.supportCount} open`, 'Speak with Student Service', deriveProgressFromCount(context.supportCount, 14, 22)),
+            buildNewsHomeQuickTile(context.newsUnread)
         ];
     }
     if (role === 'professor') {
         return [
-            buildQuickTile('timetable', 'Schedule', 'fas fa-calendar-week', context.nextFacultySession ? `Next session: ${context.nextFacultySession.title}.` : 'Review assigned classes, rooms, and timing.', `${context.sectionCount} sections`, 'Active schedule', deriveProgressFromCount(context.sectionCount, 32, 11), 'royal'),
-            buildQuickTile('lms', 'LMS', 'fas fa-book-reader', 'Materials, grading, submissions, and course communication.', `${context.studentCount} students`, 'Manage delivery', deriveProgressFromCount(context.studentCount, 20, 1.2), 'ink'),
-            buildQuickTile('exams', 'Exams', 'fas fa-file-signature', `${formatCountLabel(context.examCount, 'exam')} prepared for the active faculty profile.`, `${context.examCount} ready`, 'Assessments', deriveProgressFromCount(context.examCount, 18, 13), 'warm'),
-            buildQuickTile('orders', 'Orders', 'fas fa-book-open', `${formatCountLabel(context.ordersCount, 'order')} and notice in the faculty inbox.`, `${context.ordersCount} orders`, `${context.ordersUnread} unread`, deriveProgressFromCount(context.ordersCount, 18, 15), 'ink'),
-            buildQuickTile('social', 'Social', 'fas fa-comments', 'Follow announcements and faculty communication without leaving the shell.', `${context.unreadUpdates} updates`, 'Campus communication', deriveProgressFromCount(context.unreadUpdates, 18, 14), 'calm'),
-            buildQuickTile('chancellery', 'Appeals', 'fas fa-inbox', `${formatCountLabel(context.unreadUpdates, 'unread update')} across appeals, notices, and operational messages.`, 'Appeals', 'Review requests', deriveProgressFromCount(context.unreadUpdates, 24, 12), 'support')
+            buildQuickTile('timetable', 'Schedule', 'fas fa-calendar-week', context.nextFacultySession ? `Next session: ${context.nextFacultySession.title}.` : 'Review assigned classes, rooms, and timing.', `${context.sectionCount} sections`, 'Active schedule', deriveProgressFromCount(context.sectionCount, 32, 11)),
+            buildQuickTile('lms', 'LMS', 'fas fa-book-reader', 'Materials, grading, submissions, and course communication.', `${context.studentCount} students`, 'Manage delivery', deriveProgressFromCount(context.studentCount, 20, 1.2)),
+            buildQuickTile('exams', 'Exams', 'fas fa-file-signature', `${formatCountLabel(context.examCount, 'exam')} prepared for the active faculty profile.`, `${context.examCount} ready`, 'Assessments', deriveProgressFromCount(context.examCount, 18, 13)),
+            buildQuickTile('orders', 'Orders', 'fas fa-book-open', `${formatCountLabel(context.ordersCount, 'order')} and notice in the faculty inbox.`, `${context.ordersCount} orders`, `${context.ordersUnread} unread`, deriveProgressFromCount(context.ordersCount, 18, 15)),
+            buildQuickTile('social', 'Social', 'fas fa-comments', 'Follow announcements and faculty communication without leaving the shell.', `${context.unreadUpdates} updates`, 'Campus communication', deriveProgressFromCount(context.unreadUpdates, 18, 14)),
+            buildNewsHomeQuickTile(context.newsUnread),
+            buildQuickTile('chancellery', 'Appeals', 'fas fa-inbox', `${formatCountLabel(context.unreadUpdates, 'unread update')} across appeals, notices, and operational messages.`, 'Appeals', 'Review requests', deriveProgressFromCount(context.unreadUpdates, 24, 12))
         ];
     }
     if (role === 'ta') {
         return [
-            buildQuickTile('lms', 'LMS Sections', 'fas fa-book-reader', 'Support labs, discussions, attendance, and teaching materials.', `${context.studentCount} students`, 'Section support', deriveProgressFromCount(context.studentCount, 24, 1), 'support'),
-            buildQuickTile('timetable', 'Schedule', 'fas fa-calendar-week', context.nextFacultySession ? `Next support block: ${context.nextFacultySession.title}.` : 'Track section timing, rooms, and faculty coordination.', `${context.sectionCount} sections`, 'Active schedule', deriveProgressFromCount(context.sectionCount, 28, 12), 'calm'),
-            buildQuickTile('orders', 'Orders', 'fas fa-book-open', `${formatCountLabel(context.ordersCount, 'official order')} and notice in the support queue.`, `${context.ordersCount} orders`, `${context.ordersUnread} unread`, deriveProgressFromCount(context.ordersCount, 18, 16), 'ink'),
-            buildQuickTile('social', 'Social', 'fas fa-comments', 'Keep section communication and class coordination moving.', `${context.unreadUpdates} updates`, 'Reply to students', deriveProgressFromCount(context.unreadUpdates, 20, 14), 'royal'),
-            buildQuickTile('library', 'Library', 'fas fa-book', 'Reference material, reserve content, and campus resources.', 'Reserve access', 'Teaching resources', 38, 'calm'),
-            buildQuickTile('chancellery', 'Appeals', 'fas fa-inbox', `${formatCountLabel(context.unreadUpdates, 'unread update')} tied to teaching support and student follow-up.`, 'Follow-up', 'Track requests', deriveProgressFromCount(context.unreadUpdates, 16, 13), 'support')
+            buildQuickTile('lms', 'LMS Sections', 'fas fa-book-reader', 'Support labs, discussions, attendance, and teaching materials.', `${context.studentCount} students`, 'Section support', deriveProgressFromCount(context.studentCount, 24, 1)),
+            buildQuickTile('timetable', 'Schedule', 'fas fa-calendar-week', context.nextFacultySession ? `Next support block: ${context.nextFacultySession.title}.` : 'Track section timing, rooms, and faculty coordination.', `${context.sectionCount} sections`, 'Active schedule', deriveProgressFromCount(context.sectionCount, 28, 12)),
+            buildQuickTile('orders', 'Orders', 'fas fa-book-open', `${formatCountLabel(context.ordersCount, 'official order')} and notice in the support queue.`, `${context.ordersCount} orders`, `${context.ordersUnread} unread`, deriveProgressFromCount(context.ordersCount, 18, 16)),
+            buildQuickTile('social', 'Social', 'fas fa-comments', 'Keep section communication and class coordination moving.', `${context.unreadUpdates} updates`, 'Reply to students', deriveProgressFromCount(context.unreadUpdates, 20, 14)),
+            buildQuickTile('library', 'Library', 'fas fa-book', 'Reference material, reserve content, and campus resources.', 'Reserve access', 'Teaching resources', 38),
+            buildNewsHomeQuickTile(context.newsUnread),
+            buildQuickTile('chancellery', 'Appeals', 'fas fa-inbox', `${formatCountLabel(context.unreadUpdates, 'unread update')} tied to teaching support and student follow-up.`, 'Follow-up', 'Track requests', deriveProgressFromCount(context.unreadUpdates, 16, 13))
         ];
     }
     if (role === 'student_service') {
         return [
-            buildQuickTile('student-service', 'Service Inbox', 'fas fa-inbox', `${formatCountLabel(context.openTickets, 'active ticket')} currently needs follow-up.`, `${context.openTickets} live`, 'Resolve service cases', deriveProgressFromCount(context.openTickets, 24, 14), 'support'),
-            buildQuickTile('orders', 'Orders', 'fas fa-book-open', `${formatCountLabel(context.ordersCount, 'order')} and decision waiting in the service workspace.`, `${context.ordersCount} orders`, `${context.ordersUnread} unread`, deriveProgressFromCount(context.ordersCount, 18, 16), 'ink'),
-            buildQuickTile('library', 'Library', 'fas fa-book', 'Reference support, circulation help, and knowledge requests.', `${context.articleCount} articles`, 'Knowledge base', deriveProgressFromCount(context.articleCount, 22, 11), 'calm'),
-            buildQuickTile('social', 'Social', 'fas fa-comments', 'Watch public updates and common student questions.', `${context.unreadUpdates} updates`, 'Updates', deriveProgressFromCount(context.unreadUpdates, 18, 14), 'royal'),
-            buildQuickTile('profile', 'Profile', 'far fa-user', 'Keep service account identity, access details, and shell settings aligned.', 'Account', 'Settings', 42, 'warm'),
-            buildQuickTile('chancellery', 'Campus Requests', 'fas fa-desktop', `${formatCountLabel(context.unreadUpdates, 'unread update')} across service communication and notices.`, 'Escalations', 'Route requests', deriveProgressFromCount(context.unreadUpdates, 18, 12), 'support')
+            buildQuickTile('student-service', 'Service Inbox', 'fas fa-inbox', `${formatCountLabel(context.openTickets, 'active ticket')} currently needs follow-up.`, `${context.openTickets} live`, 'Resolve service cases', deriveProgressFromCount(context.openTickets, 24, 14)),
+            buildQuickTile('orders', 'Orders', 'fas fa-book-open', `${formatCountLabel(context.ordersCount, 'order')} and decision waiting in the service workspace.`, `${context.ordersCount} orders`, `${context.ordersUnread} unread`, deriveProgressFromCount(context.ordersCount, 18, 16)),
+            buildQuickTile('library', 'Library', 'fas fa-book', 'Reference support, circulation help, and knowledge requests.', `${context.articleCount} articles`, 'Knowledge base', deriveProgressFromCount(context.articleCount, 22, 11)),
+            buildQuickTile('social', 'Social', 'fas fa-comments', 'Watch public updates and common student questions.', `${context.unreadUpdates} updates`, 'Updates', deriveProgressFromCount(context.unreadUpdates, 18, 14)),
+            buildQuickTile('profile', 'Profile', 'far fa-user', 'Keep service account identity, access details, and shell settings aligned.', 'Account', 'Settings', 42),
+            buildNewsHomeQuickTile(context.newsUnread),
+            buildQuickTile('chancellery', 'Campus Requests', 'fas fa-desktop', `${formatCountLabel(context.unreadUpdates, 'unread update')} across service communication and notices.`, 'Escalations', 'Route requests', deriveProgressFromCount(context.unreadUpdates, 18, 12))
         ];
     }
     return [
-        buildQuickTile('admin-scheduler', 'Scheduler', 'fas fa-calendar-plus', 'Coordinate rooms, weeks, and course distribution from the master schedule.', `${context.studentCount} students`, 'Master schedule', deriveProgressFromCount(context.studentCount, 20, 0.6), 'royal'),
-        buildQuickTile('staff', 'Staff', 'fas fa-users-cog', `${formatCountLabel(context.staffCount, 'staff account')} in the current faculty network.`, `${context.staffCount} staff`, 'Staff records', deriveProgressFromCount(context.staffCount, 18, 10), 'ink'),
-        buildQuickTile('students-admin', 'Students', 'fas fa-user-graduate', `${formatCountLabel(context.studentCount, 'student')} in the active faculty profile.`, `${context.studentCount} students`, 'Student records', deriveProgressFromCount(context.studentCount, 18, 0.8), 'warm'),
-        buildQuickTile('exams', 'Exams', 'fas fa-file-signature', `${formatCountLabel(context.examCount, 'exam')} and assessment package available for review.`, `${context.examCount} exams`, 'Assessments', deriveProgressFromCount(context.examCount, 18, 14), 'royal'),
-        buildQuickTile('admin-tools', 'Admin Tools', 'fas fa-layer-group', 'Curriculum, accounts, and registration management.', 'Admin tools', 'Open builders', 84, 'support'),
-        buildQuickTile('orders', 'Orders', 'fas fa-book-open', `${formatCountLabel(context.ordersCount, 'faculty order')} ready for operational follow-up.`, `${context.ordersCount} orders`, 'Orders', deriveProgressFromCount(context.ordersCount, 18, 15), 'ink')
+        buildQuickTile('admin-scheduler', 'Scheduler', 'fas fa-calendar-plus', 'Coordinate rooms, weeks, and course distribution from the master schedule.', `${context.studentCount} students`, 'Master schedule', deriveProgressFromCount(context.studentCount, 20, 0.6)),
+        buildQuickTile('staff', 'Staff', 'fas fa-users-cog', `${formatCountLabel(context.staffCount, 'staff account')} in the current faculty network.`, `${context.staffCount} staff`, 'Staff records', deriveProgressFromCount(context.staffCount, 18, 10)),
+        buildQuickTile('students-admin', 'Students', 'fas fa-user-graduate', `${formatCountLabel(context.studentCount, 'student')} in the active faculty profile.`, `${context.studentCount} students`, 'Student records', deriveProgressFromCount(context.studentCount, 18, 0.8)),
+        buildQuickTile('exams', 'Exams', 'fas fa-file-signature', `${formatCountLabel(context.examCount, 'exam')} and assessment package available for review.`, `${context.examCount} exams`, 'Assessments', deriveProgressFromCount(context.examCount, 18, 14)),
+        buildQuickTile('admin-tools', 'Admin Tools', 'fas fa-layer-group', 'Curriculum, accounts, and registration management.', 'Admin tools', 'Open builders', 84),
+        buildNewsHomeQuickTile(context.newsUnread),
+        buildQuickTile('orders', 'Orders', 'fas fa-book-open', `${formatCountLabel(context.ordersCount, 'faculty order')} ready for operational follow-up.`, `${context.ordersCount} orders`, 'Orders', deriveProgressFromCount(context.ordersCount, 18, 15))
     ];
 }
 
@@ -283,6 +386,7 @@ function buildHomeModel(role) {
     const termLabel = getTermLabel();
     const notifications = getNotificationSnapshot(user);
     const orders = getOrdersSnapshot(user);
+    const newsSnapshot = getNewsHomeSnapshotSafe();
     const updates = getRecentHomeUpdates(user, 4);
 
     if (role === 'student') {
@@ -290,6 +394,7 @@ function buildHomeModel(role) {
         const balance = typeof getEffectiveTuitionBalance === 'function' ? getEffectiveTuitionBalance(user.id) : 0;
         const performance = getStudentPerformanceMetric(user);
         const completed = typeof getStudentCompletedEctsTotal === 'function' ? getStudentCompletedEctsTotal(user.id, facultyCode) : 0;
+        const rawSchedule = typeof getCurrentStudentSchedule === 'function' ? getCurrentStudentSchedule() : [];
         const scheduleRows = getStudentScheduleRows(user);
         const nextClass = scheduleRows[0];
         const progressTarget = Math.max(semester * 30, 30);
@@ -310,6 +415,7 @@ function buildHomeModel(role) {
             ordersCount: orders.orders.length,
             ordersUnread: orders.unread,
             unreadUpdates: notifications.unread,
+            newsUnread: newsSnapshot.unread,
             supportCount
         });
         const actions = getRoleActions(role, { registrationOpen: Boolean(KIU_STATE.registrationOpen) });
@@ -322,15 +428,7 @@ function buildHomeModel(role) {
             stats,
             actions,
             quick,
-            heroAside: {
-                title: 'Semester Overview',
-                copy: 'Your schedule and academic status for today.',
-                rows: [
-                    { label: 'Next class', value: nextClass?.title || 'No class scheduled', detail: nextClass?.copy || 'Your timetable will surface here once sections are assigned.' },
-                    { label: 'Registration', value: KIU_STATE.registrationOpen ? 'Open' : 'Closed', detail: KIU_STATE.registrationOpen ? 'Continue sections, electives, and free-credit choices.' : 'Review what is already locked for this term.' },
-                    { label: 'Balance', value: balance > 0 ? `${balance} GEL` : 'Clear', detail: balance > 0 ? 'A finance hold can limit access until it is resolved.' : 'Finance access is clear for the active term.' }
-                ]
-            },
+            heroAside: buildStudentHeroAside(rawSchedule, facultyName),
             alert: balance > 0 ? {
                 tone: 'warm',
                 icon: 'fas fa-credit-card',
@@ -375,6 +473,7 @@ function buildHomeModel(role) {
             ordersCount: orders.orders.length,
             ordersUnread: orders.unread,
             unreadUpdates: notifications.unread,
+            newsUnread: newsSnapshot.unread,
             examCount
         });
         const actions = getRoleActions(role, {});
@@ -389,15 +488,14 @@ function buildHomeModel(role) {
             stats,
             actions,
             quick,
-            heroAside: {
-                title: role === 'ta' ? 'Section Overview' : 'Teaching Overview',
-                copy: role === 'ta' ? 'Attendance and support status for the current faculty.' : 'Schedule, assessments, and communications for the current faculty.',
-                rows: [
-                    { label: 'Next session', value: scheduleRows[0]?.title || 'No session assigned', detail: scheduleRows[0]?.copy || 'Scheduled classes appear here as soon as the faculty timetable is available.' },
-                    { label: 'Sections', value: String(sectionCount), detail: role === 'ta' ? 'Support blocks and labs in the current faculty profile.' : 'Assigned lectures, seminars, or workshops in the current faculty profile.' },
-                    { label: 'Students', value: String(studentCount), detail: role === 'ta' ? 'Students tied to your support and lab workload.' : 'Students currently attached to your teaching load.' }
-                ]
-            },
+            heroAside: buildFacultyHeroAside({
+                role,
+                scheduleRows,
+                rawSchedule: facultySchedule,
+                facultyName,
+                sectionCount,
+                studentCount
+            }),
             alert: {
                 tone: role === 'ta' ? 'support' : 'royal',
                 icon: notifications.unread > 0 ? 'fas fa-bell' : 'fas fa-calendar-check',
@@ -434,6 +532,7 @@ function buildHomeModel(role) {
             ordersCount: orders.orders.length,
             ordersUnread: orders.unread,
             unreadUpdates: notifications.unread,
+            newsUnread: newsSnapshot.unread,
             articleCount: articles.length
         });
         const actions = getRoleActions(role, {});
@@ -447,13 +546,13 @@ function buildHomeModel(role) {
             actions,
             quick,
             heroAside: {
-                title: 'Queue Overview',
-                copy: 'Open tickets and knowledge base for the current faculty.',
-                rows: [
-                    { label: 'Open tickets', value: String(openTickets.length), detail: `${waitingForService} waiting for service and ${waitingForStudent} waiting for student response.` },
-                    { label: 'Knowledge base', value: String(articles.length), detail: 'Guidance articles available to reduce repeat support effort.' },
-                    { label: 'Orders', value: String(orders.orders.length), detail: `${orders.unread} unread order${orders.unread === 1 ? '' : 's'} still need review.` }
-                ]
+                kicker: 'Service queue',
+                chip: openTickets.length > 0 ? `${openTickets.length} open` : 'Clear queue',
+                headline: openTickets.length > 0 ? `${openTickets.length} open tickets` : 'Queue is clear',
+                copy: openTickets.length > 0
+                    ? `${waitingForService} waiting for service and ${waitingForStudent} waiting for student response.`
+                    : 'There are no unresolved service tickets demanding action right now.',
+                meta: { icon: openTickets.length ? 'fa-headset' : 'fa-circle-check', text: cleanupUiText(facultyName, 'Faculty') }
             },
             alert: {
                 tone: 'support',
@@ -468,7 +567,7 @@ function buildHomeModel(role) {
             updates: { title: 'Recent changes', copy: 'Recent activity across the service desk.', rows: updates.map((item) => [item.title, item.when]) },
             columns: [
                 { title: 'Open tickets', meta: 'Queue', rows: openTickets.length ? openTickets.slice(0, 4).map((ticket) => ({ icon: 'fas fa-inbox', title: cleanupUiText(ticket.subject || ticket.category || ticket.title, 'Student request'), copy: `${cleanupUiText(ticket.status, 'Open')} - ${cleanupUiText(ticket.priority || 'Standard', 'Standard')}` })) : [{ icon: 'fas fa-inbox', title: 'No open tickets', copy: 'Open the service inbox to review resolved history or wait for new cases.' }] },
-                { title: 'Knowledge & guidance', meta: articles.length ? 'Articles' : 'None', rows: articles.length ? articles.slice(0, 4).map((article) => ({ icon: 'fas fa-book-open', title: cleanupUiText(article.title, 'Knowledge article'), copy: cleanupUiText(article.category || article.audience || 'Student guidance', 'Student guidance') })) : [{ icon: 'fas fa-book-open', title: 'No guidance articles yet', copy: 'Publish service articles in the knowledge base when this faculty needs reusable guidance.' }] },
+                { title: 'Knowledge & guidance', meta: articles.length ? 'Articles' : 'None', rows: articles.length ? articles.slice(0, 4).map((article) => ({ icon: 'fas fa-book-open', title: cleanupUiText(article.title, 'Knowledge article'), copy: cleanupUiText(article.summary || 'Guidance article', 'Guidance article') })) : [{ icon: 'fas fa-book-open', title: 'No guidance articles yet', copy: 'Publish service articles in the knowledge base when this faculty needs reusable guidance.' }] },
                 { title: 'Recent updates', meta: notifications.unread > 0 ? 'Unread' : 'Inbox', rows: updates.length ? updates : [{ icon: 'fas fa-bell', title: 'No new updates', copy: 'Service notifications and orders will appear here.' }] }
             ]
         };
@@ -490,7 +589,8 @@ function buildHomeModel(role) {
         examCount: exams.length,
         ordersCount: facultyOrders.length,
         ordersUnread: facultyOrders.length,
-        unreadUpdates: notifications.unread
+        unreadUpdates: notifications.unread,
+        newsUnread: newsSnapshot.unread
     });
     const actions = getRoleActions(role, {});
     return {
@@ -503,13 +603,11 @@ function buildHomeModel(role) {
         actions,
         quick,
         heroAside: {
-            title: 'Faculty Overview',
-            copy: 'Faculty systems and resource overview.',
-            rows: [
-                { label: 'Curriculum', value: String(curriculum.length), detail: 'Curriculum items available in the active faculty profile.' },
-                { label: 'Students', value: String(students.length), detail: 'Students linked to this faculty environment.' },
-                { label: 'Exams', value: String(exams.length), detail: 'Assessment packages and exam records in scope.' }
-            ]
+            kicker: 'Faculty overview',
+            chip: `${students.length} students`,
+            headline: `${students.length} students`,
+            copy: `${curriculum.length} curriculum modules and ${exams.length} exams in the active faculty profile.`,
+            meta: { icon: 'fa-layer-group', text: cleanupUiText(facultyName, 'Faculty') }
         },
         alert: {
             tone: 'royal',
@@ -594,5 +692,6 @@ Object.assign(window, {
     getRoleActions,
     getRoleShortcuts,
     buildHomeModel,
-    buildHomeContext
+    buildHomeContext,
+    clampPercent
 });

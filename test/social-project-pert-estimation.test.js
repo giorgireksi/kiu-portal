@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createRequire } from 'module';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
 const require = createRequire(import.meta.url);
@@ -76,11 +76,17 @@ describe('social project PERT estimation', () => {
 
     it('exposes PERT helpers and fields in the client stack', () => {
         const page = readSource('assets/js/pages/social-page.js');
+        const workspace = readSource('assets/js/pages/social-workspace.js');
+        const scheduleModel = readSource('assets/js/pages/social-workspace-schedule-model.js');
         const runtime = readSource('assets/js/shared/social-runtime-lite.js');
         const service = readSource('backend/platform/domains/social-projects-service.js');
 
-        expect(page).toContain("createSocialWorkspaceStub('computePertExpected'");
-        expect((page + readSource('assets/js/pages/social-workspace.js'))).toContain('name="projectTaskTimeOptimistic"');
+        expect(page).toContain("'computePertExpected'");
+        expect(page).toContain('createSocialWorkspaceStub');
+        expect(page).toContain('social-workspace-schedule-model.js');
+        expect(scheduleModel).toContain('function computePertExpected(');
+        expect(workspace).toContain('KiuSocialWorkspaceScheduleModel');
+        expect((page + workspace)).toContain('name="projectTaskTimeOptimistic"');
         expect(page).not.toContain('name="projectTaskRiskTimeImpact"');
         expect(page).not.toContain('function taskHasQuantifiedRisk(');
         expect(runtime).toMatch(/createProjectTask[\s\S]*?timeOptimistic:/);

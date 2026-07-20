@@ -314,23 +314,29 @@ const qualityProfiles = {
     tinyColumns: 88,
     tinyRows: 44,
     tinyLayers: 1,
-    maxDpr: 1.25,
+    maxDpr: 2,
+    supersample: 1.15,
     fps: 45,
     tinyFps: 28,
     pointScale: 1.1,
     alphaBoost: 1.16,
   },
   high: {
-    columns: 238,
-    rows: 112,
-    layers: 3,
+    // Denser, richer, higher-fidelity field.
+    columns: 372,
+    rows: 176,
+    layers: 4,
     mobileColumns: 158,
     mobileRows: 76,
     mobileLayers: 2,
     tinyColumns: 104,
     tinyRows: 52,
     tinyLayers: 1,
-    maxDpr: 1.5,
+    // Max quality: supersample 1.85x ABOVE native (getRenderPixelRatio), capped
+    // at total ratio 3.7. On a DPR-2 display this renders a ~3.7x buffer and
+    // downsamples — the cleanest possible edges, zero crawl/shimmer.
+    maxDpr: 3.7,
+    supersample: 1.85,
     fps: 60,
     tinyFps: 30,
     pointScale: 1,
@@ -346,7 +352,10 @@ function buildLuxuryParticleEngine() {
 
   renderer = new THREE.WebGLRenderer({
     canvas,
-    antialias: false,
+    // Antialiasing ON: the GPU-saving `false` left particle edges jagged, so
+    // they crawled/shimmered as they moved — the "low quality flickering"
+    // seen through the glass. MSAA smooths the edges so motion is clean.
+    antialias: true,
     alpha: false,
     powerPreference: "high-performance",
   });
@@ -437,7 +446,11 @@ function buildLuxuryParticleEngine() {
 
     void main() {
       vec2 uv = gl_PointCoord - vec2(0.5);
-      float dotShape = smoothstep(0.25, 0.0064, dot(uv, uv));
+      // Fully soft radial falloff (no hard center core). A hard-cored dot
+      // strobes as it moves sub-pixel; a smooth soft dot is anti-aliased, so
+      // motion reads as clean glass instead of flickering pixels — without
+      // adding any backdrop blur (transparency preserved).
+      float dotShape = smoothstep(0.25, 0.0, dot(uv, uv));
       vec3 color = mix(uColorB, uColorA, vMix);
       color = mix(color, uHaze, vMist * 0.62);
       gl_FragColor = vec4(color, max(vAlpha * dotShape, uAlphaFloor * dotShape));
@@ -598,6 +611,25 @@ function disposeLuxuryParticleBackground() {
   renderer.dispose();
   engineReady = false;
   renderer = null;
+}
+
+/** Lightweight WebGL probe for orchestrator / fog (no Three init). */
+function probeWebGlAvailable() {
+  try {
+    if (window.__kiuWebGlUnavailable === true) return false;
+    if (window.__kiuLuxuryParticleBackgroundUnavailable === true) return false;
+    const canvas = document.createElement("canvas");
+    const gl =
+      canvas.getContext("webgl2", { failIfMajorPerformanceCaveat: false }) ||
+      canvas.getContext("webgl", { failIfMajorPerformanceCaveat: false }) ||
+      canvas.getContext("experimental-webgl", { failIfMajorPerformanceCaveat: false });
+    if (!gl) return false;
+    const lose = gl.getExtension?.("WEBGL_lose_context");
+    lose?.loseContext?.();
+    return true;
+  } catch (_error) {
+    return false;
+  }
 }
 
 function createWaveGeometry(quality, variantName) {
@@ -1215,8 +1247,15 @@ function detectQualityProfile() {
 
 function getRenderPixelRatio(quality) {
   const isTiny = window.innerWidth < 480;
-  const maxDpr = isTiny ? 1 : quality.maxDpr;
-  return Math.min(window.devicePixelRatio || 1, maxDpr);
+  const dpr = window.devicePixelRatio || 1;
+  if (isTiny) return Math.min(dpr, 1);
+  // Supersample: render the canvas ABOVE native display resolution, then let
+  // the browser downsample it. This is the highest-quality anti-aliasing
+  // possible for the moving particle field — edges become dead-smooth, so
+  // there is no crawl/shimmer. maxDpr caps the total ratio to keep the GPU
+  // sane. On a DPR-2 display, high renders at 3x (4320-wide buffer).
+  const supersample = quality.supersample || 1;
+  return Math.min(dpr * supersample, quality.maxDpr);
 }
 
 function setQuality(quality, forceRebuild = false) {
@@ -1378,7 +1417,15 @@ function render() {
 window.__kiuInitLuxuryParticleBackground = initLuxuryParticleBackground;
 window.__kiuRefreshLuxuryBackground = refreshLuxuryParticleBackground;
 window.__kiuDisposeLuxuryParticleBackground = disposeLuxuryParticleBackground;
+window.__kiuProbeWebGlAvailable = probeWebGlAvailable;
 window.__kiuApplyLmsParticleTheme = applyLmsParticleTheme;
+
+export {
+  initLuxuryParticleBackground,
+  refreshLuxuryParticleBackground,
+  disposeLuxuryParticleBackground,
+  probeWebGlAvailable,
+};
 
 function scheduleParticleBackgroundSelfInit(attempt = 0) {
   if (engineReady) return;

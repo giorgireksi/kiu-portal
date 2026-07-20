@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
 function readSource(relativePath) {
@@ -46,7 +46,7 @@ describe('admin-tools redirect guard', () => {
     it('uses authenticated admin role for home navigation from admin-tools', () => {
         const navigation = readSource('assets/js/features/navigation.js');
         expect(navigation).toContain('function getNavigationAuthRole()');
-        expect(navigation).toContain('getRoleHomePage(USER_ROLES.ADMIN)');
+        expect(navigation).toContain('getRoleHomePage(effectiveRole)');
         expect(navigation).toContain('isStandaloneAdminWorkspaceEntry() && getNavigationAuthRole() === USER_ROLES.ADMIN');
     });
 
@@ -68,6 +68,6 @@ describe('admin-tools redirect guard', () => {
         const luxury = readSource('assets/js/features/index-luxury.js');
         expect(luxury).toContain('lux-route-admin-tools');
         expect(luxury).toContain('__luxAdminToolsSyncAllAt');
-        expect(luxury).toMatch(/if \(!onAdminToolsRoute\) \{\s*\n\s*queueLegacyVisualRefresh/);
+        expect(luxury).toMatch(/if \(!onAdminToolsRoute && !onLmsRoute\) \{\s*\n\s*queueLegacyVisualRefresh/);
     });
 });

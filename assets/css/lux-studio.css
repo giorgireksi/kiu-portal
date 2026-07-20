@@ -1,0 +1,85 @@
+.lux-studio-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  background: rgba(7, 9, 16, 0.42);
+  backdrop-filter: blur(10px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+.lux-studio-backdrop.is-open { opacity: 1; pointer-events: auto; }
+.lux-studio-panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(420px, 100vw);
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(180deg, rgba(14, 19, 31, 0.98), rgba(10, 14, 23, 0.98));
+  border-left: 1px solid var(--lux-border);
+  box-shadow: -18px 0 50px rgba(0, 0, 0, 0.36);
+  transform: translateX(100%);
+  transition: transform 0.24s ease;
+}
+.lux-studio-backdrop.is-open .lux-studio-panel { transform: translateX(0); }
+.lux-studio-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 22px 22px 18px;
+  border-bottom: 1px solid var(--lux-border);
+}
+.lux-studio-title { font-family: 'Playfair Display', Georgia, serif; font-size: 26px; color: var(--lux-text); }
+.lux-studio-sub {
+  margin-top: 5px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--lux-text-muted);
+}
+.lux-studio-close {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  border: 1px solid var(--lux-border);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--lux-text-muted);
+  cursor: pointer;
+}
+.lux-studio-close:hover { color: var(--lux-text); border-color: var(--lux-border-strong); }
+.lux-studio-body {
+  flex: 1;
+  overflow: auto;
+  padding: 18px 22px 24px;
+  display: grid;
+  gap: 18px;
+}
+.lux-studio-section {
+  padding: 16px;
+  border-radius: 18px;
+  border: 1px solid var(--lux-border);
+  background: rgba(255, 255, 255, 0.03);
+}
+.lux-studio-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--lux-text-soft);
+  margin-bottom: 12px;
+}
+body.lux-light-mode .lux-studio-backdrop { background: rgba(229, 220, 208, 0.34); backdrop-filter: blur(14px) saturate(118%); }
+body.lux-light-mode .lux-studio-panel {
+  background: linear-gradient(180deg, rgba(255, 251, 246, 0.94), rgba(244, 236, 226, 0.88));
+  border-left: 1px solid rgba(86, 62, 36, 0.12);
+  box-shadow: -22px 0 60px rgba(87, 63, 38, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.76);
+}
+body.lux-light-mode .lux-studio-head { border-bottom: 1px solid rgba(86, 62, 36, 0.1); }
+body.lux-light-mode .lux-studio-section {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.58), rgba(248, 241, 233, 0.4));
+  border: 1px solid rgba(86, 62, 36, 0.1);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.74);
+}
+body.lux-studio-open #lux-studio-backdrop { z-index: 2000 !important; }

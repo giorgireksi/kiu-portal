@@ -66,7 +66,7 @@ function renderLmsLiveRosterPanel(resourceKey, session = null) {
         ? 'No students are enrolled in this LMS group yet. Assign the group roster before going live.'
         : `${stats.joinedCount} of ${stats.rosterCount} roster students are in this session${serverSuffix}.`;
     const seedButton = typeof isActualAdminLmsLiveQuizSession === 'function' && isActualAdminLmsLiveQuizSession()
-        ? `<button type="button" class="kiu-btn-outline lms-live-import-btn-mt-10" data-lms-click="seedLmsLiveQuizRoster(${lmsInlineArg(resourceKey)})"><i class="fas fa-user-plus"></i> Seed roster for testing</button>`
+        ? `<button type="button" class="lux-secondary-btn lms-live-import-btn-mt-10" data-lms-click="seedLmsLiveQuizRoster(${lmsInlineArg(resourceKey)})"><i class="fas fa-user-plus"></i> Seed roster for testing</button>`
         : '';
     return `
         <div class="lms-live-card">
@@ -87,152 +87,6 @@ function renderLmsLiveParticipantPill(resourceKey, session = null) {
     return `<span class="lms-live-pill"><i class="fas fa-user-group"></i> ${escapeHtml(label)}</span>`;
 }
 
-function getLmsLiveStudentId() {
-    const resourceKey = arguments.length ? arguments[0] : currentCourseId;
-    return getLmsLiveStudentMeta(resourceKey).id;
-}
-
-function canManageLmsLiveQuiz(resourceKey = currentCourseId) {
-    const canonicalKey = resolveCanonicalLmsResourceKey(resourceKey);
-    const workspace = canonicalKey ? ensureLmsLiveQuizWorkspace(canonicalKey) : null;
-    if (workspace?.ui?.accessDenied) {
-        if (typeof canAccessLmsLiveQuizScope === 'function' && canAccessLmsLiveQuizScope(canonicalKey || resourceKey)) {
-            workspace.ui.accessDenied = false;
-            workspace.ui.syncError = '';
-        } else {
-            return false;
-        }
-    }
-    if (typeof isActualAdminLmsLiveQuizSession === 'function' && isActualAdminLmsLiveQuizSession()) {
-        return true;
-    }
-    const role = getEffectiveUserRole();
-    if (![USER_ROLES.ADMIN, USER_ROLES.PROFESSOR, USER_ROLES.TA].includes(role)) {
-        return false;
-    }
-    const hasScopeAccess = typeof canAccessLmsLiveQuizScope === 'function'
-        ? canAccessLmsLiveQuizScope(canonicalKey || resourceKey)
-        : false;
-    if (!hasScopeAccess) return false;
-    const parsed = parseLmsCourseKey(canonicalKey || resourceKey);
-    if (typeof canManageLmsClassSection === 'function'
-        && !canManageLmsClassSection(parsed.sectionType || getCurrentLmsSectionType())) {
-        return hasScopeAccess;
-    }
-    return true;
-}
-
-function notifyLmsLiveStaffGuard(message = '') {
-    const text = String(message || '').trim();
-    if (!text) return;
-    alert(text);
-}
-
-function getLmsLiveStaffActionAvailability(question = null, session = null) {
-    const state = String(question?.state || 'draft').toLowerCase();
-    const questionCount = Array.isArray(session?.questions) ? session.questions.length : 0;
-    const currentIndex = Math.min(Math.max(0, Number(session?.currentQuestionIndex || 0)), Math.max(0, questionCount - 1));
-    return {
-        show: {
-            enabled: Boolean(question),
-            active: state === 'showing',
-            hint: question ? '' : 'Select a question first.'
-        },
-        pause: {
-            enabled: state === 'showing',
-            active: false,
-            hint: 'Pause only works while the question is showing.'
-        },
-        resume: {
-            enabled: state === 'paused',
-            active: state === 'paused',
-            hint: 'Resume only works while the question is paused.'
-        },
-        lock: {
-            enabled: ['showing', 'paused'].includes(state),
-            active: state === 'locked',
-            hint: 'Lock only works while the question is showing or paused.'
-        },
-        reveal: {
-            enabled: ['showing', 'paused', 'locked', 'revealed'].includes(state),
-            active: state === 'revealed',
-            hint: 'Reveal only works after the question has been shown.'
-        },
-        results: {
-            enabled: Boolean(session),
-            active: Boolean(session?.showResults),
-            hint: session ? '' : 'Start a session first.'
-        },
-        prev: {
-            enabled: questionCount > 0 && currentIndex > 0,
-            active: false,
-            hint: 'Already on the first question.'
-        },
-        next: {
-            enabled: questionCount > 0 && currentIndex < questionCount - 1,
-            active: false,
-            hint: 'Already on the last question.'
-        }
-    };
-}
-
-function renderLmsLiveStaffActionButton(actionKey, availability, label, iconClass, clickHandler, primary = false) {
-    const action = availability?.[actionKey] || { enabled: true, active: false, hint: '' };
-    const buttonClass = `${primary ? 'kiu-btn-blue' : 'kiu-btn-outline'}${action.active ? ' is-active' : ''}`;
-    const disabledAttrs = action.enabled ? '' : ' disabled aria-disabled="true"';
-    const titleAttr = action.hint ? ` title="${escapeHtml(action.hint)}"` : '';
-    return `<button type="button" class="${buttonClass}"${disabledAttrs}${titleAttr} data-lms-click="${clickHandler}"><i class="${escapeHtml(iconClass)}"></i> ${escapeHtml(label)}</button>`;
-}
-
-function prepareLmsLiveQuizImpersonation(resourceKey = currentCourseId) {
-    const canonicalKey = typeof resolveCanonicalLmsResourceKey === 'function'
-        ? resolveCanonicalLmsResourceKey(resourceKey)
-        : String(resourceKey || '').trim();
-    const role = typeof getEffectiveUserRole === 'function'
-        ? String(getEffectiveUserRole() || '').trim().toLowerCase()
-        : '';
-    if (typeof isAdminImpersonationMode !== 'function' || !isAdminImpersonationMode()) {
-        return Promise.resolve(null);
-    }
-    const syncRole = role === USER_ROLES.STUDENT
-        ? USER_ROLES.STUDENT
-        : ([USER_ROLES.PROFESSOR, USER_ROLES.TA].includes(role) ? role : '');
-    if (!syncRole || typeof syncPortalBackendImpersonation !== 'function') {
-        return Promise.resolve(null);
-    }
-    if (syncRole === USER_ROLES.STUDENT && typeof syncLmsImpersonatedStudentSession === 'function') {
-        syncLmsImpersonatedStudentSession(canonicalKey || resourceKey);
-    }
-    if (typeof window === 'undefined') {
-        return Promise.resolve(syncPortalBackendImpersonation(syncRole)).catch(() => null);
-    }
-    window.__lmsLiveQuizImpersonationSyncs = window.__lmsLiveQuizImpersonationSyncs || {};
-    const syncKey = `${canonicalKey || String(resourceKey || '').trim() || 'live-quiz'}::${syncRole}`;
-    const existing = window.__lmsLiveQuizImpersonationSyncs[syncKey];
-    if (existing) return existing;
-    const syncPromise = Promise.resolve(syncPortalBackendImpersonation(syncRole))
-        .catch(() => null)
-        .finally(() => {
-            if (window.__lmsLiveQuizImpersonationSyncs?.[syncKey] === syncPromise) {
-                delete window.__lmsLiveQuizImpersonationSyncs[syncKey];
-            }
-        });
-    window.__lmsLiveQuizImpersonationSyncs[syncKey] = syncPromise;
-    return syncPromise;
-}
-
-function refreshStaffLmsLiveQuizUi(resourceKey, options = {}) {
-    if (typeof refreshLmsLiveQuizUi === 'function') {
-        refreshLmsLiveQuizUi(resourceKey, {
-            skipLoad: true,
-            forceStructuralRender: true,
-            ...options
-        });
-        return;
-    }
-    renderLmsLiveQuizSection(resourceKey, { skipLoad: true, ...options });
-}
-
 function syncStaffLmsLiveQuizControl(resourceKey, reason = 'live-quiz') {
     const canonicalKey = typeof resolveCanonicalLmsResourceKey === 'function'
         ? resolveCanonicalLmsResourceKey(resourceKey)
@@ -251,11 +105,119 @@ function syncStaffLmsLiveQuizControl(resourceKey, reason = 'live-quiz') {
             window.invalidateLmsLiveQuizTabCache(canonicalKey);
         }
     }
-    refreshStaffLmsLiveQuizUi(resourceKey);
+    const broadcastPatchHints = LMS_LIVE_BROADCAST_PATCH_HINTS[reason] || {};
+    const forceQueuePatch = reason === 'question-ready';
+    refreshStaffLmsLiveQuizUi(canonicalKey || resourceKey, {
+        forceBroadcastPatch: true,
+        forceQueuePatch,
+        broadcastPatchHints,
+        queuePatchHints: forceQueuePatch ? broadcastPatchHints : {}
+    });
     const syncPromise = typeof runImmediateLmsLiveQuizSync === 'function' && canonicalKey
-        ? runImmediateLmsLiveQuizSync(canonicalKey, reason)
+        ? runImmediateLmsLiveQuizSync(canonicalKey, reason, { deferUiRefresh: true })
         : Promise.resolve(null);
-    return syncPromise.finally(() => refreshStaffLmsLiveQuizUi(resourceKey));
+    return syncPromise.finally(() => {
+        if (typeof refreshLmsLiveQuizUi === 'function') {
+            refreshLmsLiveQuizUi(canonicalKey || resourceKey, {
+                skipLoad: true,
+                forceBroadcastPatch: true,
+                forceQueuePatch,
+                broadcastPatchHints,
+                queuePatchHints: forceQueuePatch ? broadcastPatchHints : {}
+            });
+            return;
+        }
+        renderLmsLiveQuizSection(canonicalKey || resourceKey, { skipLoad: true });
+    });
+}
+
+function applyLmsLiveQuizSessionPatches(resourceKey, reason = 'session-deleted', hints = {}) {
+    const patchHints = { ...(LMS_LIVE_SESSION_PATCH_HINTS[reason] || {}), ...hints };
+    updateLmsLiveQuizSessionUi(resourceKey, patchHints);
+    if (patchHints.includeQueue) updateLmsLiveQuizQueueUi(resourceKey, patchHints);
+    if (patchHints.includeBroadcast) updateLmsLiveQuizBroadcastUi(resourceKey, patchHints);
+    if (patchHints.includeHeroStats) updateLmsLiveQuizVolatileUi(resourceKey);
+    return patchHints;
+}
+
+function syncStaffLmsLiveQuizSessionChange(resourceKey, reason = 'session-deleted', hints = {}) {
+    const canonicalKey = typeof resolveCanonicalLmsResourceKey === 'function'
+        ? resolveCanonicalLmsResourceKey(resourceKey)
+        : String(resourceKey || '').trim();
+    if (canonicalKey && typeof touchLmsLiveQuizWorkspaceLocal === 'function') {
+        touchLmsLiveQuizWorkspaceLocal(canonicalKey);
+    }
+    if (canonicalKey) {
+        const workspace = ensureLmsLiveQuizWorkspace(canonicalKey);
+        workspace.ui.dirty = true;
+        workspace.ui.lastStructuralReason = reason;
+        workspace.ui.lastStructuralAt = Date.now();
+        if (workspace.ui?.syncTimer) {
+            clearTimeout(workspace.ui.syncTimer);
+            workspace.ui.syncTimer = null;
+        }
+        if (typeof window.invalidateLmsLiveQuizTabCache === 'function') {
+            window.invalidateLmsLiveQuizTabCache(canonicalKey);
+        }
+    }
+    const patchHints = applyLmsLiveQuizSessionPatches(canonicalKey || resourceKey, reason, hints);
+    const syncPromise = typeof runImmediateLmsLiveQuizSync === 'function' && canonicalKey
+        ? runImmediateLmsLiveQuizSync(canonicalKey, reason, { deferUiRefresh: true, queueStructural: true })
+        : Promise.resolve(null);
+    return syncPromise.finally(() => {
+        const workspace = canonicalKey ? ensureLmsLiveQuizWorkspace(canonicalKey) : null;
+        if (workspace?.ui?.syncError && typeof notifyLmsLiveStaffGuard === 'function') {
+            notifyLmsLiveStaffGuard(workspace.ui.syncError);
+        }
+        applyLmsLiveQuizSessionPatches(canonicalKey || resourceKey, reason, patchHints);
+        if (typeof storeLmsLiveQuizRenderFingerprint === 'function' && canonicalKey) {
+            storeLmsLiveQuizRenderFingerprint(canonicalKey);
+        }
+    });
+}
+
+function syncStaffLmsLiveQuizQueueChange(resourceKey, reason = 'live-quiz', hints = {}) {
+    const canonicalKey = typeof resolveCanonicalLmsResourceKey === 'function'
+        ? resolveCanonicalLmsResourceKey(resourceKey)
+        : String(resourceKey || '').trim();
+    if (canonicalKey && typeof touchLmsLiveQuizWorkspaceLocal === 'function') {
+        touchLmsLiveQuizWorkspaceLocal(canonicalKey);
+    }
+    if (canonicalKey) {
+        const workspace = ensureLmsLiveQuizWorkspace(canonicalKey);
+        workspace.ui.dirty = true;
+        if (workspace.ui?.syncTimer) {
+            clearTimeout(workspace.ui.syncTimer);
+            workspace.ui.syncTimer = null;
+        }
+        if (typeof window.invalidateLmsLiveQuizTabCache === 'function') {
+            window.invalidateLmsLiveQuizTabCache(canonicalKey);
+        }
+    }
+    const mergedHints = { ...(LMS_LIVE_QUEUE_PATCH_HINTS[reason] || {}), ...hints };
+    const forceBroadcastPatch = hints.forceBroadcastPatch === true;
+    refreshStaffLmsLiveQuizUi(canonicalKey || resourceKey, {
+        forceQueuePatch: true,
+        forceBroadcastPatch,
+        queuePatchHints: mergedHints,
+        broadcastPatchHints: mergedHints
+    });
+    const syncPromise = typeof runImmediateLmsLiveQuizSync === 'function' && canonicalKey
+        ? runImmediateLmsLiveQuizSync(canonicalKey, reason, { deferUiRefresh: true, queueStructural: true })
+        : Promise.resolve(null);
+    return syncPromise.finally(() => {
+        if (typeof refreshLmsLiveQuizUi === 'function') {
+            refreshLmsLiveQuizUi(canonicalKey || resourceKey, {
+                skipLoad: true,
+                forceQueuePatch: true,
+                forceBroadcastPatch,
+                queuePatchHints: mergedHints,
+                broadcastPatchHints: mergedHints
+            });
+            return;
+        }
+        renderLmsLiveQuizSection(canonicalKey || resourceKey, { skipLoad: true });
+    });
 }
 
 function resolveLmsLiveWorkspaceSession(workspace = {}, questionId = '') {
@@ -308,8 +270,28 @@ function renderLmsLiveScoreList(session = null, limit = 8) {
     `).join('');
 }
 
+const LMS_LIVE_STATUS_STEPS = [
+    ['ready', 'Ready'],
+    ['showing', 'Showing'],
+    ['paused', 'Paused'],
+    ['locked', 'Locked'],
+    ['revealed', 'Revealed']
+];
+
+function getLmsLiveStatusStepIndex(state = 'draft') {
+    const normalized = String(state || 'draft').toLowerCase();
+    if (normalized === 'completed') return LMS_LIVE_STATUS_STEPS.length - 1;
+    if (normalized === 'draft') return -1;
+    const index = LMS_LIVE_STATUS_STEPS.findIndex(([key]) => key === normalized);
+    return index >= 0 ? index : -1;
+}
+
 function getLmsLiveQuestionBreakdown(session = null, question = null) {
     const participants = getLmsLiveParticipantList(session);
+    const answeredCount = participants.filter(participant => {
+        const answer = participant.answers?.[question?.id];
+        return hasLmsLiveAnswerForQuestion(answer, question);
+    }).length;
     return LMS_LIVE_OPTION_KEYS.map((key, index) => {
         const count = participants.filter(participant => {
             const answer = participant.answers?.[question?.id];
@@ -320,22 +302,64 @@ function getLmsLiveQuestionBreakdown(session = null, question = null) {
             key,
             index,
             count,
-            percent: participants.length ? Math.round((count / participants.length) * 100) : 0
+            percent: answeredCount ? Math.round((count / answeredCount) * 100) : 0
         };
     });
+}
+
+function renderLmsLiveBreakdownRows(session = null, question = null, options = {}) {
+    const showPercent = options.showPercent !== false;
+    const breakdown = getLmsLiveQuestionBreakdown(session, question);
+    return breakdown.map(item => `
+        <div class="lms-live-breakdown-row" data-option-index="${escapeHtml(String(item.index))}">
+            <span class="lms-live-option-key">${escapeHtml(item.key)}</span>
+            <div class="lms-live-breakdown-bar"><span style="--lms-live-breakdown-width:${escapeHtml(String(item.percent))}%;"></span></div>
+            ${showPercent ? `<span class="lms-live-breakdown-percent">${escapeHtml(String(item.percent))}%</span>` : ''}
+            <strong>${escapeHtml(String(item.count))}</strong>
+        </div>
+    `).join('');
 }
 
 function renderLmsLiveQuestionBreakdown(session = null, question = null) {
     if (!question) return `<div class="lms-live-copy">Start a question to see answer distribution.</div>`;
     return `
         <div class="lms-live-breakdown">
-            ${getLmsLiveQuestionBreakdown(session, question).map(item => `
-                <div class="lms-live-breakdown-row">
-                    <span class="lms-live-option-key">${escapeHtml(item.key)}</span>
-                    <div class="lms-live-breakdown-bar"><span style="--lms-live-breakdown-width:${escapeHtml(String(item.percent))}%;"></span></div>
-                    <strong>${escapeHtml(String(item.count))}</strong>
-                </div>
-            `).join('')}
+            ${renderLmsLiveBreakdownRows(session, question, { showPercent: false })}
+        </div>
+    `;
+}
+
+function shouldShowLmsLiveBroadcastResults(session = null, question = null, presentationMode = false) {
+    if (!presentationMode || !question) return false;
+    const state = String(question.state || 'draft').toLowerCase();
+    return state === 'revealed' || Boolean(session?.showResults);
+}
+
+function renderLmsLiveBroadcastResultsCardContent(session = null, question = null, presentationMode = false) {
+    if (!shouldShowLmsLiveBroadcastResults(session, question, presentationMode)) return '';
+    const breakdown = getLmsLiveQuestionBreakdown(session, question);
+    const totalAnswered = breakdown.reduce((sum, item) => sum + item.count, 0);
+    const empty = totalAnswered === 0;
+    return `
+        <div class="lms-live-broadcast-results-head">
+            <div class="lms-live-section-kicker">Answer split</div>
+            <span class="lms-live-broadcast-results-meta">${escapeHtml(String(totalAnswered))} response${totalAnswered === 1 ? '' : 's'}</span>
+        </div>
+        ${empty
+            ? `<div class="lms-live-broadcast-results-empty"><i class="fas fa-chart-bar"></i><span>Waiting for student responses</span></div>`
+            : `<div class="lms-live-breakdown lms-live-breakdown--rich">${renderLmsLiveBreakdownRows(session, question)}</div>`}
+    `;
+}
+
+function renderLmsLiveBroadcastResultsCard(session = null, question = null, presentationMode = false) {
+    if (!presentationMode) return '';
+    const visible = shouldShowLmsLiveBroadcastResults(session, question, presentationMode);
+    const content = visible
+        ? renderLmsLiveBroadcastResultsCardContent(session, question, presentationMode)
+        : `<div class="lms-live-broadcast-results-placeholder"><i class="fas fa-chart-bar"></i><span>Reveal the question to show answer split here.</span></div>`;
+    return `
+        <div class="lms-live-broadcast-results-card${visible ? '' : ' is-placeholder'}" data-lms-live-region="broadcast-results">
+            ${content}
         </div>
     `;
 }
@@ -368,6 +392,30 @@ function toggleLmsLivePresentationMode(resourceKey) {
     workspace.ui.presentationMode = !workspace.ui.presentationMode;
     saveLmsLiveQuizChange(resourceKey, 'presentation-mode');
     renderLmsLiveQuizSection(resourceKey);
+}
+
+function revealLmsLiveQuizPodium(resourceKey) {
+    if (!canManageLmsLiveQuiz(resourceKey)) return;
+    const session = getLmsLiveStaffLiveSession(resourceKey) || getLmsLiveStaffSession(resourceKey);
+    if (!canRevealLmsLiveQuizPodium(session)) {
+        notifyLmsLiveStaffGuard('Show rankings is available after the session ends.');
+        return;
+    }
+    session.showPodium = true;
+    session.podiumRevealAt = new Date().toISOString();
+    syncStaffLmsLiveQuizControl(resourceKey, 'podium-reveal');
+}
+
+function dismissLmsLiveQuizPodium(resourceKey) {
+    if (!canManageLmsLiveQuiz(resourceKey)) return;
+    const session = getLmsLiveStaffLiveSession(resourceKey) || getLmsLiveStaffSession(resourceKey);
+    if (!session) return;
+    session.showPodium = false;
+    session.podiumRevealAt = null;
+    if (typeof unmountLmsLivePodiumOverlay === 'function') {
+        unmountLmsLivePodiumOverlay();
+    }
+    syncStaffLmsLiveQuizControl(resourceKey, 'podium-dismiss');
 }
 
 function exportLmsLiveQuizCsv(resourceKey) {
@@ -421,11 +469,70 @@ function buildLmsLiveSessionTitle(workspace = {}, index = 1) {
     return `Live session ${sessionNumber}`;
 }
 
+function patchLmsLiveSessionSwitcherOptionLabel(resourceKey, session = null) {
+    if (!session?.id || typeof document === 'undefined') return;
+    const contentArea = document.getElementById('lms-content-area');
+    if (!contentArea) return;
+    const select = contentArea.querySelector('select[data-lms-change*="setLmsLiveActiveSession"]');
+    if (!select) return;
+    const option = Array.from(select.options).find(item => String(item.value) === String(session.id));
+    if (!option) return;
+    const label = repairLmsDisplayText(session.title || 'Live Quiz', 'Live Quiz');
+    const status = String(session.status || 'draft');
+    option.textContent = `${label} (${status})`;
+}
+
+function syncLmsLiveSessionDetailsFromDom(resourceKey, options = {}) {
+    const canonicalKey = typeof resolveCanonicalLmsResourceKey === 'function'
+        ? resolveCanonicalLmsResourceKey(resourceKey)
+        : String(resourceKey || '').trim();
+    if (!canonicalKey || !canManageLmsLiveQuiz(canonicalKey)) return null;
+    const session = getLmsLiveStaffEditingSession(canonicalKey);
+    if (!session) return null;
+    const token = toDomToken(canonicalKey);
+    const nextTitle = repairLmsDisplayText(
+        document.getElementById(`lms-live-title-${token}`)?.value || session.title,
+        session.title || 'Live Quiz'
+    );
+    const nextTopic = repairLmsDisplayText(document.getElementById(`lms-live-topic-${token}`)?.value || '', '');
+    const changed = session.title !== nextTitle || session.topic !== nextTopic;
+    session.title = nextTitle;
+    session.topic = nextTopic;
+    if (changed) {
+        patchLmsLiveSessionSwitcherOptionLabel(canonicalKey, session);
+        if (options.save !== false) {
+            saveLmsLiveQuizChange(canonicalKey, 'session-details-updated');
+        }
+    }
+    return session;
+}
+
+function updateLmsLiveSessionField(resourceKey, field, value) {
+    const canonicalKey = typeof resolveCanonicalLmsResourceKey === 'function'
+        ? resolveCanonicalLmsResourceKey(resourceKey)
+        : String(resourceKey || '').trim();
+    if (!canonicalKey || !canManageLmsLiveQuiz(canonicalKey)) return;
+    const normalizedField = String(field || '').trim().toLowerCase();
+    if (!['title', 'topic'].includes(normalizedField)) return;
+    const session = getLmsLiveStaffEditingSession(canonicalKey);
+    if (!session) return;
+    const nextValue = normalizedField === 'title'
+        ? repairLmsDisplayText(value, session.title || 'Live Quiz')
+        : repairLmsDisplayText(value, '');
+    if (session[normalizedField] === nextValue) return;
+    session[normalizedField] = nextValue;
+    if (normalizedField === 'title') {
+        patchLmsLiveSessionSwitcherOptionLabel(canonicalKey, session);
+    }
+    saveLmsLiveQuizChange(canonicalKey, 'session-details-updated');
+}
+
 function setLmsLiveActiveSession(resourceKey, sessionId) {
     const canonicalKey = typeof resolveCanonicalLmsResourceKey === 'function'
         ? resolveCanonicalLmsResourceKey(resourceKey)
         : String(resourceKey || '').trim();
     if (!canonicalKey || !canManageLmsLiveQuiz(canonicalKey)) return;
+    syncLmsLiveSessionDetailsFromDom(canonicalKey);
     const normalizedSessionId = String(sessionId || '').trim();
     const workspace = ensureLmsLiveQuizWorkspace(canonicalKey);
     const session = (Array.isArray(workspace.sessions) ? workspace.sessions : [])
@@ -439,665 +546,136 @@ function setLmsLiveActiveSession(resourceKey, sessionId) {
     saveLmsLiveQuizChange(canonicalKey, 'session-selected');
 }
 
-function renderLmsLiveSessionSwitcher(resourceKey, sessions = [], activeSessionId = '') {
-    const items = Array.isArray(sessions) ? sessions : [];
-    if (items.length < 2) return '';
-    const options = items.map((session, index) => {
-        const label = repairLmsDisplayText(session?.title || buildLmsLiveSessionTitle({}, index + 1), `Session ${index + 1}`);
-        const status = String(session?.status || 'draft');
-        const selected = String(session?.id || '') === String(activeSessionId || '');
-        return `<option value="${escapeHtml(String(session.id || ''))}" ${selected ? 'selected' : ''}>${escapeHtml(`${label} (${status})`)}</option>`;
-    }).join('');
-    return `
-        <label class="lms-route-field">
-            <span class="lms-route-field-label">Active session</span>
-            <select class="lms-route-input" data-lms-resource-key="${escapeHtml(resourceKey)}" data-lms-change="setLmsLiveActiveSession(this.dataset.lmsResourceKey, this.value)">
-                ${options}
-            </select>
-        </label>
-    `;
-}
-
-function createLmsLiveSession(resourceKey) {
-    const canonicalKey = typeof resolveCanonicalLmsResourceKey === 'function'
-        ? resolveCanonicalLmsResourceKey(resourceKey)
-        : String(resourceKey || '').trim();
-    if (!canonicalKey || !canManageLmsLiveQuiz(canonicalKey)) {
-        alert('Only course staff can create a live quiz session for this section.');
-        return;
-    }
-    const workspace = ensureLmsLiveQuizWorkspace(canonicalKey);
-    (Array.isArray(workspace.sessions) ? workspace.sessions : []).forEach(item => {
-        if (String(item?.status || '').toLowerCase() !== 'live') return;
-        item.status = 'ended';
-        item.endedAt = new Date().toISOString();
-    });
-    const nextIndex = (Array.isArray(workspace.sessions) ? workspace.sessions.length : 0) + 1;
-    const session = normalizeLmsLiveSession({
-        title: buildLmsLiveSessionTitle(workspace, nextIndex),
-        topic: '',
-        status: 'draft',
-        createdBy: getSimulatedUserName(),
-        questions: [],
-        participants: {}
-    }, canonicalKey);
-    workspace.sessions.unshift(session);
-    workspace.ui.activeSessionId = session.id;
-    workspace.ui.deferredRender = false;
-    if (typeof window.invalidateLmsLiveQuizTabCache === 'function') {
-        window.invalidateLmsLiveQuizTabCache(canonicalKey);
-    }
-    renderLmsLiveQuizSection(canonicalKey, { preserveDraft: false, skipLoad: true });
-    saveLmsLiveQuizChange(canonicalKey, 'session-created');
-    const syncPromise = typeof runImmediateLmsLiveQuizSync === 'function'
-        ? runImmediateLmsLiveQuizSync(canonicalKey, 'session-created')
-        : Promise.resolve(null);
-    syncPromise.finally(() => {
-        renderLmsLiveQuizSection(canonicalKey, { preserveDraft: false, skipLoad: true, forceStructuralRender: true });
-    });
-}
-
-function saveLmsLiveSessionDetails(resourceKey) {
-    if (!canManageLmsLiveQuiz(resourceKey)) return;
-    const token = toDomToken(resourceKey);
-    const session = getLmsLiveStaffEditingSession(resourceKey);
-    if (!session) return;
-    session.title = repairLmsDisplayText(document.getElementById(`lms-live-title-${token}`)?.value || session.title, session.title || 'Live Quiz');
-    session.topic = repairLmsDisplayText(document.getElementById(`lms-live-topic-${token}`)?.value || '', '');
-    saveLmsLiveQuizChange(resourceKey, 'session-details-saved');
-    renderLmsLiveQuizSection(resourceKey);
-}
-
-function ensureLmsLiveEditableSession(resourceKey) {
-    const workspace = ensureLmsLiveQuizWorkspace(resourceKey);
-    let session = getLmsLiveStaffEditingSession(resourceKey);
-    if (!session || session.status === 'ended') {
-        session = normalizeLmsLiveSession({
-            title: 'Live Quiz',
-            status: 'draft',
-            createdBy: getSimulatedUserName(),
-            questions: [],
-            participants: {}
-        }, resourceKey);
-        workspace.sessions.unshift(session);
-    }
-    return session;
-}
-
-function addLmsLiveQuestion(resourceKey) {
-    if (!canManageLmsLiveQuiz(resourceKey)) {
-        alert('Only course staff can add live quiz questions.');
-        return;
-    }
-    const token = toDomToken(resourceKey);
-    const text = repairLmsDisplayText(document.getElementById(`lms-live-question-${token}`)?.value || '', '');
-    if (!text) {
-        alert('Write the question first.');
-        return;
-    }
-    const options = LMS_LIVE_OPTION_KEYS.map((_, index) =>
-        repairLmsDisplayText(document.getElementById(`lms-live-option-${index}-${token}`)?.value || '', '')
-    );
-    if (options.some(option => !option)) {
-        alert('Fill all four answer options.');
-        return;
-    }
-    const correctOption = Math.min(3, Math.max(0, parseInt(document.getElementById(`lms-live-correct-${token}`)?.value, 10) || 0));
-    const timeLimit = Math.min(180, Math.max(10, parseInt(document.getElementById(`lms-live-timer-${token}`)?.value, 10) || 45));
-    const topic = repairLmsDisplayText(document.getElementById(`lms-live-question-topic-${token}`)?.value || '', '');
-    const session = ensureLmsLiveEditableSession(resourceKey);
-    session.questions.push(normalizeLmsLiveQuestion({ text, options, correctOption, timeLimit, topic }));
-    session.currentQuestionIndex = session.questions.length === 1 ? 0 : session.currentQuestionIndex;
-    saveLmsLiveQuizChange(resourceKey, 'question-added');
-    renderLmsLiveQuizSection(resourceKey);
-}
-
-function duplicateLmsLiveQuestion(resourceKey, questionId) {
-    if (!canManageLmsLiveQuiz(resourceKey)) return;
-    const session = typeof getLmsLiveStaffSessionForQuestion === 'function'
-        ? getLmsLiveStaffSessionForQuestion(resourceKey, questionId)
-        : getLmsLiveStaffEditingSession(resourceKey);
-    if (!session) return;
-    const sourceIndex = session.questions.findIndex(question => String(question.id) === String(questionId));
-    if (sourceIndex < 0) return;
-    const source = session.questions[sourceIndex];
-    const copy = normalizeLmsLiveQuestion({
-        ...source,
-        id: makeLmsLiveId('live-question'),
-        text: `${source.text} (copy)`,
-        state: 'draft',
-        activatedAt: null,
-        pausedAt: null,
-        lockedAt: null,
-        revealedAt: null,
-        completedAt: null
-    });
-    session.questions.splice(sourceIndex + 1, 0, copy);
-    saveLmsLiveQuizChange(resourceKey, 'question-duplicated');
-    renderLmsLiveQuizSection(resourceKey);
-}
-
-function moveLmsLiveQuestion(resourceKey, questionId, direction) {
-    if (!canManageLmsLiveQuiz(resourceKey)) return;
-    const session = typeof getLmsLiveStaffSessionForQuestion === 'function'
-        ? getLmsLiveStaffSessionForQuestion(resourceKey, questionId)
-        : getLmsLiveStaffEditingSession(resourceKey);
-    if (!session) return;
-    const fromIndex = session.questions.findIndex(question => String(question.id) === String(questionId));
-    const toIndex = fromIndex + Number(direction || 0);
-    if (fromIndex < 0 || toIndex < 0 || toIndex >= session.questions.length) return;
-    const [question] = session.questions.splice(fromIndex, 1);
-    session.questions.splice(toIndex, 0, question);
-    if (session.currentQuestionIndex === fromIndex) session.currentQuestionIndex = toIndex;
-    else if (session.currentQuestionIndex === toIndex) session.currentQuestionIndex = fromIndex;
-    saveLmsLiveQuizChange(resourceKey, 'question-moved');
-    renderLmsLiveQuizSection(resourceKey);
-}
-
-function importLmsLiveQuestionsFromText(resourceKey) {
-    if (!canManageLmsLiveQuiz(resourceKey)) return;
-    const token = toDomToken(resourceKey);
-    const raw = String(document.getElementById(`lms-live-import-${token}`)?.value || '').trim();
-    if (!raw) {
-        alert('Paste questions first. Format: Question | A | B | C | D | correct letter | seconds');
-        return;
-    }
-    const session = ensureLmsLiveEditableSession(resourceKey);
-    const added = raw.split(/\r?\n/).map(line => line.trim()).filter(Boolean).map(line => {
-        const parts = line.split(/[,|;]/).map(part => repairLmsDisplayText(part, '').trim());
-        if (parts.length < 6) return null;
-        const correctRaw = String(parts[5] || 'A').trim().toUpperCase();
-        const correctOption = Math.max(0, LMS_LIVE_OPTION_KEYS.indexOf(correctRaw[0]));
-        return normalizeLmsLiveQuestion({
-            text: parts[0],
-            options: parts.slice(1, 5),
-            correctOption: correctOption < 0 ? 0 : correctOption,
-            timeLimit: parseInt(parts[6], 10) || 45,
-            topic: 'Imported'
-        });
-    }).filter(question => question && question.text && question.options.every(Boolean));
-    if (!added.length) {
-        alert('No valid questions found. Use: Question | A | B | C | D | correct letter | seconds');
-        return;
-    }
-    session.questions.push(...added);
-    session.currentQuestionIndex = session.questions.length === added.length ? 0 : session.currentQuestionIndex;
-    saveLmsLiveQuizChange(resourceKey, 'questions-imported');
-    renderLmsLiveQuizSection(resourceKey);
-}
-
-function activateLmsLiveQuestion(resourceKey, questionId) {
-    if (!canManageLmsLiveQuiz(resourceKey)) return;
-    const workspace = ensureLmsLiveQuizWorkspace(resourceKey);
-    const session = resolveLmsLiveWorkspaceSession(workspace, questionId);
-    if (!session) {
-        alert('Create a session and add a question before showing.');
-        return;
-    }
-    const index = session.questions.findIndex(question => String(question.id) === String(questionId));
-    if (index < 0) {
-        alert('This question is not in the active live session. Select it in the queue or start the live session first.');
-        return;
-    }
-    session.questions.forEach((question, questionIndex) => {
-        if (questionIndex !== index && ['showing', 'paused', 'locked', 'revealed'].includes(String(question.state || ''))) {
-            question.state = 'completed';
-            question.completedAt = question.completedAt || new Date().toISOString();
-        }
-    });
-    session.currentQuestionIndex = index;
-    session.status = 'live';
-    session.startedAt = session.startedAt || new Date().toISOString();
-    workspace.ui.activeSessionId = session.id;
-    (Array.isArray(workspace.sessions) ? workspace.sessions : []).forEach(item => {
-        if (String(item?.id || '') === String(session.id)) return;
-        if (String(item?.status || '').toLowerCase() !== 'live') return;
-        item.status = 'ended';
-        item.endedAt = new Date().toISOString();
-    });
-    ensureLmsLiveRosterParticipants(resourceKey, session);
-    markLmsLiveQuestionActivated(session.questions[index]);
-    syncStaffLmsLiveQuizControl(resourceKey, 'question-activated');
-}
-
-function setLmsLiveQuestionReady(resourceKey, questionId) {
-    if (!canManageLmsLiveQuiz(resourceKey)) return;
-    const session = typeof getLmsLiveStaffSessionForQuestion === 'function'
-        ? getLmsLiveStaffSessionForQuestion(resourceKey, questionId)
-        : getLmsLiveStaffSession(resourceKey);
-    if (!session) return;
-    const index = session.questions.findIndex(question => String(question.id) === String(questionId));
-    if (index < 0) return;
-    session.currentQuestionIndex = index;
-    session.status = session.status === 'ended' ? 'draft' : session.status;
-    session.questions[index].state = 'ready';
-    session.questions[index].activatedAt = null;
-    syncStaffLmsLiveQuizControl(resourceKey, 'question-ready');
-}
-
-function pauseLmsLiveQuestion(resourceKey) {
-    if (!canManageLmsLiveQuiz(resourceKey)) return;
-    const session = getLmsLiveStaffSession(resourceKey);
-    const question = getLmsLiveCurrentQuestion(session);
-    const availability = getLmsLiveStaffActionAvailability(question, session);
-    if (!session || !question || String(question.state || '') !== 'showing') {
-        notifyLmsLiveStaffGuard(availability.pause.hint);
-        return;
-    }
-    const timeState = getLmsLiveQuestionTimeState(question);
-    question.state = 'paused';
-    question.pausedAt = new Date().toISOString();
-    question.pausedRemainingMs = timeState.remainingMs;
-    syncStaffLmsLiveQuizControl(resourceKey, 'question-paused');
-}
-
-function resumeLmsLiveQuestion(resourceKey) {
-    if (!canManageLmsLiveQuiz(resourceKey)) return;
-    const session = getLmsLiveStaffSession(resourceKey);
-    const question = getLmsLiveCurrentQuestion(session);
-    const availability = getLmsLiveStaffActionAvailability(question, session);
-    if (!session || !question || String(question.state || '') !== 'paused') {
-        notifyLmsLiveStaffGuard(availability.resume.hint);
-        return;
-    }
-    const remainingMs = Number.isFinite(Number(question.pausedRemainingMs)) ? Number(question.pausedRemainingMs) : Number(question.timeLimit || 45) * 1000;
-    const limitMs = Math.max(10000, Number(question.timeLimit || 45) * 1000);
-    question.state = 'showing';
-    question.activatedAt = new Date(Date.now() - Math.max(0, limitMs - remainingMs)).toISOString();
-    question.pausedAt = null;
-    question.pausedRemainingMs = null;
-    syncStaffLmsLiveQuizControl(resourceKey, 'question-resumed');
-}
-
-function lockLmsLiveQuestion(resourceKey) {
-    if (!canManageLmsLiveQuiz(resourceKey)) return;
-    const session = getLmsLiveStaffSession(resourceKey);
-    const question = getLmsLiveCurrentQuestion(session);
-    const availability = getLmsLiveStaffActionAvailability(question, session);
-    if (!session || !question) return;
-    if (!availability.lock.enabled) {
-        notifyLmsLiveStaffGuard(availability.lock.hint);
-        return;
-    }
-    question.state = 'locked';
-    question.lockedAt = new Date().toISOString();
-    syncStaffLmsLiveQuizControl(resourceKey, 'question-locked');
-}
-
-function revealLmsLiveQuestion(resourceKey) {
-    if (!canManageLmsLiveQuiz(resourceKey)) return;
-    const session = getLmsLiveStaffSession(resourceKey);
-    const question = getLmsLiveCurrentQuestion(session);
-    const availability = getLmsLiveStaffActionAvailability(question, session);
-    if (!session || !question) return;
-    if (!availability.reveal.enabled) {
-        notifyLmsLiveStaffGuard(availability.reveal.hint);
-        return;
-    }
-    question.state = 'revealed';
-    question.revealedAt = new Date().toISOString();
-    session.showResults = true;
-    syncStaffLmsLiveQuizControl(resourceKey, 'question-revealed');
-}
-
-function toggleLmsLiveResults(resourceKey) {
-    if (!canManageLmsLiveQuiz(resourceKey)) return;
-    const session = getLmsLiveStaffSession(resourceKey);
-    if (!session) return;
-    session.showResults = !session.showResults;
-    syncStaffLmsLiveQuizControl(resourceKey, 'results-toggle');
-}
-
-function stepLmsLiveQuestion(resourceKey, direction) {
-    if (!canManageLmsLiveQuiz(resourceKey)) return;
-    const session = getLmsLiveStaffSession(resourceKey);
-    const currentQuestion = getLmsLiveCurrentQuestion(session);
-    const availability = getLmsLiveStaffActionAvailability(currentQuestion, session);
-    const stepKey = Number(direction || 0) < 0 ? 'prev' : 'next';
-    if (!session || !session.questions.length) return;
-    if (!availability[stepKey]?.enabled) {
-        notifyLmsLiveStaffGuard(availability[stepKey]?.hint);
-        return;
-    }
-    if (currentQuestion && ['showing', 'paused', 'locked', 'revealed'].includes(String(currentQuestion.state || ''))) {
-        currentQuestion.state = 'completed';
-        currentQuestion.completedAt = currentQuestion.completedAt || new Date().toISOString();
-    }
-    const nextIndex = Math.min(session.questions.length - 1, Math.max(0, Number(session.currentQuestionIndex || 0) + Number(direction || 0)));
-    session.currentQuestionIndex = nextIndex;
-    session.status = 'live';
-    session.startedAt = session.startedAt || new Date().toISOString();
-    ensureLmsLiveRosterParticipants(resourceKey, session);
-    markLmsLiveQuestionActivated(session.questions[nextIndex]);
-    session.showResults = false;
-    syncStaffLmsLiveQuizControl(resourceKey, 'question-stepped');
-}
-
-function startLmsLiveSession(resourceKey) {
-    if (!canManageLmsLiveQuiz(resourceKey)) return;
-    const workspace = ensureLmsLiveQuizWorkspace(resourceKey);
-    const session = resolveLmsLiveWorkspaceSession(workspace);
-    if (!session || !session.questions.length) {
-        alert('Add at least one question before starting.');
-        return;
-    }
-    workspace.ui.activeSessionId = session.id;
-    (Array.isArray(workspace.sessions) ? workspace.sessions : []).forEach(item => {
-        if (String(item?.id || '') === String(session.id)) return;
-        if (String(item?.status || '').toLowerCase() !== 'live') return;
-        item.status = 'ended';
-        item.endedAt = new Date().toISOString();
-    });
-    session.status = 'live';
-    session.currentQuestionIndex = 0;
-    session.startedAt = session.startedAt || new Date().toISOString();
-    session.endedAt = null;
-    ensureLmsLiveRosterParticipants(resourceKey, session);
-    session.questions.forEach((question, index) => {
-        if (index === 0) {
-            markLmsLiveQuestionActivated(question);
-            return;
-        }
-        question.state = question.state === 'completed' ? 'completed' : 'draft';
-        question.activatedAt = null;
-        question.pausedAt = null;
-        question.pausedRemainingMs = null;
-        question.lockedAt = null;
-        question.revealedAt = null;
-    });
-    session.showResults = false;
-    saveLmsLiveQuizChange(resourceKey, 'session-started');
-    const syncPromise = typeof runImmediateLmsLiveQuizSync === 'function'
-        ? runImmediateLmsLiveQuizSync(resourceKey, 'session-started')
-        : Promise.resolve(null);
-    syncPromise.finally(() => renderLmsLiveQuizSection(resourceKey, { skipLoad: true }));
-}
-
-function endLmsLiveSession(resourceKey) {
-    if (!canManageLmsLiveQuiz(resourceKey)) return;
-    const session = getLmsLiveStaffSession(resourceKey);
-    if (!session) return;
-    session.status = 'ended';
-    session.endedAt = new Date().toISOString();
-    saveLmsLiveQuizChange(resourceKey, 'session-ended');
-    renderLmsLiveQuizSection(resourceKey);
-}
-
-function deleteLmsLiveQuestion(resourceKey, questionId) {
-    if (!canManageLmsLiveQuiz(resourceKey)) return;
-    const session = typeof getLmsLiveStaffSessionForQuestion === 'function'
-        ? getLmsLiveStaffSessionForQuestion(resourceKey, questionId)
-        : getLmsLiveStaffEditingSession(resourceKey);
-    if (!session) return;
-    session.questions = session.questions.filter(question => String(question.id) !== String(questionId));
-    session.currentQuestionIndex = Math.min(session.currentQuestionIndex || 0, Math.max(session.questions.length - 1, 0));
-    saveLmsLiveQuizChange(resourceKey, 'question-deleted');
-    renderLmsLiveQuizSection(resourceKey);
-}
-
-function clearLmsLiveAnswers(resourceKey) {
-    if (!canManageLmsLiveQuiz(resourceKey)) return;
-    const session = getLmsLiveStaffSession(resourceKey);
-    if (!session) return;
-    Object.values(session.participants || {}).forEach(participant => {
-        participant.answers = {};
-        participant.score = 0;
-    });
-    saveLmsLiveQuizChange(resourceKey, 'answers-cleared');
-    renderLmsLiveQuizSection(resourceKey);
-}
-
-function joinLmsLiveQuiz(resourceKey, sessionId) {
-    const session = getLmsLiveStudentSession(resourceKey);
-    if (!session || String(session.id) !== String(sessionId)) {
-        alert('This live quiz is not running now.');
-        return;
-    }
-    const studentMeta = getLmsLiveStudentMeta(resourceKey);
-    const participantId = studentMeta.id;
-    ensureLmsLiveRosterParticipants(resourceKey, session);
-    const uniqueNickname = getUniqueLmsLiveNickname(session, studentMeta.name || getSimulatedUserName(), participantId);
-    session.participants[participantId] = normalizeLmsLiveParticipant({
-        ...(session.participants[participantId] || {}),
-        id: participantId,
-        accountId: participantId,
-        nickname: uniqueNickname,
-        lastSeenAt: new Date().toISOString()
-    }, participantId);
-    if (typeof submitLmsLiveQuizJoinChange === 'function') {
-        submitLmsLiveQuizJoinChange(resourceKey, {
-            sessionId: String(session.id || sessionId || '').trim(),
-            nickname: uniqueNickname,
-            joinedAt: session.participants[participantId].joinedAt || new Date().toISOString(),
-            lastSeenAt: session.participants[participantId].lastSeenAt || new Date().toISOString()
-        }, 'participant-joined');
-    } else {
-        saveLmsLiveQuizChange(resourceKey, 'participant-joined', { skipBackendSync: false });
-    }
-    renderLmsLiveQuizSection(resourceKey, { skipLoad: true });
-}
-
-function answerLmsLiveQuestion(resourceKey, sessionId, questionId, optionIndex) {
-    const session = getLmsLiveStudentSession(resourceKey);
-    if (!session || String(session.id) !== String(sessionId)) return;
-    const participantId = getLmsLiveStudentMeta(resourceKey).id;
-    if (!participantId) {
-        alert('Sign in as a student with a valid account before answering.');
-        return;
-    }
-    ensureLmsLiveRosterParticipants(resourceKey, session);
-    if (typeof ensureLmsLiveStudentParticipant === 'function') {
-        ensureLmsLiveStudentParticipant(resourceKey, session);
-    }
-    const participant = session.participants?.[participantId];
-    if (!participant) {
-        alert('You are not listed in this LMS group roster.');
-        return;
-    }
-    const question = session.questions.find(item => String(item.id) === String(questionId));
-    if (!question) return;
-    const timeState = getLmsLiveQuestionTimeState(question);
-    if (!timeState.answerable) {
-        alert(timeState.paused ? 'The question is paused.' : 'Answers are closed for this question.');
-        renderLmsLiveQuizSection(resourceKey);
-        return;
-    }
-    participant.answers = participant.answers || {};
-    if (participant.answers[question.id]?.showVersion === question.showVersion) return;
-    const selectedOption = Math.min(3, Math.max(0, parseInt(optionIndex, 10) || 0));
-    const answeredAt = new Date();
-    const scoreResult = calculateLmsLiveAnswerScore(question, selectedOption, answeredAt);
-    const previousAnswer = participant.answers[question.id] ? { ...participant.answers[question.id] } : null;
-    participant.answers[question.id] = {
-        selectedOption,
-        correct: scoreResult.correct,
-        score: scoreResult.score,
-        responseMs: scoreResult.responseMs,
-        speedRatio: scoreResult.speedRatio,
-        showVersion: question.showVersion,
-        questionState: question.state,
-        answeredAt: answeredAt.toISOString()
-    };
-    recalculateLmsLiveParticipantScore(participant, session);
-    participant.lastSeenAt = new Date().toISOString();
-    renderLmsLiveQuizSection(resourceKey);
-    const submitAnswer = typeof submitLmsLiveQuizAnswerChange === 'function'
-        ? submitLmsLiveQuizAnswerChange(resourceKey, {
-            sessionId: session.id,
-            questionId: question.id,
-            selectedOption
-        }, 'answer-submitted')
-        : null;
-    if (!submitAnswer) {
-        const role = typeof getEffectiveUserRole === 'function'
-            ? String(getEffectiveUserRole() || '').trim().toLowerCase()
-            : '';
-        if (role === USER_ROLES.STUDENT) {
-            alert('Your answer could not be saved. Check that you are enrolled in this course group.');
-            if (previousAnswer) {
-                participant.answers[question.id] = previousAnswer;
-            } else {
-                delete participant.answers[question.id];
-            }
-            recalculateLmsLiveParticipantScore(participant, session);
-            renderLmsLiveQuizSection(resourceKey);
-            return;
-        }
-        if ([USER_ROLES.PROFESSOR, USER_ROLES.TA, USER_ROLES.ADMIN].includes(role) && !canManageLmsLiveQuiz(resourceKey)) {
-            alert('Switch to the staff live quiz view for this section to run the session.');
-            if (previousAnswer) {
-                participant.answers[question.id] = previousAnswer;
-            } else {
-                delete participant.answers[question.id];
-            }
-            recalculateLmsLiveParticipantScore(participant, session);
-            renderLmsLiveQuizSection(resourceKey);
-            return;
-        }
-        saveLmsLiveQuizChange(resourceKey, 'answer-submitted');
-        return;
-    }
-    submitAnswer.catch(() => {
-        if (previousAnswer) {
-            participant.answers[question.id] = previousAnswer;
-        } else {
-            delete participant.answers[question.id];
-        }
-        recalculateLmsLiveParticipantScore(participant, session);
-        renderLmsLiveQuizSection(resourceKey);
-    });
-}
-
-function renderLmsLiveQuestionOptions(question, session, participant = null, resourceKey = '') {
-    const existingAnswer = participant?.answers?.[question.id] || null;
-    const answer = existingAnswer && Number(existingAnswer.showVersion || 0) === Number(question.showVersion || 0) ? existingAnswer : null;
-    const timeState = getLmsLiveQuestionTimeState(question);
-    const revealAnswers = timeState.revealed || session?.showResults;
-    return `
-        <div class="lms-live-options">
-            ${question.options.map((option, index) => {
-                const selected = Number(answer?.selectedOption) === index;
-                const correct = revealAnswers && Number(question.correctOption) === index;
-                const classes = ['lms-live-option', selected ? 'is-selected' : '', correct ? 'is-correct' : ''].filter(Boolean).join(' ');
-                const click = participant && !answer && timeState.answerable
-                    ? `data-lms-click="answerLmsLiveQuestion(${lmsInlineArg(resourceKey)}, ${lmsInlineArg(session.id)}, ${lmsInlineArg(question.id)}, ${index})"`
-                    : '';
-                const disabled = click ? '' : 'disabled';
-                return `
-                    <button type="button" class="${classes}" ${click} ${disabled}>
-                        <span class="lms-live-option-key">${escapeHtml(LMS_LIVE_OPTION_KEYS[index])}</span>
-                        <span class="lms-live-option-text">${escapeHtml(option)}</span>
-                    </button>
-                `;
-            }).join('')}
-        </div>
-        ${timeState.paused ? `<div class="lms-live-copy lms-live-copy-mt-10 lms-live-copy-center">Timer paused by course staff.</div>` : ''}
-        ${timeState.expired && !timeState.paused ? `<div class="lms-live-copy lms-live-copy-mt-10 lms-live-copy-center">Answers are closed for this question.</div>` : ''}
-    `;
-}
-
-function renderLmsLiveSyncNotice(workspace = null) {
-    const error = repairLmsDisplayText(workspace?.ui?.syncError || '', '');
-    if (error) {
-        const denied = workspace?.ui?.accessDenied === true;
-        return `
-            <div class="lms-live-card lms-live-sync-card is-error">
-                <div class="lms-live-label is-danger"><i class="fas fa-triangle-exclamation"></i> ${denied ? 'Live quiz access denied' : 'Live sync needs attention'}</div>
-                <div class="lms-live-copy lms-route-copy-mt-6 is-danger">${escapeHtml(error)}</div>
-            </div>
-        `;
-    }
-    if (workspace?.ui?.syncing) {
-        return `
-            <div class="lms-live-card lms-live-sync-card is-syncing">
-                <div class="lms-live-label"><i class="fas fa-rotate fa-spin"></i> Syncing live quiz</div>
-            </div>
-        `;
-    }
-    if (workspace?.ui?.dirty) {
-        return `
-            <div class="lms-live-card lms-live-sync-card is-pending">
-                <div class="lms-live-label"><i class="fas fa-cloud-arrow-up"></i> Unsaved changes</div>
-                <div class="lms-live-copy lms-route-copy-mt-6">Your latest edits will sync shortly.</div>
-            </div>
-        `;
-    }
-    if (workspace?.ui?.loadedFromBackend && !workspace?.ui?.accessDenied) {
-        return `
-            <div class="lms-live-card lms-live-sync-card is-ok">
-                <div class="lms-live-label"><i class="fas fa-circle-check"></i> Synced with server</div>
-            </div>
-        `;
-    }
-    return '';
-}
-
-function renderLmsLiveStatusRail(question = null) {
-    const state = String(question?.state || 'draft').toLowerCase();
-    const steps = [
-        ['ready', 'Ready'],
-        ['showing', 'Showing'],
-        ['paused', 'Paused'],
-        ['locked', 'Locked'],
-        ['revealed', 'Revealed']
-    ];
-    return `
-        <div class="lms-live-status-rail" data-lms-live-region="status-rail" aria-label="Live question state">
-            ${steps.map(([key, label]) => `<span class="lms-live-status-step ${state === key ? 'is-active' : ''}">${escapeHtml(label)}</span>`).join('')}
-        </div>
-    `;
-}
-
-function renderLmsLiveTimerMeterInner(question = null, timeState = null) {
-    if (!question) return '';
-    const limitSeconds = Math.max(10, Number(question.timeLimit || 45));
-    const rawRemaining = Number(timeState?.remainingSeconds);
-    const remainingSeconds = timeState?.answerable
-        ? Math.max(0, Number.isFinite(rawRemaining) ? rawRemaining : limitSeconds)
-        : Math.max(0, Number.isFinite(rawRemaining) ? rawRemaining : 0);
-    const progress = limitSeconds > 0
-        ? Math.max(0, Math.min(100, (remainingSeconds / limitSeconds) * 100))
-        : 0;
-    const label = timeState?.paused ? 'Paused' : timeState?.answerable ? 'Answer window' : 'Closed';
-    return `
-        <div class="lms-live-timer-shell">
-            <div class="lms-live-timer-number">${escapeHtml(String(remainingSeconds))}</div>
-            <div>
-                <div class="lms-live-label lms-live-label--left lms-live-label-mb-7">${escapeHtml(label)} - ${escapeHtml(String(limitSeconds))}s question</div>
-                <div class="lms-live-timer-track"><span class="lms-live-timer-fill" style="--live-progress:${progress.toFixed(2)}%;"></span></div>
-            </div>
-        </div>
-    `;
-}
-
-function renderLmsLiveTimerMeter(question = null, timeState = null) {
-    const inner = renderLmsLiveTimerMeterInner(question, timeState);
-    if (!inner) return '';
-    return `<div data-lms-live-region="timer">${inner}</div>`;
-}
+const isLmsLiveSessionRemoveDialogOpen = window.isLmsLiveSessionRemoveDialogOpen;
+const closeLmsLiveSessionRemoveDialog = window.closeLmsLiveSessionRemoveDialog;
+const renderLmsLiveSessionRemoveDialogCard = window.renderLmsLiveSessionRemoveDialogCard;
+const renderLmsLiveSessionRemoveDialog = window.renderLmsLiveSessionRemoveDialog;
+const mountLmsLiveSessionRemoveDialog = window.mountLmsLiveSessionRemoveDialog;
+const openLmsLiveSessionRemoveDialog = window.openLmsLiveSessionRemoveDialog;
+const advanceLmsLiveSessionRemoveDialog = window.advanceLmsLiveSessionRemoveDialog;
+const confirmLmsLiveSessionRemove = window.confirmLmsLiveSessionRemove;
+const deleteLmsLiveSession = window.deleteLmsLiveSession;
+const renderLmsLiveSessionCardHeader = window.renderLmsLiveSessionCardHeader;
+const renderLmsLiveSessionFieldsMarkup = window.renderLmsLiveSessionFieldsMarkup;
+const renderLmsLiveSessionActionsMarkup = window.renderLmsLiveSessionActionsMarkup;
+const renderLmsLiveSessionSwitcher = window.renderLmsLiveSessionSwitcher;
+const createLmsLiveSession = window.createLmsLiveSession;
+const saveLmsLiveSessionDetails = window.saveLmsLiveSessionDetails;
+const ensureLmsLiveEditableSession = window.ensureLmsLiveEditableSession;
+const addLmsLiveQuestion = window.addLmsLiveQuestion;
+const duplicateLmsLiveQuestion = window.duplicateLmsLiveQuestion;
+const moveLmsLiveQuestion = window.moveLmsLiveQuestion;
+const importLmsLiveQuestionsFromText = window.importLmsLiveQuestionsFromText;
+const activateLmsLiveQuestion = window.activateLmsLiveQuestion;
+const setLmsLiveQuestionReady = window.setLmsLiveQuestionReady;
+const pauseLmsLiveQuestion = window.pauseLmsLiveQuestion;
+const resumeLmsLiveQuestion = window.resumeLmsLiveQuestion;
+const lockLmsLiveQuestion = window.lockLmsLiveQuestion;
+const revealLmsLiveQuestion = window.revealLmsLiveQuestion;
+const toggleLmsLiveResults = window.toggleLmsLiveResults;
+const stepLmsLiveQuestion = window.stepLmsLiveQuestion;
+const startLmsLiveSession = window.startLmsLiveSession;
+const endLmsLiveSession = window.endLmsLiveSession;
+const resolveLmsLiveStaffQueueMutationSession = window.resolveLmsLiveStaffQueueMutationSession;
+const deleteLmsLiveQuestion = window.deleteLmsLiveQuestion;
+const clearLmsLiveAnswers = window.clearLmsLiveAnswers;
+const answerLmsLiveQuestion = window.answerLmsLiveQuestion;
+const renderLmsLiveQuestionOptions = window.renderLmsLiveQuestionOptions;
+const renderLmsLiveSyncNotice = window.renderLmsLiveSyncNotice;
+const renderLmsLiveStatusRailSteps = window.renderLmsLiveStatusRailSteps;
+const renderLmsLiveStatusRail = window.renderLmsLiveStatusRail;
+const renderLmsLiveTimerMeterInner = window.renderLmsLiveTimerMeterInner;
+const renderLmsLiveTimerMeter = window.renderLmsLiveTimerMeter;
+const getLmsLiveStudentViewMeta = window.getLmsLiveStudentViewMeta;
 
 function renderLmsLiveStaffDirectorBarContent(session, resourceKey, statusLabel = 'Draft') {
     const stats = getLmsLiveSessionStats(session);
     const currentQuestion = getLmsLiveCurrentQuestion(session);
     const timeState = currentQuestion ? getLmsLiveQuestionTimeState(currentQuestion) : null;
     if (!currentQuestion) return '';
-    const questionState = String(currentQuestion.state || 'draft');
-    const answerStatusLabel = questionState === 'showing'
-        ? `${escapeHtml(String(timeState?.remainingSeconds ?? currentQuestion?.timeLimit ?? 0))}s left`
-        : questionState === 'paused'
-            ? 'Paused'
-            : questionState === 'ready'
-                ? 'Ready, hidden from students'
-                : ['locked', 'revealed', 'completed'].includes(questionState)
-                    ? 'Answers closed'
-                    : 'Hidden';
+    const { answerStatusLabel, tileClass } = getLmsLiveStudentViewMeta(currentQuestion, timeState);
     const currentQuestionNumber = Math.max(1, (session?.questions || []).findIndex(question => String(question.id) === String(currentQuestion.id)) + 1);
     return `
         <div class="lms-live-director-bar">
-            <div class="lms-live-director-tile"><strong>${escapeHtml(String(currentQuestionNumber))}/${escapeHtml(String(stats.questionCount || 0))}</strong><span>Question</span></div>
-            <div class="lms-live-director-tile"><strong>${escapeHtml(String(stats.currentAnswerCount))}/${escapeHtml(String(stats.participants))}</strong><span>Answered</span></div>
-            <div class="lms-live-director-tile" data-lms-live-region="director-timer"><strong>${escapeHtml(String(timeState?.remainingSeconds ?? currentQuestion.timeLimit ?? 0))}s</strong><span>Timer</span></div>
-            <div class="lms-live-director-tile"><strong>${escapeHtml(answerStatusLabel)}</strong><span>Student view</span></div>
+            <div class="lms-live-director-tile"><i class="fas fa-list-ol lms-live-director-icon" aria-hidden="true"></i><strong>${escapeHtml(String(currentQuestionNumber))}/${escapeHtml(String(stats.questionCount || 0))}</strong><span>Question</span></div>
+            <div class="lms-live-director-tile" data-lms-live-region="director-answered"><i class="fas fa-users lms-live-director-icon" aria-hidden="true"></i><strong>${escapeHtml(String(stats.currentAnswerCount))}/${escapeHtml(String(stats.participants))}</strong><span>Answered</span></div>
+            <div class="lms-live-director-tile" data-lms-live-region="director-timer"><i class="far fa-clock lms-live-director-icon" aria-hidden="true"></i><strong>${escapeHtml(String(timeState?.remainingSeconds ?? currentQuestion.timeLimit ?? 0))}s</strong><span>Timer</span></div>
+            <div class="lms-live-director-tile ${tileClass}" data-lms-live-region="director-student-view"><i class="fas fa-eye lms-live-director-icon" aria-hidden="true"></i><strong>${escapeHtml(answerStatusLabel)}</strong><span>Student view</span></div>
+        </div>
+    `;
+}
+
+function renderLmsLiveBroadcastHeader(session, resourceKey, statusLabel = 'Draft', currentQuestion = null) {
+    if (!currentQuestion) return '';
+    return `
+        <div class="lms-live-broadcast-header" data-lms-live-region="broadcast-header">
+            <div class="lms-live-section-kicker">Live broadcast</div>
+            <div data-lms-live-region="director-bar">${renderLmsLiveStaffDirectorBarContent(session, resourceKey, statusLabel)}</div>
+            <div data-lms-live-region="status-rail" class="lms-live-status-rail" aria-label="Live question state">
+                ${renderLmsLiveStatusRailSteps(currentQuestion)}
+            </div>
+        </div>
+    `;
+}
+
+function renderLmsLiveBroadcastQuestionCardInner(question, session, resourceKey, timeState = null) {
+    if (!question) return '';
+    const resolvedTimeState = timeState || getLmsLiveQuestionTimeState(question);
+    const topicChip = question.topic
+        ? `<span class="lms-live-question-topic-chip">${escapeHtml(question.topic)}</span>`
+        : '';
+    return `
+        <div data-lms-live-region="timer">${renderLmsLiveTimerMeterInner(question, resolvedTimeState)}</div>
+        <div class="lms-live-question-headline">
+            ${topicChip}
+            <div class="lms-live-question-text">${escapeHtml(question.text)}</div>
+        </div>
+        <div data-lms-live-region="options">${renderLmsLiveQuestionOptions(question, session)}</div>
+    `;
+}
+
+function renderLmsLiveBroadcastQuestionCard(question, session, resourceKey, timeState = null) {
+    if (!question) return '';
+    return `
+        <div class="lms-live-broadcast-question-card" data-lms-live-region="broadcast-question">
+            ${renderLmsLiveBroadcastQuestionCardInner(question, session, resourceKey, timeState)}
+        </div>
+    `;
+}
+
+function renderLmsLiveBroadcastControlDeckContent(resourceKey, session = null, currentQuestion = null) {
+    if (!session || !currentQuestion) return '';
+    const availability = getLmsLiveStaffActionAvailability(currentQuestion, session);
+    return `
+        <div class="lms-live-control-group">
+            <div class="lms-live-control-group-label">Broadcast flow</div>
+            <div class="lms-live-control-group-actions lms-live-broadcast-actions">
+                ${renderLmsLiveStaffActionButton('show', availability, 'Show', 'fas fa-eye', `activateLmsLiveQuestion(${lmsInlineArg(resourceKey)}, ${lmsInlineArg(currentQuestion.id)})`, true)}
+                ${renderLmsLiveStaffActionButton('pause', availability, 'Pause', 'fas fa-pause', `pauseLmsLiveQuestion(${lmsInlineArg(resourceKey)})`)}
+                ${renderLmsLiveStaffActionButton('resume', availability, 'Resume', 'fas fa-play', `resumeLmsLiveQuestion(${lmsInlineArg(resourceKey)})`)}
+                ${renderLmsLiveStaffActionButton('lock', availability, 'Lock', 'fas fa-lock', `lockLmsLiveQuestion(${lmsInlineArg(resourceKey)})`)}
+                ${renderLmsLiveStaffActionButton('reveal', availability, 'Reveal', 'fas fa-check-circle', `revealLmsLiveQuestion(${lmsInlineArg(resourceKey)})`)}
+            </div>
+        </div>
+        <div class="lms-live-control-group">
+            <div class="lms-live-control-group-label">Session flow</div>
+            <div class="lms-live-control-group-actions lms-live-control-grid">
+                ${renderLmsLiveStaffActionButton('results', availability, 'Results', 'fas fa-chart-simple', `toggleLmsLiveResults(${lmsInlineArg(resourceKey)})`)}
+                ${renderLmsLiveStaffActionButton('podium', availability, 'Show rankings', 'fas fa-trophy', `revealLmsLiveQuizPodium(${lmsInlineArg(resourceKey)})`)}
+                ${renderLmsLiveStaffActionButton('prev', availability, 'Previous', 'fas fa-arrow-left', `stepLmsLiveQuestion(${lmsInlineArg(resourceKey)}, -1)`)}
+                ${renderLmsLiveStaffActionButton('next', availability, 'Next', 'fas fa-arrow-right', `stepLmsLiveQuestion(${lmsInlineArg(resourceKey)}, 1)`)}
+            </div>
+        </div>
+        <div class="lms-live-operator-note">Use Next to advance and auto-broadcast the next question. Pause if discussion takes longer, lock answers, then reveal the correct answer and answer split.</div>
+    `;
+}
+
+function renderLmsLiveBroadcastControlDeck(resourceKey, session = null, currentQuestion = null) {
+    const content = renderLmsLiveBroadcastControlDeckContent(resourceKey, session, currentQuestion);
+    if (!content) return '';
+    return `
+        <div class="lms-live-broadcast-control-deck" data-lms-live-region="broadcast-controls">
+            ${content}
         </div>
     `;
 }
@@ -1140,8 +718,6 @@ function captureLmsLiveQuizDraftFields(resourceKey) {
         focusId: '',
         focusSelectionStart: null,
         focusSelectionEnd: null,
-        title: '',
-        topic: '',
         question: '',
         options: ['', '', '', ''],
         correct: '0',
@@ -1149,8 +725,6 @@ function captureLmsLiveQuizDraftFields(resourceKey) {
         questionTopic: '',
         importText: ''
     };
-    snapshot.title = document.getElementById(`lms-live-title-${token}`)?.value || '';
-    snapshot.topic = document.getElementById(`lms-live-topic-${token}`)?.value || '';
     snapshot.question = document.getElementById(`lms-live-question-${token}`)?.value || '';
     LMS_LIVE_OPTION_KEYS.forEach((key, index) => {
         snapshot.options[index] = document.getElementById(`lms-live-option-${index}-${token}`)?.value || '';
@@ -1175,8 +749,6 @@ function restoreLmsLiveQuizDraftFields(snapshot = null, resourceKey = '') {
         if (!node || value === undefined || value === null) return;
         node.value = String(value);
     };
-    setValue(`lms-live-title-${token}`, snapshot.title);
-    setValue(`lms-live-topic-${token}`, snapshot.topic);
     setValue(`lms-live-question-${token}`, snapshot.question);
     LMS_LIVE_OPTION_KEYS.forEach((key, index) => {
         setValue(`lms-live-option-${index}-${token}`, snapshot.options?.[index] || '');
@@ -1224,12 +796,12 @@ function renderLmsLiveStaffQueueMarkup(session, resourceKey) {
                 </div>
                 <div class="lms-live-actions">
                     <span class="lms-live-pill ${questionState === 'showing' ? 'is-live' : questionState === 'paused' ? 'is-paused' : ['locked','revealed'].includes(questionState) ? 'is-locked' : ''}">${escapeHtml(questionState)}</span>
-                    <button type="button" class="kiu-btn-outline" data-lms-click="moveLmsLiveQuestion(${lmsInlineArg(resourceKey)}, ${lmsInlineArg(question.id)}, -1)"><i class="fas fa-arrow-up"></i></button>
-                    <button type="button" class="kiu-btn-outline" data-lms-click="moveLmsLiveQuestion(${lmsInlineArg(resourceKey)}, ${lmsInlineArg(question.id)}, 1)"><i class="fas fa-arrow-down"></i></button>
-                    <button type="button" class="kiu-btn-outline" data-lms-click="duplicateLmsLiveQuestion(${lmsInlineArg(resourceKey)}, ${lmsInlineArg(question.id)})"><i class="fas fa-copy"></i> Duplicate</button>
-                    <button type="button" class="kiu-btn-outline" data-lms-click="setLmsLiveQuestionReady(${lmsInlineArg(resourceKey)}, ${lmsInlineArg(question.id)})"><i class="fas fa-eye-slash"></i> Ready</button>
-                    <button type="button" class="kiu-btn-blue" data-lms-click="activateLmsLiveQuestion(${lmsInlineArg(resourceKey)}, ${lmsInlineArg(question.id)})"><i class="fas fa-play"></i> Show</button>
-                    <button type="button" class="kiu-btn-outline" data-lms-click="deleteLmsLiveQuestion(${lmsInlineArg(resourceKey)}, ${lmsInlineArg(question.id)})"><i class="fas fa-trash"></i> Remove</button>
+                    <button type="button" class="lux-secondary-btn" data-lms-click="moveLmsLiveQuestion(${lmsInlineArg(resourceKey)}, ${lmsInlineArg(question.id)}, -1)"><i class="fas fa-arrow-up"></i></button>
+                    <button type="button" class="lux-secondary-btn" data-lms-click="moveLmsLiveQuestion(${lmsInlineArg(resourceKey)}, ${lmsInlineArg(question.id)}, 1)"><i class="fas fa-arrow-down"></i></button>
+                    <button type="button" class="lux-secondary-btn" data-lms-click="duplicateLmsLiveQuestion(${lmsInlineArg(resourceKey)}, ${lmsInlineArg(question.id)})"><i class="fas fa-copy"></i> Duplicate</button>
+                    <button type="button" class="lux-secondary-btn" data-lms-click="setLmsLiveQuestionReady(${lmsInlineArg(resourceKey)}, ${lmsInlineArg(question.id)})"><i class="fas fa-eye-slash"></i> Ready</button>
+                    <button type="button" class="lux-primary-btn" data-lms-click="activateLmsLiveQuestion(${lmsInlineArg(resourceKey)}, ${lmsInlineArg(question.id)})"><i class="fas fa-play"></i> Show</button>
+                    <button type="button" class="lux-secondary-btn" data-lms-click="deleteLmsLiveQuestion(${lmsInlineArg(resourceKey)}, ${lmsInlineArg(question.id)})"><i class="fas fa-trash"></i> Remove</button>
                 </div>
             </div>
         `;
@@ -1263,9 +835,10 @@ function renderLmsLiveStaffControlGridMarkup(resourceKey, session = null, curren
     `;
 }
 
-function renderLmsLiveStaffStageMarkup(session, resourceKey, statusLabel = 'Draft') {
+function renderLmsLiveStaffStageMarkup(session, resourceKey, statusLabel = 'Draft', options = {}) {
     const currentQuestion = getLmsLiveCurrentQuestion(session);
     const timeState = currentQuestion ? getLmsLiveQuestionTimeState(currentQuestion) : null;
+    const presentationMode = Boolean(options.presentationMode);
     if (session?.status === 'ended') return renderLmsLiveSessionSummary(session);
     if (!currentQuestion) {
         return `
@@ -1276,18 +849,15 @@ function renderLmsLiveStaffStageMarkup(session, resourceKey, statusLabel = 'Draf
             </div>
         `;
     }
+    const stageClass = presentationMode ? 'lms-live-stage is-broadcast is-presentation-stage' : 'lms-live-stage is-broadcast';
     return `
-        <div class="lms-live-stage is-broadcast">
-            <div data-lms-live-region="director-bar">${renderLmsLiveStaffDirectorBarContent(session, resourceKey, statusLabel)}</div>
-            ${renderLmsLiveStatusRail(currentQuestion)}
-            <div class="lms-live-pill-row lms-live-pill-row--center" data-lms-live-region="stage-pills">${renderLmsLiveStaffStagePillsContent(session, statusLabel)}</div>
-            ${renderLmsLiveTimerMeter(currentQuestion, timeState)}
-            <div class="lms-live-question-text">${escapeHtml(currentQuestion.text)}</div>
-            <div data-lms-live-region="options">${renderLmsLiveQuestionOptions(currentQuestion, session)}</div>
-            <div data-lms-live-region="stage-breakdown">${renderLmsLiveQuestionBreakdown(session, currentQuestion)}</div>
-            <div data-lms-live-region="broadcast-actions">${renderLmsLiveStaffBroadcastActionsMarkup(session, resourceKey, currentQuestion)}</div>
-            <div data-lms-live-region="control-grid">${renderLmsLiveStaffControlGridMarkup(resourceKey, session, currentQuestion)}</div>
-            <div class="lms-live-operator-note">Use Next to advance and auto-broadcast the next question. Pause if discussion takes longer, lock answers, then reveal the correct answer and answer split.</div>
+        <div class="${stageClass}">
+            ${renderLmsLiveBroadcastHeader(session, resourceKey, statusLabel, currentQuestion)}
+            <div class="lms-live-broadcast-body${presentationMode ? ' is-presentation' : ''}">
+                ${renderLmsLiveBroadcastQuestionCard(currentQuestion, session, resourceKey, timeState)}
+                ${renderLmsLiveBroadcastResultsCard(session, currentQuestion, presentationMode)}
+            </div>
+            ${renderLmsLiveBroadcastControlDeck(resourceKey, session, currentQuestion)}
         </div>
     `;
 }
@@ -1303,10 +873,12 @@ function renderLmsLiveStudentStageMarkup(context, session, participant, particip
         : `<div class="lms-live-copy lms-live-copy-mt-10 lms-live-copy-center is-danger">Confirm your LMS group enrollment with course staff before submitting answers.</div>`;
     return `
         <div class="lms-live-stage lms-live-stage-min-320">
-            ${renderLmsLiveStatusRail(currentQuestion)}
+            <div data-lms-live-region="status-rail" class="lms-live-status-rail" aria-label="Live question state">
+                ${renderLmsLiveStatusRailSteps(currentQuestion)}
+            </div>
             ${rosterBanner}
             <div class="lms-live-pill-row lms-live-pill-row--center" data-lms-live-region="stage-pills">
-                <span class="lms-live-pill ${timeState?.paused ? 'is-paused' : timeState?.answerable ? 'is-live' : 'is-locked'}"><i class="far fa-clock"></i> ${timeState?.paused ? 'Paused' : timeState?.answerable ? `${escapeHtml(String(timeState?.remainingSeconds ?? currentQuestion.timeLimit ?? 0))}s left` : 'Answers closed'}</span>
+                <span class="lms-live-pill ${timeState?.paused ? 'is-paused' : timeState?.answerable ? 'is-live' : 'is-locked'}" data-lms-live-region="stage-clock-pill"><i class="far fa-clock"></i> ${timeState?.paused ? 'Paused' : timeState?.answerable ? `${escapeHtml(String(timeState?.remainingSeconds ?? currentQuestion.timeLimit ?? 0))}s left` : 'Answers closed'}</span>
                 <span class="lms-live-pill"><i class="fas fa-user"></i> ${escapeHtml(nickname)}</span>
                 ${answer ? `<span class="lms-live-pill ${answer.correct ? 'is-live' : ''}"><i class="fas ${answer.correct ? 'fa-check' : 'fa-circle'}"></i> ${answer.correct ? `+${escapeHtml(String((answer.score || 0) + (answer.streakBonus || 0)))}` : '0 pts'}</span>` : `<span class="lms-live-pill"><i class="fas fa-trophy"></i> ${LMS_LIVE_MAX_SCORE} max</span>`}
             </div>
@@ -1324,28 +896,150 @@ function patchLmsLiveQuizRegion(contentArea, region, html) {
     node.innerHTML = html;
 }
 
-function updateLmsLiveQuizClockUi(resourceKey) {
+function getLmsLiveTimerUiModel(question = null, timeState = null) {
+    if (!question) return null;
+    const state = String(question.state || 'draft').toLowerCase();
+    const limitSeconds = Math.max(10, Number(question.timeLimit || 45));
+    const rawRemaining = Number(timeState?.remainingSeconds);
+    const remainingSeconds = timeState?.answerable
+        ? Math.max(0, Number.isFinite(rawRemaining) ? rawRemaining : limitSeconds)
+        : Math.max(0, Number.isFinite(rawRemaining) ? rawRemaining : 0);
+    const progress = limitSeconds > 0
+        ? Math.max(0, Math.min(100, (remainingSeconds / limitSeconds) * 100))
+        : 0;
+    const isPaused = Boolean(timeState?.paused) || state === 'paused';
+    const isClosed = ['locked', 'revealed', 'completed'].includes(state)
+        || (!timeState?.answerable && !isPaused);
+    const studentViewMeta = getLmsLiveStudentViewMeta(question, timeState);
+    return {
+        remainingSeconds,
+        progress,
+        isPaused,
+        isClosed,
+        isLive: Boolean(timeState?.answerable),
+        limitSeconds,
+        directorTimerLabel: `${remainingSeconds}s`,
+        studentClockLabel: isPaused
+            ? 'Paused'
+            : timeState?.answerable
+                ? `${remainingSeconds}s left`
+                : 'Answers closed',
+        studentViewLabel: studentViewMeta.answerStatusLabel,
+        studentViewClass: studentViewMeta.tileClass
+    };
+}
+
+function applyLmsLiveTimerShellClasses(shell, numberNode, model) {
+    if (!shell || !numberNode || !model) return false;
+    shell.classList.toggle('is-live', model.isLive);
+    shell.classList.toggle('is-paused', model.isPaused);
+    shell.classList.toggle('is-closed', model.isClosed);
+    numberNode.classList.toggle('is-live', model.isLive);
+    numberNode.classList.toggle('is-paused', model.isPaused);
+    numberNode.classList.toggle('is-closed', model.isClosed);
+    return true;
+}
+
+function patchLmsLiveQuizTimerUi(resourceKey) {
+    const contentArea = document.getElementById('lms-content-area');
+    if (!contentArea || !isLmsActiveTab('live-quiz')) return false;
+    const context = resolveActiveLmsQuizContext(resourceKey);
+    if (!context?.resourceKey) return false;
+    const canonicalKey = context.resourceKey;
+    const isStaff = canManageLmsLiveQuiz(canonicalKey);
+    const session = isStaff
+        ? (getLmsLiveStaffLiveSession(canonicalKey) || getLmsLiveStaffEditingSession(canonicalKey))
+        : getLmsLiveStudentSession(canonicalKey);
+    if (!session || session.status !== 'live') return false;
+    const currentQuestion = getLmsLiveCurrentQuestion(session);
+    if (!currentQuestion) return false;
+    const questionState = String(currentQuestion.state || 'draft').toLowerCase();
+    if (!['showing', 'paused', 'locked', 'revealed'].includes(questionState)) return false;
+    const timeState = getLmsLiveQuestionTimeState(currentQuestion);
+    const model = getLmsLiveTimerUiModel(currentQuestion, timeState);
+    if (!model) return false;
+
+    const timerRegion = contentArea.querySelector('[data-lms-live-region="timer"]');
+    if (timerRegion) {
+        const shell = timerRegion.querySelector('.lms-live-timer-shell');
+        const numberNode = timerRegion.querySelector('.lms-live-timer-number');
+        const fillNode = timerRegion.querySelector('.lms-live-timer-fill');
+        if (shell && numberNode && fillNode && applyLmsLiveTimerShellClasses(shell, numberNode, model)) {
+            if (model.isPaused) {
+                numberNode.innerHTML = '<i class="fas fa-pause" aria-hidden="true"></i>';
+            } else if (model.isClosed) {
+                numberNode.innerHTML = '<i class="fas fa-lock" aria-hidden="true"></i>';
+            } else {
+                numberNode.textContent = String(model.remainingSeconds);
+            }
+            fillNode.style.setProperty('--live-progress', `${model.isClosed ? 0 : model.progress}%`);
+        } else {
+            patchLmsLiveQuizRegion(contentArea, 'timer', renderLmsLiveTimerMeterInner(currentQuestion, timeState));
+        }
+    }
+
+    const directorTimer = contentArea.querySelector('[data-lms-live-region="director-timer"] strong');
+    if (directorTimer) {
+        directorTimer.textContent = model.directorTimerLabel;
+    }
+
+    const directorStudentView = contentArea.querySelector('[data-lms-live-region="director-student-view"]');
+    if (directorStudentView) {
+        directorStudentView.classList.remove('is-open', 'is-paused', 'is-closed');
+        if (model.studentViewClass) directorStudentView.classList.add(model.studentViewClass);
+        const labelNode = directorStudentView.querySelector('strong');
+        if (labelNode) labelNode.textContent = model.studentViewLabel;
+    }
+
+    const stageClockPill = contentArea.querySelector('[data-lms-live-region="stage-clock-pill"]');
+    if (stageClockPill) {
+        stageClockPill.classList.remove('is-live', 'is-paused', 'is-locked');
+        stageClockPill.classList.add(model.isPaused ? 'is-paused' : model.isLive ? 'is-live' : 'is-locked');
+        const icon = '<i class="far fa-clock"></i> ';
+        stageClockPill.innerHTML = `${icon}${escapeHtml(model.studentClockLabel)}`;
+    }
+
+    return true;
+}
+
+function storeLmsLiveQuizVolatileSignature(canonicalKey, signature = '') {
+    if (!canonicalKey || typeof window === 'undefined') return;
+    window.__lmsLiveVolatileSignatures = window.__lmsLiveVolatileSignatures || {};
+    window.__lmsLiveVolatileSignatures[canonicalKey] = String(signature || '');
+}
+
+function finalizeLmsLivePodiumOverlay(resourceKey) {
+    if (typeof syncLmsLivePodiumOverlay !== 'function' || !isLmsActiveTab('live-quiz')) return;
+    const context = typeof resolveActiveLmsQuizContext === 'function'
+        ? resolveActiveLmsQuizContext(resourceKey)
+        : null;
+    const canonicalKey = context?.resourceKey
+        || (typeof resolveCanonicalLmsResourceKey === 'function'
+            ? resolveCanonicalLmsResourceKey(resourceKey)
+            : String(resourceKey || '').trim());
+    if (!canonicalKey) return;
+    syncLmsLivePodiumOverlay(canonicalKey);
+}
+
+function updateLmsLiveQuizVolatileUi(resourceKey) {
     const contentArea = document.getElementById('lms-content-area');
     if (!contentArea || !isLmsActiveTab('live-quiz')) return false;
     const context = resolveActiveLmsQuizContext(resourceKey);
     if (!context?.resourceKey) return false;
     const canonicalKey = context.resourceKey;
     const workspace = ensureLmsLiveQuizWorkspace(canonicalKey);
+    const volatileSignature = typeof getLmsLiveQuizVolatileSignature === 'function'
+        ? getLmsLiveQuizVolatileSignature(canonicalKey)
+        : '';
     patchLmsLiveQuizRegion(contentArea, 'sync', renderLmsLiveSyncNotice(workspace));
-    if (typeof window !== 'undefined') {
-        window.__lmsLiveVolatileSignatures = window.__lmsLiveVolatileSignatures || {};
-        const volatileSignature = typeof getLmsLiveQuizVolatileSignature === 'function'
-            ? getLmsLiveQuizVolatileSignature(canonicalKey)
-            : '';
-        window.__lmsLiveVolatileSignatures[canonicalKey] = volatileSignature;
-    }
+    storeLmsLiveQuizVolatileSignature(canonicalKey, volatileSignature);
+
     if (canManageLmsLiveQuiz(canonicalKey)) {
         const session = getLmsLiveStaffLiveSession(canonicalKey) || getLmsLiveStaffEditingSession(canonicalKey);
         const stats = getLmsLiveSessionStats(session);
         const statusLabel = session ? (session.status === 'live' ? 'Live now' : session.status === 'ended' ? 'Ended' : 'Draft') : 'No session';
         const sectionMeta = getLmsSectionMeta(parseLmsCourseKey(canonicalKey).sectionType || getCurrentLmsSectionType());
         const currentQuestion = getLmsLiveCurrentQuestion(session);
-        const timeState = currentQuestion ? getLmsLiveQuestionTimeState(currentQuestion) : null;
         patchLmsLiveQuizRegion(contentArea, 'hero-stats', `
             <span class="lms-live-pill"><i class="fas ${escapeHtml(sectionMeta.icon)}"></i> ${escapeHtml(sectionMeta.label)}</span>
             <span class="lms-live-pill ${session?.status === 'live' ? 'is-live' : ''}"><i class="fas fa-circle"></i> ${escapeHtml(statusLabel)}</span>
@@ -1353,23 +1047,33 @@ function updateLmsLiveQuizClockUi(resourceKey) {
             ${renderLmsLiveParticipantPill(canonicalKey, session)}
             <span class="lms-live-pill"><i class="fas fa-list-check"></i> ${stats.questionCount} questions</span>
         `);
-        patchLmsLiveQuizRegion(contentArea, 'director-bar', renderLmsLiveStaffDirectorBarContent(session, canonicalKey, statusLabel));
-        patchLmsLiveQuizRegion(contentArea, 'director-timer', `<strong>${escapeHtml(String(timeState?.remainingSeconds ?? currentQuestion?.timeLimit ?? 0))}s</strong><span>Timer</span>`);
-        patchLmsLiveQuizRegion(contentArea, 'stage-pills', renderLmsLiveStaffStagePillsContent(session, statusLabel));
         if (currentQuestion) {
-            patchLmsLiveQuizRegion(contentArea, 'status-rail', renderLmsLiveStatusRail(currentQuestion));
-            patchLmsLiveQuizRegion(contentArea, 'timer', renderLmsLiveTimerMeterInner(currentQuestion, timeState));
-            patchLmsLiveQuizRegion(contentArea, 'options', renderLmsLiveQuestionOptions(currentQuestion, session));
-            patchLmsLiveQuizRegion(contentArea, 'stage-breakdown', renderLmsLiveQuestionBreakdown(session, currentQuestion));
-            patchLmsLiveQuizRegion(contentArea, 'broadcast-actions', renderLmsLiveStaffBroadcastActionsMarkup(session, canonicalKey, currentQuestion));
-            patchLmsLiveQuizRegion(contentArea, 'control-grid', renderLmsLiveStaffControlGridMarkup(canonicalKey, session, currentQuestion));
+            const answeredTile = contentArea.querySelector('[data-lms-live-region="director-answered"] strong');
+            if (answeredTile) {
+                answeredTile.textContent = `${stats.currentAnswerCount}/${stats.participants}`;
+            } else {
+                patchLmsLiveQuizRegion(contentArea, 'director-bar', renderLmsLiveStaffDirectorBarContent(session, canonicalKey, statusLabel));
+            }
+            patchLmsLiveQuizRegion(contentArea, 'status-rail', renderLmsLiveStatusRailSteps(currentQuestion));
+            if (Boolean(workspace?.ui?.presentationMode)) {
+                const resultsVisible = shouldShowLmsLiveBroadcastResults(session, currentQuestion, true);
+                patchLmsLiveQuizRegion(
+                    contentArea,
+                    'broadcast-results',
+                    resultsVisible
+                        ? renderLmsLiveBroadcastResultsCardContent(session, currentQuestion, true)
+                        : `<div class="lms-live-broadcast-results-placeholder"><i class="fas fa-chart-bar"></i><span>Reveal the question to show answer split here.</span></div>`
+                );
+            }
         }
         const queueSession = getLmsLiveStaffEditingSession(canonicalKey) || session;
         patchLmsLiveQuizRegion(contentArea, 'queue', renderLmsLiveStaffQueueMarkup(queueSession, canonicalKey));
         patchLmsLiveQuizRegion(contentArea, 'leaderboard', renderLmsLiveScoreList(session));
         patchLmsLiveQuizRegion(contentArea, 'breakdown', renderLmsLiveQuestionBreakdown(session, currentQuestion));
+        patchLmsLiveQuizTimerUi(canonicalKey);
         return true;
     }
+
     const session = getLmsLiveStudentSession(canonicalKey);
     if (!session) return false;
     const participantMeta = getLmsLiveStudentMeta(canonicalKey);
@@ -1381,15 +1085,183 @@ function updateLmsLiveQuizClockUi(resourceKey) {
     const timeState = getLmsLiveQuestionTimeState(currentQuestion);
     const answer = participant?.answers?.[currentQuestion.id] || null;
     const nickname = participant?.nickname || participantMeta.name || 'Student';
-    patchLmsLiveQuizRegion(contentArea, 'status-rail', renderLmsLiveStatusRail(currentQuestion));
-    patchLmsLiveQuizRegion(contentArea, 'stage-pills', `
-        <span class="lms-live-pill ${timeState?.paused ? 'is-paused' : timeState?.answerable ? 'is-live' : 'is-locked'}"><i class="far fa-clock"></i> ${timeState?.paused ? 'Paused' : timeState?.answerable ? `${escapeHtml(String(timeState?.remainingSeconds ?? currentQuestion.timeLimit ?? 0))}s left` : 'Answers closed'}</span>
-        <span class="lms-live-pill"><i class="fas fa-user"></i> ${escapeHtml(nickname)}</span>
-        ${answer ? `<span class="lms-live-pill ${answer.correct ? 'is-live' : ''}"><i class="fas ${answer.correct ? 'fa-check' : 'fa-circle'}"></i> ${answer.correct ? `+${escapeHtml(String((answer.score || 0) + (answer.streakBonus || 0)))}` : '0 pts'}</span>` : `<span class="lms-live-pill"><i class="fas fa-trophy"></i> ${LMS_LIVE_MAX_SCORE} max</span>`}
-    `);
-    patchLmsLiveQuizRegion(contentArea, 'timer', renderLmsLiveTimerMeterInner(currentQuestion, timeState));
-    patchLmsLiveQuizRegion(contentArea, 'options', renderLmsLiveQuestionOptions(currentQuestion, session, participant, canonicalKey));
+    patchLmsLiveQuizRegion(contentArea, 'status-rail', renderLmsLiveStatusRailSteps(currentQuestion));
+    const clockPill = contentArea.querySelector('[data-lms-live-region="stage-clock-pill"]');
+    if (!clockPill) {
+        patchLmsLiveQuizRegion(contentArea, 'stage-pills', `
+            <span class="lms-live-pill ${timeState?.paused ? 'is-paused' : timeState?.answerable ? 'is-live' : 'is-locked'}" data-lms-live-region="stage-clock-pill"><i class="far fa-clock"></i> ${timeState?.paused ? 'Paused' : timeState?.answerable ? `${escapeHtml(String(timeState?.remainingSeconds ?? currentQuestion.timeLimit ?? 0))}s left` : 'Answers closed'}</span>
+            <span class="lms-live-pill"><i class="fas fa-user"></i> ${escapeHtml(nickname)}</span>
+            ${answer ? `<span class="lms-live-pill ${answer.correct ? 'is-live' : ''}"><i class="fas ${answer.correct ? 'fa-check' : 'fa-circle'}"></i> ${answer.correct ? `+${escapeHtml(String((answer.score || 0) + (answer.streakBonus || 0)))}` : '0 pts'}</span>` : `<span class="lms-live-pill"><i class="fas fa-trophy"></i> ${LMS_LIVE_MAX_SCORE} max</span>`}
+        `);
+    }
     patchLmsLiveQuizRegion(contentArea, 'leaderboard', renderLmsLiveScoreList(session, 6));
+    patchLmsLiveQuizTimerUi(canonicalKey);
+    return true;
+}
+
+function updateLmsLiveQuizClockUi(resourceKey) {
+    updateLmsLiveQuizVolatileUi(resourceKey);
+    return patchLmsLiveQuizTimerUi(resourceKey);
+}
+
+function updateLmsLiveQuizSessionUi(resourceKey, hints = {}) {
+    const contentArea = document.getElementById('lms-content-area');
+    if (!contentArea || !isLmsActiveTab('live-quiz')) return false;
+    const context = resolveActiveLmsQuizContext(resourceKey);
+    if (!context?.resourceKey || !canManageLmsLiveQuiz(context.resourceKey)) return false;
+    if (!contentArea.querySelector('[data-lms-live-region="session-header"]')) return false;
+
+    const canonicalKey = context.resourceKey;
+    const workspace = ensureLmsLiveQuizWorkspace(canonicalKey);
+    const editingSession = getLmsLiveStaffEditingSession(canonicalKey);
+    const activeSessionId = workspace.ui?.activeSessionId || editingSession?.id || '';
+
+    patchLmsLiveQuizRegion(contentArea, 'session-header',
+        renderLmsLiveSessionCardHeader(canonicalKey, workspace.sessions, editingSession));
+    patchLmsLiveQuizRegion(contentArea, 'session-fields',
+        renderLmsLiveSessionFieldsMarkup(canonicalKey, editingSession));
+    patchLmsLiveQuizRegion(contentArea, 'session-switcher',
+        renderLmsLiveSessionSwitcher(canonicalKey, workspace.sessions, activeSessionId));
+    patchLmsLiveQuizRegion(contentArea, 'session-actions',
+        renderLmsLiveSessionActionsMarkup(canonicalKey));
+    patchLmsLiveQuizRegion(contentArea, 'sync', renderLmsLiveSyncNotice(workspace));
+
+    if (typeof window.enhanceUniversalPicker === 'function') {
+        const switcher = document.getElementById(`lms-live-session-switcher-${toDomToken(canonicalKey)}`);
+        if (switcher) window.enhanceUniversalPicker(switcher);
+    }
+    if (typeof storeLmsLiveQuizRenderFingerprint === 'function') {
+        storeLmsLiveQuizRenderFingerprint(canonicalKey);
+    }
+    if (typeof getLmsLiveQuizVolatileSignature === 'function') {
+        storeLmsLiveQuizVolatileSignature(canonicalKey, getLmsLiveQuizVolatileSignature(canonicalKey));
+    }
+    return true;
+}
+
+function updateLmsLiveQuizQueueUi(resourceKey, hints = {}) {
+    const contentArea = document.getElementById('lms-content-area');
+    if (!contentArea || !isLmsActiveTab('live-quiz')) return false;
+    const context = resolveActiveLmsQuizContext(resourceKey);
+    if (!context?.resourceKey || !canManageLmsLiveQuiz(context.resourceKey)) return false;
+    if (!contentArea.querySelector('[data-lms-live-region="queue"]')) return false;
+
+    const canonicalKey = context.resourceKey;
+    const workspace = ensureLmsLiveQuizWorkspace(canonicalKey);
+    const runtimeSession = getLmsLiveStaffLiveSession(canonicalKey) || getLmsLiveStaffEditingSession(canonicalKey);
+    const queueSession = typeof getLmsLiveStaffQueueSession === 'function'
+        ? getLmsLiveStaffQueueSession(canonicalKey)
+        : (getLmsLiveStaffEditingSession(canonicalKey) || runtimeSession);
+    const currentQuestion = getLmsLiveCurrentQuestion(runtimeSession);
+    const statusLabel = runtimeSession
+        ? (runtimeSession.status === 'live' ? 'Live now' : runtimeSession.status === 'ended' ? 'Ended' : 'Draft')
+        : 'No session';
+
+    patchLmsLiveQuizRegion(contentArea, 'sync', renderLmsLiveSyncNotice(workspace));
+    patchLmsLiveQuizRegion(contentArea, 'queue', renderLmsLiveStaffQueueMarkup(queueSession, canonicalKey));
+
+    if (hints.includeHeroStats !== false) {
+        const stats = getLmsLiveSessionStats(runtimeSession);
+        const sectionMeta = getLmsSectionMeta(parseLmsCourseKey(canonicalKey).sectionType || getCurrentLmsSectionType());
+        patchLmsLiveQuizRegion(contentArea, 'hero-stats', `
+            <span class="lms-live-pill"><i class="fas ${escapeHtml(sectionMeta.icon)}"></i> ${escapeHtml(sectionMeta.label)}</span>
+            <span class="lms-live-pill ${runtimeSession?.status === 'live' ? 'is-live' : ''}"><i class="fas fa-circle"></i> ${escapeHtml(statusLabel)}</span>
+            ${runtimeSession ? `<span class="lms-live-pill"><i class="fas fa-broadcast-tower"></i> Auto shown to group</span>` : ''}
+            ${renderLmsLiveParticipantPill(canonicalKey, runtimeSession)}
+            <span class="lms-live-pill"><i class="fas fa-list-check"></i> ${stats.questionCount} questions</span>
+        `);
+    }
+
+    if (hints.includeBreakdown) {
+        patchLmsLiveQuizRegion(contentArea, 'breakdown', renderLmsLiveQuestionBreakdown(runtimeSession, currentQuestion));
+    }
+
+    if (hints.includeStage && contentArea.querySelector('[data-lms-live-region="stage"]')) {
+        patchLmsLiveQuizRegion(contentArea, 'stage', renderLmsLiveStaffStageMarkup(runtimeSession, canonicalKey, statusLabel, {
+            presentationMode: Boolean(workspace.ui.presentationMode)
+        }));
+    }
+
+    if (typeof storeLmsLiveQuizQueueSignature === 'function') {
+        storeLmsLiveQuizQueueSignature(canonicalKey);
+    }
+    if (typeof storeLmsLiveQuizBroadcastSignature === 'function') {
+        storeLmsLiveQuizBroadcastSignature(canonicalKey);
+    }
+    if (typeof getLmsLiveQuizVolatileSignature === 'function') {
+        storeLmsLiveQuizVolatileSignature(canonicalKey, getLmsLiveQuizVolatileSignature(canonicalKey));
+    }
+    return true;
+}
+
+function updateLmsLiveQuizBroadcastUi(resourceKey, hints = {}) {
+    const contentArea = document.getElementById('lms-content-area');
+    if (!contentArea || !isLmsActiveTab('live-quiz')) return false;
+    const context = resolveActiveLmsQuizContext(resourceKey);
+    if (!context?.resourceKey) return false;
+    const canonicalKey = context.resourceKey;
+    if (!canManageLmsLiveQuiz(canonicalKey)) return false;
+    if (!contentArea.querySelector('[data-lms-live-region="broadcast-controls"]')) return false;
+
+    const workspace = ensureLmsLiveQuizWorkspace(canonicalKey);
+    const session = getLmsLiveStaffLiveSession(canonicalKey) || getLmsLiveStaffEditingSession(canonicalKey);
+    const currentQuestion = getLmsLiveCurrentQuestion(session);
+    if (!session || !currentQuestion) return false;
+
+    const statusLabel = session.status === 'live' ? 'Live now' : session.status === 'ended' ? 'Ended' : 'Draft';
+    const timeState = getLmsLiveQuestionTimeState(currentQuestion);
+    const presentationMode = Boolean(workspace.ui.presentationMode);
+
+    patchLmsLiveQuizRegion(contentArea, 'sync', renderLmsLiveSyncNotice(workspace));
+    patchLmsLiveQuizRegion(contentArea, 'broadcast-controls',
+        renderLmsLiveBroadcastControlDeckContent(canonicalKey, session, currentQuestion));
+    patchLmsLiveQuizRegion(contentArea, 'status-rail', renderLmsLiveStatusRailSteps(currentQuestion));
+    patchLmsLiveQuizRegion(contentArea, 'director-bar',
+        renderLmsLiveStaffDirectorBarContent(session, canonicalKey, statusLabel));
+
+    if (hints.questionSwap) {
+        const questionCard = contentArea.querySelector('[data-lms-live-region="broadcast-question"]');
+        if (questionCard) {
+            questionCard.innerHTML = renderLmsLiveBroadcastQuestionCardInner(
+                currentQuestion,
+                session,
+                canonicalKey,
+                timeState
+            );
+        }
+    } else {
+        patchLmsLiveQuizRegion(contentArea, 'options', renderLmsLiveQuestionOptions(currentQuestion, session));
+    }
+
+    patchLmsLiveQuizTimerUi(canonicalKey);
+
+    const resultsNode = contentArea.querySelector('[data-lms-live-region="broadcast-results"]');
+    if (resultsNode && (hints.includeResults || presentationMode)) {
+        const resultsVisible = shouldShowLmsLiveBroadcastResults(session, currentQuestion, presentationMode);
+        resultsNode.classList.toggle('is-placeholder', !resultsVisible);
+        patchLmsLiveQuizRegion(
+            contentArea,
+            'broadcast-results',
+            resultsVisible
+                ? renderLmsLiveBroadcastResultsCardContent(session, currentQuestion, presentationMode)
+                : `<div class="lms-live-broadcast-results-placeholder"><i class="fas fa-chart-bar"></i><span>Reveal the question to show answer split here.</span></div>`
+        );
+    }
+
+    const queueSession = getLmsLiveStaffEditingSession(canonicalKey) || session;
+    patchLmsLiveQuizRegion(contentArea, 'queue', renderLmsLiveStaffQueueMarkup(queueSession, canonicalKey));
+    patchLmsLiveQuizRegion(contentArea, 'breakdown', renderLmsLiveQuestionBreakdown(session, currentQuestion));
+    patchLmsLiveQuizRegion(contentArea, 'leaderboard', renderLmsLiveScoreList(session));
+
+    if (typeof storeLmsLiveQuizQueueSignature === 'function') {
+        storeLmsLiveQuizQueueSignature(canonicalKey);
+    }
+    if (typeof storeLmsLiveQuizBroadcastSignature === 'function') {
+        storeLmsLiveQuizBroadcastSignature(canonicalKey);
+    }
+    if (typeof getLmsLiveQuizVolatileSignature === 'function') {
+        storeLmsLiveQuizVolatileSignature(canonicalKey, getLmsLiveQuizVolatileSignature(canonicalKey));
+    }
     return true;
 }
 
@@ -1400,42 +1272,86 @@ function refreshLmsLiveQuizUi(resourceKey, options = {}) {
         return;
     }
     const canonicalKey = context.resourceKey;
+    if (isLmsLiveSessionRemoveDialogOpen() && options.forceStructuralRender !== true) {
+        if (typeof patchLmsLiveQuizTimerUi === 'function') {
+            patchLmsLiveQuizTimerUi(canonicalKey);
+        }
+        return;
+    }
     if (options.forceStructuralRender === true) {
         renderLmsLiveQuizSection(canonicalKey, options);
         return;
     }
-    const structuralFingerprint = typeof getLmsLiveQuizStructuralFingerprint === 'function'
-        ? getLmsLiveQuizStructuralFingerprint(canonicalKey)
+    const layoutFingerprint = typeof getLmsLiveQuizLayoutFingerprint === 'function'
+        ? getLmsLiveQuizLayoutFingerprint(canonicalKey)
+        : (typeof getLmsLiveQuizStructuralFingerprint === 'function'
+            ? getLmsLiveQuizStructuralFingerprint(canonicalKey)
+            : '');
+    const queueSignature = typeof getLmsLiveQuizQueueSignature === 'function'
+        ? getLmsLiveQuizQueueSignature(canonicalKey)
+        : '';
+    const broadcastSignature = typeof getLmsLiveQuizBroadcastSignature === 'function'
+        ? getLmsLiveQuizBroadcastSignature(canonicalKey)
         : '';
     const volatileSignature = typeof getLmsLiveQuizVolatileSignature === 'function'
         ? getLmsLiveQuizVolatileSignature(canonicalKey)
         : '';
-    const previousStructural = window.__lmsLiveRenderFingerprints?.[canonicalKey] || '';
+    const previousLayout = window.__lmsLiveRenderFingerprints?.[canonicalKey] || '';
+    const previousQueue = window.__lmsLiveQueueSignatures?.[canonicalKey] || '';
+    const previousBroadcast = window.__lmsLiveBroadcastSignatures?.[canonicalKey] || '';
     const previousVolatile = window.__lmsLiveVolatileSignatures?.[canonicalKey] || '';
-    if (!options.forceStructuralRender && isLmsLiveQuizDraftEditorActive()) {
+    const forceBroadcastPatch = options.forceBroadcastPatch === true;
+    const forceQueuePatch = options.forceQueuePatch === true;
+    if (!options.forceStructuralRender && !forceBroadcastPatch && !forceQueuePatch && isLmsLiveQuizDraftEditorActive()) {
         const workspace = ensureLmsLiveQuizWorkspace(canonicalKey);
         workspace.ui.deferredRender = true;
-        updateLmsLiveQuizClockUi(canonicalKey);
-        if (typeof window !== 'undefined') {
-            window.__lmsLiveVolatileSignatures = window.__lmsLiveVolatileSignatures || {};
-            window.__lmsLiveVolatileSignatures[canonicalKey] = volatileSignature;
-        }
+        patchLmsLiveQuizTimerUi(canonicalKey);
+        storeLmsLiveQuizVolatileSignature(canonicalKey, volatileSignature);
         return;
     }
-    if (structuralFingerprint && structuralFingerprint === previousStructural) {
-        updateLmsLiveQuizClockUi(canonicalKey);
-        if (volatileSignature && volatileSignature !== previousVolatile) {
-            if (typeof window !== 'undefined') {
-                window.__lmsLiveVolatileSignatures = window.__lmsLiveVolatileSignatures || {};
-                window.__lmsLiveVolatileSignatures[canonicalKey] = volatileSignature;
-            }
+    if (layoutFingerprint && layoutFingerprint === previousLayout) {
+        const broadcastChanged = broadcastSignature !== previousBroadcast;
+        const queueChanged = queueSignature !== previousQueue;
+        const volatileChanged = volatileSignature !== previousVolatile;
+        const patchHints = {
+            ...(options.queuePatchHints || {}),
+            ...(options.broadcastPatchHints || {})
+        };
+        let broadcastPatchApplied = false;
+        let queuePatchApplied = false;
+        if (broadcastChanged || forceBroadcastPatch) {
+            broadcastPatchApplied = updateLmsLiveQuizBroadcastUi(
+                canonicalKey,
+                options.broadcastPatchHints || patchHints
+            );
         }
+        if (queueChanged || forceQueuePatch) {
+            queuePatchApplied = updateLmsLiveQuizQueueUi(
+                canonicalKey,
+                options.queuePatchHints || patchHints
+            );
+        }
+        if (volatileChanged) {
+            updateLmsLiveQuizVolatileUi(canonicalKey);
+        }
+        const forcedPatchNeeded = forceQueuePatch || forceBroadcastPatch;
+        const forcedPatchApplied = (!forceQueuePatch || queuePatchApplied)
+            && (!forceBroadcastPatch || broadcastPatchApplied);
+        if (forcedPatchNeeded && !forcedPatchApplied) {
+            renderLmsLiveQuizSection(canonicalKey, { skipLoad: true, forceStructuralRender: true });
+            return;
+        }
+        finalizeLmsLivePodiumOverlay(canonicalKey);
+        if (broadcastPatchApplied || queuePatchApplied || volatileChanged) return;
         return;
     }
-    if (typeof window !== 'undefined') {
-        window.__lmsLiveVolatileSignatures = window.__lmsLiveVolatileSignatures || {};
-        window.__lmsLiveVolatileSignatures[canonicalKey] = volatileSignature;
+    if (typeof storeLmsLiveQuizBroadcastSignature === 'function') {
+        storeLmsLiveQuizBroadcastSignature(canonicalKey, broadcastSignature);
     }
+    if (typeof storeLmsLiveQuizQueueSignature === 'function') {
+        storeLmsLiveQuizQueueSignature(canonicalKey, queueSignature);
+    }
+    storeLmsLiveQuizVolatileSignature(canonicalKey, volatileSignature);
     renderLmsLiveQuizSection(canonicalKey, options);
 }
 
@@ -1451,6 +1367,9 @@ function renderLmsLiveStaffWorkspace(context) {
     const token = toDomToken(resourceKey);
     const workspace = ensureLmsLiveQuizWorkspace(resourceKey);
     const editingSession = getLmsLiveStaffEditingSession(resourceKey);
+    const queueSession = typeof getLmsLiveStaffQueueSession === 'function'
+        ? getLmsLiveStaffQueueSession(resourceKey)
+        : editingSession;
     const runtimeSession = getLmsLiveStaffLiveSession(resourceKey) || editingSession;
     const sectionMeta = getLmsSectionMeta(parseLmsCourseKey(resourceKey).sectionType || getCurrentLmsSectionType());
     const stats = getLmsLiveSessionStats(runtimeSession);
@@ -1458,8 +1377,10 @@ function renderLmsLiveStaffWorkspace(context) {
     const statusLabel = runtimeSession
         ? (runtimeSession.status === 'live' ? 'Live now' : runtimeSession.status === 'ended' ? 'Ended' : 'Draft')
         : 'No session';
-    const questionCards = renderLmsLiveStaffQueueMarkup(editingSession, resourceKey);
-    const stage = renderLmsLiveStaffStageMarkup(runtimeSession, resourceKey, statusLabel);
+    const questionCards = renderLmsLiveStaffQueueMarkup(queueSession || editingSession, resourceKey);
+    const stage = renderLmsLiveStaffStageMarkup(runtimeSession, resourceKey, statusLabel, {
+        presentationMode: Boolean(workspace.ui.presentationMode)
+    });
 
     if (workspace.ui.presentationMode) {
         return `
@@ -1470,7 +1391,7 @@ function renderLmsLiveStaffWorkspace(context) {
                         <div class="lms-live-title">${escapeHtml(runtimeSession?.title || 'Live Quiz')}</div>
                     <div class="lms-live-copy">${escapeHtml(context.subject?.name || context.courseId || 'Subject')} - live broadcast for enrolled students</div>
                     </div>
-                    <button type="button" class="kiu-btn-outline" data-lms-click="toggleLmsLivePresentationMode(${lmsInlineArg(resourceKey)})"><i class="fas fa-compress"></i> Exit</button>
+                    <button type="button" class="lux-secondary-btn" data-lms-click="toggleLmsLivePresentationMode(${lmsInlineArg(resourceKey)})"><i class="fas fa-compress"></i> Exit</button>
                 </section>
                 <section class="lms-live-layout">
                     <div class="lms-live-panel" data-lms-live-region="stage">${stage}</div>
@@ -1512,10 +1433,11 @@ function renderLmsLiveStaffWorkspace(context) {
                                 <div class="lms-route-card-title lms-live-card-title-mt-5 lms-live-queue-title">Ready for this group</div>
                             </div>
                             <div class="lms-live-actions lms-live-queue-actions">
-                                ${runtimeSession ? `<button type="button" class="kiu-btn-outline" data-lms-click="toggleLmsLivePresentationMode(${lmsInlineArg(resourceKey)})"><i class="fas fa-display"></i> Present</button>` : ''}
-                                ${runtimeSession ? `<button type="button" class="kiu-btn-outline" data-lms-click="exportLmsLiveQuizCsv(${lmsInlineArg(resourceKey)})"><i class="fas fa-file-export"></i> Export</button>` : ''}
-                                ${runtimeSession && runtimeSession.status !== 'ended' ? `<button type="button" class="kiu-btn-outline" data-lms-click="endLmsLiveSession(${lmsInlineArg(resourceKey)})"><i class="fas fa-stop"></i> End</button>` : ''}
-                                ${runtimeSession ? `<button type="button" class="kiu-btn-outline" data-lms-click="clearLmsLiveAnswers(${lmsInlineArg(resourceKey)})"><i class="fas fa-rotate"></i> Clear answers</button>` : ''}
+                                ${runtimeSession ? `<button type="button" class="lux-secondary-btn" data-lms-click="toggleLmsLivePresentationMode(${lmsInlineArg(resourceKey)})"><i class="fas fa-display"></i> Present</button>` : ''}
+                                ${runtimeSession ? renderLmsLivePodiumQueueButton(resourceKey, runtimeSession) : ''}
+                                ${runtimeSession ? `<button type="button" class="lux-secondary-btn" data-lms-click="exportLmsLiveQuizCsv(${lmsInlineArg(resourceKey)})"><i class="fas fa-file-export"></i> Export</button>` : ''}
+                                ${runtimeSession && runtimeSession.status !== 'ended' ? `<button type="button" class="lux-secondary-btn" data-lms-click="endLmsLiveSession(${lmsInlineArg(resourceKey)})"><i class="fas fa-stop"></i> End</button>` : ''}
+                                ${runtimeSession ? `<button type="button" class="lux-secondary-btn" data-lms-click="clearLmsLiveAnswers(${lmsInlineArg(resourceKey)})"><i class="fas fa-rotate"></i> Clear answers</button>` : ''}
                             </div>
                         </div>
                         <div class="lms-live-question-list lms-live-queue-list" data-lms-live-region="queue">${questionCards}</div>
@@ -1524,22 +1446,11 @@ function renderLmsLiveStaffWorkspace(context) {
                 <aside class="lms-live-side-stack">
                     ${renderLmsLiveRosterPanel(resourceKey, runtimeSession)}
                     <div class="lms-live-card">
-                        <div class="lms-live-label">Session</div>
+                        <div data-lms-live-region="session-header">${renderLmsLiveSessionCardHeader(resourceKey, workspace.sessions, editingSession)}</div>
                         <div class="lms-live-form-grid lms-live-form-grid-mt-12">
-                            <label class="lms-route-field">
-                                <span class="lms-route-field-label">Title</span>
-                                <input id="lms-live-title-${escapeHtml(token)}" class="lms-route-input" type="text" placeholder="e.g. Week 4 lecture quiz" value="${escapeHtml(editingSession?.title || '')}">
-                            </label>
-                            <label class="lms-route-field">
-                                <span class="lms-route-field-label">Topic</span>
-                                <input id="lms-live-topic-${escapeHtml(token)}" class="lms-route-input" type="text" placeholder="Topic or slide section" value="${escapeHtml(editingSession?.topic || '')}">
-                            </label>
-                            ${renderLmsLiveSessionSwitcher(resourceKey, workspace.sessions, workspace.ui?.activeSessionId || editingSession?.id || '')}
-                            ${editingSession ? `<button type="button" class="kiu-btn-outline" data-lms-resource-key="${escapeHtml(resourceKey)}" data-lms-click="saveLmsLiveSessionDetails(this.dataset.lmsResourceKey)"><i class="fas fa-save"></i> Save details</button>` : ''}
-                            ${editingSession && editingSession.status !== 'live' && editingSession.status !== 'ended' && editingSession.questions?.length
-                                ? `<button type="button" class="kiu-btn-blue" data-lms-resource-key="${escapeHtml(resourceKey)}" data-lms-click="startLmsLiveSession(this.dataset.lmsResourceKey)"><i class="fas fa-broadcast-tower"></i> Start live session</button>`
-                                : ''}
-                            <button type="button" class="kiu-btn-blue" data-lms-resource-key="${escapeHtml(resourceKey)}" data-lms-click="createLmsLiveSession(this.dataset.lmsResourceKey)"><i class="fas fa-plus"></i> New session</button>
+                            <div data-lms-live-region="session-fields">${renderLmsLiveSessionFieldsMarkup(resourceKey, editingSession)}</div>
+                            <div data-lms-live-region="session-switcher">${renderLmsLiveSessionSwitcher(resourceKey, workspace.sessions, workspace.ui?.activeSessionId || editingSession?.id || '')}</div>
+                            <div data-lms-live-region="session-actions">${renderLmsLiveSessionActionsMarkup(resourceKey)}</div>
                         </div>
                     </div>
                     <div class="lms-live-card">
@@ -1573,14 +1484,14 @@ function renderLmsLiveStaffWorkspace(context) {
                                 <span class="lms-route-field-label">Topic label</span>
                                 <input id="lms-live-question-topic-${escapeHtml(token)}" class="lms-route-input" type="text" placeholder="Optional">
                             </label>
-                            <button type="button" class="kiu-btn-blue" data-lms-click="addLmsLiveQuestion(${lmsInlineArg(resourceKey)})"><i class="fas fa-plus"></i> Add question</button>
+                            <button type="button" class="lux-primary-btn" data-lms-click="addLmsLiveQuestion(${lmsInlineArg(resourceKey)})"><i class="fas fa-plus"></i> Add question</button>
                         </div>
                     </div>
                     <div class="lms-live-card">
                         <div class="lms-live-label">Import questions</div>
                         <div class="lms-live-copy">One line per question: Question | A | B | C | D | correct letter | seconds</div>
                         <textarea id="lms-live-import-${escapeHtml(token)}" class="lms-route-textarea" rows="5" placeholder="What is 2+2? | 3 | 4 | 5 | 6 | B | 30"></textarea>
-                        <button type="button" class="kiu-btn-outline lms-live-import-btn-mt-10" data-lms-click="importLmsLiveQuestionsFromText(${lmsInlineArg(resourceKey)})"><i class="fas fa-file-import"></i> Import</button>
+                        <button type="button" class="lux-secondary-btn lms-live-import-btn-mt-10" data-lms-click="importLmsLiveQuestionsFromText(${lmsInlineArg(resourceKey)})"><i class="fas fa-file-import"></i> Import</button>
                     </div>
                     <div class="lms-live-card">
                         <div class="lms-live-label">Leaderboard</div>
@@ -1699,6 +1610,19 @@ function paintLmsLiveQuizSectionContent(context, options = {}) {
     if (typeof storeLmsLiveQuizRenderFingerprint === 'function') {
         storeLmsLiveQuizRenderFingerprint(context.resourceKey);
     }
+    if (typeof storeLmsLiveQuizBroadcastSignature === 'function') {
+        storeLmsLiveQuizBroadcastSignature(context.resourceKey);
+    }
+    if (typeof storeLmsLiveQuizQueueSignature === 'function') {
+        storeLmsLiveQuizQueueSignature(context.resourceKey);
+    }
+    if (typeof getLmsLiveQuizVolatileSignature === 'function') {
+        storeLmsLiveQuizVolatileSignature(
+            context.resourceKey,
+            getLmsLiveQuizVolatileSignature(context.resourceKey)
+        );
+    }
+    patchLmsLiveQuizTimerUi(context.resourceKey);
     scheduleLmsLiveClockRefresh(context.resourceKey);
     if (typeof bindLmsLiveQuizFocusRefresh === 'function') {
         bindLmsLiveQuizFocusRefresh();
@@ -1707,6 +1631,11 @@ function paintLmsLiveQuizSectionContent(context, options = {}) {
         const sectionType = typeof getCurrentLmsSectionType === 'function' ? getCurrentLmsSectionType() : '';
         const courseKey = typeof getLmsTabCourseKey === 'function' ? getLmsTabCourseKey('live-quiz') : context.resourceKey;
         window.syncLmsTabRenderCacheFromDom('live-quiz', courseKey, sectionType);
+    }
+    finalizeLmsLivePodiumOverlay(context.resourceKey);
+    if (canManageLmsLiveQuiz(context.resourceKey) && typeof window.enhanceUniversalPicker === 'function') {
+        const switcher = document.getElementById(`lms-live-session-switcher-${toDomToken(context.resourceKey)}`);
+        if (switcher) window.enhanceUniversalPicker(switcher);
     }
 }
 
@@ -1763,6 +1692,11 @@ if (typeof window !== 'undefined') {
         refreshLmsLiveQuizUi,
         maybeRenderLmsLiveQuizSection,
         updateLmsLiveQuizClockUi,
+        updateLmsLiveQuizVolatileUi,
+        updateLmsLiveQuizBroadcastUi,
+        updateLmsLiveQuizQueueUi,
+        updateLmsLiveQuizSessionUi,
+        patchLmsLiveQuizTimerUi,
         captureLmsLiveQuizDraftFields,
         restoreLmsLiveQuizDraftFields,
         handleLmsLiveQuizRealtimeUpdate,
@@ -1784,9 +1718,17 @@ if (typeof window !== 'undefined') {
         importLmsLiveQuestionsFromText,
         addLmsLiveQuestion,
         createLmsLiveSession,
+        deleteLmsLiveSession,
         setLmsLiveActiveSession,
+        updateLmsLiveSessionField,
         saveLmsLiveSessionDetails,
+        openLmsLiveSessionRemoveDialog,
+        advanceLmsLiveSessionRemoveDialog,
+        confirmLmsLiveSessionRemove,
+        closeLmsLiveSessionRemoveDialog,
         toggleLmsLivePresentationMode,
+        revealLmsLiveQuizPodium,
+        dismissLmsLiveQuizPodium,
         answerLmsLiveQuestion,
         seedLmsLiveQuizRoster
     });

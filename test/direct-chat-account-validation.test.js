@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createRequire } from 'module';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
 const require = createRequire(import.meta.url);
@@ -24,6 +24,8 @@ describe('direct chat account validation', () => {
         const socialPage = readSource('assets/js/pages/social-page.js');
 
         expect(socialPage).toContain('data-action="directory-message"');
+        expect(socialPage).toContain("action === 'directory-message' || action === 'message-start'");
+        expect(socialPage).toContain('data-action="message-start"');
         expect(socialPage).toContain('Message');
         expect(socialPage).toContain('Add friend');
     });

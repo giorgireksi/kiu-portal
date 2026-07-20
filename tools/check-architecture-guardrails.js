@@ -9,12 +9,103 @@ const {
 } = require('./visual-route-classification');
 
 const ROOT = path.resolve(__dirname, '..');
+const jsCeilingsOnly = process.argv.includes('--js-ceilings-only');
 
 const explicitMobileShellRouteGuardrails = {
-    'admin-orders.html': { category: 'standard-shell', dedicatedCss: ['assets/css/admin-orders-route.css'], mobileShell: 'shared-standalone' },
-    'admin-tools.html': { category: 'special-surface', dedicatedCss: ['assets/css/admin-tools-luxury.css'], mobileShell: 'shared-standalone' },
-    'admin-scheduler.html': { category: 'special-surface', dedicatedCss: ['assets/css/admin-scheduler-route.css'], mobileShell: 'shared-standalone' }
+    'admin-orders.html': { category: 'standard-shell', dedicatedCss: ['assets/css/lux-page-bare-lite.css'], mobileShell: 'shared-standalone' },
+    'admin-tools.html': { category: 'special-surface', dedicatedCss: ['assets/css/lux-page-bare-lite.css'], mobileShell: 'shared-standalone' },
+    'admin-scheduler.html': { category: 'special-surface', dedicatedCss: ['assets/css/lux-page-bare-lite.css'], mobileShell: 'shared-standalone' }
 };
+
+/** Wave 11+ peels must expose a factory marker (__kiuCreate* / createKiu*). Allowlist grows with each peel. */
+const factoryPeelAllowlist = [
+    'assets/js/features/luxury-palette-runtime.js',
+    'assets/js/features/luxury-atmosphere-runtime.js',
+    'assets/js/features/luxury-shell-studio-runtime.js',
+    'assets/js/features/luxury-shell-picker-runtime.js',
+    'assets/js/features/luxury-transparency-model-runtime.js',
+    'assets/js/pages/student-service-page-runtime.js',
+    'assets/js/pages/student-service-inbox-runtime.js',
+    'assets/js/pages/student-service-modules-runtime.js',
+    'assets/js/pages/social-page-survey-runtime.js',
+    'assets/js/pages/social-page-feed-runtime.js',
+    'assets/js/pages/social-page-shell-runtime.js',
+    'assets/js/pages/social-workspace-graph-sync-runtime.js',
+    'assets/js/pages/lms-whiteboard-chrome-runtime.js',
+    'assets/js/shared/social-lite-project-runtime.js',
+    'assets/js/pages/lms-classroom-sessions-runtime.js',
+    'assets/js/features/home-dashboard-widget-data-runtime.js',
+    'assets/js/features/home-dashboard-widget-layout-runtime.js',
+    'assets/js/pages/admin-registration-seats-runtime.js',
+    'assets/js/pages/lms-quiz-focus-runtime.js',
+    'assets/js/app/api-lms-portal-runtime.js',
+    'assets/js/pages/lms-live-quiz-session-runtime.js',
+    'assets/js/pages/lms-section-quiz-runtime.js',
+    'assets/js/pages/student-registration-eligibility-runtime.js',
+    'assets/js/shared/lux-transparency-route-runtime.js',
+    'assets/js/shared/faculty-schedule-runtime.js',
+    'assets/js/pages/registration-semester-runtime.js',
+    'assets/js/pages/gradebook-weights-runtime.js',
+    'assets/js/pages/gradebook-history-ui-runtime.js',
+    'assets/js/pages/gradebook-quiz-map-runtime.js',
+    'assets/js/pages/gradebook-components-runtime.js',
+    'assets/js/pages/admin-scheduler-faculty-runtime.js',
+    'assets/js/shared/messenger-gradebook-runtime.js',
+    'assets/js/pages/students-command-mobility-runtime.js',
+    'assets/js/pages/form-builder-actions-runtime.js',
+    'assets/js/pages/student-service-qa-thread-runtime.js',
+    'assets/js/pages/social-workspace-events-input-runtime.js',
+    'assets/js/pages/social-workspace-events-submit-runtime.js',
+    'assets/js/pages/social-workspace-panel-budget-runtime.js',
+    'assets/js/pages/lms-whiteboard-session-runtime.js',
+    'assets/js/pages/lms-quiz-workspace-session-runtime.js',
+    'assets/js/pages/social-page-interactions-runtime.js',
+    'assets/js/shared/social-lite-content-runtime.js',
+    'assets/js/pages/student-service-ops-runtime.js',
+    'assets/js/pages/admin-registration-cms-runtime.js',
+    'assets/js/pages/lms-classroom-tabs-shell-runtime.js',
+    'assets/js/pages/exams-console-workspace-runtime.js',
+    'assets/js/pages/lms-whiteboard-selection-runtime.js',
+    'assets/js/pages/lms-quiz-workspace-review-runtime.js',
+    'assets/js/features/luxury-shell-topbar-runtime.js',
+    'assets/js/shared/messenger-chrome-runtime.js',
+    'assets/js/app/state-deleted-staff-runtime.js',
+    'assets/js/app/state-admin-exam-runtime.js',
+    'assets/js/pages/student-registration-choice-runtime.js',
+    'assets/js/pages/admin-registration-boot-runtime.js',
+    'assets/js/app/api-portal-persist-runtime.js',
+    'assets/js/app/api-admin-merge-runtime.js',
+    'assets/js/pages/student-service-bootstrap-runtime.js',
+    'assets/js/shared/faculty-messenger-runtime.js',
+    'assets/js/pages/registration-curriculum-runtime.js',
+    'assets/js/pages/lms-exam-session-runtime.js',
+    'assets/js/pages/lms-live-quiz-ui-staff-runtime.js',
+    'assets/js/pages/lms-live-quiz-access-runtime.js',
+    'assets/js/pages/lms-classroom-tabs-panel-runtime.js',
+    'assets/js/pages/exams-console-schedule-runtime.js',
+    'assets/js/pages/students-command-academic-runtime.js',
+    'assets/js/pages/admin-scheduler-session-runtime.js',
+    'assets/js/pages/student-service-qa-staff-runtime.js',
+    'assets/js/features/luxury-index-sync-runtime.js',
+    'assets/js/features/luxury-index-home-shell-runtime.js',
+    'assets/js/shared/social-lite-invite-runtime.js',
+    'assets/js/features/home-dashboard-gesture-runtime.js',
+    'assets/js/pages/social-page-boot-runtime.js',
+    'assets/js/pages/social-workspace-graph-layout-runtime.js',
+    'assets/js/pages/social-workspace-panel-team-runtime.js',
+    'assets/js/pages/form-blueprint-runtime.js',
+    'assets/js/app/portal-compat-runtime.js',
+    'assets/js/pages/social-workspace.js',
+    'assets/js/app/portal-api-stubs-runtime.js',
+];
+
+/** Allowed window.* assignment prefixes on factory peels (Structure scorecard Wave 14). */
+const factoryPeelAllowedWindowAssignPrefixes = [
+    '__KIU_',
+    '__kiu',
+    'Kiu'
+];
+
 
 const lineCountThresholds = [
     {
@@ -29,29 +120,712 @@ const lineCountThresholds = [
     },
     {
         file: 'assets/js/pages/lms.js',
-        maxLines: 3000,
-        reason: 'Post-split ceiling now that LMS route ownership is distributed across focused runtime modules.'
+        maxLines: 1850,
+        reason: 'Wave 18: host ≤1850 after headroom peel. Wave 16: section/quiz helpers peeled to lms-section-quiz-runtime.js.'
+    },
+    {
+        file: 'assets/js/pages/lms-section-quiz-runtime.js',
+        maxLines: 1000,
+        reason: 'LMS section keys + quiz bank/normalize helpers peeled from lms.js.'
+    },
+    {
+        file: 'assets/js/pages/lms-quiz-blue-runtime.js',
+        maxLines: 500,
+        reason: 'Kiu Blue helper/gate/heartbeat peeled from lms.js.'
     },
     {
         file: 'assets/js/features/index-luxury.js',
-        maxLines: 2600,
-        reason: 'Post-split ceiling now that shell chrome and home dashboard ownership live in dedicated luxury modules.'
+        maxLines: 1850,
+        reason: 'Wave 18: host ≤1850 after headroom peel. Wave 16: transparency model + shortcut helpers in luxury-transparency-model-runtime.js.'
+    },
+    {
+        file: 'assets/js/features/luxury-transparency-model-runtime.js',
+        maxLines: 500,
+        reason: 'Transparency model + shortcut/layout helpers peeled from index-luxury.js.'
+    },
+    {
+        file: 'assets/js/features/luxury-atmosphere-runtime.js',
+        maxLines: 750,
+        reason: 'Theme/background/particle/fog/mixer peeled from index-luxury.js.'
+    },
+    {
+        file: 'assets/js/features/luxury-palette-runtime.js',
+        maxLines: 450,
+        reason: 'Color helpers + palette resolve peeled from index-luxury.js.'
+    },
+    {
+        file: 'assets/js/features/luxury-shell-chrome.js',
+        maxLines: 1850,
+        reason: 'Wave 18: host ≤1850 after headroom peel. Wave 16: picker/utility chrome peeled to luxury-shell-picker-runtime.js.'
+    },
+    {
+        file: 'assets/js/features/luxury-shell-picker-runtime.js',
+        maxLines: 950,
+        reason: 'Utility panels + universal picker chrome peeled from luxury-shell-chrome.js.'
+    },
+    {
+        file: 'assets/js/features/luxury-shell-studio-runtime.js',
+        maxLines: 750,
+        reason: 'Fog profile studio UI peeled from luxury-shell-chrome.js (factory+deps).'
     },
     {
         file: 'assets/js/pages/registration.js',
-        maxLines: 2400,
-        reason: 'Post-split ceiling now that registration shell and student-route ownership are separated.'
+        maxLines: 1850,
+        reason: 'Wave 18: host ≤1850 after headroom peel. Wave 16: semester/curriculum helpers in registration-semester-runtime.js.'
+    },
+    {
+        file: 'assets/js/pages/registration-semester-runtime.js',
+        maxLines: 400,
+        reason: 'Semester/curriculum condition helpers peeled from registration.js.'
     },
     {
         file: 'assets/js/shared/faculty.js',
-        maxLines: 2700,
-        reason: 'Post-split ceiling now that faculty scheduling, people, and messenger-adjacent ownership are materially reduced.'
+        maxLines: 1850,
+        reason: 'Wave 18: host ≤1850 after headroom peel. Wave 16: schedule week/group helpers in faculty-schedule-runtime.js.'
+    },
+    {
+        file: 'assets/js/shared/faculty-schedule-runtime.js',
+        maxLines: 450,
+        reason: 'Schedule text/week/group helpers peeled from faculty.js.'
     },
     {
         file: 'assets/js/shared/messenger.js',
-        maxLines: 2400,
-        reason: 'Post-split ceiling now that orders/admin recipient ownership is removed from the shared messenger runtime.'
+        maxLines: 1850,
+        reason: 'Wave 18: host ≤1850 after headroom peel. Wave 16 size A+: host under 2k after gradebook peel.'
+    },
+    // Engineering A+ frontend freeze — ceilings only decrease after peels (docs/engineering-a-plus-frontend-js.md).
+    {
+        file: 'assets/js/pages/social-workspace.js',
+        maxLines: 1500,
+        reason: 'Post tab/portfolio-runtime/schedule-ui peels (~2.0k→~1.4k): coordinator install/re-exports.'
+    },
+    {
+        file: 'assets/js/pages/social-workspace-events.js',
+        maxLines: 2000,
+        reason: 'Wave 16 size A+: host under 2k after input/submit peels.'
+    },
+    {
+        file: 'assets/js/pages/social-workspace-panel.js',
+        maxLines: 1850,
+        reason: 'Wave 18: host ≤1850 after headroom peel. Wave 16 size A+: host under 2k after budget peel.'
+    },
+    {
+        file: 'assets/js/pages/social-workspace-graph-runtime.js',
+        maxLines: 1850,
+        reason: 'Wave 18: host ≤1850 after headroom peel. Wave 16: sync/chrome helpers peeled to social-workspace-graph-sync-runtime.js.'
+    },
+    {
+        file: 'assets/js/pages/social-workspace-graph-sync-runtime.js',
+        maxLines: 1200,
+        reason: 'Graph sync/chrome/selection helpers peeled from graph-runtime.'
+    },
+    {
+        file: 'assets/js/pages/social-workspace-dialogs.js',
+        maxLines: 1300,
+        reason: 'Task detail / risk / health dialog markup peeled from social-workspace.js.'
+    },
+    {
+        file: 'assets/js/pages/social-workspace-graph-render.js',
+        maxLines: 1800,
+        reason: 'Task graph SVG/canvas/inspectors/fullscreen markup peeled from social-workspace.js.'
+    },
+    {
+        file: 'assets/js/pages/social-workspace-task-ui.js',
+        maxLines: 900,
+        reason: 'Task form fields + create/delete + desk/board cards peeled from social-workspace.js.'
+    },
+    {
+        file: 'assets/js/pages/social-workspace-portfolio-ui.js',
+        maxLines: 500,
+        reason: 'Portfolio hero/create/discover panel/editor shell peeled from social-workspace.js.'
+    },
+    {
+        file: 'assets/js/pages/social-workspace-project-chrome.js',
+        maxLines: 420,
+        reason: 'Workspace hero + project create/settings/invite peeled from social-workspace.js.'
+    },
+    {
+        file: 'assets/js/pages/social-workspace-dialog-route.js',
+        maxLines: 320,
+        reason: 'Owned-dialog kind routing + health/graph stacks peeled from social-workspace.js.'
+    },
+    {
+        file: 'assets/js/pages/social-workspace-tab-runtime.js',
+        maxLines: 500,
+        reason: 'Tab pane cache/refresh + desk toolbar sync peeled from social-workspace.js.'
+    },
+    {
+        file: 'assets/js/pages/social-workspace-portfolio-runtime.js',
+        maxLines: 400,
+        reason: 'Portfolio hydrate/save/editor document runtime peeled from social-workspace.js.'
+    },
+    {
+        file: 'assets/js/pages/social-workspace-schedule-ui.js',
+        maxLines: 150,
+        reason: 'Plan-vs-baseline + progress hours strip markup peeled from social-workspace.js.'
+    },
+    {
+        file: 'assets/js/pages/social-workspace-portfolio-model.js',
+        maxLines: 320,
+        reason: 'Pure portfolio normalize/access/field helpers peeled from social-workspace.js.'
+    },
+    {
+        file: 'assets/js/pages/social-workspace-health-model.js',
+        maxLines: 700,
+        reason: 'Health score + plan-pick pure models; freeze growth.'
+    },
+    {
+        file: 'assets/js/pages/social-workspace-graph-model.js',
+        maxLines: 1850,
+        reason: 'Post desk peel (~2.2k→~1.7k): forest/rollup in social-workspace-graph-desk-model.js.'
+    },
+    {
+        file: 'assets/js/pages/social-workspace-graph-desk-model.js',
+        maxLines: 650,
+        reason: 'Desk forest/dependency order + group rollup peeled from graph-model.'
+    },
+    {
+        file: 'assets/js/pages/social-workspace-week-plan-model.js',
+        maxLines: 220,
+        reason: 'Week-plan localStorage + workspace event routing predicates.'
+    },
+    {
+        file: 'assets/js/pages/social-page.js',
+        maxLines: 1850,
+        reason: 'Wave 18: host ≤1850 after headroom peel. Wave 17: interactions/render peeled to social-page-interactions-runtime.js.'
+    },
+    {
+        file: 'assets/js/pages/social-page-interactions-runtime.js',
+        maxLines: 1200,
+        reason: 'Reactions/photography/portfolio/pages patches + renderSocialPageNow from social-page.js.'
+    },
+    {
+        file: 'assets/js/pages/social-page-survey-runtime.js',
+        maxLines: 800,
+        reason: 'Survey create/take helpers peeled from social-page.js (factory+deps).'
+    },
+    {
+        file: 'assets/js/pages/social-page-feed-runtime.js',
+        maxLines: 1000,
+        reason: 'Entity detail + post compose + panel/shell helpers peeled from social-page.js (factory+deps).'
+    },
+    {
+        file: 'assets/js/pages/social-page-shell-runtime.js',
+        maxLines: 750,
+        reason: 'Workspace-nav + messages/inbox scroll shell + group-leave peeled from social-page.js (factory+deps).'
+    },
+    {
+        file: 'assets/js/pages/social-overlay-chrome.js',
+        maxLines: 550,
+        reason: 'Overlay portal + dialog open/close/lock/stack chrome peeled from social-page.js.'
+    },
+    {
+        file: 'assets/js/pages/social-page-events.js',
+        maxLines: 550,
+        reason: 'Social page click/submit/input/change/keydown + photography drop handlers peeled from social-page.js.'
+    },
+    {
+        file: 'assets/js/pages/social-form-model.js',
+        maxLines: 760,
+        reason: 'Form/survey parse + lost-found + survey draft/datetime + syncSurveyDraftFromForm.'
+    },
+    {
+        file: 'assets/js/pages/social-entity-model.js',
+        maxLines: 360,
+        reason: 'Pure composer entity-link / attachable-entity helpers peeled from social-page.js.'
+    },
+    {
+        file: 'assets/js/pages/social-panel-model.js',
+        maxLines: 430,
+        reason: 'Panel config + feed filter + photography + posting/feed scope options.'
+    },
+    {
+        file: 'assets/js/pages/social-alerts-model.js',
+        maxLines: 150,
+        reason: 'Notification classify/filter + target URL helpers peeled from social-page.js.'
+    },
+    {
+        file: 'assets/js/pages/social-profile-model.js',
+        maxLines: 360,
+        reason: 'Profile/people/connection/feedReason helpers peeled from social-page.js.'
+    },
+    {
+        file: 'assets/js/pages/social-fingerprint-model.js',
+        maxLines: 430,
+        reason: 'Render fingerprints + signature + force-render reason regex peeled from social-page.js.'
+    },
+    {
+        file: 'assets/js/pages/social-chrome-model.js',
+        maxLines: 540,
+        reason: 'Display/avatar/account/file/draft/context-tabs helpers peeled from social-page.js.'
+    },
+    {
+        file: 'assets/js/pages/social-workspace-stubs.js',
+        maxLines: 140,
+        reason: 'Workspace lazy-export stub name registry peeled from social-page.js.'
+    },
+    {
+        file: 'assets/js/pages/social-dialog-router.js',
+        maxLines: 200,
+        reason: 'Dialog kind → deferred-module render router peeled from social-page.js.'
+    },
+    {
+        file: 'assets/js/pages/social-shell-nav.js',
+        maxLines: 460,
+        reason: 'Shell panel-nav clicks + routeSocialDomain + click domain routes peeled from social-page.js.'
+    },
+    {
+        file: 'assets/js/pages/student-service.js',
+        maxLines: 1850,
+        reason: 'Wave 18: host ≤1850 after headroom peel. Wave 17: ops/question/ticket/attachment helpers in student-service-ops-runtime.js.'
+    },
+    {
+        file: 'assets/js/pages/student-service-ops-runtime.js',
+        maxLines: 1400,
+        reason: 'Helpful/ops/question/ticket/attachment submit helpers peeled from student-service.js.'
+    },
+    {
+        file: 'assets/js/pages/student-service-inbox-runtime.js',
+        maxLines: 800,
+        reason: 'Inbox filter forwards + UI prefs/lane/stores helpers peeled from student-service.js (factory+deps).'
+    },
+    {
+        file: 'assets/js/pages/student-service-page-runtime.js',
+        maxLines: 900,
+        reason: 'Article CMS + page shell/render/bootstrap peeled from student-service.js (factory+deps).'
+    },
+    {
+        file: 'assets/js/pages/student-service-modules-runtime.js',
+        maxLines: 700,
+        reason: 'Lazy module loaders + hub stubs peeled from student-service.js (factory+deps).'
+    },
+    {
+        file: 'assets/js/pages/student-service-events.js',
+        maxLines: 550,
+        reason: 'Delegated root/modal click + input/change/escape handlers peeled from student-service.js.'
+    },
+    {
+        file: 'assets/js/pages/student-service-chrome.js',
+        maxLines: 450,
+        reason: 'Command bar / lane chooser / delete shell chrome peeled from student-service.js.'
+    },
+    {
+        file: 'assets/js/pages/lms-whiteboard-runtime.js',
+        maxLines: 1850,
+        reason: 'Wave 18: host ≤1850 after headroom peel. Wave 17: session/shell/render/bind peeled to lms-whiteboard-session-runtime.js.'
+    },
+    {
+        file: 'assets/js/pages/lms-whiteboard-session-runtime.js',
+        maxLines: 1100,
+        reason: 'Session fingerprints/shells/render/bind helpers peeled from whiteboard runtime.'
+    },
+    {
+        file: 'assets/js/pages/lms-whiteboard-chrome-runtime.js',
+        maxLines: 1300,
+        reason: 'Theme/tools, dashboard/share/members, props/banner, HUD/fullscreen/layers peeled from runtime.'
+    },
+    {
+        file: 'assets/js/pages/lms-whiteboard-pointer-runtime.js',
+        maxLines: 700,
+        reason: 'Whiteboard stage pointer bind + wheel/touch/pointer/dblclick peeled from runtime.'
+    },
+    {
+        file: 'assets/js/pages/lms-whiteboard-paint-runtime.js',
+        maxLines: 420,
+        reason: 'Canvas paint + grid + element draw peeled from lms-whiteboard-runtime.js.'
+    },
+    {
+        file: 'assets/js/pages/lms-whiteboard-model.js',
+        maxLines: 500,
+        reason: 'Pure whiteboard geometry/color/text helpers; freeze growth.'
+    },
+    {
+        file: 'assets/js/shared/utilities.js',
+        maxLines: 1400,
+        reason: 'Post lux-transparency peel (~3.8k→~1.3k); keep escape/theme/role helpers only.'
+    },
+    {
+        file: 'assets/js/shared/lux-transparency.js',
+        maxLines: 2000,
+        reason: 'Wave 16: route shouldKeep* helpers in lux-transparency-route-runtime.js.'
+    },
+    {
+        file: 'assets/js/shared/lux-transparency-route-runtime.js',
+        maxLines: 850,
+        reason: 'Route shouldKeep* fade ownership helpers peeled from lux-transparency.js.'
+    },
+    {
+        file: 'assets/js/app/app.js',
+        maxLines: 1900,
+        reason: 'Post english-localization peel (~3.0k→~1.8k); bootstrap/composition root only.'
+    },
+    {
+        file: 'assets/js/app/english-localization.js',
+        maxLines: 1300,
+        reason: 'English UI + encoding repair layer peeled from app.js; freeze growth.'
+    },
+    {
+        file: 'assets/js/app/api.js',
+        maxLines: 1650,
+        reason: 'E2: admin-library/registration CMS merge peeled to api-admin-merge-runtime.js. Wave 18 host after headroom peels.'
+    },
+    {
+        file: 'assets/js/app/api-lms-portal-runtime.js',
+        maxLines: 900,
+        reason: 'LMS live-quiz/whiteboard/personal-dashboard/exam/social API helpers peeled from api.js.'
+    },
+    {
+        file: 'assets/js/app/api-admin-merge-runtime.js',
+        maxLines: 350,
+        reason: 'E2: Admin-library + registration CMS merge helpers peeled from api.js.'
+    },
+    {
+        file: 'assets/js/pages/lms-quiz-workspace-runtime.js',
+        maxLines: 1850,
+        reason: 'Wave 18: host ≤1850 after headroom peel. Wave 17: access/builder session peeled to lms-quiz-workspace-session-runtime.js.'
+    },
+    {
+        file: 'assets/js/pages/lms-quiz-workspace-session-runtime.js',
+        maxLines: 1200,
+        reason: 'Quiz access dialog + builder draft/variant helpers peeled from quiz workspace.'
+    },
+    {
+        file: 'assets/js/pages/lms-quiz-focus-runtime.js',
+        maxLines: 150,
+        reason: 'Student quiz focus-mode helpers peeled from quiz workspace runtime.'
+    },
+    {
+        file: 'assets/js/pages/lms-quiz-model.js',
+        maxLines: 400,
+        reason: 'Pure LMS quiz helpers peeled from quiz workspace runtime.'
+    },
+    {
+        file: 'assets/js/shared/social-runtime-lite.js',
+        maxLines: 1850,
+        reason: 'Wave 18: host ≤1850 after headroom peel. Wave 17: feed/page/group/event/call mutations in social-lite-content-runtime.js.'
+    },
+    {
+        file: 'assets/js/shared/social-lite-content-runtime.js',
+        maxLines: 1400,
+        reason: 'Feed/page/group/event/survey/post/call mutation helpers peeled from social-runtime-lite.js.'
+    },
+    {
+        file: 'assets/js/shared/social-lite-project-runtime.js',
+        maxLines: 450,
+        reason: 'Project membership/tasks/budget/risks peeled from social-runtime-lite.js.'
+    },
+    {
+        file: 'assets/js/pages/lms-classroom-tabs-runtime.js',
+        maxLines: 1850,
+        reason: 'Wave 18: host ≤1850 after headroom peel. Wave 17: interaction/attendance/tab-switch shell in lms-classroom-tabs-shell-runtime.js.'
+    },
+    {
+        file: 'assets/js/pages/lms-classroom-tabs-shell-runtime.js',
+        maxLines: 1300,
+        reason: 'Interaction/attendance/enhancement/tab-switch helpers peeled from classroom tabs.'
+    },
+    {
+        file: 'assets/js/pages/lms-classroom-sessions-runtime.js',
+        maxLines: 350,
+        reason: 'Next-session schedule + marker composer preview peeled from classroom tabs.'
+    },
+    {
+        file: 'assets/js/features/index-home-dashboard.plain.js',
+        maxLines: 1850,
+        reason: 'Wave 18: host ≤1850 after headroom peel. Wave 16: widget-layout geometry peeled to home-dashboard-widget-layout-runtime.js.'
+    },
+    {
+        file: 'assets/js/features/home-dashboard-widget-data-runtime.js',
+        maxLines: 300,
+        reason: 'Widget row adapters + default geometry peeled from home dashboard plain chunk.'
+    },
+    {
+        file: 'assets/js/features/home-dashboard-widget-layout-runtime.js',
+        maxLines: 1400,
+        reason: 'Widget geometry/layout helpers peeled from home-dashboard/widget-layout.js.'
+    },
+    {
+        file: 'assets/js/pages/lms-live-quiz-ui-runtime.js',
+        maxLines: 1850,
+        reason: 'Wave 18: host ≤1850 after headroom peel. Wave 16: session/question UI peeled to lms-live-quiz-session-runtime.js.'
+    },
+    {
+        file: 'assets/js/pages/lms-live-quiz-session-runtime.js',
+        maxLines: 1000,
+        reason: 'Live-quiz session/question/broadcast UI helpers peeled from lms-live-quiz-ui-runtime.js.'
+    },
+    {
+        file: 'assets/js/pages/student-registration.js',
+        maxLines: 1850,
+        reason: 'Wave 18: host ≤1850 after headroom peel. Wave 16: eligibility/grade helpers in student-registration-eligibility-runtime.js.'
+    },
+    {
+        file: 'assets/js/pages/student-registration-eligibility-runtime.js',
+        maxLines: 750,
+        reason: 'Curriculum eligibility + gradebook score helpers peeled from student-registration.js.'
+    },
+    {
+        file: 'assets/js/pages/admin-registration.js',
+        maxLines: 1850,
+        reason: 'Wave 18: host ≤1850 after headroom peel. Wave 17: CMS modules/program/minor helpers in admin-registration-cms-runtime.js.'
+    },
+    {
+        file: 'assets/js/pages/admin-registration-cms-runtime.js',
+        maxLines: 1200,
+        reason: 'CMS modules/program/minor/faculty helpers peeled from admin-registration.js.'
+    },
+    {
+        file: 'assets/js/pages/admin-registration-seats-runtime.js',
+        maxLines: 200,
+        reason: 'Seat limits + student registration data adapters peeled from admin-registration.js.'
+    },
+    {
+        file: 'assets/js/pages/exams-console.js',
+        maxLines: 1850,
+        reason: 'Wave 18: host ≤1850 after headroom peel. Wave 17: workspace/render/handlers in exams-console-workspace-runtime.js.'
+    },
+    {
+        file: 'assets/js/pages/exams-console-workspace-runtime.js',
+        maxLines: 1300,
+        reason: 'Review/live/workspace render + click/change handlers peeled from exams-console.js.'
     }
+,
+
+    {
+        file: 'assets/js/pages/gradebook-weights-runtime.js',
+        maxLines: 300,
+        reason: 'Wave 16 size peel: modern weights UI from gradebook-workspace.'
+    },
+    {
+        file: 'assets/js/pages/gradebook-history-ui-runtime.js',
+        maxLines: 250,
+        reason: 'Wave 16 size peel: score history panel from gradebook-model.'
+    },
+    {
+        file: 'assets/js/pages/gradebook-quiz-map-runtime.js',
+        maxLines: 350,
+        reason: 'H2b: LMS quiz ↔ gradebook mapping peeled from gradebook-model.'
+    },
+    {
+        file: 'assets/js/pages/gradebook-components-runtime.js',
+        maxLines: 250,
+        reason: 'H2b: assessment component manager peeled from gradebook-workspace.'
+    },
+    {
+        file: 'assets/js/pages/admin-scheduler-faculty-runtime.js',
+        maxLines: 200,
+        reason: 'H2b: faculty/palette + week helpers peeled from admin-scheduler.'
+    },
+    {
+        file: 'assets/js/shared/messenger-gradebook-runtime.js',
+        maxLines: 300,
+        reason: 'Wave 16 size peel: roster helpers from messenger.js.'
+    },
+    {
+        file: 'assets/js/pages/students-command-mobility-runtime.js',
+        maxLines: 150,
+        reason: 'Wave 16 size peel: mobility tab from students-command-center.'
+    },
+    {
+        file: 'assets/js/pages/form-builder-actions-runtime.js',
+        maxLines: 450,
+        reason: 'Wave 16 size peel: builder input/events from form-builder-runtime.'
+    },
+    {
+        file: 'assets/js/pages/student-service-qa-thread-runtime.js',
+        maxLines: 400,
+        reason: 'Wave 16 size peel: thread click + student feed from student-service-qa.'
+    },
+    {
+        file: 'assets/js/pages/social-workspace-events-input-runtime.js',
+        maxLines: 400,
+        reason: 'Wave 16 size peel: input/change handlers from social-workspace-events.'
+    },
+    {
+        file: 'assets/js/pages/social-workspace-events-submit-runtime.js',
+        maxLines: 700,
+        reason: 'Wave 16 size peel: submit handler from social-workspace-events.'
+    },
+    {
+        file: 'assets/js/pages/social-workspace-panel-budget-runtime.js',
+        maxLines: 250,
+        reason: 'Wave 16 size peel: budget tab helpers from social-workspace-panel.'
+    },
+    {
+        file: 'assets/js/pages/gradebook-workspace.js',
+        maxLines: 1750,
+        reason: 'H2b: host under 1750 after components peel.'
+    },
+    {
+        file: 'assets/js/pages/gradebook-model.js',
+        maxLines: 1700,
+        reason: 'H2b: host under 1700 after quiz-map peel.'
+    },
+    {
+        file: 'assets/js/pages/students-command-center.js',
+        maxLines: 1850,
+        reason: 'Wave 18: host ≤1850 after headroom peel. Wave 16 size A+: host under 2k after mobility peel.'
+    },
+    {
+        file: 'assets/js/pages/form-builder-runtime.js',
+        maxLines: 2000,
+        reason: 'Wave 16 size A+: host under 2k after actions peel.'
+    },
+    {
+        file: 'assets/js/pages/student-service-qa.js',
+        maxLines: 1850,
+        reason: 'Wave 18: host ≤1850 after headroom peel. Wave 16 size A+: host under 2k after thread peel.'
+    },
+    {
+        file: 'assets/js/pages/lms-whiteboard-selection-runtime.js',
+        maxLines: 400,
+        reason: 'Wave 18: Whiteboard selection toolbar/align/context peeled from lms-whiteboard-runtime.js.'
+    },
+    {
+        file: 'assets/js/pages/lms-quiz-workspace-review-runtime.js',
+        maxLines: 350,
+        reason: 'Wave 18: Quiz review panel/paper markup peeled from lms-quiz-workspace-runtime.js.'
+    },
+    {
+        file: 'assets/js/features/luxury-shell-topbar-runtime.js',
+        maxLines: 350,
+        reason: 'Wave 18: Faculty/role switchers + topbar sync peeled from luxury-shell-chrome.js.'
+    },
+    {
+        file: 'assets/js/shared/messenger-chrome-runtime.js',
+        maxLines: 250,
+        reason: 'Wave 18: Messenger drag/drop/search/chrome helpers peeled from messenger.js.'
+    },
+    {
+        file: 'assets/js/app/state-deleted-staff-runtime.js',
+        maxLines: 250,
+        reason: 'Wave 18: State text-repair + deleted-staff registry peeled from state.js.'
+    },
+    {
+        file: 'assets/js/pages/student-registration-choice-runtime.js',
+        maxLines: 250,
+        reason: 'Wave 18: Student registration faculty/scope/choice peeled from student-registration.js.'
+    },
+    {
+        file: 'assets/js/pages/admin-registration-boot-runtime.js',
+        maxLines: 250,
+        reason: 'Wave 18: Admin registration CMS boot/identity/ECTS peeled from admin-registration.js.'
+    },
+    {
+        file: 'assets/js/app/api-portal-persist-runtime.js',
+        maxLines: 250,
+        reason: 'Wave 18: Portal diagnostic/mail/persist helpers peeled from api.js.'
+    },
+    {
+        file: 'assets/js/pages/student-service-bootstrap-runtime.js',
+        maxLines: 280,
+        reason: 'Wave 18: Student-service snapshot/bootstrap helpers peeled from student-service.js.'
+    },
+    {
+        file: 'assets/js/shared/faculty-messenger-runtime.js',
+        maxLines: 250,
+        reason: 'Wave 18: Faculty portal messenger send/render peeled from faculty.js.'
+    },
+    {
+        file: 'assets/js/pages/registration-curriculum-runtime.js',
+        maxLines: 280,
+        reason: 'Wave 18: Curriculum library module/subject mutations peeled from registration.js.'
+    },
+    {
+        file: 'assets/js/pages/lms-exam-session-runtime.js',
+        maxLines: 320,
+        reason: 'Wave 18: LMS quiz finalize + exam session lifecycle peeled from lms.js.'
+    },
+    {
+        file: 'assets/js/pages/lms-live-quiz-ui-staff-runtime.js',
+        maxLines: 280,
+        reason: 'Wave 18: Live quiz staff action/impersonation UI peeled from lms-live-quiz-ui-runtime.js.'
+    },
+    {
+        file: 'assets/js/pages/lms-live-quiz-access-runtime.js',
+        maxLines: 250,
+        reason: 'Wave 18: Live quiz staff/access/sync helpers peeled from lms-live-quiz-workspace-runtime.js.'
+    },
+    {
+        file: 'assets/js/pages/lms-classroom-tabs-panel-runtime.js',
+        maxLines: 280,
+        reason: 'Wave 18: LMS classroom panel visibility + groups open peeled from lms-classroom-tabs-runtime.js.'
+    },
+    {
+        file: 'assets/js/pages/exams-console-schedule-runtime.js',
+        maxLines: 400,
+        reason: 'Wave 18: Exams schedule collision/PIN/export + local test helpers peeled from exams-console.js.'
+    },
+    {
+        file: 'assets/js/pages/students-command-academic-runtime.js',
+        maxLines: 250,
+        reason: 'Wave 18: Student academic/mobility actions peeled from students-command-center.js.'
+    },
+    {
+        file: 'assets/js/pages/admin-scheduler-session-runtime.js',
+        maxLines: 250,
+        reason: 'Wave 18: Scheduler create-session + faculty scope peeled from admin-scheduler.js.'
+    },
+    {
+        file: 'assets/js/pages/student-service-qa-staff-runtime.js',
+        maxLines: 400,
+        reason: 'Wave 18: Staff QA feedback/delete/feed markup peeled from student-service-qa.js.'
+    },
+    {
+        file: 'assets/js/features/luxury-index-sync-runtime.js',
+        maxLines: 300,
+        reason: 'Wave 18: Luxury index shell sync helpers peeled from index-luxury.js.'
+    },
+    {
+        file: 'assets/js/features/luxury-index-home-shell-runtime.js',
+        maxLines: 150,
+        reason: 'Wave 18: Luxury home-shell render/preload helpers peeled from index-luxury.js.'
+    },
+    {
+        file: 'assets/js/shared/social-lite-invite-runtime.js',
+        maxLines: 250,
+        reason: 'Wave 18: Social profile/page/group mutations + invite peeled from social-runtime-lite.js.'
+    },
+    {
+        file: 'assets/js/features/home-dashboard-gesture-runtime.js',
+        maxLines: 400,
+        reason: 'Wave 18: Home dashboard desktop gesture + shell bind peeled from index-home-dashboard.plain.js.'
+    },
+    {
+        file: 'assets/js/pages/social-page-boot-runtime.js',
+        maxLines: 300,
+        reason: 'Wave 18: Social page busy/bind/boot helpers peeled from social-page.js.'
+    },
+    {
+        file: 'assets/js/pages/social-workspace-graph-layout-runtime.js',
+        maxLines: 220,
+        reason: 'Wave 18: Project task-graph layout/position helpers peeled from social-workspace-graph-runtime.js.'
+    },
+    {
+        file: 'assets/js/pages/social-workspace-panel-team-runtime.js',
+        maxLines: 200,
+        reason: 'Wave 18: Team tab + workload aside helpers peeled from social-workspace-panel.js.'
+    },
+    {
+        file: 'assets/js/app/state.js',
+        maxLines: 1500,
+        reason: 'E4: admin exam/quiz helpers peeled to state-admin-exam-runtime.js. Wave 18 host after headroom peel.'
+    },
+    {
+        file: 'assets/js/app/state-admin-exam-runtime.js',
+        maxLines: 500,
+        reason: 'E4: Admin exam/quiz draft + exam-session helpers peeled from state.js.'
+    },
+    {
+        file: 'assets/js/pages/admin-scheduler.js',
+        maxLines: 1800,
+        reason: 'H2b: host under 1800 after faculty/palette peel.'
+    },
+    {
+        file: 'assets/js/pages/lms-live-quiz-workspace-runtime.js',
+        maxLines: 1850,
+        reason: 'Wave 18: host ≤1850 after headroom peel.'
+    },
 ];
 
 const extractedRouteOwners = [
@@ -128,15 +902,6 @@ const extractedRouteOwners = [
             "app.post('/api/student-service/questions/:id/convert-to-ticket'",
             "app.post('/api/student-service/questions/:id/convert-to-article'",
             "app.post('/api/student-service/questions/:id/merge'"
-        ]
-    },
-    {
-        module: 'backend/platform/routes/gradebook-routes.js',
-        routes: [
-            "app.get('/api/gradebook/courses/:id'",
-            "app.post('/api/gradebook/scores'",
-            "app.post('/api/gradebook/publish'",
-            "app.post('/api/gradebook/finalize'"
         ]
     },
     {
@@ -219,9 +984,6 @@ const extractedRouteOwners = [
             "app.get('/api/students/:id/enrollments'",
             "app.post('/api/registration/enroll'",
             "app.post('/api/registration/drop'",
-            "app.get('/api/lms/courses/:id'",
-            "app.post('/api/lms/assignments'",
-            "app.post('/api/lms/materials'",
             "app.post('/api/exam-sessions/sync'"
         ]
     },
@@ -229,7 +991,6 @@ const extractedRouteOwners = [
         module: 'backend/platform/routes/news-routes.js',
         routes: [
             "app.get('/api/news/feed'",
-            "app.get('/api/news/privileges'",
             "app.post('/api/news/posts'",
             "app.patch('/api/news/posts/:id'",
             "app.post('/api/news/posts/:id/replies'"
@@ -272,6 +1033,7 @@ const extractedRouteOwners = [
             "app.post('/api/accounts/upsert'",
             "app.get('/api/notifications'",
             "app.post('/api/notifications/read'",
+            "app.post('/api/notifications/delete'",
             "app.post('/api/notifications/preferences'",
             "app.get('/api/push/public-config'",
             "app.post('/api/push/subscribe'",
@@ -286,8 +1048,7 @@ const extractedRouteOwners = [
             "app.get('/download/:platform'",
             "app.get('/download/:platform/file'",
             "app.get('/health'",
-            "app.get('/ready'",
-            "app.post('/api/ai/career-completion'"
+            "app.get('/ready'"
         ]
     },
     {
@@ -314,10 +1075,11 @@ const sharedMobileShellPages = Object.keys(routeVisualClassification).filter((pa
 const shellAliasWrapperPages = Object.keys(routeVisualClassification).filter((page) => routeVisualClassification[page].category === 'excluded-wrapper');
 
 let failed = false;
-const serverSource = readText('backend/platform/server.js');
+const serverSource = jsCeilingsOnly ? '' : readText('backend/platform/server.js');
 
-console.log('Architecture guardrails');
+console.log(jsCeilingsOnly ? 'JS ceiling guardrails' : 'Architecture guardrails');
 
+if (!jsCeilingsOnly) {
 for (const [page, expected] of Object.entries(explicitMobileShellRouteGuardrails)) {
     const actual = routeVisualClassification[page];
     const matches = Boolean(actual)
@@ -331,8 +1093,14 @@ for (const [page, expected] of Object.entries(explicitMobileShellRouteGuardrails
         failed = true;
     }
 }
+}
 
 for (const entry of lineCountThresholds) {
+    if (!fs.existsSync(resolveRelative(entry.file))) {
+        console.log(`FAIL line ceiling ${entry.file} missing`);
+        failed = true;
+        continue;
+    }
     const count = countLines(entry.file);
     const ok = count <= entry.maxLines;
     console.log(`${ok ? 'PASS' : 'FAIL'} line ceiling ${entry.file} ${count}/${entry.maxLines}`);
@@ -340,6 +1108,181 @@ for (const entry of lineCountThresholds) {
         console.log(`  Reason: ${entry.reason}`);
         failed = true;
     }
+}
+
+for (const relativePath of factoryPeelAllowlist) {
+    if (!fs.existsSync(resolveRelative(relativePath))) {
+        console.log(`FAIL factory peel missing ${relativePath}`);
+        failed = true;
+        continue;
+    }
+    const source = readText(relativePath);
+    const hasFactory = /__kiuCreate\w+|function createKiu\w+|createKiu\w+Api\s*=/.test(source);
+    const hasLoadGuard = /__KIU_[\w]+_LOADED/.test(source);
+    const ok = hasFactory && hasLoadGuard;
+    console.log(`${ok ? 'PASS' : 'FAIL'} factory peel contract ${relativePath}`);
+    if (!ok) {
+        console.log('  Expected __kiuCreate*/createKiu* factory and __KIU_*_LOADED load guard.');
+        failed = true;
+    }
+
+    // Wave 14 structure scorecard: no bare public window.X = function APIs on allowlisted peels.
+    // Allowed: __KIU_*_LOADED, __kiuCreate*, window.Kiu*, window.__kiu*, Object.assign(window, api).
+    const adHocWindowFns = [];
+    const windowFnAssignRe = /window\.([A-Za-z_$][\w$]*)\s*=\s*(?:async\s+)?function\b/g;
+    let windowFnMatch;
+    while ((windowFnMatch = windowFnAssignRe.exec(source)) !== null) {
+        const name = windowFnMatch[1];
+        const allowed = factoryPeelAllowedWindowAssignPrefixes.some((prefix) => name.startsWith(prefix));
+        if (!allowed) adHocWindowFns.push(name);
+    }
+    const scorecardOk = adHocWindowFns.length === 0;
+    console.log(`${scorecardOk ? 'PASS' : 'FAIL'} factory peel structure scorecard ${relativePath}`);
+    if (!scorecardOk) {
+        console.log(`  Ad-hoc window.<name> = function assignments (use Object.assign(window, api) / Kiu* / __kiu*): ${adHocWindowFns.join(', ')}`);
+        failed = true;
+    }
+}
+
+// Wave 15 Structure 10: hard gate — no assets/js host may reach 3000 lines.
+{
+    const HARD_LINE_GATE = 3000;
+    const offenders = [];
+    for (const relativePath of listAssetsJsFiles()) {
+        const count = countLines(relativePath);
+        if (count >= HARD_LINE_GATE) offenders.push({ relativePath, count });
+    }
+    if (offenders.length === 0) {
+        console.log(`PASS assets/js hard line gate (no file ≥${HARD_LINE_GATE})`);
+    } else {
+        for (const { relativePath, count } of offenders) {
+            console.log(`FAIL assets/js hard line gate ${relativePath} ${count}`);
+            failed = true;
+        }
+    }
+}
+
+// Wave 16/17 Size A+: zero assets/js files may be ≥2000 lines.
+{
+    const SIZE_GATE = 2000;
+    const SIZE_MAX_FILES = 0;
+    const large = [];
+    for (const relativePath of listAssetsJsFiles()) {
+        const count = countLines(relativePath);
+        if (count >= SIZE_GATE) large.push({ relativePath, count });
+    }
+    if (large.length <= SIZE_MAX_FILES) {
+        console.log(`PASS assets/js size gate (files ≥${SIZE_GATE}: ${large.length}/${SIZE_MAX_FILES})`);
+    } else {
+        console.log(`FAIL assets/js size gate (files ≥${SIZE_GATE}: ${large.length}/${SIZE_MAX_FILES})`);
+        for (const { relativePath, count } of large.sort((a, b) => b.count - a.count)) {
+            console.log(`  ${count}  ${relativePath}`);
+        }
+        failed = true;
+    }
+}
+
+// Wave 18 Headroom: no assets/js file may reach 1900 lines (near-ceiling safety under the 2k gate).
+{
+    const HEADROOM_GATE = 1900;
+    const offenders = [];
+    for (const relativePath of listAssetsJsFiles()) {
+        const count = countLines(relativePath);
+        if (count >= HEADROOM_GATE) offenders.push({ relativePath, count });
+    }
+    if (offenders.length === 0) {
+        console.log(`PASS assets/js headroom gate (no file ≥${HEADROOM_GATE})`);
+    } else {
+        for (const { relativePath, count } of offenders) {
+            console.log(`FAIL assets/js headroom gate ${relativePath} ${count}`);
+            failed = true;
+        }
+    }
+}
+
+// Wave 20 Module boundaries: bare window.X= (not __KIU_/__kiu/Kiu) must stay under ceiling (only goes down).
+{
+    const BARE_WINDOW_ASSIGN_MAX = 900;
+    const bareWindowAssignRe = /\bwindow\.([A-Za-z_$][\w$]*)\s*=(?!=)/g;
+    let bareCount = 0;
+    for (const relativePath of listAssetsJsFiles()) {
+        const source = readText(relativePath);
+        let match;
+        bareWindowAssignRe.lastIndex = 0;
+        while ((match = bareWindowAssignRe.exec(source)) !== null) {
+            const name = match[1];
+            if (name.startsWith('__KIU_') || name.startsWith('__kiu') || name.startsWith('Kiu')) continue;
+            bareCount += 1;
+        }
+    }
+    if (bareCount <= BARE_WINDOW_ASSIGN_MAX) {
+        console.log(`PASS bare window assign gate (${bareCount}/${BARE_WINDOW_ASSIGN_MAX})`);
+    } else {
+        console.log(`FAIL bare window assign gate (${bareCount}/${BARE_WINDOW_ASSIGN_MAX})`);
+        failed = true;
+    }
+}
+
+// Wave H3 Dependency clarity: typeof window.X probes must stay under ceiling (only goes down).
+{
+    const TYPEOF_WINDOW_MAX = 900;
+    const typeofWindowRe = /\btypeof\s+window\.([A-Za-z_$][\w$]*)/g;
+    let typeofCount = 0;
+    for (const relativePath of listAssetsJsFiles()) {
+        const source = readText(relativePath);
+        typeofWindowRe.lastIndex = 0;
+        while (typeofWindowRe.exec(source) !== null) typeofCount += 1;
+    }
+    if (typeofCount <= TYPEOF_WINDOW_MAX) {
+        console.log(`PASS typeof window probe gate (${typeofCount}/${TYPEOF_WINDOW_MAX})`);
+    } else {
+        console.log(`FAIL typeof window probe gate (${typeofCount}/${TYPEOF_WINDOW_MAX})`);
+        failed = true;
+    }
+}
+
+// Wave 23 Modern stack: ESM leaves (export + install*) must stay ≥ floor (only goes up).
+{
+    const ESM_LEAF_MIN = 10;
+    const ESM_LEAF_MARKERS = [
+        'assets/js/features/luxury-background.js',
+        'assets/js/pages/social-entity-model.js',
+        'assets/js/pages/social-workspace-risk-model.js',
+        'assets/js/pages/social-task-model.js',
+        'assets/js/pages/social-form-model.js',
+        'assets/js/pages/social-alerts-model.js',
+        'assets/js/pages/social-panel-model.js',
+        'assets/js/pages/social-profile-model.js',
+        'assets/js/pages/lms-quiz-model.js',
+        'assets/js/pages/lms-whiteboard-model.js',
+        'assets/js/pages/student-service-model.js',
+        'assets/js/shared/curriculum-library-model.js'
+    ];
+    const found = [];
+    for (const relativePath of ESM_LEAF_MARKERS) {
+        if (!fs.existsSync(path.join(ROOT, relativePath))) continue;
+        const source = readText(relativePath);
+        const hasExport = /\bexport\s+(function|const|\{)/.test(source);
+        const hasInstall = /\bexport\s+function\s+install\w+/.test(source);
+        const isBgOrchestrator = relativePath.endsWith('luxury-background.js')
+            && /import\s*\(/.test(source);
+        if ((hasExport && hasInstall) || isBgOrchestrator) found.push(relativePath);
+    }
+    if (found.length >= ESM_LEAF_MIN) {
+        console.log(`PASS ESM leaf gate (${found.length}/${ESM_LEAF_MIN})`);
+    } else {
+        console.log(`FAIL ESM leaf gate (${found.length}/${ESM_LEAF_MIN}) — need export+install leaves`);
+        failed = true;
+    }
+}
+
+if (jsCeilingsOnly) {
+    if (failed) {
+        console.error('\nJS ceiling guardrails failed.');
+        process.exit(1);
+    }
+    console.log('\nJS ceiling guardrails passed.');
+    process.exit(0);
 }
 
 for (const owner of extractedRouteOwners) {
@@ -362,7 +1305,6 @@ const routeModulesThatNeedStoreInjection = new Set([
     'backend/platform/routes/admin-integrations-routes.js',
     'backend/platform/routes/admin-support-routes.js',
     'backend/platform/routes/student-service-routes.js',
-    'backend/platform/routes/gradebook-routes.js',
     'backend/platform/routes/protected-exam-routes.js',
     'backend/platform/routes/messenger-calls-routes.js',
     'backend/platform/routes/social-routes.js',
@@ -514,4 +1456,18 @@ function readText(relativePath) {
 
 function countLines(relativePath) {
     return readText(relativePath).split(/\r?\n/).length;
+}
+
+/** Live assets/js tree; skips node_modules, _archive, and vendor path segments. */
+function listAssetsJsFiles(dir = path.join(ROOT, 'assets', 'js'), acc = []) {
+    if (!fs.existsSync(dir)) return acc;
+    for (const ent of fs.readdirSync(dir, { withFileTypes: true })) {
+        const full = path.join(dir, ent.name);
+        if (ent.name === 'node_modules' || ent.name === '_archive' || ent.name === 'vendor') continue;
+        if (ent.isDirectory()) listAssetsJsFiles(full, acc);
+        else if (ent.isFile() && ent.name.endsWith('.js')) {
+            acc.push(path.relative(ROOT, full).split(path.sep).join('/'));
+        }
+    }
+    return acc;
 }

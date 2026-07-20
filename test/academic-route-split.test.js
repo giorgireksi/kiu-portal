@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
 function readSource(relativePath) {
@@ -19,9 +19,9 @@ describe('academic route split', () => {
         expect(routeModule).toContain("app.get('/api/students/:id/enrollments'");
         expect(routeModule).toContain("app.post('/api/registration/enroll'");
         expect(routeModule).toContain("app.post('/api/registration/drop'");
-        expect(routeModule).toContain("app.get('/api/lms/courses/:id'");
-        expect(routeModule).toContain("app.post('/api/lms/assignments'");
-        expect(routeModule).toContain("app.post('/api/lms/materials'");
         expect(routeModule).toContain("app.post('/api/exam-sessions/sync'");
+        expect(routeModule).not.toContain("app.get('/api/lms/courses/:id'");
+        expect(routeModule).not.toContain("app.post('/api/lms/assignments'");
+        expect(routeModule).not.toContain("app.post('/api/lms/materials'");
     });
 });

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
 function readSource(relativePath) {
@@ -14,8 +14,9 @@ describe('protected launch route regressions', () => {
         expect(html).toContain('assets/js/app/api.js');
         expect(html).toContain('assets/css/lux-tokens.css');
         expect(html).toContain('assets/css/lux-surfaces.css');
+        expect(html).not.toContain('assets/css/lux-focus-panel.css');
         expect(html).toContain('assets/css/lux-controls.css');
-        expect(html).toContain('assets/css/lux-layout-primitives.css');
+        expect(html).not.toContain('assets/css/lux-layout-primitives.css');
         expect(html).toContain('assets/css/protected-launch-route.css');
         expect(html).not.toContain('<style>');
         expect(html).not.toContain('assets/js/app/app.js');

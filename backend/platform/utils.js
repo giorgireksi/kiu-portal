@@ -10,7 +10,7 @@ function clone(value) {
     try {
         return JSON.parse(JSON.stringify(value));
     } catch (error) {
-        return null;
+        return {};
     }
 }
 
@@ -189,6 +189,22 @@ function sanitizeAccount(account) {
     };
 }
 
+function isDemoOrTestingAccountId(id = '') {
+    const normalized = String(id || '').trim().toLowerCase();
+    if (!normalized) return false;
+    if (normalized.startsWith('admin-testing-')) return true;
+    if (normalized.startsWith('testing-')) return true;
+    if (normalized.includes('-demo') || normalized.endsWith('-demo')) return true;
+    return /^(econ|cs|law|med|arts)-(student|professor|ta|service)(-demo)?$/.test(normalized);
+}
+
+function isDemoOrTestingAccount(record = {}) {
+    if (!record || typeof record !== 'object') return false;
+    if (record.isDemoAccount) return true;
+    if (record.isAdminTestingPersona) return true;
+    return isDemoOrTestingAccountId(record.id || record.userId || record.studentId);
+}
+
 function paginate(items, { limit = 50, offset = 0 } = {}) {
     const safeLimit = Math.max(1, Math.min(200, Number(limit) || 50));
     const safeOffset = Math.max(0, Number(offset) || 0);
@@ -222,6 +238,8 @@ module.exports = {
     decryptSecret,
     displayInitials,
     encryptSecret,
+    isDemoOrTestingAccount,
+    isDemoOrTestingAccountId,
     isPasswordHash,
     makeId,
     matchesSearch,

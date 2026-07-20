@@ -1,3 +1,4 @@
+/* CONTRACT: Each social domain module exports the is/handle click/input/change (+ submit) contract; logic stays out of social-page.js. — see docs/test-as-map.md */
 import { describe, expect, it } from 'vitest';
 import { readFileSync, readdirSync } from 'fs';
 import { join } from 'path';
@@ -33,7 +34,11 @@ describe('social domain export contract', () => {
 
     it('exports is/handle click, input, change (+ submit when required) and MODULE_LOADED', () => {
         for (const { file, token, requireSubmit } of DOMAIN_MODULES) {
-            const source = readSource(`assets/js/pages/${file}`);
+            const source = readSource(`assets/js/pages/${file}`)
+                + (file === 'social-workspace.js'
+                    ? readSource('assets/js/pages/social-workspace-events.js')
+                        + readSource('assets/js/pages/social-workspace-week-plan-model.js')
+                    : '');
             const required = [
                 `isSocial${token}ClickAction`,
                 `handleSocial${token}Click`,
@@ -47,7 +52,15 @@ describe('social domain export contract', () => {
             }
             for (const name of required) {
                 expect(source, `${file} should define ${name}`).toContain(`function ${name}`);
-                expect(source, `${file} should export window.${name}`).toContain(`window.${name}`);
+                if (file === 'social-workspace.js' && name.startsWith('handleSocial')) {
+                    expect(
+                        readSource('assets/js/pages/social-workspace.js')
+                        + readSource('assets/js/pages/social-workspace-events.js'),
+                        `${file} should export window.${name}`
+                    ).toContain(`window.${name}`);
+                } else {
+                    expect(source, `${file} should export window.${name}`).toContain(`window.${name}`);
+                }
             }
             expect(source, `${file} should set MODULE_LOADED`).toMatch(/__KIU_SOCIAL_\w+_MODULE_LOADED/);
         }
@@ -55,12 +68,16 @@ describe('social domain export contract', () => {
 
     it('routes domain events through routeSocialDomain on the shell page', () => {
         const page = readSource('assets/js/pages/social-page.js');
-        expect(page).toContain('function routeSocialDomain(');
-        expect(page).toContain("handle: 'handleSocialFeedClick'");
-        expect(page).toContain("handle: 'handleSocialWorkspaceClick'");
-        expect(page).toContain("handle: 'handleSocialFeedSubmit'");
-        expect(page).toContain("handle: 'handleSocialFeedInput'");
-        expect(page).toContain("handle: 'handleSocialFeedChange'");
+        const shellNav = readSource('assets/js/pages/social-shell-nav.js');
+        const pageEvents = readSource('assets/js/pages/social-page-events.js');
+        expect(shellNav).toContain('function routeSocialDomain(');
+        expect(page).toContain('createKiuSocialShellNavApi');
+        expect(page).toContain('createKiuSocialPageEventsApi');
+        expect(shellNav).toContain("handle: 'handleSocialFeedClick'");
+        expect(shellNav).toContain("handle: 'handleSocialWorkspaceClick'");
+        expect(pageEvents).toContain("handle: 'handleSocialFeedSubmit'");
+        expect(pageEvents).toContain("handle: 'handleSocialFeedInput'");
+        expect(pageEvents).toContain("handle: 'handleSocialFeedChange'");
     });
 
     it('keeps the twelve domain modules present under pages/', () => {

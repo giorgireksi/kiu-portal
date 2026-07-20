@@ -1,151 +1,80 @@
 (function initStaffCommandCenter() {
     'use strict';
 
+    window.__KIU_COMMAND_CENTER_HUB__ = 'staff-hub';
+    window.__KIU_COMMAND_CENTER_ENTITY__ = 'Staff';
+    window.__KIU_COMMAND_CENTER_TOAST_ID__ = 'staff-command-toast';
+    window.__KIU_COMMAND_CENTER_TOAST_TIMER_KEY__ = '__staffCommandToastTimer';
+    window.__KIU_COMMAND_CENTER_MODAL_ROOT__ = 'staff-command-modal-root';
+    window.__KIU_COMMAND_CENTER_FIELD_NS__ = 'staff';
+
     const FLOW_KEY = 'KIU_PENDING_ADMIN_ACCOUNT_FLOW';
     const STORE_KEY = 'staffDirectoryRecords';
-    const DIRECTORIES_SCRIPT_URL = 'assets/js/pages/directories.js?v=20260510-staff-admin3';
-    const DEFAULT_FILTERS = {
-        query: '',
-        platform: 'all',
-        role: 'all',
-        department: 'all',
-        status: 'all',
-        account: 'all',
-        profile: 'all',
-        teaching: 'all',
-        archive: 'active',
-        sort: 'name'
-    };
+    function cloneDefaultFilters() {
+        const base = typeof STAFF_DIRECTORY_DEFAULT_FILTERS !== 'undefined'
+            ? STAFF_DIRECTORY_DEFAULT_FILTERS
+            : {
+                query: '',
+                droplistQuery: '',
+                platform: 'all',
+                field: {},
+                profile: 'all',
+                teaching: 'all',
+                archive: 'active',
+                sort: 'name'
+            };
+        return { ...base, field: { ...(base.field || {}) } };
+    }
     const VIEW_ROLES = ['admin', 'faculty', 'viewer'];
     const PLATFORM_ROLE_META = {
         professor: { profileKey: 'professors', label: 'Professor', lmsRole: 'Instructor' },
         ta: { profileKey: 'tas', label: 'Teaching Assistant', lmsRole: 'Teaching Assistant' },
         student_service: { profileKey: 'service', label: 'Student Service', lmsRole: 'Support Agent' }
     };
-    let directoriesScriptPromise = null;
 
     function getStaffState() {
         if (!window.__staffCommandState) {
             window.__staffCommandState = {
                 selectedId: null,
-                profileTab: 'overview',
+                profileTab: null,
                 editingId: null,
                 modalRole: 'professor',
+                modalStaffTypeId: 'professor',
+                modalOpen: false,
+                modalTouched: false,
+                workspace: 'directory',
+                formSettingsTypeId: 'professor',
+                builderPanel: null,
+                builderDirty: false,
+                builderLastSavedAt: null,
+                blueprintSeenAt: null,
+                activeSectionId: null,
+                sectionNameFocusId: null,
+                fieldAdvancedOpenId: null,
+                fieldRemovePendingId: null,
+                lockedFieldKeys: {},
+                copySourceTypeId: 'ta',
+                copySections: true,
                 viewRole: 'admin',
-                filters: { ...DEFAULT_FILTERS }
+                filters: cloneDefaultFilters()
             };
         }
+        if (window.__staffCommandState.workspace == null) window.__staffCommandState.workspace = 'directory';
+        if (window.__staffCommandState.formSettingsTypeId == null) window.__staffCommandState.formSettingsTypeId = 'professor';
+        if (window.__staffCommandState.modalStaffTypeId == null) window.__staffCommandState.modalStaffTypeId = 'professor';
         return window.__staffCommandState;
     }
 
     function ensureStore() {
-        if (!window.KIU_STATE) window.KIU_STATE = {};
-        if (!KIU_STATE[STORE_KEY] || typeof KIU_STATE[STORE_KEY] !== 'object') {
-            KIU_STATE[STORE_KEY] = {};
-        }
-        if (!KIU_STATE.users) KIU_STATE.users = [];
-        if (!KIU_STATE.facultyProfiles) KIU_STATE.facultyProfiles = {};
-        return KIU_STATE[STORE_KEY];
-    }
-
-    function escapeHtml(value) {
-        return String(value ?? '')
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#39;');
-    }
-
-    function normalizeText(value, fallback = '') {
-        const raw = value == null ? '' : String(value);
-        const cleaned = typeof cleanupEncodingArtifacts === 'function' ? cleanupEncodingArtifacts(raw) : raw;
-        const translated = typeof toEnglishText === 'function' ? toEnglishText(cleaned) : cleaned;
-        const finalValue = String(translated || '').trim();
-        return finalValue || fallback;
-    }
-
-    function normalizeSearch(value, fallback = '') {
-        return normalizeText(value, fallback).toLowerCase();
-    }
-
-    function initials(name) {
-        return normalizeText(name, 'Staff')
-            .split(/\s+/)
-            .filter(Boolean)
-            .slice(0, 2)
-            .map((part) => part[0].toUpperCase())
-            .join('');
-    }
-
-    function unique(items) {
-        return Array.from(new Set(items.filter(Boolean)));
-    }
-
-    function todayIso() {
-        return new Date().toISOString().slice(0, 10);
-    }
-
-    function facultyName(code) {
-        const profile = typeof getFacultyProfile === 'function' ? getFacultyProfile(code) : null;
-        return normalizeText(profile?.fullName || profile?.name || code || 'Faculty', 'Faculty');
-    }
-
-    function departmentForFaculty(code) {
-        const label = facultyName(code);
-        if (/business/i.test(label)) return 'Business Management';
-        if (/computer/i.test(label)) return 'Computer Science';
-        if (/law/i.test(label)) return 'Law';
-        if (/medicine/i.test(label)) return 'Medicine';
-        if (/art/i.test(label)) return 'Arts & Humanities';
-        return label;
+        return KiuCommandCenterUtils.ensureCommandCenterStore(STORE_KEY);
     }
 
     function roleTitleOptions(platformRole) {
-        if (platformRole === 'ta') {
-            return ['Teaching Assistant', 'Lead Teaching Assistant', 'Lab Assistant', 'Seminar Assistant'];
-        }
-        if (platformRole === 'student_service') {
-            return ['Student Service Advisor', 'Student Service Specialist', 'Student Success Coordinator', 'Support Advisor'];
-        }
-        return [
-            'Professor',
-            'Associate Professor',
-            'Assistant Professor',
-            'Lecturer',
-            'Visiting Professor',
-            'Department Chair',
-            'Program Coordinator',
-            'Dean',
-            'Academic Advisor'
-        ];
+        return KiuCommandCenterUtils.roleTitleOptions(platformRole);
     }
 
     function buildHoursAndSectionStats(facultyCode) {
-        const hoursMap = {};
-        let unassignedSections = 0;
-        Object.keys(KIU_STATE.availableGroups || {}).forEach((courseId) => {
-            (KIU_STATE.availableGroups[courseId] || []).forEach((group) => {
-                const derivedFaculty = typeof deriveFacultyFromSubjectId === 'function'
-                    ? deriveFacultyFromSubjectId(courseId)
-                    : facultyCode;
-                const groupFaculty = typeof normalizeFacultyCode === 'function'
-                    ? normalizeFacultyCode(group?.faculty || derivedFaculty || facultyCode, facultyCode)
-                    : (group?.faculty || derivedFaculty || facultyCode);
-                if (facultyCode !== 'all' && groupFaculty !== facultyCode) return;
-                const duration = parseInt(String(group?.duration || '110min').match(/\d+/)?.[0] || '110', 10);
-                [group?.prof, group?.ta].forEach((name) => {
-                    const normalizedName = normalizeText(name);
-                    if (normalizedName && normalizedName !== 'TBD' && normalizedName !== 'Assigned Professor' && normalizedName !== 'Assigned Teaching Assistant') {
-                        hoursMap[normalizedName] = (hoursMap[normalizedName] || 0) + (duration / 60);
-                    }
-                });
-                if (!group?.prof || group.prof === 'TBD' || !group?.ta || group.ta === 'TBD') {
-                    unassignedSections += 1;
-                }
-            });
-        });
-        return { hoursMap, unassignedSections };
+        return KiuCommandCenterUtils.buildHoursAndSectionStats(facultyCode);
     }
 
     function getRecordStoreEntry(id) {
@@ -194,67 +123,31 @@
             notes: record.notes,
             maxHours: record.maxHours,
             joinYear: record.joinYear,
-            subjects: record.subjects
+            subjects: record.subjects,
+            staffTypeId: record.staffTypeId,
+            fieldValues: record.fieldValues || {}
         };
         return store[id];
     }
 
     function getAccountStatus(user, stored) {
-        if (stored?.accountStatus) return stored.accountStatus;
-        const email = normalizeSearch(user?.email);
-        if (!email) return 'Needs Review';
-        return email.includes('@kiu.edu.ge') || email.includes('@student.kiu.edu.ge')
-            ? 'Account Active'
-            : 'Needs Review';
+        return KiuCommandCenterUtils.getAccountStatus(user, stored);
+    }
+
+    function resolveStaffRegistrationEmail(values = {}, editing = null) {
+        return KiuCommandCenterUtils.resolveStaffRegistrationEmail(values, editing);
     }
 
     function getPlatformRoleLabel(platformRole) {
+        if (typeof getStaffFormTypes === 'function') {
+            const match = getStaffFormTypes().find((type) => type.platformRole === platformRole || type.id === platformRole || type.slug === platformRole);
+            if (match) return match.label;
+        }
         return PLATFORM_ROLE_META[platformRole]?.label || 'Staff';
     }
 
     function getVisibilityDefault(platformRole) {
-        return platformRole === 'student_service' ? 'Visible to staff only' : 'Public to students';
-    }
-
-    function humanizeFacultyName(code) {
-        const label = facultyName(code);
-        return /^School of /i.test(label) ? label : `School of ${label}`;
-    }
-
-    function hasDirectoryProfileBridge() {
-        return typeof openProfilePage === 'function';
-    }
-
-    function ensureDirectoryProfileBridge() {
-        if (hasDirectoryProfileBridge()) return Promise.resolve(true);
-        if (directoriesScriptPromise) return directoriesScriptPromise;
-        directoriesScriptPromise = new Promise((resolve, reject) => {
-            const existing = document.querySelector(`script[src="${DIRECTORIES_SCRIPT_URL}"]`);
-            const onLoad = () => hasDirectoryProfileBridge()
-                ? resolve(true)
-                : reject(new Error('Staff directory profile bridge did not register openProfilePage.'));
-            if (existing) {
-                if (hasDirectoryProfileBridge()) {
-                    resolve(true);
-                    return;
-                }
-                existing.addEventListener('load', onLoad, { once: true });
-                existing.addEventListener('error', () => reject(new Error('Staff directory profile bridge failed to load.')), { once: true });
-                return;
-            }
-            const script = document.createElement('script');
-            script.src = DIRECTORIES_SCRIPT_URL;
-            script.defer = true;
-            script.addEventListener('load', onLoad, { once: true });
-            script.addEventListener('error', () => reject(new Error('Staff directory profile bridge failed to load.')), { once: true });
-            document.head.appendChild(script);
-        }).catch((error) => {
-            console.error('Failed to load deferred staff directory bridge.', error);
-            throw error;
-        }).finally(() => {
-            directoriesScriptPromise = null;
-        });
-        return directoriesScriptPromise;
+        return KiuCommandCenterUtils.getVisibilityDefault(platformRole);
     }
 
     function buildPlatformCandidates(facultyCode) {
@@ -298,7 +191,11 @@
                 ? normalizeFacultyCode(user?.facultyCode || user?.faculty || normalizedFaculty, normalizedFaculty)
                 : (user?.facultyCode || user?.faculty || normalizedFaculty);
             if (userFaculty !== normalizedFaculty) return;
-            if (!['professor', 'ta', 'student_service'].includes(platformRole)) return;
+            const knownRoles = new Set(['professor', 'ta', 'student_service']);
+            if (typeof getStaffFormTypes === 'function') {
+                getStaffFormTypes().forEach((type) => knownRoles.add(type.platformRole));
+            }
+            if (!knownRoles.has(platformRole)) return;
             absorb(user, platformRole, 'user');
         });
 
@@ -395,6 +292,10 @@
                 subjects,
                 loadRatio,
                 scheduledHours,
+                staffTypeId: stored.staffTypeId || (typeof resolveStaffTypeIdFromPlatformRole === 'function'
+                    ? resolveStaffTypeIdFromPlatformRole(entry.platformRole)
+                    : entry.platformRole),
+                fieldValues: stored.fieldValues && typeof stored.fieldValues === 'object' ? stored.fieldValues : {},
                 profile: profile
             };
         });
@@ -410,6 +311,19 @@
     }
 
     function profileCompleteness(record) {
+        const typeId = record?.staffTypeId
+            || (typeof resolveStaffTypeIdFromPlatformRole === 'function'
+                ? resolveStaffTypeIdFromPlatformRole(record?.platformRole)
+                : record?.platformRole || 'professor');
+        if (typeof getAllStaffFormFields === 'function' && typeof computeStaffFormCompleteness === 'function') {
+            const fields = getAllStaffFormFields(typeId);
+            if (fields.length) {
+                const values = record?.fieldValues && typeof record.fieldValues === 'object'
+                    ? record.fieldValues
+                    : (typeof hydrateFieldValuesFromRecord === 'function' ? hydrateFieldValuesFromRecord(record, typeId) : {});
+                return computeStaffFormCompleteness(typeId, values);
+            }
+        }
         const checks = [
             { key: 'photo', label: 'profile photo', ok: Boolean(record.photo), weight: 10 },
             { key: 'basic', label: 'basic information', ok: Boolean(record.name && record.email && record.staffId), weight: 15 },
@@ -425,113 +339,36 @@
         return { percent: earned, missing, checks };
     }
 
-    function completionTone(percent) {
-        if (percent >= 85) return 'is-success';
-        if (percent >= 65) return 'is-warning';
-        return 'is-danger';
+    function getStaffDirectoryModel(records) {
+        return typeof buildStaffDirectoryFilterModel === 'function'
+            ? buildStaffDirectoryFilterModel(records)
+            : { blueprintFilters: [], staffTypes: [] };
     }
 
-    function statusTone(value) {
-        const normalized = normalizeSearch(value || '');
-        if (normalized.includes('active')) return 'is-success';
-        if (normalized.includes('pending') || normalized.includes('review') || normalized.includes('invitation')) return 'is-warning';
-        if (normalized.includes('archived') || normalized.includes('disabled') || normalized.includes('inactive') || normalized.includes('suspended')) return 'is-danger';
-        return '';
-    }
-
-    function platformCounts(records) {
+    function getDirectoryFilterHelpers() {
         return {
-            total: records.length,
-            teaching: records.filter(isTeachingRole).length,
-            incomplete: records.filter((record) => profileCompleteness(record).percent < 85 && record.status !== 'Archived').length,
-            pending: records.filter((record) => ['Not Invited', 'Invitation Sent', 'Needs Review', 'Login Disabled'].includes(record.accountStatus) && record.status !== 'Archived').length,
-            noOfficeHours: records.filter((record) => !(record.officeHours || []).length && record.status !== 'Archived').length,
-            archived: records.filter((record) => record.status === 'Archived').length,
-            overloaded: records.filter((record) => record.loadRatio >= 0.9).length
-        };
-    }
-
-    function getStaffDictionaries(records, facultyCode) {
-        const departments = unique(records.map((record) => record.department));
-        const roles = unique(records.map((record) => record.role));
-        return {
-            departments: departments.length ? departments : [departmentForFaculty(facultyCode)],
-            roles: roles.length ? roles : roleTitleOptions('professor'),
-            statuses: ['Active', 'Pending Setup', 'On Leave', 'Part-Time', 'Visiting', 'Inactive', 'Archived'],
-            accountStatuses: ['Not Invited', 'Invitation Sent', 'Account Active', 'Login Disabled', 'Needs Review'],
-            ranks: unique([...roleTitleOptions('professor'), ...roleTitleOptions('ta'), ...roleTitleOptions('student_service')]),
-            campuses: ['Main Campus', 'City Campus', 'Medical Campus', 'Online', 'Hybrid'],
-            visibility: ['Public to students', 'Visible to staff only', 'Admin only'],
-            employmentTypes: ['Full-time', 'Part-time', 'Visiting', 'Contract', 'Temporary'],
-            lmsRoles: ['Administrator', 'Department Admin', 'Instructor', 'Teaching Assistant', 'Advisor', 'Support Agent', 'Viewer']
+            normalizeSearch,
+            profileCompleteness,
+            isTeachingRole,
+            getPlatformRoleLabel
         };
     }
 
     function getFilteredStaff(records) {
         const state = getStaffState();
-        const query = normalizeSearch(state.filters.query);
-        const result = records.filter((record) => {
-            const completion = profileCompleteness(record);
-            if (state.filters.archive === 'active' && record.status === 'Archived') return false;
-            if (state.filters.archive === 'archived' && record.status !== 'Archived') return false;
-            if (state.filters.platform !== 'all' && record.platformRole !== state.filters.platform) return false;
-            if (state.filters.role !== 'all' && record.role !== state.filters.role) return false;
-            if (state.filters.department !== 'all' && record.department !== state.filters.department) return false;
-            if (state.filters.status !== 'all' && record.status !== state.filters.status) return false;
-            if (state.filters.account !== 'all' && record.accountStatus !== state.filters.account) return false;
-            if (state.filters.profile === 'complete' && completion.percent < 85) return false;
-            if (state.filters.profile === 'incomplete' && completion.percent >= 85) return false;
-            if (state.filters.profile === 'missing-photo' && record.photo) return false;
-            if (state.filters.profile === 'missing-office-hours' && (record.officeHours || []).length) return false;
-            if (state.filters.profile === 'missing-courses' && (!isTeachingRole(record) || (record.courses || []).length)) return false;
-            if (state.filters.teaching === 'teaching' && !(record.courses || []).length) return false;
-            if (state.filters.teaching === 'not-teaching' && (record.courses || []).length) return false;
-            if (state.filters.teaching === 'heavy-load' && record.scheduledHours < 6) return false;
-            if (!query) return true;
-            const searchable = [
-                record.name,
-                record.nameEn,
-                record.email,
-                record.staffId,
-                record.phone,
-                record.role,
-                record.title,
-                record.department,
-                record.faculty,
-                record.office,
-                (record.expertise || []).join(' '),
-                (record.languages || []).join(' '),
-                (record.courses || []).map((course) => `${course.code} ${course.name} ${course.section || ''}`).join(' ')
-            ].join(' ');
-            return normalizeSearch(searchable).includes(query);
-        });
-
-        result.sort((a, b) => {
-            const sort = state.filters.sort;
-            if (sort === 'department') return a.department.localeCompare(b.department) || a.name.localeCompare(b.name);
-            if (sort === 'role') return a.role.localeCompare(b.role) || a.name.localeCompare(b.name);
-            if (sort === 'updated') return String(b.updatedAt || '').localeCompare(String(a.updatedAt || '')) || a.name.localeCompare(b.name);
-            if (sort === 'courses') return (b.courses || []).length - (a.courses || []).length || a.name.localeCompare(b.name);
-            if (sort === 'completion') return profileCompleteness(b).percent - profileCompleteness(a).percent || a.name.localeCompare(b.name);
-            return a.name.localeCompare(b.name);
-        });
-        return result;
+        const model = getStaffDirectoryModel(records);
+        const normalizedFilters = typeof normalizeStaffDirectoryFilters === 'function'
+            ? normalizeStaffDirectoryFilters(state.filters, model)
+            : state.filters;
+        if (typeof applyStaffDirectoryFilters === 'function') {
+            return applyStaffDirectoryFilters(records, normalizedFilters, model, getDirectoryFilterHelpers());
+        }
+        return records;
     }
 
     function activeSelection(records) {
         const state = getStaffState();
         return records.find((record) => record.id === state.selectedId) || null;
-    }
-
-    function showToast(message) {
-        const toast = document.getElementById('staff-command-toast');
-        if (!toast) return;
-        toast.textContent = message;
-        toast.classList.add('is-visible');
-        clearTimeout(window.__staffCommandToastTimer);
-        window.__staffCommandToastTimer = window.setTimeout(() => {
-            toast.classList.remove('is-visible');
-        }, 2600);
     }
 
     function setFilter(key, value) {
@@ -542,7 +379,7 @@
 
     function clearFilters() {
         const state = getStaffState();
-        state.filters = { ...DEFAULT_FILTERS };
+        state.filters = cloneDefaultFilters();
         renderStaffPage();
         showToast('Staff filters cleared.');
     }
@@ -556,10 +393,42 @@
         showToast('Showing incomplete active profiles.');
     }
 
+    function resolveRecordTypeId(record) {
+        return record?.staffTypeId
+            || (typeof resolveStaffTypeIdFromPlatformRole === 'function'
+                ? resolveStaffTypeIdFromPlatformRole(record?.platformRole)
+                : 'professor');
+    }
+
+    function getRecordProfileSections(record) {
+        const typeId = resolveRecordTypeId(record);
+        if (typeof getStaffFormSchema !== 'function') return [];
+        const schema = getStaffFormSchema(typeId);
+        return (schema.sections || []).slice()
+            .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+            .filter((section) => (section.fields || []).length);
+    }
+
+    function profileSectionTabLabel(section) {
+        return KiuCommandCenterUtils.profileSectionTabLabel(section);
+    }
+
+    function defaultProfileTabForRecord(record) {
+        return getRecordProfileSections(record)[0]?.id || null;
+    }
+
+    function resolveActiveProfileTab(state, sections) {
+        if (state.profileTab === 'admin' && state.viewRole === 'admin') return 'admin';
+        if (sections.some((section) => section.id === state.profileTab)) return state.profileTab;
+        return sections[0]?.id || null;
+    }
+
     function selectStaff(id) {
         const state = getStaffState();
         state.selectedId = id;
-        state.profileTab = 'overview';
+        const facultyCode = typeof getCurrentFaculty === 'function' ? getCurrentFaculty() : 'ECON';
+        const record = buildStaffRecords(facultyCode).records.find((item) => item.id === id) || null;
+        state.profileTab = record ? defaultProfileTabForRecord(record) : null;
         window.location.hash = `profile/${encodeURIComponent(id)}`;
         renderStaffPage();
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -568,7 +437,7 @@
     function backToDirectory() {
         const state = getStaffState();
         state.selectedId = null;
-        state.profileTab = 'overview';
+        state.profileTab = null;
         if (window.location.hash.startsWith('#profile/')) {
             history.pushState('', document.title, window.location.pathname + window.location.search);
         }
@@ -576,244 +445,32 @@
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    function parseCommaList(value) {
-        return String(value || '')
-            .split(',')
-            .map((item) => normalizeText(item))
-            .filter(Boolean);
-    }
-
-    function parseLinks(value) {
-        return String(value || '')
-            .split('\n')
-            .map((line) => line.trim())
-            .filter(Boolean)
-            .map((line) => {
-                const [label, url] = line.split('|').map((part) => normalizeText(part));
-                return { label: label || 'Link', url: url || '' };
-            })
-            .filter((link) => link.url);
-    }
-
-    function parseCourses(value) {
-        return String(value || '')
-            .split('\n')
-            .map((line) => line.trim())
-            .filter(Boolean)
-            .map((line) => {
-                const [code, name, role, semester, section, hours] = line.split('|').map((part) => normalizeText(part));
-                return {
-                    code: code || 'COURSE',
-                    name: name || 'Untitled course',
-                    role: role || 'Instructor',
-                    semester: semester || 'Current semester',
-                    section: section || 'Default',
-                    hours: Number(hours || 0)
-                };
-            });
-    }
-
-    function parseOfficeHours(value) {
-        return String(value || '')
-            .split('\n')
-            .map((line) => line.trim())
-            .filter(Boolean)
-            .map((line) => {
-                const [day, start, end, location, mode, booking] = line.split('|').map((part) => normalizeText(part));
-                return {
-                    day: day || 'Day TBD',
-                    start: start || 'Start TBD',
-                    end: end || 'End TBD',
-                    location: location || 'Location TBD',
-                    mode: mode || 'In person',
-                    booking: booking || 'By appointment'
-                };
-            });
-    }
-
-    function parseScheduleSessions(value) {
-        return String(value || '')
-            .split('\n')
-            .map((line) => line.trim())
-            .filter(Boolean)
-            .map((line) => {
-                const [courseId, sessionType, day, time, duration, room, group, capacity] = line.split('|').map((part) => normalizeText(part));
-                return {
-                    courseId: courseId || 'COURSE',
-                    sessionType: sessionType || 'lecture',
-                    day: day || 'Mon',
-                    time: time || '09:00',
-                    duration: duration || '110min',
-                    room: room || 'TBD',
-                    group: group || 'G1',
-                    capacity: Math.max(1, Number(capacity || 30))
-                };
-            });
-    }
-
     function renderStatusChip(value) {
-        if (!value) return '';
-        return `<span class="staff-hub-chip lux-status-pill ${statusTone(value)}">${escapeHtml(value)}</span>`;
-    }
-
-    function clampProgressPercent(value) {
-        const percent = Number(value);
-        if (!Number.isFinite(percent)) return 0;
-        return Math.max(0, Math.min(100, Math.round(percent)));
-    }
-
-    function renderProgress(percent, copy) {
-        const safePercent = clampProgressPercent(percent);
-        return `
-            <div class="staff-hub-progress">
-                <div class="staff-hub-progress-track">
-                    <span class="staff-hub-progress-fill" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${safePercent}" data-staff-hub-progress="${safePercent}"></span>
-                </div>
-                <small class="staff-hub-text-muted">${copy}</small>
-            </div>
-        `;
+        return KiuCommandCenterUtils.renderStatusChipHtml(value);
     }
 
     function applyStaffHubProgressBars(scope = document) {
-        if (!scope || typeof scope.querySelectorAll !== 'function') return;
-        scope.querySelectorAll('[data-staff-hub-progress]').forEach((element) => {
-            const fill = clampProgressPercent(element.getAttribute('data-staff-hub-progress'));
-            element.style.setProperty('--staff-hub-progress', `${fill}%`);
-        });
-    }
-
-    function renderHeroStatCard(label, value, copy) {
-        return `
-            <article class="staff-hub-metric-card lux-strip-card surface-card">
-                <span>${escapeHtml(label)}</span>
-                <strong>${escapeHtml(value)}</strong>
-                <small>${escapeHtml(copy)}</small>
-            </article>
-        `;
-    }
-
-    function renderCommandCard(label, value, copy) {
-        return `
-            <article class="staff-hub-command-card">
-                <span>${escapeHtml(label)}</span>
-                <strong>${escapeHtml(value)}</strong>
-                <em>${escapeHtml(copy)}</em>
-            </article>
-        `;
-    }
-
-    function infoCard(label, value, full = false) {
-        if (full) {
-            return `<article class="staff-hub-info-card is-full lux-data-card"><span>${escapeHtml(label)}</span><p>${escapeHtml(value || '—')}</p></article>`;
-        }
-        return `<article class="staff-hub-info-card lux-data-card"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value || '—')}</strong></article>`;
+        KiuCommandCenterUtils.applyHubProgressBars(scope);
     }
 
     function renderOverview(record) {
-        const completion = profileCompleteness(record);
-        return `
-            ${completion.missing.length ? `<div class="staff-hub-warning lux-data-card"><strong>Missing profile data</strong><div>${completion.missing.map(escapeHtml).join(', ')}</div></div>` : ''}
-            <div class="staff-hub-info-grid">
-                ${infoCard('Staff ID', record.staffId)}
-                ${infoCard('Role', record.role)}
-                ${infoCard('Academic rank', record.rank)}
-                ${infoCard('Employment', record.employmentType)}
-                ${infoCard('Department', record.department)}
-                ${infoCard('Faculty / School', record.faculty)}
-                ${infoCard('Campus', record.campus)}
-                ${infoCard('Office', record.office || 'No office assigned')}
-                ${infoCard('Biography', record.bio || 'No biography yet.', true)}
-            </div>
-            <section class="staff-hub-info-card is-full lux-data-card">
-                <span>Expertise</span>
-                <div class="staff-hub-chips staff-hub-chips--spaced">${(record.expertise || []).length ? record.expertise.map((item) => `<span class="staff-hub-chip lux-status-pill">${escapeHtml(item)}</span>`).join('') : '<span class="staff-hub-chip is-warning lux-status-pill">No expertise listed</span>'}</div>
-            </section>
-            <section class="staff-hub-info-card is-full lux-data-card">
-                <span>Languages</span>
-                <div class="staff-hub-chips staff-hub-chips--spaced">${(record.languages || []).length ? record.languages.map((item) => `<span class="staff-hub-chip lux-status-pill">${escapeHtml(item)}</span>`).join('') : '<span class="staff-hub-chip is-warning lux-status-pill">No languages listed</span>'}</div>
-            </section>
-        `;
+        return KiuCommandCenterUtils.renderOverviewSection(record, profileCompleteness(record));
     }
 
     function renderTeaching(record) {
-        return `
-            <div class="staff-hub-info-grid">
-                ${infoCard('Current courses', (record.courses || []).length)}
-                ${infoCard('Weekly teaching load', `${record.scheduledHours} hours`)}
-                ${infoCard('Teaching status', (record.courses || []).length ? 'Teaching this semester' : 'No current teaching assignment')}
-                ${infoCard('Primary course role', record.courses?.[0]?.role || 'Not assigned')}
-            </div>
-            <div class="staff-hub-list">
-                ${(record.courses || []).length ? record.courses.map((course) => `
-                    <article class="staff-hub-list-item">
-                        <strong>${escapeHtml(course.code)} · ${escapeHtml(course.name)}</strong>
-                        <small>${escapeHtml(course.role)} · ${escapeHtml(course.semester)} · ${escapeHtml(course.section)} · ${escapeHtml(course.hours)}h/week</small>
-                    </article>
-                `).join('') : `<div class="staff-hub-warning lux-data-card"><strong>No course assignment</strong><div>${isTeachingRole(record) ? 'This staff member appears to be teaching staff. Assign a course before publishing the profile.' : 'Course assignments are not required for this role.'}</div></div>`}
-            </div>
-            <section class="staff-hub-info-card is-full lux-data-card">
-                <span>Scheduler Sync</span>
-                <div class="staff-hub-list staff-hub-list--spaced">
-                    ${(record.scheduleSessions || []).length ? record.scheduleSessions.map((session) => `
-                        <article class="staff-hub-list-item">
-                            <strong>${escapeHtml(session.courseId)} · ${escapeHtml(session.group)}</strong>
-                            <small>${escapeHtml(session.sessionType)} · ${escapeHtml(session.day)} · ${escapeHtml(session.time)} · ${escapeHtml(session.duration)} · ${escapeHtml(session.room)} · ${escapeHtml(session.capacity)} seats</small>
-                        </article>
-                    `).join('') : '<article class="staff-hub-list-item"><strong>No synced schedule sessions</strong><small>Add schedule sync lines in the staff editor to create or update recurring teaching sessions.</small></article>'}
-                </div>
-            </section>
-        `;
+        return KiuCommandCenterUtils.renderTeachingSection(record, isTeachingRole);
     }
 
     function renderAvailability(record) {
-        return `
-            <div class="staff-hub-info-grid">
-                ${infoCard('Office', record.office || 'No office assigned')}
-                ${infoCard('Availability entries', (record.officeHours || []).length)}
-            </div>
-            <div class="staff-hub-list">
-                ${(record.officeHours || []).length ? record.officeHours.map((slot) => `
-                    <article class="staff-hub-list-item">
-                        <strong>${escapeHtml(slot.day)} · ${escapeHtml(slot.start)}-${escapeHtml(slot.end)}</strong>
-                        <small>${escapeHtml(slot.location)} · ${escapeHtml(slot.mode)} · ${escapeHtml(slot.booking)}</small>
-                    </article>
-                `).join('') : '<div class="staff-hub-warning lux-data-card"><strong>No office hours</strong><div>Add office hours so students know when and how to contact this staff member.</div></div>'}
-            </div>
-        `;
+        return KiuCommandCenterUtils.renderAvailabilitySection(record);
     }
 
     function renderContact(record) {
-        return `
-            <div class="staff-hub-info-grid">
-                ${infoCard('Email', record.email)}
-                ${infoCard('Phone', record.phone || 'No phone listed')}
-                ${infoCard('Office', record.office || 'No office listed')}
-                ${infoCard('Visibility', record.visibility)}
-            </div>
-            <section class="staff-hub-info-card is-full lux-data-card">
-                <span>Professional links</span>
-                <div class="staff-hub-list staff-hub-list--spaced">
-                    ${(record.links || []).length ? record.links.map((link) => `<article class="staff-hub-list-item"><strong>${escapeHtml(link.label)}</strong><small>${escapeHtml(link.url)}</small></article>`).join('') : '<article class="staff-hub-list-item"><strong>No links listed</strong><small>Add website, ORCID, scholar profile, or department profile links.</small></article>'}
-                </div>
-            </section>
-        `;
+        return KiuCommandCenterUtils.renderContactSection(record);
     }
 
     function renderDocuments(record) {
-        return `
-            <section class="staff-hub-info-card is-full lux-data-card">
-                <span>Profile documents</span>
-                <p>Document metadata placeholder. In a live LMS, these records would connect to secure file storage, retention rules, and permissions.</p>
-            </section>
-            <div class="staff-hub-list">
-                ${(record.documents || []).length ? record.documents.map((doc) => `
-                    <article class="staff-hub-list-item">
-                        <strong>${escapeHtml(doc.name)}</strong>
-                        <small>${escapeHtml(doc.type)} · ${escapeHtml(doc.visibility)}</small>
-                    </article>
-                `).join('') : '<article class="staff-hub-list-item"><strong>No documents</strong><small>CV, syllabus files, publication lists, or admin-only documents can be added later.</small></article>'}
-            </div>
-        `;
+        return KiuCommandCenterUtils.renderDocumentsSection(record);
     }
 
     function renderAdmin(record) {
@@ -841,41 +498,47 @@
                         ? `<button class="lux-primary-btn" type="button" data-staff-action="restore" data-staff-id="${escapeHtml(record.id)}" ${canManage ? '' : 'disabled'}><i class="fas fa-box-open"></i> Restore</button>`
                         : `<button class="lux-secondary-btn" type="button" data-staff-action="archive" data-staff-id="${escapeHtml(record.id)}" ${canManage ? '' : 'disabled'}><i class="fas fa-box-archive"></i> Archive</button>`}
                     <button class="lux-secondary-btn lux-danger-btn" type="button" data-staff-action="delete" data-staff-id="${escapeHtml(record.id)}" ${canManage ? '' : 'disabled'}><i class="fas fa-user-slash"></i> Delete</button>
-                    <button class="lux-secondary-btn" type="button" data-staff-action="open-platform-profile" data-staff-id="${escapeHtml(record.id)}"><i class="fas fa-id-card"></i> Open canonical profile</button>
                 </div>
                 ${!canManage ? '<p class="staff-hub-section-copy staff-hub-section-copy--spaced">Switch to Admin preview with an active administrator session to use admin-only actions.</p>' : ''}
             </section>
         `;
     }
 
+    function renderBlueprintProfile(record, activeSectionId = null) {
+        return KiuCommandCenterUtils.renderBlueprintProfileHtml(
+            record,
+            activeSectionId,
+            resolveRecordTypeId,
+            typeof renderStaffBlueprintProfileView === 'function' ? renderStaffBlueprintProfileView : null
+        );
+    }
+
     function renderProfileTab(record) {
         const state = getStaffState();
-        if (state.profileTab === 'teaching') return renderTeaching(record);
-        if (state.profileTab === 'availability') return renderAvailability(record);
-        if (state.profileTab === 'contact') return renderContact(record);
-        if (state.profileTab === 'documents') return renderDocuments(record);
-        if (state.profileTab === 'admin') return renderAdmin(record);
-        return renderOverview(record);
+        if (state.profileTab === 'admin' && state.viewRole === 'admin') return renderAdmin(record);
+        const sections = getRecordProfileSections(record);
+        const activeSectionId = resolveActiveProfileTab(state, sections);
+        return renderBlueprintProfile(record, activeSectionId);
     }
 
     function renderProfile(record) {
         const state = getStaffState();
         const completion = profileCompleteness(record);
-        const tabs = [
-            ['overview', 'Overview'],
-            ['teaching', 'Teaching'],
-            ['availability', 'Availability'],
-            ['contact', 'Contact'],
-            ['documents', 'Documents'],
-            ['admin', 'Admin']
-        ];
+        const sections = getRecordProfileSections(record);
+        const sectionTabs = sections.map((section) => [section.id, profileSectionTabLabel(section)]);
+        const adminTabs = state.viewRole === 'admin' ? [['admin', 'Admin']] : [];
+        const tabs = [...sectionTabs, ...adminTabs];
+        const activeTab = resolveActiveProfileTab(state, sections);
+        const tabsMarkup = tabs.length ? `
+                <div class="staff-hub-tabs lux-tab-strip is-profile-tabs">
+                    ${tabs.map(([key, label]) => `<button class="staff-hub-tab lux-tab-btn staff-hub-profile-tab${activeTab === key ? ' is-active' : ''}" type="button" aria-pressed="${activeTab === key ? 'true' : 'false'}" data-staff-action="tab" data-staff-tab="${escapeHtml(key)}">${escapeHtml(label)}</button>`).join('')}
+                </div>` : '';
         return `
             <section class="staff-hub-profile">
                 <div class="staff-hub-toolbar">
                     <button class="lux-secondary-btn" type="button" data-staff-action="back"><i class="fas fa-arrow-left"></i> Back to staff directory</button>
                     <div class="staff-hub-toolbar-actions">
                         <button class="lux-primary-btn" type="button" data-staff-action="edit" data-staff-id="${escapeHtml(record.id)}"><i class="fas fa-pen"></i> Edit profile</button>
-                        <button class="lux-secondary-btn" type="button" data-staff-action="open-platform-profile" data-staff-id="${escapeHtml(record.id)}"><i class="fas fa-up-right-from-square"></i> Open canonical profile</button>
                         <button class="lux-secondary-btn" type="button" data-staff-action="message" data-staff-id="${escapeHtml(record.id)}"><i class="fas fa-envelope"></i> Message</button>
                         <button class="lux-secondary-btn" type="button" data-staff-action="invite" data-staff-id="${escapeHtml(record.id)}"><i class="fas fa-paper-plane"></i> Send invite</button>
                     </div>
@@ -899,9 +562,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="staff-hub-tabs lux-tab-strip">
-                    ${tabs.map(([key, label]) => `<button class="staff-hub-tab lux-tab-btn ${state.profileTab === key ? 'is-active' : ''}" type="button" aria-pressed="${state.profileTab === key ? 'true' : 'false'}" data-staff-action="tab" data-staff-tab="${key}">${label}</button>`).join('')}
-                </div>
+                ${tabsMarkup}
                 <div class="staff-hub-profile-body">
                     ${renderProfileTab(record)}
                 </div>
@@ -909,26 +570,26 @@
         `;
     }
 
-    function renderDirectory(records, facultyCode, stats, unassignedSections) {
+    function renderDirectory(records, facultyCode) {
         const state = getStaffState();
-        const dictionaries = getStaffDictionaries(records, facultyCode);
+        const model = getStaffDirectoryModel(records);
         const visible = getFilteredStaff(records);
         const facultyLabel = facultyName(facultyCode);
-        const facultyDeckLabel = facultyLabel.replace(/^School of\s+/i, '').trim() || facultyLabel;
         const currentUserRole = normalizeSearch(getCurrentUser?.()?.role || '');
         const isAdminSession = currentUserRole === 'admin';
         const viewRoleOptions = VIEW_ROLES.map((value) => `<option value="${value}" ${state.viewRole === value ? 'selected' : ''}>${value === 'admin' ? 'Admin Preview' : value === 'faculty' ? 'Faculty Preview' : 'Viewer Preview'}</option>`).join('');
-        const activeChips = [
-            state.filters.query ? ['Search', state.filters.query] : null,
-            state.filters.platform !== 'all' ? ['Category', getPlatformRoleLabel(state.filters.platform)] : null,
-            state.filters.role !== 'all' ? ['Role', state.filters.role] : null,
-            state.filters.department !== 'all' ? ['Department', state.filters.department] : null,
-            state.filters.status !== 'all' ? ['Status', state.filters.status] : null,
-            state.filters.account !== 'all' ? ['Account', state.filters.account] : null,
-            state.filters.profile !== 'all' ? ['Profile', state.filters.profile.replace(/-/g, ' ')] : null,
-            state.filters.teaching !== 'all' ? ['Teaching', state.filters.teaching.replace(/-/g, ' ')] : null,
-            state.filters.archive !== 'active' ? ['Archive', state.filters.archive] : null
-        ].filter(Boolean);
+        const directoryControlsMarkup = typeof renderStaffDirectoryControls === 'function'
+            ? renderStaffDirectoryControls({
+                filters: state.filters,
+                model,
+                visibleCount: visible.length,
+                isAdminSession,
+                escapeHtml,
+                getPlatformRoleLabel,
+                renderStaffTypeCreateButtons,
+                helpers: getDirectoryFilterHelpers()
+            })
+            : '';
 
         const rows = visible.length ? visible.map((record) => {
                 const completion = profileCompleteness(record);
@@ -976,205 +637,17 @@
                 <div class="staff-hub-inline-actions">
                     ${records.length
                         ? '<button class="lux-secondary-btn" type="button" data-staff-action="clear-filters">Clear filters</button>'
-                        : '<button class="lux-primary-btn" type="button" data-staff-action="open-create" data-staff-role="professor"><i class="fas fa-user-plus"></i> Add staff</button>'}
+                        : renderPrimaryCreateButton(state, 'Add staff')}
                 </div>
             </div>
         `;
 
         return `
             <div class="staff-hub-shell">
-                <section class="page-hero staff-hub-hero">
-                    <div class="lux-hero-main">
-                        <div class="staff-hub-kicker"><i class="fas fa-users-cog"></i> Faculty Operations Deck</div>
-                        <h1 class="staff-hub-title">Run staff operations for ${escapeHtml(facultyDeckLabel)}.</h1>
-                        <p class="staff-hub-hero-copy">Govern profile quality, teaching load, staffing risk, and account lifecycle from one operations surface instead of splitting work across directory cleanup, access review, and scheduler triage.</p>
-                        <div class="staff-hub-hero-meta page-hero-meta">
-                            <span class="staff-hub-pill lux-filter-pill"><i class="fas fa-building"></i> ${escapeHtml(facultyLabel)}</span>
-                            <span class="staff-hub-pill lux-filter-pill"><i class="fas fa-users"></i> ${stats.total} staff records</span>
-                            <span class="staff-hub-pill lux-filter-pill"><i class="fas fa-book-open-reader"></i> ${stats.teaching} teaching-active profiles</span>
-                            <span class="staff-hub-pill lux-filter-pill"><i class="fas fa-user-graduate"></i> ${typeof getAllStudents === 'function' ? getAllStudents(facultyCode).length : 0} students in scope</span>
-                            <span class="staff-hub-pill lux-filter-pill"><i class="fas fa-triangle-exclamation"></i> ${stats.incomplete + stats.pending + unassignedSections} issues in queue</span>
-                        </div>
-                        <div class="lux-field-grid staff-hub-hero-search-grid staff-hub-inline-actions--spaced">
-                            <div class="staff-hub-field">
-                                <label for="staff-global-search">Search command center</label>
-                                <input class="staff-hub-control lux-control" id="staff-global-search" type="search" value="${escapeHtml(state.filters.query)}" placeholder="Search staff, course, department, office..." />
-                            </div>
-                            <div class="staff-hub-field">
-                                <label for="staff-view-role">View role</label>
-                                <select class="staff-hub-control lux-control" id="staff-view-role">${viewRoleOptions}</select>
-                            </div>
-                        </div>
-                        <div class="staff-hub-action-row staff-hub-inline-actions--spaced">
-                            <button class="lux-secondary-btn" type="button" data-staff-action="import"><i class="fas fa-file-import"></i> Import Roster</button>
-                            <button class="lux-secondary-btn" type="button" data-staff-action="export"><i class="fas fa-file-export"></i> Export Roster</button>
-                            ${isAdminSession ? `<button class="lux-primary-btn" type="button" data-staff-action="open-create" data-staff-role="professor"><i class="fas fa-user-plus"></i> Add Staff Profile</button>` : ''}
-                        </div>
-                        <input id="staff-import-file" type="file" accept="application/json" hidden>
-                    </div>
-                    <div class="staff-hub-hero-panel staff-hub-command-panel lux-hero-side">
-                        <div class="staff-hub-command-head">
-                            <strong>Command Map</strong>
-                            <span>Keep directory quality, staffing risk, and access actions moving in one review lane.</span>
-                        </div>
-                        <div class="staff-hub-command-grid">
-                            ${renderCommandCard('Directory health', `${stats.incomplete} incomplete`, 'Profiles missing publish-ready data')}
-                            ${renderCommandCard('Account review', `${stats.pending} pending`, 'Invitation, review, or login recovery')}
-                            ${renderCommandCard('Scheduler risk', `${unassignedSections} unassigned`, `${stats.overloaded} overloaded teaching records`)}
-                        </div>
-                        <div class="staff-hub-command-note">
-                            <span class="staff-hub-command-badge"><i class="fas fa-user-shield"></i>${stats.total - stats.archived} active profiles</span>
-                            <p>Use the staff directory and scheduler together to close course ownership gaps before the term goes live.</p>
-                        </div>
-                    </div>
-                </section>
 
-                <section class="staff-hub-metrics lux-strip-grid lux-strip-grid--adaptive">
-                    <article class="staff-hub-metric-card lux-strip-card surface-card">
-                        <span>Total staff</span>
-                        <strong>${stats.total}</strong>
-                        <small>${stats.total - stats.archived} active visible records by default</small>
-                    </article>
-                    <article class="staff-hub-metric-card lux-strip-card surface-card">
-                        <span>Teaching staff</span>
-                        <strong>${stats.teaching}</strong>
-                        <small>Professors and teaching assistants with academic assignments</small>
-                    </article>
-                    <article class="staff-hub-metric-card lux-strip-card surface-card">
-                        <span>Incomplete</span>
-                        <strong>${stats.incomplete}</strong>
-                        <small>Profiles below the publishing threshold</small>
-                    </article>
-                    <article class="staff-hub-metric-card lux-strip-card surface-card">
-                        <span>Account review</span>
-                        <strong>${stats.pending}</strong>
-                        <small>Needs invitation, review, or login recovery</small>
-                    </article>
-                    <article class="staff-hub-metric-card lux-strip-card surface-card">
-                        <span>No office hours</span>
-                        <strong>${stats.noOfficeHours}</strong>
-                        <small>Availability is missing for student contact</small>
-                    </article>
-                    <article class="staff-hub-metric-card lux-strip-card surface-card">
-                        <span>Overloaded</span>
-                        <strong>${stats.overloaded}</strong>
-                        <small>Weekly teaching load is at or above threshold</small>
-                    </article>
-                    <article class="staff-hub-metric-card lux-strip-card surface-card">
-                        <span>Unassigned sections</span>
-                        <strong>${unassignedSections}</strong>
-                        <small>Groups missing a professor or TA in scheduler scope</small>
-                    </article>
-                    <article class="staff-hub-metric-card lux-strip-card surface-card">
-                        <span>Archived</span>
-                        <strong>${stats.archived}</strong>
-                        <small>Records hidden from default staff operations</small>
-                    </article>
-                </section>
 
-                <section class="staff-hub-controls staff-admin-controls">
-                    <div class="staff-hub-controls-head">
-                        <div>
-                            <div class="staff-hub-overline">Directory controls</div>
-                            <h2 class="staff-hub-section-title">Search, filter, and govern staff profiles</h2>
-                            <p class="staff-hub-section-copy">${visible.length} result${visible.length === 1 ? '' : 's'} shown. Review completeness, teaching scope, account state, and lifecycle flags without leaving the directory.</p>
-                        </div>
-                        ${isAdminSession ? `<div class="staff-hub-inline-actions">
-                            <button class="lux-secondary-btn" type="button" data-staff-action="export-csv"><i class="fas fa-table"></i> Export CSV</button>
-                            <button class="lux-primary-btn" type="button" data-staff-action="open-create" data-staff-role="professor"><i class="fas fa-user-plus"></i> Register professor</button>
-                            <button class="lux-secondary-btn" type="button" data-staff-action="open-create" data-staff-role="ta"><i class="fas fa-user-tie"></i> Register TA</button>
-                            <button class="lux-secondary-btn" type="button" data-staff-action="open-create" data-staff-role="student_service"><i class="fas fa-headset"></i> Register service staff</button>
-                        </div>` : ''}
-                    </div>
-
-                    <div class="staff-hub-inline-actions staff-hub-inline-actions--spaced">
-                        <button class="lux-secondary-btn" type="button" data-staff-action="saved-view" data-staff-view="all"><i class="fas fa-layer-group"></i> All staff</button>
-                        <button class="lux-secondary-btn" type="button" data-staff-action="saved-view" data-staff-view="account-review"><i class="fab fa-microsoft"></i> Needs account</button>
-                        <button class="lux-secondary-btn" type="button" data-staff-action="saved-view" data-staff-view="overloaded"><i class="fas fa-triangle-exclamation"></i> Overloaded</button>
-                        <button class="lux-secondary-btn" type="button" data-staff-action="saved-view" data-staff-view="unassigned"><i class="fas fa-link-slash"></i> Unassigned</button>
-                    </div>
-
-                    <div class="staff-hub-filter-grid">
-                        <div class="staff-hub-field">
-                            <label for="staff-search">Search directory</label>
-                            <input class="staff-hub-control lux-control" id="staff-search" type="search" value="${escapeHtml(state.filters.query)}" placeholder="Name, email, staff ID, course, office..." />
-                        </div>
-                        <div class="staff-hub-field">
-                            <label for="staff-role-filter">Role</label>
-                            <select class="staff-hub-control lux-control" id="staff-role-filter">
-                                <option value="all">All roles</option>
-                                ${dictionaries.roles.map((role) => `<option value="${escapeHtml(role)}" ${state.filters.role === role ? 'selected' : ''}>${escapeHtml(role)}</option>`).join('')}
-                            </select>
-                        </div>
-                        <div class="staff-hub-field">
-                            <label for="staff-department-filter">Department</label>
-                            <select class="staff-hub-control lux-control" id="staff-department-filter">
-                                <option value="all">All departments</option>
-                                ${dictionaries.departments.map((department) => `<option value="${escapeHtml(department)}" ${state.filters.department === department ? 'selected' : ''}>${escapeHtml(department)}</option>`).join('')}
-                            </select>
-                        </div>
-                        <div class="staff-hub-field">
-                            <label for="staff-status-filter">Status</label>
-                            <select class="staff-hub-control lux-control" id="staff-status-filter">
-                                <option value="all">All statuses</option>
-                                ${dictionaries.statuses.map((status) => `<option value="${escapeHtml(status)}" ${state.filters.status === status ? 'selected' : ''}>${escapeHtml(status)}</option>`).join('')}
-                            </select>
-                        </div>
-                        <div class="staff-hub-field">
-                            <label for="staff-sort-filter">Sort</label>
-                            <select class="staff-hub-control lux-control" id="staff-sort-filter">
-                                <option value="name" ${state.filters.sort === 'name' ? 'selected' : ''}>Name</option>
-                                <option value="department" ${state.filters.sort === 'department' ? 'selected' : ''}>Department</option>
-                                <option value="role" ${state.filters.sort === 'role' ? 'selected' : ''}>Role</option>
-                                <option value="updated" ${state.filters.sort === 'updated' ? 'selected' : ''}>Recently updated</option>
-                                <option value="courses" ${state.filters.sort === 'courses' ? 'selected' : ''}>Most courses</option>
-                                <option value="completion" ${state.filters.sort === 'completion' ? 'selected' : ''}>Profile completeness</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="staff-hub-filter-grid-secondary">
-                        <div class="staff-hub-field">
-                            <label for="staff-account-filter">Account</label>
-                            <select class="staff-hub-control lux-control" id="staff-account-filter">
-                                <option value="all">All accounts</option>
-                                ${dictionaries.accountStatuses.map((status) => `<option value="${escapeHtml(status)}" ${state.filters.account === status ? 'selected' : ''}>${escapeHtml(status)}</option>`).join('')}
-                            </select>
-                        </div>
-                        <div class="staff-hub-field">
-                            <label for="staff-profile-filter">Profile status</label>
-                            <select class="staff-hub-control lux-control" id="staff-profile-filter">
-                                <option value="all" ${state.filters.profile === 'all' ? 'selected' : ''}>All profiles</option>
-                                <option value="complete" ${state.filters.profile === 'complete' ? 'selected' : ''}>Complete profiles</option>
-                                <option value="incomplete" ${state.filters.profile === 'incomplete' ? 'selected' : ''}>Incomplete profiles</option>
-                                <option value="missing-photo" ${state.filters.profile === 'missing-photo' ? 'selected' : ''}>Missing photo</option>
-                                <option value="missing-office-hours" ${state.filters.profile === 'missing-office-hours' ? 'selected' : ''}>Missing office hours</option>
-                                <option value="missing-courses" ${state.filters.profile === 'missing-courses' ? 'selected' : ''}>Missing courses</option>
-                            </select>
-                        </div>
-                        <div class="staff-hub-field">
-                            <label for="staff-teaching-filter">Teaching</label>
-                            <select class="staff-hub-control lux-control" id="staff-teaching-filter">
-                                <option value="all" ${state.filters.teaching === 'all' ? 'selected' : ''}>All staff</option>
-                                <option value="teaching" ${state.filters.teaching === 'teaching' ? 'selected' : ''}>Teaching this semester</option>
-                                <option value="not-teaching" ${state.filters.teaching === 'not-teaching' ? 'selected' : ''}>Not teaching this semester</option>
-                                <option value="heavy-load" ${state.filters.teaching === 'heavy-load' ? 'selected' : ''}>High teaching load</option>
-                            </select>
-                        </div>
-                        <div class="staff-hub-field">
-                            <label for="staff-archive-filter">Archive</label>
-                            <select class="staff-hub-control lux-control" id="staff-archive-filter">
-                                <option value="active" ${state.filters.archive === 'active' ? 'selected' : ''}>Active records</option>
-                                <option value="archived" ${state.filters.archive === 'archived' ? 'selected' : ''}>Archived only</option>
-                                <option value="all" ${state.filters.archive === 'all' ? 'selected' : ''}>All records</option>
-                            </select>
-                        </div>
-                        <button class="lux-secondary-btn" type="button" data-staff-action="review-missing"><i class="fas fa-clipboard-list"></i> Review missing data</button>
-                    </div>
-
-                    <div class="staff-hub-chips staff-hub-chips--spaced">
-                        ${activeChips.length ? activeChips.map(([label, value]) => `<span class="staff-hub-chip lux-status-pill">${escapeHtml(label)}: ${escapeHtml(value)}</span>`).join('') : '<span class="staff-hub-chip lux-status-pill">No active filters</span>'}
-                    </div>
+                <section class="staff-hub-controls staff-admin-controls staff-hub-controls--adaptive">
+                    ${directoryControlsMarkup}
                 </section>
 
                 <section class="staff-hub-directory-panel">
@@ -1214,213 +687,106 @@
         `;
     }
 
+    function renderStaffTypeCreateButtons(isAdminSession) {
+        return KiuCommandCenterUtils.renderHubTypeCreateButtons(
+            isAdminSession,
+            typeof getStaffFormTypes === 'function' ? getStaffFormTypes : null,
+            'professor'
+        );
+    }
+
+    function renderPrimaryCreateButton(state = getStaffState(), fallbackLabel = 'Add Staff Profile') {
+        const typeId = state.formSettingsTypeId || 'professor';
+        const type = typeof getStaffFormType === 'function' ? getStaffFormType(typeId) : null;
+        return KiuCommandCenterUtils.renderHubPrimaryCreateButton(typeId, type?.label, fallbackLabel);
+    }
+
+    function refreshModalBody() {
+        const state = getStaffState();
+        if (!state.modalOpen) return;
+        const facultyCode = typeof getCurrentFaculty === 'function' ? getCurrentFaculty() : 'ECON';
+        if (typeof ensureStaffFormBlueprint === 'function') ensureStaffFormBlueprint();
+        const { records } = buildStaffRecords(facultyCode);
+        renderModal(records, facultyCode);
+    }
+
     function renderModal(records, facultyCode) {
         const root = document.getElementById('staff-command-modal-root');
         if (!root) return;
         const state = getStaffState();
         const editing = records.find((record) => record.id === state.editingId) || null;
-        if (!state.editingId && !state.modalRole && root.hasAttribute('hidden')) return;
         if (!state.modalOpen) {
             root.setAttribute('hidden', '');
             root.innerHTML = '';
             return;
         }
-        const dictionaries = getStaffDictionaries(records, facultyCode);
-        const profile = editing || buildDraftRecord(facultyCode, state.modalRole);
-        const roleOptions = roleTitleOptions(profile.platformRole);
-        const completion = profileCompleteness(profile);
+        const staffTypeId = state.modalStaffTypeId
+            || (editing?.staffTypeId)
+            || state.formSettingsTypeId
+            || (typeof resolveStaffTypeIdFromPlatformRole === 'function'
+                ? resolveStaffTypeIdFromPlatformRole(state.modalRole || editing?.platformRole || 'professor')
+                : 'professor');
+        const staffType = typeof getStaffFormType === 'function' ? getStaffFormType(staffTypeId) : null;
+        if (typeof clearStaffFormErrors === 'function') clearStaffFormErrors();
+        const profile = editing || buildDraftRecord(facultyCode, staffType?.platformRole || state.modalRole || 'professor');
+        if (typeof hydrateFieldValuesFromRecord === 'function') {
+            profile.fieldValues = hydrateFieldValuesFromRecord(profile, staffTypeId);
+        }
+        const completion = profileCompleteness({ ...profile, staffTypeId });
+        const bodyMarkup = typeof renderStaffFormFromBlueprint === 'function'
+            ? renderStaffFormFromBlueprint(staffTypeId, profile)
+            : '<div class="staff-hub-schema-empty lux-data-card"><strong>Form renderer unavailable</strong></div>';
+        const schemaEmpty = typeof staffFormSchemaIsEmpty === 'function' && staffFormSchemaIsEmpty(staffTypeId);
+        const touched = Boolean(state.modalTouched);
+        const titleIcon = editing ? 'fa-user-pen' : 'fa-user-plus';
         root.removeAttribute('hidden');
+        if (!root.hasAttribute('data-lux-transparency-exempt')) {
+            root.setAttribute('data-lux-transparency-exempt', '1');
+        }
         root.innerHTML = `
             <div class="staff-hub-modal-backdrop" data-staff-action="dismiss-modal">
-                <form class="staff-hub-modal" id="staff-command-form" novalidate>
+                <form class="staff-hub-modal" id="staff-command-form" novalidate data-staff-type-id="${escapeHtml(staffTypeId)}">
                     <div class="staff-hub-modal-head">
-                        <div>
-                            <h2 class="staff-hub-modal-title">${editing ? 'Edit Staff Profile' : 'Add Staff Member'}</h2>
-                            <p class="staff-hub-modal-copy">${editing ? 'Update profile, teaching, availability, and access details.' : 'Create a complete KIU LMS staff profile with contact, teaching, and account metadata.'}</p>
+                        <div class="staff-hub-modal-head-main">
+                            <div class="staff-hub-modal-title-row">
+                                <h2 class="staff-hub-modal-title"><i class="fas ${titleIcon}" aria-hidden="true"></i> ${editing ? 'Edit Staff Profile' : 'Add Staff Member'}</h2>
+                                <span class="staff-hub-modal-type-pill">${escapeHtml(staffType?.label || 'Staff')}</span>
+                            </div>
+                            <p class="staff-hub-modal-copy">${editing
+                                ? `Update this ${escapeHtml(staffType?.label || 'staff')} profile using your configured form sections.`
+                                : `Create a new ${escapeHtml(staffType?.label || 'staff')} profile from the sections your administrators configured.`}</p>
                         </div>
-                        <button class="lux-secondary-btn" type="button" data-staff-action="close-modal"><i class="fas fa-times"></i> Close</button>
+                        <button class="lux-secondary-btn" type="button" data-staff-action="close-modal" aria-label="Close modal"><i class="fas fa-times" aria-hidden="true"></i> Close</button>
                     </div>
                     <div class="staff-hub-modal-body">
-                        <section class="staff-hub-form-section lux-data-card">
-                            <div class="staff-hub-form-section-head">
-                                <div>
-                                    <span class="staff-hub-overline">Step 1</span>
-                                    <strong>Basic information</strong>
-                                    <p>Identity details used across the staff directory and profile pages.</p>
-                                </div>
-                                <span class="staff-hub-chip lux-status-pill">Required</span>
-                            </div>
-                            <div class="staff-hub-form-grid">
-                                ${renderField('Full name *', 'formName', 'text', profile.name, 'Nino Beridze', true)}
-                                ${renderField('Institutional email *', 'formEmail', 'email', profile.email, 'name@kiu.edu.ge', true)}
-                                ${renderField('English name', 'formNameEn', 'text', profile.nameEn || '', 'Nino Beridze')}
-                                ${renderField('Staff ID', 'formStaffId', 'text', profile.staffId, 'STF-2026-001')}
-                                ${renderField('Phone', 'formPhone', 'text', profile.phone || '', '+995 555 000 000')}
-                                ${renderField('Photo URL', 'formPhoto', 'url', profile.photo || '', 'Optional image URL')}
-                                ${renderSelectField('Staff status *', 'formStatus', dictionaries.statuses, profile.status)}
-                            </div>
-                        </section>
-
-                        <section class="staff-hub-form-section lux-data-card">
-                            <div class="staff-hub-form-section-head">
-                                <div>
-                                    <span class="staff-hub-overline">Step 2</span>
-                                    <strong>Role and governance</strong>
-                                    <p>Platform role, faculty placement, title, department, and visibility scope.</p>
-                                </div>
-                            </div>
-                            <div class="staff-hub-form-grid">
-                                ${renderSelectField('Account type *', 'formPlatformRole', ['professor', 'ta', 'student_service'], profile.platformRole, {
-                                    labels: {
-                                        professor: 'Professor',
-                                        ta: 'Teaching Assistant',
-                                        student_service: 'Student Service'
-                                    }
-                                })}
-                                ${renderSelectField('Display role *', 'formRole', roleOptions, profile.role)}
-                                ${renderField('Title', 'formTitle', 'text', profile.title || '', 'Professor of Management')}
-                                ${renderSelectField('Academic rank', 'formRank', dictionaries.ranks, profile.rank)}
-                                ${renderField('Department *', 'formDepartment', 'text', profile.department, 'Computer Science', true)}
-                                ${renderSelectField('Faculty / School', 'formFaculty', unique([profile.faculty, ...Object.keys(KIU_STATE.facultyProfiles || {}).map((code) => humanizeFacultyName(code))]), profile.faculty)}
-                                ${renderSelectField('Employment type', 'formEmploymentType', dictionaries.employmentTypes, profile.employmentType)}
-                                ${renderSelectField('Campus', 'formCampus', dictionaries.campuses, profile.campus)}
-                                ${renderField('Office', 'formOffice', 'text', profile.office || '', 'B-204')}
-                                ${renderSelectField('Profile visibility', 'formVisibility', dictionaries.visibility, profile.visibility)}
-                                ${renderField('Max weekly hours', 'formMaxHours', 'number', profile.maxHours, '15')}
-                            </div>
-                        </section>
-
-                        <section class="staff-hub-form-section lux-data-card">
-                            <div class="staff-hub-form-section-head">
-                                <div>
-                                    <span class="staff-hub-overline">Step 3</span>
-                                    <strong>Profile content</strong>
-                                    <p>Biography, expertise, languages, and professional links.</p>
-                                </div>
-                            </div>
-                            <div class="staff-hub-form-grid is-two">
-                                ${renderTextareaField('Biography', 'formBio', profile.bio || '', 'Short profile summary for students and staff.')}
-                                ${renderTextareaField('Expertise / interests', 'formExpertise', (profile.expertise || []).join(', '), 'Marketing Strategy, Consumer Behavior, Research Methods', 'Separate items with commas.')}
-                                ${renderField('Languages', 'formLanguages', 'text', (profile.languages || []).join(', '), 'Georgian, English', false, 'Separate items with commas.')}
-                                ${renderTextareaField('Links', 'formLinks', (profile.links || []).map((link) => `${link.label} | ${link.url}`).join('\n'), 'Website | https://example.edu/profile', 'Use one link per line: Label | URL')}
-                            </div>
-                        </section>
-
-                        <section class="staff-hub-form-section lux-data-card">
-                            <div class="staff-hub-form-section-head">
-                                <div>
-                                    <span class="staff-hub-overline">Step 4</span>
-                                    <strong>Teaching assignments</strong>
-                                    <p>Course ownership and weekly load details used for directory visibility and staffing review.</p>
-                                </div>
-                            </div>
-                            <div class="staff-hub-form-grid is-one">
-                                ${renderTextareaField('Assigned courses', 'formCourses', (profile.courses || []).map((course) => `${course.code} | ${course.name} | ${course.role} | ${course.semester} | ${course.section} | ${course.hours}`).join('\n'), 'BUS-204 | Marketing Strategy | Instructor | Spring 2026 | Group A | 4', 'Format: Course code | Course name | Role | Semester | Section | Weekly hours')}
-                            </div>
-                        </section>
-
-                        <section class="staff-hub-form-section lux-data-card">
-                            <div class="staff-hub-form-section-head">
-                                <div>
-                                    <span class="staff-hub-overline">Step 5</span>
-                                    <strong>Scheduler sync</strong>
-                                    <p>Create or update recurring teaching sessions in the KIU master scheduler while keeping the improved staff workflow.</p>
-                                </div>
-                            </div>
-                            <div class="staff-hub-form-grid is-one">
-                                ${renderTextareaField('Teaching sessions', 'formScheduleSessions', (profile.scheduleSessions || []).map((session) => `${session.courseId} | ${session.sessionType} | ${session.day} | ${session.time} | ${session.duration} | ${session.room} | ${session.group} | ${session.capacity}`).join('\n'), 'BUS-101 | lecture | Mon | 09:00 | 110min | A-301 | G1 | 30', 'Format: Course ID | Type | Day | Start | Duration | Room | Group | Seats. Existing sessions stay unchanged unless the same course + group is updated.')}
-                            </div>
-                        </section>
-
-                        <section class="staff-hub-form-section lux-data-card">
-                            <div class="staff-hub-form-section-head">
-                                <div>
-                                    <span class="staff-hub-overline">Step 6</span>
-                                    <strong>Availability and office hours</strong>
-                                    <p>Consultation slots, booking mode, and location details for contact visibility.</p>
-                                </div>
-                            </div>
-                            <div class="staff-hub-form-grid is-one">
-                                ${renderTextareaField('Office hours', 'formOfficeHours', (profile.officeHours || []).map((slot) => `${slot.day} | ${slot.start} | ${slot.end} | ${slot.location} | ${slot.mode} | ${slot.booking}`).join('\n'), 'Tuesday | 14:00 | 16:00 | B-204 | In person | Booking enabled', 'Format: Day | Start | End | Location | Mode | Booking status')}
-                            </div>
-                        </section>
-
-                        <section class="staff-hub-form-section lux-data-card">
-                            <div class="staff-hub-form-section-head">
-                                <div>
-                                    <span class="staff-hub-overline">Step 7</span>
-                                    <strong>Access and admin settings</strong>
-                                    <p>Account lifecycle, permission role, login history, and internal notes.</p>
-                                </div>
-                            </div>
-                            <div class="staff-hub-form-grid">
-                                ${renderSelectField('LMS account status', 'formAccountStatus', dictionaries.accountStatuses, profile.accountStatus)}
-                                ${renderSelectField('LMS permission role', 'formLmsRole', dictionaries.lmsRoles, profile.lmsRole)}
-                                ${renderField('Last login', 'formLastLogin', 'date', profile.lastLogin || '', '')}
-                            </div>
-                            <div class="staff-hub-form-grid is-one">
-                                ${renderTextareaField('Internal admin notes', 'formNotes', profile.notes || '', 'Private notes for administrators only.')}
-                            </div>
-                        </section>
+                        ${bodyMarkup}
                     </div>
                     <div class="staff-hub-modal-foot">
-                        <div class="staff-hub-chips">
-                            <span class="staff-hub-chip lux-status-pill ${completionTone(completion.percent)}">${completion.percent}% complete</span>
-                            ${completion.missing.slice(0, 3).map((item) => `<span class="staff-hub-chip is-warning lux-status-pill">Missing ${escapeHtml(item)}</span>`).join('')}
-                        </div>
+                        ${renderModalStatus(completion, touched)}
                         <div class="staff-hub-modal-actions">
                             <button class="lux-secondary-btn" type="button" data-staff-action="close-modal">Cancel</button>
-                            <button class="lux-secondary-btn" type="button" data-staff-action="preview-form">Preview completeness</button>
-                            <button class="lux-primary-btn" type="submit"><i class="fas fa-check"></i> ${editing ? 'Save Staff Profile' : 'Create Staff Profile'}</button>
+                            <button class="lux-secondary-btn" type="button" data-staff-action="check-required-fields"><i class="fas fa-list-check" aria-hidden="true"></i> Check required fields</button>
+                            <button class="lux-primary-btn" type="submit" ${schemaEmpty ? 'disabled' : ''}><i class="fas fa-check" aria-hidden="true"></i> ${editing ? 'Save Staff Profile' : 'Create Staff Profile'}</button>
                         </div>
                     </div>
                 </form>
             </div>
         `;
-    }
-
-    function renderField(label, id, type, value, placeholder, required = false, help = '') {
-        return `
-            <div class="staff-hub-field" data-field="${escapeHtml(id)}">
-                <label for="${escapeHtml(id)}">${escapeHtml(label)}</label>
-                <input class="staff-hub-control lux-control" id="${escapeHtml(id)}" type="${escapeHtml(type)}" value="${escapeHtml(value ?? '')}" placeholder="${escapeHtml(placeholder || '')}" ${required ? 'required' : ''}>
-                ${help ? `<div class="staff-hub-help">${escapeHtml(help)}</div>` : ''}
-                <div class="staff-hub-error">This field is required.</div>
-            </div>
-        `;
-    }
-
-    function renderTextareaField(label, id, value, placeholder, help = '') {
-        return `
-            <div class="staff-hub-field" data-field="${escapeHtml(id)}">
-                <label for="${escapeHtml(id)}">${escapeHtml(label)}</label>
-                <textarea class="staff-hub-control lux-control" id="${escapeHtml(id)}" placeholder="${escapeHtml(placeholder || '')}">${escapeHtml(value ?? '')}</textarea>
-                ${help ? `<div class="staff-hub-help">${escapeHtml(help)}</div>` : ''}
-            </div>
-        `;
-    }
-
-    function renderSelectField(label, id, options, value, config = {}) {
-        const labels = config.labels || {};
-        return `
-            <div class="staff-hub-field" data-field="${escapeHtml(id)}">
-                <label for="${escapeHtml(id)}">${escapeHtml(label)}</label>
-                <select class="staff-hub-control lux-control" id="${escapeHtml(id)}">
-                    ${options.map((option) => {
-                        const normalized = String(option);
-                        const display = labels[normalized] || option;
-                        return `<option value="${escapeHtml(normalized)}" ${String(value) === normalized ? 'selected' : ''}>${escapeHtml(display)}</option>`;
-                    }).join('')}
-                </select>
-                <div class="staff-hub-error">This field is required.</div>
-            </div>
-        `;
+        if (typeof window.enhanceUniversalPickers === 'function') {
+            window.enhanceUniversalPickers(root);
+        }
+        refreshModalCompleteness();
     }
 
     function buildDraftRecord(facultyCode, platformRole) {
         const faculty = humanizeFacultyName(facultyCode);
+        const staffTypeId = typeof resolveStaffTypeIdFromPlatformRole === 'function'
+            ? resolveStaffTypeIdFromPlatformRole(platformRole || 'professor')
+            : (platformRole || 'professor');
         return {
             id: '',
+            staffTypeId,
+            fieldValues: {},
             platformRole: platformRole || 'professor',
             profileKey: PLATFORM_ROLE_META[platformRole || 'professor']?.profileKey || 'professors',
             staffId: nextStaffNumber(),
@@ -1476,107 +842,95 @@
     }
 
     function clearFormErrors() {
-        document.querySelectorAll('#staff-command-modal-root .staff-hub-field.is-invalid').forEach((field) => field.classList.remove('is-invalid'));
+        KiuCommandCenterUtils.clearFormErrors();
     }
 
     function markInvalid(id) {
-        const field = document.getElementById(id)?.closest('.staff-hub-field');
-        if (field) field.classList.add('is-invalid');
+        KiuCommandCenterUtils.markInvalid(id);
     }
 
     function buildFormRecord(soft = false) {
         const state = getStaffState();
         const facultyCode = typeof getCurrentFaculty === 'function' ? getCurrentFaculty() : 'ECON';
-        const platformRole = normalizeText(document.getElementById('formPlatformRole')?.value || state.modalRole || 'professor', 'professor');
+        const staffTypeId = state.modalStaffTypeId
+            || document.getElementById('staff-command-form')?.dataset?.staffTypeId
+            || 'professor';
+        const staffType = typeof getStaffFormType === 'function' ? getStaffFormType(staffTypeId) : null;
+        const platformRole = staffType?.platformRole || state.modalRole || 'professor';
         const currentRecords = buildStaffRecords(facultyCode).records;
         const editing = currentRecords.find((record) => record.id === state.editingId) || null;
-        const name = normalizeText(document.getElementById('formName')?.value || '');
-        const email = normalizeText(document.getElementById('formEmail')?.value || '');
-        const nameEn = normalizeText(document.getElementById('formNameEn')?.value || name, name);
-        const existingUser = (KIU_STATE.users || []).find((user) => normalizeSearch(user?.email) === normalizeSearch(email) && String(user?.id || '') !== String(editing?.id || ''));
+        const values = typeof collectStaffFormValues === 'function' ? collectStaffFormValues(staffTypeId) : {};
+        const staffId = normalizeText(values.staff_id || editing?.staffId || '', '');
+        const email = resolveStaffRegistrationEmail(values, editing);
+        const existingUser = typeof window.findDuplicateEmailUser === 'function'
+            ? window.findDuplicateEmailUser(KIU_STATE.users || [], email, editing?.id || '')
+            : null;
 
         if (!soft) {
-            clearFormErrors();
-            let valid = true;
-            if (!name) { markInvalid('formName'); valid = false; }
-            if (!email || !/^\S+@\S+\.\S+$/.test(email) || existingUser) { markInvalid('formEmail'); valid = false; }
-            if (!document.getElementById('formRole')?.value) { markInvalid('formRole'); valid = false; }
-            if (!document.getElementById('formDepartment')?.value) { markInvalid('formDepartment'); valid = false; }
-            if (!valid) {
+            if (typeof clearStaffFormErrors === 'function') clearStaffFormErrors();
+            else clearFormErrors();
+            const errors = typeof validateStaffFormValues === 'function'
+                ? validateStaffFormValues(staffTypeId, values, false)
+                : [];
+            if (existingUser) {
+                const emailField = errors.find((item) => item.key === 'institutional_email') || { fieldId: '', key: 'institutional_email' };
+                if (typeof markStaffFormInvalid === 'function') markStaffFormInvalid(emailField.fieldId || 'institutional_email');
+            }
+            errors.forEach((error) => {
+                if (typeof markStaffFormInvalid === 'function') markStaffFormInvalid(error.fieldId);
+            });
+            if (errors.length || existingUser) {
+                const state = getStaffState();
+                state.modalTouched = true;
+                refreshModalCompleteness();
+                scrollToFirstInvalidField();
                 showToast(existingUser ? 'This email already exists in the KIU directory.' : 'Please fix required fields before saving.');
+                return null;
+            }
+            if (typeof staffFormSchemaIsEmpty === 'function' && staffFormSchemaIsEmpty(staffTypeId)) {
+                showToast('Configure the staff form blueprint before creating profiles.');
                 return null;
             }
         }
 
-        const facultyNameValue = normalizeText(document.getElementById('formFaculty')?.value || humanizeFacultyName(facultyCode), humanizeFacultyName(facultyCode));
-        const actualFacultyCode = Object.keys(KIU_STATE.facultyProfiles || {}).find((code) => humanizeFacultyName(code) === facultyNameValue) || facultyCode;
-        const staffId = normalizeText(document.getElementById('formStaffId')?.value || editing?.staffId || nextStaffNumber(), nextStaffNumber());
-        return {
-            id: editing?.id || nextUserId(platformRole, actualFacultyCode),
-            platformRole,
-            profileKey: PLATFORM_ROLE_META[platformRole]?.profileKey || 'professors',
-            staffId,
-            name,
-            nameEn,
-            email,
-            phone: normalizeText(document.getElementById('formPhone')?.value || ''),
-            photo: normalizeText(document.getElementById('formPhoto')?.value || ''),
-            status: normalizeText(document.getElementById('formStatus')?.value || 'Active', 'Active'),
-            role: normalizeText(document.getElementById('formRole')?.value || roleTitleOptions(platformRole)[0], roleTitleOptions(platformRole)[0]),
-            title: normalizeText(document.getElementById('formTitle')?.value || document.getElementById('formRole')?.value || roleTitleOptions(platformRole)[0], roleTitleOptions(platformRole)[0]),
-            rank: normalizeText(document.getElementById('formRank')?.value || roleTitleOptions(platformRole)[0], roleTitleOptions(platformRole)[0]),
-            department: normalizeText(document.getElementById('formDepartment')?.value || departmentForFaculty(actualFacultyCode), departmentForFaculty(actualFacultyCode)),
-            faculty: facultyNameValue,
-            facultyCode: actualFacultyCode,
-            employmentType: normalizeText(document.getElementById('formEmploymentType')?.value || '', ''),
-            campus: normalizeText(document.getElementById('formCampus')?.value || 'Main Campus', 'Main Campus'),
-            office: normalizeText(document.getElementById('formOffice')?.value || ''),
-            visibility: normalizeText(document.getElementById('formVisibility')?.value || getVisibilityDefault(platformRole), getVisibilityDefault(platformRole)),
-            bio: normalizeText(document.getElementById('formBio')?.value || ''),
-            expertise: parseCommaList(document.getElementById('formExpertise')?.value || ''),
-            languages: parseCommaList(document.getElementById('formLanguages')?.value || ''),
-            links: parseLinks(document.getElementById('formLinks')?.value || ''),
-            courses: parseCourses(document.getElementById('formCourses')?.value || ''),
-            scheduleSessions: parseScheduleSessions(document.getElementById('formScheduleSessions')?.value || ''),
-            officeHours: parseOfficeHours(document.getElementById('formOfficeHours')?.value || ''),
-            accountStatus: normalizeText(document.getElementById('formAccountStatus')?.value || 'Not Invited', 'Not Invited'),
-            lmsRole: normalizeText(document.getElementById('formLmsRole')?.value || PLATFORM_ROLE_META[platformRole]?.lmsRole || 'Viewer', 'Viewer'),
-            lastLogin: normalizeText(document.getElementById('formLastLogin')?.value || ''),
-            updatedAt: todayIso(),
-            createdBy: normalizeText(editing?.createdBy || getCurrentUser?.()?.name || getCurrentUser?.()?.email || 'Admin', 'Admin'),
-            documents: editing?.documents || [],
-            notes: normalizeText(document.getElementById('formNotes')?.value || ''),
-            maxHours: Math.max(1, Number(document.getElementById('formMaxHours')?.value || editing?.maxHours || 15)),
-            joinYear: normalizeText(editing?.joinYear || new Date().getFullYear(), String(new Date().getFullYear())),
-            subjects: unique(parseCourses(document.getElementById('formCourses')?.value || '').map((course) => normalizeText(course.code)))
-        };
+        const draft = editing || buildDraftRecord(facultyCode, platformRole);
+        const actualFacultyCode = draft.facultyCode || facultyCode;
+        const mapped = typeof mapFieldValuesToLegacyRecord === 'function'
+            ? mapFieldValuesToLegacyRecord(staffTypeId, values, {
+                ...draft,
+                id: editing?.id || nextUserId(platformRole, actualFacultyCode),
+                staffId: normalizeText(values.staff_id || editing?.staffId || nextStaffNumber(), nextStaffNumber()),
+                facultyCode: actualFacultyCode,
+                faculty: draft.faculty || humanizeFacultyName(actualFacultyCode),
+                department: normalizeText(values.department || draft.department || departmentForFaculty(actualFacultyCode), departmentForFaculty(actualFacultyCode)),
+                accountStatus: normalizeText(values.lms_account_status || draft.accountStatus || 'Not Invited', 'Not Invited'),
+                lmsRole: normalizeText(values.lms_permission_role || draft.lmsRole || PLATFORM_ROLE_META[platformRole]?.lmsRole || 'Viewer', 'Viewer'),
+                visibility: normalizeText(values.profile_visibility || draft.visibility || getVisibilityDefault(platformRole), getVisibilityDefault(platformRole)),
+                updatedAt: todayIso(),
+                createdBy: normalizeText(editing?.createdBy || getCurrentUser?.()?.name || getCurrentUser?.()?.email || 'Admin', 'Admin'),
+                documents: editing?.documents || [],
+                courses: editing?.courses || [],
+                scheduleSessions: editing?.scheduleSessions || [],
+                officeHours: editing?.officeHours || [],
+                links: editing?.links || [],
+                joinYear: normalizeText(editing?.joinYear || new Date().getFullYear(), String(new Date().getFullYear())),
+                subjects: editing?.subjects || [],
+                maxHours: Math.max(1, Number(values.max_weekly_hours || editing?.maxHours || (platformRole === 'ta' ? 8 : 15)))
+            })
+            : { ...draft, fieldValues: values };
+        mapped.staffTypeId = staffTypeId;
+        mapped.fieldValues = { ...(mapped.fieldValues || {}), ...values };
+        if (!mapped.name) mapped.name = normalizeText(values.full_name || '', 'New staff');
+        mapped.email = email;
+        if (values.institutional_email !== email) {
+            mapped.fieldValues = { ...(mapped.fieldValues || {}), institutional_email: email };
+        }
+        if (!mapped.role) mapped.role = normalizeText(values.display_role || staffType?.label || 'Staff', staffType?.label || 'Staff');
+        return mapped;
     }
 
     function syncGroupsForStaff(nextRecord, previousRecord = null) {
-        if (!KIU_STATE.availableGroups || nextRecord.platformRole === 'student_service') return;
-        const assignmentKey = nextRecord.platformRole === 'ta' ? 'ta' : 'prof';
-        const previousName = normalizeText(previousRecord?.name || '');
-        const nextName = normalizeText(nextRecord.name || '');
-        Object.keys(KIU_STATE.availableGroups || {}).forEach((courseId) => {
-            const courseFaculty = typeof deriveFacultyFromSubjectId === 'function'
-                ? deriveFacultyFromSubjectId(courseId)
-                : nextRecord.facultyCode;
-            const normalizedCourseFaculty = typeof normalizeFacultyCode === 'function'
-                ? normalizeFacultyCode(courseFaculty || nextRecord.facultyCode, nextRecord.facultyCode)
-                : (courseFaculty || nextRecord.facultyCode);
-            if (normalizedCourseFaculty !== nextRecord.facultyCode) return;
-            const shouldOwnCourse = nextRecord.subjects.includes(normalizeText(courseId));
-            KIU_STATE.availableGroups[courseId] = (KIU_STATE.availableGroups[courseId] || []).map((group) => {
-                const currentName = normalizeText(group?.[assignmentKey] || '');
-                if (shouldOwnCourse && (!currentName || currentName === 'TBD' || currentName === 'Assigned Professor' || currentName === 'Assigned Teaching Assistant' || currentName === previousName)) {
-                    return { ...group, [assignmentKey]: nextName };
-                }
-                if (!shouldOwnCourse && currentName === previousName) {
-                    return { ...group, [assignmentKey]: assignmentKey === 'prof' ? 'Assigned Professor' : 'Assigned Teaching Assistant' };
-                }
-                return group;
-            });
-        });
+        return KiuCommandCenterUtils.syncGroupsForStaff(nextRecord, previousRecord);
     }
 
     function upsertFacultyMirror(nextRecord) {
@@ -1609,62 +963,11 @@
     }
 
     function upsertUserRecord(nextRecord, existingUser) {
-        const baseUser = {
-            ...(existingUser || {}),
-            id: nextRecord.id,
-            staffId: nextRecord.staffId,
-            name: nextRecord.name,
-            nameEn: nextRecord.nameEn,
-            email: nextRecord.email,
-            role: nextRecord.platformRole,
-            faculty: nextRecord.facultyCode,
-            facultyCode: nextRecord.facultyCode,
-            status: nextRecord.status,
-            photo: nextRecord.photo,
-            avatar: typeof getInitialsAvatar === 'function' ? getInitialsAvatar(nextRecord.nameEn || nextRecord.name) : initials(nextRecord.nameEn || nextRecord.name),
-            joinYear: nextRecord.joinYear,
-            title: nextRecord.title,
-            office: nextRecord.office,
-            phone: nextRecord.phone,
-            maxHours: nextRecord.maxHours,
-            subjects: nextRecord.subjects,
-            lastLogin: nextRecord.lastLogin
-        };
-        if (!existingUser && typeof buildProvisioningMeta === 'function') {
-            Object.assign(baseUser, buildProvisioningMeta(nextRecord.id));
-        }
-        const existingIndex = KIU_STATE.users.findIndex((user) => String(user?.id || '') === String(nextRecord.id));
-        if (existingIndex >= 0) {
-            KIU_STATE.users[existingIndex] = baseUser;
-        } else {
-            KIU_STATE.users.push(baseUser);
-        }
-        return baseUser;
+        return KiuCommandCenterUtils.upsertUserRecord(nextRecord, existingUser);
     }
 
     function syncScheduleSessions(nextRecord) {
-        if (nextRecord.platformRole === 'student_service') return;
-        if (typeof upsertScheduledSession !== 'function') return;
-        (nextRecord.scheduleSessions || []).forEach((session) => {
-            const courseId = normalizeText(session.courseId || '', '');
-            if (!courseId) return;
-            const sessionData = {
-                id: normalizeText(session.group || 'G1', 'G1'),
-                name: normalizeText(session.group || 'G1', 'G1'),
-                day: normalizeText(session.day || 'Mon', 'Mon'),
-                time: normalizeText(session.time || '09:00', '09:00'),
-                duration: normalizeText(session.duration || '110min', '110min'),
-                room: normalizeText(session.room || 'TBD', 'TBD'),
-                sessionType: normalizeText(session.sessionType || 'lecture', 'lecture'),
-                prof: nextRecord.platformRole === 'professor' ? nextRecord.name : 'TBD',
-                ta: nextRecord.platformRole === 'ta' ? nextRecord.name : 'TBD',
-                faculty: nextRecord.facultyCode,
-                semester: 1,
-                capacity: Math.max(1, Number(session.capacity || 30)),
-                registered: 0
-            };
-            upsertScheduledSession(courseId, sessionData, { scope: 'recurring' });
-        });
+        return KiuCommandCenterUtils.syncScheduleSessions(nextRecord);
     }
 
     function persistRecord(nextRecord) {
@@ -1708,7 +1011,9 @@
             notes: nextRecord.notes,
             maxHours: nextRecord.maxHours,
             joinYear: nextRecord.joinYear,
-            subjects: nextRecord.subjects
+            subjects: nextRecord.subjects,
+            staffTypeId: nextRecord.staffTypeId,
+            fieldValues: nextRecord.fieldValues || {}
         };
         syncGroupsForStaff(nextRecord, current);
         syncScheduleSessions(nextRecord);
@@ -1728,58 +1033,23 @@
     }
 
     function archiveStaff(id) {
-        const entry = ensureRecordEntry(id);
-        if (!entry) return;
-        entry.status = 'Archived';
-        entry.updatedAt = todayIso();
-        const user = KIU_STATE.users.find((item) => String(item?.id || '') === String(id));
-        if (user) user.status = 'Archived';
-        if (typeof saveState === 'function') saveState();
-        renderStaffPage();
-        showToast(`${entry.name || 'Staff member'} archived.`);
+        KiuCommandCenterUtils.setRecordArchiveStatus(id, ensureRecordEntry, renderStaffPage, 'Archived', 'Staff member');
     }
 
     function restoreStaff(id) {
-        const entry = ensureRecordEntry(id);
-        if (!entry) return;
-        entry.status = 'Active';
-        entry.updatedAt = todayIso();
-        const user = KIU_STATE.users.find((item) => String(item?.id || '') === String(id));
-        if (user) user.status = 'Active';
-        if (typeof saveState === 'function') saveState();
-        renderStaffPage();
-        showToast(`${entry.name || 'Staff member'} restored.`);
+        KiuCommandCenterUtils.setRecordArchiveStatus(id, ensureRecordEntry, renderStaffPage, 'Active', 'Staff member');
     }
 
     function inviteStaff(id) {
-        const entry = ensureRecordEntry(id);
-        if (!entry) return;
-        if (entry.accountStatus !== 'Account Active') entry.accountStatus = 'Invitation Sent';
-        entry.updatedAt = todayIso();
-        if (typeof saveState === 'function') saveState();
-        renderStaffPage();
-        showToast(`Invitation status updated for ${entry.name}.`);
+        KiuCommandCenterUtils.inviteRecord(id, ensureRecordEntry, renderStaffPage);
     }
 
     function toggleLogin(id) {
-        const entry = ensureRecordEntry(id);
-        if (!entry) return;
-        entry.accountStatus = entry.accountStatus === 'Login Disabled' ? 'Account Active' : 'Login Disabled';
-        entry.updatedAt = todayIso();
-        if (typeof saveState === 'function') saveState();
-        renderStaffPage();
-        showToast(`Login status changed for ${entry.name}.`);
+        KiuCommandCenterUtils.toggleLoginStatus(id, ensureRecordEntry, renderStaffPage);
     }
 
     function markReviewed(id) {
-        const entry = ensureRecordEntry(id);
-        if (!entry) return;
-        entry.updatedAt = todayIso();
-        if (entry.accountStatus === 'Needs Review') entry.accountStatus = 'Account Active';
-        entry.notes = `${entry.notes ? `${entry.notes}\n` : ''}Reviewed on ${todayIso()} by ${normalizeText(getCurrentUser?.()?.name || 'Admin', 'Admin')}.`;
-        if (typeof saveState === 'function') saveState();
-        renderStaffPage();
-        showToast(`${entry.name} marked reviewed.`);
+        KiuCommandCenterUtils.markRecordReviewed(id, ensureRecordEntry, renderStaffPage);
     }
 
     function deleteStaff(id) {
@@ -1802,110 +1072,208 @@
     function exportJson() {
         const facultyCode = typeof getCurrentFaculty === 'function' ? getCurrentFaculty() : 'ECON';
         const records = buildStaffRecords(facultyCode).records;
-        const blob = new Blob([JSON.stringify(records, null, 2)], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `kiu-staff-${facultyCode.toLowerCase()}-${todayIso()}.json`;
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-        URL.revokeObjectURL(url);
-        showToast('Staff directory exported as JSON.');
+        KiuCommandCenterUtils.exportDirectoryJson(records, facultyCode, 'Staff');
     }
 
     function exportCsv() {
         const facultyCode = typeof getCurrentFaculty === 'function' ? getCurrentFaculty() : 'ECON';
         const records = getFilteredStaff(buildStaffRecords(facultyCode).records);
-        const headers = ['Staff ID', 'Name', 'English Name', 'Platform Role', 'Display Role', 'Department', 'Faculty', 'Email', 'Phone', 'Office', 'Status', 'Account', 'Courses', 'Weekly Load', 'Profile Completion'];
-        const rows = records.map((record) => {
-            const completion = profileCompleteness(record);
-            return [
-                record.staffId,
-                record.name,
-                record.nameEn,
-                getPlatformRoleLabel(record.platformRole),
-                record.role,
-                record.department,
-                record.faculty,
-                record.email,
-                record.phone,
-                record.office,
-                record.status,
-                record.accountStatus,
-                (record.courses || []).map((course) => `${course.code} ${course.name}`).join('; '),
-                `${record.scheduledHours}/${record.maxHours}`,
-                `${completion.percent}%`
-            ];
-        });
-        const escapeCell = (value) => `"${String(value ?? '').replace(/"/g, '""')}"`;
-        const csv = [headers, ...rows].map((row) => row.map(escapeCell).join(',')).join('\n');
-        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `kiu-staff-${facultyCode.toLowerCase()}-${todayIso()}.csv`;
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-        URL.revokeObjectURL(url);
-        showToast('Staff directory exported as CSV.');
+        KiuCommandCenterUtils.exportDirectoryCsv(
+            records,
+            facultyCode,
+            'Staff',
+            getPlatformRoleLabel,
+            profileCompleteness
+        );
     }
 
     function importJson(file) {
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = () => {
-            try {
-                const data = JSON.parse(reader.result);
-                if (!Array.isArray(data)) throw new Error('Expected array');
-                data.forEach((item) => {
-                    const record = {
-                        ...buildDraftRecord(item.facultyCode || (typeof getCurrentFaculty === 'function' ? getCurrentFaculty() : 'ECON'), item.platformRole || 'professor'),
-                        ...item,
-                        platformRole: normalizeText(item.platformRole || 'professor', 'professor')
-                    };
-                    persistRecord(record);
-                });
-                renderStaffPage();
-                showToast('Staff directory imported.');
-            } catch (error) {
-                showToast('Import failed. Please choose a valid staff JSON export.');
-            }
-        };
-        reader.readAsText(file);
+        KiuCommandCenterUtils.importDirectoryJson(file, {
+            defaultRole: 'professor',
+            buildDraft: buildDraftRecord,
+            persist: persistRecord,
+            onDone: () => renderStaffPage(),
+            successToast: 'Staff directory imported.',
+            failToast: 'Import failed. Please choose a valid staff JSON export.'
+        });
     }
 
-    function openModal(id = null, platformRole = null) {
+    function openModal(id = null, staffTypeId = null) {
         const state = getStaffState();
+        if (typeof ensureStaffFormBlueprint === 'function') ensureStaffFormBlueprint();
+        if (typeof clearStaffFormErrors === 'function') clearStaffFormErrors();
         state.editingId = id;
-        state.modalRole = platformRole || (state.editingId ? null : 'professor');
+        const facultyCode = typeof getCurrentFaculty === 'function' ? getCurrentFaculty() : 'ECON';
+        const editing = id ? buildStaffRecords(facultyCode).records.find((record) => record.id === id) : null;
+        state.modalStaffTypeId = staffTypeId
+            || editing?.staffTypeId
+            || state.formSettingsTypeId
+            || (typeof resolveStaffTypeIdFromPlatformRole === 'function'
+                ? resolveStaffTypeIdFromPlatformRole(editing?.platformRole || state.modalRole || 'professor')
+                : 'professor');
+        state.modalRole = typeof getStaffFormType === 'function'
+            ? (getStaffFormType(state.modalStaffTypeId)?.platformRole || 'professor')
+            : (editing?.platformRole || staffTypeId || 'professor');
         state.modalOpen = true;
+        state.modalTouched = false;
+        if (typeof getStaffFormBlueprint === 'function') {
+            state.blueprintSeenAt = getStaffFormBlueprint().updatedAt || null;
+        }
         renderStaffPage();
         window.setTimeout(() => {
-            document.getElementById('formName')?.focus();
+            document.querySelector('#staff-command-modal-root [data-staff-blueprint-field]')?.focus();
         }, 0);
     }
 
     function closeModal() {
         const state = getStaffState();
         state.modalOpen = false;
+        state.modalTouched = false;
         state.editingId = null;
         state.modalRole = 'professor';
+        state.modalStaffTypeId = 'professor';
         renderModal([], typeof getCurrentFaculty === 'function' ? getCurrentFaculty() : 'ECON');
     }
 
-    function updateFormPreview() {
+
+    let __formBuilderRuntimePromise = null;
+    function ensureFormBuilderRuntime() {
+        if (typeof window.renderStaffFormSettings === 'function' || typeof window.bindStaffFormBuilderEvents === 'function') {
+            return Promise.resolve(true);
+        }
+        if (__formBuilderRuntimePromise) return __formBuilderRuntimePromise;
+        const urls = [
+            'assets/js/pages/form-builder-actions-runtime.js?v=20260720-fbact1',
+            'assets/js/pages/form-builder-runtime.js?v=20260720-fbact1'
+        ];
+        __formBuilderRuntimePromise = urls.reduce((chain, src) => chain.then(() => new Promise((resolve) => {
+            const existing = document.querySelector(`script[src="${src}"]`);
+            if (existing) {
+                if (existing.dataset.kiuLoaded === '1') { resolve(true); return; }
+                existing.addEventListener('load', () => resolve(true), { once: true });
+                existing.addEventListener('error', () => resolve(false), { once: true });
+                return;
+            }
+            const script = document.createElement('script');
+            script.src = src;
+            script.defer = true;
+            script.onload = () => { script.dataset.kiuLoaded = '1'; resolve(true); };
+            script.onerror = () => resolve(false);
+            document.head.appendChild(script);
+        })), Promise.resolve(true));
+        return __formBuilderRuntimePromise;
+    }
+
+    function openFormSettings(typeId = null) {
+        const run = () => KiuCommandCenterUtils.openFormSettingsWorkspace({
+            getState: getStaffState,
+            renderPage: renderStaffPage,
+            closeModal,
+            defaultTypeId: 'professor',
+            typeId
+        });
+        if (typeof window.renderStaffFormSettings === 'function') {
+            run();
+            return;
+        }
+        ensureFormBuilderRuntime().then((ok) => {
+            if (!ok) {
+                showToast('Form studio failed to load. Refresh and try again.');
+                return;
+            }
+            run();
+        });
+    }
+
+    function backToDirectoryWorkspace() {
+        const state = getStaffState();
+        if (state.modalOpen) closeModal();
+        state.workspace = 'directory';
+        state.builderPanel = null;
+        renderStaffPage();
+    }
+
+    function getStaffBuilderCallbacks() {
+        return {
+            getState: getStaffState,
+            setState: (patch) => {
+                const next = patch || {};
+                const state = getStaffState();
+                Object.assign(state, next);
+                if (next.selectedTypeId) state.formSettingsTypeId = next.selectedTypeId;
+            },
+            onRefresh: () => {
+                const state = getStaffState();
+                if (state.workspace === 'form-settings'
+                    && typeof window.patchStaffFormStudioCanvas === 'function') {
+                    const patched = window.patchStaffFormStudioCanvas(state, getStaffBuilderCallbacks());
+                    if (patched) {
+                        const container = document.getElementById('staff-content');
+                        if (container) applyStaffHubProgressBars(container);
+                        if (typeof queueLuxuryTransparencyRefresh === 'function') {
+                            const formSettings = container?.querySelector('.staff-hub-form-settings');
+                            queueLuxuryTransparencyRefresh(undefined, {
+                                roots: formSettings ? [formSettings] : undefined
+                            });
+                        }
+                        return;
+                    }
+                }
+                renderStaffPage();
+            },
+            onBlueprintSaved: (typeId) => {
+                const state = getStaffState();
+                if (typeId) state.formSettingsTypeId = typeId;
+                if (state.modalOpen && state.modalStaffTypeId === typeId) refreshModalBody();
+            },
+            onToast: (message) => showToast(message)
+        };
+    }
+
+    function markModalTouched() {
+        const state = getStaffState();
+        if (!state.modalTouched) {
+            state.modalTouched = true;
+        }
+    }
+
+    function scrollToFirstInvalidField() {
+        return KiuCommandCenterUtils.scrollToFirstInvalidField();
+    }
+
+    function refreshModalCompleteness() {
+        const state = getStaffState();
         const next = buildFormRecord(true);
         if (!next) return;
-        const completion = profileCompleteness(next);
-        const chips = document.querySelector('#staff-command-modal-root .staff-hub-modal-foot .staff-hub-chips');
-        if (chips) {
-            chips.innerHTML = `
-                <span class="staff-hub-chip lux-status-pill ${completionTone(completion.percent)}">${completion.percent}% complete</span>
-                ${completion.missing.slice(0, 3).map((item) => `<span class="staff-hub-chip is-warning lux-status-pill">Missing ${escapeHtml(item)}</span>`).join('')}
-            `;
+        KiuCommandCenterUtils.applyModalCompletenessUI(
+            profileCompleteness(next),
+            next.fieldValues || {},
+            Boolean(state.modalTouched)
+        );
+    }
+
+    function checkRequiredFields() {
+        const state = getStaffState();
+        state.modalTouched = true;
+        const staffTypeId = state.modalStaffTypeId
+            || document.getElementById('staff-command-form')?.dataset?.staffTypeId
+            || 'professor';
+        if (typeof clearStaffFormErrors === 'function') clearStaffFormErrors();
+        else clearFormErrors();
+        const values = typeof collectStaffFormValues === 'function' ? collectStaffFormValues(staffTypeId) : {};
+        const errors = typeof validateStaffFormValues === 'function'
+            ? validateStaffFormValues(staffTypeId, values, false)
+            : [];
+        errors.forEach((error) => {
+            if (typeof markStaffFormInvalid === 'function') markStaffFormInvalid(error.fieldId);
+        });
+        refreshModalCompleteness();
+        if (errors.length) {
+            scrollToFirstInvalidField();
+            showToast(`${errors.length} required field${errors.length === 1 ? '' : 's'} still need attention.`);
+            return;
         }
+        showToast('All required fields are complete.');
     }
 
     function applyHashRoute() {
@@ -1921,32 +1289,13 @@
         const records = buildStaffRecords(facultyCode).records;
         if (records.some((record) => record.id === id)) {
             state.selectedId = id;
-            state.profileTab = 'overview';
+            state.profileTab = defaultProfileTabForRecord(records.find((record) => record.id === id));
         } else {
             state.selectedId = null;
             history.replaceState('', document.title, window.location.pathname + window.location.search);
             showToast('Profile not found. Returning to staff directory.');
         }
         renderStaffPage();
-    }
-
-    function syncRoleDependentFields() {
-        const platformRole = normalizeText(document.getElementById('formPlatformRole')?.value || 'professor', 'professor');
-        const roleSelect = document.getElementById('formRole');
-        if (!roleSelect) return;
-        const currentValue = roleSelect.value;
-        const nextOptions = roleTitleOptions(platformRole);
-        roleSelect.innerHTML = nextOptions.map((option) => `<option value="${escapeHtml(option)}">${escapeHtml(option)}</option>`).join('');
-        roleSelect.value = nextOptions.includes(currentValue) ? currentValue : nextOptions[0];
-        const lmsRole = document.getElementById('formLmsRole');
-        if (lmsRole && !getStaffState().editingId) {
-            lmsRole.value = PLATFORM_ROLE_META[platformRole]?.lmsRole || 'Viewer';
-        }
-        const maxHours = document.getElementById('formMaxHours');
-        if (maxHours && !getStaffState().editingId) {
-            maxHours.value = platformRole === 'ta' ? '8' : platformRole === 'student_service' ? '40' : '15';
-        }
-        updateFormPreview();
     }
 
     function submitForm(event) {
@@ -1957,7 +1306,7 @@
         persistRecord(next);
         const state = getStaffState();
         state.selectedId = next.id;
-        state.profileTab = 'overview';
+        state.profileTab = defaultProfileTabForRecord(next);
         closeModal();
         renderStaffPage();
         showToast(`${next.name} ${wasEditing ? 'updated' : 'added'}.`);
@@ -1966,11 +1315,51 @@
     function handleAction(action, element) {
         const staffId = element?.dataset?.staffId || '';
         if (action === 'open-create') {
-            openModal(null, element?.dataset?.staffRole || 'professor');
+            const staffTypeId = element?.dataset?.staffTypeId
+                || (typeof resolveStaffTypeIdFromPlatformRole === 'function'
+                    ? resolveStaffTypeIdFromPlatformRole(element?.dataset?.staffRole || 'professor')
+                    : 'professor');
+            openModal(null, staffTypeId);
+            return;
+        }
+        if (action === 'open-form-settings') {
+            const settingsState = getStaffState();
+            openFormSettings(element?.dataset?.staffTypeId
+                || settingsState.modalStaffTypeId
+                || settingsState.formSettingsTypeId
+                || null);
             return;
         }
         if (action === 'clear-filters') {
             clearFilters();
+            return;
+        }
+        if (action === 'clear-filter-chip') {
+            const state = getStaffState();
+            const kind = element?.dataset?.filterClearKind || 'system';
+            const key = element?.dataset?.filterClearKey || '';
+            if (!key) return;
+            if (!state.filters.field || typeof state.filters.field !== 'object') {
+                state.filters.field = {};
+            }
+            if (kind === 'field') {
+                delete state.filters.field[key];
+            } else if (key === 'query') {
+                state.filters.query = '';
+            } else if (key === 'droplistQuery') {
+                state.filters.droplistQuery = '';
+            } else if (key === 'platform') {
+                state.filters.platform = 'all';
+            } else if (key === 'profile') {
+                state.filters.profile = 'all';
+            } else if (key === 'teaching') {
+                state.filters.teaching = 'all';
+            } else if (key === 'archive') {
+                state.filters.archive = 'active';
+            } else if (key === 'sort') {
+                state.filters.sort = 'name';
+            }
+            renderStaffPage();
             return;
         }
         if (action === 'review-missing') {
@@ -1989,7 +1378,9 @@
             const facultyCode = typeof getCurrentFaculty === 'function' ? getCurrentFaculty() : 'ECON';
             const records = buildStaffRecords(facultyCode).records;
             const record = records.find((item) => item.id === staffId);
-            openModal(staffId, record?.platformRole || 'professor');
+            openModal(staffId, record?.staffTypeId || (typeof resolveStaffTypeIdFromPlatformRole === 'function'
+                ? resolveStaffTypeIdFromPlatformRole(record?.platformRole || 'professor')
+                : 'professor'));
             return;
         }
         if (action === 'archive') {
@@ -2018,7 +1409,7 @@
         }
         if (action === 'tab') {
             const state = getStaffState();
-            state.profileTab = element.dataset.staffTab || 'overview';
+            state.profileTab = element.dataset.staffTab || null;
             renderStaffPage();
             return;
         }
@@ -2026,9 +1417,8 @@
             closeModal();
             return;
         }
-        if (action === 'preview-form') {
-            updateFormPreview();
-            showToast('Profile completeness preview updated.');
+        if (action === 'check-required-fields') {
+            checkRequiredFields();
             return;
         }
         if (action === 'export') {
@@ -2046,34 +1436,29 @@
         if (action === 'saved-view') {
             const state = getStaffState();
             const view = element?.dataset?.staffView || 'all';
-            if (view === 'all') {
-                state.filters = { ...DEFAULT_FILTERS };
-            } else if (view === 'account-review') {
-                state.filters = { ...state.filters, account: 'Needs Review', archive: 'active', sort: 'name' };
-            } else if (view === 'overloaded') {
-                state.filters = { ...state.filters, teaching: 'heavy-load', archive: 'active', sort: 'completion' };
-            } else if (view === 'unassigned') {
-                state.filters = { ...state.filters, profile: 'missing-courses', archive: 'active', sort: 'name' };
+            const facultyCode = typeof getCurrentFaculty === 'function' ? getCurrentFaculty() : 'ECON';
+            const { records } = buildStaffRecords(facultyCode);
+            const model = getStaffDirectoryModel(records);
+            if (typeof resolveStaffSavedViewFilters === 'function') {
+                const resolved = resolveStaffSavedViewFilters(view, model);
+                if (view === 'all') {
+                    state.filters = typeof normalizeStaffDirectoryFilters === 'function'
+                        ? normalizeStaffDirectoryFilters(resolved, model)
+                        : { ...cloneDefaultFilters(), ...resolved, field: { ...(resolved.field || {}) } };
+                } else {
+                    const merged = {
+                        ...state.filters,
+                        ...resolved,
+                        field: { ...(state.filters.field || {}), ...(resolved.field || {}) }
+                    };
+                    state.filters = typeof normalizeStaffDirectoryFilters === 'function'
+                        ? normalizeStaffDirectoryFilters(merged, model)
+                        : merged;
+                }
+            } else if (view === 'all') {
+                state.filters = cloneDefaultFilters();
             }
             renderStaffPage();
-            return;
-        }
-        if (action === 'open-platform-profile') {
-            const facultyCode = typeof getCurrentFaculty === 'function' ? getCurrentFaculty() : 'ECON';
-            const records = buildStaffRecords(facultyCode).records;
-            const record = records.find((item) => item.id === staffId);
-            if (!record) return;
-            ensureDirectoryProfileBridge()
-                .then(() => {
-                    if (typeof openProfilePage !== 'function') {
-                        showToast('Canonical profile tools are unavailable right now.');
-                        return;
-                    }
-                    openProfilePage(record.platformRole === 'student_service' ? 'student_service' : record.platformRole, record.id, record.facultyCode || facultyCode);
-                })
-                .catch(() => {
-                    showToast('Could not open the canonical profile right now.');
-                });
             return;
         }
         if (action === 'message') {
@@ -2084,6 +1469,12 @@
     function bindEvents() {
         if (window.__staffCommandBound) return;
         window.__staffCommandBound = true;
+        if (typeof bindStaffFormBuilderEvents === 'function') {
+            bindStaffFormBuilderEvents({
+                ...getStaffBuilderCallbacks(),
+                onBackDirectory: () => backToDirectoryWorkspace()
+            });
+        }
 
         document.addEventListener('click', (event) => {
             const actionEl = event.target.closest('[data-staff-action]');
@@ -2098,20 +1489,40 @@
                 setFilter('query', event.target.value);
                 return;
             }
+            if (event.target.id === 'staff-droplist-search') {
+                setFilter('droplistQuery', event.target.value);
+                if (typeof window.applyStaffDirectoryDroplistFieldVisibility === 'function') {
+                    window.applyStaffDirectoryDroplistFieldVisibility(event.target.value);
+                }
+                return;
+            }
             if (event.target.closest('#staff-command-modal-root')) {
-                updateFormPreview();
+                markModalTouched();
+                refreshModalCompleteness();
             }
         });
 
         document.addEventListener('change', (event) => {
-            if (event.target.id === 'staff-role-filter') return setFilter('role', event.target.value);
-            if (event.target.id === 'staff-department-filter') return setFilter('department', event.target.value);
-            if (event.target.id === 'staff-status-filter') return setFilter('status', event.target.value);
-            if (event.target.id === 'staff-account-filter') return setFilter('account', event.target.value);
-            if (event.target.id === 'staff-profile-filter') return setFilter('profile', event.target.value);
-            if (event.target.id === 'staff-teaching-filter') return setFilter('teaching', event.target.value);
-            if (event.target.id === 'staff-archive-filter') return setFilter('archive', event.target.value);
-            if (event.target.id === 'staff-sort-filter') return setFilter('sort', event.target.value);
+            if (event.target.matches('[data-staff-directory-filter]')) {
+                const kind = event.target.dataset.filterKind || 'system';
+                const key = event.target.dataset.filterKey || '';
+                const value = event.target.value;
+                const state = getStaffState();
+                if (!state.filters.field || typeof state.filters.field !== 'object') {
+                    state.filters.field = {};
+                }
+                if (kind === 'field' && key) {
+                    if (value === 'all' || value === '') {
+                        delete state.filters.field[key];
+                    } else {
+                        state.filters.field[key] = value;
+                    }
+                } else if (key) {
+                    state.filters[key] = value;
+                }
+                renderStaffPage();
+                return;
+            }
             if (event.target.id === 'staff-view-role') {
                 const state = getStaffState();
                 state.viewRole = event.target.value;
@@ -2124,12 +1535,9 @@
                 event.target.value = '';
                 return;
             }
-            if (event.target.id === 'formPlatformRole') {
-                syncRoleDependentFields();
-                return;
-            }
             if (event.target.closest('#staff-command-modal-root')) {
-                updateFormPreview();
+                markModalTouched();
+                refreshModalCompleteness();
             }
         });
 
@@ -2149,15 +1557,36 @@
     }
 
     function renderStaffPage() {
+        if (typeof ensureStaffFormBlueprint === 'function') ensureStaffFormBlueprint();
         const facultyCode = typeof getCurrentFaculty === 'function' ? getCurrentFaculty() : 'ECON';
-        const { records, unassignedSections } = buildStaffRecords(facultyCode);
-        const stats = platformCounts(records);
+        const { records } = buildStaffRecords(facultyCode);
         const container = document.getElementById('staff-content');
         if (!container) return;
         container.classList.add('staff-command-root');
         const state = getStaffState();
         const selected = activeSelection(records);
-        container.innerHTML = selected ? renderProfile(selected) : renderDirectory(records, facultyCode, stats, unassignedSections);
+        if (state.workspace === 'form-settings' && typeof renderStaffFormSettings === 'function') {
+            container.innerHTML = renderStaffFormSettings({
+                ...state,
+                selectedTypeId: state.formSettingsTypeId || state.selectedTypeId || 'professor'
+            }, getStaffBuilderCallbacks());
+            if (typeof window.enhanceUniversalPickers === 'function') {
+                const formSettingsWorkspace = container.querySelector('.staff-hub-form-settings');
+                if (formSettingsWorkspace) window.enhanceUniversalPickers(formSettingsWorkspace);
+            }
+            if (state.sectionNameFocusId && typeof focusSectionCatalogTitle === 'function') {
+                focusSectionCatalogTitle(container, state.sectionNameFocusId, getStaffBuilderCallbacks());
+            }
+        } else {
+            container.innerHTML = selected ? renderProfile(selected) : renderDirectory(records, facultyCode);
+            if (!selected && typeof window.enhanceUniversalPickers === 'function') {
+                const directoryWorkspace = container.querySelector('.staff-hub-shell');
+                if (directoryWorkspace) window.enhanceUniversalPickers(directoryWorkspace);
+            }
+            if (!selected && typeof window.applyStaffDirectoryDroplistFieldVisibility === 'function') {
+                window.applyStaffDirectoryDroplistFieldVisibility(state.filters?.droplistQuery || '');
+            }
+        }
         applyStaffHubProgressBars(container);
         renderModal(records, facultyCode);
         if (typeof queueEnglishLocalization === 'function') {
@@ -2168,7 +1597,10 @@
             }
         }
         if (typeof queueLuxuryTransparencyRefresh === 'function') {
-            queueLuxuryTransparencyRefresh();
+            const transparencyRoots = state.workspace === 'form-settings'
+                ? [container.querySelector('.staff-hub-form-settings')].filter(Boolean)
+                : undefined;
+            queueLuxuryTransparencyRefresh(undefined, { roots: transparencyRoots });
         }
         if (document.documentElement?.classList.contains('kiu-shell-loading')) {
             document.documentElement.classList.remove('kiu-shell-loading');
@@ -2179,14 +1611,20 @@
     function consumePendingAdminAccountFlow() {
         const pending = localStorage.getItem(FLOW_KEY);
         if (!pending) return;
-        if (['professor', 'ta', 'student_service'].includes(pending)) {
+        const staffTypeId = typeof resolveStaffTypeIdFromPlatformRole === 'function'
+            ? resolveStaffTypeIdFromPlatformRole(pending)
+            : pending;
+        if (staffTypeId) {
             localStorage.removeItem(FLOW_KEY);
-            openModal(null, pending);
+            openModal(null, staffTypeId);
         }
     }
 
     function openProfRegistration(role) {
-        openModal(null, role || 'professor');
+        const staffTypeId = typeof resolveStaffTypeIdFromPlatformRole === 'function'
+            ? resolveStaffTypeIdFromPlatformRole(role || 'professor')
+            : (role || 'professor');
+        openModal(null, staffTypeId);
     }
 
     function staffTabSwitch(tab) {

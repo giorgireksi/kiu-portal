@@ -13,6 +13,8 @@
         && typeof window.handleStudentServiceQaThreadClick === 'function'
     ) return;
     window.__KIU_STUDENT_SERVICE_QA_MODULE_LOADED = true;
+    const __kiuSsApi = window.KiuStudentService || (window.KiuStudentService = {});
+    window.__kiuSsApi = __kiuSsApi;
 
     function buildStudentServiceDefaultDraftQuestion() {
         return {
@@ -1489,652 +1491,125 @@
         }
     }
 
-    async function setStudentServiceQuestionOwnerResolution(questionId, status, triggerButton = null) {
-        const normalizedQuestionId = String(questionId || '').trim();
-        const normalizedStatus = String(status || '').trim().toLowerCase();
-        if (!normalizedQuestionId || !['answered', 'unanswered'].includes(normalizedStatus)) return;
-        if (triggerButton?.dataset.studentServiceOwnerResolutionPending === 'true') return;
-        const questionBefore = getStudentServiceQuestionById(normalizedQuestionId);
-        if (!questionBefore || !canCurrentUserSetStudentServiceOwnerResolution(questionBefore)) return;
-        const currentStatus = String(questionBefore.ownerResolutionStatus || '').trim().toLowerCase();
-        const optimisticStatus = currentStatus === normalizedStatus ? '' : normalizedStatus;
-        const optimisticQuestion = {
-            ...questionBefore,
-            ownerResolutionStatus: optimisticStatus
-        };
-        const actionRoot = triggerButton?.closest('.student-service-qa-detail-actions')
-            || getStudentServiceQuestionThreadHost(normalizedQuestionId)?.querySelector('.student-service-qa-detail-actions');
-        if (triggerButton) {
-            triggerButton.dataset.studentServiceOwnerResolutionPending = 'true';
-            setStudentServiceActionButtonPending(triggerButton, true);
-            flashStudentServiceActionButton(triggerButton, 'acting');
-            updateStudentServiceOwnerResolutionButtons(actionRoot, optimisticQuestion);
-            patchStudentServiceQuestionCardStats(normalizedQuestionId);
-        }
-        try {
-            const payload = await postStudentService(
-                STUDENT_SERVICE_API_PATHS.questionOwnerResolution(normalizedQuestionId),
-                { status: normalizedStatus }
-            );
-            if (payload?.question) mergeStudentServiceQuestionSnapshot(payload.question);
-            runStudentServiceScrollPreserved(() => {
-                if (!patchStudentServiceOwnerResolutionUi(normalizedQuestionId)
-                    && !patchStudentServiceOpenQuestionThread(normalizedQuestionId)) {
-                    return false;
-                }
-                syncStudentServiceRenderSignature();
-                return true;
-            });
-            if (triggerButton) flashStudentServiceActionButton(triggerButton, 'success');
-        } catch (error) {
-            console.error('Student Service owner resolution failed.', error);
-            if (triggerButton && questionBefore) {
-                updateStudentServiceOwnerResolutionButtons(actionRoot, questionBefore);
-                patchStudentServiceQuestionCardStats(normalizedQuestionId);
-                flashStudentServiceActionButton(triggerButton, 'error');
-            }
-            alert(error?.message || 'Owner resolution could not be saved.');
-        } finally {
-            if (triggerButton) {
-                delete triggerButton.dataset.studentServiceOwnerResolutionPending;
-                setStudentServiceActionButtonPending(triggerButton, false);
-            }
-        }
-    }
+    /* Wave 18: student-service-qa-staff-runtime.js */
+    const __w18Deps = { getStudentServiceQuestionThreadHost, updateStudentServiceQuestionCardToggleUi, clearLegacyStudentServiceOpenQuestionCards, updateStudentServiceQuestionThreadActiveCards, closeStudentServiceQuestionThreadModal, renderStudentServiceQuestionThreadModalShell, mountStudentServiceQuestionThreadModal, remountStudentServiceQuestionThreadModal, setStudentServiceOpenQuestionId, restoreStudentServiceOpenQuestionFromUi, patchStudentServiceQuestionCardStats, isStudentServiceQuestionHelpfulVoted, renderStudentServiceQuestionHelpfulButtonMarkup, updateStudentServiceQuestionHelpfulButton, triggerStudentServiceHelpfulAnimation, patchStudentServiceQuestionHelpfulUi, isStudentServiceAnswerHelpfulVoted, renderStudentServiceAnswerHelpfulButtonMarkup, updateStudentServiceAnswerHelpfulButton, patchStudentServiceAnswerHelpfulBtn, removeStudentServiceAnswerBranch, applyStudentServiceQuestionMutation, patchStudentServiceOpenQuestionThread, setStudentServiceQuestionFilter, setStudentServiceQuestionComposerExpanded, setStudentServiceDraftQuestionField, openStudentServiceQuestion, getStudentServiceQuestionStatusLabel, getStudentServiceQuestionStatusClass, getStudentServiceQuestionAnswerCount, renderStudentServiceQuestionList, renderStudentServiceQuestionComposer, renderStudentServiceQuestionComposerFormMarkup, renderStudentServiceQuestionComposerModalActionsMarkup, renderStudentServiceQuestionComposerModalShell, renderStudentServiceQuestionCardPreviewMarkup, renderStudentServiceQuestionFeed, renderStudentServiceCommentReplyShell, openStudentServiceDeleteQuestionConfirm, isStudentServiceQuestionComposerModalOpen, mountStudentServiceQuestionComposerModal, openStudentServiceQuestionComposerModal, closeStudentServiceQuestionComposerModal, remountStudentServiceQuestionComposerModal, renderStudentServiceAnswerCardMarkup, renderStudentServiceAnswerThreadNode, renderStudentServiceQuestionDetailActionsMarkup, renderStudentServiceQuestionDetail, submitStudentServiceQuestion, submitStudentServiceQuestionAnswer };
+    const __w18PeelApi = typeof window.__kiuCreateStudentServiceQaStaffApi === 'function'
+        ? window.__kiuCreateStudentServiceQaStaffApi(__w18Deps) : null;
+    if (!__w18PeelApi) throw new Error('student-service-qa-staff-runtime.js missing');
+    const { setStudentServiceQuestionOwnerResolution, setStudentServiceQuestionFeedback, setStudentServiceAnswerFeedback, deleteStudentServiceQuestion, deleteStudentServiceQuestionAnswer, renderStudentServiceQaCommandBarStats, ensureStudentServiceStaffQaShell, renderStudentServiceStaffQaFeedMarkup } = __w18PeelApi;
 
-    async function setStudentServiceQuestionFeedback(questionId, value, triggerButton = null) {
-        const normalizedQuestionId = String(questionId || '').trim();
-        const normalizedValue = value === 'not_helpful' ? 'not_helpful' : 'helpful';
-        if (!normalizedQuestionId) return;
-        if (triggerButton?.dataset.studentServiceHelpfulPending === 'true') return;
-        const questionBefore = getStudentServiceQuestionById(normalizedQuestionId);
-        const wasHelpful = isStudentServiceQuestionHelpfulVoted(questionBefore || {});
-        const optimisticQuestion = questionBefore
-            ? {
-                ...questionBefore,
-                viewerVote: wasHelpful ? '' : 'helpful',
-                viewerHelpfulVote: !wasHelpful,
-                helpfulCount: Math.max(0, Number(questionBefore.helpfulCount || 0) + (wasHelpful ? -1 : 1))
-            }
-            : null;
-        if (triggerButton) {
-            triggerButton.dataset.studentServiceHelpfulPending = 'true';
-            if (optimisticQuestion) {
-                updateStudentServiceQuestionHelpfulButton(triggerButton, optimisticQuestion);
-                const card = getStudentServiceQuestionCardElement(normalizedQuestionId);
-                const statEls = card?.querySelectorAll('.student-service-qa-card-stat');
-                if (statEls?.[1]) {
-                    statEls[1].innerHTML = `<i class="far fa-thumbs-up"></i> ${optimisticQuestion.helpfulCount} helpful`;
-                }
-            }
-            triggerStudentServiceHelpfulAnimation(triggerButton, !wasHelpful);
-        }
-        try {
-            const payload = await postStudentService(
-                STUDENT_SERVICE_API_PATHS.questionFeedback(normalizedQuestionId),
-                { value: normalizedValue }
-            );
-            if (payload?.question) mergeStudentServiceQuestionSnapshot(payload.question);
-            runStudentServiceScrollPreserved(() => {
-                if (!patchStudentServiceQuestionHelpfulUi(normalizedQuestionId)
-                    && !patchStudentServiceOpenQuestionThread(normalizedQuestionId)) {
-                    return false;
-                }
-                syncStudentServiceRenderSignature();
-                return true;
-            });
-        } catch (error) {
-            console.error('Student Service feedback failed.', error);
-            if (triggerButton && questionBefore) {
-                updateStudentServiceQuestionHelpfulButton(triggerButton, questionBefore);
-                patchStudentServiceQuestionCardStats(normalizedQuestionId);
-                flashStudentServiceActionButton(triggerButton, 'error');
-            }
-            alert(error?.message || 'Feedback could not be saved.');
-        } finally {
-            if (triggerButton) delete triggerButton.dataset.studentServiceHelpfulPending;
-        }
-    }
 
-    async function setStudentServiceAnswerFeedback(questionId, answerId, triggerButton = null) {
-        const normalizedQuestionId = String(questionId || '').trim();
-        const normalizedAnswerId = String(answerId || '').trim();
-        if (!normalizedQuestionId || !normalizedAnswerId) return;
-        if (triggerButton?.dataset.studentServiceHelpfulPending === 'true') return;
-        const questionBefore = getStudentServiceQuestionById(normalizedQuestionId);
-        const answerBefore = findStudentServiceAnswerRecord(questionBefore, normalizedAnswerId);
-        const wasHelpful = isStudentServiceAnswerHelpfulVoted(answerBefore || {});
-        const optimisticAnswer = answerBefore
-            ? {
-                ...answerBefore,
-                viewerHelpfulVote: !wasHelpful,
-                helpfulCount: Math.max(0, Number(answerBefore.helpfulCount || 0) + (wasHelpful ? -1 : 1))
-            }
-            : null;
-        if (triggerButton) {
-            triggerButton.dataset.studentServiceHelpfulPending = 'true';
-            if (optimisticAnswer) updateStudentServiceAnswerHelpfulButton(triggerButton, optimisticAnswer);
-            triggerStudentServiceHelpfulAnimation(triggerButton, !wasHelpful);
-        }
-        try {
-            const payload = await postStudentService(
-                STUDENT_SERVICE_API_PATHS.questionAnswerFeedback(normalizedQuestionId, normalizedAnswerId),
-                {}
-            );
-            if (payload?.question) mergeStudentServiceQuestionSnapshot(payload.question);
-            const patched = runStudentServiceScrollPreserved(() => {
-                if (patchStudentServiceAnswerHelpfulBtn(normalizedQuestionId, normalizedAnswerId)) {
-                    syncStudentServiceRenderSignature();
-                    return true;
-                }
-                if (patchStudentServiceOpenQuestionThread(normalizedQuestionId)) {
-                    syncStudentServiceRenderSignature();
-                    return true;
-                }
-                return false;
-            });
-            if (!patched) await refreshStudentServiceDataAndRender();
-        } catch (error) {
-            console.error('Student Service answer feedback failed.', error);
-            if (triggerButton && answerBefore) {
-                updateStudentServiceAnswerHelpfulButton(triggerButton, answerBefore);
-                flashStudentServiceActionButton(triggerButton, 'error');
-            }
-            alert(error?.message || 'Feedback could not be saved.');
-        } finally {
-            if (triggerButton) delete triggerButton.dataset.studentServiceHelpfulPending;
-        }
-    }
 
-    async function deleteStudentServiceQuestion(questionId) {
-        const normalizedQuestionId = String(questionId || '').trim();
-        if (!normalizedQuestionId) return;
-        const question = getStudentServiceQuestionById(normalizedQuestionId);
-        if (!question || !canCurrentUserDeleteStudentServiceQuestion(question)) return;
-        try {
-            const payload = await postStudentService(
-                STUDENT_SERVICE_API_PATHS.questionDelete(normalizedQuestionId),
-                {}
-            );
-            const deletedQuestionId = String(payload?.deletedQuestionId || normalizedQuestionId).trim();
-            closeStudentServiceDeleteConfirm({ restoreThread: false });
-            closeStudentServiceInlineReply();
-            const ui = ensureStudentServiceUiState();
-            if (ui.selectedQuestionId === deletedQuestionId) {
-                ui.selectedQuestionId = '';
-                closeStudentServiceQuestionThreadModal();
-                updateStudentServiceQuestionThreadActiveCards('');
-            }
-            removeStudentServiceQuestionFromSnapshot(deletedQuestionId);
-            const patched = runStudentServiceScrollPreserved(() => {
-                if (!removeStudentServiceQuestionCard(deletedQuestionId)) return false;
-                syncStudentServiceRenderSignature();
-                return true;
-            });
-            if (!patched) {
-                const container = document.getElementById('page-student-service');
-                if (container) delete container.dataset.studentServiceRenderSignature;
-                renderStudentServicePage();
-            }
-        } catch (error) {
-            console.error('Student Service question deletion failed.', error);
-            const confirmBtn = document.querySelector('[data-student-service-confirm-question-delete]');
-            flashStudentServiceActionButton(confirmBtn, 'error');
-            alert(error?.message || 'Question could not be deleted.');
-        }
-    }
 
-    async function deleteStudentServiceQuestionAnswer(questionId, answerId) {
-        const normalizedQuestionId = String(questionId || '').trim();
-        const normalizedAnswerId = String(answerId || '').trim();
-        if (!normalizedQuestionId || !normalizedAnswerId) return;
-        const question = getStudentServiceQuestionById(normalizedQuestionId);
-        const answer = findStudentServiceAnswerRecord(question, normalizedAnswerId);
-        if (!question || !answer || !canCurrentUserDeleteStudentServiceAnswer(question, answer)) return;
-        try {
-            const payload = await postStudentService(
-                STUDENT_SERVICE_API_PATHS.questionAnswerDelete(normalizedQuestionId, normalizedAnswerId),
-                {}
-            );
-            if (payload?.question) {
-                mergeStudentServiceQuestionSnapshot(payload.question);
-            } else {
-                const removeIds = collectStudentServiceAnswerBranchIds(
-                    normalizedQuestionId,
-                    normalizedAnswerId,
-                    question.answers
-                );
-                removeStudentServiceAnswersFromSnapshot(normalizedQuestionId, removeIds);
-            }
-            closeStudentServiceDeleteConfirm();
-            closeStudentServiceInlineReply();
-            if (!applyStudentServiceQuestionMutation(normalizedQuestionId, {
-                removedAnswerId: normalizedAnswerId,
-                scrollPreserve: true
-            })) {
-                const container = document.getElementById('page-student-service');
-                if (container) delete container.dataset.studentServiceRenderSignature;
-                renderStudentServicePage();
-                restoreStudentServiceOpenQuestionFromUi();
-            }
-        } catch (error) {
-            console.error('Student Service answer deletion failed.', error);
-            const confirmBtn = document.querySelector('[data-student-service-confirm-delete]');
-            flashStudentServiceActionButton(confirmBtn, 'error');
-            alert(error?.message || 'Comment could not be deleted.');
-        }
-    }
-
-    async function publishStudentServiceQuestion(questionId) {
-        try {
-            await postStudentService(STUDENT_SERVICE_API_PATHS.questionPublish(questionId), {});
-            await refreshStudentServiceDataAndRender();
-        } catch (error) {
-            console.error('Student Service question publish failed.', error);
-            alert(error?.message || 'Question could not be published.');
-        }
-    }
-
-    async function toggleStudentServiceQuestionFlag(questionId, field, value) {
-        try {
-            await postStudentService(STUDENT_SERVICE_API_PATHS.questionFlags(questionId), { [field]: value });
-            await refreshStudentServiceDataAndRender();
-        } catch (error) {
-            console.error('Student Service question flag update failed.', error);
-            alert(error?.message || 'Question flags could not be updated.');
-        }
-    }
-
-    async function convertStudentServiceQuestionToTicket(questionId) {
-        try {
-            await postStudentService(STUDENT_SERVICE_API_PATHS.questionConvertTicket(questionId), {});
-            await refreshStudentServiceDataAndRender();
-        } catch (error) {
-            console.error('Student Service question-to-ticket conversion failed.', error);
-            alert(error?.message || 'Question could not be converted to a private ticket.');
-        }
-    }
-
-    async function convertStudentServiceQuestionToArticle(questionId) {
-        try {
-            await postStudentService(STUDENT_SERVICE_API_PATHS.questionConvertArticle(questionId), {});
-            await refreshStudentServiceDataAndRender();
-        } catch (error) {
-            console.error('Student Service question-to-article conversion failed.', error);
-            alert(error?.message || 'Question could not be converted to an article.');
-        }
-    }
-
-    async function mergeStudentServiceQuestionPrompt(questionId) {
-        const targetQuestionId = String(window.prompt('Enter the target question ID to merge into:', '') || '').trim();
-        if (!targetQuestionId) return;
-        try {
-            await postStudentService(STUDENT_SERVICE_API_PATHS.questionMerge(questionId), { targetQuestionId });
-            await refreshStudentServiceDataAndRender();
-        } catch (error) {
-            console.error('Student Service question merge failed.', error);
-            alert(error?.message || 'Questions could not be merged.');
-        }
-    }
-
-    function renderStudentServiceQaCommandBarStats(role, metrics, ui) {
-        const filteredCount = getStudentServiceFilteredQuestions(metrics.visibleQuestions).length;
-        const stats = role === USER_ROLES.STUDENT
-            ? [
-                { label: 'my questions', value: metrics.myQuestions },
-                { label: 'answered', value: metrics.myAnsweredQuestions },
-                { label: 'accepted', value: metrics.myAcceptedQuestions },
-                { label: 'published', value: metrics.myPublishedQuestions }
-            ]
-            : [
-                { label: 'unanswered', value: metrics.unansweredQuestions },
-                { label: 'visible now', value: filteredCount },
-                { label: 'published', value: metrics.publishedQuestions }
-            ];
-        return `
-            <div class="student-service-command-bar-stat-strip" role="list" aria-label="Q&A workspace stats">
-                ${stats.map(stat => `
-                    <span class="student-service-command-bar-stat" role="listitem">
-                        <strong>${ssEscape(String(stat.value))}</strong> ${ssEscape(stat.label)}
-                    </span>
-                `).join('')}
-            </div>
-        `;
-    }
-
-    function handleStudentServiceQaThreadClick(event) {
-        const openQuestionButton = event.target.closest('[data-student-service-open-question]');
-        if (openQuestionButton) {
-            event.preventDefault();
-            openStudentServiceQuestion(openQuestionButton.dataset.studentServiceOpenQuestion || '');
-            return true;
-        }
-
-        const questionFeedbackButton = event.target.closest('[data-student-service-question-feedback]');
-        if (questionFeedbackButton) {
-            event.preventDefault();
-            setStudentServiceQuestionFeedback(
-                questionFeedbackButton.dataset.studentServiceQuestionId || '',
-                questionFeedbackButton.dataset.studentServiceQuestionFeedback || '',
-                questionFeedbackButton
-            );
-            return true;
-        }
-
-        const ownerResolutionButton = event.target.closest('[data-student-service-owner-resolution]');
-        if (ownerResolutionButton) {
-            event.preventDefault();
-            setStudentServiceQuestionOwnerResolution(
-                ownerResolutionButton.dataset.studentServiceQuestionId || '',
-                ownerResolutionButton.dataset.studentServiceOwnerResolution || '',
-                ownerResolutionButton
-            );
-            return true;
-        }
-
-        const questionFlagButton = event.target.closest('[data-student-service-question-flag-field]');
-        if (questionFlagButton) {
-            event.preventDefault();
-            toggleStudentServiceQuestionFlag(
-                questionFlagButton.dataset.studentServiceQuestionId || '',
-                questionFlagButton.dataset.studentServiceQuestionFlagField || '',
-                questionFlagButton.dataset.studentServiceQuestionFlagValue === 'true'
-            );
-            return true;
-        }
-
-        const publishQuestionButton = event.target.closest('[data-student-service-question-publish]');
-        if (publishQuestionButton) {
-            event.preventDefault();
-            publishStudentServiceQuestion(publishQuestionButton.dataset.studentServiceQuestionId || '');
-            return true;
-        }
-
-        const convertQuestionButton = event.target.closest('[data-student-service-question-convert]');
-        if (convertQuestionButton) {
-            event.preventDefault();
-            const questionId = convertQuestionButton.dataset.studentServiceQuestionId || '';
-            const destination = convertQuestionButton.dataset.studentServiceQuestionConvert || '';
-            if (destination === 'ticket') convertStudentServiceQuestionToTicket(questionId);
-            if (destination === 'article') convertStudentServiceQuestionToArticle(questionId);
-            return true;
-        }
-
-        const mergeQuestionButton = event.target.closest('[data-student-service-question-merge]');
-        if (mergeQuestionButton) {
-            event.preventDefault();
-            mergeStudentServiceQuestionPrompt(mergeQuestionButton.dataset.studentServiceQuestionId || '');
-            return true;
-        }
-
-        const answerHelpfulButton = event.target.closest('[data-student-service-answer-helpful]');
-        if (answerHelpfulButton) {
-            event.preventDefault();
-            setStudentServiceAnswerFeedback(
-                answerHelpfulButton.dataset.studentServiceQuestionId || '',
-                answerHelpfulButton.dataset.studentServiceAnswerId || '',
-                answerHelpfulButton
-            );
-            return true;
-        }
-
-        const deleteAnswerButton = event.target.closest('[data-student-service-delete-answer]');
-        if (deleteAnswerButton) {
-            event.preventDefault();
-            flashStudentServiceActionButton(deleteAnswerButton, 'acting');
-            openStudentServiceDeleteConfirm(
-                deleteAnswerButton.dataset.studentServiceQuestionId || '',
-                deleteAnswerButton.dataset.studentServiceDeleteAnswer || ''
-            );
-            return true;
-        }
-
-        const deleteQuestionButton = event.target.closest('[data-student-service-delete-question]');
-        if (deleteQuestionButton) {
-            event.preventDefault();
-            flashStudentServiceActionButton(deleteQuestionButton, 'acting');
-            openStudentServiceDeleteQuestionConfirm(deleteQuestionButton.dataset.studentServiceQuestionId || '');
-            return true;
-        }
-
-        const replyToAnswerButton = event.target.closest('[data-student-service-reply-to-answer]');
-        if (replyToAnswerButton) {
-            event.preventDefault();
-            setStudentServiceReplyTarget(
-                replyToAnswerButton.dataset.studentServiceQuestionId || '',
-                replyToAnswerButton.dataset.studentServiceReplyToAnswer || ''
-            );
-            return true;
-        }
-
-        const cancelReplyButton = event.target.closest('[data-student-service-cancel-reply]');
-        if (cancelReplyButton) {
-            event.preventDefault();
-            clearStudentServiceReplyTarget();
-            return true;
-        }
-
-        const submitAnswerButton = event.target.closest('[data-student-service-submit-answer]');
-        if (submitAnswerButton) {
-            event.preventDefault();
-            if (isStudentServiceInlineReplyOpen() && submitAnswerButton.closest('.student-service-qa-thread-compose')) {
-                alert('Use the Reply button under the comment you are answering, or cancel the inline reply first.');
-                return true;
-            }
-            const isInlineSubmit = Boolean(submitAnswerButton.closest('.student-service-qa-comment-reply-shell'));
-            submitStudentServiceQuestionAnswer(
-                submitAnswerButton.dataset.studentServiceSubmitAnswer || '',
-                submitAnswerButton,
-                { forceInlineReply: isInlineSubmit }
-            );
-            return true;
-        }
-
-        return false;
-    }
-
-    function ensureStudentServiceStudentQaShell(container) {
-        if (!container) return null;
-        let shell = container.querySelector('[data-student-service-student-qa-shell="1"]');
-        if (!shell) {
-            const range = document.createRange();
-            range.selectNodeContents(container);
-            container.replaceChildren(range.createContextualFragment(`
-                <div class="student-service-student-shell" data-student-service-student-qa-shell="1">
-                    <div data-student-service-student-qa-feed="1"></div>
-                </div>
-            `));
-            shell = container.querySelector('[data-student-service-student-qa-shell="1"]');
-        }
-        return {
-            feed: shell?.querySelector('[data-student-service-student-qa-feed="1"]') || null
-        };
-    }
-
-    function renderStudentServiceStudentQaFeedMarkup(ui, filteredQuestions, selectedQuestion) {
-        return `
-            <section class="student-service-zone student-service-zone-find">
-                <div class="student-service-zone-head">
-                    <div>
-                        <div class="student-service-kicker">Campus feed</div>
-                        <div class="student-service-zone-title">Search first, then open the thread that fits your question.</div>
-                        <div class="student-service-zone-copy">Questions stay in one central feed, and each thread expands inline instead of opening a separate detail pane.</div>
-                    </div>
-                    <span class="student-service-panel-chip">${filteredQuestions.length} question${filteredQuestions.length === 1 ? '' : 's'}</span>
-                </div>
-                <div class="student-service-find-search student-service-qa-searchbar">
-                    <i class="fas fa-search"></i>
-                    <input id="student-service-qa-search" type="search" value="${ssEscape(ui.qaSearch || '')}" data-student-service-question-filter-input="qaSearch" placeholder="Search public questions, answers, or keywords">
-                </div>
-                <div class="student-service-qa-feed-wrap">
-                    ${renderStudentServiceQuestionFeed(filteredQuestions, { mode: 'student', selectedQuestionId: selectedQuestion?.id || '' }) || '<div class="student-service-empty-state">No public questions match your search.</div>'}
-                </div>
-            </section>
-        `;
-    }
-
-    window.renderStudentServiceStudentQaHub = function renderStudentServiceStudentQaHub(container) {
-        const ui = ensureStudentServiceUiState();
-        const filteredQuestions = getStudentServiceFilteredQuestions(getStudentServiceVisibleQuestions());
-        const selectedQuestion = getStudentServiceOpenQuestion(filteredQuestions);
-        const shell = ensureStudentServiceStudentQaShell(container);
-        if (!shell) return;
-        setStudentServiceMarkup(
-            shell.feed,
-            buildStudentServiceQaFeedCacheKey(ui, filteredQuestions),
-            renderStudentServiceStudentQaFeedMarkup(ui, filteredQuestions, selectedQuestion)
-        );
+    __kiuSsApi.renderStudentServiceStaffQaFeed = window.renderStudentServiceStaffQaFeed = function renderStudentServiceStaffQaFeed(container, options = {}) {
+    const ui = ensureStudentServiceUiState();
+    const filteredQuestions = Array.isArray(options.filteredQuestions) ? options.filteredQuestions : [];
+    const selectedQuestion = options.selectedQuestion || getStudentServiceOpenQuestion(filteredQuestions);
+    const shell = ensureStudentServiceStaffQaShell(container);
+    if (!shell) return;
+    setStudentServiceMarkup(
+        shell.feed,
+        buildStudentServiceQaFeedCacheKey(ui, filteredQuestions),
+        renderStudentServiceStaffQaFeedMarkup(ui, filteredQuestions, selectedQuestion)
+    );
     };
 
-    function ensureStudentServiceStaffQaShell(container) {
-        if (!container) return null;
-        let shell = container.querySelector('[data-student-service-staff-qa-shell="1"]');
-        if (!shell) {
-            const range = document.createRange();
-            range.selectNodeContents(container);
-            container.replaceChildren(range.createContextualFragment(`
-                <div class="student-service-staff-shell" data-student-service-staff-qa-shell="1">
-                    <div data-student-service-staff-qa-feed="1"></div>
-                </div>
-            `));
-            shell = container.querySelector('[data-student-service-staff-qa-shell="1"]');
-        }
-        return {
-            feed: shell?.querySelector('[data-student-service-staff-qa-feed="1"]') || null
-        };
-    }
-
-    function renderStudentServiceStaffQaFeedMarkup(ui, filteredQuestions, selectedQuestion) {
-        return `
-            <section class="student-service-zone student-service-zone-find">
-                <div class="student-service-zone-head">
-                    <div>
-                        <div class="student-service-kicker">Public Q&A feed</div>
-                        <div class="student-service-zone-title">Search, open, and answer on the same thread cards.</div>
-                        <div class="student-service-zone-copy">No split detail pane here. Open one thread and moderate or reply inline.</div>
-                    </div>
-                    <span class="student-service-panel-chip">${filteredQuestions.length} question${filteredQuestions.length === 1 ? '' : 's'}</span>
-                </div>
-                <div class="student-service-find-search student-service-qa-searchbar">
-                    <i class="fas fa-search"></i>
-                    <input id="student-service-staff-qa-search" type="search" value="${ssEscape(ui.qaSearch || '')}" data-student-service-question-filter-input="qaSearch" placeholder="Search questions, answers, or categories">
-                </div>
-                <div class="student-service-qa-feed-wrap">
-                    ${renderStudentServiceQuestionFeed(filteredQuestions, { mode: 'staff', selectedQuestionId: selectedQuestion?.id || '' }) || '<div class="student-service-empty-state">No questions match your search.</div>'}
-                </div>
-            </section>
-        `;
-    }
-
-    window.renderStudentServiceStaffQaFeed = function renderStudentServiceStaffQaFeed(container, options = {}) {
-        const ui = ensureStudentServiceUiState();
-        const filteredQuestions = Array.isArray(options.filteredQuestions) ? options.filteredQuestions : [];
-        const selectedQuestion = options.selectedQuestion || getStudentServiceOpenQuestion(filteredQuestions);
-        const shell = ensureStudentServiceStaffQaShell(container);
-        if (!shell) return;
-        setStudentServiceMarkup(
-            shell.feed,
-            buildStudentServiceQaFeedCacheKey(ui, filteredQuestions),
-            renderStudentServiceStaffQaFeedMarkup(ui, filteredQuestions, selectedQuestion)
-        );
-    };
-
-    window.buildStudentServiceDefaultDraftQuestion = buildStudentServiceDefaultDraftQuestion;
-    window.resolveStudentServiceAnswerAuthorId = resolveStudentServiceAnswerAuthorId;
-    window.normalizeStudentServiceAnswer = normalizeStudentServiceAnswer;
-    window.preferStudentServiceAnswerRecord = preferStudentServiceAnswerRecord;
-    window.buildStudentServiceAnswerThread = buildStudentServiceAnswerThread;
-    window.normalizeStudentServiceQuestionStatus = normalizeStudentServiceQuestionStatus;
-    window.normalizeStudentServiceQuestion = normalizeStudentServiceQuestion;
-    window.resolveStudentServiceReplyShell = resolveStudentServiceReplyShell;
-    window.resolveStudentServiceParentAnswerId = resolveStudentServiceParentAnswerId;
-    window.canCurrentUserDeleteStudentServiceAnswer = canCurrentUserDeleteStudentServiceAnswer;
-    window.getStudentServiceQuestionResolutionLabel = getStudentServiceQuestionResolutionLabel;
-    window.canCurrentUserDeleteStudentServiceQuestion = canCurrentUserDeleteStudentServiceQuestion;
-    window.buildStudentServiceAnswerCardOptions = buildStudentServiceAnswerCardOptions;
-    window.findNewestStudentServiceTopLevelAnswer = findNewestStudentServiceTopLevelAnswer;
-    window.appendStudentServiceTopLevelAnswerNode = appendStudentServiceTopLevelAnswerNode;
-    window.collectStudentServiceAnswerBranchIds = collectStudentServiceAnswerBranchIds;
-    window.removeStudentServiceAnswersFromSnapshot = removeStudentServiceAnswersFromSnapshot;
-    window.mergeStudentServiceQuestionSnapshot = mergeStudentServiceQuestionSnapshot;
-    window.removeStudentServiceQuestionFromSnapshot = removeStudentServiceQuestionFromSnapshot;
-    window.removeStudentServiceQuestionCard = removeStudentServiceQuestionCard;
-    window.buildStudentServiceQaContentFingerprint = buildStudentServiceQaContentFingerprint;
-    window.buildStudentServiceQaFeedCacheKey = buildStudentServiceQaFeedCacheKey;
-    window.getStudentServiceVisibleQuestions = getStudentServiceVisibleQuestions;
-    window.getStudentServiceQuestionAuthorLabel = getStudentServiceQuestionAuthorLabel;
-    window.getStudentServiceSelectedQuestion = getStudentServiceSelectedQuestion;
-    window.getStudentServiceOpenQuestion = getStudentServiceOpenQuestion;
-    window.getStudentServiceFilteredQuestions = getStudentServiceFilteredQuestions;
-    window.getStudentServiceSimilarQuestions = getStudentServiceSimilarQuestions;
-    window.relayoutStudentServiceCommentTrunks = relayoutStudentServiceCommentTrunks;
-    window.getStudentServiceQuestionById = getStudentServiceQuestionById;
-    window.findStudentServiceAnswerRecord = findStudentServiceAnswerRecord;
-    window.studentServiceAnswerArticleEl = studentServiceAnswerArticleEl;
-    window.getStudentServiceQuestionCardElement = getStudentServiceQuestionCardElement;
-    window.getStudentServiceQuestionThreadMode = getStudentServiceQuestionThreadMode;
-    window.isStudentServiceQuestionThreadModalOpen = isStudentServiceQuestionThreadModalOpen;
-    window.getStudentServiceQuestionThreadModalBody = getStudentServiceQuestionThreadModalBody;
-    window.getStudentServiceQuestionThreadHost = getStudentServiceQuestionThreadHost;
-    window.updateStudentServiceQuestionCardToggleUi = updateStudentServiceQuestionCardToggleUi;
-    window.clearLegacyStudentServiceOpenQuestionCards = clearLegacyStudentServiceOpenQuestionCards;
-    window.updateStudentServiceQuestionThreadActiveCards = updateStudentServiceQuestionThreadActiveCards;
-    window.closeStudentServiceQuestionThreadModal = closeStudentServiceQuestionThreadModal;
-    window.renderStudentServiceQuestionThreadModalShell = renderStudentServiceQuestionThreadModalShell;
-    window.mountStudentServiceQuestionThreadModal = mountStudentServiceQuestionThreadModal;
-    window.remountStudentServiceQuestionThreadModal = remountStudentServiceQuestionThreadModal;
-    window.setStudentServiceOpenQuestionId = setStudentServiceOpenQuestionId;
-    window.restoreStudentServiceOpenQuestionFromUi = restoreStudentServiceOpenQuestionFromUi;
-    window.patchStudentServiceQuestionCardStats = patchStudentServiceQuestionCardStats;
-    window.isStudentServiceQuestionHelpfulVoted = isStudentServiceQuestionHelpfulVoted;
-    window.renderStudentServiceQuestionHelpfulButtonMarkup = renderStudentServiceQuestionHelpfulButtonMarkup;
-    window.updateStudentServiceQuestionHelpfulButton = updateStudentServiceQuestionHelpfulButton;
-    window.triggerStudentServiceHelpfulAnimation = triggerStudentServiceHelpfulAnimation;
-    window.patchStudentServiceQuestionHelpfulUi = patchStudentServiceQuestionHelpfulUi;
-    window.isStudentServiceAnswerHelpfulVoted = isStudentServiceAnswerHelpfulVoted;
-    window.renderStudentServiceAnswerHelpfulButtonMarkup = renderStudentServiceAnswerHelpfulButtonMarkup;
-    window.updateStudentServiceAnswerHelpfulButton = updateStudentServiceAnswerHelpfulButton;
-    window.patchStudentServiceAnswerHelpfulBtn = patchStudentServiceAnswerHelpfulBtn;
-    window.removeStudentServiceAnswerBranch = removeStudentServiceAnswerBranch;
-    window.applyStudentServiceQuestionMutation = applyStudentServiceQuestionMutation;
-    window.patchStudentServiceOpenQuestionThread = patchStudentServiceOpenQuestionThread;
-    window.setStudentServiceQuestionFilter = setStudentServiceQuestionFilter;
-    window.setStudentServiceQuestionComposerExpanded = setStudentServiceQuestionComposerExpanded;
-    window.setStudentServiceDraftQuestionField = setStudentServiceDraftQuestionField;
-    window.openStudentServiceQuestion = openStudentServiceQuestion;
-    window.getStudentServiceQuestionStatusLabel = getStudentServiceQuestionStatusLabel;
-    window.getStudentServiceQuestionStatusClass = getStudentServiceQuestionStatusClass;
-    window.getStudentServiceQuestionAnswerCount = getStudentServiceQuestionAnswerCount;
-    window.renderStudentServiceQuestionList = renderStudentServiceQuestionList;
-    window.renderStudentServiceQuestionComposer = renderStudentServiceQuestionComposer;
-    window.renderStudentServiceQuestionComposerFormMarkup = renderStudentServiceQuestionComposerFormMarkup;
-    window.renderStudentServiceQuestionComposerModalActionsMarkup = renderStudentServiceQuestionComposerModalActionsMarkup;
-    window.renderStudentServiceQuestionComposerModalShell = renderStudentServiceQuestionComposerModalShell;
-    window.renderStudentServiceQuestionCardPreviewMarkup = renderStudentServiceQuestionCardPreviewMarkup;
-    window.renderStudentServiceQuestionFeed = renderStudentServiceQuestionFeed;
-    window.renderStudentServiceCommentReplyShell = renderStudentServiceCommentReplyShell;
-    window.openStudentServiceDeleteQuestionConfirm = openStudentServiceDeleteQuestionConfirm;
-    window.isStudentServiceQuestionComposerModalOpen = isStudentServiceQuestionComposerModalOpen;
-    window.mountStudentServiceQuestionComposerModal = mountStudentServiceQuestionComposerModal;
-    window.openStudentServiceQuestionComposerModal = openStudentServiceQuestionComposerModal;
-    window.closeStudentServiceQuestionComposerModal = closeStudentServiceQuestionComposerModal;
-    window.remountStudentServiceQuestionComposerModal = remountStudentServiceQuestionComposerModal;
-    window.renderStudentServiceAnswerCardMarkup = renderStudentServiceAnswerCardMarkup;
-    window.renderStudentServiceAnswerThreadNode = renderStudentServiceAnswerThreadNode;
-    window.renderStudentServiceQuestionDetailActionsMarkup = renderStudentServiceQuestionDetailActionsMarkup;
-    window.renderStudentServiceQuestionDetail = renderStudentServiceQuestionDetail;
-    window.submitStudentServiceQuestion = submitStudentServiceQuestion;
-    window.submitStudentServiceQuestionAnswer = submitStudentServiceQuestionAnswer;
-    window.setStudentServiceQuestionOwnerResolution = setStudentServiceQuestionOwnerResolution;
-    window.setStudentServiceQuestionFeedback = setStudentServiceQuestionFeedback;
-    window.setStudentServiceAnswerFeedback = setStudentServiceAnswerFeedback;
-    window.deleteStudentServiceQuestion = deleteStudentServiceQuestion;
-    window.deleteStudentServiceQuestionAnswer = deleteStudentServiceQuestionAnswer;
-    window.publishStudentServiceQuestion = publishStudentServiceQuestion;
-    window.toggleStudentServiceQuestionFlag = toggleStudentServiceQuestionFlag;
-    window.convertStudentServiceQuestionToTicket = convertStudentServiceQuestionToTicket;
-    window.convertStudentServiceQuestionToArticle = convertStudentServiceQuestionToArticle;
-    window.mergeStudentServiceQuestionPrompt = mergeStudentServiceQuestionPrompt;
-    window.renderStudentServiceQaCommandBarStats = renderStudentServiceQaCommandBarStats;
-    window.handleStudentServiceQaThreadClick = handleStudentServiceQaThreadClick;
+    __kiuSsApi.buildStudentServiceDefaultDraftQuestion = buildStudentServiceDefaultDraftQuestion;
+    __kiuSsApi.resolveStudentServiceAnswerAuthorId = resolveStudentServiceAnswerAuthorId;
+    __kiuSsApi.normalizeStudentServiceAnswer = normalizeStudentServiceAnswer;
+    __kiuSsApi.preferStudentServiceAnswerRecord = preferStudentServiceAnswerRecord;
+    __kiuSsApi.buildStudentServiceAnswerThread = buildStudentServiceAnswerThread;
+    __kiuSsApi.normalizeStudentServiceQuestionStatus = normalizeStudentServiceQuestionStatus;
+    __kiuSsApi.normalizeStudentServiceQuestion = normalizeStudentServiceQuestion;
+    __kiuSsApi.resolveStudentServiceReplyShell = resolveStudentServiceReplyShell;
+    __kiuSsApi.resolveStudentServiceParentAnswerId = resolveStudentServiceParentAnswerId;
+    __kiuSsApi.canCurrentUserDeleteStudentServiceAnswer = canCurrentUserDeleteStudentServiceAnswer;
+    __kiuSsApi.getStudentServiceQuestionResolutionLabel = getStudentServiceQuestionResolutionLabel;
+    __kiuSsApi.canCurrentUserDeleteStudentServiceQuestion = canCurrentUserDeleteStudentServiceQuestion;
+    __kiuSsApi.buildStudentServiceAnswerCardOptions = buildStudentServiceAnswerCardOptions;
+    __kiuSsApi.findNewestStudentServiceTopLevelAnswer = findNewestStudentServiceTopLevelAnswer;
+    __kiuSsApi.appendStudentServiceTopLevelAnswerNode = appendStudentServiceTopLevelAnswerNode;
+    __kiuSsApi.collectStudentServiceAnswerBranchIds = collectStudentServiceAnswerBranchIds;
+    __kiuSsApi.removeStudentServiceAnswersFromSnapshot = removeStudentServiceAnswersFromSnapshot;
+    __kiuSsApi.mergeStudentServiceQuestionSnapshot = mergeStudentServiceQuestionSnapshot;
+    __kiuSsApi.removeStudentServiceQuestionFromSnapshot = removeStudentServiceQuestionFromSnapshot;
+    __kiuSsApi.removeStudentServiceQuestionCard = removeStudentServiceQuestionCard;
+    __kiuSsApi.buildStudentServiceQaContentFingerprint = buildStudentServiceQaContentFingerprint;
+    __kiuSsApi.buildStudentServiceQaFeedCacheKey = buildStudentServiceQaFeedCacheKey;
+    __kiuSsApi.getStudentServiceVisibleQuestions = getStudentServiceVisibleQuestions;
+    __kiuSsApi.getStudentServiceQuestionAuthorLabel = getStudentServiceQuestionAuthorLabel;
+    __kiuSsApi.getStudentServiceSelectedQuestion = getStudentServiceSelectedQuestion;
+    __kiuSsApi.getStudentServiceOpenQuestion = getStudentServiceOpenQuestion;
+    __kiuSsApi.getStudentServiceFilteredQuestions = getStudentServiceFilteredQuestions;
+    __kiuSsApi.getStudentServiceSimilarQuestions = getStudentServiceSimilarQuestions;
+    __kiuSsApi.relayoutStudentServiceCommentTrunks = relayoutStudentServiceCommentTrunks;
+    __kiuSsApi.getStudentServiceQuestionById = getStudentServiceQuestionById;
+    __kiuSsApi.findStudentServiceAnswerRecord = findStudentServiceAnswerRecord;
+    __kiuSsApi.studentServiceAnswerArticleEl = studentServiceAnswerArticleEl;
+    __kiuSsApi.getStudentServiceQuestionCardElement = getStudentServiceQuestionCardElement;
+    __kiuSsApi.getStudentServiceQuestionThreadMode = getStudentServiceQuestionThreadMode;
+    __kiuSsApi.isStudentServiceQuestionThreadModalOpen = isStudentServiceQuestionThreadModalOpen;
+    __kiuSsApi.getStudentServiceQuestionThreadModalBody = getStudentServiceQuestionThreadModalBody;
+    __kiuSsApi.getStudentServiceQuestionThreadHost = getStudentServiceQuestionThreadHost;
+    __kiuSsApi.updateStudentServiceQuestionCardToggleUi = updateStudentServiceQuestionCardToggleUi;
+    __kiuSsApi.clearLegacyStudentServiceOpenQuestionCards = clearLegacyStudentServiceOpenQuestionCards;
+    __kiuSsApi.updateStudentServiceQuestionThreadActiveCards = updateStudentServiceQuestionThreadActiveCards;
+    __kiuSsApi.closeStudentServiceQuestionThreadModal = closeStudentServiceQuestionThreadModal;
+    __kiuSsApi.renderStudentServiceQuestionThreadModalShell = renderStudentServiceQuestionThreadModalShell;
+    __kiuSsApi.mountStudentServiceQuestionThreadModal = mountStudentServiceQuestionThreadModal;
+    __kiuSsApi.remountStudentServiceQuestionThreadModal = remountStudentServiceQuestionThreadModal;
+    __kiuSsApi.setStudentServiceOpenQuestionId = setStudentServiceOpenQuestionId;
+    __kiuSsApi.restoreStudentServiceOpenQuestionFromUi = restoreStudentServiceOpenQuestionFromUi;
+    __kiuSsApi.patchStudentServiceQuestionCardStats = patchStudentServiceQuestionCardStats;
+    __kiuSsApi.isStudentServiceQuestionHelpfulVoted = isStudentServiceQuestionHelpfulVoted;
+    __kiuSsApi.renderStudentServiceQuestionHelpfulButtonMarkup = renderStudentServiceQuestionHelpfulButtonMarkup;
+    __kiuSsApi.updateStudentServiceQuestionHelpfulButton = updateStudentServiceQuestionHelpfulButton;
+    __kiuSsApi.triggerStudentServiceHelpfulAnimation = triggerStudentServiceHelpfulAnimation;
+    __kiuSsApi.patchStudentServiceQuestionHelpfulUi = patchStudentServiceQuestionHelpfulUi;
+    __kiuSsApi.isStudentServiceAnswerHelpfulVoted = isStudentServiceAnswerHelpfulVoted;
+    __kiuSsApi.renderStudentServiceAnswerHelpfulButtonMarkup = renderStudentServiceAnswerHelpfulButtonMarkup;
+    __kiuSsApi.updateStudentServiceAnswerHelpfulButton = updateStudentServiceAnswerHelpfulButton;
+    __kiuSsApi.patchStudentServiceAnswerHelpfulBtn = patchStudentServiceAnswerHelpfulBtn;
+    __kiuSsApi.removeStudentServiceAnswerBranch = removeStudentServiceAnswerBranch;
+    __kiuSsApi.applyStudentServiceQuestionMutation = applyStudentServiceQuestionMutation;
+    __kiuSsApi.patchStudentServiceOpenQuestionThread = patchStudentServiceOpenQuestionThread;
+    __kiuSsApi.setStudentServiceQuestionFilter = setStudentServiceQuestionFilter;
+    __kiuSsApi.setStudentServiceQuestionComposerExpanded = setStudentServiceQuestionComposerExpanded;
+    __kiuSsApi.setStudentServiceDraftQuestionField = setStudentServiceDraftQuestionField;
+    __kiuSsApi.openStudentServiceQuestion = openStudentServiceQuestion;
+    __kiuSsApi.getStudentServiceQuestionStatusLabel = getStudentServiceQuestionStatusLabel;
+    __kiuSsApi.getStudentServiceQuestionStatusClass = getStudentServiceQuestionStatusClass;
+    __kiuSsApi.getStudentServiceQuestionAnswerCount = getStudentServiceQuestionAnswerCount;
+    __kiuSsApi.renderStudentServiceQuestionList = renderStudentServiceQuestionList;
+    __kiuSsApi.renderStudentServiceQuestionComposer = renderStudentServiceQuestionComposer;
+    __kiuSsApi.renderStudentServiceQuestionComposerFormMarkup = renderStudentServiceQuestionComposerFormMarkup;
+    __kiuSsApi.renderStudentServiceQuestionComposerModalActionsMarkup = renderStudentServiceQuestionComposerModalActionsMarkup;
+    __kiuSsApi.renderStudentServiceQuestionComposerModalShell = renderStudentServiceQuestionComposerModalShell;
+    __kiuSsApi.renderStudentServiceQuestionCardPreviewMarkup = renderStudentServiceQuestionCardPreviewMarkup;
+    __kiuSsApi.renderStudentServiceQuestionFeed = window.renderStudentServiceQuestionFeed = renderStudentServiceQuestionFeed;
+    __kiuSsApi.renderStudentServiceCommentReplyShell = renderStudentServiceCommentReplyShell;
+    __kiuSsApi.openStudentServiceDeleteQuestionConfirm = openStudentServiceDeleteQuestionConfirm;
+    __kiuSsApi.isStudentServiceQuestionComposerModalOpen = isStudentServiceQuestionComposerModalOpen;
+    __kiuSsApi.mountStudentServiceQuestionComposerModal = mountStudentServiceQuestionComposerModal;
+    __kiuSsApi.openStudentServiceQuestionComposerModal = openStudentServiceQuestionComposerModal;
+    __kiuSsApi.closeStudentServiceQuestionComposerModal = closeStudentServiceQuestionComposerModal;
+    __kiuSsApi.remountStudentServiceQuestionComposerModal = remountStudentServiceQuestionComposerModal;
+    __kiuSsApi.renderStudentServiceAnswerCardMarkup = renderStudentServiceAnswerCardMarkup;
+    __kiuSsApi.renderStudentServiceAnswerThreadNode = renderStudentServiceAnswerThreadNode;
+    __kiuSsApi.renderStudentServiceQuestionDetailActionsMarkup = renderStudentServiceQuestionDetailActionsMarkup;
+    __kiuSsApi.renderStudentServiceQuestionDetail = renderStudentServiceQuestionDetail;
+    __kiuSsApi.submitStudentServiceQuestion = submitStudentServiceQuestion;
+    __kiuSsApi.submitStudentServiceQuestionAnswer = submitStudentServiceQuestionAnswer;
+    __kiuSsApi.setStudentServiceQuestionOwnerResolution = setStudentServiceQuestionOwnerResolution;
+    __kiuSsApi.setStudentServiceQuestionFeedback = setStudentServiceQuestionFeedback;
+    __kiuSsApi.setStudentServiceAnswerFeedback = setStudentServiceAnswerFeedback;
+    __kiuSsApi.deleteStudentServiceQuestion = deleteStudentServiceQuestion;
+    __kiuSsApi.deleteStudentServiceQuestionAnswer = deleteStudentServiceQuestionAnswer;
+    __kiuSsApi.publishStudentServiceQuestion = publishStudentServiceQuestion;
+    __kiuSsApi.toggleStudentServiceQuestionFlag = toggleStudentServiceQuestionFlag;
+    __kiuSsApi.convertStudentServiceQuestionToTicket = convertStudentServiceQuestionToTicket;
+    __kiuSsApi.convertStudentServiceQuestionToArticle = convertStudentServiceQuestionToArticle;
+    __kiuSsApi.mergeStudentServiceQuestionPrompt = mergeStudentServiceQuestionPrompt;
+    __kiuSsApi.renderStudentServiceQaCommandBarStats = renderStudentServiceQaCommandBarStats;
+    __kiuSsApi.handleStudentServiceQaThreadClick = window.handleStudentServiceQaThreadClick = handleStudentServiceQaThreadClick;
 })();

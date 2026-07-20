@@ -102,7 +102,8 @@ async function persistLmsStoredFile(file, kind = 'file') {
     const preferredStorage = typeof getPortalFileStorageMode === 'function'
         ? getPortalFileStorageMode()
         : '';
-    if (file.blob instanceof Blob && preferredStorage === 'bridge' && typeof uploadPortalStoredFile === 'function') {
+    const useBridgeUpload = preferredStorage === 'bridge' || preferredStorage === 'external';
+    if (file.blob instanceof Blob && useBridgeUpload && typeof uploadPortalStoredFile === 'function') {
         try {
             const uploadedFile = await uploadPortalStoredFile(file, kind);
             if (uploadedFile?.storageKey) {
@@ -177,21 +178,21 @@ function getStoredFileDownloadHtml(file, label = 'Download file') {
     if (!file) return '';
     if (file.dataUrl) {
         return `
-            <a href="${file.dataUrl}" download="${escapeHtml(file.name || 'download.bin')}" class="kiu-btn-outline lms-route-file-action-btn">
+            <a href="${file.dataUrl}" download="${escapeHtml(file.name || 'download.bin')}" class="lux-secondary-btn lms-route-file-action-btn">
                 <i class="fas fa-download"></i> ${escapeHtml(label)}
             </a>
         `;
     }
     if (file.storageKey && file.storageBackend === 'bridge' && typeof getPortalStoredFileUrl === 'function') {
         return `
-            <a href="${getPortalStoredFileUrl(file.storageKey)}" download="${escapeHtml(file.name || 'download.bin')}" target="_blank" rel="noopener" class="kiu-btn-outline lms-route-file-action-btn">
+            <a href="${getPortalStoredFileUrl(file.storageKey)}" download="${escapeHtml(file.name || 'download.bin')}" target="_blank" rel="noopener" class="lux-secondary-btn lms-route-file-action-btn">
                 <i class="fas fa-download"></i> ${escapeHtml(label)}
             </a>
         `;
     }
     if (file.storageKey) {
         return `
-            <button type="button" data-lms-click="downloadStoredFileByKey(${jsQuote(file.storageKey)}, ${jsQuote(file.name || 'download.bin')})" class="kiu-btn-outline lms-route-file-action-btn">
+            <button type="button" data-lms-click="downloadStoredFileByKey(${jsQuote(file.storageKey)}, ${jsQuote(file.name || 'download.bin')})" class="lux-secondary-btn lms-route-file-action-btn">
                 <i class="fas fa-download"></i> ${escapeHtml(label)}
             </button>
         `;
@@ -286,3 +287,7 @@ function pickLocalLmsFile(kind, key, labelId, accept = '*/*') {
     };
     input.click();
 }
+
+window.getLmsFileBlob = getLmsFileBlob;
+window.putLmsFileBlob = putLmsFileBlob;
+window.buildLmsStoredFileStorageKey = buildLmsStoredFileStorageKey;

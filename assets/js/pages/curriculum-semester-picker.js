@@ -4,10 +4,13 @@
 
     const MAX_SEMESTER = typeof window.MAX_SEMESTER_DROPDOWN === 'number' ? window.MAX_SEMESTER_DROPDOWN : 12;
     let customSemesters = [];
-    let panelCloseBound = false;
     let addSemestersMode = false;
 
     function escapeHtml(value) {
+        if (typeof window !== 'undefined' && typeof window.escapeHtml === 'function') {
+            const shared = window.escapeHtml;
+            if (shared !== escapeHtml) return shared(value);
+        }
         return String(value == null ? '' : value)
             .replace(/&/g, '&amp;')
             .replace(/</g, '&lt;')
@@ -101,16 +104,15 @@
         const selectedSet = new Set(selection);
         listNode.innerHTML = getScrollOptions().map((semester) => {
             const active = selectedSet.has(semester);
+            const title = `Semester ${semester}`;
             return `
-                <button type="button" class="lux-semester-scroll-option${active ? ' is-selected' : ''}" data-semester-value="${semester}" role="option" aria-selected="${active ? 'true' : 'false'}">
-                    <span class="lux-semester-scroll-option__label">Semester ${semester}</span>
-                    ${active ? '<span class="lux-semester-scroll-option__mark"><i class="fas fa-check"></i></span>' : ''}
+                <button type="button" class="lux-picker-option${active ? ' is-active' : ''}" data-semester-value="${semester}" role="option" aria-selected="${active ? 'true' : 'false'}">
+                    <strong>${escapeHtml(title)}</strong>
                 </button>
             `;
         }).join('') + `
-            <button type="button" class="lux-semester-scroll-option lux-semester-scroll-option--custom" data-semester-custom="1" role="option">
-                <span class="lux-semester-scroll-option__label">Custom semester…</span>
-                <span class="lux-semester-scroll-option__mark"><i class="fas fa-plus"></i></span>
+            <button type="button" class="lux-picker-option lux-picker-option--custom" data-semester-custom="1" role="option">
+                <strong>Custom semester…</strong>
             </button>
         `;
     }
@@ -156,6 +158,10 @@
         if (valueNode) valueNode.textContent = formatButtonLabel(selection);
         renderScrollList(listNode, selection);
         renderChipTray(trayNode, selection);
+        if (trayNode) {
+            trayNode.hidden = !addSemestersMode;
+            trayNode.classList.toggle('is-single-mode-hidden', !addSemestersMode);
+        }
         syncModeSegmentUi(config);
         if (typeof config.onChange === 'function') config.onChange(selection);
     }
@@ -208,36 +214,17 @@
         syncUi(config);
     }
 
-    function closePanel(panel, button) {
-        if (!panel) return;
-        panel.classList.remove('is-open');
-        panel.setAttribute('aria-hidden', 'true');
-        panel.hidden = true;
-        if (button) button.setAttribute('aria-expanded', 'false');
-    }
-
-    function openPanel(panel, button) {
-        if (!panel) return;
-        panel.classList.add('is-open');
-        panel.setAttribute('aria-hidden', 'false');
-        panel.hidden = false;
-        if (button) button.setAttribute('aria-expanded', 'true');
-        const active = panel.querySelector('.lux-semester-scroll-option.is-selected');
-        if (active) active.scrollIntoView({ block: 'center' });
-    }
-
-    function bindPanelDismiss(panel, button) {
-        if (panelCloseBound) return;
-        document.addEventListener('click', (event) => {
-            const field = document.getElementById('new-subject-semester-picker');
-            if (!field || !panel?.classList.contains('is-open')) return;
-            if (field.contains(event.target)) return;
-            closePanel(panel, button);
-        });
-        document.addEventListener('keydown', (event) => {
-            if (event.key === 'Escape') closePanel(panel, button);
-        });
-        panelCloseBound = true;
+    function togglePanel(panel, button, config) {
+        if (!panel || !button) return;
+        const willOpen = !panel.classList.contains('is-open');
+        if (willOpen) syncUi(config);
+        if (typeof window.togglePickerPanel === 'function') {
+            window.togglePickerPanel(panel.id, button.id);
+        }
+        if (willOpen) {
+            const active = panel.querySelector('.lux-picker-option.is-active');
+            if (active) active.scrollIntoView({ block: 'center' });
+        }
     }
 
     function initCurriculumSemesterPicker(config = {}) {
@@ -248,6 +235,8 @@
         const hidden = document.getElementById(config.hiddenId || 'new-subject-semesters');
         const segmentRoot = document.querySelector(config.segmentSelector || '.lux-semester-mode-segment');
         if (!button || !panel || !listNode || !trayNode || !hidden) return false;
+        panel.classList.add('lux-droplist-panel');
+        panel.classList.remove('social-neo-dialog-picker-panel');
         if (button.dataset.curriculumSemesterPickerBound === '1') {
             syncUi(config);
             return true;
@@ -269,13 +258,7 @@
         button.addEventListener('click', (event) => {
             event.preventDefault();
             event.stopPropagation();
-            if (panel.classList.contains('is-open')) {
-                closePanel(panel, button);
-            } else {
-                if (typeof closePickerPanels === 'function') closePickerPanels();
-                openPanel(panel, button);
-                syncUi(config);
-            }
+            togglePanel(panel, button, config);
         });
 
         listNode.addEventListener('click', (event) => {
@@ -299,7 +282,6 @@
             removeSemester(semester, config);
         });
 
-        bindPanelDismiss(panel, button);
         button.dataset.curriculumSemesterPickerBound = '1';
         syncUi(config);
         return true;

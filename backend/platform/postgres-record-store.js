@@ -72,6 +72,30 @@ class PostgresRecordStore {
         }
     }
 
+    async writeNamespaces(namespaces = {}, options = {}) {
+        void options;
+        const entries = Object.entries(namespaces || {});
+        if (!entries.length) return;
+        const client = await this.pool.connect();
+        try {
+            await client.query('BEGIN');
+            for (const [namespace, payload] of entries) {
+                await client.query(`
+                    INSERT INTO ${this.tableName} (namespace, payload, updated_at)
+                    VALUES ($1, $2::jsonb, NOW())
+                    ON CONFLICT (namespace)
+                    DO UPDATE SET payload = EXCLUDED.payload, updated_at = NOW()
+                `, [namespace, JSON.stringify(clone(payload))]);
+            }
+            await client.query('COMMIT');
+        } catch (error) {
+            await client.query('ROLLBACK');
+            throw error;
+        } finally {
+            client.release();
+        }
+    }
+
     async close() {
         await this.pool.end();
     }

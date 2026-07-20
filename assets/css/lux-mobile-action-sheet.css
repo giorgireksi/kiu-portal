@@ -1,0 +1,137 @@
+@media (max-width: 768px) {
+  .mob-sheet {
+    position: fixed;
+    inset: 0;
+    z-index: 9200;
+    pointer-events: none;
+  }
+  .mob-sheet.is-open { pointer-events: auto; }
+  .mob-sheet-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0);
+    transition: background 0.3s ease;
+  }
+  .mob-sheet.is-open .mob-sheet-backdrop {
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    backface-visibility: hidden;
+  }
+  .mob-sheet-panel {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    max-height: 80vh;
+    max-height: 80dvh;
+    background: rgba(12, 16, 26, 0.98);
+    border-radius: 24px 24px 0 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 -16px 60px rgba(0, 0, 0, 0.5);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 0 16px calc(env(safe-area-inset-bottom, 0px) + 8px);
+    transform: translateY(100%);
+    transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+  }
+  body.lux-light-mode .mob-sheet-panel { background: rgba(252, 250, 246, 0.98); border-top-color: rgba(0, 0, 0, 0.08); }
+  .mob-sheet.is-open .mob-sheet-panel { transform: translateY(0); }
+  .mob-sheet-handle { display: flex; justify-content: center; padding: 10px 0 6px; }
+  .mob-sheet-handle span {
+    width: 40px;
+    height: 4px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.2);
+  }
+  body.lux-light-mode .mob-sheet-handle span { background: rgba(0, 0, 0, 0.15); }
+  .mob-sheet-section { margin-bottom: 18px; }
+  .mob-sheet-label {
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: rgba(255, 255, 255, 0.4);
+    margin-bottom: 10px;
+    padding: 0 4px;
+  }
+  body.lux-light-mode .mob-sheet-label { color: rgba(0, 0, 0, 0.4); }
+  .mob-sheet-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .mob-sheet-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 4px;
+    border: none;
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 16px;
+    cursor: pointer;
+    transition: background 0.18s ease, transform 0.18s ease;
+    color: var(--lux-text, #f5f1e8);
+  }
+  body.lux-light-mode .mob-sheet-btn { background: rgba(0, 0, 0, 0.04); color: var(--lux-text, #1d2633); }
+  .mob-sheet-btn:active { transform: scale(0.94); background: rgba(255, 255, 255, 0.08); }
+  .mob-sheet-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 17px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+  }
+  #mob-act-admin .mob-sheet-icon { background: linear-gradient(135deg, #f59e0b, #d97706); }
+  #mob-act-theme .mob-sheet-icon { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
+  #mob-act-profile .mob-sheet-icon { background: linear-gradient(135deg, #06b6d4, #0891b2); }
+  #mob-act-lightmode .mob-sheet-icon { background: linear-gradient(135deg, #f97316, #ea580c); }
+  .mob-sheet-btn span {
+    font-size: 10px;
+    font-weight: 700;
+    text-align: center;
+    line-height: 1.25;
+  }
+  .mob-sheet-nav { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .mob-sheet-nav-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 10px;
+    border: none;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 14px;
+    color: var(--lux-text, #f5f1e8);
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s ease;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  body.lux-light-mode .mob-sheet-nav-btn { background: rgba(0, 0, 0, 0.03); color: var(--lux-text, #1d2633); }
+  .mob-sheet-nav-btn:active { background: rgba(var(--lux-accent-rgb, 240, 160, 80), 0.15); }
+  .mob-sheet-nav-btn i {
+    width: 20px;
+    text-align: center;
+    font-size: 13px;
+    color: var(--lux-accent, #f0a050);
+    flex-shrink: 0;
+  }
+  .mob-sheet-footer { padding: 8px 0 4px; }
+  .mob-sheet-close-btn {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    background: rgba(255, 255, 255, 0.06);
+    color: rgba(255, 255, 255, 0.6);
+    border-radius: 14px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  body.lux-light-mode .mob-sheet-close-btn { background: rgba(0, 0, 0, 0.05); color: rgba(0, 0, 0, 0.5); }
+  .mob-sheet-close-btn:active { background: rgba(255, 255, 255, 0.1); }
+}

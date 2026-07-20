@@ -377,8 +377,6 @@
         `;
     }
 
-
-    
     const PROFILE_OWNED_DIALOG_KINDS = new Set(['profile-cover']);
 
     function renderProfileOwnedDialog(runtime, dialog) {
@@ -388,10 +386,7 @@
         if (kind === 'profile-cover') {
             return `<div class="social-neo-dialog-backdrop" data-action="dialog-close">
                 <form class="social-neo-dialog-card" data-form="dialog-profile-cover" data-action="noop">
-                    <div class="social-neo-section-head social-neo-dialog-head">
-                        <div class="social-neo-dialog-heading"><strong class="social-neo-dialog-title">Update cover photo</strong><span class="social-neo-dialog-subtitle">Paste an image URL or upload a file for your profile banner.</span></div>
-                        <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-close-btn" type="button" data-action="dialog-close"><i class="fas fa-times"></i></button>
-                    </div>
+                    ${typeof socialNeoDialogHead === 'function' ? socialNeoDialogHead('Update cover photo', 'Paste an image URL or upload a file for your profile banner.') : ''}
                     <input class="social-neo-input" name="coverImageUrl" type="url" placeholder="https://..." value="${escape(text(dialog.coverImage || ''))}">
                     ${renderFileChip(state().ui?.coverImageFile, 'Cover image ready')}
                     <div class="social-neo-inline social-neo-quick-actions">
@@ -400,10 +395,7 @@
                             <input name="coverImageFile" type="file" accept="image/*" hidden>
                         </label>
                     </div>
-                    <div class="social-neo-form-actions social-neo-dialog-actions">
-                        <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-cancel-btn" type="button" data-action="dialog-close">Cancel</button>
-                        <button class="social-neo-btn social-neo-btn-primary social-neo-dialog-submit-btn" type="submit">Update cover</button>
-                    </div>
+                    ${typeof socialNeoDialogActions === 'function' ? socialNeoDialogActions({ cancelLabel: 'Cancel', submitLabel: 'Update cover' }) : ''}
                 </form>
             </div>`;
         }

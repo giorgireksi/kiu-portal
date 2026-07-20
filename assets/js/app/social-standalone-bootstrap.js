@@ -13,8 +13,8 @@ window.USER_ROLES = USER_ROLES;
 const ACTIVE_SESSION_KEY = 'KIU_ACTIVE_SESSION_USER_ID';
 const ACTIVE_ROLE_IMPERSONATION_KEY = 'KIU_ACTIVE_ROLE_IMPERSONATION';
 const PENDING_ROLE_SWITCH_KEY = 'KIU_PENDING_ROLE_SWITCH_ROLE';
-const MANUAL_TESTING_STATE_VERSION = 7;
-const REAL_TESTING_CLEANUP_FLAG = 'KIU_REAL_TESTING_CLEANUP_V7';
+const MANUAL_TESTING_STATE_VERSION = 8;
+const REAL_TESTING_CLEANUP_FLAG = 'KIU_REAL_TESTING_CLEANUP_V8';
 const TIMETABLE_WEEK_STORAGE_KEY = 'KIU_TIMETABLE_WEEK_START';
 const PROFILE_CALENDAR_WEEK_STORAGE_KEY = 'KIU_PROFILE_CALENDAR_WEEK_START';
 const SCHEDULER_WEEK_STORAGE_KEY = 'KIU_SCHEDULER_WEEK_START';
@@ -92,3 +92,52 @@ function cleanupEncodingArtifacts(text) {
 function toEnglishText(value) {
     return cleanupEncodingArtifacts(value);
 }
+
+const minutesToTimeString = window.minutesToTimeString || function (totalMinutes) {
+    const safeMinutes = Number.isFinite(totalMinutes) ? totalMinutes : 0;
+    const normalizedMinutes = ((Math.round(safeMinutes) % 1440) + 1440) % 1440;
+    const hours = String(Math.floor(normalizedMinutes / 60)).padStart(2, '0');
+    const minutes = String(normalizedMinutes % 60).padStart(2, '0');
+    return `${hours}:${minutes}`;
+};
+window.minutesToTimeString = minutesToTimeString;
+
+const parseTimeString = window.parseTimeString || function (timeStr) {
+    const raw = String(timeStr || '').trim();
+    if (!raw) return NaN;
+
+    const twelveHour = raw.match(/^(\d{1,2}):(\d{2})\s*([AP]M)$/i);
+    if (twelveHour) {
+        let hours = parseInt(twelveHour[1], 10);
+        const minutes = parseInt(twelveHour[2], 10);
+        if (!Number.isFinite(hours) || !Number.isFinite(minutes) || hours < 1 || hours > 12 || minutes < 0 || minutes > 59) return NaN;
+        const meridiem = twelveHour[3].toUpperCase();
+        if (meridiem === 'PM' && hours < 12) hours += 12;
+        if (meridiem === 'AM' && hours === 12) hours = 0;
+        return hours * 60 + minutes;
+    }
+
+    const twentyFourHour = raw.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
+    if (twentyFourHour) {
+        const hours = parseInt(twentyFourHour[1], 10);
+        const minutes = parseInt(twentyFourHour[2], 10);
+        if (!Number.isFinite(hours) || !Number.isFinite(minutes) || hours < 0 || hours > 23 || minutes < 0 || minutes > 59) return NaN;
+        return hours * 60 + minutes;
+    }
+
+    return NaN;
+};
+window.parseTimeString = parseTimeString;
+
+const normalizeTimeString = window.normalizeTimeString || function (timeStr, fallback = '') {
+    const parsed = parseTimeString(timeStr);
+    if (!Number.isFinite(parsed)) return fallback;
+    return minutesToTimeString(parsed);
+};
+window.normalizeTimeString = normalizeTimeString;
+
+const convertTimeToMinutes = window.convertTimeToMinutes || function (timeStr) {
+    const parsed = parseTimeString(timeStr);
+    return Number.isFinite(parsed) ? parsed : 0;
+};
+window.convertTimeToMinutes = convertTimeToMinutes;

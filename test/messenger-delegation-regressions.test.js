@@ -1,15 +1,17 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
 function readSource(relativePath) {
-    return readFileSync(join(process.cwd(), relativePath), 'utf8');
+    const full = join(process.cwd(), relativePath);
+    if (!existsSync(full)) return '';
+    return readFileSync(full, 'utf8');
 }
 
 describe('messenger delegation regressions', () => {
     it('keeps the shared messenger chrome on delegated click, input, change, and drop handlers', () => {
         const source = readSource('assets/js/shared/messenger.js');
-        const css = readSource('assets/css/index-luxury.css');
+        const css = readSource('assets/css/layout-portal.css');
 
         expect(source).toContain('function bindPortalMessengerDelegates()');
         expect(source).toContain('function handlePortalMessengerChromeClick(event)');

@@ -1,3 +1,14 @@
+/* Wave bag: Wave 26 registration-shared */
+window.KiuRegistrationShared = window.KiuRegistrationShared || {};
+const __kiuRegSharedApi = window.KiuRegistrationShared;
+window.__kiuRegSharedApi = __kiuRegSharedApi;
+function __kiuRegSharedExpose(map) {
+    Object.keys(map).forEach((key) => {
+        __kiuRegSharedApi[key] = map[key];
+        window[key] = map[key];
+    });
+}
+
 /* Shared registration helper surface for admin and student registration runtimes. */
 
 function normalizeStudentRegistrationCourseIds(registrationValue) {
@@ -302,6 +313,136 @@ function closeAdminRegManageModal() {
     if (existing) existing.remove();
 }
 
+function closeLuxuryConfirmModal() {
+    if (typeof window.__kiuLuxuryConfirmCleanup === 'function') {
+        window.__kiuLuxuryConfirmCleanup();
+        window.__kiuLuxuryConfirmCleanup = null;
+    }
+    const existing = document.getElementById('kiu-luxury-confirm-modal');
+    if (existing) existing.remove();
+}
+
+function openLuxuryConfirmModal(config = {}) {
+    closeLuxuryConfirmModal();
+
+    const {
+        title = 'Confirm',
+        subtitle = '',
+        message = '',
+        danger = false,
+        confirmLabel = 'Confirm',
+        onConfirm
+    } = config;
+
+    const modal = document.createElement('div');
+    modal.id = 'kiu-luxury-confirm-modal';
+    modal.className = 'registration-structured-modal-backdrop';
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+
+    const card = document.createElement('div');
+    card.className = 'social-neo-dialog-card social-neo-dialog-card--form social-neo-dialog-card--event-create social-neo-dialog-card--lms-create';
+    card.dataset.luxTransparencyExempt = '1';
+    card.dataset.luxGlassRoot = '1';
+
+    const head = document.createElement('div');
+    head.className = 'social-neo-section-head social-neo-dialog-head';
+
+    const heading = document.createElement('div');
+    heading.className = 'social-neo-dialog-heading';
+
+    const titleStrong = document.createElement('strong');
+    titleStrong.className = 'social-neo-dialog-title';
+    const titleIcon = document.createElement('i');
+    titleIcon.className = `fas ${danger ? 'fa-triangle-exclamation' : 'fa-circle-question'}`;
+    titleIcon.setAttribute('aria-hidden', 'true');
+    const titleText = document.createElement('span');
+    titleText.textContent = title;
+    titleStrong.append(titleIcon, document.createTextNode(' '), titleText);
+
+    const subtitleEl = document.createElement('span');
+    subtitleEl.className = 'social-neo-dialog-subtitle';
+    subtitleEl.textContent = subtitle || 'Please confirm this action.';
+
+    heading.append(titleStrong, subtitleEl);
+
+    const closeButton = document.createElement('button');
+    closeButton.type = 'button';
+    closeButton.className = 'social-neo-btn social-neo-btn-ghost social-neo-dialog-close-btn';
+    closeButton.setAttribute('aria-label', 'Close');
+    const closeIcon = document.createElement('i');
+    closeIcon.className = 'fas fa-times';
+    closeButton.appendChild(closeIcon);
+
+    head.append(heading, closeButton);
+
+    const body = document.createElement('div');
+    body.className = 'social-neo-dialog-body social-neo-dialog-body--event-create';
+    const messageCopy = document.createElement('div');
+    messageCopy.className = 'social-neo-dialog-preview-copy';
+    messageCopy.textContent = message;
+    body.appendChild(messageCopy);
+
+    const footer = document.createElement('div');
+    footer.className = 'social-neo-dialog-actions';
+
+    const cancelButton = document.createElement('button');
+    cancelButton.type = 'button';
+    cancelButton.className = 'social-neo-btn social-neo-btn-ghost social-neo-dialog-cancel-btn';
+    cancelButton.textContent = 'Cancel';
+
+    const confirmButton = document.createElement('button');
+    confirmButton.type = 'button';
+    confirmButton.className = `social-neo-btn social-neo-btn-primary social-neo-dialog-submit-btn${danger ? ' social-neo-dialog-submit-btn--danger' : ''}`;
+    confirmButton.textContent = confirmLabel;
+
+    footer.append(cancelButton, confirmButton);
+    card.append(head, body, footer);
+    modal.appendChild(card);
+    document.body.appendChild(modal);
+
+    if (document.body.classList.contains('lux-route-admin-tools')) {
+        modal.dataset.luxStructuredModal = '1';
+        if (typeof window.queueLuxuryTransparencyRefresh === 'function') {
+            window.queueLuxuryTransparencyRefresh(undefined, { roots: [modal] });
+        }
+    }
+
+    const close = () => closeLuxuryConfirmModal();
+    const onKeyDown = (event) => {
+        if (event.key === 'Escape') close();
+    };
+    window.__kiuLuxuryConfirmCleanup = () => {
+        window.removeEventListener('keydown', onKeyDown);
+    };
+    closeButton.onclick = close;
+    cancelButton.onclick = close;
+    confirmButton.addEventListener('click', () => {
+        if (typeof onConfirm === 'function') {
+            onConfirm(close);
+        } else {
+            close();
+        }
+    });
+    window.addEventListener('keydown', onKeyDown);
+    modal.addEventListener('click', (event) => {
+        if (event.target === modal) close();
+    });
+
+    setTimeout(() => {
+        if (typeof confirmButton.focus === 'function') confirmButton.focus();
+    }, 0);
+}
+
+function resolveAdminRegManageTitleIcon({ title } = {}) {
+    const t = String(title || '').toLowerCase();
+    if (t.includes('tab')) return 'fa-folder';
+    if (t.includes('program')) return 'fa-graduation-cap';
+    if (t.includes('group')) return 'fa-layer-group';
+    if (t.includes('course') || t.includes('subject')) return 'fa-book-open';
+    return 'fa-sliders';
+}
+
 function openAdminRegManageModal({
     title = 'Manage item',
     subtitle = '',
@@ -315,36 +456,60 @@ function openAdminRegManageModal({
     const modal = document.createElement('div');
     modal.id = 'kiu-admin-reg-manage-modal';
     modal.className = 'registration-structured-modal-backdrop admin-reg-manage-modal-backdrop';
+    modal.setAttribute('data-lux-transparency-exempt', '1');
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
 
     const card = document.createElement('div');
-    card.className = 'registration-structured-modal-card';
+    card.className = 'social-neo-dialog-card social-neo-dialog-card--form social-neo-dialog-card--event-create social-neo-dialog-card--lms-create';
+    card.dataset.luxTransparencyExempt = '1';
+    card.dataset.luxGlassRoot = '1';
 
-    const header = document.createElement('div');
-    header.className = 'registration-structured-modal-head';
-    const headerCopy = document.createElement('div');
-    headerCopy.className = 'registration-structured-modal-copy';
-    const headerTitle = document.createElement('div');
-    headerTitle.className = 'registration-structured-modal-title';
-    headerTitle.textContent = title;
-    const headerSubtitle = document.createElement('div');
-    headerSubtitle.className = 'registration-structured-modal-subtitle';
-    headerSubtitle.textContent = subtitle || 'Choose an action for this item.';
-    headerCopy.append(headerTitle, headerSubtitle);
+    const head = document.createElement('div');
+    head.className = 'social-neo-section-head social-neo-dialog-head';
+
+    const heading = document.createElement('div');
+    heading.className = 'social-neo-dialog-heading';
+
+    const titleStrong = document.createElement('strong');
+    titleStrong.className = 'social-neo-dialog-title';
+    const titleIcon = document.createElement('i');
+    titleIcon.className = `fas ${resolveAdminRegManageTitleIcon({ title })}`;
+    titleIcon.setAttribute('aria-hidden', 'true');
+    const titleText = document.createElement('span');
+    titleText.textContent = title;
+    titleStrong.append(titleIcon, document.createTextNode(' '), titleText);
+
+    const subtitleEl = document.createElement('span');
+    subtitleEl.className = 'social-neo-dialog-subtitle';
+    subtitleEl.textContent = subtitle || 'Choose an action for this item.';
+
+    heading.append(titleStrong, subtitleEl);
+
     const closeButton = document.createElement('button');
     closeButton.type = 'button';
-    closeButton.className = 'registration-structured-modal-close';
-    closeButton.textContent = '×';
-    header.append(headerCopy, closeButton);
+    closeButton.className = 'social-neo-btn social-neo-btn-ghost social-neo-dialog-close-btn';
+    closeButton.setAttribute('aria-label', 'Close');
+    const closeIcon = document.createElement('i');
+    closeIcon.className = 'fas fa-times';
+    closeButton.appendChild(closeIcon);
+
+    head.append(heading, closeButton);
 
     const body = document.createElement('div');
-    body.className = 'registration-structured-modal-body';
+    body.className = 'social-neo-dialog-body social-neo-dialog-body--event-create';
     const actions = document.createElement('div');
     actions.className = 'admin-reg-manage-modal-actions';
 
     const editButton = document.createElement('button');
     editButton.type = 'button';
-    editButton.className = 'lux-secondary-btn admin-reg-manage-modal-action';
-    editButton.innerHTML = `<i class="fas fa-edit" aria-hidden="true"></i> ${String(editLabel || 'Edit')}`;
+    editButton.className = 'social-neo-btn social-neo-btn-ghost admin-reg-manage-modal-action';
+    const editIcon = document.createElement('i');
+    editIcon.className = 'fas fa-edit';
+    editIcon.setAttribute('aria-hidden', 'true');
+    const editText = document.createElement('span');
+    editText.textContent = String(editLabel || 'Edit');
+    editButton.append(editIcon, editText);
     editButton.addEventListener('click', () => {
         close();
         if (typeof onEdit === 'function') onEdit();
@@ -352,8 +517,13 @@ function openAdminRegManageModal({
 
     const deleteButton = document.createElement('button');
     deleteButton.type = 'button';
-    deleteButton.className = 'lux-secondary-btn admin-reg-manage-modal-action admin-reg-manage-modal-action--danger';
-    deleteButton.innerHTML = `<i class="fas fa-trash" aria-hidden="true"></i> ${String(deleteLabel || 'Delete')}`;
+    deleteButton.className = 'social-neo-btn social-neo-btn-ghost admin-reg-manage-modal-action admin-reg-manage-modal-action--danger';
+    const deleteIcon = document.createElement('i');
+    deleteIcon.className = 'fas fa-trash';
+    deleteIcon.setAttribute('aria-hidden', 'true');
+    const deleteText = document.createElement('span');
+    deleteText.textContent = String(deleteLabel || 'Delete');
+    deleteButton.append(deleteIcon, deleteText);
     deleteButton.addEventListener('click', () => {
         close();
         if (typeof onDelete === 'function') onDelete();
@@ -363,14 +533,14 @@ function openAdminRegManageModal({
     body.appendChild(actions);
 
     const footer = document.createElement('div');
-    footer.className = 'registration-structured-modal-footer';
+    footer.className = 'social-neo-form-actions social-neo-dialog-actions';
     const dismissButton = document.createElement('button');
     dismissButton.type = 'button';
-    dismissButton.className = 'lux-secondary-btn registration-structured-modal-action';
+    dismissButton.className = 'social-neo-btn social-neo-btn-ghost social-neo-dialog-cancel-btn';
     dismissButton.textContent = 'Close';
     footer.appendChild(dismissButton);
 
-    card.append(header, body, footer);
+    card.append(head, body, footer);
     modal.appendChild(card);
     document.body.appendChild(modal);
 
@@ -409,14 +579,26 @@ function toPositiveInt(value, fallback = 0) {
     return Number.isFinite(parsed) ? parsed : fallback;
 }
 
-function buildStructuredFormFieldNode(field) {
-    const wrapper = document.createElement('div');
-    wrapper.className = 'registration-structured-field';
+function resolveStructuredFormTitleIcon(config) {
+    if (config?.titleIcon) return String(config.titleIcon);
+    const title = String(config?.title || '').toLowerCase();
+    if (title.includes('group')) return 'fa-layer-group';
+    if (title.includes('module')) return 'fa-cubes';
+    if (title.includes('program')) return 'fa-graduation-cap';
+    if (title.includes('subject') || title.includes('course')) return 'fa-book-open';
+    if (title.includes('edit')) return 'fa-pen';
+    if (title.includes('new') || title.includes('create')) return 'fa-plus';
+    return 'fa-pen-to-square';
+}
 
+function buildStructuredFormFieldNode(field) {
     const id = field.name;
-    const label = document.createElement('label');
-    label.htmlFor = id;
-    label.className = 'registration-structured-label';
+    const wrapper = document.createElement('label');
+    wrapper.className = 'social-neo-dialog-field';
+    wrapper.htmlFor = id;
+
+    const label = document.createElement('span');
+    label.className = 'social-neo-label';
     label.textContent = field.label || field.name;
     wrapper.appendChild(label);
 
@@ -424,11 +606,11 @@ function buildStructuredFormFieldNode(field) {
     if (field.type === 'textarea') {
         control = document.createElement('textarea');
         control.rows = field.rows || 3;
-        control.className = `registration-structured-control registration-structured-control--textarea${field.readonly || field.disabled ? ' is-muted' : ''}`;
+        control.className = `social-neo-input lux-control${field.readonly || field.disabled ? ' is-muted' : ''}`;
         control.value = field.value == null ? '' : String(field.value);
     } else if (field.type === 'select') {
         control = document.createElement('select');
-        control.className = `registration-structured-control${field.disabled ? ' is-muted' : ''}`;
+        control.className = `social-neo-input lux-control${field.disabled ? ' is-muted' : ''}`;
         (field.options || []).forEach((optionConfig) => {
             const option = document.createElement('option');
             option.value = String(optionConfig.value);
@@ -439,7 +621,7 @@ function buildStructuredFormFieldNode(field) {
     } else {
         control = document.createElement('input');
         control.type = field.type || 'text';
-        control.className = `registration-structured-control${field.readonly || field.disabled ? ' is-muted' : ''}`;
+        control.className = `social-neo-input lux-control${field.readonly || field.disabled ? ' is-muted' : ''}`;
         control.value = field.value == null ? '' : String(field.value);
         if (field.min != null) control.min = String(field.min);
         if (field.max != null) control.max = String(field.max);
@@ -470,58 +652,80 @@ function openStructuredFormModal(config) {
     const modal = document.createElement('div');
     modal.id = 'kiu-structured-form-modal';
     modal.className = 'registration-structured-modal-backdrop';
-
-    const card = document.createElement('div');
-    card.className = 'registration-structured-modal-card';
-
-    const header = document.createElement('div');
-    header.className = 'registration-structured-modal-head';
-    const headerCopy = document.createElement('div');
-    headerCopy.className = 'registration-structured-modal-copy';
-    const headerTitle = document.createElement('div');
-    headerTitle.className = 'registration-structured-modal-title';
-    headerTitle.textContent = config.title || 'Edit Item';
-    const headerSubtitle = document.createElement('div');
-    headerSubtitle.className = 'registration-structured-modal-subtitle';
-    headerSubtitle.textContent = config.subtitle || 'Fill in the details below.';
-    headerCopy.append(headerTitle, headerSubtitle);
-    const closeButton = document.createElement('button');
-    closeButton.type = 'button';
-    closeButton.id = 'kiu-structured-form-close';
-    closeButton.className = 'registration-structured-modal-close';
-    closeButton.textContent = '×';
-    header.append(headerCopy, closeButton);
+    modal.setAttribute('data-lux-transparency-exempt', '1');
 
     const form = document.createElement('form');
     form.id = 'kiu-structured-form';
-    form.className = 'registration-structured-form';
+    form.className = 'social-neo-dialog-card social-neo-dialog-card--form social-neo-dialog-card--event-create social-neo-dialog-card--lms-create';
+    form.dataset.luxTransparencyExempt = '1';
+    form.dataset.luxGlassRoot = '1';
+
+    const head = document.createElement('div');
+    head.className = 'social-neo-section-head social-neo-dialog-head';
+
+    const heading = document.createElement('div');
+    heading.className = 'social-neo-dialog-heading';
+
+    const titleStrong = document.createElement('strong');
+    titleStrong.className = 'social-neo-dialog-title';
+    const titleIcon = document.createElement('i');
+    titleIcon.className = `fas ${resolveStructuredFormTitleIcon(config)}`;
+    titleIcon.setAttribute('aria-hidden', 'true');
+    const titleText = document.createElement('span');
+    titleText.textContent = config.title || 'Edit Item';
+    titleStrong.append(titleIcon, document.createTextNode(' '), titleText);
+
+    const subtitle = document.createElement('span');
+    subtitle.className = 'social-neo-dialog-subtitle';
+    subtitle.textContent = config.subtitle || 'Fill in the details below.';
+
+    heading.append(titleStrong, subtitle);
+
+    const closeButton = document.createElement('button');
+    closeButton.type = 'button';
+    closeButton.id = 'kiu-structured-form-close';
+    closeButton.className = 'social-neo-btn social-neo-btn-ghost social-neo-dialog-close-btn';
+    closeButton.setAttribute('aria-label', 'Close');
+    const closeIcon = document.createElement('i');
+    closeIcon.className = 'fas fa-times';
+    closeButton.appendChild(closeIcon);
+
+    head.append(heading, closeButton);
+
     const body = document.createElement('div');
-    body.className = 'registration-structured-modal-body';
+    body.className = 'social-neo-dialog-body social-neo-dialog-body--event-create lux-scrollbar';
+
     const grid = document.createElement('div');
-    grid.className = 'registration-structured-grid';
+    grid.className = `social-neo-form-grid${fields.length >= 2 ? ' social-neo-form-grid-2' : ''}`;
     fields.forEach((field) => grid.appendChild(buildStructuredFormFieldNode(field)));
     body.appendChild(grid);
+
     const footer = document.createElement('div');
-    footer.className = 'registration-structured-modal-footer';
+    footer.className = 'social-neo-form-actions social-neo-dialog-actions';
+
     const cancelButton = document.createElement('button');
     cancelButton.type = 'button';
     cancelButton.id = 'kiu-structured-form-cancel';
-    cancelButton.className = 'lux-secondary-btn registration-structured-modal-action';
+    cancelButton.className = 'social-neo-btn social-neo-btn-ghost social-neo-dialog-cancel-btn';
     cancelButton.textContent = 'Cancel';
+
     const submitButton = document.createElement('button');
     submitButton.type = 'submit';
-    submitButton.className = 'lux-primary-btn registration-structured-modal-action';
+    submitButton.className = 'social-neo-btn social-neo-btn-primary social-neo-dialog-submit-btn';
     submitButton.textContent = config.submitLabel || 'Save';
+
     footer.append(cancelButton, submitButton);
-    form.append(body, footer);
-    card.append(header, form);
-    modal.appendChild(card);
+    form.append(head, body, footer);
+    modal.appendChild(form);
     document.body.appendChild(modal);
 
     if (document.body.classList.contains('lux-route-admin-tools')) {
         modal.dataset.luxStructuredModal = '1';
         if (typeof window.queueLuxuryTransparencyRefresh === 'function') {
             window.queueLuxuryTransparencyRefresh(undefined, { roots: [modal] });
+        }
+        if (typeof window.enhanceUniversalPickers === 'function') {
+            window.enhanceUniversalPickers(modal);
         }
     }
 
@@ -568,6 +772,11 @@ function getCourseEctsValue(course) {
     if (Number.isFinite(direct) && direct > 0) return direct;
     const parsed = parseInt(String(course?.ects || '').match(/\d+/)?.[0] || '0', 10);
     return Number.isFinite(parsed) ? parsed : 0;
+}
+
+
+function getAssignedCourseEctsTotal(courses) {
+    return (courses || []).reduce((sum, course) => sum + getCourseEctsValue(course), 0);
 }
 
 window.STUDENT_REGISTRATION_GRADEBOOK_CRITERIA = window.STUDENT_REGISTRATION_GRADEBOOK_CRITERIA || {
@@ -1525,33 +1734,42 @@ function purgeStudentRegistrationTrackSelectionForTab(tabId, studentTabId = tabI
     });
 }
 
-window.getAssignedCourseCurriculumDetails = getAssignedCourseCurriculumDetails;
-window.buildRegistrationCourseMeta = buildRegistrationCourseMeta;
-window.getAssignedCourseCurriculumSummary = getAssignedCourseCurriculumSummary;
-window.getSemesterRestrictionFieldConfig = getSemesterRestrictionFieldConfig;
-window.getTrackGroupProgress = getTrackGroupProgress;
-window.normalizeAssignedSemesterRestriction = normalizeAssignedSemesterRestriction;
-window.getAssignedCourseId = getAssignedCourseId;
-window.migrateRegistrationCmsToTrackModel = migrateRegistrationCmsToTrackModel;
-window.syncRegistrationTrackLegacyMirrors = syncRegistrationTrackLegacyMirrors;
-window.convertRegistrationTrackTabForStudent = convertRegistrationTrackTabForStudent;
-window.convertRegistrationTrackTabForStudentModules = convertRegistrationTrackTabForStudentModules;
-window.buildStudentRegistrationDataFromCms = buildStudentRegistrationDataFromCms;
-window.getStudentRegistrationDataForTabFromCms = getStudentRegistrationDataForTabFromCms;
-window.getStudentRegistrationTabsForFaculty = getStudentRegistrationTabsForFaculty;
-window.resolveStudentRegistrationStructureTab = resolveStudentRegistrationStructureTab;
-window.resolveStudentRegistrationTabConfig = resolveStudentRegistrationTabConfig;
-window.isStudentRegistrationModuleLayoutTab = isStudentRegistrationModuleLayoutTab;
-window.isStudentRegistrationTrackLayoutTab = isStudentRegistrationTrackLayoutTab;
-window.countRegistrationTrackProgramsForFaculty = countRegistrationTrackProgramsForFaculty;
-window.normalizeRegistrationRemoveVerificationToken = normalizeRegistrationRemoveVerificationToken;
-window.runRegistrationRemoveVerification = runRegistrationRemoveVerification;
-window.runRegistrationRemoveConfirmation = runRegistrationRemoveConfirmation;
-window.buildAdminRegTabRemoveVerification = buildAdminRegTabRemoveVerification;
-window.buildAdminRegBuiltinTabRemoveVerification = buildAdminRegBuiltinTabRemoveVerification;
-window.buildAdminRegProgramRemoveVerification = buildAdminRegProgramRemoveVerification;
-window.buildAdminRegGroupRemoveVerification = buildAdminRegGroupRemoveVerification;
-window.buildAdminRegSubjectRemoveVerification = buildAdminRegSubjectRemoveVerification;
-window.openAdminRegManageModal = openAdminRegManageModal;
-window.closeAdminRegManageModal = closeAdminRegManageModal;
-window.purgeStudentRegistrationTrackSelectionForTab = purgeStudentRegistrationTrackSelectionForTab;
+__kiuRegSharedExpose({
+    getAssignedCourseCurriculumDetails,
+    buildRegistrationCourseMeta,
+    getAssignedCourseCurriculumSummary,
+    getSemesterRestrictionFieldConfig,
+    getTrackGroupProgress,
+    normalizeAssignedSemesterRestriction,
+    getAssignedCourseId,
+    getCourseEctsValue,
+    getAssignedCourseEctsTotal,
+    parseAllowedSemesterList,
+    getAssignedSemesterRestrictionLabel,
+    getAssignedSemesterRestrictionReason,
+    migrateRegistrationCmsToTrackModel,
+    syncRegistrationTrackLegacyMirrors,
+    convertRegistrationTrackTabForStudent,
+    convertRegistrationTrackTabForStudentModules,
+    buildStudentRegistrationDataFromCms,
+    getStudentRegistrationDataForTabFromCms,
+    getStudentRegistrationTabsForFaculty,
+    resolveStudentRegistrationStructureTab,
+    resolveStudentRegistrationTabConfig,
+    isStudentRegistrationModuleLayoutTab,
+    isStudentRegistrationTrackLayoutTab,
+    countRegistrationTrackProgramsForFaculty,
+    normalizeRegistrationRemoveVerificationToken,
+    runRegistrationRemoveVerification,
+    runRegistrationRemoveConfirmation,
+    buildAdminRegTabRemoveVerification,
+    buildAdminRegBuiltinTabRemoveVerification,
+    buildAdminRegProgramRemoveVerification,
+    buildAdminRegGroupRemoveVerification,
+    buildAdminRegSubjectRemoveVerification,
+    openAdminRegManageModal,
+    closeAdminRegManageModal,
+    openLuxuryConfirmModal,
+    closeLuxuryConfirmModal,
+    purgeStudentRegistrationTrackSelectionForTab,
+});

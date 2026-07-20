@@ -116,6 +116,7 @@ Public API:
 - `createSessionForAccount(accountId, options = {})`
 - `createSessionByMicrosoftIdentity(identity = {})`
 - `activateAccount(userId, newPassword)`
+- `changePassword(userId, currentPassword, newPassword)`
 - `requestPasswordReset(email)`
 - `resetPassword(token, newPassword)`
 - `createSessionByCredentials(email, password)`
@@ -200,29 +201,19 @@ Module:
 - `backend/platform/domains/gradebook-service.js`
 
 Public API:
-- `ensureGradebook(courseId)`
 - `canAccessGradebookCourse(courseId, userId, role = '', action = 'read')`
-- `getGradebookAssessmentDefinition(gradebook, criterionKey = '')`
-- `aggregateGradebookAssessmentEntries(entries = [], mode = 'average')`
-- `computeRecordFinalScore(record, gradebook = null)`
-- `getGradebookCourse(courseId)`
-- `setScore(payload = {})`
-- `publishGradebook(payload = {})`
-- `finalizeGrades(payload = {})`
 
 Owned state:
-- `state.gradebooks`
-- gradebook assessment-definition defaults and weighted final-score computation
-- gradebook publication/finalization lifecycle and related gradebook notifications/audit writes
+- none; course-teaching-scope ACL only (used by exams / live-quiz route guards)
+- client `KIU_STATE.studentGrades` remains the faculty gradebook source of truth (no server score domain)
 
 Allowed callers:
 - `PlatformStore` wrapper methods in `backend/platform/store.js`
-- route owners that reach gradebook behavior through injected store methods only
+- `backend/platform/server.js` course-access and live-quiz staff checks via `store.canAccessGradebookCourse(...)`
 
 Forbidden cross-domain write paths:
-- route modules must not mutate gradebook records or publications directly
-- non-gradebook domains must not duplicate weighted final-score computation or publication/finalization rules
-- callers must not bypass `canAccessGradebookCourse(...)` when enforcing gradebook access
+- callers must not bypass `canAccessGradebookCourse(...)` when enforcing course-teaching-scope access
+- do not reintroduce unused server score/publish/finalize gradebook APIs without an owned REST route and state model
 
 ## `lms-course-service.js`
 
@@ -699,22 +690,10 @@ Forbidden boundaries:
 
 ### `gradebook-routes.js`
 
-Module:
-- `backend/platform/routes/gradebook-routes.js`
-
-Owned routes:
-- `GET /api/gradebook/courses/:id`
-- `POST /api/gradebook/scores`
-- `POST /api/gradebook/publish`
-- `POST /api/gradebook/finalize`
-
-Allowed callers:
-- `backend/platform/server.js` mount wiring only
-
-Forbidden boundaries:
-- no direct `require('./store')`
-- no direct gradebook authorization branching outside `requireGradebookCourseAccess(...)`
-- no unrelated LMS/social/protected-quiz route handlers in this module
+Status:
+- not mounted; no `backend/platform/routes/gradebook-routes.js` and no `/api/gradebook/*` handlers
+- faculty gradebook remains client `KIU_STATE.studentGrades` + portal sync
+- course-teaching-scope ACL stays on `store.canAccessGradebookCourse(...)` for exams / live-quiz guards
 
 ### `protected-exam-routes.js`
 

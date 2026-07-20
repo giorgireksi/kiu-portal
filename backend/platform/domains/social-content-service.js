@@ -332,7 +332,7 @@ function canViewSocialEvent(event, userId) {
 }
 
 function canDeleteSocialGroup(group, userId) {
-    return false;
+    return canManageSocialGroup.call(this, group, userId);
 }
 
 function canDeleteSocialPage(page, userId) {
@@ -360,6 +360,10 @@ function canDeleteSocialEvent(event, userId) {
         if (hostGroup && canManageSocialGroup.call(this, hostGroup, normalizedUserId)) return true;
     }
     return false;
+}
+
+function canEditSocialEvent(event, userId) {
+    return canDeleteSocialEvent.call(this, event, userId);
 }
 
 function canEditSocialPost(post, userId) {
@@ -529,18 +533,6 @@ function upsertSocialProfile(userId = '', payload = {}, actorId = '') {
     this.state.social.profiles[normalizedUserId] = nextProfile;
     this.saveSocialMutation(normalizedActorId || normalizedUserId, 'profile-settings-updated', 'social-profile', normalizedUserId, beforeState, nextProfile);
     return clone(nextProfile);
-}
-
-function resolveSocialPosts(postIds = [], viewerUserId = '') {
-    const targetIds = socialIdArray(postIds);
-    if (!targetIds.length) return [];
-    const byId = new Map(
-        asArray(this.state.social.posts)
-            .map(post => decorateSocialPost.call(this, post, viewerUserId))
-            .filter(post => canViewSocialPost.call(this, post, viewerUserId))
-            .map(post => [socialText(post.id), post])
-    );
-    return targetIds.map(postId => byId.get(postId)).filter(Boolean);
 }
 
 function toggleSocialScopePostPin(scopeType, scopeId, postId, actorId = '') {
@@ -741,6 +733,38 @@ function decorateSocialGroup(group, viewerUserId = '') {
     };
 }
 
+const SOCIAL_ENTITY_LINK_TYPES = new Set([
+    'group',
+    'project',
+    'portfolio',
+    'page',
+    'event',
+    'survey',
+    'photo',
+    'lost-found'
+]);
+const SOCIAL_ENTITY_LINK_MAX = 5;
+
+function normalizeSocialEntityLinks(value, linkedSurveyId = '') {
+    const seen = new Set();
+    const links = [];
+    asArray(value).forEach((item) => {
+        if (links.length >= SOCIAL_ENTITY_LINK_MAX) return;
+        const type = socialText(item?.type || '').toLowerCase();
+        const id = socialText(item?.id || '');
+        if (!SOCIAL_ENTITY_LINK_TYPES.has(type) || !id) return;
+        const key = `${type}:${id}`;
+        if (seen.has(key)) return;
+        seen.add(key);
+        links.push({ type, id });
+    });
+    const surveyId = socialText(linkedSurveyId || '');
+    if (surveyId && !seen.has(`survey:${surveyId}`) && links.length < SOCIAL_ENTITY_LINK_MAX) {
+        links.push({ type: 'survey', id: surveyId });
+    }
+    return links;
+}
+
 function decorateSocialPost(post, viewerUserId = '') {
     const normalized = clone(post || {}) || {};
     const scopeType = normalizeSocialScopeType(normalized.scopeType || 'profile');
@@ -757,6 +781,8 @@ function decorateSocialPost(post, viewerUserId = '') {
         accumulator[key] = reactions[key].length;
         return accumulator;
     }, {});
+    const linkedSurveyId = socialText(normalized.linkedSurveyId || '');
+    const entityLinks = normalizeSocialEntityLinks(normalized.entityLinks, linkedSurveyId);
     const sharedPost = normalized.sharedPostId ? getSocialPostRecord.call(this, normalized.sharedPostId) : null;
     const scopeRecord = scopeType === 'page'
         ? getSocialPageRecord.call(this, scopeId)
@@ -806,6 +832,8 @@ function decorateSocialPost(post, viewerUserId = '') {
         isPinned: pinnedPostIds.includes(socialText(normalized.id || '')),
         sharedPostId: socialText(normalized.sharedPostId || ''),
         sharedPost: sharedPost ? decorateSocialPost.call(this, sharedPost, viewerUserId) : null,
+        linkedSurveyId,
+        entityLinks,
         createdAt: socialText(normalized.createdAt || nowIso()),
         updatedAt: socialText(normalized.updatedAt || normalized.createdAt || nowIso())
     };
@@ -857,6 +885,7 @@ function decorateSocialEvent(event, viewerUserId = '') {
             ? (relatedRsvps.find(item => item.userId === socialText(viewerUserId))?.status || '')
             : '',
         viewerCanDelete: viewerUserId ? canDeleteSocialEvent.call(this, normalized, viewerUserId) : false,
+        viewerCanEdit: viewerUserId ? canEditSocialEvent.call(this, normalized, viewerUserId) : false,
         createdAt: socialText(normalized.createdAt || nowIso()),
         updatedAt: socialText(normalized.updatedAt || normalized.createdAt || nowIso())
     };
@@ -1104,6 +1133,21 @@ function setSocialGroupMembership(groupId, userId, action = 'join', actorId = ''
                     group.adminIds = socialIdArray(group.adminIds).filter(item => item !== normalizedUserId);
                     group.orphanedAt = '';
                 }
+                const linkedProject = typeof this.getSocialProjectByGroupId === 'function'
+                    ? this.getSocialProjectByGroupId(group.id)
+                    : null;
+                if (linkedProject) {
+                    if (!linkedProject.memberRolesByUser || typeof linkedProject.memberRolesByUser !== 'object') {
+                        linkedProject.memberRolesByUser = {};
+                    }
+                    if (
+                        !linkedProject.memberRolesByUser[normalizedUserId]
+                        && socialText(linkedProject.ownerUserId || '') !== normalizedUserId
+                    ) {
+                        linkedProject.memberRolesByUser[normalizedUserId] = 'member';
+                        linkedProject.updatedAt = nowIso();
+                    }
+                }
             } else if (!group.pendingMemberIds.includes(normalizedUserId)) {
                 group.pendingMemberIds.push(normalizedUserId);
             }
@@ -1208,7 +1252,24 @@ function removeSocialGroupMember(groupId, memberId, actorId = '') {
 }
 
 function deleteSocialGroup(groupId, actorId = '') {
-    return null;
+    const group = getSocialGroupRecord.call(this, groupId);
+    const normalizedActorId = socialText(actorId);
+    if (!group || !canDeleteSocialGroup.call(this, group, normalizedActorId)) return null;
+    const beforeState = clone(group);
+    const normalizedGroupId = socialText(group.id);
+    const chatId = socialText(group.chatId || '');
+    this.state.social.groups = asArray(this.state.social.groups)
+        .filter((entry) => socialText(entry?.id) !== normalizedGroupId);
+    this.state.social.posts = asArray(this.state.social.posts)
+        .filter((entry) => !(
+            socialText(entry?.scopeType || '').toLowerCase() === 'group'
+            && socialText(entry?.scopeId || '') === normalizedGroupId
+        ));
+    if (chatId && this.state.chats && this.state.chats[chatId]) {
+        delete this.state.chats[chatId];
+    }
+    this.saveSocialMutation(normalizedActorId, 'group-deleted', 'social-group', normalizedGroupId, beforeState, null);
+    return { groupId: normalizedGroupId };
 }
 
 function inviteSocialGroupMember(groupId, memberId, actorId = '', note = '') {
@@ -1279,6 +1340,9 @@ function createSocialPost(payload = {}, actorId = '') {
             : 'community';
     }
     const media = asArray(payload.media).map(item => this.normalizeMessageAttachment(item, authorUserId)).filter(Boolean);
+    const entityLinks = normalizeSocialEntityLinks(payload.entityLinks, payload.linkedSurveyId);
+    const linkedSurveyId = socialText(payload.linkedSurveyId || '')
+        || socialText(entityLinks.find((link) => link.type === 'survey')?.id || '');
     const post = {
         id: socialText(payload.id || makeId('post')),
         authorUserId,
@@ -1287,15 +1351,19 @@ function createSocialPost(payload = {}, actorId = '') {
         scopeType,
         scopeId,
         scopeName,
+        category: socialText(payload.category || ''),
         audience: normalizeSocialAudience(payload.audience || (scopeType === 'group' ? 'group' : scopeType === 'page' ? 'page' : 'campus')),
         audienceFacultyCode: normalizeCode(payload.audienceFacultyCode || payload.authorFacultyCode || getSocialActorFacultyCode.call(this, authorUserId)),
         body: bodyText,
         text: bodyText,
         media,
+        photoMeta: payload.photoMeta && typeof payload.photoMeta === 'object' ? clone(payload.photoMeta) : null,
         reactions: payload.reactions && typeof payload.reactions === 'object' ? clone(payload.reactions) : { like: [] },
         comments: asArray(payload.comments).map(comment => normalizeSocialComment.call(this, comment)),
         mentions: mentionUserIds,
         sharedPostId: socialText(payload.sharedPostId || ''),
+        linkedSurveyId,
+        entityLinks,
         createdAt: socialText(payload.createdAt || nowIso()),
         updatedAt: socialText(payload.updatedAt || nowIso())
     };
@@ -1489,15 +1557,75 @@ function createSocialEvent(payload = {}, actorId = '') {
         location: socialText(payload.location || ''),
         isOnline: Boolean(payload.isOnline),
         onlineLink: normalizeSafeExternalUrl(payload.onlineLink || ''),
-        capacity: Math.max(0, safeNumber(payload.capacity, 0)),
+        capacity: Math.max(0, safeNumber(payload.capacity ?? payload.maxSeats, 0)),
         joinMode: socialText(payload.joinMode || 'open').toLowerCase() || 'open',
         cover: payload.cover ? clone(payload.cover) : null,
+        category: socialText(payload.category || 'social') || 'social',
+        isOfficial: Boolean(payload.isOfficial),
+        isRecurring: Boolean(payload.isRecurring),
+        imageUrl: socialText(payload.imageUrl || ''),
+        maxSeats: Math.max(0, safeNumber(payload.maxSeats ?? payload.capacity, 0)),
         createdAt: socialText(payload.createdAt || nowIso()),
         updatedAt: socialText(payload.updatedAt || nowIso())
     };
     this.state.social.events.unshift(event);
     this.saveSocialMutation(creatorId, 'event-created', 'social-event', event.id, null, event);
     return decorateSocialEvent.call(this, event, creatorId);
+}
+
+function updateSocialEvent(eventId, payload = {}, actorId = '') {
+    const event = getSocialEventRecord.call(this, eventId);
+    const normalizedActorId = socialText(actorId);
+    if (!event || !canEditSocialEvent.call(this, event, normalizedActorId)) return null;
+    const beforeState = clone(event);
+    if (Object.prototype.hasOwnProperty.call(payload, 'title')) {
+        const title = socialText(payload.title);
+        if (!title) return null;
+        event.title = title;
+    }
+    if (Object.prototype.hasOwnProperty.call(payload, 'description')) {
+        event.description = socialText(payload.description || '');
+    }
+    if (Object.prototype.hasOwnProperty.call(payload, 'startsAt')) {
+        const startsAt = socialText(payload.startsAt);
+        if (!startsAt) return null;
+        event.startsAt = startsAt;
+    }
+    if (Object.prototype.hasOwnProperty.call(payload, 'endsAt')) {
+        event.endsAt = socialText(payload.endsAt || payload.startsAt || event.startsAt);
+    }
+    if (Object.prototype.hasOwnProperty.call(payload, 'location')) {
+        event.location = socialText(payload.location || '');
+    }
+    if (Object.prototype.hasOwnProperty.call(payload, 'isOnline')) {
+        event.isOnline = Boolean(payload.isOnline);
+    }
+    if (Object.prototype.hasOwnProperty.call(payload, 'onlineLink')) {
+        event.onlineLink = normalizeSafeExternalUrl(payload.onlineLink || '');
+    }
+    if (Object.prototype.hasOwnProperty.call(payload, 'joinMode')) {
+        event.joinMode = socialText(payload.joinMode || 'open').toLowerCase() || 'open';
+    }
+    if (Object.prototype.hasOwnProperty.call(payload, 'capacity') || Object.prototype.hasOwnProperty.call(payload, 'maxSeats')) {
+        const seats = Math.max(0, safeNumber(payload.maxSeats ?? payload.capacity, event.capacity || 0));
+        event.capacity = seats;
+        event.maxSeats = seats;
+    }
+    if (Object.prototype.hasOwnProperty.call(payload, 'category')) {
+        event.category = socialText(payload.category || 'social') || 'social';
+    }
+    if (Object.prototype.hasOwnProperty.call(payload, 'isOfficial')) {
+        event.isOfficial = Boolean(payload.isOfficial);
+    }
+    if (Object.prototype.hasOwnProperty.call(payload, 'isRecurring')) {
+        event.isRecurring = Boolean(payload.isRecurring);
+    }
+    if (Object.prototype.hasOwnProperty.call(payload, 'imageUrl') && socialText(payload.imageUrl)) {
+        event.imageUrl = socialText(payload.imageUrl);
+    }
+    event.updatedAt = nowIso();
+    this.saveSocialMutation(normalizedActorId, 'event-updated', 'social-event', socialText(event.id), beforeState, event);
+    return decorateSocialEvent.call(this, event, normalizedActorId);
 }
 
 function respondSocialEventRsvp(eventId, userId, status = 'going') {
@@ -1537,7 +1665,8 @@ function respondSocialEventRsvp(eventId, userId, status = 'going') {
             type: 'event-rsvp',
             title: 'Event RSVP updated',
             body: `${getSocialActorDisplayName.call(this, normalizedUserId)} marked "${event.title}" as ${normalizedStatus}.`,
-            routePage: 'social'
+            routePage: 'social',
+            routeData: { eventId: socialText(eventId) }
         });
     }
     if (['going', 'interested'].includes(normalizedStatus)) {
@@ -1605,6 +1734,7 @@ module.exports = {
     canDeleteSocialEvent,
     canDeleteSocialGroup,
     canDeleteSocialPage,
+    canEditSocialEvent,
     canEditSocialPost,
     canManageSocialGroup,
     canManageSocialPage,
@@ -1664,6 +1794,7 @@ module.exports = {
     toggleSocialCommentReaction,
     toggleSocialReaction,
     toggleSocialScopePostPin,
+    updateSocialEvent,
     updateSocialGroup,
     updateSocialPage,
     updateSocialPost,

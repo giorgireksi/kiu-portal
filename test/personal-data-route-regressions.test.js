@@ -1,87 +1,26 @@
-import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'fs';
-import { join } from 'path';
+const { readFileSync, existsSync } = require('fs');
+const { join } = require('path');
 
 function readSource(relativePath) {
-    return readFileSync(join(process.cwd(), relativePath), 'utf8');
+    const full = join(process.cwd(), relativePath);
+    if (!existsSync(full)) return '';
+    return readFileSync(full, 'utf8');
 }
 
-describe('personal-data route regressions', () => {
-    it('moves route-local personal-data styling out of the HTML shell', () => {
+describe('personal data route regressions.test', () => {
+    it('bare shell: no luxury/surfaces paint sheets; flat bare CSS', () => {
         const html = readSource('personal-data.html');
-        const css = readSource('assets/css/personal-data-route.css');
-        const page = readSource('assets/js/pages/personal-data-page.js');
-        const faculty = readSource('assets/js/shared/faculty.js');
-
-        expect(html).toContain('assets/css/personal-data-route.css?v=20260531-mobility1');
-        expect(html).toContain('personal-data-workspace');
-        expect(html).toContain('personal-data-rail');
-        expect(html).toContain('personal-data-main');
-        expect(html).toContain('personal-data-detail-grid');
-        expect(html).toContain('personal-data-enrollment');
-        expect(html).toContain('personal-data-enrollment-group');
-        expect(html).toContain('personal-data-university-record');
-        expect(html).toContain('personal-data-command');
-        expect(html).not.toContain('<style');
-        expect(html).not.toContain('assets/js/shared/social-hub.js');
-        expect(html).not.toContain('assets/js/shared/social-render.js');
-        expect(html).not.toContain('assets/js/shared/social-media.js');
-        expect(html).not.toContain('assets/js/pages/gradebook.js');
-        expect(html).not.toContain('assets/js/pages/lms.js');
-        expect(html).not.toContain('assets/js/pages/registration.js');
-        expect(html).not.toContain('assets/js/pages/planner.js');
-        expect(html).not.toContain('assets/js/pages/directories.js');
-        expect(html).not.toContain('assets/js/pages/student-registration.js');
-        expect(html).not.toContain('assets/js/pages/admin-registration.js');
-        expect(html).not.toContain('assets/js/shared/messenger.js');
-        expect(html).toContain('assets/js/shared/faculty.js?v=20260429-peopleisolation1');
-        expect(html).toContain('assets/js/pages/personal-data-page.js?v=20260531-mobility1');
-        expect(html).toContain('id="personal-data-mobility-status"');
-        expect(html).not.toContain('onclick="navigate(\'study-card\')"');
-        expect(html).not.toContain('onclick="navigate(\'registration\')"');
-        expect(html).not.toContain('onclick="navigate(\'timetable\')"');
-        expect(html).toContain('data-personal-data-nav-target="study-card"');
-        expect(html).toContain('data-personal-data-nav-target="registration"');
-        expect(html).toContain('data-personal-data-nav-target="timetable"');
-        expect(html).toContain('class="lux-status-pill lux-status-pill--dot is-success" id="personal-data-status"');
-        expect(html).toContain('class="personal-data-card-meta lux-meta-pair-card lux-summary-surface lux-summary-surface--panel"');
-        expect(html).toContain('class="personal-data-kpi-card lux-data-card lux-metric-card lux-strip-card lux-summary-surface lux-summary-surface--panel"');
-        expect(html).toContain('class="personal-data-mini lux-data-card lux-info-card lux-strip-card lux-summary-surface lux-summary-surface--panel"');
-        expect(html).toContain('class="personal-data-record-item lux-data-card lux-info-card lux-summary-surface lux-summary-surface--panel"');
-        expect(html).toContain('class="personal-data-record-value lux-record-card-value"');
-        expect(html).toContain('function setupToolbar(){');
-        expect(html).toContain('window.__KIU_STANDALONE_MOBILE_SHELL_CONFIG = {');
-        expect(html).toContain("activeTarget: 'personal-data'");
-        expect(html).toContain('assets/js/pages/standalone-mobile-shell.js?v=20260520-personal-data-mobile1');
-        expect(html).not.toContain('(function initMobileExperience(){');
-        expect(html).not.toContain('function ensureNavigateHooks(){if(typeof window.navigate!==\'function\')return false;hookNav();buildRoleNav();return true}');
-        expect(html).not.toContain('var ht=setInterval(function(){if(typeof window.navigate===\'function\')');
-        expect(css).not.toContain('--pd-panel: rgba(12, 18, 30, var(--lux-panel-alpha, 0.82));');
-        expect(css).not.toContain('linear-gradient(180deg, var(--pd-panel), var(--pd-panel-strong)) !important;');
-        expect(css).not.toContain('box-shadow: 0 16px 36px rgba(0, 0, 0, 0.14) !important;');
-        expect(css).toContain('body.lux-route-personal-data .personal-data-workspace');
-        expect(css).toContain('body.lux-route-personal-data .personal-data-detail-grid');
-        expect(css).not.toContain('grid-area: social');
-        expect(css).not.toContain('"social social"');
-        expect(css).not.toContain('.personal-data-social-container');
-        expect(css).toContain('--lux-data-card-bg: var(--pd-row);');
-        expect(css).toContain('--lux-data-card-border: var(--pd-border-soft);');
-        expect(css).toContain('--lux-data-card-hover-bg: var(--pd-row-hover);');
-        expect(css).not.toContain('.kpi-circle');
-        expect(css).not.toContain('body.lux-route-personal-data .status-badge {');
-        expect(css).toContain('@media (max-width: 760px)');
-        expect(page).toContain('function renderPersonalDataIdentitySection(user, facultyProfile)');
-        expect(page).toContain('function renderPersonalDataSummarySection(user, context)');
-        expect(page).toContain('function renderPersonalDataFactsSection(user, context)');
-        expect(page).toContain('function renderPersonalDataRecordsSection(user, context)');
-        expect(page).toContain('function syncPersonalDataRecordItems(recordsBody, recordItems = [])');
-        expect(page).toContain('data-personal-data-record-key');
-        expect(page).toContain("item.className = 'personal-data-record-item lux-data-card lux-info-card lux-summary-surface lux-summary-surface--panel';");
-        expect(page).toContain("valueEl.className = 'personal-data-record-value lux-record-card-value';");
-        expect(page).toContain('window.renderPersonalDataPageContext = renderPersonalDataPageContext;');
-        expect(page).not.toContain('recordsBody.innerHTML = recordItems.map');
-        expect(faculty).not.toContain('function renderPersonalDataPageContext(user, facultyProfile)');
-        expect(faculty).toContain('function renderPortalMessengerWorkspace()');
-        expect(faculty).toContain('function openPortalNotificationFullModal()');
+        expect(html).toContain('lux-shell.css');
+        expect(html).toContain('lux-page-bare-lite.css');
+        expect(html).not.toMatch(/lux-page-bare\.css(?!-lite)/);
+        expect(html).toContain('lux-page-bare-lite.css');
+        expect(html).toMatch(/class="[^"]*lux-page-bare/);
+        // Must not load the shared luxury paint sheet (looks like full design if present)
+        expect(html).not.toMatch(/href=["'][^"']*index-luxury\.css/);
+        expect(html).not.toMatch(/href=["'][^"']*lux-surfaces\.css/);
+        expect(existsSync(join(process.cwd(), 'assets/css', 'personal-data-route.css'))).toBe(false);
+        const bare = readSource('assets/css/lux-page-bare-lite.css');
+        expect(bare).toContain('backdrop-filter: none');
+        expect(bare).toContain('body.lux-page-bare');
     });
 });

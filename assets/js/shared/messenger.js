@@ -1,4 +1,24 @@
+/* READABILITY: Messenger — threads, chrome, gradebook bridge hooks, send/receive UI.
+ * Sections: Boot | Threads | Chrome | Send | Render
+ * See docs/human-maintainability.md (H2). */
+// --- READABILITY: Boot ---
 /* Messenger, notifications, and social shared logic extracted from the legacy core.js bundle. Active routes now load split files directly. */
+
+function ensureLayoutPortalCss() {
+    if (typeof document === 'undefined') return;
+    if (document.querySelector('link[data-kiu-layout-portal]')) return;
+    // Already linked synchronously (bare multi-route pages)
+    const existing = Array.from(document.querySelectorAll('link[rel="stylesheet"]')).some((l) =>
+        String(l.getAttribute('href') || '').includes('layout-portal.css')
+    );
+    if (existing) return;
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = 'assets/css/layout-portal.css?v=20260720-readable6500';
+    link.setAttribute('data-kiu-layout-portal', '1');
+    document.head.appendChild(link);
+}
+
 
 // Portal Messenger V2
 function ensurePortalMessengerUiState() {
@@ -8,13 +28,13 @@ function ensurePortalMessengerUiState() {
         roleFilter: 'all',
         dockOpen: false,
         fullOpen: false,
+// --- READABILITY: Threads ---
         compactTab: 'chats',
         compactSearch: '',
         replyTargetByChat: {}
     };
     return window.__portalMessengerUi;
 }
-
 function getPortalMessengerDirectory(search = '', roleFilter = 'all') {
     const currentUser = getCurrentUser();
     if (!currentUser) return [];
@@ -34,20 +54,17 @@ function getPortalMessengerDirectory(search = '', roleFilter = 'all') {
         return !normalizedSearch || haystack.includes(normalizedSearch);
     });
 }
-
 function ensurePortalMessengerActiveChat(uiState, chats) {
     if (!uiState.activeChatId || !chats.some(chat => chat.id === uiState.activeChatId)) {
         uiState.activeChatId = chats[0]?.id || null;
     }
     return uiState.activeChatId;
 }
-
 function getPortalMessengerChatLastTime(chat) {
     const stamp = chat?.messages?.[chat.messages.length - 1]?.sentAt || chat?.createdAt;
     if (!stamp) return '';
     return formatLmsDateTime(stamp);
 }
-
 function getPortalMessengerSummary() {
     const currentUser = getCurrentUser();
     if (!currentUser) return null;
@@ -70,7 +87,6 @@ function getPortalMessengerSummary() {
         totalChatCount: chats.length
     };
 }
-
 function ensurePortalMessengerFileInput() {
     let input = document.getElementById('portal-messenger-file-input');
     if (!input) {
@@ -82,7 +98,6 @@ function ensurePortalMessengerFileInput() {
     }
     return input;
 }
-
 function setPortalMessengerDraftFile(chatId, file) {
     const reader = new FileReader();
     reader.onload = () => {
@@ -94,19 +109,17 @@ function setPortalMessengerDraftFile(chatId, file) {
             size: file.size || 0,
             dataUrl: reader.result
         };
+// --- READABILITY: Render ---
         renderPortalMessengerWorkspace();
     };
     reader.readAsDataURL(file);
 }
-
 function getPortalMessengerDraftFile(chatId) {
     return window.__portalMessengerDraftFiles?.[chatId] || null;
 }
-
 function clearPortalMessengerDraftFile(chatId) {
     if (window.__portalMessengerDraftFiles) delete window.__portalMessengerDraftFiles[chatId];
 }
-
 function resolvePortalMessengerFileUrl(file) {
     if (!file || typeof file !== 'object') return '';
     if (String(file.storageBackend || '').trim().toLowerCase() === 'bridge'
@@ -116,7 +129,6 @@ function resolvePortalMessengerFileUrl(file) {
     }
     return String(file.dataUrl || '').trim();
 }
-
 async function persistPortalMessengerDraftFile(file) {
     if (!file || typeof file !== 'object') return null;
     if (String(file.storageBackend || '').trim().toLowerCase() === 'bridge' && String(file.storageKey || '').trim()) {
@@ -138,23 +150,19 @@ async function persistPortalMessengerDraftFile(file) {
     }
     return { ...file };
 }
-
 function setPortalMessengerReplyTarget(chatId, messageId) {
     const uiState = ensurePortalMessengerUiState();
     uiState.replyTargetByChat = uiState.replyTargetByChat || {};
     uiState.replyTargetByChat[String(chatId)] = String(messageId || '');
     renderPortalMessengerWorkspace();
 }
-
 function getPortalMessengerReplyTarget(chatId) {
     return String(ensurePortalMessengerUiState().replyTargetByChat?.[String(chatId)] || '');
 }
-
 function clearPortalMessengerReplyTarget(chatId) {
     const uiState = ensurePortalMessengerUiState();
     if (uiState.replyTargetByChat) delete uiState.replyTargetByChat[String(chatId)];
 }
-
 function pickPortalMessengerFile(chatId) {
     const input = ensurePortalMessengerFileInput();
     input.value = '';
@@ -165,183 +173,12 @@ function pickPortalMessengerFile(chatId) {
     };
     input.click();
 }
-
-function handlePortalMessengerDragOver(event) {
-    event.preventDefault();
-}
-
-function handlePortalMessengerDrop(event, chatId) {
-    event.preventDefault();
-    const file = event.dataTransfer?.files?.[0];
-    if (!file) return;
-    setPortalMessengerDraftFile(chatId, file);
-}
-
-function setPortalMessengerSearch(value) {
-    ensurePortalMessengerUiState().search = value || '';
-    renderPortalMessengerWorkspace();
-}
-
-function setPortalMessengerRoleFilter(value) {
-    ensurePortalMessengerUiState().roleFilter = value || 'all';
-    renderPortalMessengerWorkspace();
-}
-
-function setPortalMessengerCompactSearch(value) {
-    ensurePortalMessengerUiState().compactSearch = value || '';
-    renderPortalMessengerWorkspace();
-}
-
-function handlePortalMessengerChromeClick(event) {
-    const actionEl = event.target.closest('[data-portal-msg-click]');
-    if (!actionEl) return;
-    const action = String(actionEl.dataset.portalMsgClick || '').trim();
-    if (!action) return;
-    event.preventDefault();
-    event.stopPropagation();
-
-    if (action === 'open-direct-chat') {
-        openPortalDirectChat(actionEl.dataset.portalMsgUserId || '', actionEl.dataset.portalMsgSource || 'full');
-        return;
-    }
-    if (action === 'open-chat') {
-        openPortalMessengerChat(actionEl.dataset.portalMsgChatId || '', actionEl.dataset.portalMsgSource || 'full');
-        return;
-    }
-    if (action === 'toggle-favorite') {
-        togglePortalMessengerFavorite(actionEl.dataset.portalMsgChatId || '');
-        return;
-    }
-    if (action === 'set-reply-target') {
-        setPortalMessengerReplyTarget(actionEl.dataset.portalMsgChatId || '', actionEl.dataset.portalMsgMessageId || '');
-        return;
-    }
-    if (action === 'remove-message') {
-        removePortalMessengerMessage(actionEl.dataset.portalMsgChatId || '', actionEl.dataset.portalMsgMessageId || '');
-        return;
-    }
-    if (action === 'open-call') {
-        openPortalMessengerCall(actionEl.dataset.portalMsgChatId || '');
-        return;
-    }
-    if (action === 'toggle-pin') {
-        togglePortalMessengerPin(actionEl.dataset.portalMsgChatId || '');
-        return;
-    }
-    if (action === 'remove-chat') {
-        removePortalMessengerChat(actionEl.dataset.portalMsgChatId || '');
-        return;
-    }
-    if (action === 'delete-conversation') {
-        deletePortalMessengerConversation(actionEl.dataset.portalMsgChatId || '');
-        return;
-    }
-    if (action === 'set-compact-tab') {
-        setPortalMessengerCompactTab(actionEl.dataset.portalMsgValue || 'chats');
-        return;
-    }
-    if (action === 'respond-request') {
-        respondToPortalMessengerRequest(actionEl.dataset.portalMsgChatId || '', actionEl.dataset.portalMsgAccept === 'true');
-        return;
-    }
-    if (action === 'clear-reply-target') {
-        clearPortalMessengerReplyTarget(actionEl.dataset.portalMsgChatId || '');
-        renderPortalMessengerWorkspace();
-        return;
-    }
-    if (action === 'pick-file') {
-        pickPortalMessengerFile(actionEl.dataset.portalMsgChatId || '');
-        return;
-    }
-    if (action === 'send-message') {
-        sendPortalMessengerMessage(actionEl.dataset.portalMsgChatId || '', actionEl.dataset.portalMsgInputId || 'portal-messenger-message-input');
-        return;
-    }
-    if (action === 'close-group-composer') {
-        closePortalMessengerGroupComposer();
-        return;
-    }
-    if (action === 'toggle-group-member') {
-        togglePortalMessengerGroupMember(actionEl.dataset.portalMsgUserId || '');
-        return;
-    }
-    if (action === 'create-group-chat') {
-        createPortalMessengerGroupChat();
-        return;
-    }
-    if (action === 'open-full') {
-        openPortalMessengerFullModal();
-        return;
-    }
-    if (action === 'set-role-filter') {
-        setPortalMessengerRoleFilter(actionEl.dataset.portalMsgValue || 'all');
-        return;
-    }
-    if (action === 'set-chat-section') {
-        setPortalMessengerChatSection(actionEl.dataset.portalMsgValue || 'private');
-        return;
-    }
-    if (action === 'open-group-composer') {
-        openPortalMessengerGroupComposer();
-        return;
-    }
-    if (action === 'close-call') {
-        closePortalMessengerCall();
-        return;
-    }
-    if (action === 'toggle-mic') {
-        togglePortalCallMic();
-        return;
-    }
-    if (action === 'toggle-camera') {
-        togglePortalCallCamera();
-        return;
-    }
-    if (action === 'toggle-ptt') {
-        togglePortalCallPushToTalk();
-        return;
-    }
-    if (action === 'begin-shortcut-capture') {
-        beginPortalCallShortcutCapture();
-        return;
-    }
-    if (action === 'accept-call') {
-        acceptPortalMessengerCall();
-        return;
-    }
-    if (action === 'decline-call') {
-        declinePortalMessengerCall();
-        return;
-    }
-    if (action === 'open-chat-and-close-call') {
-        openPortalMessengerChat(actionEl.dataset.portalMsgChatId || '', actionEl.dataset.portalMsgSource || 'full');
-        closePortalMessengerCall();
-        return;
-    }
-    if (action === 'toggle-dock') {
-        const forceRaw = actionEl.dataset.portalMsgForceOpen;
-        togglePortalMessengerDock(forceRaw === undefined || forceRaw === '' ? null : forceRaw === 'true');
-        return;
-    }
-    if (action === 'close-full') {
-        closePortalMessengerFullModal();
-        return;
-    }
-    if (action === 'switch-dock') {
-        switchPortalMessengerToDock();
-        return;
-    }
-    if (action === 'queue-lms-session') {
-        queueFacultyLmsSession(actionEl.dataset.portalMsgCourseId || '', actionEl.dataset.portalMsgGroupId || '');
-    }
-}
-
+// --- READABILITY: Chrome ---
 function handlePortalMessengerChromeInput(event) {
     const inputEl = event.target.closest('[data-portal-msg-input]');
     if (!inputEl) return;
     const action = String(inputEl.dataset.portalMsgInput || '').trim();
     if (!action) return;
-
     if (action === 'set-group-name') {
         setPortalMessengerGroupName(inputEl.value);
         return;
@@ -358,13 +195,11 @@ function handlePortalMessengerChromeInput(event) {
         setPortalMessengerCompactSearch(inputEl.value);
     }
 }
-
 function handlePortalMessengerChromeChange(event) {
     const changeEl = event.target.closest('[data-portal-msg-change]');
     if (!changeEl) return;
     const action = String(changeEl.dataset.portalMsgChange || '').trim();
     if (!action) return;
-
     if (action === 'set-ptt-mode') {
         setPortalCallPttMode(changeEl.value);
         return;
@@ -373,20 +208,18 @@ function handlePortalMessengerChromeChange(event) {
         setPortalCallPttMouseButton(changeEl.value);
     }
 }
-
 function handlePortalMessengerChromeDragOver(event) {
     const dropZone = event.target.closest('[data-portal-msg-drop-chat]');
     if (!dropZone) return;
     handlePortalMessengerDragOver(event);
 }
-
 function handlePortalMessengerChromeDrop(event) {
     const dropZone = event.target.closest('[data-portal-msg-drop-chat]');
     if (!dropZone) return;
     handlePortalMessengerDrop(event, dropZone.dataset.portalMsgDropChat || '');
 }
-
 function bindPortalMessengerDelegates() {
+    ensureLayoutPortalCss();
     if (window.__portalMessengerDelegatesBound) return;
     window.__portalMessengerDelegatesBound = true;
     document.addEventListener('click', handlePortalMessengerChromeClick);
@@ -395,9 +228,7 @@ function bindPortalMessengerDelegates() {
     document.addEventListener('dragover', handlePortalMessengerChromeDragOver);
     document.addEventListener('drop', handlePortalMessengerChromeDrop);
 }
-
 bindPortalMessengerDelegates();
-
 function openPortalMessengerGroupComposer() {
     const uiState = ensurePortalMessengerUiState();
     uiState.groupComposerOpen = true;
@@ -406,7 +237,6 @@ function openPortalMessengerGroupComposer() {
     uiState.groupComposerMembers = [];
     renderPortalMessengerWorkspace();
 }
-
 function closePortalMessengerGroupComposer() {
     const uiState = ensurePortalMessengerUiState();
     uiState.groupComposerOpen = false;
@@ -415,16 +245,13 @@ function closePortalMessengerGroupComposer() {
     uiState.groupComposerMembers = [];
     renderPortalMessengerWorkspace();
 }
-
 function setPortalMessengerGroupName(value) {
     ensurePortalMessengerUiState().groupComposerName = value || '';
 }
-
 function setPortalMessengerGroupSearch(value) {
     ensurePortalMessengerUiState().groupComposerSearch = value || '';
     renderPortalMessengerWorkspace();
 }
-
 function togglePortalMessengerGroupMember(userId) {
     const uiState = ensurePortalMessengerUiState();
     const normalizedUserId = String(userId);
@@ -436,7 +263,6 @@ function togglePortalMessengerGroupMember(userId) {
     }
     renderPortalMessengerWorkspace();
 }
-
 function getPortalMessengerGroupCandidates(search = '') {
     const currentUser = getCurrentUser();
     if (!currentUser) return [];
@@ -455,7 +281,6 @@ function getPortalMessengerGroupCandidates(search = '') {
         return haystack.includes(normalizedSearch);
     });
 }
-
 function createPortalMessengerGroupChat() {
     const currentUser = getCurrentUser();
     if (!currentUser) return;
@@ -497,37 +322,31 @@ function createPortalMessengerGroupChat() {
     uiState.groupComposerMembers = [];
     renderPortalMessengerWorkspace();
 }
-
 function setPortalMessengerCompactTab(value) {
     ensurePortalMessengerUiState().compactTab = value || 'chats';
     renderPortalMessengerWorkspace();
 }
-
 function togglePortalMessengerDock(forceOpen = null) {
     const uiState = ensurePortalMessengerUiState();
     uiState.dockOpen = forceOpen === null ? !uiState.dockOpen : Boolean(forceOpen);
     renderPortalMessengerWorkspace();
 }
-
 function openPortalMessengerFullModal() {
     const uiState = ensurePortalMessengerUiState();
     uiState.fullOpen = true;
     uiState.dockOpen = true;
     renderPortalMessengerWorkspace();
 }
-
 function closePortalMessengerFullModal() {
     ensurePortalMessengerUiState().fullOpen = false;
     renderPortalMessengerWorkspace();
 }
-
 function switchPortalMessengerToDock() {
     const uiState = ensurePortalMessengerUiState();
     uiState.fullOpen = false;
     uiState.dockOpen = true;
     renderPortalMessengerWorkspace();
 }
-
 function consumePendingSocialMessengerLaunch() {
     const raw = localStorage.getItem('KIU_PENDING_SOCIAL_MESSENGER');
     if (!raw) return;
@@ -562,24 +381,20 @@ function consumePendingSocialMessengerLaunch() {
     uiState.activeChatId = chat.id;
     localStorage.removeItem('KIU_PENDING_SOCIAL_MESSENGER');
 }
-
 function getCurrentPortalPageId() {
     const activeSectionId = document.querySelector('.page-section.active-page')?.id || '';
     if (activeSectionId) return activeSectionId.replace(/^page-/, '').toLowerCase();
     const pathname = (window.location.pathname || '').split('/').pop().toLowerCase();
     return pathname.replace(/\.html$/, '') || 'home';
 }
-
 function normalizeSocialPortalContext(context = {}) {
     const role = String(context?.role || getEffectiveUserRole() || '').toLowerCase();
     let sourcePage = String(context?.sourcePage || '').toLowerCase();
     let returnUrl = String(context?.returnUrl || 'index.html').trim() || 'index.html';
     const pathname = (window.location.pathname || '').split('/').pop().toLowerCase();
-
     if (!sourcePage) {
         sourcePage = getCurrentPortalPageId();
     }
-
     if (role === USER_ROLES.ADMIN) {
         if (sourcePage === 'admin-orders' || returnUrl.toLowerCase().startsWith('admin-orders.html') || pathname === 'admin-orders.html') {
             sourcePage = 'orders';
@@ -593,7 +408,6 @@ function normalizeSocialPortalContext(context = {}) {
             returnUrl = 'admin-library.html';
         }
     }
-
     return {
         ...context,
         sourcePage,
@@ -601,7 +415,6 @@ function normalizeSocialPortalContext(context = {}) {
         role
     };
 }
-
 function rememberSocialPortalContext() {
     const pathname = (window.location.pathname || '').split('/').pop() || 'index.html';
     const normalized = normalizeSocialPortalContext({
@@ -612,20 +425,17 @@ function rememberSocialPortalContext() {
     });
     localStorage.setItem('KIU_SOCIAL_PORTAL_CONTEXT', JSON.stringify(normalized));
 }
-
 function clearTemporarySocialNavGlow() {
     document.querySelectorAll('[data-social-return-glow="true"]').forEach(item => {
         item.removeAttribute('data-social-return-glow');
         item.classList.remove('active');
     });
 }
-
 function getSocialNavItemForRole(role = getEffectiveUserRole()) {
     if (role === USER_ROLES.ADMIN) return document.querySelector('#admin-nav [data-nav-social]');
     if (role === USER_ROLES.PROFESSOR || role === USER_ROLES.TA) return document.querySelector('#prof-nav [data-nav-social]');
     return document.getElementById('nav-social');
 }
-
 function applyTemporarySocialNavGlow(role = getEffectiveUserRole()) {
     clearTemporarySocialNavGlow();
     const navItem = getSocialNavItemForRole(role);
@@ -633,7 +443,6 @@ function applyTemporarySocialNavGlow(role = getEffectiveUserRole()) {
     navItem.dataset.socialReturnGlow = 'true';
     navItem.classList.add('active');
 }
-
 function consumePendingSocialReturn() {
     const raw = localStorage.getItem('KIU_PENDING_SOCIAL_RETURN');
     if (!raw) return false;
@@ -656,7 +465,6 @@ function consumePendingSocialReturn() {
     applyTemporarySocialNavGlow(effectiveRole);
     return true;
 }
-
 function resetRoleSwitchViewState() {
     currentCourseId = '';
     currentLmsQuizCourseKey = '';
@@ -666,7 +474,6 @@ function resetRoleSwitchViewState() {
     localStorage.removeItem('KIU_PENDING_SOCIAL_RETURN');
     localStorage.removeItem('KIU_PENDING_ADMIN_PAGE');
 }
-
 function openPortalMessengerChat(chatId, source = 'full') {
     const uiState = ensurePortalMessengerUiState();
     const currentUser = getCurrentUser();
@@ -681,7 +488,6 @@ function openPortalMessengerChat(chatId, source = 'full') {
     }
     renderPortalMessengerWorkspace();
 }
-
 function openPortalDirectChat(userId, source = 'full') {
     const currentUser = getCurrentUser();
     if (!currentUser) return;
@@ -689,7 +495,6 @@ function openPortalDirectChat(userId, source = 'full') {
     unhidePortalMessengerChatForUser(chat.id, currentUser.id);
     openPortalMessengerChat(chat.id, source);
 }
-
 function getPortalCallEffectiveMicEnabled() {
     const uiState = ensurePortalMessengerUiState();
     const runtime = ensurePortalCallRuntime();
@@ -697,7 +502,6 @@ function getPortalCallEffectiveMicEnabled() {
     if (!uiState.callPushToTalkEnabled) return true;
     return Boolean(runtime.pushTalking);
 }
-
 function syncPortalCallTracks() {
     const uiState = ensurePortalMessengerUiState();
     const runtime = ensurePortalCallRuntime();
@@ -710,7 +514,6 @@ function syncPortalCallTracks() {
         track.enabled = Boolean(uiState.callCameraEnabled);
     });
 }
-
 async function ensurePortalCallMedia() {
     const runtime = ensurePortalCallRuntime();
     if (runtime.stream) return runtime.stream;
@@ -725,7 +528,6 @@ async function ensurePortalCallMedia() {
         return null;
     }
 }
-
 function stopPortalCallMedia() {
     const runtime = ensurePortalCallRuntime();
     if (runtime.stream) {
@@ -733,7 +535,6 @@ function stopPortalCallMedia() {
         runtime.stream = null;
     }
 }
-
 function attachPortalCallPreview() {
     const runtime = ensurePortalCallRuntime();
     const video = document.getElementById('portal-call-local-video');
@@ -744,11 +545,9 @@ function attachPortalCallPreview() {
         if (playPromise?.catch) playPromise.catch(() => {});
     }
 }
-
 function getPortalCallMouseButtonLabel(value) {
     return value === 'button5' ? 'Mouse Button 5' : 'Mouse Button 4';
 }
-
 function normalizePortalShortcutToken(key) {
     if (!key) return '';
     const lower = String(key).toLowerCase();
@@ -763,14 +562,12 @@ function normalizePortalShortcutToken(key) {
     if (lower.length === 1) return lower.toUpperCase();
     return lower.charAt(0).toUpperCase() + lower.slice(1);
 }
-
 function parsePortalShortcut(shortcut) {
     return String(shortcut || '')
         .split('+')
         .map(part => part.trim())
         .filter(Boolean);
 }
-
 function isPortalShortcutPressed() {
     const uiState = ensurePortalMessengerUiState();
     const runtime = ensurePortalCallRuntime();
@@ -779,7 +576,6 @@ function isPortalShortcutPressed() {
     const pressed = Array.from(runtime.pressedKeys || []);
     return required.every(token => pressed.includes(token));
 }
-
 function updatePortalPushToTalkState() {
     const uiState = ensurePortalMessengerUiState();
     const runtime = ensurePortalCallRuntime();
@@ -791,13 +587,11 @@ function updatePortalPushToTalkState() {
     syncPortalCallTracks();
     renderPortalMessengerWorkspace();
 }
-
 function beginPortalCallShortcutCapture() {
     const runtime = ensurePortalCallRuntime();
     runtime.captureShortcut = true;
     renderPortalMessengerWorkspace();
 }
-
 function setPortalCallPttMode(mode) {
     const uiState = ensurePortalMessengerUiState();
     uiState.callPttMode = mode;
@@ -806,32 +600,27 @@ function setPortalCallPttMode(mode) {
     }
     updatePortalPushToTalkState();
 }
-
 function setPortalCallPttMouseButton(value) {
     ensurePortalMessengerUiState().callPttMouseButton = value;
     renderPortalMessengerWorkspace();
 }
-
 function togglePortalCallPushToTalk() {
     const uiState = ensurePortalMessengerUiState();
     uiState.callPushToTalkEnabled = !uiState.callPushToTalkEnabled;
     updatePortalPushToTalkState();
 }
-
 function togglePortalCallMic() {
     const uiState = ensurePortalMessengerUiState();
     uiState.callMicEnabled = !uiState.callMicEnabled;
     syncPortalCallTracks();
     renderPortalMessengerWorkspace();
 }
-
 function togglePortalCallCamera() {
     const uiState = ensurePortalMessengerUiState();
     uiState.callCameraEnabled = !uiState.callCameraEnabled;
     syncPortalCallTracks();
     renderPortalMessengerWorkspace();
 }
-
 async function openPortalMessengerCall(chatId) {
     const currentUser = getCurrentUser();
     if (!currentUser) return;
@@ -881,7 +670,6 @@ async function openPortalMessengerCall(chatId) {
     }
     renderPortalMessengerWorkspace();
 }
-
 function closePortalMessengerCall() {
     const uiState = ensurePortalMessengerUiState();
     const chatId = uiState.activeCallChatId;
@@ -891,11 +679,9 @@ function closePortalMessengerCall() {
     }
     finalizePortalMessengerCall(true);
 }
-
 function installPortalCallGlobalListeners() {
     if (window.__portalCallListenersInstalled) return;
     window.__portalCallListenersInstalled = true;
-
     document.addEventListener('keydown', event => {
         const runtime = ensurePortalCallRuntime();
         if (runtime.captureShortcut) {
@@ -917,13 +703,11 @@ function installPortalCallGlobalListeners() {
         runtime.pressedKeys.add(normalizePortalShortcutToken(event.key));
         updatePortalPushToTalkState();
     });
-
     document.addEventListener('keyup', event => {
         const runtime = ensurePortalCallRuntime();
         runtime.pressedKeys.delete(normalizePortalShortcutToken(event.key));
         updatePortalPushToTalkState();
     });
-
     document.addEventListener('mousedown', event => {
         const uiState = ensurePortalMessengerUiState();
         const runtime = ensurePortalCallRuntime();
@@ -935,7 +719,6 @@ function installPortalCallGlobalListeners() {
             renderPortalMessengerWorkspace();
         }
     });
-
     document.addEventListener('mouseup', event => {
         const uiState = ensurePortalMessengerUiState();
         const runtime = ensurePortalCallRuntime();
@@ -948,7 +731,7 @@ function installPortalCallGlobalListeners() {
         }
     });
 }
-
+// --- READABILITY: Send ---
 async function sendPortalMessengerMessage(chatId, inputId = 'portal-messenger-message-input') {
     const currentUser = getCurrentUser();
     if (!currentUser) return;
@@ -1019,7 +802,6 @@ async function sendPortalMessengerMessage(chatId, inputId = 'portal-messenger-me
         }
     }).catch(() => {});
 }
-
 function buildPortalMessengerParticipantSummary(chat, currentUserId) {
     return (chat?.members || []).map(memberId => {
         const user = getPortalMessengerUserById(memberId);
@@ -1027,7 +809,6 @@ function buildPortalMessengerParticipantSummary(chat, currentUserId) {
         return `${user.displayName} (${user.roleLabel})`;
     }).filter(label => label).join(', ');
 }
-
 function buildPortalMessengerDirectoryCards(directory, compact = false) {
     if (!directory.length) {
         return `<div class="portal-msg-empty">${compact ? 'Type a name to find people.' : 'Type a name to find people.'}</div>`;
@@ -1046,7 +827,6 @@ function buildPortalMessengerDirectoryCards(directory, compact = false) {
         </div>
     `).join('');
 }
-
 function buildPortalMessengerChatCards(chats, currentUserId, activeChatId, compact = false) {
     if (!chats.length) {
         return `<div class="portal-msg-empty">${compact ? 'No conversations yet.' : 'Start a private conversation from the directory.'}</div>`;
@@ -1083,7 +863,17 @@ function buildPortalMessengerChatCards(chats, currentUserId, activeChatId, compa
         `;
     }).join('');
 }
-
+function isPortalMessengerImageFile(file) {
+    if (!file || typeof file !== 'object') return false;
+    const type = String(file.type || '').toLowerCase();
+    const name = String(file.name || '').toLowerCase();
+    return type.startsWith('image/') || /\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(name);
+}
+function buildPortalMessengerImagePreviewHtml(file, _mine = false, imageClass = 'portal-msg-bubble-image') {
+    const resolvedFileUrl = resolvePortalMessengerFileUrl(file);
+    if (!resolvedFileUrl || !isPortalMessengerImageFile(file)) return '';
+    return `<div class="${escapeHtml(imageClass)}"><a href="${resolvedFileUrl}" target="_blank" rel="noopener"><img src="${resolvedFileUrl}" alt="${escapeHtml(file.name || 'Image')}" loading="lazy"></a></div>`;
+}
 function buildPortalMessengerMessageList(activeChat, currentUserId) {
     if (!(activeChat?.messages || []).length) {
         return `<div class="portal-msg-empty portal-msg-thread-empty">No messages yet. Start the conversation.</div>`;
@@ -1097,17 +887,14 @@ function buildPortalMessengerMessageList(activeChat, currentUserId) {
             ? '<div class="portal-msg-bubble-seen">Seen</div>'
             : '';
         const resolvedFileUrl = resolvePortalMessengerFileUrl(message.file);
-        const videoHtml = message.file?.type?.startsWith('video/') && resolvedFileUrl
+        const imageHtml = message.file ? buildPortalMessengerImagePreviewHtml(message.file, mine) : '';
+        const videoHtml = !imageHtml && message.file?.type?.startsWith('video/') && resolvedFileUrl
             ? `<div class="portal-msg-video-wrap"><video class="portal-msg-video" controls preload="metadata" src="${resolvedFileUrl}"></video></div>`
             : '';
-        const fileHtml = message.file
-            ? (message.file.type?.startsWith('video/')
-                ? `<div class="portal-msg-bubble-file">${mine
-                    ? `<a href="${resolvedFileUrl}" download="${escapeHtml(message.file.name)}"><i class="fas fa-file-download"></i> Download ${escapeHtml(message.file.name)}</a>`
-                    : getStoredFileDownloadHtml(message.file, `Download ${message.file.name}`)}</div>`
-                : `<div class="portal-msg-bubble-file">${mine
-                    ? `<a href="${resolvedFileUrl}" download="${escapeHtml(message.file.name)}"><i class="fas fa-file-download"></i> ${escapeHtml(message.file.name)}</a>`
-                    : getStoredFileDownloadHtml(message.file, message.file.name)}</div>`)
+        const fileHtml = message.file && !imageHtml && !videoHtml
+            ? `<div class="portal-msg-bubble-file">${mine
+                ? `<a href="${resolvedFileUrl}" download="${escapeHtml(message.file.name)}"><i class="fas fa-file-download"></i> ${escapeHtml(message.file.name)}</a>`
+                : getStoredFileDownloadHtml(message.file, message.file.name)}</div>`
             : '';
         return `
             <div class="portal-msg-bubble-row ${mine ? 'is-mine' : ''}">
@@ -1125,6 +912,7 @@ function buildPortalMessengerMessageList(activeChat, currentUserId) {
                 <div class="portal-msg-bubble ${mine ? 'is-mine' : ''}">
                     ${replyTarget ? `<div class="portal-msg-bubble-reply"><strong>${escapeHtml(replyTarget.senderName || 'Message')}</strong><div>${escapeHtml((replyTarget.text || replyTarget.file?.name || '').slice(0, 80) || 'Attachment')}</div></div>` : ''}
                     ${message.text ? `<div class="portal-msg-bubble-text">${escapeHtml(message.text)}</div>` : ''}
+                    ${imageHtml}
                     ${videoHtml}
                     ${fileHtml}
                     ${seenLabel}
@@ -1133,7 +921,6 @@ function buildPortalMessengerMessageList(activeChat, currentUserId) {
         `;
     }).join('');
 }
-
 function buildPortalMessengerThread(activeChat, currentUserId, activeDraft, inputId, compact = false) {
     if (!activeChat) {
         return `
@@ -1203,7 +990,6 @@ function buildPortalMessengerThread(activeChat, currentUserId, activeDraft, inpu
         </div>
     `;
 }
-
 function buildPortalMessengerGroupComposer(summary) {
     const { uiState } = summary;
     if (!uiState.groupComposerOpen) return '';
@@ -1259,7 +1045,6 @@ function buildPortalMessengerGroupComposer(summary) {
         </div>
     `;
 }
-
 function buildPortalMessengerWorkspaceHtml(summary, context = 'embedded') {
     const { currentUser, uiState, chats, activeChat, activeDraft, directory } = summary;
     const searchPlaceholder = context === 'modal' ? 'Type a student, professor, or TA name...' : 'Type a name to find people...';
@@ -1324,7 +1109,6 @@ function buildPortalMessengerWorkspaceHtml(summary, context = 'embedded') {
         </div>
     `;
 }
-
 function buildPortalMessengerCompactBody(summary) {
     const { currentUser, uiState, chats, activeChat, activeDraft, compactDirectory } = summary;
     if (uiState.compactTab === 'thread' && uiState.activeChatId && activeChat) {
@@ -1350,7 +1134,6 @@ function buildPortalMessengerCompactBody(summary) {
         }
     `;
 }
-
 function buildPortalCallWindow(summary) {
     const { currentUser, uiState } = summary;
     if (!uiState.callOpen || !uiState.activeCallChatId) return '';
@@ -1449,8 +1232,8 @@ function buildPortalCallWindow(summary) {
         </div>
     `;
 }
-
 function ensurePortalMessengerChrome() {
+    ensureLayoutPortalCss();
     if (!document.body) return null;
     let dockRoot = document.getElementById('portal-messenger-chrome');
     if (!dockRoot) {
@@ -1472,8 +1255,8 @@ function ensurePortalMessengerChrome() {
     }
     return { dockRoot, modalRoot, callRoot };
 }
-
 function ensurePortalNotificationChrome() {
+    ensureLayoutPortalCss();
     if (!document.body) return null;
     let dockRoot = document.getElementById('portal-notification-chrome');
     if (!dockRoot) {
@@ -1564,7 +1347,6 @@ function ensurePortalNotificationChrome() {
     }
     return { dockRoot, modalRoot };
 }
-
 function ensurePortalNotificationRenderState() {
     window.__portalNotificationRenderState = window.__portalNotificationRenderState || {
         hidden: true,
@@ -1576,7 +1358,6 @@ function ensurePortalNotificationRenderState() {
     };
     return window.__portalNotificationRenderState;
 }
-
 function handlePortalNotificationChromeClick(event) {
     const actionEl = event.target.closest('[data-notif-action]');
     if (!actionEl) return;
@@ -1611,7 +1392,6 @@ function handlePortalNotificationChromeClick(event) {
         openPortalNotificationItem(actionEl.dataset.notificationKey || '');
     }
 }
-
 function handlePortalNotificationChromeKeydown(event) {
     if (event.key !== 'Escape') return;
     const uiState = typeof ensurePortalNotificationUiState === 'function' ? ensurePortalNotificationUiState() : null;
@@ -1622,7 +1402,6 @@ function handlePortalNotificationChromeKeydown(event) {
         togglePortalNotificationDock(false);
     }
 }
-
 function handlePortalNotificationChromePointerDown(event) {
     const uiState = typeof ensurePortalNotificationUiState === 'function' ? ensurePortalNotificationUiState() : null;
     if (!uiState || !uiState.dockOpen || uiState.fullOpen) return;
@@ -1630,7 +1409,6 @@ function handlePortalNotificationChromePointerDown(event) {
     if (event.target.closest('#portal-notification-modal-overlay')) return;
     togglePortalNotificationDock(false);
 }
-
 function getPortalNotificationSummary() {
     const currentUser = getCurrentUser();
     if (!currentUser) return null;
@@ -1639,7 +1417,6 @@ function getPortalNotificationSummary() {
     const unreadCount = getPortalNotificationUnreadCount(currentUser.id);
     return { currentUser, uiState, items, unreadCount };
 }
-
 function renderPortalNotificationChrome() {
     const roots = ensurePortalNotificationChrome();
     if (!roots) return;
@@ -1694,19 +1471,16 @@ function renderPortalNotificationChrome() {
         renderState.modalHtml = modalHtml;
     }
 }
-
 if (typeof window !== 'undefined') {
     Object.assign(window, {
         renderPortalNotificationChrome
     });
 }
-
 function renderPortalMessengerChrome(summary) {
     const roots = ensurePortalMessengerChrome();
     if (!roots) return;
     const { dockRoot, modalRoot, callRoot } = roots;
     const { currentUser, uiState, chats } = summary;
-
     dockRoot.innerHTML = `
         <div class="portal-msg-fab-stack">
             <div class="portal-msg-dock ${uiState.dockOpen ? 'is-open' : ''}">
@@ -1731,7 +1505,6 @@ function renderPortalMessengerChrome(summary) {
             </button>
         </div>
     `;
-
     modalRoot.className = `portal-msg-modal-overlay ${uiState.fullOpen ? 'is-open' : ''}`;
     modalRoot.innerHTML = uiState.fullOpen ? `
         <div class="portal-msg-modal-backdrop" data-portal-msg-click="close-full"></div>
@@ -1754,7 +1527,6 @@ function renderPortalMessengerChrome(summary) {
     callRoot.className = `portal-call-overlay ${uiState.callOpen ? 'is-open' : ''}`;
     callRoot.innerHTML = uiState.callOpen ? buildPortalCallWindow(summary) : '';
 }
-
 function renderPortalMessengerWorkspace() {
     const containers = [
         document.getElementById('portal-messenger-container'),
@@ -1763,7 +1535,6 @@ function renderPortalMessengerWorkspace() {
     const currentUser = getCurrentUser();
     consumePendingSocialMessengerLaunch();
     const roots = ensurePortalMessengerChrome();
-
     if (!currentUser) {
         containers.forEach(container => {
             container.innerHTML = `<div class="portal-msg-empty">Messenger is available after login.</div>`;
@@ -1778,7 +1549,6 @@ function renderPortalMessengerWorkspace() {
         renderPortalNotificationChrome();
         return;
     }
-
     const summary = getPortalMessengerSummary();
     containers.forEach(container => {
         container.innerHTML = buildPortalMessengerWorkspaceHtml(summary, 'embedded');
@@ -1791,28 +1561,22 @@ function renderPortalMessengerWorkspace() {
         log.scrollTop = log.scrollHeight;
     });
 }
-
 function refreshStandalonePageContext() {
     const currentUser = getCurrentUser();
     const facultyProfile = getFacultyProfile(getCurrentFaculty());
     if (!currentUser) return;
     const effectiveRole = getEffectiveUserRole();
-
     ensureOrdersNavLinks();
     ensureFacultyExamsNavLink();
-
     if (typeof window.syncShellNavVisibility === 'function') {
         window.syncShellNavVisibility(getCurrentPortalPageId(), effectiveRole);
     }
-
     document.querySelectorAll('.admin-nav-link').forEach(item => {
         item.hidden = effectiveRole !== USER_ROLES.ADMIN;
     });
-
     if (typeof populateProgramContextControls === 'function') {
         populateProgramContextControls(currentUser, facultyProfile);
     }
-    if (typeof renderExamsPageShellContext === 'function') renderExamsPageShellContext();
     if (typeof renderProfilePageContext === 'function') renderProfilePageContext(currentUser);
     if (typeof renderPersonalDataPageContext === 'function') renderPersonalDataPageContext(currentUser, facultyProfile);
     if ((document.getElementById('student-educational-program-root') || document.getElementById('page-programs')) && typeof renderStudentEducationalProgramPage === 'function') renderStudentEducationalProgramPage();
@@ -1828,17 +1592,7 @@ function refreshStandalonePageContext() {
     if (document.getElementById('admin-orders-root') && typeof renderAdminOrders === 'function') renderAdminOrders();
     if ((document.getElementById('page-orders') || document.getElementById('orders-inbox-root')) && typeof renderOrdersInboxPage === 'function') renderOrdersInboxPage();
 }
-
 // Get faculty curriculum from the canonical faculty-profile store.
-function getActiveCurriculum(facultyFilter) {
-    const fac = facultyFilter || getCurrentFaculty();
-    if (typeof getFacultyCurriculumFromProfiles === 'function') {
-        return getFacultyCurriculumFromProfiles(fac);
-    }
-    const fp = getFacultyProfile(fac);
-    return Array.isArray(fp?.curriculum) ? fp.curriculum : [];
-}
-
 function ensureFacultyExamsNavLink() {
     const profNav = document.getElementById('prof-nav');
     if (profNav && !profNav.querySelector('[data-nav-exams]')) {
@@ -1859,15 +1613,12 @@ function ensureFacultyExamsNavLink() {
         examsNav.classList.toggle('active', isExamsPage);
     }
 }
-
 function syncProfessorNavActiveState() {
     const profNav = document.getElementById('prof-nav');
     if (!profNav) return;
-
     const pathname = (window.location.pathname || '').split('/').pop().toLowerCase();
     const activeSectionId = document.querySelector('.page-section.active-page')?.id || '';
     const activePage = (activeSectionId.replace(/^page-/, '') || pathname.replace(/\.html$/, '')).toLowerCase();
-
     let activeKey = 'home';
     if (activePage === 'gradebook') activeKey = 'home';
     else if (['faculty-schedule', 'calendar', 'timetable'].includes(activePage)) activeKey = 'timetable';
@@ -1875,7 +1626,6 @@ function syncProfessorNavActiveState() {
     else if (activePage === 'orders') activeKey = 'orders';
     else if (activePage === 'social') activeKey = 'social';
     else if (activePage === 'exams') activeKey = 'exams';
-
     profNav.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
     const selectorMap = {
         home: "[onclick*=\"navigate('home')\"]",
@@ -1888,75 +1638,6 @@ function syncProfessorNavActiveState() {
     const activeItem = profNav.querySelector(selectorMap[activeKey] || selectorMap.home);
     if (activeItem) activeItem.classList.add('active');
 }
-
-function renderExamsPageShellContext() {
-    const titleEl = document.getElementById('exams-page-title');
-    const subtitleEl = document.getElementById('exams-page-subtitle');
-    const contextEl = document.getElementById('admin-exams-faculty-context');
-    const primaryAction = document.getElementById('exams-primary-action');
-    const secondaryAction = document.getElementById('exams-secondary-action');
-    const tertiaryAction = document.getElementById('exams-tertiary-action');
-    if (!titleEl && !subtitleEl && !contextEl && !primaryAction && !secondaryAction && !tertiaryAction) return;
-
-    const facultyLabel = getFacultyLabel(getCurrentFaculty());
-    const role = getEffectiveUserRole();
-    const roleShell = {
-        [USER_ROLES.ADMIN]: {
-            title: 'Administration Panel - Exams',
-            subtitle: 'Create digital quizzes and exam sets for faculty subjects, and define question options, correct answers, and score weight.',
-            actions: [
-                { label: 'Back to CMS', icon: 'fas fa-arrow-left', page: 'home' },
-                { label: 'Scheduler', icon: 'fas fa-calendar-alt', page: 'admin-scheduler' },
-                { label: 'Students', icon: 'fas fa-user-graduate', page: 'students-admin' }
-            ]
-        },
-        [USER_ROLES.PROFESSOR]: {
-            title: 'Professor Workspace - Exams',
-            subtitle: 'Use the same faculty quiz bank and exam builder to prepare digital assessments for your teaching groups.',
-            actions: [
-                { label: 'Back to Dashboard', icon: 'fas fa-arrow-left', page: 'home' },
-                { label: 'LMS', icon: 'fas fa-book-reader', page: 'lms' },
-                { label: 'My Schedule', icon: 'fas fa-calendar-week', page: 'timetable' }
-            ]
-        },
-        [USER_ROLES.TA]: {
-            title: 'Teaching Assistant Workspace - Exams',
-            subtitle: 'Use the same faculty quiz bank and exam builder to support digital assessments for your assigned groups.',
-            actions: [
-                { label: 'Back to Dashboard', icon: 'fas fa-arrow-left', page: 'home' },
-                { label: 'LMS', icon: 'fas fa-book-reader', page: 'lms' },
-                { label: 'My Schedule', icon: 'fas fa-calendar-week', page: 'timetable' }
-            ]
-        }
-    }[role] || {
-        title: 'Exams',
-        subtitle: 'Faculty exam tools are available from the current workspace.',
-        actions: [
-            { label: 'Back', icon: 'fas fa-arrow-left', page: 'home' },
-            null,
-            null
-        ]
-    };
-
-    if (titleEl) titleEl.textContent = roleShell.title;
-    if (subtitleEl) subtitleEl.textContent = roleShell.subtitle;
-    if (contextEl) contextEl.textContent = facultyLabel;
-
-    [primaryAction, secondaryAction, tertiaryAction].forEach((button, index) => {
-        if (!button) return;
-        const action = roleShell.actions[index];
-        if (!action) {
-            button.hidden = true;
-            button.onclick = null;
-            return;
-        }
-        button.hidden = false;
-        button.innerHTML = `<i class="${action.icon}"></i> ${escapeHtml(action.label)}`;
-        button.onclick = () => navigate(action.page);
-    });
-}
-
-
 // Count how many students a professor teaches (by checking availableGroups)
 function getProfStudentCount(profName) {
     let count = 0;
@@ -1967,7 +1648,6 @@ function getProfStudentCount(profName) {
     }
     return count;
 }
-
 // Get professor's scheduled groups
 function getProfSchedule(profName) {
     const sessions = [];
@@ -1980,7 +1660,6 @@ function getProfSchedule(profName) {
     }
     return sessions;
 }
-
 // Define day order mapping (guard against duplicate declarations)
 window.FACULTY_SCHEDULE_DAY_ORDER = window.FACULTY_SCHEDULE_DAY_ORDER || {
         monday: 1,
@@ -1991,28 +1670,23 @@ window.FACULTY_SCHEDULE_DAY_ORDER = window.FACULTY_SCHEDULE_DAY_ORDER || {
         saturday: 6,
         sunday: 7
     };
-
 function getScheduleDayOrder(dayLabel) {
     const repaired = cleanupEncodingArtifacts(toEnglishText(dayLabel || '')).toLowerCase();
     if (window.FACULTY_SCHEDULE_DAY_ORDER[repaired]) return window.FACULTY_SCHEDULE_DAY_ORDER[repaired];
     const partial = Object.keys(window.FACULTY_SCHEDULE_DAY_ORDER).find(day => repaired.includes(day));
     return partial ? window.FACULTY_SCHEDULE_DAY_ORDER[partial] : 99;
 }
-
 function getScheduleDayKey(dayLabel) {
     const repaired = cleanupEncodingArtifacts(toEnglishText(dayLabel || '')).toLowerCase();
     const partial = Object.keys(window.FACULTY_SCHEDULE_DAY_ORDER).find(day => repaired.includes(day));
     return partial || '';
 }
-
 function getTodayScheduleDayKey() {
     return new Date().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
 }
-
 function getCurrentFacultyScheduleItems() {
     const currentUser = getCurrentUser();
     if (!currentUser || ![USER_ROLES.PROFESSOR, USER_ROLES.TA].includes(currentUser.role)) return [];
-
     const userName = currentUser.name || currentUser.nameEn || '';
     return getProfSchedule(userName).map(session => {
         const subject = getDomain().subjectsById?.[session.courseId] || KIU_STATE.curriculum.find(item => item.id === session.courseId);
@@ -2036,13 +1710,11 @@ function getCurrentFacultyScheduleItems() {
         return String(a.subjectName).localeCompare(String(b.subjectName));
     });
 }
-
 function queueFacultyLmsSession(courseId, groupId) {
     if (!courseId || !groupId) return;
     localStorage.setItem('KIU_PENDING_LMS_GROUP', JSON.stringify({ courseId, groupId }));
     navigate('lms');
 }
-
 function consumePendingLmsGroupOpen(items = null) {
     const raw = localStorage.getItem('KIU_PENDING_LMS_GROUP');
     if (!raw) return;
@@ -2059,7 +1731,6 @@ function consumePendingLmsGroupOpen(items = null) {
     localStorage.removeItem('KIU_PENDING_LMS_GROUP');
     openLMSCourse(`${match.courseId}::${match.groupId}`, `${match.subjectName} | ${match.groupName || match.groupId}`);
 }
-
 function buildFacultyScheduleCardHtml(item, compact = false) {
     const sizeClass = compact ? 'faculty-schedule-card--compact' : 'faculty-schedule-card--full';
     return `
@@ -2076,19 +1747,17 @@ function buildFacultyScheduleCardHtml(item, compact = false) {
                     <span class="faculty-schedule-card__meta-item"><i class="fas fa-location-dot faculty-schedule-card__meta-icon"></i><span>${item.room || 'Room TBD'}</span></span>
                 </div>
             </div>
-            <button class="kiu-btn-outline faculty-schedule-card__action" data-portal-msg-click="queue-lms-session" data-portal-msg-course-id="${item.courseId}" data-portal-msg-group-id="${item.id}">
+            <button class="lux-secondary-btn faculty-schedule-card__action" data-portal-msg-click="queue-lms-session" data-portal-msg-course-id="${item.courseId}" data-portal-msg-group-id="${item.id}">
                 <i class="fas fa-book-reader"></i> Open in LMS
             </button>
         </div>
     `;
 }
-
 function renderFacultyScheduleWidgets() {
     const preview = document.getElementById('faculty-schedule-preview');
     const empty = document.getElementById('faculty-schedule-preview-empty');
     const helper = document.getElementById('faculty-schedule-preview-helper');
     if (!preview && !empty) return;
-
     const todayKey = getTodayScheduleDayKey();
     const items = getCurrentFacultyScheduleItems().filter(item => getScheduleDayKey(item.day) === todayKey);
     if (preview) {
@@ -2102,12 +1771,10 @@ function renderFacultyScheduleWidgets() {
         helper.textContent = "Only today's sessions from Master Scheduler are shown here for professors and teaching assistants.";
     }
 }
-
 function renderFacultySchedulePage() {
     const list = document.getElementById('faculty-schedule-page-list');
     const empty = document.getElementById('faculty-schedule-page-empty');
     if (!list && !empty) return;
-
     const weekStart = typeof getStoredWeekStart === 'function'
         ? getStoredWeekStart(TIMETABLE_WEEK_STORAGE_KEY)
         : getCurrentWeekStartISO();
@@ -2119,14 +1786,12 @@ function renderFacultySchedulePage() {
         const durationMinutes = parseInt(String(item.duration || '0').match(/\d+/)?.[0] || '0', 10);
         return sum + (durationMinutes / 60);
     }, 0);
-
     const sessionsStat = document.getElementById('faculty-schedule-stat-sessions');
     const daysStat = document.getElementById('faculty-schedule-stat-days');
     const hoursStat = document.getElementById('faculty-schedule-stat-hours');
     if (sessionsStat) sessionsStat.textContent = String(items.length);
     if (daysStat) daysStat.textContent = String(uniqueDays.size);
     if (hoursStat) hoursStat.textContent = `${totalHours.toFixed(1)}h`;
-
     if (typeof renderScheduleControls === 'function') {
         renderScheduleControls('faculty-schedule-controls', weekStart, items, {
             defaultView: 'sessions',
@@ -2148,258 +1813,14 @@ function renderFacultySchedulePage() {
     }
     if (empty) empty.hidden = true;
 }
-
 function refreshFacultyScheduleUI() {
     renderFacultyScheduleWidgets();
     renderFacultySchedulePage();
 }
-
 function normalizeIdentifier(value) {
     return String(value || '')
         .trim()
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, '');
 }
-
-function normalizeGradebookRosterKey(value) {
-    return normalizeIdentifier(value);
-}
-
-function getEnrolledStudentsForGroup(courseId, groupId) {
-    const domain = getDomain();
-    const students = [];
-    const seen = new Set();
-    const normalizedCourseId = canonicalCourseKey(courseId);
-    const normalizedGroupId = canonicalCourseKey(groupId);
-    const targetGroup = (typeof getAvailableGroupsForSubject === 'function' ? getAvailableGroupsForSubject(courseId) : (KIU_STATE.availableGroups?.[courseId] || []))
-        .find(group => canonicalCourseKey(group?.id || group?.groupId || group?.name || '') === normalizedGroupId);
-    const targetFaculty = normalizeFacultyCode(targetGroup?.faculty || (typeof deriveFacultyFromSubjectId === 'function' ? deriveFacultyFromSubjectId(courseId) : '') || '', '');
-    Object.entries(KIU_STATE.studentSchedulesByStudent || {}).forEach(([studentId, schedule]) => {
-        const scheduleEntries = Array.isArray(schedule)
-            ? schedule
-            : (schedule && typeof schedule === 'object')
-                ? Object.entries(schedule).map(([scheduledCourseId, scheduledGroupId]) => ({
-                    courseId: scheduledCourseId,
-                    groupId: scheduledGroupId
-                }))
-                : [];
-        const isEnrolled = scheduleEntries.some(item => (
-            canonicalCourseKey(item?.courseId || item?.sourceCourseId || '') === normalizedCourseId
-            && canonicalCourseKey(item?.groupId || item?.groupName || '') === normalizedGroupId
-            && (!targetFaculty || normalizeFacultyCode(item?.faculty || targetFaculty, targetFaculty) === targetFaculty)
-        ));
-        if (!isEnrolled || seen.has(studentId)) return;
-        const student = domain.usersById?.[studentId] || getAllStudents(targetFaculty || 'all').find(item => item.id === studentId);
-        if (targetFaculty && normalizeFacultyCode(student?.facultyCode || student?.faculty || '', '') !== targetFaculty) return;
-        students.push({
-            id: studentId,
-            name: student?.name || student?.nameEn || `Student ${studentId}`
-        });
-        seen.add(studentId);
-    });
-    return students.sort((a, b) => String(a.name).localeCompare(String(b.name)));
-}
-
-function normalizePersonNameKey(value) {
-    return cleanupEncodingArtifacts(toEnglishText(String(value || '')))
-        .trim()
-        .toLowerCase()
-        .replace(/\s+/g, ' ');
-}
-
-function getUserNameVariants(user) {
-    const variants = new Set();
-    [user?.name, user?.nameEn, getUiDisplayName?.()].forEach(value => {
-        const key = normalizePersonNameKey(value);
-        if (key) variants.add(key);
-    });
-    return variants;
-}
-
-function syncAvailableGroupEnrollmentCounts() {
-    Object.entries(KIU_STATE.availableGroups || {}).forEach(([courseId, groups]) => {
-        (groups || []).forEach(group => {
-            group.registered = getEnrolledStudentsForGroup(courseId, group.id).length;
-        });
-    });
-}
-
-function resolveGradebookRosterKey(courseId, groupId, enrolledStudents = []) {
-    const keys = Object.keys(KIU_STATE.studentGrades || {});
-    const subject = getDomain().subjectsById?.[courseId] || KIU_STATE.curriculum.find(item => item.id === courseId);
-    const rawCourseId = String(courseId || '').trim();
-    const rawGroupId = String(groupId || '').trim();
-    const groupNorm = normalizeIdentifier(groupId);
-    const courseNorm = normalizeIdentifier(courseId);
-    const subjectCodeNorm = normalizeIdentifier(subject?.code || '');
-    const firstSegmentNorm = normalizeIdentifier(String(courseId || '').split('-')[0]);
-    const exactCandidates = [
-        `${rawCourseId}::${rawGroupId}`,
-        `${courseNorm}::${groupNorm}`,
-        `${subjectCodeNorm}::${groupNorm}`,
-        `${firstSegmentNorm}::${groupNorm}`,
-        `${rawCourseId}_${rawGroupId}`.toLowerCase(),
-        `${courseNorm}_${groupNorm}`,
-        `${subjectCodeNorm}_${groupNorm}`,
-        `${firstSegmentNorm}_${groupNorm}`,
-        rawCourseId,
-        subject?.code || '',
-        courseNorm,
-        subjectCodeNorm,
-        firstSegmentNorm
-    ].filter(Boolean);
-    const normalizedKeyMap = new Map();
-    keys.forEach(key => {
-        const normalizedKey = normalizeGradebookRosterKey(key);
-        if (normalizedKey && !normalizedKeyMap.has(normalizedKey)) {
-            normalizedKeyMap.set(normalizedKey, key);
-        }
-    });
-
-    for (const candidate of exactCandidates) {
-        const resolvedKey = normalizedKeyMap.get(normalizeGradebookRosterKey(candidate));
-        if (resolvedKey) return resolvedKey;
-    }
-
-    const enrolledIds = new Set((enrolledStudents || []).map(student => String(student?.id || '').trim()).filter(Boolean));
-    let bestKey = null;
-    let bestScore = -1;
-    let bestRosterSize = -1;
-
-    keys.forEach(key => {
-        const roster = Array.isArray(KIU_STATE.studentGrades[key]) ? KIU_STATE.studentGrades[key] : [];
-        const normalizedKey = normalizeGradebookRosterKey(key);
-        let score = roster.length > 0 ? 1 : 0;
-        if (groupNorm && normalizedKey.endsWith(groupNorm)) score += 2;
-        if (courseNorm && normalizedKey === courseNorm) score += 4;
-        if (subjectCodeNorm && normalizedKey === subjectCodeNorm) score += 4;
-        if (firstSegmentNorm && normalizedKey === firstSegmentNorm) score += 2;
-        if (courseNorm && groupNorm && normalizedKey === `${courseNorm}${groupNorm}`) score += 8;
-        if (subjectCodeNorm && groupNorm && normalizedKey === `${subjectCodeNorm}${groupNorm}`) score += 8;
-        if (firstSegmentNorm && groupNorm && normalizedKey === `${firstSegmentNorm}${groupNorm}`) score += 8;
-        roster.forEach(student => {
-            if (enrolledIds.has(String(student?.id || '').trim())) score += 4;
-        });
-        if (score > bestScore || (score === bestScore && roster.length > bestRosterSize)) {
-            bestScore = score;
-            bestRosterSize = roster.length;
-            bestKey = key;
-        }
-    });
-
-    return bestKey || exactCandidates[0] || `${courseNorm || 'course'}_${groupNorm || 'group'}`;
-}
-
-function buildGradebookStudents(courseId, groupId) {
-    const enrolledStudents = getEnrolledStudentsForGroup(courseId, groupId);
-    const rosterKey = resolveGradebookRosterKey(courseId, groupId, enrolledStudents);
-    const existingRoster = JSON.parse(JSON.stringify(KIU_STATE.studentGrades?.[rosterKey] || []))
-        .map(student => ensureGradeRecordHistories(student));
-
-    if (!enrolledStudents.length) {
-        return {
-            rosterKey,
-            students: existingRoster
-        };
-    }
-
-    const mergedStudents = enrolledStudents.map(student => {
-        const existing = existingRoster.find(entry => entry.id === student.id) || {};
-        return ensureGradeRecordHistories({
-            id: student.id,
-            name: existing.name || student.name,
-            q1: existing.q1 || 0,
-            qa: existing.qa || 0,
-            mid: existing.mid || 0,
-            final: existing.final || 0,
-            assessments: existing.assessments || {}
-        });
-    });
-
-    return {
-        rosterKey,
-        students: mergedStudents
-    };
-}
-
-function getGradebookGroupsForCurrentUser(filterOverrides = null) {
-    const currentUser = getCurrentUser();
-    const currentFaculty = getCurrentFaculty();
-    const currentIdentityKeys = (() => {
-        if (typeof getUserNameVariants === 'function') {
-            return getUserNameVariants(currentUser);
-        }
-        const fallback = new Set();
-        [currentUser?.name, currentUser?.nameEn, currentUser?.email].forEach(value => {
-            const normalized = typeof normalizePersonNameKey === 'function'
-                ? normalizePersonNameKey(value)
-                : String(value || '').trim().toLowerCase();
-            if (normalized) fallback.add(normalized);
-        });
-        return fallback;
-    })();
-    const semesterFilter = String(
-        filterOverrides?.semester ?? document.getElementById('fs-filter-sem')?.value ?? ''
-    ).trim();
-    const facultyFilter = String(
-        filterOverrides?.faculty ?? document.getElementById('fs-filter-fac')?.value ?? currentFaculty ?? ''
-    ).trim();
-    const groups = [];
-
-    Object.entries(KIU_STATE.availableGroups || {}).forEach(([courseId, courseGroups]) => {
-        (courseGroups || []).forEach(group => {
-            if (semesterFilter && semesterFilter !== 'all' && String(group?.semester || KIU_STATE.activeSemester || '').trim() !== semesterFilter) return;
-            if (facultyFilter && facultyFilter !== 'all' && String(group?.faculty || '').trim()) {
-                const groupFaculty = typeof normalizeFacultyCode === 'function'
-                    ? normalizeFacultyCode(group.faculty, '')
-                    : String(group.faculty || '').trim().toUpperCase();
-                const selectedFaculty = typeof normalizeFacultyCode === 'function'
-                    ? normalizeFacultyCode(facultyFilter, '')
-                    : String(facultyFilter || '').trim().toUpperCase();
-                if (groupFaculty && selectedFaculty && groupFaculty !== selectedFaculty) return;
-            }
-            const isAssigned = currentUser?.role === USER_ROLES.ADMIN
-                ? (() => {
-                    if (!currentFaculty || currentFaculty === 'all') return true;
-                    const groupFaculty = typeof normalizeFacultyCode === 'function'
-                        ? normalizeFacultyCode(group.faculty, '')
-                        : String(group.faculty || '').trim().toUpperCase();
-                    const selectedFaculty = typeof normalizeFacultyCode === 'function'
-                        ? normalizeFacultyCode(currentFaculty, '')
-                        : String(currentFaculty || '').trim().toUpperCase();
-                    return !selectedFaculty || groupFaculty === selectedFaculty;
-                })()
-                : (() => {
-                    const profKey = typeof normalizePersonNameKey === 'function'
-                        ? normalizePersonNameKey(group.prof)
-                        : String(group.prof || '').trim().toLowerCase();
-                    const taKey = typeof normalizePersonNameKey === 'function'
-                        ? normalizePersonNameKey(group.ta)
-                        : String(group.ta || '').trim().toLowerCase();
-                    return currentIdentityKeys.has(profKey) || currentIdentityKeys.has(taKey);
-                })();
-            if (!isAssigned) return;
-
-            const subject = getDomain().subjectsById?.[courseId] || KIU_STATE.curriculum.find(item => item.id === courseId);
-            const enrolledStudents = getEnrolledStudentsForGroup(courseId, group.id);
-            groups.push({
-                courseId,
-                groupId: group.id,
-                groupName: group.name || group.id,
-                subjectName: subject?.name || courseId,
-                icon: subject?.icon || 'fas fa-book',
-                day: group.day,
-                time: group.time,
-                duration: group.duration,
-                room: group.room,
-                semester: group.semester,
-                capacity: group.capacity || 40,
-                enrolledCount: enrolledStudents.length || group.registered || 0
-            });
-        });
-    });
-
-    return groups.sort((a, b) => String(a.subjectName).localeCompare(String(b.subjectName)) || String(a.groupName).localeCompare(String(b.groupName)));
-}
-
-
+/* Gradebook roster helpers: messenger-gradebook-runtime.js */

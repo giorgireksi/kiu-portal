@@ -146,10 +146,6 @@ async function captureRun(browser, run) {
     const firstReadyMs = Date.now() - start;
 
     let profileOpenMs = null;
-    let canonicalProfileOpenMs = null;
-    let canonicalProfileVisible = false;
-    let canonicalProfileUrl = '';
-    let canonicalProfileName = '';
     if (run.mode === 'efficient-desktop') {
         const selectButton = page.locator('[data-staff-action="select"]').first();
         if (await selectButton.count()) {
@@ -161,32 +157,6 @@ async function captureRun(browser, run) {
                     await page.waitForFunction(() => Boolean(document.querySelector('.staff-hub-profile')), { timeout: 15000 });
                 }
             );
-        }
-
-        const canonicalButton = page.locator('[data-staff-action="open-platform-profile"]').first();
-        if (await canonicalButton.count()) {
-            canonicalProfileOpenMs = await measureInteraction(
-                async () => {
-                    await canonicalButton.click({ timeout: 15000 });
-                },
-                async () => {
-                    await page.waitForFunction(
-                        () => window.location.pathname.endsWith('/profile-view.html')
-                            && Boolean(document.querySelector('.pv-name')),
-                        undefined,
-                        { timeout: 15000 }
-                    );
-                }
-            );
-
-            const canonicalMetrics = await page.evaluate(() => ({
-                visible: Boolean(document.querySelector('.pv-name')),
-                url: window.location.href,
-                name: document.querySelector('.pv-name')?.textContent?.trim() || ''
-            }));
-            canonicalProfileVisible = canonicalMetrics.visible;
-            canonicalProfileUrl = canonicalMetrics.url;
-            canonicalProfileName = canonicalMetrics.name;
         }
     }
 
@@ -213,8 +183,6 @@ async function captureRun(browser, run) {
             surfaceCount: document.querySelectorAll('#staff-content .staff-hub-surface').length,
             directorySelectCount: document.querySelectorAll('[data-staff-action="select"]').length,
             profileVisible: Boolean(document.querySelector('.staff-hub-profile')),
-            mobileShellLoaded: window.__staffMobileShellLoaded === true,
-            mobileShellScriptPresent: Boolean(document.querySelector('script[src*="staff-mobile-shell.js"]')),
             mobileNavVisible: mobileNav ? getComputedStyle(mobileNav).display !== 'none' : false,
             actionSheetOpen: document.getElementById('mobile-action-sheet')?.classList.contains('is-open') || false,
             longTaskCount: Array.isArray(probe.longTasks) ? probe.longTasks.length : 0,
@@ -231,10 +199,6 @@ async function captureRun(browser, run) {
         reducedMotion: run.reducedMotion,
         firstReadyMs,
         profileOpenMs,
-        canonicalProfileOpenMs,
-        canonicalProfileVisible,
-        canonicalProfileUrl,
-        canonicalProfileName,
         actionSheetOpenMs,
         errors,
         ...metrics

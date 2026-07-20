@@ -1,16 +1,21 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
 function readSource(relativePath) {
     return readFileSync(join(process.cwd(), relativePath), 'utf8');
 }
 
+function readWorkspaceSurface() {
+    return readSource('assets/js/pages/social-workspace.js')
+        + readSource('assets/js/pages/social-workspace-events.js');
+}
+
 describe('social workspace PM + budget restructure', () => {
     it('drops Plan/Deliverables/Check-ins tabs and keeps Budget instead of Outcome', () => {
         const source = readSource('assets/js/pages/social-page.js');
         const _wsClassic = readSource('assets/js/pages/social-workspace.js');
-        const classicBlock = (() => { const a = _wsClassic.indexOf('function renderProjectsWorkspacePanelClassic'); const b = _wsClassic.indexOf('window.renderProjectsWorkspacePanelClassic =', a); return a >= 0 && b > a ? _wsClassic.slice(a, b) : ''; })();
+        const classicBlock = readSource('assets/js/pages/social-workspace-panel.js');
 
         expect(classicBlock).not.toContain("['plan', 'Plan'");
         expect(classicBlock).not.toContain("['files', 'Deliverables'");
@@ -28,13 +33,13 @@ describe('social workspace PM + budget restructure', () => {
         expect(source).not.toContain('function renderMilestonesTab');
         expect(source).not.toContain('function renderMeetingsTab');
 
-        expect((source + readSource('assets/js/pages/social-workspace.js'))).toMatch(/tabAlias\s*=\s*\{[^}]*outcome:\s*'budget'[^}]*\}/);
-        expect((source + readSource('assets/js/pages/social-workspace.js'))).toMatch(/REMOVED_PROJECT_TABS\s*=\s*new Set\(\[[^\]]*'plan'/);
+        expect((source + readWorkspaceSurface())).toMatch(/tabAlias\s*=\s*\{[^}]*outcome:\s*'budget'[^}]*\}/);
+        expect((source + readWorkspaceSurface())).toMatch(/REMOVED_PROJECT_TABS\s*=\s*new Set\(\[[^\]]*'plan'/);
     });
 
     it('renders the budget tab with currency selector, cap, categories and expense log', () => {
         const _wsClassic = readSource('assets/js/pages/social-workspace.js');
-        const classicBlock = (() => { const a = _wsClassic.indexOf('function renderProjectsWorkspacePanelClassic'); const b = _wsClassic.indexOf('window.renderProjectsWorkspacePanelClassic =', a); return a >= 0 && b > a ? _wsClassic.slice(a, b) : ''; })();
+        const classicBlock = readSource('assets/js/pages/social-workspace-panel.js');
 
         expect(classicBlock).toContain('data-form="project-budget-settings"');
         expect(classicBlock).toContain('name="projectBudgetCurrency"');
@@ -55,20 +60,20 @@ describe('social workspace PM + budget restructure', () => {
     it('wires budget form submit handlers and action handlers', () => {
         const source = readSource('assets/js/pages/social-page.js');
 
-        expect((source + readSource('assets/js/pages/social-workspace.js'))).toMatch(/formType === 'project-budget-settings'/);
-        expect((source + readSource('assets/js/pages/social-workspace.js'))).toMatch(/formType === 'project-budget-category-add'/);
-        expect((source + readSource('assets/js/pages/social-workspace.js'))).toMatch(/formType === 'project-budget-expense-add'/);
+        expect((source + readWorkspaceSurface())).toMatch(/formType === 'project-budget-settings'/);
+        expect((source + readWorkspaceSurface())).toMatch(/formType === 'project-budget-category-add'/);
+        expect((source + readWorkspaceSurface())).toMatch(/formType === 'project-budget-expense-add'/);
         expect(source).toContain('createPortalSocialProjectBudgetCategory');
         expect(source).toContain('createPortalSocialProjectBudgetExpense');
-        expect((source + readSource('assets/js/pages/social-workspace.js'))).toContain('updatePortalSocialProjectBudgetCategory');
-        expect((source + readSource('assets/js/pages/social-workspace.js'))).toContain('updatePortalSocialProjectBudgetExpense');
-        expect((source + readSource('assets/js/pages/social-workspace.js'))).toContain('deletePortalSocialProjectBudgetCategory');
-        expect((source + readSource('assets/js/pages/social-workspace.js'))).toContain('deletePortalSocialProjectBudgetExpense');
+        expect((source + readWorkspaceSurface())).toContain('updatePortalSocialProjectBudgetCategory');
+        expect((source + readWorkspaceSurface())).toContain('updatePortalSocialProjectBudgetExpense');
+        expect((source + readWorkspaceSurface())).toContain('deletePortalSocialProjectBudgetCategory');
+        expect((source + readWorkspaceSurface())).toContain('deletePortalSocialProjectBudgetExpense');
     });
 
     it('swaps the hero Milestones metric card for a Budget metric card', () => {
         const _wsClassic = readSource('assets/js/pages/social-workspace.js');
-        const classicBlock = (() => { const a = _wsClassic.indexOf('function renderProjectsWorkspacePanelClassic'); const b = _wsClassic.indexOf('window.renderProjectsWorkspacePanelClassic =', a); return a >= 0 && b > a ? _wsClassic.slice(a, b) : ''; })();
+        const classicBlock = readSource('assets/js/pages/social-workspace-panel.js');
 
         expect(classicBlock).toContain("renderMetricCard('fa-wallet', 'Budget'");
         expect(classicBlock).not.toMatch(/renderMetricCard\('fa-flag', 'Milestones'/);
@@ -79,8 +84,8 @@ describe('social workspace PM + budget restructure', () => {
         const source = readSource('assets/js/pages/social-page.js');
 
         expect(source).toContain('function renderProjectsPanel');
-        expect((source + readSource('assets/js/pages/social-workspace.js'))).toContain('project-showcase-publish');
-        expect((source + readSource('assets/js/pages/social-workspace.js'))).toContain('publishPortalSocialProjectShowcase');
+        expect((source + readWorkspaceSurface())).toContain('project-showcase-publish');
+        expect((source + readWorkspaceSurface())).toContain('publishPortalSocialProjectShowcase');
     });
 
     it('exposes budget client APIs on the social runtime lite window surface', () => {

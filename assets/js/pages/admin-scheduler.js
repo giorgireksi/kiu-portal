@@ -1,6 +1,10 @@
+/* READABILITY: Admin scheduler — grid, sessions, faculty scope, create/edit session flows. Sections: Boot | Grid | Sessions | Faculty | Handlers. */
+window.KiuAdminScheduler=window.KiuAdminScheduler||{};const __kiuSchedApi=window.KiuAdminScheduler;window.__kiuSchedApi=__kiuSchedApi;
+function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=map[k];window[k]=map[k];});}
+
+// --- READABILITY: Boot ---
 (function initAdminSchedulerController() {
     'use strict';
-
     const DAY_ORDER = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
     const SLOT_TIMES = ['09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00'];
     const SCHEDULER_START_MINUTES = 9 * 60;
@@ -23,6 +27,7 @@
     const SCHEDULER_QUIZ_MODAL_TEMPLATE_ID = 'prof-quiz-modal-template';
     const SCHEDULER_QUIZ_MODAL_ID = 'profQuizModalOverlay';
     const SCHEDULER_PALETTE_SEARCH_DEBOUNCE_MS = 120;
+// --- READABILITY: Sessions ---
     const SCHEDULER_SESSION_PRESETS_KEY = 'kiuSchedulerSessionPresets';
     const SCHEDULER_DEFAULT_GROUP_PRESETS = ['G1', 'G2', 'G3', 'G4', 'L1', 'L2', 'Lab-1'];
     const SCHEDULER_DEFAULT_ROOM_PRESETS = ['A-101', 'A-102', 'A-201', 'B-201', 'B-202', 'C-301', 'C-303', 'K-201', 'LAB-1', 'LAB-2'];
@@ -32,26 +37,26 @@
     let schedulerPaletteSearchHandle = 0;
     let schedulerPresetSearchHandle = 0;
     let schedulerRefreshHandle = 0;
+    let schedulerRevealShellQueued = false;
+// --- READABILITY: Grid ---
     let schedulerRefreshQueued = { palette: false, grid: false };
-
     function el(id) {
         return document.getElementById(id);
     }
-
     function setText(id, value) {
         const node = el(id);
         if (node) node.textContent = value;
     }
-
+// --- READABILITY: Handlers ---
     function bindNodeOnce(node, eventName, marker, handler) {
         if (!node || node.dataset[marker]) return;
         node.dataset[marker] = '1';
         node.addEventListener(eventName, handler);
     }
-
     function queueSchedulerRefresh(options = {}) {
         schedulerRefreshQueued.palette = schedulerRefreshQueued.palette || options.palette === true;
         schedulerRefreshQueued.grid = schedulerRefreshQueued.grid || options.grid === true;
+        schedulerRevealShellQueued = schedulerRevealShellQueued || options.revealShell === true;
         if (schedulerRefreshHandle) return;
         const schedule = typeof window.requestAnimationFrame === 'function'
             ? window.requestAnimationFrame.bind(window)
@@ -60,9 +65,18 @@
             schedulerRefreshHandle = 0;
             const runPalette = schedulerRefreshQueued.palette;
             const runGrid = schedulerRefreshQueued.grid;
+            const revealShell = schedulerRevealShellQueued;
             schedulerRefreshQueued = { palette: false, grid: false };
+            schedulerRevealShellQueued = false;
             if (runPalette) renderPalette();
             if (runGrid) renderGrid();
+            if (revealShell) {
+                if (typeof schedulePortalShellReadyReveal === 'function') {
+                    schedulePortalShellReadyReveal();
+                } else if (typeof markPortalShellReady === 'function') {
+                    markPortalShellReady();
+                }
+            }
         });
     }
 
@@ -514,6 +528,9 @@
         if (searchField) searchField.value = '';
         if (draftField) draftField.value = '';
         renderSchedulerPresetManagerList(normalizedKind, '');
+        if (typeof window.enhanceUniversalPickers === 'function') {
+            window.enhanceUniversalPickers(overlay);
+        }
         overlay.classList.add('open');
         if (typeof window.queueLuxuryTransparencyRefresh === 'function') {
             window.queueLuxuryTransparencyRefresh(undefined, { roots: [overlay] });
@@ -522,6 +539,7 @@
     }
 
     function normalizeSchedulerSelectOptions() {
+// --- READABILITY: Faculty ---
         const currentFaculty = normalizeFacultyCode(localStorage.getItem('currentFaculty') || 'ECON', 'ECON');
         const semester = String((typeof KIU_STATE !== 'undefined' && KIU_STATE.activeSemester) || 3);
         labelSchedulerSelect('admin-tt-faculty', 'Faculty');
@@ -532,97 +550,12 @@
         rebuildSchedulerSelect(el('admin-tt-semester'), SCHEDULER_SEMESTER_OPTIONS, semester);
     }
 
-    function mergeUniqueSubjects(items = []) {
-        const seen = new Set();
-        return items.filter((item) => {
-            const id = String(item?.id || '').trim();
-            if (!id || seen.has(id)) return false;
-            seen.add(id);
-            return true;
-        });
-    }
 
-    function deriveFaculty(courseId) {
-        if (!courseId) return 'ECON';
-        const normalized = String(courseId).trim().toUpperCase();
-        if (normalized.startsWith('CS') || normalized.startsWith('STAT') || normalized.startsWith('CALC')) return 'CS';
-        if (normalized.startsWith('ECON') || normalized.startsWith('PM') || normalized.startsWith('BM')) return 'ECON';
-        if (normalized.startsWith('LAW')) return 'LAW';
-        return localStorage.getItem('currentFaculty') || 'ECON';
-    }
 
-    function normalizeFacultyDisplay(code) {
-        const normalized = code === 'all' ? 'all' : normalizeFacultyCode(code, getCurrentFaculty());
-        if (normalized === 'all') return 'All Faculties';
-        const profile = typeof getFacultyProfile === 'function' ? getFacultyProfile(normalized) : null;
-        return profile?.name || normalized;
-    }
 
-    function getSchedulerWeekStart() {
-        return getStoredWeekStart(SCHEDULER_WEEK_STORAGE_KEY);
-    }
 
-    function normalizeSchedulerDayLabel(day, target = 'ge') {
-        const raw = String(day || '').trim();
-        if (!raw) return '';
-        const entries = getWeekDateEntries(getSchedulerWeekStart());
-        const lowered = raw.toLowerCase();
-        const match = entries.find((entry) =>
-            String(entry.ge || '').trim().toLowerCase() === lowered
-            || String(entry.en || '').trim().toLowerCase() === lowered
-        );
-        if (match) return target === 'en' ? match.en : match.ge;
-        const orderIndex = DAY_ORDER.findIndex((label) => label.toLowerCase() === lowered);
-        if (orderIndex >= 0) {
-            const fallbackEntry = entries[orderIndex];
-            if (fallbackEntry) return target === 'en' ? fallbackEntry.en : fallbackEntry.ge;
-        }
-        return raw;
-    }
 
-    function getSchedulerFacultyTone(facultyCode, options = {}) {
-        return getFacultyThemeTone(normalizeFacultyCode(facultyCode || 'ECON'), {
-            softAlpha: 0.14,
-            tintAlpha: 0.18,
-            strongAlpha: 0.24,
-            borderAlpha: 0.28,
-            ...options
-        });
-    }
 
-    function getSchedulerPaletteSubjects() {
-        const facultyFilter = el('admin-tt-faculty')?.value || 'all';
-        const semesterFilter = parseInt(el('admin-tt-semester')?.value || '0', 10);
-        const query = String(el('palette-search')?.value || '').trim().toLowerCase();
-        const currentFaculty = localStorage.getItem('currentFaculty') || 'ECON';
-        const normalizedFaculty = facultyFilter === 'all'
-            ? 'all'
-            : normalizeFacultyCode(facultyFilter, currentFaculty);
-
-        let subjects = normalizedFaculty === 'all'
-            ? mergeUniqueSubjects(
-                Object.values(KIU_STATE.facultyProfiles || {})
-                    .flatMap((profile) => profile.curriculum || [])
-                    .concat(KIU_STATE.curriculum || [])
-            )
-            : getActiveCurriculum(normalizedFaculty);
-
-        if (!subjects.length) {
-            subjects = (KIU_STATE.curriculum || []).filter((subject) =>
-                normalizedFaculty === 'all'
-                || normalizeFacultyCode(subject.faculty, currentFaculty) === normalizedFaculty
-            );
-        }
-
-        return subjects.filter((subject) => {
-            const subjectSemester = parseInt(subject.semester || '0', 10);
-            const semesterMatches = !semesterFilter || !subjectSemester || subjectSemester === semesterFilter;
-            if (!semesterMatches) return false;
-            if (!query) return true;
-            return String(subject.name || '').toLowerCase().includes(query)
-                || String(subject.id || '').toLowerCase().includes(query);
-        });
-    }
 
     function getVisibleSchedulerSessions() {
         const weekStart = getSchedulerWeekStart();
@@ -680,18 +613,12 @@
         const semester = el('admin-tt-semester')?.value || '3';
         const isCurrentWeek = weekStart === currentWeek;
 
-        setText('sch-current-faculty', `Faculty: ${normalizeFacultyDisplay(facultyCode)}`);
-        setText('sch-current-semester', `Semester ${semester}`);
-        setText('sch-current-week-range', formatWeekRangeLabel(weekStart));
         setText('sch-stat-sessions', String(visibleSessions.length));
         setText('sch-stat-drafts', String(drafts));
         setText('sch-stat-rooms', String(roomCount));
         setText('sch-stat-instructors', String(staffCount));
         setText('sch-palette-count', String(getPaletteSubjectsCount()));
         setText('sch-palette-summary', `${getPaletteSubjectsCount()} subjects`);
-
-        const badge = el('sch-rail-week-badge');
-        if (badge) badge.textContent = isCurrentWeek ? 'Current week' : 'Selected week';
     }
 
     function schedulerRosterDisplayName(person = {}) {
@@ -764,7 +691,9 @@
         const paletteSubjects = getSchedulerPaletteSubjects();
         const allSubjects = mergeUniqueSubjects([...(KIU_STATE.curriculum || []), ...paletteSubjects]);
         selectedPaletteSubject = allSubjects.find((subject) => subject.id === id) || null;
-        window.selectedPaletteSubject = selectedPaletteSubject;
+        __kiuSchedExpose({
+            selectedPaletteSubject,
+        });
         syncPaletteSelectionState(id);
         const subjectSelect = el('sch-subject');
         if (subjectSelect) subjectSelect.value = id;
@@ -1072,6 +1001,7 @@
         const modal = ensureMountedTemplate(SCHEDULER_CREATE_MODAL_TEMPLATE_ID, SCHEDULER_CREATE_MODAL_ID);
         if (modal) {
             bindSchedulerCreateModalListeners(modal);
+            modal.setAttribute('data-lux-transparency-exempt', '1');
             if (document.body.classList.contains('lux-route-admin-scheduler')) {
                 modal.dataset.luxSchModal = '1';
                 modal.querySelector('.sch-modal')?.setAttribute('data-lux-glass-root', '1');
@@ -1621,165 +1551,51 @@
         renderGrid();
     }
 
-    function schCreateSession() {
-        const isEdit = el('sch-edit-mode')?.value === 'edit';
-        const originalCourseId = el('sch-edit-course')?.value || '';
-        const originalGroupId = String(el('sch-edit-group')?.value || '').toLowerCase();
-        const originalWeekStart = el('sch-edit-weekstart')?.value || getSchedulerWeekStart();
-        const originalWasOverride = el('sch-edit-was-override')?.value === '1';
+    /* H2b: admin-scheduler-faculty-runtime.js */
+    const __schedFacultyDeps = window.__kiuAdminSchedulerFacultyDeps = {
+        el,
+        DAY_ORDER,
+        SCHEDULER_WEEK_STORAGE_KEY: (typeof SCHEDULER_WEEK_STORAGE_KEY !== 'undefined'
+            ? SCHEDULER_WEEK_STORAGE_KEY
+            : (window.SCHEDULER_WEEK_STORAGE_KEY || 'KIU_SCHEDULER_WEEK_START')),
+        getCurrentFaculty: (...a) => (typeof getCurrentFaculty === 'function' ? getCurrentFaculty(...a) : window.getCurrentFaculty?.(...a)),
+        normalizeFacultyCode: (...a) => (typeof normalizeFacultyCode === 'function' ? normalizeFacultyCode(...a) : window.normalizeFacultyCode?.(...a)),
+        getFacultyProfile: (...a) => (typeof getFacultyProfile === 'function' ? getFacultyProfile(...a) : window.getFacultyProfile?.(...a)),
+        getFacultyThemeTone: (...a) => (typeof getFacultyThemeTone === 'function' ? getFacultyThemeTone(...a) : window.getFacultyThemeTone?.(...a)),
+        getActiveCurriculum: (...a) => (typeof getActiveCurriculum === 'function' ? getActiveCurriculum(...a) : window.getActiveCurriculum?.(...a)),
+        getStoredWeekStart: (...a) => (typeof getStoredWeekStart === 'function' ? getStoredWeekStart(...a) : window.getStoredWeekStart?.(...a)),
+        getWeekDateEntries: (...a) => (typeof getWeekDateEntries === 'function' ? getWeekDateEntries(...a) : window.getWeekDateEntries?.(...a)),
+    };
+    const __h2bFacultyApi = typeof window.__kiuCreateAdminSchedulerFacultyApi === 'function'
+        ? window.__kiuCreateAdminSchedulerFacultyApi(__schedFacultyDeps) : null;
+    if (!__h2bFacultyApi) throw new Error('admin-scheduler-faculty-runtime.js missing');
+    const {
+        mergeUniqueSubjects,
+        deriveFaculty,
+        normalizeFacultyDisplay,
+        getSchedulerWeekStart,
+        normalizeSchedulerDayLabel,
+        getSchedulerFacultyTone,
+        getSchedulerPaletteSubjects,
+    } = __h2bFacultyApi;
 
-        const courseId = el('sch-subject')?.value?.trim();
-        const groupName = el('sch-group')?.value?.trim();
-        const day = normalizeSchedulerDayLabel(el('sch-day')?.value, 'ge');
-        const time = normalizeTimeString(el('sch-time')?.value, '');
-        let endTime = normalizeTimeString(el('sch-endtime')?.value, '');
-        let durationMinutes = parseInt(el('sch-duration')?.value, 10);
-
-        if (Number.isNaN(durationMinutes) || el('sch-duration')?.value === 'custom') {
-            durationMinutes = convertTimeToMinutes(endTime) - convertTimeToMinutes(time);
-            if (durationMinutes <= 0) durationMinutes = 60;
-        }
-        if (!endTime) {
-            endTime = minutesToTimeString(convertTimeToMinutes(time) + durationMinutes);
-        }
-
-        const room = el('sch-room')?.value?.trim() || 'TBD';
-        const professor = el('sch-prof')?.value?.trim() || 'TBD';
-        const ta = el('sch-ta')?.value?.trim() || '';
-        const sessionType = typeof inferSchedulerSessionType === 'function'
-            ? inferSchedulerSessionType(professor, ta, el('sch-session-type')?.value || 'lecture')
-            : (String(el('sch-session-type')?.value || 'lecture').toLowerCase() === 'seminar' ? 'seminar' : 'lecture');
-        const capacity = parseInt(el('sch-capacity')?.value || '40', 10) || 40;
-        const semester = parseInt(el('sch-semester-hidden')?.value || '3', 10) || 3;
-        const weekStart = el('sch-weekstart-hidden')?.value || getSchedulerWeekStart();
-        const applyScope = el('sch-apply-scope')?.value || 'selected-week';
-        const normalizedGroupId = String(groupName || '').toLowerCase();
-        const faculty = normalizeFacultyCode(el('admin-tt-faculty')?.value || localStorage.getItem('currentFaculty') || 'ECON');
-
-        if (!courseId || courseId === '- Add subjects from Curriculum CMS first -') {
-            alert('Please select a subject. If empty, add subjects from Curriculum CMS first.');
-            return;
-        }
-        if (!groupName) {
-            alert('Please enter a Group ID (e.g. G1).');
-            return;
-        }
-        if (!day || !time) {
-            alert('Day and time are required.');
-            return;
-        }
-
-        const excludeKey = isEdit && originalCourseId && originalGroupId
-            ? `${originalCourseId}::${originalGroupId}`
-            : `${courseId}::${normalizedGroupId}`;
-
-        const professorOverlap = findScheduleConflict('professor', professor, day, time, endTime, excludeKey, weekStart);
-        if (professorOverlap) {
-            alert(`CONFLICT: ${professor} is already scheduled for ${professorOverlap.courseId} at this time.`);
-            return;
-        }
-
-        const roomOverlap = findScheduleConflict('room', room, day, time, endTime, excludeKey, weekStart);
-        if (roomOverlap) {
-            alert(`CONFLICT: Room ${room} is already booked for ${roomOverlap.courseId} at this time.`);
-            return;
-        }
-
-        const result = upsertScheduledSession(courseId, {
-            id: normalizedGroupId,
-            name: groupName,
-            faculty,
-            semester,
-            day,
-            time,
-            endTime,
-            prof: professor,
-            ta,
-            room,
-            duration: `${durationMinutes}min`,
-            sessionType,
-            capacity,
-            registered: 0
-        }, {
-            weekStart,
-            scope: applyScope
-        });
-
-        if (!result?.group) {
-            alert('Unable to save this session. Please verify the subject and group details.');
-            return;
-        }
-
-        const movedSession = isEdit
-            && originalCourseId
-            && originalGroupId
-            && (originalCourseId !== courseId || originalGroupId !== normalizedGroupId);
-
-        if (movedSession && typeof migrateStudentSchedulesForScheduledGroup === 'function') {
-            migrateStudentSchedulesForScheduledGroup(originalCourseId, originalGroupId, courseId, result.group);
-        }
-
-        if (movedSession && (originalWasOverride || applyScope === 'recurring')) {
-            deleteScheduledSession(
-                originalCourseId,
-                originalGroupId,
-                originalWeekStart,
-                originalWasOverride ? 'week-only' : 'visible'
-            );
-        } else if (isEdit && !movedSession && originalWasOverride && applyScope === 'recurring') {
-            deleteScheduledSession(courseId, normalizedGroupId, originalWeekStart, 'week-only');
-        }
-
-        saveState();
-        closeSchModal();
-
-        const profFilter = el('admin-tt-prof');
-        const taFilter = el('admin-tt-ta');
-        const currentProfFilter = profFilter?.value || 'all';
-        const currentTaFilter = taFilter?.value || 'all';
-        const hiddenByFilters = (currentProfFilter !== 'all' && professor !== currentProfFilter)
-            || (currentTaFilter !== 'all' && ta !== currentTaFilter);
-
-        if (hiddenByFilters) {
-            if (profFilter) profFilter.value = 'all';
-            if (taFilter) taFilter.value = 'all';
-        }
-
-        renderGrid();
-
-        const button = el('sch-create-btn');
-        if (button) {
-            const originalHtml = button.innerHTML;
-            button.innerHTML = `<i class="fas fa-check"></i> ${isEdit ? 'Session Updated!' : 'Session Created!'}`;
-            button.classList.add('is-success-state');
-            setTimeout(() => {
-                button.innerHTML = originalHtml;
-                button.classList.remove('is-success-state');
-            }, 2000);
-        }
-    }
-
-    function syncSchedulerFacultyScope(facultyValue) {
-        normalizeSchedulerSelectOptions();
-        const normalizedFaculty = facultyValue === 'all'
-            ? 'all'
-            : normalizeFacultyCode(facultyValue, getCurrentFaculty());
-
-        if (el('admin-tt-faculty')) el('admin-tt-faculty').value = normalizedFaculty;
-
-        if (normalizedFaculty !== 'all') {
-            localStorage.setItem('currentFaculty', normalizedFaculty);
-            if (typeof switchFacultyTheme === 'function') {
-                switchFacultyTheme(normalizedFaculty, { refreshDependentViews: false });
-            }
-        }
-
-        selectedPaletteSubject = null;
-        window.selectedPaletteSubject = null;
-
-        populateProfList();
-        queueSchedulerRefresh({ palette: true, grid: true });
-    }
+    /* Wave 18: admin-scheduler-session-runtime.js */
+    const __schedSessionDeps = window.__kiuAdminSchedulerSessionDeps = {
+        el, getSchedulerWeekStart, normalizeSchedulerDayLabel, normalizeTimeString,
+        convertTimeToMinutes, minutesToTimeString, findScheduleConflict, upsertScheduledSession,
+        deleteScheduledSession, closeSchModal, renderGrid, normalizeSchedulerSelectOptions,
+        populateProfList, queueSchedulerRefresh,
+        get selectedPaletteSubject() { return selectedPaletteSubject; },
+        set selectedPaletteSubject(v) { selectedPaletteSubject = v; },
+        saveState: (...a) => (typeof saveState === 'function' ? saveState(...a) : window.saveState?.(...a)),
+        normalizeFacultyCode: (...a) => (typeof normalizeFacultyCode === 'function' ? normalizeFacultyCode(...a) : window.normalizeFacultyCode?.(...a)),
+        inferSchedulerSessionType: (...a) => window.inferSchedulerSessionType?.(...a),
+        migrateStudentSchedulesForScheduledGroup: (...a) => window.migrateStudentSchedulesForScheduledGroup?.(...a)
+    };
+    const __w18PeelApi = typeof window.__kiuCreateAdminSchedulerSessionApi === 'function'
+        ? window.__kiuCreateAdminSchedulerSessionApi(__schedSessionDeps) : null;
+    if (!__w18PeelApi) throw new Error('admin-scheduler-session-runtime.js missing');
+    const { schCreateSession, syncSchedulerFacultyScope } = __w18PeelApi;
 
     function changeSchedulerWeek(offset) {
         setStoredWeekStart(SCHEDULER_WEEK_STORAGE_KEY, shiftWeekStartISO(getSchedulerWeekStart(), offset));
@@ -1915,12 +1731,11 @@
             }
         }
 
-        document.body.classList.remove('lux-home-page', 'lux-route-home', 'kiu-shell-loading');
+        document.body.classList.remove('lux-home-page', 'lux-route-home');
         document.body.classList.add('lux-unified-shell', 'lux-nonhome-page', 'lux-route-admin-scheduler');
         document.body.dataset.luxPage = 'admin-scheduler';
         document.body.dataset.luxEntry = 'admin-scheduler';
         document.body.dataset.luxFamily = 'admin';
-        document.body.classList.remove('kiu-shell-loading');
 
         const currentFaculty = normalizeFacultyCode(localStorage.getItem('currentFaculty') || 'ECON', 'ECON');
         normalizeSchedulerSelectOptions();
@@ -1932,40 +1747,41 @@
 
         bindSchedulerListeners();
         populateProfList();
-        queueSchedulerRefresh({ palette: true, grid: true });
-
+        queueSchedulerRefresh({ palette: true, grid: true, revealShell: true });
 
         window.dispatchEvent(new CustomEvent('kiu:scheduler-ready'));
     }
 
-    window.selectedPaletteSubject = selectedPaletteSubject;
-    window.getSchedulerWeekStart = getSchedulerWeekStart;
-    window.syncSchedulerWeekChrome = syncSchedulerWeekChrome;
-    window.changeSchedulerWeek = changeSchedulerWeek;
-    window.jumpSchedulerToCurrentWeek = jumpSchedulerToCurrentWeek;
-    window.syncSchedulerFacultyScope = syncSchedulerFacultyScope;
-    window.populateProfList = populateProfList;
-    window.getSchedulerPaletteSubjects = getSchedulerPaletteSubjects;
-    window.getSchedulerFacultyTone = getSchedulerFacultyTone;
-    window.renderPalette = renderPalette;
-    window.selectPaletteItem = selectPaletteItem;
-    window.normalizeSchedulerDayLabel = normalizeSchedulerDayLabel;
-    window.openSchModal = openSchModal;
-    window.openSchEditModal = openSchEditModal;
-    window.closeSchModal = closeSchModal;
-    window.schCalcEnd = schCalcEnd;
-    window.schCheckConflict = schCheckConflict;
-    window.renderGrid = renderGrid;
-    window.schShowStats = schShowStats;
-    window.schDeleteSession = schDeleteSession;
-    window.schCreateSession = schCreateSession;
-    window.updateSchedulerRailChrome = updateSchedulerRailChrome;
-    window.openSchedulerQuickCreate = openSchedulerQuickCreate;
-    window.focusSchedulerPalette = focusSchedulerPalette;
-    window.resetSchedulerRail = resetSchedulerRail;
-    window.initializeAdminSchedulerPage = initializeAdminSchedulerPage;
-    window.openProfQuizModal = openProfQuizModal;
-    window.closeProfQuizModal = closeProfQuizModal;
+    __kiuSchedExpose({
+        selectedPaletteSubject,
+        getSchedulerWeekStart,
+        syncSchedulerWeekChrome,
+        changeSchedulerWeek,
+        jumpSchedulerToCurrentWeek,
+        syncSchedulerFacultyScope,
+        populateProfList,
+        getSchedulerPaletteSubjects,
+        getSchedulerFacultyTone,
+        renderPalette,
+        selectPaletteItem,
+        normalizeSchedulerDayLabel,
+        openSchModal,
+        openSchEditModal,
+        closeSchModal,
+        schCalcEnd,
+        schCheckConflict,
+        renderGrid,
+        schShowStats,
+        schDeleteSession,
+        schCreateSession,
+        updateSchedulerRailChrome,
+        openSchedulerQuickCreate,
+        focusSchedulerPalette,
+        resetSchedulerRail,
+        initializeAdminSchedulerPage,
+        openProfQuizModal,
+        closeProfQuizModal,
+    });
 
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', initializeAdminSchedulerPage, { once: true });
@@ -1973,5 +1789,3 @@
         initializeAdminSchedulerPage();
     }
 })();
-
-

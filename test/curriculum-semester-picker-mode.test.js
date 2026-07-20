@@ -1,15 +1,20 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
 function readSource(relativePath) {
-    return readFileSync(join(process.cwd(), relativePath), 'utf8');
+    const full = join(process.cwd(), relativePath);
+    if (typeof existsSync === 'function' && !existsSync(full)) return '';
+    return readFileSync(full, 'utf8');
 }
 
 describe('curriculum semester picker mode', () => {
     it('implements replace vs add selection logic', () => {
         const picker = readSource('assets/js/pages/curriculum-semester-picker.js');
 
+        expect(picker).toContain('lux-picker-option');
+        expect(picker).toContain('<strong>');
+        expect(picker).toContain('togglePickerPanel');
         expect(picker).toContain('let addSemestersMode = false');
         expect(picker).toContain('function applySemesterSelection(semester, config)');
         expect(picker).toContain('function setAddSemestersMode(enabled, config = {})');
@@ -32,6 +37,8 @@ describe('curriculum semester picker mode', () => {
         expect(bundle).toContain('data-semester-mode="add"');
         expect(bundle).toContain('new-subject-semester-mode-hint');
         expect(bundle).toContain('Select semester');
+        expect(bundle).toContain('lux-universal-picker-panel');
+        expect(bundle).not.toContain('new-subject-semester-lux-panel" role="listbox" aria-hidden="true" hidden');
         expect(bundle).not.toContain('lux-semester-add-mode-btn');
         expect(bundle).not.toContain('Add or remove semester');
     });

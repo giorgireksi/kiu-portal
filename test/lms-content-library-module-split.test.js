@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'fs';
+
+import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
 function readSource(relativePath) {
@@ -7,29 +8,59 @@ function readSource(relativePath) {
 }
 
 describe('LMS content library module split', () => {
-    it('moves LMS week and concept ownership out of lms.js and into the dedicated runtime module', () => {
+    it('owns concepts in content-library and shared week/store infra in week-store', () => {
         const lmsHtml = readSource('lms.html');
         const lmsSource = readSource('assets/js/pages/lms.js');
         const contentSource = readSource('assets/js/pages/lms-content-library-runtime.js');
-        const routeCss = readSource('assets/css/lms-route.css');
+        const weekStoreSource = readSource('assets/js/pages/lms-week-store-runtime.js');
+        expect(lmsHtml).not.toContain('assets/js/pages/lms-week-store-runtime.js');
+        expect(lmsHtml).not.toContain('assets/js/pages/lms-content-library-runtime.js');
+        const classroomSource = readSource('assets/js/pages/lms-classroom-tabs-runtime.js');
+        expect(classroomSource).toContain('assets/js/pages/lms-week-store-runtime.js?v=20260714-lmspro2');
+        expect(classroomSource).toContain('assets/js/pages/lms-content-library-runtime.js?v=20260714-lmspro2');
+        expect(classroomSource).toContain('function ensureLmsContentRuntime()');
+        expect(classroomSource.indexOf('lms-week-store-runtime.js')).toBeLessThan(
+            classroomSource.indexOf('lms-materials-runtime.js')
+        );
+        expect(classroomSource.indexOf('lms-week-store-runtime.js')).toBeLessThan(
+            classroomSource.indexOf('lms-assignments-runtime.js')
+        );
 
-        expect(lmsHtml).toContain('assets/js/pages/lms-content-library-runtime.js?v=20260518-lmscontent1');
-
-        expect(contentSource).toContain('function ensureLmsWeeksForKey(resourceKey)');
-        expect(contentSource).toContain('function renderLmsWeekManager(resourceKey)');
+        expect(contentSource).toContain('renderLmsWeekPanelEmptyState(');
         expect(contentSource).toContain('function renderLmsConceptsLibrary(courseId)');
         expect(contentSource).toContain('async function createLmsConcept(resourceKey)');
         expect(contentSource).toContain('function updateLmsConceptReview(resourceKey, conceptId, reviewStatus = \'approved\')');
         expect(contentSource).toContain('function deleteLmsConcept(resourceKey, conceptId)');
         expect(contentSource).toContain('function rateLmsConcept(resourceKey, conceptId, score)');
         expect(contentSource).toContain('function getLmsConceptReviewPillClass(reviewStatus = \'\')');
-        expect(contentSource).toContain('class="lms-route-card-head lms-week-manager-shell-head"');
-        expect(contentSource).toContain('class="lms-route-copy lms-route-copy-mt-4 lms-week-manager-shell-copy"');
-        expect(contentSource).toContain('class="lms-route-actions lms-week-manager-shell-actions"');
-        expect(contentSource).toContain('class="kiu-btn-blue lms-week-manager-input-action"');
-        expect(contentSource).toContain('class="lms-quiz-board-modal lms-week-manager-modal lms-week-manager-modal-shell"');
-        expect(contentSource).toContain('class="lms-quiz-board-head lms-week-manager-modal-head"');
-        expect(contentSource).toContain('class="lms-quiz-board-body lms-week-manager-modal-body"');
+        expect(contentSource).not.toContain('function ensureLmsWeeksForKey(resourceKey)');
+        expect(contentSource).not.toContain('function renderLmsWeekManager(resourceKey)');
+        expect(contentSource).not.toContain('function ensureLmsAssignmentsForKey(resourceKey)');
+        expect(contentSource).not.toContain('lms-week-manager-shell-actions');
+
+        expect(weekStoreSource).toContain('function ensureLmsAssignmentsForKey(resourceKey)');
+        expect(weekStoreSource).toContain('function ensureLmsMaterialsForKey(resourceKey)');
+        expect(weekStoreSource).toContain('function ensureLmsSubmissionsForKey(resourceKey)');
+        expect(weekStoreSource).toContain('function ensureLmsConceptsForKey(resourceKey)');
+        expect(weekStoreSource).toContain('function ensureLmsConceptRatingsForKey(resourceKey)');
+        expect(weekStoreSource).toContain('function normalizeLmsWeekLabel(value)');
+        expect(weekStoreSource).toContain('function sortLmsWeekLabels(labels = [])');
+        expect(weekStoreSource).toContain('function ensureLmsWeeksForKey(resourceKey)');
+        expect(weekStoreSource).toContain('function buildLmsWeekSelectOptions(resourceKey, selectedValue = \'\')');
+        expect(weekStoreSource).toContain('function groupLmsItemsByWeek(resourceKey, items, valueGetter)');
+        expect(weekStoreSource).toContain('function renderLmsWeekManager(resourceKey)');
+        expect(weekStoreSource).toContain('function openLmsWeekManagerModal(resourceKey)');
+        expect(weekStoreSource).toContain('function addLmsWeek(resourceKey, inputId)');
+        expect(weekStoreSource).toContain('function removeLmsWeek(resourceKey, weekLabel)');
+        expect(weekStoreSource).not.toContain('lms-week-manager-shell-actions');
+        expect(weekStoreSource).not.toContain('This group follows ${weeks.length} teaching week');
+        expect(weekStoreSource).toContain('class="lms-route-card-head lms-week-manager-shell-head"');
+        expect(weekStoreSource).toContain('class="lms-route-copy lms-route-copy-mt-4 lms-week-manager-shell-copy"');
+        expect(weekStoreSource).toContain('class="lux-primary-btn lms-week-manager-input-action"');
+        expect(weekStoreSource).toContain('lms-week-manager-modal lms-week-manager-modal-shell');
+        expect(weekStoreSource).toContain('renderLmsGlassDialogCard');
+        expect(weekStoreSource).toContain('lms-glass-dialog-overlay');
+
         expect(contentSource).toContain('class="lms-route-card-head lms-route-card-head-mb-16"');
         expect(contentSource).toContain('class="lms-route-copy lms-route-copy-mt-6"');
         expect(contentSource).toContain('class="lms-route-field lms-route-field-mt-14"');
@@ -44,7 +75,7 @@ describe('LMS content library module split', () => {
         expect(contentSource).toContain('class="lms-route-card-head lms-concept-card-head"');
         expect(contentSource).toContain('class="lms-route-pill lms-concept-review-pill ${getLmsConceptReviewPillClass(concept.reviewStatus)}"');
         expect(contentSource).toContain('class="lms-route-pill is-positive"');
-        expect(contentSource).toContain('class="kiu-btn-outline lms-route-btn-compact lms-route-btn-compact-square lms-route-btn-danger"');
+        expect(contentSource).toContain('class="lux-secondary-btn lms-route-btn-compact lms-route-btn-compact-square lms-route-btn-danger"');
         expect(contentSource).toContain('class="lms-route-copy lms-route-copy-mt-14 lms-route-copy-prewrap"');
         expect(contentSource).toContain('renderLmsStoredFileAttachmentShell(concept.file');
         expect(contentSource).toContain('class="lms-concept-card-footer"');
@@ -67,23 +98,6 @@ describe('LMS content library module split', () => {
         expect(contentSource).not.toContain('style="margin-top:12px;"');
         expect(contentSource).not.toContain('style="display:flex; justify-content:space-between; gap:14px; flex-wrap:wrap; margin-top:16px; align-items:flex-start;"');
         expect(contentSource).not.toContain('style="padding:7px 10px; min-width:42px;"');
-        expect(routeCss).toContain('.lms-route-copy-mt-14');
-        expect(routeCss).toContain('.lms-route-stack-gap-16');
-        expect(routeCss).toContain('.lms-route-actions-mt-12');
-        expect(routeCss).toContain('.lms-route-copy-prewrap');
-        expect(routeCss).toContain('.lms-week-manager-shell-head,');
-        expect(routeCss).toContain('.lms-week-manager-input-action {');
-        expect(routeCss).toContain('.lms-week-manager-modal-shell {');
-        expect(routeCss).toContain('.lms-week-manager-modal-body {');
-        expect(routeCss).toContain('.lms-concept-card {');
-        expect(routeCss).toContain('.lms-concept-guidance-card {');
-        expect(routeCss).toContain('.lms-concept-status-row {');
-        expect(routeCss).toContain('.lms-concept-form-toggle');
-        expect(routeCss).toContain('.lms-concept-review-pill.is-approved');
-        expect(routeCss).toContain('.lms-concept-card-footer');
-        expect(routeCss).toContain('.lms-concept-card-footer-actions,');
-        expect(routeCss).toContain('.lms-concept-review-actions {');
-        expect(routeCss).toContain('.lms-concept-rate-btn');
 
         expect(lmsSource).not.toContain('function ensureLmsWeeksForKey(resourceKey)');
         expect(lmsSource).not.toContain('function renderLmsWeekManager(resourceKey)');

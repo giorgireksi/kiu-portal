@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 import { createRequire } from 'module';
 
@@ -42,9 +42,12 @@ describe('registration CMS persistence', () => {
 
     it('merges richer local registration CMS during portal bootstrap', () => {
         const api = readSource('assets/js/app/api.js');
-        expect(api).toContain('function mergeRegistrationCmsStateFromLocal');
+        const peel = readSource('assets/js/app/api-admin-merge-runtime.js');
+        expect(peel).toContain('function mergeRegistrationCmsStateFromLocal');
         expect(api).toContain('function mergePortalStateFromLocal');
+        expect(api).toContain('const mergeRegistrationCmsStateFromLocal = window.mergeRegistrationCmsStateFromLocal');
         expect(api).toContain('mergePortalStateFromLocal(localSnapshot, nextState');
+        expect(api).not.toContain('function mergeRegistrationCmsStateFromLocal');
     });
 
     it('merges registration CMS by module count instead of empty local timestamps', () => {
@@ -61,11 +64,13 @@ describe('registration CMS persistence', () => {
 
     it('keeps richer remote registration CMS when local snapshot is newer but empty', () => {
         const apiSource = readSource('assets/js/app/api.js');
+        const peelSource = readSource('assets/js/app/api-admin-merge-runtime.js');
+        const persistSource = readSource('assets/js/app/api-portal-persist-runtime.js');
         const vm = require('vm');
         const context = { console, window: {}, localStorage: { getItem: () => null, setItem: () => {} } };
         vm.createContext(context);
         const fnBlock = [
-            apiSource.match(/function clonePortalState[\s\S]*?\n\}/)?.[0],
+            persistSource.match(/function clonePortalState[\s\S]*?\n\}/)?.[0],
             apiSource.match(/function countAdminRegistrationStructureModules[\s\S]*?\n\}/)?.[0],
             apiSource.match(/function countRegistrationTrackBucketEntries[\s\S]*?\n\}/)?.[0],
             apiSource.match(/function countRegistrationCmsBucketEntries[\s\S]*?\n\}/)?.[0],
@@ -75,7 +80,7 @@ describe('registration CMS persistence', () => {
             apiSource.match(/function getRegistrationCmsSavedAtMs[\s\S]*?\n\}/)?.[0],
             apiSource.match(/function countAdminRegistrationStructureModulesWithTrack[\s\S]*?\n\}/)?.[0],
             apiSource.match(/function shouldCopyLocalAdminProgramFacultyBucket[\s\S]*?\n\}/)?.[0],
-            apiSource.match(/function mergeRegistrationCmsStateFromLocal[\s\S]*?\n\}/)?.[0]
+            peelSource.match(/function mergeRegistrationCmsStateFromLocal[\s\S]*?\n\}/)?.[0]
         ].filter(Boolean).join('\n\n');
         vm.runInContext(fnBlock, context);
         const local = {
@@ -129,8 +134,11 @@ describe('registration CMS persistence', () => {
 
     it('routes luxury header add module to registration setup when CMS container exists', () => {
         const bundle = readSource('assets/js/features/index-admin-tools.bundle-source.js');
-        expect(bundle).toContain('addNewAdminRegModule(\'prog\')');
-        expect(bundle).toContain('addCurriculumLibraryModule');
+        const adminRegistration = readSource('assets/js/pages/admin-registration.js');
+        const registration = readSource('assets/js/pages/registration.js');
+        expect(adminRegistration).toContain('data-admin-reg-add-module="prog"');
+        expect(adminRegistration).toMatch(/addNewAdminRegModule\(addModuleTrigger\.dataset\.adminRegAddModule/);
+        expect(registration).toContain('function addCurriculumLibraryModule');
         expect(bundle).not.toContain('id="new-subject-semester"');
         expect(bundle).toContain('id="new-subject-semesters"');
         expect(bundle).toContain('initCurriculumSemesterPicker');
@@ -155,5 +163,38 @@ describe('registration CMS persistence', () => {
         const shared = readSource('assets/js/pages/registration-shared.js');
         expect(shared).toContain('function runRegistrationRemoveVerification');
         expect(shared).toContain('function buildAdminRegTabRemoveVerification');
+    });
+
+    it('flushes admin CMS workspace before role or view-as identity changes', () => {
+        const adminRegistration = readSource('assets/js/pages/admin-registration.js');
+        const utilities = readSource('assets/js/shared/utilities.js');
+        expect(adminRegistration).toContain('function flushAdminToolsWorkspaceBeforeIdentityChange');
+        expect(adminRegistration).toContain('window.flushAdminToolsWorkspaceBeforeIdentityChange = flushAdminToolsWorkspaceBeforeIdentityChange');
+        expect(adminRegistration).toMatch(/flushAdminToolsWorkspaceBeforeIdentityChange[\s\S]*?getAdminCmsWriteFaculty/);
+        expect(adminRegistration).toMatch(/getAdminCmsWriteFaculty[\s\S]*?boundRegistrationCmsFaculty/);
+        expect(utilities).toContain('function flushAdminWorkspaceBeforeRoleIdentityChange');
+        expect(utilities).toMatch(/fastRedirectRoleSwitch[\s\S]*?flushAdminWorkspaceBeforeRoleIdentityChange[\s\S]*?setActiveSessionUserByRole/);
+        expect(utilities).toMatch(/persistAdminImpersonationRoleState[\s\S]*?skipFlush[\s\S]*?reconcileAdminRegistrationCmsAfterIdentityChange/);
+    });
+
+    it('rebinds registration CMS globals after portal bootstrap identity changes', () => {
+        const adminRegistration = readSource('assets/js/pages/admin-registration.js');
+        const api = readSource('assets/js/app/api.js');
+        const bundle = readSource('assets/js/features/index-admin-tools.bundle-source.js');
+        expect(adminRegistration).toContain('function reconcileAdminRegistrationCmsAfterIdentityChange');
+        expect(adminRegistration).toContain('window.reconcileAdminRegistrationCmsAfterIdentityChange = reconcileAdminRegistrationCmsAfterIdentityChange');
+        expect(adminRegistration).toMatch(/reconcileAdminRegistrationCmsAfterIdentityChange[\s\S]*?bindFacultyRegistrationCmsData/);
+        expect(adminRegistration).toMatch(/bindFacultyRegistrationCmsData[\s\S]*?container\.dataset\.cmsFaculty = fac/);
+        expect(api).toMatch(/applyPortalBootstrapState[\s\S]*?reconcileAdminRegistrationCmsAfterIdentityChange/);
+        expect(api).toContain('function canMergeLocalPortalSnapshot');
+        expect(bundle).toMatch(/renderLuxuryAdminToolsPage[\s\S]*?bindFacultyRegistrationCmsData/);
+        expect(bundle).toContain('getAdminRegistrationFaculty');
+    });
+
+    it('uses admin CMS write faculty when persisting registration globals in saveState', () => {
+        const state = readSource('assets/js/app/state.js');
+        const adminRegistration = readSource('assets/js/pages/admin-registration.js');
+        expect(state).toMatch(/saveState[\s\S]*?getAdminCmsWriteFaculty/);
+        expect(adminRegistration).toContain('window.getAdminCmsWriteFaculty = getAdminCmsWriteFaculty');
     });
 });

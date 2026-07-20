@@ -37,104 +37,7 @@ const STUDENT_SERVICE_SUPPORT_AREA_BY_CATEGORY = {
     'Other': 'general',
     'General Question': 'general'
 };
-const STUDENT_SERVICE_DEFAULT_ARTICLES = [
-    {
-        id: 'svc-article-001',
-        title: 'How to ask for help from Student Service',
-        category: 'General Question',
-        serviceArea: 'general',
-        summary: 'Use Student Service for general office support, guidance, and portal questions.',
-        content: 'Student Service is the main help desk for office support, rules guidance, and non-academic process questions. Use a ticket when you need a response or follow-up.',
-        published: true,
-        featured: true,
-        audience: 'all',
-        facultyCode: 'ALL',
-        relatedLinks: [],
-        createdBy: 'System',
-        updatedBy: 'System',
-        updatedAt: '2026-04-01T09:00:00.000Z'
-    },
-    {
-        id: 'svc-article-002',
-        title: 'When to use Chancellery vs Student Service',
-        category: 'Academic Process',
-        serviceArea: 'academics',
-        summary: 'Student Service handles general help. Chancellery handles exam appeals and retake requests.',
-        content: 'Use Student Service for general office support, documents guidance, finance questions, and portal help. Use Chancellery only for grade appeals and retake request workflows after exams.',
-        published: true,
-        featured: true,
-        audience: 'all',
-        facultyCode: 'ALL',
-        relatedLinks: [],
-        createdBy: 'System',
-        updatedBy: 'System',
-        updatedAt: '2026-04-01T09:15:00.000Z'
-    },
-    {
-        id: 'svc-article-003',
-        title: 'Registration and enrollment help',
-        category: 'Registration / Enrollment',
-        serviceArea: 'registration',
-        summary: 'What to prepare before asking about course registration and enrollment issues.',
-        content: 'When opening a registration ticket, include your student ID, semester, course name, and the exact problem you saw in the portal. This helps Student Service review your case faster.',
-        published: true,
-        featured: true,
-        audience: 'students',
-        facultyCode: 'ALL',
-        relatedLinks: [],
-        createdBy: 'System',
-        updatedBy: 'System',
-        updatedAt: '2026-04-01T09:30:00.000Z'
-    },
-    {
-        id: 'svc-article-004',
-        title: 'Technical portal support checklist',
-        category: 'Technical Portal Help',
-        serviceArea: 'portal',
-        summary: 'What to send when a portal page is broken or not loading correctly.',
-        content: 'Include the page name, your role, your faculty, what button you clicked, and a screenshot when the page freezes or shows the wrong version. This lets Student Service reproduce the issue quickly.',
-        published: true,
-        featured: false,
-        audience: 'all',
-        facultyCode: 'ALL',
-        relatedLinks: [],
-        createdBy: 'System',
-        updatedBy: 'System',
-        updatedAt: '2026-04-01T09:45:00.000Z'
-    },
-    {
-        id: 'svc-article-005',
-        title: 'Finance and payment support',
-        category: 'Finance / Payments',
-        serviceArea: 'finance',
-        summary: 'How to request help about balances, payment confirmation, and finance follow-up.',
-        content: 'When you contact Student Service about finance, include your student ID, the amount or invoice you are referring to, and the date of the payment or charge. Student Service can guide the next step and document the issue, but cannot edit finance records from this workspace.',
-        published: true,
-        featured: false,
-        audience: 'all',
-        facultyCode: 'ALL',
-        relatedLinks: [],
-        createdBy: 'System',
-        updatedBy: 'System',
-        updatedAt: '2026-04-01T10:00:00.000Z'
-    },
-    {
-        id: 'svc-article-006',
-        title: 'Documents and certificate requests',
-        category: 'Documents / Certificates',
-        serviceArea: 'documents',
-        summary: 'What to include when you need a transcript, certificate, or official document.',
-        content: 'For document requests, include the document name, language needs, deadline, and where it will be used. Student Service can confirm what is needed and keep the request moving, while official document generation stays in the proper office workflow.',
-        published: true,
-        featured: false,
-        audience: 'all',
-        facultyCode: 'ALL',
-        relatedLinks: [],
-        createdBy: 'System',
-        updatedBy: 'System',
-        updatedAt: '2026-04-01T10:15:00.000Z'
-    }
-];
+const STUDENT_SERVICE_DEFAULT_ARTICLES = [];
 const STUDENT_SERVICE_DEFAULT_MACROS = [
     {
         id: 'svc-macro-001',
@@ -183,24 +86,55 @@ function getStudentServiceAreaForCategory(category = '') {
     return STUDENT_SERVICE_SUPPORT_AREA_BY_CATEGORY[normalized] || 'general';
 }
 
+const STUDENT_SERVICE_MAX_ATTACHMENTS = 5;
+
+function normalizeStudentServiceAttachmentRecord(file = {}, index = 0) {
+    if (!file || typeof file !== 'object') return null;
+    const storageKey = String(file.storageKey || file.id || '').trim();
+    if (!storageKey) return null;
+    return {
+        id: String(file.id || `svc_att_${index + 1}`).trim(),
+        name: String(file.name || 'attachment').trim(),
+        type: String(file.type || 'application/octet-stream').trim(),
+        size: safeNumber(file.size, 0),
+        storageKey,
+        storageBackend: String(file.storageBackend || 'bridge').trim()
+    };
+}
+
+function normalizeStudentServiceAttachments(files = []) {
+    return asArray(files)
+        .map((file, index) => normalizeStudentServiceAttachmentRecord(file, index))
+        .filter(Boolean)
+        .slice(0, STUDENT_SERVICE_MAX_ATTACHMENTS);
+}
+
+function hasStudentServiceMessageContent(message = '', attachments = []) {
+    return Boolean(String(message || '').trim()) || normalizeStudentServiceAttachments(attachments).length > 0;
+}
+
 function normalizeStudentServiceThreadEntry(entry = {}, fallback = {}) {
+    const attachments = normalizeStudentServiceAttachments(entry.attachments || fallback.attachments);
     return {
         id: String(entry.id || fallback.id || makeId('svc_msg')).trim(),
         authorId: String(entry.authorId || fallback.authorId || '').trim(),
         authorName: String(entry.authorName || fallback.authorName || 'Portal User').trim(),
         authorRole: String(entry.authorRole || fallback.authorRole || 'system').trim().toLowerCase(),
         message: String(entry.message || fallback.message || '').trim(),
+        attachments,
         createdAt: String(entry.createdAt || fallback.createdAt || nowIso()).trim()
     };
 }
 
 function normalizeStudentServiceInternalNote(note = {}, index = 0) {
+    const attachments = normalizeStudentServiceAttachments(note.attachments);
     return {
         id: String(note.id || `svc_note_${index + 1}`).trim(),
         authorId: String(note.authorId || '').trim(),
         authorName: String(note.authorName || 'Staff').trim(),
         authorRole: String(note.authorRole || 'student_service').trim().toLowerCase(),
         message: String(note.message || '').trim(),
+        attachments,
         createdAt: String(note.createdAt || nowIso()).trim()
     };
 }
@@ -219,7 +153,7 @@ function normalizeStudentServiceTicketRecord(ticket = {}, index = 0) {
             authorName: ticket.studentName || ticket.requesterDisplayName || 'Student',
             authorRole: 'student',
             createdAt
-        })).filter(entry => entry.message)
+        })).filter(entry => entry.message || entry.attachments?.length)
         : [normalizeStudentServiceThreadEntry({
             id: `svc-thread-${index + 1}-1`,
             authorId: String(ticket.studentId || ticket.requesterUserId || '').trim(),
@@ -251,7 +185,7 @@ function normalizeStudentServiceTicketRecord(ticket = {}, index = 0) {
         relatedSubjectName: String(ticket.relatedSubjectName || '').trim(),
         relatedContextLabel: String(ticket.relatedContextLabel || '').trim(),
         intakeContext: clone(ticket.intakeContext || {}) || {},
-        internalNotes: asArray(ticket.internalNotes).map((note, noteIndex) => normalizeStudentServiceInternalNote(note, noteIndex)).filter(note => note.message),
+        internalNotes: asArray(ticket.internalNotes).map((note, noteIndex) => normalizeStudentServiceInternalNote(note, noteIndex)).filter(note => note.message || note.attachments?.length),
         handoff: {
             target: String(ticket.handoff?.target || '').trim(),
             status: String(ticket.handoff?.status || '').trim() || 'Not Needed',
@@ -282,7 +216,7 @@ function normalizeStudentServiceArticleRecord(article = {}, index = 0) {
         published: article.published !== false,
         featured: Boolean(article.featured),
         pinned: Boolean(article.pinned),
-        audience: ['all', 'students', 'staff'].includes(String(article.audience || '').trim()) ? String(article.audience).trim() : 'students',
+        audience: 'all',
         facultyCode: normalizeCode(article.facultyCode || article.faculty || 'ALL') || 'ALL',
         relatedLinks: uniqueStrings(asArray(article.relatedLinks).map(item => String(item || '').trim()).filter(Boolean)),
         createdBy: String(article.createdBy || article.updatedBy || 'System').trim(),
@@ -313,15 +247,18 @@ function normalizeStudentServiceQuestionRecord(question = {}, index = 0) {
         id: String(question.id || `svc_question_${index + 1}`).trim(),
         title: String(question.title || 'Untitled question').trim(),
         body: String(question.body || question.message || '').trim(),
+        attachments: normalizeStudentServiceAttachments(question.attachments),
         category,
         serviceArea: String(question.serviceArea || getStudentServiceAreaForCategory(category)).trim() || 'general',
         facultyCode,
         authorUserId: String(question.authorUserId || question.studentId || '').trim(),
         authorDisplayName: String(question.authorDisplayName || question.studentName || 'Student').trim(),
         authorRole: String(question.authorRole || 'student').trim().toLowerCase(),
-        status: ['pending', 'published', 'archived', 'converted', 'merged'].includes(String(question.status || '').trim().toLowerCase())
-            ? String(question.status || '').trim().toLowerCase()
-            : 'pending',
+        status: (() => {
+            const raw = String(question.status || '').trim().toLowerCase();
+            if (raw === 'pending' || raw === 'pending_review') return 'published';
+            return ['published', 'archived', 'converted', 'merged'].includes(raw) ? raw : 'published';
+        })(),
         anonymousMode: question.anonymousMode !== false,
         displayIdentityToPeers: question.displayIdentityToPeers === true,
         pinned: Boolean(question.pinned),
@@ -331,6 +268,12 @@ function normalizeStudentServiceQuestionRecord(question = {}, index = 0) {
         lastReviewedAt: String(question.lastReviewedAt || '').trim(),
         lastReviewedBy: String(question.lastReviewedBy || '').trim(),
         acceptedAnswerId: String(question.acceptedAnswerId || '').trim(),
+        ownerResolutionStatus: (() => {
+            const raw = String(question.ownerResolutionStatus || '').trim().toLowerCase();
+            return raw === 'answered' || raw === 'unanswered' ? raw : '';
+        })(),
+        ownerResolutionUpdatedAt: String(question.ownerResolutionUpdatedAt || '').trim(),
+        ownerResolutionUpdatedBy: String(question.ownerResolutionUpdatedBy || '').trim(),
         helpfulVotes: asArray(question.helpfulVotes).map(entry => ({
             userId: String(entry?.userId || '').trim(),
             value: entry?.value === 'not_helpful' ? 'not_helpful' : 'helpful',
@@ -346,21 +289,54 @@ function normalizeStudentServiceQuestionRecord(question = {}, index = 0) {
     };
 }
 
+function resolveStudentServiceAnswerAuthorUserId(answer = {}) {
+    return String(
+        answer.authorUserId
+        || answer.responderUserId
+        || answer.authorId
+        || ''
+    ).trim();
+}
+
+function resolveStudentServiceAnswerAuthorDisplayName(answer = {}) {
+    return String(
+        answer.authorDisplayName
+        || answer.responderName
+        || answer.authorName
+        || answer.authorLabel
+        || 'Staff'
+    ).trim();
+}
+
+function resolveStudentServiceAnswerAuthorRole(answer = {}) {
+    return String(answer.authorRole || answer.responderRole || 'student_service').trim().toLowerCase();
+}
+
 function normalizeStudentServiceAnswerRecord(answer = {}, index = 0) {
+    const authorUserId = resolveStudentServiceAnswerAuthorUserId(answer);
     return {
         id: String(answer.id || `svc_answer_${index + 1}`).trim(),
         questionId: String(answer.questionId || '').trim(),
-        authorUserId: String(answer.authorUserId || '').trim(),
-        authorDisplayName: String(answer.authorDisplayName || 'Staff').trim(),
-        authorRole: String(answer.authorRole || 'student_service').trim().toLowerCase(),
+        authorUserId,
+        responderUserId: String(answer.responderUserId || authorUserId || '').trim(),
+        authorDisplayName: resolveStudentServiceAnswerAuthorDisplayName(answer),
+        authorRole: resolveStudentServiceAnswerAuthorRole(answer),
         body: String(answer.body || answer.message || '').trim(),
-        status: ['pending', 'published', 'archived'].includes(String(answer.status || '').trim().toLowerCase())
-            ? String(answer.status || '').trim().toLowerCase()
-            : 'pending',
+        attachments: normalizeStudentServiceAttachments(answer.attachments),
+        parentAnswerId: String(answer.parentAnswerId || '').trim(),
+        status: (() => {
+            const raw = String(answer.status || '').trim().toLowerCase();
+            if (raw === 'pending' || raw === 'pending_review') return 'published';
+            return ['published', 'archived'].includes(raw) ? raw : 'published';
+        })(),
         createdAt: String(answer.createdAt || nowIso()).trim(),
         updatedAt: String(answer.updatedAt || answer.createdAt || nowIso()).trim(),
         approvedBy: String(answer.approvedBy || '').trim(),
-        approvedAt: String(answer.approvedAt || '').trim()
+        approvedAt: String(answer.approvedAt || '').trim(),
+        helpfulVotes: asArray(answer.helpfulVotes).map(entry => ({
+            userId: String(entry?.userId || '').trim(),
+            updatedAt: String(entry?.updatedAt || answer.updatedAt || answer.createdAt || nowIso()).trim()
+        })).filter(entry => entry.userId)
     };
 }
 
@@ -383,9 +359,165 @@ function normalizeStudentServiceReviewQueueEntry(entry = {}, index = 0) {
     };
 }
 
-function getStudentServiceBootstrap(viewerUserId = '') {
+const STUDENT_SERVICE_BUILTIN_INBOX_FILTER_IDS = new Set([
+    'ticketSearch',
+    'ticketStatus',
+    'ticketCategory',
+    'ticketServiceArea',
+    'ticketAssignee',
+    'ticketFaculty'
+]);
+
+const STUDENT_SERVICE_INBOX_FILTER_SOURCES = new Set([
+    'statuses',
+    'categories',
+    'supportAreas',
+    'assignees',
+    'faculties'
+]);
+
+const STUDENT_SERVICE_INBOX_FILTER_FIELDS = new Set([
+    'status',
+    'category',
+    'serviceArea',
+    'faculty',
+    'assignedToId'
+]);
+
+function buildMinimalStudentServiceInboxFilterLayout() {
+    const defaultSearch = normalizeStudentServiceInboxFilterEntry(
+        buildDefaultStudentServiceInboxFilterLayout().filters.find(filter => filter.id === 'ticketSearch'),
+        0
+    );
+    return defaultSearch ? { version: 1, filters: [defaultSearch] } : null;
+}
+
+function buildDefaultStudentServiceInboxFilterLayout() {
+    return {
+        version: 1,
+        filters: [
+            {
+                id: 'ticketSearch',
+                type: 'search',
+                label: 'Search',
+                tier: 'basic',
+                enabled: true,
+                placeholder: 'Search title, student, category, status'
+            },
+            {
+                id: 'ticketStatus',
+                type: 'select',
+                label: 'Status',
+                tier: 'basic',
+                enabled: true,
+                source: 'statuses'
+            },
+            {
+                id: 'ticketCategory',
+                type: 'select',
+                label: 'Category',
+                tier: 'basic',
+                enabled: true,
+                source: 'categories'
+            },
+            {
+                id: 'ticketServiceArea',
+                type: 'select',
+                label: 'Topic',
+                tier: 'advanced',
+                enabled: true,
+                source: 'supportAreas'
+            },
+            {
+                id: 'ticketAssignee',
+                type: 'select',
+                label: 'Work',
+                tier: 'advanced',
+                enabled: true,
+                source: 'assignees'
+            },
+            {
+                id: 'ticketFaculty',
+                type: 'select',
+                label: 'Faculty',
+                tier: 'advanced',
+                enabled: true,
+                source: 'faculties'
+            }
+        ]
+    };
+}
+
+function normalizeStudentServiceInboxFilterOption(option = {}, index = 0) {
+    const value = String(option?.value ?? '').trim();
+    const label = String(option?.label ?? value).trim();
+    if (!value || !label) return null;
+    return { value, label };
+}
+
+function normalizeStudentServiceInboxFilterEntry(entry = {}, index = 0) {
+    const id = String(entry?.id || '').trim();
+    if (!id) return null;
+    const type = String(entry?.type || '').trim().toLowerCase() === 'search' ? 'search' : 'select';
+    const tier = String(entry?.tier || '').trim().toLowerCase() === 'advanced' ? 'advanced' : 'basic';
+    const label = String(entry?.label || id).trim() || id;
+    const enabled = entry?.enabled !== false;
+    const normalized = {
+        id,
+        type,
+        label,
+        tier,
+        enabled
+    };
+    if (type === 'search') {
+        normalized.placeholder = String(entry?.placeholder || 'Search tickets').trim() || 'Search tickets';
+        return STUDENT_SERVICE_BUILTIN_INBOX_FILTER_IDS.has(id) ? normalized : null;
+    }
+    if (STUDENT_SERVICE_BUILTIN_INBOX_FILTER_IDS.has(id)) {
+        const source = String(entry?.source || '').trim();
+        if (!STUDENT_SERVICE_INBOX_FILTER_SOURCES.has(source)) return null;
+        normalized.source = source;
+        return normalized;
+    }
+    if (!id.startsWith('custom_')) return null;
+    const field = String(entry?.field || 'status').trim();
+    if (!STUDENT_SERVICE_INBOX_FILTER_FIELDS.has(field)) return null;
+    const options = asArray(entry?.options)
+        .map((option, optionIndex) => normalizeStudentServiceInboxFilterOption(option, optionIndex))
+        .filter(Boolean);
+    const customOptions = options.filter(option => option.value !== 'all');
+    if (!customOptions.length) return null;
+    normalized.field = field;
+    normalized.options = customOptions;
+    return normalized;
+}
+
+function normalizeStudentServiceInboxFilterLayout(layout = null) {
+    if (!layout || typeof layout !== 'object') return null;
+    let filters = asArray(layout.filters)
+        .map((entry, index) => normalizeStudentServiceInboxFilterEntry(entry, index))
+        .filter(Boolean);
+    if (!filters.some(filter => filter.id === 'ticketSearch')) {
+        const defaultSearch = normalizeStudentServiceInboxFilterEntry(
+            buildDefaultStudentServiceInboxFilterLayout().filters.find(filter => filter.id === 'ticketSearch'),
+            0
+        );
+        if (defaultSearch) filters = [defaultSearch, ...filters];
+    }
+    filters = filters.filter(
+        filter => filter.id === 'ticketSearch' || String(filter.id).startsWith('custom_')
+    );
+    if (!filters.length) return null;
+    return {
+        version: 1,
+        filters
+    };
+}
+
+function getStudentServiceBootstrap(viewerUserId = '', options = {}) {
     const serviceState = this.ensureStudentServiceState();
-    const viewer = this.getStudentServiceViewerState(viewerUserId);
+    const sessionRole = String(options?.sessionRole || '').trim().toLowerCase();
+    const viewer = this.getStudentServiceViewerState(viewerUserId, sessionRole);
     const questions = serviceState.questions
         .filter(question => this.canViewStudentServiceQuestion(question, viewer.viewerId))
         .map(question => this.decorateStudentServiceQuestion(question, viewer.viewerId))
@@ -400,11 +532,6 @@ function getStudentServiceBootstrap(viewerUserId = '') {
         .map(ticket => this.decorateStudentServiceTicket(ticket, viewer.viewerId));
     const articles = serviceState.articles
         .filter(article => viewer.canModerate || article.published)
-        .filter(article => viewer.canModerate
-            || article.audience === 'all'
-            || (article.audience === 'students' && viewer.role === 'student')
-            || (article.audience === 'staff' && ['admin', 'student_service', 'professor', 'ta'].includes(viewer.role))
-        )
         .sort((left, right) => String(right.updatedAt || '').localeCompare(String(left.updatedAt || '')))
         .map(article => clone(article));
     return {
@@ -417,12 +544,14 @@ function getStudentServiceBootstrap(viewerUserId = '') {
         analytics: this.getStudentServiceAnalytics(viewer.viewerId),
         permissions: {
             canModerate: viewer.canModerate,
-            canPublish: viewer.canModerate,
-            canRespond: ['admin', 'student_service', 'professor', 'ta'].includes(viewer.role),
+            canPublish: false,
+            canRespond: Boolean(viewer.role),
             canAskPublic: viewer.role === 'student',
             canCreateTicket: viewer.role === 'student',
             canViewResponderLane: ['admin', 'student_service', 'professor', 'ta'].includes(viewer.role)
-        }
+        },
+        inboxFilterLayout: normalizeStudentServiceInboxFilterLayout(serviceState.inboxFilterLayout)
+            || buildMinimalStudentServiceInboxFilterLayout()
     };
 }
 
@@ -432,9 +561,15 @@ module.exports = {
     STUDENT_SERVICE_DEFAULT_MACROS,
     STUDENT_SERVICE_RESPONDER_CATEGORIES,
     STUDENT_SERVICE_SENSITIVE_CATEGORIES,
+    buildDefaultStudentServiceInboxFilterLayout,
     getStudentServiceAreaForCategory,
     getStudentServiceBootstrap,
+    normalizeStudentServiceInboxFilterLayout,
+    hasStudentServiceMessageContent,
     normalizeStudentServiceAnswerRecord,
+    normalizeStudentServiceAttachmentRecord,
+    normalizeStudentServiceAttachments,
+    resolveStudentServiceAnswerAuthorUserId,
     normalizeStudentServiceArticleRecord,
     normalizeStudentServiceCategory,
     normalizeStudentServiceInternalNote,

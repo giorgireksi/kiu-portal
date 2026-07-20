@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
 function readSource(relativePath) {
@@ -21,8 +21,10 @@ describe('social post actions regressions', () => {
         expect(appSource).toMatch(/assets\/js\/pages\/social-page\.js\?v=/);
         expect(appSource).toMatch(/assets\/js\/shared\/social-runtime-lite\.js\?v=/);
 
-        expect(source).toContain('function postKey(postOrId)');
-        expect(source).toContain('function buildFeedFingerprint(runtime)');
+        expect(source).toContain('const postKey = window.postKey');
+        expect(source).toContain('const buildFeedFingerprint = window.buildFeedFingerprint');
+        expect(readSource('assets/js/pages/social-chrome-model.js')).toContain('function postKey(postOrId)');
+        expect(readSource('assets/js/pages/social-fingerprint-model.js')).toContain('function buildFeedFingerprint(runtime)');
         expect(source).toContain('function syncCommentDraftFromTarget(target)');
         expect(source).toContain('function reactionLabel(reactionType)');
         expect(source).toContain('function renderPostReactionMetrics(reactionCounts = {})');
@@ -31,15 +33,19 @@ describe('social post actions regressions', () => {
         expect(source + feedModule).toContain('data-reaction-type="${escape(viewerReaction || \'like\')}"');
         expect(feedModule).toContain('function renderPost(post)');
         expect(feedModule).toContain('function patchPostReactions(postId)');
-        expect(source).toMatch(/function renderPost\(post\)[\s\S]*window\.renderPost !== renderPost/);
-        expect(source).toMatch(/function patchPostReactions\(postId\)[\s\S]*window\.patchPostReactions !== patchPostReactions/);
+        expect(source).toContain('function renderPost(post)');
+        expect(source).toContain('window.renderPost !== renderPost');
+        expect(source).toContain('function patchPostReactions(postId)');
+        expect(source).toContain('window.patchPostReactions !== patchPostReactions');
         expect(source + feedModule).not.toContain('fa-heart social-neo-metric-heart');
         expect(source).toContain('async function boot()');
         expect(source).toContain('if (runHydrate) await runHydrate();');
         expect(source).toContain('text(dialog?.type || \'\')');
         expect(source).not.toContain('activeDialog()?.kind');
-        expect(source).toContain('page-open-profile|page-about-more|page-members-open|page-members-filter');
-        expect(source).toContain('page-profile-back|page-profile-tab|page-profile-edit-|page-post-type');
+        const forceRenderSource = readSource('assets/js/pages/social-fingerprint-model.js');
+        expect(forceRenderSource).toContain('page-open-profile|page-about-more|page-members-open|page-members-filter');
+        expect(forceRenderSource).toContain('page-profile-back|page-profile-tab|page-profile-edit-|page-post-type');
+        expect(source).toContain('isSocialForceRenderReason(reason)');
         expect((source + feedModule)).toContain('\'post-react\'');
         expect((source + feedModule)).toContain('\'post-pin\'');
         expect((source + feedModule)).toContain("renderSocialPageNow('post-react')");

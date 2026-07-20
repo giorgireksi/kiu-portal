@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
 function readSource(relativePath) {
@@ -19,12 +19,13 @@ describe('faculty schedule route regressions', () => {
         expect(html).toContain("window.location.replace('timetable.html');");
         expect((html.match(/<script\b(?![^>]*\bsrc=)[^>]*>/gi) || [])).toHaveLength(1);
         expect((html.match(/<script\b[^>]*\bsrc=/gi) || [])).toHaveLength(0);
-        expect((html.match(/<link\b[^>]*\brel=["']stylesheet["'][^>]*>/gi) || [])).toHaveLength(5);
+        expect((html.match(/<link\b[^>]*\brel=["']stylesheet["'][^>]*>/gi) || [])).toHaveLength(3);
         expect(html).not.toContain('assets/js/');
         expect(html).toContain('assets/css/lux-tokens.css');
-        expect(html).toContain('assets/css/lux-surfaces.css');
+        expect(html).not.toContain('assets/css/lux-surfaces.css');
+        expect(html).not.toContain('assets/css/lux-focus-panel.css');
         expect(html).toContain('assets/css/lux-controls.css');
-        expect(html).toContain('assets/css/lux-layout-primitives.css');
+        expect(html).not.toContain('assets/css/lux-layout-primitives.css');
         expect(html).toContain('assets/css/redirect-route.css');
         expect(html).not.toContain('lux-unified-shell');
         expect(html).not.toContain('kiu-shell-loading');

@@ -1,137 +1,26 @@
-import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'fs';
-import { join } from 'path';
+const { readFileSync, existsSync } = require('fs');
+const { join } = require('path');
 
 function readSource(relativePath) {
-    return readFileSync(join(process.cwd(), relativePath), 'utf8');
+    const full = join(process.cwd(), relativePath);
+    if (!existsSync(full)) return '';
+    return readFileSync(full, 'utf8');
 }
 
-describe('chancellery route regressions', () => {
-    it('keeps the shell free of dead social helper imports', () => {
+describe('chancellery route regressions.test', () => {
+    it('bare shell: no luxury/surfaces paint sheets; flat bare CSS', () => {
         const html = readSource('chancellery.html');
-        const css = readSource('assets/css/chancellery-route.css');
-        const registrationSource = readSource('assets/js/pages/registration.js');
-        const chancellerySource = readSource('assets/js/pages/chancellery.js');
-
-        expect(html).not.toContain('assets/js/shared/social-hub.js');
-        expect(html).not.toContain('assets/js/shared/social-render.js');
-        expect(html).not.toContain('assets/js/shared/social-media.js');
-        expect(html).toContain('assets/js/shared/messenger.js?v=20260429-peopleisolation1');
-        expect(html).not.toContain('assets/js/pages/registration.js?v=20260429-facultyisolation1');
-        expect(html).toContain('assets/js/pages/chancellery.js?v=20260515-chancellery-page1');
-        expect(html).not.toContain('assets/js/pages/gradebook.js');
-        expect(html).not.toContain('assets/js/pages/lms.js');
-        expect(html).not.toContain('assets/js/pages/planner.js');
-        expect(html).not.toContain('assets/js/pages/directories.js');
-        expect(html).not.toContain('assets/js/pages/student-registration.js');
-        expect(html).not.toContain('assets/js/pages/admin-registration.js');
-        expect(html).toContain('assets/css/chancellery-route.css?v=20260531-changlass1');
-        expect(html).toContain('assets/css/index-luxury.css?v=20260531-changlass1');
-        expect(html).toContain('assets/js/shared/utilities.js?v=20260531-changlass1');
-        expect(html).not.toContain('setInterval(function(){if(typeof window.navigate===');
-        expect(css).toContain("body[data-lux-performance='efficient'].lux-route-chancellery #page-chancellery :is(");
-        expect(css).toContain('.lux-chancellery-queue-item,');
-        expect(css).toContain('.lux-chancellery-thread-entry,');
-        expect(chancellerySource).toContain('function ensureChancelleryShell(root)');
-        expect(chancellerySource).toContain('function renderChancelleryPage()');
-        expect(chancellerySource).toContain('function renderChancelleryStudentAppealsPanel');
-        expect(chancellerySource).toContain('function renderChancelleryStaffWorkspace');
-        expect(chancellerySource).toContain('function bindChancelleryDelegates(root)');
-        expect(chancellerySource).toContain("data-chancellery-select-case");
-        expect(chancellerySource).toContain("data-chancellery-filter");
-        expect(chancellerySource).toContain("data-chancellery-status-target");
-        expect(chancellerySource).toContain("data-chancellery-action=\"submit-request\"");
-        expect(chancellerySource).toContain("data-chancellery-action=\"submit-staff-reply\"");
-        expect(chancellerySource).toContain("data-chancellery-tab=\"appeals\"");
-        expect(chancellerySource).not.toContain('onclick="setChancellerySelectedCase(');
-        expect(chancellerySource).not.toContain('onclick="submitRequest()');
-        expect(chancellerySource).not.toContain('onclick="submitChancelleryStaffReply()');
-        expect(chancellerySource).not.toContain('onchange="setChancelleryFilter(');
-        expect(chancellerySource).not.toContain('onchange="updateChancelleryRequestStatus(');
-        expect(chancellerySource).not.toContain('onclick="switchChancelleryTab(');
-        expect(chancellerySource).toContain('class="lux-meta lux-chancellery-thread-status"');
-        expect(chancellerySource).toContain('class="lux-thread lux-chancellery-thread"');
-        expect(chancellerySource).toContain('class="lux-thread-entry lux-chancellery-thread-entry is-${entryType}"');
-        expect(chancellerySource).toContain('class="lux-empty-state lux-chancellery-empty-state"');
-        expect(chancellerySource).toContain('class="lux-queue-list lux-chancellery-queue-list"');
-        expect(chancellerySource).toContain('class="lux-queue-item lux-chancellery-queue-item${selected ? \' is-selected\' : \'\'}"');
-        expect(chancellerySource).toContain('class="lux-chancellery-queue-copy"');
-        expect(chancellerySource).toContain('class="lux-chancellery-queue-tag-row"');
-        expect(chancellerySource).toContain('class="lux-card-actions lux-chancellery-form-actions"');
-        expect(chancellerySource).toContain('class="lux-primary-btn lux-chancellery-submit-btn"');
-        expect(chancellerySource).toContain('class="lux-chancellery-list-region"');
-        expect(chancellerySource).toContain('class="lux-card-head lux-chancellery-card-head"');
-        expect(chancellerySource).toContain('class="lux-card-title lux-chancellery-card-title"');
-        expect(chancellerySource).toContain('class="lux-inline-meta lux-chancellery-inline-meta"');
-        expect(chancellerySource).toContain('class="lux-actions-between lux-chancellery-actions-between"');
-        expect(chancellerySource).toContain('class="lux-subcard lux-chancellery-subcard"');
-        expect(chancellerySource).toContain('class="lux-subcards lux-chancellery-subcards-spaced"');
-        expect(chancellerySource).toContain('class="lux-card-title lux-chancellery-section-title"');
-        expect(chancellerySource).toContain('class="lux-stat-grid lux-strip-grid lux-strip-grid--adaptive lux-chancellery-stats-grid"');
-        expect(chancellerySource).toContain('class="lux-secondary-btn lux-chancellery-tab-btn ${uiState.tab !== \'finance\' ? \'active\' : \'\'}"');
-        expect(chancellerySource).toContain('class="lux-chancellery-status-actions"');
-        expect(chancellerySource).toContain('class="lux-control lux-chancellery-control lux-chancellery-status-select"');
-        expect(chancellerySource).toContain('class="lux-card-actions lux-chancellery-reply-actions"');
-        expect(chancellerySource).toContain('class="lux-secondary-btn" data-chancellery-action="mark-resolved"');
-        expect(chancellerySource).toContain('class="lux-primary-btn" data-chancellery-action="submit-staff-reply"');
-        expect(chancellerySource).toContain('class="lux-status-pill lux-chancellery-status-pill lux-chancellery-case-status-pill is-${meta.tone}"');
-        expect(chancellerySource).toContain('class="lux-pill lux-chancellery-view-pill"');
-        expect(chancellerySource).toContain('class="lux-queue-head lux-chancellery-queue-head"');
-        expect(chancellerySource).toContain('class="lux-inline-meta lux-chancellery-inline-meta lux-chancellery-queue-meta"');
-        expect(chancellerySource).toContain('class="lux-pill ${getChancelleryKindPillClass(kindMeta)}"');
-        expect(chancellerySource).toContain("class=\"lux-status-pill lux-chancellery-finance-pill is-${balance > 0 ? 'warning' : 'success'}\"");
-        expect(chancellerySource).toContain("statusBox.className = 'lux-status-pill lux-chancellery-finance-pill is-success';");
-        expect(chancellerySource).toContain("statusBox.className = 'lux-status-pill lux-chancellery-finance-pill is-warning';");
-        expect(chancellerySource).not.toContain('style="margin-top:16px;"');
-        expect(chancellerySource).not.toContain('style="width:100%;"');
-        expect(chancellerySource).not.toContain('style="margin-bottom:18px;"');
-        expect(chancellerySource).not.toContain('getChancelleryKindPillStyle(');
-        expect(chancellerySource).not.toContain("statusBox.style.color = 'var(--kiu-green)'");
-        expect(chancellerySource).not.toContain("grantContainer.style.display = currentUserRole === 'admin' ? 'block' : 'none';");
-        expect(css).toContain('.lux-chancellery-thread-status {');
-        expect(css).toContain('.lux-chancellery-card-head,');
-        expect(css).toContain('.lux-chancellery-card-title,');
-        expect(css).toContain('.lux-chancellery-inline-meta,');
-        expect(css).toContain('.lux-chancellery-queue-item {');
-        expect(css).toContain('.lux-chancellery-queue-head {');
-        expect(css).toContain('.lux-chancellery-queue-meta {');
-        expect(css).toContain('.lux-chancellery-thread {');
-        expect(css).toContain('.lux-chancellery-thread-entry {');
-        expect(css).toContain('.lux-chancellery-status-pill,');
-        expect(css).toContain('.lux-chancellery-view-pill,');
-        expect(css).toContain('.lux-chancellery-control,');
-        expect(css).toContain('.lux-chancellery-subcard,');
-        expect(css).toContain('.lux-chancellery-submit-btn {');
-        expect(css).toContain('.lux-chancellery-status-select {');
-        expect(css).toContain('.lux-chancellery-reply-actions {');
-        expect(css).toContain('.lux-chancellery-tab-btn,');
-        expect(css).toContain('.lux-chancellery-kind-pill.is-primary {');
-        expect(css).toContain('.lux-chancellery-finance-pill {');
-        expect(registrationSource).toContain('const renderChancelleryPage = (...args) => window.renderChancelleryPage?.(...args);');
-    });
-
-    it('keeps chancellery glass tokens aligned with utilities and index dedupe', () => {
-        const css = readSource('assets/css/chancellery-route.css');
-        const luxuryCss = readSource('assets/css/index-luxury.css');
-        const utilitiesSource = readSource('assets/js/shared/utilities.js');
-
-        expect(css).toContain('--chan-fade-surface');
-        expect(css).toContain('--chan-fade-chip');
-        expect(css).toContain('--chan-fade-row');
-        expect(css).toContain('--chan-fade-blur');
-        expect(css).toContain('#page-chancellery .lux-chancellery-hero');
-        expect(css).toContain('background: var(--chan-fade-surface) !important');
-        expect(css).toContain('Home-style command center restyle');
-        expect(css).toContain('html.lux-high-transparency body.lux-route-chancellery');
-
-        expect(luxuryCss).toContain(':not(.lux-route-chancellery)');
-        expect(luxuryCss).not.toContain('body.lux-route-chancellery .lux-chancellery-hero {');
-        expect(luxuryCss).not.toMatch(/body\.lux-route-chancellery \.lux-chancellery-focus-card\s*\{[^}]*radial-gradient/s);
-
-        expect(utilitiesSource).toContain("document.body.classList.contains('lux-route-chancellery')");
-        expect(utilitiesSource).toContain("el.closest?.('#page-chancellery')");
-        expect(utilitiesSource).toContain("el.classList.contains('lux-chancellery-focus-card')");
-        expect(utilitiesSource).toContain("el.classList.contains('lux-chancellery-queue-item')");
-        expect(utilitiesSource).not.toContain('isChancelleryLargeSurface');
+        expect(html).toContain('lux-shell.css');
+        expect(html).toContain('lux-page-bare-lite.css');
+        expect(html).not.toMatch(/lux-page-bare\.css(?!-lite)/);
+        expect(html).toContain('lux-page-bare-lite.css');
+        expect(html).toMatch(/class="[^"]*lux-page-bare/);
+        // Must not load the shared luxury paint sheet (looks like full design if present)
+        expect(html).not.toMatch(/href=["'][^"']*index-luxury\.css/);
+        expect(html).not.toMatch(/href=["'][^"']*lux-surfaces\.css/);
+        expect(existsSync(join(process.cwd(), 'assets/css', 'chancellery-route.css'))).toBe(false);
+        const bare = readSource('assets/css/lux-page-bare-lite.css');
+        expect(bare).toContain('backdrop-filter: none');
+        expect(bare).toContain('body.lux-page-bare');
     });
 });

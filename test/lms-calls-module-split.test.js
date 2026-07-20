@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'fs';
+
+import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
 function readSource(relativePath) {
@@ -11,9 +12,10 @@ describe('LMS calls module split', () => {
         const lmsHtml = readSource('lms.html');
         const lmsSource = readSource('assets/js/pages/lms.js');
         const callsSource = readSource('assets/js/pages/lms-calls-runtime.js');
-        const routeCss = readSource('assets/css/lms-route.css');
-
-        expect(lmsHtml).toContain('assets/js/pages/lms-calls-runtime.js?v=20260518-lmscalls1');
+        expect(lmsHtml).not.toContain('assets/js/pages/lms-calls-runtime.js');
+        const classroomSource = readSource('assets/js/pages/lms-classroom-tabs-runtime.js');
+        expect(classroomSource).toContain('assets/js/pages/lms-calls-runtime.js?v=20260518-lmscalls1');
+        expect(classroomSource).toContain('function ensureLmsCallsRuntime()');
         expect(callsSource).toContain('const lmsClassLocalMediaRuntime = {');
         expect(callsSource).toContain('function getLmsCurrentUserForCalls()');
         expect(callsSource).toContain('function normalizeLmsClassSession(session = {}, resourceKey = \'\')');
@@ -58,13 +60,6 @@ describe('LMS calls module split', () => {
         expect(callsSource).not.toContain('style="display:flex;align-items:center;gap:12px;"');
         expect(callsSource).not.toContain('style="display:flex;gap:8px;flex-wrap:wrap;"');
         expect(callsSource).not.toContain('style="font-size:18px;color:var(--lux-accent-2);"');
-        expect(routeCss).toContain('.lms-route-panel-pad-16-20');
-        expect(routeCss).toContain('.lms-route-lead-icon');
-        expect(routeCss).toContain('.lms-call-classroom.is-active');
-        expect(routeCss).not.toContain('.lms-call-page-head');
-        expect(routeCss).not.toContain('.lms-call-page-icon');
-        expect(routeCss).not.toContain('.lms-call-card.is-active');
-        expect(routeCss).not.toContain('.lms-call-stage,.lms-call-side-card,.lms-call-collab-panel,.lms-call-post,.lms-call-roster');
 
         expect(lmsSource).not.toContain('const lmsClassLocalMediaRuntime = {');
         expect(lmsSource).not.toContain('function getLmsCurrentUserForCalls()');

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
 function readSource(relativePath) {
@@ -50,9 +50,12 @@ describe('LMS live quiz reality checks', () => {
         expect(liveQuizWorkspaceSource).toContain('invokeRefreshLmsLiveQuizUi(canonicalKey');
         expect(liveQuizUiSource).toContain('function refreshLmsLiveQuizUi');
         expect(liveQuizUiSource).toContain('function updateLmsLiveQuizClockUi');
+        expect(liveQuizUiSource).toContain('function patchLmsLiveQuizTimerUi');
+        expect(liveQuizWorkspaceSource).toContain('patchLmsLiveQuizTimerUi(canonicalKey)');
         expect(liveQuizUiSource).toContain('data-lms-live-region="timer"');
         expect(liveQuizUiSource).toContain('data-lms-live-region="stage-pills"');
-        expect(liveQuizUiSource).not.toMatch(/updateLmsLiveQuizClockUi[\s\S]*patchLmsLiveQuizRegion\(contentArea, 'stage'/);
+        const clockUpdateBody = liveQuizUiSource.match(/function updateLmsLiveQuizClockUi[\s\S]*?\n}\n/)?.[0] || '';
+        expect(clockUpdateBody).not.toContain("patchLmsLiveQuizRegion(contentArea, 'stage'");
         expect(liveQuizWorkspaceSource).toContain("joinCode: repairLmsDisplayText(session.joinCode || '', '').slice(0, 8).toUpperCase()");
         expect(liveQuizWorkspaceSource).toContain('nicknameMode: session.nicknameMode === true');
         expect(liveQuizWorkspaceSource).toContain('function isLmsActiveTab(tab)');
@@ -117,8 +120,9 @@ describe('LMS live quiz reality checks', () => {
         expect(workspaceSource).toContain('function bindLmsLiveQuizFocusRefresh');
         expect(workspaceSource).toContain('function formatLmsLiveAnswerSyncError');
         expect(workspaceSource).toContain('workspace.ui?.activeSessionId');
-        expect(lmsHtml).toContain("'live-quiz'");
-        expect(lmsHtml).toContain('livequiz-uxfix5');
+        expect(lmsHtml).toContain('data-lms-tab="live-quiz"');
+        expect(lmsHtml).not.toContain('lms-live-quiz-ui-runtime.js');
+        expect(readSource('assets/js/pages/lms-classroom-tabs-runtime.js')).toContain('livequiz-timerfix1');
         expect(workspaceSource).toContain('function reloadActiveLmsLiveQuizFromServer');
         expect(uiSource).toContain('function renderLmsLiveQuizLoadingShell');
     });

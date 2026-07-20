@@ -58,7 +58,7 @@ const IMPORT_STATUS_OVERRIDES = {
     },
     'timetable.html': {
         'assets/js/pages/timetable-runtime.js': 'required at first paint',
-        'assets/css/lux-page-bare.css': 'required at first paint (timetable bare)'
+        'assets/css/lux-page-bare-lite.css': 'required at first paint (timetable bare)'
     },
     'social.html': {
         'assets/js/pages/social-mobile.js': 'required at first paint',

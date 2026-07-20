@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createRequire } from 'module';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
 const require = createRequire(import.meta.url);
@@ -39,6 +39,7 @@ describe('auth session store domain split', () => {
         expect(Object.keys(authSessionService).sort()).toEqual([
             'PORTAL_IMPERSONATION_ROLES',
             'activateAccount',
+            'changePassword',
             'clearSessionImpersonation',
             'createSessionByCredentials',
             'createSessionByMicrosoftIdentity',
@@ -47,6 +48,7 @@ describe('auth session store domain split', () => {
             'getRawAccountByEmail',
             'getRawAccountByMicrosoftOid',
             'getSession',
+            'isImpersonationPersonaEligible',
             'isPortalImpersonationRole',
             'linkMicrosoftIdentityToAccount',
             'logoutSession',
@@ -85,7 +87,10 @@ describe('auth session store domain split', () => {
         };
         store.ensureCredential('admin').activationRequired = false;
         const adminSession = store.createSessionForAccount('admin', { identityProvider: 'portal' }).session;
-        expect(store.updateSessionImpersonation(adminSession.token, 'student')?.impersonatedRole).toBe('student');
+        expect(store.updateSessionImpersonation(adminSession.token, 'student')).toBeNull();
+        const impersonated = store.updateSessionImpersonation(adminSession.token, 'student', 'student-1');
+        expect(impersonated?.impersonatedRole).toBe('student');
+        expect(impersonated?.impersonatedUserId).toBe('student-1');
         expect(store.updateSessionImpersonation(adminSession.token, 'invalid-role')).toBeNull();
         expect(store.clearSessionImpersonation(adminSession.token)?.impersonatedRole).toBe('');
     });

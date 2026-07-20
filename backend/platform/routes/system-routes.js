@@ -8,11 +8,8 @@ function registerSystemRoutes(app, deps = {}) {
         renderAntiCheatDownloadPage,
         resolveAntiCheatDownload,
         resolveRequestedDownloadPlatform,
-        runAiProviderCompletion,
         sendAntiCheatDownloadFile,
         sendError,
-        careerCompletionRateLimitMax,
-        careerCompletionRateLimitWindowMs,
         requireSessionAccount
     } = deps;
 
@@ -63,10 +60,12 @@ function registerSystemRoutes(app, deps = {}) {
     });
 
     app.get('/health', (request, response) => {
+        const { STUDENT_SERVICE_API_MANIFEST_VERSION } = require('../contracts/student-service-api-contract');
         response.json({
             ok: true,
             status: 'ready',
-            backend: 'kiu-platform-server'
+            backend: 'kiu-platform-server',
+            studentServiceApiManifestVersion: STUDENT_SERVICE_API_MANIFEST_VERSION
         });
     });
 
@@ -78,31 +77,6 @@ function registerSystemRoutes(app, deps = {}) {
         });
     });
 
-    app.post('/api/ai/career-completion', async (request, response) => {
-        const sessionAccount = requireSessionAccount(request, response);
-        if (!sessionAccount) return;
-        if (!enforceRateLimit(request, response, 'career-completion', careerCompletionRateLimitMax, careerCompletionRateLimitWindowMs)) return;
-        try {
-            const payload = request.body || {};
-            const provider = String(payload.provider || 'google-gemini').trim().toLowerCase();
-            const text = await runAiProviderCompletion({
-                provider,
-                model: payload.model,
-                apiKey: payload.apiKey,
-                systemPrompt: payload.systemPrompt,
-                userPrompt: payload.userPrompt,
-                maxTokens: payload.maxTokens
-            });
-            response.json({
-                ok: true,
-                provider,
-                model: String(payload.model || '').trim(),
-                text: text || ''
-            });
-        } catch (error) {
-            sendError(response, 502, error?.message || 'AI provider request failed.');
-        }
-    });
 }
 
 module.exports = {

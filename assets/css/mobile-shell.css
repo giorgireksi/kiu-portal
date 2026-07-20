@@ -1,0 +1,130 @@
+/* mobile-shell.css — dashboard / home mobile polish.
+   Requires mobile-shell-core.css first (shell chrome).
+   Index injects this after index-home-dashboard.css so cascade + #page-home
+   #lux-home-shell specificity beat desktop home rules without layout !important. */
+@media (max-width: 1024px) {
+  #page-home #lux-home-shell .lux-card, #page-home #lux-home-shell .lux-subcard, #page-home #lux-home-shell .lux-panel {
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+  }
+}
+@media (max-width: 1180px) {
+  #page-home #lux-home-shell .lux-hero-main { max-width: 100%; }
+}
+@media (max-width: 900px) {
+  #page-home #lux-home-shell .lux-hero h1 { font-size: clamp(20px, 5vw, 34px); word-break: break-word; }
+  #page-home #lux-home-shell .lux-hero p { font-size: 12px; }
+  #page-home #lux-home-shell .lux-stat-row { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 100%; }
+  #page-home #lux-home-shell .lux-quick-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  #lux-topbar .lux-picker-caption { display: none; }
+  #lux-topbar .lux-user-chip-copy { display: none; }
+}
+@media (max-width: 768px) {
+  #page-home #lux-home-shell .lux-card, #page-home #lux-home-shell .lux-panel, #page-home #lux-home-shell .content-box, #page-home #lux-home-shell .surface-card {
+    overflow: visible;
+    min-width: 0;
+  }
+  #page-home #lux-home-shell .lux-hero { padding: 18px 16px; min-height: auto; }
+  #page-home #lux-home-shell .lux-hero h1 { font-size: clamp(18px, 5.5vw, 28px); line-height: 1.15; max-width: 100%; }
+  #page-home #lux-home-shell .lux-hero p {
+    font-size: 12px;
+    line-height: 1.55;
+    max-width: 100%;
+    margin-top: 8px;
+  }
+  #page-home #lux-home-shell .lux-kicker { font-size: 9px; letter-spacing: 0.14em; }
+  #page-home #lux-home-shell .lux-hero-side {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    margin-top: 14px;
+  }
+  #page-home #lux-home-shell .lux-hero-stage { grid-template-columns: 1fr; }
+  #page-home #lux-home-shell .lux-hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 14px;
+  }
+  #page-home #lux-home-shell .lux-hero-actions button {
+    min-height: 40px;
+    flex: 1 1 140px;
+    font-size: 12px;
+    padding: 10px 14px;
+  }
+  #page-home #lux-home-shell .lux-pill-row { gap: 6px; margin-top: 12px; }
+  #page-home #lux-home-shell .lux-pill {
+    padding: 5px 9px;
+    font-size: 9px;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+  #page-home #lux-home-shell .lux-stat-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    max-width: 100%;
+    gap: 6px;
+    margin-top: 12px;
+  }
+  #page-home #lux-home-shell .lux-stat { padding: 8px 10px; border-radius: 10px; }
+  #page-home #lux-home-shell .lux-stat strong { font-size: 16px; }
+  #page-home #lux-home-shell .lux-stat span { font-size: 8px; }
+  #page-home #lux-home-shell .lux-alert {
+    padding: 14px 14px;
+    border-radius: 14px;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  #page-home #lux-home-shell .lux-alert-icon { width: 36px; height: 36px; border-radius: 10px; }
+  #page-home #lux-home-shell .lux-alert-copy strong { font-size: 12px; }
+  #page-home #lux-home-shell .lux-alert-copy span { font-size: 10px; }
+  #page-home #lux-home-shell .lux-quick-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  #page-home #lux-home-shell .lux-quick-btn { padding: 14px 12px; border-radius: 14px; }
+  #page-home #lux-home-shell .lux-quick-btn .icon { width: 36px; height: 36px; border-radius: 10px; }
+  #page-home #lux-home-shell .lux-quick-btn strong { font-size: 11px; margin-top: 8px; }
+  #page-home #lux-home-shell .lux-quick-btn span { font-size: 9px; line-height: 1.4; }
+  #page-home #lux-home-shell .lux-home-grid { gap: 10px; }
+  #page-home #lux-home-shell .lux-panel, #page-home #lux-home-shell .lux-card, #page-home #lux-home-shell .content-box, #page-home #lux-home-shell .surface-card {
+    border-radius: 14px;
+    padding: 14px;
+  }
+  #page-home #lux-home-shell .lux-card-title { font-size: 12px; }
+  #page-home #lux-home-shell .lux-card-meta { font-size: 9px; }
+  #page-home #lux-home-shell .lux-list-row { gap: 10px; padding: 8px 0; }
+  #page-home #lux-home-shell .lux-list-row i {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    font-size: 12px;
+  }
+  #page-home #lux-home-shell .lux-list-row strong { font-size: 11px; }
+  #page-home #lux-home-shell .lux-list-row span { font-size: 9px; }
+  #page-home #lux-home-shell .lux-primary-btn, #page-home #lux-home-shell .lux-secondary-btn, #page-home #lux-home-shell .lux-ghost-btn {
+    min-height: 44px;
+    padding: 10px 16px;
+    font-size: 13px;
+    border-radius: 12px;
+  }
+  #lux-bg-canvas { opacity: 0.5; }
+}
+@media (max-width: 400px) {
+  #lux-topbar .lux-sidebar-toggle-btn { min-width: 36px; width: 36px; min-height: 36px; }
+  #lux-topbar .lux-picker-btn { padding: 4px 6px; min-height: 32px; }
+  #lux-topbar .lux-picker-btn strong { font-size: 9px; max-width: 56px; }
+  #lux-topbar .lux-topbar-actions .lux-icon-btn { width: 32px; height: 32px; }
+  #page-home #lux-home-shell .lux-quick-grid { grid-template-columns: 1fr; }
+  #page-home #lux-home-shell .lux-stat-row { grid-template-columns: 1fr; }
+  #page-home #lux-home-shell .lux-hero h1 { font-size: 18px; }
+  #page-home #lux-home-shell .page-hero-title, #page-home #lux-home-shell .admin-hero-title { font-size: 16px; }
+  #page-home #lux-home-shell .lux-panel, #page-home #lux-home-shell .lux-card, #page-home #lux-home-shell .content-box, #page-home #lux-home-shell .surface-card {
+    padding: 10px;
+  }
+  #page-home #lux-home-shell .lux-hero { padding: 14px 12px; }
+  #page-home #lux-home-shell .lux-card-body { padding: 12px; }
+  #lux-topbar .lux-breadcrumb { max-width: 100px; font-size: 11px; }
+}
+@media (max-height: 500px) and (orientation: landscape) {
+  #lux-topbar .lux-sidebar-toggle-btn { min-height: 32px; min-width: 32px; }
+  #lux-topbar .lux-picker-btn { min-height: 30px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #lux-bg-canvas { display: none; }
+}

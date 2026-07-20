@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
 function readSource(relativePath) {
@@ -7,6 +7,10 @@ function readSource(relativePath) {
 }
 
 function readRegisteredHomeChunk() {
+  const plainPath = 'assets/js/features/index-home-dashboard.plain.js';
+  if (existsSync(join(process.cwd(), plainPath))) {
+    return readSource(plainPath);
+  }
   const registrationSource = readSource('assets/js/features/index-home-dashboard.js');
   const match = registrationSource.match(/__kiuRegisterLuxuryHomeChunk\('([^']+)'\)/);
 
@@ -92,8 +96,8 @@ describe('faculty switch and scoped visual settings', () => {
     expect(utilities).not.toContain("document.documentElement.style.setProperty('--lux-transparency-alpha', surfaceFillAmount.toFixed(3));");
     expect(utilities).toContain("root.style.setProperty('--kiu-shell-gradient', shellGradient);");
     expect(utilities).toContain("root.style.setProperty('--kiu-gradient-blue', `linear-gradient(135deg, ${primary} 0%, ${nav} 100%)`);");
-    expect(index).toContain('assets/js/features/index-luxury.js?v=20260531-partbg7');
+    expect(index).toContain('assets/js/features/index-luxury.js?v=20260609-lightmode-restore1');
     expect(index).toContain('assets/js/features/index-home-dashboard.js?v=20260517-homejssplit1');
-    expect(index).toContain('assets/js/shared/utilities.js?v=20260531-routeglass3');
+    expect(index).toContain('assets/js/shared/utilities.js?v=20260609-lightmode-restore1');
   });
 });

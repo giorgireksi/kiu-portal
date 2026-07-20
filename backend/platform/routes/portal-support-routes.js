@@ -3,12 +3,15 @@ function registerPortalSupportRoutes(app, deps = {}) {
         addRouteAuditEvent,
         appOrigin,
         allowedCorsOrigins,
+        broadcastAll,
         getActorUserId,
         getSessionAccount,
+        getSessionRole,
         getSessionToken,
         getStore,
         getWebPushConfig,
         isActualAdminSession,
+        isSessionImpersonating,
         pushEvent,
         registerSseClient,
         requireSessionAccount,
@@ -17,36 +20,81 @@ function registerPortalSupportRoutes(app, deps = {}) {
         unregisterSseClient
     } = deps;
 
-    app.get('/api/bootstrap', (request, response) => {
-        const sessionAccount = requireSessionAccount(request, response);
-        if (!sessionAccount) return;
-        const store = getStore();
-        response.json({ ok: true, ...store.createApplicationBootstrap(getSessionToken(request)) });
-    });
-
-    app.get('/api/portal/bootstrap', (request, response) => {
-        const sessionAccount = requireSessionAccount(request, response);
-        if (!sessionAccount) return;
-        const store = getStore();
-        response.json({ ok: true, ...store.createApplicationBootstrap(getSessionToken(request)) });
-    });
-
-    app.post('/api/portal/state', (request, response) => {
-        const sessionAccount = requireSessionAccount(request, response);
-        if (!sessionAccount) return;
-        const store = getStore();
-        const nextState = request.body?.state || {};
-        const savedState = store.savePortalState(nextState);
-        addRouteAuditEvent(request, sessionAccount, {
-            eventDomain: 'portal',
-            eventType: 'portal-state-saved',
-            entityType: 'portal_state',
-            entityId: 'global',
-            afterState: {
-                keys: Object.keys(savedState?.state && typeof savedState.state === 'object' ? savedState.state : {})
+    app.get('/api/bootstrap', async (request, response) => {
+        try {
+            const sessionAccount = requireSessionAccount(request, response);
+            if (!sessionAccount) return;
+            const store = getStore();
+            if (!store) {
+                sendError(response, 503, 'Platform store is not ready.');
+                return;
             }
-        });
-        response.json({ ok: true, saved: true, bootstrapStateKeys: Object.keys(savedState?.state && typeof savedState.state === 'object' ? savedState.state : {}) });
+            response.json({ ok: true, ...store.createApplicationBootstrap(getSessionToken(request)) });
+        } catch (error) {
+            sendError(response, 500, 'Failed to load portal bootstrap.');
+        }
+    });
+
+    app.get('/api/portal/bootstrap', async (request, response) => {
+        try {
+            const sessionAccount = requireSessionAccount(request, response);
+            if (!sessionAccount) return;
+            const store = getStore();
+            if (!store) {
+                sendError(response, 503, 'Platform store is not ready.');
+                return;
+            }
+            response.json({ ok: true, ...store.createApplicationBootstrap(getSessionToken(request)) });
+        } catch (error) {
+            sendError(response, 500, 'Failed to load portal bootstrap.');
+        }
+    });
+
+    app.post('/api/portal/state', async (request, response) => {
+        try {
+            const sessionAccount = requireSessionAccount(request, response);
+            if (!sessionAccount) return;
+            const store = getStore();
+            if (!store) {
+                sendError(response, 503, 'Platform store is not ready.');
+                return;
+            }
+            const nextState = request.body?.state || {};
+            const savedState = store.savePortalState(nextState, {
+                actorUserId: getActorUserId(sessionAccount),
+                effectiveRole: typeof getSessionRole === 'function' ? getSessionRole(sessionAccount) : '',
+                allowGlobalWrite: isActualAdminSession(sessionAccount)
+                    && !(typeof isSessionImpersonating === 'function' && isSessionImpersonating(sessionAccount))
+            });
+            await store.flushPendingWrites();
+            // Live-push: notify other open sessions to re-pull the shared state.
+            // ponytail: coarse — every save pings all clients; scope to changed shared keys / per-faculty rooms if load matters.
+            if (typeof broadcastAll === 'function') {
+                broadcastAll({ type: 'portal:state-upsert', emittedAt: new Date().toISOString() });
+            }
+            if (typeof store.addAuditEvent === 'function') {
+                const actorUserId = typeof getActorUserId === 'function' ? getActorUserId(sessionAccount) : '';
+                const actorRole = typeof getSessionRole === 'function' ? getSessionRole(sessionAccount) : '';
+                store.addAuditEvent({
+                    actorUserId,
+                    actorRole,
+                    eventDomain: 'portal',
+                    eventType: 'portal-state-saved',
+                    entityType: 'portal_state',
+                    entityId: 'global',
+                    afterState: {
+                        keys: Object.keys(savedState?.state && typeof savedState.state === 'object' ? savedState.state : {})
+                    }
+                }, { skipPersist: true });
+            }
+            response.json({ ok: true, saved: true, bootstrapStateKeys: Object.keys(savedState?.state && typeof savedState.state === 'object' ? savedState.state : {}) });
+        } catch (error) {
+            if (Number(error?.statusCode) === 400) {
+                sendError(response, 400, error.message || 'Invalid portal state.');
+                return;
+            }
+            sendError(response, 500, 'Failed to save portal state.');
+        }
     });
 
     app.get('/api/me', (request, response) => {
@@ -102,7 +150,11 @@ function registerPortalSupportRoutes(app, deps = {}) {
         const actorUserId = getActorUserId(sessionAccount);
         const actorEmail = String(sessionAccount.account?.email || '').trim().toLowerCase();
         if (actualAdmin) {
-            const result = requestedEmail ? store.getAccountByEmail(requestedEmail) : requestedId ? store.getAccountById(requestedId) : null;
+            const result = requestedEmail
+                ? store.getAccountByEmail(requestedEmail)
+                : requestedId
+                    ? store.getAccountById(requestedId, { allowDemo: true })
+                    : null;
             const listing = store.listAccounts(request.query);
             response.json({ ok: true, account: result, accounts: result ? [result] : listing.items, total: listing.total });
             return;
@@ -164,6 +216,18 @@ function registerPortalSupportRoutes(app, deps = {}) {
             return;
         }
         response.json({ ok: true, notification });
+    });
+
+    app.post('/api/notifications/delete', (request, response) => {
+        const sessionAccount = request.kiuSessionAccount || requireSessionAccount(request, response);
+        if (!sessionAccount) return;
+        const store = getStore();
+        const deleted = store.deleteNotification(request.body?.notificationId, getActorUserId(sessionAccount));
+        if (!deleted) {
+            sendError(response, 404, 'Notification not found.');
+            return;
+        }
+        response.json({ ok: true, deleted: true });
     });
 
     app.post('/api/notifications/preferences', (request, response) => {

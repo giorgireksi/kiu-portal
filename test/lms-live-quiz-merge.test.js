@@ -43,6 +43,20 @@ function buildLiveWorkspace() {
 }
 
 describe('LMS live quiz merge service', () => {
+    it('drops sessions omitted from staff submission (session deletion)', () => {
+        const existing = {
+            sessions: [
+                { id: 's1', title: 'Keep', participants: {} },
+                { id: 's2', title: 'Delete', participants: { 'student-a': { answers: { q1: { selectedOption: 0 } } } } }
+            ]
+        };
+        const submitted = {
+            sessions: [existing.sessions[0]]
+        };
+        const merged = lmsLiveQuizService.mergeStaffLiveQuizWorkspace(existing, submitted);
+        expect(merged.sessions.map(session => session.id)).toEqual(['s1']);
+    });
+
     it('preserves server participant answers when staff overwrites workspace', () => {
         const existing = buildLiveWorkspace();
         const submitted = {

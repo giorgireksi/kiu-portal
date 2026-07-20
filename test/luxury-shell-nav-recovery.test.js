@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
 function readSource(relativePath) {
@@ -47,13 +47,19 @@ describe('luxury shell nav recovery', () => {
         );
     });
 
-    it('offsets fixed shell chrome for view-as banner layout', () => {
+    it('keeps view-as banner disabled (cleanup-only, no paint CSS)', () => {
+        const chromeSource = readSource('assets/js/features/luxury-shell-chrome.js');
+        const droplist = readSource('assets/css/lux-droplist.css');
         const controls = readSource('assets/css/lux-controls.css');
 
-        expect(controls).toContain('--lux-view-as-banner-height');
-        expect(controls).toContain('body.lux-view-as-active #lux-shell');
-        expect(controls).toContain('body.lux-view-as-active #lux-topbar');
-        expect(controls).toContain('top: var(--lux-view-as-banner-height)');
+        expect(chromeSource).toContain('function syncViewAsBanner()');
+        expect(chromeSource).toContain("document.getElementById('lux-view-as-banner')");
+        expect(chromeSource).toContain("document.body.classList.remove('lux-view-as-active')");
+        expect(chromeSource).not.toContain('lux-view-as-banner__copy');
+        expect(droplist).not.toContain('.lux-view-as-banner');
+        expect(droplist).not.toContain('--lux-view-as-banner-height');
+        expect(controls).not.toContain('--lux-view-as-banner-height');
+        expect(controls).not.toContain('body.lux-view-as-active #lux-shell');
     });
 
     it('keeps the VIEW picker in sync and avoids the Portal View placeholder', () => {

@@ -1,0 +1,132 @@
+{
+  "version": 1,
+  "wave": "H7",
+  "minDanger": 8,
+  "tiers": {
+    "danger": "Edit breaks many unrelated HTML routes — treat as platform change; prefer domain owners first.",
+    "caution": "Shared by a route family or dual-purpose helper — check fanout before editing.",
+    "domain-local": "Prefer these for feature work; blast radius stays on one surface when owners ≤2 (H5)."
+  },
+  "danger": [
+    {
+      "path": "assets/js/app/api.js",
+      "htmlFanoutMin": 15,
+      "editRule": "Portal HTTP client — prefer route/domain clients or new endpoints via backend seams, not one-off fetches in this file for a single feature."
+    },
+    {
+      "path": "assets/js/app/state.js",
+      "htmlFanoutMin": 15,
+      "editRule": "Global KIU_STATE — domain data changes go through existing state keys / portal sync; avoid new globals."
+    },
+    {
+      "path": "assets/js/app/auth.js",
+      "htmlFanoutMin": 15,
+      "editRule": "Session/auth UX shared across shell pages."
+    },
+    {
+      "path": "assets/js/app/app.js",
+      "htmlFanoutMin": 15,
+      "editRule": "App bootstrap hub — do not hang feature UI here."
+    },
+    {
+      "path": "assets/js/features/navigation.js",
+      "htmlFanoutMin": 15,
+      "editRule": "Nav chrome for most portal pages."
+    },
+    {
+      "path": "assets/js/features/luxury-shell-chrome.js",
+      "htmlFanoutMin": 15,
+      "editRule": "Shared shell chrome behavior."
+    },
+    {
+      "path": "assets/js/features/index-luxury.js",
+      "htmlFanoutMin": 15,
+      "editRule": "Luxury shell entry loaded on most portal pages."
+    },
+    {
+      "path": "assets/js/shared/utilities.js",
+      "htmlFanoutMin": 15,
+      "editRule": "Shared helpers — keep pure/generic; domain logic stays in pages/*."
+    },
+    {
+      "path": "assets/js/shared/lux-transparency.js",
+      "htmlFanoutMin": 15,
+      "editRule": "Panel transparency prefs — portal-wide."
+    },
+    {
+      "path": "assets/css/lux-tokens.css",
+      "htmlFanoutMin": 20,
+      "editRule": "Design tokens — change values carefully; do not invent per-route tokens here."
+    },
+    {
+      "path": "assets/css/lux-controls.css",
+      "htmlFanoutMin": 20,
+      "editRule": "Shared controls paint."
+    },
+    {
+      "path": "assets/css/lux-shell.css",
+      "htmlFanoutMin": 15,
+      "editRule": "Shell layout/chrome CSS."
+    },
+    {
+      "path": "assets/css/lux-focus-panel.css",
+      "htmlFanoutMin": 15,
+      "editRule": "Focus/soft-chrome panel SSOT — see shell-panels docs."
+    },
+    {
+      "path": "assets/css/lux-page-bare-lite.css",
+      "htmlFanoutMin": 15,
+      "editRule": "Shared page bare stack; keep shared-selector budget (architecture guardrails)."
+    },
+    {
+      "path": "assets/css/kiu-fonts.css",
+      "htmlFanoutMin": 15,
+      "editRule": "Font stack — portal-wide."
+    }
+  ],
+  "caution": [
+    {
+      "path": "assets/js/shared/social-runtime-lite.js",
+      "editRule": "Social-family helper — confirm callers before API changes."
+    },
+    {
+      "path": "assets/css/mobile-shell-core.css",
+      "editRule": "Mobile shell core — many standalone pages."
+    },
+    {
+      "path": "assets/css/lux-surfaces.css",
+      "editRule": "Surfaces used by auth and some shells."
+    },
+    {
+      "path": "assets/js/pages/standalone-mobile-shell.js",
+      "editRule": "Shared mobile shell runtime for many non-index pages."
+    }
+  ],
+  "domainLocalPatterns": [
+    {
+      "id": "route-dedicated-css",
+      "glob": "assets/css/*-route.css",
+      "editRule": "Route-dedicated sheets (must stay in visual-route-classification / css-route-manifest)."
+    },
+    {
+      "id": "page-runtimes",
+      "glob": "assets/js/pages/*-runtime.js",
+      "editRule": "Route/feature runtimes — prefer findability owners ≤2."
+    },
+    {
+      "id": "news-peels",
+      "glob": "assets/js/pages/news/*.js",
+      "editRule": "News domain peels — news.html only."
+    },
+    {
+      "id": "home-dashboard-feature",
+      "glob": "assets/js/features/home-dashboard/*.js",
+      "editRule": "Index dashboard widgets — index.html family."
+    },
+    {
+      "id": "social-domains",
+      "glob": "assets/js/pages/social-*.js",
+      "editRule": "Social domain modules — social.html (plus lite caveats)."
+    }
+  ]
+}

@@ -7,7 +7,7 @@
         state,
         currentUser,
         text,
-        escape,
+        escape, socialNeoEmptyHero, socialNeoDialogHead, socialNeoDialogActions, socialNeoField, socialNeoSectionHead,
         lostFoundVisibleItems,
         lostFoundItems,
         normalizeLostFoundItem,
@@ -122,7 +122,6 @@
             </section>
         `;
     }
-
 
     function defaultLostFoundExpiresAt(baseDate = new Date()) {
         const date = new Date(baseDate);
@@ -294,7 +293,6 @@
             </form>
         </div>`;
     }
-
 
     window.renderLostFoundActionConfirmDialog = renderLostFoundActionConfirmDialog;
     window.renderLostFoundCreateDialog = renderLostFoundCreateDialog;

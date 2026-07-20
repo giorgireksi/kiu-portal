@@ -153,19 +153,33 @@ function syncRegistrationWorkspaceSummary() {
         'registration-hero-faculty': facultyName,
         'registration-hero-ects': ectsText,
         'registration-hero-load': loadText,
-        'registration-hero-hold': holdText,
-        'registration-hero-selected': sectionText,
         'registration-next-step': nextStep,
         'registration-hero-hold-card': holdText,
         'registration-hero-ects-card': `${totalEcts} / ${limit}`,
         'registration-hero-selected-card': String(selectedCount),
-        'registration-hero-next-step-card': nextStep
+        'registration-hero-next-step-card': nextStep,
+        'timetable-hero-focus-time': ectsText,
+        'timetable-hero-focus-title': loadText
     };
 
     Object.entries(updates).forEach(([id, value]) => {
         const el = document.getElementById(id);
         if (el) el.textContent = value;
     });
+
+    const factsEl = document.getElementById('timetable-hero-focus-facts');
+    if (factsEl) {
+        factsEl.innerHTML = `
+            <li><i class="fas fa-circle-notch"></i> <span>Status: ${statusText}</span></li>
+            <li><i class="fas fa-exclamation-triangle"></i> <span>Hold: ${holdText}</span></li>
+            <li><i class="fas fa-award"></i> <span>Limit: ${limit} ECTS max</span></li>
+        `;
+    }
+
+    const metaEl = document.getElementById('timetable-hero-focus-meta');
+    if (metaEl) {
+        metaEl.innerHTML = `<span><i class="fas ${holdActive ? 'fa-exclamation-circle' : 'fa-check-circle'}"></i> ${holdActive ? 'Hold Active' : 'Ready to Register'}</span>`;
+    }
 
     const termSelect = document.getElementById('registration-term-select');
     if (termSelect && termSelect.options.length) {
@@ -249,8 +263,10 @@ function bootStudentRegistrationRoute() {
     updateEctsProgress();
     refreshRegistrationUI();
     if (typeof updateTransparency === 'function') {
-        const savedTransparency = localStorage.getItem('kiuLuxurySurfaceTransparency');
-        if (savedTransparency) updateTransparency(parseInt(savedTransparency, 10));
+        const savedTransparency = parseInt(localStorage.getItem('kiuLuxurySurfaceTransparency') || '13', 10);
+        if (!Number.isNaN(savedTransparency)) {
+            updateTransparency(savedTransparency);
+        }
     }
 }
 

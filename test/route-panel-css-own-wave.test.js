@@ -7,17 +7,12 @@ function readSource(relativePath) {
     return readFileSync(full, 'utf8');
 }
 
-/** Bare-shell era: stripped routes no longer ship paint CSS. Keep-route panels only. */
+/** Bare-shell era: stripped routes no longer ship paint CSS. Archive purged. */
 describe('route panel CSS-own wave (keep routes + bare)', () => {
-    it('timetable route still aliases / owns panel paint', () => {
-        const css = readSource('assets/css/_archive/2026-07-strip-non-dashboard/timetable-route.css');
-        expect(css.length).toBeGreaterThan(100);
-        expect(css).toMatch(/--lux-panel|lux-panel/);
-    });
-
-    it('lms workspace chrome still present', () => {
-        const css = readSource('assets/css/_archive/2026-07-strip-non-dashboard/lms-workspace-chrome.css');
-        expect(css.length).toBeGreaterThan(100);
+    it('retired timetable/lms route skins stay gone from live assets/css/', () => {
+        expect(existsSync(join(process.cwd(), 'assets/css/_archive'))).toBe(false);
+        expect(existsSync(join(process.cwd(), 'assets/css/timetable-route.css'))).toBe(false);
+        expect(existsSync(join(process.cwd(), 'assets/css/lms-workspace-chrome.css'))).toBe(false);
     });
 
     it('stripped study-card / programs / chancellery / ssvc / orders use bare shell', () => {
@@ -29,11 +24,12 @@ describe('route panel CSS-own wave (keep routes + bare)', () => {
             ['orders.html', 'orders-route.css'],
         ]) {
             const h = readSource(html);
-            expect(h).toContain('lux-page-bare.css');
+            expect(h).toContain('lux-shell.css');
+            expect(h).toContain('lux-page-bare-lite.css');
+            expect(h).not.toMatch(/lux-page-bare\.css(?!-lite)/);
             expect(existsSync(join(process.cwd(), 'assets/css', gone))).toBe(false);
         }
-        const bare = readSource('assets/css/lux-page-bare.css');
-        expect(bare).toContain('backdrop-filter: none');
+        const bare = readSource('assets/css/lux-page-bare-lite.css');
         expect(bare).toContain('body.lux-page-bare');
     });
 });

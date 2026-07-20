@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createRequire } from 'module';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
 const require = createRequire(import.meta.url);
@@ -27,6 +27,7 @@ describe('notifications store domain split', () => {
 
         expect(Object.keys(notificationsService).sort()).toEqual([
             'createNotification',
+            'deleteNotification',
             'isValidPushSubscriptionEndpoint',
             'listNotifications',
             'listPushSubscriptions',
@@ -62,6 +63,10 @@ describe('notifications store domain split', () => {
 
         const marked = store.markNotificationRead(created.id, 'user-1');
         expect(marked?.isRead).toBe(true);
+
+        expect(store.deleteNotification(created.id, 'user-1')).toBe(true);
+        expect(store.listNotifications('user-1').items).toHaveLength(0);
+        expect(store.deleteNotification(created.id, 'user-1')).toBe(false);
 
         const subscription = store.upsertPushSubscription('user-1', buildSubscription('https://push.example.com/subscription/abc'));
         expect(subscription).not.toBeNull();

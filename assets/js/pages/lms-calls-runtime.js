@@ -448,6 +448,9 @@ function launchLmsClassActivity(sessionId, activityType) {
         if (normalizedType === 'breakout') {
             session.roomSettings.breakoutRooms = Math.max(1, session.roomSettings.breakoutRooms || 4);
         }
+        if (normalizedType === 'whiteboard') {
+            session.roomSettings.layout = 'whiteboard';
+        }
         session.activities.unshift({
             id: `activity-${Date.now()}-${Math.random().toString(16).slice(2)}`,
             type: normalizedType,
@@ -461,6 +464,9 @@ function launchLmsClassActivity(sessionId, activityType) {
             responses: {}
         });
     });
+    if (String(activityType || '').toLowerCase() === 'whiteboard' && typeof openLmsWhiteboardFromCalls === 'function') {
+        openLmsWhiteboardFromCalls({ unlock: true });
+    }
 }
 
 function sendLmsClassChatMessage(sessionId) {
@@ -644,14 +650,14 @@ function buildLmsCallSessionCard(session, resourceKey, parsed) {
         : '<div class="lms-route-copy">No participants joined yet.</div>';
     const joinButton = session.status === 'active'
         ? (isParticipant
-            ? `<button class="kiu-btn-outline" data-lms-click="leaveLmsClassCall(${lmsInlineArg(session.id)})"><i class="fas fa-arrow-right-from-bracket"></i> Leave</button>`
-            : `<button class="kiu-btn-blue" data-lms-click="joinLmsClassCall(${lmsInlineArg(session.id)})"><i class="fas fa-right-to-bracket"></i> Join</button>`)
+            ? `<button class="lux-secondary-btn" data-lms-click="leaveLmsClassCall(${lmsInlineArg(session.id)})"><i class="fas fa-arrow-right-from-bracket"></i> Leave</button>`
+            : `<button class="lux-primary-btn" data-lms-click="joinLmsClassCall(${lmsInlineArg(session.id)})"><i class="fas fa-right-to-bracket"></i> Join</button>`)
         : '';
     const startButton = canManage && session.status === 'scheduled'
-        ? `<button class="kiu-btn-blue" data-lms-click="startLmsScheduledClassCall(${lmsInlineArg(session.id)})"><i class="fas fa-circle-play"></i> Start now</button>`
+        ? `<button class="lux-primary-btn" data-lms-click="startLmsScheduledClassCall(${lmsInlineArg(session.id)})"><i class="fas fa-circle-play"></i> Start now</button>`
         : '';
     const endButton = canManage && session.status === 'active'
-        ? `<button class="kiu-btn-outline" data-lms-click="endLmsClassCall(${lmsInlineArg(session.id)})"><i class="fas fa-stop"></i> End</button>`
+        ? `<button class="lux-secondary-btn" data-lms-click="endLmsClassCall(${lmsInlineArg(session.id)})"><i class="fas fa-stop"></i> End</button>`
         : '';
     const buildControl = (icon, label, action, active = false, disabled = false, meta = '') => `
         <button type="button" class="lms-call-control${active ? ' is-active' : ''}" ${disabled ? 'disabled' : ''} data-lms-click="${escapeHtml(action)}">
@@ -763,20 +769,21 @@ function buildLmsCallSessionCard(session, resourceKey, parsed) {
     `).join('') || '<span class="lms-call-feed-item">Class chat is empty.</span>';
     const teacherActionBar = canManage ? `
         <div class="lms-call-action-bar">
-            <button type="button" class="kiu-btn-outline" data-lms-click="launchLmsClassActivity(${lmsInlineArg(session.id)}, 'poll')"><i class="fas fa-chart-pie"></i> Poll</button>
-            <button type="button" class="kiu-btn-outline" data-lms-click="launchLmsClassActivity(${lmsInlineArg(session.id)}, 'quiz')"><i class="fas fa-list-check"></i> Quiz</button>
-            <button type="button" class="kiu-btn-outline" data-lms-click="launchLmsClassActivity(${lmsInlineArg(session.id)}, 'whiteboard')"><i class="fas fa-chalkboard"></i> Whiteboard</button>
-            <button type="button" class="kiu-btn-outline" data-lms-click="launchLmsClassActivity(${lmsInlineArg(session.id)}, 'breakout')"><i class="fas fa-people-arrows"></i> Breakouts</button>
-            <button type="button" class="kiu-btn-outline" data-lms-click="admitLmsClassWaitingStudent(${lmsInlineArg(session.id)})"><i class="fas fa-user-check"></i> Admit lobby</button>
-            <button type="button" class="kiu-btn-outline" data-lms-click="exportLmsClassAttendance(${lmsInlineArg(session.id)})"><i class="fas fa-file-arrow-down"></i> Attendance</button>
-            <button type="button" class="kiu-btn-outline" data-lms-click="exportLmsClassTranscript(${lmsInlineArg(session.id)})"><i class="fas fa-file-lines"></i> Transcript</button>
-            <button type="button" class="kiu-btn-outline" data-lms-click="createLmsAssignmentFromCall(${lmsInlineArg(session.id)})"><i class="fas fa-square-plus"></i> Homework draft</button>
+            <button type="button" class="lux-secondary-btn" data-lms-click="launchLmsClassActivity(${lmsInlineArg(session.id)}, 'poll')"><i class="fas fa-chart-pie"></i> Poll</button>
+            <button type="button" class="lux-secondary-btn" data-lms-click="launchLmsClassActivity(${lmsInlineArg(session.id)}, 'quiz')"><i class="fas fa-list-check"></i> Quiz</button>
+            <button type="button" class="lux-secondary-btn" data-lms-click="launchLmsClassActivity(${lmsInlineArg(session.id)}, 'whiteboard')"><i class="fas fa-chalkboard"></i> Whiteboard</button>
+            <button type="button" class="lux-secondary-btn" data-lms-click="openLmsWhiteboardFromCalls()"><i class="fas fa-up-right-from-square"></i> Open board tab</button>
+            <button type="button" class="lux-secondary-btn" data-lms-click="launchLmsClassActivity(${lmsInlineArg(session.id)}, 'breakout')"><i class="fas fa-people-arrows"></i> Breakouts</button>
+            <button type="button" class="lux-secondary-btn" data-lms-click="admitLmsClassWaitingStudent(${lmsInlineArg(session.id)})"><i class="fas fa-user-check"></i> Admit lobby</button>
+            <button type="button" class="lux-secondary-btn" data-lms-click="exportLmsClassAttendance(${lmsInlineArg(session.id)})"><i class="fas fa-file-arrow-down"></i> Attendance</button>
+            <button type="button" class="lux-secondary-btn" data-lms-click="exportLmsClassTranscript(${lmsInlineArg(session.id)})"><i class="fas fa-file-lines"></i> Transcript</button>
+            <button type="button" class="lux-secondary-btn" data-lms-click="createLmsAssignmentFromCall(${lmsInlineArg(session.id)})"><i class="fas fa-square-plus"></i> Homework draft</button>
         </div>
     ` : `
         <div class="lms-call-action-bar">
-            <button type="button" class="kiu-btn-outline" data-lms-click="sendLmsClassReaction(${lmsInlineArg(session.id)}, '👍')"><i class="fas fa-thumbs-up"></i> React</button>
-            <button type="button" class="kiu-btn-outline" data-lms-click="sendLmsClassReaction(${lmsInlineArg(session.id)}, '👏')"><i class="fas fa-hands-clapping"></i> Clap</button>
-            <button type="button" class="kiu-btn-outline" data-lms-click="sendLmsClassReaction(${lmsInlineArg(session.id)}, '❓')"><i class="fas fa-circle-question"></i> Question</button>
+            <button type="button" class="lux-secondary-btn" data-lms-click="sendLmsClassReaction(${lmsInlineArg(session.id)}, '👍')"><i class="fas fa-thumbs-up"></i> React</button>
+            <button type="button" class="lux-secondary-btn" data-lms-click="sendLmsClassReaction(${lmsInlineArg(session.id)}, '👏')"><i class="fas fa-hands-clapping"></i> Clap</button>
+            <button type="button" class="lux-secondary-btn" data-lms-click="sendLmsClassReaction(${lmsInlineArg(session.id)}, '❓')"><i class="fas fa-circle-question"></i> Question</button>
         </div>
     `;
     const featureTiles = `
@@ -827,6 +834,7 @@ function buildLmsCallSessionCard(session, resourceKey, parsed) {
                             <span class="lms-call-video-label">${session.roomSettings.screenShareAllowed ? 'Shared stage' : 'Stage locked'}</span>
                             <strong>${session.roomSettings.layout === 'coding' ? 'Code editor / IDE share' : session.roomSettings.layout === 'exam' ? 'Exam monitoring panel' : session.roomSettings.layout === 'whiteboard' ? 'Collaborative whiteboard' : 'Presentation / shared board'}</strong>
                             <span>${session.roomSettings.audioOnly ? 'Audio-only stability mode enabled' : (session.roomSettings.lowBandwidth ? 'Low-bandwidth optimization on' : 'Video and content visible to participants')}</span>
+                            ${session.roomSettings.layout === 'whiteboard' ? `<button type="button" class="lms-call-mini-action" data-lms-click="openLmsWhiteboardFromCalls()"><i class="fas fa-chalkboard"></i> Open full whiteboard</button>` : ''}
                         </div>
                     </div>
                     <div class="lms-call-gallery">
@@ -946,7 +954,7 @@ function buildLmsCallSessionCard(session, resourceKey, parsed) {
                     ${session.status === 'active' ? `
                         <div class="lms-call-question-form">
                             <input id="lms-call-chat-${token}" class="lms-route-input" type="text" placeholder="Message everyone in class">
-                            <button type="button" class="kiu-btn-outline" data-lms-click="sendLmsClassChatMessage(${lmsInlineArg(session.id)})"><i class="fas fa-paper-plane"></i> Send</button>
+                            <button type="button" class="lux-secondary-btn" data-lms-click="sendLmsClassChatMessage(${lmsInlineArg(session.id)})"><i class="fas fa-paper-plane"></i> Send</button>
                         </div>
                     ` : ''}
                 </div>
@@ -957,14 +965,14 @@ function buildLmsCallSessionCard(session, resourceKey, parsed) {
                         <div class="lms-call-question-form">
                             <input id="lms-call-question-${token}" class="lms-route-input" type="text" placeholder="Ask a question or use anonymous mode">
                             <label><input id="lms-call-anonymous-${token}" type="checkbox"> Ask anonymously</label>
-                            <button type="button" class="kiu-btn-outline" data-lms-click="askLmsClassQuestion(${lmsInlineArg(session.id)})"><i class="fas fa-paper-plane"></i> Ask</button>
+                            <button type="button" class="lux-secondary-btn" data-lms-click="askLmsClassQuestion(${lmsInlineArg(session.id)})"><i class="fas fa-paper-plane"></i> Ask</button>
                         </div>
                     ` : ''}
                 </div>
                 <div class="lms-route-card lms-route-panel-compact lms-call-collab-panel">
                     <div class="lms-route-field-label">Private notes</div>
                     <textarea id="lms-call-notes-${token}" class="lms-route-textarea" placeholder="Private notes for this class">${escapeHtml(userState.privateNotes || '')}</textarea>
-                    <button type="button" class="kiu-btn-outline" data-lms-click="saveLmsClassPrivateNotes(${lmsInlineArg(session.id)})"><i class="fas fa-save"></i> Save notes</button>
+                    <button type="button" class="lux-secondary-btn" data-lms-click="saveLmsClassPrivateNotes(${lmsInlineArg(session.id)})"><i class="fas fa-save"></i> Save notes</button>
                 </div>
                 <div class="lms-route-card lms-route-panel-compact lms-call-collab-panel">
                     <div class="lms-route-field-label">Transcript</div>
@@ -992,7 +1000,7 @@ function buildLmsCallSessionCard(session, resourceKey, parsed) {
                     ${canManage ? `
                         <div class="lms-call-question-form">
                             <input id="lms-call-broadcast-${token}" class="lms-route-input" type="text" placeholder="Broadcast message to rooms">
-                            <button type="button" class="kiu-btn-outline" data-lms-click="broadcastLmsBreakoutMessage(${lmsInlineArg(session.id)})"><i class="fas fa-bullhorn"></i> Broadcast</button>
+                            <button type="button" class="lux-secondary-btn" data-lms-click="broadcastLmsBreakoutMessage(${lmsInlineArg(session.id)})"><i class="fas fa-bullhorn"></i> Broadcast</button>
                         </div>
                     ` : ''}
                 </div>
@@ -1005,8 +1013,8 @@ function buildLmsCallSessionCard(session, resourceKey, parsed) {
                 ${joinButton}
                 ${startButton}
                 ${endButton}
-                <button class="kiu-btn-outline" data-lms-click="copyLmsClassCallInvite(${lmsInlineArg(session.id)})"><i class="fas fa-link"></i> Copy invite</button>
-                ${canManage && session.status === 'ended' ? `<button class="kiu-btn-outline" data-lms-click="publishLmsClassRecording(${lmsInlineArg(session.id)})"><i class="fas fa-record-vinyl"></i> Publish recording</button>` : ''}
+                <button class="lux-secondary-btn" data-lms-click="copyLmsClassCallInvite(${lmsInlineArg(session.id)})"><i class="fas fa-link"></i> Copy invite</button>
+                ${canManage && session.status === 'ended' ? `<button class="lux-secondary-btn" data-lms-click="publishLmsClassRecording(${lmsInlineArg(session.id)})"><i class="fas fa-record-vinyl"></i> Publish recording</button>` : ''}
             </div>
         </article>
     `;
@@ -1071,8 +1079,8 @@ function renderLmsCallsSection(courseId) {
                 </label>
             </div>
             <div class="lms-route-actions lms-route-actions-mt-16">
-                <button class="kiu-btn-blue" data-lms-click="startLmsClassCall(${lmsInlineArg(resourceKey)})"><i class="fas fa-circle-play"></i> Start live lesson</button>
-                <button class="kiu-btn-outline" data-lms-click="scheduleLmsClassCall(${lmsInlineArg(resourceKey)})"><i class="fas fa-calendar-plus"></i> Schedule lesson</button>
+                <button class="lux-primary-btn" data-lms-click="startLmsClassCall(${lmsInlineArg(resourceKey)})"><i class="fas fa-circle-play"></i> Start live lesson</button>
+                <button class="lux-secondary-btn" data-lms-click="scheduleLmsClassCall(${lmsInlineArg(resourceKey)})"><i class="fas fa-calendar-plus"></i> Schedule lesson</button>
             </div>
         </div>
     ` : '';
@@ -1267,4 +1275,8 @@ function copyLmsClassCallInvite(sessionId) {
     } else {
         prompt('Copy class invite', invite);
     }
+}
+if (typeof window !== 'undefined') {
+    window.ensureLmsClassSessionsForKey = window.ensureLmsClassSessionsForKey || ensureLmsClassSessionsForKey;
+    window.renderLmsCallsSection = window.renderLmsCallsSection || renderLmsCallsSection;
 }

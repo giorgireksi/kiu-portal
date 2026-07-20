@@ -72,6 +72,97 @@ function registerSocialRoutes(app, deps = {}) {
         response.json({ ok: true, ...store.listSocialEvents(request.query) });
     });
 
+    app.get('/api/social/surveys', (request, response) => {
+        const sessionAccount = requireSessionAccount(request, response);
+        if (!sessionAccount) return;
+        const store = getStore();
+        const actorUserId = getActorUserId(sessionAccount);
+        const items = store.listSocialSurveys(request.query || {}, actorUserId);
+        response.json({ ok: true, items, total: items.length });
+    });
+
+    app.get('/api/social/surveys/:id', (request, response) => {
+        const sessionAccount = requireSessionAccount(request, response);
+        if (!sessionAccount) return;
+        const store = getStore();
+        const actorUserId = getActorUserId(sessionAccount);
+        const survey = store.getSocialSurvey(request.params.id, actorUserId);
+        if (!survey) {
+            sendError(response, 404, 'Survey not found.');
+            return;
+        }
+        response.json({ ok: true, survey });
+    });
+
+    app.get('/api/social/surveys/:id/results', (request, response) => {
+        const sessionAccount = requireSessionAccount(request, response);
+        if (!sessionAccount) return;
+        const store = getStore();
+        const actorUserId = getActorUserId(sessionAccount);
+        const results = store.getSocialSurveyResults(request.params.id, actorUserId);
+        if (!results) {
+            sendError(response, 403, 'Survey results are not available.');
+            return;
+        }
+        response.json({ ok: true, results });
+    });
+
+    app.post('/api/social/surveys', (request, response) => {
+        const sessionAccount = requireSessionAccount(request, response);
+        if (!sessionAccount) return;
+        const store = getStore();
+        const actorUserId = getActorUserId(sessionAccount);
+        const survey = store.createSocialSurvey(request.body || {}, actorUserId);
+        if (!survey) {
+            sendError(response, 400, 'Survey could not be created.');
+            return;
+        }
+        emitSocialUpdated();
+        response.json({ ok: true, survey });
+    });
+
+    app.post('/api/social/surveys/:id/close', (request, response) => {
+        const sessionAccount = requireSessionAccount(request, response);
+        if (!sessionAccount) return;
+        const store = getStore();
+        const actorUserId = getActorUserId(sessionAccount);
+        const survey = store.closeSocialSurvey(request.params.id, actorUserId);
+        if (!survey) {
+            sendError(response, 400, 'Survey could not be closed.');
+            return;
+        }
+        emitSocialUpdated();
+        response.json({ ok: true, survey });
+    });
+
+    app.post('/api/social/surveys/:id/respond', (request, response) => {
+        const sessionAccount = requireSessionAccount(request, response);
+        if (!sessionAccount) return;
+        const store = getStore();
+        const actorUserId = getActorUserId(sessionAccount);
+        const survey = store.submitSocialSurveyResponse(request.params.id, request.body || {}, actorUserId);
+        if (!survey) {
+            sendError(response, 400, 'Survey response could not be submitted.');
+            return;
+        }
+        emitSocialUpdated();
+        response.json({ ok: true, survey });
+    });
+
+    app.delete('/api/social/surveys/:id', (request, response) => {
+        const sessionAccount = requireSessionAccount(request, response);
+        if (!sessionAccount) return;
+        const store = getStore();
+        const actorUserId = getActorUserId(sessionAccount);
+        const result = store.deleteSocialSurvey(request.params.id, actorUserId);
+        if (!result) {
+            sendError(response, 400, 'Survey could not be deleted.');
+            return;
+        }
+        emitSocialUpdated();
+        response.json({ ok: true, ...result });
+    });
+
     app.post('/api/social/pages', (request, response) => {
         const sessionAccount = requireSessionAccount(request, response);
         if (!sessionAccount) return;
@@ -226,32 +317,179 @@ function registerSocialRoutes(app, deps = {}) {
         response.json({ ok: true, ...result });
     });
 
-    app.post('/api/social/projects', (request, response) => {
+    app.get('/api/social/portfolio/me', (request, response) => {
         const sessionAccount = requireSessionAccount(request, response);
         if (!sessionAccount) return;
         const store = getStore();
         const actorUserId = getActorUserId(sessionAccount);
-        const project = store.createSocialProject(request.body || {}, actorUserId);
-        if (!project) {
-            sendError(response, 400, 'Project workspace could not be created.');
+        const portfolio = store.getPortfolioForUser(actorUserId, actorUserId);
+        response.json({ ok: true, portfolio });
+    });
+
+    app.put('/api/social/portfolio/me', (request, response) => {
+        const sessionAccount = requireSessionAccount(request, response);
+        if (!sessionAccount) return;
+        try {
+            const store = getStore();
+            const actorUserId = getActorUserId(sessionAccount);
+            const portfolio = store.savePortfolioForUser(actorUserId, request.body || {}, actorUserId);
+            if (!portfolio) {
+                sendError(response, 400, 'Portfolio could not be saved.');
+                return;
+            }
+            emitSocialUpdated();
+            response.json({ ok: true, portfolio });
+        } catch (error) {
+            console.error('[social/portfolio] save failed:', error);
+            sendError(response, 400, error?.message || 'Portfolio could not be saved.');
+        }
+    });
+
+    app.post('/api/social/portfolio/me/publish', (request, response) => {
+        const sessionAccount = requireSessionAccount(request, response);
+        if (!sessionAccount) return;
+        try {
+            const store = getStore();
+            const actorUserId = getActorUserId(sessionAccount);
+            const portfolio = store.publishPortfolioForUser(actorUserId, request.body || {}, actorUserId);
+            emitSocialUpdated();
+            response.json({ ok: true, portfolio });
+        } catch (error) {
+            console.error('[social/portfolio] publish failed:', error);
+            sendError(response, 400, error?.message || 'Portfolio could not be published.');
+        }
+    });
+
+    app.post('/api/social/portfolio/me/unpublish', (request, response) => {
+        const sessionAccount = requireSessionAccount(request, response);
+        if (!sessionAccount) return;
+        try {
+            const store = getStore();
+            const actorUserId = getActorUserId(sessionAccount);
+            const portfolio = store.unpublishPortfolioForUser(actorUserId, actorUserId);
+            emitSocialUpdated();
+            response.json({ ok: true, portfolio });
+        } catch (error) {
+            console.error('[social/portfolio] unpublish failed:', error);
+            sendError(response, 400, error?.message || 'Portfolio could not be unpublished.');
+        }
+    });
+
+    app.post('/api/social/portfolio/me/sections', (request, response) => {
+        const sessionAccount = requireSessionAccount(request, response);
+        if (!sessionAccount) return;
+        try {
+            const store = getStore();
+            const actorUserId = getActorUserId(sessionAccount);
+            const portfolio = store.addCustomPortfolioSection(actorUserId, request.body || {}, actorUserId);
+            emitSocialUpdated();
+            response.json({ ok: true, portfolio });
+        } catch (error) {
+            console.error('[social/portfolio] add section failed:', error);
+            sendError(response, 400, error?.message || 'Custom section could not be added.');
+        }
+    });
+
+    app.get('/api/social/portfolio/discover', (request, response) => {
+        const sessionAccount = requireSessionAccount(request, response);
+        if (!sessionAccount) return;
+        const store = getStore();
+        const actorUserId = getActorUserId(sessionAccount);
+        const portfolios = store.listDiscoverablePortfolios(actorUserId, {
+            q: String(request.query.q || request.query.search || '').trim(),
+            faculty: String(request.query.faculty || '').trim(),
+            visibility: String(request.query.visibility || request.query.visibilityMode || '').trim()
+        });
+        response.json({ ok: true, portfolios });
+    });
+
+    app.get('/api/social/portfolio/:userId', (request, response) => {
+        const sessionAccount = requireSessionAccount(request, response);
+        if (!sessionAccount) return;
+        const store = getStore();
+        const actorUserId = getActorUserId(sessionAccount);
+        const portfolio = store.getPortfolioForUser(request.params.userId, actorUserId);
+        if (!portfolio?.canView) {
+            sendError(response, 404, 'Portfolio not found.');
             return;
         }
-        emitSocialUpdated();
-        response.json({ ok: true, project });
+        response.json({ ok: true, portfolio });
+    });
+
+    app.post('/api/social/projects', (request, response) => {
+        const sessionAccount = requireSessionAccount(request, response);
+        if (!sessionAccount) return;
+        try {
+            const store = getStore();
+            const actorUserId = getActorUserId(sessionAccount);
+            const project = store.createSocialProject(request.body || {}, actorUserId);
+            if (!project) {
+                sendError(response, 400, 'Project workspace could not be created.');
+                return;
+            }
+            emitSocialUpdated();
+            response.json({ ok: true, project });
+        } catch (error) {
+            console.error('[social/projects] create failed:', error);
+            sendError(response, 500, error?.message || 'Internal error creating project.');
+        }
     });
 
     app.post('/api/social/projects/:id', (request, response) => {
         const sessionAccount = requireSessionAccount(request, response);
         if (!sessionAccount) return;
-        const store = getStore();
-        const actorUserId = getActorUserId(sessionAccount);
-        const project = store.updateSocialProject(request.params.id, request.body || {}, actorUserId);
-        if (!project) {
-            sendError(response, 400, 'Project workspace could not be updated.');
-            return;
+        try {
+            const store = getStore();
+            const actorUserId = getActorUserId(sessionAccount);
+            const project = store.updateSocialProject(request.params.id, request.body || {}, actorUserId);
+            if (!project) {
+                sendError(response, 400, 'Project workspace could not be updated.');
+                return;
+            }
+            emitSocialUpdated();
+            response.json({ ok: true, project });
+        } catch (error) {
+            console.error('[social/projects] update failed:', error);
+            sendError(response, 500, error?.message || 'Internal error updating project.');
         }
-        emitSocialUpdated();
-        response.json({ ok: true, project });
+    });
+
+    app.post('/api/social/projects/:id/baseline', (request, response) => {
+        const sessionAccount = requireSessionAccount(request, response);
+        if (!sessionAccount) return;
+        try {
+            const store = getStore();
+            const actorUserId = getActorUserId(sessionAccount);
+            const project = store.setSocialProjectBaseline(request.params.id, actorUserId);
+            if (!project) {
+                sendError(response, 403, 'Project baseline could not be set.');
+                return;
+            }
+            emitSocialUpdated();
+            response.json({ ok: true, project });
+        } catch (error) {
+            console.error('[social/projects] baseline failed:', error);
+            sendError(response, 500, error?.message || 'Internal error setting project baseline.');
+        }
+    });
+
+    app.post('/api/social/projects/:id/task-graph', (request, response) => {
+        const sessionAccount = requireSessionAccount(request, response);
+        if (!sessionAccount) return;
+        try {
+            const store = getStore();
+            const actorUserId = getActorUserId(sessionAccount);
+            const project = store.updateSocialProjectTaskGraph(request.params.id, request.body || {}, actorUserId);
+            if (!project) {
+                sendError(response, 403, 'Task map layout could not be updated.');
+                return;
+            }
+            emitSocialUpdated();
+            response.json({ ok: true, project });
+        } catch (error) {
+            console.error('[social/projects] task-graph failed:', error);
+            sendError(response, 500, error?.message || 'Internal error updating task map layout.');
+        }
     });
 
     app.delete('/api/social/projects/:id', (request, response) => {
@@ -389,96 +627,157 @@ function registerSocialRoutes(app, deps = {}) {
         response.json({ ok: true, ...result });
     });
 
-    app.post('/api/social/projects/:id/milestones', (request, response) => {
+    app.post('/api/social/projects/:id/budget-categories', (request, response) => {
         const sessionAccount = requireSessionAccount(request, response);
         if (!sessionAccount) return;
         const store = getStore();
         const actorUserId = getActorUserId(sessionAccount);
-        const milestone = store.createSocialProjectMilestone(request.params.id, request.body || {}, actorUserId);
-        if (!milestone) {
-            sendError(response, 400, 'Project milestone could not be created.');
+        const category = store.createSocialProjectBudgetCategory(request.params.id, request.body || {}, actorUserId);
+        if (!category) {
+            sendError(response, 400, 'Project budget category could not be created.');
             return;
         }
         emitSocialUpdated();
-        response.json({ ok: true, milestone });
+        response.json({ ok: true, category });
     });
 
-    app.post('/api/social/projects/:id/milestones/:milestoneId', (request, response) => {
+    app.post('/api/social/projects/:id/budget-categories/:categoryId', (request, response) => {
         const sessionAccount = requireSessionAccount(request, response);
         if (!sessionAccount) return;
         const store = getStore();
         const actorUserId = getActorUserId(sessionAccount);
-        const milestone = store.updateSocialProjectMilestone(request.params.id, request.params.milestoneId, request.body || {}, actorUserId);
-        if (!milestone) {
-            sendError(response, 400, 'Project milestone could not be updated.');
-            return;
-        }
-        emitSocialUpdated();
-        response.json({ ok: true, milestone });
-    });
-
-    app.delete('/api/social/projects/:id/milestones/:milestoneId', (request, response) => {
-        const sessionAccount = requireSessionAccount(request, response);
-        if (!sessionAccount) return;
-        const store = getStore();
-        const actorUserId = getActorUserId(sessionAccount);
-        const result = store.deleteSocialProjectMilestone(
+        const category = store.updateSocialProjectBudgetCategory(
             request.params.id,
-            request.params.milestoneId,
+            request.params.categoryId,
+            request.body || {},
+            actorUserId
+        );
+        if (!category) {
+            sendError(response, 400, 'Project budget category could not be updated.');
+            return;
+        }
+        emitSocialUpdated();
+        response.json({ ok: true, category });
+    });
+
+    app.delete('/api/social/projects/:id/budget-categories/:categoryId', (request, response) => {
+        const sessionAccount = requireSessionAccount(request, response);
+        if (!sessionAccount) return;
+        const store = getStore();
+        const actorUserId = getActorUserId(sessionAccount);
+        const result = store.deleteSocialProjectBudgetCategory(
+            request.params.id,
+            request.params.categoryId,
             actorUserId
         );
         if (!result) {
-            sendError(response, 400, 'Project milestone could not be deleted.');
+            sendError(response, 400, 'Project budget category could not be deleted.');
             return;
         }
         emitSocialUpdated();
         response.json({ ok: true, ...result });
     });
 
-    app.post('/api/social/projects/:id/deliverables', (request, response) => {
+    app.post('/api/social/projects/:id/budget-expenses', (request, response) => {
         const sessionAccount = requireSessionAccount(request, response);
         if (!sessionAccount) return;
         const store = getStore();
         const actorUserId = getActorUserId(sessionAccount);
-        const deliverable = store.createSocialProjectDeliverable(request.params.id, request.body || {}, actorUserId);
-        if (!deliverable) {
-            sendError(response, 400, 'Project deliverable could not be created.');
+        const expense = store.createSocialProjectBudgetExpense(request.params.id, request.body || {}, actorUserId);
+        if (!expense) {
+            sendError(response, 400, 'Project budget expense could not be created.');
             return;
         }
         emitSocialUpdated();
-        response.json({ ok: true, deliverable });
+        response.json({ ok: true, expense });
     });
 
-    app.delete('/api/social/projects/:id/deliverables/:deliverableId', (request, response) => {
+    app.post('/api/social/projects/:id/budget-expenses/:expenseId', (request, response) => {
         const sessionAccount = requireSessionAccount(request, response);
         if (!sessionAccount) return;
         const store = getStore();
         const actorUserId = getActorUserId(sessionAccount);
-        const result = store.deleteSocialProjectDeliverable(
+        const expense = store.updateSocialProjectBudgetExpense(
             request.params.id,
-            request.params.deliverableId,
+            request.params.expenseId,
+            request.body || {},
+            actorUserId
+        );
+        if (!expense) {
+            sendError(response, 400, 'Project budget expense could not be updated.');
+            return;
+        }
+        emitSocialUpdated();
+        response.json({ ok: true, expense });
+    });
+
+    app.delete('/api/social/projects/:id/budget-expenses/:expenseId', (request, response) => {
+        const sessionAccount = requireSessionAccount(request, response);
+        if (!sessionAccount) return;
+        const store = getStore();
+        const actorUserId = getActorUserId(sessionAccount);
+        const result = store.deleteSocialProjectBudgetExpense(
+            request.params.id,
+            request.params.expenseId,
             actorUserId
         );
         if (!result) {
-            sendError(response, 400, 'Project deliverable could not be deleted.');
+            sendError(response, 400, 'Project budget expense could not be deleted.');
             return;
         }
         emitSocialUpdated();
         response.json({ ok: true, ...result });
     });
 
-    app.post('/api/social/projects/:id/checkins', (request, response) => {
+    app.post('/api/social/projects/:id/risks', (request, response) => {
         const sessionAccount = requireSessionAccount(request, response);
         if (!sessionAccount) return;
         const store = getStore();
         const actorUserId = getActorUserId(sessionAccount);
-        const checkin = store.createSocialProjectCheckin(request.params.id, request.body || {}, actorUserId);
-        if (!checkin) {
-            sendError(response, 400, 'Project check-in could not be created.');
+        const risk = store.createSocialProjectRisk(request.params.id, request.body || {}, actorUserId);
+        if (!risk) {
+            sendError(response, 400, 'Project risk could not be created.');
             return;
         }
         emitSocialUpdated();
-        response.json({ ok: true, checkin });
+        response.json({ ok: true, risk });
+    });
+
+    app.post('/api/social/projects/:id/risks/:riskId', (request, response) => {
+        const sessionAccount = requireSessionAccount(request, response);
+        if (!sessionAccount) return;
+        const store = getStore();
+        const actorUserId = getActorUserId(sessionAccount);
+        const risk = store.updateSocialProjectRisk(
+            request.params.id,
+            request.params.riskId,
+            request.body || {},
+            actorUserId
+        );
+        if (!risk) {
+            sendError(response, 400, 'Project risk could not be updated.');
+            return;
+        }
+        emitSocialUpdated();
+        response.json({ ok: true, risk });
+    });
+
+    app.delete('/api/social/projects/:id/risks/:riskId', (request, response) => {
+        const sessionAccount = requireSessionAccount(request, response);
+        if (!sessionAccount) return;
+        const store = getStore();
+        const actorUserId = getActorUserId(sessionAccount);
+        const result = store.deleteSocialProjectRisk(
+            request.params.id,
+            request.params.riskId,
+            actorUserId
+        );
+        if (!result) {
+            sendError(response, 400, 'Project risk could not be deleted.');
+            return;
+        }
+        emitSocialUpdated();
+        response.json({ ok: true, ...result });
     });
 
     app.post('/api/social/projects/:id/showcase', (request, response) => {
@@ -752,6 +1051,20 @@ function registerSocialRoutes(app, deps = {}) {
         const event = store.respondSocialEventRsvp(request.params.id, actorUserId, request.body?.status || 'going');
         if (!event) {
             sendError(response, 400, 'RSVP could not be updated.');
+            return;
+        }
+        emitSocialUpdated();
+        response.json({ ok: true, event });
+    });
+
+    app.patch('/api/social/events/:id', (request, response) => {
+        const sessionAccount = requireSessionAccount(request, response);
+        if (!sessionAccount) return;
+        const store = getStore();
+        const actorUserId = getActorUserId(sessionAccount);
+        const event = store.updateSocialEvent(request.params.id, request.body || {}, actorUserId);
+        if (!event) {
+            sendError(response, 400, 'Event could not be updated.');
             return;
         }
         emitSocialUpdated();

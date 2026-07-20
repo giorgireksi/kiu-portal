@@ -1,3 +1,14 @@
+/* Wave bag: Wave 26 admin-registration-track */
+window.KiuAdminRegistrationTrack = window.KiuAdminRegistrationTrack || {};
+const __kiuArtApi = window.KiuAdminRegistrationTrack;
+window.__kiuArtApi = __kiuArtApi;
+function __kiuArtExpose(map) {
+    Object.keys(map).forEach((key) => {
+        __kiuArtApi[key] = map[key];
+        window[key] = map[key];
+    });
+}
+
 /* Unified admin registration track-tab system (regtabs1). */
 
 const ADMIN_REG_TRACK_MIGRATION_VERSION = 1;
@@ -664,7 +675,6 @@ function renderAdminRegTrackTab(container, tabConfig) {
         <div class="admin-reg-program-head admin-reg-program-head--large">
             <div class="admin-reg-program-head-main">
                 <div class="admin-reg-program-head-title admin-reg-program-head-title--large">${escapeHtml(tabConfig.label)}</div>
-                <div class="admin-reg-program-head-copy admin-reg-program-head-copy--large">${escapeHtml(tabConfig.description)}</div>
             </div>
             <button type="button" data-admin-reg-add-program="1" data-admin-reg-tab="${escapeHtml(tabId)}" class="lux-primary-btn admin-reg-program-add-btn admin-reg-program-add-btn--large"><i class="fas fa-plus"></i> Add Program</button>
         </div>
@@ -1290,43 +1300,45 @@ function handleAdminRegTrackDelegateChange(event) {
     return false;
 }
 
-window.ADMIN_REG_BUILTIN_TABS = ADMIN_REG_BUILTIN_TABS;
-window.ADMIN_REG_TRACK_MIGRATION_VERSION = ADMIN_REG_TRACK_MIGRATION_VERSION;
-window.migrateAdminRegistrationCmsToTrackModel = migrateAdminRegistrationCmsToTrackModel;
-window.ensureAdminRegTrackBucket = ensureAdminRegTrackBucket;
-window.getAdminRegTrackData = getAdminRegTrackData;
-window.syncAdminRegTrackLegacyMirrors = syncAdminRegTrackLegacyMirrors;
-window.getAdminRegTabsForFaculty = getAdminRegTabsForFaculty;
-window.resolveAdminRegTab = resolveAdminRegTab;
-window.getValidAdminRegTabIds = getValidAdminRegTabIds;
-window.isBuiltinAdminRegTab = isBuiltinAdminRegTab;
-window.getAdminRegSelectedProgram = getAdminRegSelectedProgram;
-window.setAdminRegSelectedProgram = setAdminRegSelectedProgram;
-window.getAdminRegSelectedGroupKey = getAdminRegSelectedGroupKey;
-window.buildAdminRegGroupKey = buildAdminRegGroupKey;
-window.ensureTrackProgramGroup = ensureTrackProgramGroup;
-window.getTrackProgramGroup = getTrackProgramGroup;
-window.renderAdminRegTabBar = renderAdminRegTabBar;
-window.renderAdminRegPanelHeadActions = renderAdminRegPanelHeadActions;
-window.editTrackProgram = editTrackProgram;
-window.renderAdminRegTrackTab = renderAdminRegTrackTab;
-window.renderAdminRegTrackProgramPane = renderAdminRegTrackProgramPane;
-window.addTrackProgram = addTrackProgram;
-window.deleteTrackProgram = deleteTrackProgram;
-window.addTrackGroup = addTrackGroup;
-window.editTrackGroup = editTrackGroup;
-window.deleteTrackGroup = deleteTrackGroup;
-window.addTrackSubject = addTrackSubject;
-window.editTrackCourse = editTrackCourse;
-window.deleteTrackCourse = deleteTrackCourse;
-window.openAddCustomAdminRegTabModal = openAddCustomAdminRegTabModal;
-window.openAdminRegTabManage = openAdminRegTabManage;
-window.openEditAdminRegTabModal = openEditAdminRegTabModal;
-window.hideBuiltinAdminRegTab = hideBuiltinAdminRegTab;
-window.deleteCustomAdminRegTab = deleteCustomAdminRegTab;
-window.renameCustomAdminRegTab = renameCustomAdminRegTab;
-window.handleAdminRegTrackDelegateClick = handleAdminRegTrackDelegateClick;
-window.handleAdminRegTrackDelegateChange = handleAdminRegTrackDelegateChange;
-window.refreshAdminRegistrationCmsPresentation = refreshAdminRegistrationCmsPresentation;
-window.rerenderAdminRegTrackTab = rerenderAdminRegTrackTab;
-window.convertTrackTabForStudent = convertTrackTabForStudent;
+__kiuArtExpose({
+    ADMIN_REG_BUILTIN_TABS,
+    ADMIN_REG_TRACK_MIGRATION_VERSION,
+    migrateAdminRegistrationCmsToTrackModel,
+    ensureAdminRegTrackBucket,
+    getAdminRegTrackData,
+    syncAdminRegTrackLegacyMirrors,
+    getAdminRegTabsForFaculty,
+    resolveAdminRegTab,
+    getValidAdminRegTabIds,
+    isBuiltinAdminRegTab,
+    getAdminRegSelectedProgram,
+    setAdminRegSelectedProgram,
+    getAdminRegSelectedGroupKey,
+    buildAdminRegGroupKey,
+    ensureTrackProgramGroup,
+    getTrackProgramGroup,
+    renderAdminRegTabBar,
+    renderAdminRegPanelHeadActions,
+    editTrackProgram,
+    renderAdminRegTrackTab,
+    renderAdminRegTrackProgramPane,
+    addTrackProgram,
+    deleteTrackProgram,
+    addTrackGroup,
+    editTrackGroup,
+    deleteTrackGroup,
+    addTrackSubject,
+    editTrackCourse,
+    deleteTrackCourse,
+    openAddCustomAdminRegTabModal,
+    openAdminRegTabManage,
+    openEditAdminRegTabModal,
+    hideBuiltinAdminRegTab,
+    deleteCustomAdminRegTab,
+    renameCustomAdminRegTab,
+    handleAdminRegTrackDelegateClick,
+    handleAdminRegTrackDelegateChange,
+    refreshAdminRegistrationCmsPresentation,
+    rerenderAdminRegTrackTab,
+    convertTrackTabForStudent,
+});

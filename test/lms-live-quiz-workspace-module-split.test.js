@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
 function readSource(relativePath) {
@@ -13,7 +13,10 @@ describe('LMS live quiz workspace module split', () => {
         const liveQuizWorkspaceSource = readSource('assets/js/pages/lms-live-quiz-workspace-runtime.js');
         const liveQuizUiSource = readSource('assets/js/pages/lms-live-quiz-ui-runtime.js');
 
-        expect(lmsHtml).toContain('assets/js/pages/lms-live-quiz-workspace-runtime.js?v=20260604-livequiz-uxfix5');
+        expect(lmsHtml).not.toContain('assets/js/pages/lms-live-quiz-workspace-runtime.js');
+        const classroomSource = readSource('assets/js/pages/lms-classroom-tabs-runtime.js');
+        expect(classroomSource).toContain('assets/js/pages/lms-live-quiz-workspace-runtime.js?v=20260714-lmspro2');
+        expect(classroomSource).toContain('function ensureLmsLiveQuizRuntime()');
         expect(liveQuizWorkspaceSource).toContain('const LMS_LIVE_OPTION_KEYS = [\'A\', \'B\', \'C\', \'D\'];');
         expect(liveQuizWorkspaceSource).toContain('function ensureLmsLiveQuizWorkspace(resourceKey)');
         expect(liveQuizWorkspaceSource).toContain('function applyLmsLiveQuizWorkspace(resourceKey, workspace = null, options = {})');

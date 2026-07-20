@@ -15,7 +15,7 @@ This table mirrors `tools/visual-route-classification.js` and documents which ro
 | `faculty-gradebook.html` | `standard-shell` | `assets/css/faculty-gradebook-route.css` | `shared-standalone` |
 | `faculty-schedule.html` | `excluded-route` | `assets/css/redirect-route.css` | `none` |
 | `gradebook.html` | `excluded-route` | `assets/css/redirect-route.css` | `none` |
-| `index.html` | `standard-shell` | `assets/css/index-home-dashboard.css` | `index-shared` |
+| `index.html` | `standard-shell` | `assets/css/index-home-layout.css` + `index-home-widgets.css` + `index-home-role.css` | `index-shared` |
 | `library.html` | `standard-shell` | `assets/css/library-catalog-shared.css`, `assets/css/library-route.css` | `none` |
 | `lms.html` | `standard-shell` | `assets/css/lux-page-bare.css` | `shared-standalone` |
 | `login.html` | `excluded-route` | `assets/css/login-route.css` | `none` |
@@ -28,8 +28,8 @@ This table mirrors `tools/visual-route-classification.js` and documents which ro
 | `protected-launch.html` | `excluded-route` | `assets/css/protected-launch-route.css` | `none` |
 | `registration.html` | `standard-shell` | `assets/css/registration-route.css` | `shared-standalone` |
 | `social.html` | `special-surface` | `assets/css/social-rebuild.css`, `assets/css/social-projects-lms.css` | `social-shared` |
-| `staff.html` | `special-surface` | `assets/css/staff-command-center.css` | `shared-standalone` |
+| `staff.html` | `special-surface` | `assets/css/lux-page-bare-lite.css` | `shared-standalone` |
 | `student-service.html` | `standard-shell` | `assets/css/student-service-route.css` | `none` |
 | `study-card.html` | `standard-shell` | `assets/css/study-card-route.css` | `shared-standalone` |
-| `timetable.html` | `standard-shell` | `assets/css/lux-page-bare.css` | `shared-standalone` |
+| `timetable.html` | `standard-shell` | `assets/css/layout-schedule-board.css` + `assets/css/lux-page-bare-lite.css` | `shared-standalone` |
 | `wifi-setup.html` | `excluded-route` | - | `none` |

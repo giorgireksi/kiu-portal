@@ -1,3 +1,17 @@
+/* READABILITY: Social home feed — posts, comments (via comments-runtime), compose, handlers.
+ * Sections: Bag | Hooks | PostCard | Comments | SavedHub | Compose | Click | Submit
+ * See docs/human-maintainability.md (H2). */
+/* Wave bag: Wave 26 social-feed */
+window.KiuSocialFeed = window.KiuSocialFeed || {};
+const __kiuFeedApi = window.KiuSocialFeed;
+window.__kiuFeedApi = __kiuFeedApi;
+function __kiuFeedExpose(map) {
+    Object.keys(map).forEach((key) => {
+        __kiuFeedApi[key] = map[key];
+        window[key] = map[key];
+    });
+}
+
 (function initSocialFeedModule() {
     if (window.__KIU_SOCIAL_FEED_MODULE_LOADED) return;
     window.__KIU_SOCIAL_FEED_MODULE_LOADED = true;
@@ -167,7 +181,7 @@
         const contextLine = `${accountSubtitle(author)} - ${feedReason(post, author)}`;
         const commentTotal = comments.length + Number(post.replyCount || 0);
         return `
-            <article class="social-neo-card social-neo-post-card ${post.isPinned ? 'is-pinned' : ''}">
+            <article class="social-neo-card sn-mat-soft social-neo-post-card ${post.isPinned ? 'is-pinned' : ''}">
                 <div class="social-neo-post-head">
                     <button class="social-neo-post-author social-neo-clickable" type="button" data-action="profile-view" data-user-id="${escape(text(author.id))}">
                         ${avatar(author)}
@@ -231,278 +245,65 @@
         `;
     }
 
-    window.renderPost = renderPost;
+    __kiuFeedExpose({
+        renderPost,
+    });
 
-    function commentReactionType(comment) {
-        const reactions = comment?.reactions && typeof comment.reactions === 'object' ? comment.reactions : {};
-        const userId = currentUserId();
-        return Object.keys(reactions).find((type) => Array.isArray(reactions[type]) && reactions[type].some((id) => text(id) === userId)) || '';
+    // --- READABILITY: Comments ---
+    if (typeof window.createKiuSocialFeedCommentsApi !== 'function') {
+        throw new Error('Social feed comments runtime is unavailable.');
     }
-
-    /**
-     * Renders a single comment bubble with reactions, reply button, and nested replies.
-     * Recursively calls itself for child replies, capping depth CSS class at 3.
-     * @param {Object} comment  - Comment object with id, body, authorUserId, replies[], reactions.
-     * @param {Object} post     - Parent post (used for data-post-id attributes).
-     * @param {number} [depth]  - Current nesting depth (0 = root comment).
-     * @returns {string} HTML `<article>` markup.
-     */
-    /**
-     * Renders the inline (Reddit-style) reply composer shown directly beneath a
-     * comment when it is the active reply target. Carries the parent comment id
-     * on the form so the submit handler attaches the reply correctly.
-     */
-    function renderInlineReplyForm(comment, post, context) {
-        const normalizedPostId = postKey(post);
-        const formType = context === 'dialog' ? 'dialog-comment' : 'comment';
-        const author = displayName(accountById(comment.authorUserId) || { id: comment.authorUserId, displayName: comment.authorName || comment.authorUserId });
-        const inputId = `social-reply-input-${text(comment.id)}`;
-        return `
-            <form class="social-neo-comment-reply-form" data-form="${formType}" data-post-id="${escape(normalizedPostId)}" data-reply-comment-id="${escape(text(comment.id))}" data-reply-author="${escape(author)}">
-                <input class="social-neo-input lux-modern-field" id="${escape(inputId)}" type="text" name="commentBody" placeholder="Reply to @${escape(author)}..." aria-label="Reply to @${escape(author)}..." value="" autocomplete="off">
-                <div class="social-neo-comment-reply-form-actions">
-                    <button class="social-neo-btn social-neo-btn-sm social-neo-btn-ghost" type="button" data-action="comment-reply-cancel" data-post-id="${escape(normalizedPostId)}" data-comment-id="${escape(text(comment.id))}">Cancel</button>
-                    <button class="social-neo-btn social-neo-btn-sm social-neo-btn-primary" type="submit">Reply</button>
-                </div>
-                <input type="hidden" name="postId" value="${escape(normalizedPostId)}">
-            </form>
-        `;
-    }
-
-    /** The 5 emoji reaction buttons for a comment (extracted so they can be patched in place). */
-    function renderCommentReactionButtons(comment, normalizedPostId) {
-        const commentReaction = commentReactionType(comment);
-        const reactionCounts = comment?.reactionCounts || {};
-        return ['like', 'love', 'laugh', 'wow', 'support'].map((reactionType) => `
-            <button class="social-neo-btn social-neo-btn-sm ${commentReaction === reactionType ? 'social-neo-btn-primary' : 'social-neo-btn-ghost'}" type="button" data-action="comment-react" data-post-id="${escape(normalizedPostId)}" data-comment-id="${escape(text(comment.id))}" data-reaction-type="${escape(reactionType)}">
-                <span>${reactionEmoji(reactionType)}</span> ${escape(text(reactionCounts[reactionType] || 0))}
-            </button>
-        `).join('');
-    }
-
-    function renderCommentNode(comment, post, depth = 0, context = 'feed') {
-        const normalizedPostId = postKey(post);
-        const commentAuthor = accountById(comment.authorUserId) || { id: comment.authorUserId, displayName: comment.authorName || comment.authorUserId };
-        const replyCount = Array.isArray(comment.replies) ? comment.replies.length : 0;
-        const depthClass = depth ? ` is-reply social-neo-comment-depth-${Math.min(depth, 3)}` : '';
-        const viewer = currentUser();
-        const canDeleteComment = Boolean(
-            viewer && comment?.authorUserId &&
-            (text(viewer.id) === text(comment.authorUserId) || String(viewer.role || '').toLowerCase() === 'admin')
-        );
-        const isReplyTarget = text(state().ui?.commentReplyTargetByPost?.[normalizedPostId]?.commentId) === text(comment.id);
-        return `
-            <article class="social-neo-comment${depthClass}" data-comment-id="${escape(text(comment.id))}">
-                <div class="social-neo-comment-row">
-                    ${avatar(commentAuthor, 'social-neo-avatar-sm')}
-                    <div class="social-neo-comment-body">
-                        <div class="social-neo-comment-bubble">
-                            <div class="social-neo-comment-head">
-                                <strong>${escape(displayName(commentAuthor))}</strong>
-                                <span>${escape(when(comment.createdAt))}</span>
-                            </div>
-                            <p>${escape(comment.body || comment.text || '')}</p>
-                        </div>
-                        <div class="social-neo-comment-actions">
-                            <span class="social-neo-comment-reactions">${renderCommentReactionButtons(comment, normalizedPostId)}</span>
-                            <button class="social-neo-btn social-neo-btn-sm social-neo-btn-ghost social-neo-comment-reply-btn${isReplyTarget ? ' is-active' : ''}" type="button" data-action="comment-reply" data-post-id="${escape(normalizedPostId)}" data-comment-id="${escape(text(comment.id))}" data-author-name="${escape(displayName(commentAuthor))}">
-                                <i class="fas fa-reply"></i> <span class="social-neo-comment-reply-label">Reply${replyCount ? ` (${replyCount})` : ''}</span>
-                            </button>
-                            ${canDeleteComment ? `
-                            <button class="social-neo-btn social-neo-btn-sm social-neo-btn-ghost social-neo-comment-delete-btn" type="button" data-action="comment-delete" data-post-id="${escape(normalizedPostId)}" data-comment-id="${escape(text(comment.id))}" aria-label="Delete comment">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                            ` : ''}
-                            <button class="social-neo-btn social-neo-btn-sm social-neo-btn-ghost" type="button" data-action="comment-report" data-post-id="${escape(normalizedPostId)}" data-comment-id="${escape(text(comment.id))}">
-                                <i class="fas fa-flag"></i>
-                            </button>
-                        </div>
-                        ${isReplyTarget ? renderInlineReplyForm(comment, post, context) : ''}
-                    </div>
-                </div>
-                ${Array.isArray(comment.replies) && comment.replies.length ? `<div class="social-neo-comment-children">${comment.replies.map((reply) => renderCommentNode(reply, post, depth + 1, context)).join('')}</div>` : ''}
-            </article>
-        `;
-    }
-
-    /**
-     * Renders the full comment thread below a post card.
-     * Delegates to renderCommentNode for each root-level comment.
-     * @param {Array<Object>} comments - Root-level comments array.
-     * @param {Object} post - Parent post.
-     * @returns {string} HTML or empty string if no comments.
-     */
-    function renderCommentThread(comments, post, context = 'feed') {
-        const roots = Array.isArray(comments) ? comments : [];
-        if (!roots.length) return '';
-        return `<div class="social-neo-comment-list">${roots.map((comment) => renderCommentNode(comment, post, 0, context)).join('')}</div>`;
-    }
-
-    window.commentReactionType = commentReactionType;
-    window.renderInlineReplyForm = renderInlineReplyForm;
-    window.renderCommentReactionButtons = renderCommentReactionButtons;
-    window.renderCommentNode = renderCommentNode;
-    window.renderCommentThread = renderCommentThread;
-
-    function dialogCommentEl(commentId) {
-        const thread = document.getElementById('social-neo-dialog-comment-thread');
-        return thread?.querySelector(`article.social-neo-comment[data-comment-id="${CSS.escape(text(commentId))}"]`) || null;
-    }
-    function patchCommentReactions(updatedPost, commentId) {
-        const article = dialogCommentEl(commentId);
-        if (!article) return false;
-        const span = article.querySelector(':scope > .social-neo-comment-row > .social-neo-comment-body > .social-neo-comment-actions > .social-neo-comment-reactions');
-        if (!span) return false;
-        const fresh = findCommentInThread(updatedPost?.comments, commentId);
-        if (!fresh) return false;
-        span.innerHTML = renderCommentReactionButtons(fresh, postKey(updatedPost));
-        return true;
-    }
-    function patchCommentReactionsByIds(postId, commentId) {
-        const normalizedPostId = postKey(postId);
-        const normalizedCommentId = text(commentId);
-        if (!normalizedPostId || !normalizedCommentId) return false;
-        const feed = Array.isArray(state()?.feed) ? state().feed : [];
-        const post = feed.find((entry) => text(entry?.id) === normalizedPostId);
-        if (!post) return false;
-        return Boolean(patchCommentReactions(post, normalizedCommentId));
-    }
-    function openInlineReply(post, commentId, authorName) {
-        const article = dialogCommentEl(commentId);
-        if (!article) return;
-        const body = article.querySelector(':scope > .social-neo-comment-row > .social-neo-comment-body');
-        if (!body) return;
-        body.querySelector(':scope > .social-neo-comment-reply-form')?.remove();
-        const comment = findCommentInThread(post?.comments, commentId) || { id: commentId, authorName };
-        const holder = document.createElement('div');
-        holder.innerHTML = renderInlineReplyForm(comment, post, 'dialog');
-        const form = holder.firstElementChild;
-        if (form) body.appendChild(form);
-        article.querySelector(':scope > .social-neo-comment-row > .social-neo-comment-body > .social-neo-comment-actions .social-neo-comment-reply-btn')?.classList.add('is-active');
-        window.requestAnimationFrame(() => {
-            relayoutCommentTrunks();
-            const input = document.getElementById(`social-reply-input-${text(commentId)}`);
-            input?.focus?.({ preventScroll: true });
-            const replyForm = body.querySelector(':scope > .social-neo-comment-reply-form');
-            replyForm?.scrollIntoView?.({ block: 'end', behavior: 'smooth' });
-        });
-    }
-    function closeInlineReply(commentId) {
-        const article = dialogCommentEl(commentId);
-        if (!article) return;
-        article.querySelector(':scope > .social-neo-comment-row > .social-neo-comment-body > .social-neo-comment-reply-form')?.remove();
-        article.querySelector(':scope > .social-neo-comment-row > .social-neo-comment-body > .social-neo-comment-actions .social-neo-comment-reply-btn')?.classList.remove('is-active');
-        relayoutCommentTrunks();
-    }
-    function appendReplyNode(updatedPost, parentCommentId) {
-        const article = dialogCommentEl(parentCommentId);
-        if (!article) return;
-        const parent = findCommentInThread(updatedPost?.comments, parentCommentId);
-        const replies = Array.isArray(parent?.replies) ? parent.replies : [];
-        if (!replies.length) return;
-        const newest = replies[replies.length - 1];
-        let children = article.querySelector(':scope > .social-neo-comment-children');
-        if (!children) {
-            children = document.createElement('div');
-            children.className = 'social-neo-comment-children';
-            article.appendChild(children);
-        }
-        let parentDepth = 0;
-        for (let p = article.parentElement; p && !p.classList.contains('social-neo-comment-list'); p = p.parentElement) {
-            if (p.classList.contains('social-neo-comment-children')) parentDepth++;
-        }
-        const depth = Math.min(parentDepth + 1, 3);
-        const holder = document.createElement('div');
-        holder.innerHTML = renderCommentNode(newest, updatedPost, depth, 'dialog');
-        if (holder.firstElementChild) children.appendChild(holder.firstElementChild);
-        const label = article.querySelector(':scope > .social-neo-comment-row > .social-neo-comment-body > .social-neo-comment-actions .social-neo-comment-reply-label');
-        if (label) label.textContent = `Reply (${replies.length})`;
-        relayoutCommentTrunks();
-    }
-    function patchCommentDialogCount(updatedPost) {
-        const card = document.querySelector('.social-neo-dialog-card--comments');
-        const heroCopy = card?.querySelector('.social-neo-surveys-hero-copy p');
-        const legacySubtitle = card?.querySelector('.social-neo-dialog-subtitle')
-            || document.querySelector('.social-photo-ig-modal .social-photo-ig-comments-subtitle');
-        const subtitle = heroCopy || legacySubtitle;
-        if (!subtitle && !card) return;
-        const collect = (list) => (Array.isArray(list) ? list : []).reduce((n, c) => n + 1 + collect(c?.replies), 0);
-        const total = collect(updatedPost?.comments);
-        if (heroCopy) {
-            heroCopy.textContent = total
-                ? `${total} comment${total === 1 ? '' : 's'} on this post.`
-                : 'Be the first to reply to this post.';
-        } else if (legacySubtitle) {
-            legacySubtitle.textContent = total ? `${total} comment${total === 1 ? '' : 's'}` : 'No comments yet';
-        }
-        const statStrong = card?.querySelector('.social-neo-dialog-comment-stats article:nth-child(2) strong');
-        if (statStrong) statStrong.textContent = String(total);
-    }
-    async function deleteCommentInline(postId, commentId) {
-        if (typeof removePortalSocialComment !== 'function') {
-            if (typeof setPortalSocialFlash === 'function') setPortalSocialFlash('Social runtime not ready.', 'danger');
-            return;
-        }
-        const article = dialogCommentEl(commentId);
-        const updatedPost = await removePortalSocialComment(postId, commentId);
-        if (article?.parentNode) article.parentNode.removeChild(article);
-        const thread = document.getElementById('social-neo-dialog-comment-thread');
-        const list = thread?.querySelector('.social-neo-comment-list');
-        if (list && !list.querySelector('article.social-neo-comment')) {
-            list.remove();
-            if (!thread.querySelector('.social-neo-empty')) {
-                const empty = document.createElement('div');
-                empty.className = 'social-neo-empty';
-                empty.textContent = 'No comments yet. Be the first to reply.';
-                thread.appendChild(empty);
-            }
-        }
-        if (updatedPost) patchCommentDialogCount(updatedPost);
-        relayoutCommentTrunks();
-    }
-    function relayoutCommentTrunks(scope) {
-        const root = scope || document.getElementById('social-neo-dialog-comment-thread');
-        if (!root) return;
-        root.querySelectorAll('article.social-neo-comment').forEach((comment) => {
-            const kids = comment.querySelector(':scope > .social-neo-comment-children');
-            const avatar = comment.querySelector(':scope > .social-neo-comment-row > .social-neo-avatar');
-            if (!kids || !avatar) {
-                comment.style.removeProperty('--trunk-top');
-                comment.style.removeProperty('--trunk-bottom');
-                return;
-            }
-            const lastChild = kids.querySelector(':scope > article.social-neo-comment:last-child');
-            const lastAvatar = lastChild?.querySelector(':scope > .social-neo-comment-row > .social-neo-avatar');
-            if (!lastAvatar) return;
-            const cR = comment.getBoundingClientRect();
-            const aR = avatar.getBoundingClientRect();
-            const lR = lastAvatar.getBoundingClientRect();
-            comment.style.setProperty('--trunk-top', `${Math.round(aR.bottom - cR.top + 2)}px`);
-            comment.style.setProperty('--trunk-bottom', `${Math.round(cR.bottom - (lR.top + lR.height / 2))}px`);
-        });
-    }
-    function findCommentInThread(comments, commentId) {
-        const normalizedId = text(commentId);
-        if (!normalizedId) return null;
-        for (const comment of Array.isArray(comments) ? comments : []) {
-            if (text(comment?.id) === normalizedId) return comment;
-            const replyMatch = findCommentInThread(comment?.replies, normalizedId);
-            if (replyMatch) return replyMatch;
-        }
-        return null;
-    }
-
-    window.dialogCommentEl = dialogCommentEl;
-    window.patchCommentReactions = patchCommentReactions;
-    window.patchCommentReactionsByIds = patchCommentReactionsByIds;
-    window.openInlineReply = openInlineReply;
-    window.closeInlineReply = closeInlineReply;
-    window.appendReplyNode = appendReplyNode;
-    window.patchCommentDialogCount = patchCommentDialogCount;
-    window.deleteCommentInline = deleteCommentInline;
-    window.relayoutCommentTrunks = relayoutCommentTrunks;
-    window.findCommentInThread = findCommentInThread;
+    const __feedComments = window.createKiuSocialFeedCommentsApi({
+        text,
+        escape,
+        displayName,
+        accountById,
+        currentUserId,
+        currentUser,
+        avatar,
+        when,
+        postKey,
+        state,
+        reactionEmoji,
+        removePortalSocialComment,
+        setPortalSocialFlash
+    });
+    const {
+        commentReactionType,
+        renderInlineReplyForm,
+        renderCommentReactionButtons,
+        renderCommentNode,
+        renderCommentThread,
+        dialogCommentEl,
+        patchCommentReactions,
+        patchCommentReactionsByIds,
+        openInlineReply,
+        closeInlineReply,
+        appendReplyNode,
+        patchCommentDialogCount,
+        deleteCommentInline,
+        relayoutCommentTrunks,
+        findCommentInThread
+    } = __feedComments;
+    __kiuFeedExpose({
+        commentReactionType,
+        renderInlineReplyForm,
+        renderCommentReactionButtons,
+        renderCommentNode,
+        renderCommentThread,
+        dialogCommentEl,
+        patchCommentReactions,
+        patchCommentReactionsByIds,
+        openInlineReply,
+        closeInlineReply,
+        appendReplyNode,
+        patchCommentDialogCount,
+        deleteCommentInline,
+        relayoutCommentTrunks,
+        findCommentInThread
+    });
     window.__kiuRelayoutCommentTrunks = relayoutCommentTrunks;
+
 
     function socialHub() {
         if (!window.KIU_STATE) window.KIU_STATE = {};
@@ -639,17 +440,16 @@
         return true;
     }
 
-    window.socialHub = socialHub;
-    window.savedItems = savedItems;
-    window.isPostSaved = isPostSaved;
-    window.toggleSavedPost = toggleSavedPost;
-    window.patchPhotographyFeedReactions = patchPhotographyFeedReactions;
-    window.patchPostSaveButtons = patchPostSaveButtons;
-    window.patchPhotographyFeedSave = patchPhotographyFeedSave;
-    window.patchPostReactions = patchPostReactions;
-
-
-
+    __kiuFeedExpose({
+        socialHub,
+        savedItems,
+        isPostSaved,
+        toggleSavedPost,
+        patchPhotographyFeedReactions,
+        patchPostSaveButtons,
+        patchPhotographyFeedSave,
+        patchPostReactions,
+    });
 
     const POST_COMPOSE_ATTACH_SECTIONS = [
         { id: 'group', label: 'Groups', icon: 'fa-user-group' },
@@ -759,7 +559,7 @@
         /* ── Assemble the feed panel layout ── */
         return `
             <div class="social-neo-feed-shell">
-                <section class="social-neo-card social-neo-feed-header-card">
+                <section class="social-neo-card sn-mat-soft social-neo-feed-header-card">
                     ${renderFeedHero(runtime, homeFilter, feedHeroMetrics, focusOptions, feedScopeId)}
                     <div class="social-neo-feed-header-divider" aria-hidden="true"></div>
                     ${composerMarkup}
@@ -879,7 +679,7 @@
             ? `<span class="social-neo-dialog-submit-badge">${escape(String(attached.length))}</span>`
             : '';
         return `<div class="social-neo-dialog-backdrop social-neo-dialog-backdrop--stacked-child social-neo-dialog-backdrop--post-compose-attach" data-action="dialog-close" role="dialog" aria-modal="true" aria-label="Attach ${escape(sectionMeta.label)}">
-            <div class="social-neo-dialog-card social-neo-dialog-card--form social-neo-dialog-card--post-compose-attach social-neo-dialog-card--lms-create social-neo-dialog-card--social-glass" data-form="post-compose-attach" data-action="noop" data-lux-transparency-exempt="1" data-section="${escape(sectionMeta.id)}">
+            <div class="social-neo-dialog-card social-neo-dialog-card--form social-neo-dialog-card--post-compose-attach social-neo-dialog-card--lms-create social-neo-dialog-card--social-glass sn-mat-modal" data-form="post-compose-attach" data-action="noop" data-lux-transparency-exempt="1" data-section="${escape(sectionMeta.id)}">
                 <div class="social-neo-section-head social-neo-dialog-head">
                     <div class="social-neo-dialog-heading">
                         <strong class="social-neo-dialog-title"><i class="fas ${escape(sectionMeta.icon)}" aria-hidden="true"></i> Attach · ${escape(sectionMeta.label)}</strong>
@@ -927,14 +727,8 @@
             ? `<span class="social-neo-dialog-submit-badge">${escape(String(entityLinks.length))}</span>`
             : '';
         return `<div class="social-neo-dialog-backdrop" data-action="dialog-close">
-            <form class="social-neo-dialog-card social-neo-dialog-card--form social-neo-dialog-card--post-compose social-neo-dialog-card--project-create social-neo-dialog-card--lms-create" data-form="post-compose" data-action="noop" data-lux-transparency-exempt="1">
-                <div class="social-neo-section-head social-neo-dialog-head">
-                    <div class="social-neo-dialog-heading">
-                        <strong class="social-neo-dialog-title"><i class="fas fa-pen" aria-hidden="true"></i> Create post</strong>
-                        <span class="social-neo-dialog-subtitle">Write an update, add photos, then attach campus items to share on Home.</span>
-                    </div>
-                    <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-close-btn" type="button" data-action="dialog-close"><i class="fas fa-times"></i></button>
-                </div>
+            <form class="social-neo-dialog-card social-neo-dialog-card--form social-neo-dialog-card--post-compose social-neo-dialog-card--project-create social-neo-dialog-card--lms-create sn-mat-modal" data-form="post-compose" data-action="noop" data-lux-transparency-exempt="1">
+                ${typeof socialNeoDialogHead === 'function' ? socialNeoDialogHead('Create post', 'Write an update, add photos, then attach campus items to share on Home.', { icon: 'fas fa-pen' }) : ''}
                 <div class="social-neo-dialog-body social-neo-dialog-body--project-create">
                     <section class="social-neo-dialog-project-create-section">
                         <div class="social-neo-dialog-project-create-section-head">
@@ -994,7 +788,6 @@
         </div>`;
     }
 
-
     const FEED_OWNED_DIALOG_KINDS = new Set([
         'post-compose',
         'post-compose-attach',
@@ -1022,49 +815,31 @@
             : null;
         if (kind === 'post-edit' && post) {
             return `<div class="social-neo-dialog-backdrop" data-action="dialog-close">
-                <form class="social-neo-dialog-card" data-form="dialog-post-edit" data-action="noop">
-                    <div class="social-neo-section-head social-neo-dialog-head">
-                        <div class="social-neo-dialog-heading"><strong class="social-neo-dialog-title">Edit post</strong><span class="social-neo-dialog-subtitle">Refine the post without leaving the feed.</span></div>
-                        <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-close-btn" type="button" data-action="dialog-close"><i class="fas fa-times"></i></button>
-                    </div>
+                <form class="social-neo-dialog-card sn-mat-modal" data-form="dialog-post-edit" data-action="noop">
+                    ${typeof socialNeoDialogHead === 'function' ? socialNeoDialogHead('Edit post', 'Refine the post without leaving the feed.') : ''}
                     <textarea class="social-neo-textarea" name="dialogBody" rows="6" placeholder="Update your post...">${escape(text(dialog.body || post.body || post.text || ''))}</textarea>
-                    <div class="social-neo-form-actions social-neo-dialog-actions">
-                        <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-cancel-btn" type="button" data-action="dialog-close">Cancel</button>
-                        <button class="social-neo-btn social-neo-btn-primary social-neo-dialog-submit-btn" type="submit">Save changes</button>
-                    </div>
+                    ${typeof socialNeoDialogActions === 'function' ? socialNeoDialogActions({ cancelLabel: 'Cancel', submitLabel: 'Save changes' }) : ''}
                     <input type="hidden" name="postId" value="${escape(text(post.id))}">
                 </form>
             </div>`;
         }
         if (kind === 'post-share' && post) {
             return `<div class="social-neo-dialog-backdrop" data-action="dialog-close">
-                <form class="social-neo-dialog-card" data-form="dialog-post-share" data-action="noop">
-                    <div class="social-neo-section-head social-neo-dialog-head">
-                        <div class="social-neo-dialog-heading"><strong class="social-neo-dialog-title">Share post</strong><span class="social-neo-dialog-subtitle">Add context before it goes back into the stream.</span></div>
-                        <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-close-btn" type="button" data-action="dialog-close"><i class="fas fa-times"></i></button>
-                    </div>
+                <form class="social-neo-dialog-card sn-mat-modal" data-form="dialog-post-share" data-action="noop">
+                    ${typeof socialNeoDialogHead === 'function' ? socialNeoDialogHead('Share post', 'Add context before it goes back into the stream.') : ''}
                     <textarea class="social-neo-textarea" name="dialogNote" rows="4" placeholder="Say something about this...">${escape(text(dialog.note || ''))}</textarea>
                     <div class="social-neo-dialog-preview">${escape(text(post.body || post.text || 'Original post'))}</div>
-                    <div class="social-neo-form-actions social-neo-dialog-actions">
-                        <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-cancel-btn" type="button" data-action="dialog-close">Cancel</button>
-                        <button class="social-neo-btn social-neo-btn-primary social-neo-dialog-submit-btn" type="submit">Share now</button>
-                    </div>
+                    ${typeof socialNeoDialogActions === 'function' ? socialNeoDialogActions({ cancelLabel: 'Cancel', submitLabel: 'Share now' }) : ''}
                     <input type="hidden" name="postId" value="${escape(text(post.id))}">
                 </form>
             </div>`;
         }
         if (kind === 'post-report' && post) {
             return `<div class="social-neo-dialog-backdrop" data-action="dialog-close">
-                <form class="social-neo-dialog-card" data-form="dialog-post-report" data-action="noop">
-                    <div class="social-neo-section-head social-neo-dialog-head">
-                        <div class="social-neo-dialog-heading"><strong class="social-neo-dialog-title">Report post</strong><span class="social-neo-dialog-subtitle">Explain what is wrong with this content.</span></div>
-                        <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-close-btn" type="button" data-action="dialog-close"><i class="fas fa-times"></i></button>
-                    </div>
+                <form class="social-neo-dialog-card sn-mat-modal" data-form="dialog-post-report" data-action="noop">
+                    ${typeof socialNeoDialogHead === 'function' ? socialNeoDialogHead('Report post', 'Explain what is wrong with this content.') : ''}
                     <textarea class="social-neo-textarea" name="dialogReason" rows="4" placeholder="Spam, harassment, misleading information...">${escape(text(dialog.reason || 'Inappropriate or misleading'))}</textarea>
-                    <div class="social-neo-form-actions social-neo-dialog-actions">
-                        <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-cancel-btn" type="button" data-action="dialog-close">Cancel</button>
-                        <button class="social-neo-btn social-neo-btn-primary social-neo-dialog-submit-btn" type="submit">Submit report</button>
-                    </div>
+                    ${typeof socialNeoDialogActions === 'function' ? socialNeoDialogActions({ cancelLabel: 'Cancel', submitLabel: 'Submit report' }) : ''}
                     <input type="hidden" name="postId" value="${escape(text(post.id))}">
                 </form>
             </div>`;
@@ -1074,17 +849,11 @@
             const comment = findCommentInThread(reportPost?.comments, dialog.commentId);
             if (!comment) return '';
             return `<div class="social-neo-dialog-backdrop" data-action="dialog-close">
-                <form class="social-neo-dialog-card" data-form="dialog-comment-report" data-action="noop">
-                    <div class="social-neo-section-head social-neo-dialog-head">
-                        <div class="social-neo-dialog-heading"><strong class="social-neo-dialog-title">Report comment</strong><span class="social-neo-dialog-subtitle">Explain what is wrong with this comment.</span></div>
-                        <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-close-btn" type="button" data-action="dialog-close"><i class="fas fa-times"></i></button>
-                    </div>
+                <form class="social-neo-dialog-card sn-mat-modal" data-form="dialog-comment-report" data-action="noop">
+                    ${typeof socialNeoDialogHead === 'function' ? socialNeoDialogHead('Report comment', 'Explain what is wrong with this comment.') : ''}
                     <div class="social-neo-dialog-preview">${escape(text(comment.body || comment.text || 'Comment'))}</div>
                     <textarea class="social-neo-textarea" name="dialogReason" rows="4" placeholder="Spam, harassment, misleading information...">${escape(text(dialog.reason || 'Inappropriate or misleading'))}</textarea>
-                    <div class="social-neo-form-actions social-neo-dialog-actions">
-                        <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-cancel-btn" type="button" data-action="dialog-close">Cancel</button>
-                        <button class="social-neo-btn social-neo-btn-primary social-neo-dialog-submit-btn" type="submit">Submit report</button>
-                    </div>
+                    ${typeof socialNeoDialogActions === 'function' ? socialNeoDialogActions({ cancelLabel: 'Cancel', submitLabel: 'Submit report' }) : ''}
                     <input type="hidden" name="postId" value="${escape(postKey(dialog.postId))}">
                     <input type="hidden" name="commentId" value="${escape(text(dialog.commentId))}">
                     <input type="hidden" name="targetOwnerId" value="${escape(text(comment.authorUserId || ''))}">
@@ -1096,7 +865,7 @@
                 // eslint-disable-next-line no-console
                 console.warn('[comment-delete] post not in feed', { postId: dialog.postId, feedSize: Array.isArray(state().feed) ? state().feed.length : 0 });
                 return `<div class="social-neo-dialog-backdrop" data-action="dialog-close">
-                    <div class="social-neo-dialog-card social-neo-delete-confirm">
+                    <div class="social-neo-dialog-card social-neo-delete-confirm sn-mat-modal">
                         <div class="social-neo-section-head social-neo-dialog-head">
                             <div class="social-neo-dialog-heading">
                                 <span class="social-neo-delete-confirm-icon-chip"><i class="fas fa-trash" aria-hidden="true"></i></span>
@@ -1140,7 +909,7 @@
                 console.warn('[comment-delete] comment lookup missed', { postId: post.id, commentId: dialog.commentId, commentCount: Array.isArray(post.comments) ? post.comments.length : 0 });
             }
             return `<div class="social-neo-dialog-backdrop" data-action="dialog-close">
-                <form class="social-neo-dialog-card social-neo-delete-confirm" data-form="dialog-comment-delete" data-action="noop">
+                <form class="social-neo-dialog-card social-neo-delete-confirm sn-mat-modal" data-form="dialog-comment-delete" data-action="noop">
                     <div class="social-neo-delete-confirm-accent" aria-hidden="true"></div>
                     <div class="social-neo-section-head social-neo-dialog-head">
                         <div class="social-neo-dialog-heading">
@@ -1168,16 +937,10 @@
         }
         if (kind === 'post-delete' && post) {
             return `<div class="social-neo-dialog-backdrop" data-action="dialog-close">
-                <form class="social-neo-dialog-card" data-form="dialog-post-delete" data-action="noop">
-                    <div class="social-neo-section-head social-neo-dialog-head">
-                        <div class="social-neo-dialog-heading"><strong class="social-neo-dialog-title">Delete post</strong><span class="social-neo-dialog-subtitle">This removes the post from the social feed.</span></div>
-                        <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-close-btn" type="button" data-action="dialog-close"><i class="fas fa-times"></i></button>
-                    </div>
+                <form class="social-neo-dialog-card sn-mat-modal" data-form="dialog-post-delete" data-action="noop">
+                    ${typeof socialNeoDialogHead === 'function' ? socialNeoDialogHead('Delete post', 'This removes the post from the social feed.') : ''}
                     <div class="social-neo-dialog-preview">${escape(text(post.body || post.text || 'This post has no text.'))}</div>
-                    <div class="social-neo-form-actions social-neo-dialog-actions">
-                        <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-cancel-btn" type="button" data-action="dialog-close">Cancel</button>
-                        <button class="social-neo-btn social-neo-btn-primary social-neo-dialog-submit-btn" type="submit">Delete post</button>
-                    </div>
+                    ${typeof socialNeoDialogActions === 'function' ? socialNeoDialogActions({ cancelLabel: 'Cancel', submitLabel: 'Delete post' }) : ''}
                     <input type="hidden" name="postId" value="${escape(text(post.id))}">
                 </form>
             </div>`;
@@ -1207,7 +970,7 @@
                 ? `${dialogCommentTotal} comment${dialogCommentTotal === 1 ? '' : 's'} on this post.`
                 : 'Be the first to reply to this post.';
             return `<div class="social-neo-dialog-backdrop" data-action="dialog-close" role="dialog" aria-modal="true" aria-label="Comments">
-                <div class="social-neo-dialog-card social-neo-dialog-card--comments" data-action="noop" data-lux-transparency-exempt="1">
+                <div class="social-neo-dialog-card social-neo-dialog-card--comments sn-mat-modal" data-action="noop" data-lux-transparency-exempt="1">
                     <div class="social-neo-dialog-head social-neo-surveys-hero-head">
                         <div class="social-neo-surveys-hero-copy">
                             <span class="social-neo-section-kicker">Post</span>
@@ -1270,14 +1033,16 @@
         return '';
     }
 
-    window.renderFeedHero = renderFeedHero;
-    window.renderFeedPanel = renderFeedPanel;
-    window.renderPostComposeShareSection = renderPostComposeShareSection;
-    window.renderPostComposeAttachResultsHtml = renderPostComposeAttachResultsHtml;
-    window.renderPostComposeAttachDialog = renderPostComposeAttachDialog;
-    window.renderPostComposeDialog = renderPostComposeDialog;
-    window.renderFeedOwnedDialog = renderFeedOwnedDialog;
-    window.FEED_OWNED_DIALOG_KINDS = FEED_OWNED_DIALOG_KINDS;
+    __kiuFeedExpose({
+        renderFeedHero,
+        renderFeedPanel,
+        renderPostComposeShareSection,
+        renderPostComposeAttachResultsHtml,
+        renderPostComposeAttachDialog,
+        renderPostComposeDialog,
+        renderFeedOwnedDialog,
+        FEED_OWNED_DIALOG_KINDS,
+    });
 
     function isSocialFeedClickAction(action) {
         const a = text(action || '');
@@ -1552,8 +1317,10 @@
         return false;
     }
 
-    window.handleSocialFeedClick = handleSocialFeedClick;
-    window.isSocialFeedClickAction = isSocialFeedClickAction;
+    __kiuFeedExpose({
+        handleSocialFeedClick,
+        isSocialFeedClickAction,
+    });
 
     function isSocialFeedSubmitForm(formType) {
         const f = text(formType || '');
@@ -1803,8 +1570,10 @@
         return false;
     }
 
-    window.handleSocialFeedSubmit = handleSocialFeedSubmit;
-    window.isSocialFeedSubmitForm = isSocialFeedSubmitForm;
+    __kiuFeedExpose({
+        handleSocialFeedSubmit,
+        isSocialFeedSubmitForm,
+    });
 
     function isSocialFeedInputTarget(target) {
         if (!target || typeof target.matches !== 'function') return false;
@@ -1891,9 +1660,11 @@
         return true;
     }
 
-    window.handleSocialFeedInput = handleSocialFeedInput;
-    window.isSocialFeedInputTarget = isSocialFeedInputTarget;
-    window.handleSocialFeedChange = handleSocialFeedChange;
-    window.isSocialFeedChangeTarget = isSocialFeedChangeTarget;
+    __kiuFeedExpose({
+        handleSocialFeedInput,
+        isSocialFeedInputTarget,
+        handleSocialFeedChange,
+        isSocialFeedChangeTarget,
+    });
 
 })();

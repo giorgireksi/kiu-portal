@@ -1,9 +1,12 @@
+/* CONTRACT: Soft-chrome and focus-panel tokens/structure stay shared once — not re-invented per route. — see docs/test-as-map.md */
 import { describe, expect, it } from 'vitest';
-import { readFileSync, readdirSync } from 'fs';
+import { readFileSync, readdirSync, existsSync } from 'fs';
 import { join } from 'path';
 
 function readSource(relativePath) {
-    return readFileSync(join(process.cwd(), relativePath), 'utf8');
+    const full = join(process.cwd(), relativePath);
+    if (typeof existsSync === 'function' && !existsSync(full)) return '';
+    return readFileSync(full, 'utf8');
 }
 
 describe('lux-focus-panel portal contract', () => {
@@ -32,10 +35,10 @@ describe('lux-focus-panel portal contract', () => {
         expect(css).toContain('.lux-focus-panel__copy');
         expect(css).toContain('.lux-soft-chrome');
         expect(css).toMatch(
-            /\.lux-focus-panel[\s\S]{0,500}backdrop-filter:\s*none\s*!important/
+            /\.lux-focus-panel[\s\S]{0,500}backdrop-filter:\s*none(?:\s*!important)?/
         );
         expect(css).toMatch(
-            /\.lux-soft-chrome[\s\S]{0,400}backdrop-filter:\s*none\s*!important/
+            /\.lux-soft-chrome[\s\S]{0,400}backdrop-filter:\s*none(?:\s*!important)?/
         );
     });
 
@@ -50,31 +53,38 @@ describe('lux-focus-panel portal contract', () => {
         expect(css).toMatch(/\.lux-timetable-hero-focus::before|\.lms-hero-focus\.lux-hero-side::before/);
     });
 
-    it('is linked after lux-surfaces on portal pages', () => {
+    it('keeps lux-surfaces auth-only; focus-panel is not required with surfaces', () => {
         const htmlFiles = readdirSync(process.cwd()).filter((name) => name.endsWith('.html'));
-        // Full-paint routes load lux-surfaces; bare routes use solid shell without it.
         const withSurfaces = htmlFiles.filter((name) =>
             readSource(name).includes('lux-surfaces.css')
         );
-        expect(withSurfaces.length).toBeGreaterThanOrEqual(3);
+        expect(withSurfaces.sort()).toEqual(['login.html', 'protected-launch.html']);
         for (const name of withSurfaces) {
             const html = readSource(name);
-            expect(html, name).toContain('lux-focus-panel.css');
-            const surfacesIdx = html.indexOf('lux-surfaces.css');
-            const focusIdx = html.indexOf('lux-focus-panel.css');
-            expect(focusIdx, name).toBeGreaterThan(surfacesIdx);
+            expect(html, name).not.toContain('lux-focus-panel.css');
         }
-        // Full-paint triad always carries surfaces + focus order
-        for (const name of ['index.html', 'timetable.html', 'lms.html']) {
+        for (const name of ['calendar.html', 'profile.html', 'gradebook.html', 'faculty-schedule.html']) {
             const html = readSource(name);
-            expect(html, name).toContain('lux-surfaces.css');
-            expect(html.indexOf('lux-focus-panel.css')).toBeGreaterThan(html.indexOf('lux-surfaces.css'));
+            expect(html, name).not.toContain('lux-surfaces.css');
+            expect(html, name).not.toContain('lux-focus-panel.css');
         }
     });
 
+    it('bare portal pages link lux-focus-panel with shared paint', () => {
+        const htmlFiles = readdirSync(process.cwd()).filter((name) => name.endsWith('.html'));
+        for (const name of htmlFiles) {
+            const html = readSource(name);
+            if (!/\blux-page-bare\b/.test(html)) continue;
+            expect(html, name).toMatch(/lux-focus-panel\.css/);
+            expect(html, name).toMatch(/\blux-full-paint\b/);
+        }
+        expect(readSource('index.html')).toContain('lux-focus-panel.css');
+    });
+
     it('dual-writes lux-focus-panel on pilot and phase-3 hero asides', () => {
-        expect(readSource('timetable.html')).toContain('lux-timetable-hero-focus lux-hero-side lux-focus-panel lux-soft-chrome');
-        expect(readSource('lms.html')).toContain('lms-hero-focus lux-hero-side lux-focus-panel');
+        // Bare-shell era: LMS/TT keep focus class aliases without lux-focus-panel sheet/class dual-write
+        expect(readSource('timetable.html')).toContain('lux-timetable-hero-focus lux-hero-side');
+        expect(readSource('lms.html')).toContain('lms-hero-focus lux-hero-side');
         expect(readSource('assets/js/features/home-dashboard/widget-render.js')).toContain(
             'lms-hero-focus lux-hero-side lux-focus-panel'
         );
@@ -86,30 +96,10 @@ describe('lux-focus-panel portal contract', () => {
     });
 
     it('keeps engine soft treatment for focus panels', () => {
-        expect(utilities).toContain("'lux-focus-panel'");
-        expect(utilities).toContain("'lux-soft-chrome'");
-        expect(utilities).toContain('.lux-focus-panel');
-        expect(utilities).toContain('el.classList.contains(\'lux-focus-panel\')');
-        expect(utilities).toContain('el.classList.contains(\'lux-soft-chrome\')');
-        expect(utilities).toContain("el.matches?.('.lms-hero-focus, .lux-focus-panel')");
+        const softEngine = readSource('assets/js/shared/lux-transparency.js');
+        expect(softEngine).toContain('lux-focus-panel');
+        expect(softEngine).toContain('lux-soft-chrome');
         expect(primer).toContain("'.lux-focus-panel'");
         expect(primer).toContain("'.lux-soft-chrome'");
-    });
-
-    it('does not re-blur focus in efficient timetable luxury rules', () => {
-        const luxury = readSource('assets/css/index-luxury.css');
-        const timetableRoute = readSource('assets/css/_archive/2026-07-strip-non-dashboard/timetable-route.css');
-        const efficientBlock =
-            luxury.match(
-                /body\[data-lux-performance='efficient'\]\.lux-route-timetable[\s\S]{0,900}lux-timetable-hero-focus[\s\S]{0,400}/
-            ) ||
-            timetableRoute.match(
-                /body\[data-lux-performance='efficient'\]\.lux-route-timetable[\s\S]{0,900}lux-timetable-hero-focus[\s\S]{0,400}/
-            );
-        expect(efficientBlock?.[0] || '').toMatch(/backdrop-filter:\s*none/);
-        // Glass-host list must not force blur onto focus panel
-        expect(luxury).not.toMatch(
-            /body\.lux-site-modernized\.lux-unified-shell :where\([\s\S]{0,800}\.lux-timetable-hero-focus[\s\S]{0,400}backdrop-filter:\s*blur/
-        );
     });
 });

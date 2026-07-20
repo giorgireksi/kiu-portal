@@ -122,3 +122,7 @@ function syncLmsQuizRoster(resourceKey, quiz) {
         syncLmsQuizSubmissionVariant(quiz, submission, student.id);
     });
 }
+
+if (typeof window !== 'undefined') {
+    window.applyQuizScoreToGradebook = window.applyQuizScoreToGradebook || applyQuizScoreToGradebook;
+}

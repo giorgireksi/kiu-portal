@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
 function readSource(relativePath) {
@@ -12,8 +12,8 @@ describe('transparency slider floor', () => {
         const luxurySource = readSource('assets/js/features/index-luxury.js');
         const html = readSource('index.html');
 
-        expect(html).toContain('assets/js/shared/utilities.js?v=20260531-routeglass3');
-        expect(html).toContain('assets/js/features/index-luxury.js?v=20260531-partbg7');
+        expect(html).toContain('assets/js/shared/utilities.js?v=20260609-lightmode-restore1');
+        expect(html).toContain('assets/js/features/index-luxury.js?v=20260609-lightmode-restore1');
 
         expect(utilitiesSource).toContain('function mapLuxuryTransparencyFillRatio(value)');
         expect(utilitiesSource).toContain('return (percentage + 1) / 101');

@@ -1,46 +1,26 @@
-/* Shared font delivery for root portal routes. */
 @font-face {
-    font-family: 'Inter';
+  font-family: 'Inter';
     src: local('Inter'), local('Inter Regular');
     font-style: normal;
     font-weight: 100 900;
     font-display: swap;
 }
-
 @font-face {
-    font-family: 'Noto Sans Georgian';
+  font-family: 'Noto Sans Georgian';
     src: local('Noto Sans Georgian'), local('NotoSansGeorgian-Regular');
     font-style: normal;
     font-weight: 400 700;
     font-display: swap;
 }
-
 @font-face {
-    font-family: 'Playfair Display';
+  font-family: 'Playfair Display';
     src: local('Playfair Display'), local('PlayfairDisplay-Regular');
     font-style: normal;
     font-weight: 400 900;
     font-display: swap;
 }
-
 @font-face {
-    font-family: 'DM Mono';
-    src: local('DM Mono'), local('DMMono-Regular');
-    font-style: normal;
-    font-weight: 400 500;
-    font-display: swap;
-}
-
-@font-face {
-    font-family: 'Fraunces';
-    src: local('Fraunces'), local('Fraunces 72pt');
-    font-style: normal;
-    font-weight: 400 900;
-    font-display: swap;
-}
-
-@font-face {
-    font-family: 'Manrope';
+  font-family: 'Manrope';
     src: local('Manrope'), local('Manrope Regular');
     font-style: normal;
     font-weight: 200 900;

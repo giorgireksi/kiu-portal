@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
 function readSource(relativePath) {
@@ -25,12 +25,17 @@ describe('admin-library route class guard', () => {
     });
 
     it('re-stabilizes admin library route classes after topbar sync', () => {
-        expect(html).toContain('ensureAdminLibraryRouteVisualState');
-        expect(html).toContain("body.classList.add('lux-route-admin-library')");
-        expect(html).toContain("body.classList.remove('lux-route-library')");
+        const adminJs = readSource('assets/js/pages/admin-library.js');
+
+        expect(html).toContain('bootAdminLibraryPage');
+        expect(html).toContain('assets/js/pages/admin-library.js?v=20260714-libcleanup1');
+        expect(adminJs).toContain('ensureAdminLibraryRouteVisualState');
+        expect(adminJs).toContain("body.classList.add('lux-route-admin-library')");
+        expect(adminJs).toContain("body.classList.remove('lux-route-library')");
         expect(chromeSource).toContain('ensureAdminLibraryRouteVisualState');
-        expect(html).toContain("switchFacultyTheme(fac, { refreshDependentViews: false });");
-        expect(html).toContain('window.refreshStandaloneDesktopRouteShellContext({ rerender: false, refreshActiveRoute: false });');
+        expect(adminJs).toContain("switchFacultyTheme(fac, { refreshDependentViews: false });");
+        expect(adminJs).toContain('window.refreshStandaloneDesktopRouteShellContext({ rerender: false, refreshActiveRoute: false });');
+        expect(adminJs).not.toContain('logAdminLibraryLayoutProbe');
         expect(html).not.toContain('logAdminLibraryLayoutProbe');
         expect(html).not.toContain('127.0.0.1:7615/ingest');
     });

@@ -1,30 +1,7 @@
 /* LMS materials runtime extracted from lms.js. */
 
-function renderLmsMaterialsLibrary(resourceKey) {
-    const items = ensureLmsMaterialsForKey(resourceKey);
-    const activeItems = items.filter(item => !item.archived);
-    const archivedItems = items.filter(item => item.archived);
-    const canManage = canManageLmsGroupContent();
-    const token = toDomToken(resourceKey);
-    const fileLabelId = `lms-material-file-label-${token}`;
-
-    const weekBanner = `
-        <div class="lms-route-panel lms-route-panel-pad-16-20">
-            <div class="lms-route-card-head">
-                <div class="lms-route-inline lms-route-inline-center lms-route-inline-gap-12">
-                    <i class="fas fa-folder-open lms-route-lead-icon"></i>
-                    <div>
-                        <div class="lms-route-card-title">Materials</div>
-                            <div class="lms-route-copy lms-route-copy-mt-4">${activeItems.length} active files &middot; ${items.filter(item => item.pinned).length} pinned &middot; ${archivedItems.length} archived</div>
-                    </div>
-                </div>
-                <div class="lms-route-inline lms-route-inline-gap-8">
-                    ${canManage ? '<button class="kiu-btn-outline lms-route-btn-compact" data-lms-click="openLmsWeekManagerModal(&#39;' + resourceKey + '&#39;)"><i class="fas fa-calendar-week"></i> Manage Weeks</button>' : ''}
-                </div>
-            </div>
-        </div>
-    `;
-    const createBox = canManage ? `
+function buildLmsMaterialsCreateBoxHtml(resourceKey, fileLabelId) {
+    return `
         <div class="lms-route-panel lms-route-panel-compact">
             <div class="lms-route-card-head lms-route-card-head-mb-16">
                 <div>
@@ -50,17 +27,34 @@ function renderLmsMaterialsLibrary(resourceKey) {
                 </div>
             </div>
             <div class="lms-route-actions lms-route-actions-mt-16">
-                <button class="kiu-btn-outline" data-lms-click="pickLocalLmsFile('material', '${resourceKey}', '${fileLabelId}')"><i class="fas fa-paperclip"></i> Upload File</button>
-                <button class="kiu-btn-blue" data-lms-click="createLmsMaterial('${resourceKey}')"><i class="fas fa-cloud-upload-alt"></i> Save Material</button>
+                <button class="lux-secondary-btn" data-lms-click="pickLocalLmsFile('material', '${resourceKey}', '${fileLabelId}')"><i class="fas fa-paperclip"></i> Upload File</button>
+                <button class="lux-primary-btn" data-lms-click="createLmsMaterial('${resourceKey}')"><i class="fas fa-cloud-upload-alt"></i> Save Material</button>
             </div>
         </div>
-    ` : '';
-    const groupedMaterials = groupLmsItemsByWeek(resourceKey, activeItems, item => item.weekLabel, true);
-    const cards = groupedMaterials.length ? groupedMaterials.map(([weekLabel, weekItems], index) => {
-        const body = weekItems.length
-            ? `
-                <div class="lms-route-card-grid lms-material-card-grid">
-                    ${weekItems.map(item => `
+    `;
+}
+
+function buildLmsMaterialsWeekBannerHtml(resourceKey, activeCount, pinnedCount, archivedCount, canManage) {
+    return `
+        <div class="lms-route-panel lms-route-panel-pad-16-20">
+            <div class="lms-route-card-head">
+                <div class="lms-route-inline lms-route-inline-center lms-route-inline-gap-12">
+                    <i class="fas fa-folder-open lms-route-lead-icon"></i>
+                    <div>
+                        <div class="lms-route-card-title">Materials</div>
+                            <div class="lms-route-copy lms-route-copy-mt-4">${activeCount} active files &middot; ${pinnedCount} pinned &middot; ${archivedCount} archived</div>
+                    </div>
+                </div>
+                <div class="lms-route-inline lms-route-inline-gap-8">
+                    ${canManage ? '<button class="lux-secondary-btn lms-route-btn-compact" data-lms-click="openLmsWeekManagerModal(&#39;' + resourceKey + '&#39;)"><i class="fas fa-calendar-week"></i> Manage Weeks</button>' : ''}
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function buildLmsMaterialsCardHtml(resourceKey, item, canManage) {
+    return `
                         <div class="lms-route-card lms-route-panel-compact lms-material-card">
                             <div class="lms-route-card-head lms-material-card-head">
                                 <div>
@@ -70,11 +64,11 @@ function renderLmsMaterialsLibrary(resourceKey) {
                                 <div class="lms-route-inline lms-route-inline-center lms-route-inline-gap-8 lms-material-card-actions">
                                     ${item.pinned ? '<span class="lms-route-pill"><i class="fas fa-thumbtack"></i> Pinned</span>' : ''}
                                     ${canManage ? `
-                                        <button class="kiu-btn-outline lms-route-btn-compact lms-route-btn-compact-square" data-lms-click="toggleLmsMaterialPinned('${resourceKey}', '${item.id}')"><i class="fas fa-thumbtack"></i></button>
-                                        <button class="kiu-btn-outline lms-route-btn-compact lms-route-btn-compact-square" data-lms-click="moveLmsMaterial('${resourceKey}', '${item.id}', -1)"><i class="fas fa-arrow-up"></i></button>
-                                        <button class="kiu-btn-outline lms-route-btn-compact lms-route-btn-compact-square" data-lms-click="moveLmsMaterial('${resourceKey}', '${item.id}', 1)"><i class="fas fa-arrow-down"></i></button>
-                                        <button class="kiu-btn-outline lms-route-btn-compact lms-route-btn-compact-square" data-lms-click="toggleLmsMaterialArchived('${resourceKey}', '${item.id}')"><i class="fas fa-box-archive"></i></button>
-                                        <button class="kiu-btn-outline lms-route-btn-compact lms-route-btn-compact-square lms-route-btn-danger" data-lms-click="deleteLmsMaterial('${resourceKey}', '${item.id}')"><i class="fas fa-trash"></i></button>
+                                        <button class="lux-secondary-btn lms-route-btn-compact lms-route-btn-compact-square" data-lms-click="toggleLmsMaterialPinned('${resourceKey}', '${item.id}')"><i class="fas fa-thumbtack"></i></button>
+                                        <button class="lux-secondary-btn lms-route-btn-compact lms-route-btn-compact-square" data-lms-click="moveLmsMaterial('${resourceKey}', '${item.id}', -1)"><i class="fas fa-arrow-up"></i></button>
+                                        <button class="lux-secondary-btn lms-route-btn-compact lms-route-btn-compact-square" data-lms-click="moveLmsMaterial('${resourceKey}', '${item.id}', 1)"><i class="fas fa-arrow-down"></i></button>
+                                        <button class="lux-secondary-btn lms-route-btn-compact lms-route-btn-compact-square" data-lms-click="toggleLmsMaterialArchived('${resourceKey}', '${item.id}')"><i class="fas fa-box-archive"></i></button>
+                                        <button class="lux-secondary-btn lms-route-btn-compact lms-route-btn-compact-square lms-route-btn-danger" data-lms-click="deleteLmsMaterial('${resourceKey}', '${item.id}')"><i class="fas fa-trash"></i></button>
                                     ` : ''}
                                 </div>
                             </div>
@@ -86,10 +80,19 @@ function renderLmsMaterialsLibrary(resourceKey) {
                                 shellClass: 'lms-route-file-shell lms-material-card-attachment'
                             })}
                         </div>
-                    `).join('')}
+                    `;
+}
+
+function buildLmsMaterialsListMarkup(resourceKey, activeItems, archivedItems, canManage) {
+    const groupedMaterials = groupLmsItemsByWeek(resourceKey, activeItems, item => item.weekLabel);
+    const cards = groupedMaterials.length ? groupedMaterials.map(([weekLabel, weekItems], index) => {
+        const body = weekItems.length
+            ? `
+                <div class="lms-route-card-grid lms-material-card-grid">
+                    ${weekItems.map(item => buildLmsMaterialsCardHtml(resourceKey, item, canManage)).join('')}
                 </div>
             `
-            : renderLmsRouteEmptyState('No Material Yet', 'No materials were uploaded for this week yet.', 'fa-file-lines');
+            : renderLmsWeekPanelEmptyState('No Material Yet', 'No materials were uploaded for this week yet.', 'fa-file-lines');
         return renderLmsRouteWeekAccordion(
             weekLabel,
             `${weekItems.length} material${weekItems.length === 1 ? '' : 's'} in this section`,
@@ -113,13 +116,34 @@ function renderLmsMaterialsLibrary(resourceKey) {
                             <div class="lms-route-card-title lms-route-card-title-14">${escapeHtml(item.title || item.file?.name || 'Archived material')}</div>
                             <div class="lms-route-meta lms-route-meta-11 lms-route-copy-mt-4">${joinLmsMeta([item.weekLabel || 'General', item.file?.name || 'Attachment'])}</div>
                         </div>
-                        <button class="kiu-btn-outline" data-lms-click="toggleLmsMaterialArchived('${resourceKey}', '${item.id}')"><i class="fas fa-rotate-left"></i> Restore</button>
+                        <button class="lux-secondary-btn" data-lms-click="toggleLmsMaterialArchived('${resourceKey}', '${item.id}')"><i class="fas fa-rotate-left"></i> Restore</button>
                     </div>
                 `).join('')}
             </div>
         </div>
     ` : '';
-    return `${weekBanner}${createBox}<div class="lms-route-stack">${cards}${archivedPanel}</div>`;
+    return `<div class="lms-route-stack">${cards}${archivedPanel}</div>`;
+}
+
+function renderLmsMaterialsLibrary(resourceKey) {
+    const items = ensureLmsMaterialsForKey(resourceKey);
+    const activeItems = items.filter(item => !item.archived);
+    const archivedItems = items.filter(item => item.archived);
+    const canManage = canManageLmsGroupContent();
+    const token = toDomToken(resourceKey);
+    const fileLabelId = `lms-material-file-label-${token}`;
+
+    const weekBanner = buildLmsMaterialsWeekBannerHtml(
+        resourceKey,
+        activeItems.length,
+        items.filter(item => item.pinned).length,
+        archivedItems.length,
+        canManage
+    );
+    const createBox = canManage
+        ? buildLmsMaterialsCreateBoxHtml(resourceKey, fileLabelId)
+        : '';
+    return `${weekBanner}${createBox}${buildLmsMaterialsListMarkup(resourceKey, activeItems, archivedItems, canManage)}`;
 }
 
 async function createLmsMaterial(resourceKey) {
@@ -216,4 +240,8 @@ function moveLmsMaterial(resourceKey, materialId, direction = 0) {
     materials.forEach((item, order) => { item.sortOrder = order; item.updatedAt = new Date().toISOString(); });
     saveState();
     rerenderCurrentLmsTab();
+}
+
+if (typeof window !== 'undefined') {
+    window.renderLmsMaterialsLibrary = window.renderLmsMaterialsLibrary || renderLmsMaterialsLibrary;
 }

@@ -97,4 +97,18 @@ describe('Wave dashboard CSS A+ (criteria → 10/10)', () => {
             'assets/css/index-home-role.css',
         ]);
     });
+
+    it('desktop freeform contract: absolute widgets on block canvas', () => {
+        const widgetsCss = read('assets/css/index-home-widgets.css');
+        const layoutCss = read('assets/css/index-home-layout.css');
+        expect(widgetsCss).toMatch(
+            /\.lux-dashboard-canvas\.is-desktop\s+\.lux-grid-widget\s*\{[^}]*position:\s*absolute/
+        );
+        expect(widgetsCss).not.toMatch(
+            /\.lux-dashboard-canvas\.is-desktop\s+\.lux-grid-widget\s*\{[^}]*position:\s*static/
+        );
+        expect(layoutCss).toMatch(
+            /\.lux-dashboard-canvas\.is-desktop\s*\{[^}]*display:\s*block/
+        );
+    });
 });

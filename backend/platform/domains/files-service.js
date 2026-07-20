@@ -103,8 +103,87 @@ function createFileFromUpload(payload = {}) {
     return clone(record);
 }
 
+function extensionForStoredFile(fileRecord = {}) {
+    const name = String(fileRecord?.name || '').trim();
+    const nameMatch = name.match(/(\.[A-Za-z0-9]+)$/);
+    if (nameMatch) return nameMatch[1];
+    const recorded = String(fileRecord?.path || '').trim();
+    const pathMatch = recorded.match(/(\.[A-Za-z0-9]+)$/);
+    return pathMatch ? pathMatch[1] : '';
+}
+
+/**
+ * Resolve a stored file to a path that exists on this machine.
+ * Heals absolute paths left over when the repo was copied/moved
+ * (e.g. .../test/asd/... -> .../test/asd8/...).
+ */
+function resolveStoredFileDiskPath(fileRecord = null) {
+    if (!fileRecord || typeof fileRecord !== 'object') return '';
+    const recorded = String(fileRecord.path || '').trim();
+    if (recorded && fs.existsSync(recorded)) return recorded;
+
+    const id = String(fileRecord.id || '').trim();
+    const uploadsDir = this.uploadsDir ? path.resolve(this.uploadsDir) : '';
+    if (!uploadsDir || !id) return recorded;
+
+    const ext = extensionForStoredFile(fileRecord);
+    const candidates = [
+        path.resolve(uploadsDir, `${id}${ext}`),
+        path.resolve(uploadsDir, id)
+    ];
+    for (const candidate of candidates) {
+        if (candidate !== uploadsDir && candidate.startsWith(`${uploadsDir}${path.sep}`) && fs.existsSync(candidate)) {
+            return candidate;
+        }
+    }
+    try {
+        const entries = fs.readdirSync(uploadsDir);
+        const hit = entries.find((entry) => entry === id || entry.startsWith(`${id}.`));
+        if (hit) {
+            const candidate = path.resolve(uploadsDir, hit);
+            if (candidate.startsWith(`${uploadsDir}${path.sep}`) && fs.existsSync(candidate)) return candidate;
+        }
+    } catch (error) {}
+    return recorded;
+}
+
+function healStoredFileRecord(fileRecord = null) {
+    if (!fileRecord || typeof fileRecord !== 'object') return null;
+    const resolvedPath = resolveStoredFileDiskPath.call(this, fileRecord);
+    if (!resolvedPath) return clone(fileRecord);
+    if (String(fileRecord.path || '').trim() === resolvedPath) return clone(fileRecord);
+    const next = {
+        ...fileRecord,
+        path: resolvedPath,
+        updatedAt: nowIso()
+    };
+    if (this.state?.files && fileRecord.id) {
+        this.state.files[String(fileRecord.id)] = next;
+    }
+    return clone(next);
+}
+
 function getFile(fileId) {
-    return clone(this.state.files[String(fileId || '').trim()] || null);
+    const key = String(fileId || '').trim();
+    const record = this.state.files?.[key] || null;
+    if (!record) return null;
+    return healStoredFileRecord.call(this, record);
+}
+
+function healAllStoredFilePaths() {
+    const files = this.state?.files && typeof this.state.files === 'object' ? this.state.files : {};
+    let changed = 0;
+    Object.keys(files).forEach((key) => {
+        const before = String(files[key]?.path || '').trim();
+        const healed = healStoredFileRecord.call(this, files[key]);
+        if (healed && String(healed.path || '').trim() !== before && fs.existsSync(String(healed.path || ''))) {
+            changed += 1;
+        }
+    });
+    if (changed && typeof this.save === 'function') {
+        try { this.save(); } catch (error) {}
+    }
+    return changed;
 }
 
 function objectContainsStoredFileReference(value, fileId, visited = new WeakSet()) {
@@ -149,12 +228,49 @@ function canActorAccessStoredFile(fileId, actorUserId = '', actorRole = '') {
     if (objectContainsStoredFileReference(this.getSocialBootstrap(normalizedActorUserId), normalizedFileId)) {
         return true;
     }
+    // Social feed posts are not in getSocialBootstrap — allow media for posts the actor can view.
+    const socialPosts = asArray(this.state.social?.posts);
+    if (socialPosts.some((post) => {
+        if (!objectContainsStoredFileReference(post, normalizedFileId)) return false;
+        if (typeof this.canViewSocialPost === 'function') {
+            return Boolean(this.canViewSocialPost(post, normalizedActorUserId));
+        }
+        const authorId = String(post?.authorUserId || post?.postedById || post?.authorId || '').trim();
+        return authorId && authorId === normalizedActorUserId;
+    })) {
+        return true;
+    }
+    // Stories may carry image media the same way.
+    const socialStories = asArray(this.state.social?.stories);
+    if (socialStories.length && socialStories.some((story) => objectContainsStoredFileReference(story, normalizedFileId))) {
+        if (typeof this.canViewSocialStory === 'function') {
+            if (socialStories.some((story) =>
+                objectContainsStoredFileReference(story, normalizedFileId)
+                && this.canViewSocialStory(story, normalizedActorUserId)
+            )) return true;
+        } else {
+            return true;
+        }
+    }
     const accessibleLmsCourseIds = Object.keys(this.state.lmsCourses || {}).filter((courseId) => {
         const enrolled = this.getStudentEnrollmentsByCourse(courseId).some(enrollment => String(enrollment?.studentId || '').trim() === normalizedActorUserId);
         if (enrolled) return true;
         return this.isCourseTeachingStaff(courseId, normalizedActorUserId, normalizedActorRole);
     });
-    return accessibleLmsCourseIds.some(courseId => objectContainsStoredFileReference(this.getLmsCourse(courseId), normalizedFileId));
+    if (accessibleLmsCourseIds.some(courseId => objectContainsStoredFileReference(this.getLmsCourse(courseId), normalizedFileId))) {
+        return true;
+    }
+    const whiteboardWorkspaces = this.state.portal?.whiteboardWorkspaces || {};
+    return Object.entries(whiteboardWorkspaces).some(([resourceKey, workspace]) => {
+        if (!objectContainsStoredFileReference(workspace, normalizedFileId)) return false;
+        const courseId = String(resourceKey || '').split('::')[0]?.trim()
+            || String(resourceKey || '').split(':')[0]?.trim()
+            || '';
+        if (!courseId) return isStoredFileOwnedByActor(fileRecord, normalizedActorUserId);
+        const enrolled = this.getStudentEnrollmentsByCourse(courseId)
+            .some(enrollment => String(enrollment?.studentId || '').trim() === normalizedActorUserId);
+        return enrolled || this.isCourseTeachingStaff(courseId, normalizedActorUserId, normalizedActorRole);
+    });
 }
 
 function normalizeMessageAttachment(file, senderId) {
@@ -198,6 +314,9 @@ module.exports = {
     canActorAccessStoredFile,
     createFileFromUpload,
     getFile,
+    healAllStoredFilePaths,
+    healStoredFileRecord,
     normalizeMessageAttachment,
-    objectContainsStoredFileReference
+    objectContainsStoredFileReference,
+    resolveStoredFileDiskPath
 };

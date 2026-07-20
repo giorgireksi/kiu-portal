@@ -549,13 +549,7 @@
         const pageVisibility = text(runtime.ui?.pageVisibility || 'public') || 'public';
         return `<div class="social-neo-dialog-backdrop" data-action="dialog-close">
             <form class="social-neo-dialog-card social-neo-dialog-card--form social-neo-dialog-card--page-create social-neo-dialog-card--lms-create" data-form="create-page" data-action="noop" data-lux-transparency-exempt="1">
-                <div class="social-neo-section-head social-neo-dialog-head">
-                    <div class="social-neo-dialog-heading">
-                        <strong class="social-neo-dialog-title"><i class="fas fa-flag" aria-hidden="true"></i> Create page</strong>
-                        <span class="social-neo-dialog-subtitle">Build a public-facing page for a brand, product, club, department, or official campus team.</span>
-                    </div>
-                    <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-close-btn" type="button" data-action="dialog-close"><i class="fas fa-times"></i></button>
-                </div>
+                ${typeof socialNeoDialogHead === 'function' ? socialNeoDialogHead('Create page', 'Build a public-facing page for a brand, product, club, department, or official campus team.', { icon: 'fas fa-flag' }) : ''}
                 <div class="social-neo-dialog-body social-neo-dialog-body--page-create">
                     <div class="social-neo-pages-wizard-steps social-neo-dialog-page-create-steps">
                         ${[
@@ -749,7 +743,6 @@
             </form>
         </div>`;
     }
-
 
     const PAGES_OWNED_DIALOG_KINDS = new Set([
         'page-about',

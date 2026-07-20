@@ -1,0 +1,9 @@
+# Extra ignores for graphify watch (merged with .gitignore).
+.tmp/
+.playwright-browsers/
+.playwright-mcp/
+graphify-out/cache/
+.claude/
+.cursor/
+.grok/
+.kiro/

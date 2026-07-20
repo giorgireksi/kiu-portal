@@ -37,7 +37,7 @@
                     '<div class="mob-sheet-section"><div class="mob-sheet-label">Quick Actions</div><div class="mob-sheet-grid">' +
                         '<button class="mob-sheet-btn" type="button" id="mob-act-admin"><span class="mob-sheet-icon"><i class="fas fa-user-shield"></i></span><span>Admin View</span></button>' +
                         '<button class="mob-sheet-btn" type="button" id="mob-act-theme"><span class="mob-sheet-icon"><i class="fas fa-palette"></i></span><span>Theme</span></button>' +
-                        '<button class="mob-sheet-btn" type="button" id="mob-act-profile"><span class="mob-sheet-icon"><i class="fas fa-user-circle"></i></span><span>Profile</span></button>' +
+                        '<button class="mob-sheet-btn" type="button" id="mob-act-profile"><span class="mob-sheet-icon"><i class="far fa-user"></i></span><span>Personal Data</span></button>' +
                         '<button class="mob-sheet-btn" type="button" id="mob-act-lightmode"><span class="mob-sheet-icon"><i class="fas fa-sun"></i></span><span>Light Mode</span></button>' +
                     '</div></div>' +
                     '<div id="mob-sheet-dynamic-nav"></div>' +
@@ -291,7 +291,7 @@
         if (profileButton) {
             profileButton.addEventListener('click', function (event) {
                 event.preventDefault();
-                if (!invokeNavigate('profile-view')) return;
+                if (!invokeNavigate('personal-data')) return;
                 closeSheet();
             });
         }
@@ -320,7 +320,26 @@
         openSheet();
     }
 
+
+    function ensureMobileActionSheetCss() {
+        if (typeof document === 'undefined') return;
+        if (document.querySelector('link[data-kiu-mobile-action-sheet]')) return;
+        var links = document.querySelectorAll('link[rel="stylesheet"]');
+        for (var i = 0; i < links.length; i++) {
+            var href = String(links[i].getAttribute('href') || '');
+            if (href.indexOf('lux-mobile-action-sheet.css') !== -1 || href.indexOf('mobile-responsive.css') !== -1) {
+                return;
+            }
+        }
+        var link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = 'assets/css/lux-mobile-action-sheet.css?v=20260720-densify6500';
+        link.setAttribute('data-kiu-mobile-action-sheet', '1');
+        document.head.appendChild(link);
+    }
+
     function openSheet() {
+        ensureMobileActionSheetCss();
         var sheet = document.getElementById('mobile-action-sheet');
         if (!sheet) return;
         var moreButton = document.getElementById('mob-nav-more');

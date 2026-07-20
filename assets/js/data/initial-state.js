@@ -77,10 +77,10 @@ function createEmptySocialHubState() {
         groups: [],
         projects: [],
         projectTasks: [],
-        projectMilestones: [],
-        projectDeliverables: [],
-        projectCheckins: [],
         projectActivities: [],
+        projectBudgetCategories: [],
+        projectBudgetExpenses: [],
+        projectRisks: [],
         posts: [],
         stories: [],
         storyViews: [],
@@ -93,9 +93,12 @@ function createEmptySocialHubState() {
         notifications: [],
         events: [],
         rsvps: [],
+        surveys: [],
+        surveyQuestions: [],
+        surveyResponses: [],
         ui: {},
         draftFiles: {},
-        migrationVersion: 4
+        migrationVersion: 5
     };
 }
 
@@ -281,6 +284,9 @@ function sanitizeStateForManualTesting(state, options = {}) {
     state.messages = state.messages && typeof state.messages === 'object' ? state.messages : {};
     state.lmsSessionMarkers = state.lmsSessionMarkers && typeof state.lmsSessionMarkers === 'object' ? state.lmsSessionMarkers : {};
     state.chancelleryRequests = Array.isArray(state.chancelleryRequests) ? state.chancelleryRequests : [];
+    state.chancelleryFilterLayout = state.chancelleryFilterLayout && typeof state.chancelleryFilterLayout === 'object'
+        ? state.chancelleryFilterLayout
+        : null;
     state.officeHours = state.officeHours && typeof state.officeHours === 'object' ? state.officeHours : {};
     state.calendarEvents = state.calendarEvents && typeof state.calendarEvents === 'object' ? state.calendarEvents : {};
     state.adminProgramStructures = state.adminProgramStructures && typeof state.adminProgramStructures === 'object'
@@ -313,7 +319,7 @@ function sanitizeStateForManualTesting(state, options = {}) {
     state.portalMessengerPinnedChats = state.portalMessengerPinnedChats && typeof state.portalMessengerPinnedChats === 'object' ? state.portalMessengerPinnedChats : {};
     state.orderReadsByUser = state.orderReadsByUser && typeof state.orderReadsByUser === 'object' ? state.orderReadsByUser : {};
     state.ordersCenterByFaculty = state.ordersCenterByFaculty && typeof state.ordersCenterByFaculty === 'object' ? state.ordersCenterByFaculty : {};
-    state.studentServiceArticles = Array.isArray(state.studentServiceArticles) ? state.studentServiceArticles : [];
+    state.studentServiceArticles = [];
     state.studentServiceMacros = Array.isArray(state.studentServiceMacros) ? state.studentServiceMacros : [];
     state.studentServiceTickets = Array.isArray(state.studentServiceTickets) ? state.studentServiceTickets : [];
     state.publicSocialPosts = Array.isArray(state.publicSocialPosts) ? state.publicSocialPosts : [];
@@ -327,7 +333,9 @@ function sanitizeStateForManualTesting(state, options = {}) {
         : {};
     state.notifications = Array.isArray(state.notifications) ? state.notifications : [];
     state.lmsQuizBuilder = state.lmsQuizBuilder && typeof state.lmsQuizBuilder === 'object' ? state.lmsQuizBuilder : {};
+    state.lmsSubjectQuizBank = state.lmsSubjectQuizBank && typeof state.lmsSubjectQuizBank === 'object' ? state.lmsSubjectQuizBank : {};
     state.lmsLiveQuizzes = state.lmsLiveQuizzes && typeof state.lmsLiveQuizzes === 'object' ? state.lmsLiveQuizzes : {};
+    state.lmsWhiteboards = state.lmsWhiteboards && typeof state.lmsWhiteboards === 'object' ? state.lmsWhiteboards : {};
     state.users = Array.isArray(state.users) ? state.users.map(user => ({
         ...user,
         photo: scrubFakeMedia(user?.photo),
@@ -360,6 +368,7 @@ const KIU_EMPTY_STATE = sanitizeStateForManualTesting({
     messages: {},
     lmsSessionMarkers: {},
     lmsLiveQuizzes: {},
+    lmsWhiteboards: {},
     activeSemester: 1,
     registrationOpen: true,
     tuitionBalances: {},

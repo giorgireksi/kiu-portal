@@ -1,6 +1,8 @@
 (function initStudentServiceTicketsModule() {
     if (window.__KIU_STUDENT_SERVICE_TICKETS_MODULE_LOADED) return;
     window.__KIU_STUDENT_SERVICE_TICKETS_MODULE_LOADED = true;
+    const __kiuSsApi = window.KiuStudentService || (window.KiuStudentService = {});
+    window.__kiuSsApi = __kiuSsApi;
 
     function buildStudentServiceDefaultDraftTicket() {
         return {
@@ -578,39 +580,39 @@
         }
     }
 
-    window.buildStudentServiceDefaultDraftTicket = buildStudentServiceDefaultDraftTicket;
-    window.normalizeStudentServiceThreadEntry = normalizeStudentServiceThreadEntry;
-    window.normalizeStudentServiceInternalNote = normalizeStudentServiceInternalNote;
-    window.normalizeStudentServiceHandoff = normalizeStudentServiceHandoff;
-    window.normalizeStudentServiceTicket = normalizeStudentServiceTicket;
-    window.getStudentServiceDraftTicket = getStudentServiceDraftTicket;
-    window.syncStudentServiceDraftTicketFromDom = syncStudentServiceDraftTicketFromDom;
-    window.setStudentServiceDraftTicketField = setStudentServiceDraftTicketField;
-    window.getStudentServiceTicketSourceLabel = getStudentServiceTicketSourceLabel;
-    window.getStudentServiceVisibleTickets = getStudentServiceVisibleTickets;
-    window.sortStudentServiceTicketsForStaff = sortStudentServiceTicketsForStaff;
-    window.ensureSelectedStudentServiceTicket = ensureSelectedStudentServiceTicket;
-    window.findStudentServiceArticleForTicket = findStudentServiceArticleForTicket;
-    window.getStudentServiceContextForTicket = getStudentServiceContextForTicket;
-    window.getStudentServiceTicketById = getStudentServiceTicketById;
-    window.getStudentServiceTicketThreadMode = getStudentServiceTicketThreadMode;
-    window.isStudentServiceTicketThreadModalOpen = isStudentServiceTicketThreadModalOpen;
-    window.scrollStudentServiceTicketChatLog = scrollStudentServiceTicketChatLog;
-    window.renderStudentServiceTicketThreadModalShell = renderStudentServiceTicketThreadModalShell;
-    window.closeStudentServiceTicketThreadModal = closeStudentServiceTicketThreadModal;
-    window.mountStudentServiceTicketThreadModal = mountStudentServiceTicketThreadModal;
-    window.remountStudentServiceTicketThreadModal = remountStudentServiceTicketThreadModal;
-    window.getStudentServiceTicketReplyTextareaId = getStudentServiceTicketReplyTextareaId;
-    window.getStudentServiceInternalNoteTextareaId = getStudentServiceInternalNoteTextareaId;
-    window.getStudentServiceInternalNoteComposerId = getStudentServiceInternalNoteComposerId;
-    window.openStudentServiceTicket = openStudentServiceTicket;
-    window.openStudentServiceArticleFromTicket = openStudentServiceArticleFromTicket;
-    window.scheduleStudentServiceTicketFilterRender = scheduleStudentServiceTicketFilterRender;
-    window.setStudentServiceTicketFilter = setStudentServiceTicketFilter;
-    window.submitStudentServiceTicket = submitStudentServiceTicket;
-    window.replyStudentServiceTicket = replyStudentServiceTicket;
-    window.updateStudentServiceTicketStatus = updateStudentServiceTicketStatus;
-    window.assignStudentServiceTicketToCurrentUser = assignStudentServiceTicketToCurrentUser;
-    window.addStudentServiceInternalNote = addStudentServiceInternalNote;
-    window.updateStudentServiceHandoff = updateStudentServiceHandoff;
+    __kiuSsApi.buildStudentServiceDefaultDraftTicket = buildStudentServiceDefaultDraftTicket;
+    __kiuSsApi.normalizeStudentServiceThreadEntry = normalizeStudentServiceThreadEntry;
+    __kiuSsApi.normalizeStudentServiceInternalNote = normalizeStudentServiceInternalNote;
+    __kiuSsApi.normalizeStudentServiceHandoff = normalizeStudentServiceHandoff;
+    __kiuSsApi.normalizeStudentServiceTicket = normalizeStudentServiceTicket;
+    __kiuSsApi.getStudentServiceDraftTicket = getStudentServiceDraftTicket;
+    __kiuSsApi.syncStudentServiceDraftTicketFromDom = syncStudentServiceDraftTicketFromDom;
+    __kiuSsApi.setStudentServiceDraftTicketField = setStudentServiceDraftTicketField;
+    __kiuSsApi.getStudentServiceTicketSourceLabel = getStudentServiceTicketSourceLabel;
+    __kiuSsApi.getStudentServiceVisibleTickets = getStudentServiceVisibleTickets;
+    __kiuSsApi.sortStudentServiceTicketsForStaff = sortStudentServiceTicketsForStaff;
+    __kiuSsApi.ensureSelectedStudentServiceTicket = ensureSelectedStudentServiceTicket;
+    __kiuSsApi.findStudentServiceArticleForTicket = findStudentServiceArticleForTicket;
+    __kiuSsApi.getStudentServiceContextForTicket = getStudentServiceContextForTicket;
+    __kiuSsApi.getStudentServiceTicketById = getStudentServiceTicketById;
+    __kiuSsApi.getStudentServiceTicketThreadMode = getStudentServiceTicketThreadMode;
+    __kiuSsApi.isStudentServiceTicketThreadModalOpen = isStudentServiceTicketThreadModalOpen;
+    __kiuSsApi.scrollStudentServiceTicketChatLog = scrollStudentServiceTicketChatLog;
+    __kiuSsApi.renderStudentServiceTicketThreadModalShell = renderStudentServiceTicketThreadModalShell;
+    __kiuSsApi.closeStudentServiceTicketThreadModal = closeStudentServiceTicketThreadModal;
+    __kiuSsApi.mountStudentServiceTicketThreadModal = mountStudentServiceTicketThreadModal;
+    __kiuSsApi.remountStudentServiceTicketThreadModal = remountStudentServiceTicketThreadModal;
+    __kiuSsApi.getStudentServiceTicketReplyTextareaId = getStudentServiceTicketReplyTextareaId;
+    __kiuSsApi.getStudentServiceInternalNoteTextareaId = getStudentServiceInternalNoteTextareaId;
+    __kiuSsApi.getStudentServiceInternalNoteComposerId = getStudentServiceInternalNoteComposerId;
+    __kiuSsApi.openStudentServiceTicket = openStudentServiceTicket;
+    __kiuSsApi.openStudentServiceArticleFromTicket = openStudentServiceArticleFromTicket;
+    __kiuSsApi.scheduleStudentServiceTicketFilterRender = scheduleStudentServiceTicketFilterRender;
+    __kiuSsApi.setStudentServiceTicketFilter = setStudentServiceTicketFilter;
+    __kiuSsApi.submitStudentServiceTicket = submitStudentServiceTicket;
+    __kiuSsApi.replyStudentServiceTicket = replyStudentServiceTicket;
+    __kiuSsApi.updateStudentServiceTicketStatus = updateStudentServiceTicketStatus;
+    __kiuSsApi.assignStudentServiceTicketToCurrentUser = assignStudentServiceTicketToCurrentUser;
+    __kiuSsApi.addStudentServiceInternalNote = addStudentServiceInternalNote;
+    __kiuSsApi.updateStudentServiceHandoff = updateStudentServiceHandoff;
 })();

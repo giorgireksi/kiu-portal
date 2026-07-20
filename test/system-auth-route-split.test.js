@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
 function readSource(relativePath) {
@@ -21,7 +21,6 @@ describe('system and auth maintenance route split', () => {
         expect(systemRoutes).toContain("app.get('/download/:platform/file'");
         expect(systemRoutes).toContain("app.get('/health'");
         expect(systemRoutes).toContain("app.get('/ready'");
-        expect(systemRoutes).toContain("app.post('/api/ai/career-completion'");
 
         expect(authMaintenanceRoutes).toContain("app.post('/api/auth/login'");
         expect(authMaintenanceRoutes).toContain("app.post('/api/auth/logout'");

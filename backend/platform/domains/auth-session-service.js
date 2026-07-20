@@ -216,6 +216,27 @@ function resetPassword(token, newPassword) {
     return this.getAccountById(userId);
 }
 
+function changePassword(userId, currentPassword, newPassword) {
+    const accountId = String(userId || '').trim();
+    const account = this.state.accounts[accountId];
+    if (!account) return { error: 'Account not found.', status: 404 };
+    const next = String(newPassword || '');
+    if (next.length < 8) return { error: 'New password must be at least 8 characters.', status: 400 };
+    const credential = ensureCredential.call(this, accountId);
+    const expectedValues = [credential.passwordHash, credential.temporaryPasswordHash].filter(Boolean);
+    if (expectedValues.length && !expectedValues.some(value => verifyPassword(String(currentPassword || ''), value))) {
+        return { error: 'Current password is incorrect.', status: 400 };
+    }
+    credential.passwordHash = buildPasswordHash(next);
+    credential.temporaryPasswordHash = '';
+    credential.mustChangePassword = false;
+    credential.activationRequired = false;
+    account.mustChangePassword = false;
+    account.updatedAt = nowIso();
+    this.save();
+    return { account: this.getAccountById(accountId) };
+}
+
 function createSessionByCredentials(email, password) {
     const account = getRawAccountByEmail.call(this, email);
     if (!account) return { error: 'Account not found.', status: 404 };
@@ -326,6 +347,7 @@ module.exports = {
     PORTAL_IMPERSONATION_ROLES,
     activateAccount,
     clearSessionImpersonation,
+    changePassword,
     createSessionByCredentials,
     createSessionByMicrosoftIdentity,
     createSessionForAccount,

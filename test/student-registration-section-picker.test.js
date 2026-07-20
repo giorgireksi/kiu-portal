@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
 function readSource(relativePath) {
@@ -34,7 +34,7 @@ describe('student registration section picker', () => {
     expect(registrationSource).toContain('dataset.studentCourseSectionClear = escapeHtml(courseId)');
     expect(registrationSource).toContain('function removeStudentCourseSelection(courseId, courseName =');
     expect(registrationSource).toContain('function buildStudentCourseSectionPickerFooter(courseId, courseName, hasSubjectSelection)');
-    expect(registrationSource).toContain("const REGISTRATION_PICKER_BUILD = '20260605-regpicker3'");
+    expect(registrationSource).toContain("const REGISTRATION_PICKER_BUILD = '20260608-regfix1'");
     expect(registrationSource).toContain('window.REGISTRATION_PICKER_BUILD = REGISTRATION_PICKER_BUILD');
   });
 

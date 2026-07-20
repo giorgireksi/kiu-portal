@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
 function readSource(relativePath) {
@@ -14,6 +14,7 @@ describe('realtime bootstrap route gating', () => {
 
         expect(auth).toContain('function shouldEagerBootstrapKiuRealtime() {');
         expect(auth).toContain("if (routeName === 'social.html') return true;");
+        expect(auth).toContain("if (routeName === 'student-service.html') return true;");
         expect(auth).toContain("return activeHash === 'social';");
         expect(api).toContain("typeof shouldEagerBootstrapKiuRealtime !== 'function' || shouldEagerBootstrapKiuRealtime()");
         expect(shellChrome).toContain("if (typeof bootstrapKiuRealtimeBridge === 'function') {");

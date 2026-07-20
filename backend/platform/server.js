@@ -10,8 +10,9 @@ const { registerAcademicRoutes } = require('./routes/academic-routes');
 const { registerAdminSupportRoutes } = require('./routes/admin-support-routes');
 const { registerAuthRoutes } = require('./routes/auth-routes');
 const { registerFileRoutes } = require('./routes/files-routes');
-const { registerGradebookRoutes } = require('./routes/gradebook-routes');
 const { registerLmsLiveQuizRoutes } = require('./routes/lms-live-quiz-routes');
+const { registerLmsWhiteboardRoutes } = require('./routes/lms-whiteboard-routes');
+const { registerLmsPersonalDashboardRoutes } = require('./routes/lms-personal-dashboard-routes');
 const { registerAuthMaintenanceRoutes } = require('./routes/auth-maintenance-routes');
 const { registerMailRoutes } = require('./routes/mail-routes');
 const { registerMessengerCallsRoutes } = require('./routes/messenger-calls-routes');
@@ -31,7 +32,7 @@ const { asArray, uniqueStrings } = require('./utils');
 const ROOT_DIR = path.resolve(__dirname, '..', '..');
 dotenv.config({ path: path.join(ROOT_DIR, '.env') });
 
-const HOST = process.env.KIU_REALTIME_HOST || '127.0.0.1';
+const HOST = process.env.KIU_REALTIME_HOST || process.env.KIU_LOCAL_BACKEND_BIND_HOST || '127.0.0.1';
 const PORT = Number(process.env.KIU_REALTIME_PORT || 48933);
 const APP_URL = String(process.env.KIU_PUBLIC_APP_URL || process.env.KIU_PORTAL_LOGIN_URL || 'http://127.0.0.1:8876').replace(/\/$/, '');
 const BACKEND_URL = String(process.env.KIU_PUBLIC_BACKEND_URL || `http://${HOST}:${PORT}`).replace(/\/$/, '');
@@ -64,10 +65,6 @@ const SELF_SERVICE_ACCOUNT_MUTABLE_FIELDS = new Set([
     'officeHours',
     'coverImage'
 ]);
-const GRADEBOOK_READ_ROLES = new Set(['admin', 'professor', 'ta']);
-const GRADEBOOK_SCORE_ROLES = new Set(['admin', 'professor', 'ta']);
-const GRADEBOOK_PUBLISH_ROLES = new Set(['admin', 'professor']);
-const GRADEBOOK_FINALIZE_ROLES = new Set(['admin', 'professor']);
 const CURRENT_ENVIRONMENT = String(process.env.KIU_ENVIRONMENT || process.env.NODE_ENV || 'development').trim().toLowerCase();
 const IS_PRODUCTION_ENVIRONMENT = ['production', 'prod'].includes(CURRENT_ENVIRONMENT);
 const LOGIN_RATE_LIMIT_WINDOW_MS = Number(process.env.KIU_AUTH_RATE_LIMIT_WINDOW_MS || 10 * 60 * 1000);
@@ -78,8 +75,6 @@ const SSE_MAX_CONNECTIONS_PER_USER = Math.max(1, Number(process.env.KIU_SSE_MAX_
 const SSE_MAX_CONNECTIONS_TOTAL = Math.max(SSE_MAX_CONNECTIONS_PER_USER, Number(process.env.KIU_SSE_MAX_CONNECTIONS_TOTAL || 200));
 const EXAM_PORTAL_AUTH_RATE_LIMIT_WINDOW_MS = Number(process.env.KIU_EXAM_PORTAL_AUTH_RATE_LIMIT_WINDOW_MS || 10 * 60 * 1000);
 const EXAM_PORTAL_AUTH_RATE_LIMIT_MAX = Number(process.env.KIU_EXAM_PORTAL_AUTH_RATE_LIMIT_MAX || 10);
-const CAREER_COMPLETION_RATE_LIMIT_WINDOW_MS = Number(process.env.KIU_CAREER_COMPLETION_RATE_LIMIT_WINDOW_MS || 10 * 60 * 1000);
-const CAREER_COMPLETION_RATE_LIMIT_MAX = Number(process.env.KIU_CAREER_COMPLETION_RATE_LIMIT_MAX || 10);
 const RAW_WEB_PUSH_CONTACT = String(process.env.KIU_WEB_PUSH_CONTACT || process.env.KIU_ADMIN_EMAIL || 'admin@kiu.local').trim();
 const WEB_PUSH_CONTACT = /^[a-z]+:/i.test(RAW_WEB_PUSH_CONTACT)
     ? RAW_WEB_PUSH_CONTACT
@@ -321,11 +316,8 @@ registerSystemRoutes(app, {
     renderAntiCheatDownloadPage,
     resolveAntiCheatDownload,
     resolveRequestedDownloadPlatform,
-    runAiProviderCompletion,
     sendAntiCheatDownloadFile,
     sendError,
-    careerCompletionRateLimitMax: CAREER_COMPLETION_RATE_LIMIT_MAX,
-    careerCompletionRateLimitWindowMs: CAREER_COMPLETION_RATE_LIMIT_WINDOW_MS,
     requireSessionAccount
 });
 
@@ -333,116 +325,6 @@ const sseClients = new Map();
 
 function sendError(response, status, error, extra = {}) {
     response.status(status).json({ ok: false, error, ...extra });
-}
-
-function normalizeAiProvider(value = '') {
-    const provider = String(value || 'google-gemini').trim().toLowerCase();
-    if (provider === 'gemini' || provider === 'google-ai-studio') return 'google-gemini';
-    if (['google-gemini', 'nvidia-nim', 'openai', 'deepseek', 'openrouter'].includes(provider)) return provider;
-    return 'google-gemini';
-}
-
-function extractAiProviderText(provider, payload) {
-    if (provider === 'openai') {
-        if (payload?.output_text) return String(payload.output_text || '').trim();
-        const chunks = [];
-        for (const item of payload?.output || []) {
-            for (const part of item?.content || []) {
-                if (part?.text) chunks.push(part.text);
-            }
-        }
-        return chunks.join('\n').trim();
-    }
-    if (provider === 'google-gemini') {
-        return String((payload?.candidates?.[0]?.content?.parts || []).map(part => part?.text || '').join('\n')).trim();
-    }
-    return String(payload?.choices?.[0]?.message?.content || payload?.choices?.[0]?.text || '').trim();
-}
-
-async function postAiProviderJson(url, headers, body) {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 90000);
-    try {
-        const upstream = await fetch(url, {
-            method: 'POST',
-            headers,
-            body: JSON.stringify(body),
-            signal: controller.signal
-        });
-        const text = await upstream.text();
-        let payload = {};
-        try {
-            payload = text ? JSON.parse(text) : {};
-        } catch (error) {
-            payload = { raw: text };
-        }
-        if (!upstream.ok) {
-            throw new Error(payload?.error?.message || payload?.message || text || `Provider HTTP ${upstream.status}`);
-        }
-        return payload;
-    } finally {
-        clearTimeout(timer);
-    }
-}
-
-async function runAiProviderCompletion(options = {}) {
-    const provider = normalizeAiProvider(options.provider);
-    const model = String(options.model || '').trim();
-    const apiKey = String(options.apiKey || '').trim();
-    const systemPrompt = String(options.systemPrompt || '').trim();
-    const userPrompt = String(options.userPrompt || '').trim();
-    const maxTokens = Math.max(1, Math.min(Number(options.maxTokens || 1800), 6000));
-    if (!apiKey) throw new Error('API key is required.');
-    if (!model) throw new Error('Model name is required.');
-    if (!userPrompt) throw new Error('User prompt is required.');
-    if (provider === 'openai') {
-        const payload = await postAiProviderJson('https://api.openai.com/v1/responses', {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${apiKey}`
-        }, {
-            model,
-            instructions: systemPrompt,
-            input: userPrompt,
-            max_output_tokens: maxTokens,
-            store: false
-        });
-        return extractAiProviderText(provider, payload);
-    }
-    if (provider === 'google-gemini') {
-        const geminiModel = model.replace(/^models\//, '');
-        const payload = await postAiProviderJson(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(geminiModel)}:generateContent?key=${encodeURIComponent(apiKey)}`, {
-            'Content-Type': 'application/json'
-        }, {
-            systemInstruction: { parts: [{ text: systemPrompt }] },
-            contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
-            generationConfig: { temperature: 0.35, maxOutputTokens: maxTokens }
-        });
-        return extractAiProviderText(provider, payload);
-    }
-    const endpoints = {
-        'nvidia-nim': 'https://integrate.api.nvidia.com/v1/chat/completions',
-        deepseek: 'https://api.deepseek.com/chat/completions',
-        openrouter: 'https://openrouter.ai/api/v1/chat/completions'
-    };
-    const headers = {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`
-    };
-    if (provider === 'openrouter') {
-        headers['X-Title'] = 'KIU AI Career Analyst';
-        headers['HTTP-Referer'] = APP_URL;
-    }
-    const payload = await postAiProviderJson(endpoints[provider], headers, {
-        model,
-        messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: userPrompt }
-        ],
-        temperature: 0.35,
-        max_tokens: maxTokens,
-        stream: false
-    });
-    return extractAiProviderText(provider, payload);
 }
 
 function normalizeDownloadPlatformKey(value = '') {
@@ -911,6 +793,8 @@ function broadcastAll(payload) {
 function getSessionToken(request) {
     const bearer = String(request.headers.authorization || '').trim();
     if (bearer.toLowerCase().startsWith('bearer ')) return bearer.slice(7).trim();
+    const queryToken = String(request.query?.token || '').trim();
+    if (queryToken) return queryToken;
     return String(request.headers['x-portal-session'] || request.body?.token || '').trim();
 }
 
@@ -992,6 +876,21 @@ function resolveImpersonatedActorUserId(sessionAccount) {
     }
     const rosterPick = pickCandidate(candidates);
     if (rosterPick) return rosterPick;
+    if (impersonatedRole === 'student_service') {
+        const preferredServiceId = `admin-testing-${facultyCode.toLowerCase()}-service`;
+        if (store.state.accounts?.[preferredServiceId]) return preferredServiceId;
+        const serviceTestingAccounts = Object.values(store.state.accounts || {})
+            .map(entry => ({
+                id: String(entry?.id || '').trim(),
+                facultyCode: normalizeAccessFaculty(entry?.facultyCode || entry?.faculty || facultyCode)
+            }))
+            .filter(entry => {
+                const normalizedId = entry.id.toLowerCase();
+                return normalizedId.startsWith('admin-testing-') && normalizedId.endsWith('-service');
+            });
+        const servicePick = pickCandidate(serviceTestingAccounts);
+        if (servicePick) return servicePick;
+    }
     const accountCandidates = Object.values(store.state.accounts || {})
         .filter(entry => String(entry?.role || '').trim().toLowerCase() === impersonatedRole)
         .map(entry => ({
@@ -1015,6 +914,12 @@ function getActorUserId(sessionAccount) {
         if (resolvedUserId) return resolvedUserId;
     }
     return getActualActorUserId(sessionAccount);
+}
+
+function resolveSessionActorAccount(sessionAccount = {}) {
+    const actorUserId = getActorUserId(sessionAccount);
+    if (!actorUserId) return sessionAccount?.account || sessionAccount || {};
+    return store.getAccountById(actorUserId) || { id: actorUserId, userId: actorUserId };
 }
 
 function isActualAdminSession(sessionAccount) {
@@ -1344,29 +1249,6 @@ function addRouteAuditEvent(request, sessionAccount, event = {}) {
     return store.addAuditEvent(auditPayload);
 }
 
-function requireGradebookCourseAccess(request, response, allowedRoles, courseId, action = 'read') {
-    const sessionAccount = requireActualSessionRole(request, response, allowedRoles);
-    if (!sessionAccount) return null;
-    const actor = getSessionActor(sessionAccount);
-    const normalizedCourseId = String(courseId || '').trim();
-    if (!normalizedCourseId) {
-        sendError(response, 400, 'Course id is required.');
-        return null;
-    }
-    if (!store.canAccessGradebookCourse(normalizedCourseId, actor.actorUserId, actor.actorRole, action)) {
-        sendError(response, 403, 'You are not assigned to this gradebook scope.');
-        addRouteAuditEvent(request, sessionAccount, {
-            eventDomain: 'gradebook',
-            eventType: 'scope-denied',
-            entityType: 'gradebook',
-            entityId: normalizedCourseId,
-            afterState: { action, courseId: normalizedCourseId }
-        });
-        return null;
-    }
-    return sessionAccount;
-}
-
 function requireCourseStaffAccess(request, response, courseId, action = 'read', allowedRoles = STAFF_ROLES) {
     const sessionAccount = requireActualSessionRole(request, response, allowedRoles);
     if (!sessionAccount) return null;
@@ -1577,6 +1459,77 @@ function isStaffViaLmsCourseTeachingTeam(parsedResourceKey = {}, userId = '', ro
     });
 }
 
+function isAdminTestingPersonaUserId(userId = '') {
+    return String(userId || '').trim().toLowerCase().startsWith('admin-testing-');
+}
+
+function getAdminTestingPersonaFacultyCode(userId = '') {
+    const normalized = String(userId || '').trim().toLowerCase();
+    if (!normalized.startsWith('admin-testing-')) return '';
+    const parts = normalized.split('-');
+    if (parts.length < 3) return '';
+    return normalizeAccessFaculty(parts[2]);
+}
+
+function isAdminTestingPersonaListedInFacultyProfile(profile = {}, userId = '', role = '') {
+    const normalizedRole = String(role || '').trim().toLowerCase();
+    const normalizedUserId = String(userId || '').trim();
+    if (!normalizedUserId || !profile || typeof profile !== 'object') return false;
+    if (normalizedRole === 'professor') {
+        return asArray(profile.professors).some(member => String(member?.id || '').trim() === normalizedUserId);
+    }
+    if (normalizedRole === 'ta') {
+        return asArray(profile.tas).some(member => String(member?.id || '').trim() === normalizedUserId);
+    }
+    return false;
+}
+
+function isAdminTestingPersonaCourseInFacultyScope(courseId = '', personaFaculty = '', profile = {}, portalState = {}) {
+    const targetCourse = normalizeLmsLiveQuizScopeKey(courseId);
+    if (!targetCourse || !personaFaculty) return false;
+    if (asArray(profile.curriculum).some(subject =>
+        normalizeLmsLiveQuizScopeKey(subject?.id || subject?.subjectId || '') === targetCourse
+    )) {
+        return true;
+    }
+    const structures = portalState.adminProgramStructures?.[personaFaculty];
+    if (structures && typeof structures === 'object') {
+        const tracks = ['prog', 'free', 'conc', 'minor'];
+        const matchesProgramCourse = tracks.some(track => asArray(structures[track]).some(module =>
+            asArray(module?.subModules).some(subject => {
+                const ids = [
+                    subject?.id,
+                    subject?.sourceCourseId,
+                    subject?.number,
+                    subject?.n
+                ].map(value => normalizeLmsLiveQuizScopeKey(value)).filter(Boolean);
+                return ids.includes(targetCourse);
+            })
+        ));
+        if (matchesProgramCourse) return true;
+    }
+    const courseFaculty = normalizeAccessFaculty(String(courseId || '').split('-')[0] || '');
+    return Boolean(courseFaculty && courseFaculty === personaFaculty);
+}
+
+function isAdminTestingPersonaStaffForLiveQuiz(userId = '', role = '', courseId = '') {
+    if (!isAdminTestingPersonaUserId(userId) || !courseId) return false;
+    const personaFaculty = getAdminTestingPersonaFacultyCode(userId);
+    if (!personaFaculty) return false;
+    const portalState = store.state.portal?.state && typeof store.state.portal.state === 'object'
+        ? store.state.portal.state
+        : {};
+    const profile = portalState.facultyProfiles?.[personaFaculty];
+    if (!isAdminTestingPersonaListedInFacultyProfile(profile, userId, role)) return false;
+    return isAdminTestingPersonaCourseInFacultyScope(courseId, personaFaculty, profile, portalState);
+}
+
+function isAdminTestingImpersonationStaffForLiveQuiz(sessionAccount, courseId = '', groupId = '', userId = '', role = '') {
+    if (!isSessionImpersonating(sessionAccount) || !isAdminTestingPersonaUserId(userId)) return false;
+    if (isPortalCurriculumStaffForLiveQuiz(courseId, groupId, userId, role)) return true;
+    return isAdminTestingPersonaStaffForLiveQuiz(userId, role, courseId);
+}
+
 function canAccessLmsLiveQuizAsStaff(sessionAccount, parsedResourceKey = {}, action = 'read') {
     if (isActualAdminSession(sessionAccount) && !isSessionImpersonating(sessionAccount)) return true;
     const actor = getSessionActor(sessionAccount);
@@ -1593,6 +1546,12 @@ function canAccessLmsLiveQuizAsStaff(sessionAccount, parsedResourceKey = {}, act
         return true;
     }
     if (isAssignedViaLmsLiveQuizGroupRoster(courseId, groupId, actor.actorUserId, actor.actorRole)) {
+        return true;
+    }
+    if (isAdminTestingPersonaStaffForLiveQuiz(actor.actorUserId, actor.actorRole, courseId)) {
+        return true;
+    }
+    if (isAdminTestingImpersonationStaffForLiveQuiz(sessionAccount, courseId, groupId, actor.actorUserId, actor.actorRole)) {
         return true;
     }
     return isPortalCurriculumStaffForLiveQuiz(courseId, groupId, actor.actorUserId, actor.actorRole);
@@ -1766,7 +1725,7 @@ function requireExamPortalSession(request, response, options = {}) {
 
 app.use((request, response, next) => {
     const route = String(request.path || '').trim();
-    const guardedPrefixes = ['/api/social', '/api/news', '/api/messenger', '/api/calls', '/api/notifications', '/api/events', '/api/lms/live-quizzes'];
+    const guardedPrefixes = ['/api/social', '/api/news', '/api/messenger', '/api/calls', '/api/notifications', '/api/events', '/api/lms/live-quizzes', '/api/lms/whiteboards'];
     const requiresBoundSession = guardedPrefixes.some(prefix => route === prefix || route.startsWith(`${prefix}/`));
     if (!requiresBoundSession) {
         next();
@@ -2476,12 +2435,15 @@ registerPortalSupportRoutes(app, {
     addRouteAuditEvent,
     appOrigin: APP_ORIGIN,
     allowedCorsOrigins: ALLOWED_CORS_ORIGINS,
+    broadcastAll,
     getActorUserId,
     getSessionAccount,
+    getSessionRole,
     getSessionToken,
     getStore: () => store,
     getWebPushConfig,
     isActualAdminSession,
+    isSessionImpersonating,
     pushEvent,
     registerSseClient,
     requireSessionAccount,
@@ -2504,9 +2466,80 @@ registerLmsLiveQuizRoutes(app, {
     submitStudentLiveQuizAnswer
 });
 
+const {
+    mergeStaffWhiteboardWorkspace,
+    mergeStudentWhiteboardWorkspace,
+    mergeStudentWhiteboardOps,
+    stripLmsPersonalBoardScopeKey,
+    isLmsPersonalBoardKey,
+    isLmsStaffRole
+} = require('./domains/lms-whiteboard-service');
+const {
+    savePersonalDashboardSnapshot,
+    deletePersonalDashboardSnapshot,
+    restorePersonalDashboardSnapshot,
+    updatePersonalDashboardSnapshotShare,
+    updatePersonalDashboardWorkspaceShare,
+    updatePersonalDashboardPeerShares,
+    listPersonalDashboardHistory,
+    listPersonalDashboardSharedHistory,
+    listPersonalDashboardShareStatus,
+    listPersonalDashboardSharedWithMe,
+    mergePersonalDashboardWorkspace,
+    assertLmsPersonalBoardReadAccess,
+    assertLmsPersonalBoardWriteAccess,
+    redactPersonalWorkspaceForStaffViewer,
+    redactPersonalWorkspaceForViewer,
+    parsePersonalScopeMeta
+} = require('./domains/lms-personal-dashboard-service');
+
+registerLmsWhiteboardRoutes(app, {
+    broadcastAll,
+    getSessionRole,
+    resolveSessionActorAccount,
+    getStore: () => store,
+    mergeStaffWhiteboardWorkspace,
+    mergeStudentWhiteboardWorkspace,
+    mergeStudentWhiteboardOps,
+    mergePersonalDashboardWorkspace,
+    requireLmsLiveQuizWorkspaceAccess,
+    sendError,
+    staffRoles: STAFF_ROLES,
+    stripLmsPersonalBoardScopeKey,
+    isLmsPersonalBoardKey,
+    assertLmsPersonalBoardReadAccess,
+    assertLmsPersonalBoardWriteAccess,
+    redactPersonalWorkspaceForStaffViewer,
+    redactPersonalWorkspaceForViewer,
+    parsePersonalScopeMeta
+});
+
+registerLmsPersonalDashboardRoutes(app, {
+    getSessionRole,
+    resolveSessionActorAccount,
+    getStore: () => store,
+    mergePersonalDashboardWorkspace,
+    savePersonalDashboardSnapshot,
+    deletePersonalDashboardSnapshot,
+    restorePersonalDashboardSnapshot,
+    updatePersonalDashboardSnapshotShare,
+    updatePersonalDashboardWorkspaceShare,
+    updatePersonalDashboardPeerShares,
+    listPersonalDashboardHistory,
+    listPersonalDashboardSharedWithMe,
+    listPersonalDashboardSharedHistory,
+    listPersonalDashboardShareStatus,
+    requireLmsLiveQuizWorkspaceAccess,
+    sendError,
+    stripLmsPersonalBoardScopeKey,
+    isLmsPersonalBoardKey,
+    isLmsStaffRole
+});
+
 registerStudentServiceRoutes(app, {
     broadcastAll,
     getActorUserId,
+    getSessionRole,
     getStore: () => store,
     requireSessionAccount,
     sendError
@@ -2550,6 +2583,8 @@ registerAuthMaintenanceRoutes(app, {
     loginRateLimitMax: LOGIN_RATE_LIMIT_MAX,
     loginRateLimitWindowMs: LOGIN_RATE_LIMIT_WINDOW_MS,
     requireActualSessionRole,
+    requireSessionAccount,
+    getActualActorUserId,
     resetRateLimitMax: RESET_RATE_LIMIT_MAX,
     resetRateLimitWindowMs: RESET_RATE_LIMIT_WINDOW_MS,
     sendError
@@ -2631,19 +2666,16 @@ registerProtectedExamRoutes(app, {
     sendError
 });
 
-registerGradebookRoutes(app, {
-    getSessionActor,
-    getStore: () => store,
-    gradebookFinalizeRoles: GRADEBOOK_FINALIZE_ROLES,
-    gradebookPublishRoles: GRADEBOOK_PUBLISH_ROLES,
-    gradebookReadRoles: GRADEBOOK_READ_ROLES,
-    gradebookScoreRoles: GRADEBOOK_SCORE_ROLES,
-    requireGradebookCourseAccess,
-    sendError
-});
-
 app.use((request, response) => {
     sendError(response, 404, 'Route not found.');
+});
+
+app.use((error, request, response, next) => {
+    if (response.headersSent) {
+        next(error);
+        return;
+    }
+    sendError(response, 500, 'Internal server error.');
 });
 
 async function startServer() {

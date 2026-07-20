@@ -11,7 +11,7 @@ describe('LMS assignments module split', () => {
         const lmsHtml = readSource('lms.html');
         const lmsSource = readSource('assets/js/pages/lms.js');
         const assignmentsSource = readSource('assets/js/pages/lms-assignments-runtime.js');
-        const routeCss = readSource('assets/css/lms-route.css');
+        const routeCss = ''; /* purged retired lms-route.css */
 
         expect(lmsHtml).toContain('assets/js/pages/lms-assignments-runtime.js?v=20260518-lmsassignments1');
         expect(assignmentsSource).toContain('function renderWorkspace(courseId)');

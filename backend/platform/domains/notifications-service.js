@@ -70,6 +70,18 @@ function markNotificationRead(notificationId, userId = '') {
     return clone(notification);
 }
 
+function deleteNotification(notificationId, userId = '') {
+    const id = String(notificationId || '').trim();
+    if (!id || !this.state.notifications[id]) return false;
+    const notification = this.state.notifications[id];
+    if (userId && String(notification.recipientUserId || '').trim() !== String(userId || '').trim()) {
+        return false;
+    }
+    delete this.state.notifications[id];
+    this.save();
+    return true;
+}
+
 function updateNotificationPreferences(userId, preferences = {}) {
     const key = String(userId || '').trim();
     if (!key) return null;
@@ -138,6 +150,7 @@ function removePushSubscription(userId = '', endpoint = '') {
 
 module.exports = {
     createNotification,
+    deleteNotification,
     isValidPushSubscriptionEndpoint,
     listNotifications,
     listPushSubscriptions,

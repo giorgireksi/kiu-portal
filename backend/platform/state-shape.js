@@ -7,11 +7,12 @@ function createEmptySocialState() {
         pages: [],
         groups: [],
         projects: [],
+        portfolios: {},
         projectTasks: [],
-        projectMilestones: [],
-        projectDeliverables: [],
-        projectCheckins: [],
         projectActivities: [],
+        projectBudgetCategories: [],
+        projectBudgetExpenses: [],
+        projectRisks: [],
         posts: [],
         stories: [],
         storyViews: [],
@@ -24,14 +25,29 @@ function createEmptySocialState() {
         notifications: [],
         events: [],
         rsvps: [],
-        migrationVersion: 4
+        surveys: [],
+        surveyQuestions: [],
+        surveyResponses: [],
+        migrationVersion: 7
     };
+}
+
+function createDefaultNewsSectionCatalog() {
+    return [
+        { key: 'academic-updates', label: 'Academic Updates' },
+        { key: 'campus-life', label: 'Campus Life' },
+        { key: 'events', label: 'Events' },
+        { key: 'announcements', label: 'Announcements' },
+        { key: 'admissions', label: 'Admissions' },
+        { key: 'research', label: 'Research' }
+    ];
 }
 
 function createEmptyNewsState() {
     return {
         posts: [],
         replies: [],
+        sectionCatalog: createDefaultNewsSectionCatalog(),
         version: 1
     };
 }
@@ -44,6 +60,7 @@ function createEmptyStudentServiceState() {
         articles: [],
         macros: [],
         reviewQueue: [],
+        inboxFilterLayout: null,
         version: 1
     };
 }
@@ -62,14 +79,12 @@ function createEmptyPlatformState(storageDriver = 'postgres') {
         people: {},
         sessions: {},
         faculties: {},
-        programs: {},
         terms: {},
         courses: {},
         sections: {},
         enrollments: {},
         registrationHolds: {},
         lmsCourses: {},
-        gradebooks: {},
         examSessions: {},
         examPortalSessions: {},
         protectedQuizLaunches: {},
@@ -86,7 +101,6 @@ function createEmptyPlatformState(storageDriver = 'postgres') {
         notifications: {},
         notificationPreferences: {},
         pushSubscriptions: {},
-        serviceRequests: {},
         integrations: {
             systems: {},
             syncRuns: [],
@@ -102,6 +116,7 @@ function createEmptyPlatformState(storageDriver = 'postgres') {
         portal: {
             state: {},
             liveQuizWorkspaces: {},
+            whiteboardWorkspaces: {},
             meta: {},
             microsoft: {
                 oauthStates: {},
@@ -115,5 +130,6 @@ module.exports = {
     createEmptyPlatformState,
     createEmptySocialState,
     createEmptyNewsState,
+    createDefaultNewsSectionCatalog,
     createEmptyStudentServiceState
 };

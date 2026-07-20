@@ -4,7 +4,7 @@ const {
     nowIso
 } = require('../utils');
 
-function addAuditEvent(payload = {}) {
+function addAuditEvent(payload = {}, options = {}) {
     const event = {
         id: String(payload.id || makeId('audit')).trim(),
         actorUserId: String(payload.actorUserId || '').trim(),
@@ -25,7 +25,9 @@ function addAuditEvent(payload = {}) {
     this.state.audit.events = this.state.audit.events
         .filter(item => new Date(item.createdAt || 0).getTime() >= cutoff)
         .slice(0, 10000);
-    this.save();
+    if (!options.skipPersist) {
+        this.save();
+    }
     return clone(event);
 }
 

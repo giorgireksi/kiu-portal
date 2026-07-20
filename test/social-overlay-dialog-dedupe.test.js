@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
 function readSource(relativePath) {
@@ -8,13 +8,15 @@ function readSource(relativePath) {
 
 describe('social overlay dialog dedupe', () => {
     it('normalizes dialog region and removes dead inline dialog render path', () => {
-        const source = readSource('assets/js/pages/social-page.js');
+        const page = readSource('assets/js/pages/social-page.js');
+        const overlay = readSource('assets/js/pages/social-overlay-chrome.js');
 
-        expect(source).toContain('function normalizeSocialOverlayDialogRegion()');
-        expect(source).toMatch(/function ensureSocialOverlayPortal\(\)[\s\S]*?normalizeSocialOverlayDialogRegion\(\)/);
-        expect(source).toMatch(/function setSocialRegionMarkup\(node, markup\)[\s\S]*?normalizeSocialOverlayDialogRegion\(\)/);
-        expect(source).toMatch(/canonical\.querySelectorAll\(':scope > \.social-neo-dialog-backdrop'\)/);
-        expect(source).not.toContain('function renderPageBody()');
-        expect(source).not.toMatch(/\$\{renderDialog\(\)\}/);
+        expect(overlay).toContain('function normalizeSocialOverlayDialogRegion()');
+        expect(overlay).toMatch(/function ensureSocialOverlayPortal\(\)[\s\S]*?normalizeSocialOverlayDialogRegion\(\)/);
+        expect(page).toMatch(/function setSocialRegionMarkup\(node, markup\)[\s\S]*?normalizeSocialOverlayDialogRegion\(\)/);
+        expect(overlay).toMatch(/canonical\.querySelectorAll\(':scope > \.social-neo-dialog-backdrop'\)/);
+        expect(page).toContain('createKiuSocialOverlayChromeApi');
+        expect(page).not.toContain('function renderPageBody()');
+        expect(page).not.toMatch(/\$\{renderDialog\(\)\}/);
     });
 });

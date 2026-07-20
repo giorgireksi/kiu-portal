@@ -18,16 +18,19 @@ describe('bare topbar horizontal layout', () => {
         expect(css).toContain('margin-left: auto');
     });
 
-    it('bare CSS does not force topbar shell to stack as block columns', () => {
-        const bare = read('assets/css/lux-page-bare.css');
-        expect(bare).toContain('Topbar flex layout wins');
-        expect(bare).toMatch(/#lux-topbar \.lux-topbar-shell[\s\S]*flex-direction:\s*row/);
+    it('lux-shell owns topbar shell row flex (bare-lite is layout-only)', () => {
+        const shell = read('assets/css/lux-shell.css');
+        const bare = read('assets/css/lux-page-bare-lite.css');
+        expect(shell).toMatch(/#lux-topbar \.lux-topbar-shell\s*\{[^}]*flex-direction:\s*row/s);
+        expect(bare).toContain('Bare portal layout helpers');
+        expect(bare).not.toMatch(/#lux-topbar \.lux-topbar-shell[\s\S]{0,200}flex-direction:\s*column/);
     });
 
     it('programs loads lux-shell + bare', () => {
         const html = read('programs.html');
         expect(html).toMatch(/lux-shell\.css/);
-        expect(html).toMatch(/lux-page-bare\.css/);
+        expect(html).toMatch(/lux-page-bare-lite\.css/);
+        expect(html).not.toMatch(/lux-page-bare\.css(?!-lite)/);
         expect(html).toContain('lux-page-bare');
     });
 });

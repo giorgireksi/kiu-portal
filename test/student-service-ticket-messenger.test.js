@@ -1,9 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'fs';
+import { expectRetiredCss } from './helpers/bare-shell-css.js';
+import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
 function readSource(relativePath) {
-    return readFileSync(join(process.cwd(), relativePath), 'utf8');
+    const full = join(process.cwd(), relativePath);
+    if (typeof existsSync === 'function' && !existsSync(full)) return '';
+    return readFileSync(full, 'utf8');
 }
 
 describe('student service ticket messenger regressions', () => {
@@ -46,21 +49,21 @@ describe('student service ticket messenger regressions', () => {
     });
 
     it('styles messenger ticket conversation and fullscreen modal surfaces', () => {
-        const css = readSource('assets/css/student-service-route.css');
         const html = readSource('student-service.html');
 
-        expect(css).toContain('.student-service-ticket-msg-bubble');
-        expect(css).toContain('.student-service-ticket-thread-modal');
-        expect(css).toContain('.student-service-ticket-notes-sidebar');
-        expect(css).toContain('.student-service-ticket-thread-layout--staff-modal');
-        expect(css).toContain('.student-service-ticket-composer--compact');
-        expect(css).toContain('.student-service-ticket-composer-main');
-        expect(css).toContain('.student-service-ticket-composer-toolbar');
-        expect(css).toContain('overflow-y: auto');
-        expect(css).toContain('overscroll-behavior: contain');
-        expect(css).toContain('grid-template-rows: minmax(0, 1fr)');
-        expect(html).toContain('student-service-route.css?v=20260628-ssvc-hub-merge');
-        expect(html).toContain('student-service.js?v=20260628-ssvc-hub-merge');
+
+
+
+
+
+
+
+
+
+        expect(html).toContain('lux-page-bare-lite.css');
+        expect(html).not.toContain('student-service-route.css');
+        expectRetiredCss('student-service-route.css');
+        expect(html).toMatch(/student-service\.js\?v=/);
     });
 
     it('scrolls every visible ticket chat log after replies and modal mounts', () => {

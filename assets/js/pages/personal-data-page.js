@@ -1,122 +1,9 @@
-function getStudentAdminProfile(userId) {
-    const store = window.KIU_STATE?.studentAdminProfiles;
-    if (!store || typeof store !== 'object') return {};
-    return store[String(userId)] || {};
-}
-
-function normalizePersonalDataMobility(profile = {}) {
-    if (typeof window.StudentsAdminMobility?.normalizeStudentMobility === 'function') {
-        return window.StudentsAdminMobility.normalizeStudentMobility(profile);
-    }
-    const mobility = {
-        category: 'degree',
-        direction: 'none',
-        homeInstitution: '',
-        homeCountry: '',
-        hostProgram: '',
-        startDate: '',
-        endDate: '',
-        agreementRef: '',
-        internalFromFaculty: '',
-        internalFromProgram: '',
-        notes: '',
-        ...(profile.mobility && typeof profile.mobility === 'object' ? profile.mobility : {})
-    };
-    if (!profile.mobility && profile.enrollmentType === 'Exchange Student') {
-        mobility.category = 'exchange_incoming';
-        mobility.direction = 'incoming';
-    } else if (!profile.mobility && profile.enrollmentType === 'Visiting Student') {
-        mobility.category = 'visiting_incoming';
-        mobility.direction = 'incoming';
-    }
-    return mobility;
-}
-
-function formatMobilityStatusLabel(mobility) {
-    const labels = {
-        exchange_incoming: 'Exchange student (incoming)',
-        visiting_incoming: 'Visiting student (incoming)',
-        exchange_outgoing: 'Exchange student (outgoing)',
-        internal_transfer: 'Internal KIU transfer',
-        degree: 'Degree-seeking'
-    };
-    return labels[mobility.category] || 'Degree-seeking';
-}
-
-function formatMobilityPeriod(startDate, endDate) {
-    if (typeof window.StudentsAdminMobility?.formatMobilityPeriod === 'function') {
-        return window.StudentsAdminMobility.formatMobilityPeriod(startDate, endDate);
-    }
-    const formatPart = value => {
-        if (!value) return '';
-        const date = new Date(`${value}T00:00:00`);
-        if (Number.isNaN(date.getTime())) return value;
-        return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-    };
-    const start = formatPart(startDate);
-    const end = formatPart(endDate);
-    if (start && end) return `${start} – ${end}`;
-    return start || end || '-';
-}
-
-function isPersonalDataMobilityActive(mobility) {
-    return mobility.category !== 'degree' || mobility.direction !== 'none';
-}
-
-function getPersonalDataRecordKey(label) {
-    return String(label || 'record')
-        .trim()
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-+|-+$/g, '') || 'record';
-}
-
-function ensurePersonalDataRecordItem(recordsBody, key) {
-    let item = recordsBody.querySelector(`[data-personal-data-record-key="${key}"]`);
-    if (item) return item;
-
-    item = document.createElement('div');
-    item.className = 'personal-data-record-item lux-data-card lux-info-card lux-summary-surface lux-summary-surface--panel';
-    item.dataset.personalDataRecordKey = key;
-
-    const labelEl = document.createElement('span');
-    labelEl.className = 'personal-data-record-label';
-    item.appendChild(labelEl);
-
-    const valueEl = document.createElement('span');
-    valueEl.className = 'personal-data-record-value lux-record-card-value';
-    item.appendChild(valueEl);
-
-    return item;
-}
-
-function syncPersonalDataRecordItems(recordsBody, recordItems = []) {
-    if (!recordsBody) return;
-
-    const activeKeys = new Set();
-    recordItems.forEach(([label, value]) => {
-        const key = getPersonalDataRecordKey(label);
-        const item = ensurePersonalDataRecordItem(recordsBody, key);
-        item.querySelector('.personal-data-record-label').textContent = label ?? '-';
-        item.querySelector('.personal-data-record-value').textContent = value ?? '-';
-        recordsBody.appendChild(item);
-        activeKeys.add(key);
-    });
-
-    Array.from(recordsBody.children).forEach((child) => {
-        if (!activeKeys.has(child.dataset.personalDataRecordKey || '')) {
-            child.remove();
-        }
-    });
-}
-
 function renderPersonalDataIdentitySection(user, facultyProfile) {
     const nameEl = document.getElementById('personal-data-name');
     const statusEl = document.getElementById('personal-data-status');
     const programEl = document.getElementById('personal-data-program');
     const idEl = document.getElementById('personal-data-id');
     const levelHeadingEl = document.getElementById('personal-data-level-heading');
-    const recordsTitleEl = document.getElementById('personal-data-records-title');
     const avatarEl = document.getElementById('personal-data-avatar');
 
     if (nameEl) {
@@ -128,9 +15,14 @@ function renderPersonalDataIdentitySection(user, facultyProfile) {
     if (programEl) programEl.textContent = getProgramLabelForUser(user, facultyProfile);
     if (idEl) idEl.textContent = user?.id || 'N/A';
     if (levelHeadingEl) levelHeadingEl.textContent = getAcademicLevelLabel(user);
-    if (recordsTitleEl) {
-        recordsTitleEl.textContent = user?.role === USER_ROLES.STUDENT ? 'Academic Information' : 'Employment Information';
-    }
+
+    const setContact = (id, value) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = value && String(value).trim() ? value : '—';
+    };
+    setContact('personal-data-email', user?.email);
+    setContact('personal-data-phone', user?.phone || user?.phoneNumber);
+    setContact('personal-data-national-id', user?.nationalId || user?.personalNumber || user?.idNumber);
     if (avatarEl) {
         const storedPhoto = scrubFakeMedia(user?.photo || user?.image || '');
         const fallbackAvatar = ensurePersonalDataAvatarFallback(avatarEl);
@@ -149,48 +41,24 @@ function renderPersonalDataIdentitySection(user, facultyProfile) {
     }
 }
 
-function collectPersonalDataContext(user, facultyProfile) {
-    const summary = getUserPerformanceSummary(user);
-    const status = user?.status || 'Active';
-    const preferredFaculty = user?.facultyCode || user?.faculty || getCurrentFaculty();
-    const facultyName = facultyProfile?.fullName || facultyProfile?.name || getFacultyLabel(preferredFaculty);
-    const programLabel = getProgramLabelForUser(user, facultyProfile);
-    const entryDate = getStudentAdmissionDate(user);
-    const currentTermLabel = getCurrentAcademicTermLabel();
-    const balance = typeof getEffectiveTuitionBalance === 'function'
-        ? getEffectiveTuitionBalance(user?.id)
-        : ((KIU_STATE.tuitionBalances && KIU_STATE.tuitionBalances[user?.id]) || 0);
-    const isProbation = !!KIU_STATE.probationStatus?.[user?.id];
-    const registeredEcts = typeof getStudentRegisteredEctsTotal === 'function'
-        ? getStudentRegisteredEctsTotal(user?.id, preferredFaculty)
-        : 0;
-    const scheduledSections = Array.isArray(KIU_STATE.studentSchedulesByStudent?.[user?.id])
-        ? KIU_STATE.studentSchedulesByStudent[user.id]
-        : [];
-    const scheduledCourseCount = new Set(scheduledSections.map((item) => item?.courseId).filter(Boolean)).size;
-    const loadLabel = user?.role === USER_ROLES.STUDENT
-        ? `${registeredEcts || 0} ECTS`
-        : summary.secondary || '0h';
-
-    const adminProfile = user?.role === USER_ROLES.STUDENT ? getStudentAdminProfile(user.id) : {};
-    const mobility = normalizePersonalDataMobility(adminProfile);
-
-    return {
-        summary,
-        status,
-        preferredFaculty,
-        facultyName,
-        programLabel,
-        entryDate,
-        currentTermLabel,
-        balance,
-        isProbation,
-        registeredEcts,
-        scheduledCourseCount,
-        loadLabel,
-        mobility,
-        mobilityActive: isPersonalDataMobilityActive(mobility)
+function collectPersonalDataContext(user) {
+    const record = {
+        id: user?.id,
+        facultyCode: user?.facultyCode || user?.faculty || (typeof getCurrentFaculty === 'function' ? getCurrentFaculty() : 'ECON'),
+        gpa: user?.gpa,
+        semester: user?.semester
     };
+    const snapshot = typeof loadStudentAcademicSnapshot === 'function'
+        ? loadStudentAcademicSnapshot(record)
+        : null;
+    const summary = typeof getUserPerformanceSummary === 'function'
+        ? getUserPerformanceSummary(user)
+        : { primary: '-', secondary: '-', tertiary: '-', quaternary: '-' };
+    if (snapshot) {
+        summary.tertiary = String(snapshot.completedEcts);
+        summary.secondary = snapshot.performance?.secondary || summary.secondary;
+    }
+    return { summary, snapshot };
 }
 
 function renderPersonalDataSummarySection(user, context) {
@@ -207,134 +75,109 @@ function renderPersonalDataSummarySection(user, context) {
     setText('personal-data-kpi-gpa', context.summary.secondary);
     setText('personal-data-kpi-ects', context.summary.tertiary);
     setHtml('personal-data-kpi-average', context.summary.quaternary);
-}
 
-function renderPersonalDataMobilitySection(context) {
-    const group = document.getElementById('personal-data-mobility-group');
-    const muted = document.getElementById('personal-data-mobility-muted');
-    const fields = document.getElementById('personal-data-mobility-fields');
-    const setText = (id, value) => {
-        const el = document.getElementById(id);
-        if (el) el.textContent = value ?? '-';
-    };
-
-    if (!group) return;
-
-    const mobility = context.mobility || normalizePersonalDataMobility({});
-    const active = context.mobilityActive;
-
-    if (muted) muted.hidden = active;
-    if (fields) fields.hidden = !active;
-
-    if (!active) return;
-
-    setText('personal-data-mobility-status', formatMobilityStatusLabel(mobility));
-    setText('personal-data-home-institution', mobility.homeInstitution || '-');
-    setText('personal-data-mobility-period', formatMobilityPeriod(mobility.startDate, mobility.endDate));
-    setText('personal-data-agreement-ref', mobility.agreementRef || '-');
-
-    const internalWrap = document.getElementById('personal-data-internal-from-wrap');
-    if (mobility.category === 'internal_transfer') {
-        if (internalWrap) internalWrap.hidden = false;
-        const fromLabel = [mobility.internalFromFaculty, mobility.internalFromProgram].filter(Boolean).join(' / ') || '-';
-        setText('personal-data-internal-from', fromLabel);
-    } else if (internalWrap) {
-        internalWrap.hidden = true;
+    const snapshot = context.snapshot;
+    if (snapshot) {
+        const fill = document.getElementById('personal-data-progress-fill');
+        const label = document.getElementById('personal-data-progress-label');
+        if (fill) fill.style.width = `${Math.max(0, Math.min(100, snapshot.progressPercent || 0))}%`;
+        if (label) label.textContent = `${snapshot.completedEcts} / ${snapshot.programRequiredEcts} ECTS`;
     }
 
-    const homeWrap = document.getElementById('personal-data-home-institution-wrap');
-    const periodWrap = document.getElementById('personal-data-mobility-period-wrap');
-    const agreementWrap = document.getElementById('personal-data-agreement-wrap');
-    const showPartner = mobility.category !== 'internal_transfer';
-    if (homeWrap) homeWrap.hidden = !showPartner;
-    if (periodWrap) periodWrap.hidden = false;
-    if (agreementWrap) agreementWrap.hidden = !mobility.agreementRef && showPartner;
-}
-
-function renderPersonalDataFactsSection(user, context) {
-    const setText = (id, value) => {
-        const el = document.getElementById(id);
-        if (el) el.textContent = value ?? '-';
-    };
-
-    setText('personal-data-faculty', context.facultyName);
-    setText('personal-data-program-name', context.programLabel);
-    setText('personal-data-entry-date', formatPersonalDataDate(context.entryDate));
-    setText('personal-data-current-term', context.currentTermLabel);
-    setText('personal-data-hold', user?.role === USER_ROLES.STUDENT ? (context.balance > 0 ? `${Math.round(context.balance)} GEL hold` : 'Clear') : 'N/A');
-    setText('personal-data-probation', user?.role === USER_ROLES.STUDENT ? (context.isProbation ? 'Under review' : 'Clear') : 'N/A');
-    setText('personal-data-load', context.loadLabel);
-    setText('personal-data-record-state', getStudentPersonalDataRecordLabel(user, context.preferredFaculty));
-}
-
-function buildPersonalDataRecordItems(user, context) {
-    const recordItems = [
-        ['Faculty', context.facultyName],
-        ['Program', context.programLabel],
-        ['Level', getAcademicLevelLabel(user)],
-        ['Status', context.status],
-        ['Record state', getStudentPersonalDataRecordLabel(user, context.preferredFaculty)],
-        ['Entry date', formatPersonalDataDate(context.entryDate)],
-        ['Current term', context.currentTermLabel],
-    ];
-    if (user?.role === USER_ROLES.STUDENT) {
-        recordItems.push(
-            ['Tuition hold', context.balance > 0 ? `${Math.round(context.balance)} GEL outstanding` : 'Clear'],
-            ['Probation', context.isProbation ? 'Under review' : 'Clear'],
-            ['Enrollment load', `${context.registeredEcts || 0} ECTS / ${context.scheduledCourseCount || 0} subjects`]
-        );
-        if (context.mobilityActive) {
-            const mobility = context.mobility || {};
-            recordItems.push(['Mobility status', formatMobilityStatusLabel(mobility)]);
-            if (mobility.homeInstitution) recordItems.push(['Home institution', mobility.homeInstitution]);
-            const period = formatMobilityPeriod(mobility.startDate, mobility.endDate);
-            if (period && period !== '-') recordItems.push(['Mobility period', period]);
-            if (mobility.agreementRef) recordItems.push(['Agreement', mobility.agreementRef]);
-            if (mobility.category === 'internal_transfer') {
-                const fromLabel = [mobility.internalFromFaculty, mobility.internalFromProgram].filter(Boolean).join(' / ');
-                if (fromLabel) recordItems.push(['Internal transfer from', fromLabel]);
-            }
-        }
-    } else {
-        recordItems.push(
-            ['Appointment', 'Faculty appointment'],
-            ['Teaching load', context.loadLabel],
-            ['Assigned subjects', `${(user?.subjects || []).length || context.scheduledCourseCount || 0}`]
-        );
+    const recordStateEl = document.getElementById('personal-data-record-state');
+    if (recordStateEl && user) {
+        const preferredFaculty = user?.facultyCode || user?.faculty || (typeof getCurrentFaculty === 'function' ? getCurrentFaculty() : 'ECON');
+        recordStateEl.textContent = typeof getStudentPersonalDataRecordLabel === 'function'
+            ? getStudentPersonalDataRecordLabel(user, preferredFaculty)
+            : (user?.status || 'Active');
     }
-    return recordItems;
 }
 
-function renderPersonalDataRecordsSection(user, context) {
-    const recordsBody = document.getElementById('personal-data-records-body');
-    if (!recordsBody) return;
-    syncPersonalDataRecordItems(recordsBody, buildPersonalDataRecordItems(user, context));
+function renderPersonalDataSubjects(user, context) {
+    if (typeof renderPersonalDataSubjectsSection !== 'function') return;
+    renderPersonalDataSubjectsSection(user, {
+        id: user?.id,
+        facultyCode: user?.facultyCode || user?.faculty,
+        gpa: user?.gpa,
+        semester: user?.semester
+    });
+    void context;
 }
 
 function renderPersonalDataPageContext(user, facultyProfile) {
     if (!document.getElementById('page-personal-data')) return;
-    const context = collectPersonalDataContext(user, facultyProfile);
+    const context = collectPersonalDataContext(user);
     renderPersonalDataIdentitySection(user, facultyProfile);
     renderPersonalDataSummarySection(user, context);
-    renderPersonalDataFactsSection(user, context);
-    renderPersonalDataMobilitySection(context);
-    renderPersonalDataRecordsSection(user, context);
+    renderPersonalDataSubjects(user, context);
 }
 
-function initPersonalDataPageContext() {
+async function initPersonalDataPageContext() {
     if (!document.getElementById('page-personal-data')) return;
     const currentUser = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
     if (!currentUser) return;
     const facultyProfile = typeof getFacultyProfile === 'function'
         ? getFacultyProfile(getCurrentFaculty())
         : null;
+    if (typeof hydrateStudentAcademicRecord === 'function') {
+        try {
+            await hydrateStudentAcademicRecord(currentUser.id, {
+                id: currentUser.id,
+                facultyCode: currentUser.facultyCode || currentUser.faculty,
+                gpa: currentUser.gpa,
+                semester: currentUser.semester
+            });
+        } catch (_) {
+            // Local state fallback.
+        }
+    }
     renderPersonalDataPageContext(currentUser, facultyProfile);
+    setupPersonalDataPasswordForm();
+}
+
+function setupPersonalDataPasswordForm() {
+    const form = document.getElementById('personal-data-password-form');
+    if (!form || form.dataset.bound === '1') return;
+    form.dataset.bound = '1';
+    const msg = document.getElementById('personal-data-password-msg');
+    const setMsg = (text, ok) => {
+        if (!msg) return;
+        msg.textContent = text;
+        msg.className = `pd-password-msg${ok ? ' is-ok' : (text ? ' is-error' : '')}`;
+    };
+    form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const data = new FormData(form);
+        const currentPassword = String(data.get('currentPassword') || '');
+        const newPassword = String(data.get('newPassword') || '');
+        const confirmPassword = String(data.get('confirmPassword') || '');
+        if (newPassword.length < 8) return setMsg('New password must be at least 8 characters.', false);
+        if (newPassword !== confirmPassword) return setMsg('New passwords do not match.', false);
+        if (typeof kiuPortalFetch !== 'function') return setMsg('Password service is unavailable in this mode.', false);
+        const button = form.querySelector('button[type="submit"]');
+        if (button) button.disabled = true;
+        setMsg('Saving…', true);
+        try {
+            await kiuPortalFetch('/api/auth/change-password', {
+                method: 'POST',
+                body: JSON.stringify({ currentPassword, newPassword })
+            });
+            form.reset();
+            setMsg('Password updated.', true);
+        } catch (error) {
+            setMsg(error?.message || 'Could not change password.', false);
+        } finally {
+            if (button) button.disabled = false;
+        }
+    });
 }
 
 window.renderPersonalDataPageContext = renderPersonalDataPageContext;
 
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initPersonalDataPageContext, { once: true });
+    document.addEventListener('DOMContentLoaded', () => {
+        initPersonalDataPageContext();
+    }, { once: true });
 } else {
     initPersonalDataPageContext();
 }

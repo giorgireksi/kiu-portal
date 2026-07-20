@@ -1,18 +1,27 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
+import { readHomeDashboardCss } from './helpers/bare-shell-css.js';
 
 function readSource(relativePath) {
-    return readFileSync(join(process.cwd(), relativePath), 'utf8');
+    const full = join(process.cwd(), relativePath);
+    if (!existsSync(full)) return '';
+    return readFileSync(full, 'utf8');
 }
 
 describe('particle background route integration', () => {
     it('exposes portal particle background globals', () => {
         const particle = readSource('assets/js/features/luxury-particle-background.js');
+        const orchestrator = readSource('assets/js/features/luxury-background.js');
         expect(particle).toContain('window.__kiuInitLuxuryParticleBackground = initLuxuryParticleBackground');
-        expect(particle).toContain('window.__kiuRefreshLuxuryBackground = refreshLuxuryParticleBackground');
+        expect(orchestrator).toContain('window.__kiuRefreshLuxuryBackground');
         expect(particle).toContain('function applyLmsParticleTheme()');
         expect(particle).toContain('lux-bg-canvas');
+        /* Orchestrator ES-imports these named exports */
+        expect(particle).toContain('export {');
+        expect(particle).toContain('disposeLuxuryParticleBackground');
+        expect(particle).toContain('probeWebGlAvailable');
+        expect(orchestrator).toContain('import("./luxury-particle-background.js")');
     });
 
     it('migrates legacy background mode names to particle variants', () => {
@@ -32,17 +41,26 @@ describe('particle background route integration', () => {
         expect(luxury).not.toContain('startBackground();');
     });
 
-    it('loads particle background module on luxury html entry points', () => {
+    it('loads background orchestrator module on luxury html entry points', () => {
         const htmlFiles = [
             'index.html',
             'lms.html',
-            'profile.html',
+            'profile-view.html',
             'orders.html'
         ];
         htmlFiles.forEach((file) => {
             const html = readSource(file);
-            expect(html).toContain('luxury-particle-background.js');
+            expect(html).toContain('luxury-background.js');
         });
+    });
+
+    it('lazy-creates LMS particle canvas via orchestrator (no static markup)', () => {
+        const html = readSource('lms.html');
+        const orchestrator = readSource('assets/js/features/luxury-background.js');
+        expect(html).not.toContain('<canvas id="lux-bg-canvas"');
+        expect(html).toContain('luxury-background.js');
+        expect(orchestrator).toContain('scheduleBackgroundSelfInit');
+        expect(orchestrator).toContain('window.__kiuInitLuxuryParticleBackground');
     });
 
     it('reads LMS css variables for particle theme colors', () => {
@@ -58,11 +76,12 @@ describe('particle background route integration', () => {
         expect(particle).toContain('staticBackgroundOnly = !animationsEnabled');
         expect(particle).not.toContain("staticBackgroundOnly = getPerformanceTier() === 'efficient'");
         expect(particle).not.toContain('targetMotion = reducedMotion || staticBackgroundOnly');
-        expect(particle).toContain('scheduleParticleBackgroundSelfInit');
+        const orchestrator = readSource('assets/js/features/luxury-background.js');
+        expect(orchestrator).toContain('scheduleBackgroundSelfInit');
     });
 
     it('uses full-opacity particle presentation when background animation is on', () => {
-        const css = readSource('assets/css/index-luxury.css');
+        const css = readHomeDashboardCss() + '\n' + readSource('assets/css/lux-fouc-ht.css');
         expect(css).toContain('body[data-lux-background-animation="on"] #lux-bg-canvas');
         expect(css).toMatch(/body\[data-lux-background-animation="on"\] #lux-bg-canvas[\s\S]*opacity:\s*1/);
         expect(css).toContain('body[data-lux-background-animation="on"] #lux-bg-overlay');
@@ -139,5 +158,322 @@ describe('particle background route integration', () => {
             ''
         );
         expect(afterAutoBlock).not.toContain('getPerformanceTier() === "efficient"');
+    });
+
+    it('registers fog in the Color & Motion Studio background catalog', () => {
+        const luxury = readSource('assets/js/features/index-luxury.js');
+        const shellChrome = readSource('assets/js/features/luxury-shell-chrome.js');
+
+        expect(luxury).toMatch(/const BACKGROUND_MODES = \[[\s\S]*key: 'fog'/);
+        expect(luxury).toContain("label: 'Volumetric Fog'");
+        expect(luxury).toContain("icon: 'fas fa-smog'");
+        expect(shellChrome).toContain('BACKGROUND_MODES.forEach((mode) => {');
+        expect(shellChrome).toContain('button.dataset.bgMode = mode.key');
+    });
+
+    it('accepts fog as a canonical background mode', () => {
+        const luxury = readSource('assets/js/features/index-luxury.js');
+        const sanitizeBlock = luxury.slice(
+            luxury.indexOf('function sanitizeBackgroundMode'),
+            luxury.indexOf('function areBackgroundAnimationsEnabled')
+        );
+        expect(sanitizeBlock).toContain('BACKGROUND_MODES.some((item) => item.key === normalized)');
+        expect(luxury).not.toContain("if (normalized === 'fog') return 'peak'");
+    });
+
+    it('keeps legacy background mode migration unchanged when fog is added', () => {
+        const luxury = readSource('assets/js/features/index-luxury.js');
+        expect(luxury).toContain("if (normalized === 'tunnel') return 'orbit'");
+        expect(luxury).toContain("if (normalized === 'grid') return 'corners'");
+        expect(luxury).toContain("if (normalized === 'constellation') return 'peak'");
+        expect(luxury).toContain("if (normalized === 'aurora') return 'orbit'");
+        expect(luxury).toContain("if (normalized === 'mesh') return 'corners'");
+        expect(luxury).not.toContain("if (normalized === 'fog') return");
+    });
+
+    it('routes fog through the background orchestrator with mutual dispose', () => {
+        const orchestrator = readSource('assets/js/features/luxury-background.js');
+        const particle = readSource('assets/js/features/luxury-particle-background.js');
+        const fog = readSource('assets/js/features/luxury-vanta-fog-background.js');
+
+        expect(orchestrator).toContain('function isFogMode');
+        expect(orchestrator).toContain('__kiuDisposeLuxuryParticleBackground');
+        expect(orchestrator).toContain('__kiuDisposeLuxuryVantaFogBackground');
+        expect(orchestrator).toContain('import("./luxury-vanta-fog-background.js")');
+        expect(orchestrator).toContain('scheduleBackgroundSelfInit');
+        expect(fog).toContain('applyLmsFogTheme');
+        expect(fog).toContain('window.__kiuApplyLmsFogTheme');
+    });
+
+    it('exposes dedicated fog settings separate from particle controls', () => {
+        const luxury = readSource('assets/js/features/index-luxury.js');
+        const shellChrome = readSource('assets/js/features/luxury-shell-chrome.js');
+        const fog = readSource('assets/js/features/luxury-vanta-fog-background.js');
+
+        expect(luxury).toContain('function getFogSettings');
+        expect(luxury).toContain('function setFogSettings');
+        expect(luxury).toContain('function applyFogPreset');
+        expect(luxury).toContain('function ensureFogProfileStore');
+        expect(luxury).toContain('function getFogProfiles');
+        expect(luxury).toContain('function saveFogProfile');
+        expect(luxury).toContain('function applyFogProfile');
+        expect(luxury).toContain('function deleteFogProfile');
+        expect(luxury).toContain('function updateFogProfile');
+        expect(luxury).toContain('function reorderFogProfiles');
+        expect(luxury).toContain('entry.fogProfiles');
+        expect(luxury).toContain('kiuLuxuryFogProfiles');
+        expect(luxury).toContain('readStoredFogProfiles');
+        expect(luxury).toContain('writeStoredFogProfiles');
+        expect(luxury).toContain('syncFogProfilesStorage');
+        expect(luxury).toContain("highlightColor: '#b794f6'");
+        expect(shellChrome).toContain('id="lux-bg-mode-panels-store"');
+        expect(shellChrome).toContain('id="lux-bg-settings-panel-fog"');
+        expect(shellChrome).toContain('data-bg-mode-panel="fog"');
+        expect(shellChrome).toContain('lux-bg-mode-item');
+        expect(shellChrome).toContain('lux-bg-mode-settings-btn');
+        // index-luxury.css retired; mode chrome is DOM/classes in luxury-shell-chrome (asserted above).
+        expect(existsSync(join(process.cwd(), 'assets/css/index-luxury.css'))).toBe(false);
+        expect(shellChrome).toContain('lux-bg-mode-params-backdrop');
+        expect(shellChrome).toContain('function openBgModeParamsPopup');
+        expect(shellChrome).toContain('lux-fog-blur-slider');
+        expect(shellChrome).toContain('lux-fog-speed-slider');
+        expect(shellChrome).toContain('lux-fog-zoom-slider');
+        expect(shellChrome).toContain('id="lux-fog-profiles-section"');
+        expect(shellChrome).toContain('id="lux-fog-profile-list"');
+        expect(shellChrome).toContain('id="lux-fog-profile-name-input"');
+        expect(shellChrome).toContain('id="lux-fog-profile-add"');
+        expect(shellChrome).toContain('data-fog-profile-add');
+        expect(shellChrome).toContain('data-fog-profile-save-edit');
+        expect(shellChrome).toContain('data-fog-profile-discard-edit');
+        expect(shellChrome).toContain('data-fog-profile-apply');
+        expect(shellChrome).toContain('data-fog-profile-edit');
+        expect(shellChrome).toContain('data-fog-profile-delete');
+        expect(shellChrome).toContain("FOG_PARAMS_TEMPLATE_VERSION = '6'");
+        expect(shellChrome).toContain('lux-fog-profile-index');
+        expect(shellChrome).toContain('data-fog-profile-drag-handle');
+        expect(shellChrome).toContain('data-lux-skip-modern-button="true"');
+        expect(shellChrome).toContain('data-fog-profile-bank');
+        expect(shellChrome).toContain('function buildFogProfileGhostMarkup');
+        expect(shellChrome).toContain('function bindFogProfileListDrag');
+        expect(shellChrome).toContain('function createFogProfileDragGhost');
+        expect(shellChrome).toContain('function flipFogProfileSiblings');
+        expect(shellChrome).toContain('function animateFogProfileGhostDrop');
+        expect(shellChrome).toContain('prefersReducedFogProfileMotion');
+        expect(shellChrome).toContain('function readFogSettingsFromStudioInputs');
+        expect(shellChrome).toContain('function resolveFogSettingsForProfileSave');
+        expect(shellChrome).toContain('function syncFogProfileEditPreview');
+        expect(shellChrome).toContain("editBar.classList.toggle('is-editing', editing)");
+        expect(shellChrome).toContain('is-edit-active');
+        expect(shellChrome).toContain('function notifyFogProfileApiMissing');
+        expect(shellChrome).toContain('function flashFogProfileAction');
+        expect(shellChrome).toContain('function bindFogStudioControls');
+        expect(shellChrome).toContain('fogControlsBound');
+        expect(shellChrome).toContain('lux-bg-mode-params-dialog');
+        expect(shellChrome).toContain('isFogProfileEditing()');
+        expect(shellChrome).toContain('commitFogProfileEdit');
+        expect(shellChrome).toContain('id="lux-fog-profile-edit-bar"');
+        expect(shellChrome).toContain('id="lux-fog-profile-save-edit"');
+        expect(shellChrome).toContain('id="lux-fog-profile-discard-edit"');
+        expect(shellChrome).toContain('function renderFogProfileList');
+        expect(shellChrome).toContain('function startFogProfileEdit');
+        expect(shellChrome).toContain('function commitFogProfileEdit');
+        expect(shellChrome).toContain('function cancelFogProfileEdit');
+        expect(shellChrome).toContain('function bindFogProfileControls');
+        expect(shellChrome).toContain('fogProfileEditState');
+        expect(fog).toContain('window.getFogSettings');
+        expect(fog).toContain('blurFactor: settings.blurFactor');
+        expect(fog).not.toContain('readPortalMotion');
+    });
+
+    it('keeps saved fog profiles when visual settings reset', () => {
+        const luxury = readSource('assets/js/features/index-luxury.js');
+        const resetBlock = luxury.slice(
+            luxury.indexOf('function resetVisualSettings'),
+            luxury.indexOf('function resetHomeToDefaults')
+        );
+        expect(resetBlock).not.toContain('fogProfiles');
+    });
+
+    it('opens per-mode settings in a dedicated parameters popup', () => {
+        const shellChrome = readSource('assets/js/features/luxury-shell-chrome.js');
+        expect(shellChrome).toContain('dataset.bgModeSettings');
+        expect(shellChrome).toContain('openBgModeParamsPopup(mode.key)');
+        expect(shellChrome).toContain('function closeBgModeParamsPopup');
+        expect(shellChrome).toContain('mountBgModePanelInPopup');
+        expect(shellChrome).toContain('id="lux-bg-params-body"');
+        expect(shellChrome).toContain('id="lux-bg-settings-panel-particle"');
+        expect(shellChrome).toContain('data-bg-mode-panel="peak layered orbit corners"');
+        expect(shellChrome).toContain('id="lux-bg-panel-particle-copy"');
+        expect(shellChrome).toContain('function syncStudioModePanels');
+        expect(shellChrome).not.toContain('syncStudioBackgroundPanels');
+        expect(shellChrome).not.toContain('lux-bg-mode-settings-host');
+        expect(shellChrome).not.toContain('dataset.bgModeParams');
+        expect(shellChrome).not.toContain('lux-fog-settings-section');
+        expect(shellChrome).not.toContain('lux-particle-settings-wrap');
+    });
+
+    it('keeps global studio controls outside the parameters popup store', () => {
+        const shellChrome = readSource('assets/js/features/luxury-shell-chrome.js');
+        const popupStart = shellChrome.indexOf('function ensureBgModeParamsPopup');
+        const storeStart = shellChrome.indexOf('id="lux-bg-mode-panels-store"', popupStart);
+        const storeEnd = shellChrome.indexOf('function openBgModeParamsPopup', storeStart);
+        const storeBlock = shellChrome.slice(storeStart, storeEnd);
+
+        expect(storeBlock).not.toContain('id="lux-palette-grid"');
+        expect(storeBlock).not.toContain('id="lux-transparency-slider"');
+        expect(storeBlock).not.toContain('id="lux-reset-visuals"');
+        expect(storeBlock).not.toContain('id="lux-apply-mix"');
+        expect(shellChrome).toContain('id="lux-palette-grid"');
+        expect(shellChrome).toContain('id="lux-transparency-slider"');
+        expect(shellChrome).toContain('id="lux-bg-animation-on"');
+        expect(shellChrome).toContain('id="lux-reset-visuals"');
+        expect(shellChrome).toContain('id="lux-apply-mix"');
+    });
+
+    it('ships fog profile script cache versions on luxury html entry points', () => {
+        const htmlFiles = {
+            'index.html': 'index-luxury.js?v=',
+            'lms.html': 'index-luxury.js?v=',
+            'profile-view.html': 'index-luxury.js?v=',
+            'orders.html': 'index-luxury.js?v=',
+            'students-admin.html': 'index-luxury.js?v=',
+            'admin-tools.html': 'index-luxury.js?v='
+        };
+        Object.entries(htmlFiles).forEach(([file, luxuryTag]) => {
+            const html = readSource(file);
+            expect(html).toContain(luxuryTag);
+            expect(html).toContain('luxury-shell-chrome.js?v=');
+        });
+    });
+
+    it('drives fog profile drag ghost classes from shell chrome (no dedicated CSS sheet)', () => {
+        const shellChrome = readSource('assets/js/features/luxury-shell-chrome.js');
+        expect(shellChrome).toContain('lux-fog-profile-drag-ghost');
+        expect(shellChrome).toContain('is-drag-source');
+        expect(shellChrome).toContain('function buildFogProfileGhostMarkup');
+        expect(shellChrome).toContain('function animateFogProfileGhostDrop');
+        expect(existsSync(join(process.cwd(), 'assets/css/index-luxury.css'))).toBe(false);
+    });
+
+    it('stores fog profiles in separate dark and light banks', () => {
+        const luxury = readSource('assets/js/features/index-luxury.js');
+        expect(luxury).toContain('themeMode: normalizeFogProfileBank(entry.themeMode)');
+        expect(luxury).toContain('function buildDefaultLightFogProfiles');
+        expect(luxury).toContain('function getAllFogProfiles');
+        expect(luxury).toContain('profile.themeMode === activeBank ? queue.shift() : profile');
+        const shellChrome = readSource('assets/js/features/luxury-shell-chrome.js');
+        expect(shellChrome).toContain('activeFogProfileBank');
+        expect(shellChrome).toContain('resolveActiveFogProfileBank()');
+    });
+
+    it('prefers live fog settings from localStorage when reading profile save state', () => {
+        const luxury = readSource('assets/js/features/index-luxury.js');
+        const getFogBlock = luxury.slice(
+            luxury.indexOf('function getFogSettings'),
+            luxury.indexOf('function refreshActiveFogBackground')
+        );
+        expect(getFogBlock).toContain('readStoredFogSettings()');
+        expect(getFogBlock).toContain('stored || visuals.fogSettings');
+        expect(luxury).toContain('if (!Array.isArray(entry.fogProfiles)) entry.fogProfiles = []');
+        expect(luxury).toContain('function mergeFogProfileStores');
+        const storeBlock = luxury.slice(
+            luxury.indexOf('function ensureFogProfileStore'),
+            luxury.indexOf('function getFogProfiles')
+        );
+        expect(storeBlock).toContain('mergeFogProfileStores(entryProfiles, storedProfiles)');
+        expect(storeBlock).not.toMatch(/if \(Array\.isArray\(entry\.fogProfiles\) && entry\.fogProfiles\.length > 0\)[\s\S]*syncFogProfilesStorage\(entry\.fogProfiles\)/);
+    });
+
+    it('commits profile edits from studio inputs', () => {
+        const shellChrome = readSource('assets/js/features/luxury-shell-chrome.js');
+        const commitBlock = shellChrome.slice(
+            shellChrome.indexOf('function commitFogProfileEdit'),
+            shellChrome.indexOf('function startFogProfileEdit')
+        );
+        expect(commitBlock).toContain('resolveFogSettingsForProfileSave()');
+        expect(commitBlock).toContain('settings');
+        expect(commitBlock).not.toContain('settings: window.getFogSettings()');
+        const closeBlock = shellChrome.slice(
+            shellChrome.indexOf('function closeBgModeParamsPopup'),
+            shellChrome.indexOf('function syncStudioModePanels')
+        );
+        expect(closeBlock).toContain('Save profile changes before closing?');
+    });
+
+    it('delegates fog profile actions from the parameters dialog', () => {
+        const shellChrome = readSource('assets/js/features/luxury-shell-chrome.js');
+        const bindBlock = shellChrome.slice(
+            shellChrome.indexOf('function bindFogProfileControls'),
+            shellChrome.indexOf('function bindFogStudioControls')
+        );
+        expect(bindBlock).toContain('lux-bg-mode-params-dialog');
+        expect(bindBlock).toContain('fogControlsBound');
+        expect(bindBlock).not.toContain("getElementById('lux-fog-profiles-section')");
+        const openBlock = shellChrome.slice(
+            shellChrome.indexOf('function openBgModeParamsPopup'),
+            shellChrome.indexOf('function closeBgModeParamsPopup')
+        );
+        expect(openBlock).toContain("if (modeKey === 'fog')");
+        expect(openBlock).toContain('bindFogProfileControls()');
+        expect(openBlock).toContain('bindFogProfileListDrag()');
+    });
+
+    it('preserves fog profile order when merging stores', () => {
+        const luxury = readSource('assets/js/features/index-luxury.js');
+        const mergeBlock = luxury.slice(
+            luxury.indexOf('function mergeFogProfileStores'),
+            luxury.indexOf('function ensureFogProfileStore')
+        );
+        expect(mergeBlock).toContain('entryProfiles.map');
+        expect(mergeBlock).not.toContain('Array.from(mergedById.values())');
+    });
+
+    it('forces high particle quality and wires DPR/frame caps on home', () => {
+        const particle = readSource('assets/js/features/luxury-particle-background.js');
+        const runtime = readSource('assets/js/features/luxury-index-runtime.js');
+        const luxury = readSource('assets/js/features/index-luxury.js');
+        const resolveQualityBlock = particle.slice(
+            particle.indexOf('function resolveQuality'),
+            particle.indexOf('function detectQualityProfile')
+        );
+        expect(resolveQualityBlock).toContain('mapPerformanceTierToQuality');
+        expect(resolveQualityBlock).toContain('getPerformanceTier() === "efficient"');
+        expect(runtime).toContain('--lux-canvas-pixel-ratio-cap');
+        expect(runtime).toContain('--lux-canvas-frame-interval');
+        expect(runtime).toContain('pixelRatioCap: isTimetable ? 3 : (isHome ? 2.5 : 1.5)');
+        expect(runtime).toContain('frameInterval: isHome ? 16 : (reducedMotion ? 80 : 42)');
+        expect(luxury).toMatch(/particleQuality:\s*'high'/);
+        const dprBlock = particle.slice(
+            particle.indexOf('function getRenderPixelRatio'),
+            particle.indexOf('function setQuality')
+        );
+        expect(dprBlock).toContain('Math.min(dpr * supersample, quality.maxDpr)');
+        expect(particle).toMatch(/high:\s*\{[\s\S]*?maxDpr:\s*3\.7/);
+    });
+
+    it('keeps canvas filter none when background animation is on', () => {
+        const css = readHomeDashboardCss() + '\n' + readSource('assets/css/lux-fouc-ht.css');
+        const canvasDefault = css.slice(
+            css.indexOf('#lux-bg-canvas {\n    opacity: var(--lux-canvas-opacity);'),
+            css.indexOf('#lux-bg-overlay {')
+        );
+        expect(canvasDefault).not.toContain('blur(0.1px)');
+        expect(css).toMatch(
+            /body\[data-lux-background-animation="on"\] #lux-bg-canvas[\s\S]*?filter:\s*none/
+        );
+        expect(css).toMatch(
+            /body\[data-lux-background-animation="on"\] #lux-bg-overlay[\s\S]*?opacity:\s*0/
+        );
+    });
+
+    it('cache-busts particle and luxury background assets', () => {
+        const html = readSource('index.html');
+        const background = readSource('assets/js/features/luxury-background.js');
+        expect(html).toContain('luxury-background.js?v=20260717-lazythree1');
+        expect(html).toContain('index-luxury.js?v=');
+        expect(html).toContain('luxury-index-runtime.js?v=');
+        expect(html).not.toContain('index-luxury.css');
+        expect(background).toContain('import("./luxury-particle-background.js")');
+        expect(background).not.toContain('luxury-particle-background.js?v=');
     });
 });

@@ -10,6 +10,7 @@ const require = createRequire(import.meta.url);
 
 const RESOURCE_KEY = 'ECON-DEMO-101::G1__lmssec_lecture';
 const SESSION_ID = 'live-session-http-e2e';
+const SESSION_DELETE_ID = 'live-session-http-delete';
 const QUESTION_ID = 'live-question-http-e2e';
 
 function buildSeedState() {
@@ -108,6 +109,47 @@ function buildSeedState() {
         chats: {},
         notifications: {},
         auditEvents: []
+    };
+}
+
+function buildTwoSessionWorkspace() {
+    const activatedAt = new Date().toISOString();
+    return {
+        sessions: [
+            {
+                id: SESSION_ID,
+                status: 'live',
+                currentQuestionIndex: 0,
+                title: 'HTTP E2E Keep Session',
+                questions: [{
+                    id: QUESTION_ID,
+                    text: '2 + 2 = ?',
+                    options: ['3', '4', '5', '6'],
+                    correctOption: 1,
+                    timeLimit: 45,
+                    state: 'showing',
+                    showVersion: 1,
+                    activatedAt
+                }],
+                participants: {
+                    'livequiz-student': {
+                        id: 'livequiz-student',
+                        accountId: 'livequiz-student',
+                        nickname: 'Live Quiz Student',
+                        answers: {},
+                        score: 0
+                    }
+                }
+            },
+            {
+                id: SESSION_DELETE_ID,
+                status: 'draft',
+                currentQuestionIndex: 0,
+                title: 'HTTP E2E Delete Session',
+                questions: [],
+                participants: {}
+            }
+        ]
     };
 }
 
@@ -242,6 +284,58 @@ async function main() {
         const studentScore = Number(studentReload?.workspace?.sessions?.[0]?.participants?.['livequiz-student']?.score || 0);
         if (studentScore <= 0) {
             throw new Error('Student score was not persisted on the server workspace.');
+        }
+
+        const twoSessions = await fetchJson(`${baseUrl}/api/lms/live-quizzes/${encodedKey}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-portal-session': profToken
+            },
+            body: JSON.stringify({
+                workspace: buildTwoSessionWorkspace(),
+                reason: 'http-e2e-two-session-sync'
+            })
+        });
+        if ((twoSessions?.workspace?.sessions || []).length !== 2) {
+            throw new Error('Professor sync did not seed two sessions.');
+        }
+
+        const afterDelete = await fetchJson(`${baseUrl}/api/lms/live-quizzes/${encodedKey}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-portal-session': profToken
+            },
+            body: JSON.stringify({
+                workspace: {
+                    sessions: [twoSessions.workspace.sessions[0]]
+                },
+                reason: 'session-deleted'
+            })
+        });
+        if ((afterDelete?.workspace?.sessions || []).length !== 1) {
+            throw new Error('Professor delete sync did not reduce sessions to one.');
+        }
+        if ((afterDelete?.workspace?.sessions || []).some(session => session.id === SESSION_DELETE_ID)) {
+            throw new Error('Deleted session was still present after professor delete sync.');
+        }
+
+        const reloadedAfterDelete = await fetchJson(`${baseUrl}/api/lms/live-quizzes/${encodedKey}`, {
+            headers: { 'x-portal-session': profToken }
+        });
+        if ((reloadedAfterDelete?.workspace?.sessions || []).length !== 1) {
+            throw new Error('Professor GET after delete did not persist one session.');
+        }
+
+        const reloadedAgain = await fetchJson(`${baseUrl}/api/lms/live-quizzes/${encodedKey}`, {
+            headers: { 'x-portal-session': studentToken }
+        });
+        if ((reloadedAgain?.workspace?.sessions || []).length !== 1) {
+            throw new Error('Student GET after delete did not persist one session.');
+        }
+        if ((reloadedAgain?.workspace?.sessions || []).some(session => session.id === SESSION_DELETE_ID)) {
+            throw new Error('Deleted session reappeared in student GET.');
         }
 
         console.log('LMS live quiz HTTP e2e passed.');

@@ -1,6 +1,10 @@
+/* READABILITY: Portal API client — fetch helpers, auth headers, domain endpoints.
+ * Sections: Boot | Fetch | Auth | Portal | Social
+ * See docs/human-maintainability.md (H2). */
 var KIU_PORTAL_BACKEND_URL_KEY = 'KIU_PORTAL_BACKEND_URL';
 var KIU_PORTAL_LOCAL_BACKEND_HOST = '127.0.0.1';
 var KIU_PORTAL_BACKEND_PORT = '48933';
+// --- READABILITY: Boot ---
 function getKiuPortalBackendDefaultUrl() {
     try {
         if (window.location?.protocol === 'http:' || window.location?.protocol === 'https:') {
@@ -19,8 +23,10 @@ var KIU_PORTAL_SESSION_TOKEN_KEY = 'KIU_PORTAL_SESSION_TOKEN';
 var KIU_PORTAL_BACKEND_TIMEOUT_MS = 4000;
 var KIU_PORTAL_BACKEND_COOLDOWN_MS = 5000;
 var KIU_PORTAL_PUBLIC_ENDPOINT_PATTERNS = [
+// --- READABILITY: Auth ---
     /^\/api\/portal\/session\/login\b/i,
     /^\/api\/password\//i,
+// --- READABILITY: Portal ---
     /^\/api\/portal\/microsoft\/config\b/i,
     /^\/api\/portal\/microsoft\/start\b/i,
     /^\/api\/platform\/config\b/i,
@@ -50,10 +56,12 @@ function shouldBypassPortalBackendFetch() {
 
 function getKiuPortalBackendUrl() {
     try {
-        if (typeof getKiuRealtimeBridgeUrl === 'function') {
-            return String(getKiuRealtimeBridgeUrl() || KIU_PORTAL_BACKEND_DEFAULT_URL).replace(/\/$/, '');
+        const explicitPortalUrl = String(localStorage.getItem(KIU_PORTAL_BACKEND_URL_KEY) || '').trim();
+        if (explicitPortalUrl) return explicitPortalUrl.replace(/\/$/, '');
+        if (window.location?.protocol === 'http:' || window.location?.protocol === 'https:') {
+            return String(window.location.origin).replace(/\/$/, '');
         }
-        return String(localStorage.getItem(KIU_PORTAL_BACKEND_URL_KEY) || KIU_PORTAL_BACKEND_DEFAULT_URL).replace(/\/$/, '');
+        return String(KIU_PORTAL_BACKEND_DEFAULT_URL).replace(/\/$/, '');
     } catch (error) {
         return KIU_PORTAL_BACKEND_DEFAULT_URL;
     }
@@ -101,16 +109,19 @@ async function kiuPortalFetch(path, options = {}) {
         failure.code = 'KIU_PORTAL_SESSION_REQUIRED';
         failure.status = 401;
         failure.silent = true;
-        setPortalRuntimeDiagnostic({
-            kind: 'missing-session',
-            code: failure.code,
-            path,
-            message: failure.message,
-            status: 401
-        });
+        if (!shouldSuppressPortalFetchDiagnostic(options, path)) {
+            setPortalRuntimeDiagnostic({
+                kind: 'missing-session',
+                code: failure.code,
+                path,
+                message: failure.message,
+                status: 401
+            });
+        }
         throw failure;
     }
     try {
+// --- READABILITY: Fetch ---
         response = await fetch(`${getKiuPortalBackendUrl()}${path}`, {
             method: options.method || 'GET',
             headers: {
@@ -124,9 +135,13 @@ async function kiuPortalFetch(path, options = {}) {
         });
     } catch (error) {
         runtime.online = false;
-        runtime.lastBackendError = error?.name === 'AbortError'
-            ? `Portal backend timed out after ${Math.round(timeoutMs / 1000)}s.`
-            : (error?.message || 'Portal backend is unavailable.');
+        if (error?.name === 'AbortError') {
+            runtime.lastBackendError = `Portal backend timed out after ${Math.round(timeoutMs / 1000)}s.`;
+        } else if (String(error?.message || '').trim().toLowerCase() === 'failed to fetch') {
+            runtime.lastBackendError = `Portal backend unreachable at ${getKiuPortalBackendUrl()}. Start the backend on port ${KIU_PORTAL_BACKEND_PORT} and use http://127.0.0.1:8876.`;
+        } else {
+            runtime.lastBackendError = error?.message || 'Portal backend is unavailable.';
+        }
         runtime.backendUnavailableUntil = Date.now() + KIU_PORTAL_BACKEND_COOLDOWN_MS;
         const failure = new Error(runtime.lastBackendError);
         failure.code = error?.name === 'AbortError' ? 'KIU_PORTAL_BACKEND_TIMEOUT' : 'KIU_PORTAL_BACKEND_OFFLINE';
@@ -204,6 +219,17 @@ function hasPortalAuthSnapshot() {
     }
 }
 
+function shouldSuppressPortalFetchDiagnostic(options = {}, path = '') {
+    if (options.suppressDiagnostic === true) return true;
+    if (typeof document === 'undefined') return false;
+    const contentArea = document.getElementById('lms-content-area');
+    if (contentArea?.dataset?.activeLmsTab === 'whiteboard'
+        && /\/api\/lms\/whiteboards\//i.test(String(path || ''))) {
+        return true;
+    }
+    return false;
+}
+
 function isPortalLocalDevEnvironment() {
     try {
         const protocol = String(window.location?.protocol || '').trim().toLowerCase();
@@ -244,148 +270,6 @@ function getPortalRuntimeDiagnosticCopy(detail = {}) {
         title: 'Backend unavailable',
         message: detail.message || 'The portal backend could not be reached.'
     };
-}
-
-function renderPortalRuntimeDiagnostic(detail = null) {
-    const existing = document.getElementById('kiu-portal-runtime-diagnostic');
-    if (!detail) {
-        if (existing) existing.remove();
-        return;
-    }
-    if (!document.body) {
-        window.setTimeout(() => renderPortalRuntimeDiagnostic(detail), 0);
-        return;
-    }
-    const copy = getPortalRuntimeDiagnosticCopy(detail);
-    const banner = existing || document.createElement('div');
-    banner.id = 'kiu-portal-runtime-diagnostic';
-    banner.className = 'kiu-portal-runtime-diagnostic';
-    banner.setAttribute('data-diagnostic-kind', String(detail.kind || 'backend-unavailable'));
-    const routePath = String(detail.path || '').trim();
-    banner.innerHTML = `
-        <div class="kiu-portal-runtime-diagnostic__row">
-            <div class="kiu-portal-runtime-diagnostic__copy">
-                <div class="kiu-portal-runtime-diagnostic__title">${copy.title}</div>
-                <div class="kiu-portal-runtime-diagnostic__message">${copy.message}</div>
-                ${routePath ? `<div class="kiu-portal-runtime-diagnostic__route">Route: ${escapeHtml(routePath)}</div>` : ''}
-            </div>
-            <button type="button" class="kiu-portal-runtime-diagnostic__close" data-close-portal-diagnostic="1">×</button>
-        </div>
-    `;
-    banner.querySelector('[data-close-portal-diagnostic="1"]')?.addEventListener('click', () => {
-        clearPortalRuntimeDiagnostic();
-    }, { once: true });
-    if (!existing) document.body.appendChild(banner);
-}
-
-function setPortalRuntimeDiagnostic(detail = null) {
-    const runtime = ensurePortalBackendRuntime();
-    runtime.diagnostic = detail ? {
-        ...detail,
-        updatedAt: new Date().toISOString()
-    } : null;
-    renderPortalRuntimeDiagnostic(runtime.diagnostic);
-    try {
-        window.dispatchEvent(new CustomEvent('kiu:portal-runtime-diagnostic', {
-            detail: runtime.diagnostic
-        }));
-    } catch (error) {}
-    return runtime.diagnostic;
-}
-
-function clearPortalRuntimeDiagnostic() {
-    const runtime = ensurePortalBackendRuntime();
-    runtime.diagnostic = null;
-    renderPortalRuntimeDiagnostic(null);
-    try {
-        window.dispatchEvent(new CustomEvent('kiu:portal-runtime-diagnostic', {
-            detail: null
-        }));
-    } catch (error) {}
-}
-
-function decodeBase64UrlToUint8Array(value) {
-    const normalized = String(value || '').trim();
-    if (!normalized) return new Uint8Array();
-    const padding = '='.repeat((4 - normalized.length % 4) % 4);
-    const base64 = (normalized + padding).replace(/-/g, '+').replace(/_/g, '/');
-    const raw = atob(base64);
-    return Uint8Array.from(raw.split('').map(character => character.charCodeAt(0)));
-}
-
-function dispatchPortalMailSummaryUpdate(summary = null) {
-    try {
-        window.dispatchEvent(new CustomEvent('kiu:mail-summary-updated', {
-            detail: summary ? clonePortalState(summary) : null
-        }));
-    } catch (error) {}
-}
-
-function setPortalMailSummary(summary = null) {
-    const runtime = ensurePortalBackendRuntime();
-    runtime.mailSummary = summary && typeof summary === 'object'
-        ? clonePortalState(summary)
-        : {
-            connected: false,
-            mailboxAddress: '',
-            unreadCount: 0,
-            lastSyncAt: '',
-            lastSyncStatus: 'idle',
-            lastError: ''
-        };
-    dispatchPortalMailSummaryUpdate(runtime.mailSummary);
-    return runtime.mailSummary;
-}
-
-function getPortalMailSummary() {
-    return clonePortalState(ensurePortalBackendRuntime().mailSummary || {
-        connected: false,
-        mailboxAddress: '',
-        unreadCount: 0,
-        lastSyncAt: '',
-        lastSyncStatus: 'idle',
-        lastError: ''
-    });
-}
-
-function clonePortalState(source) {
-    try {
-        return JSON.parse(JSON.stringify(source || {}));
-    } catch (error) {
-        return {};
-    }
-}
-
-function buildPortalPersistableState(source = (typeof KIU_STATE !== 'undefined' ? KIU_STATE : {})) {
-    const snapshot = clonePortalState(source);
-    delete snapshot.domain;
-    delete snapshot.auth;
-    delete snapshot.lmsLiveQuizzes;
-    return snapshot;
-}
-
-function buildPortalBackendPersistableState(source = (typeof KIU_STATE !== 'undefined' ? KIU_STATE : {})) {
-    // The platform bootstrap depends on the canonical portal state, including
-    // curriculum, groups, LMS data, and role-scoped records. Persist the same
-    // sanitized snapshot we cache locally so backend bootstrap stays complete.
-    return buildPortalPersistableState(source);
-}
-
-function getPortalSessionToken() {
-    try {
-        return String(localStorage.getItem(KIU_PORTAL_SESSION_TOKEN_KEY) || '').trim();
-    } catch (error) {
-        return '';
-    }
-}
-
-function isPortalLoginPage() {
-    try {
-        const currentPath = String(window.location?.pathname || '').replace(/\\/g, '/').toLowerCase();
-        return currentPath.endsWith('/login.html') || currentPath.endsWith('login.html') || currentPath.endsWith('/login') || currentPath === 'login';
-    } catch (error) {
-        return false;
-    }
 }
 
 function removeStorageKeysByPrefix(storage, prefix) {
@@ -508,12 +392,30 @@ function setPortalSessionToken(token) {
     }
 }
 
+function resolveAdminEffectiveRole(account, session = {}) {
+    const actualRole = account?.role || USER_ROLES.STUDENT;
+    if (actualRole !== USER_ROLES.ADMIN) return actualRole;
+    const sessionRole = String(session?.impersonatedRole || '').trim().toLowerCase();
+    if (Object.values(USER_ROLES).includes(sessionRole) && sessionRole !== USER_ROLES.ADMIN) {
+        return sessionRole;
+    }
+    try {
+        const pending = String(localStorage.getItem(PENDING_ROLE_SWITCH_KEY) || '').trim().toLowerCase();
+        if (Object.values(USER_ROLES).includes(pending) && pending !== USER_ROLES.ADMIN) {
+            return pending;
+        }
+        const stored = String(localStorage.getItem('currentUserRole') || '').trim().toLowerCase();
+        if (Object.values(USER_ROLES).includes(stored) && stored !== USER_ROLES.ADMIN) {
+            return stored;
+        }
+    } catch (error) {}
+    return actualRole;
+}
+
 function storePortalBackendAuth(account, session) {
     if (!account || !session) return null;
     const actualRole = account.role || USER_ROLES.STUDENT;
-    const effectiveRole = actualRole === USER_ROLES.ADMIN
-        ? (session.impersonatedRole || actualRole)
-        : actualRole;
+    const effectiveRole = resolveAdminEffectiveRole(account, session);
     const normalizedAuth = {
         id: account.id,
         name: account.name,
@@ -564,16 +466,24 @@ function storePortalBackendAuth(account, session) {
     } catch (error) {
         persistedState = null;
     }
+    const priorOwnerAccountId = String(persistedState?.meta?.portalStateOwnerAccountId || persistedState?.auth?.activeUserId || '').trim();
+    const nextOwnerAccountId = String(normalizedAuth.id || '').trim();
+    if (priorOwnerAccountId && nextOwnerAccountId && priorOwnerAccountId !== nextOwnerAccountId) {
+        resetPortalLocalStateForAccountChange();
+        persistedState = null;
+    }
     if (!persistedState && typeof KIU_EMPTY_STATE !== 'undefined') {
         persistedState = JSON.parse(JSON.stringify(KIU_EMPTY_STATE));
     }
     if (persistedState) {
-        persistedState.auth = persistedState.auth || {};
-        persistedState.auth.activeUserId = activeSessionUserId;
+        persistedState.meta = persistedState.meta && typeof persistedState.meta === 'object' ? persistedState.meta : {};
+        persistedState.meta.portalStateOwnerAccountId = nextOwnerAccountId;
         localStorage.setItem('KIU_PERSISTENT_STATE', JSON.stringify(persistedState));
     }
 
-    return normalizedAuth;
+    currentUserRole = effectiveRole;
+
+    return { normalizedAuth, effectiveRole };
 }
 
 async function createPortalBackendSession(email, password) {
@@ -618,7 +528,7 @@ async function destroyPortalBackendSession(token = getPortalSessionToken()) {
     }
 }
 
-async function syncPortalBackendImpersonation(role) {
+async function syncPortalBackendImpersonation(role, userId = '') {
     const token = getPortalSessionToken();
     if (!token) return null;
     try {
@@ -630,11 +540,11 @@ async function syncPortalBackendImpersonation(role) {
             });
         }
         const persona = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
-        const userId = String(persona?.id || '').trim();
-        if (!userId) return null;
+        const resolvedUserId = String(userId || persona?.id || '').trim();
+        if (!resolvedUserId) return null;
         return await kiuPortalFetch('/api/session/impersonate-role', {
             method: 'POST',
-            body: JSON.stringify({ token, role: normalizedRole, userId })
+            body: JSON.stringify({ token, role: normalizedRole, userId: resolvedUserId })
         });
     } catch (error) {
         return null;
@@ -736,494 +646,59 @@ async function savePortalIntegrationSystem(system) {
     });
 }
 
-async function syncProtectedQuizRecord(quiz) {
-    const payload = await kiuPortalFetch('/api/protected-quizzes/sync', {
-        method: 'POST',
-        body: JSON.stringify(quiz || {})
-    });
-    return payload?.quiz || null;
-}
-
-async function fetchLmsLiveQuizWorkspace(resourceKey) {
-    const safeResourceKey = encodeURIComponent(String(resourceKey || '').trim());
-    if (!safeResourceKey) return null;
-    const payload = await kiuPortalFetch(`/api/lms/live-quizzes/${safeResourceKey}`);
-    return payload?.workspace || null;
-}
-
-async function syncLmsLiveQuizWorkspace(resourceKey, workspace = {}, reason = 'live-quiz') {
-    const safeResourceKey = encodeURIComponent(String(resourceKey || '').trim());
-    if (!safeResourceKey) return null;
-    const payload = await kiuPortalFetch(`/api/lms/live-quizzes/${safeResourceKey}`, {
-        method: 'POST',
-        body: JSON.stringify({
-            workspace: workspace && typeof workspace === 'object' ? workspace : {},
-            reason
-        })
-    });
-    return payload?.workspace || null;
-}
-
-async function submitLmsLiveQuizAnswer(resourceKey, answer = {}, reason = 'live-quiz-answer') {
-    const safeResourceKey = encodeURIComponent(String(resourceKey || '').trim());
-    if (!safeResourceKey) return null;
-    const payload = await kiuPortalFetch(`/api/lms/live-quizzes/${safeResourceKey}/answers`, {
-        method: 'POST',
-        body: JSON.stringify({
-            sessionId: String(answer?.sessionId || '').trim(),
-            questionId: String(answer?.questionId || '').trim(),
-            selectedOption: Number.parseInt(answer?.selectedOption, 10),
-            reason
-        })
-    });
-    return payload?.workspace || null;
-}
-
-async function submitLmsLiveQuizJoin(resourceKey, join = {}, reason = 'live-quiz-join') {
-    const safeResourceKey = encodeURIComponent(String(resourceKey || '').trim());
-    if (!safeResourceKey) return null;
-    const payload = await kiuPortalFetch(`/api/lms/live-quizzes/${safeResourceKey}/join`, {
-        method: 'POST',
-        body: JSON.stringify({
-            sessionId: String(join?.sessionId || '').trim(),
-            nickname: String(join?.nickname || '').trim(),
-            joinedAt: String(join?.joinedAt || '').trim(),
-            lastSeenAt: String(join?.lastSeenAt || '').trim(),
-            reason
-        })
-    });
-    return payload?.workspace || null;
-}
-
-async function createProtectedQuizLaunchTicket(quizId, payload = {}) {
-    const safeQuizId = encodeURIComponent(String(quizId || '').trim());
-    const result = await kiuPortalFetch(`/api/protected-quizzes/${safeQuizId}/launch-ticket`, {
-        method: 'POST',
-        body: JSON.stringify(payload || {})
-    });
-    return result || null;
-}
-
-async function fetchProtectedQuizMonitor(groupKey, quizId = '') {
-    const safeGroupKey = encodeURIComponent(String(groupKey || '').trim());
-    const suffix = quizId ? `?quizId=${encodeURIComponent(String(quizId || '').trim())}` : '';
-    const payload = await kiuPortalFetch(`/api/protected-quizzes/group/${safeGroupKey}/monitor${suffix}`);
-    return payload?.monitor || null;
-}
-
-async function fetchProtectedQuizAttempts(courseId, quizId) {
-    const safeQuizId = encodeURIComponent(String(quizId || '').trim());
-    const safeCourseId = encodeURIComponent(String(courseId || '').trim());
-    const payload = await kiuPortalFetch(`/api/protected-quizzes/${safeQuizId}/attempts?courseId=${safeCourseId}`);
-    return {
-        quiz: payload?.quiz || null,
-        attempts: Array.isArray(payload?.attempts) ? payload.attempts : []
-    };
-}
-
-async function fetchProtectedQuizClientAttempt(courseId, quizId) {
-    const safeQuizId = encodeURIComponent(String(quizId || '').trim());
-    const safeCourseId = encodeURIComponent(String(courseId || '').trim());
-    const payload = await kiuPortalFetch(`/api/protected-quizzes/${safeQuizId}/attempt?courseId=${safeCourseId}`);
-    return payload || null;
-}
-
-async function postProtectedQuizHeartbeat(courseId, quizId, payload = {}) {
-    const safeQuizId = encodeURIComponent(String(quizId || '').trim());
-    const result = await kiuPortalFetch(`/api/protected-quizzes/${safeQuizId}/heartbeat`, {
-        method: 'POST',
-        body: JSON.stringify({
-            ...(payload || {}),
-            courseId
-        })
-    });
-    return result || null;
-}
-
-async function postProtectedQuizEvent(courseId, quizId, payload = {}) {
-    const safeQuizId = encodeURIComponent(String(quizId || '').trim());
-    const result = await kiuPortalFetch(`/api/protected-quizzes/${safeQuizId}/events`, {
-        method: 'POST',
-        body: JSON.stringify({
-            ...(payload || {}),
-            courseId
-        })
-    });
-    return result || null;
-}
-
-async function submitProtectedQuizAttempt(courseId, quizId, payload = {}) {
-    const safeQuizId = encodeURIComponent(String(quizId || '').trim());
-    const result = await kiuPortalFetch(`/api/protected-quizzes/${safeQuizId}/submit`, {
-        method: 'POST',
-        body: JSON.stringify({
-            ...(payload || {}),
-            courseId
-        })
-    });
-    return result || null;
-}
-
-async function saveProtectedQuizManualGrade(courseId, quizId, payload = {}) {
-    const safeQuizId = encodeURIComponent(String(quizId || '').trim());
-    const result = await kiuPortalFetch(`/api/protected-quizzes/${safeQuizId}/manual-grade`, {
-        method: 'POST',
-        body: JSON.stringify({
-            ...(payload || {}),
-            courseId
-        })
-    });
-    return result || null;
-}
-
-async function performProtectedQuizStudentAction(courseId, quizId, studentId, action, payload = {}) {
-    const safeQuizId = encodeURIComponent(String(quizId || '').trim());
-    const safeStudentId = encodeURIComponent(String(studentId || '').trim());
-    const safeAction = String(action || '').trim().toLowerCase();
-    const allowed = new Set(['block', 'unblock', 'force-submit', 'reset-warnings', 'approve-reconnect', 'override-status']);
-    if (!allowed.has(safeAction)) throw new Error('Unsupported protected quiz action.');
-    const result = await kiuPortalFetch(`/api/protected-quizzes/${safeQuizId}/students/${safeStudentId}/${safeAction}`, {
-        method: 'POST',
-        body: JSON.stringify({
-            ...(payload || {}),
-            courseId
-        })
-    });
-    return result || null;
-}
-
-async function syncExamSessionRecord(session) {
-    const payload = await kiuPortalFetch('/api/exam-sessions/sync', {
-        method: 'POST',
-        body: JSON.stringify(session || {})
-    });
-    return payload?.session || null;
-}
-
-async function createExamPortalAuthSession(email, studentId) {
-    const payload = await kiuPortalFetch('/api/exam-portal/auth', {
-        method: 'POST',
-        body: JSON.stringify({ email, studentId })
-    });
-    return payload || null;
-}
-
-async function fetchExamPortalSessions(token) {
-    const normalizedToken = String(token || '').trim();
-    if (!normalizedToken) return null;
-    const payload = await kiuPortalFetch('/api/exam-portal/sessions', {
-        headers: {
-            'X-Exam-Portal-Token': normalizedToken
-        }
-    });
-    return payload || null;
-}
-
-async function fetchExamPortalSessionSummary(sessionId, token) {
-    const safeSessionId = encodeURIComponent(String(sessionId || '').trim());
-    const normalizedToken = String(token || '').trim();
-    if (!normalizedToken) return null;
-    const payload = await kiuPortalFetch(`/api/exam-portal/session/${safeSessionId}`, {
-        headers: {
-            'X-Exam-Portal-Token': normalizedToken
-        }
-    });
-    return payload?.session || null;
-}
-
-async function createExamPortalLaunchTicket(sessionId, token, payload = {}) {
-    const safeSessionId = encodeURIComponent(String(sessionId || '').trim());
-    const normalizedToken = String(token || '').trim();
-    const result = await kiuPortalFetch(`/api/exam-portal/sessions/${safeSessionId}/launch-ticket`, {
-        method: 'POST',
-        headers: normalizedToken ? {
-            'X-Exam-Portal-Token': normalizedToken
-        } : {},
-        body: JSON.stringify({
-            ...(payload || {})
-        })
-    });
-    return result || null;
-}
-
-async function fetchPortalSyncRuns(options = {}) {
-    const params = new URLSearchParams();
-    if (options.systemCode) params.set('systemCode', options.systemCode);
-    if (options.limit) params.set('limit', options.limit);
-    const suffix = params.toString() ? `?${params.toString()}` : '';
-    try {
-        const payload = await kiuPortalFetch(`/api/integrations/sync-runs${suffix}`);
-        return Array.isArray(payload?.syncRuns) ? payload.syncRuns : [];
-    } catch (error) {
-        return [];
-    }
-}
-
-async function createPortalSyncRun(syncRun) {
-    return kiuPortalFetch('/api/integrations/sync-runs', {
-        method: 'POST',
-        body: JSON.stringify({ syncRun })
-    });
-}
-
-async function fetchPortalSyncConflicts(options = {}) {
-    const params = new URLSearchParams();
-    if (options.systemCode) params.set('systemCode', options.systemCode);
-    if (options.status) params.set('status', options.status);
-    if (options.limit) params.set('limit', options.limit);
-    const suffix = params.toString() ? `?${params.toString()}` : '';
-    try {
-        const payload = await kiuPortalFetch(`/api/integrations/conflicts${suffix}`);
-        return Array.isArray(payload?.conflicts) ? payload.conflicts : [];
-    } catch (error) {
-        return [];
-    }
-}
-
-async function createPortalSyncConflict(conflict) {
-    return kiuPortalFetch('/api/integrations/conflicts', {
-        method: 'POST',
-        body: JSON.stringify({ conflict })
-    });
-}
-
-async function fetchPortalAuditEvents(options = {}) {
-    const params = new URLSearchParams();
-    if (options.domain) params.set('domain', options.domain);
-    if (options.actorUserId) params.set('actorUserId', options.actorUserId);
-    if (options.limit) params.set('limit', options.limit);
-    const suffix = params.toString() ? `?${params.toString()}` : '';
-    try {
-        const payload = await kiuPortalFetch(`/api/audit/events${suffix}`);
-        return Array.isArray(payload?.events) ? payload.events : [];
-    } catch (error) {
-        return [];
-    }
-}
-
-async function createPortalAuditEvent(event) {
-    return kiuPortalFetch('/api/audit/events', {
-        method: 'POST',
-        body: JSON.stringify({ event })
-    });
-}
-
-function getPortalRtcConfiguration() {
-    return getCachedPortalPlatformConfig()?.rtc || null;
-}
-
-function getPortalFileStorageMode() {
-    return String(getCachedPortalPlatformConfig()?.fileStorageMode || '').trim().toLowerCase() || 'bridge';
-}
-
-async function uploadPortalStoredFile(file, scope = 'file') {
-    if (!file) return null;
-    const sourceBlob = file.blob instanceof Blob ? file.blob : (file instanceof Blob ? file : null);
-    let dataUrl = String(file.dataUrl || '').trim();
-    const activeUser = typeof getCurrentUser === 'function' ? getCurrentUser() : currentUser;
-    if (!dataUrl && sourceBlob && typeof readBlobAsDataUrl === 'function') {
-        dataUrl = await readBlobAsDataUrl(sourceBlob);
-    }
-    if (!dataUrl) return null;
-    const payload = await kiuPortalFetch('/api/files/upload', {
-        method: 'POST',
-        body: JSON.stringify({
-            name: file.name || 'download.bin',
-            type: file.type || sourceBlob?.type || 'application/octet-stream',
-            uploadedAt: file.uploadedAt || new Date().toISOString(),
-            uploadedBy: activeUser?.id || '',
-            scope,
-            dataUrl
-        })
-    });
-    if (!payload?.file?.id) return null;
-    return {
-        name: payload.file.name,
-        type: payload.file.type,
-        size: payload.file.size,
-        uploadedAt: payload.file.uploadedAt,
-        storageKey: payload.file.id,
-        storageBackend: 'bridge',
-        dataUrl: ''
-    };
-}
-
-function getPortalStoredFileUrl(storageKey) {
-    const normalizedKey = String(storageKey || '').trim();
-    if (!normalizedKey) return '';
-    return `${getKiuPortalBackendUrl()}/api/files/${encodeURIComponent(normalizedKey)}`;
-}
-
-function extractPersistableSocialHubState(source = (typeof KIU_STATE !== 'undefined' ? KIU_STATE.socialHub : null)) {
-    const social = source && typeof source === 'object' ? clonePortalState(source) : {};
-    return {
-        lostFoundItems: Array.isArray(social.lostFoundItems) ? social.lostFoundItems : []
-    };
-}
-
-function applyPortalSocialState(remoteSocial, options = {}) {
-    if (!remoteSocial || typeof remoteSocial !== 'object' || typeof KIU_STATE === 'undefined' || !KIU_STATE) return false;
-    const currentHub = KIU_STATE.socialHub && typeof KIU_STATE.socialHub === 'object' ? KIU_STATE.socialHub : {};
-    KIU_STATE.socialHub = {
-        ...clonePortalState(remoteSocial),
-        ui: clonePortalState(currentHub.ui || {}),
-        draftFiles: clonePortalState(currentHub.draftFiles || {})
-    };
-    if (typeof ensureCanonicalState === 'function') ensureCanonicalState();
-    if (options.render !== false) {
-        if (typeof renderPublicSocialPage === 'function') renderPublicSocialPage();
-        if (typeof renderStudentSocialWorkspace === 'function') renderStudentSocialWorkspace();
-        if (typeof renderPortalNotificationChrome === 'function') setTimeout(() => renderPortalNotificationChrome(), 0);
-    }
-    return true;
-}
-
-async function persistPortalSocialState(reason = 'social-save') {
-    const activeUser = typeof getCurrentUser === 'function' ? getCurrentUser() : currentUser;
-    const actorRole = typeof getEffectiveUserRole === 'function'
-        ? getEffectiveUserRole()
-        : (activeUser?.role || currentUserRole || '');
-    const payload = await kiuPortalFetch('/api/social/state', {
-        method: 'POST',
-        body: JSON.stringify({
-            token: getPortalSessionToken(),
-            actorId: activeUser?.id || '',
-            actorRole,
-            reason,
-            social: extractPersistableSocialHubState()
-        })
-    });
-    if (payload?.social) applyPortalSocialState(payload.social, { render: false });
-    return payload?.social || null;
-}
-
-function queuePortalSocialSync(reason = 'social-save') {
-    const runtime = ensurePortalBackendRuntime();
-    runtime.socialSyncTimer = runtime.socialSyncTimer || null;
-    runtime.lastSocialSyncReason = reason;
-    if (runtime.socialSyncTimer) clearTimeout(runtime.socialSyncTimer);
-    runtime.socialSyncTimer = setTimeout(async () => {
-        runtime.socialSyncTimer = null;
-        try {
-            await persistPortalSocialState(runtime.lastSocialSyncReason || 'social-save');
-        } catch (error) {
-            console.warn('Could not sync social state to backend.', error);
-        }
-    }, 120);
-}
-
-async function bootstrapPortalSocialState(force = false) {
-    const runtime = ensurePortalBackendRuntime();
-    if (runtime.socialBootstrapPromise && !force) return runtime.socialBootstrapPromise;
-    runtime.socialBootstrapPromise = (async () => {
-        const payload = await kiuPortalFetch('/api/social/bootstrap');
-        if (payload?.social) applyPortalSocialState(payload.social, { render: false });
-        return payload?.social || null;
-    })().catch(error => {
-        if (!error?.silent) console.warn('Could not bootstrap social state.', error);
-        return null;
-    }).finally(() => {
-        runtime.socialBootstrapPromise = null;
-    });
-    return runtime.socialBootstrapPromise;
-}
-
-function schedulePortalSocialBootstrap(force = false) {
-    setTimeout(() => {
-        bootstrapPortalSocialState(force).catch(() => null);
-    }, 0);
-}
-
-function isStandaloneSocialRoute(pathname = window.location.pathname) {
-    const normalizedPath = String(pathname || '').replace(/\\/g, '/').toLowerCase();
-    return normalizedPath.endsWith('/social.html') || normalizedPath.endsWith('social.html');
-}
-
-async function ensurePortalSocialGroupChatRecord(group) {
-    if (!group?.id) return null;
-    const activeUser = typeof getCurrentUser === 'function' ? getCurrentUser() : currentUser;
-    const payload = await kiuPortalFetch('/api/social/group-chat', {
-        method: 'POST',
-        body: JSON.stringify({
-            token: getPortalSessionToken(),
-            actorId: activeUser?.id || '',
-            groupId: String(group.id)
-        })
-    });
-    if (payload?.social) applyPortalSocialState(payload.social, { render: false });
-    if (payload?.chat && typeof upsertPortalMessengerChatFromRealtime === 'function') {
-        upsertPortalMessengerChatFromRealtime(payload.chat, true);
-    }
-    return payload?.chat || null;
-}
-
-async function beginMicrosoftPortalLogin(returnTo = window.location.href) {
-    const payload = await kiuPortalFetch(`/api/portal/microsoft/start?returnTo=${encodeURIComponent(returnTo)}`);
-    if (!payload?.authorizeUrl) {
-        throw new Error(payload?.error || 'Microsoft sign-in could not be started.');
-    }
-    window.location.href = payload.authorizeUrl;
-    return payload;
-}
-
-async function completeMicrosoftPortalLoginFromUrl() {
-    const currentUrl = new URL(window.location.href);
-    const status = String(currentUrl.searchParams.get('microsoft_status') || '').trim();
-    const handoff = String(currentUrl.searchParams.get('microsoft_handoff') || '').trim();
-    const email = String(currentUrl.searchParams.get('microsoft_email') || '').trim();
-    const errorMessage = String(currentUrl.searchParams.get('microsoft_error') || '').trim();
-    if (!status && !handoff) return null;
-
-    const clearParams = () => {
-        ['microsoft_status', 'microsoft_handoff', 'portal_token', 'microsoft_email', 'microsoft_error'].forEach(key => currentUrl.searchParams.delete(key));
-        window.history.replaceState({}, document.title, currentUrl.toString());
-    };
-
-    if (status !== 'success' || !handoff) {
-        clearParams();
-        return {
-            success: false,
-            status: status || 'error',
-            error: errorMessage || (status === 'unlinked'
-                ? `Your Microsoft account${email ? ` (${email})` : ''} is valid but not linked to a portal record yet.`
-                : 'Microsoft sign-in could not be completed.')
-        };
-    }
-
-    clearParams();
-    const payload = await kiuPortalFetch('/api/portal/microsoft/complete', {
-        method: 'POST',
-        body: JSON.stringify({ handoff })
-    });
-    if (!payload?.session || !payload?.account) {
-        return {
-            success: false,
-            status: 'error',
-            error: 'The Microsoft sign-in session could not be loaded.'
-        };
-    }
-
-    storePortalBackendAuth(payload.account, payload.session);
-    if (typeof loadAuthState === 'function') loadAuthState();
-    if (typeof schedulePortalBackendBootstrap === 'function') schedulePortalBackendBootstrap(true);
-    if (typeof createPortalAuditEvent === 'function') {
-        createPortalAuditEvent({
-            actorUserId: payload.account.id,
-            actorRole: payload.account.role,
-            eventDomain: 'auth',
-            eventType: 'login',
-            entityType: 'session',
-            entityId: payload.account.id,
-            sourceSystem: 'microsoft'
-        }).catch(() => {});
-    }
-    return {
-        success: true,
-        status: 'success',
-        session: payload.session,
-        account: payload.account
-    };
-}
+const syncProtectedQuizRecord = window.syncProtectedQuizRecord;
+const fetchLmsLiveQuizWorkspace = window.fetchLmsLiveQuizWorkspace;
+const syncLmsLiveQuizWorkspace = window.syncLmsLiveQuizWorkspace;
+const submitLmsLiveQuizAnswer = window.submitLmsLiveQuizAnswer;
+const fetchLmsWhiteboardWorkspace = window.fetchLmsWhiteboardWorkspace;
+const syncLmsWhiteboardWorkspace = window.syncLmsWhiteboardWorkspace;
+const fetchLmsPersonalDashboardHistory = window.fetchLmsPersonalDashboardHistory;
+const saveLmsPersonalDashboardSnapshot = window.saveLmsPersonalDashboardSnapshot;
+const deleteLmsPersonalDashboardSnapshot = window.deleteLmsPersonalDashboardSnapshot;
+const restoreLmsPersonalDashboardSnapshot = window.restoreLmsPersonalDashboardSnapshot;
+const patchLmsPersonalDashboardWorkspaceShare = window.patchLmsPersonalDashboardWorkspaceShare;
+const patchLmsPersonalDashboardPeerShares = window.patchLmsPersonalDashboardPeerShares;
+const fetchLmsPersonalDashboardSharedWithMe = window.fetchLmsPersonalDashboardSharedWithMe;
+const patchLmsPersonalDashboardSnapshotShare = window.patchLmsPersonalDashboardSnapshotShare;
+const fetchLmsPersonalDashboardShareStatus = window.fetchLmsPersonalDashboardShareStatus;
+const fetchLmsPersonalDashboardSharedHistory = window.fetchLmsPersonalDashboardSharedHistory;
+const submitLmsWhiteboardOps = window.submitLmsWhiteboardOps;
+const submitLmsWhiteboardSignal = window.submitLmsWhiteboardSignal;
+const submitLmsLiveQuizJoin = window.submitLmsLiveQuizJoin;
+const createProtectedQuizLaunchTicket = window.createProtectedQuizLaunchTicket;
+const fetchProtectedQuizMonitor = window.fetchProtectedQuizMonitor;
+const fetchProtectedQuizAttempts = window.fetchProtectedQuizAttempts;
+const fetchProtectedQuizClientAttempt = window.fetchProtectedQuizClientAttempt;
+const postProtectedQuizHeartbeat = window.postProtectedQuizHeartbeat;
+const postProtectedQuizEvent = window.postProtectedQuizEvent;
+const submitProtectedQuizAttempt = window.submitProtectedQuizAttempt;
+const saveProtectedQuizManualGrade = window.saveProtectedQuizManualGrade;
+const performProtectedQuizStudentAction = window.performProtectedQuizStudentAction;
+const syncExamSessionRecord = window.syncExamSessionRecord;
+const createExamPortalAuthSession = window.createExamPortalAuthSession;
+const fetchExamPortalSessions = window.fetchExamPortalSessions;
+const fetchExamPortalSessionSummary = window.fetchExamPortalSessionSummary;
+const createExamPortalLaunchTicket = window.createExamPortalLaunchTicket;
+const fetchPortalSyncRuns = window.fetchPortalSyncRuns;
+const createPortalSyncRun = window.createPortalSyncRun;
+const fetchPortalSyncConflicts = window.fetchPortalSyncConflicts;
+const createPortalSyncConflict = window.createPortalSyncConflict;
+const fetchPortalAuditEvents = window.fetchPortalAuditEvents;
+const createPortalAuditEvent = window.createPortalAuditEvent;
+const getPortalRtcConfiguration = window.getPortalRtcConfiguration;
+const getPortalFileStorageMode = window.getPortalFileStorageMode;
+const uploadPortalStoredFile = window.uploadPortalStoredFile;
+const getPortalStoredFileUrl = window.getPortalStoredFileUrl;
+const extractPersistableSocialHubState = window.extractPersistableSocialHubState;
+const applyPortalSocialState = window.applyPortalSocialState;
+const persistPortalSocialState = window.persistPortalSocialState;
+const queuePortalSocialSync = window.queuePortalSocialSync;
+const bootstrapPortalSocialState = window.bootstrapPortalSocialState;
+const schedulePortalSocialBootstrap = window.schedulePortalSocialBootstrap;
+const isStandaloneSocialRoute = window.isStandaloneSocialRoute;
+const ensurePortalSocialGroupChatRecord = window.ensurePortalSocialGroupChatRecord;
+const beginMicrosoftPortalLogin = window.beginMicrosoftPortalLogin;
+const completeMicrosoftPortalLoginFromUrl = window.completeMicrosoftPortalLoginFromUrl;
 
 async function beginPortalMailConnect(returnTo = window.location.href) {
     const payload = await kiuPortalFetch(`/api/mail/connect/start?returnTo=${encodeURIComponent(returnTo)}`);
@@ -1477,7 +952,7 @@ function isRegistrationCmsEmptyAcrossFaculties(state = {}) {
     ));
 }
 
-const PORTAL_NEVER_MERGE_FROM_LOCAL_KEYS = new Set(['auth', 'domain', 'lmsLiveQuizzes']);
+const PORTAL_NEVER_MERGE_FROM_LOCAL_KEYS = new Set(['auth', 'domain', 'lmsLiveQuizzes', 'studentServiceArticles']);
 const PORTAL_STUDENT_KEYED_STATE_KEYS = new Set([
     'studentSchedulesByStudent',
     'tuitionBalances',
@@ -1518,13 +993,40 @@ function getBestLocalPortalSnapshot(inMemoryState = null) {
     return memory;
 }
 
-function mergeStudentKeyedPortalMaps(localMap, remoteMap) {
+function mergeStudentKeyedPortalMaps(localMap, remoteMap, activeUserId = '') {
     const result = clonePortalState(remoteMap && typeof remoteMap === 'object' ? remoteMap : {});
     const local = localMap && typeof localMap === 'object' ? localMap : {};
+    const scopedUserId = String(activeUserId || '').trim();
+    if (scopedUserId) {
+        if (local[scopedUserId] !== undefined) {
+            result[scopedUserId] = clonePortalState(local[scopedUserId]);
+        }
+        return result;
+    }
     Object.entries(local).forEach(([key, value]) => {
         if (value !== undefined) result[key] = clonePortalState(value);
     });
     return result;
+}
+
+function canMergeLocalPortalSnapshot(localSnapshot, ownerAccountId = '') {
+    const local = localSnapshot && typeof localSnapshot === 'object' ? localSnapshot : {};
+    const owner = String(ownerAccountId || '').trim();
+    if (!owner) return true;
+    const localOwner = String(local?.meta?.portalStateOwnerAccountId || '').trim();
+    if (localOwner && localOwner !== owner) return false;
+    const localAuthUserId = String(local?.auth?.activeUserId || '').trim();
+    if (!localOwner && localAuthUserId && localAuthUserId !== owner) return false;
+    return true;
+}
+
+function resetPortalLocalStateForAccountChange() {
+    try {
+        localStorage.removeItem('KIU_PERSISTENT_STATE');
+    } catch (error) {}
+    if (typeof KIU_STATE !== 'undefined' && typeof createFreshKiuState === 'function') {
+        KIU_STATE = createFreshKiuState();
+    }
 }
 
 function mergeRicherPortalValue(localValue, remoteValue) {
@@ -1535,19 +1037,27 @@ function mergeRicherPortalValue(localValue, remoteValue) {
     return remoteValue !== undefined ? remoteValue : clonePortalState(localValue);
 }
 
+const mergeAdminLibraryState = window.mergeAdminLibraryState;
+const mergeRegistrationCmsStateFromLocal = window.mergeRegistrationCmsStateFromLocal;
+
 function mergePortalStateFromLocal(localState, remoteState, options = {}) {
     if (!remoteState || typeof remoteState !== 'object') return;
     const local = localState && typeof localState === 'object' ? localState : {};
     if (!Object.keys(local).length) return;
+    if (options.allowLocalMerge === false) return;
 
-    mergeRegistrationCmsStateFromLocal(local, remoteState);
+    if (options.allowCmsMerge !== false) {
+        mergeRegistrationCmsStateFromLocal(local, remoteState);
+    }
 
     const localSavedAt = getPortalStateSavedAtMs(local);
     const remoteSavedAt = getPortalStateSavedAtMs(remoteState);
     const serverSavedAt = getPortalStateSavedAtMs(options.serverMeta || {});
-    const preferLocal = options.forcePreferLocal === true
+    const preferLocal = options.allowLocalMerge !== false && (
+        options.forcePreferLocal === true
         || localSavedAt > remoteSavedAt
-        || localSavedAt > serverSavedAt;
+        || localSavedAt > serverSavedAt
+    );
 
     Object.keys(local).forEach((key) => {
         if (PORTAL_NEVER_MERGE_FROM_LOCAL_KEYS.has(key)) return;
@@ -1556,7 +1066,12 @@ function mergePortalStateFromLocal(localState, remoteState, options = {}) {
         if (local[key] === undefined) return;
 
         if (PORTAL_STUDENT_KEYED_STATE_KEYS.has(key)) {
-            remoteState[key] = mergeStudentKeyedPortalMaps(local[key], remoteState[key]);
+            remoteState[key] = mergeStudentKeyedPortalMaps(local[key], remoteState[key], options.activeUserId);
+            return;
+        }
+
+        if (key === 'adminLibrary') {
+            remoteState[key] = mergeAdminLibraryState(local[key], remoteState[key], { preferLocal });
             return;
         }
 
@@ -1584,51 +1099,6 @@ function mergePortalStateFromLocal(localState, remoteState, options = {}) {
     );
 }
 
-function mergeRegistrationCmsStateFromLocal(localState, remoteState) {
-    if (!remoteState || typeof remoteState !== 'object') return;
-    const local = localState && typeof localState === 'object' ? localState : {};
-
-    remoteState.adminProgramStructures = remoteState.adminProgramStructures && typeof remoteState.adminProgramStructures === 'object'
-        ? remoteState.adminProgramStructures
-        : {};
-    const structureFaculties = new Set([
-        ...Object.keys(local.adminProgramStructures || {}),
-        ...Object.keys(remoteState.adminProgramStructures || {})
-    ]);
-    structureFaculties.forEach((faculty) => {
-        const localBucket = local.adminProgramStructures?.[faculty];
-        if (shouldCopyLocalAdminProgramFacultyBucket(local, remoteState, faculty) && localBucket) {
-            remoteState.adminProgramStructures[faculty] = clonePortalState(localBucket);
-        }
-    });
-
-    remoteState.registrationCMSByFaculty = remoteState.registrationCMSByFaculty && typeof remoteState.registrationCMSByFaculty === 'object'
-        ? remoteState.registrationCMSByFaculty
-        : {};
-    const cmsFaculties = new Set([
-        ...Object.keys(local.registrationCMSByFaculty || {}),
-        ...Object.keys(remoteState.registrationCMSByFaculty || {})
-    ]);
-    cmsFaculties.forEach((faculty) => {
-        const localBucket = local.registrationCMSByFaculty?.[faculty];
-        if (shouldCopyLocalRegistrationCmsConcMinorBucket(local, remoteState, faculty) && localBucket) {
-            remoteState.registrationCMSByFaculty[faculty] = clonePortalState(localBucket);
-        }
-    });
-
-    remoteState.meta = remoteState.meta && typeof remoteState.meta === 'object' ? remoteState.meta : {};
-    const localMeta = local.meta && typeof local.meta === 'object' ? local.meta : {};
-    remoteState.meta.registrationCmsRevision = Math.max(
-        Number(remoteState.meta.registrationCmsRevision || 0),
-        Number(localMeta.registrationCmsRevision || 0)
-    );
-    remoteState.meta.registrationCmsSavedAt = Math.max(
-        Number(remoteState.meta.registrationCmsSavedAt || 0),
-        Number(localMeta.registrationCmsSavedAt || 0),
-        getRegistrationCmsRevisionMs(remoteState),
-        getRegistrationCmsRevisionMs(local)
-    );
-}
 
 function applyPortalBootstrapState(remoteState, options = {}) {
     if (!remoteState || typeof remoteState !== 'object') return false;
@@ -1638,16 +1108,17 @@ function applyPortalBootstrapState(remoteState, options = {}) {
         adminProgramStructures: clonePortalState(remoteState.adminProgramStructures || {}),
         registrationCMSByFaculty: clonePortalState(remoteState.registrationCMSByFaculty || {})
     };
+    const ownerAccountId = String(options?.account?.id || currentUser?.id || '').trim();
     const localSnapshot = getBestLocalPortalSnapshot(
         (typeof KIU_STATE !== 'undefined' && KIU_STATE) ? KIU_STATE : null
     );
     const serverMeta = options.serverMeta && typeof options.serverMeta === 'object' ? options.serverMeta : {};
     const localSnapshotSavedAt = getPortalStateSavedAtMs(localSnapshot);
-    const forcePreferLocal = localSnapshotSavedAt > getPortalStateSavedAtMs(serverMeta);
+    const allowLocalMerge = canMergeLocalPortalSnapshot(localSnapshot, ownerAccountId);
+    const forcePreferLocal = allowLocalMerge && localSnapshotSavedAt > getPortalStateSavedAtMs(serverMeta);
     const freshLocalClient = localSnapshotSavedAt === 0;
     const localHadRegistrationCms = !isRegistrationCmsEmptyAcrossFaculties(localSnapshot);
     const remoteHadRegistrationCms = !isRegistrationCmsEmptyAcrossFaculties(remoteState);
-    mergePortalStateFromLocal(localSnapshot, nextState, { serverMeta, forcePreferLocal });
 
     const storedRole = (() => {
         try {
@@ -1656,8 +1127,8 @@ function applyPortalBootstrapState(remoteState, options = {}) {
             return '';
         }
     })();
-    const effectiveRole = (currentUser?.role === USER_ROLES.ADMIN && (currentUserRole || storedRole))
-        ? (currentUserRole || storedRole)
+    const effectiveRole = (currentUser?.role === USER_ROLES.ADMIN && (storedRole || currentUserRole))
+        ? (storedRole || currentUserRole)
         : (currentUser?.role || USER_ROLES.STUDENT);
     const activeUserId = (() => {
         const bootstrapImpersonatedUserId = String(options?.session?.impersonatedUserId || '').trim();
@@ -1666,11 +1137,13 @@ function applyPortalBootstrapState(remoteState, options = {}) {
             const sessionUserId = sessionStorage.getItem(ACTIVE_SESSION_KEY);
             if (sessionUserId) return String(sessionUserId);
         } catch (error) {}
-        try {
-            const persistedState = JSON.parse(localStorage.getItem('KIU_PERSISTENT_STATE') || 'null');
-            const persistedUserId = persistedState?.auth?.activeUserId;
-            if (persistedUserId) return String(persistedUserId);
-        } catch (error) {}
+        if (allowLocalMerge) {
+            try {
+                const persistedState = JSON.parse(localStorage.getItem('KIU_PERSISTENT_STATE') || 'null');
+                const persistedUserId = persistedState?.auth?.activeUserId;
+                if (persistedUserId) return String(persistedUserId);
+            } catch (error) {}
+        }
         if (currentUser?.role === USER_ROLES.ADMIN && effectiveRole && effectiveRole !== USER_ROLES.ADMIN) {
             try {
                 const preferredFaculty = normalizeFacultyCode(
@@ -1685,6 +1158,15 @@ function applyPortalBootstrapState(remoteState, options = {}) {
         }
         return String(currentUser?.id || '');
     })();
+
+    mergePortalStateFromLocal(localSnapshot, nextState, {
+        serverMeta,
+        forcePreferLocal,
+        allowLocalMerge,
+        allowCmsMerge: allowLocalMerge,
+        activeUserId
+    });
+
     const requiredCleanupVersion = typeof MANUAL_TESTING_STATE_VERSION === 'number' ? MANUAL_TESTING_STATE_VERSION : 7;
     let sanitizedBootstrapState = false;
 
@@ -1706,11 +1188,13 @@ function applyPortalBootstrapState(remoteState, options = {}) {
         restoreRemoteRegistrationCmsAfterBootstrapLoss(nextState, remoteCmsBackup);
     }
 
+    delete nextState.studentServiceArticles;
     KIU_STATE = nextState;
     if (KIU_STATE && typeof KIU_STATE === 'object') {
         KIU_STATE.lmsLiveQuizzes = KIU_STATE.lmsLiveQuizzes && typeof KIU_STATE.lmsLiveQuizzes === 'object'
             ? KIU_STATE.lmsLiveQuizzes
             : {};
+        KIU_STATE.studentServiceArticles = [];
     }
     KIU_STATE.auth = KIU_STATE.auth || {};
     if (activeUserId) KIU_STATE.auth.activeUserId = activeUserId;
@@ -1740,6 +1224,21 @@ function applyPortalBootstrapState(remoteState, options = {}) {
             console.warn('Could not refresh cached portal bootstrap state.', error);
         }
     }
+    if (document.getElementById('admin-library-catalog-tabs')) {
+        if (typeof window.renderAdminLibraryAfterBootstrap === 'function') {
+            window.renderAdminLibraryAfterBootstrap();
+        } else if (typeof window.renderAdminLibrary === 'function') {
+            window.renderAdminLibrary();
+        }
+    } else if (
+        document.getElementById('page-library')?.classList?.contains('active-page')
+        && typeof window.refreshLibraryCatalogAfterBootstrap === 'function'
+    ) {
+        window.refreshLibraryCatalogAfterBootstrap();
+    }
+    if (typeof window !== 'undefined') {
+        window.__KIU_PORTAL_BOOTSTRAP_PENDING = false;
+    }
     if (effectiveRole) currentUserRole = effectiveRole;
 
     if (render) {
@@ -1766,10 +1265,26 @@ function applyPortalBootstrapState(remoteState, options = {}) {
     if (typeof reloadActiveLmsLiveQuizFromServer === 'function') {
         reloadActiveLmsLiveQuizFromServer('portal-bootstrap');
     }
+    if (typeof reconcileAdminRegistrationCmsAfterIdentityChange === 'function') {
+        let bootstrapFaculty = '';
+        if (typeof getAdminRegistrationFaculty === 'function') {
+            bootstrapFaculty = getAdminRegistrationFaculty();
+        }
+        if (!bootstrapFaculty) {
+            try {
+                bootstrapFaculty = localStorage.getItem('currentFaculty') || '';
+            } catch (error) {}
+        }
+        if (!bootstrapFaculty && typeof getCurrentFaculty === 'function') {
+            bootstrapFaculty = getCurrentFaculty();
+        }
+        reconcileAdminRegistrationCmsAfterIdentityChange(bootstrapFaculty || 'ECON');
+    }
     return true;
 }
 
 async function persistPortalStateToBackend(reason = 'saveState') {
+    if (isStandaloneSocialRoute()) return null;
     const runtime = ensurePortalBackendRuntime();
     if (typeof KIU_STATE === 'undefined') return null;
     if (runtime.syncPromise) return runtime.syncPromise;
@@ -1784,6 +1299,7 @@ async function persistPortalStateToBackend(reason = 'saveState') {
         try {
             const payload = await kiuPortalFetch('/api/portal/state', {
                 method: 'POST',
+                timeoutMs: 15000,
                 body: JSON.stringify({
                     reason,
                     token,
@@ -1809,6 +1325,7 @@ async function persistPortalStateToBackend(reason = 'saveState') {
 }
 
 function flushPortalStateSync() {
+    if (isStandaloneSocialRoute()) return null;
     const runtime = ensurePortalBackendRuntime();
     runtime.lastSyncReason = runtime.lastSyncReason || 'saveState';
     if (runtime.syncTimer) {
@@ -1822,6 +1339,7 @@ function flushPortalStateSync() {
 }
 
 function sendPortalStateKeepalive() {
+    if (isStandaloneSocialRoute()) return;
     const token = getPortalSessionToken();
     if (!token || typeof KIU_STATE === 'undefined' || shouldBypassPortalBackendFetch()) return;
     const activeUser = typeof getCurrentUser === 'function' ? getCurrentUser() : currentUser;
@@ -1875,6 +1393,7 @@ function flushPortalStateBeforeNavigation(options = {}) {
 }
 
 function queuePortalStateSync(reason = 'saveState') {
+    if (isStandaloneSocialRoute()) return;
     const runtime = ensurePortalBackendRuntime();
     runtime.lastSyncReason = reason;
     if (runtime.syncTimer) clearTimeout(runtime.syncTimer);
@@ -1895,10 +1414,13 @@ async function bootstrapPortalBackendState(force = false) {
         const token = getPortalSessionToken();
         if (!token) {
             runtime.online = false;
+            if (typeof window !== 'undefined') {
+                window.__KIU_PORTAL_BOOTSTRAP_PENDING = false;
+            }
             return null;
         }
         await fetchPortalPlatformConfig(force).catch(() => null);
-        const payload = await kiuPortalFetch('/api/bootstrap');
+        const payload = await kiuPortalFetch('/api/bootstrap', { timeoutMs: 15000 });
         if (token && (!payload?.session || !payload?.account)) {
             handleKiuUnauthorizedSession({
                 redirect: true,
@@ -1909,23 +1431,17 @@ async function bootstrapPortalBackendState(force = false) {
         runtime.online = true;
 
         if (payload?.session?.token) setPortalSessionToken(payload.session.token);
+        let bootstrapEffectiveRole = '';
         if (payload?.account && payload?.session) {
-            const account = payload.account;
-            const effectiveRole = account.role === USER_ROLES.ADMIN
-                ? (payload.session.impersonatedRole || account.role)
-                : account.role;
-            storePortalBackendAuth(account, payload.session);
-            currentUserRole = effectiveRole;
+            const authResult = storePortalBackendAuth(payload.account, payload.session);
+            bootstrapEffectiveRole = authResult?.effectiveRole || currentUserRole || payload.account.role;
+            if (typeof loadAuthState === 'function' && !currentUser) {
+                loadAuthState();
+            }
         }
         setPortalMailSummary(payload?.mailSummary || null);
 
         const bootstrapAccounts = Array.isArray(payload?.accounts) ? payload.accounts : [];
-        let bootstrapEffectiveRole = '';
-        if (payload?.account && payload?.session) {
-            bootstrapEffectiveRole = payload.account.role === USER_ROLES.ADMIN
-                ? (payload.session.impersonatedRole || payload.account.role)
-                : payload.account.role;
-        }
 
         if (payload?.state) {
             applyPortalBootstrapState(payload.state, {
@@ -1956,6 +1472,7 @@ async function bootstrapPortalBackendState(force = false) {
         ) {
             setActiveSessionUserByRole(bootstrapEffectiveRole);
         }
+// --- READABILITY: Social ---
         if (payload?.social) {
             applyPortalSocialState(payload.social, { render: false });
         } else if (typeof schedulePortalSocialBootstrap === 'function') {
@@ -1972,14 +1489,30 @@ async function bootstrapPortalBackendState(force = false) {
         runtime.online = false;
         return null;
     }).finally(() => {
+        if (typeof window !== 'undefined') {
+            window.__KIU_PORTAL_BOOTSTRAP_PENDING = false;
+        }
         runtime.bootstrapPromise = null;
     });
     return runtime.bootstrapPromise;
 }
 
 function schedulePortalBackendBootstrap(force = false) {
-    if (isStandaloneSocialRoute()) return;
-    if (!getPortalSessionToken()) return;
+    if (isStandaloneSocialRoute()) {
+        if (typeof window !== 'undefined') {
+            window.__KIU_PORTAL_BOOTSTRAP_PENDING = false;
+        }
+        return;
+    }
+    if (!force && typeof window !== 'undefined' && window.__KIU_PORTAL_BOOTSTRAP_PENDING) {
+        return;
+    }
+    if (!getPortalSessionToken()) {
+        if (typeof window !== 'undefined') {
+            window.__KIU_PORTAL_BOOTSTRAP_PENDING = false;
+        }
+        return;
+    }
     setTimeout(() => {
         bootstrapPortalBackendState(force).catch(() => null);
     }, 0);
@@ -2047,3 +1580,10 @@ function recordPortalSyncConflict(systemCode, entityType, conflictField, conflic
         resolvedAt: conflict.resolvedAt || ''
     }).catch(() => null);
 }
+
+async function fetchStudentAcademicEnrollments(studentId) {
+    const safeId = encodeURIComponent(String(studentId || '').trim());
+    if (!safeId) return { ok: true, enrollments: [] };
+    return kiuPortalFetch(`/api/students/${safeId}/enrollments`);
+}
+

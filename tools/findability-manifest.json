@@ -1,0 +1,407 @@
+{
+  "version": 1,
+  "wave": "H1",
+  "minFeatures": 40,
+  "routes": [
+    {
+      "id": "shared",
+      "html": "index.html",
+      "archDoc": "docs/shell-panels.md",
+      "features": [
+        {
+          "id": "shared.navigation",
+          "label": "Portal nav / route switching",
+          "owners": ["assets/js/features/navigation.js"]
+        },
+        {
+          "id": "shared.luxury-shell",
+          "label": "Luxury shell chrome (topbar / drawers)",
+          "owners": ["assets/js/features/luxury-shell-chrome.js", "assets/js/features/index-luxury.js"]
+        },
+        {
+          "id": "shared.app-bootstrap",
+          "label": "App bootstrap / compat runtime",
+          "owners": ["assets/js/app/app.js"]
+        }
+      ]
+    },
+    {
+      "id": "social",
+      "html": "social.html",
+      "archDoc": "docs/social-architecture.md",
+      "features": [
+        {
+          "id": "social.shell",
+          "label": "Social shell orchestrator / domain dispatch",
+          "owners": ["assets/js/pages/social-page.js"]
+        },
+        {
+          "id": "social.feed",
+          "label": "Feed / posts / reactions / compose",
+          "owners": [
+            "assets/js/pages/social-feed.js",
+            "assets/js/pages/social-feed-comments-runtime.js"
+          ],
+          "lazyFrom": ["assets/js/pages/social-page.js"],
+          "anchor": "social-feed"
+        },
+        {
+          "id": "social.community",
+          "label": "People / relationships",
+          "owners": ["assets/js/pages/social-community.js"],
+          "lazyFrom": ["assets/js/pages/social-page.js"],
+          "anchor": "social-community"
+        },
+        {
+          "id": "social.groups",
+          "label": "Groups",
+          "owners": ["assets/js/pages/social-groups.js"],
+          "lazyFrom": ["assets/js/pages/social-page.js"],
+          "anchor": "social-groups"
+        },
+        {
+          "id": "social.workspace",
+          "label": "Projects workspace / desk",
+          "owners": ["assets/js/pages/social-workspace.js"],
+          "lazyFrom": ["assets/js/pages/social-page.js"],
+          "anchor": "social-workspace"
+        },
+        {
+          "id": "social.portfolio",
+          "label": "Portfolio (projects panel)",
+          "owners": ["assets/js/pages/social-workspace.js"],
+          "lazyFrom": ["assets/js/pages/social-page.js"],
+          "anchor": "social-portfolio"
+        },
+        {
+          "id": "social.pages",
+          "label": "Campus pages",
+          "owners": ["assets/js/pages/social-pages.js"],
+          "lazyFrom": ["assets/js/pages/social-page.js"],
+          "anchor": "social-pages"
+        },
+        {
+          "id": "social.events",
+          "label": "Events",
+          "owners": ["assets/js/pages/social-events.js"],
+          "lazyFrom": ["assets/js/pages/social-page.js"],
+          "anchor": "social-events"
+        },
+        {
+          "id": "social.surveys",
+          "label": "Surveys",
+          "owners": ["assets/js/pages/social-surveys.js"],
+          "lazyFrom": ["assets/js/pages/social-page.js"],
+          "anchor": "social-surveys"
+        },
+        {
+          "id": "social.photography",
+          "label": "Photography / Exposé",
+          "owners": ["assets/js/pages/social-photography.js"],
+          "lazyFrom": ["assets/js/pages/social-page.js"],
+          "anchor": "social-photography"
+        },
+        {
+          "id": "social.lost-found",
+          "label": "Lost & Found",
+          "owners": ["assets/js/pages/social-lost-found.js"],
+          "lazyFrom": ["assets/js/pages/social-page.js"],
+          "anchor": "social-lost-found"
+        },
+        {
+          "id": "social.messages",
+          "label": "Messages / chat",
+          "owners": ["assets/js/pages/social-messages.js"],
+          "lazyFrom": ["assets/js/pages/social-page.js"],
+          "anchor": "social-messages"
+        },
+        {
+          "id": "social.alerts",
+          "label": "Alerts / notifications",
+          "owners": ["assets/js/pages/social-alerts.js"],
+          "lazyFrom": ["assets/js/pages/social-page.js"],
+          "anchor": "social-alerts"
+        },
+        {
+          "id": "social.profile",
+          "label": "Social profile panel",
+          "owners": ["assets/js/pages/social-profile.js", "assets/js/pages/social-profile-model.js"],
+          "lazyFrom": ["assets/js/pages/social-page.js"],
+          "anchor": "social-profile"
+        },
+        {
+          "id": "social.runtime-lite",
+          "label": "Social state / queueRender bridge",
+          "owners": ["assets/js/shared/social-runtime-lite.js"]
+        }
+      ]
+    },
+    {
+      "id": "lms",
+      "html": "lms.html",
+      "archDoc": null,
+      "features": [
+        {
+          "id": "lms.hub",
+          "label": "LMS course shell / sessions hub",
+          "owners": ["assets/js/pages/lms.js"],
+          "anchor": "lms-hub"
+        },
+        {
+          "id": "lms.tabs",
+          "label": "Classroom tab switch + lazy module loader",
+          "owners": ["assets/js/pages/lms-classroom-tabs-runtime.js"],
+          "anchor": "lms-tabs"
+        },
+        {
+          "id": "lms.sessions",
+          "label": "Sessions tab",
+          "owners": ["assets/js/pages/lms-classroom-sessions-runtime.js"]
+        },
+        {
+          "id": "lms.gradebook",
+          "label": "Grades / gradebook",
+          "owners": ["assets/js/pages/gradebook-workspace.js", "assets/js/pages/gradebook-model.js"],
+          "support": [
+            "assets/js/pages/gradebook-history-ui-runtime.js",
+            "assets/js/pages/gradebook-quiz-map-runtime.js",
+            "assets/js/pages/gradebook-weights-runtime.js",
+            "assets/js/pages/gradebook-components-runtime.js",
+            "assets/js/pages/gradebook-staff.js"
+          ],
+          "lazyFrom": ["assets/js/pages/lms-classroom-tabs-runtime.js"],
+          "anchor": "lms-gradebook"
+        },
+        {
+          "id": "lms.live-quiz",
+          "label": "Live quiz",
+          "owners": ["assets/js/pages/lms-live-quiz-ui-runtime.js", "assets/js/pages/lms-live-quiz-workspace-runtime.js"],
+          "lazyFrom": ["assets/js/pages/lms-classroom-tabs-runtime.js"],
+          "anchor": "lms-live-quiz"
+        },
+        {
+          "id": "lms.whiteboard",
+          "label": "Whiteboard",
+          "owners": ["assets/js/pages/lms-whiteboard-runtime.js", "assets/js/pages/lms-whiteboard-model.js"],
+          "lazyFrom": ["assets/js/pages/lms-classroom-tabs-runtime.js"],
+          "anchor": "lms-whiteboard"
+        },
+        {
+          "id": "lms.quiz",
+          "label": "Section quiz / protected quiz",
+          "owners": ["assets/js/pages/lms-quiz-workspace-runtime.js", "assets/js/pages/lms-quiz-model.js"],
+          "lazyFrom": ["assets/js/pages/lms-classroom-tabs-runtime.js"],
+          "anchor": "lms-quiz"
+        },
+        {
+          "id": "lms.calls",
+          "label": "Calls",
+          "owners": ["assets/js/pages/lms-calls-runtime.js"],
+          "lazyFrom": ["assets/js/pages/lms-classroom-tabs-runtime.js"],
+          "anchor": "lms-calls"
+        },
+        {
+          "id": "lms.interaction",
+          "label": "Interaction / messenger in LMS",
+          "owners": ["assets/js/pages/lms-interaction-messages-runtime.js", "assets/js/shared/messenger.js"],
+          "lazyFrom": ["assets/js/pages/lms-classroom-tabs-runtime.js"],
+          "anchor": "lms-interaction"
+        },
+        {
+          "id": "lms.materials",
+          "label": "Materials / content library / assignments",
+          "owners": ["assets/js/pages/lms-materials-runtime.js", "assets/js/pages/lms-content-library-runtime.js"],
+          "support": ["assets/js/pages/lms-assignments-runtime.js"],
+          "lazyFrom": ["assets/js/pages/lms-classroom-tabs-runtime.js"],
+          "anchor": "lms-materials"
+        },
+        {
+          "id": "lms.personal-dashboard",
+          "label": "LMS personal dashboard",
+          "owners": ["assets/js/pages/lms-personal-dashboard-runtime.js"],
+          "lazyFrom": ["assets/js/pages/lms-classroom-tabs-runtime.js"],
+          "anchor": "lms-personal-dashboard"
+        }
+      ]
+    },
+    {
+      "id": "student-service",
+      "html": "student-service.html",
+      "archDoc": "docs/student-service-architecture.md",
+      "features": [
+        {
+          "id": "ss.hub",
+          "label": "Student Service hub / lanes / ensure*",
+          "owners": ["assets/js/pages/student-service.js"],
+          "anchor": "ss-hub"
+        },
+        {
+          "id": "ss.service-lane",
+          "label": "Service lane shells (tickets workbench)",
+          "owners": ["assets/js/pages/student-service-service.js"],
+          "lazyFrom": ["assets/js/pages/student-service-modules-runtime.js"],
+          "anchor": "ss-service"
+        },
+        {
+          "id": "ss.qa",
+          "label": "Q&A lane",
+          "owners": ["assets/js/pages/student-service-qa.js"],
+          "lazyFrom": ["assets/js/pages/student-service-modules-runtime.js"],
+          "anchor": "ss-qa"
+        },
+        {
+          "id": "ss.filters",
+          "label": "Inbox filters / editor",
+          "owners": ["assets/js/pages/student-service-filters.js"],
+          "lazyFrom": ["assets/js/pages/student-service-modules-runtime.js"],
+          "anchor": "ss-filters"
+        },
+        {
+          "id": "ss.attachments",
+          "label": "Attachments gallery / picker",
+          "owners": ["assets/js/pages/student-service-attachments.js"],
+          "lazyFrom": ["assets/js/pages/student-service-modules-runtime.js"],
+          "anchor": "ss-attachments"
+        },
+        {
+          "id": "ss.tickets",
+          "label": "Tickets / thread actions",
+          "owners": ["assets/js/pages/student-service-tickets.js"],
+          "lazyFrom": ["assets/js/pages/student-service-modules-runtime.js"],
+          "anchor": "ss-tickets"
+        },
+        {
+          "id": "ss.inbox-runtime",
+          "label": "Inbox runtime (eager)",
+          "owners": ["assets/js/pages/student-service-inbox-runtime.js"]
+        },
+        {
+          "id": "ss.page-runtime",
+          "label": "Articles / page runtime (eager)",
+          "owners": ["assets/js/pages/student-service-page-runtime.js"]
+        }
+      ]
+    },
+    {
+      "id": "registration",
+      "html": "registration.html",
+      "archDoc": null,
+      "features": [
+        {
+          "id": "reg.student",
+          "label": "Student registration hub / tabs",
+          "owners": ["assets/js/pages/student-registration.js"],
+          "anchor": "reg-student"
+        },
+        {
+          "id": "reg.shared",
+          "label": "Shared registration helpers",
+          "owners": ["assets/js/pages/registration-shared.js"]
+        },
+        {
+          "id": "reg.enrollment",
+          "label": "Enrollment helpers",
+          "owners": ["assets/js/pages/registration-enrollment.js"]
+        },
+        {
+          "id": "reg.eligibility",
+          "label": "Eligibility runtime",
+          "owners": ["assets/js/pages/student-registration-eligibility-runtime.js"]
+        },
+        {
+          "id": "reg.choice",
+          "label": "Course choice runtime",
+          "owners": ["assets/js/pages/student-registration-choice-runtime.js"]
+        },
+        {
+          "id": "reg.student-route",
+          "label": "Student registration route boot",
+          "owners": ["assets/js/pages/registration-student-route.js"]
+        }
+      ]
+    },
+    {
+      "id": "index",
+      "html": "index.html",
+      "archDoc": null,
+      "features": [
+        {
+          "id": "index.luxury",
+          "label": "Index luxury shell / page chrome",
+          "owners": ["assets/js/features/index-luxury.js"],
+          "anchor": "index-luxury"
+        },
+        {
+          "id": "index.home-dashboard",
+          "label": "Home dashboard widgets / editor chunk",
+          "owners": [
+            "assets/js/features/index-home-dashboard.js",
+            "assets/js/features/home-dashboard-widget-layout-runtime.js"
+          ],
+          "support": ["assets/js/features/index-home-dashboard.plain.js"],
+          "lazyFrom": ["assets/js/features/index-home-dashboard.js"],
+          "anchor": "index-home"
+        },
+        {
+          "id": "index.home-gestures",
+          "label": "Home dashboard gestures",
+          "owners": ["assets/js/features/home-dashboard-gesture-runtime.js"]
+        },
+        {
+          "id": "index.home-widget-data",
+          "label": "Home dashboard widget data",
+          "owners": ["assets/js/features/home-dashboard-widget-data-runtime.js"]
+        },
+        {
+          "id": "index.news-home",
+          "label": "News teaser on home",
+          "owners": ["assets/js/shared/news-home.js"]
+        }
+      ]
+    },
+    {
+      "id": "news",
+      "html": "news.html",
+      "archDoc": null,
+      "features": [
+        {
+          "id": "news.entry",
+          "label": "News page entry / boot",
+          "owners": ["assets/js/pages/news.js"],
+          "anchor": "news-entry"
+        },
+        {
+          "id": "news.runtime",
+          "label": "News workspace runtime",
+          "owners": ["assets/js/pages/news/news-runtime.js"]
+        },
+        {
+          "id": "news.feed",
+          "label": "News feed render",
+          "owners": ["assets/js/pages/news/news-feed-render.js"],
+          "anchor": "news-feed"
+        },
+        {
+          "id": "news.publisher",
+          "label": "News publisher",
+          "owners": ["assets/js/pages/news/news-publisher.js"]
+        },
+        {
+          "id": "news.replies",
+          "label": "News replies",
+          "owners": ["assets/js/pages/news/news-replies.js"]
+        },
+        {
+          "id": "news.events",
+          "label": "News events / handlers",
+          "owners": ["assets/js/pages/news/news-events.js"]
+        },
+        {
+          "id": "news.api",
+          "label": "News API helpers",
+          "owners": ["assets/js/pages/news/news-api.js"]
+        }
+      ]
+    }
+  ]
+}

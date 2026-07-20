@@ -243,7 +243,7 @@
         if (profileButton) {
             profileButton.addEventListener('click', (event) => {
                 event.preventDefault();
-                if (!invokeNavigate('profile-view')) return;
+                if (!invokeNavigate('personal-data')) return;
                 closeSheet();
             });
         }
@@ -269,11 +269,27 @@
         isElementShown(sheet) ? closeSheet() : openSheet();
     }
 
+    function ensureMobileActionSheetCss() {
+        if (typeof document === 'undefined') return;
+        if (document.querySelector('link[data-kiu-mobile-action-sheet]')) return;
+        const links = document.querySelectorAll('link[rel="stylesheet"]');
+        for (let i = 0; i < links.length; i += 1) {
+            const href = String(links[i].getAttribute('href') || '');
+            if (href.indexOf('lux-mobile-action-sheet.css') !== -1) return;
+        }
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = 'assets/css/lux-mobile-action-sheet.css?v=20260720-densify6500';
+        link.setAttribute('data-kiu-mobile-action-sheet', '1');
+        document.head.appendChild(link);
+    }
+
     function openSheet() {
         const sheet = document.getElementById('mobile-action-sheet');
         const moreButton = document.getElementById('mob-nav-more');
         const closeButton = document.getElementById('mob-sheet-close');
         if (!sheet) return;
+        ensureMobileActionSheetCss();
         setElementShown(sheet, true, '');
         sheet.setAttribute('aria-hidden', 'false');
         if (moreButton) moreButton.setAttribute('aria-expanded', 'true');

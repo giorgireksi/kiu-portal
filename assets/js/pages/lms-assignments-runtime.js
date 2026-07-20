@@ -1,20 +1,7 @@
 /* LMS assignments/workspace runtime extracted from lms.js. */
 
-function renderWorkspace(courseId) {
-    const contentArea = document.getElementById('lms-content-area');
-    if (!contentArea) return;
-    prepareLmsContentAreaForTab('workspace', contentArea);
-
-    const parsed = parseLmsCourseKey(courseId);
-    const resourceKey = parsed.resourceKey;
-    const assignments = ensureLmsAssignmentsForKey(resourceKey);
-    const canManage = canManageLmsGroupContent();
-    const effectiveRole = getEffectiveUserRole();
-    const userId = getCurrentUserId() || 'student';
-    const resourceToken = toDomToken(resourceKey);
-    const assignmentLabelId = `lms-assignment-file-label-${resourceToken}`;
-
-    const createBox = canManage ? `
+function buildLmsAssignmentCreateBoxHtml(courseId, resourceKey, assignmentLabelId) {
+    return `
         <div class="lms-route-panel">
             <div class="lms-route-card-head lms-route-card-head-mb-16">
                 <div>
@@ -52,13 +39,104 @@ function renderWorkspace(courseId) {
                 Allow late submissions
             </label>
             <div class="lms-route-actions lms-route-actions-mt-16">
-                <button class="kiu-btn-outline" data-lms-click="pickLocalLmsFile('assignment', '${resourceKey}', '${assignmentLabelId}')"><i class="fas fa-paperclip"></i> Upload Assignment File</button>
-                <button class="kiu-btn-blue" data-lms-click="createAssignment('${courseId}')"><i class="fas fa-save"></i> Save & Publish Homework</button>
+                <button class="lux-secondary-btn" data-lms-click="pickLocalLmsFile('assignment', '${resourceKey}', '${assignmentLabelId}')"><i class="fas fa-paperclip"></i> Upload Assignment File</button>
+                <button class="lux-primary-btn" data-lms-click="createAssignment('${courseId}')"><i class="fas fa-save"></i> Save & Publish Homework</button>
             </div>
         </div>
-    ` : '';
+    `;
+}
+
+function buildLmsAssignmentGradeModalBodyHtml({
+    courseId,
+    studentId,
+    assignment,
+    submission,
+    fieldIds,
+    maxScore,
+    statusLabel,
+    submissionStateLabel,
+    reviewerMeta
+}) {
+    return `
+                <div class="lms-route-card-grid lms-assignment-grade-summary-grid">
+                    <div class="lms-route-card lms-route-panel-compact lms-assignment-grade-summary-card">
+                        <div class="lms-route-kv-label">Student</div>
+                        <div class="lms-route-card-title lms-route-card-title-15 lms-route-copy-mt-6">${escapeHtml(submission.studentName || studentId || 'Student')}</div>
+                        <div class="lms-route-meta lms-route-meta-12 lms-route-copy-mt-8">${joinLmsMeta([submissionStateLabel, formatLmsDateTime(submission.submittedAt)])}</div>
+                        <div class="lms-route-pill lms-assignment-grade-summary-pill">${escapeHtml(statusLabel)}</div>
+                    </div>
+                    <div class="lms-route-card lms-route-panel-compact lms-assignment-grade-summary-card">
+                        <div class="lms-route-kv-label">Assignment</div>
+                        <div class="lms-route-card-title lms-route-card-title-15 lms-route-copy-mt-6">${escapeHtml(assignment.title || 'Homework')}</div>
+                        <div class="lms-route-meta lms-route-meta-12 lms-route-copy-mt-8">${joinLmsMeta([getLmsWeekLabel(assignment.weekLabel), assignment.lateAllowed ? 'Late submissions allowed' : 'Late submissions closed'])}</div>
+                        <div class="lms-route-copy lms-route-copy-mt-8 lms-assignment-grade-review-note">${escapeHtml(reviewerMeta)}</div>
+                    </div>
+                </div>
+                <div class="lms-route-card lms-route-panel-compact lms-assignment-grade-response-card">
+                    <div class="lms-route-card-head lms-route-card-head-mb-14">
+                        <div>
+                            <div class="lms-route-card-title lms-route-card-title-15">Student Response</div>
+                            <div class="lms-route-copy lms-route-copy-mt-6">Read the answer, download the attached file if needed, then save the final score below.</div>
+                        </div>
+                    </div>
+                    <div class="lms-route-copy lms-route-copy-prewrap lms-assignment-grade-response-copy">${escapeHtml(submission.text || 'No written response submitted.')}</div>
+                    ${submission.file ? renderLmsStoredFileAttachmentShell(submission.file, {
+                        label: 'Submission file',
+                        title: submission.file.name || 'Submission upload',
+                        downloadLabel: 'Download submission',
+                        shellClass: 'lms-route-file-shell lms-route-actions-mt-12'
+                    }) : '<div class="lms-route-file-shell lms-route-actions-mt-12 lms-assignment-grade-empty-shell"><div class="lms-route-kv-label">Submission file</div><div class="lms-route-copy lms-route-copy-mt-6 lms-assignment-empty-copy">No submission file was uploaded for this review.</div></div>'}
+                </div>
+                <div class="lms-route-panel lms-route-panel-compact lms-assignment-grade-editor">
+                    <div class="lms-route-card-head lms-route-card-head-mb-16">
+                        <div>
+                            <div class="lms-route-card-title lms-route-card-title-15">Grade & Feedback</div>
+                            <div class="lms-route-copy lms-route-copy-mt-6">${escapeHtml(assignment.rubric || 'Rubric not configured.')}</div>
+                        </div>
+                    </div>
+                    <div class="lms-route-field-grid lms-assignment-grade-field-grid">
+                        <div class="lms-route-field">
+                            <label class="lms-route-field-label" for="${fieldIds.scoreInputId}">Score out of ${escapeHtml(String(maxScore))}</label>
+                            <input id="${fieldIds.scoreInputId}" type="number" min="0" max="${escapeHtml(String(maxScore))}" step="1" value="${escapeHtml(submission.score == null ? '' : String(submission.score))}" class="lms-route-input lms-assignment-grade-score-input">
+                        </div>
+                        <div class="lms-route-field">
+                            <label class="lms-route-field-label">Review status</label>
+                            <div class="lms-route-pill lms-assignment-grade-status-pill ${submission.score == null ? 'is-pending' : 'is-graded'}">
+                                <i class="fas ${submission.score == null ? 'fa-hourglass-half' : 'fa-check-circle'}"></i>
+                                ${submission.score == null ? 'Save the first grade for this submission' : `Current grade ${escapeHtml(String(submission.score))}/${escapeHtml(String(maxScore))}`}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="lms-route-field lms-route-field-mt-14">
+                        <label class="lms-route-field-label" for="${fieldIds.feedbackInputId}">Feedback for the student</label>
+                        <textarea id="${fieldIds.feedbackInputId}" class="lms-route-textarea lms-route-textarea-min-110 lms-assignment-grade-feedback-input" placeholder="Explain the score, note what to revise, or confirm why the work is ready.">${escapeHtml(submission.feedback || '')}</textarea>
+                    </div>
+                    <div class="lms-route-actions lms-route-actions-mt-16 lms-assignment-grade-actions">
+                        <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-cancel-btn" data-lms-click="closeLmsAssignmentGradeModal()"><i class="fas fa-arrow-left"></i> Cancel</button>
+                        <button class="social-neo-btn social-neo-btn-primary social-neo-dialog-submit-btn" data-lms-click="saveLmsAssignmentSubmissionGrade(${jsQuote(courseId)}, ${jsQuote(assignment.id)}, ${jsQuote(studentId)})"><i class="fas fa-save"></i> Save Grade</button>
+                    </div>
+                </div>`;
+}
+
+function renderWorkspace(courseId) {
+    const contentArea = document.getElementById('lms-content-area');
+    if (!contentArea) return;
+    prepareLmsContentAreaForTab('workspace', contentArea);
+
+    const parsed = parseLmsCourseKey(courseId);
+    const resourceKey = parsed.resourceKey;
+    const assignments = ensureLmsAssignmentsForKey(resourceKey);
+    const canManage = canManageLmsGroupContent();
+    const effectiveRole = getEffectiveUserRole();
+    const userId = getCurrentUserId() || 'student';
+    const resourceToken = toDomToken(resourceKey);
+    const assignmentLabelId = `lms-assignment-file-label-${resourceToken}`;
+
+    const createBox = canManage
+        ? buildLmsAssignmentCreateBoxHtml(courseId, resourceKey, assignmentLabelId)
+        : '';
     const assignmentWeekBanner = `
-        <div class="lms-route-panel">
+        <div class="lms-route-panel lms-assignment-banner">
             <div class="lms-route-card-head">
                 <div class="lms-route-inline lms-route-inline-gap-12 lms-route-inline-center">
                     <i class="fas fa-clipboard-list lms-route-icon-accent"></i>
@@ -68,13 +146,13 @@ function renderWorkspace(courseId) {
                     </div>
                 </div>
                 <div class="lms-route-actions">
-                    ${canManage ? '<button class="kiu-btn-outline lms-quiz-action-btn" data-lms-click="openLmsWeekManagerModal(&#39;' + resourceKey + '&#39;)"><i class="fas fa-calendar-week"></i> Manage Weeks</button>' : ''}
+                    ${canManage ? '<button class="lux-secondary-btn lms-quiz-action-btn" data-lms-click="openLmsWeekManagerModal(&#39;' + resourceKey + '&#39;)"><i class="fas fa-calendar-week"></i> Manage Weeks</button>' : ''}
                 </div>
             </div>
         </div>
     `;
 
-    const groupedAssignments = groupLmsItemsByWeek(resourceKey, assignments, assignment => assignment.weekLabel, true);
+    const groupedAssignments = groupLmsItemsByWeek(resourceKey, assignments, assignment => assignment.weekLabel);
     const cards = groupedAssignments.length ? groupedAssignments.map(([weekLabel, weekAssignments], weekIndex) => {
         const weekCardHtml = weekAssignments.length ? weekAssignments.map(assignment => {
         const submissionDraftKey = buildLmsSubmissionDraftKey(resourceKey, assignment.id, userId);
@@ -96,8 +174,8 @@ function renderWorkspace(courseId) {
                         ${studentSubmission?.file?.name ? `<i class="fas fa-paperclip"></i> ${escapeHtml(studentSubmission.file.name)}` : 'No homework file selected'}
                     </div>
                     <div class="lms-route-actions lms-assignment-student-actions">
-                        <button class="kiu-btn-outline" data-lms-click="pickLocalLmsFile('submissions', '${submissionDraftKey}', '${submissionLabelId}')"><i class="fas fa-upload"></i> Upload Homework</button>
-                        <button class="kiu-btn-blue" data-lms-click="submitAssignment('${courseId}', '${assignment.id}')"><i class="fas fa-paper-plane"></i> ${studentSubmission ? 'Update Submission' : 'Submit Homework'}</button>
+                        <button class="lux-secondary-btn" data-lms-click="pickLocalLmsFile('submissions', '${submissionDraftKey}', '${submissionLabelId}')"><i class="fas fa-upload"></i> Upload Homework</button>
+                        <button class="lux-primary-btn" data-lms-click="submitAssignment('${courseId}', '${assignment.id}')"><i class="fas fa-paper-plane"></i> ${studentSubmission ? 'Update Submission' : 'Submit Homework'}</button>
                     </div>
                 </div>
                 ${studentSubmission ? `
@@ -121,7 +199,7 @@ function renderWorkspace(courseId) {
             <div class="lms-route-divider-top lms-route-card-stack">
                 <div class="lms-route-inline lms-route-inline-between lms-route-inline-gap-12 lms-route-inline-center lms-assignment-staff-summary">
                     <div class="lms-route-card-title lms-route-card-title-14">Submissions received: ${submissionEntries.length}</div>
-                    <button class="kiu-btn-outline lms-quiz-action-btn is-compact" data-lms-click="deleteAssignment('${courseId}', '${assignment.id}')"><i class="fas fa-trash"></i> Remove</button>
+                    <button class="lux-secondary-btn lms-quiz-action-btn is-compact" data-lms-click="deleteAssignment('${courseId}', '${assignment.id}')"><i class="fas fa-trash"></i> Remove</button>
                 </div>
                 ${submissionEntries.length ? `
                     <div class="lms-route-card-grid lms-assignment-review-summary-grid">
@@ -170,7 +248,7 @@ function renderWorkspace(courseId) {
                                     ? `<div class="lms-route-file-shell lms-route-actions-mt-10 lms-assignment-feedback-shell"><div class="lms-route-kv-label">Feedback</div><div class="lms-route-copy lms-route-copy-mt-6">${escapeHtml(entry.feedback)}</div></div>`
                                     : `<div class="lms-route-file-shell lms-route-actions-mt-10 lms-assignment-feedback-shell is-empty"><div class="lms-route-kv-label">Feedback</div><div class="lms-route-copy lms-route-copy-mt-6 lms-assignment-empty-copy">Course staff has not saved feedback for this submission yet.</div></div>`}
                                 <div class="lms-assignment-submission-actions lms-route-actions-mt-10">
-                                    <button class="kiu-btn-outline" data-lms-click="gradeLmsAssignmentSubmission('${courseId}', '${assignment.id}', '${entry.studentId}')"><i class="fas fa-pen"></i> Grade / feedback</button>
+                                    <button class="lux-secondary-btn" data-lms-click="gradeLmsAssignmentSubmission('${courseId}', '${assignment.id}', '${entry.studentId}')"><i class="fas fa-pen"></i> Grade / feedback</button>
                                     ${Number.isFinite(Number(entry.score))
                                         ? `<span class="lms-route-pill lms-assignment-submission-status-pill is-graded"><i class="fas fa-star"></i> ${escapeHtml(String(entry.score))}/${escapeHtml(String(assignment.maxScore || 100))}</span>`
                                         : '<span class="lms-route-pill lms-assignment-submission-status-pill is-pending">Pending review</span>'}
@@ -215,7 +293,7 @@ function renderWorkspace(courseId) {
                 ${canManage ? staffControls : ''}
             </div>
         `;
-        }).join('') : renderLmsRouteEmptyState('No Homework Yet', 'No homework was uploaded in this week yet.', 'fa-book-open');
+        }).join('') : renderLmsWeekPanelEmptyState('No Homework Yet', 'No homework was uploaded in this week yet.', 'fa-book-open');
         return renderLmsRouteWeekAccordion(
             weekLabel,
             `${weekAssignments.length} homework${weekAssignments.length === 1 ? '' : 's'} in this section`,
@@ -405,81 +483,33 @@ function gradeLmsAssignmentSubmission(courseId, assignmentId, studentId) {
 
     const overlay = document.createElement('div');
     overlay.id = 'lms-assignment-grade-modal';
-    overlay.className = 'lms-quiz-board-overlay lms-assignment-grade-overlay';
+    overlay.className = 'lms-quiz-board-overlay lms-assignment-grade-overlay lms-glass-dialog-overlay';
     overlay.onclick = (event) => {
         if (event.target === overlay) closeLmsAssignmentGradeModal();
     };
 
-    overlay.innerHTML = upgradeLmsLegacyMarkup(`
-        <div class="lms-quiz-board-modal lms-assignment-grade-modal">
-            <div class="lms-quiz-board-head lms-assignment-grade-modal-head">
-                <div class="lms-quiz-board-head-copy">
-                    <div class="lms-quiz-board-title">Grade Submission</div>
-                    <div class="lms-quiz-board-copy">Review the student answer, confirm the upload, and save a score with feedback inside the LMS workspace.</div>
-                </div>
-                <button class="kiu-btn-outline lms-quiz-board-close-btn" data-lms-click="closeLmsAssignmentGradeModal()"><i class="fas fa-times"></i> Close</button>
-            </div>
-            <div class="lms-quiz-board-body lms-assignment-grade-modal-body">
-                <div class="lms-route-card-grid lms-assignment-grade-summary-grid">
-                    <div class="lms-route-card lms-route-panel-compact lms-assignment-grade-summary-card">
-                        <div class="lms-route-kv-label">Student</div>
-                        <div class="lms-route-card-title lms-route-card-title-15 lms-route-copy-mt-6">${escapeHtml(submission.studentName || studentId || 'Student')}</div>
-                        <div class="lms-route-meta lms-route-meta-12 lms-route-copy-mt-8">${joinLmsMeta([submissionStateLabel, formatLmsDateTime(submission.submittedAt)])}</div>
-                        <div class="lms-route-pill lms-assignment-grade-summary-pill">${escapeHtml(statusLabel)}</div>
-                    </div>
-                    <div class="lms-route-card lms-route-panel-compact lms-assignment-grade-summary-card">
-                        <div class="lms-route-kv-label">Assignment</div>
-                        <div class="lms-route-card-title lms-route-card-title-15 lms-route-copy-mt-6">${escapeHtml(assignment.title || 'Homework')}</div>
-                        <div class="lms-route-meta lms-route-meta-12 lms-route-copy-mt-8">${joinLmsMeta([getLmsWeekLabel(assignment.weekLabel), assignment.lateAllowed ? 'Late submissions allowed' : 'Late submissions closed'])}</div>
-                        <div class="lms-route-copy lms-route-copy-mt-8 lms-assignment-grade-review-note">${escapeHtml(reviewerMeta)}</div>
-                    </div>
-                </div>
-                <div class="lms-route-card lms-route-panel-compact lms-assignment-grade-response-card">
-                    <div class="lms-route-card-head lms-route-card-head-mb-14">
-                        <div>
-                            <div class="lms-route-card-title lms-route-card-title-15">Student Response</div>
-                            <div class="lms-route-copy lms-route-copy-mt-6">Read the answer, download the attached file if needed, then save the final score below.</div>
-                        </div>
-                    </div>
-                    <div class="lms-route-copy lms-route-copy-prewrap lms-assignment-grade-response-copy">${escapeHtml(submission.text || 'No written response submitted.')}</div>
-                    ${submission.file ? renderLmsStoredFileAttachmentShell(submission.file, {
-                        label: 'Submission file',
-                        title: submission.file.name || 'Submission upload',
-                        downloadLabel: 'Download submission',
-                        shellClass: 'lms-route-file-shell lms-route-actions-mt-12'
-                    }) : '<div class="lms-route-file-shell lms-route-actions-mt-12 lms-assignment-grade-empty-shell"><div class="lms-route-kv-label">Submission file</div><div class="lms-route-copy lms-route-copy-mt-6 lms-assignment-empty-copy">No submission file was uploaded for this review.</div></div>'}
-                </div>
-                <div class="lms-route-panel lms-route-panel-compact lms-assignment-grade-editor">
-                    <div class="lms-route-card-head lms-route-card-head-mb-16">
-                        <div>
-                            <div class="lms-route-card-title lms-route-card-title-15">Grade & Feedback</div>
-                            <div class="lms-route-copy lms-route-copy-mt-6">${escapeHtml(assignment.rubric || 'Rubric not configured.')}</div>
-                        </div>
-                    </div>
-                    <div class="lms-route-field-grid lms-assignment-grade-field-grid">
-                        <div class="lms-route-field">
-                            <label class="lms-route-field-label" for="${fieldIds.scoreInputId}">Score out of ${escapeHtml(String(maxScore))}</label>
-                            <input id="${fieldIds.scoreInputId}" type="number" min="0" max="${escapeHtml(String(maxScore))}" step="1" value="${escapeHtml(submission.score == null ? '' : String(submission.score))}" class="lms-route-input lms-assignment-grade-score-input">
-                        </div>
-                        <div class="lms-route-field">
-                            <label class="lms-route-field-label">Review status</label>
-                            <div class="lms-route-pill lms-assignment-grade-status-pill ${submission.score == null ? 'is-pending' : 'is-graded'}">
-                                <i class="fas ${submission.score == null ? 'fa-hourglass-half' : 'fa-check-circle'}"></i>
-                                ${submission.score == null ? 'Save the first grade for this submission' : `Current grade ${escapeHtml(String(submission.score))}/${escapeHtml(String(maxScore))}`}
-                            </div>
-                        </div>
-                    </div>
-                    <div class="lms-route-field lms-route-field-mt-14">
-                        <label class="lms-route-field-label" for="${fieldIds.feedbackInputId}">Feedback for the student</label>
-                        <textarea id="${fieldIds.feedbackInputId}" class="lms-route-textarea lms-route-textarea-min-110 lms-assignment-grade-feedback-input" placeholder="Explain the score, note what to revise, or confirm why the work is ready.">${escapeHtml(submission.feedback || '')}</textarea>
-                    </div>
-                    <div class="lms-route-actions lms-route-actions-mt-16 lms-assignment-grade-actions">
-                        <button class="kiu-btn-outline" data-lms-click="closeLmsAssignmentGradeModal()"><i class="fas fa-arrow-left"></i> Cancel</button>
-                        <button class="kiu-btn-blue" data-lms-click="saveLmsAssignmentSubmissionGrade(${jsQuote(courseId)}, ${jsQuote(assignment.id)}, ${jsQuote(studentId)})"><i class="fas fa-save"></i> Save Grade</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `);
+    overlay.innerHTML = upgradeLmsLegacyMarkup(renderLmsGlassDialogCard({
+        hookClass: 'lms-quiz-board-modal lms-assignment-grade-modal',
+        bodyClass: 'lms-quiz-board-body lms-assignment-grade-modal-body',
+        title: 'Grade Submission',
+        icon: 'fa-pen-to-square',
+        subtitle: 'Review the student answer, confirm the upload, and save a score with feedback inside the LMS workspace.',
+        closeAttr: 'data-lms-click="closeLmsAssignmentGradeModal()"',
+        bodyHtml: buildLmsAssignmentGradeModalBodyHtml({
+            courseId,
+            studentId,
+            assignment,
+            submission,
+            fieldIds,
+            maxScore,
+            statusLabel,
+            submissionStateLabel,
+            reviewerMeta
+        })
+    }));
     document.body.appendChild(overlay);
+}
+
+if (typeof window !== 'undefined') {
+    window.renderWorkspace = window.renderWorkspace || renderWorkspace;
 }

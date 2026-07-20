@@ -1,18 +1,22 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'fs';
+import { expectRetiredCss } from './helpers/bare-shell-css.js';
+import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
 function readSource(relativePath) {
-    return readFileSync(join(process.cwd(), relativePath), 'utf8');
+    const full = join(process.cwd(), relativePath);
+    if (typeof existsSync === 'function' && !existsSync(full)) return '';
+    return readFileSync(full, 'utf8');
 }
 
 describe('admin tools interaction safety', () => {
-    it('keeps the standalone admin-tools workspace offset from the luxury sidebar on desktop', () => {
-        const css = readSource('assets/css/admin-tools-luxury.css');
+    it('uses global unified-shell overlay instead of admin-tools desktop push offsets', () => {
+        expectRetiredCss('admin-tools-luxury.css');
+        const shellCss = readSource('assets/css/lux-shell.css');
 
-        expect(css).toContain('body.lux-route-admin-tools #app-content {');
-        expect(css).toContain('margin-left: var(--lux-sidebar-width) !important;');
-        expect(css).toContain('width: calc(100% - var(--lux-sidebar-width)) !important;');
+        expect(shellCss).toMatch(
+            /@media \(min-width: 1181px\)[\s\S]*body\.lux-unified-shell #app-content[\s\S]*margin-left:\s*0/
+        );
     });
 
     it('keeps admin registration tabs compatible with data-driven tab buttons', () => {
@@ -41,5 +45,12 @@ describe('admin tools interaction safety', () => {
         expect(alignment).toContain('page.dataset.adminToolsIndexSignature = getAlignmentSignature(page);');
         expect(alignment).toContain("document.getElementById('lux-admin-tools-shell')");
         expect(alignment).toContain('observer.observe(observerRoot, { childList: true, subtree: true });');
+        expect(alignment).not.toContain('function getStripMarkup');
+        expect(alignment).not.toContain('function renderStrip');
+        expect(alignment).not.toContain('lux-admin-tools-index-summary');
+        expect(alignment).not.toContain('lux-strip-grid lux-strip-grid--adaptive lux-admin-tools-index-strip');
+        expect(alignment).toContain('function removeLegacyStrip');
+        expect(alignment).toContain('getActiveRegistrationLane(page)');
+        expect(alignment).toContain('Four linked control zones');
     });
 });

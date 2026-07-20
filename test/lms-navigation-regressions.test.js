@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
 function readSource(relativePath) {
@@ -9,11 +9,12 @@ function readSource(relativePath) {
 describe('LMS navigation regressions', () => {
     it('keeps standalone LMS shell refresh separate from global navigate wrapping', () => {
         const lmsHtml = readSource('lms.html');
+        const routeBoot = readSource('assets/js/pages/lms-route-boot.js');
 
-        expect(lmsHtml).toContain('function refreshStandaloneLmsShellContext(options = {}) {');
-        expect(lmsHtml).toContain('window.refreshStandaloneLmsShellContext = refreshStandaloneLmsShellContext;');
-        expect(lmsHtml).toContain('refreshLmsFacultyScopedView() {');
-        expect(lmsHtml).toContain('refreshStandaloneLmsShellContext({ refreshSubjectDeck: true, forceSubjectDeck: true });');
+        expect(routeBoot).toContain('function refreshStandaloneLmsShellContext(options = {}) {');
+        expect(routeBoot).toContain('window.refreshStandaloneLmsShellContext = refreshStandaloneLmsShellContext;');
+        expect(routeBoot).not.toContain('refreshLmsFacultyScopedView');
+        expect(routeBoot).not.toContain('scrollToLmsSubjects');
         expect(lmsHtml).not.toContain('window.navigate = function(pageId) {');
         expect(lmsHtml).not.toContain('window.switchFacultyTheme = function(value) {');
         expect(lmsHtml).not.toContain('function hookLmsNavigationVisualSync() {');

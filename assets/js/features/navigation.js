@@ -1,3 +1,14 @@
+/* Wave bag: Wave 26 navigation */
+window.KiuNavigation = window.KiuNavigation || {};
+const __kiuNavApi = window.KiuNavigation;
+window.__kiuNavApi = __kiuNavApi;
+function __kiuNavExpose(map) {
+    Object.keys(map).forEach((key) => {
+        __kiuNavApi[key] = map[key];
+        window[key] = map[key];
+    });
+}
+
 /* Navigation and route switching logic extracted from the legacy core.js bundle. Active routes now load split files directly. */
 
 // --- PERFORMANCE: Cache DOM queries to avoid repeated full-DOM scans ---
@@ -18,7 +29,9 @@ function invalidateDomCache() {
 }
 
 // Expose globally for utilities.js to call on role/faculty switch
-window.invalidateDomCache = invalidateDomCache;
+__kiuNavExpose({
+    invalidateDomCache,
+});
 
 function getPageSections() {
     if (!_domCache.pageSections) {
@@ -71,7 +84,9 @@ function syncShellNavVisibility(pageId, effectiveRole = getEffectiveUserRole()) 
     }
 }
 
-window.syncShellNavVisibility = syncShellNavVisibility;
+__kiuNavExpose({
+    syncShellNavVisibility,
+});
 
 function syncShellNavActiveItem(pageId, effectiveRole = getEffectiveUserRole()) {
     getAllNavItems().forEach((nav) => nav.classList.remove('active'));
@@ -92,10 +107,55 @@ function syncShellNavActiveItem(pageId, effectiveRole = getEffectiveUserRole()) 
     }
 }
 
+function cleanupStaleSocialRouteState(pageId) {
+    const normalizedPageId = String(pageId || '').trim().toLowerCase();
+    if (normalizedPageId === 'social') return;
+    const body = document.body;
+    const root = document.documentElement;
+    if (!body) return;
+
+    const socialClasses = [
+        'lux-route-social',
+        'lux-entry-social',
+        'lux-family-social',
+        'social-neo-scroll-lock'
+    ];
+    const hadSocialState = socialClasses.some((className) => body.classList.contains(className))
+        || Boolean(root?.classList?.contains('social-neo-scroll-lock'));
+
+    socialClasses.forEach((className) => body.classList.remove(className));
+    if (root) {
+        root.classList.remove('social-neo-scroll-lock');
+        root.style.removeProperty('--social-visual-height');
+    }
+    body.style.removeProperty('--social-visual-height');
+
+    const overlay = document.getElementById('social-neo-overlay-portal');
+    if (overlay) {
+        overlay.hidden = true;
+        overlay.setAttribute('aria-hidden', 'true');
+    }
+
+    if (!hadSocialState) return;
+    const repaint = () => {
+        if (typeof window.queueLuxuryTransparencyRefresh === 'function') {
+            window.queueLuxuryTransparencyRefresh(undefined, { persist: false });
+        } else if (typeof window.refreshLuxuryTransparencySurfaces === 'function') {
+            window.refreshLuxuryTransparencySurfaces(undefined, { persist: false });
+        }
+    };
+    if (typeof window.requestAnimationFrame === 'function') {
+        window.requestAnimationFrame(repaint);
+    } else {
+        window.setTimeout(repaint, 0);
+    }
+}
+
 function primeShellSectionTransition(pageId, effectiveRole = getEffectiveUserRole()) {
     const targetSection = getNavigablePageSection(pageId);
     if (!targetSection) return false;
     if (isSamePageNavigation(pageId)) return true;
+    cleanupStaleSocialRouteState(pageId);
     syncShellSectionLocation(pageId, effectiveRole);
     let found = false;
     getPageSections().forEach((section) => {
@@ -139,7 +199,7 @@ function syncShellSectionLocation(pageId, role = getEffectiveUserRole()) {
 }
 
 function normalizePortalPageId(pageId) {
-    return String(pageId === 'profile' ? 'profile-view' : (pageId || 'home')).trim().toLowerCase() || 'home';
+    return String(pageId === 'profile' ? 'personal-data' : (pageId || 'home')).trim().toLowerCase() || 'home';
 }
 
 function resolveAliasPageId(pageId, role = getEffectiveUserRole()) {
@@ -155,10 +215,19 @@ function resolveAliasPageId(pageId, role = getEffectiveUserRole()) {
     return normalizedPageId;
 }
 
-window.resolveAliasPageId = resolveAliasPageId;
+__kiuNavExpose({
+    resolveAliasPageId,
+});
+
+function shouldRedirectProfileViewToPersonalData() {
+    return typeof isAdminImpersonationMode === 'function' && isAdminImpersonationMode();
+}
 
 function resolvePortalRouteUrl(pageId, role = getEffectiveUserRole()) {
     const normalizedPageId = resolveAliasPageId(pageId, role);
+    if (normalizedPageId === 'profile-view' && shouldRedirectProfileViewToPersonalData()) {
+        return appendPortalViewQuery('personal-data.html', role);
+    }
     if (normalizedPageId === 'home') {
         return typeof getRoleHomePage === 'function'
             ? getRoleHomePage(role)
@@ -194,13 +263,204 @@ function resolvePortalRouteUrl(pageId, role = getEffectiveUserRole()) {
     return routeMap[normalizedPageId] || `${normalizedPageId}.html`;
 }
 
-function assignStandalonePortalRoute(pageId, role = getEffectiveUserRole()) {
-    const targetUrl = resolvePortalRouteUrl(pageId, role);
+const STUDENT_SERVICE_WORKSPACE_ROUTE_IDS = new Set([
+    'home',
+    'student-service',
+    'orders',
+    'library',
+    'news',
+    'social',
+    'profile-view'
+]);
+
+function getPortalViewRoleFromLocation() {
+    try {
+        const viewRole = String(new URLSearchParams(window.location.search || '').get('view') || '').trim().toLowerCase();
+        return Object.values(USER_ROLES).includes(viewRole) ? viewRole : '';
+    } catch (error) {
+        return '';
+    }
+}
+
+function shouldPreservePortalViewContext(role = getEffectiveUserRole()) {
+    const normalizedRole = String(role || '').trim().toLowerCase();
+    if (normalizedRole === USER_ROLES.STUDENT_SERVICE) return true;
+    const authRole = getNavigationAuthRole();
+    return authRole === USER_ROLES.ADMIN && normalizedRole && normalizedRole !== USER_ROLES.ADMIN;
+}
+
+function appendPortalViewQuery(targetUrl = '', role = getEffectiveUserRole()) {
+    const normalizedRole = String(role || '').trim().toLowerCase();
+    if (!normalizedRole || !shouldPreservePortalViewContext(normalizedRole)) {
+        return String(targetUrl || '').trim();
+    }
+    try {
+        const resolved = new URL(String(targetUrl || '').trim(), window.location.href);
+        if (!resolved.pathname.endsWith('.html')) return String(targetUrl || '').trim();
+        resolved.searchParams.set('view', normalizedRole);
+        return `${resolved.pathname}${resolved.search}${resolved.hash}`;
+    } catch (error) {
+        return String(targetUrl || '').trim();
+    }
+}
+
+function isStudentServiceWorkspaceEntry(pageId = getStandaloneEntryPageId()) {
+    const normalizedPageId = String(pageId || '').trim().toLowerCase();
+    return normalizedPageId === 'student-service' || STUDENT_SERVICE_WORKSPACE_ROUTE_IDS.has(normalizedPageId);
+}
+
+function resolveActiveWorkspaceViewRole(role = getEffectiveUserRole()) {
+    const viewFromUrl = getPortalViewRoleFromLocation();
+    if (viewFromUrl === USER_ROLES.STUDENT_SERVICE) return USER_ROLES.STUDENT_SERVICE;
+    const normalizedRole = String(role || '').trim().toLowerCase();
+    if (normalizedRole === USER_ROLES.STUDENT_SERVICE) return USER_ROLES.STUDENT_SERVICE;
+    try {
+        const pendingRole = String(
+            localStorage.getItem(PENDING_ROLE_SWITCH_KEY)
+            || localStorage.getItem('currentUserRole')
+            || ''
+        ).trim().toLowerCase();
+        if (pendingRole === USER_ROLES.STUDENT_SERVICE) return USER_ROLES.STUDENT_SERVICE;
+    } catch (error) {}
+    if (getNavigationAuthRole() === USER_ROLES.STUDENT_SERVICE) return USER_ROLES.STUDENT_SERVICE;
+    if (typeof resolveStoredWorkspaceRole === 'function') {
+        const storedWorkspaceRole = resolveStoredWorkspaceRole();
+        if (storedWorkspaceRole === USER_ROLES.STUDENT_SERVICE) return USER_ROLES.STUDENT_SERVICE;
+    }
+    return '';
+}
+
+function resolveWorkspacePortalNavUrl(pageId, role = getEffectiveUserRole()) {
+    const resolvedPageId = resolveAliasPageId(pageId, role);
+    const workspaceViewRole = resolveActiveWorkspaceViewRole(role);
+    const effectiveRole = workspaceViewRole || role;
+    let targetUrl = resolvePortalRouteUrl(pageId, effectiveRole);
+    if (
+        workspaceViewRole === USER_ROLES.STUDENT_SERVICE
+        && (STUDENT_SERVICE_WORKSPACE_ROUTE_IDS.has(resolvedPageId) || resolvedPageId === 'home')
+    ) {
+        targetUrl = appendPortalViewQuery(targetUrl, USER_ROLES.STUDENT_SERVICE);
+    } else if (
+        shouldPreservePortalViewContext(effectiveRole)
+        && (STUDENT_SERVICE_WORKSPACE_ROUTE_IDS.has(resolvedPageId) || resolvedPageId === 'home')
+    ) {
+        targetUrl = appendPortalViewQuery(targetUrl, effectiveRole);
+    }
+    return targetUrl;
+}
+
+function syncPortalViewRoleState(role = '', options = {}) {
+    const normalizedRole = String(role || '').trim().toLowerCase();
+    if (!normalizedRole || !Object.values(USER_ROLES).includes(normalizedRole)) return false;
+    const authRole = getNavigationAuthRole();
+    currentUserRole = normalizedRole;
+    try {
+        localStorage.setItem('currentUserRole', normalizedRole);
+        if (authRole === USER_ROLES.ADMIN && normalizedRole !== USER_ROLES.ADMIN) {
+            localStorage.setItem(PENDING_ROLE_SWITCH_KEY, normalizedRole);
+            sessionStorage.setItem(ACTIVE_ROLE_IMPERSONATION_KEY, '1');
+            if (options.applySessionUser !== false && typeof setActiveSessionUserByRole === 'function') {
+                setActiveSessionUserByRole(normalizedRole);
+            }
+        } else if (authRole === USER_ROLES.ADMIN && normalizedRole === USER_ROLES.ADMIN) {
+            localStorage.removeItem(PENDING_ROLE_SWITCH_KEY);
+            sessionStorage.removeItem(ACTIVE_ROLE_IMPERSONATION_KEY);
+        }
+    } catch (error) {
+        console.warn('Could not sync portal view role state.', error);
+    }
+    if (typeof invalidatePageAccessCache === 'function') invalidatePageAccessCache();
+    if (typeof invalidateDomCache === 'function') invalidateDomCache();
+    if (document.body) {
+        Array.from(document.body.classList)
+            .filter(className => className.startsWith('role-'))
+            .forEach(className => document.body.classList.remove(className));
+        document.body.classList.add(`role-${normalizedRole}`);
+        document.body.dataset.shellRole = normalizedRole;
+    }
+    document.documentElement.dataset.shellRole = normalizedRole;
+    if (options.refreshChrome !== false) {
+        if (typeof window.renderNav === 'function') window.renderNav();
+        if (typeof window.seedRolePickerLabel === 'function') window.seedRolePickerLabel();
+        if (typeof refreshShellIdentity === 'function') refreshShellIdentity();
+    }
+    if (
+        authRole === USER_ROLES.ADMIN
+        && normalizedRole === USER_ROLES.STUDENT_SERVICE
+        && typeof window.syncStudentServiceWorkspaceBackendSession === 'function'
+    ) {
+        window.syncStudentServiceWorkspaceBackendSession()
+            .then(() => {
+                if (document.getElementById('page-student-service') && typeof window.renderStudentServicePage === 'function') {
+                    window.renderStudentServicePage();
+                }
+            })
+            .catch(() => null);
+    }
+    return true;
+}
+
+function applyPortalViewRoleFromLocation(options = {}) {
+    const viewRole = getPortalViewRoleFromLocation();
+    if (viewRole) {
+        return syncPortalViewRoleState(viewRole, options);
+    }
+    if (!isStudentServiceWorkspaceEntry()) return false;
+    const authRole = getNavigationAuthRole();
+    if (authRole === USER_ROLES.STUDENT_SERVICE) {
+        return syncPortalViewRoleState(USER_ROLES.STUDENT_SERVICE, options);
+    }
+    const storedRole = (() => {
+        try {
+            return String(
+                localStorage.getItem(PENDING_ROLE_SWITCH_KEY)
+                || localStorage.getItem('currentUserRole')
+                || ''
+            ).trim().toLowerCase();
+        } catch (error) {
+            return '';
+        }
+    })();
+    if (storedRole === USER_ROLES.STUDENT_SERVICE) {
+        return syncPortalViewRoleState(USER_ROLES.STUDENT_SERVICE, options);
+    }
+    return false;
+}
+
+function pinStudentServiceWorkspaceRole(options = {}) {
+    if (applyPortalViewRoleFromLocation(options)) return true;
+    const authRole = getNavigationAuthRole();
+    const effectiveRole = typeof getEffectiveUserRole === 'function'
+        ? getEffectiveUserRole()
+        : currentUserRole;
+    if (
+        authRole === USER_ROLES.STUDENT_SERVICE
+        || String(effectiveRole || '').trim().toLowerCase() === USER_ROLES.STUDENT_SERVICE
+    ) {
+        return syncPortalViewRoleState(USER_ROLES.STUDENT_SERVICE, options);
+    }
+    return false;
+}
+
+__kiuNavExpose({
+    applyPortalViewRoleFromLocation,
+    pinStudentServiceWorkspaceRole,
+});
+
+function assignStandalonePortalRoute(pageId, role = getEffectiveUserRole(), options = {}) {
+    const targetUrl = resolveWorkspacePortalNavUrl(pageId, role);
+    cleanupStaleSocialRouteState(pageId);
     persistNavigationAuthSnapshot();
     window.location.assign(targetUrl);
 }
 
-window.resolvePortalRouteUrl = resolvePortalRouteUrl;
+__kiuNavExpose({
+    resolveWorkspacePortalNavUrl,
+});
+
+__kiuNavExpose({
+    resolvePortalRouteUrl,
+});
 
 const PORTAL_ROUTE_KIND = {
     'calendar': 'alias-redirect',
@@ -247,7 +507,9 @@ function getPortalRouteMode(pageId, options = {}) {
     return 'standalone';
 }
 
-window.getPortalRouteMode = getPortalRouteMode;
+__kiuNavExpose({
+    getPortalRouteMode,
+});
 
 function getAllNavItems() {
     if (!_domCache.allNavItems) {
@@ -345,9 +607,11 @@ function runDeferredPortalStartupForStandaloneAdmin() {
     markPortalShellReady();
 }
 
-window.shouldUseStudentShellVisualRole = shouldUseStudentShellVisualRole;
-window.isStandaloneAdminWorkspaceEntry = isStandaloneAdminWorkspaceEntry;
-window.getNavigationAuthRole = getNavigationAuthRole;
+__kiuNavExpose({
+    shouldUseStudentShellVisualRole,
+    isStandaloneAdminWorkspaceEntry,
+    getNavigationAuthRole,
+});
 
 const REGISTRATION_RUNTIME_PAGES = new Set([
     'gradebook',
@@ -386,10 +650,21 @@ function ensureRuntimeForPage(pageId) {
     if (pageId === 'news' && typeof ensurePortalNewsRuntimeLoaded === 'function' && typeof window.renderNewsWorkspace !== 'function') {
         loaders.push(ensurePortalNewsRuntimeLoaded());
     }
-    if (pageId === 'student-service' && typeof ensurePortalStudentServiceRuntimeLoaded === 'function' && typeof window.renderStudentServicePage !== 'function') {
-        loaders.push(ensurePortalStudentServiceRuntimeLoaded());
-    }
-    if (pageId === 'orders' && typeof ensurePortalOrdersRuntimeLoaded === 'function' && typeof renderOrdersInboxPage !== 'function') {
+    const isAdminOrdersRoute = document.body?.classList?.contains('lux-route-admin-orders')
+        || Boolean(document.getElementById('admin-orders-root'));
+    const isRecipientOrdersRoute = document.body?.classList?.contains('lux-route-orders')
+        || Boolean(document.getElementById('page-orders') || document.getElementById('orders-inbox-root'));
+    if (
+        isAdminOrdersRoute
+        && typeof ensurePortalAdminOrdersRuntimeLoaded === 'function'
+        && typeof renderAdminOrders !== 'function'
+    ) {
+        loaders.push(ensurePortalAdminOrdersRuntimeLoaded());
+    } else if (
+        isRecipientOrdersRoute
+        && typeof ensurePortalOrdersRuntimeLoaded === 'function'
+        && typeof renderOrdersInboxPage !== 'function'
+    ) {
         loaders.push(ensurePortalOrdersRuntimeLoaded());
     }
     if (pageId === 'library' && typeof ensurePortalLibraryRuntimeLoaded === 'function' && typeof window.renderLibraryPageShellContext !== 'function') {
@@ -404,6 +679,7 @@ function ensureRuntimeForPage(pageId) {
 
 function isPortalStartupDependencyReady() {
     const dependencyChecks = [
+        ['page-registration', 'renderStudentRegStructures'],
         ['study-card-container', 'renderStudyCard'],
         ['timetable-master-container', 'renderTimetable'],
         ['lms-subject-grid', 'renderLMSSubjects'],
@@ -413,8 +689,7 @@ function isPortalStartupDependencyReady() {
         ['page-orders', 'renderOrdersInboxPage'],
         ['orders-inbox-root', 'renderOrdersInboxPage'],
         ['page-library', 'renderLibraryPageShellContext'],
-        ['page-chancellery', 'renderChancelleryPage'],
-        ['page-student-service', 'renderStudentServicePage']
+        ['page-chancellery', 'renderChancelleryPage']
     ];
     return dependencyChecks.every(([elementId, functionName]) => {
         if (!document.getElementById(elementId)) return true;
@@ -423,11 +698,32 @@ function isPortalStartupDependencyReady() {
 }
 
 function markPortalShellReady() {
+    document.documentElement.classList.add('kiu-shell-ready');
     document.documentElement.classList.remove('kiu-shell-loading');
-    document.body?.classList.remove('kiu-shell-loading');
+    if (document.body) {
+        document.body.classList.add('kiu-shell-ready');
+        document.body.classList.remove('kiu-shell-loading');
+    }
 }
 
-window.markPortalShellReady = markPortalShellReady;
+__kiuNavExpose({
+    markPortalShellReady,
+});
+
+function schedulePortalShellReadyReveal() {
+    const reveal = () => markPortalShellReady();
+    if (typeof window.requestAnimationFrame === 'function') {
+        window.requestAnimationFrame(() => {
+            window.requestAnimationFrame(reveal);
+        });
+        return;
+    }
+    window.setTimeout(reveal, 32);
+}
+
+__kiuNavExpose({
+    schedulePortalShellReadyReveal,
+});
 
 function normalizeIndexPortalHomeHash() {
     if (!isIndexPortalShell()) return;
@@ -466,28 +762,33 @@ function invokeIndexPortalRehydrate(options = {}) {
 }
 
 function tryMarkPortalShellInteractive() {
-    if (
-        document.getElementById('lux-shell')
-        || document.getElementById('lux-nav')
-        || getStandaloneEntryPageId()
-    ) {
+    const navRoot = document.getElementById('lux-nav');
+    if (document.getElementById('lux-shell') && navRoot?.children?.length > 0) {
         markPortalShellReady();
     }
 }
 
 function scheduleRouteContentRender(renderFn) {
-    tryMarkPortalShellInteractive();
     if (typeof renderFn !== 'function') return;
     let hasRun = false;
     const run = () => {
         if (hasRun) return;
         hasRun = true;
         try {
-            renderFn();
+            const result = renderFn();
+            if (result && typeof result.then === 'function') {
+                result.catch((error) => {
+                    console.warn('Route content render failed.', error);
+                });
+            }
         } catch (error) {
             console.warn('Route content render failed.', error);
         }
     };
+    if (getStandaloneEntryPageId() === 'library') {
+        run();
+        return;
+    }
     const fallbackTimer = window.setTimeout(run, 48);
     if (typeof window.requestIdleCallback === 'function') {
         window.requestIdleCallback(() => {
@@ -506,7 +807,9 @@ function scheduleRouteContentRender(renderFn) {
     run();
 }
 
-window.scheduleRouteContentRender = scheduleRouteContentRender;
+__kiuNavExpose({
+    scheduleRouteContentRender,
+});
 
 function inferStandaloneRouteFamily(pageId, fallbackFamily = '') {
     const normalizedPageId = normalizeStandaloneActivePageId(pageId);
@@ -541,7 +844,7 @@ function applyStandaloneDesktopRouteVisualState(config = {}) {
     const pageId = normalizeStandaloneActivePageId(config.pageId || getActivePageId() || getStandaloneEntryPageId() || 'home');
     const entryId = normalizeStandaloneActivePageId(config.entryId || getStandaloneEntryPageId() || pageId || 'home');
     const family = inferStandaloneRouteFamily(pageId, config.family || body.dataset?.luxFamily || '');
-    body.classList.remove('kiu-shell-loading', 'lux-home-page');
+    body.classList.remove('lux-home-page');
     body.classList.add('lux-unified-shell', 'lux-nonhome-page', `lux-route-${pageId}`);
     if (config.decorateModernized !== false) {
         body.classList.add('lux-site-modernized');
@@ -572,9 +875,19 @@ function syncStandaloneDesktopRouteVisualShell(config = {}) {
     const activeBackgroundMode = document.body?.dataset?.luxBackgroundMode
         || localStorage.getItem('kiuLuxuryBackgroundMode')
         || 'peak';
-    if (typeof window.__kiuRefreshLuxuryBackground === 'function') {
-        window.__kiuRefreshLuxuryBackground(activeBackgroundMode);
+    const onOrdersRoute = document.body?.classList?.contains('lux-route-orders');
+    const onLibraryRoute = document.body?.classList?.contains('lux-route-library');
+    const refreshBackground = () => {
+        if (typeof window.__kiuRefreshLuxuryBackground === 'function') {
+            window.__kiuRefreshLuxuryBackground(activeBackgroundMode);
+        }
+    };
+    if (onOrdersRoute || onLibraryRoute) {
+        const schedule = window.requestIdleCallback || ((cb) => window.setTimeout(cb, 120));
+        schedule(refreshBackground);
+        return;
     }
+    refreshBackground();
 }
 
 function refreshStandaloneDesktopShellChrome(options = {}) {
@@ -650,7 +963,6 @@ function refreshStandaloneDesktopRouteContent(pageId, options = {}) {
         }
     }
     if (activePageId === 'exams') {
-        if (typeof window.renderExamsPageShellContext === 'function') window.renderExamsPageShellContext();
         if (typeof window.renderAdminExamSection === 'function') {
             window.renderAdminExamSection();
             return true;
@@ -668,6 +980,14 @@ function refreshStandaloneDesktopRouteContent(pageId, options = {}) {
     }
     if (activePageId === 'admin-tools' && typeof window.renderLuxuryAdminToolsPage === 'function') {
         window.renderLuxuryAdminToolsPage();
+        return true;
+    }
+    if (activePageId === 'student-service' && typeof window.renderStudentServicePage === 'function') {
+        window.renderStudentServicePage();
+        return true;
+    }
+    if (activePageId === 'programs' && typeof window.renderStudentEducationalProgramPage === 'function') {
+        window.renderStudentEducationalProgramPage();
         return true;
     }
     return false;
@@ -707,25 +1027,31 @@ function bootStandaloneDesktopRoute(config = {}) {
         });
     };
     const bootContent = async () => {
-        if (typeof config.beforeBoot === 'function') {
-            await config.beforeBoot();
+        try {
+            if (typeof config.beforeBoot === 'function') {
+                await config.beforeBoot();
+            }
+            if (typeof config.renderContent === 'function') {
+                await config.renderContent();
+            } else {
+                refreshStandaloneDesktopRouteContent(pageId, { reason: 'standalone-default-content' });
+            }
+            if (typeof config.afterRender === 'function') {
+                await config.afterRender();
+            }
+        } finally {
+            window.__kiuStandaloneRouteContentBootKey = bootKey;
+            scheduleRouteVisualSync();
+            schedulePortalShellReadyReveal();
         }
-        if (typeof config.renderContent === 'function') {
-            await config.renderContent();
-        } else {
-            refreshStandaloneDesktopRouteContent(pageId, { reason: 'standalone-default-content' });
-        }
-        if (typeof config.afterRender === 'function') {
-            await config.afterRender();
-        }
-        window.__kiuStandaloneRouteContentBootKey = bootKey;
-        scheduleRouteVisualSync();
     };
     const boot = () => {
-        routeRefresh({ rerender: false, trigger: 'boot' });
-        if (typeof markPortalShellReady === 'function') {
-            markPortalShellReady();
+        if (isStudentServiceWorkspaceEntry(entryId) || isStudentServiceWorkspaceEntry(pageId)) {
+            pinStudentServiceWorkspaceRole({ refreshChrome: false });
+        } else {
+            applyPortalViewRoleFromLocation({ refreshChrome: false });
         }
+        routeRefresh({ rerender: false, trigger: 'boot' });
         if (typeof scheduleRouteContentRender === 'function') {
             scheduleRouteContentRender(bootContent);
         } else {
@@ -770,12 +1096,14 @@ function bootStandaloneDesktopRoute(config = {}) {
 }
 
 window.ensureStandaloneDesktopRouteVisualState = applyStandaloneDesktopRouteVisualState;
-window.refreshStandaloneDesktopShellChrome = refreshStandaloneDesktopShellChrome;
-window.bootStandaloneDesktopRoute = bootStandaloneDesktopRoute;
+__kiuNavExpose({
+    refreshStandaloneDesktopShellChrome,
+    bootStandaloneDesktopRoute,
+});
 
 function autoBootStandaloneDesktopRoute() {
     const entryId = normalizeStandaloneActivePageId(getStandaloneEntryPageId());
-    if (!entryId || entryId === 'index' || entryId === 'lms') return;
+    if (!entryId || entryId === 'index' || entryId === 'lms' || entryId === 'student-service' || entryId === 'exams' || entryId === 'orders' || entryId === 'library') return;
     if (window.__kiuStandaloneDesktopRouteBootKey) return;
     bootStandaloneDesktopRoute({
         entryId,
@@ -920,17 +1248,13 @@ function runDeferredPortalStartup() {
     const hash = window.location.hash.replace('#', '');
     if (PORTAL_STANDALONE_ROUTE_IDS.has(hash)) {
         flushPortalStateForHardNavigation();
-        window.location.replace(resolvePortalRouteUrl(hash, activeRole));
+        window.location.replace(resolveWorkspacePortalNavUrl(hash, activeRole));
         return;
     }
     if (hash === 'calendar' && getNavigablePageSection('timetable')) {
         navigate('timetable');
         markPortalShellReady();
         return;
-    }
-    if (hash === 'programs' && typeof ensureIndexProgramsPage === 'function') {
-        const programsPage = ensureIndexProgramsPage();
-        if (programsPage) invalidateDomCache();
     }
     if (hash && hash !== 'home' && getNavigablePageSection(hash)) {
         navigate(hash);
@@ -955,14 +1279,15 @@ function runDeferredPortalStartup() {
     } else if (activePageId === 'news') {
         if (typeof renderNewsWorkspace === 'function') renderNewsWorkspace();
     } else if (activePageId === 'exams') {
-        if (typeof renderExamsPageShellContext === 'function') renderExamsPageShellContext();
         if (activeRole !== USER_ROLES.STUDENT && typeof renderAdminExamSection === 'function') {
             renderAdminExamSection();
         }
     } else if (activePageId === 'chancellery') {
         if (typeof renderChancelleryPage === 'function') renderChancelleryPage();
     } else if (activePageId === 'library') {
-        if (typeof renderLibraryPage === 'function') renderLibraryPage();
+        if (!window.__kiuStandaloneDesktopRouteBootKey && typeof renderLibraryPage === 'function') {
+            renderLibraryPage();
+        }
     } else if (activePageId === 'study-card' && typeof renderStudyCard === 'function') {
         scheduleRouteContentRender(renderStudyCard);
     }
@@ -979,14 +1304,8 @@ function primeDeferredShellRouteFromLocation(role = getEffectiveUserRole()) {
     let targetPageId = '';
     if (hash === 'calendar' && getNavigablePageSection('timetable')) {
         targetPageId = 'timetable';
-    } else {
-        if (hash === 'programs' && typeof ensureIndexProgramsPage === 'function') {
-            const programsPage = ensureIndexProgramsPage();
-            if (programsPage) invalidateDomCache();
-        }
-        if (hash && hash !== 'home' && getNavigablePageSection(hash)) {
-            targetPageId = hash;
-        }
+    } else if (hash && hash !== 'home' && getNavigablePageSection(hash)) {
+        targetPageId = hash;
     }
     if (!targetPageId) return false;
     return primeShellSectionTransition(targetPageId, role);
@@ -995,7 +1314,6 @@ function primeDeferredShellRouteFromLocation(role = getEffectiveUserRole()) {
 function queueDeferredPortalStartup() {
     if (getStandaloneEntryPageId() === 'social') {
         kiuShellStartupCompleted = true;
-        markPortalShellReady();
         return;
     }
     if (isStandaloneAdminWorkspaceEntry()) {
@@ -1020,7 +1338,7 @@ function queueDeferredPortalStartup() {
     const startupHash = window.location.hash.replace('#', '');
     if (PORTAL_STANDALONE_ROUTE_IDS.has(startupHash)) {
         flushPortalStateForHardNavigation();
-        window.location.replace(resolvePortalRouteUrl(startupHash, getEffectiveUserRole()));
+        window.location.replace(resolveWorkspacePortalNavUrl(startupHash, getEffectiveUserRole()));
         return;
     }
     tryMarkPortalShellInteractive();
@@ -1042,13 +1360,14 @@ function initializePortalShell() {
     if (typeof loadAuthState === 'function' && !currentUser) {
         loadAuthState();
     }
+    applyPortalViewRoleFromLocation({ refreshChrome: false });
     if (typeof requireAuth === 'function') {
         requireAuth();
     }
     const startupHash = window.location.hash.replace('#', '');
     if (PORTAL_STANDALONE_ROUTE_IDS.has(startupHash)) {
         flushPortalStateForHardNavigation();
-        window.location.replace(resolvePortalRouteUrl(startupHash, getEffectiveUserRole()));
+        window.location.replace(resolveWorkspacePortalNavUrl(startupHash, getEffectiveUserRole()));
         return;
     }
     if (getStandaloneEntryPageId() === 'social') {
@@ -1057,6 +1376,31 @@ function initializePortalShell() {
             .filter(className => className.startsWith('role-'))
             .forEach(className => document.body.classList.remove(className));
         document.body.classList.add(`role-${initialRole}`);
+        const storedFac = normalizeFacultyCode(localStorage.getItem('currentFaculty') || 'ECON', 'ECON');
+        switchFacultyTheme(storedFac, { refreshDependentViews: false });
+        kiuShellStartupCompleted = true;
+        return;
+    }
+    if (getStandaloneEntryPageId() === 'orders') {
+        const initialRole = getEffectiveUserRole();
+        const visualRole = shouldUseStudentShellVisualRole() ? USER_ROLES.STUDENT : initialRole;
+        Array.from(document.body.classList)
+            .filter(className => className.startsWith('role-'))
+            .forEach(className => document.body.classList.remove(className));
+        document.body.classList.add(`role-${visualRole}`);
+        const storedFac = normalizeFacultyCode(localStorage.getItem('currentFaculty') || 'ECON', 'ECON');
+        switchFacultyTheme(storedFac, { refreshDependentViews: false });
+        kiuShellStartupCompleted = true;
+        markPortalShellReady();
+        return;
+    }
+    if (getStandaloneEntryPageId() === 'library') {
+        const initialRole = getEffectiveUserRole();
+        const visualRole = shouldUseStudentShellVisualRole() ? USER_ROLES.STUDENT : initialRole;
+        Array.from(document.body.classList)
+            .filter(className => className.startsWith('role-'))
+            .forEach(className => document.body.classList.remove(className));
+        document.body.classList.add(`role-${visualRole}`);
         const storedFac = normalizeFacultyCode(localStorage.getItem('currentFaculty') || 'ECON', 'ECON');
         switchFacultyTheme(storedFac, { refreshDependentViews: false });
         kiuShellStartupCompleted = true;
@@ -1157,9 +1501,10 @@ function handleHeaderHomeNavigation(event) {
         return;
     }
     if (isStandaloneAdminWorkspaceEntry() && getNavigationAuthRole() === USER_ROLES.ADMIN) {
+        const effectiveRole = typeof getEffectiveUserRole === 'function' ? getEffectiveUserRole() : USER_ROLES.ADMIN;
         const homeTarget = typeof getRoleHomePage === 'function'
-            ? getRoleHomePage(USER_ROLES.ADMIN)
-            : 'index.html?view=admin#home';
+            ? getRoleHomePage(effectiveRole)
+            : `index.html?view=${encodeURIComponent(effectiveRole)}#home`;
         persistNavigationAuthSnapshot();
         window.location.assign(homeTarget);
         return;
@@ -1167,7 +1512,9 @@ function handleHeaderHomeNavigation(event) {
     navigate('home');
 }
 
-window.handleHeaderHomeNavigation = handleHeaderHomeNavigation;
+__kiuNavExpose({
+    handleHeaderHomeNavigation,
+});
 
 function flushPortalStateForHardNavigation() {
     if (typeof flushPortalStateBeforeNavigation === 'function') {
@@ -1180,6 +1527,15 @@ function flushPortalStateForHardNavigation() {
 }
 
 function persistNavigationAuthSnapshot() {
+    let snapshotRole = '';
+    try {
+        snapshotRole = String(
+            localStorage.getItem(PENDING_ROLE_SWITCH_KEY)
+            || localStorage.getItem('currentUserRole')
+            || (typeof resolveStoredWorkspaceRole === 'function' ? resolveStoredWorkspaceRole() : '')
+            || ''
+        ).trim().toLowerCase();
+    } catch (error) {}
     flushPortalStateForHardNavigation();
     try {
         const authenticatedUser = currentUser
@@ -1198,8 +1554,17 @@ function persistNavigationAuthSnapshot() {
         }));
         const effectiveRole = typeof getEffectiveUserRole === 'function'
             ? getEffectiveUserRole()
-            : (currentUserRole || activeUser?.role || authenticatedUser.role);
-        if (effectiveRole) localStorage.setItem('currentUserRole', effectiveRole);
+            : (snapshotRole || currentUserRole || activeUser?.role || authenticatedUser.role);
+        if (effectiveRole) {
+            localStorage.setItem('currentUserRole', effectiveRole);
+            if (
+                String(authenticatedUser.role || '').trim().toLowerCase() === USER_ROLES.ADMIN
+                && effectiveRole !== USER_ROLES.ADMIN
+            ) {
+                localStorage.setItem(PENDING_ROLE_SWITCH_KEY, effectiveRole);
+                sessionStorage.setItem(ACTIVE_ROLE_IMPERSONATION_KEY, '1');
+            }
+        }
     } catch (error) {
         console.warn('Could not persist auth snapshot before navigation.', error);
     }
@@ -1210,13 +1575,16 @@ function navigate(pageId, skipRuntimeBootstrap = false) {
     const profileMenu = document.getElementById('profileMenu');
     if(profileMenu) profileMenu.classList.remove('show');
     if (typeof clearTemporarySocialNavGlow === 'function') clearTemporarySocialNavGlow();
+    if (!isIndexPortalShell() && isStudentServiceWorkspaceEntry()) {
+        pinStudentServiceWorkspaceRole({ refreshChrome: false });
+    }
     const effectiveRole = getEffectiveUserRole();
     const navigationAuthRole = getNavigationAuthRole();
 
     if (pageId === 'home' && isStandaloneAdminWorkspaceEntry() && navigationAuthRole === USER_ROLES.ADMIN) {
         const homeTarget = typeof getRoleHomePage === 'function'
-            ? getRoleHomePage(USER_ROLES.ADMIN)
-            : 'index.html?view=admin#home';
+            ? getRoleHomePage(effectiveRole)
+            : `index.html?view=${encodeURIComponent(effectiveRole)}#home`;
         persistNavigationAuthSnapshot();
         window.location.assign(homeTarget);
         return;
@@ -1224,7 +1592,7 @@ function navigate(pageId, skipRuntimeBootstrap = false) {
 
     // Standalone routes should bypass hidden legacy shell sections entirely.
     if (pageId === 'social' && getStandaloneEntryPageId() !== 'social') {
-        if (!_allowedPagesCache) {
+        if (!_allowedPagesCache || _allowedPagesCacheRole !== effectiveRole) {
             _allowedPagesCache = getAllowedPagesForRole(effectiveRole);
         }
         if (!_allowedPagesCache.has(pageId)) {
@@ -1237,8 +1605,7 @@ function navigate(pageId, skipRuntimeBootstrap = false) {
         if (pageId === 'social' && typeof rememberSocialPortalContext === 'function') {
             try { rememberSocialPortalContext(); } catch (error) {}
         }
-        persistNavigationAuthSnapshot();
-        window.location.assign('social.html');
+        assignStandalonePortalRoute('social', effectiveRole);
         return;
     }
 
@@ -1249,7 +1616,7 @@ function navigate(pageId, skipRuntimeBootstrap = false) {
     if (
         routeMode === 'spa-section'
         && !skipRuntimeBootstrap
-        && (pageId === 'news' || pageId === 'student-service' || pageId === 'orders')
+        && (pageId === 'news' || pageId === 'orders')
     ) {
         const runtimePromise = ensureRuntimeForPage(pageId);
         if (runtimePromise) {
@@ -1260,7 +1627,7 @@ function navigate(pageId, skipRuntimeBootstrap = false) {
     }
 
     // PERFORMANCE: Use cached allowed pages instead of rebuilding Set every time
-    if (!_allowedPagesCache) {
+    if (!_allowedPagesCache || _allowedPagesCacheRole !== effectiveRole) {
         _allowedPagesCache = getAllowedPagesForRole(effectiveRole);
     }
     const resolvedPageId = resolveAliasPageId(pageId, effectiveRole);
@@ -1279,7 +1646,10 @@ function navigate(pageId, skipRuntimeBootstrap = false) {
 
     // Standalone HTML routes: always hard-navigate via the shared route resolver.
     if (!isIndexPortalShell()) {
-        assignStandalonePortalRoute(pageId, effectiveRole);
+        assignStandalonePortalRoute(
+            pageId,
+            typeof getEffectiveUserRole === 'function' ? getEffectiveUserRole() : effectiveRole
+        );
         return;
     }
 
@@ -1297,7 +1667,7 @@ function navigate(pageId, skipRuntimeBootstrap = false) {
     }
 
     // Always-external pages skip SPA section search.
-    const alwaysExternal = ['admin-tools', 'admin-scheduler', 'staff', 'students-admin', 'profile-view', 'exams', 'career-market'];
+    const alwaysExternal = ['admin-tools', 'admin-scheduler', 'staff', 'students-admin', 'profile-view', 'exams'];
     if (alwaysExternal.includes(pageId)) {
         const externalPages = {
             'admin-tools': 'admin-tools.html',
@@ -1305,20 +1675,23 @@ function navigate(pageId, skipRuntimeBootstrap = false) {
             'staff': 'staff.html',
             'students-admin': 'students-admin.html',
             'profile-view': 'profile-view.html',
-            'exams': 'exams.html',
-            'career-market': 'career-market.html'
+            'exams': 'exams.html'
         };
+        cleanupStaleSocialRouteState(pageId);
         persistNavigationAuthSnapshot();
-        window.location.assign(externalPages[pageId]);
+        let externalTarget = externalPages[pageId];
+        if (pageId === 'profile-view') {
+            if (resolveActiveWorkspaceViewRole(effectiveRole) === USER_ROLES.STUDENT_SERVICE) {
+                externalTarget = resolveWorkspacePortalNavUrl('profile-view', effectiveRole);
+            } else if (shouldRedirectProfileViewToPersonalData()) {
+                externalTarget = appendPortalViewQuery('personal-data.html', effectiveRole);
+            }
+        }
+        window.location.assign(externalTarget);
         return;
     }
 
     // Pages always re-render on navigation to pick up theme/transparency changes
-
-    if (pageId === 'programs' && typeof ensureIndexProgramsPage === 'function' && !document.getElementById('page-programs')) {
-        const programsPage = ensureIndexProgramsPage();
-        if (programsPage) invalidateDomCache();
-    }
 
     // SPA-style switching for index.html elements
     if (routeMode === 'spa-section') {
@@ -1347,8 +1720,7 @@ function navigate(pageId, skipRuntimeBootstrap = false) {
                     if (typeof onAdminDashboardLoad === 'function') onAdminDashboardLoad();
                 }
                 if (pageId === 'exams' && effectiveRole !== USER_ROLES.STUDENT) {
-                    if (typeof renderExamsPageShellContext === 'function') renderExamsPageShellContext();
-                    if (typeof renderAdminExamSection === 'function') renderAdminExamSection();
+                                if (typeof renderAdminExamSection === 'function') renderAdminExamSection();
                 }
                 if (pageId === 'social') {
                     if (typeof schedulePublicSocialRenderBoost === 'function') schedulePublicSocialRenderBoost();
@@ -1359,9 +1731,6 @@ function navigate(pageId, skipRuntimeBootstrap = false) {
                 if (pageId === 'chancellery' && typeof renderChancelleryPage === 'function') {
                     renderChancelleryPage();
                 }
-                if (pageId === 'student-service' && typeof renderStudentServicePage === 'function') {
-                    renderStudentServicePage();
-                }
                 if (pageId === 'library' && typeof renderLibraryPage === 'function') {
                     renderLibraryPage();
                 }
@@ -1371,12 +1740,6 @@ function navigate(pageId, skipRuntimeBootstrap = false) {
 
                 ensureFacultyExamsNavLink();
                 syncProfessorNavActiveState();
-
-                /* FIX: Re-apply saved transparency to all elements on the new page */
-                if (typeof updateTransparency === 'function') {
-                    var _savedTrans = localStorage.getItem('kiuLuxurySurfaceTransparency');
-                    if (_savedTrans) updateTransparency(parseInt(_savedTrans));
-                }
             }
 
             if (found) {
@@ -1390,7 +1753,9 @@ function navigate(pageId, skipRuntimeBootstrap = false) {
 }
 
 window.__kiuCoreNavigate = navigate;
-window.navigate = navigate;
+__kiuNavExpose({
+    navigate,
+});
 window.__mobileNavHooked = false;
 try {
     window.dispatchEvent(new Event('kiu:navigate-runtime-ready'));

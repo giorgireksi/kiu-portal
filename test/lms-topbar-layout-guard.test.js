@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
 function readSource(relativePath) {
@@ -8,6 +8,7 @@ function readSource(relativePath) {
 
 describe('lms topbar layout guard', () => {
     const luxurySource = readSource('assets/js/features/index-luxury.js');
+    const runtimeSource = readSource('assets/js/features/luxury-index-runtime.js');
     const chromeSource = readSource('assets/js/features/luxury-shell-chrome.js');
     const classroomSource = readSource('assets/js/pages/lms-classroom-tabs-runtime.js');
     const lmsHtml = readSource('lms.html');
@@ -19,7 +20,7 @@ describe('lms topbar layout guard', () => {
     });
 
     it('applies resolved route token in applyPortalPageState', () => {
-        expect(luxurySource).toContain('`lux-route-${sanitizeBodyToken(resolveLuxRouteBodyToken(pageId, entryId))}`');
+        expect(luxurySource).toContain('sanitizeBodyToken(resolveLuxRouteBodyToken(pageId, entryId), \'portal\')');
     });
 
     it('skips legacy visual refresh on LMS route during shell sync', () => {
@@ -29,8 +30,8 @@ describe('lms topbar layout guard', () => {
     });
 
     it('skips legacy visual decoration inside LMS workspace nodes', () => {
-        expect(luxurySource).toContain("node.closest('#page-lms, #page-lms-groups, #page-lms-inner, #lms-content-area')");
-        expect(luxurySource).toContain("document.body?.classList?.contains('lux-route-lms')");
+        expect(runtimeSource).toContain("node.closest('#page-lms, #page-lms-groups, #page-lms-inner, #lms-content-area')");
+        expect(runtimeSource).toContain("document.body?.classList?.contains('lux-route-lms')");
     });
 
     it('does not enhance LMS selects with universal picker widgets', () => {

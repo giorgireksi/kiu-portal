@@ -72,6 +72,7 @@ function armProtectedQuizMonitorAutoRefresh(courseKey) {
     activeProtectedQuizMonitorCourseKey = normalizedCourseKey;
     if (activeProtectedQuizMonitorInterval) return;
     activeProtectedQuizMonitorInterval = setInterval(() => {
+        if (document.visibilityState === 'hidden') return;
         void refreshProtectedQuizMonitorLiveData();
     }, PROTECTED_QUIZ_MONITOR_REFRESH_MS);
 }
@@ -691,27 +692,29 @@ async function launchProtectedQuizInAntiCheat(resourceKey, quizId) {
 function renderProtectedQuizLaunchShell(resourceKey, quiz, subjectLabel, groupLabel) {
     const installUrl = getProtectedQuizInstallUrl();
     return `
-        <div class="lms-student-quiz-cover lms-protected-launch-shell">
-            <div class="lms-student-quiz-cover-inner lms-protected-launch-inner">
-                <div class="lms-student-quiz-cover-icon is-accent lms-protected-launch-icon">
-                    <i class="fas fa-shield-alt"></i>
-                </div>
-                <div class="lms-student-quiz-cover-title lms-protected-launch-title">Protected Quiz Launch Required</div>
-                <div class="lms-student-quiz-cover-copy lms-protected-launch-copy">
-                    ${escapeHtml(quiz.title || getLmsQuizDisplayLabel(quiz))} for ${escapeHtml(subjectLabel)} / ${escapeHtml(groupLabel)} can only be opened inside the anti-cheat application.
-                    The regular browser LMS page will not reveal the answerable quiz body.
-                </div>
-                <div class="lms-protected-launch-support-copy">
-                    Open the Anti-Cheat Browser first, sign in there, then open this same LMS group and start the quiz from inside that protected browser. This page stays read-only in the regular browser.
-                </div>
-                <div class="lms-student-quiz-cover-actions lms-protected-launch-actions">
-                    <button type="button" class="kiu-btn-blue lms-student-quiz-cover-btn lms-protected-launch-action-btn is-open-browser" data-lms-click="launchProtectedQuizInAntiCheat(${jsQuote(resourceKey)}, ${jsQuote(quiz.id)})">
-                        <i class="fas fa-arrow-up-right-from-square"></i> Open Anti-Cheat Browser
-                    </button>
-                    <button type="button" class="kiu-btn-outline lms-student-quiz-cover-btn lms-protected-launch-action-btn is-open-app" data-lms-click="openAntiCheatDesktopApp()">
-                        <i class="fas fa-desktop"></i> Open LMS In App
-                    </button>
-                    ${installUrl && installUrl !== '#' ? `<a href="${escapeHtml(installUrl)}" target="_blank" rel="noopener" class="kiu-btn-outline lms-student-quiz-cover-btn lms-protected-launch-link lms-protected-launch-action-btn is-install"><i class="fas fa-download"></i> Install App</a>` : ''}
+        <div class="lms-quiz-studio-shell lms-quiz-builder lms-protected-launch-shell">
+            <div class="lms-student-quiz-cover">
+                <div class="lms-student-quiz-cover-inner lms-protected-launch-inner">
+                    <div class="lms-student-quiz-cover-icon is-accent lms-protected-launch-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <div class="lms-student-quiz-cover-title lms-protected-launch-title">Protected Quiz Launch Required</div>
+                    <div class="lms-student-quiz-cover-copy lms-protected-launch-copy">
+                        ${escapeHtml(quiz.title || getLmsQuizDisplayLabel(quiz))} for ${escapeHtml(subjectLabel)} / ${escapeHtml(groupLabel)} can only be opened inside the anti-cheat application.
+                        The regular browser LMS page will not reveal the answerable quiz body.
+                    </div>
+                    <div class="lms-protected-launch-support-copy">
+                        Open the Anti-Cheat Browser first, sign in there, then open this same LMS group and start the quiz from inside that protected browser. This page stays read-only in the regular browser.
+                    </div>
+                    <div class="lms-student-quiz-cover-actions lms-protected-launch-actions">
+                        <button type="button" class="lux-primary-btn lms-student-quiz-cover-btn lms-protected-launch-action-btn is-open-browser" data-lms-click="launchProtectedQuizInAntiCheat(${jsQuote(resourceKey)}, ${jsQuote(quiz.id)})">
+                            <i class="fas fa-arrow-up-right-from-square"></i> Open Anti-Cheat Browser
+                        </button>
+                        <button type="button" class="lux-secondary-btn lms-student-quiz-cover-btn lms-protected-launch-action-btn is-open-app" data-lms-click="openAntiCheatDesktopApp()">
+                            <i class="fas fa-desktop"></i> Open LMS In App
+                        </button>
+                        ${installUrl && installUrl !== '#' ? `<a href="${escapeHtml(installUrl)}" target="_blank" rel="noopener" class="lux-secondary-btn lms-student-quiz-cover-btn lms-protected-launch-link lms-protected-launch-action-btn is-install"><i class="fas fa-download"></i> Install App</a>` : ''}
+                    </div>
                 </div>
             </div>
         </div>
@@ -864,12 +867,12 @@ async function renderLmsMonitoringSection(courseId, options = {}) {
                     </summary>
                     <div class="lms-protected-monitor-body">
                         <div class="lms-protected-monitor-actions">
-                            <button type="button" class="kiu-btn-outline lms-quiz-action-btn is-compact lms-protected-monitor-action-btn is-block" data-lms-click="performProtectedMonitoringAction(${jsQuote(context.resourceKey)}, ${jsQuote(quiz.id)}, ${jsQuote(student.id || attempt.studentId)}, 'block')">Block</button>
-                            <button type="button" class="kiu-btn-outline lms-quiz-action-btn is-compact lms-protected-monitor-action-btn is-unblock" data-lms-click="performProtectedMonitoringAction(${jsQuote(context.resourceKey)}, ${jsQuote(quiz.id)}, ${jsQuote(student.id || attempt.studentId)}, 'unblock')">Unblock</button>
-                            <button type="button" class="kiu-btn-outline lms-quiz-action-btn is-compact lms-protected-monitor-action-btn is-force-submit" data-lms-click="performProtectedMonitoringAction(${jsQuote(context.resourceKey)}, ${jsQuote(quiz.id)}, ${jsQuote(student.id || attempt.studentId)}, 'force-submit')">Force Submit</button>
-                            <button type="button" class="kiu-btn-outline lms-quiz-action-btn is-compact lms-protected-monitor-action-btn is-reset-warnings" data-lms-click="performProtectedMonitoringAction(${jsQuote(context.resourceKey)}, ${jsQuote(quiz.id)}, ${jsQuote(student.id || attempt.studentId)}, 'reset-warnings')">Reset Warnings</button>
-                            <button type="button" class="kiu-btn-outline lms-quiz-action-btn is-compact lms-protected-monitor-action-btn is-approve-reconnect" data-lms-click="performProtectedMonitoringAction(${jsQuote(context.resourceKey)}, ${jsQuote(quiz.id)}, ${jsQuote(student.id || attempt.studentId)}, 'approve-reconnect')">Approve Reconnect</button>
-                            <button type="button" class="kiu-btn-outline lms-quiz-action-btn is-compact lms-protected-monitor-action-btn is-override-status" data-lms-click="performProtectedMonitoringAction(${jsQuote(context.resourceKey)}, ${jsQuote(quiz.id)}, ${jsQuote(student.id || attempt.studentId)}, 'override-status')">Override Status</button>
+                            <button type="button" class="lux-secondary-btn lms-quiz-action-btn is-compact lms-protected-monitor-action-btn is-block" data-lms-click="performProtectedMonitoringAction(${jsQuote(context.resourceKey)}, ${jsQuote(quiz.id)}, ${jsQuote(student.id || attempt.studentId)}, 'block')">Block</button>
+                            <button type="button" class="lux-secondary-btn lms-quiz-action-btn is-compact lms-protected-monitor-action-btn is-unblock" data-lms-click="performProtectedMonitoringAction(${jsQuote(context.resourceKey)}, ${jsQuote(quiz.id)}, ${jsQuote(student.id || attempt.studentId)}, 'unblock')">Unblock</button>
+                            <button type="button" class="lux-secondary-btn lms-quiz-action-btn is-compact lms-protected-monitor-action-btn is-force-submit" data-lms-click="performProtectedMonitoringAction(${jsQuote(context.resourceKey)}, ${jsQuote(quiz.id)}, ${jsQuote(student.id || attempt.studentId)}, 'force-submit')">Force Submit</button>
+                            <button type="button" class="lux-secondary-btn lms-quiz-action-btn is-compact lms-protected-monitor-action-btn is-reset-warnings" data-lms-click="performProtectedMonitoringAction(${jsQuote(context.resourceKey)}, ${jsQuote(quiz.id)}, ${jsQuote(student.id || attempt.studentId)}, 'reset-warnings')">Reset Warnings</button>
+                            <button type="button" class="lux-secondary-btn lms-quiz-action-btn is-compact lms-protected-monitor-action-btn is-approve-reconnect" data-lms-click="performProtectedMonitoringAction(${jsQuote(context.resourceKey)}, ${jsQuote(quiz.id)}, ${jsQuote(student.id || attempt.studentId)}, 'approve-reconnect')">Approve Reconnect</button>
+                            <button type="button" class="lux-secondary-btn lms-quiz-action-btn is-compact lms-protected-monitor-action-btn is-override-status" data-lms-click="performProtectedMonitoringAction(${jsQuote(context.resourceKey)}, ${jsQuote(quiz.id)}, ${jsQuote(student.id || attempt.studentId)}, 'override-status')">Override Status</button>
                         </div>
                         <div class="lms-protected-monitor-metrics">
                             <div class="lms-protected-monitor-metric">
@@ -929,7 +932,7 @@ async function renderLmsMonitoringSection(courseId, options = {}) {
                         <div class="lms-route-card-title lms-protected-monitor-page-title">Quiz Monitoring</div>
                         <div class="lms-route-copy lms-route-copy-mt-4 lms-protected-monitor-page-copy">Live anti-cheat, warnings, and proctor controls. Auto-refresh updates every ${Math.round(PROTECTED_QUIZ_MONITOR_REFRESH_MS / 1000)} seconds.</div>
                     </div>
-                    <button type="button" class="kiu-btn-outline lms-quiz-action-btn lms-protected-monitor-page-refresh lms-protected-monitor-action-btn is-refresh" data-lms-click="refreshProtectedQuizMonitorLiveData(true)"><i class="fas fa-rotate-right"></i> Refresh</button>
+                    <button type="button" class="lux-secondary-btn lms-quiz-action-btn lms-protected-monitor-page-refresh lms-protected-monitor-action-btn is-refresh" data-lms-click="refreshProtectedQuizMonitorLiveData(true)"><i class="fas fa-rotate-right"></i> Refresh</button>
                 </div>
             </div>
             ${quizBlocks}
@@ -975,3 +978,6 @@ window.refreshProtectedQuizMonitorLiveData = refreshProtectedQuizMonitorLiveData
 bootstrapProtectedQuizRouteFromUrl();
 schedulePendingProtectedQuizLaunchResume();
 window.addEventListener('beforeunload', stopProtectedQuizMonitorAutoRefresh);
+if (typeof window !== 'undefined') {
+    window.renderLmsMonitoringSection = window.renderLmsMonitoringSection || renderLmsMonitoringSection;
+}

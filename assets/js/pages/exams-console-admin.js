@@ -7,6 +7,9 @@
         runtime,
         getReviewTemplates,
         getApprovedTemplates,
+        getReviewQueueGroups,
+        getReviewFacultyOptions,
+        canUseCrossFacultyExamView,
         getTemplateById,
         getScheduleDraft,
         getSelectedStudentsForSchedule,
@@ -32,6 +35,9 @@
         !runtime
         || typeof getReviewTemplates !== 'function'
         || typeof getApprovedTemplates !== 'function'
+        || typeof getReviewQueueGroups !== 'function'
+        || typeof getReviewFacultyOptions !== 'function'
+        || typeof canUseCrossFacultyExamView !== 'function'
         || typeof getTemplateById !== 'function'
         || typeof getScheduleDraft !== 'function'
         || typeof getSelectedStudentsForSchedule !== 'function'
@@ -161,55 +167,151 @@
     }
 
     window.renderExamReviewTab = function renderExamReviewTab() {
-        const queue = getReviewTemplates();
+        const groups = getReviewQueueGroups();
+        const facultyOptions = getReviewFacultyOptions();
+        const crossFaculty = canUseCrossFacultyExamView();
         const bankCount = (t) => (t.questionBank || t.questions || []).length;
         const varCount = (t) => (t.variants || []).length;
+
+        const initials = (name) => {
+            const parts = String(name || '').trim().split(/\s+/).filter(Boolean);
+            if (!parts.length) return '—';
+            if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+            return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+        };
+
+        const timeAgo = (value) => {
+            const time = new Date(value).getTime();
+            if (!time || Number.isNaN(time)) return '';
+            const diff = Date.now() - time;
+            if (diff < 0) return typeof formatShortDate === 'function' ? formatShortDate(value) : '';
+            const minutes = Math.floor(diff / 60000);
+            if (minutes < 1) return 'just now';
+            if (minutes < 60) return `${minutes}m ago`;
+            const hours = Math.floor(minutes / 60);
+            if (hours < 24) return `${hours}h ago`;
+            const days = Math.floor(hours / 24);
+            if (days < 7) return `${days}d ago`;
+            return typeof formatShortDate === 'function' ? formatShortDate(value) : `${days}d ago`;
+        };
+
+        const renderCard = (template, opts = {}) => {
+            const status = String(template.status || 'submitted').toLowerCase();
+            const showApprove = opts.showApprove !== false;
+            const showReturn = opts.showReturn !== false;
+            const note = String(template.revisionNote || '').trim();
+            return `
+                <article class="ex2-rq-card" data-exam-call="editExamTemplate" data-exam-args='["${escapeHtml(template.id)}"]'>
+                    <div class="ex2-rq-card-top">
+                        <span class="ex2-status-dot is-${escapeHtml(status)}">${escapeHtml(status.replace(/_/g, ' '))}</span>
+                        <span class="ex2-rq-card-age">${escapeHtml(timeAgo(template.updatedAt || template.createdAt))}</span>
+                    </div>
+                    <h4 class="ex2-rq-card-title">${escapeHtml(template.title || 'Untitled')}</h4>
+                    <div class="ex2-rq-card-meta">${escapeHtml(template.subjectName || template.subjectId || 'No subject')} · ${bankCount(template)} Q · ${varCount(template)} v · ${template.durationMinutes || 90}m</div>
+                    <div class="ex2-rq-card-foot">
+                        <span class="ex2-rq-card-author" title="${escapeHtml(template.createdByName || 'Unknown')}">
+                            <span class="ex2-rq-avatar">${escapeHtml(initials(template.createdByName))}</span>
+                            <span class="ex2-rq-card-author-name">${escapeHtml(template.createdByName || 'Unknown')}</span>
+                        </span>
+                        ${template.faculty ? `<span class="ex2-rq-card-faculty">${escapeHtml(template.faculty)}</span>` : ''}
+                    </div>
+                    ${note ? `<div class="ex2-rq-card-note"><i class="fas fa-comment-dots"></i> ${escapeHtml(note)}</div>` : ''}
+                    <div class="ex2-rq-card-actions">
+                        ${showApprove ? `<button type="button" class="ex2-rq-action is-approve" data-exam-call="saveAndApproveExamTemplate" data-exam-args='["${escapeHtml(template.id)}"]' title="Approve"><i class="fas fa-check"></i></button>` : ''}
+                        ${showReturn ? `<button type="button" class="ex2-rq-action is-return" data-exam-call="openReturnModal" data-exam-args='["${escapeHtml(template.id)}"]' title="Return for revision"><i class="fas fa-rotate-left"></i></button>` : ''}
+                        <button type="button" class="ex2-rq-action is-preview" data-exam-call="editExamTemplate" data-exam-args='["${escapeHtml(template.id)}"]' title="Preview"><i class="fas fa-eye"></i></button>
+                    </div>
+                </article>
+            `;
+        };
+
+        const renderColumn = ({ title, icon, tone, items, emptyText, collapsible, collapsed, showApprove, showReturn }) => {
+            const count = items.length;
+            const bodyCollapsed = collapsible && collapsed;
+            return `
+                <section class="ex2-rq-column is-${tone}${bodyCollapsed ? ' is-collapsed' : ''}${!count && !bodyCollapsed ? ' is-empty' : ''}">
+                    <header class="ex2-rq-column-head">
+                        <div class="ex2-rq-column-title">
+                            <i class="fas ${icon}"></i>
+                            <span>${escapeHtml(title)}</span>
+                            <span class="ex2-rq-column-count is-${tone}">${count}</span>
+                        </div>
+                        ${collapsible ? `<button type="button" class="ex2-rq-column-toggle" data-exam-call="toggleExamReviewApproved" title="${collapsed ? 'Expand' : 'Collapse'}"><i class="fas fa-chevron-${collapsed ? 'right' : 'down'}"></i></button>` : ''}
+                    </header>
+                    ${!bodyCollapsed ? `
+                        <div class="ex2-rq-column-body">
+                            ${count ? items.map((t) => renderCard(t, { showApprove, showReturn })).join('') : `<div class="ex2-rq-column-empty"><i class="fas fa-inbox"></i><span>${escapeHtml(emptyText)}</span></div>`}
+                        </div>
+                    ` : ''}
+                </section>
+            `;
+        };
+
+        const total = groups.awaiting.length + groups.returned.length + groups.approved.length;
+
         return `
-            <section class="ex2-panel">
-                <div class="ex2-panel-head">
+            <section class="ex2-panel ex2-rq-console">
+                <div class="ex2-panel-head ex2-rq-console-head">
                     <div>
                         <h2 class="ex2-panel-title"><i class="fas fa-clipboard-check ex2-heading-icon"></i>Review Queue</h2>
-                        <p class="ex2-panel-copy">Approve or return quizzes submitted by teaching staff.</p>
+                        <p class="ex2-panel-copy">Triage quizzes submitted by teaching staff. Approve, return, or preview in place.</p>
+                    </div>
+                    <div class="ex2-rq-summary-chips">
+                        <span class="ex2-status-dot is-submitted">${groups.awaiting.length} awaiting</span>
+                        <span class="ex2-status-dot is-returned">${groups.returned.length} returned</span>
+                        <span class="ex2-status-dot is-approved">${groups.approved.length} approved</span>
                     </div>
                 </div>
-                ${queue.length ? `
-                    <div class="ex2-review-grid">
-                        ${queue.map((template) => `
-                            <article class="ex2-quiz-card ex2-quiz-card--static ex2-review-queue-card">
-                                <div class="ex2-quiz-card-head ex2-quiz-card-head--mb-12 ex2-review-queue-head">
-                                    <div class="ex2-inline-actions ex2-inline-actions--gap-10 ex2-review-queue-status-row">
-                                        <span class="ex2-status-dot is-${escapeHtml(String(template.status || 'submitted').toLowerCase())}">${escapeHtml(template.status || 'submitted')}</span>
-                                        <span class="ex2-copy-muted ex2-review-queue-author-copy">by ${escapeHtml(template.createdByName || 'Unknown')}</span>
-                                    </div>
-                                    <span class="ex2-tag ex2-review-queue-faculty-tag">${escapeHtml(template.faculty || 'N/A')}</span>
-                                </div>
-                                <h3 class="ex2-quiz-card-title ex2-quiz-card-title--lg">${escapeHtml(template.title || 'Untitled')}</h3>
-                                <div class="ex2-quiz-card-meta ex2-quiz-card-meta--mb-12">${escapeHtml(template.subjectName || template.subjectId || 'No subject')}</div>
-                                <div class="ex2-mini-grid">
-                                    <div class="ex2-review-summary-card"><strong class="ex2-review-summary-value">${bankCount(template)}</strong><span class="ex2-review-summary-label">Questions</span></div>
-                                    <div class="ex2-review-summary-card"><strong class="ex2-review-summary-value">${varCount(template)}</strong><span class="ex2-review-summary-label">Variants</span></div>
-                                    <div class="ex2-review-summary-card"><strong class="ex2-review-summary-value">${template.durationMinutes || 90}m</strong><span class="ex2-review-summary-label">Duration</span></div>
-                                    <div class="ex2-review-summary-card"><strong class="ex2-review-summary-value">${template.passingScore || 50}</strong><span class="ex2-review-summary-label">Pass pts</span></div>
-                                    <div class="ex2-review-summary-card"><strong class="ex2-review-summary-value">${template.gradingWeight || 30}</strong><span class="ex2-review-summary-label">Quiz pts</span></div>
-                                </div>
-                                <div class="ex2-inline-actions ex2-inline-actions--mt-16 ex2-review-queue-action-row">
-                                    <button type="button" class="ex2-btn is-primary" data-exam-call="saveAndApproveExamTemplate" data-exam-args='["${escapeHtml(template.id)}"]'><i class="fas fa-check-circle"></i> Approve</button>
-                                    <button type="button" class="ex2-btn is-danger" data-exam-call="openReturnModal" data-exam-args='["${escapeHtml(template.id)}"]'><i class="fas fa-rotate-left"></i> Return for Revision</button>
-                                    <button type="button" class="ex2-btn is-ghost" data-exam-call="editExamTemplate" data-exam-args='["${escapeHtml(template.id)}"]'><i class="fas fa-eye"></i> Preview</button>
-                                </div>
-                            </article>
-                        `).join('')}
-                    </div>
-                ` : `
-                    <div class="ex2-empty-state ex2-review-queue-empty">
-                        <i class="fas fa-inbox"></i>
-                        <p class="ex2-empty-state-copy">No quizzes awaiting review. All clear!</p>
-                    </div>
-                `}
+                <div class="ex2-rq-toolbar">
+                    <input class="ex2-input ex2-input--search" type="text" placeholder="Search by title, subject, author..." value="${escapeHtml(runtime.reviewSearch)}" data-exam-input-call="setExamReviewSearch" data-exam-input-args='["$value"]'>
+                    ${crossFaculty && facultyOptions.length ? `
+                        <select class="ex2-select ex2-select--filter" data-exam-change-call="setExamReviewFaculty" data-exam-change-args='["$value"]'>
+                            <option value="all"${runtime.reviewFaculty === 'all' ? ' selected' : ''}>All faculties</option>
+                            ${facultyOptions.map((opt) => `<option value="${escapeHtml(opt.code)}"${runtime.reviewFaculty === opt.code ? ' selected' : ''}>${escapeHtml(opt.label)}</option>`).join('')}
+                        </select>
+                    ` : ''}
+                    <select class="ex2-select ex2-select--filter" data-exam-change-call="setExamReviewSort" data-exam-change-args='["$value"]'>
+                        <option value="oldest"${runtime.reviewSort === 'oldest' ? ' selected' : ''}>Oldest first</option>
+                        <option value="newest"${runtime.reviewSort === 'newest' ? ' selected' : ''}>Newest first</option>
+                    </select>
+                    <span class="ex2-rq-toolbar-count">${total} ${total === 1 ? 'task' : 'tasks'}</span>
+                </div>
+                <div class="ex2-rq-board">
+                    ${renderColumn({
+                        title: 'Awaiting Review',
+                        icon: 'fa-inbox',
+                        tone: 'submitted',
+                        items: groups.awaiting,
+                        emptyText: 'Nothing awaiting review.',
+                        showApprove: true,
+                        showReturn: true
+                    })}
+                    ${renderColumn({
+                        title: 'Returned',
+                        icon: 'fa-rotate-left',
+                        tone: 'returned',
+                        items: groups.returned,
+                        emptyText: 'No returned quizzes.',
+                        showApprove: true,
+                        showReturn: false
+                    })}
+                    ${renderColumn({
+                        title: 'Approved',
+                        icon: 'fa-circle-check',
+                        tone: 'approved',
+                        items: groups.approved,
+                        emptyText: 'No approved quizzes yet.',
+                        collapsible: true,
+                        collapsed: runtime.reviewApprovedCollapsed,
+                        showApprove: false,
+                        showReturn: true
+                    })}
+                </div>
             </section>
-            ${runtime.showReturnModal ? renderReturnModal() : ''}
         `;
     };
+
+    window.renderExamReturnModal = renderReturnModal;
 
     window.renderExamScheduleBoard = function renderExamScheduleBoard() {
         const draft = getScheduleDraft();

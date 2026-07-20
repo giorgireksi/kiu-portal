@@ -62,7 +62,7 @@
                         <span class="ex2-field-label">Question text</span>
                         <textarea class="ex2-textarea" rows="3" data-exam-input-call="${syncFunc}" data-exam-input-args='["${escapeHtml(question.id)}","text","$value"]' data-exam-change-call="${updateFunc}" data-exam-change-args='["${escapeHtml(question.id)}","text","$value"]'>${escapeHtml(question.text)}</textarea>
                     </label>
-                    <label class="ex2-field">
+                    <label class="ex2-field ex2-field-span ex2-field--picker">
                         <span class="ex2-field-label">Correct option</span>
                         <select class="ex2-select" data-exam-change-call="${updateFunc}" data-exam-change-args='["${escapeHtml(question.id)}","correctOption","$value"]'>
                             ${(question.options || []).map((opt, oi) => `<option value="${oi}"${Number(question.correctOption) === oi ? ' selected' : ''}>Option ${oi + 1}</option>`).join('')}
@@ -79,23 +79,48 @@
         `;
     }
 
+    function buildBankIndexById(bank) {
+        const indexById = new Map();
+        (bank || []).forEach((q, i) => {
+            const id = String(q?.id || '').trim();
+            if (id) indexById.set(id, i + 1);
+        });
+        return indexById;
+    }
+
+    function resolveVariantQuestions(variant, bank) {
+        const bankById = new Map((bank || []).map((q) => [String(q?.id || '').trim(), q]));
+        const bankIndexById = buildBankIndexById(bank);
+        return (variant?.questionIds || [])
+            .map((id) => {
+                const key = String(id || '').trim();
+                const question = bankById.get(key);
+                if (!question) return null;
+                return { question, bankNum: bankIndexById.get(key) || 0 };
+            })
+            .filter(Boolean);
+    }
+
     function renderVariantCard(variant, index, bank) {
-        const qIds = new Set(variant.questionIds || []);
-        const resolved = bank.filter((q) => qIds.has(q.id));
-        const totalScore = resolved.reduce((s, q) => s + (q.score || 1), 0);
+        const resolved = resolveVariantQuestions(variant, bank);
+        const totalScore = resolved.reduce((s, entry) => s + (entry.question.score || 1), 0);
         return `
             <article class="ex2-question-card">
                 <div class="ex2-question-head">
                     <div>
                         <div class="ex2-status ex2-question-card-status is-neutral">${escapeHtml(variant.label)}</div>
-                        <div class="ex2-meta ex2-question-card-meta">${resolved.length} questions Â· ${totalScore} points Â· Shuffle: ${variant.shuffleQuestions ? 'Yes' : 'No'}</div>
+                        <div class="ex2-meta ex2-question-card-meta">${resolved.length} questions · ${totalScore} points · Shuffle: ${variant.shuffleQuestions ? 'Yes' : 'No'}</div>
                     </div>
                     <div class="ex2-inline-actions">
                         <button type="button" class="ex2-btn is-ghost" data-exam-call="removeVariant" data-exam-args='["${escapeHtml(variant.id)}"]'><i class="fas fa-trash"></i></button>
                     </div>
                 </div>
                 <div class="ex2-mini-list">
-                    ${resolved.map((q, qi) => `<div class="ex2-list-item ex2-list-item--compact"><div class="ex2-list-item-head"><strong class="ex2-list-item-title">Q${qi + 1}</strong> <span class="ex2-list-item-meta">MCQ Â· ${q.score} pts</span></div><div class="ex2-list-copy-truncate">${escapeHtml(q.text || 'No text')}</div></div>`).join('')}
+                    ${resolved.map((entry, qi) => {
+                        const q = entry.question;
+                        const bankNum = entry.bankNum;
+                        return `<div class="ex2-list-item ex2-list-item--compact" title="Variant Q${qi + 1} uses bank question Q${bankNum}"><div class="ex2-list-item-head"><strong class="ex2-list-item-title">Q${qi + 1}</strong> <span class="ex2-list-item-meta"><span class="ex2-variant-bank-ref">Bank Q${bankNum}</span> · MCQ · ${q.score} pts</span></div><div class="ex2-list-copy-truncate">${escapeHtml(q.text || 'No text')}</div></div>`;
+                    }).join('')}
                 </div>
             </article>
         `;
@@ -108,13 +133,16 @@
                     <span class="ex2-field-label">Exam title</span>
                     <input id="exam-template-title" name="exam_template_title" class="ex2-input" type="text" value="${escapeHtml(draft.title)}" placeholder="e.g. Microeconomics Midterm" data-exam-input-call="syncExamTemplateField" data-exam-input-args='["title","$value"]' data-exam-change-call="updateExamTemplateField" data-exam-change-args='["title","$value"]'>
                 </label>
-                <label class="ex2-field">
+                <label class="ex2-field ex2-field-span ex2-field--picker" id="exam-template-subject-field-label">
                     <span class="ex2-field-label">Subject</span>
-                    <select id="exam-template-subject" name="exam_template_subject" class="ex2-select" data-exam-change-call="updateExamTemplateField" data-exam-change-args='["subjectId","$value"]'>
-                        ${getSubjectOptions().map((item) => `<option value="${escapeHtml(item.id)}"${draft.subjectId === item.id ? ' selected' : ''}>${escapeHtml(item.name)}${item.facultyCode ? ` (${escapeHtml(item.facultyCode)})` : ''}</option>`).join('')}
+                    <select id="exam-template-subject" name="exam_template_subject" class="ex2-select" data-exam-change-call="updateExamTemplateField" data-exam-change-args='["subjectId","$value"]' data-lux-picker-search="true" data-lux-picker-search-placeholder="Search by name, code, or faculty…">
+                        ${getSubjectOptions().map((item) => {
+                            const searchText = [item.name, item.facultyCode, item.facultyLabel, item.id].filter(Boolean).join(' ');
+                            return `<option value="${escapeHtml(item.id)}" data-lux-picker-search-text="${escapeHtml(searchText)}"${draft.subjectId === item.id ? ' selected' : ''}>${escapeHtml(item.name)}${item.facultyCode ? ` (${escapeHtml(item.facultyCode)})` : ''}</option>`;
+                        }).join('')}
                     </select>
                 </label>
-                <label class="ex2-field">
+                <label class="ex2-field ex2-field-span ex2-field--picker">
                     <span class="ex2-field-label">Course year / grade</span>
                     <select id="exam-template-course-number" name="exam_template_course_number" class="ex2-select" data-exam-change-call="updateExamTemplateField" data-exam-change-args='["courseNumber","$value"]'>
                         ${renderCourseYearOptions(draft.courseNumber)}
@@ -124,7 +152,7 @@
                     <span class="ex2-field-label">Course number / code</span>
                     <input id="exam-template-course-code" name="exam_template_course_code" class="ex2-input" type="text" value="${escapeHtml(draft.courseCode || '')}" placeholder="e.g. 221 or ECON-S1-234" data-exam-input-call="syncExamTemplateField" data-exam-input-args='["courseCode","$value"]' data-exam-change-call="updateExamTemplateField" data-exam-change-args='["courseCode","$value"]'>
                 </label>
-                <label class="ex2-field">
+                <label class="ex2-field ex2-field-span ex2-field--picker">
                     <span class="ex2-field-label">Exam type</span>
                     <select id="exam-template-type" name="exam_template_type" class="ex2-select" data-exam-change-call="updateExamTemplateField" data-exam-change-args='["examType","$value"]'>
                         <option value="digital"${draft.examType === 'digital' ? ' selected' : ''}>Digital (Laptop)</option>
@@ -256,71 +284,130 @@
         `;
     }
 
-    window.renderExamTemplateBuilder = function renderExamTemplateBuilder() {
+    const BUILDER_STEPS = ['details', 'questions', 'variants', 'review'];
+    const BUILDER_STEP_LABELS = { details: 'Details', questions: 'Question Bank', variants: 'Variants', review: 'Review' };
+    const BUILDER_STEP_ICONS = { details: 'fa-sliders', questions: 'fa-bank', variants: 'fa-shuffle', review: 'fa-check-circle' };
+
+    function isBuilderStepComplete(step, draft) {
+        const bankCount = (draft.questionBank || draft.questions || []).length;
+        const variantCount = (draft.variants || []).length;
+        if (step === 'details') return !!(draft.subjectId && draft.title);
+        if (step === 'questions') return bankCount > 0;
+        if (step === 'variants') return variantCount > 0;
+        return false;
+    }
+
+    function renderExamBuilderToolbarMarkup(draft) {
+        return `
+            <div class="ex2-builder-toolbar-main">
+                <button type="button" class="ex2-btn is-ghost" data-exam-call="cancelExamDraft"><i class="fas fa-arrow-left"></i> Back to library</button>
+                <h2 class="ex2-builder-title">${escapeHtml(draft.title || (draft.editingTemplateId ? 'Edit Quiz' : 'New Quiz'))}</h2>
+            </div>
+            <div class="ex2-builder-toolbar-actions">
+                <div class="ex2-builder-export-group" role="group" aria-label="Export quiz">
+                    <button type="button" class="ex2-btn is-ghost ex2-builder-export-btn" data-exam-call="exportQuizAs" data-exam-args='["pdf"]'><i class="fas fa-file-pdf"></i><span class="ex2-builder-export-label"> PDF</span></button>
+                    <button type="button" class="ex2-btn is-ghost ex2-builder-export-btn" data-exam-call="exportQuizAs" data-exam-args='["docx"]'><i class="fas fa-file-word"></i><span class="ex2-builder-export-label"> DOCX</span></button>
+                </div>
+                <button type="button" class="ex2-btn is-ghost ex2-builder-save-btn" data-exam-call="saveExamTemplateDraft"><i class="fas fa-save"></i> Save Draft</button>
+                <button type="button" class="ex2-btn is-primary ex2-builder-submit-btn" data-exam-call="saveAndSubmitExamTemplate"><i class="fas fa-paper-plane"></i> Submit to Admin</button>
+            </div>
+        `;
+    }
+
+    function renderExamBuilderStepperMarkup(draft) {
+        return BUILDER_STEPS.map((step, i) => {
+            const done = isBuilderStepComplete(step, draft);
+            const active = runtime.templateStep === step;
+            return `<button type="button" class="ex2-progress-step${active ? ' is-active' : ''}${done && !active ? ' is-done' : ''}" data-exam-call="setExamTemplateStep" data-exam-args='["${step}"]' aria-current="${active ? 'step' : 'false'}" aria-label="${escapeHtml(BUILDER_STEP_LABELS[step])}"><span class="step-num ex2-progress-step-num">${done && !active ? `<i class="fas fa-check"></i>` : (i + 1)}</span><span class="step-label ex2-progress-step-label"><i class="fas ${BUILDER_STEP_ICONS[step]}"></i>${BUILDER_STEP_LABELS[step]}</span></button>`;
+        }).join('');
+    }
+
+    function renderExamBuilderStepMarkup() {
         const draft = getTemplateDraft();
-        const STEPS = ['details', 'questions', 'variants', 'review'];
-        const STEP_LABELS = { details: 'Details', questions: 'Question Bank', variants: 'Variants', review: 'Review' };
-        const STEP_ICONS = { details: 'fa-sliders', questions: 'fa-bank', variants: 'fa-shuffle', review: 'fa-check-circle' };
+        if (runtime.templateStep === 'details') return renderStepDetails(draft);
+        if (runtime.templateStep === 'questions') return renderStepQuestions(draft);
+        if (runtime.templateStep === 'variants') return renderStepVariants(draft);
+        return renderStepReview(draft);
+    }
+
+    function renderSummaryChip(label, value) {
+        return `
+            <span class="ex2-summary-chip">
+                <span class="ex2-summary-chip-label">${escapeHtml(label)}</span>
+                <strong class="ex2-summary-chip-value">${escapeHtml(value)}</strong>
+            </span>
+        `;
+    }
+
+    function renderSummaryGroup(title, chips, extraClass = '') {
+        return `
+            <div class="ex2-builder-summary-group${extraClass ? ` ${extraClass}` : ''}">
+                <span class="ex2-summary-group-label">${escapeHtml(title)}</span>
+                <div class="ex2-builder-summary-chips">${chips.join('')}</div>
+            </div>
+        `;
+    }
+
+    function renderExamBuilderSummaryStrip(draft) {
         const bankCount = (draft.questionBank || draft.questions || []).length;
         const variantCount = (draft.variants || []).length;
         const totalPts = (draft.questionBank || draft.questions || []).reduce((s, q) => s + (parseInt(q.score, 10) || 0), 0);
-
-        const stepDone = (step) => {
-            if (step === 'details') return !!(draft.subjectId && draft.title);
-            if (step === 'questions') return bankCount > 0;
-            if (step === 'variants') return variantCount > 0;
-            return false;
-        };
-
+        const qPerVariant = variantCount > 0 ? String((draft.variants[0]?.questionIds || []).length) : '';
+        const identityChips = [
+            renderSummaryChip('Subject', draft.subjectName || 'Not set'),
+            renderSummaryChip('Type', draft.examType === 'paper' ? 'Paper' : 'Digital'),
+            renderSummaryChip('Duration', `${draft.durationMinutes || 90} min`),
+            renderSummaryChip('Course Year', formatCourseYearLabel(draft.courseNumber)),
+            renderSummaryChip('Course No.', draft.courseCode || 'Optional')
+        ];
+        const gradingChips = [
+            renderSummaryChip('Passing', `${draft.passingScore || 50} pts`),
+            renderSummaryChip('Quiz Value', `${draft.gradingWeight || 30} pts`),
+            renderSummaryChip('Q Default', `${draft.defaultQuestionScore || 1} pts / ${draft.defaultOptionCount || 4} opts`),
+            renderSummaryChip('Total Pts', String(totalPts))
+        ];
+        const contentChips = [
+            renderSummaryChip('Questions', String(bankCount)),
+            renderSummaryChip('Variants', String(variantCount))
+        ];
+        if (qPerVariant) contentChips.push(renderSummaryChip('Q/Variant', qPerVariant));
         return `
-            <div class="ex2-builder-fullscreen">
-                <div class="ex2-builder-header">
-                    <div>
-                        <button type="button" class="ex2-btn is-ghost" data-exam-call="cancelExamDraft"><i class="fas fa-arrow-left"></i> Back to library</button>
-                        <h2 class="ex2-builder-title ex2-builder-title--mt-8">${escapeHtml(draft.title || (draft.editingTemplateId ? 'Edit Quiz' : 'New Quiz'))}</h2>
-                    </div>
-                    <div class="ex2-inline-actions">
-                        <button type="button" class="ex2-btn is-ghost" data-exam-call="exportQuizAs" data-exam-args='["pdf"]'><i class="fas fa-file-pdf"></i> PDF</button>
-                        <button type="button" class="ex2-btn is-ghost" data-exam-call="exportQuizAs" data-exam-args='["docx"]'><i class="fas fa-file-word"></i> DOCX</button>
-                        <button type="button" class="ex2-btn is-ghost" data-exam-call="saveExamTemplateDraft"><i class="fas fa-save"></i> Save Draft</button>
-                        <button type="button" class="ex2-btn is-primary" data-exam-call="saveAndSubmitExamTemplate"><i class="fas fa-paper-plane"></i> Submit to Admin</button>
-                    </div>
+            <div class="ex2-builder-summary-strip">
+                <div class="ex2-builder-summary-groups">
+                    ${renderSummaryGroup('Identity', identityChips, 'ex2-summary-group--meta')}
+                    ${renderSummaryGroup('Grading', gradingChips)}
+                    ${renderSummaryGroup('Content', contentChips)}
                 </div>
-                <div class="ex2-progress-bar">
-                    ${STEPS.map((step, i) => {
-                        const done = stepDone(step);
-                        const active = runtime.templateStep === step;
-                        return `<button type="button" class="ex2-progress-step${active ? ' is-active' : ''}${done && !active ? ' is-done' : ''}" data-exam-call="setExamTemplateStep" data-exam-args='["${step}"]' aria-current="${active ? 'step' : 'false'}"><span class="step-num ex2-progress-step-num">${done && !active ? `<i class="fas fa-check"></i>` : (i + 1)}</span><span class="step-label ex2-progress-step-label"><i class="fas ${STEP_ICONS[step]}"></i>${STEP_LABELS[step]}</span></button>`;
-                    }).join('')}
+                <button type="button" class="ex2-btn is-secondary ex2-builder-summary-share" data-exam-call="openShareModal" data-exam-args='["${escapeHtml(draft.editingTemplateId)}"]'><i class="fas fa-share-nodes"></i> Share Quiz</button>
+            </div>
+        `;
+    }
+
+    window.renderExamBuilderToolbarMarkup = renderExamBuilderToolbarMarkup;
+    window.renderExamBuilderStepperMarkup = renderExamBuilderStepperMarkup;
+    window.renderExamBuilderSummaryMarkup = function renderExamBuilderSummaryMarkup() {
+        return renderExamBuilderSummaryStrip(getTemplateDraft());
+    };
+    window.renderExamBuilderStepMarkup = renderExamBuilderStepMarkup;
+    window.isExamBuilderStepComplete = isBuilderStepComplete;
+
+    window.renderExamTemplateBuilder = function renderExamTemplateBuilder() {
+        const draft = getTemplateDraft();
+        return `
+            <div class="ex2-builder-body" data-exam-builder="1">
+                <header class="ex2-builder-toolbar" data-exam-region="builder-toolbar">
+                    ${renderExamBuilderToolbarMarkup(draft)}
+                </header>
+                <nav class="ex2-progress-bar ex2-progress-bar--compact" data-exam-region="builder-stepper" aria-label="Quiz builder steps">
+                    ${renderExamBuilderStepperMarkup(draft)}
+                </nav>
+                <div data-exam-region="builder-summary">
+                    ${renderExamBuilderSummaryStrip(draft)}
                 </div>
-                <div class="ex2-builder-layout">
-                    <div class="ex2-panel ex2-panel--animated">
-                        ${runtime.templateStep === 'details' ? renderStepDetails(draft)
-                            : runtime.templateStep === 'questions' ? renderStepQuestions(draft)
-                            : runtime.templateStep === 'variants' ? renderStepVariants(draft)
-                            : renderStepReview(draft)}
-                     </div>
-                     <div class="ex2-live-sidebar">
-                         <h3 class="ex2-builder-section-title ex2-builder-section-title--sidebar">Quiz Overview</h3>
-                         <div class="ex2-sidebar-stat"><span class="ex2-sidebar-stat-label">Subject</span><strong class="ex2-sidebar-stat-value">${escapeHtml(draft.subjectName || 'Not set')}</strong></div>
-                        <div class="ex2-sidebar-stat"><span class="ex2-sidebar-stat-label">Type</span><strong class="ex2-sidebar-stat-value">${escapeHtml(draft.examType === 'paper' ? 'Paper' : 'Digital')}</strong></div>
-                        <div class="ex2-sidebar-stat"><span class="ex2-sidebar-stat-label">Duration</span><strong class="ex2-sidebar-stat-value">${draft.durationMinutes || 90} min</strong></div>
-                        <div class="ex2-sidebar-stat"><span class="ex2-sidebar-stat-label">Course Year</span><strong class="ex2-sidebar-stat-value">${escapeHtml(formatCourseYearLabel(draft.courseNumber))}</strong></div>
-                        <div class="ex2-sidebar-stat"><span class="ex2-sidebar-stat-label">Course No.</span><strong class="ex2-sidebar-stat-value">${escapeHtml(draft.courseCode || 'Optional')}</strong></div>
-                        <div class="ex2-sidebar-stat"><span class="ex2-sidebar-stat-label">Passing Points</span><strong class="ex2-sidebar-stat-value">${draft.passingScore || 50} pts</strong></div>
-                        <div class="ex2-sidebar-stat"><span class="ex2-sidebar-stat-label">Quiz Value</span><strong class="ex2-sidebar-stat-value">${draft.gradingWeight || 30} pts</strong></div>
-                        <div class="ex2-sidebar-stat"><span class="ex2-sidebar-stat-label">New Q Default</span><strong class="ex2-sidebar-stat-value">${draft.defaultQuestionScore || 1} pts / ${draft.defaultOptionCount || 4} options</strong></div>
-                        <div class="ex2-divider ex2-divider--14"></div>
-                        <div class="ex2-sidebar-stat"><span class="ex2-sidebar-stat-label">Questions</span><strong class="ex2-sidebar-stat-value">${bankCount}</strong></div>
-                        <div class="ex2-sidebar-stat"><span class="ex2-sidebar-stat-label">Total Points</span><strong class="ex2-sidebar-stat-value">${totalPts}</strong></div>
-                        <div class="ex2-sidebar-stat"><span class="ex2-sidebar-stat-label">Variants</span><strong class="ex2-sidebar-stat-value">${variantCount}</strong></div>
-                        ${variantCount > 0 ? `<div class="ex2-sidebar-stat"><span class="ex2-sidebar-stat-label">Q/Variant</span><strong class="ex2-sidebar-stat-value">${(draft.variants[0]?.questionIds || []).length}</strong></div>` : ''}
-                        <div class="ex2-divider ex2-divider--14"></div>
-                        <button type="button" class="ex2-btn is-secondary ex2-btn--full-center" data-exam-call="openShareModal" data-exam-args='["${escapeHtml(draft.editingTemplateId)}"]'><i class="fas fa-share-nodes"></i> Share Quiz</button>
-                    </div>
+                <div class="ex2-builder-step-body ex2-panel--animated" data-exam-region="builder-step">
+                    ${renderExamBuilderStepMarkup()}
                 </div>
             </div>
-            ${runtime.showShareModal ? renderShareModal(draft) : ''}
         `;
     };
 })();

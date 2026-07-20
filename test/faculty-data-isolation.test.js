@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
 function readSource(relativePath) {
@@ -9,7 +9,7 @@ function readSource(relativePath) {
 describe('faculty data isolation guardrails', () => {
   it('scopes student registration track choices and section picking by faculty', () => {
     const studentRegistration = readSource('assets/js/pages/student-registration.js');
-    const registration = readSource('assets/js/pages/registration.js');
+    const state = readSource('assets/js/app/state.js');
 
     expect(studentRegistration).toContain('function getStudentRegistrationScopeKey');
     expect(studentRegistration).toContain('return `${studentId}::${normalizedFaculty}`;');
@@ -17,8 +17,8 @@ describe('faculty data isolation guardrails', () => {
     expect(studentRegistration).toContain('const activeFaculty = normalizeFacultyCode(getCurrentFaculty(), \'ECON\');');
     expect(studentRegistration).toContain('return groupFaculty === activeFaculty;');
     expect(studentRegistration).toContain('This section belongs to another faculty or is no longer available.');
-    expect(registration).toContain('if (groupFaculty !== normalizedPreferredFaculty)');
-    expect(registration).toContain('faculty: normalizedPreferredFaculty');
+    expect(state).toContain('const normalizedPreferredFaculty = normalizeFacultyCode(preferredFaculty || \'\', \'\');');
+    expect(state).toContain('normalizeFacultyCode(user?.facultyCode || user?.faculty || \'\', \'\') === normalizedPreferredFaculty');
   });
 
   it('filters saved student schedules to the student faculty before reading or writing', () => {
@@ -46,13 +46,13 @@ describe('faculty data isolation guardrails', () => {
     expect(faculty).toContain('normalizeFacultyCode(group?.faculty || deriveFacultyFromSubjectId(courseId), normalizedFaculty) === normalizedFaculty');
     expect(messenger).toContain('const targetFaculty = normalizeFacultyCode');
     expect(messenger).toContain('if (targetFaculty && normalizeFacultyCode(student?.facultyCode || student?.faculty || \'\', \'\') !== targetFaculty) return;');
-    expect(state).toContain('return sameFacultyPersona || sameFacultyCandidate || null;');
+    expect(state).toContain('function pickImpersonationPersonaForFaculty');
+    expect(state).toContain("normalizeFacultyCode(user?.facultyCode || user?.faculty || '', '') === normalizedFaculty");
   });
 
   it('keeps people directories scoped to the active faculty unless all faculties is explicit', () => {
     const app = readSource('assets/js/app/app.js');
     const messenger = readSource('assets/js/shared/messenger.js');
-    const directories = readSource('assets/js/pages/directories.js');
     const faculty = readSource('assets/js/shared/faculty.js');
     const state = readSource('assets/js/app/state.js');
     const homeModel = readSource('assets/js/features/luxury-home-model.js');
@@ -66,11 +66,6 @@ describe('faculty data isolation guardrails', () => {
     expect(messenger).not.toContain('function normalizePeopleFacultyFilter(facultyFilter = getCurrentFaculty())');
     expect(messenger).not.toContain("function getAllStaff(type = 'professors', facultyFilter = getCurrentFaculty())");
     expect(messenger).not.toContain('function getAllStudents(facultyFilter = getCurrentFaculty())');
-    expect(directories).toContain("const fac = getCurrentFaculty();");
-    expect(directories).toContain("const totalStudents = getAllStudents(fac).length;");
-    expect(directories).toContain('function clearStaffAssignmentsFromGroups(member, type, facultyCode = getCurrentFaculty())');
-    expect(directories).toContain('if (groupFaculty !== normalizedFaculty) return group;');
-    expect(directories).toContain("normalizeFacultyCode(user.facultyCode || user.faculty || fac, fac) === normalizeFacultyCode(fac, fac)");
     expect(faculty).toContain('return getAllStudents(getCurrentFaculty()).map(student => ({');
     expect(state).toContain('usersByFacultyRole');
     expect(homeModel).toContain("getAllStaff('professors', facultyCode)");

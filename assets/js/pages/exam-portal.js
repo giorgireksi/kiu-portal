@@ -79,7 +79,11 @@
     }
 
     function escapeHtml(value) {
-        return String(value ?? '')
+        if (typeof window !== 'undefined' && typeof window.escapeHtml === 'function') {
+            const shared = window.escapeHtml;
+            if (shared !== escapeHtml) return shared(value);
+        }
+        return String(value == null ? '' : value)
             .replace(/&/g, '&amp;')
             .replace(/</g, '&lt;')
             .replace(/>/g, '&gt;')
@@ -585,7 +589,7 @@
                 </div>
                 <div class="exam-action-row">
                     <span class="exam-launch-reason" data-session-launch-reason>${escapeHtml(getLaunchReason(session))}</span>
-                    <button type="button" class="kiu-btn-blue" ${!canLaunchSession(session) ? 'disabled' : ''} data-exam-launch-session="${escapeHtml(session.id)}">
+                    <button type="button" class="lux-primary-btn" ${!canLaunchSession(session) ? 'disabled' : ''} data-exam-launch-session="${escapeHtml(session.id)}">
                         <i class="fas fa-shield-halved"></i> Start In Anti-Cheat
                     </button>
                 </div>
@@ -1079,7 +1083,7 @@
                     <span class="exam-chip"><i class="fas fa-file-signature"></i> ${escapeHtml(session.variantLabel || 'Variant')}</span>
                 </div>
                 <div class="exam-action-row">
-                    <button type="button" class="kiu-btn-blue" id="protected-start-btn"><i class="fas fa-play"></i> Start Exam</button>
+                    <button type="button" class="lux-primary-btn" id="protected-start-btn"><i class="fas fa-play"></i> Start Exam</button>
                 </div>
             </section>
         `;
@@ -1146,7 +1150,7 @@
                             <form id="protected-exam-form" class="exam-question-list">
                                 ${questions.map(buildProtectedQuestionCardMarkup).join('')}
                                 <div class="exam-action-row">
-                                    <button type="submit" class="kiu-btn-blue"><i class="fas fa-paper-plane"></i> Submit Exam</button>
+                                    <button type="submit" class="lux-primary-btn"><i class="fas fa-paper-plane"></i> Submit Exam</button>
                                 </div>
                             </form>
                         </section>

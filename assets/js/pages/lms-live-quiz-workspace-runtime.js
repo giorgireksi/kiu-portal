@@ -1,15 +1,38 @@
+/* Wave bag: Wave 26 live-quiz workspace */
+window.KiuLmsLiveQuizWorkspace = window.KiuLmsLiveQuizWorkspace || {};
+const __kiuLqWsApi = window.KiuLmsLiveQuizWorkspace;
+window.__kiuLqWsApi = __kiuLqWsApi;
+function __kiuLqWsExpose(map) {
+    Object.keys(map).forEach((key) => {
+        __kiuLqWsApi[key] = map[key];
+        window[key] = map[key];
+    });
+}
+
 /* LMS live quiz workspace/state helpers extracted from lms.js. */
 
 const LMS_LIVE_OPTION_KEYS = ['A', 'B', 'C', 'D'];
 const LMS_LIVE_MAX_SCORE = 1000;
 const LMS_LIVE_MIN_CORRECT_SCORE = 500;
-const LMS_LIVE_SYNC_DEBOUNCE_MS = 350;
+const LMS_LIVE_SYNC_DEBOUNCE_MS = (window.__KIU_LMS_WORKSPACE_SYNC_TIMING__ && window.__KIU_LMS_WORKSPACE_SYNC_TIMING__.SYNC_DEBOUNCE_MS) || 350;
 const LMS_LIVE_CLOCK_REFRESH_MS = 1000;
 const LMS_LIVE_CLOCK_FALLBACK_REFRESH_MS = 5000;
 const LMS_LIVE_CLOCK_BACKEND_REFRESH_TICKS = 5;
-const LMS_LIVE_LOCAL_SYNC_ECHO_MS = 800;
-const LMS_LIVE_REALTIME_DEBOUNCE_MS = 150;
-const LMS_LIVE_BACKEND_RELOAD_TTL_MS = 120000;
+const LMS_LIVE_LOCAL_SYNC_ECHO_MS = (window.__KIU_LMS_WORKSPACE_SYNC_TIMING__ && window.__KIU_LMS_WORKSPACE_SYNC_TIMING__.LOCAL_SYNC_ECHO_MS) || 1500;
+const LMS_LIVE_STRUCTURAL_SYNC_ECHO_MS = 5000;
+const LMS_LIVE_QUEUE_STRUCTURAL_REASONS = new Set([
+    'question-added',
+    'question-duplicated',
+    'question-moved',
+    'question-deleted',
+    'questions-imported',
+    'answers-cleared',
+    'session-ended',
+    'session-deleted',
+    'session-created'
+]);
+const LMS_LIVE_REALTIME_DEBOUNCE_MS = (window.__KIU_LMS_WORKSPACE_SYNC_TIMING__ && window.__KIU_LMS_WORKSPACE_SYNC_TIMING__.REALTIME_DEBOUNCE_MS) || 150;
+const LMS_LIVE_BACKEND_RELOAD_TTL_MS = (window.__KIU_LMS_WORKSPACE_SYNC_TIMING__ && window.__KIU_LMS_WORKSPACE_SYNC_TIMING__.BACKEND_RELOAD_TTL_MS) || 120000;
 const LMS_LIVE_QUESTION_STATES = ['draft', 'ready', 'showing', 'paused', 'locked', 'revealed', 'completed'];
 
 function isLmsActiveTab(tab) {
@@ -119,187 +142,6 @@ function isPortalCurriculumStaffForLmsLiveQuiz(courseId = '', groupId = '', user
     return groups.some(group => normalizeLmsLiveQuizScopeKey(group?.id || group?.name || '') === targetGroup);
 }
 
-function isStaffForLmsLiveQuizPortalSections(resourceKey = '', userId = '', role = '') {
-    const parsed = parseLmsCourseKey(resolveCanonicalLmsResourceKey(resourceKey));
-    const courseId = String(parsed.courseId || '').trim();
-    const groupId = parsed.groupId || null;
-    const normalizedRole = String(role || '').trim().toLowerCase();
-    const normalizedUserId = String(userId || '').trim();
-    if (!normalizedUserId || !courseId) return false;
-    const targetCourse = normalizeLmsLiveQuizScopeKey(courseId);
-    const targetGroup = groupId ? normalizeLmsLiveQuizScopeKey(groupId) : '';
-    const sections = KIU_STATE?.sections && typeof KIU_STATE.sections === 'object'
-        ? Object.values(KIU_STATE.sections)
-        : [];
-    return sections.some(section => {
-        const sectionCourseKeys = new Set([
-            normalizeLmsLiveQuizScopeKey(section?.courseId || ''),
-            normalizeLmsLiveQuizScopeKey(parseLmsCourseKey(section?.id || section?.code || '').courseId || '')
-        ].filter(Boolean));
-        if (!sectionCourseKeys.has(targetCourse)) return false;
-        const sectionGroup = normalizeLmsLiveQuizScopeKey(parseLmsCourseKey(section?.id || section?.code || '').groupId || section?.code || '');
-        if (targetGroup && sectionGroup && sectionGroup !== targetGroup) return false;
-        const professorIds = [
-            section?.professorId,
-            section?.instructorUserId,
-            section?.instructorId
-        ].map(value => String(value || '').trim()).filter(Boolean);
-        const taIds = [
-            ...(Array.isArray(section?.taIds) ? section.taIds : []),
-            section?.assistantUserId,
-            section?.assistantId,
-            section?.taId
-        ].map(value => String(value || '').trim()).filter(Boolean);
-        if (normalizedRole === USER_ROLES.PROFESSOR) return professorIds.includes(normalizedUserId);
-        if (normalizedRole === USER_ROLES.TA) return taIds.includes(normalizedUserId);
-        return professorIds.includes(normalizedUserId) || taIds.includes(normalizedUserId);
-    });
-}
-
-function isStaffViaLmsLiveQuizTeachingTeam(resourceKey = '', userId = '', role = '') {
-    const parsed = parseLmsCourseKey(resolveCanonicalLmsResourceKey(resourceKey));
-    const courseId = String(parsed.courseId || '').trim();
-    const groupId = String(parsed.groupId || '').trim();
-    const sectionType = String(parsed.sectionType || '').trim().toLowerCase();
-    const normalizedUserId = String(userId || '').trim();
-    const normalizedRole = String(role || '').trim().toLowerCase();
-    if (!normalizedUserId || !courseId) return false;
-    const sectionSuffix = sectionType ? `__lmssec_${sectionType}` : '';
-    const candidateKeys = [
-        parsed.resourceKey,
-        groupId ? `${courseId}::${groupId}${sectionSuffix}` : '',
-        groupId ? `${courseId}::${groupId}` : '',
-        courseId
-    ].filter(Boolean);
-    const lmsCourses = KIU_STATE?.lmsCourses && typeof KIU_STATE.lmsCourses === 'object'
-        ? KIU_STATE.lmsCourses
-        : {};
-    return candidateKeys.some(key => {
-        const teachingTeam = Array.isArray(lmsCourses?.[key]?.teachingTeam) ? lmsCourses[key].teachingTeam : [];
-        return teachingTeam.some(member => {
-            if (typeof member === 'string') return member === normalizedUserId;
-            const memberId = String(member?.userId || member?.id || '').trim();
-            const memberRole = String(member?.role || member?.assignmentRole || '').trim().toLowerCase();
-            if (memberId !== normalizedUserId) return false;
-            if (!normalizedRole || !memberRole) return true;
-            return memberRole === normalizedRole
-                || (normalizedRole === USER_ROLES.PROFESSOR && memberRole === 'instructor');
-        });
-    });
-}
-
-function isAssignedViaLmsLiveQuizGroupRoster(courseId = '', groupId = '', userId = '', role = '') {
-    const normalizedRole = String(role || '').trim().toLowerCase();
-    const normalizedUserId = String(userId || '').trim();
-    if (!normalizedUserId || !courseId) return false;
-    const user = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
-    const identityTokens = new Set([normalizedUserId, normalizeLmsLiveQuizScopeKey(normalizedUserId)]);
-    [user?.displayName, user?.nameEn, user?.name, user?.email].forEach(value => {
-        const token = String(value || '').trim();
-        if (!token || token.toLowerCase() === 'tbd') return;
-        identityTokens.add(token);
-        identityTokens.add(normalizeLmsLiveQuizScopeKey(token));
-    });
-    const targetGroup = groupId ? normalizeLmsLiveQuizScopeKey(groupId) : '';
-    const groups = KIU_STATE?.availableGroups?.[courseId] || [];
-    return groups.some(group => {
-        if (targetGroup && normalizeLmsLiveQuizScopeKey(group?.id || group?.name || '') !== targetGroup) return false;
-        const profToken = String(group?.professorId || group?.prof || '').trim();
-        const taToken = String(group?.taId || group?.assistantId || group?.ta || '').trim();
-        const matchesToken = (token = '') => {
-            const raw = String(token || '').trim();
-            if (!raw || raw.toLowerCase() === 'tbd') return false;
-            return identityTokens.has(raw) || identityTokens.has(normalizeLmsLiveQuizScopeKey(raw));
-        };
-        if (normalizedRole === USER_ROLES.PROFESSOR) return matchesToken(profToken);
-        if (normalizedRole === USER_ROLES.TA) return matchesToken(taToken);
-        return matchesToken(profToken) || matchesToken(taToken);
-    });
-}
-
-function canAccessLmsLiveQuizScope(resourceKey = currentCourseId) {
-    const canonicalKey = resolveCanonicalLmsResourceKey(resourceKey);
-    if (!canonicalKey) return false;
-    const parsed = parseLmsCourseKey(canonicalKey);
-    const courseId = String(parsed.courseId || '').trim();
-    if (!courseId) return false;
-    const groupId = parsed.groupId || null;
-    if (isActualAdminLmsLiveQuizSession()) return true;
-    const role = typeof getEffectiveUserRole === 'function'
-        ? String(getEffectiveUserRole() || '').trim().toLowerCase()
-        : '';
-    const userId = String((typeof getCurrentUserId === 'function' ? getCurrentUserId() : '') || '').trim();
-    if ([USER_ROLES.ADMIN, USER_ROLES.PROFESSOR, USER_ROLES.TA].includes(role)) {
-        return isPortalCurriculumStaffForLmsLiveQuiz(courseId, groupId, userId, role)
-            || isAssignedViaLmsLiveQuizGroupRoster(courseId, groupId, userId, role)
-            || isAssignedViaLmsLiveQuizGroupRoster(courseId, null, userId, role)
-            || isStaffForLmsLiveQuizPortalSections(canonicalKey, userId, role)
-            || isStaffViaLmsLiveQuizTeachingTeam(canonicalKey, userId, role);
-    }
-    if (role === USER_ROLES.STUDENT) {
-        const schedule = typeof getStudentLmsScheduleEntries === 'function'
-            ? getStudentLmsScheduleEntries()
-            : (typeof getCurrentStudentSchedule === 'function' ? getCurrentStudentSchedule() : []);
-        if ((Array.isArray(schedule) ? schedule : []).some(entry =>
-            enrollmentMatchesLmsLiveQuizGroup(entry, courseId, groupId)
-        )) {
-            return true;
-        }
-        if (userId && typeof getLmsQuizEligibleStudents === 'function') {
-            const roster = getLmsQuizEligibleStudents(canonicalKey, { strictRoster: true });
-            if (roster.some(student => String(student?.id || '').trim() === userId)) {
-                return true;
-            }
-        }
-        const liveSession = getLmsLiveStudentSession(canonicalKey);
-        if (userId && liveSession?.participants?.[userId]) {
-            return true;
-        }
-        return false;
-    }
-    return false;
-}
-
-function markLmsLiveQuizAccessDenied(canonicalKey, message = 'You are not assigned to this course scope.') {
-    if (!canonicalKey) return;
-    const workspace = ensureLmsLiveQuizWorkspace(canonicalKey);
-    workspace.ui.accessDenied = true;
-    workspace.ui.dirty = false;
-    workspace.ui.syncing = false;
-    if (workspace.ui.syncTimer) {
-        clearTimeout(workspace.ui.syncTimer);
-        workspace.ui.syncTimer = null;
-    }
-    workspace.ui.syncError = repairLmsDisplayText(message, 'You are not assigned to this course scope.');
-}
-
-function shouldSyncLmsLiveQuizWorkspace(resourceKey = currentCourseId) {
-    const canonicalKey = resolveCanonicalLmsResourceKey(resourceKey);
-    if (!canonicalKey) return false;
-    const workspace = ensureLmsLiveQuizWorkspace(canonicalKey);
-    if (workspace.ui?.accessDenied) {
-        if (typeof canAccessLmsLiveQuizScope === 'function' && canAccessLmsLiveQuizScope(canonicalKey)) {
-            workspace.ui.accessDenied = false;
-            workspace.ui.syncError = '';
-        } else {
-            return false;
-        }
-    }
-    if (typeof canManageLmsLiveQuiz === 'function' && canManageLmsLiveQuiz(canonicalKey)) {
-        return canAccessLmsLiveQuizScope(canonicalKey);
-    }
-    return canAccessLmsLiveQuizScope(canonicalKey);
-}
-
-function countLmsLiveQuizContent(workspace = {}) {
-    const sessions = Array.isArray(workspace?.sessions) ? workspace.sessions : [];
-    let questions = 0;
-    sessions.forEach(session => {
-        questions += Array.isArray(session?.questions) ? session.questions.length : 0;
-    });
-    return { sessions: sessions.length, questions };
-}
-
 function countLmsLiveQuizAnswers(workspace = {}) {
     let total = 0;
     (Array.isArray(workspace?.sessions) ? workspace.sessions : []).forEach(session => {
@@ -403,24 +245,32 @@ function shouldApplyRemoteLmsLiveQuizWorkspace(localWorkspace = {}, remoteWorksp
     if (!remoteWorkspace || typeof remoteWorkspace !== 'object') return false;
     if (!localWorkspace || typeof localWorkspace !== 'object') return true;
     if (options.forceMergeParticipants === true) return false;
+    const syncReason = String(options.syncReason || localWorkspace.ui?.lastStructuralReason || '').trim();
+    const allowExtraRemoteSessions = syncReason === 'session-created';
     const localPending = Boolean(localWorkspace.ui?.syncing || localWorkspace.ui?.dirty);
-    if (localPending) {
-        if (options.forceRemote === true) {
-            return isRemoteLmsLiveQuizWorkspaceNewer(localWorkspace, remoteWorkspace);
-        }
-        return false;
-    }
-    if (options.forceRemote === true) return true;
     const localContent = countLmsLiveQuizContent(localWorkspace);
     const remoteContent = countLmsLiveQuizContent(remoteWorkspace);
     const localAnswers = countLmsLiveQuizAnswers(localWorkspace);
     const remoteAnswers = countLmsLiveQuizAnswers(remoteWorkspace);
+    const localAt = Math.max(
+        Number(localWorkspace.ui?.localUpdatedAt || 0) || 0,
+        getLmsLiveWorkspaceUpdatedAtMs(localWorkspace)
+    );
+    const remoteAt = getLmsLiveWorkspaceUpdatedAtMs(remoteWorkspace);
+    if (!allowExtraRemoteSessions && remoteContent.sessions > localContent.sessions) return false;
+    if (localPending) {
+        if (options.forceRemote === true) {
+            if (!allowExtraRemoteSessions && remoteContent.sessions > localContent.sessions) return false;
+            return isRemoteLmsLiveQuizWorkspaceNewer(localWorkspace, remoteWorkspace);
+        }
+        return false;
+    }
+    if (localAt > remoteAt && remoteContent.questions > localContent.questions) return false;
     if (remoteAnswers > localAnswers) return true;
     if (localContent.questions > 0 && remoteContent.questions === 0) return false;
     if (localContent.sessions > 0 && remoteContent.sessions === 0) return false;
-    const localAt = getLmsLiveWorkspaceUpdatedAtMs(localWorkspace);
-    const remoteAt = getLmsLiveWorkspaceUpdatedAtMs(remoteWorkspace);
     if (localAt > remoteAt && remoteContent.questions <= localContent.questions && remoteAnswers <= localAnswers) return false;
+    if (options.forceRemote === true) return true;
     return true;
 }
 
@@ -514,6 +364,8 @@ function normalizeLmsLiveSession(session = {}, resourceKey = '') {
         currentQuestionIndex: Math.min(Math.max(0, parseInt(session.currentQuestionIndex, 10) || 0), Math.max(questions.length - 1, 0)),
         showLeaderboard: session.showLeaderboard !== false,
         showResults: session.showResults === true,
+        showPodium: session.showPodium === true,
+        podiumRevealAt: session.podiumRevealAt || null,
         nicknameMode: session.nicknameMode === true,
         autoEnroll: session.autoEnroll !== false,
         scoringMode: ['practice', 'speed', 'accuracy'].includes(String(session.scoringMode || '').toLowerCase()) ? String(session.scoringMode).toLowerCase() : 'speed',
@@ -544,10 +396,50 @@ function ensureLmsLiveQuizWorkspace(resourceKey) {
     return workspace;
 }
 
-function getLmsLiveQuizStructuralFingerprint(resourceKey) {
+function getLmsLiveQuizLayoutFingerprint(resourceKey) {
     const canonicalKey = resolveCanonicalLmsResourceKey(resourceKey);
     if (!canonicalKey) return '';
     const workspace = ensureLmsLiveQuizWorkspace(canonicalKey);
+    const isStaff = typeof canManageLmsLiveQuiz === 'function' && canManageLmsLiveQuiz(canonicalKey);
+    const session = isStaff
+        ? (getLmsLiveStaffLiveSession(canonicalKey) || getLmsLiveStaffEditingSession(canonicalKey))
+        : getLmsLiveStudentSession(canonicalKey);
+    const question = getLmsLiveCurrentQuestion(session);
+    const questionVisible = Boolean(
+        question && ['showing', 'paused', 'locked', 'revealed'].includes(String(question.state || ''))
+    );
+    const sessionIds = (Array.isArray(workspace.sessions) ? workspace.sessions : [])
+        .map(item => String(item?.id || ''))
+        .filter(Boolean)
+        .sort()
+        .join('|');
+    return [
+        String(getLmsLiveQuizActorKey()),
+        isStaff ? 'staff' : 'student',
+        String((workspace.sessions || []).length),
+        sessionIds,
+        String(session?.id || ''),
+        String(session?.status || ''),
+        String(workspace.ui?.presentationMode || false),
+        String(workspace.ui?.accessDenied || false),
+        questionVisible ? String(question?.id || '') : '',
+        questionVisible ? 'visible' : 'hidden'
+    ].join('::');
+}
+
+function getLmsLiveQuizQueueSignature(resourceKey) {
+    const canonicalKey = resolveCanonicalLmsResourceKey(resourceKey);
+    if (!canonicalKey) return '';
+    const queueSession = getLmsLiveStaffQueueSession(canonicalKey);
+    if (!Array.isArray(queueSession?.questions)) return '';
+    return queueSession.questions
+        .map(item => `${item.id}:${item.state || 'draft'}`)
+        .join('|');
+}
+
+function getLmsLiveQuizBroadcastSignature(resourceKey) {
+    const canonicalKey = resolveCanonicalLmsResourceKey(resourceKey);
+    if (!canonicalKey) return '';
     const isStaff = typeof canManageLmsLiveQuiz === 'function' && canManageLmsLiveQuiz(canonicalKey);
     const session = isStaff
         ? (getLmsLiveStaffLiveSession(canonicalKey) || getLmsLiveStaffEditingSession(canonicalKey))
@@ -557,19 +449,22 @@ function getLmsLiveQuizStructuralFingerprint(resourceKey) {
         ? session.questions.map(item => `${item.id}:${item.state}:${item.showVersion || 0}`).join('|')
         : '';
     return [
-        String(getLmsLiveQuizActorKey()),
-        isStaff ? 'staff' : 'student',
-        String(session?.id || ''),
-        String(session?.status || ''),
         String(session?.currentQuestionIndex ?? ''),
         String(question?.id || ''),
         String(question?.state || ''),
         String(question?.showVersion || ''),
-        String(workspace.ui?.presentationMode || false),
         String(session?.showResults || false),
-        String(workspace.ui?.accessDenied || false),
+        String(session?.showPodium || false),
+        String(session?.podiumRevealAt || ''),
         questionSignature
     ].join('::');
+}
+
+function getLmsLiveQuizStructuralFingerprint(resourceKey) {
+    const layout = getLmsLiveQuizLayoutFingerprint(resourceKey);
+    const broadcast = getLmsLiveQuizBroadcastSignature(resourceKey);
+    if (!layout && !broadcast) return '';
+    return `${layout}::${broadcast}`;
 }
 
 function getLmsLiveQuizVolatileSignature(resourceKey) {
@@ -643,23 +538,56 @@ function bindLmsLiveQuizWorkspaceActor(workspace = {}, canonicalKey = '') {
 }
 
 function getLmsLiveQuizRenderFingerprint(resourceKey) {
-    return getLmsLiveQuizStructuralFingerprint(resourceKey);
+    return getLmsLiveQuizLayoutFingerprint(resourceKey);
 }
 
 function storeLmsLiveQuizRenderFingerprint(resourceKey) {
     const canonicalKey = resolveCanonicalLmsResourceKey(resourceKey);
     if (!canonicalKey || typeof window === 'undefined') return '';
-    const fingerprint = getLmsLiveQuizStructuralFingerprint(canonicalKey);
+    const fingerprint = getLmsLiveQuizLayoutFingerprint(canonicalKey);
     window.__lmsLiveRenderFingerprints = window.__lmsLiveRenderFingerprints || {};
     window.__lmsLiveRenderFingerprints[canonicalKey] = fingerprint;
     return fingerprint;
 }
 
-function markLmsLiveQuizLocalSync(resourceKey) {
+function storeLmsLiveQuizBroadcastSignature(resourceKey, signature = '') {
     const canonicalKey = resolveCanonicalLmsResourceKey(resourceKey);
     if (!canonicalKey || typeof window === 'undefined') return;
-    window.__lmsLiveQuizLocalSyncAt = window.__lmsLiveQuizLocalSyncAt || {};
-    window.__lmsLiveQuizLocalSyncAt[canonicalKey] = Date.now();
+    window.__lmsLiveBroadcastSignatures = window.__lmsLiveBroadcastSignatures || {};
+    const nextSignature = signature || (typeof getLmsLiveQuizBroadcastSignature === 'function'
+        ? getLmsLiveQuizBroadcastSignature(canonicalKey)
+        : '');
+    window.__lmsLiveBroadcastSignatures[canonicalKey] = String(nextSignature || '');
+}
+
+function storeLmsLiveQuizQueueSignature(resourceKey, signature = '') {
+    const canonicalKey = resolveCanonicalLmsResourceKey(resourceKey);
+    if (!canonicalKey || typeof window === 'undefined') return;
+    window.__lmsLiveQueueSignatures = window.__lmsLiveQueueSignatures || {};
+    const nextSignature = signature || (typeof getLmsLiveQuizQueueSignature === 'function'
+        ? getLmsLiveQuizQueueSignature(canonicalKey)
+        : '');
+    window.__lmsLiveQueueSignatures[canonicalKey] = String(nextSignature || '');
+}
+
+function markLmsLiveQuizLocalSync(resourceKey, reason = '') {
+    const canonicalKey = resolveCanonicalLmsResourceKey(resourceKey);
+    if (!canonicalKey || typeof window === 'undefined') return;
+    const now = typeof markLmsWorkspaceLocalSyncAt === 'function'
+        ? (markLmsWorkspaceLocalSyncAt('__lmsLiveQuizLocalSyncAt', canonicalKey) || Date.now())
+        : Date.now();
+    if (typeof markLmsWorkspaceLocalSyncAt !== 'function') {
+        window.__lmsLiveQuizLocalSyncAt = window.__lmsLiveQuizLocalSyncAt || {};
+        window.__lmsLiveQuizLocalSyncAt[canonicalKey] = now;
+    }
+    const normalizedReason = String(reason || '').trim();
+    if (normalizedReason === 'session-deleted' || normalizedReason === 'session-created') {
+        window.__lmsLiveQuizStructuralSyncAt = window.__lmsLiveQuizStructuralSyncAt || {};
+        window.__lmsLiveQuizStructuralSyncAt[canonicalKey] = now;
+        const workspace = ensureLmsLiveQuizWorkspace(canonicalKey);
+        workspace.ui.lastStructuralReason = normalizedReason;
+        workspace.ui.lastStructuralAt = now;
+    }
 }
 
 function shouldIgnoreLmsLiveQuizRealtimeUpdate(resourceKey) {
@@ -667,7 +595,9 @@ function shouldIgnoreLmsLiveQuizRealtimeUpdate(resourceKey) {
     if (!canonicalKey || typeof window === 'undefined') return false;
     if (window.__lmsLiveQuizSyncPromises?.[canonicalKey]) return true;
     const lastLocalSyncAt = Number(window.__lmsLiveQuizLocalSyncAt?.[canonicalKey] || 0);
-    return lastLocalSyncAt > 0 && (Date.now() - lastLocalSyncAt) < LMS_LIVE_LOCAL_SYNC_ECHO_MS;
+    if (lastLocalSyncAt > 0 && (Date.now() - lastLocalSyncAt) < LMS_LIVE_LOCAL_SYNC_ECHO_MS) return true;
+    const structuralAt = Number(window.__lmsLiveQuizStructuralSyncAt?.[canonicalKey] || 0);
+    return structuralAt > 0 && (Date.now() - structuralAt) < LMS_LIVE_STRUCTURAL_SYNC_ECHO_MS;
 }
 
 function hasLmsLiveQuizLiveSession(resourceKey) {
@@ -702,6 +632,66 @@ function invokeRefreshLmsLiveQuizUi(resourceKey, options = {}) {
         return;
     }
     renderLmsLiveQuizSection(canonicalKey, { skipLoad: true });
+}
+
+function getLmsLiveQuizQueueSignatureFromWorkspace(workspace = {}) {
+    const queueSession = getLmsLiveStaffQueueSessionFromWorkspace(workspace);
+    if (!Array.isArray(queueSession?.questions)) return '';
+    return queueSession.questions
+        .map(item => `${item.id}:${item.state || 'draft'}`)
+        .join('|');
+}
+
+function preserveLocalLmsLiveQuizSessionList(localWorkspace = {}, remoteWorkspace = {}) {
+    if (!localWorkspace || !remoteWorkspace || typeof remoteWorkspace !== 'object') return remoteWorkspace;
+    const localSessions = Array.isArray(localWorkspace.sessions) ? localWorkspace.sessions : [];
+    const remoteSessions = Array.isArray(remoteWorkspace.sessions) ? remoteWorkspace.sessions : [];
+    if (localSessions.length >= remoteSessions.length) return remoteWorkspace;
+    const merged = typeof cloneState === 'function'
+        ? cloneState(remoteWorkspace)
+        : JSON.parse(JSON.stringify(remoteWorkspace));
+    merged.sessions = localSessions.map(localSession => {
+        const remoteSession = remoteSessions.find(item => String(item?.id || '') === String(localSession?.id || ''));
+        const session = typeof cloneState === 'function'
+            ? cloneState(localSession)
+            : JSON.parse(JSON.stringify(localSession));
+        if (!remoteSession) return session;
+        const remoteParticipants = remoteSession?.participants && typeof remoteSession.participants === 'object'
+            ? remoteSession.participants
+            : {};
+        session.participants = session.participants && typeof session.participants === 'object'
+            ? { ...session.participants }
+            : {};
+        Object.entries(remoteParticipants).forEach(([participantId, remoteParticipant]) => {
+            const localParticipant = session.participants[participantId];
+            session.participants[participantId] = mergeRemoteLmsLiveParticipantAnswers(
+                localParticipant || remoteParticipant,
+                remoteParticipant
+            );
+        });
+        return session;
+    });
+    return merged;
+}
+
+function preserveLocalLmsLiveQuizQueueStructure(localWorkspace = {}, remoteWorkspace = {}) {
+    if (!localWorkspace || !remoteWorkspace || typeof remoteWorkspace !== 'object') return remoteWorkspace;
+    const merged = typeof cloneState === 'function'
+        ? cloneState(remoteWorkspace)
+        : JSON.parse(JSON.stringify(remoteWorkspace));
+    const localSessions = Array.isArray(localWorkspace.sessions) ? localWorkspace.sessions : [];
+    const remoteSessions = Array.isArray(merged.sessions) ? merged.sessions : [];
+    remoteSessions.forEach(remoteSession => {
+        const localSession = localSessions.find(item => String(item?.id || '') === String(remoteSession?.id || ''));
+        if (!localSession || !Array.isArray(localSession.questions)) return;
+        remoteSession.questions = typeof cloneState === 'function'
+            ? cloneState(localSession.questions)
+            : JSON.parse(JSON.stringify(localSession.questions));
+        if (Number.isFinite(Number(localSession.currentQuestionIndex))) {
+            remoteSession.currentQuestionIndex = localSession.currentQuestionIndex;
+        }
+    });
+    return merged;
 }
 
 function mergeLmsLiveStaffQuestionOverrides(localWorkspace = {}, remoteWorkspace = {}) {
@@ -746,6 +736,8 @@ function mergeLmsLiveStaffQuestionOverrides(localWorkspace = {}, remoteWorkspace
             remoteSession.currentQuestionIndex = localSession.currentQuestionIndex;
         }
         if (localSession.showResults != null) remoteSession.showResults = localSession.showResults;
+        if (localSession.showPodium != null) remoteSession.showPodium = localSession.showPodium;
+        if (localSession.podiumRevealAt) remoteSession.podiumRevealAt = localSession.podiumRevealAt;
         if (localSession.status) remoteSession.status = localSession.status;
     });
     return remoteWorkspace;
@@ -764,7 +756,32 @@ function applyLmsLiveQuizWorkspace(resourceKey, workspace = null, options = {}) 
             JSON.parse(JSON.stringify(normalizedWorkspace))
         );
     }
-    const canApplyRemote = shouldApplyRemoteLmsLiveQuizWorkspace(localWorkspace, incomingWorkspace, options);
+    const syncReason = String(options.syncReason || localWorkspace.ui?.lastStructuralReason || '').trim();
+    const localSessionCount = Array.isArray(localWorkspace.sessions) ? localWorkspace.sessions.length : 0;
+    const remoteSessionCount = Array.isArray(incomingWorkspace.sessions) ? incomingWorkspace.sessions.length : 0;
+    if (
+        typeof canManageLmsLiveQuiz === 'function'
+        && canManageLmsLiveQuiz(canonicalKey)
+        && syncReason !== 'session-created'
+        && localSessionCount < remoteSessionCount
+    ) {
+        incomingWorkspace = preserveLocalLmsLiveQuizSessionList(localWorkspace, incomingWorkspace);
+    }
+    const queueStructural = options.queueStructural === true
+        || (options.syncReason && LMS_LIVE_QUEUE_STRUCTURAL_REASONS.has(options.syncReason));
+    if (queueStructural && typeof canManageLmsLiveQuiz === 'function' && canManageLmsLiveQuiz(canonicalKey)) {
+        const localQueueSig = typeof getLmsLiveQuizQueueSignature === 'function'
+            ? getLmsLiveQuizQueueSignature(canonicalKey)
+            : '';
+        const remoteQueueSig = getLmsLiveQuizQueueSignatureFromWorkspace(incomingWorkspace);
+        if (localQueueSig !== remoteQueueSig) {
+            incomingWorkspace = preserveLocalLmsLiveQuizQueueStructure(localWorkspace, incomingWorkspace);
+        }
+    }
+    const canApplyRemote = shouldApplyRemoteLmsLiveQuizWorkspace(localWorkspace, incomingWorkspace, {
+        ...options,
+        syncReason: syncReason || options.syncReason
+    });
     const shouldMergeParticipantsOnly = !canApplyRemote
         && (options.forceMergeParticipants === true || countLmsLiveQuizAnswers(normalizedWorkspace) > countLmsLiveQuizAnswers(localWorkspace));
     if (!canApplyRemote && !shouldMergeParticipantsOnly) {
@@ -780,16 +797,24 @@ function applyLmsLiveQuizWorkspace(resourceKey, workspace = null, options = {}) 
         ...(localWorkspace.ui && typeof localWorkspace.ui === 'object' ? localWorkspace.ui : {}),
         ...(normalizedWorkspace.ui && typeof normalizedWorkspace.ui === 'object' ? normalizedWorkspace.ui : {})
     };
-    const remoteSessions = Array.isArray(normalizedWorkspace.sessions) ? normalizedWorkspace.sessions : [];
-    const liveSession = remoteSessions.find(session => String(session?.status || '').toLowerCase() === 'live') || null;
+    const effectiveSessions = canApplyRemote
+        ? (Array.isArray(incomingWorkspace.sessions) ? incomingWorkspace.sessions : [])
+        : (Array.isArray(localWorkspace.sessions) ? localWorkspace.sessions : []);
+    const liveSession = effectiveSessions.find(session => String(session?.status || '').toLowerCase() === 'live') || null;
     const localActiveSessionId = String(localWorkspace.ui?.activeSessionId || '').trim();
     const remoteActiveSessionId = String(normalizedWorkspace.ui?.activeSessionId || '').trim();
+    const localActiveStillValid = localActiveSessionId
+        && effectiveSessions.some(session => String(session?.id || '') === localActiveSessionId);
+    const remoteActiveStillValid = remoteActiveSessionId
+        && effectiveSessions.some(session => String(session?.id || '') === remoteActiveSessionId);
     if (liveSession) {
         preservedUi.activeSessionId = liveSession.id;
-    } else if (localActiveSessionId && !remoteActiveSessionId) {
+    } else if (localActiveStillValid) {
         preservedUi.activeSessionId = localActiveSessionId;
-    } else if (remoteActiveSessionId) {
+    } else if (remoteActiveStillValid) {
         preservedUi.activeSessionId = remoteActiveSessionId;
+    } else {
+        preservedUi.activeSessionId = effectiveSessions[0]?.id || null;
     }
     delete preservedUi.syncTimer;
     if (canApplyRemote) {
@@ -804,7 +829,7 @@ function applyLmsLiveQuizWorkspace(resourceKey, workspace = null, options = {}) 
     if (options.render !== false && isLmsActiveTab('live-quiz')) {
         invokeRefreshLmsLiveQuizUi(canonicalKey, {
             skipLoad: true,
-            forceStructuralRender: options.forceRender === true || shouldMergeParticipantsOnly
+            forceStructuralRender: options.forceRender === true
         });
     }
     return normalized;
@@ -822,58 +847,88 @@ function buildLmsLiveQuizSyncPayload(canonicalKey) {
     return payload;
 }
 
-function runImmediateLmsLiveQuizSync(canonicalKey, reason = 'live-quiz') {
+function runImmediateLmsLiveQuizSync(canonicalKey, reason = 'live-quiz', options = {}) {
     if (!canonicalKey || typeof syncLmsLiveQuizWorkspace !== 'function') return Promise.resolve(null);
     if (!shouldSyncLmsLiveQuizWorkspace(canonicalKey)) return Promise.resolve(null);
-    markLmsLiveQuizLocalSync(canonicalKey);
+    markLmsLiveQuizLocalSync(canonicalKey, reason);
     const workspace = ensureLmsLiveQuizWorkspace(canonicalKey);
     if (workspace.ui?.syncTimer) {
         clearTimeout(workspace.ui.syncTimer);
         workspace.ui.syncTimer = null;
     }
-    workspace.ui.syncing = true;
-    const payload = buildLmsLiveQuizSyncPayload(canonicalKey);
-    const syncPromise = syncLmsLiveQuizWorkspace(canonicalKey, payload, reason)
-        .then(savedWorkspace => {
-            if (savedWorkspace) {
-                applyLmsLiveQuizWorkspace(canonicalKey, savedWorkspace, { render: false, forceRemote: true });
-                rememberLmsLiveQuizServerParticipantCount(canonicalKey, savedWorkspace);
-            }
-            const latest = ensureLmsLiveQuizWorkspace(canonicalKey);
-            latest.ui.accessDenied = false;
-            latest.ui.syncError = '';
-            latest.ui.dirty = false;
-            latest.ui.lastServerSyncAt = Date.now();
-            if (typeof window.invalidateLmsLiveQuizTabCache === 'function') {
-                window.invalidateLmsLiveQuizTabCache(canonicalKey);
-            }
-            return savedWorkspace;
-        })
-        .catch(error => {
-            const status = Number(error?.status || error?.httpStatus || 0);
-            if (status === 403) {
-                markLmsLiveQuizAccessDenied(
-                    canonicalKey,
-                    error?.message || 'You are not assigned to this course scope.'
-                );
-            } else {
-                const latest = ensureLmsLiveQuizWorkspace(canonicalKey);
-                latest.ui.accessDenied = false;
-                latest.ui.syncError = repairLmsDisplayText(error?.message || 'Live quiz sync failed. Try again.', 'Live quiz sync failed. Try again.');
-            }
-            return null;
-        })
-        .finally(() => {
-            const latest = ensureLmsLiveQuizWorkspace(canonicalKey);
-            latest.ui.syncing = false;
-            if (typeof window !== 'undefined') {
-                window.__lmsLiveQuizSyncPromises = window.__lmsLiveQuizSyncPromises || {};
-                delete window.__lmsLiveQuizSyncPromises[canonicalKey];
-            }
-            if (isLmsActiveTab('live-quiz')) {
-                invokeRefreshLmsLiveQuizUi(canonicalKey, { skipLoad: true });
-            }
-        });
+    workspace.ui.syncGeneration = Number(workspace.ui.syncGeneration || 0) + 1;
+    const syncGeneration = workspace.ui.syncGeneration;
+    let syncPromise = null;
+    const executeSync = () => {
+        const latest = ensureLmsLiveQuizWorkspace(canonicalKey);
+        if (Number(latest.ui.syncGeneration || 0) !== syncGeneration) {
+            return Promise.resolve(null);
+        }
+        latest.ui.syncing = true;
+        const payload = buildLmsLiveQuizSyncPayload(canonicalKey);
+        return syncLmsLiveQuizWorkspace(canonicalKey, payload, reason)
+            .then(savedWorkspace => {
+                const current = ensureLmsLiveQuizWorkspace(canonicalKey);
+                if (Number(current.ui.syncGeneration || 0) !== syncGeneration) return null;
+                if (savedWorkspace) {
+                    applyLmsLiveQuizWorkspace(canonicalKey, savedWorkspace, {
+                        render: false,
+                        forceRemote: true,
+                        syncReason: reason,
+                        queueStructural: Boolean(options.queueStructural)
+                            || LMS_LIVE_QUEUE_STRUCTURAL_REASONS.has(reason)
+                    });
+                    rememberLmsLiveQuizServerParticipantCount(canonicalKey, savedWorkspace);
+                    current.ui.lastKnownServerSessionCount = Array.isArray(savedWorkspace.sessions)
+                        ? savedWorkspace.sessions.length
+                        : 0;
+                }
+                current.ui.accessDenied = false;
+                current.ui.syncError = '';
+                current.ui.dirty = false;
+                current.ui.lastServerSyncAt = Date.now();
+                if (typeof window.invalidateLmsLiveQuizTabCache === 'function') {
+                    window.invalidateLmsLiveQuizTabCache(canonicalKey);
+                }
+                return savedWorkspace;
+            })
+            .catch(error => {
+                const current = ensureLmsLiveQuizWorkspace(canonicalKey);
+                if (Number(current.ui.syncGeneration || 0) !== syncGeneration) return null;
+                const status = Number(error?.status || error?.httpStatus || 0);
+                if (status === 403) {
+                    markLmsLiveQuizAccessDenied(
+                        canonicalKey,
+                        error?.message || 'You are not assigned to this course scope.'
+                    );
+                } else {
+                    current.ui.accessDenied = false;
+                    current.ui.syncError = repairLmsDisplayText(error?.message || 'Live quiz sync failed. Try again.', 'Live quiz sync failed. Try again.');
+                }
+                return null;
+            })
+            .finally(() => {
+                const current = ensureLmsLiveQuizWorkspace(canonicalKey);
+                if (Number(current.ui.syncGeneration || 0) === syncGeneration) {
+                    current.ui.syncing = false;
+                }
+                if (typeof window !== 'undefined') {
+                    window.__lmsLiveQuizSyncPromises = window.__lmsLiveQuizSyncPromises || {};
+                    if (window.__lmsLiveQuizSyncPromises[canonicalKey] === syncPromise) {
+                        delete window.__lmsLiveQuizSyncPromises[canonicalKey];
+                    }
+                }
+                if (!options.deferUiRefresh && isLmsActiveTab('live-quiz')) {
+                    invokeRefreshLmsLiveQuizUi(canonicalKey, { skipLoad: true });
+                }
+            });
+    };
+    const previousPromise = typeof window !== 'undefined'
+        ? window.__lmsLiveQuizSyncPromises?.[canonicalKey]
+        : null;
+    syncPromise = previousPromise
+        ? previousPromise.catch(() => null).then(executeSync)
+        : executeSync();
     if (typeof window !== 'undefined') {
         window.__lmsLiveQuizSyncPromises = window.__lmsLiveQuizSyncPromises || {};
         window.__lmsLiveQuizSyncPromises[canonicalKey] = syncPromise;
@@ -921,6 +976,14 @@ function flushLmsLiveQuizSync(resourceKey = '') {
 }
 
 function shouldReloadLmsLiveQuizFromBackend(workspace = {}, canonicalKey = '', options = {}) {
+    if (typeof shouldReloadLmsWorkspaceFromBackendGeneric === 'function') {
+        return shouldReloadLmsWorkspaceFromBackendGeneric(
+            workspace,
+            options,
+            LMS_LIVE_BACKEND_RELOAD_TTL_MS,
+            () => hasLmsLiveQuizLiveSession(canonicalKey)
+        );
+    }
     if (options.force === true) return true;
     if (hasLmsLiveQuizLiveSession(canonicalKey)) return true;
     const lastServerSyncAt = Number(workspace.ui?.lastServerSyncAt || 0);
@@ -955,10 +1018,24 @@ function loadLmsLiveQuizWorkspace(resourceKey, options = {}) {
         .then(remoteWorkspace => {
             if (!isCurrentLmsLiveQuizLoadGeneration(canonicalKey, loadGeneration)) return null;
             if (remoteWorkspace) {
+                const localWorkspace = ensureLmsLiveQuizWorkspace(canonicalKey);
+                const isStaff = typeof canManageLmsLiveQuiz === 'function' && canManageLmsLiveQuiz(canonicalKey);
+                let queueStructural = options.queueStructural === true;
+                if (isStaff && !queueStructural) {
+                    const localQueueSig = typeof getLmsLiveQuizQueueSignature === 'function'
+                        ? getLmsLiveQuizQueueSignature(canonicalKey)
+                        : '';
+                    const remoteQueueSig = getLmsLiveQuizQueueSignatureFromWorkspace(remoteWorkspace);
+                    if (localQueueSig !== remoteQueueSig) {
+                        queueStructural = true;
+                    }
+                }
                 applyLmsLiveQuizWorkspace(canonicalKey, remoteWorkspace, {
                     render: false,
                     forceRemote,
-                    forceMergeParticipants: options.forceMergeParticipants === true
+                    forceMergeParticipants: options.forceMergeParticipants === true,
+                    queueStructural,
+                    syncReason: queueStructural ? (options.syncReason || 'queue-reload') : undefined
                 });
                 rememberLmsLiveQuizServerParticipantCount(canonicalKey, remoteWorkspace);
             }
@@ -1045,14 +1122,15 @@ function handleLmsLiveQuizRealtimeUpdate(payload = {}) {
             if (shouldIgnoreLmsLiveQuizRealtimeUpdate(resourceKey)) return;
             const workspace = ensureLmsLiveQuizWorkspace(resourceKey);
             const localPending = Boolean(workspace.ui?.dirty || workspace.ui?.syncing);
+            const hadRecentDelete = workspace.ui?.lastStructuralReason === 'session-deleted'
+                && (Date.now() - Number(workspace.ui?.lastStructuralAt || 0)) < LMS_LIVE_STRUCTURAL_SYNC_ECHO_MS;
             loadLmsLiveQuizWorkspace(resourceKey, {
                 force: true,
                 forceRemote: true,
-                forceMergeParticipants: !localPending,
-                forceStructuralRender: true,
+                forceMergeParticipants: !localPending || hadRecentDelete,
+                syncReason: hadRecentDelete ? 'session-deleted' : undefined,
                 render: true
             });
-            invokeRefreshLmsLiveQuizUi(resourceKey, { skipLoad: true });
         }, LMS_LIVE_REALTIME_DEBOUNCE_MS);
     }
 }
@@ -1118,7 +1196,7 @@ function submitLmsLiveQuizAnswerChange(resourceKey, answerPayload = {}, reason =
             const latest = ensureLmsLiveQuizWorkspace(canonicalKey);
             latest.ui.syncing = false;
             if (isLmsActiveTab('live-quiz')) {
-                invokeRefreshLmsLiveQuizUi(canonicalKey, { skipLoad: true, forceStructuralRender: true });
+                invokeRefreshLmsLiveQuizUi(canonicalKey, { skipLoad: true });
             }
         });
     if (typeof window !== 'undefined') {
@@ -1173,7 +1251,7 @@ function submitLmsLiveQuizJoinChange(resourceKey, joinPayload = {}, reason = 'pa
             const latest = ensureLmsLiveQuizWorkspace(canonicalKey);
             latest.ui.syncing = false;
             if (isLmsActiveTab('live-quiz')) {
-                invokeRefreshLmsLiveQuizUi(canonicalKey, { skipLoad: true, forceStructuralRender: true });
+                invokeRefreshLmsLiveQuizUi(canonicalKey, { skipLoad: true });
             }
         });
     if (typeof window !== 'undefined') {
@@ -1228,11 +1306,29 @@ function scheduleLmsLiveClockRefresh(resourceKey) {
             || workspace.ui?.syncing
             || workspace.ui?.accessDenied
         );
+        const previousVolatile = typeof getLmsLiveQuizVolatileSignature === 'function'
+            ? getLmsLiveQuizVolatileSignature(canonicalKey)
+            : '';
+        const staffControlsLiveQuestion = canManageLmsLiveQuiz(canonicalKey)
+            && liveFastClock
+            && !workspace.ui?.dirty
+            && !workspace.ui?.syncing;
         if (shouldRefreshFromBackend
             && !skipBackendLoad
+            && !staffControlsLiveQuestion
             && typeof loadLmsLiveQuizWorkspace === 'function'
             && !shouldSkipLmsLiveQuizBackendPoll(canonicalKey)) {
-            loadLmsLiveQuizWorkspace(canonicalKey, { force: true, render: false });
+            Promise.resolve(loadLmsLiveQuizWorkspace(canonicalKey, { force: true, render: false }))
+                .finally(() => {
+                    const nextVolatile = typeof getLmsLiveQuizVolatileSignature === 'function'
+                        ? getLmsLiveQuizVolatileSignature(canonicalKey)
+                        : '';
+                    if (nextVolatile !== previousVolatile && typeof refreshLmsLiveQuizUi === 'function') {
+                        refreshLmsLiveQuizUi(canonicalKey, { skipLoad: true });
+                    }
+                });
+        } else if (typeof patchLmsLiveQuizTimerUi === 'function') {
+            patchLmsLiveQuizTimerUi(canonicalKey);
         } else {
             invokeRefreshLmsLiveQuizUi(canonicalKey, { skipLoad: true });
         }
@@ -1259,6 +1355,28 @@ function getLmsLiveStaffEditingSession(resourceKey) {
     }
     return sessions.find(session => session.status === 'live')
         || sessions.find(session => session.status === 'draft')
+        || sessions[0]
+        || null;
+}
+
+function getLmsLiveStaffQueueSession(resourceKey) {
+    const canonicalKey = resolveCanonicalLmsResourceKey(resourceKey);
+    if (!canonicalKey) return null;
+    const liveSession = getLmsLiveStaffLiveSession(canonicalKey);
+    if (liveSession) return liveSession;
+    return getLmsLiveStaffEditingSession(canonicalKey);
+}
+
+function getLmsLiveStaffQueueSessionFromWorkspace(workspace = {}) {
+    const sessions = Array.isArray(workspace?.sessions) ? workspace.sessions : [];
+    const liveSession = sessions.find(session => String(session?.status || '').toLowerCase() === 'live') || null;
+    if (liveSession) return liveSession;
+    const activeSessionId = String(workspace?.ui?.activeSessionId || '').trim();
+    if (activeSessionId) {
+        const activeSession = sessions.find(session => String(session?.id || '') === activeSessionId) || null;
+        if (activeSession) return activeSession;
+    }
+    return sessions.find(session => session?.status === 'draft')
         || sessions[0]
         || null;
 }
@@ -1604,6 +1722,8 @@ function resetLmsLiveQuizRuntimeState() {
         window.__lmsLiveLoadGenerations = {};
         window.__lmsLiveRenderGenerations = {};
         window.__lmsLiveRenderFingerprints = {};
+        window.__lmsLiveBroadcastSignatures = {};
+        window.__lmsLiveQueueSignatures = {};
         window.__lmsLiveVolatileSignatures = {};
         window.__lmsLiveQuizLocalSyncAt = {};
         window.__lmsLiveQuizSyncPromises = {};
@@ -1620,47 +1740,10 @@ function resetLmsLiveQuizRuntimeState() {
 }
 
 if (typeof window !== 'undefined') {
-    Object.assign(window, {
-        isLmsActiveTab,
-        getLmsLiveQuizStructuralFingerprint,
-        getLmsLiveQuizVolatileSignature,
-        getLmsLiveQuizRenderFingerprint,
-        storeLmsLiveQuizRenderFingerprint,
-        markLmsLiveQuizLocalSync,
-        shouldIgnoreLmsLiveQuizRealtimeUpdate,
-        shouldApplyRemoteLmsLiveQuizWorkspace,
-        mergeRemoteLmsLiveQuizParticipants,
-        hasLmsLiveAnswerForQuestion,
-        rehydrateLmsLiveSessionParticipants,
-        shouldReloadLmsLiveQuizFromBackend,
-        reloadActiveLmsLiveQuizFromServer,
-        getLmsLiveStaffEditingSession,
-        getLmsLiveStaffLiveSession,
-        getLmsLiveStaffControlSession,
-        buildLmsLiveQuizSyncPayload,
-        countLmsLiveQuizAnswers,
-        hasLmsLiveQuizLiveSession,
-        getLmsLiveQuizRosterStats,
-        formatLmsLiveAnswerSyncError,
-        bindLmsLiveQuizFocusRefresh,
-        rememberLmsLiveQuizServerParticipantCount,
-        ensureLmsLiveStudentParticipant,
-        getLmsLiveStaffSessionForQuestion,
-        canAccessLmsLiveQuizScope,
-        shouldSyncLmsLiveQuizWorkspace,
+    __kiuLqWsExpose({
         flushLmsLiveQuizSync,
-        submitLmsLiveQuizJoinChange,
-        resetLmsLiveQuizRuntimeState,
-        rerenderCurrentLmsLiveQuizWorkspace: function rerenderCurrentLmsLiveQuizWorkspace() {
-            if (!isLmsActiveTab('live-quiz')) return;
-            const courseKey = typeof getLmsTabCourseKey === 'function'
-                ? getLmsTabCourseKey('live-quiz')
-                : (currentCourseId || '');
-            renderLmsLiveQuizSection(courseKey);
-            if (typeof window.syncLmsTabRenderCacheFromDom === 'function') {
-                const sectionType = typeof getCurrentLmsSectionType === 'function' ? getCurrentLmsSectionType() : '';
-                window.syncLmsTabRenderCacheFromDom('live-quiz', courseKey, sectionType);
-            }
-        }
+        getLmsLiveGroupSummary,
+        getLmsLiveSessions,
     });
 }
+

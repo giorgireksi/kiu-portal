@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
 function readSource(relativePath) {
@@ -16,8 +16,10 @@ describe('social render coordination regressions', () => {
         expect(page).toContain('function invalidateSocialRenderCache({ center = true } = {})');
         expect(page).not.toContain('function renderRail(');
         expect(page).not.toContain('social-neo-rail-region');
-        expect(page).toContain('function buildDirectoryFingerprint(runtime)');
-        expect(page).toContain('function buildReportsFingerprint(runtime)');
+        expect(page).toContain('const buildDirectoryFingerprint = window.buildDirectoryFingerprint');
+        expect(page).toContain('const buildReportsFingerprint = window.buildReportsFingerprint');
+        expect(readSource('assets/js/pages/social-fingerprint-model.js')).toContain('function buildDirectoryFingerprint(runtime)');
+        expect(readSource('assets/js/pages/social-fingerprint-model.js')).toContain('function buildReportsFingerprint(runtime)');
         expect(page).toContain('window.__kiuSocialPatchEventRsvp = patchEventRsvpButtons');
         expect(readSource('assets/js/pages/social-render-plan.js')).toMatch(/reason === 'mobile-nav'/);
         expect((page + readSource('assets/js/pages/social-events.js'))).toContain("'event-created'");
@@ -36,10 +38,16 @@ describe('social render coordination regressions', () => {
             ['panel-surveys', "renderSocialPageNow('panel-surveys')"],
             ['panel-messages', "renderSocialPageNow('panel-messages')"]
         ];
+        const shellNav = readSource('assets/js/pages/social-shell-nav.js');
         panelHandlers.forEach(([action, renderCall]) => {
-            expect(page).toMatch(new RegExp(`action === '${action}'[\\s\\S]*${renderCall.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`));
+            expect(shellNav).toMatch(new RegExp(`action === '${action}'[\\s\\S]*${renderCall.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`));
         });
-
+        expect(page).toContain('handleShellNavClick');
+        expect(html).toMatch(/assets\/js\/pages\/social-shell-nav\.js\?v=/);
+        expect(html).toMatch(/assets\/js\/pages\/social-overlay-chrome\.js\?v=/);
+        expect(html).toMatch(/assets\/js\/pages\/social-page-events\.js\?v=/);
+        expect(page).toContain('createKiuSocialPageEventsApi');
+        expect(page).toContain('createKiuSocialOverlayChromeApi');
         expect((page + readSource('assets/js/pages/social-groups.js'))).toMatch(/action === 'group-join'[\s\S]*renderSocialPageNow\('group-membership'\)/);
         expect((page + readSource('assets/js/pages/social-events.js'))).toMatch(/formType === 'dialog-event-delete'[\s\S]*renderSocialPageNow\('event-deleted'\)/);
         expect((page + readSource('assets/js/pages/social-feed.js'))).toMatch(/formType === 'dialog-post-delete'[\s\S]*renderSocialPageNow\('post-deleted'\)/);
@@ -51,12 +59,14 @@ describe('social render coordination regressions', () => {
         expect(runtime).toMatch(/setFlash\('Post deleted\.'[\s\S]*skipRender: true/);
         expect(runtime).toContain("queueRender('event-deleted')");
 
-        expect(html).toContain('assets/js/pages/social-page.js?v=20260713-groups-detail9');
-        expect(html).toContain('assets/js/shared/social-runtime-lite.js?v=20260713-post-compose1');
-        expect(html).toContain('assets/js/pages/social-mobile.js?v=20260624-event-edit2');
-        expect(app).toContain('assets/js/pages/social-page.js?v=20260713-groups-detail9');
-        expect(app).toContain('assets/js/shared/social-runtime-lite.js?v=20260713-post-compose1');
-        expect(app).toContain('assets/js/pages/social-mobile.js?v=20260624-event-edit2');
+        expect(html).toMatch(/assets\/js\/pages\/social-ui-kernel\.js\?v=/);
+        expect(html).toMatch(/assets\/js\/pages\/social-page\.js\?v=/);
+        expect(html).toMatch(/assets\/js\/pages\/social-dialog-router\.js\?v=/);
+        expect(html).toMatch(/assets\/js\/shared\/social-runtime-lite\.js\?v=/);
+        expect(html).toMatch(/assets\/js\/pages\/social-mobile\.js\?v=/);
+        expect(app).toMatch(/assets\/js\/pages\/social-page\.js\?v=/);
+        expect(app).toMatch(/assets\/js\/shared\/social-runtime-lite\.js\?v=/);
+        expect(app).toMatch(/assets\/js\/pages\/social-mobile\.js\?v=/);
     });
 
     it('does not keep duplicate RSVP patch helpers', () => {

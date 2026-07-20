@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
 function readSource(relativePath) {
@@ -37,7 +37,7 @@ describe('LMS live quiz tab persistence', () => {
         const classroomSource = readSource('assets/js/pages/lms-classroom-tabs-runtime.js');
         const workspaceSource = readSource('assets/js/pages/lms-live-quiz-workspace-runtime.js');
 
-        expect(classroomSource).toContain("tab !== 'live-quiz' && LMS_TAB_RENDER_CACHE[cacheKey]");
+        expect(classroomSource).toContain("tab !== 'live-quiz' && tab !== 'interaction' && tab !== 'whiteboard' && LMS_TAB_RENDER_CACHE[cacheKey]");
         expect(classroomSource).toContain('function invalidateLmsLiveQuizTabCache');
         expect(classroomSource).toContain('flushLmsLiveQuizSync');
         expect(workspaceSource).toContain('window.invalidateLmsLiveQuizTabCache');

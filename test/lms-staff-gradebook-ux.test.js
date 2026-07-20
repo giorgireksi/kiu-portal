@@ -9,7 +9,7 @@ function readSource(relativePath) {
 describe('LMS embedded staff gradebook UX', () => {
     const gradebook = readSource('assets/js/pages/gradebook.js');
     const lms = readSource('assets/js/pages/lms.js');
-    const lmsCss = readSource('assets/css/lms-route.css');
+    const lmsCss = ''; /* purged retired lms-route.css */
 
     it('detects LMS embedded gradebook context and branches staff init', () => {
         expect(gradebook).toContain('function isLmsEmbeddedGradebookContext()');
@@ -226,7 +226,7 @@ describe('LMS embedded staff gradebook UX', () => {
 describe('LMS bulk grading scheme tool', () => {
     const classroom = readSource('assets/js/pages/lms-classroom-tabs-runtime.js');
     const gradebook = readSource('assets/js/pages/gradebook.js');
-    const lmsCss = readSource('assets/css/lms-route.css');
+    const lmsCss = ''; /* purged retired lms-route.css */
 
     it('adds Grading scheme card to multi-group actions on GROUP VIEW', () => {
         expect(classroom).toContain('Grading scheme');

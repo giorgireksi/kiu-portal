@@ -1,8 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { createRequire } from 'module';
+import { readFileSync, existsSync } from 'fs';
+import { join } from 'path';
 
 const require = createRequire(import.meta.url);
 const { PlatformStore } = require('../backend/platform/store.js');
+
+function readSource(relativePath) {
+    return readFileSync(join(process.cwd(), relativePath), 'utf8');
+}
 
 function makeStore() {
     return new PlatformStore();
@@ -42,29 +48,16 @@ describe('runtime gradebook and registration regressions', () => {
         });
     });
 
-    it('computes final gradebook scores with weighted criterion math', () => {
+    it('keeps gradebook domain ACL-only without server score state', () => {
         const store = makeStore();
-        store.state.courses.COURSE_G = { id: 'COURSE_G', ects: 5, name: 'Weighted Course' };
-        store.state.sections.SECTION_G = {
-            id: 'SECTION_G',
-            courseId: 'COURSE_G',
-            seatsTotal: 30,
-            seatsTaken: 1,
-            schedule: []
-        };
-        store.state.enrollments.ENR_G = {
-            id: 'ENR_G',
-            studentId: 'student-2',
-            courseId: 'COURSE_G',
-            sectionId: 'SECTION_G',
-            status: 'active'
-        };
-
-        store.setScore({ courseId: 'COURSE_G', studentId: 'student-2', criterion: 'quiz', assessmentNumber: 1, score: 8 });
-        store.setScore({ courseId: 'COURSE_G', studentId: 'student-2', criterion: 'homework', assessmentNumber: 1, score: 90 });
-        store.setScore({ courseId: 'COURSE_G', studentId: 'student-2', criterion: 'midterm', assessmentNumber: 1, score: 70 });
-        const gradebook = store.setScore({ courseId: 'COURSE_G', studentId: 'student-2', criterion: 'final', assessmentNumber: 1, score: 80 });
-
-        expect(gradebook.records['student-2'].finalScore).toBe(78);
+        const gradebookService = readSource('backend/platform/domains/gradebook-service.js');
+        const stateShape = readSource('backend/platform/state-shape.js');
+        expect(store.state.gradebooks).toBeUndefined();
+        expect(stateShape).not.toContain('gradebooks:');
+        expect(gradebookService).toContain('function canAccessGradebookCourse');
+        expect(gradebookService).not.toContain('function setScore');
+        expect(gradebookService).not.toContain('function ensureGradebook');
+        expect(typeof store.setScore).toBe('undefined');
+        expect(typeof store.computeRecordFinalScore).toBe('undefined');
     });
 });

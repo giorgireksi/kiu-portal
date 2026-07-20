@@ -1,0 +1,19 @@
+@media (max-width: 768px) {
+  .lux-studio-backdrop.is-open { z-index: 10000 !important; }
+  .lux-studio-panel {
+    width: 100vw;
+    max-width: 100%;
+    border-radius: 0;
+    border-left: none;
+  }
+  .lux-studio-head { padding: 16px 16px 14px; }
+  .lux-studio-title { font-size: 20px; }
+  .lux-studio-sub { font-size: 11px; }
+  .lux-studio-body { padding: 14px 16px 100px; gap: 14px; }
+  .lux-studio-section { padding: 14px; }
+  .lux-palette-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .lux-palette-chip { min-height: 72px; }
+  .lux-range-row { grid-template-columns: 60px minmax(0, 1fr) 42px; gap: 8px; }
+  .lux-mix-preview { min-height: 64px; }
+  .lux-apply-btn { min-height: 48px; font-size: 13px; }
+}

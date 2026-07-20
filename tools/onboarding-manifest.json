@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "wave": "H10",
+  "entryDocs": [
+    "README.md",
+    "docs/ONBOARDING.md"
+  ],
+  "requiredLinks": [
+    "docs/findability-index.md",
+    "docs/dependency-index.md",
+    "docs/js-naming-patterns.md",
+    "docs/js-change-locality.md",
+    "docs/js-safe-edit-surface.md",
+    "docs/css-js-coupling.md",
+    "docs/fe-backend-seams.md",
+    "docs/test-as-map.md"
+  ],
+  "bootScripts": [
+    "start:local:web",
+    "start:web"
+  ]
+}

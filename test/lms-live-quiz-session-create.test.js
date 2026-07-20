@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 import { createRequire } from 'module';
 import { JSDOM } from 'jsdom';
@@ -18,6 +18,8 @@ describe('LMS live quiz session create', () => {
         expect(uiSource).toContain('renderLmsLiveQuizSection(canonicalKey, { preserveDraft: false, skipLoad: true });');
         expect(uiSource).toContain('function setLmsLiveActiveSession(resourceKey, sessionId)');
         expect(uiSource).toContain('function renderLmsLiveSessionSwitcher(resourceKey, sessions = [], activeSessionId = \'\')');
+        expect(uiSource).toContain('lms-route-select');
+        expect(uiSource).toContain('data-lux-picker-enhanced="true"');
     });
 
     it('resolves delegated createLmsLiveSession calls with :: in the resource key', () => {

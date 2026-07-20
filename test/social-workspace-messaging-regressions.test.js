@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
 function readSource(relativePath) {
@@ -12,8 +12,9 @@ describe('social workspace messaging regressions', () => {
         const page = readSource('assets/js/pages/social-page.js');
         const html = readSource('social.html');
 
-        expect(html).toContain('assets/js/shared/social-runtime-lite.js?v=20260713-post-compose1');
-        expect(html).toContain('assets/js/pages/social-page.js?v=20260713-groups-detail9');
+        expect(html).toMatch(/assets\/js\/shared\/social-runtime-lite\.js\?v=/);
+        expect(html).toMatch(/assets\/js\/pages\/social-ui-kernel\.js\?v=/);
+        expect(html).toMatch(/assets\/js\/pages\/social-page\.js\?v=/);
 
         expect(runtime).toContain("portalRequest(`/api/notifications?userId=${encodeURIComponent(text(user.id))}&limit=50`)");
         expect(runtime).toContain("type: text(item.type || 'general')");
@@ -28,7 +29,7 @@ describe('social workspace messaging regressions', () => {
         expect(page).toContain('markPortalChatMessagesRead(nextChatId)');
         expect(page).toContain('refreshPortalNotifications(true)');
         expect(page).toContain('persistPortalSocialStatePatch({ lostFoundItems: normalizedItems }');
-        expect(page).toContain('notification?.routeData?.chatId');
+        expect(readSource('assets/js/pages/social-alerts-model.js')).toContain('notification?.routeData?.chatId');
     });
 
     it('exposes chat read on the messenger backend route module', () => {

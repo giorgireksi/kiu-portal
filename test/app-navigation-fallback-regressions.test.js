@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
 function readSource(relativePath) {
@@ -14,7 +14,8 @@ describe('app navigation fallback regressions', () => {
     expect(source).toContain('function resolveFallbackPortalRouteUrl(pageId, role = getFallbackNavigationRole()) {');
     expect(source).toContain('function getFallbackRoutePageFromTrigger(trigger) {');
     expect(source).toContain('function performFallbackRouteNavigation(pageId) {');
-    expect(source).toContain("if (trigger.id === 'mob-act-profile') return 'profile-view';");
+    expect(source).toContain("if (trigger.id === 'mob-act-profile')");
+    expect(source).toContain("return 'personal-data';");
     expect(source).toContain("if (trigger.hasAttribute('data-admin-focus')) return 'admin-tools';");
     expect(source).toContain("if (typeof window.__kiuCoreNavigate === 'function') {");
     expect(source).toContain('window.__kiuCoreNavigate(targetPage);');

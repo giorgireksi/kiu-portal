@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createRequire } from 'module';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
 const require = createRequire(import.meta.url);
@@ -157,7 +157,8 @@ describe('social project task graph sync', () => {
         expect(routes).toContain("app.post('/api/social/projects/:id/task-graph'");
         expect(runtime).toContain('updatePortalSocialProjectTaskGraph');
         expect(runtime).toContain('/task-graph');
-        expect(page).toContain("createSocialWorkspaceStub('queueProjectTaskGraphSync'");
+        expect(page).toContain("'queueProjectTaskGraphSync'");
+        expect(page).toContain('createSocialWorkspaceStub');
         expect(page).toMatch(/setProjectTaskGraphPositions[\s\S]*?queueProjectTaskGraphSync/);
     });
 });

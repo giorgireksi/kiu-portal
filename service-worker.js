@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kiu-portal-shell-v20260717-phaseA1';
+const CACHE_NAME = 'kiu-portal-shell-v20260721-nodebug1';
 const CACHE_PREFIX = 'kiu-portal-shell-';
 const SHELL_ASSETS = [
   '/',
@@ -7,14 +7,14 @@ const SHELL_ASSETS = [
   '/news.html',
   '/exams.html',
   '/login.html',
-  '/assets/css/base.css?v=20260604-styleguard2',
-  '/assets/css/layout.css?v=1776604822083',
-  '/assets/css/lux-tokens.css?v=20260608-topbar-clear4',
-  '/assets/css/lux-fouc-ht.css?v=20260717-phaseA1',
-  '/assets/css/lux-page-bare.css?v=20260717-topbarrow1',
-  '/assets/css/lux-shell.css?v=20260717-phaseA1',
-  '/assets/css/index-home-dashboard.css?v=20260714-homeglass2',
-  '/assets/css/mobile-responsive.css?v=20260608-topbar-clear4',
+  '/assets/css/lux-tokens.css?v=20260721-darkglow1',
+'/assets/css/lux-fouc-ht.css?v=20260719-foucslim1',
+  '/assets/css/mobile-shell-core.css?v=20260720-densify6500',
+  '/assets/css/mobile-shell.css?v=20260720-densify6500',
+  '/assets/css/lux-shell.css?v=20260721-topbarhost1',
+'/assets/css/index-home-layout.css?v=20260720-gridfix1',
+'/assets/css/index-home-widgets.css?v=20260721-hoverfix1',
+'/assets/css/index-home-role.css?v=20260721-toolbarplain1',
   '/assets/js/theme-primer.js?v=20260609-bootguard1',
   '/assets/js/features/navigation.js?v=20260609-bootguard1',
   '/assets/js/features/luxury-index-runtime.js?v=20260714-homeglass2',

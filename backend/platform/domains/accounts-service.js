@@ -1,6 +1,7 @@
 const {
     buildPasswordHash,
     displayInitials,
+    isDemoOrTestingAccount,
     makeId,
     matchesSearch,
     normalizeCode,
@@ -37,18 +38,27 @@ function listAccounts(filters = {}) {
             .filter(Boolean)
     );
     const items = Object.values(this.state.accounts)
-        .map(account => this.sanitizeAccountForClient(account))
+        .map(account => sanitizeAccount(account))
         .filter(Boolean)
         .filter(account => !idFilters.length || idFilters.includes(String(account.id || '').trim()))
         .filter(account => !facultyCode || account.facultyCode === facultyCode)
         .filter(account => !role || account.role === role)
+        .filter(account => !isDemoOrTestingAccount(account) || (idFilters.length && idFilters.includes(String(account.id || '').trim())))
         .filter(account => matchesSearch(account, search, ['id', 'email', 'displayName', 'name', 'nameEn', 'facultyCode', 'role']))
         .sort((a, b) => String(a.displayName || '').localeCompare(String(b.displayName || ''), undefined, { sensitivity: 'base' }));
-    return paginate(items, filters);
+    const page = paginate(items, filters);
+    return {
+        ...page,
+        items: page.items.map(account => this.sanitizeAccountForClient(this.state.accounts[account.id])).filter(Boolean)
+    };
 }
 
-function getAccountById(userId) {
-    return this.sanitizeAccountForClient(this.state.accounts[String(userId || '').trim()]);
+function getAccountById(userId, options = {}) {
+    const sanitized = this.sanitizeAccountForClient(this.state.accounts[String(userId || '').trim()]);
+    if (!sanitized) return null;
+    if (options.allowDemo) return sanitized;
+    if (isDemoOrTestingAccount(sanitized)) return null;
+    return sanitized;
 }
 
 function getAccountByEmail(email) {

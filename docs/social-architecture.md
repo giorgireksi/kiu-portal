@@ -9,7 +9,6 @@ social-standalone-bootstrap.js
 → api / auth / state / faculty / utilities / navigation / luxury chrome
 → social-runtime-lite.js   (state + API + queueRender)
 → social-mobile.js         (static #mobile-bottom-nav + action sheet)
-→ portfolio/* (eager; lazy later)
 → social-render-plan.js    (eager: reason→region paint plan)
 → social-page.js           (orchestrator + shell glue; domain click/submit handlers in modules)
 → lazy: social-{community,alerts,lost-found,photography,surveys,messages,profile,events,groups,feed,pages,workspace}.js

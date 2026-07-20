@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
 function readSource(relativePath) {
@@ -8,59 +8,78 @@ function readSource(relativePath) {
 
 describe('index widget wave 1 regressions', () => {
   it('keeps orders aligned to the index hero-side widget structure', () => {
-    const source = readSource('assets/js/shared/orders-workspace.js');
+    const source = readSource('assets/js/shared/orders-inbox.js');
 
     expect(source).toContain('class="lux-card-body lux-hero-stage orders-inbox-hero-stage"');
     expect(source).toContain('class="lux-hero-main"');
-    expect(source).toContain('class="lux-hero-side orders-inbox-hero-side"');
-    expect(source).toContain('class="lux-hero-side-head"');
-    expect(source).toContain('class="lux-hero-signal-list"');
+    expect(source).toMatch(/class="lux-hero-side orders-inbox-hero-side(?: lux-focus-panel)?"/);
+    expect(source).toContain('lux-focus-panel');
+    expect(source).toContain('lux-focus-panel__head');
+    expect(source).toContain('lux-focus-panel__meta');
     expect(source).toContain('class="lux-hero-signal"');
   });
 
-  it('keeps library aligned to index hero-side and strip widgets', () => {
+  it('keeps library aligned to readonly catalog shell without deleted hero markup', () => {
     const source = readSource('assets/js/pages/library.js');
 
-    expect(source).toContain('class="lux-hero-stage"');
-    expect(source).toContain('class="lux-hero-main"');
-    expect(source).toContain('aside class="lux-hero-side library-hero-side');
-    expect(source).toContain('class="lux-strip-grid lux-strip-grid--adaptive library-widget-strip"');
-    expect(source).toContain('class="lux-strip-card surface-card library-overview-card library-hero-metric');
-    expect(source).toContain("'library-widget-visible'");
-    expect(source).toContain("'library-widget-topics'");
-    expect(source).toContain("'library-widget-languages'");
+    expect(source).toContain('LibraryCatalogView.renderCatalogShell');
+    expect(source).toContain("LibraryCatalogView.bindCatalogInteractions({ mode: 'readonly' })");
+    expect(source).toContain('LibraryCatalogView.renderCatalogTable({ mode: \'readonly\' })');
+    expect(source).toContain('[data-library-catalog-shell="1"]');
+    expect(source).not.toContain('library-hero-summary-card');
+    expect(source).not.toContain('id="library-hero-summary-detail"');
+    expect(source).not.toContain('library-page-hero');
+    expect(source).not.toContain('library-widget-strip');
+    expect(source).not.toContain('library-overview-card');
   });
 
-  it('keeps student-service aligned to index hero-side and strip widgets', () => {
+  it('keeps student-service aligned to index hero-side workflow chrome', () => {
     const source = readSource('assets/js/pages/student-service.js');
 
     expect(source).toContain('class="admin-hero student-service-hero lux-hero-stage"');
     expect(source).toContain('class="student-service-hero-main lux-hero-main"');
-    expect(source).toContain('class="student-service-hero-aside lux-hero-side"');
-    expect(source).toContain('class="student-service-hero-aside-grid lux-hero-signal-list"');
-    expect(source).toContain('class="student-service-hero-aside-stat lux-hero-signal"');
-    expect(source).toContain('class="student-service-summary-grid lux-strip-grid lux-strip-grid--adaptive"');
-    expect(source).toContain('class="student-service-summary-card lux-strip-card surface-card ');
+    expect(source).toMatch(/class="student-service-hero-aside lux-hero-side(?: lux-focus-panel)?"/);
+    expect(source).toContain('lux-focus-panel');
+    expect(source).toContain('student-service-hero-aside-grid');
+    expect(source).toContain('lux-hero-signal-list');
+    expect(source).toContain('student-service-hero-aside-stat');
+    expect(source).toContain('lux-hero-signal');
+    expect(source).toContain('student-service-workflow-section');
+    expect(source).not.toContain('student-service-summary-grid');
+    expect(source).not.toContain('student-service-summary-card');
   });
 
-  it('keeps news audience widgets aligned to index strip cards', () => {
+  it('keeps news feed post cards in editorial layout', () => {
     const source = readSource('assets/js/pages/news.js');
 
-    expect(source).toContain('class="newsx-stat-grid lux-strip-grid lux-strip-grid--adaptive"');
-    expect(source).toContain('class="newsx-stat lux-strip-card surface-card lux-summary-surface lux-summary-surface--panel"');
-    expect(source).toContain('class="lux-card-body lux-mini-panel"');
+    expect(source).toContain('newsx-reply-tabs');
+    expect(source).toContain('newsx-private-fold');
+    expect(source).toContain('newsx-post-card--editorial');
+    expect(source).not.toContain('newsx-stat-grid--compact');
+    expect(source).not.toContain('Who can see this announcement right now.');
+
+    const shellBlock = source.slice(
+      source.indexOf('function ensureNewsPostShell(host, postId)'),
+      source.indexOf('function renderNewsPostRegions(host, post)')
+    );
+    expect(shellBlock).not.toContain('newsx-divider');
   });
 
-  it('keeps registration widgets aligned to index hero-side and strip cards', () => {
+  it('keeps registration widgets aligned to consolidated studio panel', () => {
     const source = readSource('registration.html');
 
+    expect(source).toContain('registration-studio-head');
     expect(source).toContain('class="registration-hero-copy lux-hero-main"');
-    expect(source).toContain('class="registration-hero-focus lux-hero-side"');
-    expect(source).toContain('class="registration-focus-card registration-summary-card registration-summary-card--hero lux-hero-side-head"');
-    expect(source).toContain('class="registration-hero-focus-grid lux-hero-signal-list"');
-    expect(source).toContain('class="registration-mini-metric registration-signal-card registration-signal-card--hold lux-hero-signal"');
-    expect(source).toContain('class="registration-insight-grid lux-strip-grid lux-strip-grid--adaptive"');
-    expect(source).toContain('class="registration-insight-card registration-summary-card registration-summary-card--hold lux-summary-surface lux-summary-surface--panel lux-strip-card surface-card"');
+    expect(source).toMatch(/class="registration-hero-aside lux-hero-side(?: lux-focus-panel)?"/);
+    expect(source).toContain('registration-focus-card registration-summary-card registration-summary-card--hero');
+    expect(source).toContain('lux-hero-side-head');
+    expect(source).toContain('class="registration-command-band"');
+    expect(source).toContain('class="registration-metrics-band lux-strip-grid lux-strip-grid--adaptive"');
+    expect(source).toContain('registration-insight-card registration-summary-card registration-summary-card--hold');
+    expect(source).toContain('lux-soft-chrome');
+    expect(source).not.toContain('registration-hero-focus-grid');
+    expect(source).not.toContain('registration-mini-metric');
+    expect(source).not.toContain('registration-insight-grid');
   });
 
   it('keeps profile-view stat widgets aligned to index strip cards', () => {
@@ -74,10 +93,9 @@ describe('index widget wave 1 regressions', () => {
     const source = readSource('personal-data.html');
 
     expect(source).toContain('class="personal-data-hero-copy lux-hero-main"');
-    expect(source).toContain('class="personal-data-hero-panel lux-hero-side"');
-    expect(source).toContain('class="kpi-row lux-strip-grid lux-strip-grid--adaptive"');
+    expect(source).toContain('class="kpi-row lux-strip-grid lux-strip-grid--adaptive personal-data-kpi-row"');
     expect(source).toContain('class="personal-data-kpi-card lux-data-card lux-metric-card lux-strip-card lux-summary-surface lux-summary-surface--panel"');
-    expect(source).toContain('class="personal-data-record-grid lux-strip-grid lux-strip-grid--adaptive"');
-    expect(source).toContain('class="personal-data-mini lux-data-card lux-info-card lux-strip-card lux-summary-surface lux-summary-surface--panel"');
+    expect(source).not.toContain('class="personal-data-record-grid lux-strip-grid lux-strip-grid--adaptive"');
+    expect(source).not.toContain('class="personal-data-mini lux-data-card lux-info-card lux-strip-card lux-summary-surface lux-summary-surface--panel"');
   });
 });

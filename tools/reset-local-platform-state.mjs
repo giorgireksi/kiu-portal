@@ -53,6 +53,15 @@ async function main() {
         bootstrapAdmin
     });
     store.resetPlatformState({ preserveAdmin: true });
+    const serviceState = store.ensureStudentServiceState();
+    serviceState.articles = [];
+    if (store.state.portal?.state && typeof store.state.portal.state === 'object') {
+        delete store.state.portal.state.studentServiceArticles;
+    }
+    await store.save();
+    if (typeof store.savePortal === 'function') {
+        await store.savePortal();
+    }
     const accountIds = Object.keys(store.state.accounts || {});
     console.log(`Reset complete: ${STATE_PATH}`);
     console.log(`Accounts remaining (${accountIds.length}): ${accountIds.join(', ') || '(none)'}`);

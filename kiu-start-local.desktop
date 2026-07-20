@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Start KIU Local
+Comment=Start LMS, platform backend, and anti-cheat for local dev
+Exec=env KIU_LAUNCHER_IN_TERMINAL=1 bash /home/reksi/2/test/asd/start-local-lms-anticheat.sh
+Path=/home/reksi/2/test/asd
+Icon=applications-education
+Terminal=true
+Categories=Development;Education;
+StartupNotify=true

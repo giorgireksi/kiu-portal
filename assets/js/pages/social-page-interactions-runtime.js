@@ -1,0 +1,1070 @@
+/* Social page reactions/photography/portfolio/pages patches + renderSocialPageNow.
+ * Load before social-page.js.
+ */
+(function initSocialPageInteractionsRuntime() {
+    'use strict';
+    if (window.__KIU_SOCIAL_PAGE_INTERACTIONS_LOADED) return;
+    window.__KIU_SOCIAL_PAGE_INTERACTIONS_LOADED = true;
+
+    window.__kiuCreateSocialPageInteractionsApi = function createKiuPeelApi(deps) {
+        const d = deps || {};
+        function __dep(name) {
+            return function (...a) {
+                const fn = d[name] || window[name];
+                if (typeof fn !== 'function') throw new Error('Missing dep: ' + name);
+                return fn.apply(this, a);
+            };
+        }
+        /* Mutable deps bag: callers Object.assign(d, {...}) before/after install. */
+        const __lookup = (name, fallback) => {
+            if (typeof d[name] === 'function') return d[name];
+            if (typeof window[name] === 'function') return window[name];
+            if (typeof fallback === 'function') return fallback;
+            return function missingDep() {
+                throw new Error('Missing social interactions dep: ' + name);
+            };
+        };
+        // Proxy common free vars via deps bag (filled by host install).
+        function text(...a) { return __lookup('text')(...a); }
+        function state(...a) { return __lookup('state')(...a); }
+        function root(...a) { return __lookup('root')(...a); }
+        function escape(...a) { return __lookup('escape', __lookup('escapeHtml'))(...a); }
+        function currentUser(...a) { return __lookup('currentUser')(...a); }
+        function currentUserId(...a) { return __lookup('currentUserId')(...a); }
+        function portalRequest(...a) { return __lookup('portalRequest')(...a); }
+        function hydrateRuntime(...a) { return __lookup('hydrateRuntime')(...a); }
+        function setFlash(...a) { return __lookup('setFlash')(...a); }
+        function queueRender(...a) { return __lookup('queueRender')(...a); }
+        function loadSocialState(...a) { return __lookup('loadSocialState')(...a); }
+        function mutationRequest(...a) { return __lookup('mutationRequest')(...a); }
+        function invalidateSocialRenderCache(...a) { return __lookup('invalidateSocialRenderCache')(...a); }
+        function makeId(...a) { return __lookup('makeId')(...a); }
+        function nowLabel(...a) { return __lookup('nowLabel')(...a); }
+        function readFileAsDataUrl(...a) { return __lookup('readFileAsDataUrl')(...a); }
+        function fileUrl(...a) { return __lookup('fileUrl')(...a); }
+        function isImage(...a) { return (__lookup('isImage') || __lookup('isImageFile'))(...a); }
+        function openDialog(...a) { return __lookup('openDialog')(...a); }
+        function closeDialog(...a) { return __lookup('closeDialog')(...a); }
+        function setPanel(...a) { return __lookup('setPanel')(...a); }
+        function activeDialog(...a) { return __lookup('activeDialog')(...a); }
+        function ensureSocialShell(...a) { return __lookup('ensureSocialShell')(...a); }
+        function applyShellIdentity(...a) { return __lookup('applyShellIdentity')(...a); }
+        function ensureWorkspaceNavCollapsedState(...a) { return __lookup('ensureWorkspaceNavCollapsedState')(...a); }
+        function syncWorkspaceNavCollapsedClass(...a) { return __lookup('syncWorkspaceNavCollapsedClass')(...a); }
+        function getSocialPanelConfig(...a) { return __lookup('getSocialPanelConfig')(...a); }
+        function clearProjectTabPaneCache(...a) { return __lookup('clearProjectTabPaneCache')(...a); }
+        function projectTabPaneCacheKey(...a) { return __lookup('projectTabPaneCacheKey')(...a); }
+        function isSocialTopbarSkippedPanel(...a) { return __lookup('isSocialTopbarSkippedPanel')(...a); }
+        function syncSocialOverlayLock(...a) { return __lookup('syncSocialOverlayLock')(...a); }
+        function resolveSocialRenderPlan(...a) { return __lookup('resolveSocialRenderPlan')(...a); }
+        function messageAnchorId(...a) { return __lookup('messageAnchorId')(...a); }
+        function buildSocialRenderSignature(...a) { return __lookup('buildSocialRenderSignature')(...a); }
+        function isSocialForceRenderReason(...a) { return __lookup('isSocialForceRenderReason')(...a); }
+        function mergeFeedPost(...a) { return __lookup('mergeFeedPost')(...a); }
+        function cloneFeedPost(...a) { return __lookup('cloneFeedPost')(...a); }
+        function findFeedCommentRecord(...a) { return __lookup('findFeedCommentRecord')(...a); }
+        function applyOptimisticCommentReaction(...a) { return __lookup('applyOptimisticCommentReaction')(...a); }
+        function applyOptimisticPostReaction(...a) { return __lookup('applyOptimisticPostReaction')(...a); }
+        function ensureDirectChat(...a) { return __lookup('ensureDirectChat')(...a); }
+        function upsertChat(...a) { return __lookup('upsertChat')(...a); }
+        function ensureCallRuntime(...a) { return __lookup('ensureCallRuntime')(...a); }
+        const runtime = d.runtime || window.__kiuSocialLiteRuntime;
+        const PANEL_KEY = d.PANEL_KEY ?? window.PANEL_KEY;
+        void d;
+
+function reactionEmoji(reactionType) {
+    const type = text(reactionType || 'like').toLowerCase();
+    if (type === 'love') return '&#10084;&#65039;';
+    if (type === 'laugh') return '&#128514;';
+    if (type === 'wow') return '&#128558;';
+    if (type === 'support') return '&#129309;';
+    return '&#128077;';
+}
+
+/**
+ * Maps a reaction type to its past-tense display label (e.g. 'like' → 'Liked').
+ * Returns 'Like' when no reaction is active.
+ * @param {string} reactionType
+ * @returns {string}
+ */
+function reactionLabel(reactionType) {
+    const type = text(reactionType || '').toLowerCase();
+    if (!type) return 'Like';
+    if (type === 'like') return 'Liked';
+    if (type === 'love') return 'Loved';
+    if (type === 'laugh') return 'Haha';
+    if (type === 'wow') return 'Wow';
+    if (type === 'support') return 'Support';
+    return type.charAt(0).toUpperCase() + type.slice(1);
+}
+
+/**
+ * Renders the reaction summary row below a post (top-3 emoji icons + total count).
+ * Returns empty string when no reactions exist.
+ * @param {Object} reactionCounts - Map of reaction type → count.
+ * @returns {string} HTML markup.
+ */
+function renderPostReactionMetrics(reactionCounts = {}) {
+    const types = ['like', 'love', 'laugh', 'wow', 'support'];
+    const active = types
+        .map((type) => [type, Number(reactionCounts[type] || 0)])
+        .filter(([, count]) => count > 0)
+        .sort((left, right) => right[1] - left[1]);
+    const total = active.reduce((sum, [, count]) => sum + count, 0);
+    if (!total) return '';
+    const icons = active.slice(0, 3).map(([type]) =>
+        `<span class="social-neo-reaction-metric-emoji" aria-hidden="true">${reactionEmoji(type)}</span>`
+    ).join('');
+    return `<span class="social-neo-post-metric social-neo-post-reaction-metric">${icons}<span>${escape(total)}</span></span>`;
+}
+
+/** Returns the current viewer's reaction type on a comment, or '' if none. */
+function commentReactionType(comment) {
+    if (hasSocialFeedModule() && typeof window.commentReactionType === 'function' && window.commentReactionType !== commentReactionType) {
+        return window.commentReactionType(comment);
+    }
+    ensureSocialFeedModule().catch(() => null);
+    return '';
+}
+function renderInlineReplyForm(comment, post, context) {
+    if (hasSocialFeedModule() && typeof window.renderInlineReplyForm === 'function' && window.renderInlineReplyForm !== renderInlineReplyForm) {
+        return window.renderInlineReplyForm(comment, post, context);
+    }
+    ensureSocialFeedModule().catch(() => null);
+    return '';
+}
+function renderCommentReactionButtons(comment, normalizedPostId) {
+    if (hasSocialFeedModule() && typeof window.renderCommentReactionButtons === 'function' && window.renderCommentReactionButtons !== renderCommentReactionButtons) {
+        return window.renderCommentReactionButtons(comment, normalizedPostId);
+    }
+    ensureSocialFeedModule().catch(() => null);
+    return '';
+}
+const renderCommentNode = createSocialLazyStub('renderCommentNode', hasSocialFeedModule, ensureSocialFeedModule, '', () => queueDeferredModuleRender('feed-module'));
+const renderCommentThread = createSocialLazyStub('renderCommentThread', hasSocialFeedModule, ensureSocialFeedModule, '', () => queueDeferredModuleRender('feed-module'));
+
+/* ----- Surgical comment-thread DOM patching (flicker-free dialog updates) ----- */
+
+/** The comment <article> for a given id inside the open comments dialog. */
+const dialogCommentEl = createSocialLazyStub('dialogCommentEl', hasSocialFeedModule, ensureSocialFeedModule, null, null);
+
+/**
+ * Replace only the tasks body stack (desk packages / list / map preview).
+ * Keeps Work Desk header, toolbar, and filters mounted — no opacity reveal.
+ */
+
+/** Tabs that embed renderTaskDependencyGraphPreview. */
+const PROJECT_TABS_WITH_GRAPH_PREVIEW = new Set(['overview', 'tasks']);
+
+/**
+ * Force-rebuild the active workspace tab pane when it hosts the task-map preview.
+ * Used because keep-center dialogs leave stale __projectTabPaneCache DOM in place.
+ */
+
+/**
+ * Graph data or free positions changed — drop cached tab panes so preview re-renders.
+ * While the graph dialog is open, mark stale and rebuild when the dialog closes.
+ */
+
+/** Replaces just the 5 reaction chips of one comment with fresh counts/active state. */
+const patchCommentReactions = createSocialLazyStub('patchCommentReactions', hasSocialFeedModule, ensureSocialFeedModule, false, null);
+
+/** Window hook for runtime comment-react (dialog chips only — no center rebuild). */
+const patchCommentReactionsByIds = createSocialLazyStub('patchCommentReactionsByIds', hasSocialFeedModule, ensureSocialFeedModule, false, null);
+const patchPhotographyFeedReactions = createSocialLazyStub('patchPhotographyFeedReactions', hasSocialFeedModule, ensureSocialFeedModule, false, null);
+const patchPostSaveButtons = createSocialLazyStub('patchPostSaveButtons', hasSocialFeedModule, ensureSocialFeedModule, false, null);
+const patchPhotographyFeedSave = createSocialLazyStub('patchPhotographyFeedSave', hasSocialFeedModule, ensureSocialFeedModule, '', null);
+function patchPhotographyFollowButtons(userId, isFollowing) {
+    const normalizedId = text(userId);
+    if (!normalizedId) return false;
+    const host = root();
+    if (!host) return false;
+    const buttons = host.querySelectorAll(`[data-action="photography-follow"][data-user-id="${CSS.escape(normalizedId)}"]`);
+    if (!buttons.length) return false;
+    const following = Boolean(isFollowing);
+    buttons.forEach((btn) => {
+        btn.classList.toggle('social-neo-btn-primary', following);
+        btn.classList.toggle('social-neo-btn-ghost', !following);
+        const sm = btn.classList.contains('social-neo-btn-sm');
+        btn.textContent = following ? 'Following' : 'Follow';
+        // preserve spacing for sm buttons that had only text
+        if (!sm && following) {
+            // ok
+        }
+    });
+    return true;
+}
+function refreshPhotographyPanelStage() {
+    if (typeof window.refreshPhotographyFeedStage === 'function') {
+        try {
+            if (window.refreshPhotographyFeedStage()) return true;
+        } catch (error) {
+            console.warn('[Social] photography stage refresh failed', error);
+        }
+    }
+    return false;
+}
+
+/** Surgically updates a single post card's reaction UI (metrics, Like button, picker)
+ *  without re-rendering the entire center column — prevents scroll jumps. */
+const patchPostReactions = createSocialLazyStub('patchPostReactions', hasSocialFeedModule, ensureSocialFeedModule, false, null);
+function portfolioEditorFormRoot() {
+    if (text(activeDialog()?.type || '') === 'portfolio-editor') {
+        return socialDialogRegion()?.querySelector('.social-neo-dialog-body--portfolio-editor') || null;
+    }
+    return document.getElementById('social-neo-center-region');
+}
+function capturePortfolioEditorSnapshot() {
+    const body = portfolioEditorFormRoot();
+    if (!body) return null;
+    const active = document.activeElement;
+    const activeInBody = Boolean(active && body.contains(active));
+    return {
+        scrollTop: body.scrollTop || 0,
+        activeSelector: activeInBody ? focusRestoreSelector(active) : '',
+        selectionStart: activeInBody && typeof active.selectionStart === 'number' ? active.selectionStart : null,
+        selectionEnd: activeInBody && typeof active.selectionEnd === 'number' ? active.selectionEnd : null
+    };
+}
+function restorePortfolioEditorSnapshot(snapshot) {
+    if (!snapshot) return;
+    const body = portfolioEditorFormRoot();
+    if (!body) return;
+    body.scrollTop = snapshot.scrollTop || 0;
+    if (!snapshot.activeSelector) return;
+    const el = body.querySelector(snapshot.activeSelector);
+    if (!el || typeof el.focus !== 'function') return;
+    el.focus({ preventScroll: true });
+    if (snapshot.selectionStart != null && snapshot.selectionEnd != null && typeof el.setSelectionRange === 'function') {
+        try { el.setSelectionRange(snapshot.selectionStart, snapshot.selectionEnd); } catch (error) {}
+    }
+}
+function patchPortfolioSaveStatus(statusText) {
+    const root = portfolioEditorFormRoot();
+    if (!root) return false;
+    const el = root.querySelector('.portfolio-save-status');
+    if (!el) return false;
+    el.textContent = text(statusText || state().ui?.portfolioSaveStatus || '');
+    return true;
+}
+function patchPortfolioStartedPill() {
+    // Started-section pill needs a live counter on the workspace portfolio model.
+    return false;
+}
+function patchPortfolioSectionToggle(sectionKey) {
+    const root = portfolioEditorFormRoot();
+    if (!root) return false;
+    const card = root.querySelector(`.portfolio-section-card[data-section-key="${CSS.escape(sectionKey)}"]`);
+    if (!card) return false;
+    const openSections = state().ui?.openPortfolioSections || {};
+    const isOpen = openSections[sectionKey] !== false;
+    card.classList.toggle('is-open', isOpen);
+    const body = card.querySelector('.portfolio-section-body');
+    if (body) body.hidden = !isOpen;
+    return true;
+}
+function patchPortfolioPublishVisibility(visibilityMode) {
+    const root = portfolioEditorFormRoot();
+    if (!root) return false;
+    const panel = root.querySelector('.portfolio-publish-panel');
+    if (!panel) return false;
+    const mode = text(visibilityMode || state().ui?.publishVisibility || 'staff_only') || 'staff_only';
+    panel.querySelectorAll('.portfolio-audience-card').forEach((card) => {
+        const cardMode = text(card.getAttribute('data-visibility'));
+        card.classList.toggle('is-selected', cardMode === mode);
+    });
+    const consent = Boolean(state().ui?.publishConsent);
+    let consentRow = panel.querySelector('.portfolio-consent-row');
+    if (mode === 'students_only') {
+        if (!consentRow) {
+            panel.querySelector('.portfolio-audience-cards')?.insertAdjacentHTML('afterend', `
+                <label class="portfolio-consent-row">
+                    <input type="checkbox" name="portfolioPublishConsent" ${consent ? 'checked' : ''}>
+                    <span>I understand I can unpublish anytime and my portfolio will appear in campus discovery.</span>
+                </label>
+            `);
+        }
+    } else if (consentRow) {
+        consentRow.remove();
+    }
+    return true;
+}
+function patchPortfolioSection(sectionKey) {
+    const root = portfolioEditorFormRoot();
+    if (!root || typeof window.KiuPortfolioEditor?.renderSection !== 'function') return false;
+    const portfolio = ensureMyPortfolioDocument();
+    const section = portfolio.sections?.[sectionKey];
+    if (!section) return false;
+    const card = root.querySelector(`.portfolio-section-card[data-section-key="${CSS.escape(sectionKey)}"]`);
+    if (!card) return false;
+    const runtime = state();
+    card.outerHTML = window.KiuPortfolioEditor.renderSection(sectionKey, section, {
+        openPortfolioSections: runtime.ui?.openPortfolioSections || {},
+        publishVisibility: runtime.ui?.publishVisibility || portfolio.visibilityMode || 'staff_only',
+        publishConsent: Boolean(runtime.ui?.publishConsent),
+        portfolioSaveStatus: runtime.ui?.portfolioSaveStatus || 'Changes autosave as you type.'
+    });
+    patchPortfolioStartedPill(portfolio);
+    return true;
+}
+function syncPortfolioEditorInput() {
+    if (text(activeDialog()?.type || '') !== 'portfolio-editor') return false;
+    portfolioCollectDocumentFromUi();
+    state().ui.portfolioSaveStatus = 'Unsaved changes';
+    return patchPortfolioSaveStatus('Unsaved changes');
+}
+function patchEventRsvpButtons(eventId) {
+    const normalizedId = text(eventId);
+    if (!normalizedId) return false;
+    const host = root();
+    if (!host) return false;
+    const buttons = host.querySelectorAll(`[data-action="event-rsvp"][data-event-id="${CSS.escape(normalizedId)}"]`);
+    if (!buttons.length) return false;
+    const events = Array.isArray(state()?.social?.events) ? state().social.events : [];
+    const eventItem = events.find((entry) => text(entry?.id) === normalizedId);
+    if (!eventItem) return false;
+    const activeStatus = text(eventItem.viewerRsvpStatus || '');
+    buttons.forEach((btn) => {
+        const status = text(btn.getAttribute('data-status'));
+        const isActive = status === activeStatus;
+        btn.classList.toggle('social-neo-btn-primary', isActive);
+        btn.classList.toggle('social-neo-btn-ghost', !isActive);
+    });
+    return true;
+}
+function getSocialPageRecord(pageId) {
+    const normalizedId = text(pageId);
+    if (!normalizedId) return null;
+    return (Array.isArray(state().social?.pages) ? state().social.pages : []).find((page) => text(page?.id) === normalizedId) || null;
+}
+function pageFollowerIdsFor(page) {
+    return Array.isArray(page?.followerIds)
+        ? page.followerIds
+        : (Array.isArray(page?.followerUserIds) ? page.followerUserIds : []);
+}
+function pageAdminIdsFor(page) {
+    const ids = Array.isArray(page?.adminIds) ? page.adminIds : (Array.isArray(page?.adminUserIds) ? page.adminUserIds : []);
+    return uniqueStrings([...ids, text(page?.ownerUserId || '')].filter(Boolean));
+}
+function buildPageMembersList(page) {
+    const adminIds = pageAdminIdsFor(page).map((id) => text(id)).filter(Boolean);
+    const adminSet = new Set(adminIds);
+    const members = adminIds.map((id) => ({ id, role: 'admin' }));
+    pageFollowerIdsFor(page).forEach((followerId) => {
+        const id = text(followerId);
+        if (!id || adminSet.has(id)) return;
+        members.push({ id, role: 'follower' });
+    });
+    return members;
+}
+function shouldPatchPageComposeBlock(pageId) {
+    const runtime = state();
+    if (text(runtime.ui?.activePanel || '') !== 'pages') return false;
+    if (text(runtime.ui?.activePageProfileId || '') !== text(pageId)) return false;
+    const tab = text(runtime.ui?.pageProfileTab || 'all');
+    if (tab === 'about') return false;
+    const page = getSocialPageRecord(pageId);
+    if (tab === 'official' && page && !page.isManager) return false;
+    return Boolean(page);
+}
+function patchSocialFlash() {
+    const host = root();
+    const flashRegion = host?.querySelector('#social-neo-flash-region');
+    if (!flashRegion) return false;
+    flashRegion.innerHTML = renderSocialFlashStatus(state());
+    return true;
+}
+function patchPageFollowState(pageId) {
+    const normalizedId = text(pageId);
+    if (!normalizedId) return false;
+    const host = root();
+    if (!host) return false;
+    const page = getSocialPageRecord(normalizedId);
+    if (!page) return false;
+    const buttons = host.querySelectorAll(`[data-action="page-follow"][data-page-id="${CSS.escape(normalizedId)}"]`);
+    if (!buttons.length) return false;
+    const isFollowing = Boolean(page.isFollowing);
+    buttons.forEach((button) => {
+        button.classList.toggle('social-neo-btn-primary', isFollowing);
+        button.classList.toggle('social-neo-btn-ghost', !isFollowing);
+        const composeCta = button.closest('.social-neo-page-compose-block');
+        button.innerHTML = composeCta
+            ? '<i class="fas fa-plus"></i> Follow Page'
+            : (isFollowing
+                ? '<i class="fas fa-check"></i> Following'
+                : '<i class="fas fa-plus"></i> Follow');
+    });
+    const followerPill = host.querySelector('.social-neo-page-profile-meta .social-neo-badge-row .social-neo-pill:last-child');
+    if (followerPill) {
+        followerPill.textContent = `${Number(page.followerCount || 0)} followers`;
+    }
+    return true;
+}
+function patchPageComposeBlock(pageId) {
+    if (!shouldPatchPageComposeBlock(pageId)) return false;
+    const host = root();
+    if (!host) return false;
+    const block = host.querySelector('.social-neo-page-compose-block');
+    if (!block) return false;
+    const page = getSocialPageRecord(pageId);
+    if (!page) return false;
+    block.outerHTML = renderPageProfileComposer(page, state());
+    const freshBlock = host.querySelector('.social-neo-page-compose-block');
+    if (freshBlock && typeof window.enhanceUniversalPickers === 'function') {
+        try { window.enhanceUniversalPickers(freshBlock); } catch (error) {}
+    }
+    return true;
+}
+
+/** Opens the inline reply composer under a comment without re-rendering the dialog. */
+const openInlineReply = createSocialLazyStub('openInlineReply', hasSocialFeedModule, ensureSocialFeedModule, '', null);
+
+/** Removes the inline reply composer under a comment. */
+const closeInlineReply = createSocialLazyStub('closeInlineReply', hasSocialFeedModule, ensureSocialFeedModule, '', null);
+
+/** Appends a freshly-posted reply under its parent and updates the reply counter. */
+const appendReplyNode = createSocialLazyStub('appendReplyNode', hasSocialFeedModule, ensureSocialFeedModule, '', null);
+
+/** Updates the "N comments" header count in the open comments dialog. */
+const patchCommentDialogCount = createSocialLazyStub('patchCommentDialogCount', hasSocialFeedModule, ensureSocialFeedModule, '', null);
+
+/** Deletes a comment in place (no confirm modal → no overlay re-render/flicker). */
+async function deleteCommentInline(postId, commentId) {
+    if (hasSocialFeedModule() && typeof window.deleteCommentInline === 'function' && window.deleteCommentInline !== deleteCommentInline) {
+        return window.deleteCommentInline(postId, commentId);
+    }
+    await ensureSocialFeedModule().catch(() => null);
+    if (typeof window.deleteCommentInline === 'function' && window.deleteCommentInline !== deleteCommentInline) {
+        return window.deleteCommentInline(postId, commentId);
+    }
+}
+
+/* The vertical thread line for each parent is a `::after` whose height is set
+   here so it stops exactly at its LAST direct reply (CSS alone would run it
+   to the bottom of the whole subtree, leaving a dangling line). */
+const relayoutCommentTrunks = createSocialLazyStub('relayoutCommentTrunks', hasSocialFeedModule, ensureSocialFeedModule, '', null);
+
+/**
+ * Recursively searches a comment tree for a comment by ID.
+ * Used to locate reply targets and react to nested comments.
+ * @param {Array<Object>} comments - Comments array to search.
+ * @param {string} commentId - Target comment ID.
+ * @returns {Object|null} The matched comment or null.
+ */
+const findCommentInThread = createSocialLazyStub('findCommentInThread', hasSocialFeedModule, ensureSocialFeedModule, null, null);
+function readFileAsDataUrl(file) {
+    if (!file) return Promise.resolve('');
+    if (text(file.dataUrl)) return Promise.resolve(text(file.dataUrl));
+    if (typeof readPortalSocialFile === 'function') {
+        return Promise.resolve(readPortalSocialFile(file)).then((result) => text(result?.dataUrl || result || ''));
+    }
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(text(reader.result || ''));
+        reader.onerror = () => reject(reader.error || new Error('File could not be read.'));
+        reader.readAsDataURL(file);
+    });
+}
+function setPanel(panel) {
+    const runtime = state();
+    const normalizedPanel = text(panel).toLowerCase() === 'lost-found' ? 'lost-and-found' : text(panel);
+    const nextPanel = ['feed', 'community', 'groups', 'workspace', 'projects', 'pages', 'events', 'surveys', 'photography', 'lost-and-found', 'messages', 'alerts', 'profile'].includes(normalizedPanel) ? normalizedPanel : 'feed';
+    const panelChanged = runtime.ui.activePanel !== nextPanel;
+    const drawerChanged = runtime.ui.shellDrawerOpen !== false;
+    const workspaceNavChanged = runtime.ui.workspaceNavOpen !== false;
+    if (runtime.ui.workspaceNavOpen && (panelChanged || drawerChanged)) {
+        return closeSocialWorkspaceNavAnimated(() => {
+            finalizeSetPanel(nextPanel, panelChanged, drawerChanged);
+        });
+    }
+    finalizeSetPanel(nextPanel, panelChanged, drawerChanged, workspaceNavChanged);
+}
+function finalizeSetPanel(nextPanel, panelChanged, drawerChanged, workspaceNavChanged = false) {
+    const runtime = state();
+    runtime.ui.activePanel = nextPanel;
+    runtime.ui.shellDrawerOpen = false;
+    runtime.ui.workspaceNavOpen = false;
+    if (runtime.ui.activePanel === 'community') {
+        scheduleDirectoryPrefetch();
+    }
+    try {
+        localStorage.setItem(PANEL_KEY, runtime.ui.activePanel);
+    } catch (error) {}
+    if (!panelChanged && !drawerChanged && !workspaceNavChanged) {
+        return;
+    }
+    renderSocialPageNow('panel');
+}
+function setActiveChat(chatId) {
+    const runtime = state();
+    const nextChatId = text(chatId);
+    const chatChanged = runtime.ui.activeChatId !== nextChatId;
+    runtime.ui.activeChatId = nextChatId;
+    try {
+        localStorage.setItem(CHAT_KEY, runtime.ui.activeChatId);
+    } catch (error) {}
+    if (typeof unhidePortalMessengerChatForUser === 'function' && nextChatId) {
+        try { unhidePortalMessengerChatForUser(nextChatId, currentUserId()); } catch (error) {}
+    }
+    if (typeof markPortalChatMessagesRead === 'function' && nextChatId) {
+        markPortalChatMessagesRead(nextChatId).catch(() => null);
+    }
+    if (!chatChanged) return;
+    renderSocialPageNow('chat');
+}
+async function focusFeed(scopeType, scopeId) {
+    const runtime = state();
+    runtime.ui.feedScopeType = text(scopeType);
+    runtime.ui.feedScopeId = text(scopeId);
+    try {
+        await refreshPortalSocialFeed(true);
+    } catch (error) {
+        if (typeof setPortalSocialFlash === 'function') setPortalSocialFlash(error?.message || 'Feed could not be refreshed.', 'danger', { skipRender: true });
+    }
+    setPanel('feed');
+    invalidateSocialRenderCache({ center: true });
+    renderSocialPageNow('feed-scope');
+}
+function focusRestoreSelector(node) {
+    if (!node || node === document.body) return '';
+    const name = text(node.getAttribute?.('name') || '');
+    const bind = text(node.getAttribute?.('data-bind') || '');
+    const form = node.closest?.('form[data-form]');
+    const formName = text(form?.getAttribute('data-form') || '');
+    const postId = postKey(form?.getAttribute('data-post-id') || '');
+    if ((formName === 'comment' || formName === 'dialog-comment') && postId && name === 'commentBody') {
+        return `form[data-form="${formName}"][data-post-id="${CSS.escape(postId)}"] [name="commentBody"]`;
+    }
+    if (node.id) return `#${CSS.escape(node.id)}`;
+    if (formName && name) return `form[data-form="${formName}"] [name="${name}"]`;
+    if (bind) return `[data-bind="${bind}"]`;
+    if (name) return `[name="${name}"]`;
+    return '';
+}
+function rememberInteractionAnchor(host, trigger) {
+    if (!host || !trigger) return;
+    const card = trigger.closest?.('.social-neo-community-card, .social-neo-directory-item');
+    const userId = text(card?.getAttribute('data-user-id') || trigger.getAttribute('data-user-id') || '');
+    if (userId) host.__kiuInteractionAnchorUserId = userId;
+}
+function interactionAnchorNode(host, userId) {
+    if (!host || !userId) return null;
+    return host.querySelector(`[data-user-id="${CSS.escape(userId)}"]`)
+        ?.closest('.social-neo-community-card, .social-neo-directory-item') || null;
+}
+const SOCIAL_SCROLL_LOCK_QUERY = '(min-width: 1181px)';
+function socialScrollLockMedia() {
+    try {
+        return window.matchMedia(SOCIAL_SCROLL_LOCK_QUERY);
+    } catch (error) {
+        return { matches: false };
+    }
+}
+function isSocialRouteDesktopScroll() {
+    return document.body.classList.contains('lux-route-social')
+        && Boolean(socialScrollLockMedia().matches);
+}
+function socialScrollLockActive() {
+    return document.body.classList.contains('social-neo-scroll-lock');
+}
+function getSocialCenterScroller(host) {
+    const rootNode = host?.querySelector?.('#social-neo-root') || host;
+    if (!rootNode) return null;
+    return rootNode.querySelector('#social-neo-center-region')
+        || rootNode.querySelector('.social-neo-center')
+        || null;
+}
+function scrollSocialCenterTo(top = 0, behavior = 'auto', host = root()) {
+    const nextTop = Math.max(0, Number(top) || 0);
+    if (!socialScrollLockActive()) {
+        try {
+            window.scrollTo({ top: nextTop, behavior: behavior === 'smooth' ? 'smooth' : 'auto' });
+        } catch (error) {
+            window.scrollTo(0, nextTop);
+        }
+        return;
+    }
+    const scroller = getSocialCenterScroller(host);
+    if (!scroller) return;
+    try {
+        scroller.scrollTo({ top: nextTop, behavior: behavior === 'smooth' ? 'smooth' : 'auto' });
+    } catch (error) {
+        scroller.scrollTop = nextTop;
+    }
+}
+function scrollSocialCenterElementIntoView(selector, host = root(), behavior = 'smooth') {
+    const scroller = getSocialCenterScroller(host);
+    const node = host?.querySelector?.(selector);
+    if (!scroller || !node) return false;
+    if (!scroller.contains(node)) {
+        try { node.scrollIntoView({ block: 'nearest', behavior }); } catch (error) {}
+        return true;
+    }
+    const scrollerRect = scroller.getBoundingClientRect();
+    const nodeRect = node.getBoundingClientRect();
+    const nextTop = scroller.scrollTop + (nodeRect.top - scrollerRect.top) - 12;
+    scrollSocialCenterTo(nextTop, behavior, host);
+    return true;
+}
+function bindFileInputs() {
+    const host = root();
+    if (!host) return;
+    const postInput = host.querySelector('input[name="postFile"]');
+    if (postInput) postInput.value = '';
+    const pagePostInput = host.querySelector('input[name="pagePostFile"]');
+    if (pagePostInput) pagePostInput.value = '';
+    const messageInput = host.querySelector('input[name="messageFile"]');
+    if (messageInput) messageInput.value = '';
+    const storyInput = host.querySelector('input[name="storyFile"]');
+    if (storyInput) storyInput.value = '';
+    const coverInput = host.querySelector('input[name="coverImageFile"]');
+    if (coverInput) coverInput.value = '';
+    const pageAvatarInput = host.querySelector('input[name="pageAvatarFile"]');
+    if (pageAvatarInput) pageAvatarInput.value = '';
+    const pageCoverInput = host.querySelector('input[name="pageCoverFile"]');
+    if (pageCoverInput) pageCoverInput.value = '';
+}
+const filePreview = window.filePreview || (window.KiuSocialFormModel || {}).filePreview;
+
+/**
+ * Renders a small chip showing an attached file name.
+ * Used in the composer and post edit dialogs.
+ * @param {Object|null} file  - File reference with a `.name` property, or null.
+ * @param {string} [label]    - Fallback label when `file.name` is missing.
+ * @returns {string} HTML or empty string.
+ */
+function renderFileChip(file, label = 'Attachment ready') {
+    if (!file) return '';
+    return `
+        <div class="social-neo-draft-file">
+            <i class="fas fa-paperclip"></i>
+            <span>${escape(text(file.name || label))}</span>
+        </div>
+    `;
+}
+const POST_COMPOSE_ATTACH_SECTIONS = [
+    { id: 'group', label: 'Groups', icon: 'fa-user-group' },
+    { id: 'project', label: 'Projects', icon: 'fa-diagram-project' },
+    { id: 'portfolio', label: 'Portfolio', icon: 'fa-briefcase' },
+    { id: 'page', label: 'Pages', icon: 'fa-flag' },
+    { id: 'event', label: 'Events', icon: 'fa-calendar-days' },
+    { id: 'survey', label: 'Surveys', icon: 'fa-clipboard-list' },
+    { id: 'photo', label: 'Exposé', icon: 'fa-camera-retro' },
+    { id: 'lost-found', label: 'Lost & Found', icon: 'fa-magnifying-glass-location' }
+];
+const POST_COMPOSE_ENTITY_LINK_MAX = 5;
+const normalizeComposerEntityLinks = window.normalizeComposerEntityLinks || (window.KiuSocialEntityModel || {}).normalizeComposerEntityLinks;
+const postEntityLinks = window.postEntityLinks || (window.KiuSocialEntityModel || {}).postEntityLinks;
+const entityLinkSectionLabel = window.entityLinkSectionLabel || (window.KiuSocialEntityModel || {}).entityLinkSectionLabel;
+const entityLinkIcon = window.entityLinkIcon || (window.KiuSocialEntityModel || {}).entityLinkIcon;
+const resolveEntityLinkMeta = window.resolveEntityLinkMeta || (window.KiuSocialEntityModel || {}).resolveEntityLinkMeta;
+
+function renderSectionCommandCenter(activePanel, activeConfig, runtime) {
+    // Command chrome permanently disabled; heroes own panel chrome.
+    if (isSocialTopbarSkippedPanel(activePanel)) return '';
+    return '';
+}
+const getSocialPanelConfig = window.getSocialPanelConfig || (window.KiuSocialPanelModel || {}).getSocialPanelConfig;
+function renderSocialFlashStatus(runtime) {
+    const flash = runtime.flash?.message ? `
+        <div class="social-neo-flash ${runtime.flash?.tone === 'danger' ? 'is-danger' : runtime.flash?.tone === 'success' ? 'is-success' : ''}">
+            ${escape(text(runtime.flash.message))}
+        </div>
+    ` : '';
+    const status = runtime.error ? `
+        <div class="social-neo-flash is-danger">
+            ${escape(text(runtime.error))} If the page is running from local files, make sure the platform server is available at ${escape(typeof getKiuPortalBackendUrl === 'function' ? getKiuPortalBackendUrl() : 'http://127.0.0.1:48933')}.
+        </div>
+    ` : '';
+    return flash + status;
+}
+function renderSocialTopbarRegion(activePanel, activeConfig, user) {
+    // All panels use hero chrome; shell topbar region stays empty.
+    if (isSocialTopbarSkippedPanel(activePanel)) return '';
+    return '';
+}
+function renderActivePanelMarkup(activePanel) {
+    return activePanel === 'community'
+        ? renderCommunityPanel()
+        : activePanel === 'groups'
+            ? renderGroupsPanel()
+            : activePanel === 'workspace'
+                ? renderProjectsWorkspacePanelClassic()
+                : activePanel === 'projects'
+                    ? renderProjectsPanel()
+                : activePanel === 'pages'
+                    ? renderPagesPanel()
+                    : activePanel === 'events'
+                        ? renderEventsPanel()
+                        : activePanel === 'surveys'
+                            ? renderSurveysPanel()
+                        : activePanel === 'photography'
+                            ? renderPhotographyPanel()
+                        : activePanel === 'lost-and-found'
+                            ? renderLostFoundPanel()
+                            : activePanel === 'messages'
+                                ? renderMessagesPanel()
+                                : activePanel === 'alerts'
+                                    ? renderAlertsPanel()
+                                    : activePanel === 'profile'
+                                        ? renderProfilePageBody()
+                                        : renderFeedPanel();
+}
+function renderToastArea() {
+    const toasts = (typeof getPortalSocialToastItems === 'function' ? getPortalSocialToastItems() : []) || [];
+    if (!toasts.length) return '';
+    return `<div class="social-neo-toast-container">
+        ${toasts.map((toast) => `
+            <article class="social-neo-toast ${toast.dismissing ? 'is-dismissing' : ''}" data-action="toast-dismiss" data-toast-id="${escape(toast.id)}">
+                <div class="social-neo-toast-icon"><i class="fas ${escape(toast.icon || 'fa-bell')}"></i></div>
+                <div class="social-neo-toast-content">
+                    <div class="social-neo-toast-title">${escape(toast.title)}</div>
+                    <div class="social-neo-toast-text">${escape(toast.text)}</div>
+                </div>
+                <button class="social-neo-toast-close" type="button" data-action="toast-dismiss" data-toast-id="${escape(toast.id)}"><i class="fas fa-times"></i></button>
+            </article>
+        `).join('')}
+    </div>`;
+}
+
+// Dialog kind -> deferred module router: social-dialog-router.js
+const renderDialog = (typeof window.createKiuSocialDialogRenderer === 'function'
+    ? window.createKiuSocialDialogRenderer({
+        text,
+        state,
+        activeDialog,
+        queueDeferredModuleRender,
+        lostFoundItems,
+        normalizeLostFoundItem,
+        surveyById,
+        renderEntityDetailDialog: typeof window.renderEntityDetailDialog === 'function'
+            ? window.renderEntityDetailDialog
+            : () => '',
+        renderWorkspaceOwnedDialogStub: renderWorkspaceOwnedDialog,
+        hasSocialPhotographyModule,
+        hasSocialGroupsModule,
+        ensureSocialGroupsModule,
+        hasSocialPagesModule,
+        ensureSocialPagesModule,
+        hasSocialFeedModule,
+        ensureSocialFeedModule,
+        hasSocialEventsModule,
+        ensureSocialEventsModule,
+        hasSocialMessagesModule,
+        ensureSocialMessagesModule,
+        hasSocialProfileModule,
+        ensureSocialProfileModule,
+        hasSocialLostFoundModule,
+        ensureSocialLostFoundModule,
+        hasSocialSurveysModule,
+        ensureSocialSurveysModule,
+        hasSocialWorkspaceModule,
+        ensureSocialWorkspaceModule
+    })
+    : () => '');
+
+function renderStoryViewer() {
+    return '';
+}
+function renderStoryComposer() {
+    return '';
+}
+const collectCommentReactionFingerprint = window.collectCommentReactionFingerprint || (window.KiuSocialFingerprintModel || {}).collectCommentReactionFingerprint;
+const summarizeCommentReactions = window.summarizeCommentReactions || (window.KiuSocialFingerprintModel || {}).summarizeCommentReactions;
+const buildFeedFingerprint = window.buildFeedFingerprint || (window.KiuSocialFingerprintModel || {}).buildFeedFingerprint;
+const buildRelationshipsFingerprint = window.buildRelationshipsFingerprint || (window.KiuSocialFingerprintModel || {}).buildRelationshipsFingerprint;
+const buildLostFoundFingerprint = window.buildLostFoundFingerprint || (window.KiuSocialFingerprintModel || {}).buildLostFoundFingerprint;
+const buildSurveysFingerprint = window.buildSurveysFingerprint || (window.KiuSocialFingerprintModel || {}).buildSurveysFingerprint;
+const buildEventsFingerprint = window.buildEventsFingerprint || (window.KiuSocialFingerprintModel || {}).buildEventsFingerprint;
+const buildGroupsFingerprint = window.buildGroupsFingerprint || (window.KiuSocialFingerprintModel || {}).buildGroupsFingerprint;
+const buildDirectoryFingerprint = window.buildDirectoryFingerprint || (window.KiuSocialFingerprintModel || {}).buildDirectoryFingerprint;
+const buildReportsFingerprint = window.buildReportsFingerprint || (window.KiuSocialFingerprintModel || {}).buildReportsFingerprint;
+const buildNotificationsFingerprint = window.buildNotificationsFingerprint || (window.KiuSocialFingerprintModel || {}).buildNotificationsFingerprint;
+const buildChatsFingerprint = window.buildChatsFingerprint || (window.KiuSocialFingerprintModel || {}).buildChatsFingerprint;
+const buildProjectsFingerprint = window.buildProjectsFingerprint || (window.KiuSocialFingerprintModel || {}).buildProjectsFingerprint;
+const buildPortfolioFingerprint = window.buildPortfolioFingerprint || (window.KiuSocialFingerprintModel || {}).buildPortfolioFingerprint;
+const buildPhotographyUiFingerprint = window.buildPhotographyUiFingerprint || (window.KiuSocialFingerprintModel || {}).buildPhotographyUiFingerprint;
+const buildPagesFingerprint = window.buildPagesFingerprint || (window.KiuSocialFingerprintModel || {}).buildPagesFingerprint;
+const buildSocialRenderSignature = window.buildSocialRenderSignature || (window.KiuSocialFingerprintModel || {}).buildSocialRenderSignature;
+const isSocialForceRenderReason = window.isSocialForceRenderReason || (window.KiuSocialFingerprintModel || {}).isSocialForceRenderReason;
+function renderSocialPageNow(reason = 'manual') {
+    clearTimeout(renderDebounceTimer);
+    const renderCallback = () => {
+        const host = root();
+        if (!host) return;
+        window.__kiuSocialLiteRenderPage = renderSocialPageNow;
+        applyShellIdentity();
+        const runtime = state();
+        ensureWorkspaceNavCollapsedState(runtime);
+        syncWorkspaceNavCollapsedClass(runtime.ui.workspaceNavCollapsed);
+        if (/^project-(settings-saved|task-created|task-updated|budget-|created|left)/.test(reason)) {
+            clearProjectTabPaneCache(text(runtime.ui?.activeProjectId || ''));
+        }
+        if (text(runtime.ui?.projectTab || '') === 'chat' && /^(message-|chat-upsert|chat-read|group-thread-|thread-jump-latest|message-file|group-panel-file-filter|project-chat-ready|project-open-chat)/.test(reason)) {
+            const projectId = text(runtime.ui?.activeProjectId || '');
+            const cache = runtime.ui?.__projectTabPaneCache;
+            if (projectId && cache && typeof cache === 'object') {
+                delete cache[projectTabPaneCacheKey(projectId, 'chat')];
+            }
+        }
+        const activePanel = text(runtime.ui?.activePanel || 'feed') || 'feed';
+        const activeConfig = (getSocialPanelConfig(activePanel, runtime)[activePanel]) || getSocialPanelConfig('feed', runtime).feed;
+        const user = currentUser() || {};
+        const shell = ensureSocialShell(host);
+        const renderSignature = buildSocialRenderSignature(activePanel, runtime);
+        const forceCenterOnly = Boolean(host.__kiuForceCenterOnly);
+        host.__kiuForceCenterOnly = false;
+        const forceRender = isSocialForceRenderReason(reason);
+        if (!forceRender && reason !== 'boot' && !/-module$/.test(reason) && host.__kiuLastRenderSignature === renderSignature) {
+            syncSocialOverlayLock();
+            return;
+        }
+        const renderPlan = resolveSocialRenderPlan(reason, activePanel, runtime);
+        if (isSocialTopbarSkippedPanel(activePanel)) {
+            renderPlan.topbar = false;
+            renderPlan.command = false;
+        }
+        if (forceRender && renderPlan.center && shell.center) {
+            delete shell.center.__kiuLastMarkup;
+        }
+        if (forceCenterOnly) {
+            renderPlan.flash = false;
+            renderPlan.topbar = false;
+            renderPlan.command = false;
+            renderPlan.workspaceNav = false;
+            renderPlan.drawer = false;
+            renderPlan.mobileTab = false;
+            renderPlan.toast = false;
+            renderPlan.dialog = false;
+            renderPlan.storyViewer = false;
+            renderPlan.storyComposer = false;
+        }
+        const interactionSnapshot = captureInteractionState(host);
+        shell.root.dataset.role = text(currentUser()?.role || 'student');
+        shell.root.dataset.panel = activePanel;
+        if (renderPlan.flash) setSocialRegionMarkup(shell.flash, renderSocialFlashStatus(runtime));
+        if (renderPlan.topbar) {
+            setSocialRegionMarkup(shell.topbar, renderSocialTopbarRegion(activePanel, activeConfig, user));
+        } else if (isSocialTopbarSkippedPanel(activePanel)) {
+            setSocialRegionMarkup(shell.topbar, '');
+        }
+        if (renderPlan.command) {
+            setSocialRegionMarkup(shell.command, renderSectionCommandCenter(activePanel, activeConfig, runtime));
+        } else if (isSocialTopbarSkippedPanel(activePanel)) {
+            setSocialRegionMarkup(shell.command, '');
+        }
+        if (!forceCenterOnly) {
+            setSocialRegionMarkup(shell.workspaceNav, renderShellWorkspaceNav(activePanel));
+        }
+        if (renderPlan.center) {
+            setSocialRegionMarkup(shell.center, renderActivePanelMarkup(activePanel));
+            /* Immediately anchor scroll to prevent visible jump between
+               innerHTML and the full restoreInteractionState call below. */
+            if (!socialScrollLockActive()) {
+                try { window.scrollTo(interactionSnapshot.windowX || 0, interactionSnapshot.windowY || 0); } catch (e) {}
+            } else {
+                const cs = getSocialCenterScroller(root());
+                if (cs && Number.isFinite(interactionSnapshot.centerScrollY)) cs.scrollTop = interactionSnapshot.centerScrollY;
+            }
+            scheduleSocialCenterScrollRepair(host);
+            if (activePanel === 'events') syncEventDescScrollRails(host);
+            if (typeof window.enhanceUniversalPickers === 'function') {
+                try { window.enhanceUniversalPickers(shell.center); } catch (e) {}
+            }
+        }
+        if (renderPlan.drawer) setSocialRegionMarkup(shell.drawer, renderShellDrawer(activePanel));
+        if (renderPlan.mobileTab) setSocialRegionMarkup(shell.mobileTab, renderMobileTabBar(activePanel));
+        if (renderPlan.toast) setSocialRegionMarkup(shell.toast, renderToastArea());
+        if (renderPlan.dialog) {
+            const portfolioEditorSnapshot = text(activeDialog()?.type || '') === 'portfolio-editor'
+                ? capturePortfolioEditorSnapshot()
+                : null;
+            const stackSynced = trySyncProjectTaskGraphStackDialog(shell.dialog, runtime);
+            if (!stackSynced) {
+                setSocialRegionMarkup(shell.dialog, renderDialog());
+            }
+            bindPhotographyUploadDialogFileInput();
+            if (typeof window.enhanceUniversalPickers === 'function') {
+                try { window.enhanceUniversalPickers(shell.dialog); } catch (e) {}
+            }
+            if (text(activeDialog()?.type || '') === 'survey-results') {
+                window.requestAnimationFrame(() => syncSurveyResultsDialog(host));
+            }
+            restorePortfolioEditorSnapshot(portfolioEditorSnapshot);
+            const dialogKind = text(activeDialog()?.type || '');
+            if (!stackSynced && (dialogKind === 'project-task-graph' || shouldRenderProjectTaskGraphStack(runtime, dialogKind))) {
+                bindProjectTaskGraphDrag();
+                bindProjectTaskGraphResizeObserver();
+            }
+            if (stackSynced && dialogKind === 'project-task-graph') {
+                bindProjectTaskGraphDrag();
+                bindProjectTaskGraphResizeObserver();
+            }
+        }
+        if (renderPlan.storyViewer) setSocialRegionMarkup(shell.storyViewer, renderStoryViewer());
+        if (renderPlan.storyComposer) setSocialRegionMarkup(shell.storyComposer, renderStoryComposer());
+        syncOverlayPortalVisibility();
+        pruneStaleSocialOverlayState();
+        bindFileInputs();
+        enhanceSocialAccessibility(host);
+        const focusPostId = postKey(runtime.ui?.commentReplyFocusPostId || '');
+        if (focusPostId && /^comment-reply/.test(reason)) {
+            focusCommentComposeInput(host, focusPostId);
+            delete runtime.ui.commentReplyFocusPostId;
+        }
+        bindEvents();
+        revealShell();
+        const wasScrollLocked = interactionSnapshot.layoutScrollLock;
+        syncSocialScrollLayout(host);
+        scheduleSocialCenterScrollRepair(host);
+        const scrollLockChanged = wasScrollLocked !== socialScrollLockActive();
+        if (scrollLockChanged) {
+            migrateSocialScrollOnLockChange(wasScrollLocked, host);
+            if (socialScrollLockActive()) {
+                interactionSnapshot.layoutScrollLock = true;
+                interactionSnapshot.centerScrollY = getSocialCenterScroller(host)?.scrollTop ?? interactionSnapshot.windowY;
+                interactionSnapshot.deferWindowScroll = true;
+            }
+        }
+        const isDialogRender = reason === 'dialog-close' || /^dialog-/.test(reason)
+            || (text(activeDialog()?.type || '') === 'portfolio-editor' && /^portfolio-/.test(reason));
+        const tabChange = SOCIAL_TAB_SCROLL_RESET_RE.test(reason) && reason !== 'panel';
+        const panelChange = reason === 'panel' || tabChange;
+        const shouldResetScroll = SOCIAL_TAB_SCROLL_RESET_RE.test(reason);
+        const willDeferCenter = !isDialogRender && !panelChange
+            && (/^connection-/.test(reason) || interactionSnapshot.deferWindowScroll
+                || (scrollLockChanged && socialScrollLockActive()));
+        if (shouldResetScroll) {
+            scrollSocialCenterTo(0, 'auto', host);
+        }
+        restoreInteractionState(host, interactionSnapshot, {
+            skipWindow: isDialogRender || interactionSnapshot.deferWindowScroll || panelChange || shouldResetScroll || scrollLockChanged,
+            skipCenterScroll: panelChange || willDeferCenter || shouldResetScroll || scrollLockChanged
+        });
+        if (willDeferCenter) {
+            scheduleDeferredWindowScrollRestore(host, interactionSnapshot);
+        } else if (!isDialogRender) {
+            delete host.__kiuInteractionAnchorUserId;
+        }
+        const skipTransparencyRefresh = reason === 'project-tab' || SOCIAL_SKIP_TRANSPARENCY_REFRESH_RE.test(reason);
+        if (!skipTransparencyRefresh && typeof window.queueHeavySurfaceObservationRefresh === 'function') {
+            try { window.queueHeavySurfaceObservationRefresh(); } catch (error) {}
+        }
+        const transparencyRoots = [
+            renderPlan.flash ? shell.flash : null,
+            renderPlan.topbar ? shell.topbar : null,
+            renderPlan.command ? shell.command : null,
+            renderPlan.center ? shell.center : null,
+            renderPlan.drawer ? shell.drawer : null,
+            renderPlan.mobileTab ? shell.mobileTab : null,
+            renderPlan.toast ? shell.toast : null,
+            renderPlan.dialog ? shell.dialog : null,
+            renderPlan.storyViewer ? shell.storyViewer : null,
+            renderPlan.storyComposer ? shell.storyComposer : null
+        ].filter(Boolean);
+        if (!skipTransparencyRefresh && (reason === 'boot' || reason === 'social-bootstrap')) {
+            syncSocialVisualShell();
+        } else if (!skipTransparencyRefresh) {
+            // Sync call first to prevent flash of unstyled/transparent surfaces
+            // during panel switches. The queued refresh handles edge cases.
+            if (/^panel-/.test(reason)) {
+                syncSocialVisualShell();
+            }
+            if (typeof window.queueLuxuryTransparencyRefresh === 'function') {
+                try { window.queueLuxuryTransparencyRefresh(undefined, { roots: transparencyRoots }); } catch (error) {}
+            } else if (typeof window.refreshLuxuryTransparencySurfaces === 'function') {
+                try { window.refreshLuxuryTransparencySurfaces(undefined, { roots: transparencyRoots }); } catch (error) {}
+            }
+        }
+        if (typeof window.__kiuSocialMobileSync === 'function') {
+            try { window.__kiuSocialMobileSync(); } catch (error) {}
+        }
+        scheduleDeferredDesktopModulePrefetch();
+        scheduleDirectoryPrefetch();
+        host.__kiuLastRenderSignature = renderSignature;
+        syncSocialOverlayLock();
+        if (reason === 'project-tab') {
+            host.querySelector('.social-projects-shell')?.classList.remove('is-tab-switching');
+        }
+        if (state().ui?.callOpen) {
+            window.requestAnimationFrame(() => {
+                try {
+                    if (typeof attachPortalCallLocalPreview === 'function') attachPortalCallLocalPreview();
+                    if (typeof attachPortalCallRemotePreview === 'function') attachPortalCallRemotePreview();
+                } catch (error) {
+                    console.warn('[Social] Could not attach call previews.', error);
+                }
+            });
+        }
+        const activeChatId = text(state().ui?.activeChatId || '');
+        const jumpMessageId = text(state().ui?.groupThreadJumpMessageByChat?.[activeChatId] || '');
+        if (activeChatId && jumpMessageId) {
+            window.requestAnimationFrame(() => {
+                const node = host.querySelector(`#${messageAnchorId(activeChatId, jumpMessageId)}`);
+                if (node) node.scrollIntoView({ block: 'center', behavior: 'smooth' });
+            });
+        }
+    };
+    // Docs actions render synchronously so a subsequent center:false render
+    // (toast/flash/dialog-close) can't clear the pending timer and swallow
+    const fastPath = reason === 'boot' || /^(comment-|post-react|post-save|post-pin|post-updated|post-deleted|post-shared|connection-|page-follow|page-report|flash|dialog-|survey-closed|survey-deleted|survey-response-submitted|survey-created|survey-take-|survey-results-|social-bootstrap|event-rsvp|event-created|event-deleted|event-rsvp-optimistic|event-rsvp-rollback|group-membership|group-request|group-member-removed|group-updated|group-left|notification-read|notification-removed|notifications-refresh|chat-read|chat-upsert|message-sent|message-delete|chat-hide|panel-|feed-tab|feed-scope|community-tab|pages-tab|groups-tab|events-tab|directory-search|directory-role|report-resolve|mobile-nav|alerts-filter|messages-filter|profile-view|project-|projects-back)/.test(reason);
+    renderDebounceTimer = setTimeout(renderCallback, fastPath ? 0 : 80);
+}
+
+        const api = {
+            reactionEmoji,
+            reactionLabel,
+            renderPostReactionMetrics,
+            commentReactionType,
+            renderInlineReplyForm,
+            renderCommentReactionButtons,
+            patchPhotographyFollowButtons,
+            refreshPhotographyPanelStage,
+            portfolioEditorFormRoot,
+            capturePortfolioEditorSnapshot,
+            restorePortfolioEditorSnapshot,
+            patchPortfolioSaveStatus,
+            patchPortfolioStartedPill,
+            patchPortfolioSectionToggle,
+            patchPortfolioPublishVisibility,
+            patchPortfolioSection,
+            syncPortfolioEditorInput,
+            patchEventRsvpButtons,
+            getSocialPageRecord,
+            pageFollowerIdsFor,
+            pageAdminIdsFor,
+            buildPageMembersList,
+            shouldPatchPageComposeBlock,
+            patchSocialFlash,
+            patchPageFollowState,
+            patchPageComposeBlock,
+            deleteCommentInline,
+            readFileAsDataUrl,
+            setPanel,
+            finalizeSetPanel,
+            setActiveChat,
+            focusFeed,
+            focusRestoreSelector,
+            rememberInteractionAnchor,
+            interactionAnchorNode,
+            socialScrollLockMedia,
+            isSocialRouteDesktopScroll,
+            socialScrollLockActive,
+            getSocialCenterScroller,
+            scrollSocialCenterTo,
+            scrollSocialCenterElementIntoView,
+            bindFileInputs,
+            renderFileChip,
+            renderSectionCommandCenter,
+            renderSocialFlashStatus,
+            renderSocialTopbarRegion,
+            renderActivePanelMarkup,
+            renderToastArea,
+            renderStoryViewer,
+            renderStoryComposer,
+            renderSocialPageNow,
+        };
+        Object.assign(window, api);
+        return api;
+    };
+})();

@@ -1,5 +1,6 @@
+/* CONTRACT: Extracted platform domains keep the documented public API surface aligned with server wiring. — see docs/test-as-map.md */
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 import { createRequire } from 'module';
 
@@ -55,6 +56,7 @@ describe('backend platform domain contracts', () => {
         expect(Object.keys(authSessionService).sort()).toEqual([
             'PORTAL_IMPERSONATION_ROLES',
             'activateAccount',
+            'changePassword',
             'clearSessionImpersonation',
             'createSessionByCredentials',
             'createSessionByMicrosoftIdentity',
@@ -81,15 +83,7 @@ describe('backend platform domain contracts', () => {
             'updateAccountPrivileges'
         ]);
         expect(Object.keys(gradebookService).sort()).toEqual([
-            'aggregateGradebookAssessmentEntries',
-            'canAccessGradebookCourse',
-            'computeRecordFinalScore',
-            'ensureGradebook',
-            'finalizeGrades',
-            'getGradebookAssessmentDefinition',
-            'getGradebookCourse',
-            'publishGradebook',
-            'setScore'
+            'canAccessGradebookCourse'
         ]);
         expect(Object.keys(lmsCourseService).sort()).toEqual([
             'createAssignment',
@@ -151,6 +145,7 @@ describe('backend platform domain contracts', () => {
             'canDeleteSocialEvent',
             'canDeleteSocialGroup',
             'canDeleteSocialPage',
+            'canEditSocialEvent',
             'canEditSocialPost',
             'canManageSocialGroup',
             'canManageSocialPage',
@@ -210,6 +205,7 @@ describe('backend platform domain contracts', () => {
             'toggleSocialCommentReaction',
             'toggleSocialReaction',
             'toggleSocialScopePostPin',
+            'updateSocialEvent',
             'updateSocialGroup',
             'updateSocialPage',
             'updateSocialPost',
@@ -220,15 +216,16 @@ describe('backend platform domain contracts', () => {
             'canManageSocialProject',
             'canViewSocialProject',
             'createSocialProject',
-            'createSocialProjectCheckin',
-            'createSocialProjectDeliverable',
-            'createSocialProjectMilestone',
+            'createSocialProjectBudgetCategory',
+            'createSocialProjectBudgetExpense',
+            'createSocialProjectRisk',
             'createSocialProjectShowcasePage',
             'createSocialProjectTask',
             'decorateSocialProject',
             'deleteSocialProject',
-            'deleteSocialProjectDeliverable',
-            'deleteSocialProjectMilestone',
+            'deleteSocialProjectBudgetCategory',
+            'deleteSocialProjectBudgetExpense',
+            'deleteSocialProjectRisk',
             'deleteSocialProjectTask',
             'getSocialProjectAdvisorIds',
             'getSocialProjectByChatId',
@@ -238,11 +235,15 @@ describe('backend platform domain contracts', () => {
             'getSocialProjectRecord',
             'inviteSocialProjectMember',
             'removeSocialProjectMember',
+            'setSocialProjectBaseline',
             'setSocialProjectMembership',
             'updateSocialProject',
+            'updateSocialProjectBudgetCategory',
+            'updateSocialProjectBudgetExpense',
             'updateSocialProjectMemberRole',
-            'updateSocialProjectMilestone',
-            'updateSocialProjectTask'
+            'updateSocialProjectRisk',
+            'updateSocialProjectTask',
+            'updateSocialProjectTaskGraph'
         ]);
         expect(Object.keys(socialRelationshipsService).sort()).toEqual([
             'getPendingSocialConnectionRequestBetween',
@@ -259,7 +260,11 @@ describe('backend platform domain contracts', () => {
             'ensureSocialGroupChat',
             'ensureSocialProjectCollections',
             'getSocialBootstrap',
+            'isLostFoundItemExpired',
             'listSocialRelationshipsForUser',
+            'migrateLostFoundSocialState',
+            'normalizeLostFoundItem',
+            'normalizeLostFoundItems',
             'saveSocialMutation',
             'upsertSocialState'
         ]);
@@ -267,14 +272,18 @@ describe('backend platform domain contracts', () => {
             'canActorAccessStoredFile',
             'createFileFromUpload',
             'getFile',
+            'healAllStoredFilePaths',
+            'healStoredFileRecord',
             'normalizeMessageAttachment',
-            'objectContainsStoredFileReference'
+            'objectContainsStoredFileReference',
+            'resolveStoredFileDiskPath'
         ]);
         expect(Object.keys(auditService).sort()).toEqual([
             'addAuditEvent'
         ]);
         expect(Object.keys(notificationsService).sort()).toEqual([
             'createNotification',
+            'deleteNotification',
             'isValidPushSubscriptionEndpoint',
             'listNotifications',
             'listPushSubscriptions',
@@ -289,17 +298,23 @@ describe('backend platform domain contracts', () => {
             'STUDENT_SERVICE_DEFAULT_MACROS',
             'STUDENT_SERVICE_RESPONDER_CATEGORIES',
             'STUDENT_SERVICE_SENSITIVE_CATEGORIES',
+            'buildDefaultStudentServiceInboxFilterLayout',
             'getStudentServiceAreaForCategory',
             'getStudentServiceBootstrap',
+            'hasStudentServiceMessageContent',
             'normalizeStudentServiceAnswerRecord',
             'normalizeStudentServiceArticleRecord',
+            'normalizeStudentServiceAttachmentRecord',
+            'normalizeStudentServiceAttachments',
             'normalizeStudentServiceCategory',
+            'normalizeStudentServiceInboxFilterLayout',
             'normalizeStudentServiceInternalNote',
             'normalizeStudentServiceMacroRecord',
             'normalizeStudentServiceQuestionRecord',
             'normalizeStudentServiceReviewQueueEntry',
             'normalizeStudentServiceThreadEntry',
-            'normalizeStudentServiceTicketRecord'
+            'normalizeStudentServiceTicketRecord',
+            'resolveStudentServiceAnswerAuthorUserId'
         ]);
 
         expect(contracts).toContain('ensurePersonFromAccount(account)');
@@ -312,9 +327,9 @@ describe('backend platform domain contracts', () => {
         expect(contracts).toContain('listPrivilegeDefinitions()');
         expect(contracts).toContain("accountHasPrivilege(accountOrUserId, privilegeId = '')");
         expect(contracts).toContain("updateAccountPrivileges(accountId, payload = {}, actorId = '')");
-        expect(contracts).toContain('ensureGradebook(courseId)');
         expect(contracts).toContain("canAccessGradebookCourse(courseId, userId, role = '', action = 'read')");
-        expect(contracts).toContain("setScore(payload = {})");
+        expect(contracts).not.toContain('ensureGradebook(courseId)');
+        expect(contracts).not.toContain("setScore(payload = {})");
         expect(contracts).toContain('ensureLmsCourse(courseId)');
         expect(contracts).toContain("createAssignment(payload = {})");
         expect(contracts).toContain("isCourseTeachingStaff(courseId, userId, role = '')");
@@ -343,8 +358,6 @@ describe('backend platform domain contracts', () => {
         expect(contracts).toContain("POST /api/audit/events");
         expect(contracts).toContain("GET /api/student-service/bootstrap");
         expect(contracts).toContain("POST /api/student-service/questions/:id/merge");
-        expect(contracts).toContain("GET /api/gradebook/courses/:id");
-        expect(contracts).toContain("POST /api/gradebook/finalize");
         expect(contracts).toContain("POST /api/exam-portal/auth");
         expect(contracts).toContain("POST /api/protected-quizzes/:quizId/manual-grade");
         expect(contracts).toContain("GET /api/messenger/snapshot");
@@ -393,7 +406,6 @@ describe('backend platform domain contracts', () => {
             'backend/platform/routes/admin-integrations-routes.js',
             'backend/platform/routes/admin-support-routes.js',
             'backend/platform/routes/student-service-routes.js',
-            'backend/platform/routes/gradebook-routes.js',
             'backend/platform/routes/protected-exam-routes.js',
             'backend/platform/routes/messenger-calls-routes.js',
             'backend/platform/routes/social-routes.js',

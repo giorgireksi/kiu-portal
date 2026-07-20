@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createRequire } from 'module';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
 const require = createRequire(import.meta.url);
@@ -50,35 +50,27 @@ describe('gradebook store domain split', () => {
         const source = readSource('backend/platform/store.js');
 
         expect(Object.keys(gradebookService).sort()).toEqual([
-            'aggregateGradebookAssessmentEntries',
-            'canAccessGradebookCourse',
-            'computeRecordFinalScore',
-            'ensureGradebook',
-            'finalizeGrades',
-            'getGradebookAssessmentDefinition',
-            'getGradebookCourse',
-            'publishGradebook',
-            'setScore'
+            'canAccessGradebookCourse'
         ]);
         expect(source).toContain("} = require('./domains/gradebook-service');");
-        expect(source).toContain('return ensureGradebook.call(this, courseId);');
-        expect(source).toContain('return setScore.call(this, payload);');
-        expect(source).toContain('return finalizeGrades.call(this, payload);');
+        expect(source).toContain('return canAccessGradebookCourse.call(this, courseId, userId, role, action);');
+        expect(source).not.toContain('return ensureGradebook.call(this, courseId);');
+        expect(source).not.toContain('return setScore.call(this, payload);');
+        expect(source).not.toContain('return finalizeGrades.call(this, payload);');
+        expect(source).not.toContain('state.gradebooks');
     });
 
-    it('preserves gradebook scoring behavior through PlatformStore wrappers', () => {
+    it('preserves course-teaching-scope ACL through PlatformStore wrappers', () => {
         const store = buildStore();
 
         expect(store.canAccessGradebookCourse('COURSE-1', 'prof-1', 'professor', 'publish')).toBe(true);
         expect(store.canAccessGradebookCourse('COURSE-1', 'ta-1', 'ta', 'publish')).toBe(false);
-
-        store.setScore({ courseId: 'COURSE-1', studentId: 'student-1', criterion: 'quiz', assessmentNumber: 1, score: 8, actorUserId: 'prof-1' });
-        store.setScore({ courseId: 'COURSE-1', studentId: 'student-1', criterion: 'homework', assessmentNumber: 1, score: 90, actorUserId: 'prof-1' });
-        const gradebook = store.setScore({ courseId: 'COURSE-1', studentId: 'student-1', criterion: 'final', assessmentNumber: 1, score: 80, actorUserId: 'prof-1' });
-
-        expect(gradebook.records['student-1'].finalScore).toBeGreaterThan(0);
-        const finalized = store.finalizeGrades({ courseId: 'COURSE-1', actorUserId: 'prof-1', finalizedBy: 'prof-1' });
-        expect(finalized.finalGradesReleased).toBe(true);
-        expect(finalized.records['student-1'].assessments.final[0].status).toBe('finalized');
+        expect(store.canAccessGradebookCourse('COURSE-1', 'ta-1', 'ta', 'score')).toBe(true);
+        expect(store.canAccessGradebookCourse('COURSE-1', 'ta-1', 'ta', 'read')).toBe(true);
+        expect(store.canAccessGradebookCourse('COURSE-1', 'outsider', 'professor', 'read')).toBe(false);
+        expect(store.state.gradebooks).toBeUndefined();
+        expect(typeof store.setScore).toBe('undefined');
+        expect(typeof store.finalizeGrades).toBe('undefined');
+        expect(typeof store.ensureGradebook).toBe('undefined');
     });
 });

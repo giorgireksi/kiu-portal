@@ -98,26 +98,63 @@ function loadAuthState() {
                     console.warn('Could not clear stale impersonation keys for faculty account.', storageError);
                 }
             }
-            const hasStoredImpersonatedRole = isAdminAccount && Object.values(USER_ROLES).includes(storedImpersonatedRole);
-            const impersonationEnabled = hasStoredImpersonatedRole && storedImpersonatedRole !== currentUser.role;
+            const normalizedStoredRole = String(storedImpersonatedRole || '').trim().toLowerCase();
+            const hasStoredImpersonatedRole = isAdminAccount
+                && Object.values(USER_ROLES).includes(normalizedStoredRole);
+            const impersonationEnabled = hasStoredImpersonatedRole && normalizedStoredRole !== currentUser.role;
             if (impersonationEnabled) {
                 sessionStorage.setItem(ACTIVE_ROLE_IMPERSONATION_KEY, '1');
-                currentUserRole = storedImpersonatedRole;
-            } else {
-                sessionStorage.removeItem(ACTIVE_ROLE_IMPERSONATION_KEY);
-                currentUserRole = currentUser.role;
+                currentUserRole = normalizedStoredRole;
                 try {
-                    localStorage.setItem('currentUserRole', currentUser.role);
+                    localStorage.setItem('currentUserRole', normalizedStoredRole);
                 } catch (storageError) {
-                    console.warn('Could not normalize stored role for authenticated account.', storageError);
+                    console.warn('Could not persist impersonated role for authenticated account.', storageError);
+                }
+            } else {
+                const pendingWorkspaceRole = (() => {
+                    try {
+                        const pendingRole = String(localStorage.getItem(PENDING_ROLE_SWITCH_KEY) || '').trim().toLowerCase();
+                        return isAdminAccount
+                            && Object.values(USER_ROLES).includes(pendingRole)
+                            && pendingRole !== USER_ROLES.ADMIN
+                            ? pendingRole
+                            : '';
+                    } catch (error) {
+                        return '';
+                    }
+                })();
+                if (pendingWorkspaceRole) {
+                    sessionStorage.setItem(ACTIVE_ROLE_IMPERSONATION_KEY, '1');
+                    currentUserRole = pendingWorkspaceRole;
+                    try {
+                        localStorage.setItem('currentUserRole', pendingWorkspaceRole);
+                    } catch (storageError) {
+                        console.warn('Could not persist pending workspace role for authenticated account.', storageError);
+                    }
+                } else {
+                    sessionStorage.removeItem(ACTIVE_ROLE_IMPERSONATION_KEY);
+                    currentUserRole = currentUser.role;
+                    try {
+                        localStorage.setItem('currentUserRole', currentUser.role);
+                    } catch (storageError) {
+                        console.warn('Could not normalize stored role for authenticated account.', storageError);
+                    }
                 }
             }
             if (currentUser?.id && currentUser.role !== USER_ROLES.ADMIN && !impersonationEnabled) {
                 sessionStorage.setItem(ACTIVE_SESSION_KEY, currentUser.id);
             }
-            syncAuthenticatedSessionState();
             if (impersonationEnabled && typeof setActiveSessionUserByRole === 'function') {
                 setActiveSessionUserByRole(currentUserRole);
+            }
+            syncAuthenticatedSessionState();
+            if (impersonationEnabled) {
+                if (typeof invalidatePageAccessCache === 'function') invalidatePageAccessCache();
+                if (typeof renderNav === 'function') renderNav();
+                if (typeof syncShellNavVisibility === 'function') {
+                    const activePageId = typeof getActivePageId === 'function' ? getActivePageId() : 'home';
+                    syncShellNavVisibility(activePageId);
+                }
             }
             if (hasSessionToken) {
                 if (typeof schedulePortalBackendBootstrap === 'function') schedulePortalBackendBootstrap();
@@ -159,6 +196,14 @@ function loadAuthState() {
                 }
                 if (impersonationEnabled && typeof setActiveSessionUserByRole === 'function') {
                     setActiveSessionUserByRole(currentUserRole);
+                }
+                if (impersonationEnabled) {
+                    if (typeof invalidatePageAccessCache === 'function') invalidatePageAccessCache();
+                    if (typeof renderNav === 'function') renderNav();
+                    if (typeof syncShellNavVisibility === 'function') {
+                        const activePageId = typeof getActivePageId === 'function' ? getActivePageId() : 'home';
+                        syncShellNavVisibility(activePageId);
+                    }
                 }
                 if (hasSessionToken) {
                     if (typeof schedulePortalBackendBootstrap === 'function') schedulePortalBackendBootstrap();
@@ -427,6 +472,7 @@ function ensureKiuRealtimeRuntime() {
         pushSubscriptionPromise: null,
         bridgeUnavailableUntil: 0,
         sseBlockedUntil: 0,
+        sseConnectInFlight: false,
         lastBridgeError: '',
         lastBrowserNoticeAtByKey: {}
     };
@@ -475,6 +521,7 @@ function shouldEagerBootstrapKiuRealtime() {
             .toLowerCase();
         const routeName = routePath.split('/').filter(Boolean).pop() || 'index.html';
         if (routeName === 'social.html') return true;
+        if (routeName === 'student-service.html') return true;
         if (routeName === 'index.html') {
             const activeHash = String(window.location?.hash || '').replace(/^#/, '').trim().toLowerCase();
             return activeHash === 'social';
@@ -827,6 +874,13 @@ function upsertPortalMessengerChatFromRealtime(chat, persist = false) {
             messages: mergeMessagesById(existing.messages || [], normalizedChat.messages || [])
         }
         : normalizedChat;
+    if (
+        getPortalMessengerDirectChatMembers
+        && typeof reconcilePortalMessengerDirectChatDuplicates === 'function'
+        && getPortalMessengerDirectChatMembers(KIU_STATE.portalMessengerChats[normalizedChat.id])
+    ) {
+        return reconcilePortalMessengerDirectChatDuplicates(KIU_STATE.portalMessengerChats[normalizedChat.id], persist);
+    }
     if (persist) saveState();
     return KIU_STATE.portalMessengerChats[normalizedChat.id];
 }
@@ -865,6 +919,12 @@ async function fetchRealtimeAccountByEmail(email) {
 async function syncUserToRealtimeBridge(user) {
     const account = buildRealtimeAccountPayload(user);
     if (!account?.id || !account.email) return null;
+    if (
+        account.isAdminTestingPersona
+        || (typeof isDemoOrTestingUserRecord === 'function' && isDemoOrTestingUserRecord(account))
+    ) {
+        return null;
+    }
     try {
         const payload = await kiuRealtimeFetch('/api/accounts/upsert', {
             method: 'POST',
@@ -941,7 +1001,13 @@ function handleKiuRealtimeEventPayload(payload) {
                 if (getCurrentUserId()) {
                     unhidePortalMessengerChatForUser(payload.chat.id, getCurrentUserId());
                 }
-                if (typeof renderPortalMessengerWorkspace === 'function') renderPortalMessengerWorkspace();
+                const onLmsRoute = document.body?.classList?.contains('lux-route-lms');
+                if (!onLmsRoute && typeof renderPortalMessengerWorkspace === 'function') {
+                    renderPortalMessengerWorkspace();
+                }
+                if (typeof refreshLmsInteractionMessagesIfActive === 'function') {
+                    refreshLmsInteractionMessagesIfActive();
+                }
             }
             break;
         case 'call:ringing':
@@ -989,18 +1055,71 @@ function handleKiuRealtimeEventPayload(payload) {
             }
             emitWorkspaceEvent('kiu:lms-live-quiz-updated', payload);
             break;
+        case 'lms-whiteboard:updated':
+            if (typeof handleLmsWhiteboardRealtimeUpdate === 'function') {
+                handleLmsWhiteboardRealtimeUpdate(payload);
+            }
+            emitWorkspaceEvent('kiu:lms-whiteboard-updated', payload);
+            break;
+        case 'lms-whiteboard:signal':
+            if (typeof handleLmsWhiteboardRealtimeSignal === 'function') {
+                handleLmsWhiteboardRealtimeSignal(payload);
+            }
+            emitWorkspaceEvent('kiu:lms-whiteboard-signal', payload);
+            break;
         case 'social:state-upsert':
             if (typeof schedulePortalSocialBootstrap === 'function') schedulePortalSocialBootstrap(true);
             break;
         case 'news:updated':
-            showBrowserNotification('University news updated', {
-                body: 'A new announcement or response is available in the News workspace.',
-                key: `news:${payload.emittedAt || ''}`,
-                tag: 'news-update',
-                url: 'news.html'
-            });
+            if (!payload.silent) {
+                showBrowserNotification('University news updated', {
+                    body: 'A new announcement or response is available in the News workspace.',
+                    key: `news:${payload.emittedAt || ''}`,
+                    tag: 'news-update',
+                    url: 'news.html'
+                });
+            }
             emitWorkspaceEvent('kiu:news-updated', payload);
             break;
+        case 'student-service:updated': {
+            const refreshStudentServiceState = () => {
+                if (typeof fetchStudentServiceBootstrap === 'function') {
+                    return fetchStudentServiceBootstrap(true);
+                }
+                if (typeof kiuPortalFetch !== 'function' || !window.KIU_STATE) {
+                    return Promise.resolve(null);
+                }
+                return kiuPortalFetch('/api/student-service/bootstrap').then((bootstrapPayload) => {
+                    if (typeof window.applyStudentServiceBootstrap === 'function') {
+                        window.applyStudentServiceBootstrap(bootstrapPayload);
+                    } else if (window.KIU_STATE) {
+                        const articles = bootstrapPayload?.studentService?.articles;
+                        window.KIU_STATE.studentServiceArticles = Array.isArray(articles) ? articles.slice() : [];
+                    }
+                    return bootstrapPayload?.studentService || null;
+                });
+            };
+            refreshStudentServiceState()
+                .then(() => {
+                    if (typeof window.invalidateStudentServiceRenderSignature === 'function') {
+                        window.invalidateStudentServiceRenderSignature();
+                    } else {
+                        const container = document.getElementById('page-student-service');
+                        if (container) {
+                            delete container.dataset.studentServiceRenderSignature;
+                            delete container.dataset.studentServiceChromeSignature;
+                        }
+                    }
+                    if (document.getElementById('page-student-service') && typeof renderStudentServicePage === 'function') {
+                        renderStudentServicePage();
+                    }
+                })
+                .catch((error) => {
+                    console.warn('Student Service realtime refresh failed.', error);
+                });
+            emitWorkspaceEvent('kiu:student-service-updated', payload);
+            break;
+        }
         case 'accounts:privileges-updated':
             refreshPrivilegeAwareShell();
             emitWorkspaceEvent('kiu:privileges-updated', payload);
@@ -1093,6 +1212,7 @@ function connectKiuRealtimeEventStream() {
         return;
     }
     if (isKiuRealtimeSseBlocked()) return;
+    if (runtime.sseConnectInFlight) return;
     const normalizedUserId = String(currentUserId);
     if (runtime.eventSource && runtime.bootstrappedFor === normalizedUserId && !isKiuRealtimeSseBlocked()) {
         return;
@@ -1102,6 +1222,7 @@ function connectKiuRealtimeEventStream() {
     }
     const portalSessionToken = typeof getPortalSessionToken === 'function' ? getPortalSessionToken() : '';
     if (!portalSessionToken) return;
+    runtime.sseConnectInFlight = true;
     const streamUrl = `${getKiuRealtimeBridgeUrl()}/api/events?userId=${encodeURIComponent(String(currentUserId))}`;
     const eventSource = openKiuRealtimeEventStream(streamUrl, portalSessionToken, (event) => {
         let payload = null;
@@ -1113,14 +1234,23 @@ function connectKiuRealtimeEventStream() {
         handleKiuRealtimeEventPayload(payload);
     }, (error) => {
         runtime.online = false;
+        runtime.sseConnectInFlight = false;
         if (Number(error?.status) === 429) {
             runtime.sseBlockedUntil = Date.now() + (5 * 60 * 1000);
+            if (runtime.bootstrapScheduledHandle) {
+                clearTimeout(runtime.bootstrapScheduledHandle);
+                runtime.bootstrapScheduledHandle = null;
+                runtime.bootstrapScheduledFor = '';
+            }
             console.warn('Realtime event stream paused after too many connections. It will retry in a few minutes.');
         }
         if (runtime.eventSource === eventSource) {
             runtime.eventSource = null;
             runtime.bootstrappedFor = '';
         }
+    });
+    eventSource.ready.finally(() => {
+        runtime.sseConnectInFlight = false;
     });
     runtime.eventSource = eventSource;
     runtime.bootstrappedFor = normalizedUserId;
@@ -1383,7 +1513,21 @@ function syncAuthenticatedSessionState() {
         console.warn('Could not persist active session user during auth sync.', error);
     }
     if (!impersonationEnabled) {
-        currentUserRole = currentUser.role;
+        const pendingWorkspaceRole = (() => {
+            try {
+                const pendingRole = String(localStorage.getItem(PENDING_ROLE_SWITCH_KEY) || '').trim().toLowerCase();
+                return currentUser?.role === USER_ROLES.ADMIN
+                    && Object.values(USER_ROLES).includes(pendingRole)
+                    && pendingRole !== USER_ROLES.ADMIN
+                    ? pendingRole
+                    : '';
+            } catch (error) {
+                return '';
+            }
+        })();
+        if (!pendingWorkspaceRole) {
+            currentUserRole = currentUser.role;
+        }
     }
 
     const normalizedFaculty = normalizeFacultyCode(

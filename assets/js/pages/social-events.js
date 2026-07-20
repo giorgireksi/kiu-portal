@@ -458,13 +458,7 @@
         if (isUniversity && !isStaff) {
             return `<div class="social-neo-dialog-backdrop" data-action="dialog-close">
                 <div class="social-neo-dialog-card social-neo-dialog-card--event-create social-neo-dialog-card--lms-create" data-lux-transparency-exempt="1">
-                    <div class="social-neo-section-head social-neo-dialog-head">
-                        <div class="social-neo-dialog-heading">
-                            <strong class="social-neo-dialog-title"><i class="fas fa-landmark" aria-hidden="true"></i> Official events</strong>
-                            <span class="social-neo-dialog-subtitle">Faculty and administrators can publish campus-wide events here.</span>
-                        </div>
-                        <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-close-btn" type="button" data-action="dialog-close"><i class="fas fa-times"></i></button>
-                    </div>
+                    ${typeof socialNeoDialogHead === 'function' ? socialNeoDialogHead('Official events', 'Faculty and administrators can publish campus-wide events here.', { icon: 'fas fa-landmark' }) : ''}
                     <p class="social-neo-dialog-hint">Official university announcements, exam sessions, and administration-led events are published by staff accounts.</p>
                     <div class="social-neo-form-actions social-neo-dialog-actions">
                         <button class="social-neo-btn social-neo-btn-primary social-neo-dialog-submit-btn" type="button" data-action="dialog-close">Got it</button>
@@ -574,7 +568,6 @@
         </div>`;
     }
 
-
     const EVENTS_OWNED_DIALOG_KINDS = new Set(['event-create', 'event-delete']);
 
     function renderEventsOwnedDialog(runtime, dialog) {
@@ -590,10 +583,7 @@
             if (!eventItem) return '';
             return `<div class="social-neo-dialog-backdrop" data-action="dialog-close">
                 <form class="social-neo-dialog-card" data-form="dialog-event-delete" data-action="noop">
-                    <div class="social-neo-section-head social-neo-dialog-head">
-                        <div class="social-neo-dialog-heading"><strong class="social-neo-dialog-title">Delete event</strong><span class="social-neo-dialog-subtitle">This removes the event and its RSVP history.</span></div>
-                        <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-close-btn" type="button" data-action="dialog-close"><i class="fas fa-times"></i></button>
-                    </div>
+                    ${typeof socialNeoDialogHead === 'function' ? socialNeoDialogHead('Delete event', 'This removes the event and its RSVP history.') : ''}
                     <div class="social-neo-dialog-preview">
                         <strong class="social-neo-dialog-preview-title">${escape(text(eventItem.title || 'Untitled event'))}</strong>
                         <div class="social-neo-muted social-neo-muted-mt-6">${escape(when(eventItem.startsAt || ''))}</div>
@@ -601,10 +591,7 @@
                     <div class="social-neo-dialog-preview social-neo-dialog-preview-danger">
                         This will remove the event for everyone and clear its RSVP history.
                     </div>
-                    <div class="social-neo-form-actions social-neo-dialog-actions">
-                        <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-cancel-btn" type="button" data-action="dialog-close">Cancel</button>
-                        <button class="social-neo-btn social-neo-btn-primary social-neo-dialog-submit-btn" type="submit">Delete event</button>
-                    </div>
+                    ${typeof socialNeoDialogActions === 'function' ? socialNeoDialogActions({ cancelLabel: 'Cancel', submitLabel: 'Delete event' }) : ''}
                     <input type="hidden" name="eventId" value="${escape(text(eventItem.id))}">
                 </form>
             </div>`;

@@ -1,7 +1,10 @@
+const { STUDENT_SERVICE_API_MANIFEST_VERSION } = require('../contracts/student-service-api-contract');
+
 function registerStudentServiceRoutes(app, deps = {}) {
     const {
         broadcastAll,
         getActorUserId,
+        getSessionRole,
         getStore,
         requireSessionAccount,
         sendError
@@ -17,7 +20,10 @@ function registerStudentServiceRoutes(app, deps = {}) {
         const store = getStore();
         response.json({
             ok: true,
-            studentService: store.getStudentServiceBootstrap(getActorUserId(sessionAccount))
+            apiManifestVersion: STUDENT_SERVICE_API_MANIFEST_VERSION,
+            studentService: store.getStudentServiceBootstrap(getActorUserId(sessionAccount), {
+                sessionRole: typeof getSessionRole === 'function' ? getSessionRole(sessionAccount) : ''
+            })
         });
     });
 
@@ -99,17 +105,55 @@ function registerStudentServiceRoutes(app, deps = {}) {
         response.json({ ok: true, ticket: result });
     });
 
+    app.post('/api/student-service/inbox-filter-layout', (request, response) => {
+        const sessionAccount = request.kiuSessionAccount || requireSessionAccount(request, response);
+        if (!sessionAccount) return;
+        const store = getStore();
+        const result = store.saveStudentServiceInboxFilterLayout(
+            request.body || {},
+            getActorUserId(sessionAccount),
+            typeof getSessionRole === 'function' ? getSessionRole(sessionAccount) : ''
+        );
+        if (!result || result?.error) {
+            sendError(response, result?.status || 400, result?.error || 'Student Service inbox filter layout could not be saved.');
+            return;
+        }
+        emitStudentServiceUpdated();
+        response.json(result);
+    });
+
     app.post('/api/student-service/articles', (request, response) => {
         const sessionAccount = request.kiuSessionAccount || requireSessionAccount(request, response);
         if (!sessionAccount) return;
         const store = getStore();
-        const result = store.saveStudentServiceArticle(request.body || {}, getActorUserId(sessionAccount));
+        const result = store.saveStudentServiceArticle(
+            request.body || {},
+            getActorUserId(sessionAccount),
+            typeof getSessionRole === 'function' ? getSessionRole(sessionAccount) : ''
+        );
         if (!result || result?.error) {
             sendError(response, result?.status || 400, result?.error || 'Student Service article could not be saved.');
             return;
         }
         emitStudentServiceUpdated();
         response.json({ ok: true, article: result });
+    });
+
+    app.post('/api/student-service/articles/:id/delete', (request, response) => {
+        const sessionAccount = request.kiuSessionAccount || requireSessionAccount(request, response);
+        if (!sessionAccount) return;
+        const store = getStore();
+        const result = store.deleteStudentServiceArticle(
+            request.params.id,
+            getActorUserId(sessionAccount),
+            typeof getSessionRole === 'function' ? getSessionRole(sessionAccount) : ''
+        );
+        if (!result || result?.error) {
+            sendError(response, result?.status || 400, result?.error || 'Student Service article could not be deleted.');
+            return;
+        }
+        emitStudentServiceUpdated();
+        response.json(result);
     });
 
     app.post('/api/student-service/questions', (request, response) => {
@@ -138,6 +182,39 @@ function registerStudentServiceRoutes(app, deps = {}) {
         response.json({ ok: true, question: result });
     });
 
+    app.post('/api/student-service/questions/:questionId/answers/:answerId/delete', (request, response) => {
+        const sessionAccount = request.kiuSessionAccount || requireSessionAccount(request, response);
+        if (!sessionAccount) return;
+        const store = getStore();
+        const result = store.deleteStudentServiceQuestionAnswer(
+            request.params.questionId,
+            request.params.answerId,
+            getActorUserId(sessionAccount)
+        );
+        if (!result || result?.error) {
+            sendError(response, result?.status || 400, result?.error || 'Student Service answer could not be deleted.');
+            return;
+        }
+        emitStudentServiceUpdated();
+        response.json({ ok: true, question: result });
+    });
+
+    app.post('/api/student-service/questions/:id/delete', (request, response) => {
+        const sessionAccount = request.kiuSessionAccount || requireSessionAccount(request, response);
+        if (!sessionAccount) return;
+        const store = getStore();
+        const result = store.deleteStudentServiceQuestion(
+            request.params.id,
+            getActorUserId(sessionAccount)
+        );
+        if (!result || result?.error) {
+            sendError(response, result?.status || 400, result?.error || 'Student Service question could not be deleted.');
+            return;
+        }
+        emitStudentServiceUpdated();
+        response.json({ ok: true, ...result });
+    });
+
     app.post('/api/student-service/questions/:id/feedback', (request, response) => {
         const sessionAccount = request.kiuSessionAccount || requireSessionAccount(request, response);
         if (!sessionAccount) return;
@@ -145,6 +222,23 @@ function registerStudentServiceRoutes(app, deps = {}) {
         const result = store.setStudentServiceQuestionFeedback(request.params.id, request.body || {}, getActorUserId(sessionAccount));
         if (!result || result?.error) {
             sendError(response, result?.status || 400, result?.error || 'Student Service feedback could not be saved.');
+            return;
+        }
+        emitStudentServiceUpdated();
+        response.json({ ok: true, question: result });
+    });
+
+    app.post('/api/student-service/questions/:questionId/answers/:answerId/feedback', (request, response) => {
+        const sessionAccount = request.kiuSessionAccount || requireSessionAccount(request, response);
+        if (!sessionAccount) return;
+        const store = getStore();
+        const result = store.setStudentServiceAnswerFeedback(
+            request.params.questionId,
+            request.params.answerId,
+            getActorUserId(sessionAccount)
+        );
+        if (!result || result?.error) {
+            sendError(response, result?.status || 400, result?.error || 'Student Service answer feedback could not be saved.');
             return;
         }
         emitStudentServiceUpdated();
@@ -171,6 +265,23 @@ function registerStudentServiceRoutes(app, deps = {}) {
         const result = store.publishStudentServiceQuestion(request.params.id, request.body || {}, getActorUserId(sessionAccount));
         if (!result || result?.error) {
             sendError(response, result?.status || 400, result?.error || 'Student Service question could not be published.');
+            return;
+        }
+        emitStudentServiceUpdated();
+        response.json({ ok: true, question: result });
+    });
+
+    app.post('/api/student-service/questions/:id/owner-resolution', (request, response) => {
+        const sessionAccount = request.kiuSessionAccount || requireSessionAccount(request, response);
+        if (!sessionAccount) return;
+        const store = getStore();
+        const result = store.setStudentServiceQuestionOwnerResolution(
+            request.params.id,
+            request.body || {},
+            getActorUserId(sessionAccount)
+        );
+        if (!result || result?.error) {
+            sendError(response, result?.status || 400, result?.error || 'Student Service owner resolution could not be updated.');
             return;
         }
         emitStudentServiceUpdated();
@@ -207,7 +318,12 @@ function registerStudentServiceRoutes(app, deps = {}) {
         const sessionAccount = request.kiuSessionAccount || requireSessionAccount(request, response);
         if (!sessionAccount) return;
         const store = getStore();
-        const result = store.convertStudentServiceQuestionToArticle(request.params.id, request.body || {}, getActorUserId(sessionAccount));
+        const result = store.convertStudentServiceQuestionToArticle(
+            request.params.id,
+            request.body || {},
+            getActorUserId(sessionAccount),
+            typeof getSessionRole === 'function' ? getSessionRole(sessionAccount) : ''
+        );
         if (!result || result?.error) {
             sendError(response, result?.status || 400, result?.error || 'Student Service question could not be converted to an article.');
             return;

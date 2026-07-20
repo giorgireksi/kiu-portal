@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
 function readSource(relativePath) {
@@ -12,7 +12,9 @@ describe('LMS grade sync module split', () => {
         const lmsSource = readSource('assets/js/pages/lms.js');
         const gradeSyncRuntimeSource = readSource('assets/js/pages/lms-grade-sync-runtime.js');
 
-        expect(lmsHtml).toContain('assets/js/pages/lms-grade-sync-runtime.js?v=20260518-lmsgrade1');
+        expect(lmsHtml).not.toContain('assets/js/pages/lms-grade-sync-runtime.js');
+        expect(readSource('assets/js/pages/lms-classroom-tabs-runtime.js')).toContain('assets/js/pages/lms-grade-sync-runtime.js?v=20260518-lmsgrade1');
+        expect(readSource('assets/js/pages/lms-classroom-tabs-runtime.js')).toContain('LMS_QUIZ_MODULE_URLS');
         expect(gradeSyncRuntimeSource).toContain('function getGradebookRosterForQuizResource(resourceKey)');
         expect(gradeSyncRuntimeSource).toContain('function buildLmsQuizGradebookMeta(resourceKey, quiz = {}, overrides = {})');
         expect(gradeSyncRuntimeSource).toContain('function buildLmsQuizGradebookNote(resourceKey, quiz = {}, noteSuffix = \'\')');

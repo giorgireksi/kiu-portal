@@ -4,7 +4,6 @@
         : null;
 
     const ROOT_ID = 'admin-exams-root';
-    const STYLE_ID = 'kiu-exams-console-styles';
     const STAFF_ROLES = new Set(['admin', 'professor', 'ta']);
     const ADMIN_ROLES = new Set(['admin']);
     const MANUAL_TYPES = new Set(['short', 'written']);
@@ -39,14 +38,25 @@
         splitRoomLabel: '',
         splitTimeSlot: '',
         /* â”€â”€ Paginated question bank â”€â”€ */
-        currentBankPage: 0
+        currentBankPage: 0,
+        renderCache: {},
+        renderPass: null,
+        /* Review Queue triage state */
+        reviewSearch: '',
+        reviewSort: 'oldest',
+        reviewFaculty: 'all',
+        reviewApprovedCollapsed: true
     };
     let examsAdminModulePromise = null;
     let examsBuilderModulePromise = null;
     let examsAttemptsModulePromise = null;
 
     function escapeHtml(value) {
-        return String(value ?? '')
+        if (typeof window !== 'undefined' && typeof window.escapeHtml === 'function') {
+            const shared = window.escapeHtml;
+            if (shared !== escapeHtml) return shared(value);
+        }
+        return String(value == null ? '' : value)
             .replace(/&/g, '&amp;')
             .replace(/</g, '&lt;')
             .replace(/>/g, '&gt;')
@@ -995,7 +1005,7 @@
         if (!options.force && Array.isArray(store.attempts) && store.attempts.length) return;
         store.loading = true;
         store.error = '';
-        renderConsole();
+        renderConsole('body');
         try {
             const payload = await fetchProtectedQuizAttempts(session.protectedCourseId || `exam-session::${session.id}`, session.protectedQuizId || session.id);
             store.attempts = Array.isArray(payload?.attempts) ? payload.attempts : [];
@@ -1004,7 +1014,7 @@
             store.error = error?.message || 'Attempts could not be loaded.';
         } finally {
             store.loading = false;
-            renderConsole();
+            renderConsole('body');
         }
     }
 
@@ -1049,16 +1059,84 @@
         return (template?.questions || []).reduce((total, question) => total + Math.max(1, parseInt(question?.score, 10) || 1), 0);
     }
 
+    function buildRenderPassSnapshot() {
+        const templates = getTemplates();
+        const sessions = getSessions();
+        return {
+            templates,
+            sessions,
+            reviewTemplates: templates.filter(template => ['submitted', 'in_review'].includes(String(template?.status || '').trim().toLowerCase())),
+            approvedTemplates: templates.filter(template => String(template?.status || '').trim().toLowerCase() === 'approved')
+        };
+    }
+
+    function beginRenderPass(dirty) {
+        const dirtySet = normalizeExamDirtyRegions(dirty);
+        if (dirtySet.has('chrome') || dirtySet.has('all') || dirtySet.has('full')) {
+            runtime.renderPass = buildRenderPassSnapshot();
+        }
+    }
+
+    function endRenderPass() {
+        runtime.renderPass = null;
+    }
+
     function getReviewTemplates() {
+        if (runtime.renderPass?.reviewTemplates) return runtime.renderPass.reviewTemplates;
         return getTemplates().filter(template => ['submitted', 'in_review'].includes(String(template?.status || '').trim().toLowerCase()));
     }
 
     function getApprovedTemplates() {
+        if (runtime.renderPass?.approvedTemplates) return runtime.renderPass.approvedTemplates;
         return getTemplates().filter(template => String(template?.status || '').trim().toLowerCase() === 'approved');
     }
 
-    function getFilteredTemplates(searchText, statusFilter, staffSubTab) {
-        let list = getTemplates();
+    function getReviewQueueGroups() {
+        const cross = canUseCrossFacultyExamView();
+        const currentFaculty = getCurrentFacultyCode();
+        const search = String(runtime.reviewSearch || '').trim().toLowerCase();
+        const facultyFilter = String(runtime.reviewFaculty || 'all').trim().toUpperCase();
+        const sortNewest = String(runtime.reviewSort || 'oldest').trim().toLowerCase() === 'newest';
+        const matches = (t) => {
+            const faculty = String(t?.faculty || '').trim().toUpperCase();
+            if (!cross && faculty !== currentFaculty) return false;
+            if (facultyFilter !== 'ALL' && faculty !== facultyFilter) return false;
+            if (!search) return true;
+            return [t?.title, t?.subjectName, t?.subjectId, t?.variantLabel, t?.createdByName, t?.lastEditedByName, t?.faculty]
+                .some(v => String(v || '').toLowerCase().includes(search));
+        };
+        const sortFn = (a, b) => {
+            const aTime = parseDate(a?.updatedAt || a?.createdAt);
+            const bTime = parseDate(b?.updatedAt || b?.createdAt);
+            return sortNewest ? bTime - aTime : aTime - bTime;
+        };
+        const groups = { awaiting: [], returned: [], approved: [] };
+        getTemplateEntries().forEach(entry => {
+            const t = entry?.template;
+            if (!t || !matches(t)) return;
+            const status = String(t.status || '').trim().toLowerCase();
+            if (['submitted', 'in_review'].includes(status)) groups.awaiting.push(t);
+            else if (status === 'returned') groups.returned.push(t);
+            else if (status === 'approved') groups.approved.push(t);
+        });
+        groups.awaiting.sort(sortFn);
+        groups.returned.sort(sortFn);
+        groups.approved.sort(sortFn);
+        return groups;
+    }
+
+    function getReviewFacultyOptions() {
+        if (!canUseCrossFacultyExamView()) return [];
+        const codes = new Set();
+        getTemplateEntries().forEach(entry => {
+            const code = String(entry?.template?.faculty || entry?.facultyCode || '').trim().toUpperCase();
+            if (code) codes.add(code);
+        });
+        return [...codes].sort().map(code => ({ code, label: getFacultyLabelSafe(code) || code }));
+    }
+
+    function getFilteredTemplates(searchText, statusFilter, staffSubTab, sourceTemplates = null) {
+        let list = Array.isArray(sourceTemplates) ? sourceTemplates.slice() : getTemplates();
         const role = getRole();
         const isAdmin = ADMIN_ROLES.has(role);
         const currentUser = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
@@ -1074,19 +1152,19 @@
             }
         }
 
-        // Status filter
-        if (statusFilter && statusFilter !== 'all') {
-            list = list.filter(t => String(t.status || 'draft').toLowerCase() === statusFilter.toLowerCase());
-        }
-
-        // Search text
-        const q = String(searchText || '').trim().toLowerCase();
-        if (q) {
-            list = list.filter(t =>
-                (t.title || '').toLowerCase().includes(q) ||
-                (t.subjectName || '').toLowerCase().includes(q) ||
-                (t.subjectId || '').toLowerCase().includes(q)
-            );
+        // When sourceTemplates is not provided, search/status are already applied in getTemplates().
+        if (!Array.isArray(sourceTemplates)) {
+            if (statusFilter && statusFilter !== 'all') {
+                list = list.filter(t => String(t.status || 'draft').toLowerCase() === statusFilter.toLowerCase());
+            }
+            const q = String(searchText || '').trim().toLowerCase();
+            if (q) {
+                list = list.filter(t =>
+                    (t.title || '').toLowerCase().includes(q) ||
+                    (t.subjectName || '').toLowerCase().includes(q) ||
+                    (t.subjectId || '').toLowerCase().includes(q)
+                );
+            }
         }
 
         return list;
@@ -1131,41 +1209,60 @@
         toFieldToken
     });
 
-    function renderHero() {
+    function getWorkspaceStatChips() {
         const role = getRole();
         const isAdmin = ADMIN_ROLES.has(role);
-        const templates = getTemplates();
-        const sessions = getSessions();
+        const templates = runtime.renderPass?.templates || getTemplates();
+        const sessions = runtime.renderPass?.sessions || getSessions();
         const reviewCount = getReviewTemplates().length;
         const liveCount = sessions.filter(s => getSelectedSessionStatus(s) === 'live').length;
-        const returnedCount = templates.filter(t => String(t.status||'').toLowerCase() === 'returned').length;
+        const returnedCount = templates.filter(t => String(t.status || '').toLowerCase() === 'returned').length;
         const approvedCount = getApprovedTemplates().length;
+        if (isAdmin) {
+            return [
+                { value: reviewCount, label: 'Awaiting Review', tone: 'is-pending' },
+                { value: sessions.length, label: 'Scheduled', tone: 'is-approved' },
+                { value: liveCount, label: 'Live Now', tone: liveCount ? 'is-live' : '' },
+                { value: templates.length, label: 'All Templates', tone: '' }
+            ];
+        }
+        return [
+            { value: templates.length, label: 'My Quizzes', tone: 'is-draft' },
+            { value: templates.filter(t => t.status === 'submitted').length, label: 'Pending Review', tone: 'is-pending' },
+            { value: returnedCount, label: 'Returned', tone: returnedCount ? 'is-returned' : '' },
+            { value: approvedCount, label: 'Approved', tone: 'is-approved' }
+        ];
+    }
 
+    function renderWorkspaceTitle() {
+        const role = getRole();
+        const isAdmin = ADMIN_ROLES.has(role);
         return `
-            <div class="ex2-command-bar">
+            <div class="ex2-workspace-title-row">
                 <h1><i class="fas ${isAdmin ? 'fa-satellite-dish' : 'fa-wand-magic-sparkles'}"></i> ${isAdmin ? 'Exam Command Center' : 'Quiz Studio'}</h1>
-            </div>
-            <div class="ex2-stats-row lux-strip-grid lux-strip-grid--adaptive">
-                ${isAdmin ? `
-                    <div class="ex2-stat-card lux-strip-card surface-card is-pending"><strong>${reviewCount}</strong><span>Awaiting Review</span></div>
-                    <div class="ex2-stat-card lux-strip-card surface-card is-approved"><strong>${sessions.length}</strong><span>Scheduled</span></div>
-                    <div class="ex2-stat-card lux-strip-card surface-card${liveCount ? ' is-live' : ''}"><strong>${liveCount}</strong><span>Live Now</span></div>
-                    <div class="ex2-stat-card lux-strip-card surface-card"><strong>${templates.length}</strong><span>All Templates</span></div>
-                ` : `
-                    <div class="ex2-stat-card lux-strip-card surface-card is-draft"><strong>${templates.length}</strong><span>My Quizzes</span></div>
-                    <div class="ex2-stat-card lux-strip-card surface-card is-pending"><strong>${templates.filter(t => t.status === 'submitted').length}</strong><span>Pending Review</span></div>
-                    <div class="ex2-stat-card lux-strip-card surface-card${returnedCount ? ' is-returned' : ''}"><strong>${returnedCount}</strong><span>Returned</span></div>
-                    <div class="ex2-stat-card lux-strip-card surface-card is-approved"><strong>${approvedCount}</strong><span>Approved</span></div>
-                `}
             </div>
         `;
     }
 
-    function renderTabBar() {
+    function renderWorkspaceStatsInline() {
+        return `
+            <div class="ex2-workspace-stats">
+                ${getWorkspaceStatChips().map(chip => `
+                    <div class="ex2-stat-chip${chip.tone ? ` ${chip.tone}` : ''}">
+                        <strong>${chip.value}</strong>
+                        <span>${escapeHtml(chip.label)}</span>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    }
+
+    function renderWorkspaceTabRow() {
         const role = getRole();
         const isAdmin = ADMIN_ROLES.has(role);
         const reviewCount = getReviewTemplates().length;
-        const liveCount = getSessions().filter(s => getSelectedSessionStatus(s) === 'live').length;
+        const sessions = runtime.renderPass?.sessions || getSessions();
+        const liveCount = sessions.filter(s => getSelectedSessionStatus(s) === 'live').length;
         const TAB_META = {
             templates: { icon: 'fa-file-lines', label: isAdmin ? 'All Templates' : 'Quiz Builder' },
             review:    { icon: 'fa-clipboard-check', label: 'Review', badge: reviewCount },
@@ -1174,29 +1271,47 @@
             results:   { icon: 'fa-chart-column', label: 'Results' }
         };
         const visibleTabs = TABS.filter(tab => tab === 'templates' || isAdmin);
+        // Staff only has one lane (templates) — section head already titles it; a lone tab + full-width rule looks like a cut-through title.
+        if (visibleTabs.length <= 1) return '';
         return `
-            <section class="ex2-toolbar">
-                <div class="ex2-tab-row">
-                    ${visibleTabs.map(tab => {
-                        const meta = TAB_META[tab] || {};
-                        return `<button type="button" class="ex2-tab${runtime.activeTab === tab ? ' is-active' : ''}" data-exam-call="setExamTab" data-exam-args='["${tab}"]'><i class="fas ${meta.icon || 'fa-circle'}"></i> ${escapeHtml(meta.label || tab)}${meta.badge ? ` <span class="ex2-tab-badge">${meta.badge}</span>` : ''}</button>`;
-                    }).join('')}
-                </div>
-                ${getBackendWarning() ? `<div class="ex2-warning"><i class="fas fa-triangle-exclamation"></i> ${escapeHtml(getBackendWarning())}</div>` : ''}
-            </section>
+            <div class="ex2-tab-row ex2-workspace-tab-row">
+                ${visibleTabs.map(tab => {
+                    const meta = TAB_META[tab] || {};
+                    return `<button type="button" class="ex2-tab${runtime.activeTab === tab ? ' is-active' : ''}" data-exam-call="setExamTab" data-exam-args='["${tab}"]'><i class="fas ${meta.icon || 'fa-circle'}"></i> ${escapeHtml(meta.label || tab)}${meta.badge ? ` <span class="ex2-tab-badge">${meta.badge}</span>` : ''}</button>`;
+                }).join('')}
+            </div>
         `;
+    }
+
+    function renderWorkspaceChrome() {
+        return `
+            <header class="ex2-workspace-head">
+                ${renderWorkspaceTitle()}
+                ${renderWorkspaceStatsInline()}
+                ${renderWorkspaceTabRow()}
+                ${getBackendWarning() ? `<div class="ex2-warning"><i class="fas fa-triangle-exclamation"></i> ${escapeHtml(getBackendWarning())}</div>` : ''}
+            </header>
+        `;
+    }
+
+    function renderTabBar() {
+        return renderWorkspaceChrome();
+    }
+
+    function renderHero() {
+        return renderWorkspaceChrome();
     }
 
     function renderTemplateList() {
         const role = getRole();
         const isAdmin = ADMIN_ROLES.has(role);
-        const allTemplates = getTemplates();
-        const filtered = getFilteredTemplates(runtime.templateSearch, runtime.templateFilter, runtime.staffSubTab);
+        const templates = runtime.renderPass?.templates || getTemplates();
+        const filtered = getFilteredTemplates(runtime.templateSearch, runtime.templateFilter, runtime.staffSubTab, templates);
         const bankCount = (t) => (t.questionBank || t.questions || []).length;
         const varCount = (t) => (t.variants || []).length;
 
         return `
-            <section class="ex2-panel">
+            <div class="ex2-workspace-section">
                 <div class="ex2-panel-head">
                     <div>
                         <h2><i class="fas ${isAdmin ? 'fa-folder-open' : 'fa-wand-magic-sparkles'} ex2-panel-title-icon"></i>${isAdmin ? 'All Templates' : 'Quiz Builder'}</h2>
@@ -1254,20 +1369,18 @@
                         <button type="button" class="ex2-btn is-primary" data-exam-call="beginExamTemplateCreation"><i class="fas fa-plus"></i> Create Quiz</button>
                     </div>
                 `}
-            </section>
+            </div>
         `;
     }
 
 
     function renderBuilderLoadingState() {
         return `
-            <div class="ex2-builder-fullscreen">
-                <div class="ex2-panel">
-                    <div class="ex2-empty-state">
-                        <i class="fas fa-wand-magic-sparkles"></i>
-                        <p><strong>Loading Quiz Builder</strong></p>
-                        <p>Preparing the question bank, variant editor, and review workspace.</p>
-                    </div>
+            <div class="ex2-workspace-section">
+                <div class="ex2-empty-state">
+                    <i class="fas fa-wand-magic-sparkles"></i>
+                    <p><strong>Loading Quiz Builder</strong></p>
+                    <p>Preparing the question bank, variant editor, and review workspace.</p>
                 </div>
             </div>
         `;
@@ -1277,7 +1390,7 @@
         if (hasExamsBuilderModule()) {
             return window.renderExamTemplateBuilder();
         }
-        ensureExamsBuilderModule().then(() => renderConsole()).catch(() => null);
+        ensureExamsBuilderModule().then(() => renderConsole('body')).catch(() => null);
         return renderBuilderLoadingState();
     }
 
@@ -1342,6 +1455,9 @@
         runtime,
         getReviewTemplates,
         getApprovedTemplates,
+        getReviewQueueGroups,
+        getReviewFacultyOptions,
+        canUseCrossFacultyExamView,
         getTemplateById,
         getScheduleDraft,
         getSelectedStudentsForSchedule,
@@ -1392,7 +1508,7 @@
                         <span>Question text</span>
                         <textarea class="ex2-textarea" rows="3" data-exam-input-call="${syncFunc}" data-exam-input-args='["${escapeHtml(question.id)}","text","$value"]' data-exam-change-call="${updateFunc}" data-exam-change-args='["${escapeHtml(question.id)}","text","$value"]'>${escapeHtml(question.text)}</textarea>
                     </label>
-                    <label class="ex2-field">
+                    <label class="ex2-field ex2-field-span ex2-field--picker">
                         <span>Correct option</span>
                         <select class="ex2-select" data-exam-change-call="${updateFunc}" data-exam-change-args='["${escapeHtml(question.id)}","correctOption","$value"]'>
                             ${(question.options || []).map((opt, oi) => `<option value="${oi}"${Number(question.correctOption) === oi ? ' selected' : ''}>Option ${oi + 1}</option>`).join('')}
@@ -1411,1480 +1527,108 @@
 
     function renderAdminLoadingPanel(title, description) {
         return `
-            <section class="ex2-panel">
+            <div class="ex2-workspace-section">
                 <div class="ex2-empty-state">
                     <i class="fas fa-user-shield"></i>
                     <p><strong>${escapeHtml(title)}</strong></p>
                     <p>${escapeHtml(description)}</p>
                 </div>
-            </section>
-        `;
-    }
-
-    function renderReviewTab() {
-        if (hasExamsAdminModule()) {
-            return window.renderExamReviewTab();
-        }
-        ensureExamsAdminModule().then(() => renderConsole()).catch(() => null);
-        return renderAdminLoadingPanel(
-            'Loading Review Queue',
-            'Preparing submitted quizzes, return notes, and approval actions.'
-        );
-    }
-
-    function renderScheduleBoard() {
-        if (hasExamsAdminModule()) {
-            return window.renderExamScheduleBoard();
-        }
-        ensureExamsAdminModule().then(() => renderConsole()).catch(() => null);
-        return renderAdminLoadingPanel(
-            'Loading Schedule Builder',
-            'Preparing approved templates, cohort groups, and scheduled exam sessions.'
-        );
-    }
-    function renderExamsAttemptsLoadingPanel(title, description) {
-        return `
-            <section class="ex2-panel">
-                <div class="ex2-empty-state">
-                    <i class="fas fa-chart-line"></i>
-                    <p><strong>${escapeHtml(title)}</strong></p>
-                    <p>${escapeHtml(description)}</p>
-                </div>
-            </section>
-        `;
-    }
-
-    function renderLiveTab() {
-        if (hasExamsAttemptsModule()) {
-            return window.renderExamLiveTab();
-        }
-        ensureExamsAttemptsModule().then(() => renderConsole()).catch(() => null);
-        return renderExamsAttemptsLoadingPanel(
-            'Loading Live Monitoring',
-            'Preparing session activity, warning counters, and live attempt controls.'
-        );
-    }
-
-    function renderResultsTab() {
-        if (hasExamsAttemptsModule()) {
-            return window.renderExamResultsTab();
-        }
-        ensureExamsAttemptsModule().then(() => renderConsole()).catch(() => null);
-        return renderExamsAttemptsLoadingPanel(
-            'Loading Results Queue',
-            'Preparing objective scores, manual review inputs, and session grading controls.'
-        );
-    }
-
-    function renderWorkspace() {
-        const role = getRole();
-        if (!STAFF_ROLES.has(role)) {
-            return `<div class="ex2-empty">This exam workspace is available only to admin, professor, and teaching assistant accounts.</div>`;
-        }
-        const isAdmin = ADMIN_ROLES.has(role);
-        const adminOnlyTabs = new Set(['review', 'schedule', 'live', 'results']);
-        if (adminOnlyTabs.has(runtime.activeTab) && !isAdmin) runtime.activeTab = 'templates';
-        const hasActiveDraft = runtime.templateDraft !== null;
-        return `
-            <div class="ex2-shell">
-                ${renderHero()}
-                ${renderTabBar()}
-                ${runtime.activeTab === 'templates' ? `
-                    <div class="ex2-stack">
-                        ${hasActiveDraft ? renderTemplateBuilder() : renderTemplateList()}
-                    </div>
-                ` : runtime.activeTab === 'review' ? renderReviewTab()
-                    : runtime.activeTab === 'schedule' ? renderScheduleBoard()
-                    : runtime.activeTab === 'live' ? renderLiveTab()
-                    : renderResultsTab()}
             </div>
         `;
     }
 
-    function renderConsole() {
-        ensureStyles();
-        const root = document.getElementById(ROOT_ID);
-        if (!root) return;
-        bindConsoleEvents(root);
-        root.innerHTML = renderWorkspace();
-    }
-
-    function handleConsoleClick(event) {
-        const root = document.getElementById(ROOT_ID);
-        if (!root || !root.contains(event.target)) return;
-        if (event.target.classList?.contains('ex2-modal-overlay') && event.target === event.target.closest('.ex2-modal-overlay')) {
-            const modalKey = String(event.target.getAttribute('data-exam-modal') || '').trim().toLowerCase();
-            if (modalKey === 'return') {
-                closeReturnModalInternal();
-                return;
-            }
-            if (modalKey === 'share') {
-                closeShareModalInternal();
-            }
-            return;
-        }
-        const invokeEl = event.target.closest('[data-exam-call]');
-        if (invokeEl && root.contains(invokeEl)) {
-            const fnName = String(invokeEl.getAttribute('data-exam-call') || '').trim();
-            if (fnName) {
-                event.preventDefault();
-                event.stopPropagation();
-                invokeExamDelegate(fnName, invokeEl.getAttribute('data-exam-args'), invokeEl);
-                return;
-            }
-        }
-        const actionEl = event.target.closest('[data-exam-action]');
-        if (!actionEl || !root.contains(actionEl)) return;
-        const action = String(actionEl.getAttribute('data-exam-action') || '').trim();
-        if (action === 'close-share-modal') return closeShareModalInternal();
-        if (action === 'close-return-modal') return closeReturnModalInternal();
-        if (action === 'execute-return') return executeReturnForRevisionInternal();
-        if (action === 'share-with-staff') {
-            return shareExamWithInternal(
-                actionEl.getAttribute('data-user-id') || '',
-                actionEl.getAttribute('data-user-name') || ''
-            );
-        }
-    }
-
-    function parseExamDelegateArgs(raw) {
-        if (!raw) return [];
-        try {
-            const parsed = JSON.parse(raw);
-            return Array.isArray(parsed) ? parsed : [];
-        } catch (error) {
-            return [];
-        }
-    }
-
-    function invokeExamDelegate(fnName, rawArgs, target) {
-        const fn = window[fnName];
-        if (typeof fn !== 'function') return;
-        const args = parseExamDelegateArgs(rawArgs).map((item) => {
-            if (item === '$value') return target?.value;
-            if (item === '$checked') return Boolean(target?.checked);
-            if (typeof item === 'string' && item.startsWith('$bankIndex:')) {
-                const upperBound = parseInt(item.split(':')[1], 10) || 0;
-                const nextValue = Math.max(0, Math.min(upperBound, (parseInt(target?.value, 10) || 1) - 1));
-                return nextValue;
-            }
-            return item;
-        });
-        return fn(...args);
-    }
-
-    function handleConsoleInput(event) {
-        const root = document.getElementById(ROOT_ID);
-        const target = event.target;
-        if (!root || !target || !root.contains(target)) return;
-        const fnName = String(target.getAttribute('data-exam-input-call') || '').trim();
-        if (fnName) {
-            invokeExamDelegate(fnName, target.getAttribute('data-exam-input-args'), target);
-            return;
-        }
-        const inputType = String(target.getAttribute('data-exam-input') || '').trim();
-        if (inputType === 'share-search') {
-            runtime.shareSearchQuery = String(target.value || '');
-            renderConsole();
-            return;
-        }
-        if (inputType === 'return-note') {
-            runtime.returnNote = String(target.value || '');
-        }
-    }
-
-    function handleConsoleChange(event) {
-        const root = document.getElementById(ROOT_ID);
-        const target = event.target;
-        if (!root || !target || !root.contains(target)) return;
-        const fnName = String(target.getAttribute('data-exam-change-call') || '').trim();
-        if (!fnName) return;
-        invokeExamDelegate(fnName, target.getAttribute('data-exam-change-args'), target);
-    }
-
-    function bindConsoleEvents(root) {
-        if (!root || root.dataset.examConsoleBound === '1') return;
-        root.dataset.examConsoleBound = '1';
-        root.addEventListener('click', handleConsoleClick);
-        root.addEventListener('input', handleConsoleInput);
-        root.addEventListener('change', handleConsoleChange);
-    }
-
-    function ensureStyles() {
-        /*
-            Route CSS ownership reference migrated to assets/css/exam-studio.css:
-            .ex2-modal-head.is-warm
-            body[data-lux-performance='efficient'].lux-route-exams #${ROOT_ID} .ex2-modal-overlay {
-            body[data-lux-performance='efficient'].lux-route-exams #${ROOT_ID} .ex2-modal {
-        */
-        return;
-    }
-
-    window.renderExamsPageShellContext = function renderExamsPageShellContext() {
-        const titleEl = document.getElementById('exams-page-title');
-        const subtitleEl = document.getElementById('exams-page-subtitle');
-        const contextEl = document.getElementById('admin-exams-faculty-context');
-        const primaryAction = document.getElementById('exams-primary-action');
-        const secondaryAction = document.getElementById('exams-secondary-action');
-        const tertiaryAction = document.getElementById('exams-tertiary-action');
-        const role = getRole();
-        const facultyLabel = canUseCrossFacultyExamView() ? 'All faculties' : getFacultyLabelSafe(getCurrentFacultyCode());
-
-        if (titleEl) {
-            titleEl.textContent = role === 'admin'
-                ? 'Administration Panel - Exams'
-                : role === 'professor'
-                    ? 'Professor Workspace - Exams'
-                    : 'Teaching Assistant Workspace - Exams';
-        }
-        if (subtitleEl) {
-            subtitleEl.textContent = role === 'admin'
-                ? 'Auto-group students by exact subject sets, review variants, and schedule conflict-free computer exams.'
-                : 'Build subject variants once and send them into the administration review and scheduling flow.';
-        }
-        if (contextEl) contextEl.textContent = facultyLabel;
-
-        [
-            { element: primaryAction, label: 'Back to Dashboard', icon: 'fas fa-arrow-left', page: 'home' },
-            { element: secondaryAction, label: role === 'admin' ? 'News' : 'LMS', icon: role === 'admin' ? 'fas fa-newspaper' : 'fas fa-book-reader', page: role === 'admin' ? 'news' : 'lms' },
-            { element: tertiaryAction, label: role === 'admin' ? 'Scheduler' : 'My Schedule', icon: 'fas fa-calendar-week', page: role === 'admin' ? 'admin-scheduler' : 'timetable' }
-        ].forEach(action => {
-            if (!action.element) return;
-            action.element.style.display = '';
-            action.element.innerHTML = `<i class="${action.icon}"></i> ${escapeHtml(action.label)}`;
-            action.element.onclick = () => navigate(action.page);
-        });
+    /* Workspace/render/handlers: exams-console-workspace-runtime.js */
+    const __examsWorkspaceDeps = window.__kiuExamsConsoleWorkspaceDeps = {
+        runtime, ROOT_ID, TABS, STAFF_ROLES, ADMIN_ROLES, MANUAL_TYPES, TEMPLATE_STATUSES, STAFF_SUB_TABS
     };
+    const __examsWorkspaceApi = typeof window.__kiuCreateExamsConsoleWorkspaceApi === 'function'
+        ? window.__kiuCreateExamsConsoleWorkspaceApi(__examsWorkspaceDeps)
+        : {};
+    const {
+        renderReviewTab, renderScheduleBoard, renderExamsAttemptsLoadingPanel,
+        renderLiveTab, renderResultsTab, hasActiveExamDraft,
+        setExamRegionMarkup, clearExamRegionCache, ensureExamWorkspaceShell,
+        syncWorkspaceBodyClass, renderWorkspaceBodyContent, renderExamModalMarkup,
+        enhanceExamRegionPickers, patchExamChrome, patchExamBody,
+        patchExamModal, syncBuilderToolbarTitle, syncBuilderSubjectDefaultInputs,
+        syncBuilderStepperState, patchExamBuilderSummary, patchExamBuilderStep,
+        patchExamBuilderStepper, patchExamBuilderPartial, normalizeExamDirtyRegions,
+        renderWorkspace, renderConsole, handleConsoleClick,
+        parseExamDelegateArgs, invokeExamDelegate, handleConsoleInput,
+        handleConsoleChange, bindConsoleEvents, bootExamsConsoleOnce,
+        buildTemplateFromDraft, openShareModalInternal, closeShareModalInternal,
+        shareExamWithInternal, openReturnModalInternal, closeReturnModalInternal,
+        executeReturnForRevisionInternal, getExamProtectedSessionKeys, findExamAttemptEntry,
+    } = __examsWorkspaceApi;
+    Object.assign(__examsWorkspaceDeps, {
+        escapeHtml, text, toFieldToken, hasExamsBuilderModule, ensureExamsBuilderModule,
+        hasExamsAdminModule, ensureExamsAdminModule, hasExamsAttemptsModule, ensureExamsAttemptsModule,
+        formatDateTime, getRole, getFacultyLabelSafe, persistState, clampPositiveInt,
+        saveQuestionDefaultsForSubject, renderCourseYearOptions, getTemplateById, getSessionById,
+        getGroupsForSubject, normalizeQuestion, shuffleArray, isSharedWithMe, createScheduleDraft,
+        normalizeSubjectKey, normalizeStudentRecord, buildSubjectAutoCohorts, getSelectedSessionStatus,
+        getAssignedStudents, getScheduleDraftIssues, upsertSession, loadAttemptsForSession,
+        deriveAttemptState, buildRenderPassSnapshot, beginRenderPass, endRenderPass,
+        getReviewTemplates, getReviewFacultyOptions, getResultSessions
+    });
+    /* Schedule/collision/PIN/export: exams-console-schedule-runtime.js */
+    const __examsScheduleApi = typeof window.__kiuCreateExamsConsoleScheduleApi === 'function'
+        ? window.__kiuCreateExamsConsoleScheduleApi(window.__kiuExamsConsoleWorkspaceDeps || {})
+        : {};
+    const {
+        previewStudentExamPortal, createLocalExamTestSession, toggleExamCohort, selectAllExamCohorts,
+        clearExamCohorts, editExamSession, detectScheduleCollisions, generateExamPIN,
+        hasExamsExportModule, ensureExamsExportModule, splitCohort, publishExamSession, unpublishExamSession
+    } = __examsScheduleApi;
+    Object.assign(window, {
+        previewStudentExamPortal, createLocalExamTestSession, toggleExamCohort, selectAllExamCohorts,
+        clearExamCohorts, editExamSession, splitCohort, publishExamSession, unpublishExamSession
+    });
+
+
+    window.__kiuExamsExportHooks = window.__kiuExamsExportHooks || {};
+    Object.assign(window.__kiuExamsExportHooks, {
+        getTemplateDraft,
+        getTemplateById,
+        formatCourseYearLabel,
+        notify
+    });
 
-    window.renderAdminExamSection = function renderAdminExamSection() {
-        const embeddedRoot = document.getElementById('lms-admin-exams-root');
-        if (embeddedRoot && typeof currentLmsQuizCourseKey !== 'undefined' && currentLmsQuizCourseKey && legacyRenderAdminExamSection) {
-            legacyRenderAdminExamSection();
-            return;
-        }
-        renderConsole();
-    };
-
-    window.setExamTab = function setExamTab(tab) {
-        runtime.activeTab = TABS.includes(String(tab || '').trim()) ? String(tab).trim() : 'templates';
-        renderConsole();
-    };
-
-    window.selectExamSession = async function selectExamSession(sessionId, targetTab = runtime.activeTab) {
-        const normalizedSessionId = String(sessionId || '').trim();
-        if (!normalizedSessionId || !getSessionById(normalizedSessionId)) return;
-        const normalizedTab = ['live', 'results'].includes(String(targetTab || '').trim()) ? String(targetTab).trim() : runtime.activeTab;
-        runtime.selectedSessionId = normalizedSessionId;
-        if (normalizedTab) runtime.activeTab = normalizedTab;
-        renderConsole();
-        if (['live', 'results'].includes(normalizedTab)) {
-            await loadAttemptsForSession(normalizedSessionId, { force: false });
-        }
-    };
-
-    window.setExamTemplateSearch = function setExamTemplateSearch(value) {
-        runtime.templateSearch = String(value || '');
-        renderConsole();
-    };
-
-    function initializeStandaloneExamConsole() {
-        const root = document.getElementById(ROOT_ID);
-        const embeddedRoot = document.getElementById('lms-admin-exams-root');
-        if (!root || embeddedRoot) return;
-        renderConsole();
-    }
-
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initializeStandaloneExamConsole, { once: true });
-    } else {
-        initializeStandaloneExamConsole();
-    }
-
-    window.setExamTemplateFilter = function setExamTemplateFilter(value) {
-        runtime.templateFilter = String(value || 'all').trim().toLowerCase() || 'all';
-        renderConsole();
-    };
-
-    window.cancelExamDraft = function cancelExamDraft() {
-        runtime.templateDraft = null;
-        runtime.templateStep = 'details';
-        runtime.showShareModal = false;
-        renderConsole();
-    };
-
-    window.beginExamTemplateCreation = function beginExamTemplateCreation() {
-        runtime.activeTab = 'templates';
-        runtime.templateDraft = createTemplateDraft();
-        runtime.templateStep = 'details';
-        renderConsole();
-    };
-
-    window.editExamTemplate = function editExamTemplate(templateId) {
-        const template = getTemplateById(templateId);
-        if (!template) return;
-        runtime.activeTab = 'templates';
-        runtime.templateDraft = createTemplateDraft(template);
-        runtime.templateStep = 'details';
-        renderConsole();
-    };
-
-    window.duplicateExamTemplate = function duplicateExamTemplate(templateId) {
-        const template = getTemplateById(templateId);
-        if (!template) return;
-        const duplicated = createTemplateDraft({
-            ...template,
-            id: '',
-            title: `${template.title || template.subjectName || 'Exam'} copy`,
-            status: 'draft'
-        });
-        duplicated.editingTemplateId = '';
-        runtime.templateDraft = duplicated;
-        runtime.activeTab = 'templates';
-        runtime.templateStep = 'details';
-        renderConsole();
-    };
-
-    window.updateExamTemplateField = function updateExamTemplateField(field, value) {
-        const draft = getTemplateDraft();
-        if (field === 'subjectId') {
-            const subject = getSubjectById(value);
-            const defaults = getQuestionDefaultsForSubject(value);
-            draft.subjectId = String(value || '').trim();
-            draft.subjectName = String(subject?.name || value || '').trim();
-            draft.defaultQuestionScore = defaults.score;
-            draft.defaultOptionCount = defaults.optionCount;
-        } else if (field === 'durationMinutes') {
-            draft.durationMinutes = Math.max(1, parseInt(value, 10) || 90);
-        } else if (field === 'passingScore') {
-            draft.passingScore = clampPositiveInt(value, 50, 0, 999);
-        } else if (field === 'gradingWeight') {
-            draft.gradingWeight = clampPositiveInt(value, 30, 0, 999);
-        } else if (field === 'defaultQuestionScore') {
-            draft.defaultQuestionScore = clampPositiveInt(value, 1, 1, 999);
-            saveQuestionDefaultsForSubject(draft.subjectId, getDraftQuestionDefaults(draft));
-        } else if (field === 'defaultOptionCount') {
-            draft.defaultOptionCount = clampPositiveInt(value, 4, 2, 8);
-            saveQuestionDefaultsForSubject(draft.subjectId, getDraftQuestionDefaults(draft));
-        } else if (field === 'examType') {
-            draft.examType = ['digital', 'paper'].includes(String(value||'').trim()) ? String(value).trim() : 'digital';
-        } else if (field === 'status') {
-            draft[field] = String(value || '').trim().toLowerCase();
-        } else {
-            draft[field] = String(value || '');
-        }
-        renderConsole();
-    };
-
-    window.syncExamTemplateField = function syncExamTemplateField(field, value) {
-        const draft = getTemplateDraft();
-        if (field === 'subjectId') {
-            const subject = getSubjectById(value);
-            const defaults = getQuestionDefaultsForSubject(value);
-            draft.subjectId = String(value || '').trim();
-            draft.subjectName = String(subject?.name || value || '').trim();
-            draft.defaultQuestionScore = defaults.score;
-            draft.defaultOptionCount = defaults.optionCount;
-            return;
-        }
-        draft[field] = value;
-    };
-
-    window.setExamTemplateStep = function setExamTemplateStep(step) {
-        runtime.templateStep = ['details', 'questions', 'variants', 'review'].includes(String(step || '').trim()) ? String(step).trim() : 'details';
-        renderConsole();
-    };
-
-    window.addExamQuestion = function addExamQuestion(type) {
-        const draft = getTemplateDraft();
-        draft.questions.push(createQuestion(type, getDraftQuestionDefaults(draft)));
-        runtime.templateStep = 'questions';
-        renderConsole();
-    };
-
-    window.removeExamQuestion = function removeExamQuestion(questionId) {
-        const draft = getTemplateDraft();
-        draft.questions = (draft.questions || []).filter(question => String(question?.id || '').trim() !== String(questionId || '').trim());
-        if (!draft.questions.length) draft.questions = [createQuestion('mcq', getDraftQuestionDefaults(draft))];
-        renderConsole();
-    };
-
-    window.updateExamQuestionField = function updateExamQuestionField(questionId, field, value) {
-        const draft = getTemplateDraft();
-        const question = (draft.questions || []).find(item => String(item?.id || '').trim() === String(questionId || '').trim());
-        if (!question) return;
-        if (field === 'type') {
-            const nextType = ['mcq', 'short', 'written'].includes(String(value || '').trim()) ? String(value).trim() : 'mcq';
-            question.type = nextType;
-            if (nextType === 'mcq') applyQuestionOptionCount(question, question.optionCount || 4);
-        } else if (field === 'score' || field === 'correctOption') {
-            question[field] = Math.max(0, parseInt(value, 10) || 0);
-        } else if (field === 'optionCount') {
-            applyQuestionOptionCount(question, value);
-        } else {
-            question[field] = String(value || '');
-        }
-        renderConsole();
-    };
-
-    window.syncExamQuestionField = function syncExamQuestionField(questionId, field, value) {
-        const draft = getTemplateDraft();
-        const question = (draft.questions || []).find(item => String(item?.id || '').trim() === String(questionId || '').trim());
-        if (!question) return;
-        if (field === 'type') {
-            question.type = ['mcq', 'short', 'written'].includes(String(value || '').trim()) ? String(value).trim() : 'mcq';
-        } else if (field === 'score' || field === 'correctOption') {
-            question[field] = Math.max(0, parseInt(value, 10) || 0);
-        } else if (field === 'optionCount') {
-            applyQuestionOptionCount(question, value);
-        } else {
-            question[field] = value;
-        }
-    };
-
-    window.updateExamQuestionOption = function updateExamQuestionOption(questionId, optionIndex, value) {
-        const draft = getTemplateDraft();
-        const question = (draft.questions || []).find(item => String(item?.id || '').trim() === String(questionId || '').trim());
-        if (!question || !Array.isArray(question.options)) return;
-        question.options[optionIndex] = String(value || '');
-        renderConsole();
-    };
-
-    window.syncExamQuestionOption = function syncExamQuestionOption(questionId, optionIndex, value) {
-        const draft = getTemplateDraft();
-        const question = (draft.questions || []).find(item => String(item?.id || '').trim() === String(questionId || '').trim());
-        if (!question || !Array.isArray(question.options)) return;
-        question.options[optionIndex] = String(value || '');
-    };
-
-    function buildTemplateFromDraft(statusOverride = '') {
-        const draft = getTemplateDraft();
-        const user = getCurrentUserSafe();
-        const subject = getSubjectById(draft.subjectId);
-        const now = new Date().toISOString();
-        const existingTemplate = getTemplateById(draft.editingTemplateId);
-        return {
-            id: String(draft.editingTemplateId || makeLocalId('exam_template')).trim(),
-            faculty: String(subject?.facultyCode || getCurrentFacultyCode()).trim().toUpperCase(),
-            title: String(draft.title || `${draft.subjectName || draft.subjectId || 'Exam'} ${draft.variantLabel || ''}`).trim(),
-            subjectId: String(draft.subjectId || '').trim(),
-            subjectName: String(subject?.name || draft.subjectName || draft.subjectId || '').trim(),
-            courseNumber: String(draft.courseNumber || '').trim(),
-            courseCode: String(draft.courseCode || '').trim(),
-            variantLabel: String(draft.variantLabel || 'Variant A').trim(),
-            instructions: String(draft.instructions || '').trim(),
-            status: String(statusOverride || draft.status || 'draft').trim().toLowerCase(),
-            /* Legacy flat questions kept for backward compat */
-            questions: (draft.questionBank || draft.questions || []).map(normalizeQuestion),
-            /* â”€â”€ New fields â”€â”€ */
-            examType: String(draft.examType || 'digital').trim(),
-            durationMinutes: Math.max(1, parseInt(draft.durationMinutes, 10) || 90),
-            passingScore: clampPositiveInt(draft.passingScore, 50, 0, 999),
-            gradingWeight: clampPositiveInt(draft.gradingWeight, 30, 0, 999),
-            defaultQuestionScore: clampPositiveInt(draft.defaultQuestionScore, 1, 1, 999),
-            defaultOptionCount: clampPositiveInt(draft.defaultOptionCount, 4, 2, 8),
-            questionBank: (draft.questionBank || []).map(normalizeQuestion),
-            variants: clone(draft.variants || []),
-            sharedWith: clone(draft.sharedWith || []),
-            lockedBy: draft.lockedBy || null,
-            revisionNote: String(statusOverride === 'returned' ? (draft.revisionNote || '') : (existingTemplate?.revisionNote || '')).trim(),
-            /* â”€â”€ Existing meta â”€â”€ */
-            createdAt: existingTemplate?.createdAt || now,
-            updatedAt: now,
-            createdBy: String(existingTemplate?.createdBy || user?.id || '').trim(),
-            createdByName: String(existingTemplate?.createdByName || getCurrentStaffName()).trim(),
-            lastEditedBy: String(user?.id || '').trim(),
-            lastEditedByName: getCurrentStaffName(),
-            approvedBy: statusOverride === 'approved' ? getCurrentStaffName() : String(existingTemplate?.approvedBy || '').trim(),
-            approvedAt: statusOverride === 'approved' ? now : String(existingTemplate?.approvedAt || '').trim()
-        };
-    }
-
-    window.saveExamTemplateDraft = function saveExamTemplateDraft() {
-        const template = buildTemplateFromDraft();
-        if (!template.subjectId || !template.title || !(template.questionBank || template.questions || []).length) {
-            notify('Exam needs a subject, title, and at least one question in the bank.');
-            return;
-        }
-        upsertTemplate(template);
-        runtime.templateDraft = null;
-        notify('Quiz draft saved.');
-        renderConsole();
-    };
-
-    window.saveAndSubmitExamTemplate = function saveAndSubmitExamTemplate() {
-        const template = buildTemplateFromDraft('submitted');
-        if (!template.subjectId || !template.title || !(template.questionBank || template.questions || []).length) {
-            notify('Exam needs a subject, title, and at least one question in the bank.');
-            return;
-        }
-        if (!(template.variants || []).length) {
-            notify('Please generate at least one variant before submitting.');
-            return;
-        }
-        upsertTemplate(template);
-        runtime.templateDraft = createTemplateDraft(template);
-        notify('Exam submitted to admin for review.');
-        renderConsole();
-    };
-
-    /* â”€â”€ Question Bank CRUD â”€â”€ */
-    window.navigateBankQuestion = function navigateBankQuestion(page) {
-        const draft = getTemplateDraft();
-        const total = (draft.questionBank || []).length;
-        runtime.currentBankPage = Math.max(0, Math.min(page, total - 1));
-        renderConsole();
-    };
-
-    window.addExamBankQuestion = function addExamBankQuestion(type) {
-        const draft = getTemplateDraft();
-        draft.questionBank.push(createQuestion('mcq', getDraftQuestionDefaults(draft)));
-        runtime.currentBankPage = draft.questionBank.length - 1;
-        runtime.templateStep = 'questions';
-        renderConsole();
-    };
-
-    window.removeExamBankQuestion = function removeExamBankQuestion(questionId) {
-        const draft = getTemplateDraft();
-        draft.questionBank = (draft.questionBank || []).filter(q => String(q?.id||'').trim() !== String(questionId||'').trim());
-        if (!draft.questionBank.length) draft.questionBank = [createQuestion('mcq', getDraftQuestionDefaults(draft))];
-        /* Adjust current page if needed */
-        runtime.currentBankPage = Math.max(0, Math.min(runtime.currentBankPage, draft.questionBank.length - 1));
-        /* Also remove from any variants */
-        (draft.variants || []).forEach(v => {
-            v.questionIds = (v.questionIds || []).filter(id => id !== questionId);
-        });
-        renderConsole();
-    };
-
-    window.updateExamBankQuestionField = function updateExamBankQuestionField(questionId, field, value) {
-        const draft = getTemplateDraft();
-        const question = (draft.questionBank || []).find(q => String(q?.id||'').trim() === String(questionId||'').trim());
-        if (!question) return;
-        if (field === 'type') {
-            question.type = 'mcq';
-            applyQuestionOptionCount(question, question.optionCount || 4);
-        } else if (field === 'score' || field === 'correctOption') {
-            question[field] = Math.max(0, parseInt(value, 10) || 0);
-        } else if (field === 'optionCount') {
-            applyQuestionOptionCount(question, value);
-        } else {
-            question[field] = String(value || '');
-        }
-        renderConsole();
-    };
-
-    window.syncExamBankQuestionField = function syncExamBankQuestionField(questionId, field, value) {
-        const draft = getTemplateDraft();
-        const question = (draft.questionBank || []).find(q => String(q?.id||'').trim() === String(questionId||'').trim());
-        if (!question) return;
-        if (field === 'score' || field === 'correctOption') {
-            question[field] = Math.max(0, parseInt(value, 10) || 0);
-        } else if (field === 'optionCount') {
-            applyQuestionOptionCount(question, value);
-        } else {
-            question[field] = value;
-        }
-    };
-
-    window.updateExamBankQuestionOption = function updateExamBankQuestionOption(questionId, optionIndex, value) {
-        const draft = getTemplateDraft();
-        const question = (draft.questionBank || []).find(q => String(q?.id||'').trim() === String(questionId||'').trim());
-        if (!question || !Array.isArray(question.options)) return;
-        question.options[optionIndex] = String(value || '');
-        renderConsole();
-    };
-
-    window.syncExamBankQuestionOption = function syncExamBankQuestionOption(questionId, optionIndex, value) {
-        const draft = getTemplateDraft();
-        const question = (draft.questionBank || []).find(q => String(q?.id||'').trim() === String(questionId||'').trim());
-        if (!question || !Array.isArray(question.options)) return;
-        question.options[optionIndex] = String(value || '');
-    };
-
-    /* â”€â”€ Auto-Variant Generator â”€â”€ */
-    window.runAutoGenerateVariants = function runAutoGenerateVariants() {
-        const draft = getTemplateDraft();
-        const bank = draft.questionBank || [];
-        if (!bank.length) {
-            notify('Add questions to the bank first before generating variants.');
-            return;
-        }
-        const count = Math.max(1, Math.min(26, runtime.autoGenVariantCount || 3));
-        const perVariant = Math.max(1, runtime.autoGenQuestionsPerVariant || 10);
-        draft.variants = autoGenerateVariants(bank, count, perVariant);
-        notify(`Generated ${draft.variants.length} variants with ${perVariant} questions each.`);
-        renderConsole();
-    };
-
-    window.addManualVariant = function addManualVariant() {
-        const draft = getTemplateDraft();
-        const existingCount = (draft.variants || []).length;
-        const label = `Variant ${String.fromCharCode(65 + existingCount)}`;
-        draft.variants = draft.variants || [];
-        draft.variants.push({
-            id: makeLocalId('variant'),
-            label,
-            questionIds: (draft.questionBank || []).map(q => q.id),
-            shuffleQuestions: true,
-            shuffleOptions: true
-        });
-        renderConsole();
-    };
-
-    window.removeVariant = function removeVariant(variantId) {
-        const draft = getTemplateDraft();
-        draft.variants = (draft.variants || []).filter(v => v.id !== variantId);
-        renderConsole();
-    };
-
-    /* â”€â”€ Share Modal â”€â”€ */
-    function openShareModalInternal(templateId) {
-        if (templateId) {
-            const template = getTemplateById(templateId);
-            if (template) {
-                runtime.templateDraft = createTemplateDraft(template);
-            }
-        }
-        runtime.showShareModal = true;
-        runtime.shareSearchQuery = '';
-        renderConsole();
-    }
-
-    function closeShareModalInternal() {
-        runtime.showShareModal = false;
-        renderConsole();
-    }
-
-    function shareExamWithInternal(userId, userName) {
-        const draft = getTemplateDraft();
-        if (!draft) return;
-        draft.sharedWith = draft.sharedWith || [];
-        if (draft.sharedWith.some(s => s.userId === userId)) return;
-        draft.sharedWith.push({ userId, userName, sharedAt: new Date().toISOString() });
-        /* Auto-save */
-        const template = buildTemplateFromDraft();
-        upsertTemplate(template);
-        runtime.templateDraft = createTemplateDraft(template);
-        runtime.showShareModal = true;
-        notify(`Exam shared with ${userName}.`);
-        renderConsole();
-    }
-
-    /* â”€â”€ Approve Template (Admin) â”€â”€ */
-    window.saveAndApproveExamTemplate = function saveAndApproveExamTemplate(templateId) {
-        const container = getTemplateContainer();
-        const idx = container.findIndex(t => t.id === templateId);
-        if (idx < 0) { alert('Template not found.'); return; }
-        container[idx].status = 'approved';
-        container[idx].approvedAt = new Date().toISOString();
-        container[idx].approvedBy = (typeof getCurrentUser === 'function' ? getCurrentUser()?.name : '') || 'Admin';
-        renderConsole();
-    };
-
-    /* â”€â”€ Return for Revision â”€â”€ */
-    function openReturnModalInternal(templateId) {
-        runtime.showReturnModal = true;
-        runtime.returnTemplateId = String(templateId || '').trim();
-        runtime.returnNote = '';
-        renderConsole();
-    }
-
-    function closeReturnModalInternal() {
-        runtime.showReturnModal = false;
-        runtime.returnTemplateId = '';
-        runtime.returnNote = '';
-        renderConsole();
-    }
-
-    function executeReturnForRevisionInternal() {
-        if (!runtime.returnNote.trim()) {
-            notify('Please provide feedback for the Professor/TA.');
-            return;
-        }
-        const template = getTemplateById(runtime.returnTemplateId);
-        if (!template) return;
-        upsertTemplate({
-            ...template,
-            status: 'returned',
-            revisionNote: runtime.returnNote.trim(),
-            updatedAt: new Date().toISOString(),
-            lastEditedByName: getCurrentStaffName()
-        });
-        notify('Exam returned to creator with feedback.');
-        closeReturnModalInternal();
-    }
-
-    window.openShareModal = openShareModalInternal;
-    window.closeShareModal = closeShareModalInternal;
-    window.shareExamWith = shareExamWithInternal;
-    window.openReturnModal = openReturnModalInternal;
-    window.closeReturnModal = closeReturnModalInternal;
-    window.executeReturnForRevision = executeReturnForRevisionInternal;
-
-    /* â”€â”€ Staff Sub-Tab â”€â”€ */
-    window.setExamStaffSubTab = function setExamStaffSubTab(tab) {
-        runtime.staffSubTab = STAFF_SUB_TABS.includes(String(tab||'').trim()) ? String(tab).trim() : 'my_drafts';
-        renderConsole();
-    };
-
-
-    /* â”€â”€ Schedule Field Handlers â”€â”€ */
-    window.updateExamScheduleField = function updateExamScheduleField(field, value) {
-        const draft = getScheduleDraft();
-        if (field === 'suspendsClasses') {
-            draft.suspendsClasses = !!value;
-        } else if (field === 'roomCapacity') {
-            draft.roomCapacity = Math.max(0, parseInt(value, 10) || 0);
-        } else {
-            draft[field] = String(value || '').trim();
-        }
-        renderConsole();
-    };
-
-    window.syncExamScheduleField = function syncExamScheduleField(field, value) {
-        const draft = getScheduleDraft();
-        draft[field] = String(value || '').trim();
-    };
-
-    window.saveExamSchedule = function saveExamSchedule() {
-        const draft = getScheduleDraft();
-        const template = getTemplateById(draft.templateId);
-        if (!template) { notify('Please select an approved template first.'); return; }
-        if (!draft.startAt || !draft.endAt) { notify('Start and end time are required.'); return; }
-        const selectedStudents = getSelectedStudentsForSchedule(draft, template);
-        if (!selectedStudents.length) { notify('No students selected for this session.'); return; }
-        const existingSessions = getSessions();
-        const collisions = detectScheduleCollisions(draft, existingSessions);
-        if (collisions.hard.length) { notify('Cannot save: ' + collisions.hard[0]); return; }
-        const session = {
-            id: String(draft.editingSessionId || makeLocalId('exam_session')).trim(),
-            templateId: String(draft.templateId).trim(),
-            title: String(template.title || template.subjectName || 'Exam').trim(),
-            subjectId: String(template.subjectId || '').trim(),
-            subjectName: String(template.subjectName || '').trim(),
-            variantLabel: String(template.variantLabel || '').trim(),
-            startAt: String(draft.startAt).trim(),
-            endAt: String(draft.endAt).trim(),
-            durationMinutes: parseInt(draft.durationMinutes, 10) || 120,
-            placeLabel: String(draft.placeLabel || '').trim(),
-            roomLabel: String(draft.roomLabel || '').trim(),
-            roomCapacity: parseInt(draft.roomCapacity, 10) || 0,
-            observerNames: uniqueStrings(String(draft.observerNamesText || '').split(',').map(s => s.trim())),
-            cohortKeys: clone(draft.selectedCohortKeys || []),
-            assignedStudentIds: selectedStudents.map(s => s.id),
-            suspendsClasses: draft.suspendsClasses,
-            published: false,
-            createdAt: new Date().toISOString()
-        };
-        const sessions = getSessions();
-        const existIndex = sessions.findIndex(s => s.id === session.id);
-        if (existIndex >= 0) sessions[existIndex] = session;
-        else sessions.push(session);
-        runtime.scheduleDraft = createScheduleDraft();
-        notify('Exam session saved successfully.');
-        renderConsole();
-    };
-
-    window.clearExamScheduleDraft = function clearExamScheduleDraft() {
-        runtime.scheduleDraft = createScheduleDraft();
-        renderConsole();
-    };
-
-    function getExamProtectedSessionKeys(session) {
-        return {
-            courseId: String(session?.protectedCourseId || `exam-session::${session?.id || ''}`).trim(),
-            quizId: String(session?.protectedQuizId || session?.id || '').trim()
-        };
-    }
-
-    function findExamAttemptEntry(sessionId, studentId) {
-        return getAttemptsForSession(sessionId).find(entry => String(getAttemptStudentId(entry)) === String(studentId)) || null;
-    }
-
-    window.refreshExamAttempts = async function refreshExamAttempts(sessionId) {
-        await loadAttemptsForSession(sessionId, { force: true });
-    };
-
-    window.runExamStudentAction = async function runExamStudentAction(sessionId, studentId, action) {
-        const session = getSessionById(sessionId);
-        if (!session || typeof performProtectedQuizStudentAction !== 'function') return;
-        const keys = getExamProtectedSessionKeys(session);
-        try {
-            await performProtectedQuizStudentAction(keys.courseId, keys.quizId, studentId, action, {
-                actorName: getCurrentStaffName()
-            });
-            await loadAttemptsForSession(sessionId, { force: true });
-            notify('Student exam control updated.');
-        } catch (error) {
-            notify(error?.message || 'Student exam control could not be updated.');
-        }
-    };
-
-    window.updateExamManualGradeDraft = function updateExamManualGradeDraft(sessionId, studentId, questionId, value) {
-        const baseKey = `${sessionId}::${studentId}`;
-        const key = questionId ? `${baseKey}::${questionId}` : baseKey;
-        runtime.manualScoreDrafts[key] = String(value || '').trim();
-    };
-
-    window.saveExamManualGrade = async function saveExamManualGrade(sessionId, studentId) {
-        const session = getSessionById(sessionId);
-        const entry = findExamAttemptEntry(sessionId, studentId);
-        const attempt = entry?.attempt || {};
-        if (!session || typeof saveProtectedQuizManualGrade !== 'function') return;
-        const keys = getExamProtectedSessionKeys(session);
-        const manualScoresByQuestion = {};
-        const questionResults = Array.isArray(attempt.questionResults) ? attempt.questionResults.map(result => ({ ...result })) : [];
-        const manualResults = questionResults.filter(result => MANUAL_TYPES.has(String(result?.type || '').trim()));
-        if (manualResults.length) {
-            manualResults.forEach((result, index) => {
-                const questionId = String(result.questionId || `manual_${index + 1}`);
-                const fieldKey = `${sessionId}::${studentId}::${questionId}`;
-                const maxScore = Number(result.manualMax || result.maxScore || 0);
-                const raw = Number(runtime.manualScoreDrafts[fieldKey] ?? result.manualScoreAwarded ?? result.scoreAwarded ?? 0);
-                const bounded = Number.isFinite(raw) ? Math.max(0, Math.min(maxScore, raw)) : 0;
-                manualScoresByQuestion[questionId] = bounded;
-                result.manualScoreAwarded = bounded;
-                result.scoreAwarded = bounded;
-                result.needsManualReview = false;
-                result.reviewedAt = new Date().toISOString();
-                result.reviewedBy = getCurrentStaffName();
-            });
-        } else {
-            const key = `${sessionId}::${studentId}`;
-            const raw = Number(runtime.manualScoreDrafts[key] ?? attempt.manualScoreRaw ?? 0);
-            manualScoresByQuestion.manual_total = Number.isFinite(raw) ? Math.max(0, raw) : 0;
-        }
-        const manualScoreRaw = Object.values(manualScoresByQuestion).reduce((sum, value) => sum + Number(value || 0), 0);
-        const finalScoreRaw = Math.max(0, Number(attempt.autoScoreRaw || 0) + manualScoreRaw);
-        const responseSummary = {
-            ...(attempt.responseSummary || {}),
-            needsManualReview: false
-        };
-        try {
-            await saveProtectedQuizManualGrade(keys.courseId, keys.quizId, {
-                studentId,
-                studentName: entry?.student?.name || attempt.studentName || `Student ${studentId}`,
-                autoScoreRaw: attempt.autoScoreRaw || 0,
-                manualScoreRaw,
-                finalScoreRaw,
-                gradebookScore: finalScoreRaw,
-                requiresManualReview: false,
-                manualScoresByQuestion,
-                questionResults,
-                responseSummary,
-                gradedAt: new Date().toISOString(),
-                reviewedBy: getCurrentStaffName()
-            });
-            Object.keys(runtime.manualScoreDrafts).forEach(key => {
-                if (key.startsWith(`${sessionId}::${studentId}`)) delete runtime.manualScoreDrafts[key];
-            });
-            await loadAttemptsForSession(sessionId, { force: true });
-            notify('Manual exam grade saved.');
-        } catch (error) {
-            notify(error?.message || 'Manual exam grade could not be saved.');
-        }
-    };
-
-    window.previewStudentExamPortal = function previewStudentExamPortal() {
-        window.open('exam-portal.html', '_blank', 'noopener');
-    };
-
-    window.createLocalExamTestSession = async function createLocalExamTestSession() {
-        const now = new Date();
-        const start = new Date(now.getTime() - 5 * 60 * 1000);
-        const end = new Date(now.getTime() + 85 * 60 * 1000);
-        const faculty = getCurrentFacultyCode();
-        const authorName = getCurrentStaffName();
-        const author = getCurrentUserSafe();
-        const questions = [
-            {
-                id: makeLocalId('exam_q'),
-                type: 'mcq',
-                text: 'Which tool is most useful for organizing business data before analysis?',
-                options: ['Advanced Excel', 'Photo editor', 'Video player', 'Music library'],
-                correctOption: 0,
-                score: 1
-            },
-            {
-                id: makeLocalId('exam_q'),
-                type: 'mcq',
-                text: 'What should a Business Analyst document before recommending a solution?',
-                options: ['Only the final grade', 'Current process and requirements', 'Personal preferences only', 'Unrelated policies'],
-                correctOption: 1,
-                score: 1
-            },
-            {
-                id: makeLocalId('exam_q'),
-                type: 'short',
-                text: 'In one or two sentences, explain why evidence is important in a career or business recommendation.',
-                options: [],
-                correctOption: null,
-                score: 3
-            }
-        ];
-        const templateId = makeLocalId('exam_template');
-        const template = {
-            id: templateId,
-            title: 'Local Test Computer Exam',
-            faculty,
-            subjectId: 'ECON-TEST',
-            subjectName: 'Local Test Subject',
-            variantLabel: 'Variant A',
-            instructions: 'Answer each question carefully. This local session is created for anti-cheat portal testing.',
-            status: 'approved',
-            examType: 'digital',
-            durationMinutes: 90,
-            passingScore: 50,
-            gradingWeight: 30,
-            defaultQuestionScore: 1,
-            defaultOptionCount: 4,
-            questions: clone(questions),
-            questionBank: clone(questions),
-            variants: [{ id: makeLocalId('exam_variant'), label: 'Variant A', questions: clone(questions) }],
-            createdBy: String(author?.id || author?.email || 'local-admin'),
-            createdByName: authorName,
-            approvedBy: authorName,
-            approvedAt: now.toISOString(),
-            createdAt: now.toISOString(),
-            updatedAt: now.toISOString()
-        };
-        const activeUser = getCurrentUserSafe();
-        const isDemoStudent = typeof isDemoOrTestingUserRecord === 'function'
-            ? (user) => isDemoOrTestingUserRecord(user)
-            : () => false;
-        const studentUser = String(activeUser?.role || '').trim().toLowerCase() === 'student' && activeUser?.id && !isDemoStudent(activeUser)
-            ? activeUser
-            : (Array.isArray(KIU_STATE?.users)
-                ? KIU_STATE.users.find((user) => String(user?.role || '').trim().toLowerCase() === 'student' && user?.id && !isDemoStudent(user))
-                : null);
-        if (!studentUser?.id) {
-            notify('Add a real student account before creating a local exam test session.');
-            return;
-        }
-        const student = {
-            id: String(studentUser.id),
-            email: String(studentUser.email || ''),
-            name: String(studentUser.displayName || studentUser.nameEn || studentUser.name || studentUser.id),
-            displayName: String(studentUser.displayName || studentUser.nameEn || studentUser.name || studentUser.id),
-            groupId: String(studentUser.groupId || studentUser.group || 'local-test-group'),
-            groupName: String(studentUser.groupName || studentUser.group || 'Assigned Group')
-        };
-        const session = {
-            id: makeLocalId('exam_session'),
-            templateId,
-            templateSnapshotId: makeLocalId('exam_snapshot'),
-            title: template.title,
-            subjectId: template.subjectId,
-            subjectName: template.subjectName,
-            variantLabel: template.variantLabel,
-            faculty,
-            groupId: student.groupId,
-            groupName: student.groupName,
-            groupIds: [student.groupId],
-            groupNames: [student.groupName],
-            cohortKeys: [student.groupId],
-            startAt: start.toISOString(),
-            endAt: end.toISOString(),
-            durationMinutes: 90,
-            status: 'scheduled',
-            deliveryMode: 'Anti-cheat lab',
-            instructions: template.instructions,
-            placeLabel: 'KIU Computer Lab',
-            roomLabel: 'Lab 301',
-            locationLabel: 'KIU Computer Lab - Lab 301',
-            observerNames: ['Local Test Observer'],
-            observerNamesText: 'Local Test Observer',
-            roomCapacity: 30,
-            assignedStudentIds: [student.id],
-            allowedStudentIds: [student.id],
-            assignedStudents: [student],
-            templateSnapshot: clone(template),
-            createdBy: authorName,
-            updatedAt: now.toISOString(),
-            publishedAt: now.toISOString(),
-            published: true
-        };
-
-        try {
-            upsertTemplate(template);
-            await upsertSession(session);
-            runtime.scheduleDraft = createScheduleDraft();
-            runtime.activeTab = 'schedule';
-            notify('Local test session created for QA Student Alpha.');
-            renderConsole();
-        } catch (error) {
-            notify('Could not create local test session: ' + (error?.message || 'Unknown error'));
-        }
-    };
-
-    window.toggleExamCohort = function toggleExamCohort(cohortKey, checked) {
-        const draft = getScheduleDraft();
-        const keys = new Set(draft.selectedCohortKeys || []);
-        if (checked) keys.add(cohortKey); else keys.delete(cohortKey);
-        draft.selectedCohortKeys = Array.from(keys);
-        renderConsole();
-    };
-
-    window.selectAllExamCohorts = function selectAllExamCohorts() {
-        const draft = getScheduleDraft();
-        const template = getTemplateById(draft.templateId);
-        if (!template) return;
-        const cohorts = buildSubjectAutoCohorts(template.subjectId);
-        draft.selectedCohortKeys = cohorts.map(c => c.key);
-        renderConsole();
-    };
-
-    window.clearExamCohorts = function clearExamCohorts() {
-        const draft = getScheduleDraft();
-        draft.selectedCohortKeys = [];
-        renderConsole();
-    };
-
-    window.editExamSession = function editExamSession(sessionId) {
-        const sessions = getSessions();
-        const session = sessions.find(s => s.id === sessionId);
-        if (!session) return;
-        runtime.scheduleDraft = createScheduleDraft(session);
-        runtime.activeTab = 'schedule';
-        renderConsole();
-    };
-
-    /* â”€â”€ Collision Detection Engine â”€â”€ */
-    function detectScheduleCollisions(draft, existingSessions) {
-        const hard = [];
-        const soft = [];
-        if (!draft.startAt || !draft.endAt || !draft.templateId) return { hard, soft };
-        const dStart = new Date(draft.startAt).getTime();
-        const dEnd = new Date(draft.endAt).getTime();
-        if (isNaN(dStart) || isNaN(dEnd)) return { hard, soft };
-        const dRoom = String(draft.roomLabel || '').trim().toLowerCase();
-        const selectedStudentIds = new Set(getSelectedStudentsForSchedule(draft, getTemplateById(draft.templateId)).map(s => s.id));
-        (existingSessions || []).forEach(session => {
-            if (session.id === draft.editingSessionId) return;
-            const sStart = new Date(session.startAt).getTime();
-            const sEnd = new Date(session.endAt).getTime();
-            if (isNaN(sStart) || isNaN(sEnd)) return;
-            const overlaps = dStart < sEnd && dEnd > sStart;
-            if (!overlaps) return;
-            /* Hard: Room collision */
-            const sRoom = String(getSessionRoomLabel(session) || '').trim().toLowerCase();
-            if (dRoom && sRoom && dRoom === sRoom) {
-                hard.push(`Room "${draft.roomLabel}" is already booked by "${session.title || session.subjectName}" at this time.`);
-            }
-            /* Hard: Student collision */
-            const sStudents = getAssignedStudentIds(session);
-            const conflicts = sStudents.filter(id => selectedStudentIds.has(id));
-            if (conflicts.length) {
-                hard.push(`${conflicts.length} student(s) already have "${session.title || session.subjectName}" at the same time.`);
-            }
-            /* Soft: Observer/proctor collision */
-            const dObservers = uniqueStrings(String(draft.observerNamesText || '').split(',').map(s => s.trim().toLowerCase()));
-            const sObservers = getSessionObserverNames(session).map(n => n.toLowerCase());
-            const proctorConflicts = dObservers.filter(n => n && sObservers.includes(n));
-            if (proctorConflicts.length) {
-                soft.push(`Proctor "${proctorConflicts[0]}" is assigned to "${session.title || session.subjectName}" at the same time.`);
-            }
-        });
-        return { hard, soft };
-    }
-
-    /* â”€â”€ Exam PIN Generator â”€â”€ */
-    function generateExamPIN(draft) {
-        const seed = String(draft.templateId || '') + String(draft.startAt || '') + String(draft.roomLabel || '');
-        let hash = 0;
-        for (let i = 0; i < seed.length; i++) hash = ((hash << 5) - hash + seed.charCodeAt(i)) | 0;
-        return String(Math.abs(hash) % 10000).padStart(4, '0');
-    }
-
-    /* â”€â”€ Room Split Handler â”€â”€ */
-    window.splitCohort = function splitCohort(cohortKey) {
-        const draft = getScheduleDraft();
-        const template = getTemplateById(draft.templateId);
-        if (!template) return;
-        const cohorts = buildSubjectAutoCohorts(template.subjectId);
-        const cohort = cohorts.find(c => c.key === cohortKey);
-        if (!cohort) return;
-        const keepCount = Math.max(1, runtime.splitStudentCount || parseInt(draft.roomCapacity, 10) || Math.ceil(cohort.students.length / 2));
-        const overflowRoom = runtime.splitRoomLabel || `${draft.roomLabel || 'Room'} (Overflow)`;
-        const overflowTime = runtime.splitTimeSlot || draft.startAt;
-        notify(`Split: ${keepCount} students stay in ${draft.roomLabel || 'current room'}, ${cohort.students.length - keepCount} moved to ${overflowRoom}.`);
-        runtime.splitStudentCount = 0;
-        runtime.splitRoomLabel = '';
-        runtime.splitTimeSlot = '';
-        renderConsole();
-    };
-
-    /* â”€â”€ Publish / Unpublish Session â”€â”€ */
-    window.publishExamSession = function publishExamSession(sessionId) {
-        const sessions = getSessions();
-        const session = sessions.find(s => s.id === sessionId);
-        if (!session) return;
-        session.published = true;
-        session.publishedAt = new Date().toISOString();
-        session.publishedBy = getCurrentStaffName();
-        notify('Exam session published to students. Timetable updated.');
-        renderConsole();
-    };
-
-    window.unpublishExamSession = function unpublishExamSession(sessionId) {
-        const sessions = getSessions();
-        const session = sessions.find(s => s.id === sessionId);
-        if (!session) return;
-        session.published = false;
-        notify('Exam session unpublished. Students can no longer see this session.');
-        renderConsole();
-    };
-
-    /* Collision and split visuals now live in assets/css/exam-studio.css. */
-
-    /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-       QUIZ EXPORT â€” PDF & DOCX
-       â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
-
-    function getExportData(templateOrDraft) {
-        const d = templateOrDraft || {};
-        const bank = d.questionBank || d.questions || [];
-        const variants = d.variants || [];
-        const totalScore = bank.reduce((s, q) => s + (parseInt(q.score, 10) || 1), 0);
-        const subjectLabel = `${d.subjectName || d.subjectId || ''}${d.courseNumber ? ` | ${formatCourseYearLabel(d.courseNumber)}` : ''}${d.courseCode ? ` | No. ${d.courseCode}` : ''}`;
-        return {
-            title: d.title || d.subjectName || 'Untitled Quiz',
-            subject: subjectLabel,
-            courseNumber: d.courseNumber || '',
-            courseCode: d.courseCode || '',
-            type: d.examType === 'paper' ? 'Paper' : 'Digital',
-            duration: d.durationMinutes || 90,
-            passingScore: d.passingScore || 50,
-            instructions: d.instructions || '',
-            bank,
-            variants,
-            totalScore
-        };
-    }
-
-    function buildQuestionLines(bank) {
-        const lines = [];
-        bank.forEach((q, qi) => {
-            const num = qi + 1;
-            lines.push({ type: 'question', text: `Q${num}. ${q.text || '(No text)'}`, score: q.score || 1 });
-            if (Array.isArray(q.options)) {
-                q.options.forEach((opt, oi) => {
-                    const letter = String.fromCharCode(65 + oi);
-                    const isCorrect = Number(q.correctOption) === oi;
-                    lines.push({ type: 'option', text: `   ${letter}) ${opt || '(empty)'}`, correct: isCorrect });
-                });
-            }
-            lines.push({ type: 'gap' });
-        });
-        return lines;
-    }
-
-    /* â”€â”€ PDF Export â”€â”€ */
-    function exportToPDF(data) {
-        if (typeof window.jspdf === 'undefined' && typeof window.jsPDF === 'undefined') {
-            notify('PDF library not loaded. Please check your internet connection.');
-            return;
-        }
-        const { jsPDF } = window.jspdf || window;
-        const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-        const pageW = doc.internal.pageSize.getWidth();
-        const margin = 18;
-        const usable = pageW - margin * 2;
-        let y = 20;
-        const lineH = 6;
-
-        function checkPage(need) {
-            if (y + need > doc.internal.pageSize.getHeight() - 20) {
-                doc.addPage();
-                y = 20;
-            }
-        }
-
-        // Header
-        doc.setFillColor(30, 58, 95);
-        doc.rect(0, 0, pageW, 38, 'F');
-        doc.setTextColor(255, 255, 255);
-        doc.setFontSize(18);
-        doc.setFont('helvetica', 'bold');
-        doc.text(data.title, margin, 16);
-        doc.setFontSize(10);
-        doc.setFont('helvetica', 'normal');
-        doc.text(`${data.subject}  |  ${data.type}  |  ${data.duration} min  |  Pass: ${data.passingScore} pts`, margin, 26);
-        doc.text(`Total: ${data.bank.length} questions  Â·  ${data.totalScore} points`, margin, 33);
-        y = 48;
-        doc.setTextColor(0, 0, 0);
-
-        // Instructions
-        if (data.instructions) {
-            doc.setFontSize(11);
-            doc.setFont('helvetica', 'bold');
-            doc.text('Instructions:', margin, y);
-            y += lineH;
-            doc.setFont('helvetica', 'normal');
-            doc.setFontSize(9);
-            const instrLines = doc.splitTextToSize(data.instructions, usable);
-            checkPage(instrLines.length * 4 + 6);
-            doc.text(instrLines, margin, y);
-            y += instrLines.length * 4 + 6;
-        }
-
-        // Separator
-        doc.setDrawColor(200);
-        doc.line(margin, y, pageW - margin, y);
-        y += 8;
-
-        // Questions
-        const lines = buildQuestionLines(data.bank);
-        lines.forEach(line => {
-            if (line.type === 'gap') { y += 3; return; }
-            checkPage(lineH + 2);
-            if (line.type === 'question') {
-                doc.setFontSize(11);
-                doc.setFont('helvetica', 'bold');
-                const qLines = doc.splitTextToSize(line.text, usable - 20);
-                qLines.forEach(ql => {
-                    checkPage(lineH);
-                    doc.text(ql, margin, y);
-                    y += lineH;
-                });
-                // Score badge
-                doc.setFontSize(8);
-                doc.setFont('helvetica', 'normal');
-                doc.setTextColor(100);
-                doc.text(`[${line.score} pt${line.score > 1 ? 's' : ''}]`, pageW - margin - 12, y - lineH);
-                doc.setTextColor(0);
-            } else if (line.type === 'option') {
-                doc.setFontSize(10);
-                doc.setFont('helvetica', 'normal');
-                if (line.correct) {
-                    doc.setTextColor(16, 138, 80);
-                    doc.setFont('helvetica', 'bold');
-                }
-                const oLines = doc.splitTextToSize(line.text, usable - 10);
-                oLines.forEach(ol => {
-                    checkPage(lineH - 1);
-                    doc.text(ol, margin + 6, y);
-                    y += lineH - 1;
-                });
-                if (line.correct) {
-                    doc.text(' âœ“', margin + 6 + doc.getTextWidth(oLines[0]) + 1, y - (lineH - 1));
-                }
-                doc.setTextColor(0);
-                doc.setFont('helvetica', 'normal');
-            }
-        });
-
-        // Variants summary
-        if (data.variants.length) {
-            checkPage(20);
-            y += 6;
-            doc.setDrawColor(200);
-            doc.line(margin, y, pageW - margin, y);
-            y += 8;
-            doc.setFontSize(12);
-            doc.setFont('helvetica', 'bold');
-            doc.text(`Variants (${data.variants.length})`, margin, y);
-            y += lineH + 2;
-            data.variants.forEach(v => {
-                checkPage(lineH);
-                doc.setFontSize(10);
-                doc.setFont('helvetica', 'normal');
-                doc.text(`${v.label}: ${(v.questionIds || []).length} questions`, margin + 4, y);
-                y += lineH;
-            });
-        }
-
-        // Footer
-        const pageCount = doc.internal.getNumberOfPages();
-        for (let i = 1; i <= pageCount; i++) {
-            doc.setPage(i);
-            doc.setFontSize(8);
-            doc.setTextColor(150);
-            doc.text(`Page ${i} of ${pageCount}  |  ${data.title}  |  Generated: ${new Date().toLocaleDateString()}`, margin, doc.internal.pageSize.getHeight() - 8);
-        }
-
-        const filename = (data.title || 'quiz').replace(/[^a-zA-Z0-9_-]/g, '_') + '.pdf';
-        doc.save(filename);
-        notify(`PDF exported: ${filename}`);
-    }
-
-    /* â”€â”€ DOCX Export â”€â”€ */
-    function exportToDOCX(data) {
-        if (typeof window.docx === 'undefined') {
-            notify('DOCX library not loaded. Please check your internet connection.');
-            return;
-        }
-        const { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, BorderStyle, TableRow, TableCell, Table, WidthType } = window.docx;
-
-        const children = [];
-
-        // Title
-        children.push(new Paragraph({
-            heading: HeadingLevel.HEADING_1,
-            alignment: AlignmentType.CENTER,
-            spacing: { after: 200 },
-            children: [new TextRun({ text: data.title, bold: true, size: 36, color: '1E3A5F' })]
-        }));
-
-        // Meta line
-        children.push(new Paragraph({
-            alignment: AlignmentType.CENTER,
-            spacing: { after: 120 },
-            children: [
-                new TextRun({ text: `${data.subject}  |  ${data.type}  |  ${data.duration} min  |  Pass: ${data.passingScore} pts`, size: 20, color: '666666' })
-            ]
-        }));
-
-        children.push(new Paragraph({
-            alignment: AlignmentType.CENTER,
-            spacing: { after: 300 },
-            children: [
-                new TextRun({ text: `${data.bank.length} questions  Â·  ${data.totalScore} points`, size: 20, color: '888888' })
-            ]
-        }));
-
-        // Instructions
-        if (data.instructions) {
-            children.push(new Paragraph({
-                heading: HeadingLevel.HEADING_2,
-                spacing: { before: 200, after: 100 },
-                children: [new TextRun({ text: 'Instructions', bold: true, size: 24 })]
-            }));
-            children.push(new Paragraph({
-                spacing: { after: 200 },
-                children: [new TextRun({ text: data.instructions, size: 20, italics: true, color: '444444' })]
-            }));
-        }
-
-        // Separator
-        children.push(new Paragraph({
-            spacing: { before: 100, after: 200 },
-            border: { bottom: { style: BorderStyle.SINGLE, size: 1, color: 'CCCCCC' } },
-            children: []
-        }));
-
-        // Questions
-        data.bank.forEach((q, qi) => {
-            const num = qi + 1;
-            children.push(new Paragraph({
-                spacing: { before: 200, after: 80 },
-                children: [
-                    new TextRun({ text: `Q${num}. `, bold: true, size: 22 }),
-                    new TextRun({ text: q.text || '(No text)', size: 22 }),
-                    new TextRun({ text: `  [${q.score || 1} pt${(q.score || 1) > 1 ? 's' : ''}]`, size: 18, color: '999999' })
-                ]
-            }));
-
-            if (Array.isArray(q.options)) {
-                q.options.forEach((opt, oi) => {
-                    const letter = String.fromCharCode(65 + oi);
-                    const isCorrect = Number(q.correctOption) === oi;
-                    children.push(new Paragraph({
-                        spacing: { after: 40 },
-                        indent: { left: 400 },
-                        children: [
-                            new TextRun({
-                                text: `${letter}) ${opt || '(empty)'}`,
-                                size: 20,
-                                bold: isCorrect,
-                                color: isCorrect ? '108A50' : '333333'
-                            }),
-                            ...(isCorrect ? [new TextRun({ text: '  âœ“ correct', size: 16, bold: true, color: '108A50' })] : [])
-                        ]
-                    }));
-                });
-            }
-        });
-
-        // Variants
-        if (data.variants.length) {
-            children.push(new Paragraph({
-                spacing: { before: 300, after: 100 },
-                border: { bottom: { style: BorderStyle.SINGLE, size: 1, color: 'CCCCCC' } },
-                children: []
-            }));
-            children.push(new Paragraph({
-                heading: HeadingLevel.HEADING_2,
-                spacing: { after: 120 },
-                children: [new TextRun({ text: `Variants (${data.variants.length})`, bold: true, size: 24 })]
-            }));
-            data.variants.forEach(v => {
-                children.push(new Paragraph({
-                    spacing: { after: 60 },
-                    indent: { left: 200 },
-                    children: [
-                        new TextRun({ text: `${v.label}: `, bold: true, size: 20 }),
-                        new TextRun({ text: `${(v.questionIds || []).length} questions`, size: 20, color: '666666' })
-                    ]
-                }));
-            });
-        }
-
-        // Footer
-        children.push(new Paragraph({
-            spacing: { before: 400 },
-            alignment: AlignmentType.CENTER,
-            children: [new TextRun({ text: `Generated: ${new Date().toLocaleDateString()}`, size: 16, color: 'AAAAAA' })]
-        }));
-
-        const docFile = new Document({
-            sections: [{
-                properties: { page: { margin: { top: 720, bottom: 720, left: 1080, right: 1080 } } },
-                children
-            }]
-        });
-
-        const filename = (data.title || 'quiz').replace(/[^a-zA-Z0-9_-]/g, '_') + '.docx';
-        Packer.toBlob(docFile).then(blob => {
-            if (typeof saveAs === 'function') {
-                saveAs(blob, filename);
-            } else {
-                const a = document.createElement('a');
-                a.href = URL.createObjectURL(blob);
-                a.download = filename;
-                a.click();
-                URL.revokeObjectURL(a.href);
-            }
-            notify(`DOCX exported: ${filename}`);
-        }).catch(err => {
-            console.error('DOCX export failed:', err);
-            notify('DOCX export failed. See console for details.');
-        });
-    }
-
-    /* â”€â”€ Export from active draft (builder) â”€â”€ */
     window.exportQuizAs = async function exportQuizAs(format) {
-        const draft = getTemplateDraft();
-        if (!draft) { notify('No quiz draft open.'); return; }
-        const data = getExportData(draft);
-        if (!data.bank.length) { notify('Add at least one question before exporting.'); return; }
-        try {
-            await Promise.resolve(window.ensureExamExportLibraries?.(format));
-        } catch (error) {
-            notify(`Could not load ${String(format || '').toUpperCase()} export tools.`);
-            return;
-        }
-        if (format === 'docx') exportToDOCX(data);
-        else exportToPDF(data);
+        await ensureExamsExportModule();
+        return window.__kiuExportQuizAsImpl(format);
     };
 
-    /* â”€â”€ Export from template list by ID â”€â”€ */
     window.exportQuizById = async function exportQuizById(templateId, format) {
-        const template = getTemplateById(templateId);
-        if (!template) { notify('Template not found.'); return; }
-        const data = getExportData(template);
-        if (!data.bank.length) { notify('This quiz has no questions to export.'); return; }
-        try {
-            await Promise.resolve(window.ensureExamExportLibraries?.(format));
-        } catch (error) {
-            notify(`Could not load ${String(format || '').toUpperCase()} export tools.`);
-            return;
-        }
-        if (format === 'docx') exportToDOCX(data);
-        else exportToPDF(data);
+        await ensureExamsExportModule();
+        return window.__kiuExportQuizByIdImpl(templateId, format);
     };
 
-    if (document.getElementById(ROOT_ID)) renderConsole();
+
+    Object.assign(__examsWorkspaceDeps, {
+        escapeHtml, clone, uniqueStrings, toFieldToken, hasExamsAttemptsModule, ensureExamsAttemptsModule,
+        hasExamsBuilderModule, ensureExamsBuilderModule, hasExamsAdminModule, ensureExamsAdminModule, makeLocalId, parseDate,
+        formatDateTime, formatShortDate, formatCountdown, getRole, getCurrentUserSafe, getCurrentFacultyCode,
+        getFacultyLabelSafe, getCurrentStaffName, canUseCrossFacultyExamView, persistState, notify, ensureStores,
+        clampPositiveInt, getSubjectDefaultKey, getQuestionDefaultsForSubject, saveQuestionDefaultsForSubject, getDraftQuestionDefaults, formatCourseYearLabel,
+        renderCourseYearOptions, getTemplateEntries, getTemplates, getTemplateById, getTemplateContainer, getSessions,
+        getSessionById, getSubjectOptions, getSubjectById, getGroupsForSubject, resolveGroupName, createQuestion,
+        normalizeQuestion, applyQuestionOptionCount, createTemplateDraft, shuffleArray, autoGenerateVariants, getShareableStaff,
+        isSharedWithMe, isMySentTemplate, isMyDraft, createScheduleDraft, getTemplateDraft, getScheduleDraft,
+        normalizeSubjectKey, getStudentScheduleEntries, resolveSubjectNameFromSchedule, normalizeStudentRecord, getAllKnownStudents, buildStudentSubjectPattern,
+        buildSubjectAutoCohorts, getSelectedCohorts, getSelectedStudentsForSchedule, getSelectedSessionStatus, getSessionRoomLabel, getSessionObserverNames,
+        getAssignedStudents, getAssignedStudentIds, rangesOverlap, getScheduleDraftIssues, syncTemplateLinks, upsertTemplate,
+        upsertSession, getBackendWarning, getAttemptStore, loadAttemptsForSession, getAttemptsForSession, getAttemptStudentId,
+        deriveAttemptState, buildSessionActivity, getTemplateTotalScore, buildRenderPassSnapshot, beginRenderPass, endRenderPass,
+        getReviewTemplates, getApprovedTemplates, getReviewQueueGroups, getReviewFacultyOptions, getFilteredTemplates, getLiveSessions,
+        getResultSessions, getWorkspaceStatChips, renderWorkspaceTitle, renderWorkspaceStatsInline, renderWorkspaceTabRow, renderWorkspaceChrome,
+        renderTabBar, renderHero, renderTemplateList, renderBuilderLoadingState, renderTemplateBuilder, renderExamModalShell,
+        renderShareModal, renderQuestionEditor, renderAdminLoadingPanel, detectScheduleCollisions, generateExamPIN, hasExamsExportModule,
+        ensureExamsExportModule,
+        escapeHtml, legacyRenderAdminExamSection, runtime, ROOT_ID, TABS,
+        STAFF_ROLES, ADMIN_ROLES, MANUAL_TYPES, TEMPLATE_STATUSES, STAFF_SUB_TABS
+    });
+
 })();
 
 

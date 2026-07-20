@@ -178,11 +178,11 @@ async function captureRun(browser, run) {
 
     const modalOpenMs = await measureInteraction(
         async () => {
-            await page.locator('[data-admin-library-open-params="true"]').evaluate((node) => node.click());
+            await page.locator('[data-admin-library-open-schema-editor="true"]').evaluate((node) => node.click());
         },
         async () => {
             await page.waitForFunction(
-                () => getComputedStyle(document.getElementById('library-param-overlay')).display === 'flex',
+                () => getComputedStyle(document.getElementById('library-schema-overlay')).display === 'flex',
                 undefined,
                 { timeout: 15000 }
             );
@@ -190,7 +190,7 @@ async function captureRun(browser, run) {
     );
 
     const metrics = await page.evaluate(() => {
-        const overlay = document.getElementById('library-param-overlay');
+        const overlay = document.getElementById('library-schema-overlay');
         const mobileNav = document.getElementById('mobile-bottom-nav');
         return {
             title: document.title,
@@ -201,7 +201,7 @@ async function captureRun(browser, run) {
             rowCount: document.querySelectorAll('#book-catalog-body tr').length,
             emptyStateVisible: Boolean(document.querySelector('.library-empty-row')),
             modalVisible: overlay ? getComputedStyle(overlay).display === 'flex' : false,
-            parameterChipCount: document.querySelectorAll('#param-list-thematic .admin-library-chip, #param-list-language .admin-library-chip, #param-list-status .admin-library-chip').length,
+            schemaFieldCount: document.querySelectorAll('#schema-fields-list .admin-library-schema-field-row').length,
             mobileNavVisible: mobileNav ? getComputedStyle(mobileNav).display !== 'none' : false
         };
     });

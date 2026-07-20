@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'fs';
+import { existsSync, readFileSync } from 'fs';
 import { join } from 'path';
 
 function readSource(relativePath) {
@@ -7,16 +7,13 @@ function readSource(relativePath) {
 }
 
 describe('gradebook route split', () => {
-    it('mounts the gradebook backend route family from its dedicated route module', () => {
+    it('does not mount unused gradebook REST handlers (client uses KIU_STATE)', () => {
         const server = readSource('backend/platform/server.js');
-        const routeModule = readSource('backend/platform/routes/gradebook-routes.js');
 
-        expect(server).toContain("require('./routes/gradebook-routes')");
-        expect(server).toContain('registerGradebookRoutes(app, {');
-        expect(routeModule).toContain("app.get('/api/gradebook/courses/:id'");
-        expect(routeModule).toContain("app.post('/api/gradebook/scores'");
-        expect(routeModule).toContain("app.post('/api/gradebook/publish'");
-        expect(routeModule).toContain("app.post('/api/gradebook/finalize'");
-        expect(routeModule).toContain("reason: request.body?.reason || request.body?.note || 'Gradebook score update'");
+        expect(existsSync(join(process.cwd(), 'backend/platform/routes/gradebook-routes.js'))).toBe(false);
+        expect(server).not.toContain("require('./routes/gradebook-routes')");
+        expect(server).not.toContain('registerGradebookRoutes');
+        expect(server).not.toContain('/api/gradebook/');
+        expect(server).not.toContain('requireGradebookCourseAccess');
     });
 });

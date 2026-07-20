@@ -7,6 +7,8 @@ function registerAuthMaintenanceRoutes(app, deps = {}) {
         loginRateLimitMax,
         loginRateLimitWindowMs,
         requireActualSessionRole,
+        requireSessionAccount,
+        getActualActorUserId = (sessionAccount) => sessionAccount?.account?.id,
         resetRateLimitMax,
         resetRateLimitWindowMs,
         sendError
@@ -67,6 +69,22 @@ function registerAuthMaintenanceRoutes(app, deps = {}) {
             return;
         }
         response.json({ ok: true, account });
+    });
+
+    app.post('/api/auth/change-password', (request, response) => {
+        const sessionAccount = requireSessionAccount(request, response);
+        if (!sessionAccount) return;
+        const store = getStore();
+        const result = store.changePassword(
+            getActualActorUserId(sessionAccount),
+            request.body?.currentPassword,
+            request.body?.newPassword
+        );
+        if (result?.error) {
+            sendError(response, result.status || 400, result.error);
+            return;
+        }
+        response.json({ ok: true, account: result.account });
     });
 
     app.post('/api/auth/request-reset', (request, response) => {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
 function readSource(relativePath) {
@@ -22,6 +22,7 @@ describe('portal support route split', () => {
         expect(routeModule).toContain("app.post('/api/accounts/upsert'");
         expect(routeModule).toContain("app.get('/api/notifications'");
         expect(routeModule).toContain("app.post('/api/notifications/read'");
+        expect(routeModule).toContain("app.post('/api/notifications/delete'");
         expect(routeModule).toContain("app.post('/api/notifications/preferences'");
         expect(routeModule).toContain("app.get('/api/push/public-config'");
         expect(routeModule).toContain("app.post('/api/push/subscribe'");

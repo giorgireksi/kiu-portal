@@ -255,9 +255,30 @@ html.lux-light-mode, body.lux-light-mode {
 }
 body.lux-route-home {
   --home-glass-border: color-mix( in srgb, rgba(var(--lux-accent-rgb), 0.72) 58%, var(--lux-border) );
-  --home-fade-soft: radial-gradient(circle at 16% 0%, rgba(255, 255, 255, calc(var(--lux-transparency-alpha, 0.70) * 0.07)), transparent 30%), radial-gradient(circle at 80% 18%, rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, 0.70) * 0.20)), transparent 34%), linear-gradient(145deg, rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, 0.70) * 0.10)), rgba(8, 12, 21, calc(var(--lux-transparency-alpha, 0.70) * 0.88)) 48%, rgba(6, 9, 16, calc(var(--lux-transparency-alpha, 0.70) * 0.78)));
-  --home-fade-border-soft: color-mix(in srgb, var(--home-glass-border) 78%, transparent);
-  --home-fade-shadow-soft: 0 14px 32px rgba(0, 0, 0, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  /*
+   * Glassmorph density tracks slider (fillRatio → --lux-transparency-alpha):
+   * 0% ≈ clear · 50% mixed frost · 100% dense glass (still polished glass, not flat matte).
+   * Base uses full alpha so high opacity does not starfield-bleed; accents stay on top.
+   */
+  --home-glass-fill: rgba(8, 12, 21, var(--lux-transparency-alpha, 0.70));
+  --home-chip-fill: rgba(12, 18, 28, calc(0.22 + var(--lux-transparency-alpha, 0.70) * 0.35));
+  --home-fade-soft:
+    radial-gradient(circle at 16% 0%, rgba(255, 255, 255, calc(var(--lux-transparency-alpha, 0.70) * 0.10)), transparent 34%),
+    radial-gradient(circle at 80% 18%, rgba(var(--lux-accent-rgb), calc(0.14 + var(--lux-transparency-alpha, 0.70) * 0.04)), transparent 38%),
+    linear-gradient(145deg,
+      rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, 0.70) * 0.09)),
+      rgba(8, 12, 21, var(--lux-transparency-alpha, 0.70)) 44%,
+      rgba(6, 9, 16, var(--lux-transparency-alpha, 0.70)) 100%
+    );
+  --home-fade-border-soft: color-mix(in srgb, var(--home-glass-border) 62%, transparent);
+  --home-fade-shadow-soft:
+    0 0 0 1px rgba(var(--lux-accent-rgb), 0.08),
+    0 0 12px rgba(var(--lux-accent-rgb), 0.04),
+    0 14px 32px rgba(0, 0, 0, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  /* Fill-proportional frost: low % stays sharp; mid/high quiet polish (~10px max). */
+  --home-fade-blur: blur(calc(var(--lux-transparency-alpha, 0.70) * 10px))
+    saturate(calc(100% + var(--lux-transparency-alpha, 0.70) * 25%));
   --lux-soft-chrome-surface: var(--home-fade-soft);
   --lux-soft-chrome-border: var(--home-fade-border-soft);
   --lux-soft-chrome-shadow: var(--home-fade-shadow-soft);
@@ -266,10 +287,67 @@ body.lux-route-home {
   --lux-focus-shadow: var(--home-fade-shadow-soft);
 }
 html.lux-light-mode body.lux-route-home, body.lux-light-mode.lux-route-home {
-  --home-glass-border: color-mix( in srgb, rgba(var(--lux-accent-rgb), 0.55) 52%, var(--lux-border) );
-  --home-fade-soft: radial-gradient(circle at 16% 0%, rgba(255, 255, 255, calc(var(--lux-transparency-alpha, 0.70) * 0.86)), transparent 32%), radial-gradient(circle at 80% 18%, rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, 0.70) * 0.18)), transparent 34%), linear-gradient(145deg, rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, 0.70) * 0.08)), rgba(255, 255, 255, calc(var(--lux-transparency-alpha, 0.70) * 0.84)) 48%, rgba(246, 240, 231, calc(var(--lux-transparency-alpha, 0.70) * 0.70)));
-  --home-fade-border-soft: color-mix(in srgb, var(--home-glass-border) 78%, transparent);
-  --home-fade-shadow-soft: inset 0 1px 0 rgba(255, 255, 255, 0.62), 0 6px 16px rgba(var(--lux-shadow-ink-rgb), 0.06);
+  --home-glass-border: color-mix( in srgb, rgba(var(--lux-accent-rgb), 0.74) 68%, var(--lux-border) );
+  --home-glass-fill: rgba(250, 246, 240, calc(var(--lux-transparency-alpha, 0.70) * 0.82));
+  --home-chip-fill: rgba(255, 255, 255, calc(0.28 + var(--lux-transparency-alpha, 0.70) * 0.40));
+  /* Light frost material: tinted translucent face + fill wash + soft elev (blur via --home-fade-blur). */
+  --home-fade-soft:
+    radial-gradient(circle at 16% 0%, rgba(255, 255, 255, calc(var(--lux-transparency-alpha, 0.70) * 0.35)), transparent 34%),
+    radial-gradient(circle at 80% 18%, rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, 0.70) * 0.26)), transparent 38%),
+    radial-gradient(circle at 100% 50%, rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, 0.70) * 0.20)), transparent 44%),
+    linear-gradient(145deg,
+      rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, 0.70) * 0.12)),
+      rgba(250, 246, 240, var(--lux-transparency-alpha, 0.70)) 48%,
+      rgba(244, 238, 228, var(--lux-transparency-alpha, 0.70)) 100%
+    );
+  --home-fade-border-soft: color-mix(in srgb, var(--home-glass-border) 82%, transparent);
+  --home-fade-shadow-soft:
+    0 0 0 1px rgba(var(--lux-accent-rgb), 0.18),
+    0 0 18px rgba(var(--lux-accent-rgb), 0.08),
+    0 12px 28px rgba(var(--lux-shadow-ink-rgb), 0.10),
+    inset 0 1px 0 rgba(255, 255, 255, 0.65);
+  --home-fade-blur: blur(calc(var(--lux-transparency-alpha, 0.70) * 10px))
+    saturate(calc(100% + var(--lux-transparency-alpha, 0.70) * 25%));
+  --lux-soft-chrome-surface: var(--home-fade-soft);
+  --lux-soft-chrome-border: var(--home-fade-border-soft);
+  --lux-soft-chrome-shadow: var(--home-fade-shadow-soft);
+  --lux-focus-fill: var(--home-fade-soft);
+  --lux-focus-border: var(--home-fade-border-soft);
+  --lux-focus-shadow: var(--home-fade-shadow-soft);
+}
+/* 100%: dense glassmorph (keep gradient + blur + shadow — not flat matte). */
+html.lux-fully-opaque body.lux-route-home {
+  --home-glass-fill: rgba(8, 12, 21, 0.96);
+  --home-chip-fill: rgba(12, 18, 28, 0.55);
+  --home-fade-soft:
+    radial-gradient(circle at 16% 0%, rgba(255, 255, 255, 0.08), transparent 34%),
+    radial-gradient(circle at 80% 18%, rgba(var(--lux-accent-rgb), 0.18), transparent 38%),
+    linear-gradient(145deg,
+      rgba(var(--lux-accent-rgb), 0.10),
+      rgba(8, 12, 21, 0.96) 44%,
+      rgba(6, 9, 16, 0.98) 100%
+    );
+  --home-fade-blur: blur(10px) saturate(118%);
+  --lux-soft-chrome-surface: var(--home-fade-soft);
+  --lux-focus-fill: var(--home-fade-soft);
+}
+html.lux-fully-opaque.lux-light-mode body.lux-route-home,
+html.lux-fully-opaque body.lux-light-mode.lux-route-home,
+html.lux-light-mode.lux-fully-opaque body.lux-route-home {
+  --home-glass-fill: rgba(250, 246, 240, 0.96);
+  --home-chip-fill: rgba(255, 255, 255, 0.62);
+  --home-fade-soft:
+    radial-gradient(circle at 16% 0%, rgba(255, 255, 255, 0.40), transparent 34%),
+    radial-gradient(circle at 80% 18%, rgba(var(--lux-accent-rgb), 0.16), transparent 38%),
+    radial-gradient(circle at 100% 50%, rgba(var(--lux-accent-rgb), 0.12), transparent 44%),
+    linear-gradient(145deg,
+      rgba(var(--lux-accent-rgb), 0.08),
+      rgba(250, 246, 240, 0.96) 48%,
+      rgba(244, 238, 228, 0.98) 100%
+    );
+  --home-fade-blur: blur(10px) saturate(118%);
+  --lux-soft-chrome-surface: var(--home-fade-soft);
+  --lux-focus-fill: var(--home-fade-soft);
 }
 :root {
   --lux-nonhome-fade-surface-soft: var(--lux-panel-surface-soft);

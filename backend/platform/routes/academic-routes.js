@@ -105,32 +105,6 @@ function registerAcademicRoutes(app, deps = {}) {
         response.json({ ok: true, ...result });
     });
 
-    app.get('/api/lms/courses/:id', (request, response) => {
-        const sessionAccount = requireCourseStaffAccess(request, response, request.params.id, 'read', new Set(['admin', 'professor', 'ta']));
-        if (!sessionAccount) return;
-        const store = getStore();
-        const course = store.getLmsCourse(request.params.id);
-        if (!course) {
-            sendError(response, 404, 'LMS course not found.');
-            return;
-        }
-        response.json({ ok: true, course });
-    });
-
-    app.post('/api/lms/assignments', (request, response) => {
-        const sessionAccount = requireCourseStaffAccess(request, response, request.body?.courseId, 'score', new Set(['admin', 'professor', 'ta']));
-        if (!sessionAccount) return;
-        const store = getStore();
-        response.json({ ok: true, assignment: store.createAssignment(request.body || {}) });
-    });
-
-    app.post('/api/lms/materials', (request, response) => {
-        const sessionAccount = requireCourseStaffAccess(request, response, request.body?.courseId, 'score', new Set(['admin', 'professor', 'ta']));
-        if (!sessionAccount) return;
-        const store = getStore();
-        response.json({ ok: true, material: store.createMaterial(request.body || {}) });
-    });
-
     app.post('/api/exam-sessions/sync', (request, response) => {
         const sessionAccount = requireCourseStaffAccess(request, response, request.body?.protectedCourseId || request.body?.courseId || request.body?.resourceKey, 'publish', new Set(['admin', 'professor']));
         if (!sessionAccount) return;

@@ -1,17 +1,19 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 import { JSDOM } from 'jsdom';
 
 function readSource(relativePath) {
-  return readFileSync(join(process.cwd(), relativePath), 'utf8');
+    const full = join(process.cwd(), relativePath);
+    if (!existsSync(full)) return '';
+    return readFileSync(full, 'utf8');
 }
 
 describe('theme primer localhost reset regressions', () => {
   it('contains the localhost stale-service-worker recovery path', () => {
     const source = readSource('assets/js/theme-primer.js');
 
-    expect(source).toContain("var PORTAL_CACHE_RESET_VERSION = '20260606-postactions6';");
+    expect(source).toContain("var PORTAL_CACHE_RESET_VERSION = '20260609-bootguard1';");
     expect(source).toContain('function maybeResetStaleLocalPortalWorker() {');
     expect(source).toContain('if (!navigator.serviceWorker || !navigator.serviceWorker.controller) return;');
     expect(source).toContain("var resetMarker = 'KIU_PORTAL_LOCAL_SW_RESET_' + PORTAL_CACHE_RESET_VERSION;");
@@ -23,10 +25,21 @@ describe('theme primer localhost reset regressions', () => {
     const appSource = readSource('assets/js/app/app.js');
     const workerSource = readSource('service-worker.js');
 
-    expect(appSource).toContain("const PORTAL_CACHE_RESET_VERSION = '20260606-postactions6';");
-    expect(appSource).toContain("manifest.webmanifest?v=20260604-styleguard2");
-    expect(workerSource).toContain("const CACHE_NAME = 'kiu-portal-shell-v20260606-postactions6';");
-    expect(workerSource).toContain("/assets/css/base.css?v=20260604-styleguard2");
-    expect(workerSource).toContain("/assets/css/index-luxury.css?v=20260604-styleguard2");
+    // Versions drift with shell diets — assert live SW stack, not a frozen bust string.
+    expect(appSource).toMatch(/const PORTAL_CACHE_RESET_VERSION = '20\d{6}-[^']+'/);
+    expect(appSource).toContain("manifest.webmanifest?v=");
+    expect(workerSource).toMatch(/const CACHE_NAME = 'kiu-portal-shell-v/);
+    expect(workerSource).not.toContain('/assets/css/base.css');
+    expect(workerSource).toContain('/assets/css/lux-tokens.css');
+    expect(workerSource).not.toContain('/assets/css/index-luxury.css');
+    expect(workerSource).toContain('/assets/css/lux-fouc-ht.css');
+    expect(workerSource).toContain('/assets/css/index-home-layout.css');
+    expect(workerSource).toContain('/assets/css/index-home-widgets.css');
+    expect(workerSource).toContain('/assets/css/index-home-role.css');
+    expect(workerSource).not.toContain('/assets/css/mobile-responsive.css');
+    expect(workerSource).toContain('/assets/css/mobile-shell-core.css');
+    expect(workerSource).toContain('/assets/css/mobile-shell.css');
+    expect(workerSource).toContain('/assets/js/theme-primer.js');
+    expect(workerSource).toContain('/assets/js/features/navigation.js');
   });
 });

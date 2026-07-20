@@ -1,14 +1,19 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
+import { gradebookSources } from './helpers/gradebook-sources.js';
 
 function readSource(relativePath) {
     return readFileSync(join(process.cwd(), relativePath), 'utf8');
 }
 
+
 describe('faculty gradebook aggregate roster', () => {
-    const gradebook = readSource('assets/js/pages/gradebook.js');
-    const messenger = readSource('assets/js/shared/messenger.js');
+    const gradebook = gradebookSources();
+    const messenger = [
+        'assets/js/shared/messenger-gradebook-runtime.js',
+        'assets/js/shared/messenger.js'
+    ].map(readSource).join('\n');
     const appJs = readSource('assets/js/app/app.js');
 
     it('extends group lookup with optional filter overrides', () => {

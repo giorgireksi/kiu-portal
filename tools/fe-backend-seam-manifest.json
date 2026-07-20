@@ -1,0 +1,134 @@
+{
+  "version": 1,
+  "wave": "H9",
+  "minSeams": 12,
+  "backendContractsDoc": "docs/BACKEND_PLATFORM_DOMAIN_CONTRACTS.md",
+  "seams": [
+    {
+      "id": "auth.session",
+      "label": "Portal session / login",
+      "featureId": "shared.app-bootstrap",
+      "apiPrefix": "/api/portal/session",
+      "domain": "backend/platform/domains/auth-session-service.js",
+      "routes": "backend/platform/routes/auth-routes.js",
+      "feEntry": "assets/js/app/api.js"
+    },
+    {
+      "id": "portal.state",
+      "label": "Portal bootstrap / persisted state",
+      "featureId": "shared.app-bootstrap",
+      "apiPrefix": "/api/portal/state",
+      "domain": "backend/platform/domains/accounts-service.js",
+      "routes": "backend/platform/routes/portal-support-routes.js",
+      "feEntry": "assets/js/app/api.js"
+    },
+    {
+      "id": "notifications",
+      "label": "In-app notifications + push config",
+      "featureId": null,
+      "apiPrefix": "/api/notifications",
+      "domain": "backend/platform/domains/notifications-service.js",
+      "routes": "backend/platform/routes/portal-support-routes.js",
+      "feEntry": "assets/js/app/api.js"
+    },
+    {
+      "id": "files",
+      "label": "File upload / download",
+      "featureId": null,
+      "apiPrefix": "/api/files",
+      "domain": "backend/platform/domains/files-service.js",
+      "routes": "backend/platform/routes/files-routes.js",
+      "feEntry": "assets/js/app/api.js"
+    },
+    {
+      "id": "mail",
+      "label": "Campus mail",
+      "featureId": null,
+      "apiPrefix": "/api/mail",
+      "domain": "backend/platform/domains/accounts-service.js",
+      "routes": "backend/platform/routes/mail-routes.js",
+      "feEntry": "assets/js/app/api.js"
+    },
+    {
+      "id": "student-service",
+      "label": "Student service tickets / KB",
+      "featureId": "student-service",
+      "apiPrefix": "/api/student-service",
+      "domain": "backend/platform/domains/student-service-service.js",
+      "routes": "backend/platform/routes/student-service-routes.js",
+      "feEntry": "assets/js/pages/student-service.js"
+    },
+    {
+      "id": "social",
+      "label": "Social feed / projects / relationships",
+      "featureId": "social.shell",
+      "apiPrefix": "/api/social",
+      "domain": "backend/platform/domains/social-state-service.js",
+      "routes": "backend/platform/routes/social-routes.js",
+      "feEntry": "assets/js/pages/social-page.js"
+    },
+    {
+      "id": "news",
+      "label": "Campus news feed",
+      "featureId": "news.feed",
+      "apiPrefix": "/api/news",
+      "domain": "backend/platform/domains/social-content-service.js",
+      "routes": "backend/platform/routes/news-routes.js",
+      "feEntry": "assets/js/pages/news.js"
+    },
+    {
+      "id": "lms.live-quiz",
+      "label": "LMS live quiz",
+      "featureId": "lms.live-quiz",
+      "apiPrefix": "/api/lms/live-quizzes",
+      "domain": "backend/platform/domains/lms-live-quiz-service.js",
+      "routes": "backend/platform/routes/lms-live-quiz-routes.js",
+      "feEntry": "assets/js/pages/lms-live-quiz-ui-runtime.js"
+    },
+    {
+      "id": "lms.whiteboard",
+      "label": "LMS whiteboard",
+      "featureId": "lms.whiteboard",
+      "apiPrefix": "/api/lms/whiteboards",
+      "domain": "backend/platform/domains/lms-whiteboard-service.js",
+      "routes": "backend/platform/routes/lms-whiteboard-routes.js",
+      "feEntry": "assets/js/pages/lms-whiteboard-runtime.js"
+    },
+    {
+      "id": "lms.personal-dashboard",
+      "label": "LMS personal dashboards",
+      "featureId": "lms.personal-dashboard",
+      "apiPrefix": "/api/lms/personal-dashboards",
+      "domain": "backend/platform/domains/lms-personal-dashboard-service.js",
+      "routes": "backend/platform/routes/lms-personal-dashboard-routes.js",
+      "feEntry": "assets/js/pages/lms-personal-dashboard-runtime.js"
+    },
+    {
+      "id": "protected-exam",
+      "label": "Protected exam / exam portal",
+      "featureId": null,
+      "apiPrefix": "/api/exam-portal",
+      "domain": "backend/platform/domains/protected-exam-service.js",
+      "routes": "backend/platform/routes/protected-exam-routes.js",
+      "feEntry": "assets/js/pages/exam-portal.js"
+    },
+    {
+      "id": "registration.academic",
+      "label": "Registration / catalog enrollments",
+      "featureId": null,
+      "apiPrefix": "/api/registration",
+      "domain": "backend/platform/domains/lms-course-service.js",
+      "routes": "backend/platform/routes/academic-routes.js",
+      "feEntry": "assets/js/pages/registration.js"
+    },
+    {
+      "id": "gradebook.weights",
+      "label": "Gradebook weights helpers (scores still client/portal state)",
+      "featureId": "lms.gradebook",
+      "apiPrefix": "/api/portal/state",
+      "domain": "backend/platform/domains/gradebook-service.js",
+      "routes": "backend/platform/routes/portal-support-routes.js",
+      "feEntry": "assets/js/pages/gradebook-model.js"
+    }
+  ]
+}

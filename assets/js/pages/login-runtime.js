@@ -66,6 +66,7 @@ function getStoredAuthState() {
 
 function clearStaleLoginSnapshot() {
     try { localStorage.removeItem('KIU_AUTH_STATE'); } catch (error) {}
+    try { localStorage.removeItem('KIU_PERSISTENT_STATE'); } catch (error) {}
     try { localStorage.removeItem('currentUserRole'); } catch (error) {}
     try { localStorage.removeItem('KIU_FACULTY_CONTEXT'); } catch (error) {}
     try { localStorage.removeItem('currentFaculty'); } catch (error) {}
@@ -193,9 +194,17 @@ function storePortalBackendAuth(account, session) {
         sessionStorage.setItem(LOGIN_ACTIVE_SESSION_KEY, normalizedAuth.id);
     } catch (error) {}
     try {
-        const persistedState = JSON.parse(localStorage.getItem('KIU_PERSISTENT_STATE') || 'null') || {};
-        persistedState.auth = persistedState.auth || {};
-        persistedState.auth.activeUserId = normalizedAuth.id;
+        let persistedState = JSON.parse(localStorage.getItem('KIU_PERSISTENT_STATE') || 'null') || {};
+        const priorOwnerAccountId = String(
+            persistedState?.meta?.portalStateOwnerAccountId || persistedState?.auth?.activeUserId || ''
+        ).trim();
+        const nextOwnerAccountId = String(normalizedAuth.id || '').trim();
+        if (priorOwnerAccountId && nextOwnerAccountId && priorOwnerAccountId !== nextOwnerAccountId) {
+            persistedState = {};
+        }
+        persistedState.meta = persistedState.meta && typeof persistedState.meta === 'object' ? persistedState.meta : {};
+        persistedState.meta.portalStateOwnerAccountId = nextOwnerAccountId;
+        delete persistedState.auth;
         localStorage.setItem('KIU_PERSISTENT_STATE', JSON.stringify(persistedState));
     } catch (error) {}
     return normalizedAuth;
@@ -392,7 +401,11 @@ function showSuccess(message) {
 }
 
 function escapeHtml(value) {
-    return String(value || '')
+    if (typeof window !== 'undefined' && typeof window.escapeHtml === 'function') {
+        const shared = window.escapeHtml;
+        if (shared !== escapeHtml) return shared(value);
+    }
+    return String(value == null ? '' : value)
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')

@@ -24,7 +24,6 @@ function detectMobileShellMode(source) {
     if (source.includes('assets/js/pages/standalone-mobile-shell.js')) return 'shared-standalone';
     if (source.includes('assets/js/pages/index-mobile-shell.js')) return 'index-shared';
     if (source.includes('assets/js/pages/social-mobile.js')) return 'social-shared';
-    if (source.includes('assets/js/pages/staff-mobile-shell.js')) return 'staff-shared';
     if (source.includes('(function initMobileExperience(){')) return 'legacy-inline';
     return 'none';
 }

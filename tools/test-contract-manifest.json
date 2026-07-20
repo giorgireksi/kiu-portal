@@ -1,0 +1,154 @@
+{
+  "version": 1,
+  "wave": "H8",
+  "minContracts": 10,
+  "contracts": [
+    {
+      "id": "css.focus-panel",
+      "label": "Focus / soft-chrome panel tokens + structure",
+      "featureId": "shared.luxury-shell",
+      "test": "test/lux-focus-panel-contract.test.js",
+      "invariant": "Soft-chrome and focus-panel tokens/structure stay shared once — not re-invented per route."
+    },
+    {
+      "id": "social.domain-exports",
+      "label": "Social domain module export surface",
+      "featureId": "social.shell",
+      "test": "test/social-domain-export-contract.test.js",
+      "invariant": "Each social domain module exports the is/handle click/input/change (+ submit) contract; logic stays out of social-page.js."
+    },
+    {
+      "id": "student-service.api-routes",
+      "label": "Student-service API client ↔ backend routes",
+      "featureId": "student-service",
+      "test": "test/student-service-api-route-contract.test.js",
+      "invariant": "Browser/client manifest routes stay registered on the backend student-service route module."
+    },
+    {
+      "id": "backend.platform-domains",
+      "label": "Backend platform domain public APIs",
+      "featureId": null,
+      "test": "test/backend-platform-contracts.test.js",
+      "invariant": "Extracted platform domains keep the documented public API surface aligned with server wiring."
+    },
+    {
+      "id": "human.findability",
+      "label": "Feature → owner → HTML/lazy map",
+      "featureId": null,
+      "test": "test/wave-h1-findability.test.js",
+      "invariant": "Every findability feature has ≤2 owners reachable from its HTML or lazy host."
+    },
+    {
+      "id": "human.naming-patterns",
+      "label": "Exactly three JS global patterns",
+      "featureId": null,
+      "test": "test/wave-h4-naming-patterns.test.js",
+      "invariant": "New JS uses only patterns A/B/C — no fourth global dialect."
+    },
+    {
+      "id": "lms.gradebook-load-chain",
+      "label": "Gradebook module load order",
+      "featureId": "lms.gradebook",
+      "test": "test/gradebook-load-chain-contract.test.js",
+      "invariant": "Gradebook peels/hosts load in one shared order (MODULE_URLS = helper = eager HTML)."
+    },
+    {
+      "id": "human.change-locality",
+      "label": "Owners ≤2 + shared gradebook sources",
+      "featureId": "lms.gradebook",
+      "test": "test/wave-h5-change-locality.test.js",
+      "invariant": "Primary owners stay ≤2; gradebook source-locks use one shared helper."
+    },
+    {
+      "id": "human.archive-noise",
+      "label": "No HTML links into CSS _archive",
+      "featureId": null,
+      "test": "test/wave-h6-archive-noise.test.js",
+      "invariant": "assets/css/_archive is purged; production HTML never href-links _archive/; retired route basenames stay absent from live assets/css/."
+    },
+    {
+      "id": "human.local-peels",
+      "label": "Hot-host peels + ≥1800 headcount",
+      "featureId": "lms.gradebook",
+      "test": "test/wave-h2b-local-readability.test.js",
+      "invariant": "Gradebook/scheduler peels stay Pattern C and assets/js files ≥1800 stay ≤6."
+    },
+    {
+      "id": "social.feed-comments-peel",
+      "label": "Feed comments peel load order",
+      "featureId": "social.feed",
+      "test": "test/wave-h2-local-readability.test.js",
+      "invariant": "Comments runtime loads before the social feed host."
+    },
+    {
+      "id": "human.css-route-map",
+      "label": "Route → CSS stack manifest",
+      "featureId": null,
+      "test": "test/wave-h9-css-backend-seams.test.js",
+      "invariant": "css-route-manifest stays synced to visual-route-classification; dedicated sheets exist and are linked from HTML."
+    },
+    {
+      "id": "human.fe-backend-seams",
+      "label": "Feature → API/domain seam map",
+      "featureId": null,
+      "test": "test/wave-h9-css-backend-seams.test.js",
+      "invariant": "≥12 FE→backend seams list real domain/routes paths and live /api prefixes."
+    },
+    {
+      "id": "human.safe-edit-surface",
+      "label": "Danger vs domain-local edit blast map",
+      "featureId": null,
+      "test": "test/wave-h7-safe-edit-surface.test.js",
+      "invariant": "High-fanout hubs are labeled danger; mid prefers domain-local owners for feature edits."
+    },
+    {
+      "id": "human.onboarding",
+      "label": "Day-1 product wiring front door",
+      "featureId": null,
+      "test": "test/wave-h10-onboarding.test.js",
+      "invariant": "README + ONBOARDING compose index links and boot scripts; Human A+ when all criteria ≥8."
+    },
+    {
+      "id": "eng.test-suite-health",
+      "label": "E1 test suite health ≥8",
+      "featureId": null,
+      "test": "test/wave-e1-test-suite-health.test.js",
+      "invariant": "Naming gate current; no 8-line staff purge stubs; quiz module-split matches peels; engineering-band-queue marks E1 ✅."
+    },
+    {
+      "id": "eng.shared-hub-isolation",
+      "label": "E2 shared-hub isolation ≥8",
+      "featureId": null,
+      "test": "test/wave-e2-shared-hub-isolation.test.js",
+      "invariant": "Admin-library/registration merge lives in api-admin-merge-runtime.js; AdminQuiz/Exam peeled to state-admin-exam-runtime.js; isolation doc + E2 ✅."
+    },
+    {
+      "id": "eng.typeof-probe-hygiene",
+      "label": "E3 typeof probe hygiene ≥8",
+      "featureId": null,
+      "test": "test/wave-e3-typeof-probe-hygiene.test.js",
+      "invariant": "student-service stubs use ssForwardToLoadedModule; TYPEOF_WINDOW_MAX ≤900; measured typeof window.X < 943."
+    },
+    {
+      "id": "eng.godfile-peels",
+      "label": "E4 god-file peels ≥8",
+      "featureId": null,
+      "test": "test/wave-e4-godfile-peels.test.js",
+      "invariant": "state-admin-exam peel owns AdminQuiz/Exam; state.js ≤1500; ≥1800 headcount ≤6; E4 ✅."
+    },
+    {
+      "id": "eng.esm-leaf-ratchet",
+      "label": "E5 ESM leaf ratchet ≥8",
+      "featureId": null,
+      "test": "test/wave-e5-esm-leaf-ratchet.test.js",
+      "invariant": "ESM_LEAF_MIN ≥10; student-service-model + curriculum-library-model are ESM leaves with bridges; E5 ✅."
+    },
+    {
+      "id": "eng.fe-line-mass",
+      "label": "E6 FE line mass ≥8",
+      "featureId": null,
+      "test": "test/wave-e6-fe-line-mass.test.js",
+      "invariant": "Never-loaded assets/js/portfolio/ absent; no KiuPortfolioModel; assets/js file/line ceilings; E6 ✅."
+    }
+  ]
+}

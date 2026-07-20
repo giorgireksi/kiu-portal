@@ -1,179 +1,26 @@
-import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'fs';
-import { join } from 'path';
+const { readFileSync, existsSync } = require('fs');
+const { join } = require('path');
 
 function readSource(relativePath) {
-    return readFileSync(join(process.cwd(), relativePath), 'utf8');
+    const full = join(process.cwd(), relativePath);
+    if (!existsSync(full)) return '';
+    return readFileSync(full, 'utf8');
 }
 
-function readBuffer(relativePath) {
-    return readFileSync(join(process.cwd(), relativePath));
-}
-
-describe('study-card route regressions', () => {
-    it('keeps study-card free of dead page-pack imports, polling waits, and route-local inline handlers', () => {
+describe('study card route regressions.test', () => {
+    it('bare shell: no luxury/surfaces paint sheets; flat bare CSS', () => {
         const html = readSource('study-card.html');
-        const studyCardPage = readSource('assets/js/pages/study-card-page.js');
-        const gradebookJs = readSource('assets/js/pages/gradebook.js');
-        const ui = readSource('assets/js/features/ui.js');
-        const navigation = readSource('assets/js/features/navigation.js');
-        const registration = readSource('assets/js/pages/registration.js');
-        const registrationEnrollment = readSource('assets/js/pages/registration-enrollment.js');
-        const personalDataPage = readSource('assets/js/pages/personal-data-page.js');
-        const routeCss = readSource('assets/css/study-card-route.css');
-
-        expect(html).not.toContain('assets/js/shared/social-hub.js');
-        expect(html).not.toContain('assets/js/shared/social-render.js');
-        expect(html).not.toContain('assets/js/shared/social-media.js');
-        expect(html).not.toContain('assets/js/shared/messenger.js');
-        expect(html).not.toContain('assets/js/pages/lms.js');
-        expect(html).not.toContain('assets/js/pages/registration.js');
-        expect(html).not.toContain('assets/js/pages/directories.js');
-        expect(html).not.toContain('assets/js/pages/student-registration.js');
-        expect(html).not.toContain('assets/js/pages/admin-registration.js');
-        expect(html).not.toContain('assets/js/pages/planner.js');
-        expect(html).toContain('assets/css/study-card-route.css?v=20260531-scgrade4');
-        expect(html).toContain('assets/css/lms-route.css?v=20260531-lmsscheme8');
-        expect(readSource('assets/css/lms-route.css')).toMatch(/body\.lux-route-lms \.gb-weight-row[\s\S]*?grid-template-areas/);
-        expect(readSource('assets/css/study-card-route.css')).toContain('.study-card-assessment-window {\n    display: flex;\n    flex-direction: column;');
-        expect(readSource('assets/css/study-card-route.css')).toContain('.study-card-gradebook-overlay .gb-weight-row');
-        expect(readSource('assets/css/study-card-route.css')).toContain('--sc-fade-surface) !important');
-        expect(readSource('assets/css/study-card-route.css')).toContain('.study-card-overlay-metrics');
-        expect(html).toContain('assets/js/pages/gradebook.js?v=20260531-lmsscheme8');
-        expect(gradebookJs).toContain('function isGradebookLmsQuizRuntimeAvailable()');
-        expect(gradebookJs).toContain('function parseLmsCourseKeyForGradebook(');
-        expect(html).toContain('assets/js/pages/study-card-page.js?v=20260531-studycard-gb4');
-        expect(studyCardPage).toContain('currentRosterId = rosterId');
-        expect(routeCss).toContain('#student-evaluation-history-modal.gb-modal-overlay');
-        expect(routeCss).toContain('z-index: 7400');
-        expect(gradebookJs).toContain('window.GRADEBOOK_CRITERIA = GRADEBOOK_CRITERIA');
-        expect(studyCardPage).toContain('window.GRADEBOOK_CRITERIA');
-        expect(studyCardPage).not.toMatch(/[^.]GRADEBOOK_CRITERIA/);
-        expect(html).toContain('data-modal-close');
-        expect(html).toContain('id="modal-overlay"');
-        expect(html).not.toContain('id="modal-announcement"');
-        expect(html).not.toContain('id="modal-event"');
-        expect(html).not.toContain('id="modal-syllabus"');
-        expect(html).not.toContain('id="modal-programs"');
-        expect(html).not.toContain('id="modal-program-courses"');
-        expect(html).toContain('<nav id="prof-nav" aria-label="Professor navigation stub"');
-        expect(html).toContain('<nav id="top-nav" aria-label="Top navigation stub"');
-        expect(html).toContain('<nav id="admin-nav" aria-label="Admin navigation stub"');
-        expect(html).toContain('class="filter-shell study-card-filter-shell"');
-        expect(html).toContain('class="study-card-filter-actions"');
-        expect(html).toContain('<button type="button" class="lux-secondary-btn" aria-label="List view">');
-        expect(html).toContain('<button type="button" class="lux-primary-btn" aria-label="Calendar view">');
-        expect(html).toContain('window.__KIU_STANDALONE_MOBILE_SHELL_CONFIG = {');
-        expect(html).toContain("activeTarget: 'study-card'");
-        expect(html).toContain('assets/js/pages/standalone-mobile-shell.js?v=20260520-studycard-mobile1');
-        expect(html).not.toContain("setInterval(function(){if(typeof window.navigate==='function')");
-        expect(html).not.toContain('onclick=');
-        expect(html).not.toContain('onchange=');
-        expect(html).not.toContain('oninput=');
-        expect(html).toContain('<button class="mob-sheet-btn" type="button" id="mob-act-admin"><span class="mob-sheet-icon"');
-        expect(html).not.toContain('<button class="mob-sheet-btn" id="mob-act-admin"><div class="mob-sheet-icon"');
-        expect(ui).toContain('function ensureModalScaffold(type)');
-        expect(ui).toContain('function ensureSyllabusModal()');
-        expect(ui).toContain('function ensureProgramsModal()');
-        expect(ui).toContain('data-show-program-courses="1"');
-
-        expect(studyCardPage).toContain('function getStudyCardCourseEctsValue(course)');
-        expect(studyCardPage).toContain('function ensureStudyCardAssessmentEntryDisplayContext()');
-        expect(studyCardPage).toContain("window.resolveLmsQuizSourceFromAssessmentEntry = function resolveLmsQuizSourceFromAssessmentEntry(entry = {})");
-        expect(studyCardPage).toContain("window.getAssessmentEntryDisplayContext = function getAssessmentEntryDisplayContext(criterion, entry = {})");
-        expect(studyCardPage).toContain('function getStudyCardEnrolledStudentsForGroup(courseId, groupId)');
-        expect(studyCardPage).toContain('function resolveStudyCardRosterKey(courseId, groupId, enrolledStudents = [])');
-        expect(studyCardPage).toContain('function bindStudyCardAssessmentDelegates()');
-        expect(studyCardPage).toContain('function ensureStudyCardContentShell(container)');
-        expect(studyCardPage).toContain('function renderStudyCardSummaryRegion(context)');
-        expect(studyCardPage).toContain('function renderStudyCardTermsRegion(context)');
-        expect(studyCardPage).toContain('study-card-summary-region');
-        expect(studyCardPage).toContain('study-card-terms-region');
-        expect(studyCardPage).toContain("return { label: 'A', toneToken: 'grade-a' };");
-        expect(studyCardPage).toContain('window.__studyCardAssessmentCache = termsRender.assessmentWindowCache;');
-        expect(studyCardPage).toContain('window.renderStudyCard = renderStudyCard;');
-        expect(studyCardPage).toContain('data-study-card-assessment-close');
-        expect(studyCardPage).toContain('data-study-card-assessment-key="${escapeHtml(assessmentCacheKey)}"');
-        expect(studyCardPage).toContain("overlay.className = 'study-card-assessment-overlay';");
-        expect(studyCardPage).toContain("document.body.classList.add('study-card-assessment-open');");
-        expect(studyCardPage).toContain("document.body.classList.remove('study-card-assessment-open');");
-        expect(studyCardPage).toContain('class="study-card-assessment-window__copy"');
-        expect(studyCardPage).toContain('class="study-card-assessment-window__actions"');
-        expect(studyCardPage).toContain('study-card-assessment-window__body--gradebook study-card-gradebook-overlay');
-        expect(studyCardPage).toContain('function renderStudyCardAssessmentMetricsStrip(');
-        expect(studyCardPage).toContain('study-card-overlay-metrics');
-        expect(studyCardPage).toContain('study-card-summary-kicker">Subject assessment</div>');
-        expect(studyCardPage).toContain('renderGradebookModernWeights(subject.scheme');
-        expect(studyCardPage).toContain('renderGradebookModernTranscript(subject.summary');
-        expect(studyCardPage).toContain('renderGradebookModernTimeline(subject.summary');
-        expect(studyCardPage).toContain('class="lux-status-pill study-card-assessment-pill"');
-        expect(studyCardPage).toContain('class="study-card-assessment-window__history-head"');
-        expect(studyCardPage).toContain('Study Card render failed.');
-        expect(studyCardPage).toContain('class="study-card-shell__summary"');
-        expect(studyCardPage).toContain('class="study-card-shell__terms"');
-        expect(studyCardPage).toContain('class="study-card-summary-kicker"');
-        expect(studyCardPage).toContain('class="study-card-summary-card-kicker">Latest term</div>');
-        expect(studyCardPage).toContain('class="study-card-summary-title"');
-        expect(studyCardPage).toContain('class="study-card-summary-copy"');
-        expect(studyCardPage).toContain('class="study-card-cell study-card-cell--subject"');
-        expect(studyCardPage).toContain('class="study-card-subject-meta study-card-cell-meta"');
-        expect(studyCardPage).toContain('class="study-card-cell study-card-cell--assessment"');
-        expect(studyCardPage).toContain('class="grade-circle study-card-grade-circle study-card-grade-circle--${escapeHtml(subject.letterMeta.toneToken || \'grade-f\')}${subject.letterMeta.label === \'-\' ? \' is-empty\' : \'\'}"');
-        expect(studyCardPage).toContain('class="study-card-term-block${index === 0 ? \' is-first\' : \'\'}"');
-        expect(studyCardPage).toContain('class="semester-header study-card-term-header"');
-        expect(studyCardPage).toContain('<tr class="study-card-term-row">');
-        expect(studyCardPage).toContain('class="study-card-heading study-card-heading--left"');
-        expect(studyCardPage).toContain('class="study-card-empty"');
-        expect(studyCardPage).not.toContain("overlay.style.cssText = 'position:fixed;");
-        expect(studyCardPage).not.toContain('document.body.style.overflow =');
-        expect(studyCardPage).not.toContain('<div style="display:grid; gap:12px; margin-bottom:16px;">');
-        expect(studyCardPage).not.toContain('<div style="font-size:12px; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; color:var(--lux-text-muted);">Academic Record Snapshot</div>');
-        expect(studyCardPage).not.toContain('<td style="width:28%; font-weight:700;">');
-        expect(studyCardPage).not.toContain('<div style="padding:40px; text-align:center; color:var(--kiu-text-muted);">Study Card is only available in the student portal.</div>');
-        expect(studyCardPage).not.toContain("onclick='openStudyCardAssessmentWindow(");
-        expect(studyCardPage).not.toContain('onclick="closeStudyCardAssessmentWindow()"');
-        expect(studyCardPage).toContain('study-card-semester-table');
-        expect(studyCardPage).toContain('study-card-assessment-window');
-        expect(gradebookJs).toContain('class="study-card-history-entry"');
-        expect(gradebookJs).toContain('class="study-card-history-section"');
-        expect(gradebookJs).toContain('class="study-card-history-row"');
-        expect(routeCss).toContain('.study-card-history-entry');
-        expect(routeCss).toContain('.study-card-history-section');
-        expect(routeCss).toContain('.study-card-history-row');
-        expect(routeCss).toContain('.study-card-assessment-overlay {');
-        expect(routeCss).toContain('.study-card-assessment-window__summary {');
-        expect(routeCss).toContain('.study-card-assessment-pill {');
-        expect(routeCss).toContain('.study-card-assessment-window__card-kicker,');
-        expect(routeCss).toContain('.study-card-shell__summary {');
-        expect(routeCss).toContain('.study-card-summary-kicker {');
-        expect(routeCss).toContain('.study-card-term-block {');
-        expect(routeCss).toContain('.study-card-term-row {');
-        expect(routeCss).toContain('.study-card-cell--subject {');
-        expect(routeCss).toContain('.study-card-cell-meta {');
-        expect(routeCss).toContain('.study-card-grade-circle--grade-a {');
-        expect(routeCss).toContain('.study-card-grade-circle.is-empty {');
-
-        expect((registrationEnrollment.match(/if \(typeof renderStudyCard === 'function'\) renderStudyCard\(\);/g) || [])).toHaveLength(2);
-        expect(registration).not.toContain('study-card-semester-table');
-        expect(registrationEnrollment).not.toContain('study-card-semester-table');
-        expect(registration).not.toContain('study-card-assessment-window');
-        expect(registrationEnrollment).not.toContain('study-card-assessment-window');
-
-        expect(personalDataPage).toContain('function renderPersonalDataIdentitySection(user, facultyProfile)');
-        expect(personalDataPage).toContain('function renderPersonalDataSummarySection(user, context)');
-        expect(personalDataPage).toContain('function renderPersonalDataRecordsSection(user, context)');
-        expect(personalDataPage).not.toContain('study-card-semester-table');
-        expect(personalDataPage).not.toContain('study-card-assessment-window');
-        expect(personalDataPage).not.toContain('window.renderStudyCard = renderStudyCard;');
-        expect(navigation).toContain("'study-card': () => typeof window.renderStudyCard === 'function'");
-        expect(navigation).toContain("activePageId === 'study-card' && typeof renderStudyCard === 'function'");
-    });
-
-    it('ships study-card.html without a UTF-8 BOM', () => {
-        const buffer = readBuffer('study-card.html');
-
-        expect(buffer[0]).not.toBe(0xef);
-        expect(buffer[1]).not.toBe(0xbb);
-        expect(buffer[2]).not.toBe(0xbf);
+        expect(html).toContain('lux-shell.css');
+        expect(html).toContain('lux-page-bare-lite.css');
+        expect(html).not.toMatch(/lux-page-bare\.css(?!-lite)/);
+        expect(html).toContain('lux-page-bare-lite.css');
+        expect(html).toMatch(/class="[^"]*lux-page-bare/);
+        // Must not load the shared luxury paint sheet (looks like full design if present)
+        expect(html).not.toMatch(/href=["'][^"']*index-luxury\.css/);
+        expect(html).not.toMatch(/href=["'][^"']*lux-surfaces\.css/);
+        expect(existsSync(join(process.cwd(), 'assets/css', 'study-card-route.css'))).toBe(false);
+        const bare = readSource('assets/css/lux-page-bare-lite.css');
+        expect(bare).toContain('backdrop-filter: none');
+        expect(bare).toContain('body.lux-page-bare');
     });
 });

@@ -354,13 +354,7 @@
             : '';
         return `<div class="social-neo-dialog-backdrop" data-action="dialog-close">
             <form class="social-neo-dialog-card social-neo-dialog-card--form social-neo-dialog-card--group-create social-neo-dialog-card--lms-create social-neo-dialog-card--social-glass" data-form="create-group" data-action="noop" data-lux-transparency-exempt="1">
-                <div class="social-neo-section-head social-neo-dialog-head">
-                    <div class="social-neo-dialog-heading">
-                        <strong class="social-neo-dialog-title"><i class="fas fa-layer-group" aria-hidden="true"></i> Create group</strong>
-                        <span class="social-neo-dialog-subtitle">Name your group, set visibility, invite members, then open the group workspace.</span>
-                    </div>
-                    <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-close-btn" type="button" data-action="dialog-close"><i class="fas fa-times"></i></button>
-                </div>
+                ${typeof socialNeoDialogHead === 'function' ? socialNeoDialogHead('Create group', 'Name your group, set visibility, invite members, then open the group workspace.', { icon: 'fas fa-layer-group' }) : ''}
                 <div class="social-neo-dialog-body social-neo-dialog-body--group-create">
                     <section class="social-neo-dialog-group-create-section">
                         <div class="social-neo-dialog-group-create-section-head">
@@ -582,10 +576,7 @@
                <button class="social-neo-btn social-neo-btn-primary social-neo-dialog-submit-btn" type="submit">Leave group</button>`;
         return `<div class="social-neo-dialog-backdrop" data-action="dialog-close">
             <form class="social-neo-dialog-card" data-form="dialog-group-leave" data-action="noop">
-                <div class="social-neo-section-head social-neo-dialog-head">
-                    <div class="social-neo-dialog-heading"><strong class="social-neo-dialog-title">Leave group</strong><span class="social-neo-dialog-subtitle">Complete all three verification steps before leaving.</span></div>
-                    <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-close-btn" type="button" data-action="dialog-close"><i class="fas fa-times"></i></button>
-                </div>
+                ${typeof socialNeoDialogHead === 'function' ? socialNeoDialogHead('Leave group', 'Complete all three verification steps before leaving.') : ''}
                 <div class="social-neo-pages-wizard-steps social-neo-dialog-group-leave-steps">
                     ${[
                         ['1', 'Review'],
@@ -608,7 +599,6 @@
             </form>
         </div>`;
     }
-
 
     const GROUP_OWNED_DIALOG_KINDS = new Set([
         'group-create',
@@ -654,13 +644,7 @@
                 : `<div class="social-neo-empty">You are not in any groups you can invite from yet.</div>`;
             return `<div class="social-neo-dialog-backdrop" data-action="dialog-close">
                 <form class="social-neo-dialog-card social-neo-dialog-card--compact social-neo-dialog-card--form" data-form="dialog-group-invite" data-action="noop">
-                    <div class="social-neo-section-head social-neo-dialog-head">
-                        <div class="social-neo-dialog-heading">
-                            <strong class="social-neo-dialog-title"><i class="fas fa-envelope-open-text" aria-hidden="true"></i> Invite to group</strong>
-                            <span class="social-neo-dialog-subtitle">They will get a notification and can accept or decline.</span>
-                        </div>
-                        <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-close-btn" type="button" data-action="dialog-close"><i class="fas fa-times"></i></button>
-                    </div>
+                    ${typeof socialNeoDialogHead === 'function' ? socialNeoDialogHead('Invite to group', 'They will get a notification and can accept or decline.', { icon: 'fas fa-envelope-open-text' }) : ''}
                     <div class="social-neo-dialog-preview social-neo-dialog-recipient-preview">
                         <div class="social-neo-person social-neo-person-start-gap-12">
                             ${avatar(targetAccount, 'social-neo-avatar-sm')}

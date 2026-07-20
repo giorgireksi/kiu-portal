@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
 function readSource(relativePath) {
@@ -89,7 +89,7 @@ describe('home dashboard load recovery', () => {
         expect(luxury).toContain('function renderHomeChromeSkeleton(');
         expect(luxury).toMatch(/isLuxuryHomeRoute\(\) \{[\s\S]*ensureLuxuryHomeDashboardBundle[\s\S]*renderHomeShell\(\)/);
         expect(luxury).not.toContain('ensureLuxuryHomeDashboardBundle({ preload: false, allowWhileNotHome: true }).finally(runInitialShellSync)');
-        expect(luxury).toContain('const scheduleInitialShellSync = window.requestAnimationFrame');
+        expect(luxury).toContain('const scheduleInitialShellSync = window.requestIdleCallback || ((cb) => window.setTimeout(cb, 0));');
         expect(navigation).toContain('window.__kiuIndexChromeBootstrapped === true');
         expect(navigation).toContain('chromeOnly: useChromeOnly');
     });

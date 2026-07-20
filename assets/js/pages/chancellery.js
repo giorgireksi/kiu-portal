@@ -14,7 +14,8 @@ let chancelleryUiState = {
     filters: {
         status: 'all',
         type: 'all',
-        subject: 'all'
+        subject: 'all',
+        search: ''
     }
 };
 
@@ -50,11 +51,63 @@ function ensureChancelleryUiState() {
         chancelleryUiState = {
             tab: 'appeals',
             selectedCaseId: '',
-            filters: { status: 'all', type: 'all', subject: 'all' }
+            filters: { status: 'all', type: 'all', subject: 'all', search: '' }
         };
     }
-    chancelleryUiState.filters = chancelleryUiState.filters || { status: 'all', type: 'all', subject: 'all' };
+    chancelleryUiState.filters = chancelleryUiState.filters || { status: 'all', type: 'all', subject: 'all', search: '' };
     return chancelleryUiState;
+}
+
+function syncChancelleryUiFiltersForRole(role) {
+    const uiState = ensureChancelleryUiState();
+    if (typeof buildDefaultChancelleryUiFiltersForRole === 'function') {
+        uiState.filters = buildDefaultChancelleryUiFiltersForRole(role, uiState.filters || {});
+    }
+}
+
+function filterChancelleryRequests(requests, filters = {}, role = null) {
+    const effectiveRole = role || (typeof getEffectiveUserRole === 'function' ? getEffectiveUserRole() : USER_ROLES.STUDENT);
+    if (typeof applyChancelleryConfiguredFilters === 'function' && typeof getChancelleryEnabledFiltersForRole === 'function') {
+        return applyChancelleryConfiguredFilters(
+            requests,
+            filters,
+            getChancelleryEnabledFiltersForRole(effectiveRole)
+        );
+    }
+    const statusFilter = normalizeChancelleryKey(filters.status || 'all');
+    const typeFilter = normalizeChancelleryKey(filters.type || 'all');
+    const subjectFilter = normalizeChancelleryKey(filters.subject || 'all');
+    const search = String(filters.search || '').trim().toLowerCase();
+    return requests.filter(request => {
+        if (statusFilter !== 'all' && normalizeChancelleryKey(request.status) !== statusFilter) return false;
+        if (typeFilter !== 'all' && normalizeChancelleryKey(request.requestKind) !== typeFilter) return false;
+        if (subjectFilter !== 'all' && normalizeChancelleryKey(request.subjectId) !== subjectFilter) return false;
+        if (!search) return true;
+        const haystack = [
+            request.id,
+            request.subjectName,
+            request.studentName,
+            request.message,
+            request.latestPreview
+        ].join(' ').toLowerCase();
+        return haystack.includes(search);
+    });
+}
+
+function resolveChancellerySelection(requests, { autoSelect = false } = {}) {
+    const uiState = ensureChancelleryUiState();
+    if (!requests.length) {
+        uiState.selectedCaseId = '';
+        return null;
+    }
+    const selected = requests.find(request => request.id === uiState.selectedCaseId) || null;
+    if (selected) return selected;
+    if (!autoSelect) {
+        uiState.selectedCaseId = '';
+        return null;
+    }
+    uiState.selectedCaseId = requests[0].id;
+    return requests[0];
 }
 
 function normalizeChancelleryStatus(value) {
@@ -275,18 +328,6 @@ function getVisibleChancelleryRequests() {
     return [];
 }
 
-function ensureSelectedChancelleryCase(requests) {
-    const uiState = ensureChancelleryUiState();
-    if (!requests.length) {
-        uiState.selectedCaseId = '';
-        return null;
-    }
-    if (!uiState.selectedCaseId || !requests.some(request => request.id === uiState.selectedCaseId)) {
-        uiState.selectedCaseId = requests[0].id;
-    }
-    return requests.find(request => request.id === uiState.selectedCaseId) || requests[0] || null;
-}
-
 function getChancelleryStatusMeta(status) {
     const normalized = normalizeChancelleryStatus(status);
     if (normalized === 'Resolved') return { label: normalized, tone: 'success', icon: 'fas fa-circle-check' };
@@ -322,20 +363,35 @@ function getChancelleryLatestPreview(request) {
 
 function setChancellerySelectedCase(caseId) {
     ensureChancelleryUiState().selectedCaseId = caseId;
-    renderChancelleryPage();
+    if (!syncChancelleryWorkspaceRegion()) {
+        renderChancelleryPage();
+    }
 }
 
 function setChancelleryFilter(filterKey, value) {
     const uiState = ensureChancelleryUiState();
-    uiState.filters[filterKey] = value || 'all';
-    uiState.selectedCaseId = '';
-    renderChancelleryPage();
+    uiState.filters[filterKey] = filterKey === 'search' ? String(value || '') : (value || 'all');
+    if (filterKey !== 'search') uiState.selectedCaseId = '';
+    if (!syncChancelleryFilterRegions(filterKey)) {
+        renderChancelleryPage();
+    }
 }
 
 function switchChancelleryTab(tab) {
     const uiState = ensureChancelleryUiState();
-    uiState.tab = tab === 'finance' ? 'finance' : 'appeals';
-    renderChancelleryPage();
+    const nextTab = tab === 'finance' ? 'finance' : 'appeals';
+    if (uiState.tab === nextTab) return;
+    uiState.tab = nextTab;
+    if (!syncChancelleryTabRegions()) {
+        renderChancelleryPage();
+    }
+}
+
+function showChancelleryCompose() {
+    ensureChancelleryUiState().selectedCaseId = '';
+    if (!syncChancelleryWorkspaceRegion()) {
+        renderChancelleryPage();
+    }
 }
 
 function bindChancelleryDelegates(root) {
@@ -359,6 +415,10 @@ function bindChancelleryDelegates(root) {
         if (!actionTrigger) return;
         event.preventDefault();
         const action = String(actionTrigger.getAttribute('data-chancellery-action') || '').trim();
+        if (action === 'show-compose') {
+            showChancelleryCompose();
+            return;
+        }
         if (action === 'submit-request') {
             submitRequest();
             return;
@@ -369,6 +429,12 @@ function bindChancelleryDelegates(root) {
         }
         if (action === 'mark-resolved') {
             updateChancelleryRequestStatus(String(actionTrigger.getAttribute('data-request-id') || ''), 'Resolved');
+        }
+    });
+    root.addEventListener('input', function onChancelleryInput(event) {
+        const filterTrigger = event.target.closest('[data-chancellery-filter]');
+        if (filterTrigger && filterTrigger.getAttribute('data-chancellery-filter') === 'search') {
+            setChancelleryFilter('search', filterTrigger.value);
         }
     });
     root.addEventListener('change', function onChancelleryChange(event) {
@@ -450,7 +516,11 @@ function submitRequest() {
     uiState.selectedCaseId = newRequest.id;
     uiState.tab = 'appeals';
     saveState();
-    renderChancelleryPage();
+    if (!syncChancelleryMutationRegions()) {
+        if (!syncChancelleryTabRegions()) {
+            renderChancelleryPage();
+        }
+    }
     alert('Your request was sent to administration and the course staff.');
 }
 
@@ -472,7 +542,9 @@ function updateChancelleryRequestStatus(requestId, nextStatus) {
         status: normalizedStatus
     }));
     saveState();
-    renderChancelleryPage();
+    if (!syncChancelleryMutationRegions()) {
+        renderChancelleryPage();
+    }
 }
 
 function submitChancelleryStaffReply() {
@@ -499,7 +571,9 @@ function submitChancelleryStaffReply() {
         request.currentStep = getChancelleryStatusStepIndex(request.status);
     }
     saveState();
-    renderChancelleryPage();
+    if (!syncChancelleryMutationRegions()) {
+        renderChancelleryPage();
+    }
 }
 
 function renderChancelleryThread(request) {
@@ -565,129 +639,233 @@ function renderChancelleryRequestList(requests, selectedCaseId) {
     }</div>`;
 }
 
-function renderChancelleryStudentAppealsPanel(requests, selectedRequest) {
-    const subjects = getStudentGradedSubjectsForChancellery();
+function renderChancelleryComposeForm(subjects) {
     return `
-        <div class="lux-layout-split">
-            <div class="lux-stack">
-                <div class="lux-card">
-                    <div class="lux-card-body">
-                        <div class="lux-card-head lux-chancellery-card-head">
-                            <div>
-                                <div class="lux-page-kicker"><i class="fas fa-file-circle-plus"></i> New Appeal</div>
-                                <div class="lux-card-title lux-chancellery-card-title">Submit a request</div>
-                                <div class="lux-card-copy">Choose a graded subject, select the request type, and explain what should be reviewed.</div>
-                            </div>
-                        </div>
-                        <div class="lux-field-grid">
-                            <div class="lux-field">
-                                <label for="chancellery-subject-select">Subject</label>
-                                <select id="chancellery-subject-select" class="lux-control lux-chancellery-control">
-                                    <option value="">Select a graded subject</option>
-                                    ${subjects.map(subject => `<option value="${escapeChancelleryHtml(`${subject.subjectId}::${subject.groupId}`)}">${escapeChancelleryHtml(subject.subjectName)} Â· ${escapeChancelleryHtml(subject.groupName)}</option>`).join('')}
-                                </select>
-                            </div>
-                            <div class="lux-field">
-                                <label for="chancellery-request-kind">Request Type</label>
-                                <select id="chancellery-request-kind" class="lux-control lux-chancellery-control">
-                                    <option value="grade-appeal">Grade Appeal</option>
-                                    <option value="retake-request">Retake Request</option>
-                                </select>
-                            </div>
-                            <div class="lux-field">
-                                <label for="chancellery-request-message">Reason</label>
-                                <textarea id="chancellery-request-message" class="lux-control lux-chancellery-control" rows="6" placeholder="Explain the evaluation issue or the reason for the retake request..."></textarea>
-                            </div>
-                        </div>
-                        <div class="lux-card-actions lux-chancellery-form-actions">
-                            <button type="button" class="lux-primary-btn lux-chancellery-submit-btn" data-chancellery-action="submit-request">
-                                <i class="fas fa-paper-plane"></i> Send Request
-                            </button>
-                        </div>
-                        <div class="lux-meta lux-chancellery-card-note">Requests are delivered to administration and the assigned professor or TA for that subject. Grades are not changed automatically from this page.</div>
-                    </div>
-                </div>
-                <div class="lux-card">
-                    <div class="lux-card-body">
-                        <div class="lux-actions-between lux-chancellery-actions-between">
-                            <div>
-                                <div class="lux-card-title lux-chancellery-card-title">My Cases</div>
-                                <div class="lux-card-copy">Track status, staff replies, and the latest note for each request.</div>
-                            </div>
-                            <span class="lux-pill">${requests.length} case${requests.length === 1 ? '' : 's'}</span>
-                        </div>
-                        <div class="lux-chancellery-list-region">${renderChancelleryRequestList(requests, selectedRequest?.id || '')}</div>
-                    </div>
+        <div class="lux-chancellery-compose-form">
+            <div class="lux-card-head lux-chancellery-card-head">
+                <div>
+                    <div class="lux-page-kicker"><i class="fas fa-file-circle-plus"></i> New request</div>
+                    <div class="lux-card-title lux-chancellery-card-title">Submit appeal or retake</div>
                 </div>
             </div>
-            <div class="lux-card">
-                <div class="lux-card-body">
-                    ${selectedRequest ? `
-                        <div class="lux-card-head lux-chancellery-card-head">
+            <div class="lux-field-grid lux-field-grid--inline">
+                <div class="lux-field">
+                    <label for="chancellery-subject-select">Subject</label>
+                    <select id="chancellery-subject-select" class="lux-control lux-chancellery-control">
+                        <option value="">Select a graded subject</option>
+                        ${subjects.map(subject => `<option value="${escapeChancelleryHtml(`${subject.subjectId}::${subject.groupId}`)}">${escapeChancelleryHtml(subject.subjectName)} · ${escapeChancelleryHtml(subject.groupName)}</option>`).join('')}
+                    </select>
+                </div>
+                <div class="lux-field">
+                    <label for="chancellery-request-kind">Type</label>
+                    <select id="chancellery-request-kind" class="lux-control lux-chancellery-control">
+                        <option value="grade-appeal">Grade Appeal</option>
+                        <option value="retake-request">Retake Request</option>
+                    </select>
+                </div>
+                <div class="lux-field">
+                    <label for="chancellery-request-message">Reason</label>
+                    <textarea id="chancellery-request-message" class="lux-control lux-chancellery-control" rows="4" placeholder="Describe the issue or retake reason..."></textarea>
+                </div>
+            </div>
+            <div class="lux-card-actions lux-chancellery-form-actions">
+                <button type="button" class="lux-primary-btn lux-chancellery-submit-btn" data-chancellery-action="submit-request">
+                    <i class="fas fa-paper-plane"></i> Send
+                </button>
+            </div>
+        </div>
+    `;
+}
+
+function renderChancelleryCaseMeta(request) {
+    const facultyLabel = typeof getFacultyLabel === 'function' ? getFacultyLabel(request.faculty) : request.faculty;
+    const recipients = [
+        'Administration',
+        request.recipientContext?.professorName,
+        request.recipientContext?.taName
+    ].filter(Boolean).map(name => escapeChancelleryHtml(name)).join('<br>');
+    return `
+        <div class="lux-subcards lux-chancellery-subcards-spaced">
+            <div class="lux-subcard lux-chancellery-subcard">
+                <div class="lux-overline">Recipients</div>
+                <div class="lux-meta">${recipients}</div>
+            </div>
+            <div class="lux-subcard lux-chancellery-subcard">
+                <div class="lux-overline">Faculty</div>
+                <div class="lux-meta">${escapeChancelleryHtml(facultyLabel)}</div>
+            </div>
+            <div class="lux-subcard lux-chancellery-subcard">
+                <div class="lux-overline">Submitted</div>
+                <div class="lux-meta">${escapeChancelleryHtml(formatChancelleryDate(request.createdAt, true))}</div>
+            </div>
+        </div>
+    `;
+}
+
+function renderChancelleryCaseDetailPanel(request, options = {}) {
+    const { staff = false, readOnly = false } = options;
+    const headKicker = staff ? 'Selected request' : 'Case';
+    const metaLine = staff
+        ? [request.id, request.studentName, deriveChancelleryTypeLabel(request.requestKind)]
+        : [request.id, deriveChancelleryTypeLabel(request.requestKind), request.groupName || request.groupId || 'No group'];
+    return `
+        <div class="lux-card-head lux-chancellery-card-head">
+            <div>
+                <div class="lux-page-kicker"><i class="fas fa-timeline"></i> ${headKicker}</div>
+                <div class="lux-card-title lux-chancellery-card-title">${escapeChancelleryHtml(request.subjectName)}</div>
+                <div class="lux-inline-meta lux-chancellery-inline-meta">
+                    ${metaLine.map(item => `<span>${escapeChancelleryHtml(item)}</span>`).join('')}
+                </div>
+            </div>
+            <div class="lux-chancellery-status-actions">
+                ${getChancelleryStatusPill(request.status)}
+                ${staff ? (readOnly ? `
+                    <span class="lux-pill lux-chancellery-view-pill"><i class="fas fa-eye"></i> View only</span>
+                ` : `
+                    <select data-chancellery-status-target="${escapeChancelleryHtml(request.id)}" class="lux-control lux-chancellery-control lux-chancellery-status-select">
+                        ${CHANCELLERY_STATUS_FLOW.map(status => `<option value="${escapeChancelleryHtml(status)}"${request.status === status ? ' selected' : ''}>${escapeChancelleryHtml(status)}</option>`).join('')}
+                    </select>
+                `) : ''}
+            </div>
+        </div>
+        ${renderChancelleryCaseMeta(request)}
+        <div class="lux-card-title lux-chancellery-section-title">Thread</div>
+        ${renderChancelleryThread(request)}
+        ${staff ? `
+            <div class="lux-chancellery-thread-region">
+                ${readOnly ? `
+                    <div class="lux-meta">Read-only view. Continue student conversations in Student Service.</div>
+                ` : `
+                    <div class="lux-field-grid">
+                        <div class="lux-field">
+                            <label for="chancellery-staff-reply">Reply</label>
+                            <textarea id="chancellery-staff-reply" class="lux-control lux-chancellery-control" rows="4" placeholder="Write an update for the student..."></textarea>
+                        </div>
+                    </div>
+                    <div class="lux-card-actions lux-chancellery-reply-actions">
+                        <button type="button" class="lux-secondary-btn" data-chancellery-action="mark-resolved" data-request-id="${escapeChancelleryHtml(request.id)}">
+                            <i class="fas fa-circle-check"></i> Resolved
+                        </button>
+                        <button type="button" class="lux-primary-btn" data-chancellery-action="submit-staff-reply">
+                            <i class="fas fa-reply"></i> Send
+                        </button>
+                    </div>
+                `}
+            </div>
+        ` : ''}
+    `;
+}
+
+function renderChancelleryFilterSelect(filterKey, label, value, options) {
+    const current = normalizeChancelleryKey(value || 'all');
+    return `
+        <div class="lux-field lux-chancellery-filter-field">
+            <label>${escapeChancelleryHtml(label)}</label>
+            <select data-chancellery-filter="${escapeChancelleryHtml(filterKey)}" class="lux-control lux-chancellery-control">
+                ${options.map(option => {
+                    const key = normalizeChancelleryKey(option.value);
+                    return `<option value="${escapeChancelleryHtml(option.value)}"${current === key ? ' selected' : ''}>${escapeChancelleryHtml(option.label)}</option>`;
+                }).join('')}
+            </select>
+        </div>
+    `;
+}
+
+
+function renderChancelleryCommandBar({ role, uiState, count, subjectOptions = [], showCompose = false }) {
+    const filters = uiState.filters || {};
+    const configuredFilters = typeof getChancelleryEnabledFiltersForRole === 'function'
+        ? getChancelleryEnabledFiltersForRole(role)
+        : [];
+    const dynamicSubjects = subjectOptions.map(request => ({
+        value: normalizeChancelleryKey(request.subjectId),
+        label: request.subjectName
+    }));
+    const droplistMarkup = configuredFilters.map((filter) => {
+        const options = typeof resolveChancelleryFilterOptions === 'function'
+            ? resolveChancelleryFilterOptions(filter, { subjects: dynamicSubjects })
+            : (filter.options || []);
+        return renderChancelleryFilterSelect(filter.id, filter.label, filters[filter.id], options);
+    }).join('');
+    return `
+        <div class="filter-shell lux-chancellery-command-bar" data-lux-visual-skip="1">
+            ${showCompose ? `
+                <button type="button" class="lux-primary-btn" data-chancellery-action="show-compose">
+                    <i class="fas fa-plus"></i> New request
+                </button>
+            ` : ''}
+            <div class="lux-field lux-chancellery-filter-field lux-chancellery-search">
+                <label class="sr-only" for="chancellery-search">Search</label>
+                <input id="chancellery-search" type="search" class="lux-control lux-chancellery-control" data-chancellery-filter="search" value="${escapeChancelleryHtml(filters.search || '')}" placeholder="Search cases...">
+            </div>
+            ${droplistMarkup}
+            <span class="lux-chancellery-command-spacer" aria-hidden="true"></span>
+            <span class="lux-pill">${count} case${count === 1 ? '' : 's'}</span>
+        </div>
+    `;
+}
+
+function renderChancelleryWorkspace({ listTitle, listCopy, requests, selectedRequest, rightMarkup }) {
+    return `
+        <div class="lux-chancellery-workspace">
+            <div class="lux-card lux-chancellery-main-panel">
+                <div class="lux-card-body lux-chancellery-workspace-split">
+                    <section class="lux-chancellery-list-panel">
+                        <div class="lux-actions-between lux-chancellery-actions-between">
                             <div>
-                                <div class="lux-page-kicker"><i class="fas fa-timeline"></i> Active Case</div>
-                                <div class="lux-card-title lux-chancellery-card-title">${escapeChancelleryHtml(selectedRequest.subjectName)}</div>
-                                <div class="lux-inline-meta lux-chancellery-inline-meta">
-                                    <span>${escapeChancelleryHtml(selectedRequest.id)}</span>
-                                    <span>${escapeChancelleryHtml(deriveChancelleryTypeLabel(selectedRequest.requestKind))}</span>
-                                    <span>${escapeChancelleryHtml(selectedRequest.groupName || selectedRequest.groupId || 'No group')}</span>
-                                </div>
-                            </div>
-                            ${getChancelleryStatusPill(selectedRequest.status)}
-                        </div>
-                        <div class="lux-subcards lux-chancellery-subcards-spaced">
-                            <div class="lux-subcard lux-chancellery-subcard">
-                                <div class="lux-overline">Recipients</div>
-                                <div class="lux-meta">Administration${selectedRequest.recipientContext?.professorName ? `<br>${escapeChancelleryHtml(selectedRequest.recipientContext.professorName)}` : ''}${selectedRequest.recipientContext?.taName ? `<br>${escapeChancelleryHtml(selectedRequest.recipientContext.taName)}` : ''}</div>
-                            </div>
-                            <div class="lux-subcard lux-chancellery-subcard">
-                                <div class="lux-overline">Faculty</div>
-                                <div class="lux-meta">${escapeChancelleryHtml(typeof getFacultyLabel === 'function' ? getFacultyLabel(selectedRequest.faculty) : selectedRequest.faculty)}</div>
-                            </div>
-                            <div class="lux-subcard lux-chancellery-subcard">
-                                <div class="lux-overline">Submitted</div>
-                                <div class="lux-meta">${escapeChancelleryHtml(formatChancelleryDate(selectedRequest.createdAt, true))}</div>
+                                <div class="lux-card-title lux-chancellery-card-title">${escapeChancelleryHtml(listTitle)}</div>
+                                ${listCopy ? `<div class="lux-card-copy">${escapeChancelleryHtml(listCopy)}</div>` : ''}
                             </div>
                         </div>
-                        <div class="lux-card-title lux-chancellery-section-title">Conversation & Workflow</div>
-                        ${renderChancelleryThread(selectedRequest)}
-                    ` : `
-                        <div class="lux-empty-state">Select one of your requests to open the full history, recipients, and status timeline.</div>
-                    `}
+                        <div class="lux-chancellery-list-region">${renderChancelleryRequestList(requests, selectedRequest?.id || '')}</div>
+                    </section>
+                    <section class="lux-chancellery-detail-panel">
+                        <div class="lux-chancellery-detail-body">${rightMarkup}</div>
+                    </section>
                 </div>
             </div>
         </div>
     `;
 }
 
+function renderChancelleryStudentAppealsPanel(requests, selectedRequest) {
+    const subjects = getStudentGradedSubjectsForChancellery();
+    const uiState = ensureChancelleryUiState();
+    const filteredRequests = filterChancelleryRequests(requests, uiState.filters);
+    const activeRequest = selectedRequest && filteredRequests.some(request => request.id === selectedRequest.id)
+        ? selectedRequest
+        : null;
+    const rightMarkup = activeRequest
+        ? renderChancelleryCaseDetailPanel(activeRequest)
+        : renderChancelleryComposeForm(subjects);
+    return renderChancelleryWorkspace({
+        listTitle: 'My cases',
+        listCopy: '',
+        requests: filteredRequests,
+        selectedRequest: activeRequest,
+        rightMarkup
+    });
+}
+
 function renderChancelleryStudentFinancePanel() {
     const currentUser = getCurrentUser();
     const tuitionBalances = KIU_STATE?.tuitionBalances || {};
     const balance = Number(tuitionBalances[currentUser?.id] || tuitionBalances.student || 0);
-    const statusLabel = balance > 0 ? 'Outstanding balance' : 'All fees are paid';
+    const statusLabel = balance > 0 ? 'Outstanding balance' : 'Paid';
     const tone = balance > 0 ? 'warning' : 'success';
     return `
-        <div class="lux-card">
-            <div class="lux-card-body">
-                <div class="lux-card-head lux-chancellery-card-head">
-                    <div>
-                        <div class="lux-page-kicker"><i class="fas fa-wallet"></i> Financial Summary</div>
-                        <div class="lux-card-title lux-chancellery-card-title">Bursar snapshot</div>
-                        <div class="lux-card-copy">Read-only balance information while appeal and retake requests stay in the main workspace.</div>
-                    </div>
-                    <span class="lux-status-pill lux-chancellery-finance-pill is-${tone}">${escapeChancelleryHtml(statusLabel)}</span>
-                </div>
-                <div class="lux-subcards">
-                    <div class="lux-subcard lux-chancellery-subcard">
-                        <div class="lux-overline">Current Balance</div>
-                        <div id="finance-current-balance" class="lux-metric">${balance.toLocaleString()} GEL</div>
-                        <div id="finance-status-note" class="lux-status-pill lux-chancellery-finance-pill is-${balance > 0 ? 'warning' : 'success'}">${escapeChancelleryHtml(statusLabel)}</div>
-                    </div>
-                    <div class="lux-subcard lux-chancellery-subcard">
-                        <div class="lux-overline">Portal Note</div>
-                        <div class="lux-meta">This page is currently focused on exam appeals and retake requests. Tuition payments and detailed statements stay read-only here.</div>
-                    </div>
-                </div>
+        <div class="lux-strip-grid lux-strip-grid--adaptive lux-chancellery-finance-grid">
+            <div class="lux-stat-card lux-strip-card surface-card lux-chancellery-subcard">
+                <div class="lux-stat-label">Balance</div>
+                <div id="finance-current-balance" class="lux-stat-value">${balance.toLocaleString()} GEL</div>
+            </div>
+            <div class="lux-stat-card lux-strip-card surface-card lux-chancellery-subcard">
+                <div class="lux-stat-label">Status</div>
+                <div id="finance-status-note" class="lux-status-pill lux-chancellery-finance-pill is-${tone}">${escapeChancelleryHtml(statusLabel)}</div>
+            </div>
+            <div class="lux-stat-card lux-strip-card surface-card lux-chancellery-subcard">
+                <div class="lux-stat-label">Note</div>
+                <div class="lux-meta">Read-only tuition snapshot. Appeals stay on the other tab.</div>
             </div>
         </div>
     `;
@@ -696,161 +874,23 @@ function renderChancelleryStudentFinancePanel() {
 function renderChancelleryStaffWorkspace(requests) {
     const uiState = ensureChancelleryUiState();
     const isReadOnly = getEffectiveUserRole() === USER_ROLES.STUDENT_SERVICE;
-    const statusFilter = normalizeChancelleryKey(uiState.filters.status || 'all');
-    const typeFilter = normalizeChancelleryKey(uiState.filters.type || 'all');
-    const subjectFilter = normalizeChancelleryKey(uiState.filters.subject || 'all');
-    const filteredRequests = requests.filter(request => {
-        if (statusFilter !== 'all' && normalizeChancelleryKey(request.status) !== statusFilter) return false;
-        if (typeFilter !== 'all' && normalizeChancelleryKey(request.requestKind) !== typeFilter) return false;
-        if (subjectFilter !== 'all' && normalizeChancelleryKey(request.subjectId) !== subjectFilter) return false;
-        return true;
-    });
-    const selectedFilteredRequest = ensureSelectedChancelleryCase(filteredRequests);
-    const subjectOptions = [...new Map(requests.map(request => [request.subjectId, request])).values()];
-    const roleLabel = getEffectiveUserRole() === USER_ROLES.ADMIN
-        ? 'Administration Inbox'
+    const filteredRequests = filterChancelleryRequests(requests, uiState.filters);
+    const selectedRequest = resolveChancellerySelection(filteredRequests, { autoSelect: true });
+    const rightMarkup = selectedRequest
+        ? renderChancelleryCaseDetailPanel(selectedRequest, { staff: true, readOnly: isReadOnly })
+        : '<div class="lux-empty-state">Select a request from the queue.</div>';
+    const listTitle = getEffectiveUserRole() === USER_ROLES.ADMIN
+        ? 'Inbox'
         : isReadOnly
-            ? 'Student Service Read-Only Cases'
-            : 'Course Staff Inbox';
-    const openCount = requests.filter(request => !['Resolved', 'Rejected'].includes(request.status)).length;
-    const resolvedCount = requests.filter(request => request.status === 'Resolved').length;
-    const waitingCount = requests.filter(request => ['Waiting for Staff', 'Waiting for Student'].includes(request.status)).length;
-    return `
-        <div class="lux-layout-split">
-            <div class="lux-stack">
-                <div class="lux-card">
-                    <div class="lux-card-body">
-                        <div class="lux-card-head lux-chancellery-card-head">
-                            <div>
-                                <div class="lux-page-kicker"><i class="fas fa-inbox"></i> ${escapeChancelleryHtml(roleLabel)}</div>
-                                <div class="lux-card-title lux-chancellery-card-title">Workflow filters</div>
-                                <div class="lux-card-copy">${isReadOnly ? 'Use this case view to verify office workflow status before replying in Student Service.' : 'Review appeals, answer students, and keep the workflow status current.'}</div>
-                            </div>
-                        </div>
-                        <div class="lux-stat-grid lux-strip-grid lux-strip-grid--adaptive lux-chancellery-stats-grid">
-                            <div class="lux-stat-card lux-strip-card surface-card">
-                                <div class="lux-stat-label">Open</div>
-                                <div class="lux-stat-value">${openCount}</div>
-                            </div>
-                            <div class="lux-stat-card lux-strip-card surface-card">
-                                <div class="lux-stat-label">Resolved</div>
-                                <div class="lux-stat-value">${resolvedCount}</div>
-                            </div>
-                            <div class="lux-stat-card lux-strip-card surface-card">
-                                <div class="lux-stat-label">Waiting</div>
-                                <div class="lux-stat-value">${waitingCount}</div>
-                            </div>
-                        </div>
-                        <div class="lux-field-grid">
-                            <div class="lux-field">
-                                <label>Status</label>
-                                <select data-chancellery-filter="status" class="lux-control lux-chancellery-control">
-                                    <option value="all"${statusFilter === 'all' ? ' selected' : ''}>All statuses</option>
-                                    ${CHANCELLERY_STATUS_FLOW.map(status => `<option value="${escapeChancelleryHtml(normalizeChancelleryKey(status))}"${statusFilter === normalizeChancelleryKey(status) ? ' selected' : ''}>${escapeChancelleryHtml(status)}</option>`).join('')}
-                                </select>
-                            </div>
-                            <div class="lux-field">
-                                <label>Request Type</label>
-                                <select data-chancellery-filter="type" class="lux-control lux-chancellery-control">
-                                    <option value="all"${typeFilter === 'all' ? ' selected' : ''}>All types</option>
-                                    <option value="grade-appeal"${typeFilter === 'grade-appeal' ? ' selected' : ''}>Grade Appeal</option>
-                                    <option value="retake-request"${typeFilter === 'retake-request' ? ' selected' : ''}>Retake Request</option>
-                                    <option value="legacy"${typeFilter === 'legacy' ? ' selected' : ''}>Legacy Request</option>
-                                </select>
-                            </div>
-                            <div class="lux-field">
-                                <label>Subject</label>
-                                <select data-chancellery-filter="subject" class="lux-control lux-chancellery-control">
-                                    <option value="all"${subjectFilter === 'all' ? ' selected' : ''}>All subjects</option>
-                                    ${subjectOptions.map(request => `<option value="${escapeChancelleryHtml(normalizeChancelleryKey(request.subjectId))}"${subjectFilter === normalizeChancelleryKey(request.subjectId) ? ' selected' : ''}>${escapeChancelleryHtml(request.subjectName)}</option>`).join('')}
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="lux-card">
-                    <div class="lux-card-body">
-                        <div class="lux-actions-between lux-chancellery-actions-between">
-                            <div>
-                                <div class="lux-card-title lux-chancellery-card-title">Request Queue</div>
-                                <div class="lux-card-copy">${isReadOnly ? 'Use this read-only queue for student-support context.' : 'Only subjects in your staff scope appear here.'}</div>
-                            </div>
-                            <span class="lux-pill">${filteredRequests.length} item${filteredRequests.length === 1 ? '' : 's'}</span>
-                        </div>
-                        <div class="lux-chancellery-list-region">${renderChancelleryRequestList(filteredRequests, selectedFilteredRequest?.id || '')}</div>
-                    </div>
-                </div>
-            </div>
-            <div class="lux-card">
-                <div class="lux-card-body">
-                    ${selectedFilteredRequest ? `
-                        <div class="lux-card-head lux-chancellery-card-head">
-                            <div>
-                                <div class="lux-page-kicker"><i class="fas fa-scale-balanced"></i> Selected Request</div>
-                                <div class="lux-card-title lux-chancellery-card-title">${escapeChancelleryHtml(selectedFilteredRequest.subjectName)}</div>
-                                <div class="lux-inline-meta lux-chancellery-inline-meta">
-                                    <span>${escapeChancelleryHtml(selectedFilteredRequest.id)}</span>
-                                    <span>${escapeChancelleryHtml(selectedFilteredRequest.studentName)}</span>
-                                    <span>${escapeChancelleryHtml(deriveChancelleryTypeLabel(selectedFilteredRequest.requestKind))}</span>
-                                </div>
-                            </div>
-                            <div class="lux-chancellery-status-actions">
-                                ${getChancelleryStatusPill(selectedFilteredRequest.status)}
-                                ${isReadOnly ? `
-                                    <span class="lux-pill lux-chancellery-view-pill"><i class="fas fa-eye"></i> View only</span>
-                                ` : `
-                                    <select data-chancellery-status-target="${escapeChancelleryHtml(selectedFilteredRequest.id)}" class="lux-control lux-chancellery-control lux-chancellery-status-select">
-                                        ${CHANCELLERY_STATUS_FLOW.map(status => `<option value="${escapeChancelleryHtml(status)}"${selectedFilteredRequest.status === status ? ' selected' : ''}>${escapeChancelleryHtml(status)}</option>`).join('')}
-                                    </select>
-                                `}
-                            </div>
-                        </div>
-                        <div class="lux-subcards lux-chancellery-subcards-spaced">
-                            <div class="lux-subcard lux-chancellery-subcard">
-                                <div class="lux-overline">Recipients</div>
-                                <div class="lux-meta">Administration${selectedFilteredRequest.recipientContext?.professorName ? `<br>${escapeChancelleryHtml(selectedFilteredRequest.recipientContext.professorName)}` : ''}${selectedFilteredRequest.recipientContext?.taName ? `<br>${escapeChancelleryHtml(selectedFilteredRequest.recipientContext.taName)}` : ''}</div>
-                            </div>
-                            <div class="lux-subcard lux-chancellery-subcard">
-                                <div class="lux-overline">Faculty</div>
-                                <div class="lux-meta">${escapeChancelleryHtml(typeof getFacultyLabel === 'function' ? getFacultyLabel(selectedFilteredRequest.faculty) : selectedFilteredRequest.faculty)}</div>
-                            </div>
-                            <div class="lux-subcard lux-chancellery-subcard">
-                                <div class="lux-overline">Latest Update</div>
-                                <div class="lux-meta">${escapeChancelleryHtml(formatChancelleryDate(selectedFilteredRequest.updatedAt, true))}</div>
-                            </div>
-                        </div>
-                        <div class="lux-card-title lux-chancellery-section-title">Conversation & Workflow</div>
-                        ${renderChancelleryThread(selectedFilteredRequest)}
-                        <div class="lux-chancellery-thread-region">
-                            ${isReadOnly ? `
-                                <div class="lux-subcard lux-chancellery-subcard">
-                                    <div class="lux-overline">Operating boundary</div>
-                                    <div class="lux-meta">Use this page to confirm the official case status, then continue the student conversation back in Student Service. Appeal status changes and office replies stay in the academic workflow.</div>
-                                </div>
-                            ` : `
-                                <div class="lux-field-grid">
-                                    <div class="lux-field">
-                                        <label for="chancellery-staff-reply">Reply to Student</label>
-                                        <textarea id="chancellery-staff-reply" class="lux-control lux-chancellery-control" rows="5" placeholder="Write a clear update for the student..."></textarea>
-                                    </div>
-                                </div>
-                                <div class="lux-card-actions lux-chancellery-reply-actions">
-                                    <button type="button" class="lux-secondary-btn" data-chancellery-action="mark-resolved" data-request-id="${escapeChancelleryHtml(selectedFilteredRequest.id)}">
-                                        <i class="fas fa-circle-check"></i> Mark Resolved
-                                    </button>
-                                    <button type="button" class="lux-primary-btn" data-chancellery-action="submit-staff-reply">
-                                        <i class="fas fa-reply"></i> Send Reply
-                                    </button>
-                                </div>
-                            `}
-                        </div>
-                    ` : `
-                        <div class="lux-empty-state">Choose a request from the inbox to review the full thread, recipients, and status actions.</div>
-                    `}
-                </div>
-            </div>
-        </div>
-    `;
+            ? 'Cases'
+            : 'Queue';
+    return renderChancelleryWorkspace({
+        listTitle,
+        listCopy: '',
+        requests: filteredRequests,
+        selectedRequest,
+        rightMarkup
+    });
 }
 
 function ensureChancelleryShell(root) {
@@ -859,122 +899,504 @@ function ensureChancelleryShell(root) {
         root.innerHTML = `
             <div class="lux-page-shell" data-chancellery-shell="1">
                 <div id="chancellery-hero-region"></div>
+                <div id="chancellery-command-region"></div>
                 <div id="chancellery-content-region"></div>
             </div>
         `;
     }
     return {
         hero: root.querySelector('#chancellery-hero-region'),
-        content: root.querySelector('#chancellery-content-region')
+        command: root.querySelector('#chancellery-command-region'),
+        content: root.querySelector('#chancellery-content-region'),
     };
 }
 
 function renderChancelleryHero({ isStudent, uiState, headingTitle, headingCopy, heroStatusLabel, heroRows }) {
     return `
-        <div class="page-hero lux-chancellery-hero">
-            <div class="lux-chancellery-hero-copy">
-                <div class="lux-page-kicker"><i class="fas fa-scale-balanced"></i> Academic workflow</div>
-                <div class="page-hero-title">${headingTitle}</div>
-                <div class="page-hero-copy">${headingCopy}</div>
-                <div class="page-hero-meta">
-                    <span class="page-hero-badge"><i class="fas fa-scale-balanced"></i> Grade appeals</span>
-                    <span class="page-hero-badge"><i class="fas fa-rotate-right"></i> Retake requests</span>
-                    <span class="page-hero-badge"><i class="fas fa-comments"></i> Shared workflow thread</span>
-                </div>
-                ${isStudent ? `
-                    <div class="lux-card-actions lux-chancellery-hero-actions">
-                        <button type="button" id="chan-tab-appeals" class="lux-secondary-btn lux-chancellery-tab-btn ${uiState.tab !== 'finance' ? 'active' : ''}" data-chancellery-tab="appeals">
-                            <i class="fas fa-file-circle-question"></i> Appeals & Retakes
-                        </button>
-                        <button type="button" id="chan-tab-finance" class="lux-secondary-btn lux-chancellery-tab-btn ${uiState.tab === 'finance' ? 'active' : ''}" data-chancellery-tab="finance">
-                            <i class="fas fa-wallet"></i> Financial Summary
-                        </button>
-                    </div>
-                ` : ''}
-            </div>
-            <div class="lux-chancellery-hero-focus">
-                <div class="lux-card lux-chancellery-focus-card">
-                    <div class="lux-card-head lux-chancellery-card-head">
-                        <div>
-                    <div class="lux-page-kicker"><i class="fas fa-bolt"></i> Live signal</div>
-                            <div class="lux-card-title lux-chancellery-card-title">${isStudent ? 'Track your cases at a glance' : 'See the current case load'}</div>
-                            <div class="lux-card-copy">${isStudent ? 'Appeals, finance state, and the latest action stay visible in one calm panel.' : 'Open requests, waiting items, and resolved cases stay visible in one calm panel.'}</div>
+        <section class="lux-card lux-chancellery-hero-card lux-summary-surface lux-summary-surface--hero">
+            <div class="lux-card-body lux-hero-stage lux-chancellery-hero-stage">
+                <div class="lux-hero-main lux-chancellery-hero-main">
+                    <div class="lux-page-kicker"><i class="fas fa-scale-balanced"></i> Chancellery</div>
+                    <div class="page-hero-title">${headingTitle}</div>
+                    <div class="page-hero-copy">${headingCopy}</div>
+                    ${isStudent ? `
+                        <div class="lux-card-actions lux-chancellery-hero-actions">
+                            <button type="button" id="chan-tab-appeals" class="lux-secondary-btn lux-chancellery-tab-btn ${uiState.tab !== 'finance' ? 'active' : ''}" data-chancellery-tab="appeals" role="tab" aria-selected="${uiState.tab !== 'finance' ? 'true' : 'false'}">
+                                <i class="fas fa-file-circle-question"></i> Appeals
+                            </button>
+                            <button type="button" id="chan-tab-finance" class="lux-secondary-btn lux-chancellery-tab-btn ${uiState.tab === 'finance' ? 'active' : ''}" data-chancellery-tab="finance" role="tab" aria-selected="${uiState.tab === 'finance' ? 'true' : 'false'}">
+                                <i class="fas fa-wallet"></i> Finance
+                            </button>
                         </div>
-                        ${getChancelleryStatusPill(heroStatusLabel)}
+                    ` : ''}
+                </div>
+                <aside class="lux-hero-side lux-chancellery-hero-side lux-focus-panel" aria-label="Chancellery case load">
+                    <div class="lux-focus-panel__head">
+                        <div class="lux-focus-panel__kicker">Case load</div>
+                        ${getChancelleryStatusPill(heroStatusLabel).replace(
+                            'class="lux-status-pill',
+                            'class="lux-focus-panel__chip lux-status-pill'
+                        )}
                     </div>
-                    <div class="lux-chancellery-focus-grid">
+                    <div class="lux-focus-panel__body">
+                        <div class="lux-focus-panel__title">${escapeChancelleryHtml((heroRows.find((row) => row.label === 'Open') || heroRows[0] || { value: '0' }).value)} open</div>
+                        <p class="lux-focus-panel__copy">${headingCopy}</p>
+                    </div>
+                    <div class="lux-focus-panel__meta lux-hero-signal-list lux-chancellery-hero-signals" aria-label="Case metrics">
                         ${heroRows.map(row => `
-                            <div class="lux-chancellery-focus-row">
-                                <div class="lux-overline">${escapeChancelleryHtml(row.label)}</div>
-                                <div class="lux-chancellery-focus-value">${escapeChancelleryHtml(row.value)}</div>
-                                <div class="lux-meta">${escapeChancelleryHtml(row.detail)}</div>
-                            </div>
+                            <span class="lux-hero-signal">
+                                <span>${escapeChancelleryHtml(row.label)}</span>
+                                <strong>${escapeChancelleryHtml(row.value)}</strong>
+                            </span>
                         `).join('')}
                     </div>
-                </div>
+                </aside>
             </div>
-        </div>
+        </section>
     `;
 }
 
-function renderChancelleryPage() {
-    const root = document.getElementById('page-chancellery');
-    if (!root) return;
-    const shell = ensureChancelleryShell(root);
-    if (!shell?.hero || !shell?.content) return;
-    bindChancelleryDelegates(root);
-    const uiState = ensureChancelleryUiState();
-    const role = getEffectiveUserRole();
-    const requests = getVisibleChancelleryRequests();
-    const selectedRequest = ensureSelectedChancelleryCase(requests);
-    const isStudent = role === USER_ROLES.STUDENT;
-    const headingTitle = isStudent ? 'Appeals & Retakes' : role === USER_ROLES.STUDENT_SERVICE ? 'Student Support Cases' : 'Appeals Inbox';
-    const headingCopy = isStudent
-        ? 'Submit grade appeals and retake requests for graded subjects, then track replies from administration and course staff in one place.'
-        : role === USER_ROLES.STUDENT_SERVICE
-            ? 'Review appeal and document-case context in read-only mode so Student Service can support students without editing the official workflow.'
-            : 'Review student grade appeals and retake requests, reply in thread, and keep the workflow status updated without changing grades automatically.';
+function buildChancelleryHeroRows(isStudent, requests) {
     const openCount = requests.filter(request => !['Resolved', 'Rejected'].includes(request.status)).length;
     const waitingCount = requests.filter(request => ['Waiting for Staff', 'Waiting for Student'].includes(request.status)).length;
     const resolvedCount = requests.filter(request => request.status === 'Resolved').length;
-    const userRequests = isStudent
-        ? requests.filter(request => String(request.studentId || '') === String(getCurrentUserId() || ''))
-        : [];
-    const studentOpenCount = isStudent ? userRequests.filter(request => !['Resolved', 'Rejected'].includes(request.status)).length : 0;
-    const studentWaitingCount = isStudent ? userRequests.filter(request => ['Waiting for Staff', 'Waiting for Student'].includes(request.status)).length : 0;
-    const studentResolvedCount = isStudent ? userRequests.filter(request => request.status === 'Resolved').length : 0;
-    const studentBalance = isStudent
-        ? Number(KIU_STATE?.tuitionBalances?.[getCurrentUserId()] || KIU_STATE?.tuitionBalances?.student || 0)
-        : 0;
-    const heroStatusLabel = isStudent
-        ? (studentWaitingCount > 0 ? 'Waiting for Staff' : (studentOpenCount > 0 ? 'Submitted' : 'Resolved'))
-        : (waitingCount > 0 ? 'Waiting for Staff' : (openCount ? 'Under Review' : 'Resolved'));
-    const heroRows = isStudent
-        ? [
-            { label: 'Open cases', value: String(studentOpenCount), detail: 'Your own active appeals and retake requests.' },
-            { label: 'Waiting on staff', value: String(studentWaitingCount), detail: 'Requests that are waiting for administrative or faculty action.' },
-            { label: 'Resolved', value: String(studentResolvedCount), detail: 'Requests that reached a closed outcome.' },
-            { label: 'Balance', value: studentBalance > 0 ? `${studentBalance.toLocaleString()} GEL` : 'Clear', detail: studentBalance > 0 ? 'Financial review is still required for some portal actions.' : 'No balance is blocking your academic workflow.' }
-        ]
-        : [
-            { label: 'Visible cases', value: String(requests.length), detail: 'Requests available in the current scope.' },
-            { label: 'Waiting', value: String(waitingCount), detail: 'Cases awaiting the next staff or student step.' },
-            { label: 'Resolved', value: String(resolvedCount), detail: 'Requests already completed.' },
-            { label: 'Open', value: String(openCount), detail: 'Cases still in progress.' }
+    if (isStudent) {
+        const balance = Number(KIU_STATE?.tuitionBalances?.[getCurrentUserId()] || KIU_STATE?.tuitionBalances?.student || 0);
+        return [
+            { label: 'Open', value: String(openCount) },
+            { label: 'Waiting', value: String(waitingCount) },
+            { label: 'Resolved', value: String(resolvedCount) },
+            { label: 'Balance', value: balance > 0 ? `${balance.toLocaleString()} GEL` : 'Clear' }
         ];
+    }
+    return [
+        { label: 'Total', value: String(requests.length) },
+        { label: 'Open', value: String(openCount) },
+        { label: 'Waiting', value: String(waitingCount) },
+        { label: 'Resolved', value: String(resolvedCount) }
+    ];
+}
+
+function buildChancelleryRenderContext() {
+    if (typeof ensureChancelleryFilterLayoutStore === 'function') ensureChancelleryFilterLayoutStore();
+    const uiState = ensureChancelleryUiState();
+    const role = getEffectiveUserRole();
+    syncChancelleryUiFiltersForRole(role);
+    const requests = getVisibleChancelleryRequests();
+    const isStudent = role === USER_ROLES.STUDENT;
+    const isStaff = [USER_ROLES.ADMIN, USER_ROLES.PROFESSOR, USER_ROLES.TA, USER_ROLES.STUDENT_SERVICE].includes(role);
+    const showAppealsWorkspace = !isStudent || uiState.tab !== 'finance';
+    const filteredRequests = showAppealsWorkspace ? filterChancelleryRequests(requests, uiState.filters, role) : requests;
+    const selectedRequest = isStudent
+        ? resolveChancellerySelection(filteredRequests, { autoSelect: false })
+        : resolveChancellerySelection(filteredRequests, { autoSelect: true });
+    const headingTitle = isStudent
+        ? (uiState.tab === 'finance' ? 'Finance' : 'Appeals & Retakes')
+        : role === USER_ROLES.STUDENT_SERVICE
+            ? 'Support cases'
+            : 'Appeals inbox';
+    const headingCopy = isStudent
+        ? (uiState.tab === 'finance' ? 'Tuition balance snapshot.' : 'Grade appeals and retake requests for your subjects.')
+        : role === USER_ROLES.STUDENT_SERVICE
+            ? 'Read-only case view for student support.'
+            : 'Review appeals, reply in thread, update status.';
+    const openCount = requests.filter(request => !['Resolved', 'Rejected'].includes(request.status)).length;
+    const waitingCount = requests.filter(request => ['Waiting for Staff', 'Waiting for Student'].includes(request.status)).length;
+    const heroStatusLabel = isStudent
+        ? (waitingCount > 0 ? 'Waiting for Staff' : (openCount > 0 ? 'Submitted' : 'Resolved'))
+        : (waitingCount > 0 ? 'Waiting for Staff' : (openCount ? 'Under Review' : 'Resolved'));
+    const heroRows = buildChancelleryHeroRows(isStudent, requests);
+    const subjectOptions = [...new Map(requests.map(request => [request.subjectId, request])).values()];
+    return {
+        uiState,
+        role,
+        requests,
+        isStudent,
+        isStaff,
+        showAppealsWorkspace,
+        filteredRequests,
+        filteredCount: filteredRequests.length,
+        selectedRequest,
+        headingTitle,
+        headingCopy,
+        heroStatusLabel,
+        heroRows,
+        subjectOptions
+    };
+}
+
+function getChancelleryShellRegions() {
+    const root = document.getElementById('page-chancellery');
+    if (!root) return null;
+    const shell = ensureChancelleryShell(root);
+    if (!shell?.hero || !shell?.command || !shell?.content) return null;
+    return { root, shell };
+}
+
+function applyChancelleryRegionMarkup(region, markup) {
+    region.innerHTML = typeof localizeHtmlMarkup === 'function' ? localizeHtmlMarkup(markup) : markup;
+    if (typeof queueEnglishLocalization === 'function') {
+        queueEnglishLocalization(region);
+    }
+}
+
+function resolveChancelleryStudentWorkspaceParts(context) {
+    const subjects = getStudentGradedSubjectsForChancellery();
+    const activeRequest = context.selectedRequest
+        && context.filteredRequests.some(request => request.id === context.selectedRequest.id)
+        ? context.selectedRequest
+        : null;
+    return {
+        listSelectedId: activeRequest?.id || '',
+        rightMarkup: activeRequest
+            ? renderChancelleryCaseDetailPanel(activeRequest)
+            : renderChancelleryComposeForm(subjects)
+    };
+}
+
+function resolveChancelleryStaffWorkspaceParts(context) {
+    const isReadOnly = context.role === USER_ROLES.STUDENT_SERVICE;
+    const selectedRequest = context.selectedRequest;
+    return {
+        listSelectedId: selectedRequest?.id || '',
+        rightMarkup: selectedRequest
+            ? renderChancelleryCaseDetailPanel(selectedRequest, { staff: true, readOnly: isReadOnly })
+            : '<div class="lux-empty-state">Select a request from the queue.</div>'
+    };
+}
+
+function applyChancelleryLocalizedMarkup(target, markup) {
+    if (!target) return;
+    target.innerHTML = typeof localizeHtmlMarkup === 'function' ? localizeHtmlMarkup(markup) : markup;
+    if (typeof queueEnglishLocalization === 'function') {
+        queueEnglishLocalization(target);
+    }
+}
+
+function syncChancelleryPickerControls(root) {
+    if (!root || typeof root.querySelectorAll !== 'function') return;
+    const syncPicker = typeof window.syncUniversalPicker === 'function' ? window.syncUniversalPicker : null;
+    if (!syncPicker) return;
+    root.querySelectorAll('select').forEach((select) => {
+        const shell = select.closest('.lux-picker-field');
+        if (!shell) return;
+        syncPicker(select, shell.querySelector('.lux-picker-btn'), shell.querySelector('.lux-picker-panel'));
+    });
+}
+
+function resolveChancelleryDetailMode(detailBody) {
+    if (!detailBody) return 'unknown';
+    if (detailBody.querySelector('.lux-chancellery-compose-form')) return 'compose';
+    if (detailBody.querySelector('.lux-chancellery-thread, .lux-chancellery-section-title')) return 'case';
+    if (detailBody.querySelector('.lux-empty-state')) return 'empty';
+    return 'unknown';
+}
+
+function resolveChancelleryTargetDetailMode(context) {
+    if (context.isStudent) {
+        const activeRequest = context.selectedRequest
+            && context.filteredRequests.some(request => request.id === context.selectedRequest.id)
+            ? context.selectedRequest
+            : null;
+        return activeRequest ? 'case' : 'compose';
+    }
+    return context.selectedRequest ? 'case' : 'empty';
+}
+
+function getChancelleryDetailCaseId(detailBody, contentEl) {
+    if (!detailBody || resolveChancelleryDetailMode(detailBody) !== 'case') return '';
+    const statusTarget = detailBody.querySelector('[data-chancellery-status-target]');
+    if (statusTarget) {
+        return String(statusTarget.getAttribute('data-chancellery-status-target') || '');
+    }
+    const selectedBtn = contentEl?.querySelector('.lux-chancellery-queue-item.is-selected');
+    return String(selectedBtn?.getAttribute('data-chancellery-select-case') || '');
+}
+
+function resolveChancelleryTargetCaseId(context) {
+    const activeRequest = context.selectedRequest
+        && context.filteredRequests.some(request => request.id === context.selectedRequest.id)
+        ? context.selectedRequest
+        : null;
+    return activeRequest?.id || '';
+}
+
+function shouldPatchChancelleryDetailRegion(contentEl, context) {
+    const detailBody = contentEl.querySelector('.lux-chancellery-detail-body');
+    if (!detailBody) return false;
+    const targetMode = resolveChancelleryTargetDetailMode(context);
+    const currentMode = resolveChancelleryDetailMode(detailBody);
+    if (currentMode !== targetMode) return true;
+    if (targetMode !== 'case') return false;
+    return getChancelleryDetailCaseId(detailBody, contentEl) !== resolveChancelleryTargetCaseId(context);
+}
+
+function patchChancelleryListRegion(contentEl, context) {
+    const listRegion = contentEl.querySelector('.lux-chancellery-list-region');
+    if (!listRegion) return false;
+    const parts = context.isStudent
+        ? resolveChancelleryStudentWorkspaceParts(context)
+        : resolveChancelleryStaffWorkspaceParts(context);
+    applyChancelleryLocalizedMarkup(
+        listRegion,
+        renderChancelleryRequestList(context.filteredRequests, parts.listSelectedId)
+    );
+    return true;
+}
+
+function patchChancelleryListSelection(contentEl, selectedCaseId) {
+    const listRegion = contentEl.querySelector('.lux-chancellery-list-region');
+    if (!listRegion) return false;
+    const selectedId = String(selectedCaseId || '');
+    const buttons = listRegion.querySelectorAll('[data-chancellery-select-case]');
+    if (!buttons.length) return false;
+    buttons.forEach((button) => {
+        const caseId = String(button.getAttribute('data-chancellery-select-case') || '');
+        button.classList.toggle('is-selected', caseId === selectedId);
+    });
+    return true;
+}
+
+function patchChancelleryDetailRegion(contentEl, context) {
+    const detailBody = contentEl.querySelector('.lux-chancellery-detail-body');
+    if (!detailBody) return false;
+    const parts = context.isStudent
+        ? resolveChancelleryStudentWorkspaceParts(context)
+        : resolveChancelleryStaffWorkspaceParts(context);
+    applyChancelleryLocalizedMarkup(detailBody, parts.rightMarkup);
+    if (typeof window.enhanceUniversalPickers === 'function') {
+        window.enhanceUniversalPickers(detailBody);
+    }
+    return true;
+}
+
+function patchChancelleryWorkspace(contentEl, context, { list = true, detail = true } = {}) {
+    const hasList = contentEl.querySelector('.lux-chancellery-list-region');
+    const hasDetail = contentEl.querySelector('.lux-chancellery-detail-body');
+    if (!hasList || !hasDetail) return false;
+    const listOk = !list || patchChancelleryListRegion(contentEl, context);
+    const detailOk = !detail || patchChancelleryDetailRegion(contentEl, context);
+    return listOk && detailOk;
+}
+
+function patchChancelleryCommandBar(commandEl, context, { mode = 'filters' } = {}) {
+    const bar = commandEl.querySelector('.lux-chancellery-command-bar');
+    if (!bar) return false;
+    const filters = context.uiState.filters || {};
+
+    if (mode === 'count' || mode === 'filters') {
+        const pill = bar.querySelector('.lux-pill');
+        if (pill) {
+            pill.textContent = `${context.filteredCount} case${context.filteredCount === 1 ? '' : 's'}`;
+        }
+    }
+
+    if (mode === 'filters') {
+        bar.querySelectorAll('[data-chancellery-filter]').forEach((control) => {
+            const filterKey = String(control.getAttribute('data-chancellery-filter') || '').trim();
+            if (!filterKey || filterKey === 'search') return;
+            control.value = filters[filterKey] || 'all';
+        });
+        syncChancelleryPickerControls(bar);
+    }
+    return true;
+}
+
+function syncChancelleryWorkspaceRegion() {
+    const regions = getChancelleryShellRegions();
+    const contentEl = regions?.shell.content;
+    if (!contentEl?.querySelector('.lux-chancellery-workspace')) return false;
+    bindChancelleryDelegates(regions.root);
+    const context = buildChancelleryRenderContext();
+    const targetCaseId = resolveChancelleryTargetCaseId(context);
+    const listButtons = contentEl.querySelectorAll('.lux-chancellery-list-region [data-chancellery-select-case]');
+    const listOk = listButtons.length
+        ? patchChancelleryListSelection(contentEl, targetCaseId)
+        : patchChancelleryListRegion(contentEl, context);
+    const detailOk = shouldPatchChancelleryDetailRegion(contentEl, context)
+        ? patchChancelleryDetailRegion(contentEl, context)
+        : true;
+    return listOk && detailOk;
+}
+
+function syncChancelleryFilterRegions(filterKey) {
+    const regions = getChancelleryShellRegions();
+    if (!regions) return false;
+    const contentEl = regions.shell.content;
+    const hasWorkspace = Boolean(contentEl.querySelector('.lux-chancellery-workspace'));
+    const hasCommandBar = Boolean(regions.shell.command.querySelector('.lux-chancellery-command-bar'));
+    if (!hasWorkspace || !hasCommandBar) return false;
+    bindChancelleryDelegates(regions.root);
+    const context = buildChancelleryRenderContext();
+    const commandMode = filterKey === 'search' ? 'count' : 'filters';
+    const commandOk = patchChancelleryCommandBar(regions.shell.command, context, { mode: commandMode });
+    const listOk = patchChancelleryListRegion(contentEl, context);
+    const detailOk = shouldPatchChancelleryDetailRegion(contentEl, context)
+        ? patchChancelleryDetailRegion(contentEl, context)
+        : true;
+    return commandOk && listOk && detailOk;
+}
+
+function patchChancelleryHero(heroEl, context) {
+    if (!heroEl) return false;
+    const titleEl = heroEl.querySelector('.page-hero-title');
+    const copyEl = heroEl.querySelector('.page-hero-copy');
+    const signalsEl = heroEl.querySelector('.lux-chancellery-hero-signals');
+    if (!titleEl || !copyEl || !signalsEl) return false;
+
+    titleEl.textContent = context.headingTitle;
+    copyEl.textContent = context.headingCopy;
+
+    const pillEl = heroEl.querySelector('.lux-chancellery-hero-side .lux-status-pill, .lux-chancellery-hero-side .lux-focus-panel__chip');
+    if (pillEl) {
+        const meta = getChancelleryStatusMeta(context.heroStatusLabel);
+        pillEl.className = `lux-focus-panel__chip lux-status-pill lux-chancellery-status-pill lux-chancellery-case-status-pill is-${meta.tone}`;
+        pillEl.innerHTML = `<i class="${meta.icon}"></i> ${escapeChancelleryHtml(meta.label)}`;
+    }
+
+    const titleElFocus = heroEl.querySelector('.lux-chancellery-hero-side .lux-focus-panel__title');
+    if (titleElFocus) {
+        const openValue = (context.heroRows.find((row) => row.label === 'Open') || context.heroRows[0] || { value: '0' }).value;
+        titleElFocus.textContent = `${openValue} open`;
+    }
+    const copyElFocus = heroEl.querySelector('.lux-chancellery-hero-side .lux-focus-panel__copy');
+    if (copyElFocus) copyElFocus.textContent = context.headingCopy;
+
+    const signals = signalsEl.querySelectorAll('.lux-hero-signal');
+    context.heroRows.forEach((row, index) => {
+        const signal = signals[index];
+        if (!signal) return;
+        const labelEl = signal.querySelector('span');
+        const valueEl = signal.querySelector('strong');
+        if (labelEl) labelEl.textContent = row.label;
+        if (valueEl) valueEl.textContent = row.value;
+    });
+
+    if (context.isStudent) {
+        const appealsTab = heroEl.querySelector('#chan-tab-appeals');
+        const financeTab = heroEl.querySelector('#chan-tab-finance');
+        if (!appealsTab || !financeTab) return false;
+        const isFinance = context.uiState.tab === 'finance';
+        appealsTab.classList.toggle('active', !isFinance);
+        appealsTab.setAttribute('aria-selected', isFinance ? 'false' : 'true');
+        financeTab.classList.toggle('active', isFinance);
+        financeTab.setAttribute('aria-selected', isFinance ? 'true' : 'false');
+    }
+
+    return true;
+}
+
+function resolveChancelleryRegionMarkup(context) {
+    const {
+        uiState,
+        role,
+        requests,
+        isStudent,
+        isStaff,
+        filteredRequests,
+        selectedRequest,
+        subjectOptions
+    } = context;
 
     let contentMarkup = '';
+    let commandMarkup = '';
     if (isStudent && uiState.tab === 'finance') {
         contentMarkup = renderChancelleryStudentFinancePanel();
     } else if (isStudent) {
+        commandMarkup = renderChancelleryCommandBar({
+            role,
+            uiState,
+            count: filteredRequests.length,
+            showCompose: true
+        });
         contentMarkup = renderChancelleryStudentAppealsPanel(requests, selectedRequest);
-    } else if ([USER_ROLES.ADMIN, USER_ROLES.PROFESSOR, USER_ROLES.TA, USER_ROLES.STUDENT_SERVICE].includes(role)) {
+    } else if (isStaff) {
+        commandMarkup = renderChancelleryCommandBar({
+            role,
+            uiState,
+            count: filteredRequests.length,
+            subjectOptions
+        });
         contentMarkup = renderChancelleryStaffWorkspace(requests);
     } else {
-        contentMarkup = '<div class="lux-card"><div class="lux-card-body"><div class="lux-empty-state">This workspace is unavailable for the current role.</div></div></div>';
+        contentMarkup = '<div class="lux-card"><div class="lux-card-body"><div class="lux-empty-state">Unavailable for this role.</div></div></div>';
     }
 
-    shell.hero.innerHTML = localizeHtmlMarkup(renderChancelleryHero({
+    return { commandMarkup, contentMarkup };
+}
+
+function syncChancelleryTabRegions() {
+    const regions = getChancelleryShellRegions();
+    if (!regions) return false;
+    bindChancelleryDelegates(regions.root);
+    const context = buildChancelleryRenderContext();
+    if (!patchChancelleryHero(regions.shell.hero, context)) return false;
+
+    const { commandMarkup, contentMarkup } = resolveChancelleryRegionMarkup(context);
+
+    if (context.isStudent && context.uiState.tab === 'finance') {
+        applyChancelleryRegionMarkup(regions.shell.command, '');
+        applyChancelleryRegionMarkup(regions.shell.content, contentMarkup);
+        renderFinancialLedger();
+        return true;
+    }
+
+    if (context.isStudent) {
+        const hasCommandBar = Boolean(regions.shell.command.querySelector('.lux-chancellery-command-bar'));
+        if (!hasCommandBar && commandMarkup) {
+            applyChancelleryRegionMarkup(regions.shell.command, commandMarkup);
+            if (typeof window.enhanceUniversalPickers === 'function') {
+                window.enhanceUniversalPickers(regions.shell.command);
+            }
+        } else if (hasCommandBar) {
+            patchChancelleryCommandBar(regions.shell.command, context, { mode: 'filters' });
+        }
+        applyChancelleryRegionMarkup(regions.shell.content, contentMarkup);
+        if (typeof window.enhanceUniversalPickers === 'function') {
+            window.enhanceUniversalPickers(regions.shell.content);
+        }
+        return true;
+    }
+
+    applyChancelleryRegionMarkup(regions.shell.command, commandMarkup);
+    applyChancelleryRegionMarkup(regions.shell.content, contentMarkup);
+    return true;
+}
+
+function syncChancelleryMutationRegions() {
+    const regions = getChancelleryShellRegions();
+    if (!regions) return false;
+    bindChancelleryDelegates(regions.root);
+    const context = buildChancelleryRenderContext();
+    if (!patchChancelleryHero(regions.shell.hero, context)) return false;
+
+    const hasWorkspace = Boolean(regions.shell.content.querySelector('.lux-chancellery-workspace'));
+    if (!hasWorkspace) return false;
+
+    if (!patchChancelleryWorkspace(regions.shell.content, context)) return false;
+    if (regions.shell.command.querySelector('.lux-chancellery-command-bar')) {
+        patchChancelleryCommandBar(regions.shell.command, context, { mode: 'count' });
+    }
+    return true;
+}
+
+function renderChancelleryPage() {
+    const regions = getChancelleryShellRegions();
+    if (!regions) return;
+    const { root, shell } = regions;
+    bindChancelleryDelegates(root);
+    const context = buildChancelleryRenderContext();
+    const {
+        isStudent,
+        uiState,
+        headingTitle,
+        headingCopy,
+        heroStatusLabel,
+        heroRows
+    } = context;
+    const { commandMarkup, contentMarkup } = resolveChancelleryRegionMarkup(context);
+
+    applyChancelleryRegionMarkup(shell.hero, renderChancelleryHero({
         isStudent,
         uiState,
         headingTitle,
@@ -982,14 +1404,10 @@ function renderChancelleryPage() {
         heroStatusLabel,
         heroRows
     }));
-    shell.content.innerHTML = localizeHtmlMarkup(contentMarkup);
-
+    applyChancelleryRegionMarkup(shell.command, commandMarkup);
+    applyChancelleryRegionMarkup(shell.content, contentMarkup);
     if (isStudent && uiState.tab === 'finance') {
         renderFinancialLedger();
-    }
-    if (typeof queueEnglishLocalization === 'function') {
-        queueEnglishLocalization(shell.hero);
-        queueEnglishLocalization(shell.content);
     }
 }
 

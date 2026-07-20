@@ -19,7 +19,7 @@ const {
     uniqueStrings,
     verifyPassword,
 } = require('./utils');
-const { createEmptyPlatformState, createEmptySocialState, createEmptyNewsState, createEmptyStudentServiceState } = require('./state-shape');
+const { createEmptyPlatformState, createEmptySocialState, createEmptyNewsState, createDefaultNewsSectionCatalog, createEmptyStudentServiceState } = require('./state-shape');
 const { PostgresRecordStore } = require('./postgres-record-store');
 const { LocalRecordStore } = require('./local-record-store');
 const { addAuditEvent } = require('./domains/audit-service');
@@ -27,18 +27,22 @@ const {
     canActorAccessStoredFile,
     createFileFromUpload,
     getFile,
+    healAllStoredFilePaths,
     normalizeMessageAttachment,
     objectContainsStoredFileReference
 } = require('./domains/files-service');
 const {
     STUDENT_SERVICE_CATEGORIES,
-    STUDENT_SERVICE_DEFAULT_ARTICLES,
+
     STUDENT_SERVICE_DEFAULT_MACROS,
-    STUDENT_SERVICE_RESPONDER_CATEGORIES,
     STUDENT_SERVICE_SENSITIVE_CATEGORIES,
     getStudentServiceAreaForCategory,
     getStudentServiceBootstrap,
+    normalizeStudentServiceInboxFilterLayout,
+    hasStudentServiceMessageContent,
     normalizeStudentServiceAnswerRecord,
+    normalizeStudentServiceAttachments,
+    resolveStudentServiceAnswerAuthorUserId,
     normalizeStudentServiceArticleRecord,
     normalizeStudentServiceCategory,
     normalizeStudentServiceInternalNote,
@@ -57,6 +61,7 @@ const {
 } = require('./domains/accounts-service');
 const {
     activateAccount,
+    changePassword,
     clearSessionImpersonation,
     createSessionByCredentials,
     createSessionByMicrosoftIdentity,
@@ -74,15 +79,7 @@ const {
     upgradeCredentialHashIfNeeded
 } = require('./domains/auth-session-service');
 const {
-    aggregateGradebookAssessmentEntries,
-    canAccessGradebookCourse,
-    computeRecordFinalScore,
-    ensureGradebook,
-    finalizeGrades,
-    getGradebookAssessmentDefinition,
-    getGradebookCourse,
-    publishGradebook,
-    setScore
+    canAccessGradebookCourse
 } = require('./domains/gradebook-service');
 const {
     createAssignment,
@@ -108,15 +105,16 @@ const {
     canManageSocialProject,
     canViewSocialProject,
     createSocialProject,
-    createSocialProjectCheckin,
-    createSocialProjectDeliverable,
-    createSocialProjectMilestone,
+    createSocialProjectBudgetCategory,
+    createSocialProjectBudgetExpense,
+    createSocialProjectRisk,
     createSocialProjectShowcasePage,
     createSocialProjectTask,
     decorateSocialProject,
     deleteSocialProject,
-    deleteSocialProjectDeliverable,
-    deleteSocialProjectMilestone,
+    deleteSocialProjectBudgetCategory,
+    deleteSocialProjectBudgetExpense,
+    deleteSocialProjectRisk,
     deleteSocialProjectTask,
     getSocialProjectAdvisorIds,
     getSocialProjectByChatId,
@@ -127,17 +125,31 @@ const {
     inviteSocialProjectMember,
     removeSocialProjectMember,
     setSocialProjectMembership,
+    setSocialProjectBaseline,
     updateSocialProject,
+    updateSocialProjectBudgetCategory,
+    updateSocialProjectBudgetExpense,
+    updateSocialProjectRisk,
     updateSocialProjectMemberRole,
-    updateSocialProjectMilestone,
-    updateSocialProjectTask
+    updateSocialProjectTask,
+    updateSocialProjectTaskGraph
 } = require('./domains/social-projects-service');
+const {
+    addCustomPortfolioSection,
+    decoratePortfolio,
+    getOrCreatePortfolio,
+    listDiscoverablePortfolios,
+    publishPortfolio,
+    savePortfolio,
+    unpublishPortfolio
+} = require('./domains/portfolio-service');
 const {
     appendSocialProjectActivity,
     ensureSocialGroupChat,
     ensureSocialProjectCollections,
     getSocialBootstrap,
     listSocialRelationshipsForUser,
+    migrateLostFoundSocialState,
     saveSocialMutation,
     upsertSocialState
 } = require('./domains/social-state-service');
@@ -147,6 +159,7 @@ const {
     canDeleteSocialEvent,
     canDeleteSocialGroup,
     canDeleteSocialPage,
+    canEditSocialEvent,
     canEditSocialPost,
     canManageSocialGroup,
     canManageSocialPage,
@@ -206,11 +219,22 @@ const {
     toggleSocialCommentReaction,
     toggleSocialReaction,
     toggleSocialScopePostPin,
+    updateSocialEvent,
     updateSocialGroup,
     updateSocialPage,
     updateSocialPost,
     upsertSocialProfile
 } = require('./domains/social-content-service');
+const {
+    closeExpiredSurveys,
+    closeSocialSurvey,
+    createSocialSurvey,
+    deleteSocialSurvey,
+    getSocialSurvey,
+    getSocialSurveyResults,
+    listSocialSurveys,
+    submitSocialSurveyResponse
+} = require('./domains/social-surveys-service');
 const {
     buildExamSessionCourseKey,
     buildProtectedQuizClientUrl,
@@ -252,6 +276,7 @@ const {
 } = require('./domains/account-privileges-service');
 const {
     createNotification,
+    deleteNotification,
     listNotifications,
     listPushSubscriptions,
     markNotificationRead,
@@ -261,59 +286,9 @@ const {
 } = require('./domains/notifications-service');
 
 const DEFAULT_MAX_ECTS = 30;
+
 function socialText(value) {
     return String(value || '').trim();
-}
-
-function normalizeSafeExternalUrl(value = '') {
-    const raw = socialText(value);
-    if (!raw) return '';
-    if (/^(mailto:|tel:)/i.test(raw)) return raw;
-    try {
-        const parsed = new URL(raw);
-        if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
-            return parsed.toString();
-        }
-    } catch (error) {}
-    return '';
-}
-
-function socialIdArray(values) {
-    return uniqueStrings(
-        asArray(values)
-            .map(value => {
-                if (value && typeof value === 'object') return socialText(value.id || value.userId || value.value);
-                return socialText(value);
-            })
-            .filter(Boolean)
-    );
-}
-
-function socialCompareNewest(left, right) {
-    return socialText(right || '').localeCompare(socialText(left || ''));
-}
-
-function normalizeSocialScopeType(value) {
-    const normalized = socialText(value).toLowerCase();
-    if (['profile', 'page', 'group'].includes(normalized)) return normalized;
-    return 'profile';
-}
-
-function normalizeSocialAudience(value) {
-    const normalized = socialText(value).toLowerCase();
-    if (['campus', 'faculty', 'group', 'page', 'connections', 'private'].includes(normalized)) return normalized;
-    return 'campus';
-}
-
-function normalizeSocialVisibility(value, fallback = 'public') {
-    const normalized = socialText(value).toLowerCase();
-    if (['public', 'private', 'faculty'].includes(normalized)) return normalized;
-    return socialText(fallback).toLowerCase() || 'public';
-}
-
-function normalizeSocialReactionType(value) {
-    const normalized = socialText(value).toLowerCase();
-    return normalized || 'like';
 }
 
 function extractMessageLinks(value) {
@@ -321,95 +296,6 @@ function extractMessageLinks(value) {
     if (!raw) return [];
     const matches = raw.match(/https?:\/\/[^\s<>"']+/gi) || [];
     return uniqueStrings(matches.map(item => socialText(item).replace(/[),.;!?]+$/g, ''))).filter(Boolean);
-}
-
-function extractSocialMentions(value) {
-    const textValue = socialText(value);
-    if (!textValue) return [];
-    const matches = textValue.match(/@([A-Za-z0-9._-]+)/g) || [];
-    return uniqueStrings(matches.map(item => socialText(item).replace(/^@+/, '')));
-}
-
-function normalizeSocialRsvpStatus(value) {
-    const normalized = socialText(value).toLowerCase();
-    if (['going', 'interested', 'declined'].includes(normalized)) return normalized;
-    return 'going';
-}
-
-function normalizeProjectStatus(value) {
-    const normalized = socialText(value).toLowerCase();
-    if (['idea', 'active', 'review', 'completed', 'draft', 'published'].includes(normalized)) return normalized;
-    return 'idea';
-}
-
-function normalizeProjectVisibilityMode(value, fallback = 'all_logged_in') {
-    const normalized = socialText(value).toLowerCase();
-    if ([
-        'all_logged_in',
-        'students_only',
-        'tas_only',
-        'professors_only',
-        'staff_only',
-        'custom'
-    ].includes(normalized)) return normalized;
-    return fallback;
-}
-
-function projectLegacyVisibilityFromMode(mode, fallback = 'public') {
-    const normalized = normalizeProjectVisibilityMode(mode, '');
-    if (normalized === 'all_logged_in') return 'public';
-    if (normalized === 'custom') return 'private';
-    return 'faculty';
-}
-
-function fallbackProjectVisibilityMode(project = {}) {
-    const visibility = normalizeSocialVisibility(project.visibility, 'private');
-    if (visibility === 'public') return 'all_logged_in';
-    if (visibility === 'faculty') return 'custom';
-    return 'custom';
-}
-
-function normalizePortfolioLinks(values) {
-    return asArray(values)
-        .map((item) => {
-            if (item && typeof item === 'object') {
-                const label = socialText(item.label || item.title || item.name || item.url);
-                const url = normalizeSafeExternalUrl(item.url || item.href || '');
-                if (!url) return null;
-                return { label: label || url, url };
-            }
-            const url = normalizeSafeExternalUrl(item);
-            if (!url) return null;
-            return { label: url, url };
-        })
-        .filter(Boolean);
-}
-
-function normalizePortfolioMediaItems(values) {
-    return asArray(values)
-        .map((item) => {
-            if (!item || typeof item !== 'object') return null;
-            const cloned = clone(item);
-            const storageKey = socialText(cloned.storageKey || cloned.id || '');
-            const dataUrl = socialText(cloned.dataUrl || '');
-            if (!storageKey && !dataUrl) return null;
-            return {
-                ...cloned,
-                id: socialText(cloned.id || storageKey || makeId('portfolio-media')),
-                name: socialText(cloned.name || 'portfolio-file'),
-                type: socialText(cloned.type || 'application/octet-stream'),
-                storageKey,
-                storageBackend: socialText(cloned.storageBackend || (storageKey ? 'bridge' : 'inline')),
-                dataUrl
-            };
-        })
-        .filter(Boolean);
-}
-
-function normalizeProjectRole(value) {
-    const normalized = socialText(value).toLowerCase();
-    if (['owner', 'member', 'advisor', 'instructor-viewer'].includes(normalized)) return normalized;
-    return 'member';
 }
 
 const CLIENT_OWNED_PORTAL_STATE_KEYS = new Set([
@@ -422,6 +308,80 @@ const CLIENT_OWNED_PORTAL_STATE_KEYS = new Set([
     'portalMessengerPinnedChats',
     'publicSocialUi'
 ]);
+
+/** Staff (professor/ta/admin) may replace these whole keys; students must not. */
+const STAFF_WRITABLE_PORTAL_STATE_KEYS = new Set([
+    'studentGrades'
+]);
+
+const STAFF_PORTAL_WRITE_ROLES = new Set(['professor', 'ta', 'admin']);
+
+const PORTAL_STUDENT_KEYED_STATE_KEYS = new Set([
+    'studentSchedulesByStudent',
+    'tuitionBalances',
+    'homeDashboardPreferencesByUser',
+    'portalMessengerFavorites'
+]);
+
+const PORTAL_GLOBAL_ADMIN_ONLY_KEYS = new Set([
+    'adminProgramStructures',
+    'registrationCMSByFaculty',
+    'facultyProfiles',
+    'curriculumLibraryModulesByFaculty',
+    'adminLibrary'
+]);
+
+const ADMIN_LIBRARY_UI_ONLY_KEYS = [
+    'catalogPageSize',
+    'catalogPageIndex',
+    'droplistFilters'
+];
+
+function stripAdminLibraryUiOnlyFields(adminLibrary) {
+    if (!adminLibrary || typeof adminLibrary !== 'object' || Array.isArray(adminLibrary)) {
+        return adminLibrary;
+    }
+    ADMIN_LIBRARY_UI_ONLY_KEYS.forEach((key) => {
+        delete adminLibrary[key];
+    });
+    return adminLibrary;
+}
+
+function getAdminLibraryPortalValidationError(adminLibrary) {
+    if (adminLibrary === undefined || adminLibrary === null) return '';
+    if (typeof adminLibrary !== 'object' || Array.isArray(adminLibrary)) {
+        return 'Invalid adminLibrary payload.';
+    }
+    if (adminLibrary.books !== undefined) {
+        if (!Array.isArray(adminLibrary.books)) {
+            return 'adminLibrary.books must be an array.';
+        }
+        for (const book of adminLibrary.books) {
+            if (!book || typeof book !== 'object' || Array.isArray(book) || !String(book.id || '').trim()) {
+                return 'Each adminLibrary book must be an object with an id.';
+            }
+        }
+    }
+    if (adminLibrary.formSchema !== undefined) {
+        if (!Array.isArray(adminLibrary.formSchema)) {
+            return 'adminLibrary.formSchema must be an array.';
+        }
+        for (const field of adminLibrary.formSchema) {
+            if (!field || typeof field !== 'object' || Array.isArray(field)) {
+                return 'adminLibrary.formSchema fields must be objects.';
+            }
+        }
+    }
+    return '';
+}
+
+function assertValidAdminLibraryPortalState(adminLibrary) {
+    const message = getAdminLibraryPortalValidationError(adminLibrary);
+    if (!message) return;
+    const error = new Error(message);
+    error.statusCode = 400;
+    throw error;
+}
 
 function normalizeScheduleDay(value = '') {
     return String(value || '').trim().toLowerCase();
@@ -471,17 +431,180 @@ function pickClientOwnedPortalState(source = {}) {
     }, {});
 }
 
+function mergeKeyedPortalStateMap(existingMap = {}, incomingMap = {}, actorUserId = '', allowGlobalWrite = false) {
+    const existing = existingMap && typeof existingMap === 'object' ? existingMap : {};
+    const incoming = incomingMap && typeof incomingMap === 'object' ? incomingMap : {};
+    if (allowGlobalWrite) {
+        return { ...clone(existing), ...clone(incoming) };
+    }
+    const actorId = String(actorUserId || '').trim();
+    if (!actorId) return clone(existing);
+    const merged = clone(existing);
+    if (incoming[actorId] !== undefined) {
+        merged[actorId] = clone(incoming[actorId]);
+    }
+    return merged;
+}
+
+function mergeIncomingPortalState(existingState = {}, incomingState = {}, options = {}) {
+    const existing = existingState && typeof existingState === 'object' ? existingState : {};
+    const incoming = incomingState && typeof incomingState === 'object' ? incomingState : {};
+    const merged = clone(existing);
+    const actorUserId = String(options.actorUserId || '').trim();
+    const allowGlobalWrite = options.allowGlobalWrite === true;
+    const effectiveRole = String(options.effectiveRole || '').trim().toLowerCase();
+    const canWriteStaffPortalKeys = allowGlobalWrite || STAFF_PORTAL_WRITE_ROLES.has(effectiveRole);
+
+    Object.entries(incoming).forEach(([key, value]) => {
+        if (value === undefined || PORTAL_STATE_SERVER_STRIP_KEYS.has(key)) return;
+
+        if (PORTAL_STUDENT_KEYED_STATE_KEYS.has(key)) {
+            merged[key] = mergeKeyedPortalStateMap(existing[key], value, actorUserId, allowGlobalWrite);
+            return;
+        }
+
+        if (PORTAL_GLOBAL_ADMIN_ONLY_KEYS.has(key)) {
+            if (allowGlobalWrite) merged[key] = clone(value);
+            return;
+        }
+
+        if (STAFF_WRITABLE_PORTAL_STATE_KEYS.has(key)) {
+            if (canWriteStaffPortalKeys) merged[key] = clone(value);
+            return;
+        }
+
+        if (CLIENT_OWNED_PORTAL_STATE_KEYS.has(key) || allowGlobalWrite) {
+            merged[key] = clone(value);
+        }
+    });
+
+    return merged;
+}
+
 const PORTAL_STATE_SERVER_STRIP_KEYS = new Set([
     'auth',
     'domain',
-    'lmsLiveQuizzes'
+    'lmsLiveQuizzes',
+    'studentServiceAnswers',
+    'studentServiceQuestions',
+    'studentServiceArticles'
 ]);
 
 function sanitizePortalStateForServer(source = {}) {
-    const sanitized = clone(source && typeof source === 'object' ? source : {});
+    const input = source && typeof source === 'object' && !Array.isArray(source) ? source : {};
+    const sanitized = clone(input);
     PORTAL_STATE_SERVER_STRIP_KEYS.forEach((key) => {
         delete sanitized[key];
     });
+    if (sanitized.adminLibrary && typeof sanitized.adminLibrary === 'object' && !Array.isArray(sanitized.adminLibrary)) {
+        stripAdminLibraryUiOnlyFields(sanitized.adminLibrary);
+    }
+    return sanitized;
+}
+
+function isLmsInteractionStaffMessage(message = {}) {
+    return Boolean(message?.isProf || message?.isStaff);
+}
+
+function normalizeLmsInteractionMessageShape(message = {}) {
+    const parentId = message.parentId == null || String(message.parentId).trim() === ''
+        ? null
+        : String(message.parentId).trim();
+    const type = String(message.type || (parentId ? 'reply' : 'announcement')).trim().toLowerCase();
+    return {
+        id: String(message.id || '').trim() || `msg_${Date.now()}_${Math.random().toString(16).slice(2, 10)}`,
+        parentId,
+        type: type === 'reply' ? 'reply' : 'announcement',
+        sender: socialText(message.sender) || 'Unknown',
+        text: socialText(message.text),
+        time: socialText(message.time),
+        createdAt: socialText(message.createdAt) || nowIso(),
+        isStaff: Boolean(message.isStaff),
+        isProf: Boolean(message.isProf),
+        authorId: socialText(message.authorId),
+        bulk: Boolean(message.bulk),
+        targetGroupId: socialText(message.targetGroupId),
+        targetGroupName: socialText(message.targetGroupName)
+    };
+}
+
+function applyLmsInteractionRoleFlags(message = {}, effectiveRole = '') {
+    const role = String(effectiveRole || '').trim().toLowerCase();
+    const isProfessor = role === 'professor';
+    const isStaffRole = ['professor', 'ta', 'admin'].includes(role);
+    if (message.type === 'reply') {
+        return { ...message, isStaff: false, isProf: false };
+    }
+    return {
+        ...message,
+        isProf: isProfessor,
+        isStaff: isStaffRole && !isProfessor
+    };
+}
+
+function sanitizeLmsInteractionMessagesForServer(incoming = {}, existing = {}, options = {}) {
+    const effectiveRole = String(options.effectiveRole || '').trim().toLowerCase();
+    const canAnnounce = ['professor', 'ta', 'admin'].includes(effectiveRole);
+    const incomingMap = incoming && typeof incoming === 'object' ? incoming : {};
+    const existingMap = existing && typeof existing === 'object' ? existing : {};
+    const keys = new Set([...Object.keys(existingMap), ...Object.keys(incomingMap)]);
+    const sanitized = {};
+
+    keys.forEach((resourceKey) => {
+        const existingMessages = asArray(existingMap[resourceKey]).map(normalizeLmsInteractionMessageShape);
+        const incomingMessages = asArray(incomingMap[resourceKey]).map(normalizeLmsInteractionMessageShape);
+        const existingById = new Map(existingMessages.filter(item => item.id).map(item => [item.id, item]));
+        const kept = [];
+        const seenIds = new Set();
+
+        const keepMessage = (message) => {
+            if (!message?.id || seenIds.has(message.id)) return;
+            seenIds.add(message.id);
+            kept.push(message);
+        };
+
+        incomingMessages.forEach((message) => {
+            const isAnnouncement = message.parentId == null && message.type !== 'reply';
+            if (!isAnnouncement) return;
+            const previous = existingById.get(message.id);
+            if (previous && isLmsInteractionStaffMessage(previous)) {
+                keepMessage(canAnnounce
+                    ? applyLmsInteractionRoleFlags({ ...previous, ...message, type: 'announcement', parentId: null }, effectiveRole)
+                    : clone(previous));
+                return;
+            }
+            if (!previous && canAnnounce && isLmsInteractionStaffMessage(message)) {
+                keepMessage(applyLmsInteractionRoleFlags({ ...message, type: 'announcement', parentId: null }, effectiveRole));
+            }
+        });
+
+        existingMessages.forEach((message) => {
+            const isAnnouncement = message.parentId == null && message.type !== 'reply';
+            if (!isAnnouncement || !isLmsInteractionStaffMessage(message) || seenIds.has(message.id)) return;
+            keepMessage(clone(message));
+        });
+
+        const staffAnnouncementIds = new Set(
+            kept.filter(item => item.parentId == null && isLmsInteractionStaffMessage(item)).map(item => item.id)
+        );
+
+        incomingMessages.forEach((message) => {
+            const parentId = message.parentId;
+            if (!parentId || !staffAnnouncementIds.has(parentId)) return;
+            const nextReply = applyLmsInteractionRoleFlags({ ...message, type: 'reply', parentId }, effectiveRole);
+            keepMessage(nextReply);
+        });
+
+        existingMessages.forEach((message) => {
+            if (!message.parentId || !staffAnnouncementIds.has(message.parentId) || seenIds.has(message.id)) return;
+            keepMessage(applyLmsInteractionRoleFlags({ ...message, type: 'reply' }, effectiveRole));
+        });
+
+        if (kept.length) {
+            sanitized[resourceKey] = kept.sort((a, b) => String(a.createdAt || '').localeCompare(String(b.createdAt || '')));
+        }
+    });
+
     return sanitized;
 }
 
@@ -498,8 +621,9 @@ function collectConfiguredHostnames(...values) {
 
 function normalizeTaskStatus(value) {
     const normalized = socialText(value).toLowerCase();
-    if (['backlog', 'todo', 'in-progress', 'blocked', 'done'].includes(normalized)) return normalized;
-    return 'backlog';
+    if (normalized === 'backlog') return 'todo';
+    if (['todo', 'in-progress', 'blocked', 'done'].includes(normalized)) return normalized;
+    return 'todo';
 }
 
 function normalizeTaskPriority(value) {
@@ -514,6 +638,188 @@ function sanitizeMailFolderKey(value) {
     const normalized = socialText(value).toLowerCase();
     if (DEFAULT_MAIL_FOLDERS.includes(normalized)) return normalized;
     return 'inbox';
+}
+
+function studentServiceAnswerHasLegacyResponderFields(answer = {}) {
+    const authorUserId = String(answer?.authorUserId || '').trim();
+    const responderUserId = String(answer?.responderUserId || '').trim();
+    return Boolean(responderUserId && !authorUserId);
+}
+
+function mergeStudentServiceAnswerRecords(existing = {}, incoming = {}) {
+    const existingAuthor = resolveStudentServiceAnswerAuthorUserId(existing);
+    const incomingAuthor = resolveStudentServiceAnswerAuthorUserId(incoming);
+    const preferred = incomingAuthor && !existingAuthor ? incoming : existing;
+    const fallback = preferred === incoming ? existing : incoming;
+    return normalizeStudentServiceAnswerRecord({
+        ...fallback,
+        ...preferred,
+        authorUserId: existingAuthor || incomingAuthor || '',
+        authorDisplayName: String(
+            preferred.authorDisplayName
+            || preferred.responderName
+            || fallback.authorDisplayName
+            || fallback.responderName
+            || ''
+        ).trim(),
+        authorRole: String(preferred.authorRole || preferred.responderRole || fallback.authorRole || fallback.responderRole || '').trim(),
+        responderUserId: String(preferred.responderUserId || fallback.responderUserId || existingAuthor || incomingAuthor || '').trim(),
+        parentAnswerId: String(preferred.parentAnswerId || fallback.parentAnswerId || '').trim(),
+        helpfulVotes: asArray(incoming.helpfulVotes).length >= asArray(existing.helpfulVotes).length
+            ? asArray(incoming.helpfulVotes)
+            : asArray(existing.helpfulVotes)
+    });
+}
+
+function repairOrphanStudentServiceAnswers(answers = []) {
+    const grouped = new Map();
+    (answers || []).forEach((answer, index) => {
+        const questionId = String(answer?.questionId || '').trim();
+        if (!questionId) return;
+        if (!grouped.has(questionId)) grouped.set(questionId, []);
+        grouped.get(questionId).push({ answer, index });
+    });
+    const repaired = (answers || []).map(answer => ({ ...answer }));
+    grouped.forEach(entries => {
+        const authorCounts = new Map();
+        entries.forEach(({ answer }) => {
+            const authorId = resolveStudentServiceAnswerAuthorUserId(answer);
+            if (!authorId) return;
+            authorCounts.set(authorId, (authorCounts.get(authorId) || 0) + 1);
+        });
+        if (!authorCounts.size) return;
+        const dominantAuthorId = [...authorCounts.entries()].sort((left, right) => right[1] - left[1])[0][0];
+        entries.forEach(({ answer, index }) => {
+            if (resolveStudentServiceAnswerAuthorUserId(answer)) return;
+            const displayName = String(answer.authorDisplayName || answer.responderName || '').trim();
+            const role = String(answer.authorRole || answer.responderRole || '').trim().toLowerCase();
+            const looksOrphaned = !displayName || displayName === 'Staff' || role === 'student_service';
+            if (!looksOrphaned) return;
+            const sibling = entries
+                .map(entry => entry.answer)
+                .find(item => resolveStudentServiceAnswerAuthorUserId(item) === dominantAuthorId);
+            repaired[index] = normalizeStudentServiceAnswerRecord({
+                ...answer,
+                authorUserId: dominantAuthorId,
+                responderUserId: dominantAuthorId,
+                authorDisplayName: sibling?.authorDisplayName || sibling?.responderName || answer.authorDisplayName || 'Staff',
+                authorRole: sibling?.authorRole || sibling?.responderRole || answer.authorRole || 'student',
+                responderName: sibling?.authorDisplayName || sibling?.responderName || answer.responderName || '',
+                responderRole: sibling?.authorRole || sibling?.responderRole || answer.responderRole || ''
+            });
+        });
+    });
+    return repaired;
+}
+
+function syncPortalStudentServiceAnswersFromDomain(serviceState, portalState) {
+    if (!portalState || !Array.isArray(portalState.studentServiceAnswers) || !serviceState) return false;
+    portalState.studentServiceAnswers = serviceState.answers.map((answer, index) =>
+        serializeCanonicalStudentServiceAnswerRecord(answer, index)
+    );
+    return true;
+}
+
+function serializeCanonicalStudentServiceAnswerRecord(answer = {}, index = 0) {
+    const normalized = normalizeStudentServiceAnswerRecord(answer, index);
+    return {
+        id: normalized.id,
+        questionId: normalized.questionId,
+        authorUserId: normalized.authorUserId,
+        authorDisplayName: normalized.authorDisplayName,
+        authorRole: normalized.authorRole,
+        body: normalized.body,
+        parentAnswerId: normalized.parentAnswerId,
+        status: normalized.status,
+        createdAt: normalized.createdAt,
+        updatedAt: normalized.updatedAt,
+        approvedBy: normalized.approvedBy,
+        approvedAt: normalized.approvedAt,
+        helpfulVotes: normalized.helpfulVotes
+    };
+}
+
+function ensureAdminTestingPersonaAccounts(state = {}) {
+    if (!state || typeof state !== 'object') return state;
+    if (!state.accounts || typeof state.accounts !== 'object') state.accounts = {};
+    const facultyCodes = Object.keys(state.faculties || {}).length
+        ? Object.keys(state.faculties)
+        : ['ECON'];
+    const roleSpecs = [
+        { role: 'student', suffix: 'student', name: 'Student View Account' },
+        { role: 'professor', suffix: 'professor', name: 'Professor View Account' },
+        { role: 'ta', suffix: 'ta', name: 'TA View Account' },
+        { role: 'student_service', suffix: 'service', name: 'Student Service View Account' }
+    ];
+    facultyCodes.forEach((facultyCode) => {
+        const normalizedFaculty = normalizeCode(facultyCode) || 'ECON';
+        roleSpecs.forEach((spec) => {
+            const id = `admin-testing-${String(normalizedFaculty).toLowerCase()}-${spec.suffix}`;
+            const existing = state.accounts[id];
+            const nextAccount = {
+                ...(existing && typeof existing === 'object' ? existing : {}),
+                id,
+                email: `${id}@kiu.test`,
+                name: `${spec.name} (${normalizedFaculty})`,
+                nameEn: `${spec.name} (${normalizedFaculty})`,
+                displayName: `${spec.name} (${normalizedFaculty})`,
+                role: spec.role,
+                facultyCode: normalizedFaculty,
+                faculty: normalizedFaculty,
+                accountStatus: 'active',
+                status: 'Active',
+                isAdminTestingPersona: true,
+                createdAt: existing?.createdAt || '2026-06-16T00:00:00.000Z'
+            };
+            state.accounts[id] = nextAccount;
+        });
+    });
+    return state;
+}
+
+function buildNewsReplyReactionCounts(reactions = {}) {
+    const counts = {};
+    Object.values(reactions || {}).forEach(type => {
+        const key = String(type || '').trim();
+        if (!key) return;
+        counts[key] = (counts[key] || 0) + 1;
+    });
+    return counts;
+}
+
+function buildNewsReplyTree(flatReplies = []) {
+    const byId = new Map();
+    flatReplies.forEach(reply => {
+        byId.set(String(reply.id), { ...reply, children: [] });
+    });
+    const roots = [];
+    byId.forEach(node => {
+        const parentId = String(node.parentReplyId || '').trim();
+        const parent = parentId ? byId.get(parentId) : null;
+        if (parent) parent.children.push(node);
+        else roots.push(node);
+    });
+    return roots;
+}
+
+const NEWS_REPLY_MODES = new Set(['none', 'private', 'public', 'both']);
+
+function normalizeNewsReplyMode(value, allowRepliesFallback) {
+    const mode = String(value || '').trim().toLowerCase();
+    if (NEWS_REPLY_MODES.has(mode)) return mode;
+    if (allowRepliesFallback === false) return 'none';
+    return 'private';
+}
+
+function normalizeNewsReplyVisibility(value) {
+    return String(value || '').trim().toLowerCase() === 'public' ? 'public' : 'private';
+}
+
+function postAllowsNewsReplyVisibility(post = {}, visibility = 'private') {
+    const mode = normalizeNewsReplyMode(post.replyMode, post.allowReplies);
+    if (mode === 'none') return false;
+    if (visibility === 'public') return mode === 'public' || mode === 'both';
+    return mode === 'private' || mode === 'both';
 }
 
 class PlatformStore {
@@ -563,6 +869,14 @@ class PlatformStore {
             throw new Error(`Unsupported storage driver "${this.storageDriver}". Use "postgres" or "local-json".`);
         }
         this.ensureBootstrapAdmin();
+        try {
+            const healed = this.healAllStoredFilePaths();
+            if (healed) {
+                console.info(`[platform] healed ${healed} stored file path(s) to current uploads dir`);
+            }
+        } catch (error) {
+            console.warn('[platform] stored file path heal failed:', error?.message || error);
+        }
         this.upsertIntegrationSystem({
             systemCode: 'outlook-mail',
             displayName: 'Outlook Mail',
@@ -626,14 +940,12 @@ class PlatformStore {
         state.people = state.people && typeof state.people === 'object' ? state.people : {};
         state.sessions = state.sessions && typeof state.sessions === 'object' ? state.sessions : {};
         state.faculties = state.faculties && typeof state.faculties === 'object' ? state.faculties : {};
-        state.programs = state.programs && typeof state.programs === 'object' ? state.programs : {};
         state.terms = state.terms && typeof state.terms === 'object' ? state.terms : {};
         state.courses = state.courses && typeof state.courses === 'object' ? state.courses : {};
         state.sections = state.sections && typeof state.sections === 'object' ? state.sections : {};
         state.enrollments = state.enrollments && typeof state.enrollments === 'object' ? state.enrollments : {};
         state.registrationHolds = state.registrationHolds && typeof state.registrationHolds === 'object' ? state.registrationHolds : {};
         state.lmsCourses = state.lmsCourses && typeof state.lmsCourses === 'object' ? state.lmsCourses : {};
-        state.gradebooks = state.gradebooks && typeof state.gradebooks === 'object' ? state.gradebooks : {};
         state.examSessions = state.examSessions && typeof state.examSessions === 'object' ? state.examSessions : {};
         state.examPortalSessions = state.examPortalSessions && typeof state.examPortalSessions === 'object' ? state.examPortalSessions : {};
         state.protectedQuizLaunches = state.protectedQuizLaunches && typeof state.protectedQuizLaunches === 'object' ? state.protectedQuizLaunches : {};
@@ -649,7 +961,9 @@ class PlatformStore {
         state.notifications = state.notifications && typeof state.notifications === 'object' ? state.notifications : {};
         state.notificationPreferences = state.notificationPreferences && typeof state.notificationPreferences === 'object' ? state.notificationPreferences : {};
         state.pushSubscriptions = state.pushSubscriptions && typeof state.pushSubscriptions === 'object' ? state.pushSubscriptions : {};
-        state.serviceRequests = state.serviceRequests && typeof state.serviceRequests === 'object' ? state.serviceRequests : {};
+        // Drop reserved legacy buckets if present on older snapshots
+        if (state.serviceRequests) delete state.serviceRequests;
+        if (state.docs) delete state.docs;
         state.integrations = state.integrations && typeof state.integrations === 'object' ? state.integrations : {};
         state.integrations.systems = state.integrations.systems && typeof state.integrations.systems === 'object' ? state.integrations.systems : {};
         state.integrations.syncRuns = Array.isArray(state.integrations.syncRuns) ? state.integrations.syncRuns : [];
@@ -669,6 +983,9 @@ class PlatformStore {
                 ? clone(state.portal.state.lmsLiveQuizzes)
                 : {});
         delete state.portal.state.lmsLiveQuizzes;
+        state.portal.whiteboardWorkspaces = state.portal.whiteboardWorkspaces && typeof state.portal.whiteboardWorkspaces === 'object'
+            ? state.portal.whiteboardWorkspaces
+            : {};
         state.portal.meta = state.portal.meta && typeof state.portal.meta === 'object' ? state.portal.meta : {};
         state.portal.microsoft = state.portal.microsoft && typeof state.portal.microsoft === 'object' ? state.portal.microsoft : {};
         state.portal.microsoft.oauthStates = state.portal.microsoft.oauthStates && typeof state.portal.microsoft.oauthStates === 'object'
@@ -678,16 +995,34 @@ class PlatformStore {
             ? state.portal.microsoft.loginCompletions
             : {};
         delete state.portal.legacyState;
+        migrateLostFoundSocialState(state);
+        ensureAdminTestingPersonaAccounts(state);
         return state;
     }
 
-    save() {
+    queueRecordStoreWrite(writeTask) {
         this.state.meta.updatedAt = nowIso();
         if (!this.recordStore) return Promise.resolve();
         this.pendingSave = this.pendingSave
-            .catch(() => null)
-            .then(() => this.recordStore.writeState(this.state));
+            .catch((error) => {
+                console.error('Platform store write failed:', error?.message || error);
+            })
+            .then(writeTask);
         return this.pendingSave;
+    }
+
+    save() {
+        return this.queueRecordStoreWrite(() => this.recordStore.writeState(this.state));
+    }
+
+    savePortal() {
+        if (!this.recordStore || typeof this.recordStore.writeNamespaces !== 'function') {
+            return this.save();
+        }
+        return this.queueRecordStoreWrite(() => this.recordStore.writeNamespaces(
+            { portal: this.state.portal },
+            { fullState: this.state }
+        ));
     }
 
     async flushPendingWrites() {
@@ -713,9 +1048,6 @@ class PlatformStore {
         });
     }
 
-    ensureDevelopmentTestAccounts() {
-        return [];
-    }
 
     resetPlatformState(options = {}) {
         const preserveAdmin = options.preserveAdmin !== false;
@@ -765,8 +1097,46 @@ class PlatformStore {
         }
         if (!Array.isArray(this.state.news.posts)) this.state.news.posts = [];
         if (!Array.isArray(this.state.news.replies)) this.state.news.replies = [];
+        if (!Array.isArray(this.state.news.sectionCatalog)) {
+            this.state.news.sectionCatalog = createDefaultNewsSectionCatalog();
+        }
+        this.state.news.posts.forEach((post) => {
+            // replyMode is canonical; allowReplies is derived for older clients.
+            post.replyMode = normalizeNewsReplyMode(post.replyMode, post.allowReplies);
+            post.allowReplies = post.replyMode !== 'none';
+        });
+        this.state.news.replies.forEach((reply) => {
+            if (!reply.visibility) reply.visibility = 'private';
+        });
         return this.state.news;
     }
+
+    indexNewsRepliesByPostId(replies = null) {
+        const source = Array.isArray(replies) ? replies : this.ensureNewsState().replies;
+        const byPostId = new Map();
+        source.forEach((reply) => {
+            const postId = String(reply?.postId || '').trim();
+            if (!postId) return;
+            const bucket = byPostId.get(postId);
+            if (bucket) bucket.push(reply);
+            else byPostId.set(postId, [reply]);
+        });
+        return byPostId;
+    }
+
+    normalizeNewsReplyMode(value, allowRepliesFallback) {
+        return normalizeNewsReplyMode(value, allowRepliesFallback);
+    }
+
+    canViewNewsReply(reply = {}, post = {}, viewerUserId = '') {
+        const normalizedViewerId = String(viewerUserId || '').trim();
+        if (!normalizedViewerId || !this.canViewNewsPost(post, normalizedViewerId)) return false;
+        const visibility = normalizeNewsReplyVisibility(reply.visibility);
+        if (visibility === 'public') return true;
+        const managerView = this.canModerateNewsReplies(normalizedViewerId);
+        return managerView || String(reply.authorUserId || '').trim() === normalizedViewerId;
+    }
+
 
     ensureStudentServiceState() {
         if (!this.state.studentService || typeof this.state.studentService !== 'object') {
@@ -779,6 +1149,7 @@ class PlatformStore {
         serviceState.articles = Array.isArray(serviceState.articles) ? serviceState.articles : [];
         serviceState.macros = Array.isArray(serviceState.macros) ? serviceState.macros : [];
         serviceState.reviewQueue = Array.isArray(serviceState.reviewQueue) ? serviceState.reviewQueue : [];
+        serviceState.inboxFilterLayout = normalizeStudentServiceInboxFilterLayout(serviceState.inboxFilterLayout) || null;
 
         const portalState = this.state.portal?.state && typeof this.state.portal.state === 'object'
             ? this.state.portal.state
@@ -788,10 +1159,9 @@ class PlatformStore {
         } else {
             serviceState.tickets = serviceState.tickets.map((ticket, index) => this.normalizeStudentServiceTicketRecord(ticket, index));
         }
-        if (!serviceState.articles.length && Array.isArray(portalState.studentServiceArticles)) {
-            serviceState.articles = portalState.studentServiceArticles.map((article, index) => this.normalizeStudentServiceArticleRecord(article, index));
-        } else {
-            serviceState.articles = serviceState.articles.map((article, index) => this.normalizeStudentServiceArticleRecord(article, index));
+        serviceState.articles = serviceState.articles.map((article, index) => this.normalizeStudentServiceArticleRecord(article, index));
+        if (Object.prototype.hasOwnProperty.call(portalState, 'studentServiceArticles')) {
+            delete portalState.studentServiceArticles;
         }
         if (!serviceState.macros.length && Array.isArray(portalState.studentServiceMacros)) {
             serviceState.macros = portalState.studentServiceMacros.map((macro, index) => this.normalizeStudentServiceMacroRecord(macro, index));
@@ -803,15 +1173,17 @@ class PlatformStore {
         } else {
             serviceState.questions = serviceState.questions.map((question, index) => this.normalizeStudentServiceQuestionRecord(question, index));
         }
-        if (!serviceState.answers.length && Array.isArray(portalState.studentServiceAnswers)) {
-            serviceState.answers = portalState.studentServiceAnswers.map((answer, index) => this.normalizeStudentServiceAnswerRecord(answer, index));
+        const portalAnswers = Array.isArray(portalState.studentServiceAnswers) ? portalState.studentServiceAnswers : [];
+        const domainAnswers = serviceState.answers.map((answer, index) => this.normalizeStudentServiceAnswerRecord(answer, index));
+        const portalNormalized = portalAnswers.map((answer, index) => this.normalizeStudentServiceAnswerRecord(answer, index));
+        if (domainAnswers.length) {
+            serviceState.answers = repairOrphanStudentServiceAnswers(domainAnswers);
+        } else if (portalNormalized.length) {
+            serviceState.answers = repairOrphanStudentServiceAnswers(portalNormalized);
         } else {
-            serviceState.answers = serviceState.answers.map((answer, index) => this.normalizeStudentServiceAnswerRecord(answer, index));
+            serviceState.answers = [];
         }
 
-        if (!serviceState.articles.length) {
-            serviceState.articles = STUDENT_SERVICE_DEFAULT_ARTICLES.map((article, index) => this.normalizeStudentServiceArticleRecord(article, index));
-        }
         if (!serviceState.macros.length) {
             serviceState.macros = STUDENT_SERVICE_DEFAULT_MACROS.map((macro, index) => this.normalizeStudentServiceMacroRecord(macro, index));
         }
@@ -820,7 +1192,52 @@ class PlatformStore {
             .map((entry, index) => this.normalizeStudentServiceReviewQueueEntry(entry, index))
             .filter(Boolean);
 
+        return this.reconcileLegacyStudentServiceAnswers(serviceState);
+    }
+
+    reconcileLegacyStudentServiceAnswers(serviceState) {
+        serviceState.answers = repairOrphanStudentServiceAnswers(
+            serviceState.answers.map((answer, index) => this.normalizeStudentServiceAnswerRecord(answer, index))
+        );
+
+        const portalState = this.state.portal?.state;
+        if (!portalState || !Array.isArray(portalState.studentServiceAnswers)) {
+            return serviceState;
+        }
+
+        const portalLegacy = portalState.studentServiceAnswers.some(studentServiceAnswerHasLegacyResponderFields);
+        const portalOutOfSync = portalState.studentServiceAnswers.length !== serviceState.answers.length
+            || portalState.studentServiceAnswers.some((answer, index) => {
+                const canonical = serializeCanonicalStudentServiceAnswerRecord(serviceState.answers[index] || {}, index);
+                const answerId = String(answer?.id || '').trim();
+                return answerId && (
+                    String(answer.authorUserId || '') !== canonical.authorUserId
+                    || studentServiceAnswerHasLegacyResponderFields(answer)
+                );
+            });
+        if (!portalLegacy && !portalOutOfSync) {
+            return serviceState;
+        }
+
+        syncPortalStudentServiceAnswersFromDomain(serviceState, portalState);
+        this.save();
         return serviceState;
+    }
+
+    canDeleteStudentServiceAnswer(question = {}, answer = {}, actorId = '') {
+        const viewer = this.getStudentServiceViewerState(actorId);
+        const authorId = resolveStudentServiceAnswerAuthorUserId(answer);
+        return Boolean(authorId && authorId === viewer.viewerId);
+    }
+
+    canDeleteStudentServiceQuestion(question = {}, actorId = '') {
+        if (!question) return false;
+        const status = String(question.status || '').trim().toLowerCase();
+        if (status === 'converted' || status === 'merged') return false;
+        const viewer = this.getStudentServiceViewerState(actorId);
+        if (viewer.canModerate) return true;
+        const questionAuthorId = String(question.authorUserId || '').trim();
+        return viewer.role === 'student' && questionAuthorId && questionAuthorId === viewer.viewerId;
     }
 
     getStudentServiceAccount(userId = '') {
@@ -844,16 +1261,20 @@ class PlatformStore {
         return ['admin', 'student_service'].includes(role);
     }
 
+    canAccessStudentServiceQuestionThread(question = {}, viewerUserId = '') {
+        const viewer = this.getStudentServiceViewerState(viewerUserId);
+        if (viewer.canModerate) return true;
+        if (!question || question.status === 'archived') return false;
+        if (viewer.viewerId && viewer.viewerId === String(question.authorUserId || '').trim()) return true;
+        const status = String(question.status || '').trim().toLowerCase();
+        const normalizedStatus = status === 'pending' || status === 'pending_review' ? 'published' : status;
+        return normalizedStatus === 'published' && !question.mergedIntoQuestionId;
+    }
+
     canRespondToStudentServiceQuestion(question = {}, userId = '') {
         const role = this.getStudentServiceRole(userId);
         if (!role) return false;
-        if (['admin', 'student_service'].includes(role)) return true;
-        if (!['professor', 'ta'].includes(role)) return false;
-        const category = normalizeStudentServiceCategory(question.category);
-        if (!STUDENT_SERVICE_RESPONDER_CATEGORIES.has(category)) return false;
-        const responderFaculty = this.getStudentServiceFacultyCode(userId, '');
-        const questionFaculty = normalizeCode(question.facultyCode || question.faculty || '');
-        return !questionFaculty || !responderFaculty || questionFaculty === responderFaculty;
+        return this.canAccessStudentServiceQuestionThread(question, userId);
     }
 
     shouldForceStudentServiceTicket(payload = {}) {
@@ -862,6 +1283,14 @@ class PlatformStore {
         const body = String(payload.body || payload.message || '').trim().toLowerCase();
         if (STUDENT_SERVICE_SENSITIVE_CATEGORIES.has(category)) return true;
         return /(grade appeal|passport|id card|bank|tuition|payment|invoice|receipt|transcript|certificate|balance)/i.test(body);
+    }
+
+    resolveStudentServiceMessageAttachments(payload = {}, actorId = '') {
+        return normalizeStudentServiceAttachments(
+            asArray(payload.attachments)
+                .map(file => this.normalizeMessageAttachment(file, actorId))
+                .filter(Boolean)
+        );
     }
 
     normalizeStudentServiceThreadEntry(entry = {}, fallback = {}) {
@@ -938,16 +1367,25 @@ class PlatformStore {
         });
     }
 
-    getStudentServiceViewerState(viewerUserId = '') {
+    getStudentServiceViewerState(viewerUserId = '', sessionRole = '') {
         const viewerId = String(viewerUserId || '').trim();
-        const role = this.getStudentServiceRole(viewerId);
+        const accountRole = this.getStudentServiceRole(viewerId);
+        const normalizedSessionRole = String(sessionRole || '').trim().toLowerCase();
+        const role = normalizedSessionRole || accountRole;
         const facultyCode = this.getStudentServiceFacultyCode(viewerId, '');
+        const canModerate = ['admin', 'student_service'].includes(role);
         return {
             viewerId,
             role,
             facultyCode,
-            canModerate: this.canModerateStudentService(viewerId)
+            canModerate
         };
+    }
+
+    canModerateStudentServiceSession(actorId = '', sessionRole = '') {
+        const normalizedSessionRole = String(sessionRole || '').trim().toLowerCase();
+        if (['admin', 'student_service'].includes(normalizedSessionRole)) return true;
+        return this.canModerateStudentService(actorId);
     }
 
     getStudentServiceQuestionAuthorLabel(question = {}, viewer = {}) {
@@ -965,12 +1403,7 @@ class PlatformStore {
     }
 
     canViewStudentServiceQuestion(question = {}, viewerUserId = '') {
-        const viewer = this.getStudentServiceViewerState(viewerUserId);
-        if (viewer.canModerate) return true;
-        if (!question || question.status === 'archived') return false;
-        if (viewer.role === 'student' && viewer.viewerId === String(question.authorUserId || '').trim()) return true;
-        if (this.canRespondToStudentServiceQuestion(question, viewer.viewerId)) return true;
-        return question.status === 'published' && !question.mergedIntoQuestionId;
+        return this.canAccessStudentServiceQuestionThread(question, viewerUserId);
     }
 
     canViewStudentServiceAnswer(question = {}, answer = {}, viewerUserId = '') {
@@ -1000,9 +1433,18 @@ class PlatformStore {
     }
 
     decorateStudentServiceAnswer(answer = {}, question = {}, viewer = {}) {
+        const serviceState = this.ensureStudentServiceState();
+        const parentAnswerId = String(answer.parentAnswerId || '').trim();
+        const parentAnswer = parentAnswerId
+            ? serviceState.answers.find(item => String(item.id || '').trim() === parentAnswerId) || null
+            : null;
+        const helpfulVotes = asArray(answer.helpfulVotes);
         return {
             ...clone(answer),
             authorLabel: answer.authorDisplayName || 'Staff',
+            replyToName: parentAnswer?.authorDisplayName || '',
+            helpfulCount: helpfulVotes.length,
+            viewerHelpfulVote: helpfulVotes.some(entry => entry.userId === viewer.viewerId),
             viewerCanPublish: viewer.canModerate,
             viewerCanArchive: viewer.canModerate
         };
@@ -1029,6 +1471,7 @@ class PlatformStore {
             viewerCanModerate: viewer.canModerate,
             viewerCanRespond: this.canRespondToStudentServiceQuestion(question, viewer.viewerId),
             viewerCanAcceptAnswer: viewer.canModerate || (viewer.role === 'student' && viewer.viewerId === String(question.authorUserId || '').trim()),
+            viewerCanSetOwnerResolution: viewer.viewerId === String(question.authorUserId || '').trim(),
             viewerCanConvert: viewer.canModerate
         };
         if (question.anonymousMode && !viewer.canModerate && viewer.viewerId !== String(question.authorUserId || '').trim()) {
@@ -1063,8 +1506,8 @@ class PlatformStore {
         };
     }
 
-    getStudentServiceBootstrap(viewerUserId = '') {
-        return getStudentServiceBootstrap.call(this, viewerUserId);
+    getStudentServiceBootstrap(viewerUserId = '', options = {}) {
+        return getStudentServiceBootstrap.call(this, viewerUserId, options);
     }
 
     createStudentServiceTicket(payload = {}, actorId = '') {
@@ -1075,7 +1518,10 @@ class PlatformStore {
             return { error: 'Only students or service staff may create tickets.', status: 403 };
         }
         const message = String(payload.message || payload.body || '').trim();
-        if (!message) return { error: 'Ticket message is required.', status: 400 };
+        const attachments = this.resolveStudentServiceMessageAttachments(payload, actor.id);
+        if (!hasStudentServiceMessageContent(message, attachments)) {
+            return { error: 'Ticket message or at least one attachment is required.', status: 400 };
+        }
         const category = normalizeStudentServiceCategory(payload.category);
         const createdAt = nowIso();
         const ticket = this.normalizeStudentServiceTicketRecord({
@@ -1104,6 +1550,7 @@ class PlatformStore {
                 authorName: payload.studentName || actor.displayName || actor.nameEn || actor.name || actor.id,
                 authorRole: payload.authorRole || role,
                 message,
+                attachments,
                 createdAt
             }]
         }, this.ensureStudentServiceState().tickets.length);
@@ -1132,16 +1579,20 @@ class PlatformStore {
             return { error: 'You are not allowed to reply to this ticket.', status: 403 };
         }
         const message = String(payload.message || '').trim();
-        if (!message) return { error: 'Reply body is required.', status: 400 };
+        const attachments = this.resolveStudentServiceMessageAttachments(payload, actor.id);
+        if (!hasStudentServiceMessageContent(message, attachments)) {
+            return { error: 'Reply body or at least one attachment is required.', status: 400 };
+        }
         ticket.thread.push(this.normalizeStudentServiceThreadEntry({
             id: makeId('svc_msg'),
             authorId: actor.id,
             authorName: actor.displayName || actor.nameEn || actor.name || actor.id,
             authorRole: role,
             message,
+            attachments,
             createdAt: nowIso()
         }));
-        ticket.latestPreview = message;
+        ticket.latestPreview = message || attachments[0]?.name || 'Attachment';
         ticket.updatedAt = nowIso();
         if (role === 'student' && ticket.status !== 'Closed') ticket.status = 'Waiting for Service';
         if (['admin', 'student_service'].includes(role) && ticket.status !== 'Closed') ticket.status = 'Waiting for Student';
@@ -1183,13 +1634,17 @@ class PlatformStore {
         if (!ticket) return { error: 'Ticket was not found.', status: 404 };
         const actor = this.getStudentServiceAccount(actorId);
         const message = String(payload.message || '').trim();
-        if (!message) return { error: 'Internal note body is required.', status: 400 };
+        const attachments = this.resolveStudentServiceMessageAttachments(payload, actorId);
+        if (!hasStudentServiceMessageContent(message, attachments)) {
+            return { error: 'Internal note body or at least one attachment is required.', status: 400 };
+        }
         ticket.internalNotes.push(this.normalizeStudentServiceInternalNote({
             id: makeId('svc_note'),
             authorId: actorId,
             authorName: actor?.displayName || actor?.nameEn || actor?.name || actorId,
             authorRole: actor?.role || 'student_service',
             message,
+            attachments,
             createdAt: nowIso()
         }, ticket.internalNotes.length));
         ticket.updatedAt = nowIso();
@@ -1217,8 +1672,22 @@ class PlatformStore {
         return clone(ticket);
     }
 
-    saveStudentServiceArticle(payload = {}, actorId = '') {
-        if (!this.canModerateStudentService(actorId)) return { error: 'Only Student Service staff can save articles.', status: 403 };
+    saveStudentServiceInboxFilterLayout(payload = {}, actorId = '', sessionRole = '') {
+        if (!this.canModerateStudentServiceSession(actorId, sessionRole)) {
+            return { error: 'Only Student Service moderators can save inbox filter layout.', status: 403 };
+        }
+        const layout = normalizeStudentServiceInboxFilterLayout(payload.layout || payload);
+        if (!layout) return { error: 'Inbox filter layout is invalid.', status: 400 };
+        const serviceState = this.ensureStudentServiceState();
+        serviceState.inboxFilterLayout = layout;
+        this.save();
+        return { ok: true, inboxFilterLayout: clone(layout) };
+    }
+
+    saveStudentServiceArticle(payload = {}, actorId = '', sessionRole = '') {
+        if (!this.canModerateStudentServiceSession(actorId, sessionRole)) {
+            return { error: 'Only Student Service staff can save articles.', status: 403 };
+        }
         const title = String(payload.title || '').trim();
         const summary = String(payload.summary || '').trim();
         const content = String(payload.content || '').trim();
@@ -1227,10 +1696,19 @@ class PlatformStore {
         const articleId = String(payload.id || makeId('svc_article')).trim();
         const index = serviceState.articles.findIndex(item => String(item.id || '').trim() === articleId);
         const previous = index >= 0 ? serviceState.articles[index] : null;
-        const nextArticle = this.normalizeStudentServiceArticleRecord({
+        const merged = {
             ...previous,
             ...payload,
-            id: articleId,
+            id: articleId
+        };
+        if (!Object.prototype.hasOwnProperty.call(payload, 'serviceArea') && previous?.serviceArea) {
+            merged.serviceArea = previous.serviceArea;
+        }
+        if (!Object.prototype.hasOwnProperty.call(payload, 'category') && previous?.category) {
+            merged.category = previous.category;
+        }
+        const nextArticle = this.normalizeStudentServiceArticleRecord({
+            ...merged,
             published: payload.published !== false,
             createdBy: previous?.createdBy || actorId,
             updatedBy: actorId,
@@ -1240,6 +1718,19 @@ class PlatformStore {
         else serviceState.articles.unshift(nextArticle);
         this.save();
         return clone(nextArticle);
+    }
+
+    deleteStudentServiceArticle(articleId, actorId = '', sessionRole = '') {
+        if (!this.canModerateStudentServiceSession(actorId, sessionRole)) {
+            return { error: 'Only Student Service staff can delete articles.', status: 403 };
+        }
+        const serviceState = this.ensureStudentServiceState();
+        const normalizedArticleId = String(articleId || '').trim();
+        const index = serviceState.articles.findIndex(item => String(item.id || '').trim() === normalizedArticleId);
+        if (index < 0) return { error: 'Article was not found.', status: 404 };
+        serviceState.articles.splice(index, 1);
+        this.save();
+        return { ok: true, deletedArticleId: normalizedArticleId };
     }
 
     createStudentServiceQuestion(payload = {}, actorId = '') {
@@ -1260,25 +1751,29 @@ class PlatformStore {
         }
         const title = String(payload.title || '').trim();
         const body = String(payload.body || payload.message || '').trim();
-        if (!title || !body) return { error: 'Question title and body are required.', status: 400 };
+        const attachments = this.resolveStudentServiceMessageAttachments(payload, actor.id);
+        if (!title) return { error: 'Question title is required.', status: 400 };
+        if (!hasStudentServiceMessageContent(body, attachments)) {
+            return { error: 'Question body or at least one attachment is required.', status: 400 };
+        }
         const serviceState = this.ensureStudentServiceState();
         const question = this.normalizeStudentServiceQuestionRecord({
             ...payload,
             id: payload.id || makeId('svc_question'),
             title,
             body,
+            attachments,
             authorUserId: actor.id,
             authorDisplayName: actor.displayName || actor.nameEn || actor.name || actor.id,
             authorRole: actor.role,
             facultyCode: payload.facultyCode || payload.faculty || actor.facultyCode || actor.faculty || '',
             anonymousMode: payload.anonymousMode !== false,
             displayIdentityToPeers: payload.displayIdentityToPeers === true,
-            status: 'pending',
+            status: 'published',
             createdAt: nowIso(),
             updatedAt: nowIso()
         }, serviceState.questions.length);
         serviceState.questions.unshift(question);
-        this.upsertStudentServiceReviewQueue('question', question.id, 'pending-review');
         this.save();
         return this.decorateStudentServiceQuestion(question, actorId);
     }
@@ -1293,7 +1788,22 @@ class PlatformStore {
             return { error: 'You are not allowed to answer this question.', status: 403 };
         }
         const body = String(payload.body || payload.message || '').trim();
-        if (!body) return { error: 'Answer body is required.', status: 400 };
+        const attachments = this.resolveStudentServiceMessageAttachments(payload, actor.id);
+        if (!hasStudentServiceMessageContent(body, attachments)) {
+            return { error: 'Answer body or at least one attachment is required.', status: 400 };
+        }
+        const parentAnswerId = String(payload.parentAnswerId || '').trim();
+        let parentAnswer = null;
+        if (parentAnswerId) {
+            parentAnswer = serviceState.answers.find(item =>
+                String(item.id || '').trim() === parentAnswerId
+                && String(item.questionId || '').trim() === String(question.id || '').trim()
+            ) || null;
+            if (!parentAnswer) return { error: 'Parent comment was not found.', status: 404 };
+            if (String(parentAnswer.parentAnswerId || '').trim()) {
+                return { error: 'Only one level of nested replies is supported.', status: 409 };
+            }
+        }
         const role = String(actor.role || '').trim().toLowerCase();
         const answer = this.normalizeStudentServiceAnswerRecord({
             id: payload.id || makeId('svc_answer'),
@@ -1302,19 +1812,93 @@ class PlatformStore {
             authorDisplayName: actor.displayName || actor.nameEn || actor.name || actor.id,
             authorRole: role,
             body,
-            status: ['admin', 'student_service'].includes(role) ? 'published' : 'pending',
+            attachments,
+            parentAnswerId,
+            status: 'published',
             createdAt: nowIso(),
             updatedAt: nowIso(),
-            approvedBy: ['admin', 'student_service'].includes(role) ? actor.id : '',
-            approvedAt: ['admin', 'student_service'].includes(role) ? nowIso() : ''
+            approvedBy: actor.id,
+            approvedAt: nowIso()
         }, serviceState.answers.length);
         serviceState.answers.unshift(answer);
         question.updatedAt = nowIso();
-        if (!['admin', 'student_service'].includes(role)) {
-            this.upsertStudentServiceReviewQueue('answer', answer.id, 'pending-answer-review');
-        }
         this.save();
         return this.decorateStudentServiceQuestion(question, actorId);
+    }
+
+    deleteStudentServiceQuestionAnswer(questionId, answerId, actorId = '') {
+        const serviceState = this.ensureStudentServiceState();
+        const normalizedQuestionId = String(questionId || '').trim();
+        const normalizedAnswerId = String(answerId || '').trim();
+        const question = serviceState.questions.find(item => String(item.id || '').trim() === normalizedQuestionId);
+        if (!question) return { error: 'Question was not found.', status: 404 };
+        const answer = serviceState.answers.find(item =>
+            String(item.id || '').trim() === normalizedAnswerId
+            && String(item.questionId || '').trim() === normalizedQuestionId
+        );
+        if (!answer) return { error: 'Answer was not found.', status: 404 };
+        if (!this.canDeleteStudentServiceAnswer(question, answer, actorId)) {
+            return { error: 'You are not allowed to delete this comment.', status: 403 };
+        }
+        const childIds = new Set(
+            serviceState.answers
+                .filter(item =>
+                    String(item.questionId || '').trim() === normalizedQuestionId
+                    && String(item.parentAnswerId || '').trim() === normalizedAnswerId
+                )
+                .map(item => String(item.id || '').trim())
+                .filter(Boolean)
+        );
+        const removeIds = new Set([normalizedAnswerId, ...childIds]);
+        serviceState.answers = serviceState.answers.filter(item => !removeIds.has(String(item.id || '').trim()));
+        const portalState = this.state.portal?.state;
+        const portalSynced = syncPortalStudentServiceAnswersFromDomain(serviceState, portalState);
+        if (String(question.acceptedAnswerId || '').trim() && removeIds.has(String(question.acceptedAnswerId || '').trim())) {
+            question.acceptedAnswerId = '';
+        }
+        question.updatedAt = nowIso();
+        this.save();
+        if (portalSynced) this.savePortal();
+        return this.decorateStudentServiceQuestion(question, actorId);
+    }
+
+    deleteStudentServiceQuestion(questionId, actorId = '') {
+        const serviceState = this.ensureStudentServiceState();
+        const normalizedQuestionId = String(questionId || '').trim();
+        const question = serviceState.questions.find(item => String(item.id || '').trim() === normalizedQuestionId);
+        if (!question) return { error: 'Question was not found.', status: 404 };
+        if (!this.canDeleteStudentServiceQuestion(question, actorId)) {
+            const status = String(question.status || '').trim().toLowerCase();
+            if (status === 'converted' || status === 'merged') {
+                return { error: 'Converted or merged questions cannot be deleted.', status: 409 };
+            }
+            return { error: 'You are not allowed to delete this question.', status: 403 };
+        }
+        const removedAnswerIds = serviceState.answers
+            .filter(item => String(item.questionId || '').trim() === normalizedQuestionId)
+            .map(item => String(item.id || '').trim())
+            .filter(Boolean);
+        serviceState.answers = serviceState.answers.filter(item =>
+            String(item.questionId || '').trim() !== normalizedQuestionId
+        );
+        serviceState.questions = serviceState.questions.filter(item =>
+            String(item.id || '').trim() !== normalizedQuestionId
+        );
+        serviceState.questions.forEach(item => {
+            if (!Array.isArray(item.relatedQuestionIds)) return;
+            item.relatedQuestionIds = item.relatedQuestionIds.filter(id => String(id || '').trim() !== normalizedQuestionId);
+        });
+        const portalState = this.state.portal?.state;
+        if (portalState && Array.isArray(portalState.studentServiceQuestions)) {
+            portalState.studentServiceQuestions = portalState.studentServiceQuestions.filter(item =>
+                String(item.id || '').trim() !== normalizedQuestionId
+            );
+        }
+        syncPortalStudentServiceAnswersFromDomain(serviceState, portalState);
+        this.resolveStudentServiceReviewQueue('question', normalizedQuestionId, actorId);
+        removedAnswerIds.forEach(answerId => this.resolveStudentServiceReviewQueue('answer', answerId, actorId));
+        this.save();
+        return { deletedQuestionId: normalizedQuestionId };
     }
 
     setStudentServiceQuestionFeedback(questionId, payload = {}, actorId = '') {
@@ -1325,15 +1909,53 @@ class PlatformStore {
             return { error: 'You are not allowed to rate this question.', status: 403 };
         }
         const value = payload.value === 'not_helpful' ? 'not_helpful' : 'helpful';
-        question.helpfulVotes = question.helpfulVotes.filter(entry => entry.userId !== String(actorId || '').trim());
-        question.helpfulVotes.push({
-            userId: String(actorId || '').trim(),
-            value,
-            updatedAt: nowIso()
-        });
+        const normalizedActorId = String(actorId || '').trim();
+        const hadVote = question.helpfulVotes.find(entry => entry.userId === normalizedActorId) || null;
+        question.helpfulVotes = question.helpfulVotes.filter(entry => entry.userId !== normalizedActorId);
+        if (!hadVote || hadVote.value !== value) {
+            question.helpfulVotes.push({
+                userId: normalizedActorId,
+                value,
+                updatedAt: nowIso()
+            });
+        }
         question.updatedAt = nowIso();
         this.save();
         return this.decorateStudentServiceQuestion(question, actorId);
+    }
+
+    setStudentServiceAnswerFeedback(questionId, answerId, actorId = '') {
+        const serviceState = this.ensureStudentServiceState();
+        const normalizedQuestionId = String(questionId || '').trim();
+        const normalizedAnswerId = String(answerId || '').trim();
+        const normalizedActorId = String(actorId || '').trim();
+        const question = serviceState.questions.find(item => String(item.id || '').trim() === normalizedQuestionId);
+        if (!question) return { error: 'Question was not found.', status: 404 };
+        if (!this.canViewStudentServiceQuestion(question, normalizedActorId)) {
+            return { error: 'You are not allowed to rate this answer.', status: 403 };
+        }
+        const answer = serviceState.answers.find(item =>
+            String(item.id || '').trim() === normalizedAnswerId
+            && String(item.questionId || '').trim() === normalizedQuestionId
+        );
+        if (!answer) return { error: 'Answer was not found.', status: 404 };
+        if (answer.status !== 'published') {
+            return { error: 'Only published answers may be rated.', status: 409 };
+        }
+        const hadVote = asArray(answer.helpfulVotes).some(entry => entry.userId === normalizedActorId);
+        answer.helpfulVotes = asArray(answer.helpfulVotes).filter(entry => entry.userId !== normalizedActorId);
+        if (!hadVote) {
+            answer.helpfulVotes.push({
+                userId: normalizedActorId,
+                updatedAt: nowIso()
+            });
+        }
+        answer.updatedAt = nowIso();
+        question.updatedAt = nowIso();
+        const portalState = this.state.portal?.state;
+        syncPortalStudentServiceAnswersFromDomain(serviceState, portalState);
+        this.save();
+        return this.decorateStudentServiceQuestion(question, normalizedActorId);
     }
 
     acceptStudentServiceAnswer(questionId, payload = {}, actorId = '') {
@@ -1386,6 +2008,25 @@ class PlatformStore {
         return this.decorateStudentServiceQuestion(question, actorId);
     }
 
+    setStudentServiceQuestionOwnerResolution(questionId, payload = {}, actorId = '') {
+        const normalizedActorId = String(actorId || '').trim();
+        const serviceState = this.ensureStudentServiceState();
+        const question = serviceState.questions.find(item => String(item.id || '').trim() === String(questionId || '').trim());
+        if (!question) return { error: 'Question was not found.', status: 404 };
+        if (normalizedActorId !== String(question.authorUserId || '').trim()) {
+            return { error: 'Only the question author can update owner resolution.', status: 403 };
+        }
+        const requestedStatus = String(payload.status || '').trim().toLowerCase();
+        const nextStatus = requestedStatus === 'answered' || requestedStatus === 'unanswered' ? requestedStatus : '';
+        const currentStatus = String(question.ownerResolutionStatus || '').trim().toLowerCase();
+        question.ownerResolutionStatus = nextStatus && nextStatus === currentStatus ? '' : nextStatus;
+        question.ownerResolutionUpdatedAt = nowIso();
+        question.ownerResolutionUpdatedBy = normalizedActorId;
+        question.updatedAt = nowIso();
+        this.save();
+        return this.decorateStudentServiceQuestion(question, normalizedActorId);
+    }
+
     updateStudentServiceQuestionFlags(questionId, payload = {}, actorId = '') {
         if (!this.canModerateStudentService(actorId)) return { error: 'Only Student Service staff can update question flags.', status: 403 };
         const question = this.ensureStudentServiceState().questions.find(item => String(item.id || '').trim() === String(questionId || '').trim());
@@ -1435,8 +2076,10 @@ class PlatformStore {
         };
     }
 
-    convertStudentServiceQuestionToArticle(questionId, payload = {}, actorId = '') {
-        if (!this.canModerateStudentService(actorId)) return { error: 'Only Student Service staff can convert questions to articles.', status: 403 };
+    convertStudentServiceQuestionToArticle(questionId, payload = {}, actorId = '', sessionRole = '') {
+        if (!this.canModerateStudentServiceSession(actorId, sessionRole)) {
+            return { error: 'Only Student Service staff can convert questions to articles.', status: 403 };
+        }
         const serviceState = this.ensureStudentServiceState();
         const question = serviceState.questions.find(item => String(item.id || '').trim() === String(questionId || '').trim());
         if (!question) return { error: 'Question was not found.', status: 404 };
@@ -1445,17 +2088,18 @@ class PlatformStore {
             && (String(item.id || '').trim() === String(payload.answerId || question.acceptedAnswerId || '').trim() || item.status === 'published')
         ) || null;
         if (!answer) return { error: 'A published answer is required before converting to an article.', status: 409 };
+        const questionCategory = payload.category || question.category;
         const article = this.saveStudentServiceArticle({
             title: payload.title || question.title,
-            category: question.category,
-            serviceArea: question.serviceArea,
             summary: payload.summary || question.body.slice(0, 220),
             content: payload.content || answer.body,
-            audience: payload.audience || 'students',
+            category: questionCategory,
+            serviceArea: payload.serviceArea || getStudentServiceAreaForCategory(questionCategory),
+            audience: 'all',
             published: true,
             facultyCode: payload.facultyCode || question.facultyCode || 'ALL',
             sourceQuestionId: question.id
-        }, actorId);
+        }, actorId, sessionRole);
         if (article?.error) return article;
         question.convertedArticleId = article.id;
         question.lastReviewedAt = nowIso();
@@ -1537,10 +2181,6 @@ class PlatformStore {
 
     ensureLmsCourse(courseId) {
         return ensureLmsCourse.call(this, courseId);
-    }
-
-    ensureGradebook(courseId) {
-        return ensureGradebook.call(this, courseId);
     }
 
     ensureProtectedQuizLaunch(ticket) {
@@ -1715,6 +2355,10 @@ class PlatformStore {
         return resetPassword.call(this, token, newPassword);
     }
 
+    changePassword(userId, currentPassword, newPassword) {
+        return changePassword.call(this, userId, currentPassword, newPassword);
+    }
+
     createSessionByCredentials(email, password) {
         return createSessionByCredentials.call(this, email, password);
     }
@@ -1751,6 +2395,10 @@ class PlatformStore {
         return markNotificationRead.call(this, notificationId, userId);
     }
 
+    deleteNotification(notificationId, userId = '') {
+        return deleteNotification.call(this, notificationId, userId);
+    }
+
     updateNotificationPreferences(userId, preferences = {}) {
         return updateNotificationPreferences.call(this, userId, preferences);
     }
@@ -1773,6 +2421,20 @@ class PlatformStore {
             .toLowerCase()
             .replace(/[^a-z0-9]+/g, '-')
             .replace(/^-+|-+$/g, '') || 'general';
+    }
+
+    normalizeNewsFontSize(value, fallback = 18) {
+        const parsed = Number.parseInt(value, 10);
+        if (!Number.isFinite(parsed)) return fallback;
+        return Math.max(8, Math.min(96, parsed));
+    }
+
+    normalizeNewsTypography(post = {}) {
+        return {
+            titleFontSize: this.normalizeNewsFontSize(post.titleFontSize, 28),
+            bodyFontSize: this.normalizeNewsFontSize(post.bodyFontSize, 18),
+            excerptFontSize: this.normalizeNewsFontSize(post.excerptFontSize, 15)
+        };
     }
 
     normalizeNewsRoleTargets(values = []) {
@@ -1800,38 +2462,146 @@ class PlatformStore {
         const isAuthor = normalizedViewerId && String(post.createdById || '').trim() === normalizedViewerId;
         const status = String(post.status || 'published').trim().toLowerCase();
         if (status !== 'published' && !(isManager || isAuthor)) return false;
+        if (status === 'archived' && !(isManager || isAuthor)) return false;
+        const nowMs = Date.now();
+        const publishAtMs = post.publishAt ? new Date(post.publishAt).getTime() : 0;
+        const expiresAtMs = post.expiresAt ? new Date(post.expiresAt).getTime() : 0;
+        if (!isManager && !isAuthor && status === 'published') {
+            if (publishAtMs && !Number.isNaN(publishAtMs) && publishAtMs > nowMs) return false;
+            if (expiresAtMs && !Number.isNaN(expiresAtMs) && expiresAtMs < nowMs) return false;
+        }
         const roleTargets = this.normalizeNewsRoleTargets(post.audienceRoles || []);
         const facultyTargets = this.normalizeNewsFacultyTargets(post.audienceFacultyCodes || []);
         const userTargets = uniqueStrings(asArray(post.targetUserIds).map(value => String(value || '').trim()).filter(Boolean));
-        if (!viewerAccount) return status === 'published' && !roleTargets.length && !facultyTargets.length && !userTargets.length;
+        const courseTargets = uniqueStrings(asArray(post.courseIds).map(value => String(value || '').trim()).filter(Boolean));
+        const programTarget = String(post.programCode || '').trim().toUpperCase();
+        if (!viewerAccount) return status === 'published' && !roleTargets.length && !facultyTargets.length && !userTargets.length && !courseTargets.length && !programTarget;
         const role = String(viewerAccount.role || '').trim().toLowerCase();
         const facultyCode = normalizeCode(viewerAccount.facultyCode || viewerAccount.faculty || '');
         const roleMatch = !roleTargets.length || roleTargets.includes(role);
         const facultyMatch = !facultyTargets.length || facultyTargets.includes(facultyCode);
         const userMatch = !userTargets.length || userTargets.includes(normalizedViewerId);
-        return roleMatch && facultyMatch && userMatch;
+        const courseMatch = !courseTargets.length || courseTargets.some(courseId => this.accountCanAccessNewsCourse(normalizedViewerId, courseId, viewerAccount));
+        const accountProgram = String(viewerAccount.programCode || viewerAccount.studyProgram || '').trim().toUpperCase();
+        const programMatch = !programTarget || (accountProgram && accountProgram === programTarget);
+        return roleMatch && facultyMatch && userMatch && courseMatch && programMatch;
     }
 
-    decorateNewsPost(post = {}, viewerUserId = '') {
+    accountCanAccessNewsCourse(userId = '', courseId = '', account = null) {
+        const normalizedUserId = String(userId || '').trim();
+        const normalizedCourseId = String(courseId || '').trim();
+        if (!normalizedUserId || !normalizedCourseId) return false;
+        if (this.canManageNews(normalizedUserId)) return true;
+        const viewerAccount = account || this.getAccountById(normalizedUserId);
+        const role = String(viewerAccount?.role || '').trim().toLowerCase();
+        if (this.isCourseTeachingStaff(normalizedCourseId, normalizedUserId, role)) return true;
+        const enrollments = this.getStudentEnrollmentsByCourse(normalizedCourseId) || [];
+        return enrollments.some(entry => String(entry?.studentId || entry?.userId || entry?.accountId || '').trim() === normalizedUserId);
+    }
+
+    normalizeNewsCourseIds(values = []) {
+        return uniqueStrings(asArray(values).map(value => String(value || '').trim()).filter(Boolean));
+    }
+
+    normalizeNewsAttachments(payload = {}, actorId = '') {
+        return asArray(payload.attachments)
+            .map(file => this.normalizeMessageAttachment(file, actorId))
+            .filter(Boolean);
+    }
+
+    matchesNewsFeedDateRange(post = {}, dateFrom = '', dateTo = '') {
+        const from = String(dateFrom || '').trim().slice(0, 10);
+        const to = String(dateTo || '').trim().slice(0, 10);
+        if (!from && !to) return true;
+        const postDate = String(post.publishedAt || post.createdAt || '').slice(0, 10);
+        if (!postDate) return true;
+        if (from && postDate < from) return false;
+        if (to && postDate > to) return false;
+        return true;
+    }
+
+    decorateNewsPost(post = {}, viewerUserId = '', repliesByPostId = null) {
         const normalizedViewerId = String(viewerUserId || '').trim();
         const managerView = normalizedViewerId && this.canModerateNewsReplies(normalizedViewerId);
-        const replies = this.ensureNewsState().replies
-            .filter(reply => String(reply.postId || '').trim() === String(post.id || '').trim())
-            .filter(reply => managerView || String(reply.authorUserId || '').trim() === normalizedViewerId)
+        const replyMode = normalizeNewsReplyMode(post.replyMode, post.allowReplies);
+        const postId = String(post.id || '').trim();
+        const indexedReplies = repliesByPostId instanceof Map
+            ? (repliesByPostId.get(postId) || [])
+            : this.ensureNewsState().replies.filter(reply => String(reply.postId || '').trim() === postId);
+        const postReplies = indexedReplies
+            .slice()
             .sort((left, right) => String(left.createdAt || '').localeCompare(String(right.createdAt || '')));
+        const decorateFlat = (replies) => replies.map(reply => ({
+            ...clone(reply),
+            visibility: normalizeNewsReplyVisibility(reply.visibility),
+            reactions: clone(reply.reactions || {}),
+            reactionCounts: buildNewsReplyReactionCounts(reply.reactions),
+            viewerReaction: String((reply.reactions || {})[normalizedViewerId] || ''),
+            viewerCanDelete: Boolean(normalizedViewerId && (String(reply.authorUserId || '') === normalizedViewerId || managerView))
+        }));
+        const publicReplies = postReplies.filter(reply => normalizeNewsReplyVisibility(reply.visibility) === 'public');
+        const privateReplies = postReplies.filter(reply => {
+            if (normalizeNewsReplyVisibility(reply.visibility) === 'public') return false;
+            return managerView || String(reply.authorUserId || '').trim() === normalizedViewerId;
+        });
         return {
             ...clone(post),
+            replyMode,
+            allowReplies: replyMode !== 'none',
+            attachments: asArray(post.attachments).map(file => clone(file)),
             audienceRoles: this.normalizeNewsRoleTargets(post.audienceRoles || []),
             audienceFacultyCodes: this.normalizeNewsFacultyTargets(post.audienceFacultyCodes || []),
             targetUserIds: uniqueStrings(asArray(post.targetUserIds).map(value => String(value || '').trim()).filter(Boolean)),
+            courseIds: this.normalizeNewsCourseIds(post.courseIds || []),
+            programCode: String(post.programCode || '').trim().toUpperCase(),
+            ...this.normalizeNewsTypography(post),
             viewerCanManage: normalizedViewerId ? this.canManageNews(normalizedViewerId) : false,
             viewerCanModerateReplies: managerView,
-            privateReplies: clone(replies),
-            privateReplyCount: replies.length
+            publicReplies: buildNewsReplyTree(decorateFlat(publicReplies)),
+            publicReplyCount: publicReplies.length,
+            privateReplies: buildNewsReplyTree(decorateFlat(privateReplies)),
+            privateReplyCount: privateReplies.length
         };
     }
 
-    getNewsSectionsForViewer(viewerUserId = '') {
+    getNewsSectionCatalog() {
+        return this.ensureNewsState().sectionCatalog.map(entry => {
+            const key = this.normalizeNewsSectionKey(entry?.key || entry?.label || 'general');
+            const label = String(entry?.label || entry?.key || 'General').trim() || 'General';
+            return { key, label };
+        });
+    }
+
+    getNewsSectionPostCountsAll() {
+        const counts = new Map();
+        this.ensureNewsState().posts.forEach(post => {
+            const key = this.normalizeNewsSectionKey(post.sectionKey || post.sectionLabel || 'general');
+            counts.set(key, (counts.get(key) || 0) + 1);
+        });
+        return counts;
+    }
+
+    placeReassignedNewsPostAtSectionBottom(post = {}, targetKey = '', allPosts = []) {
+        const normalizedTarget = this.normalizeNewsSectionKey(targetKey);
+        const postId = String(post?.id || '').trim();
+        let oldestMs = null;
+        asArray(allPosts).forEach(item => {
+            if (String(item?.id || '').trim() === postId) return;
+            if (this.normalizeNewsSectionKey(item?.sectionKey || item?.sectionLabel || 'general') !== normalizedTarget) return;
+            const stamp = String(item?.publishedAt || item?.createdAt || '').trim();
+            if (!stamp) return;
+            const ms = new Date(stamp).getTime();
+            if (Number.isNaN(ms)) return;
+            if (oldestMs === null || ms < oldestMs) oldestMs = ms;
+        });
+        const fallbackStamp = String(post?.createdAt || post?.publishedAt || '').trim() || nowIso();
+        post.publishedAt = oldestMs === null
+            ? fallbackStamp
+            : new Date(oldestMs - 1000).toISOString();
+        post.pinned = false;
+    }
+
+    getNewsSectionPostCountsForViewer(viewerUserId = '') {
         const counts = new Map();
         this.ensureNewsState().posts.forEach(post => {
             if (!this.canViewNewsPost(post, viewerUserId)) return;
@@ -1841,30 +2611,202 @@ class PlatformStore {
             current.count += 1;
             counts.set(key, current);
         });
-        return [...counts.values()].sort((left, right) => {
+        return counts;
+    }
+
+    getNewsSectionsForViewer(viewerUserId = '') {
+        const postCounts = this.getNewsSectionPostCountsForViewer(viewerUserId);
+        const merged = new Map();
+        this.getNewsSectionCatalog().forEach(entry => {
+            const counted = postCounts.get(entry.key);
+            merged.set(entry.key, {
+                key: entry.key,
+                label: entry.label,
+                count: counted?.count || 0
+            });
+        });
+        postCounts.forEach((entry, key) => {
+            if (!merged.has(key)) {
+                merged.set(key, { ...entry });
+            }
+        });
+        return [...merged.values()].sort((left, right) => {
             if (right.count !== left.count) return right.count - left.count;
             return String(left.label || '').localeCompare(String(right.label || ''));
         });
+    }
+
+    saveNewsSectionCatalog(entries = [], actorId = '', reassignments = {}) {
+        const normalizedActorId = String(actorId || '').trim();
+        if (!this.canManageNews(normalizedActorId)) {
+            return { error: 'Only administrators or delegated news managers can manage news sections.', status: 403 };
+        }
+        const normalized = [];
+        const seenKeys = new Set();
+        for (const entry of asArray(entries)) {
+            const label = String(entry?.label || '').trim();
+            if (!label) {
+                return { error: 'Every section needs a display name.', status: 400 };
+            }
+            const key = entry?.key
+                ? this.normalizeNewsSectionKey(entry.key)
+                : this.normalizeNewsSectionKey(label);
+            if (seenKeys.has(key)) {
+                return { error: `Duplicate section key: ${key}`, status: 400 };
+            }
+            seenKeys.add(key);
+            normalized.push({ key, label });
+        }
+        if (!normalized.length) {
+            return { error: 'At least one section is required.', status: 400 };
+        }
+        const oldCatalog = this.getNewsSectionCatalog();
+        const oldByKey = new Map(oldCatalog.map(item => [item.key, item]));
+        const newKeys = new Set(normalized.map(item => item.key));
+        const news = this.ensureNewsState();
+        const normalizedReassignments = {};
+        const reassignmentInput = reassignments && typeof reassignments === 'object' ? reassignments : {};
+        for (const [rawFrom, rawTo] of Object.entries(reassignmentInput)) {
+            const fromKey = this.normalizeNewsSectionKey(rawFrom);
+            const toKey = this.normalizeNewsSectionKey(rawTo);
+            if (!fromKey || !toKey) {
+                return { error: 'Invalid section reassignment.', status: 400 };
+            }
+            if (fromKey === toKey) {
+                return { error: 'Section reassignment source and target must differ.', status: 400 };
+            }
+            if (!newKeys.has(toKey)) {
+                return { error: 'Reassignment target must remain in the catalog.', status: 400 };
+            }
+            normalizedReassignments[fromKey] = toKey;
+        }
+        for (const [fromKey, toKey] of Object.entries(normalizedReassignments)) {
+            const target = normalized.find(item => item.key === toKey);
+            if (!target) {
+                return { error: 'Reassignment target section was not found.', status: 400 };
+            }
+            const hadPosts = news.posts.some(post =>
+                this.normalizeNewsSectionKey(post.sectionKey || post.sectionLabel || 'general') === fromKey
+            );
+            if (!oldByKey.has(fromKey) && !hadPosts) {
+                return { error: `Section "${fromKey}" was not found.`, status: 400 };
+            }
+            news.posts.forEach(post => {
+                if (this.normalizeNewsSectionKey(post.sectionKey || post.sectionLabel || 'general') !== fromKey) return;
+                post.sectionKey = target.key;
+                post.sectionLabel = target.label;
+                this.placeReassignedNewsPostAtSectionBottom(post, target.key, news.posts);
+            });
+        }
+        const postCounts = this.getNewsSectionPostCountsAll();
+        for (const oldEntry of oldCatalog) {
+            if (newKeys.has(oldEntry.key)) continue;
+            const count = postCounts.get(oldEntry.key) || 0;
+            if (count > 0) {
+                const noun = count === 1 ? 'announcement' : 'announcements';
+                return {
+                    error: `${oldEntry.label} has ${count} ${noun} — reassign or remove them first.`,
+                    status: 400
+                };
+            }
+        }
+        for (const [key, count] of postCounts.entries()) {
+            if (newKeys.has(key) || count <= 0) continue;
+            const samplePost = news.posts.find(post =>
+                this.normalizeNewsSectionKey(post.sectionKey || post.sectionLabel || 'general') === key
+            );
+            const label = String(samplePost?.sectionLabel || key).trim() || key;
+            const noun = count === 1 ? 'announcement' : 'announcements';
+            return {
+                error: `${label} has ${count} ${noun} — reassign or remove them first.`,
+                status: 400
+            };
+        }
+        normalized.forEach(entry => {
+            const previous = oldByKey.get(entry.key);
+            if (!previous || previous.label === entry.label) return;
+            news.posts.forEach(post => {
+                if (this.normalizeNewsSectionKey(post.sectionKey || post.sectionLabel || 'general') !== entry.key) return;
+                post.sectionLabel = entry.label;
+                post.sectionKey = entry.key;
+            });
+        });
+        news.sectionCatalog = normalized.map(item => ({ ...item }));
+        if (this.state.meta && typeof this.state.meta === 'object') {
+            this.state.meta.updatedAt = nowIso();
+        }
+        this.save();
+        return {
+            catalog: this.getNewsSectionCatalog(),
+            sections: this.getNewsSectionsForViewer(normalizedActorId)
+        };
+    }
+
+    listNewsSectionCatalog(viewerUserId = '') {
+        const normalizedViewerId = String(viewerUserId || '').trim();
+        return {
+            catalog: this.getNewsSectionCatalog(),
+            sections: this.getNewsSectionsForViewer(normalizedViewerId)
+        };
     }
 
     listNewsFeed(filters = {}) {
         const viewerUserId = String(filters.userId || filters.viewerUserId || '').trim();
         const sectionKey = this.normalizeNewsSectionKey(filters.section || 'all');
         const search = String(filters.search || '').trim();
-        const items = this.ensureNewsState().posts
+        const priority = String(filters.priority || 'all').trim().toLowerCase();
+        const pinned = String(filters.pinned || 'all').trim().toLowerCase();
+        const statusFilter = String(filters.status || 'all').trim().toLowerCase();
+        const dateFrom = String(filters.dateFrom || '').trim();
+        const dateTo = String(filters.dateTo || '').trim();
+        const courseId = String(filters.courseId || '').trim();
+        const limit = Math.max(0, Number.parseInt(filters.limit, 10) || 0);
+        const featuredOnly = String(filters.featured || '').trim() === '1' || filters.featured === true;
+        const isManager = viewerUserId && this.canManageNews(viewerUserId);
+        let items = this.ensureNewsState().posts
             .filter(post => this.canViewNewsPost(post, viewerUserId))
             .filter(post => sectionKey === 'all' || this.normalizeNewsSectionKey(post.sectionKey || post.sectionLabel || 'general') === sectionKey)
-            .filter(post => !search || matchesSearch(post, search, ['title', 'body', 'sectionLabel', 'sectionKey', 'createdByName']))
+            .filter(post => !search || matchesSearch(post, search, ['title', 'body', 'sectionLabel', 'sectionKey', 'createdByName', 'excerpt']))
+            .filter(post => priority === 'all' || String(post.priority || 'standard').toLowerCase() === priority)
+            .filter(post => {
+                if (pinned === 'all' || !pinned) return true;
+                if (pinned === 'yes' || pinned === 'true' || pinned === '1') return Boolean(post.pinned);
+                if (pinned === 'no' || pinned === 'false' || pinned === '0') return !post.pinned;
+                return true;
+            })
+            .filter(post => {
+                if (!isManager || statusFilter === 'all' || !statusFilter) return true;
+                return String(post.status || 'published').toLowerCase() === statusFilter;
+            })
+            .filter(post => this.matchesNewsFeedDateRange(post, dateFrom, dateTo))
+            .filter(post => {
+                if (!courseId) return true;
+                const courseIds = this.normalizeNewsCourseIds(post.courseIds || []);
+                return courseIds.includes(courseId);
+            })
             .sort((left, right) => {
                 if (Boolean(right.pinned) !== Boolean(left.pinned)) return right.pinned ? 1 : -1;
+                const rightPriority = ['critical', 'important', 'standard'].indexOf(String(right.priority || 'standard').toLowerCase());
+                const leftPriority = ['critical', 'important', 'standard'].indexOf(String(left.priority || 'standard').toLowerCase());
+                if (rightPriority !== leftPriority) return rightPriority - leftPriority;
                 return String(right.publishedAt || right.updatedAt || right.createdAt || '').localeCompare(String(left.publishedAt || left.updatedAt || left.createdAt || ''));
-            })
-            .map(post => this.decorateNewsPost(post, viewerUserId));
+            });
+        if (featuredOnly && limit > 0) {
+            const featured = items.filter(post => post.pinned || ['important', 'critical'].includes(String(post.priority || '').toLowerCase()));
+            const rest = items.filter(post => !featured.includes(post));
+            items = [...featured, ...rest].slice(0, limit);
+        } else if (limit > 0) {
+            items = items.slice(0, limit);
+        }
+        // Index once per feed pass — avoid O(posts × replies) in decorateNewsPost.
+        const repliesByPostId = this.indexNewsRepliesByPostId();
+        items = items.map(post => this.decorateNewsPost(post, viewerUserId, repliesByPostId));
+        // Lean feed: news.js / news-home.js only consume items, sections, sectionCatalog.
+        // Privileges come from session account helpers, not this payload.
         return {
             items,
             sections: this.getNewsSectionsForViewer(viewerUserId),
-            privileges: this.listPrivilegeDefinitions(),
-            viewerPrivileges: this.getEffectiveAccountPrivileges(viewerUserId)
+            sectionCatalog: this.getNewsSectionCatalog()
         };
     }
 
@@ -1887,29 +2829,37 @@ class PlatformStore {
         const now = nowIso();
         const status = String(payload.status || 'published').trim().toLowerCase() || 'published';
         const sectionLabel = String(payload.sectionLabel || payload.section || 'General').trim() || 'General';
+        const typography = this.normalizeNewsTypography(payload);
         const post = {
             id: String(payload.id || makeId('news')).trim(),
             title,
             body,
             excerpt: String(payload.excerpt || body.slice(0, 220)).trim(),
+            titleFontSize: typography.titleFontSize,
+            bodyFontSize: typography.bodyFontSize,
+            excerptFontSize: typography.excerptFontSize,
             sectionKey: this.normalizeNewsSectionKey(payload.sectionKey || sectionLabel),
             sectionLabel,
             audienceRoles: this.normalizeNewsRoleTargets(payload.audienceRoles || payload.targetRoles || []),
             audienceFacultyCodes: this.normalizeNewsFacultyTargets(payload.audienceFacultyCodes || payload.targetFacultyCodes || []),
             targetUserIds: uniqueStrings(asArray(payload.targetUserIds).map(value => String(value || '').trim()).filter(Boolean)),
-            allowReplies: payload.allowReplies !== false,
+            courseIds: this.normalizeNewsCourseIds(payload.courseIds || []),
+            programCode: String(payload.programCode || '').trim().toUpperCase(),
+            replyMode: normalizeNewsReplyMode(payload.replyMode, payload.allowReplies),
             pinned: Boolean(payload.pinned),
             priority: String(payload.priority || 'standard').trim().toLowerCase() || 'standard',
             heroTone: String(payload.heroTone || 'ink').trim().toLowerCase() || 'ink',
             status,
             publishAt: String(payload.publishAt || now).trim(),
             expiresAt: String(payload.expiresAt || '').trim(),
+            attachments: this.normalizeNewsAttachments(payload, normalizedActorId),
             createdById: normalizedActorId,
             createdByName: actor?.displayName || actor?.nameEn || actor?.name || normalizedActorId,
             createdAt: now,
             updatedAt: now,
-            publishedAt: status === 'published' ? now : ''
+            publishedAt: status === 'published' ? String(payload.publishAt || now).trim() : ''
         };
+        post.allowReplies = post.replyMode !== 'none';
         this.ensureNewsState().posts.unshift(post);
         if (status === 'published') {
             this.resolveNewsRecipients(post, normalizedActorId).forEach(account => {
@@ -1935,21 +2885,87 @@ class PlatformStore {
         if (!this.canManageNews(normalizedActorId)) {
             return { error: 'Only administrators or delegated news managers can update university news.', status: 403 };
         }
-        post.title = String(payload.title || post.title || '').trim();
-        post.body = String(payload.body || post.body || '').trim();
-        post.excerpt = String(payload.excerpt || post.excerpt || post.body.slice(0, 220)).trim();
-        post.sectionLabel = String(payload.sectionLabel || payload.section || post.sectionLabel || 'General').trim() || 'General';
-        post.sectionKey = this.normalizeNewsSectionKey(payload.sectionKey || post.sectionLabel);
-        post.audienceRoles = this.normalizeNewsRoleTargets(payload.audienceRoles || payload.targetRoles || post.audienceRoles || []);
-        post.audienceFacultyCodes = this.normalizeNewsFacultyTargets(payload.audienceFacultyCodes || payload.targetFacultyCodes || post.audienceFacultyCodes || []);
-        post.targetUserIds = uniqueStrings(asArray(payload.targetUserIds !== undefined ? payload.targetUserIds : post.targetUserIds).map(value => String(value || '').trim()).filter(Boolean));
-        post.allowReplies = payload.allowReplies === undefined ? post.allowReplies !== false : payload.allowReplies !== false;
-        post.pinned = payload.pinned === undefined ? Boolean(post.pinned) : Boolean(payload.pinned);
-        post.priority = String(payload.priority || post.priority || 'standard').trim().toLowerCase() || 'standard';
-        post.heroTone = String(payload.heroTone || post.heroTone || 'ink').trim().toLowerCase() || 'ink';
-        post.status = String(payload.status || post.status || 'published').trim().toLowerCase() || 'published';
-        post.publishAt = String(payload.publishAt || post.publishAt || nowIso()).trim();
-        post.expiresAt = String(payload.expiresAt || post.expiresAt || '').trim();
+        // Truly partial PATCH: only touch fields that are explicitly present.
+        if (payload.title !== undefined) {
+            const nextTitle = String(payload.title || '').trim();
+            // Soft-archive: keep the real title; ignore legacy [deleted] mangling from clients.
+            if (nextTitle !== '[deleted]') post.title = nextTitle;
+        }
+        if (payload.body !== undefined) post.body = String(payload.body || '').trim();
+        if (payload.excerpt !== undefined) {
+            post.excerpt = String(payload.excerpt || '').trim();
+        } else if (payload.body !== undefined && !String(post.excerpt || '').trim()) {
+            post.excerpt = String(post.body || '').slice(0, 220).trim();
+        }
+        if (
+            payload.titleFontSize !== undefined
+            || payload.bodyFontSize !== undefined
+            || payload.excerptFontSize !== undefined
+        ) {
+            const typography = this.normalizeNewsTypography({
+                titleFontSize: payload.titleFontSize !== undefined ? payload.titleFontSize : post.titleFontSize,
+                bodyFontSize: payload.bodyFontSize !== undefined ? payload.bodyFontSize : post.bodyFontSize,
+                excerptFontSize: payload.excerptFontSize !== undefined ? payload.excerptFontSize : post.excerptFontSize
+            });
+            post.titleFontSize = typography.titleFontSize;
+            post.bodyFontSize = typography.bodyFontSize;
+            post.excerptFontSize = typography.excerptFontSize;
+        }
+        if (payload.sectionLabel !== undefined || payload.section !== undefined) {
+            post.sectionLabel = String(payload.sectionLabel || payload.section || post.sectionLabel || 'General').trim() || 'General';
+        }
+        if (payload.sectionKey !== undefined || payload.sectionLabel !== undefined || payload.section !== undefined) {
+            post.sectionKey = this.normalizeNewsSectionKey(
+                payload.sectionKey !== undefined ? payload.sectionKey : post.sectionLabel
+            );
+        }
+        if (payload.audienceRoles !== undefined || payload.targetRoles !== undefined) {
+            post.audienceRoles = this.normalizeNewsRoleTargets(payload.audienceRoles || payload.targetRoles || []);
+        }
+        if (payload.audienceFacultyCodes !== undefined || payload.targetFacultyCodes !== undefined) {
+            post.audienceFacultyCodes = this.normalizeNewsFacultyTargets(
+                payload.audienceFacultyCodes || payload.targetFacultyCodes || []
+            );
+        }
+        if (payload.targetUserIds !== undefined) {
+            post.targetUserIds = uniqueStrings(asArray(payload.targetUserIds).map(value => String(value || '').trim()).filter(Boolean));
+        }
+        if (payload.courseIds !== undefined) {
+            post.courseIds = this.normalizeNewsCourseIds(payload.courseIds || []);
+        }
+        if (payload.programCode !== undefined) {
+            post.programCode = String(payload.programCode || '').trim().toUpperCase();
+        }
+        if (payload.replyMode !== undefined || payload.allowReplies !== undefined) {
+            post.replyMode = normalizeNewsReplyMode(
+                payload.replyMode !== undefined ? payload.replyMode : post.replyMode,
+                payload.allowReplies !== undefined ? payload.allowReplies : post.allowReplies
+            );
+        } else if (!post.replyMode) {
+            post.replyMode = normalizeNewsReplyMode('', post.allowReplies);
+        }
+        post.allowReplies = post.replyMode !== 'none';
+        if (payload.pinned !== undefined) post.pinned = Boolean(payload.pinned);
+        if (payload.priority !== undefined) {
+            post.priority = String(payload.priority || 'standard').trim().toLowerCase() || 'standard';
+        }
+        if (payload.heroTone !== undefined) {
+            post.heroTone = String(payload.heroTone || 'ink').trim().toLowerCase() || 'ink';
+        }
+        if (payload.status !== undefined) {
+            post.status = String(payload.status || 'published').trim().toLowerCase() || 'published';
+        }
+        if (payload.publishAt !== undefined) {
+            post.publishAt = String(payload.publishAt || '').trim();
+        }
+        if (payload.expiresAt !== undefined) {
+            post.expiresAt = String(payload.expiresAt || '').trim();
+        }
+        if (payload.attachments !== undefined) {
+            post.attachments = this.normalizeNewsAttachments(payload, normalizedActorId);
+        } else if (!Array.isArray(post.attachments)) {
+            post.attachments = [];
+        }
         post.updatedAt = nowIso();
         if (post.status === 'published' && !post.publishedAt) post.publishedAt = post.updatedAt;
         this.save();
@@ -1961,39 +2977,138 @@ class PlatformStore {
         const post = this.ensureNewsState().posts.find(item => String(item.id || '').trim() === String(postId || '').trim());
         if (!post) return { error: 'News post was not found.', status: 404 };
         if (!this.canViewNewsPost(post, normalizedActorId)) return { error: 'This news post is not visible to the replying account.', status: 403 };
-        if (post.allowReplies === false) return { error: 'Private replies are disabled for this news post.', status: 409 };
+        const visibility = normalizeNewsReplyVisibility(payload.visibility);
+        if (!postAllowsNewsReplyVisibility(post, visibility)) {
+            return { error: visibility === 'public' ? 'Public replies are disabled for this news post.' : 'Private replies are disabled for this news post.', status: 409 };
+        }
         const body = String(payload.body || '').trim();
         if (!body) return { error: 'Reply text is required.', status: 400 };
+        const parentReplyId = String(payload.parentReplyId || payload.replyToReplyId || '').trim();
+        const allReplies = this.ensureNewsState().replies;
+        if (parentReplyId) {
+            const parentReply = allReplies.find(r => String(r.id || '') === parentReplyId && String(r.postId || '') === String(post.id || ''));
+            if (!parentReply) return { error: 'Parent reply was not found.', status: 404 };
+            if (normalizeNewsReplyVisibility(parentReply.visibility) !== visibility) {
+                return { error: 'Replies must stay in the same conversation channel.', status: 409 };
+            }
+        }
         const author = this.getAccountById(normalizedActorId);
         const reply = {
             id: makeId('news_reply'),
             postId: post.id,
+            parentReplyId: parentReplyId || null,
             authorUserId: normalizedActorId,
             authorName: author?.displayName || author?.nameEn || author?.name || normalizedActorId,
             body,
+            visibility,
+            reactions: {},
             createdAt: nowIso(),
             updatedAt: nowIso()
         };
         this.ensureNewsState().replies.unshift(reply);
+        const notifyIds = new Set();
+        this.resolveNewsRecipients(post)
+            .filter(account => this.canModerateNewsReplies(account.id))
+            .forEach(account => notifyIds.add(account.id));
+        if (visibility === 'public') {
+            const authorId = String(post.createdById || '').trim();
+            if (authorId && authorId !== normalizedActorId) notifyIds.add(authorId);
+        }
+        notifyIds.forEach((recipientUserId) => {
+            this.createNotification({
+                recipientUserId,
+                sourceDomain: 'news',
+                type: 'news-reply',
+                title: visibility === 'public' ? `Public comment on ${post.title}` : `Private reply on ${post.title}`,
+                body: visibility === 'public'
+                    ? `${reply.authorName} commented on a university update.`
+                    : `${reply.authorName} sent a private response to a university update.`,
+                routePage: 'news',
+                routeData: { postId: post.id }
+            });
+        });
+        this.save();
+        return this.decorateNewsPost(post, normalizedActorId);
+    }
+
+    toggleNewsReplyReaction(postId, replyId, reactionType = 'like', actorId = '') {
+        const normalizedActorId = String(actorId || '').trim();
+        const type = String(reactionType || 'like').trim().toLowerCase() || 'like';
+        const post = this.ensureNewsState().posts.find(item => String(item.id || '') === String(postId || ''));
+        if (!post) return { error: 'News post was not found.', status: 404 };
+        if (!normalizedActorId) return { error: 'Sign in to react to replies.', status: 401 };
+        if (!this.canViewNewsPost(post, normalizedActorId)) return { error: 'This news post is not visible to your account.', status: 403 };
+        const reply = this.ensureNewsState().replies.find(r => String(r.id || '') === String(replyId || '') && String(r.postId || '') === String(post.id || ''));
+        if (!reply) return { error: 'Reply was not found.', status: 404 };
+        if (!this.canViewNewsReply(reply, post, normalizedActorId)) {
+            return { error: 'This reply is not visible to your account.', status: 403 };
+        }
+        reply.reactions = reply.reactions || {};
+        if (reply.reactions[normalizedActorId] === type) delete reply.reactions[normalizedActorId];
+        else reply.reactions[normalizedActorId] = type;
+        reply.updatedAt = nowIso();
+        this.save();
+        return this.decorateNewsPost(post, normalizedActorId);
+    }
+
+    deleteNewsReply(postId, replyId, actorId = '') {
+        const normalizedActorId = String(actorId || '').trim();
+        const post = this.ensureNewsState().posts.find(item => String(item.id || '') === String(postId || ''));
+        if (!post) return { error: 'News post was not found.', status: 404 };
+        if (!normalizedActorId) return { error: 'Sign in to delete replies.', status: 401 };
+        const store = this.ensureNewsState();
+        const target = store.replies.find(r => String(r.id || '') === String(replyId || '') && String(r.postId || '') === String(post.id || ''));
+        if (!target) return { error: 'Reply was not found.', status: 404 };
+        const managerView = this.canModerateNewsReplies(normalizedActorId);
+        if (String(target.authorUserId || '') !== normalizedActorId && !managerView) {
+            return { error: 'You can only delete your own replies.', status: 403 };
+        }
+        const removeIds = new Set([String(target.id)]);
+        let changed = true;
+        while (changed) {
+            changed = false;
+            store.replies.forEach(r => {
+                const pid = String(r.parentReplyId || '');
+                if (pid && removeIds.has(pid) && !removeIds.has(String(r.id))) {
+                    removeIds.add(String(r.id));
+                    changed = true;
+                }
+            });
+        }
+        store.replies = store.replies.filter(r => !removeIds.has(String(r.id)));
+        this.save();
+        return this.decorateNewsPost(post, normalizedActorId);
+    }
+
+    reportNewsReply(postId, replyId, actorId = '', reason = '') {
+        const normalizedActorId = String(actorId || '').trim();
+        const post = this.ensureNewsState().posts.find(item => String(item.id || '') === String(postId || ''));
+        if (!post) return { error: 'News post was not found.', status: 404 };
+        if (!normalizedActorId) return { error: 'Sign in to report replies.', status: 401 };
+        const reply = this.ensureNewsState().replies.find(r => String(r.id || '') === String(replyId || '') && String(r.postId || '') === String(post.id || ''));
+        if (!reply) return { error: 'Reply was not found.', status: 404 };
+        if (!this.canViewNewsReply(reply, post, normalizedActorId)) {
+            return { error: 'This reply is not visible to your account.', status: 403 };
+        }
+        const reasonText = String(reason || '').trim();
         this.resolveNewsRecipients(post)
             .filter(account => this.canModerateNewsReplies(account.id))
             .forEach(account => {
                 this.createNotification({
                     recipientUserId: account.id,
                     sourceDomain: 'news',
-                    type: 'news-reply',
-                    title: `Private reply on ${post.title}`,
-                    body: `${reply.authorName} sent a private response to a university update.`,
+                    type: 'news-reply-report',
+                    title: `Reported reply on ${post.title}`,
+                    body: `${reply.authorName}'s reply was reported${reasonText ? `: ${reasonText}` : '.'}`,
                     routePage: 'news',
-                    routeData: { postId: post.id }
+                    routeData: { postId: post.id, replyId: reply.id }
                 });
             });
-        this.save();
-        return this.decorateNewsPost(post, normalizedActorId);
+        return { ok: true };
     }
 
-    addAuditEvent(payload = {}) {
-        return addAuditEvent.call(this, payload);
+    addAuditEvent(payload = {}, options = {}) {
+        return addAuditEvent.call(this, payload, options);
     }
 
     listAuditEvents(filters = {}) {
@@ -2546,6 +3661,10 @@ class PlatformStore {
         return getFile.call(this, fileId);
     }
 
+    healAllStoredFilePaths() {
+        return healAllStoredFilePaths.call(this);
+    }
+
     objectContainsStoredFileReference(value, fileId, visited = new WeakSet()) {
         return objectContainsStoredFileReference.call(this, value, fileId, visited);
     }
@@ -2556,6 +3675,7 @@ class PlatformStore {
 
     createPortalBootstrap() {
         const portalState = clone(this.state.portal.state || {});
+        delete portalState.studentServiceArticles;
         portalState.lmsLiveQuizzes = Object.entries(this.state.portal.liveQuizWorkspaces || {}).reduce((accumulator, [key, workspace]) => {
             const normalized = clone(workspace || {}) || {};
             if (normalized && typeof normalized === 'object') {
@@ -2668,15 +3788,35 @@ class PlatformStore {
         return clone(current);
     }
 
-    savePortalState(nextState) {
+    savePortalState(nextState, options = {}) {
         const existingState = this.state.portal.state && typeof this.state.portal.state === 'object'
             ? this.state.portal.state
             : {};
         const sanitizedIncoming = sanitizePortalStateForServer(nextState);
-        this.state.portal.state = {
-            ...clone(existingState),
-            ...sanitizedIncoming
-        };
+        if (Object.prototype.hasOwnProperty.call(sanitizedIncoming, 'adminLibrary')) {
+            assertValidAdminLibraryPortalState(sanitizedIncoming.adminLibrary);
+        }
+        if (sanitizedIncoming.messages && typeof sanitizedIncoming.messages === 'object') {
+            sanitizedIncoming.messages = sanitizeLmsInteractionMessagesForServer(
+                sanitizedIncoming.messages,
+                existingState.messages || {},
+                options
+            );
+        }
+        const actorUserId = String(options.actorUserId || '').trim();
+        const allowGlobalWrite = options.allowGlobalWrite === true;
+        if (allowGlobalWrite || actorUserId) {
+            this.state.portal.state = mergeIncomingPortalState(existingState, sanitizedIncoming, {
+                actorUserId,
+                allowGlobalWrite,
+                effectiveRole: options.effectiveRole
+            });
+        } else {
+            this.state.portal.state = {
+                ...clone(existingState),
+                ...sanitizedIncoming
+            };
+        }
         const incomingMeta = sanitizedIncoming.meta && typeof sanitizedIncoming.meta === 'object'
             ? sanitizedIncoming.meta
             : {};
@@ -2688,13 +3828,26 @@ class PlatformStore {
         if (incomingMeta.registrationCmsRevision != null) {
             this.state.portal.meta.registrationCmsRevision = incomingMeta.registrationCmsRevision;
         }
-        this.save();
-        return this.createPortalBootstrap();
+        this.savePortal();
+        return this.createPortalStateSaveSnapshot();
     }
 
-    saveLegacyPortalState(nextState) {
-        return this.savePortalState(nextState);
+    createPortalStateSaveSnapshot() {
+        const portalState = clone(this.state.portal.state || {});
+        portalState.lmsLiveQuizzes = Object.entries(this.state.portal.liveQuizWorkspaces || {}).reduce((accumulator, [key, workspace]) => {
+            const normalized = clone(workspace || {}) || {};
+            if (normalized && typeof normalized === 'object') {
+                delete normalized.ui;
+            }
+            accumulator[key] = normalized;
+            return accumulator;
+        }, {});
+        return {
+            state: portalState,
+            meta: clone(this.state.portal.meta || {})
+        };
     }
+
 
     getLmsLiveQuizWorkspace(resourceKey = '') {
         const key = String(resourceKey || '').trim();
@@ -2719,6 +3872,33 @@ class PlatformStore {
         delete nextWorkspace.ui;
         nextWorkspace.updatedAt = nowIso();
         this.state.portal.liveQuizWorkspaces[key] = nextWorkspace;
+        this.save();
+        return clone(nextWorkspace);
+    }
+
+    getLmsWhiteboardWorkspace(resourceKey = '') {
+        const key = String(resourceKey || '').trim();
+        if (!key) return null;
+        this.state.portal.whiteboardWorkspaces = this.state.portal.whiteboardWorkspaces && typeof this.state.portal.whiteboardWorkspaces === 'object'
+            ? this.state.portal.whiteboardWorkspaces
+            : {};
+        const workspace = clone(this.state.portal.whiteboardWorkspaces[key] || null);
+        if (workspace && typeof workspace === 'object') {
+            delete workspace.ui;
+        }
+        return workspace;
+    }
+
+    saveLmsWhiteboardWorkspace(resourceKey = '', workspace = {}) {
+        const key = String(resourceKey || '').trim();
+        if (!key) return null;
+        this.state.portal.whiteboardWorkspaces = this.state.portal.whiteboardWorkspaces && typeof this.state.portal.whiteboardWorkspaces === 'object'
+            ? this.state.portal.whiteboardWorkspaces
+            : {};
+        const nextWorkspace = clone(workspace && typeof workspace === 'object' ? workspace : {}) || {};
+        delete nextWorkspace.ui;
+        nextWorkspace.updatedAt = nowIso();
+        this.state.portal.whiteboardWorkspaces[key] = nextWorkspace;
         this.save();
         return clone(nextWorkspace);
     }
@@ -3264,6 +4444,10 @@ class PlatformStore {
         return setSocialProjectMembership.call(this, projectId, userId, action, actorId);
     }
 
+    setSocialProjectBaseline(projectId, actorId = '') {
+        return setSocialProjectBaseline.call(this, projectId, actorId);
+    }
+
     createSocialProjectTask(projectId, payload = {}, actorId = '') {
         return createSocialProjectTask.call(this, projectId, payload, actorId);
     }
@@ -3272,36 +4456,83 @@ class PlatformStore {
         return updateSocialProjectTask.call(this, projectId, taskId, payload, actorId);
     }
 
+    updateSocialProjectTaskGraph(projectId, payload = {}, actorId = '') {
+        return updateSocialProjectTaskGraph.call(this, projectId, payload, actorId);
+    }
+
     deleteSocialProjectTask(projectId, taskId, actorId = '') {
         return deleteSocialProjectTask.call(this, projectId, taskId, actorId);
     }
 
-    createSocialProjectMilestone(projectId, payload = {}, actorId = '') {
-        return createSocialProjectMilestone.call(this, projectId, payload, actorId);
+    createSocialProjectBudgetCategory(projectId, payload = {}, actorId = '') {
+        return createSocialProjectBudgetCategory.call(this, projectId, payload, actorId);
     }
 
-    updateSocialProjectMilestone(projectId, milestoneId, payload = {}, actorId = '') {
-        return updateSocialProjectMilestone.call(this, projectId, milestoneId, payload, actorId);
+    updateSocialProjectBudgetCategory(projectId, categoryId, payload = {}, actorId = '') {
+        return updateSocialProjectBudgetCategory.call(this, projectId, categoryId, payload, actorId);
     }
 
-    deleteSocialProjectMilestone(projectId, milestoneId, actorId = '') {
-        return deleteSocialProjectMilestone.call(this, projectId, milestoneId, actorId);
+    deleteSocialProjectBudgetCategory(projectId, categoryId, actorId = '') {
+        return deleteSocialProjectBudgetCategory.call(this, projectId, categoryId, actorId);
     }
 
-    createSocialProjectDeliverable(projectId, payload = {}, actorId = '') {
-        return createSocialProjectDeliverable.call(this, projectId, payload, actorId);
+    createSocialProjectBudgetExpense(projectId, payload = {}, actorId = '') {
+        return createSocialProjectBudgetExpense.call(this, projectId, payload, actorId);
     }
 
-    deleteSocialProjectDeliverable(projectId, deliverableId, actorId = '') {
-        return deleteSocialProjectDeliverable.call(this, projectId, deliverableId, actorId);
+    updateSocialProjectBudgetExpense(projectId, expenseId, payload = {}, actorId = '') {
+        return updateSocialProjectBudgetExpense.call(this, projectId, expenseId, payload, actorId);
     }
 
-    createSocialProjectCheckin(projectId, payload = {}, actorId = '') {
-        return createSocialProjectCheckin.call(this, projectId, payload, actorId);
+    deleteSocialProjectBudgetExpense(projectId, expenseId, actorId = '') {
+        return deleteSocialProjectBudgetExpense.call(this, projectId, expenseId, actorId);
+    }
+
+    createSocialProjectRisk(projectId, payload = {}, actorId = '') {
+        return createSocialProjectRisk.call(this, projectId, payload, actorId);
+    }
+
+    updateSocialProjectRisk(projectId, riskId, payload = {}, actorId = '') {
+        return updateSocialProjectRisk.call(this, projectId, riskId, payload, actorId);
+    }
+
+    deleteSocialProjectRisk(projectId, riskId, actorId = '') {
+        return deleteSocialProjectRisk.call(this, projectId, riskId, actorId);
     }
 
     createSocialProjectShowcasePage(projectId, actorId = '') {
         return createSocialProjectShowcasePage.call(this, projectId, actorId);
+    }
+
+    decoratePortfolio(portfolio, viewerUserId = '') {
+        return decoratePortfolio.call(this, portfolio, viewerUserId);
+    }
+
+    getPortfolioForUser(userId, viewerUserId = '') {
+        const portfolio = getOrCreatePortfolio.call(this, userId);
+        if (!portfolio) return null;
+        const decorated = decoratePortfolio.call(this, portfolio, viewerUserId || userId);
+        return decorated?.canView ? decorated : null;
+    }
+
+    savePortfolioForUser(userId, payload = {}, actorId = '') {
+        return savePortfolio.call(this, userId, payload, actorId);
+    }
+
+    publishPortfolioForUser(userId, payload = {}, actorId = '') {
+        return publishPortfolio.call(this, userId, payload, actorId);
+    }
+
+    unpublishPortfolioForUser(userId, actorId = '') {
+        return unpublishPortfolio.call(this, userId, actorId);
+    }
+
+    listDiscoverablePortfolios(viewerUserId = '', filters = {}) {
+        return listDiscoverablePortfolios.call(this, viewerUserId, filters);
+    }
+
+    addCustomPortfolioSection(userId, payload = {}, actorId = '') {
+        return addCustomPortfolioSection.call(this, userId, payload, actorId);
     }
 
     listSocialFeed(filters = {}) { return listSocialFeed.call(this, filters); }
@@ -3362,9 +4593,27 @@ class PlatformStore {
 
     respondSocialEventRsvp(eventId, userId, status = 'going') { return respondSocialEventRsvp.call(this, eventId, userId, status); }
 
+    updateSocialEvent(eventId, payload = {}, actorId = '') { return updateSocialEvent.call(this, eventId, payload, actorId); }
+
     deleteSocialEvent(eventId, actorId = '') { return deleteSocialEvent.call(this, eventId, actorId); }
 
     listSocialEvents(filters = {}) { return listSocialEvents.call(this, filters); }
+
+    closeExpiredSurveys() { return closeExpiredSurveys.call(this); }
+
+    listSocialSurveys(filters = {}, viewerUserId = '') { return listSocialSurveys.call(this, filters, viewerUserId); }
+
+    getSocialSurvey(surveyId, viewerUserId = '') { return getSocialSurvey.call(this, surveyId, viewerUserId); }
+
+    createSocialSurvey(payload = {}, actorId = '') { return createSocialSurvey.call(this, payload, actorId); }
+
+    closeSocialSurvey(surveyId, actorId = '') { return closeSocialSurvey.call(this, surveyId, actorId); }
+
+    submitSocialSurveyResponse(surveyId, payload = {}, actorId = '') { return submitSocialSurveyResponse.call(this, surveyId, payload, actorId); }
+
+    getSocialSurveyResults(surveyId, viewerUserId = '') { return getSocialSurveyResults.call(this, surveyId, viewerUserId); }
+
+    deleteSocialSurvey(surveyId, actorId = '') { return deleteSocialSurvey.call(this, surveyId, actorId); }
 
     removeChatMessage(chatId, messageId, actorId = '') {
         const normalizedChatId = socialText(chatId);
@@ -3636,43 +4885,6 @@ class PlatformStore {
         return canAccessGradebookCourse.call(this, courseId, userId, role, action);
     }
 
-    getGradebookAssessmentDefinition(gradebook, criterionKey = '') {
-        return getGradebookAssessmentDefinition.call(this, gradebook, criterionKey);
-    }
-
-    aggregateGradebookAssessmentEntries(entries = [], mode = 'average') {
-        return aggregateGradebookAssessmentEntries.call(this, entries, mode);
-    }
-
-    computeRecordFinalScore(record, gradebook = null) {
-        return computeRecordFinalScore.call(this, record, gradebook);
-    }
-
-    getGradebookCourse(courseId) {
-        return getGradebookCourse.call(this, courseId);
-    }
-
-    setScore(payload = {}) {
-        return setScore.call(this, payload);
-    }
-
-    publishGradebook(payload = {}) {
-        return publishGradebook.call(this, payload);
-    }
-
-    finalizeGrades(payload = {}) {
-        return finalizeGrades.call(this, payload);
-    }
-
-    listServiceRequests(filters = {}) {
-        const requesterUserId = String(filters.requesterUserId || '').trim();
-        const status = String(filters.status || '').trim().toLowerCase();
-        const items = Object.values(this.state.serviceRequests)
-            .filter(item => !requesterUserId || item.requesterUserId === requesterUserId)
-            .filter(item => !status || String(item.status || '').trim().toLowerCase() === status)
-            .sort((a, b) => String(b.updatedAt || '').localeCompare(String(a.updatedAt || '')));
-        return paginate(items, filters);
-    }
 
     createImportJob(payload = {}) {
         const id = String(payload.id || makeId('import')).trim();
@@ -3750,5 +4962,7 @@ class PlatformStore {
 }
 
 module.exports = {
-    PlatformStore
+    PlatformStore,
+    getAdminLibraryPortalValidationError,
+    ADMIN_LIBRARY_UI_ONLY_KEYS
 };

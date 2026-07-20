@@ -1,10 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 import { createRequire } from 'module';
 
 const require = createRequire(import.meta.url);
-const { PlatformStore } = require('../backend/platform/store.js');
+const {
+    PlatformStore,
+    getAdminLibraryPortalValidationError
+} = require('../backend/platform/store.js');
 
 describe('portal state persistence safety', () => {
     it('posts the full sanitized portal persistable snapshot to the backend', () => {
@@ -15,6 +18,9 @@ describe('portal state persistence safety', () => {
         expect(source).toContain("'portalMessengerFavorites'");
         expect(source).toContain('state: buildPortalBackendPersistableState(KIU_STATE)');
         expect(source).not.toContain('state: buildPortalPersistableState(KIU_STATE)');
+        expect(source).toMatch(/buildPortalPersistableState[\s\S]*?delete snapshot\.adminLibrary\.catalogPageSize/);
+        expect(source).toMatch(/buildPortalPersistableState[\s\S]*?delete snapshot\.adminLibrary\.catalogPageIndex/);
+        expect(source).toMatch(/buildPortalPersistableState[\s\S]*?delete snapshot\.adminLibrary\.droplistFilters/);
     });
 
     it('merges full incoming portal state while keeping live quiz workspaces server-owned', () => {
@@ -61,5 +67,62 @@ describe('portal state persistence safety', () => {
         expect(store.state.portal.liveQuizWorkspaces['COURSE::GROUP'].title).toBe('Runtime-owned live quiz workspace');
         expect(store.state.portal.state.lmsLiveQuizzes).toBeUndefined();
         expect(bootstrap.state.lmsLiveQuizzes['COURSE::GROUP'].title).toBe('Runtime-owned live quiz workspace');
+    });
+
+    it('treats adminLibrary as an admin-only portal key and strips UI-only fields on save', () => {
+        const storeSource = readFileSync(join(process.cwd(), 'backend/platform/store.js'), 'utf8');
+        expect(storeSource).toMatch(/PORTAL_GLOBAL_ADMIN_ONLY_KEYS[\s\S]*'adminLibrary'/);
+
+        const store = new PlatformStore();
+        store.state.portal.state = {
+            adminLibrary: {
+                books: [{ id: 'keep-me', title: 'Existing' }],
+                formSchema: [{ id: 'title' }]
+            }
+        };
+
+        const rejected = store.savePortalState({
+            adminLibrary: {
+                books: [{ id: 'student-write', title: 'Should not land' }],
+                catalogPageSize: 50,
+                catalogPageIndex: 2,
+                droplistFilters: { genre: 'Poetry' }
+            }
+        }, {
+            actorUserId: 'student-1',
+            allowGlobalWrite: false
+        });
+        expect(rejected.state.adminLibrary.books).toEqual([{ id: 'keep-me', title: 'Existing' }]);
+
+        const saved = store.savePortalState({
+            adminLibrary: {
+                books: [{ id: 'lib-1', title: 'Persisted' }],
+                formSchema: [{ id: 'title', type: 'text' }],
+                catalogPageSize: 50,
+                catalogPageIndex: 2,
+                droplistFilters: { genre: 'Poetry' }
+            }
+        }, {
+            actorUserId: 'admin-1',
+            allowGlobalWrite: true
+        });
+
+        expect(saved.state.adminLibrary.books).toEqual([{ id: 'lib-1', title: 'Persisted' }]);
+        expect(saved.state.adminLibrary.catalogPageSize).toBeUndefined();
+        expect(saved.state.adminLibrary.catalogPageIndex).toBeUndefined();
+        expect(saved.state.adminLibrary.droplistFilters).toBeUndefined();
+        expect(store.state.portal.state.adminLibrary.catalogPageSize).toBeUndefined();
+        expect(store.state.portal.state.adminLibrary.droplistFilters).toBeUndefined();
+    });
+
+    it('rejects garbage adminLibrary portal blobs', () => {
+        expect(getAdminLibraryPortalValidationError({ books: 'nope' })).toContain('books');
+        expect(getAdminLibraryPortalValidationError({ books: [{ title: 'missing id' }] })).toContain('id');
+        expect(getAdminLibraryPortalValidationError({ formSchema: ['bad'] })).toContain('objects');
+
+        const store = new PlatformStore();
+        expect(() => store.savePortalState({
+            adminLibrary: { books: [{ title: 'no-id' }] }
+        }, { allowGlobalWrite: true })).toThrow(/id/);
     });
 });

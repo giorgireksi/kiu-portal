@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
 function readSource(relativePath) {
-    return readFileSync(join(process.cwd(), relativePath), 'utf8');
+    const full = join(process.cwd(), relativePath);
+    if (!existsSync(full)) return '';
+    return readFileSync(full, 'utf8');
 }
 
 describe('login route regressions', () => {
@@ -13,14 +15,16 @@ describe('login route regressions', () => {
 
         expect(html).not.toContain('assets/js/shared/messenger.js');
         expect(html).not.toContain('assets/css/base.css');
+        expect(html).not.toContain('lux-page-bare-lite.css');
         expect(html).not.toContain('assets/css/layout.css');
         expect(html).not.toContain('assets/css/components.css');
         expect(html).not.toContain('assets/css/index-luxury.css');
         expect(html).not.toContain('assets/css/mobile-responsive.css');
         expect(html).toContain('assets/css/lux-tokens.css');
         expect(html).toContain('assets/css/lux-surfaces.css');
+        expect(html).not.toContain('assets/css/lux-focus-panel.css');
         expect(html).toContain('assets/css/lux-controls.css');
-        expect(html).toContain('assets/css/lux-layout-primitives.css');
+        expect(html).not.toContain('assets/css/lux-layout-primitives.css');
         expect(html).not.toContain('assets/js/app/app.js');
         expect(html).not.toContain('assets/js/app/api.js');
         expect(html).not.toContain('assets/js/app/auth.js');

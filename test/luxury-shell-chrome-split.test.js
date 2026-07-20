@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
 function readSource(relativePath) {
@@ -9,13 +9,14 @@ function readSource(relativePath) {
 describe('luxury shell chrome split', () => {
     it('moves shell chrome owners out of index-luxury and into the dedicated shell runtime', () => {
         const luxury = readSource('assets/js/features/index-luxury.js');
+        const indexRuntime = readSource('assets/js/features/luxury-index-runtime.js');
         const shellChrome = readSource('assets/js/features/luxury-shell-chrome.js');
-        const homeRuntime = readSource('assets/js/features/luxury-home-dashboard-runtime.js');
         const indexHtml = readSource('index.html');
 
-        expect(indexHtml).toContain('assets/js/features/luxury-shell-chrome.js?v=20260527-luxshell2');
+        expect(indexHtml).toMatch(/assets\/js\/features\/luxury-shell-chrome\.js(\?v=[^"']+)?/);
         expect(luxury).toContain('window.__KIU_LUXURY_SHARED = {');
-        expect(homeRuntime).toContain('window.__KIU_LUXURY_HOME_DASHBOARD_RUNTIME_READY = true;');
+        // luxury-home-dashboard-runtime.js removed (unused seam stub)
+        expect(() => readSource('assets/js/features/luxury-home-dashboard-runtime.js')).toThrow(/ENOENT|no such file/i);
         expect(shellChrome).toContain('function getLuxurySharedConfig() {');
         expect(shellChrome).toContain('function pageTarget(pageId) {');
         expect(shellChrome).toContain('function renderNav() {');
@@ -26,7 +27,8 @@ describe('luxury shell chrome split', () => {
         expect(shellChrome).toContain('function bindUserMenu() {');
         expect(shellChrome).toContain('function bindTopbarControls() {');
         expect(shellChrome).toContain("typeof window.toggleSidebar === 'function'");
-        expect(shellChrome).toContain('openHomeEditor(getEffectiveRole(), buildHomeModel(getEffectiveRole()));');
+        expect(shellChrome).toContain('function resolveHomeModelForRole(role) {');
+        expect(shellChrome).toContain('openHomeEditor(getEffectiveRole(), homeModel);');
         expect(shellChrome).toContain('const mixed = mixHsl(');
         expect(luxury).toContain('openHomeEditor,');
         expect(luxury).toContain('mixHsl,');
@@ -37,7 +39,8 @@ describe('luxury shell chrome split', () => {
         expect(luxury).toContain('toggleSidebar');
         expect(luxury).toContain("window.toggleSidebar = typeof toggleSidebar === 'function' ? toggleSidebar : window.toggleSidebar;");
         expect(luxury).toContain("if (typeof window.buildHomeWidgetDefinitions !== 'function') {");
-        expect(luxury).toContain("window.buildHomeWidgetDefinitions = typeof buildHomeWidgetDefinitions === 'function' ? buildHomeWidgetDefinitions : window.buildHomeWidgetDefinitions;");
+        expect(indexRuntime).toContain("buildHomeWidgetDefinitions: typeof buildHomeWidgetDefinitions === 'function' ? buildHomeWidgetDefinitions : null");
+        expect(indexRuntime).toContain('window.buildHomeWidgetDefinitions = exports.buildHomeWidgetDefinitions;');
         expect(luxury).not.toContain('function renderNav() {');
         expect(luxury).not.toContain('function ensureStudio() {');
         expect(luxury).not.toContain('function populateFacultySwitcher(options = {}) {');

@@ -19,8 +19,7 @@ const PAGES = [
     { path: 'registration.html', role: 'student', label: 'registration' },
     { path: 'student-service.html', role: 'student_service', label: 'student-service' },
     { path: 'timetable.html', role: 'student', label: 'timetable' },
-    { path: 'news.html', role: 'student', label: 'news' },
-    { path: 'career-market.html', role: 'student', label: 'career-market' }
+    { path: 'news.html', role: 'student', label: 'news' }
 ];
 
 function buildAuthState(role, label) {

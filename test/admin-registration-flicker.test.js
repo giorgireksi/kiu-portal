@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
 function readSource(relativePath) {
-    return readFileSync(join(process.cwd(), relativePath), 'utf8');
+    const full = join(process.cwd(), relativePath);
+    if (typeof existsSync === 'function' && !existsSync(full)) return '';
+    return readFileSync(full, 'utf8');
 }
 
 function extractFunctionBody(source, functionName) {

@@ -449,7 +449,6 @@
         `;
     }
 
-
     const MESSAGES_OWNED_DIALOG_KINDS = new Set(['message-delete', 'chat-hide']);
 
     function renderMessagesOwnedDialog(runtime, dialog) {
@@ -466,10 +465,7 @@
             if (!dialogChat || !dialogMessage) return '';
             return `<div class="social-neo-dialog-backdrop" data-action="dialog-close">
                 <form class="social-neo-dialog-card" data-form="dialog-message-delete" data-action="noop">
-                    <div class="social-neo-section-head social-neo-dialog-head">
-                        <div class="social-neo-dialog-heading"><strong class="social-neo-dialog-title">Remove message</strong><span class="social-neo-dialog-subtitle">This will delete the message from the chat thread.</span></div>
-                        <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-close-btn" type="button" data-action="dialog-close"><i class="fas fa-times"></i></button>
-                    </div>
+                    ${typeof socialNeoDialogHead === 'function' ? socialNeoDialogHead('Remove message', 'This will delete the message from the chat thread.') : ''}
                     <div class="social-neo-dialog-preview">
                         ${escape(text(dialogMessage.text || dialogMessage.file?.name || 'Message attachment'))}
                     </div>
@@ -477,10 +473,7 @@
                         <input type="checkbox" name="confirmMessageDelete" value="yes">
                         <span class="social-neo-dialog-checkbox-copy">Remove this message from the conversation.</span>
                     </label>
-                    <div class="social-neo-form-actions social-neo-dialog-actions">
-                        <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-cancel-btn" type="button" data-action="dialog-close">Cancel</button>
-                        <button class="social-neo-btn social-neo-btn-primary social-neo-dialog-submit-btn" type="submit">Remove message</button>
-                    </div>
+                    ${typeof socialNeoDialogActions === 'function' ? socialNeoDialogActions({ cancelLabel: 'Cancel', submitLabel: 'Remove message' }) : ''}
                     <input type="hidden" name="chatId" value="${escape(text(dialogChat.id))}">
                     <input type="hidden" name="messageId" value="${escape(text(dialogMessage.id))}">
                 </form>
@@ -490,10 +483,7 @@
             if (!dialogChat) return '';
             return `<div class="social-neo-dialog-backdrop" data-action="dialog-close">
                 <form class="social-neo-dialog-card" data-form="dialog-chat-hide" data-action="noop">
-                    <div class="social-neo-section-head social-neo-dialog-head">
-                        <div class="social-neo-dialog-heading"><strong class="social-neo-dialog-title">Hide conversation</strong><span class="social-neo-dialog-subtitle">This only removes the chat from your inbox view.</span></div>
-                        <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-close-btn" type="button" data-action="dialog-close"><i class="fas fa-times"></i></button>
-                    </div>
+                    ${typeof socialNeoDialogHead === 'function' ? socialNeoDialogHead('Hide conversation', 'This only removes the chat from your inbox view.') : ''}
                     <div class="social-neo-dialog-preview">
                         <strong class="social-neo-dialog-preview-title">${escape(chatTitle(dialogChat))}</strong>
                         <div class="social-neo-muted social-neo-muted-mt-6">${escape(chatPreview(dialogChat))}</div>
@@ -501,10 +491,7 @@
                     <div class="social-neo-dialog-preview social-neo-dialog-preview-danger">
                         Chat history will stay saved. This only hides the conversation from your inbox until you open it again or a new message arrives.
                     </div>
-                    <div class="social-neo-form-actions social-neo-dialog-actions">
-                        <button class="social-neo-btn social-neo-btn-ghost social-neo-dialog-cancel-btn" type="button" data-action="dialog-close">Cancel</button>
-                        <button class="social-neo-btn social-neo-btn-primary social-neo-dialog-submit-btn" type="submit">Hide from inbox</button>
-                    </div>
+                    ${typeof socialNeoDialogActions === 'function' ? socialNeoDialogActions({ cancelLabel: 'Cancel', submitLabel: 'Hide from inbox' }) : ''}
                     <input type="hidden" name="chatId" value="${escape(text(dialogChat.id))}">
                 </form>
             </div>`;

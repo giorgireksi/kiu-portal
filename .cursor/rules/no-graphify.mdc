@@ -1,0 +1,18 @@
+---
+description: Cursor only — do not use or update graphify unless explicitly asked
+alwaysApply: true
+---
+
+# No automatic graphify (Cursor)
+
+This rule applies in **Cursor only**. It **supersedes** any graphify guidance from `AGENTS.md`, `CLAUDE.md`, or skills when running inside Cursor.
+
+Do **not**:
+
+- Run `graphify`, `graphify update`, `graphify query`, `graphify path`, `graphify explain`, or related graphify CLI
+- Read or rely on `graphify-out/` for codebase exploration
+- Invoke the graphify skill
+
+Use Grep, Read, Glob, and Task explore instead.
+
+Only use graphify when the user explicitly asks for it (e.g. `/graphify` or "run graphify").

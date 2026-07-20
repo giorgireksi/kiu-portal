@@ -8,13 +8,15 @@ function readSource(relativePath) {
 
 describe('social visual shell sync regressions', () => {
     it('runs full transparency sync on social boot and shell reveal', () => {
-        const source = readSource('assets/js/pages/social-page.js');
+        const page = readSource('assets/js/pages/social-page.js');
+        const feed = readSource('assets/js/pages/social-page-feed-runtime.js');
+        const shell = readSource('assets/js/pages/social-page-shell-runtime.js');
 
-        expect(source).toContain('function syncSocialVisualShell()');
-        expect(source).toContain("localStorage.getItem('kiuLuxurySurfaceTransparency')");
-        expect(source).toContain('window.updateTransparency(saved, { persist: false })');
-        expect(source).toMatch(/if \(!socialVisualShellSynced\)[\s\S]*syncSocialVisualShell\(\)/);
-        expect(source).toMatch(/reason === 'boot' \|\| reason === 'social-bootstrap'[\s\S]*syncSocialVisualShell\(\)/);
+        expect(feed).toContain('function syncSocialVisualShell()');
+        expect(feed).toContain("localStorage.getItem('kiuLuxurySurfaceTransparency')");
+        expect(feed).toContain('window.updateTransparency(saved, { persist: false })');
+        expect(shell).toMatch(/if \(!socialVisualShellSynced\)[\s\S]*syncSocialVisualShell\(\)/);
+        expect(page).toMatch(/reason === 'boot' \|\| reason === 'social-bootstrap'[\s\S]*syncSocialVisualShell\(\)/);
     });
 
     it('registers merged hero shells in transparency observer selectors', () => {

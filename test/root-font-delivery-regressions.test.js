@@ -18,7 +18,7 @@ describe('root font delivery regressions', () => {
         const rootHtmlFiles = getRootHtmlFiles();
         const sharedFontsCss = readSource('assets/css/kiu-fonts.css');
         const pagesWithSharedFontLink = [];
-        const redirectWrappersWithoutFonts = ['calendar.html', 'faculty-schedule.html', 'gradebook.html'];
+        const redirectWrappersWithoutFonts = ['calendar.html', 'faculty-schedule.html', 'gradebook.html', 'profile.html', 'wifi-setup.html'];
 
         for (const file of rootHtmlFiles) {
             const html = readSource(file);
@@ -35,9 +35,9 @@ describe('root font delivery regressions', () => {
         expect(sharedFontsCss).toContain("src: local('Inter'), local('Inter Regular');");
         expect(sharedFontsCss).toContain("font-family: 'Noto Sans Georgian';");
         expect(sharedFontsCss).toContain("font-family: 'Playfair Display';");
-        expect(sharedFontsCss).toContain("font-family: 'DM Mono';");
-        expect(sharedFontsCss).toContain("font-family: 'Fraunces';");
         expect(sharedFontsCss).toContain("font-family: 'Manrope';");
+        expect(sharedFontsCss).not.toContain("font-family: 'DM Mono';");
+        expect(sharedFontsCss).not.toContain("font-family: 'Fraunces';");
         expect(pagesWithSharedFontLink.length).toBe(rootHtmlFiles.length - redirectWrappersWithoutFonts.length);
         expect(redirectWrappersWithoutFonts.every((file) => !pagesWithSharedFontLink.includes(file))).toBe(true);
     });

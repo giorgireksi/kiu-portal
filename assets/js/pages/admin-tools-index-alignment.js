@@ -8,6 +8,10 @@
     let scheduled = false;
 
     function escapeHtml(value) {
+        if (typeof window !== 'undefined' && typeof window.escapeHtml === 'function') {
+            const shared = window.escapeHtml;
+            if (shared !== escapeHtml) return shared(value);
+        }
         return String(value == null ? '' : value)
             .replace(/&/g, '&amp;')
             .replace(/</g, '&lt;')
@@ -85,8 +89,10 @@
         const facultyLabel = getFacultyLabel();
         const moduleCount = getModuleCount(page);
         const registrationLaneCount = getRegistrationLaneCount(page);
+        const activeLane = getActiveRegistrationLane(page);
         const semesterLabel = getSemesterLabel(page);
         const builderTarget = getBuilderTarget(page);
+        const moduleLabel = `${moduleCount} module${moduleCount === 1 ? '' : 's'}`;
         return `
             <div class="lux-card-body lux-hero-stage lux-admin-tools-index-hero-stage">
                 <div class="lux-hero-main lux-admin-tools-index-copy">
@@ -95,9 +101,6 @@
                     <p>Shape curriculum modules, stage new subjects, and wire registration logic from one orchestration surface instead of hopping between disconnected admin forms.</p>
                     <div class="lux-pill-row">
                         <span class="lux-pill"><i class="fas fa-building-columns"></i>${escapeHtml(facultyLabel)}</span>
-                        <span class="lux-pill"><i class="fas fa-layer-group"></i>${moduleCount} module${moduleCount === 1 ? '' : 's'}</span>
-                        <span class="lux-pill"><i class="fas fa-sitemap"></i>${registrationLaneCount} setup lanes</span>
-                        <span class="lux-pill"><i class="fas fa-compass-drafting"></i>${escapeHtml(builderTarget)}</span>
                     </div>
                     <div class="lux-hero-actions">
                         <button class="lux-primary-btn" type="button" data-admin-tools-index-action="admin-scheduler"><i class="fas fa-calendar-plus"></i>Open Scheduler</button>
@@ -108,98 +111,32 @@
                 <aside class="lux-admin-tools-index-command">
                     <div class="lux-admin-tools-index-command-head">
                         <strong>Command Map</strong>
-                        <span>Three linked control zones keep curriculum, subject intake, and registration policy moving in one direction.</span>
+                        <span>Four linked control zones keep curriculum, subject intake, registration policy, and publishing aligned in one direction.</span>
                     </div>
                     <div class="lux-admin-tools-index-command-grid">
                         <article class="lux-admin-tools-index-command-card">
                             <span>Library</span>
-                            <strong>${moduleCount} module${moduleCount === 1 ? '' : 's'}</strong>
-                            <em>Core structure and sequencing</em>
+                            <strong>${moduleLabel}</strong>
+                            <em>Core structure for ${escapeHtml(facultyLabel)} · Sequence changes start here.</em>
                         </article>
                         <article class="lux-admin-tools-index-command-card">
-                            <span>Builder Target</span>
+                            <span>Builder</span>
                             <strong>${escapeHtml(semesterLabel)}</strong>
-                            <em>${escapeHtml(builderTarget)}</em>
+                            <em>${escapeHtml(builderTarget)} · Create course records and wire them into live curriculum modules.</em>
                         </article>
                         <article class="lux-admin-tools-index-command-card">
                             <span>Registration</span>
-                            <strong>${registrationLaneCount} lanes</strong>
-                            <em>Program, free credits, concentration, and minor</em>
+                            <strong>${escapeHtml(activeLane)}</strong>
+                            <em>${registrationLaneCount} lanes · Program, free credits, concentration, and minor</em>
                         </article>
-                    </div>
-                    <div class="lux-admin-tools-index-command-note">
-                        <span class="lux-admin-tools-index-command-badge"><i class="fas fa-calendar-plus"></i>Scheduler handoff</span>
-                        <p>Open the master scheduler to publish sections after curriculum and registration setup are ready.</p>
+                        <article class="lux-admin-tools-index-command-card">
+                            <span>Scheduler</span>
+                            <strong>Publish</strong>
+                            <em>Room, section, and timetable distribution after subjects and lanes are defined.</em>
+                        </article>
                     </div>
                 </aside>
             </div>
-        `;
-    }
-
-    function getStripMarkup(page) {
-        const moduleCount = getModuleCount(page);
-        const facultyLabel = getFacultyLabel();
-        const semesterLabel = getSemesterLabel(page);
-        const registrationLaneCount = getRegistrationLaneCount(page);
-        const activeLane = getActiveRegistrationLane(page);
-        const builderTarget = getBuilderTarget(page);
-        return `
-            <article class="lux-strip-card surface-card lux-summary-surface lux-summary-surface--panel lux-admin-tools-index-summary">
-                <div class="lux-card-body lux-mini-panel">
-                    <div class="lux-admin-tools-index-summary-head">
-                        <span class="lux-admin-tools-index-summary-icon"><i class="fas fa-layer-group"></i></span>
-                        <div>
-                            <div class="lux-card-title">Curriculum Library</div>
-                            <div class="lux-card-meta">Control zone</div>
-                        </div>
-                    </div>
-                    <h3>${moduleCount}</h3>
-                    <p>Modules currently organized for ${escapeHtml(facultyLabel)}.</p>
-                    <div class="lux-admin-tools-index-summary-meta">Sequence changes start here.</div>
-                </div>
-            </article>
-            <article class="lux-strip-card surface-card lux-summary-surface lux-summary-surface--panel lux-admin-tools-index-summary">
-                <div class="lux-card-body lux-mini-panel">
-                    <div class="lux-admin-tools-index-summary-head">
-                        <span class="lux-admin-tools-index-summary-icon"><i class="fas fa-book-medical"></i></span>
-                        <div>
-                            <div class="lux-card-title">Subject Builder</div>
-                            <div class="lux-card-meta">Target lane</div>
-                        </div>
-                    </div>
-                    <h3>${escapeHtml(semesterLabel)}</h3>
-                    <p>Create course records and wire them into live curriculum modules.</p>
-                    <div class="lux-admin-tools-index-summary-meta">${escapeHtml(builderTarget)}</div>
-                </div>
-            </article>
-            <article class="lux-strip-card surface-card lux-summary-surface lux-summary-surface--panel lux-admin-tools-index-summary">
-                <div class="lux-card-body lux-mini-panel">
-                    <div class="lux-admin-tools-index-summary-head">
-                        <span class="lux-admin-tools-index-summary-icon"><i class="fas fa-sitemap"></i></span>
-                        <div>
-                            <div class="lux-card-title">Registration Setup</div>
-                            <div class="lux-card-meta">Active lane</div>
-                        </div>
-                    </div>
-                    <h3>${escapeHtml(activeLane)}</h3>
-                    <p>Current lane focus inside the registration structure workspace.</p>
-                    <div class="lux-admin-tools-index-summary-meta">${registrationLaneCount} total setup lanes online.</div>
-                </div>
-            </article>
-            <article class="lux-strip-card surface-card lux-summary-surface lux-summary-surface--panel lux-admin-tools-index-summary">
-                <div class="lux-card-body lux-mini-panel">
-                    <div class="lux-admin-tools-index-summary-head">
-                        <span class="lux-admin-tools-index-summary-icon"><i class="fas fa-calendar-plus"></i></span>
-                        <div>
-                            <div class="lux-card-title">Scheduler</div>
-                            <div class="lux-card-meta">Publish</div>
-                        </div>
-                    </div>
-                    <h3>${escapeHtml(facultyLabel)}</h3>
-                    <p>Move from curriculum design into room, section, and timetable distribution.</p>
-                    <div class="lux-admin-tools-index-summary-meta">Use scheduler after subjects and registration lanes are defined.</div>
-                </div>
-            </article>
         `;
     }
 
@@ -215,12 +152,12 @@
     }
 
     function applySurfaceAlignment(page) {
-        page.querySelectorAll(':scope > .lux-home-columns > .lux-panel, :scope > .lux-panel').forEach((panel) => {
+        page.querySelectorAll(':scope > .lux-panel').forEach((panel) => {
             panel.classList.add('lux-admin-tools-index-panel');
             panel.setAttribute('data-lux-index-glass-root', '1');
         });
 
-        page.querySelectorAll('#curriculum-library-modules-root, #admin-reg-content-container').forEach((root) => {
+        page.querySelectorAll('#curriculum-library-workspace-root, #curriculum-library-modules-root, #admin-reg-content-container').forEach((root) => {
             root.classList.add('lux-admin-tools-index-panel-shell');
             clearPresentationalInlineStyle(root);
         });
@@ -229,30 +166,24 @@
             panel.classList.add('lux-admin-tools-index-subpanel');
             clearPresentationalInlineStyle(panel);
         });
+
+        page.querySelectorAll(
+            '#curriculum-module-rail-region, #curriculum-subject-panel-region, .lux-program-shell-section, .lux-admin-curriculum-control-band, .lux-admin-curriculum-ops-panel'
+        ).forEach((panel) => {
+            panel.classList.add('lux-admin-tools-index-subpanel');
+            clearPresentationalInlineStyle(panel);
+        });
     }
 
     function renderHero(page) {
         let hero = document.getElementById(HERO_ID);
-        if (!hero) {
-            hero = document.createElement('section');
-            hero.id = HERO_ID;
-            hero.className = 'lux-hero lux-summary-surface lux-summary-surface--hero lux-admin-tools-index-hero';
-            page.prepend(hero);
+        if (hero) {
+            hero.remove();
         }
-        hero.innerHTML = getHeroMarkup(page);
     }
 
-    function renderStrip(page) {
-        let strip = document.getElementById(STRIP_ID);
-        const anchor = page.querySelector('.lux-home-columns');
-        if (!anchor) return;
-        if (!strip) {
-            strip = document.createElement('div');
-            strip.id = STRIP_ID;
-            strip.className = 'lux-strip-grid lux-strip-grid--adaptive lux-admin-tools-index-strip';
-            page.insertBefore(strip, anchor);
-        }
-        strip.innerHTML = getStripMarkup(page);
+    function removeLegacyStrip() {
+        document.getElementById(STRIP_ID)?.remove();
     }
 
     function getAlignmentSignature(page) {
@@ -263,8 +194,7 @@
             getActiveRegistrationLane(page),
             getSemesterLabel(page),
             getBuilderTarget(page),
-            document.getElementById(HERO_ID) ? 'hero' : 'no-hero',
-            document.getElementById(STRIP_ID) ? 'strip' : 'no-strip'
+            document.getElementById(HERO_ID) ? 'hero' : 'no-hero'
         ].join('|');
     }
 
@@ -302,10 +232,10 @@
         const page = getPage();
         if (!page || !page.children.length) return;
         applySurfaceAlignment(page);
+        removeLegacyStrip();
         const signature = getAlignmentSignature(page);
         if (page.dataset.adminToolsIndexSignature !== signature) {
             renderHero(page);
-            renderStrip(page);
             page.dataset.adminToolsIndexSignature = getAlignmentSignature(page);
         }
         bindActions(page);

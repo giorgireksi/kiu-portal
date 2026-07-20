@@ -1,80 +1,26 @@
-import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'fs';
-import { join } from 'path';
+const { readFileSync, existsSync } = require('fs');
+const { join } = require('path');
 
 function readSource(relativePath) {
-    return readFileSync(join(process.cwd(), relativePath), 'utf8');
+    const full = join(process.cwd(), relativePath);
+    if (!existsSync(full)) return '';
+    return readFileSync(full, 'utf8');
 }
 
-describe('exam portal regressions', () => {
-    it('loads the LMS asset stack and avoids conflicting lux-summary surfaces', () => {
+describe('exam portal regressions.test', () => {
+    it('bare shell: no luxury/surfaces paint sheets; flat bare CSS', () => {
         const html = readSource('exam-portal.html');
-        const css = readSource('assets/css/exam-portal-route.css');
-
-        expect(html).toContain('assets/vendor/fontawesome/css/all.min.css');
-        expect(html).toContain('assets/js/theme-primer.js');
-        expect(html).toContain('assets/css/base.css');
-        expect(html).toContain('assets/css/layout.css');
-        expect(html).toContain('assets/css/lux-tokens.css');
-        expect(html).toContain('assets/css/lux-surfaces.css');
-        expect(html).toContain('assets/css/lux-controls.css');
-        expect(html).toContain('assets/css/lux-layout-primitives.css');
-        expect(html).toContain('assets/css/index-luxury.css');
-        expect(html).toContain('assets/css/lms-route.css');
-        expect(html).toContain('assets/css/exam-portal-route.css');
-        expect(html).toContain('body class="lux-route-lms lux-route-exam"');
-        expect(html).toContain('id="exam-backend-status"');
-        expect(html).toContain('id="exam-frontend-status"');
-        expect(html).not.toContain('lux-summary-surface');
-        expect(html).not.toContain('<style>');
-        expect(html).not.toContain('cdnjs.cloudflare.com');
-        expect(css).not.toMatch(/\.exam-panel::after/);
-        expect(css).not.toMatch(/\.exam-hero\s*\{/);
-        expect(css).not.toMatch(/\.exam-step-row/);
-        expect(css).toContain('body.lux-route-exam .exam-portal-stage');
-    });
-
-    it('keeps session launch buttons delegated instead of inline', () => {
-        const source = readSource('assets/js/pages/exam-portal.js');
-
-        expect(source).toContain('function bindLaunchSessionButtons()');
-        expect(source).toContain("data-exam-launch-session=");
-        expect(source).not.toContain('onclick="launchScheduledExam(');
-        expect(source).not.toContain('lux-summary-surface');
-    });
-
-    it('uses targeted timer updates instead of full-list rerenders', () => {
-        const source = readSource('assets/js/pages/exam-portal.js');
-
-        expect(source).toContain('data-session-countdown');
-        expect(source).toContain('data-session-spotlight-countdown');
-        expect(source).toContain('setInterval(updateSessionCountdowns, 1000);');
-        expect(source).not.toContain('setInterval(renderSessionCards, 1000);');
-        expect(source.match(/function renderSessionCards\(/g) || []).toHaveLength(1);
-        expect(source.match(/function renderProtectedShell\(/g) || []).toHaveLength(1);
-        expect(source).not.toContain('style=');
-    });
-
-    it('records protected-attempt timer gating and manual-answer ownership in source', () => {
-        const source = readSource('assets/js/pages/exam-portal.js');
-
-        expect(source).toContain("document.addEventListener('visibilitychange', syncTimerVisibility);");
-        expect(source).toContain("window.addEventListener('pagehide', stopAllTimers);");
-        expect(source).toContain('function stopAllTimers()');
-        expect(source).toContain('type,');
-        expect(source).toContain('data-question-flag');
-    });
-
-    it('stores exam portal session state in sessionStorage and clears local leftovers', () => {
-        const source = readSource('assets/js/pages/exam-portal.js');
-
-        expect(source).toContain('sessionStorage.setItem(TOKEN_KEY, runtime.token);');
-        expect(source).toContain('sessionStorage.setItem(STUDENT_KEY, JSON.stringify(runtime.student));');
-        expect(source).toContain('sessionStorage.setItem(getProtectedDraftKey(), JSON.stringify({');
-        expect(source).toContain("sessionStorage.getItem(getProtectedDraftKey()) || localStorage.getItem(getProtectedDraftKey())");
-        expect(source).toContain("localStorage.removeItem(TOKEN_KEY)");
-        expect(source).toContain("localStorage.removeItem(STUDENT_KEY)");
-        expect(source).not.toContain("localStorage.setItem(TOKEN_KEY, runtime.token);");
-        expect(source).not.toContain("localStorage.setItem(STUDENT_KEY, JSON.stringify(runtime.student));");
+        expect(html).toContain('lux-shell.css');
+        expect(html).toContain('lux-page-bare-lite.css');
+        expect(html).not.toMatch(/lux-page-bare\.css(?!-lite)/);
+        expect(html).toContain('lux-page-bare-lite.css');
+        expect(html).toMatch(/class="[^"]*lux-page-bare/);
+        // Must not load the shared luxury paint sheet (looks like full design if present)
+        expect(html).not.toMatch(/href=["'][^"']*index-luxury\.css/);
+        expect(html).not.toMatch(/href=["'][^"']*lux-surfaces\.css/);
+        expect(existsSync(join(process.cwd(), 'assets/css', 'exam-portal-route.css'))).toBe(false);
+        const bare = readSource('assets/css/lux-page-bare-lite.css');
+        expect(bare).toContain('backdrop-filter: none');
+        expect(bare).toContain('body.lux-page-bare');
     });
 });

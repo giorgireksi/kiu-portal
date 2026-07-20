@@ -1,9 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
+import { LUX_DROPLIST_CACHE_BUST } from './fixtures/lux-droplist-contract.js';
 
 function readSource(relativePath) {
-    return readFileSync(join(process.cwd(), relativePath), 'utf8');
+    const full = join(process.cwd(), relativePath);
+    if (typeof existsSync === 'function' && !existsSync(full)) return '';
+    return readFileSync(full, 'utf8');
 }
 
 describe('lux picker scroll regressions', () => {
@@ -25,10 +28,19 @@ describe('lux picker scroll regressions', () => {
         expect(shellChrome).toContain('lux-picker-panel lux-picker-panel-scroll');
         expect(shellChrome).toContain('lux-picker-panel lux-universal-picker-panel lux-picker-panel-scroll');
         expect(shellChrome).toContain('function isPickerScrollExempt(panel, scrollTarget)');
-        expect(shellChrome).toContain('PICKER_SCROLL_EXEMPT_SELECTORS');
-        expect(shellChrome).toContain('#course-selection-modal-bg');
-        expect(shellChrome).toContain('.sch-modal-overlay.open');
+        expect(shellChrome).toContain('function isLuxPickerInteractionTarget(target, panel)');
+        expect(shellChrome).toContain('function collectPickerScrollTargets(button)');
+        expect(shellChrome).toContain('function bindLuxPickerDismissHandlers()');
+        expect(shellChrome).toContain('function dismissOpenLuxPickerPanels()');
+        expect(shellChrome).toContain("window.addEventListener('resize', dismissOpenLuxPickerPanels");
+        expect(shellChrome).toContain("window.addEventListener('orientationchange', dismissOpenLuxPickerPanels");
+        expect(shellChrome).toContain('[data-lux-picker-scroll-exempt]');
+        expect(shellChrome).not.toContain('PICKER_SCROLL_EXEMPT_SELECTORS');
         expect(shellChrome).toContain('if (isPickerScrollExempt(panel, event.target)) return;');
+        expect(shellChrome).toContain('panel._luxPickerScrollTargets = scrollTargets');
+        expect(shellChrome).toContain('panel._luxPickerWheelDismissHandler = wheelDismissHandler');
+        expect(shellChrome).toContain('closePickerPanels({ immediate: true })');
+        expect(shellChrome).toContain("document.addEventListener('pointerdown'");
         expect(shellChrome).toContain('panel._luxPickerWheelHandler = wheelHandler');
         expect(shellChrome).toContain('event.stopPropagation()');
     });
@@ -38,19 +50,24 @@ describe('lux picker scroll regressions', () => {
         const registration = readSource('registration.html');
         const scheduler = readSource('admin-scheduler.html');
 
-        expect(index).toContain('assets/css/lux-controls.css?v=20260606-pickerscroll1');
-        expect(index).toContain('assets/js/features/luxury-shell-chrome.js?v=20260606-pickerscroll1');
-        expect(registration).toContain('assets/css/lux-controls.css?v=20260606-pickerscroll1');
-        expect(registration).toContain('assets/js/features/luxury-shell-chrome.js?v=20260606-pickerscroll1');
-        expect(scheduler).toContain('assets/css/lux-controls.css?v=20260606-pickerscroll1');
-        expect(scheduler).toContain('assets/js/features/luxury-shell-chrome.js?v=20260606-pickerscroll1');
+        expect(index).toContain(`assets/css/lux-controls.css?v=${LUX_DROPLIST_CACHE_BUST}`);
+        expect(index).toContain(`assets/js/features/luxury-shell-chrome.js?v=${LUX_DROPLIST_CACHE_BUST}`);
+        expect(registration).toContain(`assets/css/lux-controls.css?v=${LUX_DROPLIST_CACHE_BUST}`);
+        expect(registration).toContain(`assets/js/features/luxury-shell-chrome.js?v=${LUX_DROPLIST_CACHE_BUST}`);
+        expect(scheduler).toContain(`assets/css/lux-controls.css?v=${LUX_DROPLIST_CACHE_BUST}`);
+        expect(scheduler).toContain(`assets/js/features/luxury-shell-chrome.js?v=${LUX_DROPLIST_CACHE_BUST}`);
+        expect(scheduler).toContain(`assets/css/admin-scheduler-route.css?v=${LUX_DROPLIST_CACHE_BUST}`);
     });
 
-    it('keeps manual library filter picker panels on the scroll contract', () => {
-        const libraryPage = readSource('assets/js/pages/library.js');
+    it('routes library catalog filters through the universal picker contract', () => {
+        const libraryCatalogView = readSource('assets/js/shared/library-catalog-view.js');
         const adminLibrary = readSource('admin-library.html');
+        const libraryHtml = readSource('library.html');
 
-        expect(libraryPage).toContain('lux-picker-panel lux-picker-panel-scroll library-picker-panel');
-        expect(adminLibrary).toContain('lux-picker-panel lux-picker-panel-scroll');
+        expect(libraryCatalogView).toContain('function syncCatalogFilterPickers(root)');
+        expect(libraryCatalogView).toContain('enhanceUniversalPicker');
+        expect(libraryCatalogView).not.toContain('function renderPickerPanel');
+        expect(adminLibrary).toContain('data-lux-picker-label="Topic"');
+        expect(libraryHtml).toContain('data-lux-picker-label="Topic"');
     });
 });

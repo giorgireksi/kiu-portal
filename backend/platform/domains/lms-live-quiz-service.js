@@ -139,12 +139,6 @@ function mergeStaffLiveQuizWorkspace(existingWorkspace = {}, submittedWorkspace 
         });
         return recalculateLiveQuizParticipantsInSession(mergedSession);
     });
-    const submittedIds = new Set(mergedSessions.map(session => String(session?.id || '')));
-    existingSessions.forEach(session => {
-        const sessionId = String(session?.id || '');
-        if (!sessionId || submittedIds.has(sessionId)) return;
-        mergedSessions.push(session);
-    });
     return {
         ...submitted,
         sessions: mergedSessions,
