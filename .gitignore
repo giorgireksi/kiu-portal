@@ -48,3 +48,23 @@ anti-cheat/out/
 test-results/
 fixed-dir-cmd/
 artifacts/
+# Added by code-review-graph
+.code-review-graph/
+
+# Local runtime / analysis noise (not product)
+graphify-out/
+.tmp/
+.tmp-*.png
+tmp-*.json
+tmp-*.txt
+headroom_memory.db
+terminals/
+
+# Playwright local dumps / browser cache (not product)
+.playwright-mcp/
+.playwright-browsers/
+
+# orphan hygiene
+tmp-html-validate*.json
+undefined/
+artifacts/social-css-backup*/
