@@ -12,6 +12,84 @@ const DEFAULT_ROLE_LABELS = {
     student_service: 'Student Service View'
 };
 
+const FOG_COLOR_FIELDS = [
+    { key: 'highlightColor', label: 'Highlight' },
+    { key: 'midtoneColor', label: 'Midtone' },
+    { key: 'lowlightColor', label: 'Lowlight' },
+    { key: 'baseColor', label: 'Base' }
+];
+
+const PARTICLE_BG_MODES = new Set(['peak', 'layered', 'orbit', 'corners']);
+const FOG_PARAMS_TEMPLATE_VERSION = '6';
+let activeBgParamsMode = null;
+let activeFogProfileBank = 'dark';
+
+function resolveActiveFogProfileBank() {
+    return activeFogProfileBank === 'light' ? 'light' : 'dark';
+}
+
+function resolveHomeModelForRole(role) {
+    if (typeof window.buildHomeModel === 'function') {
+        return window.buildHomeModel(role);
+    }
+    return null;
+}
+
+function syncActiveFogProfileBankFromTheme() {
+    if (typeof getThemeMode === 'function') {
+        activeFogProfileBank = getThemeMode() === 'light' ? 'light' : 'dark';
+    }
+}
+
+function getActiveFogProfiles() {
+    if (typeof getFogProfiles !== 'function') return [];
+    return getFogProfiles(resolveActiveFogProfileBank());
+}
+
+function syncFogProfileBankUi() {
+    const label = document.getElementById('lux-fog-profile-bank-label');
+    const bank = resolveActiveFogProfileBank();
+    if (label) label.textContent = `Saved Profiles · ${bank === 'light' ? 'Light' : 'Dark'}`;
+    document.querySelectorAll('[data-fog-profile-bank]').forEach((button) => {
+        const isActive = button.dataset.fogProfileBank === bank;
+        button.classList.toggle('is-active', isActive);
+        button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+    });
+    const emptyState = document.getElementById('lux-fog-profile-empty');
+    if (emptyState) {
+        emptyState.textContent = bank === 'light'
+            ? 'No light profiles yet.'
+            : 'No dark profiles yet.';
+    }
+}
+
+function setActiveFogProfileBank(nextBank, { rerender = true } = {}) {
+    const bank = nextBank === 'light' ? 'light' : 'dark';
+    if (bank === activeFogProfileBank) {
+        syncFogProfileBankUi();
+        return;
+    }
+    if (typeof isFogProfileEditing === 'function' && isFogProfileEditing()) {
+        if (isFogProfileEditDirty() && !confirm('Discard unsaved profile changes?')) return;
+        clearFogProfileEditState({ restoreSnapshot: true });
+        const nameInput = document.getElementById('lux-fog-profile-name-input');
+        if (nameInput) nameInput.value = '';
+    }
+    activeFogProfileBank = bank;
+    syncFogProfileBankUi();
+    if (rerender) renderFogProfileList();
+}
+
+function flashFogProfileAction(button, outcome = 'success') {
+    if (!button) return;
+    button.classList.remove('is-success', 'is-error', 'is-acting');
+    void button.offsetWidth;
+    button.classList.add('is-acting', outcome === 'error' ? 'is-error' : 'is-success');
+    window.setTimeout(() => {
+        button.classList.remove('is-acting', 'is-success', 'is-error');
+    }, 520);
+}
+
 function getRoleLabels() {
     const roleLabels = getLuxurySharedConfig().ROLE_LABELS;
     if (roleLabels && typeof roleLabels === 'object') {
@@ -29,6 +107,10 @@ function resolveBootstrappedShellRole() {
     try {
         const viewParam = String(new URLSearchParams(window.location.search || '').get('view') || '').trim().toLowerCase();
         if (viewParam && DEFAULT_ROLE_LABELS[viewParam]) return viewParam;
+    } catch (error) {}
+    try {
+        const pendingRole = String(localStorage.getItem('KIU_PENDING_ROLE_SWITCH_ROLE') || '').trim().toLowerCase();
+        if (pendingRole && DEFAULT_ROLE_LABELS[pendingRole]) return pendingRole;
     } catch (error) {}
     if (typeof getEffectiveUserRole === 'function') {
         try {
@@ -68,7 +150,7 @@ function pageLabel(pageId) {
 function pageTarget(pageId) {
     const sharedPageTarget = getLuxurySharedConfig().pageTarget;
     if (typeof sharedPageTarget === 'function') return sharedPageTarget(pageId);
-    return pageId === 'profile' ? 'profile-view' : pageId;
+    return pageId === 'profile' ? 'personal-data' : pageId;
 }
 
 function prefetchPortalRoute(pageId) {
@@ -145,516 +227,60 @@ function restoreTeleportedNode(node) {
         node.style.left = '';
         node.style.width = '';
         node.style.zIndex = '';
+        node.style.transform = '';
+        node.classList.remove('is-open-above', 'ex2-picker-panel');
+    } else {
+        node.remove();
     }
     node.dataset.teleported = 'false';
 }
 
-function closeUtilityPanels(options = {}) {
-    const openPanels = Array.from(document.querySelectorAll('.lux-utility-panel.is-open'));
-    const restoreTargetId = options.restoreFocus ? (openPanels[0]?.dataset.triggerId || '') : '';
-    openPanels.forEach((panel) => {
-        panel.classList.remove('is-open');
-        panel.setAttribute('aria-hidden', 'true');
-        restoreTeleportedNode(panel);
-    });
-    ['lux-notification-btn', 'lux-chat-btn'].forEach((buttonId) => {
-        const button = document.getElementById(buttonId);
-        if (!button) return;
-        button.classList.remove('is-active');
-        button.setAttribute('aria-expanded', 'false');
-    });
-    if (restoreTargetId) {
-        restoreFocusById(restoreTargetId);
-        deferRestoreFocusById(restoreTargetId);
-    }
-}
-
-function ensureTopbarUtilityPanel(panelId) {
-    const existing = document.getElementById(panelId);
-    if (existing) return existing;
-    const buttonId = panelId === 'lux-chat-panel' ? 'lux-chat-btn' : 'lux-notification-btn';
-    const button = document.getElementById(buttonId);
-    const wrapper = button?.closest('.lux-utility-wrap');
-    if (!wrapper) return null;
-    const panel = document.createElement('div');
-    panel.className = 'lux-utility-panel';
-    panel.id = panelId;
-    panel.dataset.triggerId = buttonId;
-    panel.setAttribute('role', 'dialog');
-    panel.setAttribute('aria-modal', 'false');
-    panel.setAttribute('aria-hidden', 'true');
-    panel.setAttribute('aria-label', panelId === 'lux-chat-panel' ? 'Messenger panel' : 'Notifications panel');
-    panel.tabIndex = -1;
-    wrapper.appendChild(panel);
-    return panel;
-}
-
-function ensureUserMenu() {
-    const existing = document.getElementById('lux-user-menu');
-    if (existing) return existing;
-    const chip = document.getElementById('lux-user-chip');
-    if (!chip) return null;
-    const menu = document.createElement('div');
-    menu.className = 'lux-user-menu';
-    menu.id = 'lux-user-menu';
-    menu.setAttribute('role', 'menu');
-    menu.setAttribute('aria-hidden', 'true');
-    menu.innerHTML = `
-        <button type="button" role="menuitem" data-nav-target="profile-view">Profile</button>
-        <button type="button" role="menuitem" data-nav-target="social">Social</button>
-        <button type="button" role="menuitem" data-action="clear-cache"><i class="fas fa-broom"></i> Clear cache</button>
-        <button type="button" role="menuitem" data-action="logout">Logout</button>
-    `;
-    (chip.parentElement || chip).appendChild(menu);
-    return menu;
-}
-
-function closeUserMenu(options = {}) {
-    const menu = document.getElementById('lux-user-menu');
-    const chip = document.getElementById('lux-user-chip');
-    const restoreTargetId = menu?.dataset.triggerId || chip?.id || '';
-    if (menu) {
-        menu.classList.remove('is-open');
-        menu.setAttribute('aria-hidden', 'true');
-        restoreTeleportedNode(menu);
-    }
-    if (chip) chip.setAttribute('aria-expanded', 'false');
-    if (options.restoreFocus) {
-        restoreFocusById(restoreTargetId);
-        deferRestoreFocusById(restoreTargetId);
-    }
-}
-
-function ensureShellPickerPanel(panelId) {
-    const existing = document.getElementById(panelId);
-    if (existing) return existing;
-    const buttonId = panelId === 'lux-role-picker-panel' ? 'lux-role-picker-btn' : 'lux-faculty-picker-btn';
-    const button = document.getElementById(buttonId);
-    const wrapper = button?.closest('.lux-picker-wrap');
-    if (!wrapper) return null;
-    const panel = document.createElement('div');
-    panel.className = 'lux-picker-panel lux-picker-panel-scroll';
-    panel.id = panelId;
-    panel.dataset.triggerId = buttonId;
-    panel.setAttribute('role', 'listbox');
-    panel.setAttribute('aria-hidden', 'true');
-    panel.setAttribute('aria-label', panelId === 'lux-role-picker-panel' ? 'Role switcher' : 'Faculty switcher');
-    panel.tabIndex = -1;
-    wrapper.appendChild(panel);
-    return panel;
-}
-
-function toggleUtilityPanel(panelId, buttonId) {
-    const button = document.getElementById(buttonId);
-    const panel = ensureTopbarUtilityPanel(panelId);
-    if (!panel || !button) return;
-    const shouldOpen = !panel.classList.contains('is-open');
-    closeUtilityPanels();
-    if (shouldOpen) {
-        if (typeof bootstrapKiuRealtimeBridge === 'function') {
-            bootstrapKiuRealtimeBridge(true).then(() => {
-                if (!panel.classList.contains('is-open')) return;
-                renderTopbarUtilityPanels(typeof getCurrentUserSafe === 'function' ? getCurrentUserSafe() : null);
-                focusFirstInteractive(panel, '[data-utility-action], .lux-utility-item, button');
-                if (typeof syncTopbar === 'function') syncTopbar();
-            }).catch(() => null);
-        }
-        renderTopbarUtilityPanels(typeof getCurrentUserSafe === 'function' ? getCurrentUserSafe() : null);
-        panel.classList.add('is-open');
-        panel.setAttribute('aria-hidden', 'false');
-        panel.dataset.triggerId = buttonId;
-        button.classList.add('is-active');
-        button.setAttribute('aria-expanded', 'true');
-        focusFirstInteractive(panel, '[data-utility-action], .lux-utility-item, button');
-        if (typeof ensurePortalSocialRuntimeLoaded === 'function') {
-            ensurePortalSocialRuntimeLoaded().then(() => {
-                if (panel.classList.contains('is-open')) {
-                    renderTopbarUtilityPanels(typeof getCurrentUserSafe === 'function' ? getCurrentUserSafe() : null);
-                    focusFirstInteractive(panel, '[data-utility-action], .lux-utility-item, button');
-                }
-            });
-        }
-    }
-}
-
-const PICKER_SCROLL_EXEMPT_SELECTORS = [
-    '.sch-modal-overlay.open',
-    '#schModalOverlay.open',
-    '#schPresetManagerOverlay.open',
-    '#course-selection-modal-bg',
-    '#modal-overlay:not([hidden])',
-    '.modal-overlay.open',
-    '.admin-library-modal-overlay.open',
-    '[data-lux-picker-scroll-exempt]'
-].join(', ');
-
-function isPickerScrollExempt(panel, scrollTarget) {
-    if (!scrollTarget || scrollTarget === panel || panel.contains(scrollTarget)) return true;
-    const triggerId = panel.dataset.triggerId;
-    const trigger = triggerId ? document.getElementById(triggerId) : null;
-    if (!trigger) return false;
-    const exemptRoot = scrollTarget.closest?.(PICKER_SCROLL_EXEMPT_SELECTORS);
-    return Boolean(exemptRoot && exemptRoot.contains(trigger));
-}
-
-function clearLuxPickerPanelListeners(panel) {
-    if (!panel) return;
-    if (panel._luxPickerScrollHandler) {
-        window.removeEventListener('scroll', panel._luxPickerScrollHandler, true);
-        panel._luxPickerScrollHandler = null;
-    }
-    if (panel._luxPickerWheelHandler) {
-        panel.removeEventListener('wheel', panel._luxPickerWheelHandler);
-        panel._luxPickerWheelHandler = null;
-    }
-}
-
-function closePickerPanels(options = {}) {
-    const openPanels = Array.from(document.querySelectorAll('.lux-picker-panel.is-open'));
-    const restoreTargetId = options.restoreFocus ? (openPanels[0]?.dataset.triggerId || '') : '';
-    openPanels.forEach((panel) => {
-        clearLuxPickerPanelListeners(panel);
-        panel.classList.remove('is-open');
-        panel.setAttribute('aria-hidden', 'true');
-        restoreTeleportedNode(panel);
-    });
-    document.querySelectorAll('.lux-picker-btn.is-active').forEach((button) => {
-        button.classList.remove('is-active');
-        button.setAttribute('aria-expanded', 'false');
-    });
-    if (restoreTargetId) deferRestoreFocusById(restoreTargetId);
-}
-
-function togglePickerPanel(panelId, buttonId) {
-    const panel = panelId === 'lux-faculty-picker-panel' || panelId === 'lux-role-picker-panel'
-        ? ensureShellPickerPanel(panelId)
-        : document.getElementById(panelId);
-    const button = document.getElementById(buttonId);
-    if (!panel || !button) return;
-    const shouldOpen = !panel.classList.contains('is-open');
-    closePickerPanels();
-    if (shouldOpen) {
-        const wrapper = panel.parentElement;
-        if (wrapper && wrapper.tagName !== 'BODY') {
-            if (!wrapper.id) wrapper.id = `lux-wrap-${Math.random().toString(36).substr(2, 9)}`;
-            panel.dataset.originalParentId = wrapper.id;
-            panel.dataset.teleported = 'true';
-            document.body.appendChild(panel);
-        }
-        const rect = button.getBoundingClientRect();
-        const panelWidth = Math.min(320, window.innerWidth - 32);
-        panel.style.position = 'absolute';
-        panel.style.top = `${rect.bottom + window.scrollY + 8}px`;
-        if (rect.left + panelWidth <= window.innerWidth - 16) {
-            panel.style.left = `${rect.left + window.scrollX}px`;
-        } else if (rect.right - panelWidth > 0) {
-            panel.style.left = `${rect.right + window.scrollX - panelWidth}px`;
-        } else {
-            panel.style.left = '16px';
-        }
-        panel.style.width = `${panelWidth}px`;
-        panel.style.zIndex = '999999';
-        panel.classList.add('is-open');
-        panel.setAttribute('aria-hidden', 'false');
-        panel.dataset.triggerId = buttonId;
-        button.classList.add('is-active');
-        button.setAttribute('aria-expanded', 'true');
-        focusFirstInteractive(panel, '.lux-picker-option.is-active, .lux-picker-option');
-        clearLuxPickerPanelListeners(panel);
-        const scrollHandler = (event) => {
-            if (isPickerScrollExempt(panel, event.target)) return;
-            closePickerPanels();
-        };
-        panel._luxPickerScrollHandler = scrollHandler;
-        window.addEventListener('scroll', scrollHandler, true);
-        const wheelHandler = (event) => {
-            event.stopPropagation();
-        };
-        panel._luxPickerWheelHandler = wheelHandler;
-        panel.addEventListener('wheel', wheelHandler, { passive: true });
-    }
-}
-
-window.closePickerPanels = closePickerPanels;
-window.togglePickerPanel = togglePickerPanel;
-
-function openRoleSwitcherPanel() {
-    const roleButton = document.getElementById('lux-role-picker-btn');
-    const rolePanel = ensureShellPickerPanel('lux-role-picker-panel');
-    if (!roleButton || !rolePanel) return false;
-    closeStudio();
-    closeUtilityPanels();
-    closeUserMenu();
-    populateRoleSwitcher({ ensurePanel: true });
-    togglePickerPanel('lux-role-picker-panel', 'lux-role-picker-btn');
-    return rolePanel.classList.contains('is-open');
-}
-
-window.openRoleSwitcherPanel = openRoleSwitcherPanel;
-
-function normalizePickerLabel(value) {
-    return String(value || '')
-        .replace(/[-_]+/g, ' ')
-        .replace(/\s+/g, ' ')
-        .trim()
-        .replace(/\b\w/g, (char) => char.toUpperCase());
-}
-
-function getCleanPickerLabelText(node) {
-    if (!node) return '';
-    const clone = node.cloneNode(true);
-    clone.querySelectorAll([
-        'select',
-        'option',
-        'button',
-        'input',
-        'textarea',
-        'i',
-        'svg',
-        '.lux-picker-field',
-        '.lux-picker-panel',
-        '.lux-picker-copy',
-        '.lux-picker-caption',
-        '.lux-picker-value',
-        '.lux-picker-option',
-        '[data-lux-picker-enhanced]'
-    ].join(',')).forEach((child) => child.remove());
-    return clone.textContent.replace(/\s+/g, ' ').trim();
-}
-
-function isExternalPickerLabelNode(node) {
-    if (!node || node.nodeType !== 1) return false;
-    if (node.classList?.contains('lux-picker-label')) return false;
-    if (/^label$/i.test(node.tagName)) return true;
-    return node.classList?.contains('em-lbl')
-        || node.classList?.contains('pvsm-lbl')
-        || node.classList?.contains('peg-lbl');
-}
-
-function resolveExternalPickerLabel(select) {
-    if (!select) return null;
-    if (select.id) {
-        const escapedId = window.CSS && typeof window.CSS.escape === 'function'
-            ? window.CSS.escape(select.id)
-            : String(select.id).replace(/"/g, '\\"');
-        const associated = document.querySelector(`label[for="${escapedId}"]`);
-        if (isExternalPickerLabelNode(associated)) return associated;
-    }
-    const previous = select.previousElementSibling;
-    if (isExternalPickerLabelNode(previous)) return previous;
-    const parentLabel = select.closest('label');
-    if (parentLabel && !parentLabel.classList?.contains('lux-picker-label')) return parentLabel;
-    const parent = select.parentElement;
-    if (parent) {
-        const labelNode = parent.querySelector('label');
-        if (isExternalPickerLabelNode(labelNode)) return labelNode;
-    }
-    const fieldShell = select.closest('.sch-input-group, .sch-control-group');
-    if (fieldShell) {
-        if (fieldShell.matches('label')) return fieldShell;
-        const nestedLabel = fieldShell.querySelector('.sch-input-label-row label, :scope > label');
-        if (isExternalPickerLabelNode(nestedLabel)) return nestedLabel;
-    }
-    return null;
-}
-
-function wirePickerButtonAriaLabel(button, externalLabel, select) {
-    if (!button || !externalLabel) return;
-    let labelId = externalLabel.id;
-    if (!labelId && select?.id) {
-        labelId = `${select.id}-field-label`;
-        externalLabel.id = labelId;
-    }
-    if (labelId) button.setAttribute('aria-labelledby', labelId);
-}
-
-function inferPickerCaption(select) {
-    if (!select) return 'Select';
-    const explicit = select.getAttribute('aria-label') || select.dataset.luxPickerLabel || select.getAttribute('title');
-    if (explicit) return String(explicit).trim();
-    const externalLabel = resolveExternalPickerLabel(select);
-    if (externalLabel) {
-        const text = getCleanPickerLabelText(externalLabel);
-        if (text) return text;
-    }
-    return normalizePickerLabel(select.name || select.id || 'Select');
-}
-
-function buildUniversalPickerPanel(select, panel, button) {
-    if (!panel || !select) return;
-    const caption = inferPickerCaption(select);
-    const currentValue = select.value;
-    const options = Array.from(select.options || []);
-    panel.innerHTML = options.map((option) => {
-        if (option.disabled && !option.selected) return '';
-        const active = String(option.value) === String(currentValue);
-        const title = option.label || option.textContent || option.value || caption;
-        const subtitle = option.dataset?.luxPickerSubtitle || (active ? 'Current selection' : `Choose ${caption.toLowerCase()}`);
-        return `
-            <button class="lux-picker-option${active ? ' is-active' : ''}" type="button" role="option" aria-selected="${active ? 'true' : 'false'}" data-picker-value="${escapeHtml(option.value)}" data-picker-title="${escapeHtml(title)}">
-                <strong>${escapeHtml(title)}</strong>
-                <span>${escapeHtml(subtitle)}</span>
-            </button>
-        `;
-    }).join('');
-    panel.querySelectorAll('[data-picker-value]').forEach((optionButton) => {
-        optionButton.addEventListener('click', () => {
-            select.value = optionButton.dataset.pickerValue || '';
-            select.dispatchEvent(new Event('change', { bubbles: true }));
-            if (button) button.setAttribute('aria-expanded', 'false');
-            closePickerPanels();
-        });
-    });
-}
-
-function syncUniversalPicker(select, button, panel) {
-    if (!select || !button || !panel) return;
-    const selected = select.selectedOptions?.[0] || select.options?.[select.selectedIndex] || null;
-    const caption = inferPickerCaption(select);
-    const valueNode = button.querySelector('.lux-picker-value');
-    const captionNode = button.querySelector('.lux-picker-caption');
-    if (captionNode) captionNode.textContent = caption;
-    if (valueNode) valueNode.textContent = selected ? (selected.label || selected.textContent || selected.value || caption) : caption;
-    button.setAttribute('aria-expanded', panel.classList.contains('is-open') ? 'true' : 'false');
-}
-
-function shouldEnhanceSelect(select) {
-    if (!select || select.dataset.luxPickerEnhanced === 'true') return false;
-    if (select.matches('[multiple], [data-lux-native], .library-hidden-select')) return false;
-    if (select.closest('#lux-topbar')) return false;
-    if (select.closest('.lux-picker-field')) return false;
-    if (select.closest('.library-picker-field')) return false;
-    if (select.closest('body.lux-route-lms, #page-lms, #page-lms-groups, #page-lms-inner, #lms-content-area')) return false;
-    return true;
-}
-
-function enhanceUniversalPicker(select) {
-    if (!shouldEnhanceSelect(select)) return;
-    const parent = select.parentElement;
-    if (!parent) return;
-    const wrapper = document.createElement('div');
-    wrapper.className = 'lux-picker-field lux-universal-picker-field';
-    const panelId = select.id ? `${select.id}-lux-panel` : `lux-picker-panel-${Math.random().toString(36).slice(2, 10)}`;
-    const buttonId = select.id ? `${select.id}-lux-btn` : `lux-picker-btn-${Math.random().toString(36).slice(2, 10)}`;
-    const externalLabel = resolveExternalPickerLabel(select);
-    const compactPicker = Boolean(externalLabel);
-    const caption = inferPickerCaption(select);
-    select.dataset.luxPickerLabel = caption;
-
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.className = 'lux-picker-btn lux-universal-picker-btn';
-    button.id = buttonId;
-    button.setAttribute('aria-haspopup', 'listbox');
-    button.setAttribute('aria-expanded', 'false');
-    if (compactPicker) {
-        button.classList.add('lux-picker-btn--compact');
-        button.innerHTML = `
-        <div class="lux-picker-copy">
-            <strong class="lux-picker-value"></strong>
-        </div>
-        <i class="fas fa-chevron-down"></i>
-    `;
-        wirePickerButtonAriaLabel(button, externalLabel, select);
-    } else {
-        button.innerHTML = `
-        <div class="lux-picker-copy">
-            <span class="lux-picker-caption">${escapeHtml(caption)}</span>
-            <strong class="lux-picker-value"></strong>
-        </div>
-        <i class="fas fa-chevron-down"></i>
-    `;
-    }
-
-    const panel = document.createElement('div');
-    panel.className = 'lux-picker-panel lux-universal-picker-panel lux-picker-panel-scroll';
-    panel.id = panelId;
-    panel.setAttribute('role', 'listbox');
-    panel.setAttribute('aria-hidden', 'true');
-    panel.tabIndex = -1;
-    if (select.closest('#schModalOverlay, #schPresetManagerOverlay')) {
-        panel.classList.add('sch-session-picker-panel');
-    }
-
-    if (!compactPicker) {
-        const captionEl = document.createElement('span');
-        captionEl.className = 'lux-picker-label';
-        captionEl.textContent = caption;
-        wrapper.appendChild(captionEl);
-    }
-    wrapper.appendChild(button);
-    wrapper.appendChild(panel);
-    parent.insertBefore(wrapper, select);
-    wrapper.appendChild(select);
-
-    select.classList.add('lux-universal-native-select');
-    select.dataset.luxPickerEnhanced = 'true';
-    select.setAttribute('data-lux-picker-enhanced', 'true');
-
-    button.addEventListener('click', (event) => {
-        event.preventDefault();
-        event.stopPropagation();
-        togglePickerPanel(panelId, buttonId);
-    });
-
-    select.addEventListener('change', () => {
-        buildUniversalPickerPanel(select, panel, button);
-        syncUniversalPicker(select, button, panel);
-    });
-
-    if (window.MutationObserver) {
-        const observer = new MutationObserver(() => {
-            if (!document.contains(select)) {
-                observer.disconnect();
-                return;
-            }
-            buildUniversalPickerPanel(select, panel, button);
-            syncUniversalPicker(select, button, panel);
-        });
-        observer.observe(select, { childList: true, subtree: true });
-        select._luxPickerObserver = observer;
-    }
-
-    buildUniversalPickerPanel(select, panel, button);
-    syncUniversalPicker(select, button, panel);
-}
-
-function enhanceUniversalPickers(root = document) {
-    if (!root || typeof root.querySelectorAll !== 'function') return;
-    root.querySelectorAll('select').forEach((select) => enhanceUniversalPicker(select));
-}
-
-function observeUniversalPickers() {
-    if (window.__luxUniversalPickerObserver || !window.MutationObserver || !document.body) return;
-    let pickerTimer = null;
-    let pendingNodes = [];
-    const observer = new MutationObserver((mutations) => {
-        for (const mutation of mutations) {
-            mutation.addedNodes.forEach((node) => {
-                if (!node || node.nodeType !== 1) return;
-                pendingNodes.push(node);
-            });
-        }
-        if (!pickerTimer) {
-            pickerTimer = setTimeout(() => {
-                pickerTimer = null;
-                const nodes = pendingNodes.splice(0);
-                nodes.forEach((node) => {
-                    if (node.tagName === 'SELECT') {
-                        enhanceUniversalPicker(node);
-                        return;
-                    }
-                    enhanceUniversalPickers(node);
-                });
-            }, 200);
-        }
-    });
-    observer.observe(document.body, { childList: true, subtree: true });
-    window.__luxUniversalPickerObserver = observer;
-}
+const closeUtilityPanels = window.closeUtilityPanels;
+const ensureTopbarUtilityPanel = window.ensureTopbarUtilityPanel;
+const ensureUserMenu = window.ensureUserMenu;
+const closeUserMenu = window.closeUserMenu;
+const ensureShellPickerPanel = window.ensureShellPickerPanel;
+const toggleUtilityPanel = window.toggleUtilityPanel;
+const isPickerScrollExempt = window.isPickerScrollExempt;
+const isLuxPickerInteractionTarget = window.isLuxPickerInteractionTarget;
+const collectPickerScrollTargets = window.collectPickerScrollTargets;
+const clearLuxPickerPanelListeners = window.clearLuxPickerPanelListeners;
+const forcePickerReflow = window.forcePickerReflow;
+const deactivatePickerTrigger = window.deactivatePickerTrigger;
+const finalizePickerPanelClose = window.finalizePickerPanelClose;
+const animatePickerPanelClose = window.animatePickerPanelClose;
+const closePickerPanel = window.closePickerPanel;
+const applyLuxPickerPanelVariants = window.applyLuxPickerPanelVariants;
+const closePickerPanels = window.closePickerPanels;
+const openPickerPanel = window.openPickerPanel;
+const dismissOpenLuxPickerPanels = window.dismissOpenLuxPickerPanels;
+const bindLuxPickerDismissHandlers = window.bindLuxPickerDismissHandlers;
+const togglePickerPanel = window.togglePickerPanel;
+const openRoleSwitcherPanel = window.openRoleSwitcherPanel;
+const normalizePickerLabel = window.normalizePickerLabel;
+const getCleanPickerLabelText = window.getCleanPickerLabelText;
+const isExternalPickerLabelNode = window.isExternalPickerLabelNode;
+const resolveExternalPickerLabel = window.resolveExternalPickerLabel;
+const wirePickerButtonAriaLabel = window.wirePickerButtonAriaLabel;
+const inferPickerCaption = window.inferPickerCaption;
+const normalizePickerSearchQuery = window.normalizePickerSearchQuery;
+const isLuxPickerSearchEnabled = window.isLuxPickerSearchEnabled;
+const getLuxPickerOptionSearchHaystack = window.getLuxPickerOptionSearchHaystack;
+const filterLuxPickerPanelOptions = window.filterLuxPickerPanelOptions;
+const resetLuxPickerPanelSearch = window.resetLuxPickerPanelSearch;
+const wireLuxPickerPanelSearch = window.wireLuxPickerPanelSearch;
+const renderLuxPickerOptionButton = window.renderLuxPickerOptionButton;
+const bindLuxPickerOptionButtons = window.bindLuxPickerOptionButtons;
+const buildUniversalPickerPanel = window.buildUniversalPickerPanel;
+const syncUniversalPicker = window.syncUniversalPicker;
+const shouldEnhanceSelect = window.shouldEnhanceSelect;
+const enhanceUniversalPicker = window.enhanceUniversalPicker;
+const enhanceUniversalPickers = window.enhanceUniversalPickers;
+const observeUniversalPickers = window.observeUniversalPickers;
 
 window.enhanceUniversalPickers = enhanceUniversalPickers;
 window.enhanceUniversalPicker = enhanceUniversalPicker;
+window.syncUniversalPicker = syncUniversalPicker;
 window.observeUniversalPickers = observeUniversalPickers;
 
 function renderTopbarUtilityPanels(currentUser) {
@@ -838,16 +464,25 @@ function renderNav() {
     const signature = `${role}|${activePage}|${itemSignature}`;
     if (navRoot.dataset.renderSignature === signature && navRoot.children.length) return;
     try {
-        navRoot.innerHTML = groups.map((group) => `
-            <div class="lux-nav-group">${escapeHtml(group.group)}</div>
-            ${group.items.map(([pageId, label, icon, badge]) => `
-                <button class="lux-nav-item${activePage === pageId ? ' is-active' : ''}" type="button" data-nav-target="${escapeHtml(pageId)}">
+        let staggerIndex = 0;
+        navRoot.innerHTML = groups.map((group) => {
+            const groupStagger = Math.min(staggerIndex++, 14);
+            const groupMarkup = `<div class="lux-nav-group" style="--lux-nav-stagger:${groupStagger}">${escapeHtml(group.group)}</div>`;
+            const itemsMarkup = group.items.map(([pageId, label, icon, badge]) => {
+                const itemStagger = Math.min(staggerIndex++, 14);
+                return `
+                <button class="lux-nav-item${activePage === pageId ? ' is-active' : ''}" type="button" data-nav-target="${escapeHtml(pageId)}" style="--lux-nav-stagger:${itemStagger}">
                     <i class="${escapeHtml(icon)}"></i>
                     <span>${escapeHtml(label)}</span>
                     ${badge ? `<span class="lux-nav-badge">${escapeHtml(badge)}</span>` : ''}
-                </button>
-            `).join('')}
-        `).join('');
+                </button>`;
+            }).join('');
+            return groupMarkup + itemsMarkup;
+        }).join('');
+        const shell = document.getElementById('lux-shell');
+        if (shell) {
+            shell.style.setProperty('--lux-shell-footer-stagger', String(Math.min(staggerIndex, 14)));
+        }
         navRoot.dataset.renderSignature = signature;
     } catch (error) {
         renderNavRecoveryFallback(navRoot, error);
@@ -869,8 +504,7 @@ function renderNav() {
 }
 
 window.renderNav = renderNav;
-window.populateRoleSwitcher = populateRoleSwitcher;
-window.syncTopbar = syncTopbar;
+// populateRoleSwitcher / syncTopbar / syncChromeBottom come from luxury-shell-topbar-runtime.js
 window.seedRolePickerLabel = seedRolePickerLabel;
 window.resolveRolePickerLabel = resolveRolePickerLabel;
 
@@ -899,9 +533,50 @@ function getFallbackNavGroups(role) {
     ];
 }
 
+
+function ensureStudioCss() {
+    if (typeof document === 'undefined') return;
+    const sheets = [
+        { href: 'assets/css/lux-studio.css?v=20260720-densify6500', key: 'data-kiu-studio' },
+        { href: 'assets/css/lux-studio-mobile.css?v=20260720-densify6500', key: 'data-kiu-studio-mobile' }
+    ];
+    for (const sheet of sheets) {
+        if (document.querySelector(`link[${sheet.key}]`)) continue;
+        const file = sheet.href.split('?')[0].split('/').pop();
+        const has = Array.from(document.querySelectorAll('link[rel="stylesheet"]')).some((l) =>
+            String(l.getAttribute('href') || '').includes(file)
+        );
+        if (has) continue;
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = sheet.href;
+        link.setAttribute(sheet.key, '1');
+        document.head.appendChild(link);
+    }
+}
+
+function ensureLuxDroplistCss() {
+    if (typeof document === 'undefined') return;
+    if (document.querySelector('link[data-kiu-lux-droplist]')) return;
+    const has = Array.from(document.querySelectorAll('link[rel="stylesheet"]')).some((l) =>
+        String(l.getAttribute('href') || '').includes('lux-droplist.css')
+    );
+    if (has) return;
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = 'assets/css/lux-droplist.css?v=20260720-densify6500';
+    link.setAttribute('data-kiu-lux-droplist', '1');
+    document.head.appendChild(link);
+}
+
 function ensureStudio() {
+    ensureStudioCss();
     const existingStudio = document.getElementById('lux-studio-backdrop');
-    if (existingStudio) return existingStudio;
+    if (existingStudio) {
+        if (document.getElementById('lux-bg-mode-params-backdrop')) return existingStudio;
+        existingStudio.remove();
+        document.getElementById('lux-bg-mode-params-backdrop')?.remove();
+    }
     const backdrop = document.createElement('div');
     backdrop.id = 'lux-studio-backdrop';
     backdrop.className = 'lux-studio-backdrop';
@@ -940,8 +615,8 @@ function ensureStudio() {
                         </div>
                     </div>
                 </div>
-                <div class="lux-studio-section">
-                    <div class="lux-studio-label">Particle Variant</div>
+                <div class="lux-studio-section lux-bg-mode-section">
+                    <div class="lux-studio-label">3D Background</div>
                     <div class="lux-bg-mode-grid" id="lux-bg-mode-grid"></div>
                 </div>
                 <div class="lux-studio-section">
@@ -950,30 +625,6 @@ function ensureStudio() {
                         <button class="lux-mode-btn" id="lux-bg-animation-on" type="button"><i class="fas fa-play"></i> On</button>
                         <button class="lux-mode-btn" id="lux-bg-animation-off" type="button"><i class="fas fa-pause"></i> Off</button>
                     </div>
-                </div>
-                <div class="lux-studio-section">
-                    <div class="lux-studio-label">Particle Motion</div>
-                    <div class="lux-transparency-control">
-                        <div class="lux-transparency-header">
-                            <span class="lux-transparency-label"><i class="fas fa-wind"></i> Motion</span>
-                            <span class="lux-transparency-value" id="lux-particle-motion-value">100</span>
-                        </div>
-                        <input type="range" class="lux-range" id="lux-particle-motion-slider" min="0" max="120" value="100">
-                    </div>
-                </div>
-                <div class="lux-studio-section">
-                    <div class="lux-studio-label">Particle Density</div>
-                    <div class="lux-transparency-control">
-                        <div class="lux-transparency-header">
-                            <span class="lux-transparency-label"><i class="fas fa-braille"></i> Density</span>
-                            <span class="lux-transparency-value" id="lux-particle-density-value">100</span>
-                        </div>
-                        <input type="range" class="lux-range" id="lux-particle-density-slider" min="35" max="100" value="100">
-                    </div>
-                </div>
-                <div class="lux-studio-section">
-                    <div class="lux-studio-label">Particle Quality</div>
-                    <div class="lux-control-grid" id="lux-particle-quality-grid"></div>
                 </div>
                 <div class="lux-studio-section">
                     <div class="lux-studio-label">Default & Reset</div>
@@ -1002,6 +653,7 @@ function ensureStudio() {
         </div>
     `;
     document.body.appendChild(backdrop);
+    ensureBgModeParamsPopup();
     if (typeof writeStudioMixerInputs === 'function' && typeof getStudioMixerState === 'function') {
         writeStudioMixerInputs(getStudioMixerState());
     }
@@ -1071,6 +723,10 @@ function ensureStudio() {
         document.getElementById('lux-palette-grid')?.appendChild(chip);
     });
     BACKGROUND_MODES.forEach((mode) => {
+        const item = document.createElement('div');
+        item.className = 'lux-bg-mode-item';
+        item.dataset.bgModeItem = mode.key;
+
         const button = document.createElement('button');
         button.type = 'button';
         button.className = 'lux-bg-mode-btn';
@@ -1078,10 +734,30 @@ function ensureStudio() {
         button.innerHTML = `<i class="${escapeHtml(mode.icon)}"></i><strong>${escapeHtml(mode.label)}</strong><span>${escapeHtml(mode.copy)}</span>`;
         button.addEventListener('click', () => {
             setBackgroundMode(mode.key, true);
+            syncStudioModePanels();
             if (typeof syncVisualStateOnly === 'function') syncVisualStateOnly();
         });
-        document.getElementById('lux-bg-mode-grid')?.appendChild(button);
+
+        const settingsBtn = document.createElement('button');
+        settingsBtn.type = 'button';
+        settingsBtn.className = 'lux-bg-mode-settings-btn';
+        settingsBtn.dataset.bgModeSettings = mode.key;
+        settingsBtn.setAttribute('aria-label', `Configure ${mode.label}`);
+        settingsBtn.setAttribute('data-lux-skip-modern-button', 'true');
+        settingsBtn.innerHTML = '<i class="fas fa-sliders-h"></i><span>Parameters</span>';
+        settingsBtn.addEventListener('click', (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            openBgModeParamsPopup(mode.key);
+        });
+
+        item.appendChild(button);
+        item.appendChild(settingsBtn);
+        document.getElementById('lux-bg-mode-grid')?.appendChild(item);
     });
+    // Mount params popup shell first so particle/fog controls exist for binding below.
+    ensureBgModeParamsPopup();
+    bindFogStudioControls();
     const particleMotionSlider = document.getElementById('lux-particle-motion-slider');
     const particleMotionValue = document.getElementById('lux-particle-motion-value');
     if (particleMotionSlider && typeof getParticleMotion === 'function') {
@@ -1106,17 +782,47 @@ function ensureStudio() {
             if (typeof syncVisualStateOnly === 'function') syncVisualStateOnly();
         });
     }
+    const particleAmountSlider = document.getElementById('lux-particle-amount-slider');
+    const particleAmountValue = document.getElementById('lux-particle-amount-value');
+    if (particleAmountSlider && typeof getParticleAmount === 'function') {
+        particleAmountSlider.value = String(getParticleAmount());
+        if (particleAmountValue) particleAmountValue.textContent = particleAmountSlider.value;
+        particleAmountSlider.addEventListener('input', (event) => {
+            const value = event.target.value;
+            if (particleAmountValue) particleAmountValue.textContent = value;
+            if (typeof setParticleAmount === 'function') setParticleAmount(value, true);
+            if (typeof syncVisualStateOnly === 'function') syncVisualStateOnly();
+        });
+    }
+    const particleSharpnessSlider = document.getElementById('lux-particle-sharpness-slider');
+    const particleSharpnessValue = document.getElementById('lux-particle-sharpness-value');
+    if (particleSharpnessSlider && typeof getParticleSharpness === 'function') {
+        particleSharpnessSlider.value = String(getParticleSharpness());
+        if (particleSharpnessValue) particleSharpnessValue.textContent = particleSharpnessSlider.value;
+        particleSharpnessSlider.addEventListener('input', (event) => {
+            const value = event.target.value;
+            if (particleSharpnessValue) particleSharpnessValue.textContent = value;
+            if (typeof setParticleSharpness === 'function') setParticleSharpness(value, true);
+            if (typeof syncVisualStateOnly === 'function') syncVisualStateOnly();
+        });
+    }
+    const particleQualityGrid = document.getElementById('lux-particle-quality-grid');
+    if (particleQualityGrid) particleQualityGrid.replaceChildren();
     (PARTICLE_QUALITY_OPTIONS || []).forEach((mode) => {
         const button = document.createElement('button');
         button.type = 'button';
         button.className = 'lux-control-btn';
         button.dataset.particleQuality = mode.key;
+        button.setAttribute('data-lux-skip-modern-button', 'true');
         button.innerHTML = `<strong>${escapeHtml(mode.label)}</strong><span>${escapeHtml(mode.copy)}</span>`;
         button.addEventListener('click', () => {
             if (typeof setParticleQuality === 'function') setParticleQuality(mode.key, true);
             if (typeof syncVisualStateOnly === 'function') syncVisualStateOnly();
+            document.querySelectorAll('[data-particle-quality]').forEach((node) => {
+                node.classList.toggle('is-active', node.dataset.particleQuality === mode.key);
+            });
         });
-        document.getElementById('lux-particle-quality-grid')?.appendChild(button);
+        particleQualityGrid?.appendChild(button);
     });
     document.getElementById('lux-reset-visuals')?.addEventListener('click', () => {
         if (window.confirm('Reset visual settings for this portal profile?')) resetVisualSettings();
@@ -1125,7 +831,12 @@ function ensureStudio() {
         const role = getEffectiveRole();
         if (!window.confirm(`Reset the ${getRoleLabels()[role] || 'current'} layout to KIU defaults?`)) return;
         if (HOME_EDITOR_STATE.editing && HOME_EDITOR_STATE.role === role) {
-            resetCurrentRoleLayoutDraft(role, buildHomeModel(role));
+            const homeModel = resolveHomeModelForRole(role);
+            if (!homeModel) {
+                if (typeof showToast === 'function') showToast('Dashboard layout tools load on the home page.');
+                return;
+            }
+            resetCurrentRoleLayoutDraft(role, homeModel);
             return;
         }
         resetSavedRoleLayout(role);
@@ -1144,7 +855,12 @@ function ensureStudio() {
     });
     if (!document.body.dataset.luxStudioEscBound) {
         document.addEventListener('keydown', (event) => {
-            if (event.key === 'Escape') closeStudio({ restoreFocus: true });
+            if (event.key !== 'Escape') return;
+            if (document.getElementById('lux-bg-mode-params-backdrop')?.classList.contains('is-open')) {
+                closeBgModeParamsPopup();
+                return;
+            }
+            closeStudio({ restoreFocus: true });
         });
         document.body.dataset.luxStudioEscBound = '1';
     }
@@ -1184,10 +900,381 @@ function updateStudioPreview() {
     if (swatchB) swatchB.style.background = `hsl(${mixerState.hB},${mixerState.sB}%,${mixerState.lB}%)`;
 }
 
+const __luxShellStudio = typeof window.__kiuCreateLuxuryShellStudioApi === 'function'
+    ? window.__kiuCreateLuxuryShellStudioApi({
+        FOG_COLOR_FIELDS,
+        getFogSettings: (...a) => (typeof window.getFogSettings === 'function' ? window.getFogSettings(...a) : null),
+        setFogSettings: (...a) => window.setFogSettings?.(...a),
+        escapeHtml: (...a) => (typeof escapeHtml === 'function' ? escapeHtml(...a) : window.escapeHtml?.(...a)),
+        resolveActiveFogProfileBank: (...a) => resolveActiveFogProfileBank(...a),
+        flashFogProfileAction: (...a) => flashFogProfileAction(...a),
+        notifyFogProfileApiMissing: (...a) => (typeof notifyFogProfileApiMissing === 'function'
+            ? notifyFogProfileApiMissing(...a)
+            : window.notifyFogProfileApiMissing?.(...a))
+    })
+    : {};
+const {
+isFogProfileEditing,
+    readFogSettingsFromStudioInputs,
+    resolveFogSettingsForProfileSave,
+    syncFogProfileEditPreview,
+    isFogProfileEditDirty,
+    syncFogProfileEditUi,
+    clearFogProfileEditState,
+    cancelFogProfileEdit,
+    commitFogProfileEdit,
+    startFogProfileEdit,
+    buildFogProfileSwatchesMarkup,
+    renderFogProfileList,
+    buildFogProfileGhostMarkup,
+    syncFogProfileIndexBadges,
+    prefersReducedFogProfileMotion,
+    readFogProfileDragMetrics,
+    createFogProfileDragGhost,
+    setFogProfilePlaceholder,
+    updateFogProfileDragGhost,
+    flipFogProfileSiblings,
+    moveFogProfilePlaceholder,
+    autoScrollFogProfileShell,
+    clearFogProfileDragTransforms,
+    cleanupFogProfileDragState,
+    animateFogProfileGhostDrop,
+    finishFogProfileDragReorder,
+    scheduleFogProfileDragFrame,
+    bindFogProfileListDrag,
+    notifyFogProfileApiMissing,
+    saveFogProfileFromInput,
+    bindFogProfileControls
+} = __luxShellStudio;
+
+function bindFogStudioControls() {
+    const fogColorGrid = document.getElementById('lux-fog-color-grid');
+    if (fogColorGrid && !fogColorGrid.dataset.bound) {
+        FOG_COLOR_FIELDS.forEach((field) => {
+            const label = document.createElement('label');
+            label.className = 'lux-fog-color-field';
+            label.innerHTML = `
+                <input type="color" class="lux-fog-color-input" data-fog-color="${escapeHtml(field.key)}" aria-label="${escapeHtml(field.label)}">
+                <span class="lux-fog-color-copy">
+                    <strong>${escapeHtml(field.label)}</strong>
+                    <span class="lux-fog-color-hex" data-fog-color-hex="${escapeHtml(field.key)}">#000000</span>
+                </span>
+            `;
+            label.querySelector('input')?.addEventListener('input', (event) => {
+                const key = event.target.dataset.fogColor;
+                if (!key || typeof window.setFogSettings !== 'function') return;
+                window.setFogSettings({ [key]: event.target.value }, true);
+                syncFogProfileEditPreview();
+            });
+            fogColorGrid.appendChild(label);
+        });
+        fogColorGrid.dataset.bound = '1';
+    }
+    const fogBlurSlider = document.getElementById('lux-fog-blur-slider');
+    const fogBlurValue = document.getElementById('lux-fog-blur-value');
+    if (fogBlurSlider && !fogBlurSlider.dataset.bound) {
+        fogBlurSlider.dataset.bound = '1';
+        fogBlurSlider.addEventListener('input', (event) => {
+            const value = Number(event.target.value);
+            if (fogBlurValue) fogBlurValue.textContent = value.toFixed(2);
+            if (typeof window.setFogSettings === 'function') window.setFogSettings({ blurFactor: value }, true);
+            syncFogProfileEditPreview();
+        });
+    }
+    const fogSpeedSlider = document.getElementById('lux-fog-speed-slider');
+    const fogSpeedValue = document.getElementById('lux-fog-speed-value');
+    if (fogSpeedSlider && !fogSpeedSlider.dataset.bound) {
+        fogSpeedSlider.dataset.bound = '1';
+        fogSpeedSlider.addEventListener('input', (event) => {
+            const value = Number(event.target.value);
+            if (fogSpeedValue) fogSpeedValue.textContent = value.toFixed(2);
+            if (typeof window.setFogSettings === 'function') window.setFogSettings({ speed: value }, true);
+            syncFogProfileEditPreview();
+        });
+    }
+    const fogZoomSlider = document.getElementById('lux-fog-zoom-slider');
+    const fogZoomValue = document.getElementById('lux-fog-zoom-value');
+    if (fogZoomSlider && !fogZoomSlider.dataset.bound) {
+        fogZoomSlider.dataset.bound = '1';
+        fogZoomSlider.addEventListener('input', (event) => {
+            const value = Number(event.target.value);
+            if (fogZoomValue) fogZoomValue.textContent = value.toFixed(2);
+            if (typeof window.setFogSettings === 'function') window.setFogSettings({ zoom: value }, true);
+            syncFogProfileEditPreview();
+        });
+    }
+}
+
+function isBgModeParamsPopupStale(existing) {
+    if (!existing) return false;
+    if (existing.dataset.fogParamsVersion !== FOG_PARAMS_TEMPLATE_VERSION) return true;
+    return !existing.querySelector('#lux-fog-profile-save-edit')
+        || !existing.querySelector('#lux-fog-profile-add')
+        || !existing.querySelector('#lux-fog-profiles-section')
+        || !existing.querySelector('[data-fog-profile-bank]');
+}
+
+function syncFogStudioInputs() {
+    if (typeof getFogSettings !== 'function') return;
+    const fog = getFogSettings();
+    FOG_COLOR_FIELDS.forEach((field) => {
+        const input = document.querySelector(`[data-fog-color="${field.key}"]`);
+        const hexLabel = document.querySelector(`[data-fog-color-hex="${field.key}"]`);
+        if (input) input.value = fog[field.key];
+        if (hexLabel) hexLabel.textContent = String(fog[field.key] || '').toUpperCase();
+    });
+    const blurSlider = document.getElementById('lux-fog-blur-slider');
+    const blurValue = document.getElementById('lux-fog-blur-value');
+    if (blurSlider) blurSlider.value = String(fog.blurFactor);
+    if (blurValue) blurValue.textContent = Number(fog.blurFactor).toFixed(2);
+    const speedSlider = document.getElementById('lux-fog-speed-slider');
+    const speedValue = document.getElementById('lux-fog-speed-value');
+    if (speedSlider) speedSlider.value = String(fog.speed);
+    if (speedValue) speedValue.textContent = Number(fog.speed).toFixed(2);
+    const zoomSlider = document.getElementById('lux-fog-zoom-slider');
+    const zoomValue = document.getElementById('lux-fog-zoom-value');
+    if (zoomSlider) zoomSlider.value = String(fog.zoom);
+    if (zoomValue) zoomValue.textContent = Number(fog.zoom).toFixed(2);
+    renderFogProfileList();
+}
+
+function stashBgModePanels() {
+    const particlePanel = document.getElementById('lux-bg-settings-panel-particle');
+    const fogPanel = document.getElementById('lux-bg-settings-panel-fog');
+    const store = document.getElementById('lux-bg-mode-panels-store');
+    [particlePanel, fogPanel].forEach((panel) => {
+        if (!panel || !store || panel.parentElement === store) return;
+        panel.hidden = true;
+        store.appendChild(panel);
+    });
+}
+
+function mountBgModePanelInPopup(modeKey) {
+    const particlePanel = document.getElementById('lux-bg-settings-panel-particle');
+    const fogPanel = document.getElementById('lux-bg-settings-panel-fog');
+    const body = document.getElementById('lux-bg-params-body');
+    stashBgModePanels();
+    if (!body || !modeKey) return null;
+    if (PARTICLE_BG_MODES.has(modeKey) && particlePanel) {
+        body.appendChild(particlePanel);
+        particlePanel.hidden = false;
+        if (Array.isArray(BACKGROUND_MODES)) {
+            const meta = BACKGROUND_MODES.find((entry) => entry.key === modeKey);
+            const label = document.getElementById('lux-bg-panel-particle-label');
+            const copy = document.getElementById('lux-bg-panel-particle-copy');
+            if (meta && label) label.textContent = meta.label;
+            if (meta && copy) copy.textContent = meta.copy;
+        }
+        return particlePanel;
+    }
+    if (modeKey === 'fog' && fogPanel) {
+        body.appendChild(fogPanel);
+        fogPanel.hidden = false;
+        return fogPanel;
+    }
+    return null;
+}
+
+function ensureBgModeParamsPopup() {
+    let existing = document.getElementById('lux-bg-mode-params-backdrop');
+    if (isBgModeParamsPopupStale(existing)) {
+        if (typeof isFogProfileEditing === 'function' && isFogProfileEditing()) clearFogProfileEditState({ restoreSnapshot: true });
+        existing?.remove();
+        existing = null;
+    }
+    if (existing) return existing;
+    const backdrop = document.createElement('div');
+    backdrop.id = 'lux-bg-mode-params-backdrop';
+    backdrop.className = 'lux-bg-mode-params-backdrop';
+    backdrop.dataset.fogParamsVersion = FOG_PARAMS_TEMPLATE_VERSION;
+    backdrop.innerHTML = `
+        <div class="lux-bg-mode-params-dialog" role="dialog" aria-modal="true" aria-labelledby="lux-bg-params-title">
+            <div class="lux-bg-mode-params-head">
+                <div>
+                    <div class="lux-bg-mode-params-title" id="lux-bg-params-title">Background Parameters</div>
+                    <div class="lux-bg-mode-params-sub" id="lux-bg-params-sub">Tune motion, density, and quality for this background.</div>
+                </div>
+                <button class="lux-bg-mode-params-close" id="lux-bg-params-close" type="button" aria-label="Close parameters"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="lux-bg-mode-params-body" id="lux-bg-params-body"></div>
+            <div id="lux-bg-mode-panels-store" hidden>
+                <section id="lux-bg-settings-panel-particle"
+                         class="lux-bg-mode-panel"
+                         data-bg-mode-panel="peak layered orbit corners"
+                         hidden>
+                    <p class="lux-bg-mode-panel-copy" id="lux-bg-panel-particle-copy">Ridged particle terrain waves.</p>
+                    <p class="lux-bg-mode-panel-hint">Motion and density apply to all particle backgrounds.</p>
+                    <div class="lux-transparency-control">
+                        <div class="lux-transparency-header">
+                            <span class="lux-transparency-label"><i class="fas fa-wind"></i> Motion</span>
+                            <span class="lux-transparency-value" id="lux-particle-motion-value">100</span>
+                        </div>
+                        <input type="range" class="lux-range" id="lux-particle-motion-slider" min="0" max="120" value="100">
+                    </div>
+                    <div class="lux-transparency-control">
+                        <div class="lux-transparency-header">
+                            <span class="lux-transparency-label"><i class="fas fa-braille"></i> Density</span>
+                            <span class="lux-transparency-value" id="lux-particle-density-value">100</span>
+                        </div>
+                        <input type="range" class="lux-range" id="lux-particle-density-slider" min="35" max="100" value="100">
+                    </div>
+                    <div class="lux-transparency-control">
+                        <div class="lux-transparency-header">
+                            <span class="lux-transparency-label"><i class="fas fa-cubes"></i> Amount</span>
+                            <span class="lux-transparency-value" id="lux-particle-amount-value">100</span>
+                        </div>
+                        <input type="range" class="lux-range" id="lux-particle-amount-slider" min="50" max="150" value="100">
+                    </div>
+                    <div class="lux-transparency-control">
+                        <div class="lux-transparency-header">
+                            <span class="lux-transparency-label"><i class="fas fa-adjust"></i> Sharpness</span>
+                            <span class="lux-transparency-value" id="lux-particle-sharpness-value">50</span>
+                        </div>
+                        <input type="range" class="lux-range" id="lux-particle-sharpness-slider" min="0" max="100" value="50">
+                    </div>
+                    <div class="lux-bg-mode-panel-subsection">
+                        <div class="lux-studio-label lux-studio-label--compact">Particle Quality</div>
+                        <div class="lux-control-grid" id="lux-particle-quality-grid"></div>
+                    </div>
+                </section>
+                <section id="lux-bg-settings-panel-fog"
+                         class="lux-bg-mode-panel"
+                         data-bg-mode-panel="fog"
+                         hidden>
+                    <p class="lux-bg-mode-panel-copy">Fog colors and motion are independent from interface mode and particle controls.</p>
+                    <div class="lux-bg-mode-panel-subsection" id="lux-fog-profiles-section">
+                        <div class="lux-fog-profile-bank-head">
+                            <div class="lux-studio-label lux-studio-label--compact" id="lux-fog-profile-bank-label">Saved Profiles · Dark</div>
+                            <div class="lux-fog-profile-bank-switch" role="group" aria-label="Fog profile bank">
+                                <button type="button" class="lux-fog-profile-bank-btn is-active" data-fog-profile-bank="dark" data-lux-skip-modern-button="true" aria-pressed="true">Dark</button>
+                                <button type="button" class="lux-fog-profile-bank-btn" data-fog-profile-bank="light" data-lux-skip-modern-button="true" aria-pressed="false">Light</button>
+                            </div>
+                        </div>
+                        <div class="lux-fog-profile-list-shell">
+                            <div class="lux-fog-profile-list" id="lux-fog-profile-list" role="list"></div>
+                            <p class="lux-fog-profile-empty" id="lux-fog-profile-empty" hidden>No saved profiles yet.</p>
+                        </div>
+                        <div class="lux-fog-profile-edit-bar" id="lux-fog-profile-edit-bar" hidden>
+                            <div class="lux-fog-profile-edit-copy">Editing <strong id="lux-fog-profile-edit-label"></strong></div>
+                            <div class="lux-fog-profile-edit-actions">
+                                <button type="button" class="lux-fog-profile-action-btn" id="lux-fog-profile-save-edit" data-fog-profile-save-edit data-lux-skip-modern-button="true" aria-label="Save profile changes"><i class="fas fa-check"></i><span>Save changes</span></button>
+                                <button type="button" class="lux-fog-profile-action-btn" id="lux-fog-profile-discard-edit" data-fog-profile-discard-edit data-lux-skip-modern-button="true" aria-label="Discard profile changes"><i class="fas fa-undo"></i><span>Discard</span></button>
+                            </div>
+                        </div>
+                        <div class="lux-fog-profile-add-row">
+                            <input type="text" id="lux-fog-profile-name-input" class="lux-modern-field" placeholder="Profile name" maxlength="48" aria-label="New fog profile name">
+                            <button type="button" class="lux-control-btn lux-fog-profile-btn" id="lux-fog-profile-add" data-fog-profile-add data-lux-skip-modern-button="true" aria-label="Save current fog settings as profile"><i class="fas fa-plus"></i><span>Save current</span></button>
+                        </div>
+                    </div>
+                    <div class="lux-fog-color-grid" id="lux-fog-color-grid"></div>
+                    <div class="lux-transparency-control">
+                        <div class="lux-transparency-header">
+                            <span class="lux-transparency-label"><i class="fas fa-water"></i> Blur</span>
+                            <span class="lux-transparency-value" id="lux-fog-blur-value">0.60</span>
+                        </div>
+                        <input type="range" class="lux-range" id="lux-fog-blur-slider" min="0" max="1" step="0.01" value="0.6">
+                    </div>
+                    <div class="lux-transparency-control">
+                        <div class="lux-transparency-header">
+                            <span class="lux-transparency-label"><i class="fas fa-wind"></i> Speed</span>
+                            <span class="lux-transparency-value" id="lux-fog-speed-value">1.00</span>
+                        </div>
+                        <input type="range" class="lux-range" id="lux-fog-speed-slider" min="0" max="3" step="0.05" value="1">
+                    </div>
+                    <div class="lux-transparency-control">
+                        <div class="lux-transparency-header">
+                            <span class="lux-transparency-label"><i class="fas fa-search-plus"></i> Zoom</span>
+                            <span class="lux-transparency-value" id="lux-fog-zoom-value">1.00</span>
+                        </div>
+                        <input type="range" class="lux-range" id="lux-fog-zoom-slider" min="0.2" max="4" step="0.05" value="1">
+                    </div>
+                </section>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(backdrop);
+    backdrop.addEventListener('click', (event) => {
+        if (event.target === backdrop) closeBgModeParamsPopup();
+    });
+    document.getElementById('lux-bg-params-close')?.addEventListener('click', () => closeBgModeParamsPopup());
+    return backdrop;
+}
+
+function openBgModeParamsPopup(modeKey) {
+    ensureBgModeParamsPopup();
+    const backdrop = document.getElementById('lux-bg-mode-params-backdrop');
+    if (!backdrop || !modeKey) return;
+    const meta = Array.isArray(BACKGROUND_MODES) ? BACKGROUND_MODES.find((entry) => entry.key === modeKey) : null;
+    const title = document.getElementById('lux-bg-params-title');
+    const sub = document.getElementById('lux-bg-params-sub');
+    if (meta && title) title.textContent = `${meta.label} Parameters`;
+    if (meta && sub) sub.textContent = meta.copy;
+    mountBgModePanelInPopup(modeKey);
+    activeBgParamsMode = modeKey;
+    backdrop.classList.add('is-open');
+    if (modeKey === 'fog') {
+        syncActiveFogProfileBankFromTheme();
+        bindFogProfileControls();
+        bindFogProfileListDrag();
+        bindFogStudioControls();
+        syncFogProfileBankUi();
+        syncFogStudioInputs();
+    } else {
+        const motionSlider = document.getElementById('lux-particle-motion-slider');
+        const motionValue = document.getElementById('lux-particle-motion-value');
+        if (motionSlider && typeof getParticleMotion === 'function') {
+            motionSlider.value = String(getParticleMotion());
+            if (motionValue) motionValue.textContent = motionSlider.value;
+        }
+        const densitySlider = document.getElementById('lux-particle-density-slider');
+        const densityValue = document.getElementById('lux-particle-density-value');
+        if (densitySlider && typeof getParticleDensity === 'function') {
+            densitySlider.value = String(getParticleDensity());
+            if (densityValue) densityValue.textContent = densitySlider.value;
+        }
+        document.querySelectorAll('[data-particle-quality]').forEach((button) => {
+            button.classList.toggle('is-active', typeof getParticleQuality === 'function' && button.dataset.particleQuality === getParticleQuality());
+        });
+    }
+    focusFirstInteractive(backdrop, '#lux-bg-params-close');
+}
+
+function closeBgModeParamsPopup() {
+    if (typeof isFogProfileEditing === 'function' && isFogProfileEditing()) {
+        if (isFogProfileEditDirty()) {
+            if (confirm('Save profile changes before closing?')) {
+                commitFogProfileEdit();
+                if (isFogProfileEditing()) return;
+            } else if (!confirm('Discard unsaved profile changes?')) {
+                return;
+            } else {
+                clearFogProfileEditState({ restoreSnapshot: true });
+            }
+        } else {
+            syncFogProfileEditUi();
+        }
+        const nameInput = document.getElementById('lux-fog-profile-name-input');
+        if (nameInput) nameInput.value = '';
+    }
+    const backdrop = document.getElementById('lux-bg-mode-params-backdrop');
+    if (!backdrop) return;
+    backdrop.classList.remove('is-open');
+    activeBgParamsMode = null;
+    stashBgModePanels();
+}
+
+function syncStudioModePanels() {
+    const mode = typeof getBackgroundMode === 'function' ? getBackgroundMode() : 'peak';
+    document.querySelectorAll('[data-bg-mode]').forEach((button) => {
+        button.classList.toggle('is-active', button.dataset.bgMode === mode);
+    });
+}
+
 function syncStudioUi() {
     const studio = document.getElementById('lux-studio-backdrop');
     if (!studio) return;
     const showHomeLayoutControls = getActivePageId() === 'home';
+    syncStudioModePanels();
     const currentKey = resolvePaletteKey();
     const customPalette = resolveCustomPalette();
     const palette = STUDIO_PALETTES.find((item) => item.key === currentKey);
@@ -1224,6 +1311,18 @@ function syncStudioUi() {
         densitySlider.value = String(getParticleDensity());
         if (densityValue) densityValue.textContent = densitySlider.value;
     }
+    const amountSlider = document.getElementById('lux-particle-amount-slider');
+    const amountValue = document.getElementById('lux-particle-amount-value');
+    if (amountSlider && typeof getParticleAmount === 'function') {
+        amountSlider.value = String(getParticleAmount());
+        if (amountValue) amountValue.textContent = amountSlider.value;
+    }
+    const sharpnessSlider = document.getElementById('lux-particle-sharpness-slider');
+    const sharpnessValue = document.getElementById('lux-particle-sharpness-value');
+    if (sharpnessSlider && typeof getParticleSharpness === 'function') {
+        sharpnessSlider.value = String(getParticleSharpness());
+        if (sharpnessValue) sharpnessValue.textContent = sharpnessSlider.value;
+    }
     studio.querySelectorAll('[data-particle-quality]').forEach((button) => {
         button.classList.toggle('is-active', typeof getParticleQuality === 'function' && button.dataset.particleQuality === getParticleQuality());
     });
@@ -1235,6 +1334,7 @@ function syncStudioUi() {
     document.getElementById('lux-mode-light')?.classList.toggle('is-active', getThemeMode() === 'light');
     document.getElementById('lux-bg-animation-on')?.classList.toggle('is-active', typeof areBackgroundAnimationsEnabled === 'function' ? areBackgroundAnimationsEnabled() : true);
     document.getElementById('lux-bg-animation-off')?.classList.toggle('is-active', typeof areBackgroundAnimationsEnabled === 'function' ? !areBackgroundAnimationsEnabled() : false);
+    syncFogStudioInputs();
 }
 
 function toggleStudio() {
@@ -1256,6 +1356,7 @@ function toggleStudio() {
 }
 
 function closeStudio(options = {}) {
+    closeBgModeParamsPopup();
     document.getElementById('lux-studio-backdrop')?.classList.remove('is-open');
     document.getElementById('lux-palette-btn')?.classList.remove('is-active');
     document.body.classList.remove('lux-studio-open');
@@ -1273,267 +1374,6 @@ window.openStudio = function () {
     updateStudioPreview();
 };
 window.closeStudio = closeStudio;
-
-function populateFacultySwitcher(options = {}) {
-    const legacy = document.getElementById('faculty-select');
-    const button = document.getElementById('lux-faculty-picker-btn');
-    const value = document.getElementById('lux-faculty-picker-value');
-    let panel = document.getElementById('lux-faculty-picker-panel');
-    if (!button || !value) return;
-    const defaultFaculties = [
-        { value: 'ECON', label: 'Management' },
-        { value: 'CS', label: 'Computer Science' },
-        { value: 'LAW', label: 'Law' },
-        { value: 'MED', label: 'Medicine' },
-        { value: 'ARTS', label: 'Arts & Humanities' }
-    ];
-    let optionsList = [];
-    if (legacy && legacy.options && legacy.options.length > 0) {
-        optionsList = Array.from(legacy.options).map((opt) => ({
-            value: opt.value,
-            label: typeof cleanupUiText === 'function' ? cleanupUiText(opt.textContent || opt.value, opt.value) : (opt.textContent || opt.value)
-        }));
-    } else {
-        optionsList = defaultFaculties;
-    }
-    const currentValue = getCurrentFacultyCode();
-    const selected = optionsList.find((opt) => opt.value === currentValue) || optionsList[0];
-    value.textContent = selected?.label || getFacultyName(currentValue);
-    if (!panel && !options.ensurePanel) return;
-    panel = panel || ensureShellPickerPanel('lux-faculty-picker-panel');
-    if (!panel) return;
-    const optionSignature = optionsList.map((opt) => `${opt.value}:${opt.label}`).join('|');
-    const signature = `${currentValue}|${optionSignature}`;
-    if (panel.dataset.renderSignature !== signature) {
-        panel.innerHTML = optionsList.map((opt) => `
-            <button class="lux-picker-option${opt.value === currentValue ? ' is-active' : ''}" type="button" data-faculty-option="${escapeHtml(opt.value)}">
-                <strong>${escapeHtml(opt.label)}</strong>
-                <span>${escapeHtml(opt.value)}</span>
-            </button>
-        `).join('');
-        panel.dataset.renderSignature = signature;
-    }
-    if (panel.dataset.bound !== '1') {
-        panel.addEventListener('click', (event) => {
-            const optionButton = event.target.closest('[data-faculty-option]');
-            if (!optionButton || !panel.contains(optionButton)) return;
-            closePickerPanels();
-            if (typeof switchFacultyTheme === 'function') {
-                switchFacultyTheme(optionButton.dataset.facultyOption, { refreshDependentViews: true });
-            }
-        });
-        panel.dataset.bound = '1';
-    }
-}
-
-function roleSwitcherHasPersona(roleKey, preferredFaculty = '') {
-    if (roleKey === 'admin') return true;
-    const faculty = preferredFaculty
-        || (typeof getCurrentFacultyCode === 'function' ? getCurrentFacultyCode() : '')
-        || (typeof localStorage !== 'undefined' ? localStorage.getItem('currentFaculty') : '')
-        || 'ECON';
-    if (typeof hasImpersonationPersonaForRole === 'function') {
-        return hasImpersonationPersonaForRole(roleKey, faculty);
-    }
-    if (typeof getPreferredImpersonationUserForRole !== 'function') return true;
-    return Boolean(getPreferredImpersonationUserForRole(roleKey, faculty)?.id);
-}
-
-function populateRoleSwitcher(options = {}) {
-    const button = document.getElementById('lux-role-picker-btn');
-    const value = document.getElementById('lux-role-picker-value');
-    let panel = document.getElementById('lux-role-picker-panel');
-    if (!button || !value) return;
-    const roles = ['student', 'professor', 'ta', 'admin', 'student_service'];
-    const activeRole = getShellRole();
-    const roleLabels = getRoleLabels();
-    const authenticatedAdmin = (
-        (typeof currentUser !== 'undefined' && String(currentUser?.role || '').trim().toLowerCase() === 'admin')
-        || (typeof getCurrentUser === 'function' && String(getCurrentUser()?.role || '').trim().toLowerCase() === 'admin')
-    );
-    const preferredFaculty = typeof getCurrentFacultyCode === 'function'
-        ? getCurrentFacultyCode()
-        : (typeof localStorage !== 'undefined' ? localStorage.getItem('currentFaculty') : '');
-    const staffUrl = typeof resolvePortalRouteUrl === 'function'
-        ? resolvePortalRouteUrl('staff', 'admin')
-        : 'staff.html';
-    value.textContent = resolveRolePickerLabel(activeRole);
-    if (!panel && !options.ensurePanel) return;
-    panel = panel || ensureShellPickerPanel('lux-role-picker-panel');
-    if (!panel) return;
-    const personaSignature = authenticatedAdmin
-        ? roles.map((roleKey) => `${roleKey}:${roleSwitcherHasPersona(roleKey, preferredFaculty) ? '1' : '0'}`).join('|')
-        : '';
-    const signature = `${activeRole}|${personaSignature}`;
-    if (panel.dataset.renderSignature !== signature) {
-        panel.innerHTML = roles.map((roleKey) => {
-            const roleDescription = roleKey === 'student_service'
-                ? 'Student support operations'
-                : roleKey === 'admin'
-                    ? 'Full administrative controls'
-                    : roleKey === 'ta'
-                        ? 'Teaching support workspace'
-                        : roleKey === 'professor'
-                            ? 'Faculty delivery workspace'
-                            : 'Student academic workspace';
-            const missingPersona = authenticatedAdmin && roleKey !== 'admin' && !roleSwitcherHasPersona(roleKey, preferredFaculty);
-            const personaHint = missingPersona
-                ? ` No account — create in Staff (${staffUrl}).`
-                : '';
-            return `
-            <button class="lux-picker-option${roleKey === activeRole ? ' is-active' : ''}" type="button" data-role-option="${escapeHtml(roleKey)}">
-                <strong>${escapeHtml(resolveRolePickerLabel(roleKey))}</strong>
-                <span>${escapeHtml(`${roleDescription}${personaHint}`)}</span>
-            </button>
-        `;
-        }).join('');
-        panel.dataset.renderSignature = signature;
-    }
-    if (panel.dataset.bound !== '1') {
-        panel.addEventListener('click', (event) => {
-            const optionButton = event.target.closest('[data-role-option]');
-            if (!optionButton || !panel.contains(optionButton)) return;
-            closePickerPanels();
-            if (typeof switchRole === 'function') switchRole(optionButton.dataset.roleOption);
-        });
-        panel.dataset.bound = '1';
-    }
-}
-
-function syncViewAsBanner() {
-    const adminAccount = typeof currentUser !== 'undefined' ? currentUser : null;
-    const effectiveRole = typeof getEffectiveUserRole === 'function'
-        ? getEffectiveUserRole()
-        : (typeof getEffectiveRole === 'function' ? getEffectiveRole() : '');
-    const impersonating = adminAccount?.role === USER_ROLES.ADMIN
-        && effectiveRole
-        && effectiveRole !== USER_ROLES.ADMIN;
-    let banner = document.getElementById('lux-view-as-banner');
-    if (!impersonating) {
-        if (banner) banner.remove();
-        document.body.classList.remove('lux-view-as-active');
-        return;
-    }
-    const persona = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
-    const personaName = persona?.nameEn || persona?.name || persona?.displayName || persona?.id || 'Test user';
-    const roleLabels = getRoleLabels();
-    const roleLabel = roleLabels[effectiveRole] || effectiveRole;
-    if (!banner) {
-        banner = document.createElement('div');
-        banner.id = 'lux-view-as-banner';
-        banner.className = 'lux-view-as-banner';
-        banner.setAttribute('role', 'status');
-        document.body.prepend(banner);
-    }
-    document.body.classList.add('lux-view-as-active');
-    banner.replaceChildren();
-    const copy = document.createElement('span');
-    copy.className = 'lux-view-as-banner__copy';
-    copy.append('Viewing as ');
-    const nameNode = document.createElement('strong');
-    nameNode.textContent = personaName;
-    copy.append(nameNode, ` (${roleLabel}). Shared portal data; actions apply to this account.`);
-    const exitButton = document.createElement('button');
-    exitButton.type = 'button';
-    exitButton.className = 'lux-view-as-banner__exit';
-    exitButton.id = 'lux-view-as-exit';
-    exitButton.textContent = 'Exit view-as';
-    banner.append(copy, exitButton);
-    if (!exitButton.dataset.bound) {
-        exitButton.dataset.bound = '1';
-        exitButton.addEventListener('click', async (event) => {
-            event.preventDefault();
-            if (typeof fastRedirectRoleSwitch === 'function') {
-                await fastRedirectRoleSwitch(USER_ROLES.ADMIN);
-                return;
-            }
-            if (typeof switchRole === 'function') switchRole(USER_ROLES.ADMIN);
-        });
-    }
-}
-
-function syncTopbar() {
-    syncViewAsBanner();
-    const currentUser = typeof getCurrentUserSafe === 'function' ? getCurrentUserSafe() : null;
-    const notifications = typeof getNotificationSnapshot === 'function' ? getNotificationSnapshot(currentUser) : { unread: 0 };
-    const messenger = typeof getMessengerSnapshot === 'function' ? getMessengerSnapshot(currentUser) : { unread: 0 };
-    const activePageId = typeof getActivePageId === 'function' ? getActivePageId() : 'home';
-    const onHome = activePageId === 'home';
-    const shellRole = typeof getShellRole === 'function' ? getShellRole(activePageId) : 'student';
-    const roleLabels = getRoleLabels();
-    const effectiveRole = typeof getEffectiveRole === 'function' ? getEffectiveRole() : 'student';
-    const currentFacultyCode = typeof getCurrentFacultyCode === 'function' ? getCurrentFacultyCode() : '';
-    const resolvedUserName = typeof getUserName === 'function' ? getUserName() : 'Portal User';
-    const homeEditorState = typeof HOME_EDITOR_STATE === 'object' && HOME_EDITOR_STATE
-        ? HOME_EDITOR_STATE
-        : { editing: false, role: '' };
-    const footerAvatar = shellRole === 'student'
-        ? 'KI'
-        : (typeof getUserInitials === 'function' ? getUserInitials() : 'KI');
-    const footerName = shellRole === 'student' ? 'Portal User' : resolvedUserName;
-    const facultyName = typeof getFacultyName === 'function' ? getFacultyName(currentFacultyCode) : 'University Portal';
-    const currentPageLabel = typeof pageLabel === 'function' ? pageLabel(activePageId) : 'Dashboard';
-    const footerRole = shellRole === 'student' ? 'University Portal' : `${roleLabels[effectiveRole] || 'Portal'} - ${facultyName}`;
-    const chipRole = shellRole === 'student' ? 'Student Portal / University Portal' : `${currentPageLabel} / ${roleLabels[effectiveRole] || 'Portal'}`;
-    const setText = (id, value) => {
-        const node = document.getElementById(id);
-        if (!node) return;
-        node.textContent = value;
-    };
-    setText('lux-breadcrumb-page', currentPageLabel);
-    setText('lux-avatar', footerAvatar);
-    setText('lux-chip-avatar', footerAvatar);
-    setText('lux-user-name', footerName);
-    setText('lux-chip-name', shellRole === 'student' ? 'Portal' : (resolvedUserName.split(/\s+/)[0] || 'Portal'));
-    setText('lux-user-role', footerRole);
-    setText('lux-chip-role', chipRole);
-    const editButton = document.getElementById('lux-dashboard-edit-btn');
-    const editLabel = document.getElementById('lux-dashboard-edit-label');
-    const bell = document.getElementById('lux-notification-btn');
-    const bellBadge = document.getElementById('lux-notification-badge');
-    const chat = document.getElementById('lux-chat-btn');
-    const chatBadge = document.getElementById('lux-chat-badge');
-    if (editButton && editLabel) {
-        const isEditing = homeEditorState.editing && homeEditorState.role === effectiveRole;
-        editButton.classList.toggle('is-active', isEditing);
-        editButton.hidden = !onHome;
-        editLabel.textContent = isEditing ? 'Exit Edit' : 'Customize';
-        editButton.title = isHomeEditorAvailable()
-            ? (onHome ? (isEditing ? 'Exit dashboard editing' : 'Customize the home dashboard') : 'Open home and customize the dashboard')
-            : 'Dashboard editing is available on larger screens.';
-    }
-    if (bell) {
-        bell.classList.toggle('has-dot', notifications.unread > 0);
-        bell.title = notifications.unread > 0 ? `${notifications.unread} unread notifications` : 'Notifications';
-    }
-    if (bellBadge) {
-        bellBadge.textContent = notifications.unread > 99 ? '99+' : `${notifications.unread}`;
-        bellBadge.classList.toggle('is-zero', notifications.unread < 1);
-    }
-    if (chat) {
-        chat.classList.toggle('has-dot', messenger.unread > 0);
-        chat.title = messenger.unread > 0 ? `${messenger.unread} unread chats` : 'Messenger';
-    }
-    if (chatBadge) {
-        chatBadge.textContent = messenger.unread > 99 ? '99+' : `${messenger.unread}`;
-        chatBadge.classList.toggle('is-zero', messenger.unread < 1);
-    }
-    if (document.querySelector('#lux-notification-panel.is-open, #lux-chat-panel.is-open')) {
-        renderTopbarUtilityPanels(currentUser);
-    }
-    if (document.body?.classList?.contains('lux-route-lms') && typeof window.ensureLmsRouteVisualState === 'function') {
-        window.ensureLmsRouteVisualState();
-    }
-    if (
-        (document.body?.classList?.contains('lux-route-admin-library')
-            || document.body?.classList?.contains('lux-entry-admin-library')
-            || document.getElementById('page-library')?.querySelector('.alib-workspace'))
-        && typeof window.ensureAdminLibraryRouteVisualState === 'function'
-    ) {
-        window.ensureAdminLibraryRouteVisualState();
-    }
-    populateRoleSwitcher();
-}
 
 function clearPortalCacheAndReload() {
     const confirmed = window.confirm('Clear cached site data and reload the page?');
@@ -1668,22 +1508,27 @@ function bindUserMenu() {
     chip.dataset.bound = '1';
 }
 
+function invokeSidebarToggle() {
+    closeStudio();
+    closeUtilityPanels();
+    closePickerPanels();
+    closeUserMenu();
+    const toggleSidebarFn =
+        typeof window.toggleSidebar === 'function'
+            ? window.toggleSidebar
+            : getLuxurySharedConfig().toggleSidebar;
+    if (typeof toggleSidebarFn === 'function') toggleSidebarFn();
+}
+
+function bindSidebarToggleButton(button) {
+    if (!button || button.dataset.bound) return;
+    button.addEventListener('click', invokeSidebarToggle);
+    button.dataset.bound = '1';
+}
+
 function bindTopbarControls() {
-    const sidebarToggle = document.getElementById('lux-sidebar-toggle');
-    if (sidebarToggle && !sidebarToggle.dataset.bound) {
-        sidebarToggle.addEventListener('click', () => {
-            closeStudio();
-            closeUtilityPanels();
-            closePickerPanels();
-            closeUserMenu();
-            const toggleSidebarFn =
-                typeof window.toggleSidebar === 'function'
-                    ? window.toggleSidebar
-                    : getLuxurySharedConfig().toggleSidebar;
-            if (typeof toggleSidebarFn === 'function') toggleSidebarFn();
-        });
-        sidebarToggle.dataset.bound = '1';
-    }
+    bindSidebarToggleButton(document.getElementById('lux-sidebar-toggle'));
+    bindSidebarToggleButton(document.getElementById('lux-sidebar-close'));
 
     const paletteButton = document.getElementById('lux-palette-btn');
     if (paletteButton && !paletteButton.dataset.bound) {
@@ -1714,7 +1559,9 @@ function bindTopbarControls() {
             closeStudio();
             closeUtilityPanels();
             closeUserMenu();
-            populateRoleSwitcher({ ensurePanel: true });
+            if (typeof window.populateRoleSwitcher === 'function') {
+                window.populateRoleSwitcher({ ensurePanel: true });
+            }
             togglePickerPanel('lux-role-picker-panel', 'lux-role-picker-btn');
         });
         roleButton.dataset.bound = '1';
@@ -1732,7 +1579,12 @@ function bindTopbarControls() {
                 return;
             }
             if (typeof openHomeEditor === 'function') {
-                openHomeEditor(getEffectiveRole(), buildHomeModel(getEffectiveRole()));
+                const homeModel = resolveHomeModelForRole(getEffectiveRole());
+                if (!homeModel) {
+                    if (typeof showToast === 'function') showToast('Dashboard editing opens from the home page.');
+                    return;
+                }
+                openHomeEditor(getEffectiveRole(), homeModel);
             }
         });
         editorButton.dataset.bound = '1';
@@ -1765,7 +1617,7 @@ function bindTopbarControls() {
     if (!document.body.dataset.luxTopbarCloseBound) {
         document.addEventListener('click', () => {
             closeUtilityPanels();
-            closePickerPanels();
+            closePickerPanels({ immediate: true });
             closeUserMenu();
         });
         document.body.dataset.luxTopbarCloseBound = '1';
@@ -1810,17 +1662,51 @@ function bindTopbarControls() {
     input.dataset.bound = '1';
 }
 
+function isDesktopSidebarOverlayViewport() {
+    return typeof window !== 'undefined' && window.innerWidth >= 1181;
+}
+
+function isSidebarOverlayRoute() {
+    return Boolean(document.body?.classList.contains('lux-unified-shell'));
+}
+
+function ensureDesktopSidebarOverlayDefaults() {
+    if (!isDesktopSidebarOverlayViewport()) return;
+    if (!isSidebarOverlayRoute()) return;
+    if (typeof window.applySidebarState === 'function') {
+        window.applySidebarState(true, { persist: false });
+        return;
+    }
+    document.body.classList.add('lux-sidebar-collapsed');
+    document.body.dataset.luxSidebar = 'collapsed';
+}
+
 function initializeLuxuryShellChromeBindings(attemptsRemaining = 24) {
     if (typeof document === 'undefined') return;
     const hasShellChrome = Boolean(document.getElementById('lux-topbar') || document.getElementById('lux-user-chip'));
     if (hasShellChrome) {
+        if (typeof pinStudentServiceWorkspaceRole === 'function') {
+            pinStudentServiceWorkspaceRole({ refreshChrome: false });
+        } else if (typeof applyPortalViewRoleFromLocation === 'function') {
+            applyPortalViewRoleFromLocation({ refreshChrome: false });
+        }
         bindUserMenu();
         bindTopbarControls();
+        bindLuxPickerDismissHandlers();
         if (document.getElementById('lux-shell')) {
             renderNav();
         }
         seedRolePickerLabel();
-        populateRoleSwitcher();
+        if (typeof window.populateRoleSwitcher === 'function') {
+            window.populateRoleSwitcher();
+        }
+        if (typeof window.syncChromeBottom === 'function') {
+            window.syncChromeBottom();
+        }
+        if (typeof window.ensureChromeBottomResizeListener === 'function') {
+            window.ensureChromeBottomResizeListener();
+        }
+        ensureDesktopSidebarOverlayDefaults();
         return;
     }
     if (attemptsRemaining <= 0) return;
@@ -1831,7 +1717,11 @@ function initializeLuxuryShellChromeBindings(attemptsRemaining = 24) {
 window.__KIU_LUXURY_SHELL_CHROME_LOADED = true;
 
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => initializeLuxuryShellChromeBindings(), { once: true });
+    document.addEventListener('DOMContentLoaded', () => {
+        bindLuxPickerDismissHandlers();
+        initializeLuxuryShellChromeBindings();
+    }, { once: true });
 } else {
+    bindLuxPickerDismissHandlers();
     initializeLuxuryShellChromeBindings();
 }

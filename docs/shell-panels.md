@@ -1,6 +1,7 @@
 # Shell / panels contract
 
-> **2026-07 hard-clean:** Live polished UI = **dashboard only**. LMS/timetable route skins archived under `assets/css/_archive/2026-07-strip-non-dashboard/`. Non-dashboard pages use shared kernel + `lux-page-bare`. See `docs/visual-ssot.md`.
+> **Live CSS Day-1:** start at [`docs/css-handoff.md`](css-handoff.md) and [`docs/visual-ssot.md`](visual-ssot.md).  
+> **2026-07 hard-clean:** Live polished UI = **dashboard only**. LMS/timetable route skins were **purged** (do not reintroduce). Non-dashboard pages use shared kernel + `lux-page-bare-lite`. See [`active-vs-archive.md`](active-vs-archive.md).
 
 
 **Aim:** Every portal page — including **LMS** — shares the **same panel glass**. Redesigns should be **few known edit points**, not a hunt across 20 CSS files.
@@ -13,7 +14,7 @@
 | **Page background** (shell color behind glass) | **Mostly** (palette map in same file) | `--lux-shell-background` / `body.palette-*` |
 | **Home dashboard widgets** | **Yes** (soft-chrome / focus-panel) | `--lux-soft-chrome-*` / `--lux-focus-*` (home may still set `--home-fade-*` aliases) |
 | **Accent / faculty colors** | Related knobs | `--lux-accent-rgb`, palette tokens |
-| **Layout** (widths, grids, spacing) | **No** — stays per-route CSS | `*-route.css` layout only |
+| **Layout** (widths, grids, spacing) | **No** — stays in shared shell / layout-portal / page JS | not restored `*-route.css` glass |
 | **One-off button shadows** | **No** until elev migration | per-component; `check:panels` blocks new snowflakes |
 | **Typography sizes / copy** | **No** | content + type rules |
 
@@ -23,12 +24,12 @@ So: **shell/panel glass across portal = simple.** “The whole product UI with o
 
 | Role | Source |
 |------|--------|
-| Visual + architecture reference | `timetable.html` + `assets/css/timetable-route.css` |
+| Visual + architecture reference | `timetable.html` + shared stack (`lux-tokens` / `lux-shell` / `layout-schedule-board.css`) — **not** deleted `timetable-route.css` |
 | Look single source of truth | `assets/css/lux-tokens.css` → `--lux-panel-*`, `--lux-elev-*` |
 | Shared primitives | `.lux-panel-pro`, `.lux-focus-panel`, `.lux-soft-chrome` |
 
 **In scope:** all non-auth portal routes (timetable, LMS, social, staff, news, admin-*, gradebook, …).  
-**Exception:** home dashboard (`--home-fade-*`). Auth shells later.
+**Exception:** home dashboard atmosphere (`lux-fouc-ht` + `index-home-*`). Auth shells later.
 
 
 ## Token map (change look once)
@@ -195,20 +196,14 @@ Gate: `npm run check:panels` (aliases + snowflake ratchet).
 3. Run `npm run check:panels` (baseline only goes down).
 4. Spot-check dark + light (and HT if you changed paint).
 
-## Bare-shell era (2026-07-17)
+## Bare vs full paint (live — see also `visual-ssot.md`)
 
-**Full paint kept:** timetable (`timetable-route.css`), LMS (`lms-*.css`), social (`social-rebuild.css` + lazy social modules).
+**Do not** use retired paths: `lux-page-bare.css`, `lux-shell-nav`, `index-luxury.css`, per-route glass skins.
 
-**All other portal pages:** shared stack + `assets/css/lux-page-bare.css` only. Dedicated `*-route.css` / `admin-tools-luxury.css` / `staff-command-center.css` / `exam-studio.css` **deleted**.
+| Surface | Live stack |
+|---------|------------|
+| **Bare portals** | shared tokens/focus/controls/shell + `lux-page-bare-lite.css` + `mobile-shell-core.css` (+ `lux-modals.css` where hubs open modals) |
+| **Dashboard** (`index.html`) | shared + `lux-fouc-ht` + `index-home-*` + conditional `mobile-shell.css` |
+| **Social / LMS / timetable** | same shared bare stack; product UI is JS-driven, not restored mega route CSS |
 
-Redesign a bare page later by dual-writing `lux-soft-chrome` / `lux-page-shell` / panel tokens — not by restoring multi-kLOC route glass files.
-## Real bare vs full paint (2026-07-17)
-
-**Full paint** (`lux-full-paint`): `index.html` (dashboard + `index-home-dashboard.css`), timetable, LMS, social — load `index-luxury.css` + surfaces + product CSS.
-
-**Bare** (`lux-page-bare`): all other portal pages — **do not** load `index-luxury.css` / `lux-surfaces.css`. Flatten via `lux-page-bare.css` (no glass). That is why route-only deletes still looked “designed”: shared luxury was still linked.
-## Social bare era (2026-07-17)
-
-`social.html` is **bare** like registration/admin: shared stack + `lux-shell-nav` + `lux-page-bare` only.  
-Deleted paint: `social-rebuild`, `social-projects-lms`, surveys/photo, material, portfolio-editor (~34k LOC).  
-Redesign later using LMS/timetable panel tokens + dual-write classes — not by restoring megafiles.
+Redesign later via `lux-soft-chrome` / panel tokens in `lux-tokens.css` — not by restoring multi-kLOC route glass files.

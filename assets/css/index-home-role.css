@@ -1,0 +1,243 @@
+/* READABILITY: index-only admin ops chrome + home CTAs (third eager home sheet).
+ * SECTIONS: admin-ops | buttons | alerts | soft-chrome-surfaces | shortcuts
+ */
+/* --- admin-ops --- */
+#page-home #lux-home-shell {
+  .lux-admin-ops-grid {
+    display: grid;
+    gap: 16px;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  }
+  .lux-admin-op-card {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 0;
+    padding: 14px 16px;
+  }
+  .lux-admin-ops-panel.lux-soft-chrome {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    padding: 24px 26px;
+    min-height: 0;
+    height: auto;
+    overflow: visible;
+  }
+  .lux-admin-ops-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    padding: 0;
+  }
+  .lux-admin-ops-head .lux-card-title { font-size: 18px; font-weight: 800; letter-spacing: -0.01em; }
+  .lux-admin-ops-copy {
+    margin-top: 5px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--lux-text-muted);
+  }
+  .lux-admin-op-card.lux-soft-chrome { padding: 18px 20px; gap: 12px; }
+}
+/* --- buttons --- */
+#page-home #lux-home-shell {
+  :is(.lux-primary-btn, .lux-secondary-btn, .lux-ghost-btn, .lux-admin-op-btn) {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: var(--lux-primary-btn-min-height, 46px);
+    padding: 0 26px;
+    border-radius: var(--lux-btn-pill-radius, 999px);
+    border-style: solid;
+    border-color: transparent;
+    border-width: var(--lux-btn-frame-width, 2.5px);
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 0.03em;
+    line-height: 1.2;
+    color: var(--lux-btn-label);
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.35);
+    cursor: pointer;
+    overflow: hidden;
+    isolation: isolate;
+    background: var(--lux-btn-well), var(--lux-btn-frame-metal);
+    background-origin: border-box;
+    background-clip: padding-box, border-box;
+    box-shadow: var(--lux-btn-frame-shadow);
+    -webkit-backdrop-filter: var(--lux-btn-glass-blur, none);
+    backdrop-filter: var(--lux-btn-glass-blur, none);
+    transition: transform 0.38s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.38s cubic-bezier(0.22, 1, 0.36, 1), filter 0.38s ease;
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      pointer-events: none;
+      z-index: 1;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.04) 28%, transparent 48%);
+      opacity: 1;
+      mix-blend-mode: normal;
+    }
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      pointer-events: none;
+      z-index: 2;
+      background: var(--lux-btn-sheen);
+      transform: translateX(-130%) skewX(-14deg);
+      opacity: 0;
+      transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.2s ease;
+      display: block;
+    }
+    &:is(:hover, :focus-visible)::after {
+      transform: translateX(130%) skewX(-14deg);
+      opacity: 1;
+    }
+    > * { position: relative; z-index: 3; }
+    &:is(:hover, :focus-visible) {
+      transform: translateY(-2px);
+      filter: brightness(1.05);
+      color: var(--lux-btn-label);
+      box-shadow: var(--lux-btn-frame-shadow-hover);
+      background: var(--lux-btn-well), var(--lux-btn-frame-metal);
+      background-origin: border-box;
+      background-clip: padding-box, border-box;
+    }
+    &:active {
+      transform: translateY(0) scale(0.985);
+      filter: brightness(0.97);
+    }
+  }
+  .lux-home-toolbar :is(.lux-primary-btn, .lux-secondary-btn, .lux-ghost-btn) {
+    min-height: 42px;
+    padding: 0 18px;
+  }
+  .lux-alert .lux-primary-btn { flex: 0 0 auto; margin-left: auto; }
+}
+html[data-lux-transparency="0"] #page-home #lux-home-shell :is(.lux-primary-btn, .lux-secondary-btn, .lux-ghost-btn, .lux-admin-op-btn) {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  #page-home #lux-home-shell :is(.lux-primary-btn, .lux-secondary-btn, .lux-ghost-btn, .lux-admin-op-btn) {
+    transition: box-shadow .15s ease, filter .15s ease;
+    &::after { display: none; }
+    &:is(:hover, :focus-visible, :active) { transform: none; filter: none; }
+  }
+}
+@media (max-width: 560px) {
+  #page-home #lux-home-shell {
+    .lux-alert.lux-soft-chrome { flex-wrap: wrap; }
+    .lux-alert .lux-primary-btn { width: 100%; margin-left: 0; }
+  }
+}
+/* --- soft-chrome-surfaces --- */
+body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell :is(.lux-home-toolbar, .lux-soft-chrome, .lux-focus-panel, .lux-hero-side, .lux-home-grid > .lux-panel, .lux-home-grid > .lux-card, .lux-home-grid > .lux-hero, .lux-grid-widget > .lux-grid-widget-body > .lux-dashboard-section, .lux-grid-widget > .lux-grid-widget-body > .lux-panel, .lux-grid-widget > .lux-grid-widget-body > .lux-card, .lux-grid-widget > .lux-grid-widget-body > .lux-hero) {
+  background: var(--lux-focus-fill, var(--lux-soft-chrome-surface, var(--lux-panel-surface)));
+  border-color: var(--lux-focus-border, var(--lux-soft-chrome-border, var(--lux-panel-border)));
+  box-shadow: var(--lux-focus-shadow, var(--lux-soft-chrome-shadow, var(--lux-panel-shadow)));
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell .lux-dashboard-canvas .lux-grid-widget {
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+/* --- shortcuts --- */
+#page-home .lux-builder-copy {
+  margin-top: 4px;
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--lux-text-muted);
+}
+#page-home .lux-shortcut-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+#page-home .lux-shortcut-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  background: rgba(var(--lux-accent-rgb), 0.18);
+  color: var(--lux-text);
+  box-shadow: 0 16px 24px rgba(var(--lux-bg-glow-rgb), 0.14);
+}
+#page-home .lux-shortcut-body { margin-top: 18px; }
+#page-home .lux-shortcut-body strong {
+  display: block;
+  font-size: 18px;
+  line-height: 1.2;
+}
+#page-home .lux-shortcut-body p {
+  margin: 10px 0 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--lux-text-muted);
+}
+#page-home .lux-shortcut-foot {
+  margin-top: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+#page-home .lux-shortcut-status {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--lux-text-soft);
+}
+/* --- alerts recovery --- */
+#page-home #lux-home-shell {
+  .lux-alert {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 18px;
+    border-radius: var(--lux-radius, 18px);
+    color: var(--lux-text);
+  }
+  .lux-alert:is(.is-green, .is-royal, .is-support, .is-warm) {
+    background: var(--lux-soft-chrome-surface, var(--lux-panel-surface-soft));
+    background-image: none;
+    border-color: var(--lux-soft-chrome-border, var(--lux-panel-border-soft));
+    box-shadow: var(--lux-soft-chrome-shadow, var(--lux-panel-shadow-soft)), inset 3px 0 0 var(--_rail);
+  }
+  .lux-alert.is-green { --_rail: color-mix(in srgb, var(--lux-green) 70%, transparent); --_icon: var(--lux-green); --_icon-mix: 35%; }
+  .lux-alert.is-warm { --_rail: color-mix(in srgb, var(--lux-accent) 65%, transparent); --_icon: var(--lux-accent); --_icon-mix: 35%; }
+  .lux-alert.is-royal { --_rail: color-mix(in srgb, var(--lux-accent) 60%, transparent); --_icon: var(--lux-accent-2, var(--lux-accent)); --_icon-mix: 35%; }
+  .lux-alert.is-support { --_rail: color-mix(in srgb, var(--lux-green) 55%, transparent); --_icon: var(--lux-green); --_icon-mix: 30%; }
+  .lux-alert-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 14px;
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+    background: color-mix(in srgb, var(--lux-soft-chrome-surface, transparent) 70%, transparent);
+    border: 1px solid var(--lux-soft-chrome-border, transparent);
+  }
+  .lux-alert:is(.is-green, .is-warm, .is-royal, .is-support) .lux-alert-icon {
+    color: var(--_icon);
+    border-color: color-mix(in srgb, var(--_icon) var(--_icon-mix), var(--lux-soft-chrome-border, transparent));
+    background: color-mix(in srgb, var(--_icon) 12%, transparent);
+  }
+  .lux-alert-copy { min-width: 0; flex: 1 1 auto; }
+  .lux-alert-copy strong { display: block; font-size: 14px; font-weight: 700; }
+  .lux-alert-copy span { display: block; margin-top: 4px; font-size: 12px; line-height: 1.45; color: var(--lux-text-muted); }
+}

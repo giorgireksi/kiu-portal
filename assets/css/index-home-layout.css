@@ -1,0 +1,258 @@
+/* READABILITY: index-only home shell/toolbar/canvas. Glass→lux-tokens soft-chrome — not here.
+ * SECTIONS: tokens | shell | toolbar | canvas | a11y-utils | atmosphere | scrollbar
+ */
+/* --- tokens --- */
+body.lux-route-home {
+  --home-bp-sm: 560px;
+  --home-bp-md: 900px;
+  --home-bp-lg: 1200px;
+}
+#page-home #lux-home-shell {
+  &, * { box-sizing: border-box; }
+  :where(h1, h2, h3, p) { margin: 0; }
+  .lux-kicker {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--lux-accent-2, var(--lux-accent));
+  }
+  .page-hero-title {
+    margin: 8px 0 0;
+    font-size: clamp(28px, 3vw, 40px);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+    color: var(--lux-text);
+  }
+  .page-hero-copy {
+    margin: 10px 0 0;
+    max-width: 56ch;
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--lux-text-muted);
+  }
+  .lux-pill-row, .lux-hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-top: 14px;
+  }
+  .lux-hero-stage {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.85fr);
+    gap: 18px;
+    align-items: stretch;
+  }
+  .lux-hero-main { min-width: 0; }
+  .lux-soft-chrome, .lux-focus-panel, .lux-hero-side {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+/* --- shell --- */
+#page-home.page-section {
+  max-width: none;
+  width: 100%;
+  margin: 0;
+}
+#page-home.page-section :is(#lux-home-shell, .lux-home-grid, .lux-home-grid--builder, .lux-home-workbench, .lux-dashboard-canvas.is-desktop) {
+  max-width: none;
+  width: 100%;
+}
+#page-home.page-section > #lux-home-shell {
+  margin-bottom: 24px;
+  display: grid;
+  gap: 18px;
+}
+#page-home.page-section > #lux-home-shell > .lux-home-grid--builder[data-editing="true"] {
+  min-width: 100%;
+  overflow: visible;
+}
+#page-home > :not(#lux-home-shell) { display: none; }
+#page-home .lux-home-grid { display: grid; gap: 18px; }
+/* --- toolbar --- */
+#page-home .lux-home-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+  padding: 4px 4px 2px;
+}
+#page-home .lux-home-toolbar strong {
+  display: block;
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 28px;
+  line-height: 1.02;
+  color: var(--lux-text);
+}
+#page-home .lux-home-toolbar p {
+  margin: 8px 0 0;
+  max-width: 720px;
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--lux-text-muted);
+}
+#page-home .lux-home-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+#page-home .lux-home-grid--builder { width: 100%; gap: 26px; }
+#page-home .lux-dashboard-canvas {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  grid-auto-rows: var(--lux-grid-row-height);
+  gap: 18px;
+  align-items: start;
+}
+#page-home .lux-dashboard-canvas.is-stacked { grid-template-columns: 1fr; grid-auto-rows: auto; }
+.lux-dashboard-canvas.is-desktop {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  grid-auto-rows: auto;
+  grid-auto-flow: row dense;
+  gap: 18px;
+  align-items: start;
+  height: auto;
+}
+body.lux-dashboard-gesture-active, body.lux-dashboard-gesture-active * { user-select: none !important; -webkit-user-select: none !important; }
+.lux-home-grid--builder[data-editing="true"] .lux-dashboard-canvas.is-desktop { width: 100%; min-height: calc(100vh - 210px); }
+@media (max-width: 900px) {
+  #page-home #lux-home-shell .lux-hero-stage { grid-template-columns: 1fr; }
+  #page-home .lux-home-toolbar-actions { width: 100%; }
+  #page-home .lux-home-toolbar-actions > * { flex: 1 1 auto; }
+}
+#page-home #lux-home-shell {
+  .lux-builder-card.lux-soft-chrome {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 16px 18px;
+    min-height: 0;
+    height: auto;
+    overflow: visible;
+  }
+  .lux-builder-card-foot { flex: 0 0 auto; }
+  .lux-builder-card .lux-card-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    padding: 0;
+  }
+  .lux-builder-card .lux-card-title { font-size: 15px; font-weight: 700; color: var(--lux-text); }
+  .lux-builder-card .lux-card-meta {
+    flex: 0 0 auto;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--lux-text-soft, var(--lux-text-muted));
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+  }
+  .lux-builder-card-foot {
+    margin-top: auto;
+    padding-top: 4px;
+    display: flex;
+    justify-content: flex-start;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+  }
+  .lux-pill.lux-soft-chrome {
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    line-height: 1.2;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  /* --- a11y-utils --- */
+}
+body.lux-route-home > header, body.lux-route-home > #prof-nav, body.lux-route-home > #admin-nav {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%) !important;
+  white-space: nowrap;
+  border: 0;
+}
+body.lux-route-home #faculty-select,
+body.lux-route-home #role-switcher-select,
+body.lux-route-home .faculty-switcher,
+body.lux-route-home .role-switcher {
+  position: absolute !important;
+  left: -10000px !important;
+  top: auto !important;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none !important;
+}
+body.lux-route-home #lux-bg-overlay { opacity: var(--lux-overlay-opacity); background: radial-gradient(circle at 18% 12%, rgba(var(--lux-bg-glow-rgb), 0.22), transparent 28%), radial-gradient(circle at 82% 78%, rgba(var(--lux-bg-haze-rgb), 0.14), transparent 34%), linear-gradient(180deg, rgba(6, 8, 14, 0), rgba(6, 8, 14, 0.04)); }
+/* --- atmosphere --- */
+body.lux-route-home[data-lux-background-animation="off"] #lux-bg-canvas,
+body.lux-route-home[data-lux-background-animation="off"] #lux-bg-overlay {
+  opacity: 0;
+  pointer-events: none !important;
+}
+body.lux-route-home[data-lux-background-animation="on"] #lux-bg-canvas { opacity: 1; filter: none; }
+body.lux-route-home[data-lux-background-animation="on"] #lux-bg-overlay {
+  opacity: 0;
+  background: transparent;
+  pointer-events: none !important;
+}
+/* --- scrollbar --- */
+/* Dashboard orbital gem scrollbar */
+/* high-visibility framed rail */
+#page-home #lux-home-shell {
+  :is(.lux-grid-widget-body, .lux-builder-card, .lux-dashboard-section) {
+    scrollbar-width: auto;
+    scrollbar-color: var(--lux-home-scroll-thumb-solid, var(--lux-accent)) var(--lux-bg);
+    &::-webkit-scrollbar {
+      width: var(--lux-home-scroll-size, 14px);
+      height: var(--lux-home-scroll-size, 14px);
+    }
+    &::-webkit-scrollbar-track {
+      background: var(--lux-bg);
+      border-radius: 999px;
+      margin: 14px 3px;
+      box-shadow: 0 0 0 1px var(--lux-home-scroll-track-outer, color-mix(in srgb, var(--lux-accent) 40%, transparent)), inset 0 0 0 1.5px var(--lux-home-scroll-track-edge, var(--lux-accent)), inset 0 0 0 3px rgba(0, 0, 0, 0.65), inset 0 2px 10px rgba(0, 0, 0, 0.55);
+    }
+    &::-webkit-scrollbar-thumb {
+      background: var(--lux-home-scroll-thumb, var(--lux-accent));
+      background-color: var(--lux-home-scroll-thumb-solid, var(--lux-accent));
+      border-radius: 999px;
+      border: 2px solid var(--lux-bg);
+      box-shadow: var(--lux-home-scroll-glow, 0 0 16px rgba(var(--lux-accent-rgb), 0.65)), var(--lux-home-scroll-thumb-inset, inset 0 1px 0 rgba(255, 255, 255, 0.55)), 0 0 0 1px color-mix(in srgb, var(--lux-accent) 55%, transparent);
+      min-height: 48px;
+    }
+    &::-webkit-scrollbar-thumb:hover {
+      background: var(--lux-home-scroll-thumb-hover, var(--lux-accent));
+      background-color: var(--lux-home-scroll-thumb-hover-solid, var(--lux-accent));
+      box-shadow: var(--lux-home-scroll-glow-hover, 0 0 24px rgba(var(--lux-accent-rgb), 0.9)), inset 0 1px 0 rgba(255, 255, 255, 0.75), 0 0 0 1px color-mix(in srgb, var(--lux-accent) 75%, white 10%);
+    }
+    &::-webkit-scrollbar-thumb:active {
+      background-color: color-mix(in srgb, var(--lux-accent) 92%, white 8%);
+    }
+    &::-webkit-scrollbar-button { display: none; width: 0; height: 0; }
+    &::-webkit-scrollbar-corner { background: transparent; }
+  }
+}

@@ -1,12 +1,25 @@
+/* READABILITY: Client state — KIU_STATE bootstrap, portal slices, persistence helpers. Sections: Boot | Portal | Social | Persist | Helpers. */
+/* Pattern B (H4): window.KiuState / __kiuStateExpose — see docs/js-naming-patterns.md */
+window.KiuState=window.KiuState||{};const __kiuStateApi=window.KiuState;window.__kiuStateApi=__kiuStateApi;
+function __kiuStateExpose(map){Object.keys(map).forEach((k)=>{__kiuStateApi[k]=map[k];window[k]=map[k];});}
+
+// --- READABILITY: Boot ---
 /* Persistent state and role/page access helpers extracted from the legacy core.js bundle. Active routes now load split files directly. */
 
+// --- READABILITY: Helpers ---
 function createFreshKiuState() {
     return JSON.parse(JSON.stringify(KIU_EMPTY_STATE));
 }
 
+// --- READABILITY: Persist ---
 let KIU_STATE = JSON.parse(localStorage.getItem('KIU_PERSISTENT_STATE') || 'null') || createFreshKiuState();
+if (typeof window !== 'undefined') {
+    window.__KIU_PORTAL_BOOTSTRAP_PENDING = true;
+}
 if (KIU_STATE && typeof KIU_STATE === 'object') {
     delete KIU_STATE.lmsLiveQuizzes;
+    delete KIU_STATE.lmsWhiteboards;
+    KIU_STATE.studentServiceArticles = [];
 }
 try {
     const requiredCleanupVersion = String(typeof MANUAL_TESTING_STATE_VERSION === 'number' ? MANUAL_TESTING_STATE_VERSION : 6);
@@ -81,179 +94,6 @@ function repairDisplayTextValue(value, fallback = '') {
     } catch (error) {}
     cleaned = String(cleaned == null ? '' : cleaned).trim();
     return cleaned || raw || String(fallback || '').trim();
-}
-
-function repairTextFields(record, fields = []) {
-    if (!record || typeof record !== 'object') return record;
-    let next = record;
-    let mutated = false;
-    fields.forEach((field) => {
-        if (typeof next[field] === 'string' && next[field].trim()) {
-            const repaired = repairDisplayTextValue(next[field]);
-            if (repaired !== next[field]) {
-                if (!mutated) {
-                    next = { ...record };
-                    mutated = true;
-                }
-                next[field] = repaired;
-            }
-        }
-    });
-    return next;
-}
-
-function repairCurriculumSubjectRecord(subject) {
-    const next = repairTextFields(subject, [
-        'name',
-        'title',
-        'subjectName',
-        'label',
-        'courseName',
-        'description',
-        'summary',
-        'facultyName',
-        'semesterLabel',
-        'termLabel'
-    ]);
-    return next && typeof next === 'object' ? next : subject;
-}
-
-function repairAvailableGroupRecord(subjectId, group) {
-    const normalized = typeof normalizeScheduleGroup === 'function'
-        ? normalizeScheduleGroup(subjectId, group)
-        : group;
-    const next = repairTextFields(normalized, [
-        'name',
-        'title',
-        'subjectName',
-        'label',
-        'courseName',
-        'day',
-        'time',
-        'timeDay',
-        'endTime',
-        'room',
-        'prof',
-        'ta'
-    ]);
-    return next && typeof next === 'object' ? next : normalized;
-}
-
-function repairStudentScheduleRecord(entry) {
-    const next = repairTextFields(entry, [
-        'title',
-        'subjectName',
-        'courseName',
-        'groupName',
-        'groupLabel',
-        'day',
-        'time',
-        'timeDay',
-        'endTime',
-        'room',
-        'prof',
-        'ta'
-    ]);
-    return next && typeof next === 'object' ? next : entry;
-}
-
-function normalizeDeletedStaffType(type, role = '') {
-    const normalizedType = String(type || '').trim().toLowerCase();
-    if (normalizedType === 'professors' || normalizedType === 'professor') return 'professors';
-    if (normalizedType === 'tas' || normalizedType === 'ta') return 'tas';
-    if (normalizedType === 'service' || normalizedType === 'student_service' || normalizedType === 'student-service') return 'service';
-
-    const normalizedRole = String(role || '').trim().toLowerCase();
-    if (normalizedRole === String(USER_ROLES.PROFESSOR || '').toLowerCase()) return 'professors';
-    if (normalizedRole === String(USER_ROLES.TA || '').toLowerCase()) return 'tas';
-    if (normalizedRole === String(USER_ROLES.STUDENT_SERVICE || '').toLowerCase()) return 'service';
-    return '';
-}
-
-function normalizeDeletedStaffEntry(entry) {
-    const normalizedType = normalizeDeletedStaffType(entry?.type, entry?.role);
-    const id = String(entry?.id || '').trim();
-    if (!normalizedType || !id) return null;
-    return {
-        id,
-        type: normalizedType,
-        facultyCode: normalizeFacultyCode(entry?.facultyCode || entry?.faculty || '', '')
-    };
-}
-
-function getDeletedStaffRegistry() {
-    if (Array.isArray(kiuDeletedStaffRegistryCache)) return kiuDeletedStaffRegistryCache;
-    let parsed = [];
-    try {
-        parsed = JSON.parse(localStorage.getItem(KIU_DELETED_STAFF_REGISTRY_KEY) || '[]');
-    } catch (error) {
-        parsed = [];
-    }
-    kiuDeletedStaffRegistryCache = Array.isArray(parsed)
-        ? parsed.map(normalizeDeletedStaffEntry).filter(Boolean)
-        : [];
-    return kiuDeletedStaffRegistryCache;
-}
-
-function persistDeletedStaffRegistry(registry) {
-    const normalized = Array.isArray(registry) ? registry.map(normalizeDeletedStaffEntry).filter(Boolean) : [];
-    kiuDeletedStaffRegistryCache = normalized;
-    try {
-        localStorage.setItem(KIU_DELETED_STAFF_REGISTRY_KEY, JSON.stringify(normalized));
-    } catch (error) {
-        console.warn('Could not persist deleted staff registry.', error);
-    }
-}
-
-function isStaffMemberDeleted(member, type, facultyCode) {
-    const id = String(member?.id || '').trim();
-    const normalizedType = normalizeDeletedStaffType(type, member?.role);
-    if (!id || !normalizedType) return false;
-    const normalizedFaculty = normalizeFacultyCode(facultyCode || member?.facultyCode || member?.faculty || '', '');
-    return getDeletedStaffRegistry().some(entry => (
-        entry.id === id
-        && entry.type === normalizedType
-        && normalizeFacultyCode(entry.facultyCode || '', '') === normalizedFaculty
-    ));
-}
-
-function pruneDeletedStaffMembersFromState(state = KIU_STATE) {
-    if (!state || typeof state !== 'object') return;
-
-    if (state.facultyProfiles && typeof state.facultyProfiles === 'object') {
-        Object.entries(state.facultyProfiles).forEach(([facultyCode, profile]) => {
-            if (!profile || typeof profile !== 'object') return;
-            ['professors', 'tas'].forEach(groupKey => {
-                if (!Array.isArray(profile[groupKey])) return;
-                profile[groupKey] = profile[groupKey].filter(member => !isStaffMemberDeleted(member, groupKey, facultyCode));
-            });
-        });
-    }
-
-    if (Array.isArray(state.users)) {
-        state.users = state.users.filter(user => {
-            const normalizedType = normalizeDeletedStaffType('', user?.role);
-            if (!normalizedType) return true;
-            return !isStaffMemberDeleted(user, normalizedType, user?.facultyCode || user?.faculty || '');
-        });
-    }
-}
-
-function markStaffMemberDeleted(member, type, facultyCode) {
-    const entry = normalizeDeletedStaffEntry({
-        id: member?.id,
-        type,
-        facultyCode: facultyCode || member?.facultyCode || member?.faculty || ''
-    });
-    if (!entry) return;
-    const nextRegistry = getDeletedStaffRegistry().filter(existing => !(
-        existing.id === entry.id
-        && existing.type === entry.type
-        && normalizeFacultyCode(existing.facultyCode || '', '') === normalizeFacultyCode(entry.facultyCode || '', '')
-    ));
-    nextRegistry.push(entry);
-    persistDeletedStaffRegistry(nextRegistry);
-    pruneDeletedStaffMembersFromState(KIU_STATE);
 }
 
 function captureNamedScrollSnapshot(root = document) {
@@ -387,7 +227,9 @@ function queueKiuUiRefresh(snapshot) {
 
             if (adminContainer && typeof renderAdminRegistrationModules === 'function') {
                 const fac = normalizeFacultyCode(
-                    ((typeof getCurrentFaculty === 'function' ? getCurrentFaculty() : '') || localStorage.getItem('currentFaculty') || 'ECON'),
+                    (typeof getAdminCmsWriteFaculty === 'function' ? getAdminCmsWriteFaculty() : '')
+                    || (typeof getAdminRegistrationFaculty === 'function' ? getAdminRegistrationFaculty() : '')
+                    || ((typeof getCurrentFaculty === 'function' ? getCurrentFaculty() : '') || localStorage.getItem('currentFaculty') || 'ECON'),
                     'ECON'
                 );
                 adminContainer.dataset.cmsFaculty = fac;
@@ -424,9 +266,16 @@ function saveState() {
     const uiScrollSnapshot = captureUiScrollSnapshot();
     ensureCanonicalState();
     const registrationCmsFootprintBefore = getRegistrationCmsPersistFootprint(KIU_STATE);
-    if (typeof persistRegistrationCmsGlobalsToFaculty === 'function') {
+    const shouldPersistRegistrationCms = (() => {
+        if (typeof persistRegistrationCmsGlobalsToFaculty !== 'function') return false;
+        if (typeof isAdminToolsWorkspaceActive === 'function' && isAdminToolsWorkspaceActive()) return true;
+        if (typeof isAdminImpersonationMode === 'function' && isAdminImpersonationMode()) return false;
+        return currentUser?.role === USER_ROLES.ADMIN;
+    })();
+    if (shouldPersistRegistrationCms) {
         const cmsFaculty = normalizeFacultyCode(
-            (document.getElementById('admin-reg-content-container') && typeof getAdminRegistrationFaculty === 'function'
+            (typeof getAdminCmsWriteFaculty === 'function' ? getAdminCmsWriteFaculty() : '')
+            || (document.getElementById('admin-reg-content-container') && typeof getAdminRegistrationFaculty === 'function'
                 ? getAdminRegistrationFaculty()
                 : '')
             || (typeof getCurrentFaculty === 'function' ? getCurrentFaculty() : '')
@@ -437,6 +286,10 @@ function saveState() {
         persistRegistrationCmsGlobalsToFaculty(cmsFaculty);
     }
     if (!KIU_STATE.meta || typeof KIU_STATE.meta !== 'object') KIU_STATE.meta = {};
+    if (currentUser?.id) {
+// --- READABILITY: Portal ---
+        KIU_STATE.meta.portalStateOwnerAccountId = String(currentUser.id);
+    }
     const previousRegistrationCmsRevision = Number(KIU_STATE.meta.registrationCmsRevision || 0);
     const registrationCmsFootprintAfter = getRegistrationCmsPersistFootprint(KIU_STATE);
     const registrationCmsChanged = registrationCmsFootprintBefore !== registrationCmsFootprintAfter;
@@ -468,7 +321,9 @@ function saveState() {
         registrationCMS: persistedRegistrationCms
     };
     delete persisted.domain;
+    delete persisted.auth;
     delete persisted.lmsLiveQuizzes;
+    delete persisted.lmsWhiteboards;
     localStorage.setItem('KIU_PERSISTENT_STATE', JSON.stringify(persisted));
     if (KIU_STATE.meta.registrationCmsRevision !== previousRegistrationCmsRevision) {
         try {
@@ -484,381 +339,10 @@ function saveState() {
     }, 0);
 }
 
-let adminExamDraftByFaculty = {};
-let adminExamUiByFaculty = {};
 let adminOrdersUiByFaculty = {};
 let recipientOrdersUiByUser = {};
 let currentLmsQuizCourseKey = '';
 let lmsQuizUiByResourceKey = {};
-
-function makeAdminExamEntityId(prefix = 'exam') {
-    return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-}
-
-function createAdminQuizQuestion() {
-    return {
-        id: makeAdminExamEntityId('question'),
-        type: 'mcq',
-        text: '',
-        score: 1,
-        optionCount: 4,
-        options: ['', '', '', ''],
-        correctOption: 0,
-        expectedAnswer: ''
-    };
-}
-
-function ensureAdminExamState(faculty = getCurrentFaculty()) {
-    const normalizedFaculty = normalizeFacultyCode(faculty, 'ECON');
-    KIU_STATE.adminExamsByFaculty = KIU_STATE.adminExamsByFaculty || {};
-    KIU_STATE.adminExamsByFaculty[normalizedFaculty] = KIU_STATE.adminExamsByFaculty[normalizedFaculty] || { quizzes: [] };
-    KIU_STATE.adminExamsByFaculty[normalizedFaculty].quizzes = Array.isArray(KIU_STATE.adminExamsByFaculty[normalizedFaculty].quizzes)
-        ? KIU_STATE.adminExamsByFaculty[normalizedFaculty].quizzes
-        : [];
-    return KIU_STATE.adminExamsByFaculty[normalizedFaculty];
-}
-
-function createAdminQuizDraft(faculty = getCurrentFaculty()) {
-    const normalizedFaculty = normalizeFacultyCode(faculty, 'ECON');
-    const lmsContext = typeof resolveActiveLmsQuizContext === 'function'
-        ? resolveActiveLmsQuizContext(currentLmsQuizCourseKey, normalizedFaculty)
-        : null;
-    const lmsSubject = lmsContext?.subject || null;
-    const lmsGroup = lmsContext?.group || null;
-    const firstSubject = (getActiveCurriculum(normalizedFaculty) || [])
-        .slice()
-        .sort((a, b) => String(a?.name || '').localeCompare(String(b?.name || '')))[0];
-    const selectedSubject = lmsSubject || firstSubject || null;
-    const firstGroup = lmsGroup || getAdminQuizGroupsForSubject(selectedSubject?.id || '', normalizedFaculty)[0] || null;
-    return {
-        editingQuizId: null,
-        title: '',
-        subjectId: selectedSubject?.id || (lmsContext?.courseId || ''),
-        subjectName: selectedSubject?.name || (lmsContext?.subject?.name || lmsContext?.courseId || ''),
-        assignedGroupId: firstGroup?.id || (lmsContext?.groupId || lmsContext?.courseId || ''),
-        assessmentType: 'quiz',
-        weekLabel: lmsContext?.resourceKey ? (lmsContext.weeks?.[0] || 'Week 1') : '',
-        availableFrom: '',
-        availableUntil: '',
-        durationMinutes: 20,
-        status: lmsContext?.resourceKey ? 'draft' : 'published',
-        isPublished: lmsContext?.resourceKey ? false : true,
-        publishedAt: null,
-        publishedBy: '',
-        allowedStudentIds: [],
-        attendanceMode: 'manual-access-list',
-        lockedAfterPublish: true,
-        attendanceRequired: true,
-        instructions: '',
-        questions: [createAdminQuizQuestion()]
-    };
-}
-
-function normalizeExamSessionStatus(status = 'draft') {
-    const normalized = String(status || 'draft').trim().toLowerCase();
-    return ['draft', 'waiting', 'live', 'closed'].includes(normalized) ? normalized : 'draft';
-}
-
-function normalizeExamSessionAttendanceMap(map = {}) {
-    const source = map && typeof map === 'object' ? map : {};
-    return Object.fromEntries(
-        Object.entries(source).map(([studentId, entry]) => {
-            const value = entry && typeof entry === 'object'
-                ? entry
-                : { status: String(entry || '') };
-            return [
-                String(studentId),
-                {
-                    status: String(value.status || ''),
-                    verifiedAt: value.verifiedAt || null,
-                    verifiedBy: String(value.verifiedBy || '')
-                }
-            ];
-        })
-    );
-}
-
-function normalizeExamSessionRecord(session = {}) {
-    return {
-        id: String(session.id || makeAdminExamEntityId('exam-session')),
-        title: String(session.title || session.quizTitle || 'Lab Exam Session'),
-        quizId: String(session.quizId || ''),
-        templateQuizId: String(session.templateQuizId || ''),
-        quizTitle: String(session.quizTitle || ''),
-        resourceKey: String(session.resourceKey || ''),
-        courseId: String(session.courseId || ''),
-        groupId: String(session.groupId || ''),
-        faculty: normalizeFacultyCode(session.faculty || getCurrentFaculty(), 'ECON'),
-        status: normalizeExamSessionStatus(session.status || 'draft'),
-        allowedStudentIds: Array.isArray(session.allowedStudentIds) ? session.allowedStudentIds.map(id => String(id)) : [],
-        blockedStudentIds: Array.isArray(session.blockedStudentIds) ? session.blockedStudentIds.map(id => String(id)) : [],
-        attendanceByStudentId: normalizeExamSessionAttendanceMap(session.attendanceByStudentId),
-        startedAt: session.startedAt || null,
-        endsAt: session.endsAt || null,
-        durationMinutes: Math.max(1, parseInt(session.durationMinutes, 10) || 20),
-        createdAt: session.createdAt || new Date().toISOString(),
-        updatedAt: session.updatedAt || new Date().toISOString(),
-        monitoringSummary: session.monitoringSummary && typeof session.monitoringSummary === 'object'
-            ? {
-                allowedCount: Math.max(0, parseInt(session.monitoringSummary.allowedCount, 10) || 0),
-                presentCount: Math.max(0, parseInt(session.monitoringSummary.presentCount, 10) || 0),
-                blockedCount: Math.max(0, parseInt(session.monitoringSummary.blockedCount, 10) || 0),
-                inProgressCount: Math.max(0, parseInt(session.monitoringSummary.inProgressCount, 10) || 0),
-                submittedCount: Math.max(0, parseInt(session.monitoringSummary.submittedCount, 10) || 0),
-                alertCount: Math.max(0, parseInt(session.monitoringSummary.alertCount, 10) || 0)
-            }
-            : {
-                allowedCount: 0,
-                presentCount: 0,
-                blockedCount: 0,
-                inProgressCount: 0,
-                submittedCount: 0,
-                alertCount: 0
-            }
-    };
-}
-
-function ensureExamSessionStore() {
-    KIU_STATE.examSessions = KIU_STATE.examSessions && typeof KIU_STATE.examSessions === 'object'
-        ? KIU_STATE.examSessions
-        : {};
-    Object.keys(KIU_STATE.examSessions).forEach(sessionId => {
-        KIU_STATE.examSessions[sessionId] = normalizeExamSessionRecord(KIU_STATE.examSessions[sessionId]);
-    });
-    return KIU_STATE.examSessions;
-}
-
-function getExamSessionById(sessionId) {
-    const targetId = String(sessionId || '');
-    if (!targetId) return null;
-    return ensureExamSessionStore()[targetId] || null;
-}
-
-function getExamSessionsForFaculty(faculty = getCurrentFaculty()) {
-    const normalizedFaculty = normalizeFacultyCode(faculty, 'ECON');
-    return Object.values(ensureExamSessionStore())
-        .filter(session => normalizeFacultyCode(session.faculty || normalizedFaculty, normalizedFaculty) === normalizedFaculty)
-        .sort((a, b) => new Date(b.updatedAt || b.createdAt || 0) - new Date(a.updatedAt || a.createdAt || 0));
-}
-
-function getAdminQuizDraft(faculty = getCurrentFaculty()) {
-    const normalizedFaculty = normalizeFacultyCode(faculty, 'ECON');
-    if (!adminExamDraftByFaculty[normalizedFaculty]) {
-        adminExamDraftByFaculty[normalizedFaculty] = createAdminQuizDraft(normalizedFaculty);
-    }
-    const draft = adminExamDraftByFaculty[normalizedFaculty];
-    if (!Array.isArray(draft.questions) || draft.questions.length === 0) {
-        draft.questions = [createAdminQuizQuestion()];
-    }
-    const subjects = getActiveCurriculum(normalizedFaculty) || [];
-    const lmsContext = typeof resolveActiveLmsQuizContext === 'function'
-        ? resolveActiveLmsQuizContext(currentLmsQuizCourseKey, normalizedFaculty)
-        : null;
-    const isLmsEmbedded = Boolean(lmsContext?.resourceKey);
-    if (subjects.length > 0) {
-        const matchedSubject = subjects.find(subject => canonicalCourseKey(subject?.id) === canonicalCourseKey(draft.subjectId))
-            || subjects.find(subject => normalizeSubjectTitleKey(subject?.name) === normalizeSubjectTitleKey(draft.subjectName))
-            || (isLmsEmbedded ? null : subjects[0]);
-        if (matchedSubject) {
-            draft.subjectId = matchedSubject.id || draft.subjectId;
-            draft.subjectName = matchedSubject.name || draft.subjectName;
-        } else if (isLmsEmbedded) {
-            draft.subjectId = draft.subjectId || lmsContext.subject?.id || lmsContext.courseId || currentLmsQuizCourseKey;
-            draft.subjectName = draft.subjectName || lmsContext.subject?.name || lmsContext.courseId || currentLmsQuizCourseKey;
-        }
-    } else if (isLmsEmbedded) {
-        draft.subjectId = draft.subjectId || lmsContext.subject?.id || lmsContext.courseId || currentLmsQuizCourseKey;
-        draft.subjectName = draft.subjectName || lmsContext.subject?.name || lmsContext.courseId || currentLmsQuizCourseKey;
-    }
-    const groups = getAdminQuizGroupsForSubject(draft.subjectId, normalizedFaculty);
-    if (isLmsEmbedded) {
-        draft.assignedGroupId = lmsContext.group?.id || lmsContext.groupId || draft.assignedGroupId;
-        if (!draft.weekLabel) {
-            draft.weekLabel = lmsContext.weeks?.[0] || 'Week 1';
-        }
-    } else if (groups.length > 0) {
-        if (!groups.some(group => canonicalCourseKey(group.id) === canonicalCourseKey(draft.assignedGroupId))) {
-            draft.assignedGroupId = groups[0].id;
-        }
-    }
-    return draft;
-}
-
-function getAvailableGroupsForSubject(subjectId) {
-    const directKey = String(subjectId || '').trim();
-    if (!directKey) return [];
-    const directGroups = KIU_STATE.availableGroups?.[directKey];
-    if (Array.isArray(directGroups)) return directGroups;
-    const canonicalKey = canonicalCourseKey(directKey);
-    const matchedKey = Object.keys(KIU_STATE.availableGroups || {}).find(key => canonicalCourseKey(key) === canonicalKey);
-    const matchedGroups = matchedKey ? KIU_STATE.availableGroups?.[matchedKey] : [];
-    return Array.isArray(matchedGroups) ? matchedGroups : [];
-}
-
-function getAdminQuizGroupsForSubject(subjectId, faculty = getCurrentFaculty()) {
-    const normalizedFaculty = normalizeFacultyCode(faculty, 'ECON');
-    const groups = getAvailableGroupsForSubject(subjectId);
-    return groups
-        .filter(group => normalizeFacultyCode(group?.faculty || deriveFacultyFromSubjectId(subjectId), normalizedFaculty) === normalizedFaculty)
-        .slice()
-        .sort((a, b) => String(a?.name || a?.id || '').localeCompare(String(b?.name || b?.id || ''), undefined, { numeric: true, sensitivity: 'base' }));
-}
-
-function setAdminQuizDraftAssignedGroup(groupId) {
-    const draft = getAdminQuizDraft();
-    draft.assignedGroupId = String(groupId || '');
-    rerenderAdminExamSectionPreservingScroll();
-}
-
-function ensureAdminExamUiState(faculty = getCurrentFaculty()) {
-    const normalizedFaculty = normalizeFacultyCode(faculty, 'ECON');
-    adminExamUiByFaculty[normalizedFaculty] = adminExamUiByFaculty[normalizedFaculty] || {
-        activeQuestionId: null,
-        navigatorScrollTop: 0,
-        dragQuestionId: null,
-        activeSessionId: null,
-        sessionTemplateQuizId: '',
-        sessionTargetGroupId: ''
-    };
-    return adminExamUiByFaculty[normalizedFaculty];
-}
-
-function captureAdminExamScrollSnapshot(faculty = getCurrentFaculty()) {
-    const uiState = ensureAdminExamUiState(faculty);
-    const navigator = document.getElementById('admin-exam-question-nav');
-    if (navigator) {
-        uiState.navigatorScrollTop = navigator.scrollTop || 0;
-    }
-    return {
-        x: window.scrollX || window.pageXOffset || 0,
-        y: window.scrollY || window.pageYOffset || 0,
-        navigatorScrollTop: uiState.navigatorScrollTop || 0
-    };
-}
-
-function restoreAdminExamScrollSnapshot(snapshot, faculty = getCurrentFaculty()) {
-    if (!snapshot) return;
-    const uiState = ensureAdminExamUiState(faculty);
-    uiState.navigatorScrollTop = snapshot.navigatorScrollTop || 0;
-    const navigator = document.getElementById('admin-exam-question-nav');
-    if (navigator) {
-        navigator.scrollTop = uiState.navigatorScrollTop;
-    }
-    window.scrollTo(snapshot.x || 0, snapshot.y || 0);
-}
-
-function rerenderAdminExamSectionPreservingScroll(faculty = getCurrentFaculty()) {
-    const snapshot = captureAdminExamScrollSnapshot(faculty);
-    renderAdminExamSection();
-    requestAnimationFrame(() => restoreAdminExamScrollSnapshot(snapshot, faculty));
-}
-
-function getActiveAdminQuizQuestion(faculty = getCurrentFaculty()) {
-    const draft = getAdminQuizDraft(faculty);
-    const uiState = ensureAdminExamUiState(faculty);
-    const existing = draft.questions.find(question => question.id === uiState.activeQuestionId);
-    if (existing) return existing;
-    uiState.activeQuestionId = draft.questions[0]?.id || null;
-    return draft.questions[0] || null;
-}
-
-function setActiveAdminQuizQuestion(questionId, faculty = getCurrentFaculty()) {
-    const draft = getAdminQuizDraft(faculty);
-    if (!draft.questions.some(question => question.id === questionId)) return;
-    ensureAdminExamUiState(faculty).activeQuestionId = questionId;
-}
-
-function clampAdminQuizQuestionIndex(index, faculty = getCurrentFaculty()) {
-    const draft = getAdminQuizDraft(faculty);
-    return Math.max(0, Math.min(Number(index) || 0, draft.questions.length));
-}
-
-function insertAdminQuizQuestionAt(index, faculty = getCurrentFaculty()) {
-    const draft = getAdminQuizDraft(faculty);
-    const question = createAdminQuizQuestion();
-    const safeIndex = clampAdminQuizQuestionIndex(index, faculty);
-    draft.questions.splice(safeIndex, 0, question);
-    setActiveAdminQuizQuestion(question.id, faculty);
-    rerenderAdminExamSectionPreservingScroll(faculty);
-}
-
-function insertAdminQuizQuestionRelative(questionId, position = 'after', faculty = getCurrentFaculty()) {
-    const draft = getAdminQuizDraft(faculty);
-    const currentIndex = draft.questions.findIndex(question => question.id === questionId);
-    if (currentIndex < 0) return;
-    const insertIndex = position === 'before' ? currentIndex : currentIndex + 1;
-    insertAdminQuizQuestionAt(insertIndex, faculty);
-}
-
-function moveAdminQuizQuestion(sourceQuestionId, targetQuestionId, faculty = getCurrentFaculty()) {
-    const draft = getAdminQuizDraft(faculty);
-    const sourceIndex = draft.questions.findIndex(question => question.id === sourceQuestionId);
-    const targetIndex = draft.questions.findIndex(question => question.id === targetQuestionId);
-    if (sourceIndex < 0 || targetIndex < 0 || sourceIndex === targetIndex) return;
-    const [movedQuestion] = draft.questions.splice(sourceIndex, 1);
-    draft.questions.splice(targetIndex, 0, movedQuestion);
-    setActiveAdminQuizQuestion(movedQuestion.id, faculty);
-    rerenderAdminExamSectionPreservingScroll(faculty);
-}
-
-function startAdminQuizQuestionDrag(event, questionId, faculty = getCurrentFaculty()) {
-    ensureAdminExamUiState(faculty).dragQuestionId = questionId;
-    if (event?.dataTransfer) {
-        event.dataTransfer.effectAllowed = 'move';
-        event.dataTransfer.setData('text/plain', questionId);
-    }
-}
-
-function allowAdminQuizQuestionDrop(event) {
-    if (event?.preventDefault) event.preventDefault();
-}
-
-function endAdminQuizQuestionDrag(faculty = getCurrentFaculty()) {
-    ensureAdminExamUiState(faculty).dragQuestionId = null;
-}
-
-function dropAdminQuizQuestionOnTarget(event, targetQuestionId, faculty = getCurrentFaculty()) {
-    if (event?.preventDefault) event.preventDefault();
-    const uiState = ensureAdminExamUiState(faculty);
-    const draggedQuestionId = uiState.dragQuestionId
-        || event?.dataTransfer?.getData('text/plain')
-        || null;
-    if (!draggedQuestionId) return;
-    endAdminQuizQuestionDrag(faculty);
-    moveAdminQuizQuestion(draggedQuestionId, targetQuestionId, faculty);
-}
-
-function syncAdminQuizDraftSubject(draft, faculty = getCurrentFaculty()) {
-    if (!draft) return;
-    const normalizedFaculty = normalizeFacultyCode(faculty, 'ECON');
-    const lmsContext = typeof resolveActiveLmsQuizContext === 'function'
-        ? resolveActiveLmsQuizContext(currentLmsQuizCourseKey, normalizedFaculty)
-        : null;
-    if (lmsContext?.resourceKey) {
-        draft.subjectId = lmsContext.subject?.id || lmsContext.courseId || draft.subjectId;
-        draft.subjectName = lmsContext.subject?.name || lmsContext.courseId || draft.subjectName;
-        draft.assignedGroupId = lmsContext.group?.id || lmsContext.groupId || draft.assignedGroupId;
-        if (!draft.weekLabel) {
-            draft.weekLabel = lmsContext.weeks?.[0] || 'Week 1';
-        }
-        return;
-    }
-    const subjects = getActiveCurriculum(normalizedFaculty) || [];
-    const matchedSubject = subjects.find(subject => canonicalCourseKey(subject?.id) === canonicalCourseKey(draft.subjectId))
-        || subjects.find(subject => normalizeSubjectTitleKey(subject?.name) === normalizeSubjectTitleKey(draft.subjectName));
-    if (matchedSubject) {
-        draft.subjectId = matchedSubject.id;
-        draft.subjectName = matchedSubject.name;
-    }
-    const groups = getAdminQuizGroupsForSubject(draft.subjectId, normalizedFaculty);
-    if (groups.length > 0) {
-        if (!groups.some(group => canonicalCourseKey(group.id) === canonicalCourseKey(draft.assignedGroupId))) {
-            draft.assignedGroupId = groups[0].id;
-        }
-    } else if (!currentLmsQuizCourseKey) {
-        draft.assignedGroupId = '';
-    }
-}
 
 function mergeUniqueById(items) {
     const byId = new Map();
@@ -1231,17 +715,98 @@ function ensureAdminTestingStudentAcademicShell(studentId, state = KIU_STATE) {
     return true;
 }
 
-window.isAdminTestingPersonaId = isAdminTestingPersonaId;
-window.shouldRetainAdminTestingPersonas = shouldRetainAdminTestingPersonas;
-window.isDemoOrTestingUserRecord = isDemoOrTestingUserRecord;
-window.stripSeededMockStudents = stripSeededMockStudents;
-window.ensureAdminTestingStudentAcademicShell = ensureAdminTestingStudentAcademicShell;
-window.getFacultyCurriculumFromProfiles = getFacultyCurriculumFromProfiles;
-window.getAllCurriculumSubjects = getAllCurriculumSubjects;
-window.syncCanonicalCurriculumState = syncCanonicalCurriculumState;
-window.hasImpersonationPersonaForRole = hasImpersonationPersonaForRole;
-window.isImpersonationEligibleAccount = isImpersonationEligibleAccount;
-window.collectImpersonationCandidatesForRole = collectImpersonationCandidatesForRole;
+function buildAdminViewAccountFallbacks(state = KIU_STATE) {
+    const profiles = state?.facultyProfiles && typeof state.facultyProfiles === 'object'
+        ? state.facultyProfiles
+        : {};
+    const facultyCodes = Object.keys(profiles).length ? Object.keys(profiles) : ['ECON'];
+    const roleSpecs = [
+        { role: USER_ROLES.STUDENT, suffix: 'student', name: 'Student View Account' },
+        { role: USER_ROLES.PROFESSOR, suffix: 'professor', name: 'Professor View Account' },
+        { role: USER_ROLES.TA, suffix: 'ta', name: 'TA View Account' },
+        { role: USER_ROLES.STUDENT_SERVICE, suffix: 'service', name: 'Student Service View Account' }
+    ];
+
+    return facultyCodes.flatMap((facultyCode) => {
+        const normalizedFaculty = normalizeFacultyCode(facultyCode, 'ECON');
+        return roleSpecs.map((spec) => {
+            const id = `admin-testing-${normalizedFaculty.toLowerCase()}-${spec.suffix}`;
+            return {
+                id,
+                email: `${id}@kiu.test`,
+                name: `${spec.name} (${normalizedFaculty})`,
+                nameEn: `${spec.name} (${normalizedFaculty})`,
+                displayName: `${spec.name} (${normalizedFaculty})`,
+                role: spec.role,
+                faculty: normalizedFaculty,
+                facultyCode: normalizedFaculty,
+                status: 'Active',
+                accountStatus: 'active',
+                createdAt: '2026-06-16T00:00:00.000Z',
+                isAdminTestingPersona: true
+            };
+        });
+    });
+}
+
+function ensureAdminViewAccountFallbacks(state = KIU_STATE) {
+    if (!state || typeof state !== 'object') return 0;
+    if (String(currentUser?.role || '').trim().toLowerCase() !== USER_ROLES.ADMIN) return 0;
+    if (!Array.isArray(state.users)) state.users = [];
+
+    let changed = 0;
+    buildAdminViewAccountFallbacks(state).forEach((fallback) => {
+        const existingIndex = state.users.findIndex((user) => String(user?.id || '') === fallback.id);
+        if (existingIndex >= 0) {
+            state.users[existingIndex] = { ...fallback, ...state.users[existingIndex], isAdminTestingPersona: true };
+        } else {
+            state.users.push({ ...fallback });
+            changed += 1;
+        }
+
+        const profile = state.facultyProfiles?.[fallback.facultyCode];
+        if (profile && typeof profile === 'object') {
+            const bucketKey = fallback.role === USER_ROLES.PROFESSOR
+                ? 'professors'
+                : fallback.role === USER_ROLES.TA
+                    ? 'tas'
+                    : fallback.role === USER_ROLES.STUDENT
+                        ? 'students'
+                        : '';
+            if (bucketKey) {
+                if (!Array.isArray(profile[bucketKey])) profile[bucketKey] = [];
+                const memberIndex = profile[bucketKey].findIndex((member) => String(member?.id || '') === fallback.id);
+                if (memberIndex >= 0) {
+                    profile[bucketKey][memberIndex] = { ...fallback, ...profile[bucketKey][memberIndex], isAdminTestingPersona: true };
+                } else {
+                    profile[bucketKey].push({ ...fallback });
+                    changed += 1;
+                }
+            }
+        }
+
+        if (fallback.role === USER_ROLES.STUDENT) {
+            ensureAdminTestingStudentAcademicShell(fallback.id, state);
+        }
+    });
+
+    return changed;
+}
+
+__kiuStateExpose({
+    isAdminTestingPersonaId,
+    shouldRetainAdminTestingPersonas,
+    isDemoOrTestingUserRecord,
+    stripSeededMockStudents,
+    ensureAdminTestingStudentAcademicShell,
+    ensureAdminViewAccountFallbacks,
+    getFacultyCurriculumFromProfiles,
+    getAllCurriculumSubjects,
+    syncCanonicalCurriculumState,
+    hasImpersonationPersonaForRole,
+    isImpersonationEligibleAccount,
+    collectImpersonationCandidatesForRole,
+});
 
 function isArchivedImpersonationAccount(record = {}) {
     const status = String(record?.status || record?.accountStatus || 'active').trim().toLowerCase();
@@ -1270,6 +835,7 @@ function mergeImpersonationRecordsById(records = []) {
 }
 
 function collectRawImpersonationRecordsForRole(normalizedRole) {
+    ensureAdminViewAccountFallbacks(KIU_STATE);
     const matchesRole = (record) => String(record?.role || '').trim().toLowerCase() === normalizedRole;
     const fromUsers = Array.isArray(KIU_STATE?.users) ? KIU_STATE.users.filter(matchesRole) : [];
     const fromFaculty = collectFacultyMembers(KIU_STATE?.facultyProfiles || {}).filter(matchesRole);
@@ -1336,7 +902,7 @@ function ensureCanonicalState() {
     if (typeof stripSeededMockStudents === 'function') {
         stripSeededMockStudents(KIU_STATE, { retainAdminTestingPersonas: shouldRetainAdminTestingPersonas() });
     }
-    pruneDeletedStaffMembersFromState(KIU_STATE);
+    window.pruneDeletedStaffMembersFromState?.(KIU_STATE);
 
     if (!KIU_STATE.facultyProfiles || typeof KIU_STATE.facultyProfiles !== 'object') {
         KIU_STATE.facultyProfiles = JSON.parse(JSON.stringify(KIU_EMPTY_STATE.facultyProfiles || {}));
@@ -1362,11 +928,12 @@ function ensureCanonicalState() {
             facultyCode: currentUser.facultyCode || currentUser.faculty || ''
         });
     }
+    ensureAdminViewAccountFallbacks(KIU_STATE);
     KIU_STATE.users = mergeUniqueById([
         ...KIU_STATE.users,
         ...collectFacultyMembers(KIU_STATE.facultyProfiles || KIU_EMPTY_STATE.facultyProfiles)
     ]);
-    pruneDeletedStaffMembersFromState(KIU_STATE);
+    window.pruneDeletedStaffMembersFromState?.(KIU_STATE);
     syncCanonicalCurriculumState();
     if (needsDisplayTextRepair && Array.isArray(KIU_STATE.curriculum)) {
         KIU_STATE.curriculum = KIU_STATE.curriculum.map(repairCurriculumSubjectRecord).filter(Boolean);
@@ -1415,6 +982,7 @@ function ensureCanonicalState() {
         delete KIU_STATE.probationStatus.student;
     }
 
+// --- READABILITY: Social ---
     if (!KIU_STATE.socialHub || typeof KIU_STATE.socialHub !== 'object') KIU_STATE.socialHub = {};
     if (!KIU_STATE.socialHub.profiles || typeof KIU_STATE.socialHub.profiles !== 'object') KIU_STATE.socialHub.profiles = {};
     if (!Array.isArray(KIU_STATE.socialHub.relationships)) KIU_STATE.socialHub.relationships = [];
@@ -1422,8 +990,6 @@ function ensureCanonicalState() {
     if (!Array.isArray(KIU_STATE.socialHub.groups)) KIU_STATE.socialHub.groups = [];
     if (!Array.isArray(KIU_STATE.socialHub.projects)) KIU_STATE.socialHub.projects = [];
     if (!Array.isArray(KIU_STATE.socialHub.projectTasks)) KIU_STATE.socialHub.projectTasks = [];
-    if (!Array.isArray(KIU_STATE.socialHub.projectMilestones)) KIU_STATE.socialHub.projectMilestones = [];
-    if (!Array.isArray(KIU_STATE.socialHub.projectDeliverables)) KIU_STATE.socialHub.projectDeliverables = [];
     if (!Array.isArray(KIU_STATE.socialHub.posts)) KIU_STATE.socialHub.posts = [];
     if (!Array.isArray(KIU_STATE.socialHub.stories)) KIU_STATE.socialHub.stories = [];
     if (!Array.isArray(KIU_STATE.socialHub.storyViews)) KIU_STATE.socialHub.storyViews = [];
@@ -1431,6 +997,8 @@ function ensureCanonicalState() {
     if (!Array.isArray(KIU_STATE.socialHub.savedPosts)) KIU_STATE.socialHub.savedPosts = [];
     if (!Array.isArray(KIU_STATE.socialHub.reports)) KIU_STATE.socialHub.reports = [];
     if (!Array.isArray(KIU_STATE.socialHub.lostFoundItems)) KIU_STATE.socialHub.lostFoundItems = [];
+    if (!Array.isArray(KIU_STATE.socialHub.surveys)) KIU_STATE.socialHub.surveys = [];
+    if (!Array.isArray(KIU_STATE.socialHub.surveyResponses)) KIU_STATE.socialHub.surveyResponses = [];
     if (!Array.isArray(KIU_STATE.socialHub.blocks)) KIU_STATE.socialHub.blocks = [];
     if (!Array.isArray(KIU_STATE.socialHub.muted)) KIU_STATE.socialHub.muted = [];
     if (!Array.isArray(KIU_STATE.socialHub.notifications)) KIU_STATE.socialHub.notifications = [];
@@ -1465,13 +1033,8 @@ function ensureCanonicalState() {
     if (typeof KIU_STATE.socialHub.ui.projectHiddenUserIds !== 'string') KIU_STATE.socialHub.ui.projectHiddenUserIds = '';
     if (!Array.isArray(KIU_STATE.socialHub.ui.projectMediaItems)) KIU_STATE.socialHub.ui.projectMediaItems = [];
     if (!('projectMediaFile' in KIU_STATE.socialHub.ui)) KIU_STATE.socialHub.ui.projectMediaFile = null;
-    if (typeof KIU_STATE.socialHub.ui.lostFoundFilter !== 'string') KIU_STATE.socialHub.ui.lostFoundFilter = 'open';
     if (typeof KIU_STATE.socialHub.ui.lostFoundSearch !== 'string') KIU_STATE.socialHub.ui.lostFoundSearch = '';
-    if (typeof KIU_STATE.socialHub.ui.lostFoundBrowseFaculty !== 'string') KIU_STATE.socialHub.ui.lostFoundBrowseFaculty = typeof KIU_STATE.socialHub.ui.lostFoundFaculty === 'string' ? KIU_STATE.socialHub.ui.lostFoundFaculty : 'current';
-    if (typeof KIU_STATE.socialHub.ui.lostFoundScope !== 'string') KIU_STATE.socialHub.ui.lostFoundScope = typeof KIU_STATE.socialHub.ui.lostFoundFaculty === 'string' ? KIU_STATE.socialHub.ui.lostFoundFaculty : 'current';
-    if (typeof KIU_STATE.socialHub.ui.lostFoundComposerOpen !== 'boolean') KIU_STATE.socialHub.ui.lostFoundComposerOpen = false;
-    if (typeof KIU_STATE.socialHub.ui.lostFoundKind !== 'string') KIU_STATE.socialHub.ui.lostFoundKind = 'lost';
-    if (typeof KIU_STATE.socialHub.ui.lostFoundStatus !== 'string') KIU_STATE.socialHub.ui.lostFoundStatus = 'open';
+    if (typeof KIU_STATE.socialHub.ui.lostFoundExpiresAt !== 'string') KIU_STATE.socialHub.ui.lostFoundExpiresAt = '';
     if (typeof KIU_STATE.socialHub.ui.lostFoundTitle !== 'string') KIU_STATE.socialHub.ui.lostFoundTitle = '';
     if (typeof KIU_STATE.socialHub.ui.lostFoundDescription !== 'string') KIU_STATE.socialHub.ui.lostFoundDescription = '';
     if (typeof KIU_STATE.socialHub.ui.lostFoundCategory !== 'string') KIU_STATE.socialHub.ui.lostFoundCategory = '';
@@ -1483,7 +1046,10 @@ function ensureCanonicalState() {
     if (KIU_STATE.socialHub.migrationVersion == null) KIU_STATE.socialHub.migrationVersion = 4;
 
     if (!KIU_STATE.auth) KIU_STATE.auth = {};
-    const impersonationEnabled = isRoleImpersonationEnabled();
+    const pendingWorkspaceRole = typeof resolveStoredWorkspaceRole === 'function'
+        ? resolveStoredWorkspaceRole()
+        : '';
+    const impersonationEnabled = isRoleImpersonationEnabled() || Boolean(pendingWorkspaceRole);
     let activeUserId = sessionStorage.getItem(ACTIVE_SESSION_KEY) || KIU_STATE.auth.activeUserId;
     if (currentUser?.id && !impersonationEnabled) {
         activeUserId = currentUser.id;
@@ -1517,9 +1083,13 @@ function ensureCanonicalState() {
     }
     const effectiveUser = getCurrentUserFromState(KIU_STATE);
     if (!impersonationEnabled) {
-        currentUserRole = currentUser?.role || effectiveUser?.role || currentUserRole || USER_ROLES.STUDENT;
+        if (currentUser?.role === USER_ROLES.ADMIN && pendingWorkspaceRole) {
+            currentUserRole = pendingWorkspaceRole;
+        } else {
+            currentUserRole = currentUser?.role || effectiveUser?.role || currentUserRole || USER_ROLES.STUDENT;
+        }
     } else {
-        currentUserRole = currentUserRole || effectiveUser?.role || currentUser?.role || USER_ROLES.STUDENT;
+        currentUserRole = pendingWorkspaceRole || currentUserRole || effectiveUser?.role || currentUser?.role || USER_ROLES.STUDENT;
     }
     syncLegacyStudentStateForCurrentUser();
     } finally {
@@ -1542,10 +1112,19 @@ function getCurrentUserId() {
 }
 
 function getEffectiveUserRole() {
-    if (!isRoleImpersonationEnabled()) {
-        return currentUser?.role || getCurrentUser()?.role || currentUserRole || USER_ROLES.STUDENT;
+    const authRole = typeof getAuthenticatedAccountRole === 'function'
+        ? getAuthenticatedAccountRole()
+        : String(currentUser?.role || '').trim().toLowerCase();
+    const workspaceRole = typeof resolveStoredWorkspaceRole === 'function'
+        ? resolveStoredWorkspaceRole()
+        : '';
+    if (authRole === USER_ROLES.ADMIN && workspaceRole) {
+        return workspaceRole;
     }
-    return currentUserRole || currentUser?.role || getCurrentUser()?.role || USER_ROLES.STUDENT;
+    if (isRoleImpersonationEnabled()) {
+        return workspaceRole || currentUserRole || authRole || getCurrentUser()?.role || USER_ROLES.STUDENT;
+    }
+    return currentUser?.role || getCurrentUser()?.role || currentUserRole || USER_ROLES.STUDENT;
 }
 
 function getCurrentUserPrivileges() {
@@ -1578,7 +1157,9 @@ function userHasPortalPrivilegeForAuthUser(privilegeId = '') {
     return privileges.includes(normalizedPrivilegeId);
 }
 
-window.userHasPortalPrivilegeForAuthUser = userHasPortalPrivilegeForAuthUser;
+__kiuStateExpose({
+    userHasPortalPrivilegeForAuthUser,
+});
 
 // PERFORMANCE: Cache allowed pages to avoid rebuilding Set on every navigation call
 let _allowedPagesCache = null;
@@ -1631,7 +1212,6 @@ function getAllowedPagesForRole(role = getEffectiveUserRole()) {
             ...common,
             'personal-data',
             'chancellery',
-            'career-market',
             'programs',
             'study-card',
             'registration',
@@ -1657,7 +1237,9 @@ function invalidatePageAccessCache() {
 }
 
 // Expose globally for navigation.js to call on role switch
-window.invalidatePageAccessCache = invalidatePageAccessCache;
+__kiuStateExpose({
+    invalidatePageAccessCache,
+});
 
 function canRoleAccessPage(pageId, role = getEffectiveUserRole()) {
     return getAllowedPagesForRole(role).has(pageId);
@@ -1795,10 +1377,6 @@ function setActiveSessionUser(userId) {
         if (currentUser?.role !== USER_ROLES.ADMIN) {
             sessionStorage.removeItem(ACTIVE_ROLE_IMPERSONATION_KEY);
         }
-        const persistedState = JSON.parse(localStorage.getItem('KIU_PERSISTENT_STATE') || 'null') || {};
-        persistedState.auth = persistedState.auth || {};
-        persistedState.auth.activeUserId = userId;
-        localStorage.setItem('KIU_PERSISTENT_STATE', JSON.stringify(persistedState));
     } catch (e) {
         console.warn('Could not persist active impersonation session.', e);
     }
@@ -1832,10 +1410,6 @@ function setActiveSessionUserByRole(role) {
             localStorage.setItem(PENDING_ROLE_SWITCH_KEY, normalizedRole);
             sessionStorage.setItem(ACTIVE_ROLE_IMPERSONATION_KEY, '1');
         }
-        const persistedState = JSON.parse(localStorage.getItem('KIU_PERSISTENT_STATE') || 'null') || {};
-        persistedState.auth = persistedState.auth || {};
-        persistedState.auth.activeUserId = targetUser.id;
-        localStorage.setItem('KIU_PERSISTENT_STATE', JSON.stringify(persistedState));
     } catch (e) {
         console.warn('Could not persist impersonation session user.', e);
     }
@@ -1866,10 +1440,16 @@ if (typeof window !== 'undefined' && !window.__kiuPortalFlushHooksBound) {
     });
 }
 if (typeof schedulePortalBackendBootstrap === 'function') schedulePortalBackendBootstrap();
-ensureCanonicalState();
+if (document.body?.classList?.contains('lux-route-library')) {
+    const scheduleCanonicalState = window.requestIdleCallback || ((cb) => window.setTimeout(cb, 0));
+    scheduleCanonicalState(() => ensureCanonicalState());
+} else {
+    ensureCanonicalState();
+}
 
-window.getCurrentUserFromState = getCurrentUserFromState;
-window.getCurrentUser = getCurrentUser;
-window.getCurrentUserId = getCurrentUserId;
-window.getEffectiveUserRole = getEffectiveUserRole;
-
+__kiuStateExpose({
+    getCurrentUserFromState,
+    getCurrentUser,
+    getCurrentUserId,
+    getEffectiveUserRole,
+});

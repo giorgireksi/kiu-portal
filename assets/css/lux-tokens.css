@@ -1,434 +1,332 @@
-/* Shared luxury token layer extracted from index-luxury.css.
-   Transition owner for route-specific overrides remains index-luxury.css. */
-
+/* READABILITY: tokens + panel paint. Edit glass here (--lux-panel-*, --lux-soft-chrome-*). §1 base · §3 paint. */
+/* ── §1 base tokens ── */
 :root {
-    --lux-bg: #070910;
-    --lux-shell-background: var(--lux-bg);
-    --lux-bg-soft: #0e1220;
-    --lux-surface: #101726;
-    --lux-surface-2: #151d2e;
-    --lux-surface-3: #1b2539;
-
-    --palette-obsidian-dark:
-        radial-gradient(ellipse at 18% 12%, rgba(200, 130, 42, 0.22), transparent 42%),
-        radial-gradient(ellipse at 78% 82%, rgba(216, 170, 86, 0.14), transparent 36%),
-        radial-gradient(circle at 52% 48%, rgba(139, 90, 30, 0.08), transparent 55%),
-        linear-gradient(168deg, #140f08 0%, #1a1308 40%, #0f0c06 100%);
-    --palette-obsidian-light:
-        radial-gradient(ellipse at 18% 12%, rgba(200, 130, 42, 0.14), transparent 42%),
-        radial-gradient(ellipse at 78% 82%, rgba(216, 170, 86, 0.10), transparent 36%),
-        radial-gradient(circle at 52% 48%, rgba(255, 210, 140, 0.08), transparent 55%),
-        linear-gradient(168deg, #faf5ec 0%, #f4eadb 40%, #eee0cc 100%);
-
-    --palette-slate-dark:
-        radial-gradient(ellipse at 22% 8%, rgba(66, 108, 218, 0.24), transparent 40%),
-        radial-gradient(ellipse at 76% 86%, rgba(100, 160, 255, 0.14), transparent 34%),
-        radial-gradient(circle at 48% 50%, rgba(30, 58, 138, 0.10), transparent 52%),
-        linear-gradient(168deg, #0a0e1e 0%, #0e142c 40%, #080c18 100%);
-    --palette-slate-light:
-        radial-gradient(ellipse at 22% 8%, rgba(66, 108, 218, 0.14), transparent 40%),
-        radial-gradient(ellipse at 76% 86%, rgba(120, 170, 255, 0.10), transparent 34%),
-        radial-gradient(circle at 48% 50%, rgba(180, 210, 255, 0.08), transparent 52%),
-        linear-gradient(168deg, #eef3fc 0%, #e2ecfa 40%, #d8e4f6 100%);
-
-    --palette-pine-dark:
-        radial-gradient(ellipse at 16% 14%, rgba(22, 160, 100, 0.24), transparent 40%),
-        radial-gradient(ellipse at 82% 80%, rgba(80, 220, 160, 0.12), transparent 34%),
-        radial-gradient(circle at 50% 46%, rgba(10, 100, 60, 0.10), transparent 50%),
-        linear-gradient(168deg, #081410 0%, #0c1c14 40%, #06100c 100%);
-    --palette-pine-light:
-        radial-gradient(ellipse at 16% 14%, rgba(22, 160, 100, 0.14), transparent 40%),
-        radial-gradient(ellipse at 82% 80%, rgba(80, 220, 160, 0.10), transparent 34%),
-        radial-gradient(circle at 50% 46%, rgba(160, 240, 200, 0.08), transparent 50%),
-        linear-gradient(168deg, #eefaf3 0%, #e0f5ea 40%, #d4f0de 100%);
-
-    --palette-burgundy-dark:
-        radial-gradient(ellipse at 20% 10%, rgba(180, 40, 60, 0.22), transparent 40%),
-        radial-gradient(ellipse at 78% 84%, rgba(220, 80, 80, 0.12), transparent 34%),
-        radial-gradient(circle at 50% 50%, rgba(120, 20, 30, 0.10), transparent 50%),
-        linear-gradient(168deg, #160a0c 0%, #1e0e10 40%, #100608 100%);
-    --palette-burgundy-light:
-        radial-gradient(ellipse at 20% 10%, rgba(200, 50, 70, 0.12), transparent 40%),
-        radial-gradient(ellipse at 78% 84%, rgba(240, 100, 100, 0.08), transparent 34%),
-        radial-gradient(circle at 50% 50%, rgba(255, 180, 180, 0.08), transparent 50%),
-        linear-gradient(168deg, #fceff0 0%, #f8e2e4 40%, #f2d4d8 100%);
-
-    --palette-sand-dark:
-        radial-gradient(ellipse at 18% 12%, rgba(190, 150, 90, 0.22), transparent 40%),
-        radial-gradient(ellipse at 80% 82%, rgba(220, 190, 140, 0.12), transparent 34%),
-        radial-gradient(circle at 50% 48%, rgba(140, 100, 50, 0.08), transparent 50%),
-        linear-gradient(168deg, #14100a 0%, #1a1610 40%, #0e0c08 100%);
-    --palette-sand-light:
-        radial-gradient(ellipse at 18% 12%, rgba(200, 170, 110, 0.12), transparent 40%),
-        radial-gradient(ellipse at 80% 82%, rgba(230, 210, 160, 0.10), transparent 34%),
-        radial-gradient(circle at 50% 48%, rgba(245, 230, 190, 0.08), transparent 50%),
-        linear-gradient(168deg, #faf8f2 0%, #f5f0e4 40%, #efe8d6 100%);
-
-    --palette-ink-dark:
-        radial-gradient(ellipse at 24% 12%, rgba(130, 60, 200, 0.24), transparent 40%),
-        radial-gradient(ellipse at 74% 84%, rgba(180, 100, 220, 0.12), transparent 34%),
-        radial-gradient(circle at 46% 52%, rgba(80, 20, 150, 0.10), transparent 50%),
-        linear-gradient(168deg, #100a18 0%, #160e22 40%, #0a060e 100%);
-    --palette-ink-light:
-        radial-gradient(ellipse at 24% 12%, rgba(140, 70, 190, 0.14), transparent 40%),
-        radial-gradient(ellipse at 74% 84%, rgba(180, 110, 220, 0.10), transparent 34%),
-        radial-gradient(circle at 46% 52%, rgba(210, 160, 240, 0.08), transparent 50%),
-        linear-gradient(168deg, #f6f0fc 0%, #efe4f8 40%, #e6d8f2 100%);
-
-    --palette-ocean-dark:
-        radial-gradient(ellipse at 20% 15%, rgba(0, 140, 140, 0.24), transparent 40%),
-        radial-gradient(ellipse at 80% 80%, rgba(40, 180, 170, 0.14), transparent 34%),
-        radial-gradient(circle at 50% 50%, rgba(0, 90, 80, 0.10), transparent 50%),
-        linear-gradient(168deg, #081214 0%, #0c1a1c 40%, #060e10 100%);
-    --palette-ocean-light:
-        radial-gradient(ellipse at 20% 15%, rgba(0, 160, 150, 0.14), transparent 40%),
-        radial-gradient(ellipse at 80% 80%, rgba(60, 210, 220, 0.10), transparent 34%),
-        radial-gradient(circle at 50% 50%, rgba(150, 235, 240, 0.08), transparent 50%),
-        linear-gradient(168deg, #ecfafa 0%, #dff4f5 40%, #d2eef0 100%);
-
-    --lux-border: rgba(255, 255, 255, 0.08);
-    --lux-border-strong: rgba(255, 255, 255, 0.16);
-    --lux-text: #fbfaf6;
-    --lux-text-muted: rgba(251, 250, 246, 0.74);
-    --lux-text-soft: rgba(251, 250, 246, 0.42);
-    --lux-accent: #c8822a;
-    --lux-accent-2: #d8aa56;
-    --lux-accent-rgb: 200, 130, 42;
-    --lux-shell-start-rgb: 20, 25, 38;
-    --lux-shell-end-rgb: 8, 11, 19;
-    --lux-shell-glow-rgb: 216, 170, 86;
-    --lux-glass-tint-rgb: 16, 23, 38;
-    --lux-topbar-tint-rgb: 11, 18, 32;
-    --lux-home-secondary-rgb: 216, 170, 86;
-    --lux-green: #48bf86;
-    --lux-blue: #5c90f5;
-    --lux-red: #de6262;
-    --lux-sidebar-width: 200px;
-    --lux-topbar-height: 78px;
-    --lux-radius: 16px;
-    --lux-radius-lg: 24px;
-    --lux-shadow: 0 22px 60px rgba(0, 0, 0, 0.38);
-    --lux-topbar-shell-min-height: 76px;
-    --lux-topbar-shell-padding: 14px 18px;
-    --lux-topbar-shell-radius: 28px;
-    --lux-panel-blur: 22px;
-    --lux-surface-blur: 20px;
-    --lux-icon-btn-size: 44px;
-    --lux-icon-btn-radius: 16px;
-    --lux-button-radius: 12px;
-    --lux-primary-btn-min-height: 46px;
-    --lux-primary-btn-padding: 0 18px;
-    --lux-secondary-btn-min-height: 44px;
-    --lux-secondary-btn-padding: 9px 18px;
-    --lux-ghost-btn-padding: 9px 18px;
-    --lux-hero-side-padding: 18px;
-    --lux-hero-side-radius: 22px;
-    --lux-hero-signal-radius: 12px;
-    --lux-strip-card-min-height: 198px;
-    --lux-strip-card-radius: 18px;
-    --lux-quick-btn-min-height: 176px;
-    --lux-quick-btn-padding: 16px 12px;
-    --lux-quick-btn-radius: 18px;
-    --lux-quick-icon-size: 42px;
-    --lux-quick-icon-radius: 12px;
-    --lux-home-viewport-width: calc(100vw - var(--lux-sidebar-width) - 48px);
-    --lux-transparency-mode: on;
-    --lux-border-solid-dark: rgba(255, 255, 255, 0.20);
-    --lux-border-solid-light: rgba(255, 255, 255, 0.20);
-    --lux-canvas-opacity: 0.82;
-    --lux-overlay-opacity: 0.56;
-    --lux-panel-alpha: 0.74;
-    --lux-hero-glow: 0.24;
-    --lux-page-haze-top: 0.06;
-    --lux-page-haze-bottom: 0.11;
-    --lux-button-glow: 0.42;
-    --lux-panel-glow: 0.22;
-    --lux-glow-scale: 1;
-    --lux-raised-alpha: 0.09;
-    --lux-glass-alpha: 0.06;
-    --lux-card-glow-alpha: 0.06;
-    --lux-utility-alpha: 0.82;
-    --lux-panel-fill-alpha: 0.08;
-    --lux-raised-fill-alpha: 0.045;
-    --lux-utility-fill-alpha: 0.11;
-    --lux-glass-highlight-alpha: 0.05;
-    --lux-glass-blur: 18px;
-    --lux-grid-row-height: 28px;
-    --lux-topbar-fill-alpha: 0.78;
-    --lux-topbar-raised-alpha: 0.18;
-
-    /* Shared scroll-rail dock (dark default) */
-    --lux-scroll-rail-btn-size: 36px;
-    --lux-scroll-rail-dock-radius: 18px;
-    --lux-scroll-rail-dock-padding: 4px;
-    --lux-scroll-rail-dock-bg:
-        linear-gradient(180deg, rgba(255, 255, 255, calc(0.06 + var(--lux-glass-alpha, 0.06))), rgba(255, 255, 255, 0.02)),
-        radial-gradient(circle at 50% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, 0.92) * 0.14)), transparent 58%),
-        rgba(var(--lux-glass-tint-rgb, 16, 23, 38), calc(var(--lux-transparency-alpha, 0.92) * 0.42));
-    --lux-scroll-rail-dock-border: rgba(var(--lux-accent-rgb), calc(0.14 + var(--lux-glass-alpha, 0.06) * 0.4));
-    --lux-scroll-rail-dock-shadow:
-        0 16px 34px rgba(0, 0, 0, 0.22),
-        inset 0 1px 0 rgba(255, 255, 255, 0.08),
-        0 0 0 1px rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.35));
-    --lux-scroll-rail-dock-blur: blur(var(--lux-transparency-blur, 18px)) saturate(var(--lux-transparency-saturate, 145%));
-    --lux-scroll-rail-btn-bg: rgba(255, 255, 255, 0.03);
-    --lux-scroll-rail-btn-border: rgba(255, 255, 255, 0.08);
-    --lux-scroll-rail-btn-hover-bg: rgba(var(--lux-accent-rgb), 0.14);
-    --lux-scroll-rail-btn-hover-border: rgba(var(--lux-accent-rgb), 0.34);
-    --lux-scroll-rail-btn-hover-shadow: 0 10px 22px rgba(var(--lux-accent-rgb), 0.16);
-    --lux-scroll-rail-spine: linear-gradient(180deg, transparent, rgba(var(--lux-accent-rgb), 0.34) 18%, rgba(var(--lux-accent-rgb), 0.34) 82%, transparent);
-    --lux-scroll-rail-disabled-opacity: 0.34;
-
-    /* Shared native scrollbar chrome (dark default) */
-    --lux-scrollbar-size: 7px;
-    --lux-scrollbar-track: transparent;
-    --lux-scrollbar-thumb: rgba(var(--lux-accent-rgb), calc(0.24 + var(--lux-glass-alpha, 0.06)));
-    --lux-scrollbar-thumb-hover: rgba(var(--lux-accent-rgb), calc(0.38 + var(--lux-glass-alpha, 0.06)));
-    --lux-scrollbar-thumb-border: rgba(255, 255, 255, 0.10);
-    --lux-scrollbar-thumb-shadow: 0 0 12px rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.45));
+  --lux-bg: #070910;
+  --lux-shell-background: var(--lux-bg);
+  --lux-bg-soft: #0e1220;
+  --lux-surface: #101726;
+  --lux-surface-2: #151d2e;
+  --lux-surface-3: #1b2539;
+  --palette-obsidian-dark: radial-gradient(ellipse at 18% 12%, rgba(200, 130, 42, 0.22), transparent 42%), radial-gradient(ellipse at 78% 82%, rgba(216, 170, 86, 0.14), transparent 36%), radial-gradient(circle at 52% 48%, rgba(139, 90, 30, 0.08), transparent 55%), linear-gradient(168deg, #140f08 0%, #1a1308 40%, #0f0c06 100%);
+  --palette-obsidian-light: radial-gradient(ellipse at 18% 12%, rgba(200, 130, 42, 0.14), transparent 42%), radial-gradient(ellipse at 78% 82%, rgba(216, 170, 86, 0.10), transparent 36%), radial-gradient(circle at 52% 48%, rgba(255, 210, 140, 0.08), transparent 55%), linear-gradient(168deg, #faf5ec 0%, #f4eadb 40%, #eee0cc 100%);
+  --palette-slate-dark: radial-gradient(ellipse at 22% 8%, rgba(66, 108, 218, 0.24), transparent 40%), radial-gradient(ellipse at 76% 86%, rgba(100, 160, 255, 0.14), transparent 34%), radial-gradient(circle at 48% 50%, rgba(30, 58, 138, 0.10), transparent 52%), linear-gradient(168deg, #0a0e1e 0%, #0e142c 40%, #080c18 100%);
+  --palette-slate-light: radial-gradient(ellipse at 22% 8%, rgba(66, 108, 218, 0.14), transparent 40%), radial-gradient(ellipse at 76% 86%, rgba(120, 170, 255, 0.10), transparent 34%), radial-gradient(circle at 48% 50%, rgba(180, 210, 255, 0.08), transparent 52%), linear-gradient(168deg, #eef3fc 0%, #e2ecfa 40%, #d8e4f6 100%);
+  --palette-pine-dark: radial-gradient(ellipse at 16% 14%, rgba(22, 160, 100, 0.24), transparent 40%), radial-gradient(ellipse at 82% 80%, rgba(80, 220, 160, 0.12), transparent 34%), radial-gradient(circle at 50% 46%, rgba(10, 100, 60, 0.10), transparent 50%), linear-gradient(168deg, #081410 0%, #0c1c14 40%, #06100c 100%);
+  --palette-pine-light: radial-gradient(ellipse at 16% 14%, rgba(22, 160, 100, 0.14), transparent 40%), radial-gradient(ellipse at 82% 80%, rgba(80, 220, 160, 0.10), transparent 34%), radial-gradient(circle at 50% 46%, rgba(160, 240, 200, 0.08), transparent 50%), linear-gradient(168deg, #eefaf3 0%, #e0f5ea 40%, #d4f0de 100%);
+  --palette-burgundy-dark: radial-gradient(ellipse at 20% 10%, rgba(180, 40, 60, 0.22), transparent 40%), radial-gradient(ellipse at 78% 84%, rgba(220, 80, 80, 0.12), transparent 34%), radial-gradient(circle at 50% 50%, rgba(120, 20, 30, 0.10), transparent 50%), linear-gradient(168deg, #160a0c 0%, #1e0e10 40%, #100608 100%);
+  --palette-burgundy-light: radial-gradient(ellipse at 20% 10%, rgba(200, 50, 70, 0.12), transparent 40%), radial-gradient(ellipse at 78% 84%, rgba(240, 100, 100, 0.08), transparent 34%), radial-gradient(circle at 50% 50%, rgba(255, 180, 180, 0.08), transparent 50%), linear-gradient(168deg, #fceff0 0%, #f8e2e4 40%, #f2d4d8 100%);
+  --palette-sand-dark: radial-gradient(ellipse at 18% 12%, rgba(190, 150, 90, 0.22), transparent 40%), radial-gradient(ellipse at 80% 82%, rgba(220, 190, 140, 0.12), transparent 34%), radial-gradient(circle at 50% 48%, rgba(140, 100, 50, 0.08), transparent 50%), linear-gradient(168deg, #14100a 0%, #1a1610 40%, #0e0c08 100%);
+  --palette-sand-light: radial-gradient(ellipse at 18% 12%, rgba(200, 170, 110, 0.12), transparent 40%), radial-gradient(ellipse at 80% 82%, rgba(230, 210, 160, 0.10), transparent 34%), radial-gradient(circle at 50% 48%, rgba(245, 230, 190, 0.08), transparent 50%), linear-gradient(168deg, #faf8f2 0%, #f5f0e4 40%, #efe8d6 100%);
+  --palette-ink-dark: radial-gradient(ellipse at 24% 12%, rgba(130, 60, 200, 0.24), transparent 40%), radial-gradient(ellipse at 74% 84%, rgba(180, 100, 220, 0.12), transparent 34%), radial-gradient(circle at 46% 52%, rgba(80, 20, 150, 0.10), transparent 50%), linear-gradient(168deg, #100a18 0%, #160e22 40%, #0a060e 100%);
+  --palette-ink-light: radial-gradient(ellipse at 24% 12%, rgba(140, 70, 190, 0.14), transparent 40%), radial-gradient(ellipse at 74% 84%, rgba(180, 110, 220, 0.10), transparent 34%), radial-gradient(circle at 46% 52%, rgba(210, 160, 240, 0.08), transparent 50%), linear-gradient(168deg, #f6f0fc 0%, #efe4f8 40%, #e6d8f2 100%);
+  --palette-ocean-dark: radial-gradient(ellipse at 20% 15%, rgba(0, 140, 140, 0.24), transparent 40%), radial-gradient(ellipse at 80% 80%, rgba(40, 180, 170, 0.14), transparent 34%), radial-gradient(circle at 50% 50%, rgba(0, 90, 80, 0.10), transparent 50%), linear-gradient(168deg, #081214 0%, #0c1a1c 40%, #060e10 100%);
+  --palette-ocean-light: radial-gradient(ellipse at 20% 15%, rgba(0, 160, 150, 0.14), transparent 40%), radial-gradient(ellipse at 80% 80%, rgba(60, 210, 220, 0.10), transparent 34%), radial-gradient(circle at 50% 50%, rgba(150, 235, 240, 0.08), transparent 50%), linear-gradient(168deg, #ecfafa 0%, #dff4f5 40%, #d2eef0 100%);
+  --lux-border: rgba(255, 255, 255, 0.20);
+  --lux-border-strong: rgba(255, 255, 255, 0.32);
+  --lux-text: #fbfaf6;
+  --lux-text-muted: rgba(251, 250, 246, 0.74);
+  --lux-text-soft: rgba(251, 250, 246, 0.42);
+  --lux-accent: #c8822a;
+  --lux-accent-2: #d8aa56;
+  --lux-accent-rgb: 200, 130, 42;
+  --lux-shell-start-rgb: 20, 25, 38;
+  --lux-shell-end-rgb: 8, 11, 19;
+  --lux-shell-glow-rgb: 216, 170, 86;
+  --lux-glass-tint-rgb: 16, 23, 38;
+  --lux-topbar-tint-rgb: 11, 18, 32;
+  --lux-home-secondary-rgb: 216, 170, 86;
+  --lux-green: #48bf86;
+  --lux-shadow-ink-rgb: 48, 34, 22;
+  --lux-sidebar-width: 200px;
+  --lux-topbar-height: 78px;
+  --lux-topbar-offset-top: 18px;
+  --lux-chrome-gap: 12px;
+  --lux-chrome-bottom-fallback: calc(var(--lux-topbar-offset-top) + var(--lux-topbar-height) + var(--lux-chrome-gap));
+  --lux-chrome-bottom: var(--lux-chrome-bottom-fallback);
+  --lux-radius: 16px;
+  --lux-shadow: 0 22px 60px rgba(0, 0, 0, 0.38);
+  --lux-panel-surface: var(--lux-surface);
+  --lux-panel-surface-soft: var(--lux-surface);
+  --lux-panel-border: var(--lux-border);
+  --lux-panel-border-soft: var(--lux-border);
+  --lux-elev-2: none;
+  --lux-elev-3: none;
+  --lux-panel-shadow-soft: none;
+  --lux-panel-shadow: none;
+  --lux-btn-pill-radius: 999px;
+  --lux-icon-btn-size: 44px;
+  --lux-icon-btn-radius: 16px;
+  --lux-primary-btn-min-height: 46px;
+  --lux-secondary-btn-min-height: 44px;
+  --lux-canvas-opacity: 0.82;
+  --lux-overlay-opacity: 0.56;
+  --lux-panel-alpha: 0.74;
+  --lux-raised-alpha: 0.09;
+  --lux-glass-alpha: 0.06;
+  --lux-utility-alpha: 0.82;
+  --lux-panel-fill-alpha: 0.08;
+  --lux-raised-fill-alpha: 0.045;
+  --lux-utility-fill-alpha: 0.11;
+  --lux-topbar-raised-alpha: 0.18;
+  --lux-button-glow: 0.42;
+  --lux-panel-glow: 0.22;
+  --lux-glass-highlight-alpha: 0.05;
+  --lux-glass-blur: var(--lux-transparency-blur, 14px);
+  --lux-panel-blur-filter: blur(var(--lux-glass-blur)) saturate(150%);
+  --lux-grid-row-height: 28px;
+  --lux-topbar-fill-alpha: 0.78;
+  --lux-scrollbar-size: 7px;
+  --lux-scrollbar-track: transparent;
+  --lux-scrollbar-thumb: rgba(var(--lux-accent-rgb), calc(0.24 + var(--lux-glass-alpha, 0.06)));
 }
-
 body {
-    color: var(--lux-text);
-    min-height: 100vh;
-    overflow-x: hidden;
-    position: relative;
-    isolation: isolate;
+  color: var(--lux-text);
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+  isolation: isolate;
 }
-
-body.palette-obsidian-amber {
-    background: var(--palette-obsidian-dark) !important;
+body.palette-obsidian-amber { background: var(--palette-obsidian-dark); }
+body.palette-obsidian-amber.lux-light-mode { background: var(--palette-obsidian-light); }
+body.palette-slate-sapphire { background: var(--palette-slate-dark); }
+body.palette-slate-sapphire.lux-light-mode { background: var(--palette-slate-light); }
+body.palette-pine-jade { background: var(--palette-pine-dark); }
+body.palette-pine-jade.lux-light-mode { background: var(--palette-pine-light); }
+body.palette-burgundy-rose { background: var(--palette-burgundy-dark); }
+body.palette-burgundy-rose.lux-light-mode { background: var(--palette-burgundy-light); }
+body.palette-sand-pearl { background: var(--palette-sand-dark); }
+body.palette-sand-pearl.lux-light-mode { background: var(--palette-sand-light); }
+body.palette-ink-orchid { background: var(--palette-ink-dark); }
+body.palette-ink-orchid.lux-light-mode { background: var(--palette-ink-light); }
+body.palette-ocean-teal { background: var(--palette-ocean-dark); }
+body.palette-ocean-teal.lux-light-mode { background: var(--palette-ocean-light); }
+body.lux-light-mode:not([data-faculty]), body.lux-light-mode[data-faculty=""] {
+  --lux-bg: #f4f0e8;
+  --lux-shell-background: radial-gradient(ellipse at 20% 14%, rgba(200, 160, 80, 0.06), transparent 38%), radial-gradient(ellipse at 80% 80%, rgba(180, 140, 90, 0.04), transparent 30%), linear-gradient(168deg, #f8f4ec 0%, #f2ece0 40%, #eee6d6 100%);
+  --lux-bg-soft: #f9f5ee;
+  --lux-surface: #ffffff;
+  --lux-surface-2: #f5f1ea;
+  --lux-surface-3: #ece6db;
+  --lux-border: rgba(48, 34, 22, 0.16);
+  --lux-border-strong: rgba(48, 34, 22, 0.18);
+  --lux-text: #201912;
+  --lux-text-muted: rgba(32, 25, 18, 0.66);
+  --lux-text-soft: rgba(32, 25, 18, 0.36);
+  --lux-shadow: 0 24px 54px rgba(62, 42, 20, 0.12);
+  background: var(--lux-shell-background);
 }
-
-body.palette-obsidian-amber.lux-light-mode {
-    background: var(--palette-obsidian-light) !important;
-}
-
-body.palette-slate-sapphire {
-    background: var(--palette-slate-dark) !important;
-}
-
-body.palette-slate-sapphire.lux-light-mode {
-    background: var(--palette-slate-light) !important;
-}
-
-body.palette-pine-jade {
-    background: var(--palette-pine-dark) !important;
-}
-
-body.palette-pine-jade.lux-light-mode {
-    background: var(--palette-pine-light) !important;
-}
-
-body.palette-burgundy-rose {
-    background: var(--palette-burgundy-dark) !important;
-}
-
-body.palette-burgundy-rose.lux-light-mode {
-    background: var(--palette-burgundy-light) !important;
-}
-
-body.palette-sand-pearl {
-    background: var(--palette-sand-dark) !important;
-}
-
-body.palette-sand-pearl.lux-light-mode {
-    background: var(--palette-sand-light) !important;
-}
-
-body.palette-ink-orchid {
-    background: var(--palette-ink-dark) !important;
-}
-
-body.palette-ink-orchid.lux-light-mode {
-    background: var(--palette-ink-light) !important;
-}
-
-body.palette-ocean-teal {
-    background: var(--palette-ocean-dark) !important;
-}
-
-body.palette-ocean-teal.lux-light-mode {
-    background: var(--palette-ocean-light) !important;
-}
-
-body.lux-light-mode:not([data-faculty]),
-body.lux-light-mode[data-faculty=""] {
-    --lux-bg: #f4f0e8;
-    --lux-shell-background:
-        radial-gradient(ellipse at 20% 14%, rgba(200, 160, 80, 0.06), transparent 38%),
-        radial-gradient(ellipse at 80% 80%, rgba(180, 140, 90, 0.04), transparent 30%),
-        linear-gradient(168deg, #f8f4ec 0%, #f2ece0 40%, #eee6d6 100%);
-    --lux-bg-soft: #f9f5ee;
-    --lux-surface: #ffffff;
-    --lux-surface-2: #f5f1ea;
-    --lux-surface-3: #ece6db;
-    --lux-border: rgba(48, 34, 22, 0.10);
-    --lux-border-strong: rgba(48, 34, 22, 0.18);
-    --lux-text: #201912;
-    --lux-text-muted: rgba(32, 25, 18, 0.66);
-    --lux-text-soft: rgba(32, 25, 18, 0.36);
-    --lux-shadow: 0 24px 54px rgba(62, 42, 20, 0.12);
-    --lux-border-solid-dark: rgba(48, 34, 22, 0.30);
-    --lux-border-solid-light: rgba(48, 34, 22, 0.40);
-    background: var(--lux-shell-background) !important;
-}
-
 body.lux-light-mode {
-    --lux-scrollbar-thumb: rgba(48, 34, 22, 0.18);
-    --lux-scrollbar-thumb-hover: rgba(48, 34, 22, 0.28);
-    --lux-scrollbar-thumb-border: rgba(48, 34, 22, 0.12);
-    --lux-scrollbar-thumb-shadow: 0 0 10px rgba(var(--lux-accent-rgb), 0.10);
-    --lux-scroll-rail-dock-bg:
-        linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(248, 244, 237, 0.72)),
-        radial-gradient(circle at 50% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, 0.88) * 0.12)), transparent 58%),
-        rgba(255, 255, 255, calc(var(--lux-transparency-alpha, 0.88) * 0.68));
-    --lux-scroll-rail-dock-border: rgba(var(--lux-accent-rgb), 0.16);
-    --lux-scroll-rail-dock-shadow:
-        0 14px 30px rgba(107, 91, 62, 0.12),
-        inset 0 1px 0 rgba(255, 255, 255, 0.84),
-        0 0 0 1px rgba(var(--lux-accent-rgb), 0.10);
-    --lux-scroll-rail-btn-bg: rgba(255, 255, 255, 0.72);
-    --lux-scroll-rail-btn-border: rgba(48, 34, 22, 0.10);
-    --lux-scroll-rail-btn-hover-bg: rgba(var(--lux-accent-rgb), 0.10);
-    --lux-scroll-rail-btn-hover-border: rgba(var(--lux-accent-rgb), 0.28);
-    --lux-scroll-rail-btn-hover-shadow: 0 10px 20px rgba(var(--lux-accent-rgb), 0.10);
-    --lux-scroll-rail-spine: linear-gradient(180deg, transparent, rgba(var(--lux-accent-rgb), 0.22) 18%, rgba(var(--lux-accent-rgb), 0.22) 82%, transparent);
-    --lux-scroll-rail-disabled-opacity: 0.40;
-    --lux-bg: #efebe4;
-    --lux-shell-background:
-        radial-gradient(ellipse at 20% 14%, rgba(200, 160, 80, 0.06), transparent 38%),
-        radial-gradient(ellipse at 80% 80%, rgba(180, 140, 90, 0.04), transparent 30%),
-        linear-gradient(168deg, #f8f4ec 0%, #f2ece0 40%, #eee6d6 100%);
-    --lux-bg-soft: #f7f3ec;
-    --lux-surface: #ffffff;
-    --lux-surface-2: #f5f1ea;
-    --lux-surface-3: #ece6db;
-    --lux-border: rgba(48, 34, 22, 0.10);
-    --lux-border-strong: rgba(48, 34, 22, 0.18);
-    --lux-text: #201912;
-    --lux-text-muted: rgba(32, 25, 18, 0.66);
-    --lux-text-soft: rgba(32, 25, 18, 0.36);
-    --lux-shadow: 0 24px 54px rgba(62, 42, 20, 0.12);
-    --lux-border-solid-dark: rgba(48, 34, 22, 0.30);
-    --lux-border-solid-light: rgba(48, 34, 22, 0.40);
+  --lux-glass-tint-rgb: 246, 239, 229;
+  --lux-scrollbar-thumb: rgba(48, 34, 22, 0.18);
+  --lux-bg: #efebe4;
+  --lux-shell-background: radial-gradient(ellipse at 20% 14%, rgba(200, 160, 80, 0.06), transparent 38%), radial-gradient(ellipse at 80% 80%, rgba(180, 140, 90, 0.04), transparent 30%), linear-gradient(168deg, #f8f4ec 0%, #f2ece0 40%, #eee6d6 100%);
+  --lux-bg-soft: #f7f3ec;
+  --lux-surface: #ffffff;
+  --lux-surface-2: #f5f1ea;
+  --lux-surface-3: #ece6db;
+  --lux-border: rgba(48, 34, 22, 0.16);
+  --lux-border-strong: rgba(48, 34, 22, 0.18);
+  --lux-text: #201912;
+  --lux-text-muted: rgba(32, 25, 18, 0.66);
+  --lux-text-soft: rgba(32, 25, 18, 0.36);
+  --lux-shadow: 0 24px 54px rgba(62, 42, 20, 0.12);
 }
-
-body.palette-obsidian-amber {
-    --lux-shell-background: var(--palette-obsidian-dark);
-}
-
-body.palette-obsidian-amber.lux-light-mode {
-    --lux-shell-background: var(--palette-obsidian-light);
-}
-
-body.palette-slate-sapphire {
-    --lux-shell-background: var(--palette-slate-dark);
-}
-
-body.palette-slate-sapphire.lux-light-mode {
-    --lux-shell-background: var(--palette-slate-light);
-}
-
-body.palette-pine-jade {
-    --lux-shell-background: var(--palette-pine-dark);
-}
-
-body.palette-pine-jade.lux-light-mode {
-    --lux-shell-background: var(--palette-pine-light);
-}
-
-body.palette-burgundy-rose {
-    --lux-shell-background: var(--palette-burgundy-dark);
-}
-
-body.palette-burgundy-rose.lux-light-mode {
-    --lux-shell-background: var(--palette-burgundy-light);
-}
-
-body.palette-sand-pearl {
-    --lux-shell-background: var(--palette-sand-dark);
-}
-
-body.palette-sand-pearl.lux-light-mode {
-    --lux-shell-background: var(--palette-sand-light);
-}
-
-body.palette-ink-orchid {
-    --lux-shell-background: var(--palette-ink-dark);
-}
-
-body.palette-ink-orchid.lux-light-mode {
-    --lux-shell-background: var(--palette-ink-light);
-}
-
-body.palette-ocean-teal {
-    --lux-shell-background: var(--palette-ocean-dark);
-}
-
-body.palette-ocean-teal.lux-light-mode {
-    --lux-shell-background: var(--palette-ocean-light);
-}
-
+body.palette-obsidian-amber { --lux-shell-background: var(--palette-obsidian-dark); }
+body.palette-obsidian-amber.lux-light-mode { --lux-shell-background: var(--palette-obsidian-light); }
+body.palette-slate-sapphire { --lux-shell-background: var(--palette-slate-dark); }
+body.palette-slate-sapphire.lux-light-mode { --lux-shell-background: var(--palette-slate-light); }
+body.palette-pine-jade { --lux-shell-background: var(--palette-pine-dark); }
+body.palette-pine-jade.lux-light-mode { --lux-shell-background: var(--palette-pine-light); }
+body.palette-burgundy-rose { --lux-shell-background: var(--palette-burgundy-dark); }
+body.palette-burgundy-rose.lux-light-mode { --lux-shell-background: var(--palette-burgundy-light); }
+body.palette-sand-pearl { --lux-shell-background: var(--palette-sand-dark); }
+body.palette-sand-pearl.lux-light-mode { --lux-shell-background: var(--palette-sand-light); }
+body.palette-ink-orchid { --lux-shell-background: var(--palette-ink-dark); }
+body.palette-ink-orchid.lux-light-mode { --lux-shell-background: var(--palette-ink-light); }
+body.palette-ocean-teal { --lux-shell-background: var(--palette-ocean-dark); }
+body.palette-ocean-teal.lux-light-mode { --lux-shell-background: var(--palette-ocean-light); }
 html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode) {
-    --lux-accent-surface-rgb: 14, 20, 33;
-    --lux-hero-glow: 0;
-    --lux-glow-scale: 0;
-    --lux-card-glow-alpha: 0;
-    --lux-scrollbar-thumb:
-        rgba(var(--lux-accent-rgb), calc(0.18 + var(--lux-transparency-alpha, 0.92) * 0.06));
-    --lux-scrollbar-thumb-hover:
-        rgba(var(--lux-accent-rgb), calc(0.28 + var(--lux-transparency-alpha, 0.92) * 0.06));
-    --lux-scrollbar-thumb-shadow: none;
-    --lux-scroll-rail-dock-shadow:
-        0 12px 28px rgba(0, 0, 0, 0.18),
-        inset 0 1px 0 rgba(255, 255, 255, 0.06);
-    --lux-scroll-rail-btn-hover-shadow: 0 8px 18px rgba(var(--lux-accent-rgb), 0.10);
+  --lux-hero-glow: 0;
+  --lux-glow-scale: 0;
+  --lux-card-glow-alpha: 0;
+  --lux-scrollbar-thumb: rgba(var(--lux-accent-rgb), calc(0.18 + var(--lux-transparency-alpha, 0.92) * 0.06));
 }
-
 html.lux-high-transparency.lux-high-transparency.lux-high-transparency body.lux-light-mode {
-    --lux-accent-surface-rgb: 252, 249, 244;
-    --lux-hero-glow: 0;
-    --lux-glow-scale: 0;
-    --lux-card-glow-alpha: 0;
-    --lux-scrollbar-thumb: rgba(48, 34, 22, 0.16);
-    --lux-scrollbar-thumb-hover: rgba(48, 34, 22, 0.24);
-    --lux-scrollbar-thumb-shadow: none;
-    --lux-scroll-rail-dock-shadow:
-        0 12px 26px rgba(107, 91, 62, 0.08),
-        inset 0 1px 0 rgba(255, 255, 255, 0.78);
-    --lux-scroll-rail-btn-hover-shadow: 0 8px 16px rgba(var(--lux-accent-rgb), 0.08);
+  --lux-hero-glow: 0;
+  --lux-glow-scale: 0;
+  --lux-card-glow-alpha: 0;
+  --lux-scrollbar-thumb: rgba(48, 34, 22, 0.16);
 }
-
+:root { --lux-transparency-blur: 18px; --lux-transparency-saturate: 145%; }
+body[data-lux-performance='efficient'] { --lux-scrollbar-size: 6px; }
 :root {
-    --lux-transparency-blur: 18px;
-    --lux-transparency-saturate: 145%;
+  --lux-warmglass-overlay-dark: rgba(0, 0, 0, 0.55);
+  --lux-warmglass-overlay-light: rgba(73, 48, 25, 0.20);
+  --lux-warmglass-surface: linear-gradient(180deg, rgba(14, 20, 33, 0.97), rgba(8, 12, 21, 0.95));
+  --lux-warmglass-section: rgba(255, 255, 255, 0.06);
+  --lux-warmglass-input: rgba(255, 255, 255, 0.09);
+  --lux-warmglass-border: rgba(255, 255, 255, 0.12);
+  --lux-warmglass-blur: blur(20px) saturate(145%);
+  --lux-warmglass-shadow-dark: 0 34px 80px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.07);
+  --lux-warmglass-shadow-light: 0 24px 56px rgba(73, 48, 25, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.62);
+  --lux-warmglass-section-shadow: 0 4px 12px rgba(73, 48, 25, 0.06);
 }
-
+html.lux-light-mode, body.lux-light-mode {
+  --lux-warmglass-surface: radial-gradient(circle at 8% 0%, rgba(255, 255, 255, 0.62), transparent 32%), radial-gradient(circle at 78% 0%, rgba(var(--lux-accent-rgb), 0.10), transparent 38%), linear-gradient(135deg, rgba(255, 255, 255, 0.58), rgba(247, 241, 232, 0.44));
+  --lux-warmglass-section: rgba(255, 255, 255, 0.42);
+  --lux-warmglass-input: rgba(255, 255, 255, 0.52);
+  --lux-warmglass-border: rgba(77, 52, 31, 0.12);
+  --lux-warmglass-blur: blur(26px) saturate(155%);
+}
+/* ── §3 shared panel / soft-chrome paint surfaces ── */
+:root {
+  --lux-panel-surface-soft: radial-gradient(circle at 12% 0%, rgba(255, 255, 255, calc(var(--lux-color-fade-alpha, .92) * 0.055)), transparent 30%), radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * 0.14)), transparent 34%), linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * 0.065)), rgba(10, 15, 24, calc(var(--lux-transparency-alpha, .92) * 0.88)) 46%, rgba(7, 10, 18, calc(var(--lux-transparency-alpha, .92) * 0.80)));
+  --lux-panel-surface: radial-gradient(circle at 6% 0%, rgba(255, 255, 255, calc(var(--lux-color-fade-alpha, .92) * 0.08)), transparent 32%), radial-gradient(circle at 74% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * 0.28)), transparent 42%), radial-gradient(circle at 100% 96%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .92) * 0.18)), transparent 40%), linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * 0.10)), rgba(10, 15, 24, calc(var(--lux-transparency-alpha, .92) * 0.89)) 44%, rgba(7, 10, 18, calc(var(--lux-transparency-alpha, .92) * 0.80)));
+  --lux-panel-border-soft: rgba(var(--lux-accent-rgb), 0.12);
+  --lux-panel-border: rgba(var(--lux-accent-rgb), 0.22);
+  --lux-elev-2: 0 14px 32px rgba(0, 0, 0, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  --lux-elev-3: 0 24px 58px rgba(0, 0, 0, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 0 0 1px rgba(var(--lux-accent-rgb), 0.04);
+  --lux-panel-shadow-soft: var(--lux-elev-2);
+  --lux-panel-shadow: var(--lux-elev-3);
+}
+:root { --lux-topbar-shell-min-height: 76px; --lux-topbar-shell-padding: 14px 18px; }
+:root {
+  --lux-panel-fill-alpha: 0.08;
+  --lux-raised-fill-alpha: 0.045;
+  --lux-glass-highlight-alpha: 0.05;
+  --lux-glass-blur: 18px;
+  --lux-grid-row-height: 28px;
+  --lux-glass-tint-rgb: 16, 23, 38;
+  --lux-topbar-tint-rgb: 11, 18, 32;
+  --lux-topbar-fill-alpha: 0.78;
+  --lux-bg-line-rgb: 200, 130, 42;
+  --lux-bg-glow-rgb: 216, 170, 86;
+  --lux-bg-particle-rgb: 216, 170, 86;
+  --lux-bg-haze-rgb: 200, 130, 42;
+}
+:root {
+  --lux-btn-pill-radius: 999px;
+  --lux-btn-frame-width: 2.5px;
+  --lux-btn-frame-metal: linear-gradient( 145deg, color-mix(in srgb, var(--lux-accent) 42%, #fff 58%) 0%, color-mix(in srgb, var(--lux-accent) 88%, #fff 12%) 22%, var(--lux-accent) 48%, var(--lux-accent-2, var(--lux-accent)) 72%, color-mix(in srgb, var(--lux-accent) 40%, #0a1018 60%) 100% );
+  --lux-btn-frame-metal-soft: linear-gradient( 145deg, color-mix(in srgb, var(--lux-accent) 35%, #fff 50%) 0%, color-mix(in srgb, var(--lux-accent) 70%, transparent) 50%, color-mix(in srgb, var(--lux-accent-2, var(--lux-accent)) 50%, #0a1018 40%) 100% );
+  --lux-btn-well: linear-gradient( 180deg, color-mix(in srgb, #121820 calc(78% + var(--lux-transparency-alpha, 0.5) * 12%), var(--lux-accent) 6%) 0%, color-mix(in srgb, #0a0e14 calc(82% + var(--lux-transparency-alpha, 0.5) * 10%), transparent) 100% );
+  --lux-btn-well-soft: linear-gradient( 180deg, color-mix(in srgb, #161c24 calc(72% + var(--lux-transparency-alpha, 0.5) * 14%), var(--lux-accent) 8%) 0%, color-mix(in srgb, #0c1016 calc(78% + var(--lux-transparency-alpha, 0.5) * 12%), transparent) 100% );
+  --lux-btn-glass-blur: blur(calc(var(--lux-transparency-blur, 16px) * 0.4)) saturate(calc(108% + var(--lux-transparency-alpha, 0.5) * 25%));
+  --lux-btn-frame-shadow: 0 10px 26px rgba(0, 0, 0, 0.38), 0 0 0 1px color-mix(in srgb, var(--lux-accent) 22%, transparent), 0 4px 14px rgba(var(--lux-accent-rgb), 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  --lux-btn-frame-shadow-hover: 0 14px 34px rgba(0, 0, 0, 0.42), 0 0 0 1px color-mix(in srgb, var(--lux-accent) 38%, transparent), 0 8px 22px rgba(var(--lux-accent-rgb), 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.28);
+  --lux-btn-sheen: linear-gradient( 105deg, transparent 35%, rgba(255, 255, 255, 0.14) 48%, rgba(255, 255, 255, 0.28) 50%, rgba(255, 255, 255, 0.12) 52%, transparent 65% );
+  --lux-btn-label: #f7fbff;
+}
+:root {
+  --lux-hero-glow: 0.24;
+  --lux-page-haze-top: 0.06;
+  --lux-page-haze-bottom: 0.11;
+  --lux-glow-scale: 1;
+  --lux-raised-alpha: 0.09;
+  --lux-glass-alpha: 0.06;
+  --lux-card-glow-alpha: 0.06;
+  --lux-utility-alpha: 0.82;
+}
+:root {
+  --lux-home-scroll-size: 14px;
+  --lux-home-scroll-track-edge: color-mix(in srgb, var(--lux-accent) 70%, #fff 25%);
+  --lux-home-scroll-track-outer: color-mix(in srgb, var(--lux-accent) 40%, #000 40%);
+  --lux-home-scroll-thumb: linear-gradient( 160deg, color-mix(in srgb, var(--lux-accent) 50%, #fff 50%) 0%, var(--lux-accent) 35%, var(--lux-accent-2, var(--lux-accent)) 70%, color-mix(in srgb, var(--lux-accent) 55%, #061018 40%) 100% );
+  --lux-home-scroll-thumb-solid: color-mix(in srgb, var(--lux-accent) 78%, #fff 16%);
+  --lux-home-scroll-thumb-hover: linear-gradient( 160deg, color-mix(in srgb, var(--lux-accent) 60%, #fff 40%) 0%, color-mix(in srgb, var(--lux-accent) 95%, #fff 5%) 40%, var(--lux-accent-2, var(--lux-accent)) 100% );
+  --lux-home-scroll-thumb-hover-solid: color-mix(in srgb, var(--lux-accent) 88%, #fff 12%);
+  --lux-home-scroll-glow: 0 0 16px rgba(var(--lux-accent-rgb), 0.65), 0 0 4px color-mix(in srgb, var(--lux-accent) 80%, transparent);
+  --lux-home-scroll-glow-hover: 0 0 24px rgba(var(--lux-accent-rgb), 0.9), 0 0 8px color-mix(in srgb, var(--lux-accent) 90%, transparent);
+  --lux-home-scroll-thumb-inset: inset 0 1px 0 rgba(255, 255, 255, 0.65), inset 0 -1px 0 rgba(0, 0, 0, 0.35);
+}
+html.lux-light-mode, body.lux-light-mode {
+  --lux-home-scroll-track-edge: color-mix(in srgb, var(--lux-accent) 48%, #fff 20%);
+  --lux-home-scroll-track-outer: color-mix(in srgb, var(--lux-accent) 18%, rgba(48, 34, 22, 0.25));
+  --lux-home-scroll-thumb-solid: color-mix(in srgb, var(--lux-accent) 62%, #fff 12%);
+  --lux-home-scroll-thumb-hover-solid: color-mix(in srgb, var(--lux-accent) 75%, #fff 15%);
+  --lux-home-scroll-glow: 0 0 12px rgba(var(--lux-accent-rgb), 0.4), 0 2px 6px rgba(48, 34, 22, 0.2);
+  --lux-home-scroll-glow-hover: 0 0 18px rgba(var(--lux-accent-rgb), 0.55), 0 3px 8px rgba(48, 34, 22, 0.22);
+  --lux-panel-surface-soft: radial-gradient(circle at 12% 0%, rgba(255, 255, 255, calc(var(--lux-color-fade-alpha, .86) * 0.62)), transparent 30%), radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * 0.14)), transparent 34%), linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * 0.045)), rgba(255, 255, 255, calc(var(--lux-transparency-alpha, .86) * 0.84)) 46%, rgba(247, 241, 232, calc(var(--lux-transparency-alpha, .86) * 0.72)));
+  --lux-panel-surface: radial-gradient(circle at 6% 0%, rgba(255, 255, 255, calc(var(--lux-color-fade-alpha, .86) * 0.88)), transparent 34%), radial-gradient(circle at 74% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * 0.24)), transparent 42%), radial-gradient(circle at 100% 96%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .86) * 0.14)), transparent 40%), linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * 0.065)), rgba(255, 255, 255, calc(var(--lux-transparency-alpha, .86) * 0.84)) 44%, rgba(247, 241, 232, calc(var(--lux-transparency-alpha, .86) * 0.70)));
+  --lux-panel-border-soft: rgba(var(--lux-accent-rgb), 0.11);
+  --lux-panel-border: rgba(var(--lux-accent-rgb), 0.16);
+  --lux-elev-2: 0 14px 30px rgba(107, 91, 62, 0.10), inset 0 1px 0 rgba(255, 255, 255, 0.62);
+  --lux-elev-3: 0 22px 48px rgba(107, 91, 62, 0.13), inset 0 1px 0 rgba(255, 255, 255, 0.74), 0 0 0 1px rgba(var(--lux-accent-rgb), 0.035);
+}
+body.lux-route-home {
+  --home-glass-border: color-mix( in srgb, rgba(var(--lux-accent-rgb), 0.72) 58%, var(--lux-border) );
+  --home-fade-soft: radial-gradient(circle at 16% 0%, rgba(255, 255, 255, calc(var(--lux-transparency-alpha, 0.70) * 0.07)), transparent 30%), radial-gradient(circle at 80% 18%, rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, 0.70) * 0.20)), transparent 34%), linear-gradient(145deg, rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, 0.70) * 0.10)), rgba(8, 12, 21, calc(var(--lux-transparency-alpha, 0.70) * 0.88)) 48%, rgba(6, 9, 16, calc(var(--lux-transparency-alpha, 0.70) * 0.78)));
+  --home-fade-border-soft: color-mix(in srgb, var(--home-glass-border) 78%, transparent);
+  --home-fade-shadow-soft: 0 14px 32px rgba(0, 0, 0, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  --lux-soft-chrome-surface: var(--home-fade-soft);
+  --lux-soft-chrome-border: var(--home-fade-border-soft);
+  --lux-soft-chrome-shadow: var(--home-fade-shadow-soft);
+  --lux-focus-fill: var(--home-fade-soft);
+  --lux-focus-border: var(--home-fade-border-soft);
+  --lux-focus-shadow: var(--home-fade-shadow-soft);
+}
+html.lux-light-mode body.lux-route-home, body.lux-light-mode.lux-route-home {
+  --home-glass-border: color-mix( in srgb, rgba(var(--lux-accent-rgb), 0.55) 52%, var(--lux-border) );
+  --home-fade-soft: radial-gradient(circle at 16% 0%, rgba(255, 255, 255, calc(var(--lux-transparency-alpha, 0.70) * 0.86)), transparent 32%), radial-gradient(circle at 80% 18%, rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, 0.70) * 0.18)), transparent 34%), linear-gradient(145deg, rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, 0.70) * 0.08)), rgba(255, 255, 255, calc(var(--lux-transparency-alpha, 0.70) * 0.84)) 48%, rgba(246, 240, 231, calc(var(--lux-transparency-alpha, 0.70) * 0.70)));
+  --home-fade-border-soft: color-mix(in srgb, var(--home-glass-border) 78%, transparent);
+  --home-fade-shadow-soft: inset 0 1px 0 rgba(255, 255, 255, 0.62), 0 6px 16px rgba(var(--lux-shadow-ink-rgb), 0.06);
+}
+:root {
+  --lux-nonhome-fade-surface-soft: var(--lux-panel-surface-soft);
+  --lux-nonhome-fade-border-soft: var(--lux-panel-border-soft);
+  --lux-nonhome-fade-shadow-soft: var(--lux-panel-shadow-soft);
+  --lux-soft-chrome-surface: var(--lux-panel-surface-soft);
+  --lux-soft-chrome-border: color-mix(in srgb, var(--lux-border, rgba(255, 255, 255, 0.08)) 64%, rgba(var(--lux-accent-rgb), 0.34));
+  --lux-soft-chrome-shadow: var(--lux-elev-2);
+  --lux-focus-fill: var(--lux-soft-chrome-surface);
+  --lux-focus-border: var(--lux-soft-chrome-border);
+  --lux-focus-shadow: var(--lux-soft-chrome-shadow);
+}
+html.lux-light-mode, body.lux-light-mode {
+  --lux-nonhome-fade-surface-soft: var(--lux-panel-surface-soft);
+  --lux-nonhome-fade-border-soft: var(--lux-panel-border-soft);
+  --lux-nonhome-fade-shadow-soft: var(--lux-panel-shadow-soft);
+  --lux-soft-chrome-surface: var(--lux-panel-surface-soft);
+  --lux-soft-chrome-border: color-mix(in srgb, var(--lux-border, rgba(48, 34, 22, 0.10)) 70%, rgba(var(--lux-accent-rgb), 0.22));
+  --lux-soft-chrome-shadow: var(--lux-elev-2);
+  --lux-focus-fill: var(--lux-soft-chrome-surface);
+  --lux-focus-border: var(--lux-soft-chrome-border);
+  --lux-focus-shadow: var(--lux-soft-chrome-shadow);
+}
+body.lux-route-timetable {
+  --lux-soft-chrome-surface: var(--tt-fade-surface-matte, var(--lux-nonhome-fade-surface-soft));
+  --lux-soft-chrome-border: var(--tt-fade-border-matte, var(--lux-nonhome-fade-border-soft));
+  --lux-soft-chrome-shadow: var(--tt-fade-shadow-soft, var(--lux-nonhome-fade-shadow-soft));
+  --lux-focus-fill: var(--tt-fade-surface-matte, var(--lux-nonhome-fade-surface-soft));
+  --lux-focus-border: var(--tt-fade-border-matte, var(--lux-nonhome-fade-border-soft));
+  --lux-focus-shadow: var(--tt-fade-shadow-soft, var(--lux-nonhome-fade-shadow-soft));
+}
+html.lux-light-mode, body.lux-light-mode {
+  --lux-btn-well: linear-gradient( 180deg, color-mix(in srgb, #1a222c 88%, var(--lux-accent) 8%) 0%, color-mix(in srgb, #10161e 92%, transparent) 100% );
+  --lux-btn-well-soft: linear-gradient( 180deg, color-mix(in srgb, #f8f4ee 92%, var(--lux-accent) 4%) 0%, color-mix(in srgb, var(--lux-soft-chrome-surface, #efe6da) 94%, transparent) 100% );
+  --lux-btn-label: #f7fbff;
+}
 body[data-lux-performance='efficient'] {
-    --lux-glass-blur: 14px;
-    --lux-transparency-blur: 12px;
-    --lux-transparency-saturate: 124%;
-    --lux-glass-alpha: 0.052;
-    --lux-utility-alpha: 0.8;
-    --lux-card-glow-alpha: 0.05;
-    --lux-scrollbar-size: 6px;
+  --lux-glass-blur: 14px;
+  --lux-transparency-blur: 12px;
+  --lux-transparency-saturate: 124%;
+  --lux-glass-alpha: 0.052;
+  --lux-utility-alpha: 0.8;
+  --lux-card-glow-alpha: 0.05;
 }
-
 body[data-lux-performance='standard'] {
-    --lux-glass-blur: 18px;
-    --lux-transparency-blur: 16px;
-    --lux-transparency-saturate: 138%;
-    --lux-glass-alpha: 0.06;
-    --lux-utility-alpha: 0.82;
-    --lux-card-glow-alpha: 0.06;
+  --lux-glass-blur: 18px;
+  --lux-transparency-blur: 16px;
+  --lux-transparency-saturate: 138%;
+  --lux-glass-alpha: 0.06;
+  --lux-utility-alpha: 0.82;
+  --lux-card-glow-alpha: 0.06;
 }
-
 body[data-lux-performance='high'] {
-    --lux-glass-blur: 20px;
-    --lux-transparency-blur: 18px;
-    --lux-transparency-saturate: 148%;
-    --lux-glass-alpha: 0.068;
-    --lux-utility-alpha: 0.84;
-    --lux-card-glow-alpha: 0.07;
+  --lux-glass-blur: 20px;
+  --lux-transparency-blur: 18px;
+  --lux-transparency-saturate: 148%;
+  --lux-glass-alpha: 0.068;
+  --lux-utility-alpha: 0.84;
+  --lux-card-glow-alpha: 0.07;
 }

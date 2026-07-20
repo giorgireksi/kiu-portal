@@ -1,5 +1,10 @@
 # KIU Portal — Luxury Visual System Notes
 
+> **LIVE SSOT (2026-07):** For edits and handoff use [`docs/css-handoff.md`](docs/css-handoff.md) + [`docs/visual-ssot.md`](docs/visual-ssot.md).  
+> This file is **historical design notes**. Many paths below are **retired** (`index-home-dashboard.css`, `*-route.css` glass skins). Prefer `index-home-{layout,widgets,role}.css` and shared `lux-tokens` / `lux-shell` / `lux-controls`.
+
+**Shell/panels contract:** [`docs/shell-panels.md`](docs/shell-panels.md) — edit `--lux-panel-*` for portal glass.
+
 Reference for the glassmorphism / color-fade / glow look on the dashboard (`index.html`)
 and how to safely carry the same look to other pages **one page at a time**.
 
@@ -19,8 +24,47 @@ Every "luxury" surface (hero, panel, card, quick button, widget) is built from t
 4. **Token-driven opacity** — every alpha comes from a CSS variable, so the whole interface fades
    together when one token changes.
 
-Signature dashboard surface (the look you liked), in
-[asd/assets/css/index-home-dashboard.css](asd/assets/css/index-home-dashboard.css) L1246-1293:
+Signature dashboard surface (the look you liked) is owned by `--home-fade-surface` in
+[`assets/css/lux-tokens.css`](assets/css/lux-tokens.css) on `body.lux-route-home`, and applied in
+[`assets/css/index-home-layout.css`](assets/css/index-home-layout.css) / [`index-home-widgets.css`](assets/css/index-home-widgets.css) (not the deleted `index-home-dashboard.css` megafile).
+
+Portal reference tiers (copy these on other routes):
+
+| Tier | Token | Use |
+|---|---|---|
+| Large | `--home-fade-surface` | grid widget host, editor chrome (single glass host) |
+| Soft | `--home-fade-soft` / `--home-fade-chip` | flat soft insets: focus panel, stats, quick tiles, ops cards (shell-RGB, inset-first shadow, no nested blur) |
+| Control | `--home-fade-control` | home toolbar, pills, meta badges, widget toolbars |
+
+**Hero focus panel (portal primitive):** shared in [`assets/css/lux-focus-panel.css`](assets/css/lux-focus-panel.css).
+
+| Piece | Class |
+|---|---|
+| Shell | `.lux-focus-panel` (+ optional `.lux-hero-side`) |
+| Zones | `.lux-focus-panel__head` / `__body` / `__meta` |
+| Head | `__kicker` + `__chip` (or `__chip--time`) |
+| Body | `__title` + `__copy` + optional `__facts` |
+| Surface | matte via `--lux-focus-fill` / `--lux-soft-chrome-*`; **always `backdrop-filter: none`** |
+| Rail | 3px accent `::before` (opt out: `.lux-focus-panel--no-rail`) |
+
+Back-compat aliases: `.lms-hero-focus*`, `.lux-timetable-hero-focus` / `.lux-timetable-focus-*` map to the same structure. Home still renders LMS class names; dual-write `lux-focus-panel` is OK. Soft insets without story structure use `.lux-soft-chrome` (same matte tier, no head/body/meta required).
+
+**Nested-blur rule:** one blur host per stack (outer hero / large command deck / grid widget). Soft chrome, focus panels, chips, filters never host `backdrop-filter`.
+
+**Full-shell parity:** outer `.lux-grid-widget` = single blur host; nested hero/panels transparent; all soft insets flat and slider-linked via `--home-fade-*` / `--lux-soft-chrome-*`.
+
+**Palette adaptivity:** dark mid/end stops use `--lux-shell-start-rgb` / `--lux-shell-end-rgb` (written by `applyResolvedPalette`). Light end stop and soft fills use `--lux-glass-tint-rgb`. Accent radials use `--lux-accent-rgb` / `--lux-home-secondary-rgb`. Do **not** bake `rgba(10,15,24)` / cream into home fade definitions.
+
+Dark large recipe (what `--home-fade-surface` expands to):
+
+```css
+background: var(--home-fade-surface);
+border-color: var(--home-fade-border);
+box-shadow: var(--home-fade-shadow);
+backdrop-filter: var(--home-fade-blur);
+```
+
+Equivalent expanded gradients:
 
 ```css
 background:
@@ -29,17 +73,9 @@ background:
     radial-gradient(circle at 100% 96%,rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha,.92) * .18)), transparent 40%),
     linear-gradient(135deg,
         rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha,.92) * .10)),
-        rgba(10,15,24, calc(var(--lux-transparency-alpha,.92) * .89)) 44%,
-        rgba(7,10,18,  calc(var(--lux-transparency-alpha,.92) * .80))) !important;
-border-color: rgba(var(--lux-accent-rgb), 0.22) !important;
-box-shadow:
-    0 24px 58px rgba(0,0,0,0.24),
-    inset 0 1px 0 rgba(255,255,255,0.08),
-    0 0 0 1px rgba(var(--lux-accent-rgb),0.04) !important;
-backdrop-filter: blur(var(--lux-transparency-blur,20px)) saturate(var(--lux-transparency-saturate,145%)) !important;
-```
-
----
+        rgba(var(--lux-shell-start-rgb), calc(var(--lux-transparency-alpha,.92) * .89)) 44%,
+        rgba(var(--lux-shell-end-rgb),  calc(var(--lux-transparency-alpha,.92) * .80)));
+```---
 
 ## 2. File map (what to read / touch)
 
@@ -59,7 +95,7 @@ backdrop-filter: blur(var(--lux-transparency-blur,20px)) saturate(var(--lux-tran
 | 10 | `assets/css/mobile-responsive.css` | Mobile overrides |
 | + | route file (e.g. `lms-route.css`) | **Page-specific overrides — loaded LAST, so it wins ties** |
 
-`index.html` additionally loads `assets/css/index-home-dashboard.css` (dashboard-only) and `news-route.css`.
+`index.html` additionally loads `assets/css/index-home-dashboard.css` (dashboard-only). It does **not** load `news-route.css`.
 
 ### Key token locations in `lux-tokens.css`
 
@@ -88,7 +124,7 @@ Performance tiers adjust blur/alpha: `body[data-lux-performance='efficient'|'sta
 
 - Home grid / canvas / widget shells (`.lux-home-grid`, `.lux-dashboard-canvas`, `.lux-grid-widget`).
 - Role tints: `.lux-home-grid.is-student/.is-professor/.is-admin/...` L49-87.
-- **Signature dashboard fade** L1246-1293 (the look to replicate).
+- **Signature dashboard fade** — tokens `--home-fade-surface` / `-soft` / `-control` / `-chip` in `lux-tokens.css`; applied in `index-home-dashboard.css`. Single glass host = outer `.lux-grid-widget`; hero focus = `.lms-hero-focus` (exact LMS focus panel on home, engine-painted glass). Flat soft insets on stats/quick/ops/news strip. Home fills CSS-owned via `shouldKeepHomeFadeCssBackground` in `utilities.js`.
 
 ### JS that drives visuals
 
@@ -144,7 +180,7 @@ Theme/palette/transparency are **portal-wide** (same keys on every luxury page).
 3. **Duplication / monolith** — `.lux-hero`/`.lux-card`/`.lux-quick-btn` defined 2-3x; the fade recipe is
    copy-pasted per route with slightly different numbers.
 4. **Minor inconsistencies** — body class order varies; `data-faculty` present only on 6 pages
-   (index, timetable, social, career-market, admin-orders, admin-library).
+   (index, timetable, social, admin-orders, admin-library).
 
 ---
 
@@ -153,9 +189,9 @@ Theme/palette/transparency are **portal-wide** (same keys on every luxury page).
 Three override layers, weakest to strongest:
 
 1. **`!important` saturation.** Counts: `index-luxury.css` 2419, `mobile-responsive.css` 872,
-   `social-rebuild.css` 633, `programs-route.css` 315, `admin-tools-luxury.css` 287, `lms-route.css` 253,
+   `social-rebuild.css` 633, `admin-tools-luxury.css` 287, `lms-route.css` 253,
    `student-service-route.css` 201, `staff-command-center.css` 154, `registration-route.css` 135,
-   `timetable-route.css` 121, ...
+   `timetable-route.css` 121, `programs-route.css` 0 (post cleanup), ...
 2. **Source order.** Each page loads its route CSS AFTER `index-luxury.css`. On equal `!important`+specificity,
    the **route file wins**. So shared edits get beaten on the heaviest pages.
 3. **JS inline paint (strongest).** `updateTransparency()` in `utilities.js` does
@@ -201,22 +237,21 @@ When changing a page (e.g. `lms.html` / `lms-route.css`):
 
 | Page | Route CSS | Body class | Audited? | Hardcoded overrides found | JS-painted surfaces? | Done |
 |---|---|---|---|---|---|---|
-| index (dashboard) | index-home-dashboard.css | lux-route-home | reference | - | yes (home widgets) | baseline |
+| index (dashboard) | index-home-dashboard.css | lux-route-home | yes | `--home-fade-*`; hero focus story panel; flat soft insets; single widget glass host; FOUC/HT/99–100 carveouts | CSS-owned via `shouldKeepHomeFadeCssBackground` | baseline |
 | lms | lms-route.css | lux-route-lms | yes | converted to `--lms-fade-*` tokens (quiz/gradebook/live/concepts/assignments/monitoring) | yes (hero, lux-card, group cards, lms-clean-*, status pills) via utilities.js LMS branch | done |
 | timetable | timetable-route.css | lux-route-timetable | yes | converted to `--tt-fade-*` tokens (hero/command/stage/canvas/grid, soft chrome, chips, sch-* rows/events); removed 3 conflicting timetable blocks from index-luxury.css (glass redesign, clean-academic flat, compat-repair) + generic FOUC/HT/preset timetable selectors | yes (timetable surfaces CSS-owned via `isStructuralSurface`; removed `isTimetableLargeSurface` inline paint + HT/all-selector lists) | done |
 | study-card | study-card-route.css | lux-route-study-card | yes | converted to `--sc-fade-*` tokens (shell, hero, filter, container, summary stage/cards, term headers/rows, grade circles, assessment modal, history, legacy popover/header/circle); removed duplicate shell upgrade block | yes (hero, filter-shell, container, semester-table, summary-stage = large; strip cards, grade circles, status pills, assessment chips/cards, term rows, history = soft) via utilities.js study-card branch | done |
 | registration | registration-route.css | lux-route-registration | yes | converted to `--reg-fade-*` tokens (shell, hero, insight/focus/track cards, tabs, buttons, progress, modals, structured form, advanced map, section picker, condition/antireq); fixed light-mode `--lux-text` | yes (hero, workspace, module cards = large; insight/focus/track/footer/mini-metric/course-row/module-choice/reg-tabs = soft) via utilities.js registration branch | done |
-| programs | programs-route.css | lux-route-programs | yes | converted to `--prog-fade-*` tokens (shell, hero, filter, stage, overview/focus panels, module/subject rails, chips, module options, subject rows, requirement chips, progress, status pills, empty blocks); replaced flat light-mode white-card system with glass parity | yes (hero, filter-shell, stage, overview/focus panels, module/subject rails = large; publish pill, focus stats, semester chips, module options, subject cards, summary cards, badges = soft) via utilities.js programs branch | done |
-| profile | profile-route.css | lux-route-profile | yes | converted to `--prof-fade-*` tokens (hero/nav/content/messenger, strip/hero-side signals, tabs/controls, calendar sch-* rows, messenger panels); neutralized stacked `lux-summary-surface` in `#page-profile`; deduped index-luxury generic hero/content-box/messenger/lux-card/unified-shell catches with `:not(.lux-route-profile)` | yes (`#page-profile` surfaces CSS-owned via `isStructuralSurface` on `lux-route-profile`; removed from generic inline-paint paths) | done |
+| programs | programs-route.css | lux-route-programs | yes | converted to `--prog-fade-*` tokens (command deck, control/ops bands, module/subject rails, module options, subject cards, pills, empty states); removed legacy hero/filter/stage/overview/focus/summary/timeline + index-luxury programs final-pass; single blur host on command deck | yes (command deck / control-band / ops-panel / module+subject rails = large; ops tiles, module options, subject cards, status pills = soft) via utilities.js programs branch | done |
+| profile | *(removed)* redirect → personal-data | — | — | `profile.html` is legacy alias; use `personal-data-route.css` / `lux-route-personal-data` | — | done (2026-07-17 orphan delete) |
 | profile-view | profile-view-route.css | lux-route-profile-view | yes | converted to `--pv-fade-*` tokens (meta/left/right panels = large; stat/session/document/course/financial/probation/strip/inline/data cards = soft; controls/tabs/inputs = control; pills = chip; modals = modal; financial table = flat rows); hero keeps faculty-accent gradient with tokenized border/blur; deduped index-luxury.css flat pv blocks + generic lux-card/content-box catch-alls | yes (`pv-*` + generic surface classes CSS-owned via `isStructuralSurface`) | done |
 | personal-data | personal-data-route.css + index-luxury.css | lux-route-personal-data | yes | converted to `--pd-fade-*` tokens (hero, toolbar, profile/stats/facts/record cards, KPI/mini/record-item/meta, hero panel/badges, status pill, select); removed duplicate override waves in index-luxury.css | yes (hero, toolbar, profile/stats/facts/record cards = large; KPI/mini/record-item/meta/strip cards/status pills/hero panel = soft) via utilities.js personal-data branch | done |
 | orders | orders-route.css | lux-route-orders | yes | converted to `--orders-fade-*` tokens (home-dashboard recipe: hero/list/detail = large; hero-signal/metric/attachment/recipient/list-wrap/detail-panel/empty/status-filter/items = soft; controls/pills = control/chip; list rows = flat); scoped to `#page-orders` / `#orders-inbox-root` for index embed + standalone; deduped index-luxury.css duplicate orders blocks + generic high-transparency orders overrides | yes (inbox surfaces CSS-owned via `isStructuralSurface` inside `#page-orders` / `#orders-inbox-root`; removed from inline paint lists) | done |
 | news | news-route.css | lux-route-news | yes | converted to `--news-fade-*` tokens (panel/sidebar/rail/feed/filter/section/hero = large; stat/private/check/account/section-btn/pane = soft; badge/chip = control); refactored inlined L549-602 recipe | yes (panel/hero/feed/filter/sidebar/rail/section = large; stat/private/check/account/section-btn/pane = soft) via utilities.js news branch — already token-form | done |
-| library | library-route.css | lux-route-library | yes | converted to `--lib-fade-*` tokens (hero/filter/catalog = large; tabs/picker-panel/footer/hero summary+signal/overview = soft; filter pickers/search = control); consolidated from index-luxury.css L6117-6629 | yes (large + soft + filter controls via `isLibrarySoftSurface` in utilities.js library branch) | done |
+| library | library-route.css + library-catalog-shared.css | lux-route-library | yes | converted to `--lib-fade-*` tokens (catalog workspace/filters/table via shared CSS; route keeps fade + live glass); dead hero/filter-shell legacy removed in cleanup | yes (catalog soft/large surfaces via `isLibrarySoftSurface` in utilities.js library branch) | done |
 | student-service | student-service-route.css | lux-route-student-service | yes | converted to `--ssvc-fade-*` tokens (hero/panel/canvas/zone/lane/ticket/ops/track/home = large; area/article/ticket-row/home-card/track-card/ops-ticket = soft; hero variant via `--ssvc-fade-surface-hero`); refactored inlined L1950-2060 recipe | yes (hero/panel/canvas/zone/lane/ticket/ops/track/home = large; workflow-step/summary/home-card/area/ticket-row/track/lane/ticket-card = soft) via utilities.js student-service branch | done |
 | social | social-rebuild.css | lux-route-social | yes | converted to `--social-fade-*` tokens (topbar/section-command/events/pages/messages/projects/portfolio shells = large; neo/project/portfolio cards = soft; inputs/composer = control; pills = chip; dialogs/drawer/story/toast = modal; chat/directory/message rows = flat); aliased legacy `--sn-*`/`--social-*` surface vars; collapsed L5498 fade pass; deduped index-luxury duplicate recipe blocks + primer/high-transparency social overrides | yes (`social-neo-*` / `social-project-*` / `social-portfolio-*` / legacy `social-*` CSS-owned via `isStructuralSurface`; removed from inline paint lists) | done |
 | exams | exam-studio.css | lux-route-exams | yes | converted to `--exam-fade-*` tokens (hero/panel/toolbar/cards/sidebar/qnav/empty-state = large; stat/quiz/q-card/timeline/split/progress/mini-grid = soft); refactored inlined L1266-1347 recipe | yes (hero/panel/toolbar/cards/sidebar/qnav/empty-state = large; stat/quiz/q-card/timeline/split/progress/mini-grid = soft) via utilities.js exams branch | done |
-| career-market | career-market-route.css | lux-route-career-market | | | | |
 | chancellery | chancellery-route.css | lux-route-chancellery | yes | converted to `--chan-fade-*` tokens (hero/focus/snapshot/cards/queue/thread/controls/chips/rows); light body palette moved from index-luxury; neutralized stacked `lux-summary-surface` in `#page-chancellery`; deduped index-luxury duplicate chancellery block + generic painters with `:not(.lux-route-chancellery)` | yes (`#page-chancellery` surfaces CSS-owned via `isStructuralSurface`; removed `isChancelleryLargeSurface` inline paint + HT/all-selector lists) | done |
 | staff | staff-command-center.css | lux-route-staff | yes | converted to `--staff-fade-*` tokens (hub hero/command/directory/profile/modal/metrics/admin-directory, controls/chips/rows); neutralized stacked `lux-summary-surface` in `#staff-content`; deduped index-luxury staff hero/card/admin-directory paint dupes + generic painters with `:not(.lux-route-staff)` | yes (`#staff-content` surfaces CSS-owned via `isStructuralSurface`; removed `isStaffSurface` inline paint + HT/all-selector lists) | done |
 | students-admin | students-admin-lms.css | lux-route-students-admin | yes | renamed `--students-lms-*` -> `--sadmin-fade-*` tokens (page/surface-fill/subtle, controls/chips, rows, modal); route already excluded from all generic index-luxury painters via `:not(.lux-route-students-admin)`; HT reinstatement + home-style restyle in route CSS | yes (`#students-content` surfaces CSS-owned via transparency early return; stubbed `applyStudentsAdminManagedSurface`; `renderStudentsPage` hook kept) | done |
@@ -224,7 +259,7 @@ When changing a page (e.g. `lms.html` / `lms-route.css`):
 | admin-scheduler | admin-scheduler-route.css | lux-route-admin-scheduler | yes | converted to `--sch-fade-*` tokens (rail/board heroes = hero; rail section/grid shell/modal/legend = large; stat strip cards/actions/palette/legend chrome = soft; filter/search/modal fields = control); deduped index-luxury.css scheduler backgrounds | yes (hero/large/soft/control via `isSchedulerSoftSurface` / `isSchedulerControlSurface` in utilities.js) | done |
 | admin-tools | admin-tools-luxury.css | lux-route-admin-tools | yes | converted to `--atools-fade-*` tokens (hero/index-panel/panels/ops = large; summary/command/strip/subcard/tabs = soft; pickers/inputs = control); deduped index-luxury.css admin-tools backgrounds | yes (large + soft + control via `isAdminToolsSoftSurface` / `isAdminToolsControlSurface` in utilities.js) | done |
 | admin-orders | admin-orders-route.css | lux-route-admin-orders | yes | converted to `--aorders-fade-*` tokens (hero/panels = large; metric/recipient/attachment/detail/hero-signal = soft; compose inputs/studio controls = control; table row/danger/modal chrome); deduped index-luxury.css dead admin-orders blocks + `#admin-orders-root>*` catch-alls | yes (admin soft surfaces via `isAdminOrdersSoftSurface`; hero/panels/table/studio excluded from inline paint via `isStructuralSurface`) | done |
-| admin-library | library-route.css + admin-library-route.css | lux-route-admin-library | yes | converted to `--alib-fade-*` tokens (aliases `--lib-fade-*` for shared surfaces; admin-only row/danger/modal chrome); deduped index-luxury.css dead admin-library block + library-route.css admin hardcoded overrides | yes (extends library branch: entry shell = large; metric/param/chip/summary = soft; catalog rows + modal excluded from inline paint) | done |
+| admin-library | admin-library-route.css + library-catalog-shared.css | lux-route-admin-library | yes | converted to `--alib-fade-*` tokens (aliases `--lib-fade-*` for shared catalog surfaces; admin-only entry/row/danger/modal chrome); catalog chrome owned by `library-catalog-shared.css` — not `library-route.css` | yes (extends library branch: entry shell = large; metric/param/chip = soft; catalog rows + modal excluded from inline paint) | done |
 
 ## 8. LMS page - single source of truth (done)
 
@@ -285,18 +320,21 @@ The programs page color-fade/glow/glass is now driven from one place:
   `--prog-fade-shadow-soft`, `--prog-fade-glow-ring`, `--prog-fade-blur`
   (each has a dark + light-mode value). Glow radials use `--program-blue` /
   `--program-cyan` (accent / secondary) but follow `--lux-color-fade-alpha`.
-  Large surfaces (hero, filter shell, stage, overview/focus panels,
-  module/subject rails) use `--prog-fade-surface`; smaller chrome (publish pill,
-  summary/focus stats, semester chips, module options, subject cards, badges,
-  filter inputs) use `--prog-fade-surface-soft` / `--prog-fade-control`.
-  The page previously had zero `backdrop-filter`; glass blur is now applied via
-  `--prog-fade-blur`. The legacy flat light-mode white-card block is overridden
-  by a token-based glass parity layer appended at the end of the file.
+  Large surfaces (command deck, control band, ops panel, module/subject rails)
+  use `--prog-fade-surface`; smaller chrome (ops tiles, module options, subject
+  cards, status pills, filter inputs) use `--prog-fade-surface-soft` /
+  `--prog-fade-control`. Only `.lux-program-command-deck` applies
+  `--prog-fade-blur`; nested bands, rails, and cards are soft/opaque insets
+  with no stacked `backdrop-filter`. Light mode flips tokens — avoid duplicating
+  per-component glass pyramids. Legacy hero / filter-shell / stage / overview /
+  focus / summary / timeline CSS and the index-luxury programs final-pass are gone.
 - JS painter: the programs branch of `buildDynamicSurfaceBackground()` in
   `assets/js/shared/utilities.js` paints inline-painted surfaces. Large
   surfaces get the full color-fade; smaller programs glass classes get the soft
-  fade. It uses the `calc(var(--lux-color-fade-alpha)...)` form so it tracks
-  the same global knobs as the dashboard, LMS, and registration.
+  fade. CSS-owned programs fade surfaces skip inline background overrides;
+  backdrop blur is suppressed everywhere except the command deck. It uses the
+  `calc(var(--lux-color-fade-alpha)...)` form so it tracks the same global
+  knobs as the dashboard, LMS, and registration.
 
 To retune the whole programs look: adjust the `--prog-fade-*` token values
 (and the matching JS branch if you change the painted surfaces). No per-component
@@ -356,23 +394,22 @@ edits needed.
 
 ## 13. News page - single source of truth (done)
 
-The news page color-fade/glow/glass is now driven from one place:
+The news page color-fade/glow/glass is driven from one place:
 
 - CSS tokens on `body.lux-route-news` in `assets/css/news-route.css`
   (search `--news-fade-`): `--news-fade-surface`, `--news-fade-surface-soft`,
   `--news-fade-control`, `--news-fade-border`, `--news-fade-border-soft`,
-  `--news-fade-shadow`, `--news-fade-shadow-soft`, `--news-fade-glow-ring`,
-  `--news-fade-blur` (each has a dark + light-mode value). Glow radials follow
+  `--news-fade-shadow`, `--news-fade-shadow-soft`, `--news-fade-blur`
+  (each has a dark + light-mode value). Glow radials follow
   `--lux-color-fade-alpha`; the dark base follows `--lux-transparency-alpha`.
-  Large surfaces (panel, sidebar, rail, feed card, filter, section, hero) use
-  `--news-fade-surface`; smaller chrome (stat tiles, private items, checks,
-  account cards, section/pane buttons) use `--news-fade-surface-soft`; badges and
-  chips use `--news-fade-control`. Real glass blur is applied via
-  `--news-fade-blur` with `-webkit-backdrop-filter` pairs throughout.
+  The continuous workspace shell (`.newsx-shell`) uses `--news-fade-surface`
+  with `--news-fade-blur`. Nested chrome (header bar, sidebar section buttons,
+  soft feed cards) uses `--news-fade-surface-soft` / `--news-fade-control`.
+  Publisher / confirm / sections modals lean on `lux-modals.css` +
+  `--lux-warmglass-*` (route CSS keeps layout only).
 - JS painter: the news branch of `buildDynamicSurfaceBackground()` in
-  `assets/js/shared/utilities.js` was already in the
-  `calc(var(--lux-color-fade-alpha)...)` token form with a large-vs-soft split;
-  it stays aligned with the CSS tokens. No recipe change was needed.
+  `assets/js/shared/utilities.js` stays aligned with the CSS tokens
+  (`newsx-shell` large vs soft feed-card chrome).
 
 To retune the whole news look: adjust the `--news-fade-*` token values
 (and the matching JS branch if you change the painted surfaces). No per-component
@@ -433,26 +470,25 @@ edits needed.
 
 The library page color-fade/glow/glass is now driven from one place:
 
-- CSS tokens on `body.lux-route-library` in `assets/css/library-route.css`
-  (search `--lib-fade-`): `--lib-fade-surface`, `--lib-fade-surface-hero`,
-  `--lib-fade-surface-soft`, `--lib-fade-control`, `--lib-fade-border`,
-  `--lib-fade-border-soft`, `--lib-fade-shadow`, `--lib-fade-shadow-soft`,
-  `--lib-fade-glow-ring`, `--lib-fade-blur` (each has a dark + light-mode value).
-  Glow radials follow `--lux-color-fade-alpha`; the dark base follows
-  `--lux-transparency-alpha`. Large surfaces (page hero, filter shell, catalog
-  card) use `--lib-fade-surface`; the hero uses `--lib-fade-surface-hero`; smaller
-  chrome (tabs, picker panel, catalog foot, hero summary/signal cards, overview
-  metric strip cards) use `--lib-fade-surface-soft`; Browse Catalog filter pickers
-  and search input use `--lib-fade-control`. Real glass blur is applied via
-  `--lib-fade-blur` with `-webkit-backdrop-filter` pairs throughout. Unified-shell
-  and `lux-summary-surface` layers are neutralized inside `#page-library` so they
-  do not fight the route tokens. The former duplicate library fade block in
-  `assets/css/index-luxury.css` (L6117-6629) was removed and consolidated here.
+- Catalog chrome (filters panel, metrics, tabs, table, pagination) lives in
+  `assets/css/library-catalog-shared.css` (shared with admin-library; same
+  `admin-library-*` class names by intentional contract).
+- Route fade tokens on `body.lux-route-library` in `assets/css/library-route.css`
+  (search `--lib-fade-`): `--lib-fade-surface`, `--lib-fade-surface-soft`,
+  `--lib-fade-control`, `--lib-fade-border`, `--lib-fade-border-soft`,
+  `--lib-fade-shadow`, `--lib-fade-shadow-soft`, `--lib-fade-glow-ring`,
+  `--lib-fade-blur` (each has a dark + light-mode value). Glow radials follow
+  `--lux-color-fade-alpha`; the dark base follows `--lux-transparency-alpha`.
+  Live catalog surfaces use `--lib-fade-surface` / `--lib-fade-surface-soft`;
+  Browse Catalog filter pickers and search use `--lib-fade-control`. Real glass
+  blur is applied via `--lib-fade-blur` with `-webkit-backdrop-filter` pairs.
+  Unified-shell and `lux-summary-surface` layers are neutralized inside
+  `#page-library` so they do not fight the route tokens. Legacy page-hero /
+  filter-shell markup is gone; do not retarget those class names.
 - JS painter: the library branch of `buildDynamicSurfaceBackground()` in
   `assets/js/shared/utilities.js` uses `isLibraryLargeSurface` plus
-  `isLibrarySoftSurface` (overview metrics, hero signal/summary cards,
-  `#page-library` strip cards, filter-shell pickers and search controls) with the
-  same token-form `calc(var(--lux-color-fade-alpha)...)` recipe as the CSS tokens.
+  `isLibrarySoftSurface` with the same token-form
+  `calc(var(--lux-color-fade-alpha)...)` recipe as the CSS tokens.
 
 To retune the whole library look: adjust the `--lib-fade-*` token values
 (and the matching JS branch if you change the painted surfaces). No per-component
@@ -532,28 +568,28 @@ edits needed.
 
 The admin-library page color-fade/glow/glass is now driven from one place:
 
+- Catalog chrome (shared filters/metrics/tabs/table/pagination) is owned by
+  `assets/css/library-catalog-shared.css`. Admin does **not** load
+  `library-route.css`; route-only CSS is `assets/css/admin-library-route.css`.
 - CSS tokens on `body.lux-route-admin-library` in `assets/css/admin-library-route.css`
   (search `--alib-fade-`): `--alib-fade-surface`, `--alib-fade-surface-soft`,
   `--alib-fade-control`, `--alib-fade-border`, `--alib-fade-border-soft`,
   `--alib-fade-shadow`, `--alib-fade-shadow-soft`, `--alib-fade-blur`,
   `--alib-fade-modal`, `--alib-fade-row`, `--alib-fade-row-hover`,
   `--alib-fade-danger`, `--alib-fade-danger-border` (dark + light where needed).
-  Shared large surfaces (hero, filter shells, catalog card) inherit `--lib-fade-*`
-  via aliases; admin-only chrome (metric cards, hero summary/signal cards, param
-  groups, chips, modal, catalog row tint, remove button) uses `--alib-fade-*`.
-  Real glass blur is applied via `--alib-fade-blur` with `-webkit-backdrop-filter`
-  pairs throughout. Stacked `lux-summary-surface` layers are neutralized inside
-  `#page-library` so they do not fight the route tokens. Conflicting admin-library
-  background blocks were removed from `assets/css/index-luxury.css` (legacy
-  `.toolbar`/`.pm-modal` selectors) and admin-specific hardcoded light-mode
-  overrides were removed from `assets/css/library-route.css`.
+  Shared catalog surfaces inherit `--lib-fade-*` via aliases; admin-only chrome
+  (entry workspace, metric cards, param groups, chips, modal, catalog row tint,
+  remove button) uses `--alib-fade-*`. Real glass blur is applied via
+  `--alib-fade-blur` with `-webkit-backdrop-filter` pairs throughout. Stacked
+  `lux-summary-surface` layers are neutralized inside `#page-library` so they do
+  not fight the route tokens. Legacy admin-library hero / summary surfaces are
+  not part of the live markup.
 - JS painter: the library branch of `buildDynamicSurfaceBackground()` in
   `assets/js/shared/utilities.js` was extended with admin-library soft/large
   surface classes (`admin-library-entry-shell`, `admin-library-metric-card`,
-  `admin-library-hero-summary-card`, `admin-library-param-group`,
-  `admin-library-chip`). Catalog table rows and the params modal are excluded
-  from inline paint via `isStructuralSurface` so `--alib-fade-row` and modal
-  tokens are not overwritten.
+  `admin-library-param-group`, `admin-library-chip`). Catalog table rows and the
+  params modal are excluded from inline paint via `isStructuralSurface` so
+  `--alib-fade-row` and modal tokens are not overwritten.
 
 To retune the whole admin-library look: adjust the `--alib-fade-*` token values
 (and the matching JS branch if you change the painted surfaces). No per-component
@@ -806,10 +842,10 @@ To retune the whole timetable look: adjust the `--tt-fade-*` token values once.
 
 ## 25. Profile edit page - single source of truth (done)
 
-The self-service profile edit page (`profile.html` / `#page-profile`) color-fade/glow/glass
+~~The self-service profile edit page (`profile.html` / `#page-profile`)~~ **Superseded 2026-07-17:** `profile.html` redirects to `personal-data.html`; `profile-route.css` removed. Personal data uses `personal-data-route.css` / `lux-route-personal-data`. Historical note: the former profile page color-fade/glow/glass
 is now driven from one place:
 
-- CSS tokens on `body.lux-route-profile` in `assets/css/profile-route.css`
+- ~~CSS tokens on `body.lux-route-profile` in `assets/css/profile-route.css`~~ removed; use personal-data route tokens.
   (search `--prof-fade-`): `--prof-fade-surface`, `--prof-fade-surface-soft`,
   `--prof-fade-control`, `--prof-fade-chip`, `--prof-fade-border`,
   `--prof-fade-border-soft`, `--prof-fade-shadow`, `--prof-fade-shadow-soft`,
@@ -820,7 +856,7 @@ is now driven from one place:
   embedded calendar `sch-*` rows use `--prof-fade-row`. Stacked `lux-summary-surface`
   layers are neutralized inside `#page-profile`. Generic `index-luxury.css` catches
   exclude `lux-route-profile`. High-transparency reinstatement lives in
-  `profile-route.css`.
+  ~~`profile-route.css`~~ (deleted).
 - JS painter: profile surfaces are **CSS-owned** via `isStructuralSurface` when on
   `lux-route-profile` inside `#page-profile`.
 
@@ -896,3 +932,60 @@ is now driven from one place:
   stubbed; `renderStudentsPage` refresh hook is unchanged.
 
 To retune the whole students-admin look: adjust the `--sadmin-fade-*` token values once.
+
+## 29. Lux Droplist — global picker shell (done)
+
+Universal enhanced `<select>` pickers share one droplist shell defined in
+`assets/css/lux-controls.css` and applied by `applyLuxPickerPanelVariants()` in
+`assets/js/features/luxury-shell-chrome.js`.
+
+### Canonical tokens (`:root` in `lux-controls.css`)
+
+| Token | Value | Role |
+|---|---|---|
+| `--lux-droplist-shell-radius` | `28px` | Panel corner radius |
+| `--lux-droplist-option-height` | `44px` | Option row height |
+| `--lux-droplist-anim-duration` | `200ms` | Open/close fade duration |
+| `--lux-droplist-slide-offset` | `8px` | Closed-state vertical slide |
+| `--lux-droplist-scale-closed` | `0.97` | Closed-state scale |
+
+Legacy `--lux-picker-*` animation tokens alias to the droplist values for
+back-compat with non-droplist picker panels.
+
+### Light-mode glass (`--lux-droplist-glass-*`)
+
+Light mode uses the same warm modal-glass recipe as scheduler/social create dialogs:
+
+| Token | Role |
+|---|---|
+| `--lux-droplist-glass-surface` | 3-layer stack: top white bloom, accent bloom, warm `rgba(247,241,232)` base |
+| `--lux-droplist-glass-border` | `rgba(77, 52, 31, 0.12)` |
+| `--lux-droplist-glass-blur` | `blur(26px) saturate(155%)` |
+| `--lux-droplist-glass-shadow` | Drop shadow + inset highlight + accent outer ring |
+| `--lux-droplist-glass-inset` | `::before` top rim highlight |
+| `--lux-droplist-glass-sheen-opacity` | `::after` wash strength in light mode |
+
+Route CSS must not repaint `.lux-droplist-panel` shells; use
+`:not(.lux-droplist-panel)` when a route needs its own picker surface.
+
+### Class stack
+
+Enhanced picker panels receive:
+
+```
+lux-picker-panel lux-universal-picker-panel lux-droplist-panel lux-picker-panel-scroll
+```
+
+Open/close state classes: `.is-open`, `.is-closing`, `.is-open-above`.
+
+Route files may add context guards (e.g. scheduler modal `display: none` when
+closed) but must not redefine the global shell geometry.
+
+### Exceptions (do not receive `lux-droplist-panel`)
+
+- **LMS** — `shouldEnhanceSelect()` skips `#page-lms`, `#lms-content-area`, etc.
+- **Registration section picker** — custom `openStudentCourseSectionPicker()` modal;
+  not wired through `enhanceUniversalPicker()`.
+
+Contract tests: `test/fixtures/lux-droplist-contract.js`,
+`test/lux-droplist-global-unification.test.js`.

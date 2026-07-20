@@ -1,578 +1,211 @@
-/* lux-fouc-ht.css — FOUC + HT + atmosphere/studio (dashboard). Safe-diet slim. */
-
-/* lux-fouc-ht.css — FOUC + high-transparency + atmosphere/studio glue (dashboard only).
-   Phase A slim ex-index-luxury. *//* ═══════════════════════════════════════════════
-   FOUC + HIGH-TRANSPARENCY (dashboard luxury glue)
-   theme-primer sets classes; updateTransparency clears FOUC.
-   Dedupe: one host list, one dark/light fill via tokens.
-   ═══════════════════════════════════════════════ */html.lux-transparency-pending :is(
-    .lux-card, .lux-panel, .lux-subcard, .lux-page-shell, .lux-dashboard-section,
-    .lux-home-card, .lux-stat, .lux-stat-card, .lux-hero, .lux-grid-widget,
-    .lux-builder-card, .surface-card, .content-box, .kiu-card, .page-card,
-    .page-hero, .lux-modern-surface, .lux-utility-panel
-) {
-    background: transparent !important;
-}html.lux-high-transparency body:not(.lux-light-mode) :is(
-    .lux-card, .lux-panel, .lux-subcard, .lux-hero, .lux-stat, .lux-stat-card,
-    .lux-home-card, .lux-grid-widget, .lux-builder-card, .lux-dashboard-section,
-    .lux-page-shell, .surface-card, .content-box, .kiu-card, .page-card, .page-hero,
-    .lux-modern-surface, .lux-utility-panel, .lux-topbar-shell, .lux-quick-btn
-),
-html.lux-high-transparency body:not(.lux-light-mode) :is(
-    #lux-shell, .lux-sidebar
-) {
-    background: var(--lux-panel-surface, linear-gradient(180deg, rgba(14, 20, 33, var(--lux-panel-alpha, 0.92)), rgba(8, 12, 21, var(--lux-panel-alpha, 0.92)))) !important;
-    background-image: none !important;
-}html.lux-high-transparency body.lux-light-mode :is(
-    .lux-card, .lux-panel, .lux-subcard, .lux-hero, .lux-stat, .lux-stat-card,
-    .lux-home-card, .lux-grid-widget, .lux-builder-card, .lux-dashboard-section,
-    .lux-page-shell, .surface-card, .content-box, .kiu-card, .page-card, .page-hero,
-    .lux-modern-surface, .lux-utility-panel
-) {
-    background: var(--lux-panel-surface, linear-gradient(180deg, rgba(252, 249, 244, var(--lux-panel-alpha, 0.92)), rgba(248, 244, 237, var(--lux-panel-alpha, 0.92)))) !important;
-    background-image: none !important;
-}html.lux-high-transparency body:not(.lux-light-mode) {
-    --lux-accent-surface-rgb: 14, 20, 33;
-    --lux-hero-glow: 0;
-    --lux-glow-scale: 0;
-    --lux-card-glow-alpha: 0;
-}html.lux-high-transparency body.lux-light-mode {
-    --lux-accent-surface-rgb: 252, 249, 244;
-    --lux-hero-glow: 0;
-    --lux-glow-scale: 0;
-    --lux-card-glow-alpha: 0;
-}/* ═══════════════════════════════════════════════
-   ANTI-SCROLL-SHAKE: Force stable scroll rendering
-   ═══════════════════════════════════════════════ */html {
-    overflow-y: scroll;
-    overflow-x: hidden;
-    -webkit-overflow-scrolling: touch;
-    background: var(--lux-bg);
-    scroll-behavior: auto;
-}html,
-body {
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    text-rendering: optimizeLegibility;
-}[style*="position: fixed"],
-[style*="position:fixed"] {
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
-}/* ═══════════════════════════════════════════════
-   PERFORMANCE: CSS containment & lazy rendering
-   ═══════════════════════════════════════════════ */.page-section:not(.active-page) {
-    content-visibility: auto !important;
-    contain-intrinsic-size: 0 500px;
-}#app-content {
-    contain: layout style;
-}.lux-summary-surface {
-    position: relative;
-    overflow: hidden;
-    background-image:
-        linear-gradient(180deg, rgba(255, 255, 255, calc(var(--lux-raised-alpha) + 0.01)), rgba(255, 255, 255, var(--lux-glass-alpha))),
-        radial-gradient(circle at top right, rgba(var(--lux-accent-rgb), calc(0.08 + var(--lux-card-glow-alpha))), transparent 34%);
-}body.lux-light-mode .lux-summary-surface,
+/* READABILITY: index-only FOUC/HT + atmosphere. Panel glass→lux-tokens §3 paint.
+ * §1 pending/HT · §2 light HT · §3 dashboard atmosphere */
+/* ── §1 pending/HT overrides ── */
+/* lux-fouc-ht.css — index FOUC/HT + dashboard atmosphere (performance glass knobs → lux-tokens.css (paint section)) */
+html.lux-transparency-pending :is( .lux-card, .lux-panel, .lux-subcard, .lux-page-shell, .lux-dashboard-section, .lux-stat, .lux-hero, .lux-grid-widget, .lux-builder-card, .page-hero ) {
+  background: transparent;
+}
+html.lux-high-transparency body:not(.lux-light-mode) :is( .lux-card, .lux-panel, .lux-subcard, .lux-hero, .lux-stat, .lux-grid-widget, .lux-builder-card, .lux-dashboard-section, .lux-page-shell, .page-hero, .lux-topbar-shell, .lux-quick-btn ), html.lux-high-transparency body:not(.lux-light-mode) :is( #lux-shell, .lux-sidebar ) {
+  background: var(--lux-panel-surface, linear-gradient(180deg, rgba(14, 20, 33, var(--lux-panel-alpha, 0.92)), rgba(8, 12, 21, var(--lux-panel-alpha, 0.92))));
+  background-image: none;
+}
+html.lux-high-transparency body.lux-light-mode :is( .lux-card, .lux-panel, .lux-subcard, .lux-hero, .lux-stat, .lux-grid-widget, .lux-builder-card, .lux-dashboard-section, .lux-page-shell, .page-hero ) {
+  background: var(--lux-panel-surface, linear-gradient(180deg, rgba(252, 249, 244, var(--lux-panel-alpha, 0.92)), rgba(248, 244, 237, var(--lux-panel-alpha, 0.92))));
+  background-image: none;
+}
+html.lux-high-transparency body:not(.lux-light-mode) { --lux-accent-surface-rgb: 14, 20, 33; }
+html.lux-high-transparency body.lux-light-mode { --lux-accent-surface-rgb: 252, 249, 244; }
+html {
+  overflow-y: scroll;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  background: var(--lux-bg);
+  scroll-behavior: auto;
+}
+html, body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; text-rendering: optimizeLegibility; }
+[style*="position: fixed"], [style*="position:fixed"] { backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+.page-section:not(.active-page) { content-visibility: auto !important; contain-intrinsic-size: 0 500px; }
+.lux-summary-surface {
+  position: relative;
+  overflow: hidden;
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, calc(var(--lux-raised-alpha) + 0.01)), rgba(255, 255, 255, var(--lux-glass-alpha))), radial-gradient(circle at top right, rgba(var(--lux-accent-rgb), calc(0.08 + var(--lux-card-glow-alpha))), transparent 34%);
+}
+body.lux-light-mode .lux-summary-surface, /* ── §2 light HT ── */
 html.lux-light-mode body .lux-summary-surface {
-    background-image:
-        linear-gradient(180deg, rgba(255, 255, 255, calc(var(--lux-raised-alpha) + 0.02)), rgba(255, 255, 255, calc(var(--lux-glass-alpha) + 0.02))),
-        radial-gradient(circle at top right, rgba(var(--lux-accent-rgb), calc(0.09 + var(--lux-card-glow-alpha))), transparent 34%);
-}[data-lux-observed-surface="1"][data-lux-offscreen="1"] {
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-    box-shadow: none !important;
-}#lux-bg-canvas,
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, calc(var(--lux-raised-alpha) + 0.02)), rgba(255, 255, 255, calc(var(--lux-glass-alpha) + 0.02))), radial-gradient(circle at top right, rgba(var(--lux-accent-rgb), calc(0.09 + var(--lux-card-glow-alpha))), transparent 34%);
+}
+[data-lux-observed-surface="1"][data-lux-offscreen="1"] {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  #lux-bg-canvas { display: none !important; }
+  .lux-card, .lux-subcard, .lux-panel, .lux-nav-item, .lux-quick-btn, .lux-stat, .lux-alert, .lux-pill {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(circle at 18% 8%, rgba(var(--lux-accent-rgb), calc(0.16 * var(--lux-glow-scale))), transparent 24%), radial-gradient(circle at 84% 22%, rgba(var(--lux-accent-rgb), 0.1), transparent 22%), radial-gradient(circle at 58% 72%, rgba(var(--lux-accent-rgb), 0.08), transparent 26%), linear-gradient(180deg, rgba(255, 255, 255, var(--lux-page-haze-top)), rgba(255, 255, 255, 0) 44%), linear-gradient(180deg, rgba(5, 8, 16, 0), rgba(5, 8, 16, var(--lux-page-haze-bottom)));
+  will-change: transform;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  backface-visibility: hidden;
+  contain: strict;
+}
+body:not(.lux-light-mode)::before {
+  background: radial-gradient(circle at 16% 10%, rgba(var(--lux-bg-glow-rgb), calc(0.18 * var(--lux-glow-scale))), transparent 24%), radial-gradient(circle at 84% 20%, rgba(var(--lux-bg-haze-rgb), 0.1), transparent 22%), radial-gradient(circle at 62% 76%, rgba(var(--lux-bg-line-rgb), 0.06), transparent 26%), linear-gradient(180deg, rgba(13, 19, 32, var(--lux-page-haze-top)), rgba(13, 19, 32, 0) 38%), linear-gradient(180deg, rgba(3, 6, 12, 0), rgba(3, 6, 12, var(--lux-page-haze-bottom)));
+}
+#lux-bg-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  pointer-events: none;
+  opacity: var(--lux-canvas-opacity);
+  will-change: transform;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  backface-visibility: hidden;
+  contain: strict;
+}
 #lux-bg-overlay {
-    contain: strict;
-}/* ═══════════════════════════════════════════════
-   PERFORMANCE: Mobile/laptop optimizations
-   Reduce backdrop-filter intensity on weaker GPUs
-   without changing the visual appearance noticeably.
-   ═══════════════════════════════════════════════ */@media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
-    }
-    #lux-bg-canvas {
-        display: none !important;
-    }
-    .lux-card, .lux-subcard, .lux-panel, .lux-nav-item,
-    .lux-quick-btn, .lux-stat, .lux-alert, .lux-pill {
-        backdrop-filter: none !important;
-        -webkit-backdrop-filter: none !important;
-    }
-}body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    z-index: 0;
-    background:
-        radial-gradient(circle at 16% 10%, rgba(var(--lux-accent-rgb), 0.08), transparent 30%),
-        radial-gradient(circle at 84% 84%, rgba(var(--lux-home-secondary-rgb), 0.08), transparent 24%),
-        linear-gradient(180deg, rgba(255, 255, 255, 0.01), transparent 38%);
-    will-change: transform;
-    transform: translateZ(0);
-    -webkit-transform: translateZ(0);
-    backface-visibility: hidden;
-    contain: strict;
-}#lux-bg-canvas {
-    position: fixed;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 1;
-    pointer-events: none;
-    opacity: 0.95;
-    will-change: transform;
-    transform: translateZ(0);
-    -webkit-transform: translateZ(0);
-    backface-visibility: hidden;
-    contain: strict;
-}#lux-bg-overlay {
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    z-index: 2;
-    background:
-        linear-gradient(115deg, rgba(255, 255, 255, 0.02), transparent 35%),
-        linear-gradient(180deg, rgba(7, 9, 16, 0.08), rgba(7, 9, 16, 0.42));
-    will-change: transform;
-    transform: translateZ(0);
-    -webkit-transform: translateZ(0);
-    backface-visibility: hidden;
-    contain: strict;
-}body.lux-light-mode #lux-bg-overlay {
-    background:
-        linear-gradient(115deg, rgba(255, 255, 255, 0.18), transparent 35%),
-        linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(239, 235, 228, 0.24));
-}.lux-user-menu {
-    position: absolute;
-    top: calc(100% + 10px);
-    right: 0;
-    min-width: 180px;
-    padding: 8px;
-    border-radius: 16px;
-    border: 1px solid var(--lux-border);
-    background: rgba(12, 16, 28, 0.96);
-    box-shadow: var(--lux-shadow);
-    display: none;
-}.lux-user-menu.is-open {
-    display: block;
-}.lux-user-menu button {
-    width: 100%;
-    text-align: left;
-    padding: 10px 12px;
-    border: none;
-    background: transparent;
-    color: var(--lux-text-muted);
-    border-radius: 10px;
-    cursor: pointer;
-}.lux-user-menu button:hover {
-    background: rgba(255, 255, 255, 0.05);
-    color: var(--lux-text);
-}#app-content {
-    margin-left: var(--lux-sidebar-width);
-    padding: calc(var(--lux-topbar-height) + 26px) 26px 40px !important;
-    min-height: 100vh;
-    background: transparent !important;
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+  opacity: var(--lux-overlay-opacity);
+  background: radial-gradient(circle at 50% 14%, rgba(var(--lux-accent-rgb), var(--lux-hero-glow)), transparent 28%), linear-gradient(180deg, rgba(5, 8, 16, 0.01), rgba(5, 8, 16, 0.18));
+  will-change: transform;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  backface-visibility: hidden;
+  contain: strict;
+}
+body:not(.lux-light-mode) #lux-bg-overlay {
+  background: radial-gradient(circle at 18% 14%, rgba(var(--lux-bg-glow-rgb), 0.08), transparent 26%), radial-gradient(circle at 76% 82%, rgba(var(--lux-bg-haze-rgb), 0.06), transparent 34%), linear-gradient(180deg, rgba(7, 10, 18, 0), rgba(2, 5, 11, 0.24));
+}
+body.lux-light-mode #lux-bg-overlay {
+  background: linear-gradient(115deg, rgba(255, 255, 255, 0.18), transparent 35%), linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(239, 235, 228, 0.24));
+}
+body[data-lux-background-mode='peak'] #lux-bg-overlay, body[data-lux-background-mode='layered'] #lux-bg-overlay, body[data-lux-background-mode='orbit'] #lux-bg-overlay, body[data-lux-background-mode='corners'] #lux-bg-overlay, body:not([data-lux-background-mode]) #lux-bg-overlay {
+  background: radial-gradient(circle at 16% 14%, rgba(var(--lux-bg-glow-rgb), 0.16), transparent 24%), radial-gradient(circle at 82% 20%, rgba(var(--lux-accent-rgb), 0.12), transparent 22%), linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent 58%);
+}
+body.lux-light-mode[data-lux-background-mode='peak'] #lux-bg-overlay, body.lux-light-mode[data-lux-background-mode='layered'] #lux-bg-overlay, body.lux-light-mode[data-lux-background-mode='orbit'] #lux-bg-overlay, body.lux-light-mode[data-lux-background-mode='corners'] #lux-bg-overlay, body.lux-light-mode:not([data-lux-background-mode]) #lux-bg-overlay {
+  background: radial-gradient(circle at 16% 14%, rgba(var(--lux-bg-glow-rgb), 0.12), transparent 24%), radial-gradient(circle at 82% 20%, rgba(var(--lux-accent-rgb), 0.09), transparent 22%), linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(239, 235, 228, 0.08));
+}
+.lux-user-menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  min-width: 180px;
+  padding: 8px;
+  border-radius: 16px;
+  border: 1px solid var(--lux-border);
+  background: rgba(12, 16, 28, 0.96);
+  box-shadow: var(--lux-shadow);
+  display: none;
+}
+.lux-user-menu.is-open { display: block; }
+.lux-user-menu button {
+  width: 100%;
+  text-align: left;
+  padding: 10px 12px;
+  border: none;
+  background: transparent;
+  color: var(--lux-text-muted);
+  border-radius: 10px;
+  cursor: pointer;
+}
+.lux-user-menu button:hover { background: rgba(255, 255, 255, 0.05); color: var(--lux-text); }
+#app-content {
+  contain: layout style;
+  margin-left: var(--lux-sidebar-width);
+  padding: 118px 28px 42px !important;
+  min-height: 100vh;
+  background: transparent;
+  position: relative;
+  z-index: 5;
+}
+body.lux-light-mode .lux-user-menu, body.lux-light-mode .lux-studio-panel {
+  background: linear-gradient(180deg, rgba(252, 249, 245, 0.98), rgba(241, 235, 226, 0.98));
+}
+body.lux-light-mode .lux-pill, body.lux-light-mode .lux-stat, body.lux-light-mode .lux-mode-btn, body.lux-light-mode .lux-bg-mode-btn, body.lux-light-mode .lux-studio-section, body.lux-light-mode .lux-user-chip, body.lux-light-mode .lux-icon-btn, body.lux-light-mode .lux-quick-btn, body.lux-light-mode .lux-strip-card, body.lux-light-mode .lux-hero-side, body.lux-light-mode .lux-utility-item {
+  background: linear-gradient(180deg, rgba(var(--lux-glass-tint-rgb), calc(var(--lux-raised-fill-alpha) + var(--lux-glass-highlight-alpha))), rgba(var(--lux-glass-tint-rgb), var(--lux-raised-fill-alpha)));
+}
+.lux-utility-panel {
+  position: absolute;
+  top: calc(100% + 14px);
+  right: 0;
+  width: min(390px, calc(100vw - 48px));
+  padding: 12px;
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: linear-gradient(180deg, rgba(15, 20, 33, var(--lux-utility-alpha)), rgba(8, 12, 20, calc(var(--lux-utility-alpha) + 0.02))), radial-gradient(circle at top right, rgba(var(--lux-accent-rgb), 0.12), transparent 28%);
+  box-shadow: 0 28px 70px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(28px);
+  display: none;
+}
+.lux-utility-panel.is-open { display: block; }
+.lux-hero { min-height: 240px; padding: 26px; }
+body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-staff):not(.lux-route-profile-view) :is(.page-hero, .lux-panel, .lux-alert, .lux-studio-panel, .lux-widget-toolbar) {
+  background: linear-gradient(180deg, rgba(var(--lux-glass-tint-rgb), calc(var(--lux-panel-fill-alpha) + var(--lux-glass-highlight-alpha))), rgba(var(--lux-glass-tint-rgb), var(--lux-panel-fill-alpha)));
+  border: 1px solid var(--lux-border);
+  box-shadow: 0 22px 54px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 0 0 1px rgba(var(--lux-bg-glow-rgb), 0.03);
+  backdrop-filter: var(--lux-panel-blur-filter, blur(var(--lux-glass-blur)) saturate(150%));
+  -webkit-backdrop-filter: var(--lux-panel-blur-filter, blur(var(--lux-glass-blur)) saturate(150%));
+}
+body.lux-light-mode .lux-studio-close, body.lux-light-mode .lux-mode-btn, body.lux-light-mode .lux-bg-mode-btn, body.lux-light-mode .lux-control-btn {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.74), rgba(245, 236, 225, 0.52));
+  border-color: rgba(86, 62, 36, 0.12);
+  color: var(--lux-text);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.78);
+}
+.lux-picker-panel, .lux-user-menu { z-index: 99999 !important; }
+@media (max-width:900px) {
+  #lux-shell {
     position: relative;
-    z-index: 5;
-}.lux-studio-backdrop {
-    position: fixed;
-    inset: 0;
-    z-index: 120;
-    background: rgba(7, 9, 16, 0.42);
-    backdrop-filter: blur(10px);
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.2s ease;
-}.lux-studio-backdrop.is-open {
-    opacity: 1;
-    pointer-events: auto;
-}.lux-studio-panel {
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    width: min(420px, 100vw);
-    display: flex;
-    flex-direction: column;
-    background: linear-gradient(180deg, rgba(14, 19, 31, 0.98), rgba(10, 14, 23, 0.98));
-    border-left: 1px solid var(--lux-border);
-    box-shadow: -18px 0 50px rgba(0, 0, 0, 0.36);
-    transform: translateX(100%);
-    transition: transform 0.24s ease;
-}.lux-studio-backdrop.is-open .lux-studio-panel {
-    transform: translateX(0);
-}.lux-studio-head {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 14px;
-    padding: 22px 22px 18px;
-    border-bottom: 1px solid var(--lux-border);
-}.lux-studio-title {
-    font-family: 'Playfair Display', Georgia, serif;
-    font-size: 26px;
-    color: var(--lux-text);
-}.lux-studio-sub {
-    margin-top: 5px;
-    font-size: 12px;
-    line-height: 1.5;
-    color: var(--lux-text-muted);
-}.lux-studio-close {
-    width: 38px;
-    height: 38px;
-    border-radius: 12px;
-    border: 1px solid var(--lux-border);
-    background: rgba(255, 255, 255, 0.04);
-    color: var(--lux-text-muted);
-    cursor: pointer;
-}.lux-studio-close:hover {
-    color: var(--lux-text);
-    border-color: var(--lux-border-strong);
-}.lux-studio-body {
-    flex: 1;
-    overflow: auto;
-    padding: 18px 22px 24px;
-    display: grid;
-    gap: 18px;
-}.lux-studio-section {
-    padding: 16px;
-    border-radius: 18px;
-    border: 1px solid var(--lux-border);
-    background: rgba(255, 255, 255, 0.03);
-}.lux-studio-label {
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: var(--lux-text-soft);
-    margin-bottom: 12px;
-}body.lux-light-mode .lux-user-menu,
-body.lux-light-mode .lux-studio-panel {
-    background: linear-gradient(180deg, rgba(252, 249, 245, 0.98), rgba(241, 235, 226, 0.98));
-}body.lux-light-mode .lux-pill,
-body.lux-light-mode .lux-stat,
-body.lux-light-mode .lux-mode-btn,
-body.lux-light-mode .lux-bg-mode-btn,
-body.lux-light-mode .lux-studio-section,
-body.lux-light-mode .lux-user-chip,
-body.lux-light-mode .lux-icon-btn,
-body.lux-light-mode .lux-quick-btn,
-body.lux-light-mode .lux-strip-card,
-body.lux-light-mode .lux-hero-side,
-body.lux-light-mode .lux-stat,
-body.lux-light-mode .lux-utility-item {
-    background:
-        linear-gradient(180deg,
-            rgba(var(--lux-glass-tint-rgb), calc(var(--lux-raised-fill-alpha) + var(--lux-glass-highlight-alpha))),
-            rgba(var(--lux-glass-tint-rgb), var(--lux-raised-fill-alpha)));
-}@media (max-width:900px) {
-    #lux-shell {
-        position: relative;
-        width: 100%;
-        height: auto;
-        inset: auto;
-    }
-
-    #lux-topbar {
-        position: relative;
-        left: auto;
-        right: auto;
-        height: auto;
-        min-height: var(--lux-topbar-height);
-        flex-wrap: wrap;
-        padding: 14px 18px;
-    }
-
-    #app-content {
-        margin-left: 0;
-        padding: 24px 18px 36px !important;
-    }
-
-    .lux-quick-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr))
-    }
-
-    .lux-stat-row {
-        grid-template-columns: repeat(2, minmax(0, 1fr))
-    }
-
-    .lux-studio-panel {
-        width: min(100vw, 420px)
-    }
-
-    .portal-notif-fab-stack {
-        left: 16px !important;
-        bottom: 102px !important
-    }
-
-    .portal-msg-fab-stack {
-        left: 16px !important;
-        bottom: 188px !important
-    }
-}@media (max-width:620px) {
-    .lux-quick-grid {
-        grid-template-columns: 1fr
-    }
-
-    .lux-topbar-actions {
-        width: 100%;
-        flex-wrap: wrap;
-    }
-
-    .lux-search {
-        width: 100%;
-    }
-
-    .lux-topbar select {
-        flex: 1;
-        min-width: 140px;
-    }
-
-    .lux-studio-head,
-.lux-studio-body {
-        padding-left: 16px;
-        padding-right: 16px;
-    }
-
-    .lux-palette-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .lux-range-row {
-        grid-template-columns: 1fr;
-        gap: 6px;
-    }
-
-    .lux-range-value {
-        text-align: left;
-    }
-}:root {
-    --lux-canvas-opacity: 0.82;
-    --lux-overlay-opacity: 0.56;
-    --lux-panel-alpha: 0.74;
-    --lux-hero-glow: 0.24;
-    --lux-page-haze-top: 0.06;
-    --lux-page-haze-bottom: 0.11;
-    --lux-button-glow: 0.42;
-    --lux-panel-glow: 0.22;
-    --lux-glow-scale: 1;
-}body::before {
-    background:
-        radial-gradient(circle at 18% 8%, rgba(var(--lux-accent-rgb), calc(0.16 * var(--lux-glow-scale))), transparent 24%),
-        radial-gradient(circle at 84% 22%, rgba(var(--lux-accent-rgb), 0.1), transparent 22%),
-        radial-gradient(circle at 58% 72%, rgba(var(--lux-accent-rgb), 0.08), transparent 26%),
-        linear-gradient(180deg, rgba(255, 255, 255, var(--lux-page-haze-top)), rgba(255, 255, 255, 0) 44%),
-        linear-gradient(180deg, rgba(5, 8, 16, 0), rgba(5, 8, 16, var(--lux-page-haze-bottom)));
-}body:not(.lux-light-mode)::before {
-    background:
-        radial-gradient(circle at 16% 10%, rgba(var(--lux-bg-glow-rgb), calc(0.18 * var(--lux-glow-scale))), transparent 24%),
-        radial-gradient(circle at 84% 20%, rgba(var(--lux-bg-haze-rgb), 0.1), transparent 22%),
-        radial-gradient(circle at 62% 76%, rgba(var(--lux-bg-line-rgb), 0.06), transparent 26%),
-        linear-gradient(180deg, rgba(13, 19, 32, var(--lux-page-haze-top)), rgba(13, 19, 32, 0) 38%),
-        linear-gradient(180deg, rgba(3, 6, 12, 0), rgba(3, 6, 12, var(--lux-page-haze-bottom)));
-}#lux-bg-canvas {
-    opacity: var(--lux-canvas-opacity);
-    filter: saturate(1.18) blur(0.1px);
-}#lux-bg-overlay {
-    opacity: var(--lux-overlay-opacity);
-    background:
-        radial-gradient(circle at 50% 14%, rgba(var(--lux-accent-rgb), var(--lux-hero-glow)), transparent 28%),
-        linear-gradient(180deg, rgba(5, 8, 16, 0.01), rgba(5, 8, 16, 0.18));
-}body:not(.lux-light-mode) #lux-bg-overlay {
-    background:
-        radial-gradient(circle at 18% 14%, rgba(var(--lux-bg-glow-rgb), 0.08), transparent 26%),
-        radial-gradient(circle at 76% 82%, rgba(var(--lux-bg-haze-rgb), 0.06), transparent 34%),
-        linear-gradient(180deg, rgba(7, 10, 18, 0), rgba(2, 5, 11, 0.24));
-}.lux-utility-panel {
-    position: absolute;
-    top: calc(100% + 14px);
-    right: 0;
-    width: min(390px, calc(100vw - 48px));
-    padding: 12px;
-    border-radius: 24px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    background:
-        linear-gradient(180deg, rgba(15, 20, 33, 0.88), rgba(8, 12, 20, 0.9)),
-        radial-gradient(circle at top right, rgba(var(--lux-accent-rgb), 0.12), transparent 28%);
-    box-shadow: 0 28px 70px rgba(0, 0, 0, 0.3);
-    backdrop-filter: blur(28px);
-    display: none;
-}.lux-utility-panel.is-open {
-    display: block;
-}#app-content {
-    padding: 118px 28px 42px !important;
-}.lux-hero {
-    min-height: 240px;
-    padding: 26px;
-    background:
-        radial-gradient(circle at 72% 0%, rgba(var(--lux-accent-rgb), var(--lux-hero-glow)), transparent 30%),
-        linear-gradient(135deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02));
-}@media (max-width:980px) {
-    #lux-topbar {
-        position: relative;
-        top: auto;
-        left: auto;
-        right: auto;
-        margin: 18px 18px 0;
-    }
-
-    #app-content {
-        padding: 28px 18px 36px !important;
-    }
-
-    .lux-hero-stage,
-.lux-home-columns {
-        grid-template-columns: 1fr;
-    }
-
-    .lux-quick-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-}:root {
-    --lux-raised-alpha: 0.09;
-    --lux-glass-alpha: 0.06;
-    --lux-card-glow-alpha: 0.06;
-    --lux-utility-alpha: 0.82;
-}.lux-utility-panel {
-    background:
-        linear-gradient(180deg, rgba(15, 20, 33, var(--lux-utility-alpha)), rgba(8, 12, 20, calc(var(--lux-utility-alpha) + 0.02))),
-        radial-gradient(circle at top right, rgba(var(--lux-accent-rgb), 0.12), transparent 28%);
-}.lux-alert {
-    background: linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(0.12 + var(--lux-card-glow-alpha))), rgba(255, 255, 255, var(--lux-glass-alpha)));
-}.lux-alert.is-royal {
-    background: linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(0.1 + var(--lux-card-glow-alpha))), rgba(255, 255, 255, var(--lux-glass-alpha)));
-}.lux-alert.is-support {
-    background: linear-gradient(135deg, rgba(72, 191, 134, calc(0.08 + var(--lux-card-glow-alpha))), rgba(255, 255, 255, var(--lux-glass-alpha)));
-}.lux-alert.is-warm {
-    background: linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(0.16 + var(--lux-card-glow-alpha))), rgba(255, 255, 255, var(--lux-glass-alpha)));
-}.lux-hero {
-    background:
-        radial-gradient(circle at 72% 0%, rgba(var(--lux-accent-rgb), var(--lux-hero-glow)), transparent 30%),
-        linear-gradient(135deg, rgba(255, 255, 255, var(--lux-raised-alpha)), rgba(255, 255, 255, var(--lux-glass-alpha)));
-}body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-staff):not(.lux-route-profile-view) .content-box,
-body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-staff):not(.lux-route-profile-view) .surface-card,
-body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-staff):not(.lux-route-profile-view) .admin-card,
-body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-staff):not(.lux-route-profile-view) .tabs-container,
-body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-staff):not(.lux-route-profile-view) .reg-tabs,
-body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-staff):not(.lux-route-profile-view) .page-card,
-body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-staff):not(.lux-route-profile-view) .section-card,
-body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-staff):not(.lux-route-profile-view) .panel-card,
-body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-staff):not(.lux-route-profile-view) .kiu-card,
-body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-staff):not(.lux-route-profile-view) .dashboard-card,
-body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-staff):not(.lux-route-profile-view) .modal-content,
-body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-staff):not(.lux-route-profile-view) .page-hero,
-body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-staff):not(.lux-route-profile-view) .lux-panel,
-body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-staff):not(.lux-route-profile-view) .lux-alert,
-body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-staff):not(.lux-route-profile-view) .lux-studio-panel,
-body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-staff):not(.lux-route-profile-view) .lux-widget-toolbar {
-    background:
-        linear-gradient(180deg,
-            rgba(var(--lux-glass-tint-rgb), calc(var(--lux-panel-fill-alpha) + var(--lux-glass-highlight-alpha))),
-            rgba(var(--lux-glass-tint-rgb), var(--lux-panel-fill-alpha))) !important;
-    border: 1px solid var(--lux-border) !important;
-    box-shadow:
-        0 22px 54px rgba(0, 0, 0, 0.28),
-        inset 0 1px 0 rgba(255, 255, 255, 0.08),
-        0 0 0 1px rgba(var(--lux-bg-glow-rgb), 0.03) !important;
-    backdrop-filter: blur(var(--lux-glass-blur)) saturate(150%);
-    -webkit-backdrop-filter: blur(var(--lux-glass-blur)) saturate(150%);
-}body.lux-light-mode .lux-studio-backdrop {
-    background: rgba(229, 220, 208, 0.34);
-    backdrop-filter: blur(14px) saturate(118%);
-}body.lux-light-mode .lux-studio-panel {
-    background:
-        linear-gradient(180deg, rgba(255, 251, 246, 0.94), rgba(244, 236, 226, 0.88)) !important;
-    border-left: 1px solid rgba(86, 62, 36, 0.12) !important;
-    box-shadow: -22px 0 60px rgba(87, 63, 38, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.76) !important;
-}body.lux-light-mode .lux-studio-head {
-    border-bottom: 1px solid rgba(86, 62, 36, 0.1) !important;
-}body.lux-light-mode .lux-studio-section {
-    background:
-        linear-gradient(180deg, rgba(255, 255, 255, 0.58), rgba(248, 241, 233, 0.4)) !important;
-    border: 1px solid rgba(86, 62, 36, 0.1) !important;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.74);
-}body.lux-light-mode .lux-studio-close,
-body.lux-light-mode .lux-mode-btn,
-body.lux-light-mode .lux-bg-mode-btn,
-body.lux-light-mode .lux-control-btn {
-    background:
-        linear-gradient(180deg, rgba(255, 255, 255, 0.74), rgba(245, 236, 225, 0.52)) !important;
-    border-color: rgba(86, 62, 36, 0.12) !important;
-    color: var(--lux-text) !important;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.78);
-}body[data-lux-background-mode='peak'] #lux-bg-overlay,
-body[data-lux-background-mode='layered'] #lux-bg-overlay,
-body[data-lux-background-mode='orbit'] #lux-bg-overlay,
-body[data-lux-background-mode='corners'] #lux-bg-overlay,
-body:not([data-lux-background-mode]) #lux-bg-overlay {
-    background:
-        radial-gradient(circle at 16% 14%, rgba(var(--lux-bg-glow-rgb), 0.16), transparent 24%),
-        radial-gradient(circle at 82% 20%, rgba(var(--lux-accent-rgb), 0.12), transparent 22%),
-        linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent 58%);
-}body.lux-light-mode[data-lux-background-mode='peak'] #lux-bg-overlay,
-body.lux-light-mode[data-lux-background-mode='layered'] #lux-bg-overlay,
-body.lux-light-mode[data-lux-background-mode='orbit'] #lux-bg-overlay,
-body.lux-light-mode[data-lux-background-mode='corners'] #lux-bg-overlay,
-body.lux-light-mode:not([data-lux-background-mode]) #lux-bg-overlay {
-    background:
-        radial-gradient(circle at 16% 14%, rgba(var(--lux-bg-glow-rgb), 0.12), transparent 24%),
-        radial-gradient(circle at 82% 20%, rgba(var(--lux-accent-rgb), 0.09), transparent 22%),
-        linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(239, 235, 228, 0.08));
-}html.transparency-test-off #lux-bg-overlay {
-    backdrop-filter: none !important;
-    background: rgba(0, 0, 0, 0.20) !important;
-}body[data-lux-performance='efficient'] {
-    --lux-glass-blur: 14px;
-    --lux-transparency-blur: 12px;
-    --lux-transparency-saturate: 124%;
-    --lux-glass-alpha: 0.052;
-    --lux-utility-alpha: 0.8;
-    --lux-card-glow-alpha: 0.05;
-}body[data-lux-performance='standard'] {
-    --lux-glass-blur: 18px;
-    --lux-transparency-blur: 16px;
-    --lux-transparency-saturate: 138%;
-    --lux-glass-alpha: 0.06;
-    --lux-utility-alpha: 0.82;
-    --lux-card-glow-alpha: 0.06;
-}body[data-lux-performance='high'] {
-    --lux-glass-blur: 20px;
-    --lux-transparency-blur: 18px;
-    --lux-transparency-saturate: 148%;
-    --lux-glass-alpha: 0.068;
-    --lux-utility-alpha: 0.84;
-    --lux-card-glow-alpha: 0.07;
-}/* ==========================================================================
-   PERFORMANCE & ANIMATION OPTIMIZATIONS
-   ========================================================================== */#app-content {
-    contain: layout;
-}/* 3. Animation Performance Mode
-   Temporarily disable extremely heavy GPU filters during layout shifts. */body.lux-is-animating * {
-    /* Disable all backdrop-filters globally during animations */
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-
-    /* Disable complex box-shadows during animations */
-    box-shadow: none !important;
-}.lux-picker-panel,
-.lux-user-menu,
-.lux-dropdown,
-.lux-dropdown-content,
-.lux-action-sheet,
-.lux-context-menu {
-    z-index: 9999 !important;
-}.lux-picker-panel,
-.lux-dropdown-menu,
-.lux-user-menu,
-.lux-context-menu {
-    z-index: 99999 !important;
-}body.lux-studio-open #lux-studio-backdrop {
-    z-index: 2000 !important;
-}body.lux-is-animating * {
-    backdrop-filter: none !important;
-    box-shadow: none !important;
+    width: 100%;
+    height: auto;
+    inset: auto;
+  }
+  #lux-topbar {
+    position: relative;
+    left: auto;
+    right: auto;
+    height: auto;
+    min-height: var(--lux-topbar-height);
+    flex-wrap: wrap;
+    padding: 14px 18px;
+  }
+  #app-content { margin-left: 0; padding: 24px 18px 36px !important; }
+  .lux-studio-panel { width: min(100vw, 420px); }
+}
+@media (max-width:620px) {
+  .lux-topbar-actions { width: 100%; flex-wrap: wrap; }
+  .lux-search { width: 100%; }
+  .lux-topbar select { flex: 1; min-width: 140px; }
+}
+@media (max-width:980px) {
+  #lux-topbar {
+    position: relative;
+    top: auto;
+    left: auto;
+    right: auto;
+    margin: 18px 18px 0;
+  }
+  #app-content { padding: 28px 18px 36px !important; }
+  .lux-hero-stage { grid-template-columns: 1fr; }
 }

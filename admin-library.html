@@ -8,32 +8,25 @@
     <meta http-equiv="Expires" content="0">
     <title>KIU - Admin Library</title>
 
-
     <link rel="stylesheet" href="assets/vendor/fontawesome/css/all.min.css?v=1776604821637">
     <link rel="stylesheet" href="assets/css/kiu-fonts.css?v=20260515-fonts1">
-    <link rel="stylesheet" href="assets/css/base.css?v=20260713-accentborder2">
-    <link rel="stylesheet" href="assets/css/layout.css?v=20260713-accentborder2">
-    <link rel="stylesheet" href="assets/css/lux-tokens.css?v=20260717-panelpaint9">
-    <link rel="stylesheet" href="assets/css/lux-focus-panel.css?v=20260715-focus1">
-    <link rel="stylesheet" href="assets/css/lux-controls.css?v=20260713-accentborder2">
-    <link rel="stylesheet" href="assets/css/lux-layout-primitives.css?v=20260713-accentborder2">
-    <link rel="stylesheet" href="assets/css/lux-modals.css?v=20260710-warmglass-social-scope1">
-    <link rel="stylesheet" href="assets/css/lux-shell.css?v=20260717-phaseA1">
-    <link rel="stylesheet" href="assets/css/lux-page-bare.css?v=20260717-topbarrow1">
-    <link rel="stylesheet" href="assets/css/mobile-responsive.css?v=20260713-accentborder2">
+    <link rel="stylesheet" href="assets/css/lux-tokens.css?v=20260720-densify6500">
+    <link rel="stylesheet" href="assets/css/lux-focus-panel.css?v=20260720-densify6500">
+    <link rel="stylesheet" href="assets/css/lux-controls.css?v=20260720-densify6500">
+    <link rel="stylesheet" href="assets/css/lux-shell.css?v=20260720-readable6500">
+    <link rel="stylesheet" href="assets/css/lux-page-bare-lite.css?v=20260720-densify6500">
+    <link rel="stylesheet" href="assets/css/mobile-shell-core.css?v=20260720-densify6500">
     <script src="assets/js/theme-primer.js?v=20260709-glasslock1"></script>
 </head>
-<body class="kiu-shell-loading lux-nonhome-page lux-route-admin-library lux-entry-admin-library lux-unified-shell role-admin lux-page-bare" data-faculty="ECON">
+<body class="kiu-shell-loading lux-nonhome-page lux-route-admin-library lux-entry-admin-library lux-unified-shell role-admin lux-page-bare lux-full-paint" data-faculty="ECON">
 <!-- Navigation stubs (hidden, for JS compatibility) -->
 <nav id="prof-nav" aria-label="Professor navigation stub"></nav>
 <nav id="top-nav" aria-label="Top navigation stub"></nav>
 <nav id="admin-nav" aria-label="Admin navigation stub"></nav>
 
-
 <main id="app-content">
     <div id="page-library" class="page-section active-page">
         <div class="lux-home-grid is-admin admin-library-page">
-
 
         <section class="alib-workspace" aria-label="Admin library workspace">
             <section class="lux-panel alib-panel alib-panel--entry">
@@ -305,20 +298,37 @@
     </div>
 </div>
 <!-- SCRIPTS (synced order & versions) -->
-<script defer src="assets/js/app/app.js?v=20260716-glassmax2"></script>
+<script defer src="assets/js/app/portal-api-stubs-runtime.js?v=20260720-w21stubs1"></script>
+<script defer src="assets/js/app/portal-compat-runtime.js?v=20260720-w20compat1"></script>
+<script defer src="assets/js/app/app.js?v=20260720-w18"></script>
+<script defer src="assets/js/app/english-localization.js?v=20260719-enloc1"></script>
+<script defer src="assets/js/app/api-lms-portal-runtime.js?v=20260720-apilms1"></script>
+<script defer src="assets/js/app/api-admin-merge-runtime.js?v=20260720-e2merge1"></script>
 <script defer src="assets/js/app/api.js?v=20260426-sessionfix3"></script>
     <script defer src="assets/js/app/auth.js?v=20260429-authfix2"></script>
 <script defer src="assets/js/data/initial-state.js?v=1776604821637"></script>
-<script defer src="assets/js/app/state.js?v=20260616-admin-view-accounts1"></script>
+<script defer src="assets/js/app/state-admin-exam-runtime.js?v=20260720-e4exam1"></script>
+<script defer src="assets/js/app/state-deleted-staff-runtime.js?v=20260720-w18"></script>
+<script defer src="assets/js/app/state.js?v=20260720-w18"></script>
+    <script defer src="assets/js/shared/faculty-schedule-runtime.js?v=20260720-facsched1"></script>
     <script defer src="assets/js/shared/faculty.js?v=20260429-peopleisolation1"></script>
 <script defer src="assets/js/shared/input-autocomplete-guard.js?v=20260627-autocomplete-guard1"></script>
-<script defer src="assets/js/shared/utilities.js?v=20260717-panelpaint8"></script>
+<script defer src="assets/js/shared/utilities.js?v=20260720-w18"></script>
+<script defer src="assets/js/shared/lux-transparency-route-runtime.js?v=20260720-luxroute1"></script>
+<script defer src="assets/js/shared/lux-transparency.js?v=20260719-luxtrans1"></script>
     <script defer src="assets/js/features/navigation.js?v=20260609-bootguard1"></script>
 <script defer src="assets/js/features/ui.js?v=20260429-peopleisolation1"></script>
 <script defer src="assets/js/features/luxury-index-runtime.js?v=20260709-glasslock1"></script>
-<script defer src="assets/js/features/index-luxury.js?v=20260709-glasslock1"></script>
+<script defer src="assets/js/features/luxury-palette-runtime.js?v=20260719-luxpal1"></script>
+<script defer src="assets/js/features/luxury-atmosphere-runtime.js?v=20260719-luxatm1"></script>
+<script defer src="assets/js/features/luxury-transparency-model-runtime.js?v=20260720-luxtransmodel2"></script>
+<script defer src="assets/js/features/luxury-index-sync-runtime.js?v=20260720-w18b"></script>
+<script defer src="assets/js/features/index-luxury.js?v=20260720-w18b"></script>
 <script type="module" src="assets/js/features/luxury-background.js?v=20260717-lazythree1"></script>
-<script defer src="assets/js/features/luxury-shell-chrome.js?v=20260717-bgparams1"></script>
+<script defer src="assets/js/features/luxury-shell-studio-runtime.js?v=20260719-luxstudio1"></script>
+<script defer src="assets/js/features/luxury-shell-picker-runtime.js?v=20260720-luxpick1"></script>
+<script defer src="assets/js/features/luxury-shell-topbar-runtime.js?v=20260720-w18"></script>
+<script defer src="assets/js/features/luxury-shell-chrome.js?v=20260720-w18"></script>
 <script defer src="assets/js/features/luxury-home-model.js?v=20260518-luxhome1"></script>
 <script defer src="assets/js/shared/library-catalog-sync.js?v=20260714-libcleanup1"></script>
 <script defer src="assets/js/shared/lux-scroll-rail.js?v=20260622-scrollrail1"></script>
@@ -431,5 +441,4 @@ window.__KIU_STANDALONE_MOBILE_SHELL_CONFIG = {
 <script defer src="assets/js/pages/standalone-mobile-shell.js?v=20260520-admin-library-mobile1"></script>
 </body>
 </html>
-
 

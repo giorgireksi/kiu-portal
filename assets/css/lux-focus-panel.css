@@ -1,0 +1,184 @@
+/* READABILITY: shared focus/soft-chrome structure (eager). Glass fills→lux-tokens.
+ * §1 soft-chrome/focus · §2 hero-side · §3 density */
+/* ── §1 soft-chrome/focus base ── */
+.lux-soft-chrome, .lux-focus-panel, .lux-timetable-hero-focus, .lms-hero-focus.lux-hero-side {
+  background: var(--lux-focus-fill, var(--lux-soft-chrome-surface));
+  border: 1px solid var(--lux-focus-border, var(--lux-soft-chrome-border));
+  box-shadow: var(--lux-focus-shadow, var(--lux-soft-chrome-shadow));
+  color: var(--lux-text);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+.lux-soft-chrome { border-radius: var(--lux-radius, 18px); }
+.lux-focus-panel, .lux-timetable-hero-focus, .lms-hero-focus.lux-hero-side {
+  position: relative;
+  display: grid;
+  gap: 16px;
+  align-content: start;
+  min-height: 0;
+  min-width: 0;
+  padding: 22px 24px 20px 26px;
+  border-radius: 18px;
+  overflow: hidden;
+}
+.lux-focus-panel::before, .lux-timetable-hero-focus::before, .lms-hero-focus.lux-hero-side::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  border-radius: 16px 0 0 16px;
+  pointer-events: none;
+  background: var(--lux-panel-cta-bar);
+}
+.lux-focus-panel__head, .lux-timetable-focus-head, .lms-hero-focus-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 0;
+}
+.lux-focus-panel__kicker, .lux-timetable-focus-kicker, .lms-hero-focus-kicker {
+  margin: 0;
+  min-width: 0;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--lux-accent-2, var(--lux-accent));
+  opacity: 0.9;
+}
+.lux-focus-panel__chip, .lms-hero-focus-chip, .lux-timetable-focus-time {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  padding: 7px 14px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--lux-text);
+  background: rgba(var(--lux-accent-rgb), 0.12);
+  border: 1px solid rgba(var(--lux-accent-rgb), 0.28);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+.lux-timetable-focus-time {
+  min-height: 38px;
+  font-size: 14px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+  border-color: rgba(var(--lux-accent-rgb), 0.32);
+}
+.lux-focus-panel__body, .lux-timetable-focus-body, .lms-hero-focus-body { display: grid; gap: 8px; min-width: 0; }
+.lux-focus-panel__title, .lux-timetable-focus-title, .lms-hero-focus-title {
+  margin: 0;
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: clamp(22px, 2.4vw, 28px);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: var(--lux-text);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.lux-focus-panel__copy, .lux-timetable-focus-copy, .lux-timetable-focus-subline, .lms-hero-focus-copy {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--lux-text-muted);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.lux-focus-panel__copy[hidden], .lux-timetable-focus-copy[hidden] { display: none; }
+.lux-timetable-focus-facts {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.lux-timetable-focus-facts:empty { display: none; }
+.lux-timetable-focus-facts li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--lux-text-muted);
+}
+.lux-timetable-focus-facts li i {
+  flex-shrink: 0;
+  width: 14px;
+  text-align: center;
+  font-size: 11px;
+  color: rgba(var(--lux-accent-rgb), 0.9);
+}
+.lux-timetable-focus-facts li span { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.lux-focus-panel__meta, .lux-timetable-focus-meta, .lms-hero-focus-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  margin-top: 2px;
+  min-width: 0;
+}
+.lux-focus-panel__meta:empty, .lux-timetable-focus-meta:empty { display: none; }
+.lux-focus-panel__meta > span, .lux-timetable-focus-meta span, .lms-hero-focus-meta > span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 1.2;
+  color: var(--lux-text-muted);
+  background: rgba(var(--lux-accent-rgb), 0.07);
+  border: 1px solid var(--lux-focus-border, var(--lux-soft-chrome-border));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+.lux-focus-panel__meta > span i, .lux-timetable-focus-meta span i, .lms-hero-focus-meta i {
+  flex-shrink: 0;
+  font-size: 11px;
+  color: var(--lux-accent-2, var(--lux-accent));
+  opacity: 0.9;
+}
+:is(html.lux-light-mode, body.lux-light-mode) .lux-focus-panel__chip, :is(html.lux-light-mode, body.lux-light-mode) .lms-hero-focus-chip, :is(html.lux-light-mode, body.lux-light-mode) .lux-timetable-focus-time, :is(html.lux-light-mode, body.lux-light-mode) .lux-focus-panel__meta > span, :is(html.lux-light-mode, body.lux-light-mode) .lms-hero-focus-meta > span, :is(html.lux-light-mode, body.lux-light-mode) .lux-timetable-focus-meta span {
+  background: rgba(255, 255, 255, 0.72);
+  color: rgba(48, 34, 22, 0.9);
+}
+:is(html.lux-light-mode, body.lux-light-mode) .lux-focus-panel, :is(html.lux-light-mode, body.lux-light-mode) .lux-timetable-hero-focus, :is(html.lux-light-mode, body.lux-light-mode) .lms-hero-focus.lux-hero-side {
+  box-shadow: var(--lux-focus-shadow, var(--lux-soft-chrome-shadow));
+}
+.lux-focus-panel :is(.lux-pill, .lux-status-pill, .page-hero-badge, .lux-chip), .lux-soft-chrome :is(.lux-pill, .lux-status-pill, .page-hero-badge, .lux-chip), .lux-timetable-hero-focus :is(.lux-pill, .lux-status-pill), .lms-hero-focus :is(.lux-pill, .lux-status-pill) {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+@media (max-width: 768px) {
+  .lux-focus-panel, .lux-timetable-hero-focus, .lms-hero-focus.lux-hero-side {
+    display: grid;
+    padding: 14px 16px 14px 20px;
+    gap: 12px;
+    overflow: hidden;
+  }
+  .lux-focus-panel__head, .lux-timetable-focus-head, .lms-hero-focus-head { flex-wrap: wrap; }
+}
+@media (max-width: 480px) {
+  .lux-focus-panel, .lux-timetable-hero-focus, .lms-hero-focus.lux-hero-side { padding: 12px; }
+}

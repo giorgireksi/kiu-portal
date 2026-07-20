@@ -1,3 +1,8 @@
+/* FINDABILITY: index luxury shell — see docs/findability-index.md#index-luxury */
+/* Wave bag KiuIndexLuxury */
+window.KiuIndexLuxury=window.KiuIndexLuxury||{};const __kiuLuxApi=window.KiuIndexLuxury;window.__kiuLuxApi=__kiuLuxApi;
+function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k];window[k]=map[k];});}
+
 (function () {
     if (window.__kiuLuxuryIndexInitialized) return;
     window.__kiuLuxuryIndexInitialized = true;
@@ -136,6 +141,10 @@
         }
     }
     function escapeHtml(value) {
+        if (typeof window !== 'undefined' && typeof window.escapeHtml === 'function') {
+            const shared = window.escapeHtml;
+            if (shared !== escapeHtml) return shared(value);
+        }
         return String(value == null ? '' : value)
             .replace(/&/g, '&amp;')
             .replace(/</g, '&lt;')
@@ -726,1133 +735,83 @@
         showToast('All dashboard layouts reset.');
         syncAll();
     }
-    function hexToRgbTriplet(hex) {
-        const cleaned = String(hex || '').trim().replace('#', '');
-        if (!/^[0-9a-fA-F]{6}$/.test(cleaned)) return '200,130,42';
-        const r = parseInt(cleaned.slice(0, 2), 16);
-        const g = parseInt(cleaned.slice(2, 4), 16);
-        const b = parseInt(cleaned.slice(4, 6), 16);
-        return `${r},${g},${b}`;
-    }
-    function getPaletteByKey(key) {
-        return LUXURY_PALETTES.find((palette) => palette.key === key)
-            || LUXURY_PALETTES.find((palette) => palette.key === DEFAULT_HOME_VISUALS.paletteKey)
-            || LUXURY_PALETTES[0];
-    }
-    function hslToRgb(h, s, l) {
-        const hue = Number(h || 0);
-        const sat = Number(s || 0) / 100;
-        const lig = Number(l || 0) / 100;
-        const k = (n) => (n + hue / 30) % 12;
-        const a = sat * Math.min(lig, 1 - lig);
-        const f = (n) => lig - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
-        return [Math.round(f(0) * 255), Math.round(f(8) * 255), Math.round(f(4) * 255)];
-    }
-    function mixHsl(h1, s1, l1, h2, s2, l2, ratio) {
-        const start = Number(h1 || 0);
-        const end = Number(h2 || 0);
-        let delta = end - start;
-        if (Math.abs(delta) > 180) delta -= Math.sign(delta) * 360;
-        const mix = Number(ratio || 0);
-        return [
-            (start + delta * mix + 360) % 360,
-            Number(s1 || 0) + (Number(s2 || 0) - Number(s1 || 0)) * mix,
-            Number(l1 || 0) + (Number(l2 || 0) - Number(l1 || 0)) * mix
-        ];
-    }
-    function rgbTripletToString(rgb) {
-        return `${rgb[0]},${rgb[1]},${rgb[2]}`;
-    }
-    function blendRgbTriplets(a, b, ratio = 0.5) {
-        const mix = Math.max(0, Math.min(1, Number(ratio) || 0));
-        const parse = (triplet, fallback) => String(triplet || fallback)
-            .split(',')
-            .slice(0, 3)
-            .map((part, index) => {
-                const fallbackParts = String(fallback || '0,0,0').split(',');
-                const numeric = Number(part?.trim?.() ?? part);
-                return Math.max(0, Math.min(255, Number.isFinite(numeric) ? numeric : Number(fallbackParts[index] || 0)));
-            });
-        const first = parse(a, '0,0,0');
-        const second = parse(b, '0,0,0');
-        return [
-            Math.round(first[0] + (second[0] - first[0]) * mix),
-            Math.round(first[1] + (second[1] - first[1]) * mix),
-            Math.round(first[2] + (second[2] - first[2]) * mix)
-        ].join(',');
-    }
-    function buildLightModeBackdropTokens(accentRgb, accent2Rgb, options = {}) {
-        const ink = String(options.inkRgb || '32,26,20').trim();
-        const line = options.lineRgb || blendRgbTriplets(ink, accentRgb, 0.62);
-        const particle = options.particleRgb || blendRgbTriplets(ink, accent2Rgb, 0.54);
-        const haze = options.hazeRgb || blendRgbTriplets('239,228,213', accentRgb, 0.18);
-        const glow = options.glowRgb || blendRgbTriplets(accentRgb, accent2Rgb, 0.35);
-        return { line, particle, haze, glow };
-    }
-    function rgbTripletToHex(triplet, fallback = '#c8822a') {
-        const parts = String(triplet || '')
-            .split(',')
-            .slice(0, 3)
-            .map((part) => Math.max(0, Math.min(255, Math.round(Number(part.trim()) || 0))));
-        if (parts.length !== 3 || parts.some((value) => !Number.isFinite(value))) return fallback;
-        return `#${parts.map((value) => value.toString(16).padStart(2, '0')).join('')}`;
-    }
-    let __luxColorProbeContext = null;
-    function colorToRgbTriplet(value, fallback = '200,130,42') {
-        const input = String(value || '').trim();
-        if (!input) return fallback;
-        if (/^#[0-9a-fA-F]{6}$/.test(input)) return hexToRgbTriplet(input);
-        if (!__luxColorProbeContext) {
-            const probe = document.createElement('canvas');
-            probe.width = 1;
-            probe.height = 1;
-            __luxColorProbeContext = probe.getContext('2d');
-        }
-        const context = __luxColorProbeContext;
-        if (!context) return fallback;
-        try {
-            context.fillStyle = '#000000';
-            context.fillStyle = input;
-            const normalized = context.fillStyle || '';
-            if (/^#[0-9a-fA-F]{6}$/.test(normalized)) return hexToRgbTriplet(normalized);
-            const match = normalized.match(/rgba?\(([^)]+)\)/i);
-            if (!match) return fallback;
-            return match[1].split(',').slice(0, 3).map((part) => String(Math.round(Number(part.trim()) || 0))).join(',');
-        } catch (e) {
-            return fallback;
-        }
-    }
-    function sanitizeColorInput(value, fallback = '') {
-        const input = String(value || '').trim();
-        if (!input) return fallback;
-        if (/^#[0-9a-fA-F]{6}$/.test(input)) return input;
-        const rgb = colorToRgbTriplet(input, '');
-        if (rgb) return rgbTripletToHex(rgb, fallback || '#c8822a');
-        return fallback || '#c8822a';
-    }
-    function getFacultyLuxuryPaletteState(facultyCode = getCurrentFacultyCode()) {
-        const normalizedFaculty = String(facultyCode || 'ECON').toUpperCase();
-        const fallbackPalette = getPaletteByKey(DEFAULT_HOME_VISUALS.paletteKey);
-        let facultyProfile = null;
-        try {
-            if (typeof getFacultyProfile === 'function') facultyProfile = getFacultyProfile(normalizedFaculty) || null;
-        } catch (e) {}
-        const accent = sanitizeColorInput(facultyProfile?.color, fallbackPalette.accent || '#c8822a');
-        const nav = sanitizeColorInput(facultyProfile?.navColor, '#091220');
-        const accentRgb = colorToRgbTriplet(accent, colorToRgbTriplet(fallbackPalette.accent || '#c8822a'));
-        const navRgb = colorToRgbTriplet(nav, '9,18,32');
-        const accent2Rgb = blendRgbTriplets(accentRgb, '255,232,188', 0.42);
-        return {
-            facultyCode: normalizedFaculty,
-            paletteKey: fallbackPalette.key,
-            accent,
-            accent2: rgbTripletToHex(accent2Rgb, fallbackPalette.accent2 || accent),
-            accentRgb,
-            accent2Rgb,
-            nav,
-            navRgb,
-            shellStartRgb: blendRgbTriplets(navRgb, accentRgb, 0.26),
-            shellEndRgb: blendRgbTriplets(navRgb, '4,7,13', 0.34),
-            shellGlowRgb: accent2Rgb,
-            topbarTintRgb: blendRgbTriplets(navRgb, accentRgb, 0.2),
-            glassTintRgb: blendRgbTriplets(navRgb, accentRgb, 0.18),
-            hazeRgb: blendRgbTriplets(accentRgb, accent2Rgb, 0.28)
-        };
-    }
-    function isVisualPaletteScopedToFaculty(visuals, facultyCode = getCurrentFacultyCode()) {
-        const scopedFaculty = String(visuals?.paletteFaculty || '').trim().toUpperCase();
-        if (!scopedFaculty && (visuals?.paletteKey || visuals?.customPalette?.accent)) return true;
-        if (scopedFaculty === GLOBAL_LUXURY_PALETTE_SCOPE || scopedFaculty === 'GLOBAL') return true;
-        return scopedFaculty === String(facultyCode || '').trim().toUpperCase();
-    }
-    function resolveCustomPalette() {
-        const facultyCode = getCurrentFacultyCode();
-        const visuals = getDashboardVisuals();
-        if (isVisualPaletteScopedToFaculty(visuals, facultyCode) && visuals.customPalette?.accent && visuals.customPalette?.accent2) {
-            return visuals.customPalette;
-        }
-        try {
-            if (String(localStorage.getItem('kiuLuxuryCustomPaletteFaculty') || '').toUpperCase() !== facultyCode) return null;
-            const raw = localStorage.getItem('kiuLuxuryCustomPalette');
-            return raw ? JSON.parse(raw) : null;
-        } catch (e) {
-            return null;
-        }
-    }
-    function resolvePaletteKey() {
-        const visuals = getDashboardVisuals();
-        const stored = visuals?.paletteKey || localStorage.getItem('kiuLuxuryPalette') || localStorage.getItem('kiu-palette');
-        if (stored === 'custom' || isBuiltInLuxuryPaletteKey(stored)) return stored;
-        return visuals?.paletteKey || DEFAULT_HOME_VISUALS.paletteKey;
-    }
-    function applyPaletteValues(accent, accent2, persist, key) {
-        const paletteClasses = ['obsidian-amber', 'slate-sapphire', 'pine-jade', 'burgundy-rose', 'sand-pearl', 'ink-orchid', 'ocean-teal'];
-        paletteClasses.forEach((palette) => document.body.classList.remove(`palette-${palette}`));
-        if (key && key !== 'custom' && paletteClasses.includes(key)) {
-            document.body.classList.add(`palette-${key}`);
-        }
-        if (persist) {
-            localStorage.setItem('kiuLuxuryPalette', key || 'custom');
-            localStorage.setItem('kiuLuxuryPaletteFaculty', getCurrentFacultyCode());
-            localStorage.setItem('kiu-palette', key);
-        }
-        if (typeof window.queueLuxuryTransparencyRefresh === 'function') {
-            var _palTransVal = getDashboardVisuals().surfaceTransparency || localStorage.getItem('kiuLuxurySurfaceTransparency');
-            window.queueLuxuryTransparencyRefresh(_palTransVal);
-        }
-        if (typeof window.__kiuApplyResolvedPalette === 'function') {
-            window.__kiuApplyResolvedPalette();
-            return;
-        }
-        const root = document.documentElement;
-        root.style.setProperty('--lux-accent', accent);
-        root.style.setProperty('--lux-accent-2', accent2);
-        root.style.setProperty('--lux-accent-rgb', colorToRgbTriplet(accent));
-        if (typeof window.__kiuApplyLmsParticleTheme === 'function') {
-            window.__kiuApplyLmsParticleTheme();
-        }
-        if (typeof window.__kiuRefreshLuxuryBackground === 'function') {
-            window.__kiuRefreshLuxuryBackground();
-        }
-    }
-    function applyPaletteKey(key, persist) {
-        const palette = getPaletteByKey(key);
-        if (persist) {
-            localStorage.removeItem('kiuLuxuryCustomPalette');
-            localStorage.removeItem('kiuLuxuryCustomPaletteFaculty');
-            setDashboardVisuals({
-                paletteKey: palette.key,
-                paletteFaculty: getCurrentFacultyCode(),
-                customPalette: null,
-                accentColor: palette.accent,
-                accentColor2: palette.accent2,
-                glassTint: '',
-                particleColor: '',
-                lineColor: '',
-                glowColor: '',
-                hazeColor: ''
-            });
-        }
-        applyPaletteValues(palette.accent, palette.accent2, persist, palette.key);
-    }
-    function applyCustomPalette(accent, accent2, persist) {
-        if (persist) {
-            localStorage.setItem('kiuLuxuryCustomPalette', JSON.stringify({ accent, accent2 }));
-            localStorage.setItem('kiuLuxuryCustomPaletteFaculty', getCurrentFacultyCode());
-            localStorage.setItem('kiu-palette', 'custom');
-            setDashboardVisuals({
-                paletteKey: 'custom',
-                paletteFaculty: getCurrentFacultyCode(),
-                customPalette: { accent, accent2 },
-                accentColor: accent,
-                accentColor2: accent2,
-                glassTint: '',
-                particleColor: '',
-                lineColor: '',
-                glowColor: '',
-                hazeColor: ''
-            });
-        }
-        applyPaletteValues(accent, accent2, persist, 'custom');
-    }
-    function applyResolvedPalette() {
-        const root = document.documentElement;
-        const facultyPalette = getFacultyLuxuryPaletteState(getCurrentFacultyCode());
-        const visuals = getDashboardVisuals();
-        const visualsAreScoped = isVisualPaletteScopedToFaculty(visuals, facultyPalette.facultyCode);
-        const palette = getPaletteByKey(visualsAreScoped ? (visuals.paletteKey || facultyPalette.paletteKey) : facultyPalette.paletteKey);
-        const custom = visualsAreScoped && visuals.customPalette?.accent ? visuals.customPalette : resolveCustomPalette();
-        const lightMode = getThemeMode() === 'light';
-        const accent = visualsAreScoped
-            ? (visuals.accentColor || custom?.accent || palette.accent || facultyPalette.accent)
-            : facultyPalette.accent;
-        const accent2 = visualsAreScoped
-            ? (visuals.accentColor2 || custom?.accent2 || palette.accent2 || facultyPalette.accent2)
-            : facultyPalette.accent2;
-        const accentRgb = colorToRgbTriplet(accent, facultyPalette.accentRgb);
-        const accent2Rgb = colorToRgbTriplet(accent2, facultyPalette.accent2Rgb || accentRgb);
-        const shellStartRgb = visualsAreScoped
-            ? (lightMode
-                ? blendRgbTriplets('248,240,229', accentRgb, 0.12)
-                : blendRgbTriplets(facultyPalette.navRgb, accentRgb, 0.34))
-            : facultyPalette.shellStartRgb;
-        const shellEndRgb = visualsAreScoped
-            ? (lightMode
-                ? blendRgbTriplets('255,249,241', accent2Rgb, 0.06)
-                : blendRgbTriplets('4,7,13', accentRgb, 0.18))
-            : facultyPalette.shellEndRgb;
-        const shellGlowRgb = visualsAreScoped
-            ? blendRgbTriplets(accentRgb, accent2Rgb, 0.46)
-            : facultyPalette.shellGlowRgb;
-        const glassTint = visualsAreScoped && visuals.glassTint
-            ? visuals.glassTint
-            : (lightMode
-                ? rgbTripletToHex(blendRgbTriplets('255,255,255', accent2Rgb, visualsAreScoped ? 0.12 : 0.16), '#eadfce')
-                : (visualsAreScoped
-                    ? rgbTripletToHex(blendRgbTriplets('10,16,28', accentRgb, 0.24), facultyPalette.nav || accent)
-                    : facultyPalette.nav));
-        const topbarTint = visualsAreScoped
-            ? (lightMode
-                ? rgbTripletToHex(blendRgbTriplets('246,237,226', accentRgb, 0.16), '#e6d8c6')
-                : rgbTripletToHex(blendRgbTriplets('11,18,32', accentRgb, 0.24), facultyPalette.nav || accent))
-            : (lightMode
-                ? rgbTripletToHex(blendRgbTriplets('246,237,226', facultyPalette.accentRgb, 0.2), '#e6d8c6')
-                : facultyPalette.nav);
-        const particleColor = visualsAreScoped ? (visuals.particleColor || accent2) : facultyPalette.accent2;
-        const lineColor = visualsAreScoped ? (visuals.lineColor || accent) : facultyPalette.accent;
-        const glowColor = visualsAreScoped ? (visuals.glowColor || accent2) : facultyPalette.accent2;
-        const hazeColor = visualsAreScoped ? (visuals.hazeColor || accent) : facultyPalette.accent;
-        const lightBackdrop = lightMode
-            ? buildLightModeBackdropTokens(accentRgb, accent2Rgb, {
-                lineRgb: palette.lightLineRgb,
-                particleRgb: palette.lightParticleRgb
-            })
-            : null;
-        root.style.setProperty('--lux-accent', accent);
-        root.style.setProperty('--lux-accent-2', accent2);
-        root.style.setProperty('--lux-accent-rgb', accentRgb);
-        root.style.setProperty('--lux-glass-tint-rgb', colorToRgbTriplet(glassTint, lightMode ? '246,239,229' : '16,23,38'));
-        root.style.setProperty('--lux-topbar-tint-rgb', colorToRgbTriplet(topbarTint, lightMode ? '239,228,213' : '11,18,32'));
-        root.style.setProperty('--lux-shell-start-rgb', shellStartRgb);
-        root.style.setProperty('--lux-shell-end-rgb', shellEndRgb);
-        root.style.setProperty('--lux-shell-glow-rgb', shellGlowRgb);
-        root.style.setProperty('--lux-home-secondary-rgb', accent2Rgb);
-        root.style.setProperty(
-            '--lux-bg-particle-rgb',
-            lightBackdrop ? lightBackdrop.particle : colorToRgbTriplet(particleColor, accent2Rgb)
-        );
-        root.style.setProperty(
-            '--lux-bg-line-rgb',
-            lightBackdrop ? lightBackdrop.line : colorToRgbTriplet(lineColor, accentRgb)
-        );
-        root.style.setProperty(
-            '--lux-bg-glow-rgb',
-            lightBackdrop ? lightBackdrop.glow : colorToRgbTriplet(glowColor, accent2Rgb)
-        );
-        root.style.setProperty(
-            '--lux-bg-haze-rgb',
-            lightBackdrop ? lightBackdrop.haze : colorToRgbTriplet(hazeColor, accentRgb)
-        );
-        root.style.setProperty('--kiu-blue', accent);
-        root.style.setProperty('--kiu-dark-blue', rgbTripletToHex(shellEndRgb, accent));
-        root.style.setProperty('--kiu-navy', rgbTripletToHex(shellEndRgb, accent));
-        root.style.setProperty('--kiu-gradient-blue', `linear-gradient(135deg, ${accent} 0%, ${accent2} 100%)`);
-        root.style.setProperty('--kiu-shell-gradient', lightMode
-            ? `radial-gradient(circle at 16% 10%, rgba(${accentRgb}, 0.12), transparent 30%), radial-gradient(circle at 84% 82%, rgba(${accent2Rgb}, 0.10), transparent 28%), linear-gradient(180deg, #fffaf3 0%, #f4ede2 100%)`
-            : `radial-gradient(circle at 12% 8%, rgba(${accentRgb}, 0.18), transparent 32%), radial-gradient(circle at 84% 80%, rgba(${accent2Rgb}, 0.12), transparent 30%), radial-gradient(circle at 50% -12%, rgba(${shellGlowRgb}, 0.10), transparent 42%), linear-gradient(180deg, rgba(${shellStartRgb}, 0.42), rgba(${shellEndRgb}, 0.78) 48%, rgba(4,7,13,0.98) 100%)`);
-        document.body.dataset.luxFaculty = facultyPalette.facultyCode;
-        if (typeof window.queueLuxuryTransparencyRefresh === 'function') {
-            window.queueLuxuryTransparencyRefresh(getDashboardVisuals().surfaceTransparency || localStorage.getItem('kiuLuxurySurfaceTransparency'));
-        }
-        if (typeof window.__kiuApplyLmsParticleTheme === 'function') {
-            window.__kiuApplyLmsParticleTheme();
-        }
-    }
-    window.__kiuApplyResolvedPalette = typeof applyResolvedPalette === 'function'
-        ? applyResolvedPalette
-        : window.__kiuApplyResolvedPalette;
-    function buildLuxuryTransparencyModel(value, lightMode = false) {
-        const percentage = Math.max(0, Math.min(100, parseInt(value, 10) || 0));
-        const fillRatio = typeof window.mapLuxuryTransparencyFillRatio === 'function'
-            ? window.mapLuxuryTransparencyFillRatio(percentage)
-            : (percentage + 1) / 101;
-        const transparencyRatio = fillRatio;
-        const colorFadeRatio = lightMode
-            ? Math.max(0.40, Math.min(1, fillRatio * 0.92))
-            : Math.max(0.01, Math.min(1, fillRatio * 0.92));
-        return {
-            percentage,
-            transparencyRatio,
-            fillRatio,
-            colorFadeRatio,
-            panelAlpha: lightMode
-                ? Math.max(0.12, 0.12 + (fillRatio * 0.83))
-                : Math.max(0.08, 0.08 + (fillRatio * 0.84)),
-            raisedAlpha: lightMode
-                ? 0.03 + (fillRatio * 0.16)
-                : 0.02 + (fillRatio * 0.14),
-            glassAlpha: lightMode
-                ? 0.02 + (fillRatio * 0.10)
-                : 0.015 + (fillRatio * 0.08),
-            panelFillAlpha: lightMode
-                ? 0.04 + (fillRatio * 0.20)
-                : 0.03 + (fillRatio * 0.16),
-            raisedFillAlpha: lightMode
-                ? 0.02 + (fillRatio * 0.14)
-                : 0.015 + (fillRatio * 0.12),
-            utilityFillAlpha: lightMode
-                ? 0.05 + (fillRatio * 0.22)
-                : 0.04 + (fillRatio * 0.18),
-            utilityAlpha: lightMode
-                ? 0.18 + (fillRatio * 0.66)
-                : 0.16 + (fillRatio * 0.70),
-            topbarFillAlpha: lightMode
-                ? 0.16 + (fillRatio * 0.62)
-                : 0.14 + (fillRatio * 0.72),
-            topbarRaisedAlpha: 0.04 + (fillRatio * 0.16),
-            glassHighlightAlpha: lightMode
-                ? 0.01 + (fillRatio * 0.04)
-                : 0.006 + (fillRatio * 0.02),
-            highTransparency: percentage <= 20
-        };
-    }
-    window.__kiuBuildLuxuryTransparencyModel = typeof buildLuxuryTransparencyModel === 'function'
-        ? buildLuxuryTransparencyModel
-        : window.__kiuBuildLuxuryTransparencyModel;
-    window.buildLuxuryTransparencyModel = typeof buildLuxuryTransparencyModel === 'function'
-        ? buildLuxuryTransparencyModel
-        : window.buildLuxuryTransparencyModel;
-    function applyLuxuryTransparencyTokenState(tokenState = {}, options = {}) {
-        const root = document.documentElement;
-        const propertyMap = {
-            '--lux-panel-alpha': tokenState.panelAlpha,
-            '--lux-transparency-alpha': tokenState.fillRatio,
-            '--lux-color-fade-alpha': tokenState.colorFadeRatio,
-            '--lux-raised-alpha': tokenState.raisedAlpha,
-            '--lux-glass-alpha': tokenState.glassAlpha,
-            '--lux-panel-fill-alpha': tokenState.panelFillAlpha,
-            '--lux-raised-fill-alpha': tokenState.raisedFillAlpha,
-            '--lux-utility-fill-alpha': tokenState.utilityFillAlpha,
-            '--lux-utility-alpha': tokenState.utilityAlpha,
-            '--lux-topbar-fill-alpha': tokenState.topbarFillAlpha,
-            '--lux-topbar-raised-alpha': tokenState.topbarRaisedAlpha,
-            '--lux-glass-highlight-alpha': tokenState.glassHighlightAlpha
-        };
-        if (Object.prototype.hasOwnProperty.call(options, 'panelGlow')) propertyMap['--lux-panel-glow'] = options.panelGlow;
-        if (Object.prototype.hasOwnProperty.call(options, 'glowScale')) propertyMap['--lux-glow-scale'] = options.glowScale;
-        if (Object.prototype.hasOwnProperty.call(options, 'cardGlowAlpha')) propertyMap['--lux-card-glow-alpha'] = options.cardGlowAlpha;
-        Object.entries(propertyMap).forEach(([name, value]) => {
-            if (value == null) return;
-            root.style.setProperty(name, String(value));
-        });
-    }
-    window.__kiuApplyTransparencyTokenState = typeof applyLuxuryTransparencyTokenState === 'function'
-        ? applyLuxuryTransparencyTokenState
-        : window.__kiuApplyTransparencyTokenState;
-    function ensureLuxuryHighTransparencyStyleElement() {
-        let styleEl = document.getElementById('lux-high-trans-primer');
-        if (!styleEl) {
-            if (typeof window.__kiuThemePrimerAppendLateStyle === 'function') {
-                window.__kiuThemePrimerAppendLateStyle('lux-high-trans-primer', ':root{}');
-                styleEl = document.getElementById('lux-high-trans-primer');
-            }
-            if (!styleEl) {
-                styleEl = document.createElement('style');
-                styleEl.id = 'lux-high-trans-primer';
-                styleEl.textContent = ':root{}';
-                document.head.appendChild(styleEl);
-            }
-        }
-        styleEl.media = 'all';
-        if (!String(styleEl.textContent || '').trim()) styleEl.textContent = ':root{}';
-        return styleEl;
-    }
-    function applyLuxuryHighTransparencyState(enabled, cssText = '') {
-        const root = document.documentElement;
-        if (enabled) {
-            root.classList.add('lux-high-transparency');
-            const styleEl = ensureLuxuryHighTransparencyStyleElement();
-            if (cssText) styleEl.textContent = cssText;
-            return;
-        }
-        root.classList.remove('lux-high-transparency');
-        const styleEl = ensureLuxuryHighTransparencyStyleElement();
-        styleEl.textContent = ':root{}';
-        styleEl.media = 'all';
-    }
-    function applySharedLightModeRootTokens(mode) {
-        if (typeof window.__kiuApplyThemePrimerLightModeTokens === 'function') {
-            window.__kiuApplyThemePrimerLightModeTokens(mode);
-            return;
-        }
-        const root = document.documentElement;
-        if (mode === 'light') {
-            root.style.setProperty('--lux-bg', '#efebe4');
-            root.style.setProperty('--lux-bg-soft', '#f7f3ec');
-            root.style.setProperty('--lux-surface', '#ffffff');
-            root.style.setProperty('--lux-surface-2', '#f5f1ea');
-            root.style.setProperty('--lux-surface-3', '#ece6db');
-            root.style.setProperty('--lux-border', 'rgba(48,34,22,0.10)');
-            root.style.setProperty('--lux-border-strong', 'rgba(48,34,22,0.18)');
-            root.style.setProperty('--lux-text', '#201912');
-            root.style.setProperty('--lux-text-muted', 'rgba(32,25,18,0.66)');
-            root.style.setProperty('--lux-text-soft', 'rgba(32,25,18,0.36)');
-            root.style.setProperty('--lux-shadow', '0 24px 54px rgba(62,42,20,0.12)');
-            return;
-        }
-        ['--lux-bg', '--lux-bg-soft', '--lux-surface', '--lux-surface-2', '--lux-surface-3', '--lux-border', '--lux-border-strong', '--lux-text', '--lux-text-muted', '--lux-text-soft', '--lux-shadow']
-            .forEach((name) => root.style.removeProperty(name));
-    }
-    window.__kiuApplyHighTransparencyState = typeof applyLuxuryHighTransparencyState === 'function'
-        ? applyLuxuryHighTransparencyState
-        : window.__kiuApplyHighTransparencyState;
-    function queueLuxuryRefreshOperation(run) {
-        window.clearTimeout(window.__luxTransparencyPaletteRefreshTimer);
-        window.__luxTransparencyPaletteRefreshTimer = window.setTimeout(() => {
-            window.__luxTransparencyPaletteRefreshTimer = null;
-            if (typeof window.requestAnimationFrame === 'function') {
-                window.requestAnimationFrame(run);
-            } else {
-                run();
-            }
-        }, 0);
-    }
-    window.__kiuQueueLuxuryRefreshOperation = typeof queueLuxuryRefreshOperation === 'function'
-        ? queueLuxuryRefreshOperation
-        : window.__kiuQueueLuxuryRefreshOperation;
-    function applyLuxuryTransparencyPreferenceState(percentage, transparencyRatio) {
-        const normalizedPercentage = Math.max(0, Math.min(100, parseInt(percentage, 10) || 0));
-        const normalizedRatio = Number.isFinite(Number(transparencyRatio))
-            ? Number(transparencyRatio)
-            : normalizedPercentage / 100;
-        localStorage.setItem('kiuLuxurySurfaceTransparency', String(normalizedPercentage));
-        localStorage.setItem('kiuLuxurySurfaceTransparencyValue', normalizedRatio.toFixed(2));
-        document.documentElement.dataset.luxTransparency = String(normalizedPercentage);
-    }
-    window.__kiuApplyTransparencyPreferenceState = typeof applyLuxuryTransparencyPreferenceState === 'function'
-        ? applyLuxuryTransparencyPreferenceState
-        : window.__kiuApplyTransparencyPreferenceState;
-    function applyAtmosphereSettings() {
-        const root = document.documentElement;
-        const particleQuality = getParticleQuality();
-        const resolvedQuality = particleQuality === 'auto'
-            ? (getLuxuryPerformanceTier(false) === 'high' ? 'high' : getLuxuryPerformanceTier(false) === 'efficient' ? 'low' : 'balanced')
-            : particleQuality;
-        const lightMode = getThemeMode() === 'light';
-        const glowConfig = { glowScale: '1', buttonGlow: '0.44', panelGlow: '0.2' };
-        const panelFillMin = lightMode ? 0.016 : 0.012;
-        const raisedFillMin = lightMode ? 0.008 : 0.006;
-        const utilityFillMin = lightMode ? 0.024 : 0.022;
-        const topbarFillMin = lightMode ? 0.34 : 0.78;
-        const topbarRaisedMin = lightMode ? 0.05 : 0.16;
-        const backgroundAnimationsEnabled = areBackgroundAnimationsEnabled();
-        // Initialize canvas sharpness for timetable glass quality
-        if (typeof getParticleSharpness === 'function') {
-            const sharpness = getParticleSharpness();
-            const blurPx = ((100 - sharpness) / 100 * 1.0).toFixed(2);
-            root.style.setProperty('--lux-canvas-sharpness-blur', blurPx + 'px');
-        }
-        root.style.setProperty('--lux-canvas-opacity', backgroundAnimationsEnabled ? '1' : '0');
-        root.style.setProperty('--lux-overlay-opacity', '0');
-        root.style.setProperty('--lux-page-haze-top', backgroundAnimationsEnabled ? '0' : '0');
-        root.style.setProperty('--lux-page-haze-bottom', backgroundAnimationsEnabled ? '0' : '0');
-        // Panel fill / glass blur are owned by updateTransparency — do not stomp them here.
-        root.style.setProperty('--lux-topbar-fill-alpha', String(topbarFillMin));
-        root.style.setProperty('--lux-topbar-raised-alpha', String(topbarRaisedMin));
-        root.style.setProperty('--lux-button-glow', glowConfig.buttonGlow);
-        var _savedTransVal = parseInt(
-            getDashboardVisuals().surfaceTransparency
-            || localStorage.getItem('kiuLuxurySurfaceTransparency')
-            || DEFAULT_HOME_VISUALS.surfaceTransparency,
-            10
-        );
-        var _transparencyModel = typeof window.buildLuxuryTransparencyModel === 'function'
-            ? window.buildLuxuryTransparencyModel(_savedTransVal, lightMode)
-            : null;
-        var _panelA = _transparencyModel ? _transparencyModel.panelAlpha : (_savedTransVal >= 95 ? (lightMode ? 0.95 : 0.92) : Math.max(0.03, _savedTransVal / 100 * 0.92));
-        var _isHighTrans2 = _transparencyModel ? _transparencyModel.highTransparency : _savedTransVal >= 80;
-        const transparencyTokenState = _transparencyModel
-            ? {
-                ..._transparencyModel,
-                panelAlpha: _panelA
-            }
-            : {
-                panelAlpha: _panelA,
-                fillRatio: Math.max(0, 1 - (_savedTransVal / 100)),
-                colorFadeRatio: Math.max(0.01, Math.min(1, (Math.max(0, 1 - (_savedTransVal / 100))) * 0.92)),
-                raisedAlpha: 0.012,
-                glassAlpha: 0.006,
-                panelFillAlpha: panelFillMin,
-                raisedFillAlpha: raisedFillMin,
-                utilityFillAlpha: utilityFillMin,
-                utilityAlpha: lightMode ? 0.02 : 0.08,
-                topbarFillAlpha: topbarFillMin,
-                topbarRaisedAlpha: topbarRaisedMin,
-                glassHighlightAlpha: lightMode ? 0.02 : 0.012
-            };
-        applyLuxuryTransparencyTokenState(transparencyTokenState, {
-            panelGlow: _isHighTrans2 ? '0' : glowConfig.panelGlow,
-            glowScale: _isHighTrans2 ? '0' : glowConfig.glowScale,
-            cardGlowAlpha: _isHighTrans2 ? '0' : String(0.016)
-        });
-        root.style.setProperty('--lux-grid-row-height', `${HOME_GRID_ROW_HEIGHT}px`);
-        document.body.dataset.luxBackgroundIntensity = resolvedQuality;
-        document.body.dataset.luxParticleQuality = particleQuality;
-        document.body.dataset.luxBackgroundAnimation = backgroundAnimationsEnabled ? 'on' : 'off';
-    }
-    function getThemeMode() {
-        if (window.__KIU_FORCE_DARK_ROUTE__) return 'dark';
-        const stored = String(getDashboardVisuals().themeMode || DEFAULT_HOME_VISUALS.themeMode).trim().toLowerCase();
-        return stored === 'light' ? 'light' : 'dark';
-    }
-    function applyThemeMode(mode, persist) {
-        const nextMode = mode === 'light' ? 'light' : 'dark';
-        const root = document.documentElement;
-        document.body.classList.toggle('lux-light-mode', nextMode === 'light');
-        document.body.dataset.luxThemeMode = nextMode;
-        root.classList.toggle('lux-light-mode', nextMode === 'light');
-        root.dataset.luxThemeMode = nextMode;
-        applySharedLightModeRootTokens(nextMode);
-        if (persist) {
-            localStorage.setItem('kiuLuxuryThemeMode', nextMode);
-            setDashboardVisuals({ themeMode: nextMode });
-        }
-        applyResolvedPalette();
-        // Re-apply transparency so inline backgrounds recalculate for the new mode
-        if (typeof updateTransparency === 'function') {
-            const saved = getDashboardVisuals().surfaceTransparency
-                || localStorage.getItem('kiuLuxurySurfaceTransparency')
-                || DEFAULT_HOME_VISUALS.surfaceTransparency;
-            updateTransparency(parseInt(saved));
-        }
-        if (typeof window.__kiuRefreshLuxuryBackground === 'function') {
-            window.__kiuRefreshLuxuryBackground();
-        }
-    }
-    function sanitizeBackgroundMode(mode) {
-        const normalized = String(mode || '').trim().toLowerCase();
-        if (normalized === 'tunnel') return 'orbit';
-        if (normalized === 'grid') return 'corners';
-        if (normalized === 'constellation') return 'peak';
-        if (normalized === 'aurora') return 'orbit';
-        if (normalized === 'mesh') return 'corners';
-        return BACKGROUND_MODES.some((item) => item.key === normalized) ? normalized : 'peak';
-    }
-    function areBackgroundAnimationsEnabled() {
-        const scopeKey = getHomeScopeKey();
-        const entry = getDashboardPreferenceEntry();
-        const stored = String(localStorage.getItem('kiuLuxuryBackgroundAnimationsEnabled') || '').trim().toLowerCase();
-        if (stored) {
-            return !(stored === '0' || stored === 'false' || stored === 'off');
-        }
-        const scopedVisuals = entry.visualsByScope?.[scopeKey];
-        if (scopedVisuals && typeof scopedVisuals.backgroundAnimationsEnabled === 'boolean') {
-            return scopedVisuals.backgroundAnimationsEnabled;
-        }
-        if (
-            entry.visuals
-            && typeof entry.visuals === 'object'
-            && Object.prototype.hasOwnProperty.call(entry.visuals, 'backgroundAnimationsEnabled')
-            && typeof entry.visuals.backgroundAnimationsEnabled === 'boolean'
-        ) {
-            return entry.visuals.backgroundAnimationsEnabled;
-        }
-        return true;
-    }
-    function getBackgroundMode() {
-        return sanitizeBackgroundMode(getDashboardVisuals().backgroundMode || DEFAULT_HOME_VISUALS.backgroundMode);
-    }
-    function setBackgroundAnimationsEnabled(enabled, persist = true) {
-        const nextValue = enabled !== false;
-        document.body.dataset.luxBackgroundAnimation = nextValue ? 'on' : 'off';
-        if (persist) {
-            localStorage.setItem('kiuLuxuryBackgroundAnimationsEnabled', nextValue ? '1' : '0');
-            setDashboardVisuals({ backgroundAnimationsEnabled: nextValue });
-        }
-        applyAtmosphereSettings();
-        if (typeof window.__kiuRefreshLuxuryBackground === 'function') {
-            window.__kiuRefreshLuxuryBackground();
-        }
-        syncStudioUi();
-        showToast(nextValue ? 'Background animations on' : 'Background animations off');
-    }
-    function setBackgroundMode(mode, persist) {
-        const validMode = sanitizeBackgroundMode(mode);
-        document.body.dataset.luxBackgroundMode = validMode;
-        if (persist) {
-            localStorage.setItem('kiuLuxuryBackgroundMode', validMode);
-            setDashboardVisuals({ backgroundMode: validMode });
-        }
-        if (typeof window.__kiuRefreshLuxuryBackground === 'function') {
-            window.__kiuRefreshLuxuryBackground(validMode);
-        }
-        syncStudioUi();
-        showToast(`Background: ${BACKGROUND_MODES.find((item) => item.key === validMode)?.label || validMode}`);
-    }
-    function getParticleMotion() {
-        const raw = getDashboardVisuals().particleMotion ?? localStorage.getItem('kiuLuxuryParticleMotion') ?? DEFAULT_HOME_VISUALS.particleMotion;
-        const value = Number(raw);
-        if (Number.isNaN(value)) return DEFAULT_HOME_VISUALS.particleMotion;
-        return Math.min(120, Math.max(0, Math.round(value)));
-    }
-    function setParticleMotion(value, persist = true) {
-        const nextValue = Math.min(120, Math.max(0, Math.round(Number(value) || DEFAULT_HOME_VISUALS.particleMotion)));
-        if (persist) {
-            localStorage.setItem('kiuLuxuryParticleMotion', String(nextValue));
-            setDashboardVisuals({ particleMotion: nextValue });
-        }
-        if (typeof window.__kiuRefreshLuxuryBackground === 'function') {
-            window.__kiuRefreshLuxuryBackground();
-        }
-        syncStudioUi();
-    }
-    function getParticleDensity() {
-        const raw = getDashboardVisuals().particleDensity ?? localStorage.getItem('kiuLuxuryParticleDensity') ?? DEFAULT_HOME_VISUALS.particleDensity;
-        const value = Number(raw);
-        if (Number.isNaN(value)) return DEFAULT_HOME_VISUALS.particleDensity;
-        return Math.min(100, Math.max(35, Math.round(value)));
-    }
-    function setParticleDensity(value, persist = true) {
-        const nextValue = Math.min(100, Math.max(35, Math.round(Number(value) || DEFAULT_HOME_VISUALS.particleDensity)));
-        if (persist) {
-            localStorage.setItem('kiuLuxuryParticleDensity', String(nextValue));
-            setDashboardVisuals({ particleDensity: nextValue });
-        }
-        if (typeof window.__kiuRefreshLuxuryBackground === 'function') {
-            window.__kiuRefreshLuxuryBackground();
-        }
-        syncStudioUi();
-    }
-    function getParticleAmount() {
-        const raw = getDashboardVisuals().particleAmount ?? localStorage.getItem('kiuLuxuryParticleAmount') ?? DEFAULT_HOME_VISUALS.particleAmount;
-        const value = Number(raw);
-        if (Number.isNaN(value)) return DEFAULT_HOME_VISUALS.particleAmount;
-        return Math.min(150, Math.max(50, Math.round(value)));
-    }
-    function setParticleAmount(value, persist = true) {
-        const nextValue = Math.min(150, Math.max(50, Math.round(Number(value) || DEFAULT_HOME_VISUALS.particleAmount)));
-        if (persist) {
-            localStorage.setItem('kiuLuxuryParticleAmount', String(nextValue));
-            setDashboardVisuals({ particleAmount: nextValue });
-        }
-        if (typeof window.__kiuRefreshLuxuryBackground === 'function') {
-            window.__kiuRefreshLuxuryBackground();
-        }
-        syncStudioUi();
-    }
-    function getParticleSharpness() {
-        const raw = getDashboardVisuals().particleSharpness ?? localStorage.getItem('kiuLuxuryParticleSharpness') ?? DEFAULT_HOME_VISUALS.particleSharpness;
-        const value = Number(raw);
-        if (Number.isNaN(value)) return DEFAULT_HOME_VISUALS.particleSharpness;
-        return Math.min(100, Math.max(0, Math.round(value)));
-    }
-    function setParticleSharpness(value, persist = true) {
-        const nextValue = Math.min(100, Math.max(0, Math.round(Number(value) || DEFAULT_HOME_VISUALS.particleSharpness)));
-        if (persist) {
-            localStorage.setItem('kiuLuxuryParticleSharpness', String(nextValue));
-            setDashboardVisuals({ particleSharpness: nextValue });
-        }
-        // Map 0-100 to blur 1.0px-0px (higher sharpness = less blur)
-        const blurPx = ((100 - nextValue) / 100 * 1.0).toFixed(2);
-        document.documentElement.style.setProperty('--lux-canvas-sharpness-blur', blurPx + 'px');
-        syncStudioUi();
-    }
-    function getParticleQuality() {
-        const stored = String(
-            getDashboardVisuals().particleQuality ?? localStorage.getItem('kiuLuxuryParticleQuality') ?? DEFAULT_HOME_VISUALS.particleQuality
-        ).trim().toLowerCase();
-        return PARTICLE_QUALITY_OPTIONS.some((item) => item.key === stored) ? stored : DEFAULT_HOME_VISUALS.particleQuality;
-    }
-    function setParticleQuality(level, persist = true) {
-        const nextLevel = PARTICLE_QUALITY_OPTIONS.some((item) => item.key === level) ? level : DEFAULT_HOME_VISUALS.particleQuality;
-        document.body.dataset.luxParticleQuality = nextLevel;
-        if (persist) {
-            localStorage.setItem('kiuLuxuryParticleQuality', nextLevel);
-            setDashboardVisuals({ particleQuality: nextLevel });
-        }
-        if (typeof window.__kiuRefreshLuxuryBackground === 'function') {
-            window.__kiuRefreshLuxuryBackground();
-        }
-        syncStudioUi();
-        showToast(`Particle quality: ${PARTICLE_QUALITY_OPTIONS.find((item) => item.key === nextLevel)?.label || nextLevel}`);
-    }
-    const DEFAULT_STUDIO_MIXER = {
-        hA: 30,
-        sA: 72,
-        lA: 48,
-        hB: 45,
-        sB: 80,
-        lB: 58,
-        ratio: 50
+    const __luxPaletteBridge = {
+        getDashboardVisuals: (...a) => getDashboardVisuals(...a),
+        setDashboardVisuals: (...a) => setDashboardVisuals(...a),
+        getCurrentFacultyCode: (...a) => getCurrentFacultyCode(...a),
+        getThemeMode: (...a) => __luxPaletteBridge._getThemeMode?.(...a) ?? window.getThemeMode?.(...a) ?? 'dark',
+        isBuiltInLuxuryPaletteKey: (...a) => isBuiltInLuxuryPaletteKey(...a),
+        getFacultyProfile: (...a) => (typeof getFacultyProfile === 'function' ? getFacultyProfile(...a) : window.getFacultyProfile?.(...a)),
+        LUXURY_PALETTES,
+        DEFAULT_HOME_VISUALS,
+        GLOBAL_LUXURY_PALETTE_SCOPE
     };
-    function clampNumber(value, min, max, fallback) {
-        const numeric = Number(value);
-        if (!Number.isFinite(numeric)) return fallback;
-        return Math.min(max, Math.max(min, numeric));
-    }
-    function sanitizeFogHexColor(value, fallback) {
-        const normalized = String(value || '').trim();
-        if (/^#[0-9a-fA-F]{6}$/.test(normalized)) return normalized.toLowerCase();
-        return fallback;
-    }
-    function readStoredFogSettings() {
-        try {
-            const raw = localStorage.getItem('kiuLuxuryFogSettings');
-            if (!raw) return null;
-            const parsed = JSON.parse(raw);
-            return parsed && typeof parsed === 'object' ? parsed : null;
-        } catch (error) {
-            return null;
-        }
-    }
-    function sanitizeFogSettings(value) {
-        const source = value && typeof value === 'object' ? value : {};
-        return {
-            highlightColor: sanitizeFogHexColor(source.highlightColor, DEFAULT_FOG_SETTINGS.highlightColor),
-            midtoneColor: sanitizeFogHexColor(source.midtoneColor, DEFAULT_FOG_SETTINGS.midtoneColor),
-            lowlightColor: sanitizeFogHexColor(source.lowlightColor, DEFAULT_FOG_SETTINGS.lowlightColor),
-            baseColor: sanitizeFogHexColor(source.baseColor, DEFAULT_FOG_SETTINGS.baseColor),
-            blurFactor: clampNumber(source.blurFactor, 0, 1, DEFAULT_FOG_SETTINGS.blurFactor),
-            speed: clampNumber(source.speed, 0, 3, DEFAULT_FOG_SETTINGS.speed),
-            zoom: clampNumber(source.zoom, 0.2, 4, DEFAULT_FOG_SETTINGS.zoom)
-        };
-    }
-    function getFogSettings() {
-        const stored = readStoredFogSettings();
-        const visuals = getDashboardVisuals();
-        return sanitizeFogSettings(stored || visuals.fogSettings || DEFAULT_FOG_SETTINGS);
-    }
-    function refreshActiveFogBackground() {
-        if (getBackgroundMode() !== 'fog') return;
-        if (typeof window.__kiuRefreshLuxuryVantaFogBackground === 'function') {
-            window.__kiuRefreshLuxuryVantaFogBackground();
-            return;
-        }
-        if (typeof window.__kiuApplyLmsFogTheme === 'function') {
-            window.__kiuApplyLmsFogTheme();
-        }
-    }
-    function setFogSettings(patch, persist = true) {
-        const nextSettings = sanitizeFogSettings({
-            ...getFogSettings(),
-            ...(patch && typeof patch === 'object' ? patch : {})
-        });
-        if (persist) {
-            localStorage.setItem('kiuLuxuryFogSettings', JSON.stringify(nextSettings));
-            setDashboardVisuals({ fogSettings: nextSettings });
-        }
-        refreshActiveFogBackground();
-        syncStudioUi();
-    }
-    function applyFogPreset(preset, persist = true) {
-        const colors = FOG_COLOR_PRESETS[preset === 'light' ? 'light' : 'dark'];
-        if (!colors) return;
-        setFogSettings(colors, persist);
-        showToast(`Fog preset: ${preset === 'light' ? 'Light' : 'Dark'}`);
-    }
-    function normalizeFogProfileBank(value) {
-        return String(value || '').trim().toLowerCase() === 'light' ? 'light' : 'dark';
-    }
-    function defaultFogProfileMotion() {
-        return {
-            blurFactor: DEFAULT_FOG_SETTINGS.blurFactor,
-            speed: DEFAULT_FOG_SETTINGS.speed,
-            zoom: DEFAULT_FOG_SETTINGS.zoom
-        };
-    }
-    function buildDefaultLightFogProfiles() {
-        const motion = defaultFogProfileMotion();
-        const light = FOG_COLOR_PRESETS.light;
-        return [
-            {
-                id: 'fog-light-soft-dawn',
-                name: 'Soft Dawn',
-                themeMode: 'light',
-                settings: sanitizeFogSettings({
-                    highlightColor: '#fff1f2',
-                    midtoneColor: light.midtoneColor,
-                    lowlightColor: '#bae6fd',
-                    baseColor: light.baseColor,
-                    ...motion
-                })
-            },
-            {
-                id: 'fog-light-pale-mist',
-                name: 'Pale Mist',
-                themeMode: 'light',
-                settings: sanitizeFogSettings({
-                    highlightColor: '#e0f2fe',
-                    midtoneColor: '#7dd3fc',
-                    lowlightColor: '#fef08a',
-                    baseColor: '#f8fafc',
-                    ...motion
-                })
-            },
-            {
-                id: 'fog-light-sun-haze',
-                name: 'Sun Haze',
-                themeMode: 'light',
-                settings: sanitizeFogSettings({
-                    highlightColor: light.highlightColor,
-                    midtoneColor: '#fde68a',
-                    lowlightColor: light.lowlightColor,
-                    baseColor: light.baseColor,
-                    ...motion
-                })
-            }
-        ];
-    }
-    function sanitizeFogProfile(entry) {
-        if (!entry || typeof entry !== 'object') return null;
-        const id = String(entry.id || '').trim();
-        const name = String(entry.name || '').trim();
-        if (!id || !name) return null;
-        return {
-            id,
-            name,
-            themeMode: normalizeFogProfileBank(entry.themeMode),
-            settings: sanitizeFogSettings(entry.settings)
-        };
-    }
-    function readStoredFogProfiles() {
-        try {
-            const raw = localStorage.getItem('kiuLuxuryFogProfiles');
-            if (!raw) return null;
-            const parsed = JSON.parse(raw);
-            return Array.isArray(parsed) ? parsed : null;
-        } catch (error) {
-            return null;
-        }
-    }
-    function writeStoredFogProfiles(profiles) {
-        try {
-            localStorage.setItem('kiuLuxuryFogProfiles', JSON.stringify(Array.isArray(profiles) ? profiles : []));
-        } catch (error) {
-            return false;
-        }
-        return true;
-    }
-    function syncFogProfilesStorage(profiles) {
-        return writeStoredFogProfiles(
-            (Array.isArray(profiles) ? profiles : [])
-                .map(sanitizeFogProfile)
-                .filter(Boolean)
-        );
-    }
-    function fogProfileSettingsEqual(left, right) {
-        const a = sanitizeFogSettings(left);
-        const b = sanitizeFogSettings(right);
-        return a.highlightColor === b.highlightColor
-            && a.midtoneColor === b.midtoneColor
-            && a.lowlightColor === b.lowlightColor
-            && a.baseColor === b.baseColor
-            && a.blurFactor === b.blurFactor
-            && a.speed === b.speed
-            && a.zoom === b.zoom;
-    }
-    function mergeFogProfileStores(entryProfiles, storedProfiles) {
-        const storedById = new Map();
-        storedProfiles.forEach((profile) => {
-            const normalized = sanitizeFogProfile(profile);
-            if (normalized) storedById.set(normalized.id, normalized);
-        });
-        const entryById = new Map();
-        entryProfiles.forEach((profile) => {
-            const normalized = sanitizeFogProfile(profile);
-            if (normalized) entryById.set(normalized.id, normalized);
-        });
-        const merged = entryProfiles.map((profile) => {
-            const normalized = sanitizeFogProfile(profile);
-            if (!normalized) return null;
-            const stored = storedById.get(normalized.id);
-            if (!stored) return normalized;
-            if (!fogProfileSettingsEqual(normalized.settings, stored.settings)
-                || normalized.name !== stored.name
-                || normalized.themeMode !== stored.themeMode) {
-                return stored;
-            }
-            return normalized;
-        }).filter(Boolean);
-        storedProfiles.forEach((profile) => {
-            const normalized = sanitizeFogProfile(profile);
-            if (!normalized || entryById.has(normalized.id)) return;
-            merged.push(normalized);
-        });
-        return merged;
-    }
-    function ensureFogProfileStore() {
-        const entry = getDashboardPreferenceEntry();
-        const entryProfiles = (Array.isArray(entry.fogProfiles) ? entry.fogProfiles : [])
-            .map(sanitizeFogProfile)
-            .filter(Boolean);
-        const storedRaw = readStoredFogProfiles();
-        const storedProfiles = storedRaw
-            ? storedRaw.map(sanitizeFogProfile).filter(Boolean)
-            : [];
-        let merged = mergeFogProfileStores(entryProfiles, storedProfiles);
-        const hasLightBank = merged.some((profile) => profile.themeMode === 'light');
-        if (!hasLightBank) {
-            merged = [...merged, ...buildDefaultLightFogProfiles()];
-        }
-        const entryJson = JSON.stringify(entryProfiles);
-        const mergedJson = JSON.stringify(merged);
-        if (entryJson !== mergedJson) {
-            updateDashboardPreferenceEntry((nextEntry) => {
-                nextEntry.fogProfiles = merged;
-            }, { persist: true });
-        }
-        syncFogProfilesStorage(merged);
-        return getDashboardPreferenceEntry().fogProfiles || merged;
-    }
-    function getAllFogProfiles() {
-        return ensureFogProfileStore()
-            .map(sanitizeFogProfile)
-            .filter(Boolean);
-    }
-    function getFogProfiles(bank) {
-        const activeBank = normalizeFogProfileBank(bank ?? getThemeMode());
-        return getAllFogProfiles().filter((profile) => profile.themeMode === activeBank);
-    }
-    function slugFogProfileName(name) {
-        return String(name || 'profile').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'profile';
-    }
-    function saveFogProfile(name, bank) {
-        const trimmed = String(name || '').trim();
-        if (!trimmed) return null;
-        const profile = {
-            id: `fog-${slugFogProfileName(trimmed)}-${Date.now().toString(36)}`,
-            name: trimmed,
-            themeMode: normalizeFogProfileBank(bank ?? getThemeMode()),
-            settings: sanitizeFogSettings(getFogSettings())
-        };
-        updateDashboardPreferenceEntry((entry) => {
-            const store = Array.isArray(entry.fogProfiles) ? entry.fogProfiles : [];
-            entry.fogProfiles = [...store, profile];
-            syncFogProfilesStorage(entry.fogProfiles);
-        }, { persist: true });
-        showToast(`Fog profile saved: ${trimmed}`);
-        return profile;
-    }
-    function applyFogProfile(id) {
-        const profileId = String(id || '').trim();
-        if (!profileId) return false;
-        const profile = getAllFogProfiles().find((item) => item.id === profileId);
-        if (!profile) return false;
-        setFogSettings(profile.settings, true);
-        showToast(`Fog profile applied: ${profile.name}`);
-        return true;
-    }
-    function deleteFogProfile(id) {
-        const profileId = String(id || '').trim();
-        if (!profileId) return false;
-        const profile = getAllFogProfiles().find((item) => item.id === profileId);
-        if (!profile) return false;
-        updateDashboardPreferenceEntry((entry) => {
-            entry.fogProfiles = (entry.fogProfiles || []).filter((item) => item.id !== profileId);
-            syncFogProfilesStorage(entry.fogProfiles);
-        }, { persist: true });
-        showToast(`Fog profile removed: ${profile.name}`);
-        return true;
-    }
-    function updateFogProfile(id, patch = {}) {
-        const profileId = String(id || '').trim();
-        if (!profileId) return null;
-        const existing = getAllFogProfiles().find((item) => item.id === profileId);
-        if (!existing) return null;
-        const name = String(patch.name ?? existing.name).trim();
-        if (!name) return null;
-        const nextProfile = {
-            id: profileId,
-            name,
-            themeMode: existing.themeMode,
-            settings: sanitizeFogSettings(patch.settings ?? existing.settings)
-        };
-        updateDashboardPreferenceEntry((entry) => {
-            if (!Array.isArray(entry.fogProfiles)) entry.fogProfiles = [];
-            const index = entry.fogProfiles.findIndex((item) => item.id === profileId);
-            if (index >= 0) entry.fogProfiles[index] = nextProfile;
-            else entry.fogProfiles.push(nextProfile);
-            syncFogProfilesStorage(entry.fogProfiles);
-        }, { persist: true });
-        showToast(`Fog profile updated: ${name}`);
-        return nextProfile;
-    }
-    function reorderFogProfiles(orderedIds, bank) {
-        const ids = Array.isArray(orderedIds)
-            ? orderedIds.map((id) => String(id || '').trim()).filter(Boolean)
-            : [];
-        if (!ids.length) return false;
-        const activeBank = normalizeFogProfileBank(bank ?? getThemeMode());
-        const allProfiles = getAllFogProfiles();
-        const bankProfiles = allProfiles.filter((profile) => profile.themeMode === activeBank);
-        if (ids.length !== bankProfiles.length) return false;
-        const byId = new Map(bankProfiles.map((profile) => [profile.id, profile]));
-        if (ids.some((id) => !byId.has(id))) return false;
-        const reorderedQueue = ids.map((id) => byId.get(id));
-        const queue = [...reorderedQueue];
-        const nextProfiles = allProfiles.map((profile) => (
-            profile.themeMode === activeBank ? queue.shift() : profile
-        ));
-        updateDashboardPreferenceEntry((entry) => {
-            entry.fogProfiles = nextProfiles;
-            syncFogProfilesStorage(entry.fogProfiles);
-        }, { persist: true });
-        return true;
-    }
-    function findMatchingFogProfileId(settings, bank) {
-        const normalized = sanitizeFogSettings(settings);
-        const match = getFogProfiles(bank).find((profile) => {
-            const stored = profile.settings;
-            return stored.highlightColor === normalized.highlightColor
-                && stored.midtoneColor === normalized.midtoneColor
-                && stored.lowlightColor === normalized.lowlightColor
-                && stored.baseColor === normalized.baseColor
-                && stored.blurFactor === normalized.blurFactor
-                && stored.speed === normalized.speed
-                && stored.zoom === normalized.zoom;
-        });
-        return match?.id || '';
-    }
-    function sanitizeStudioMixerState(value) {
-        const source = value || {};
-        return {
-            hA: clampNumber(source.hA, 0, 360, DEFAULT_STUDIO_MIXER.hA),
-            sA: clampNumber(source.sA, 0, 100, DEFAULT_STUDIO_MIXER.sA),
-            lA: clampNumber(source.lA, 20, 80, DEFAULT_STUDIO_MIXER.lA),
-            hB: clampNumber(source.hB, 0, 360, DEFAULT_STUDIO_MIXER.hB),
-            sB: clampNumber(source.sB, 0, 100, DEFAULT_STUDIO_MIXER.sB),
-            lB: clampNumber(source.lB, 20, 80, DEFAULT_STUDIO_MIXER.lB),
-            ratio: clampNumber(source.ratio, 0, 100, DEFAULT_STUDIO_MIXER.ratio)
-        };
-    }
-    function getStudioMixerState() {
-        const stateMixer = getDashboardVisuals().mixerState;
-        if (stateMixer) {
-            return sanitizeStudioMixerState(stateMixer);
-        }
-        try {
-            const raw = localStorage.getItem('kiuLuxuryMixerState');
-            return sanitizeStudioMixerState(raw ? JSON.parse(raw) : DEFAULT_STUDIO_MIXER);
-        } catch (e) {
-            return { ...DEFAULT_STUDIO_MIXER };
-        }
-    }
-    function setStudioMixerState(state, persist) {
-        const nextState = sanitizeStudioMixerState(state);
-        if (persist) {
-            localStorage.setItem('kiuLuxuryMixerState', JSON.stringify(nextState));
-            setDashboardVisuals({ mixerState: nextState });
-        }
-        return nextState;
-    }
-    function readStudioMixerInputs() {
-        return sanitizeStudioMixerState({
-            hA: document.getElementById('lux-hA')?.value,
-            sA: document.getElementById('lux-sA')?.value,
-            lA: document.getElementById('lux-lA')?.value,
-            hB: document.getElementById('lux-hB')?.value,
-            sB: document.getElementById('lux-sB')?.value,
-            lB: document.getElementById('lux-lB')?.value,
-            ratio: document.getElementById('lux-mix-ratio')?.value
-        });
-    }
-    function writeStudioMixerInputs(state) {
-        const nextState = sanitizeStudioMixerState(state);
-        const bindings = {
-            'lux-hA': nextState.hA,
-            'lux-sA': nextState.sA,
-            'lux-lA': nextState.lA,
-            'lux-hB': nextState.hB,
-            'lux-sB': nextState.sB,
-            'lux-lB': nextState.lB,
-            'lux-mix-ratio': nextState.ratio
-        };
-        Object.entries(bindings).forEach(([id, value]) => {
-            const element = document.getElementById(id);
-            if (element) element.value = String(value);
-        });
-        return nextState;
-    }
+    const __luxPalette = typeof window.__kiuCreateLuxuryPaletteApi === 'function'
+        ? window.__kiuCreateLuxuryPaletteApi(__luxPaletteBridge)
+        : {};
+    const {
+        hexToRgbTriplet, getPaletteByKey, hslToRgb, mixHsl, rgbTripletToString, blendRgbTriplets,
+        buildLightModeBackdropTokens, rgbTripletToHex, colorToRgbTriplet, sanitizeColorInput,
+        getFacultyLuxuryPaletteState, isVisualPaletteScopedToFaculty, resolveCustomPalette,
+        resolvePaletteKey, applyPaletteValues, applyPaletteKey, applyCustomPalette, applyResolvedPalette
+    } = __luxPalette;
+
+    const buildLuxuryTransparencyModel = window.buildLuxuryTransparencyModel;
+    const applyLuxuryTransparencyTokenState = window.applyLuxuryTransparencyTokenState;
+    const ensureLuxuryHighTransparencyStyleElement = window.ensureLuxuryHighTransparencyStyleElement;
+    const applyLuxuryHighTransparencyState = window.applyLuxuryHighTransparencyState;
+    const applySharedLightModeRootTokens = window.applySharedLightModeRootTokens;
+    const queueLuxuryRefreshOperation = window.queueLuxuryRefreshOperation;
+    const applyLuxuryTransparencyPreferenceState = window.applyLuxuryTransparencyPreferenceState;
+    const applyAtmosphereSettings = window.applyAtmosphereSettings;
+    const normalizeWidgetSpan = window.normalizeWidgetSpan;
+    const getRoleDefaultWidgetOrder = window.getRoleDefaultWidgetOrder;
+    const sortWidgetsForRole = window.sortWidgetsForRole;
+    const getShortcutDestinationOptions = window.getShortcutDestinationOptions;
+    const sanitizeShortcutDefinition = window.sanitizeShortcutDefinition;
+    const getSavedCustomShortcuts = window.getSavedCustomShortcuts;
+    const resolveHomeLayout = window.resolveHomeLayout;
+    const serializeHomeLayout = window.serializeHomeLayout;
+    const serializeCustomShortcuts = window.serializeCustomShortcuts;
+    const __luxAtmosphereBridge = {
+        getDashboardVisuals: (...a) => getDashboardVisuals(...a),
+        setDashboardVisuals: (...a) => setDashboardVisuals(...a),
+        getDashboardPreferenceEntry: (...a) => getDashboardPreferenceEntry(...a),
+        updateDashboardPreferenceEntry: (...a) => updateDashboardPreferenceEntry(...a),
+        getHomeScopeKey: (...a) => getHomeScopeKey(...a),
+        DEFAULT_HOME_VISUALS,
+        BACKGROUND_MODES,
+        PARTICLE_QUALITY_OPTIONS,
+        FOG_COLOR_PRESETS,
+        DEFAULT_FOG_SETTINGS,
+        applyResolvedPalette: (...a) => applyResolvedPalette(...a),
+        applySharedLightModeRootTokens: (...a) => applySharedLightModeRootTokens(...a),
+        applyAtmosphereSettings: (...a) => applyAtmosphereSettings(...a),
+        updateTransparency: (...a) => (typeof updateTransparency === 'function' ? updateTransparency(...a) : window.updateTransparency?.(...a)),
+        syncStudioUi: (...a) => __luxAtmosphereBridge._syncStudioUi?.(...a),
+        showToast: (...a) => __luxAtmosphereBridge._showToast?.(...a)
+    };
+    const __luxAtmosphere = typeof window.__kiuCreateLuxuryAtmosphereApi === 'function'
+        ? window.__kiuCreateLuxuryAtmosphereApi(__luxAtmosphereBridge)
+        : {};
+    const {
+        getThemeMode, applyThemeMode, sanitizeBackgroundMode, areBackgroundAnimationsEnabled,
+        getBackgroundMode, setBackgroundAnimationsEnabled, setBackgroundMode,
+        getParticleMotion, setParticleMotion, getParticleDensity, setParticleDensity,
+        getParticleAmount, setParticleAmount, getParticleSharpness, setParticleSharpness,
+        getParticleQuality, setParticleQuality, DEFAULT_STUDIO_MIXER, clampNumber,
+        sanitizeFogHexColor, readStoredFogSettings, sanitizeFogSettings, getFogSettings,
+        refreshActiveFogBackground, setFogSettings, applyFogPreset, normalizeFogProfileBank,
+        defaultFogProfileMotion, buildDefaultLightFogProfiles, sanitizeFogProfile,
+        readStoredFogProfiles, writeStoredFogProfiles, syncFogProfilesStorage,
+        fogProfileSettingsEqual, mergeFogProfileStores, ensureFogProfileStore,
+        getAllFogProfiles, getFogProfiles, slugFogProfileName, saveFogProfile,
+        applyFogProfile, deleteFogProfile, updateFogProfile, reorderFogProfiles,
+        findMatchingFogProfileId, sanitizeStudioMixerState, getStudioMixerState,
+        setStudioMixerState, readStudioMixerInputs, writeStudioMixerInputs
+    } = __luxAtmosphere;
+    __luxPaletteBridge._getThemeMode = getThemeMode;
+
     const getRoleStats = (...args) => window.getRoleStats(...args);
     const getDomainSafe = (...args) => window.getDomainSafe(...args);
     const cleanupUiText = (...args) => window.cleanupUiText(...args);
@@ -1873,127 +832,7 @@
     const getRoleShortcuts = (...args) => window.getRoleShortcuts(...args);
     const buildHomeModel = (...args) => window.buildHomeModel(...args);
     const buildHomeContext = (...args) => window.buildHomeContext(...args);
-    function normalizeWidgetSpan(value, fallback = 6) {
-        const allowed = [3, 4, 6, 8, 12];
-        const numeric = Number(value);
-        if (!Number.isFinite(numeric)) return fallback;
-        return allowed.reduce((closest, option) => (
-            Math.abs(option - numeric) < Math.abs(closest - numeric) ? option : closest
-        ), fallback);
-    }
-    function getRoleDefaultWidgetOrder(role) {
-        const map = {
-            student: ['alert', 'hero', 'summary', 'focus', 'quick', 'updates', 'column-0', 'column-1', 'column-2'],
-            professor: ['alert', 'hero', 'quick', 'summary', 'focus', 'updates', 'column-0', 'column-1', 'column-2'],
-            ta: ['alert', 'hero', 'summary', 'quick', 'focus', 'updates', 'column-0', 'column-1', 'column-2'],
-            admin: ['alert', 'hero', 'admin-ops', 'summary', 'focus', 'updates', 'quick', 'column-0', 'column-1', 'column-2'],
-            student_service: ['alert', 'hero', 'summary', 'focus', 'quick', 'updates', 'column-0', 'column-1', 'column-2']
-        };
-        return map[role] || map.student;
-    }
-    function sortWidgetsForRole(widgets, role) {
-        const order = getRoleDefaultWidgetOrder(role);
-        return (widgets || []).slice().sort((a, b) => {
-            const aIndex = order.indexOf(a.id);
-            const bIndex = order.indexOf(b.id);
-            if (aIndex === -1 && bIndex === -1) return String(a.label || a.id).localeCompare(String(b.label || b.id));
-            if (aIndex === -1) return 1;
-            if (bIndex === -1) return -1;
-            return aIndex - bIndex;
-        });
-    }
-    function getShortcutDestinationOptions(role = getEffectiveRole()) {
-        const allowed = typeof getAllowedPagesForRole === 'function'
-            ? Array.from(getAllowedPagesForRole(role) || [])
-            : Object.keys(PAGE_LABELS);
-        return allowed
-            .filter((pageId) => PAGE_LABELS[pageId] && pageId !== 'home')
-            .map((pageId) => ({ pageId, label: PAGE_LABELS[pageId] }))
-            .sort((a, b) => a.label.localeCompare(b.label));
-    }
-    function sanitizeShortcutDefinition(definition, role = getEffectiveRole()) {
-        if (!definition || typeof definition !== 'object') return null;
-        const destinations = getShortcutDestinationOptions(role).map((item) => item.pageId);
-        const fallbackPage = destinations[0] || 'home';
-        const pageId = destinations.includes(definition.pageId) ? definition.pageId : fallbackPage;
-        return {
-            id: String(definition.id || `shortcut-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`),
-            type: 'shortcut',
-            pageId,
-            label: cleanupUiText(definition.label, 'Custom Shortcut').slice(0, 48),
-            copy: cleanupUiText(definition.copy, 'Open this workspace quickly from your dashboard.').slice(0, 120),
-            icon: cleanupUiText(definition.icon, 'fas fa-link'),
-            tone: ['warm', 'royal', 'support', 'ink', 'calm', 'default'].includes(definition.tone) ? definition.tone : 'default',
-            meta: cleanupUiText(definition.meta, 'Shortcut').slice(0, 32),
-            status: cleanupUiText(definition.status, 'Open workspace').slice(0, 48),
-            progress: clampPercent(definition.progress ?? 58, 58),
-            span: normalizeWidgetSpan(definition.span, 4),
-            visible: definition.visible !== false,
-            removable: true,
-            custom: true,
-            critical: false
-        };
-    }
-    function getSavedCustomShortcuts(role = getEffectiveRole()) {
-        const items = getDashboardPreferenceEntry().customShortcutsByRole?.[role];
-        if (!Array.isArray(items)) return [];
-        return items.map((item) => sanitizeShortcutDefinition(item, role)).filter(Boolean);
-    }
-    function resolveHomeLayout(role, model, overrideLayout = null, overrideShortcuts = null) {
-        const resolved = [];
-        const shortcuts = Array.isArray(overrideShortcuts)
-            ? overrideShortcuts.map((item) => sanitizeShortcutDefinition(item, role)).filter(Boolean)
-            : getSavedCustomShortcuts(role);
-        const baseWidgets = buildHomeWidgetDefinitions(role, model, shortcuts);
-        const widgetMap = new Map(baseWidgets.map((widget) => [widget.id, widget]));
-        const savedLayout = Array.isArray(overrideLayout)
-            ? overrideLayout
-            : getDashboardPreferenceEntry().layoutsByRole?.[role];
-        (Array.isArray(savedLayout) ? savedLayout : []).forEach((item) => {
-            const base = widgetMap.get(item?.id);
-            if (!base) return;
-            resolved.push({
-                ...base,
-                span: normalizeWidgetSpan(item.span, base.span),
-                visible: item.visible !== false
-            });
-            widgetMap.delete(item.id);
-        });
-        sortWidgetsForRole(Array.from(widgetMap.values()), role).forEach((widget) => {
-            resolved.push({
-                ...widget,
-                span: normalizeWidgetSpan(widget.span, widget.span),
-                visible: widget.visible !== false
-            });
-        });
-        const allowedShortcutIds = new Set(shortcuts.map((item) => item.id));
-        return resolved.filter((widget) => widget.type !== 'shortcut' || allowedShortcutIds.has(widget.id));
-    }
-    function serializeHomeLayout(layout) {
-        return (layout || []).map((widget) => ({
-            id: widget.id,
-            span: normalizeWidgetSpan(widget.span, 6),
-            visible: widget.visible !== false
-        }));
-    }
-    function serializeCustomShortcuts(shortcuts, role = getEffectiveRole()) {
-        return (shortcuts || [])
-            .map((item) => sanitizeShortcutDefinition(item, role))
-            .filter(Boolean)
-            .map((item) => ({
-                id: item.id,
-                pageId: item.pageId,
-                label: item.label,
-                copy: item.copy,
-                icon: item.icon,
-                tone: item.tone,
-                meta: item.meta,
-                status: item.status,
-                progress: item.progress,
-                span: item.span,
-                visible: item.visible !== false
-            }));
-    }
+    /* shortcut/layout helpers: luxury-transparency-model-runtime.js */
     function getWorkingHomeLayout(role, model) {
         if (HOME_EDITOR_STATE.editing && HOME_EDITOR_STATE.role === role && Array.isArray(HOME_EDITOR_STATE.draftLayout)) {
             return HOME_EDITOR_STATE.draftLayout;
@@ -2018,10 +857,17 @@
             }).catch(() => null);
             return;
         }
-        ensureHomeEditorDraft(role, model);
-        applyPortalPageState();
-        renderHomeShell();
-        if (typeof syncTopbar === 'function') syncTopbar();
+        const start = () => {
+            ensureHomeEditorDraft(role, model);
+            applyPortalPageState();
+            renderHomeShell();
+            if (typeof syncTopbar === 'function') syncTopbar();
+        };
+        if (typeof ensureHomeEditorCss === 'function') {
+            Promise.resolve(ensureHomeEditorCss()).then(start);
+        } else {
+            start();
+        }
     }
     function stopHomeEditor({ message = '', refresh = true } = {}) {
         clearHomeEditorState();
@@ -2346,7 +1192,9 @@
     function ensureLuxuryAdminToolsBundle() {
         return __luxAdminToolsRuntime?.ensureLuxuryAdminToolsBundle?.() || Promise.resolve(false);
     }
-    window.ensureLuxuryAdminToolsBundle = ensureLuxuryAdminToolsBundle;
+    __kiuLuxExpose({
+        ensureLuxuryAdminToolsBundle,
+    });
     function getBackgroundIntensity() {
         try { return getDashboardVisuals().backgroundIntensity || 'standard'; } catch(e) { return 'standard'; }
     }
@@ -2424,8 +1272,6 @@
         setStudioMixerState,
         readStudioMixerInputs,
         writeStudioMixerInputs,
-        syncVisualStateOnly,
-        syncAll,
         getBackgroundIntensity,
         getGlowStrength,
         getShortcutDestinationOptions,
@@ -2443,6 +1289,7 @@
     const populateRoleSwitcher = (...args) => shellChrome().populateRoleSwitcher?.(...args);
     let syncTopbar = (...args) => shellChrome().syncTopbar?.(...args);
     const syncStudioUi = (...args) => shellChrome().syncStudioUi?.(...args);
+    __luxAtmosphereBridge._syncStudioUi = syncStudioUi;
     const bindUserMenu = (...args) => shellChrome().bindUserMenu?.(...args);
     const bindTopbarControls = (...args) => shellChrome().bindTopbarControls?.(...args);
     const enhanceUniversalPickers = (...args) => shellChrome().enhanceUniversalPickers?.(...args);
@@ -2488,6 +1335,7 @@
             toast.classList.remove('is-visible');
         }, 1600);
     }
+    __luxAtmosphereBridge._showToast = showToast;
     function wrapFunction(name, callback) {
         const original = window[name];
         if (typeof original !== 'function' || original.__luxWrapped) return;
@@ -2623,204 +1471,68 @@
             syncAfterNavigate(targetPageId);
         });
     }
-    function queueShellSync(args, result) {
-        if (result?.navigationSkipped) return;
-        if (window.__kiuRoleSwitchRedirectPending || window.__kiuFacultySwitchRedirectPending) return;
-        if (queuedShellSyncFrame) return;
-        queuedShellSyncFrame = window.requestAnimationFrame(() => {
-            queuedShellSyncFrame = null;
-            if (window.__kiuRoleSwitchRedirectPending || window.__kiuFacultySwitchRedirectPending) return;
-            if (!isIndexPortalShell() && typeof window.refreshStandaloneDesktopRouteShellContext === 'function') {
-                window.refreshStandaloneDesktopRouteShellContext({ rerender: true, refreshActiveRoute: true });
-                return;
-            }
-            if (isStandaloneLmsRouteActive() && typeof window.refreshStandaloneLmsShellContext === 'function') {
-                window.refreshStandaloneLmsShellContext({ refreshSubjectDeck: false });
-                return;
-            }
-            if (!isIndexPortalShell() && typeof window.refreshStandaloneDesktopShellChrome === 'function') {
-                window.refreshStandaloneDesktopShellChrome();
-                return;
-            }
-            syncAll();
-            if (isIndexPortalShell() && isLuxNavEmpty()) {
-                rehydrateIndexPortalEntry({ pageId: getActivePageId(), reason: 'shell-sync' });
-            }
-        });
-    }
-    function syncLayout() {
-        const activePageId = getActivePageId();
-        const onExamsRoute = document.body?.classList?.contains('lux-route-exams');
-        const onLibraryRoute = document.body?.classList?.contains('lux-route-library');
-        if (onExamsRoute) {
-            const now = Date.now();
-            const lastSyncAt = window.__luxExamsSyncLayoutAt || 0;
-            if (now - lastSyncAt < 400) return;
-            window.__luxExamsSyncLayoutAt = now;
-        }
-        if (onLibraryRoute) {
-            const now = Date.now();
-            const lastSyncAt = window.__luxLibrarySyncLayoutAt || 0;
-            if (now - lastSyncAt < 400) return;
-            window.__luxLibrarySyncLayoutAt = now;
-        }
-        if (activePageId === 'home' || !activePageId) {
-            renderHomeShell();
-        }
-        syncTopbar();
-        if (activePageId === 'admin-tools') {
-            renderLuxuryAdminToolsPage();
-        }
-        if (activePageId === 'social') {
-            if (typeof schedulePublicSocialRenderBoost === 'function') schedulePublicSocialRenderBoost();
-        }
-        if (activePageId === 'exams') {
-            if (getEffectiveRole() !== USER_ROLES.STUDENT && typeof renderAdminExamSection === 'function') {
-                renderAdminExamSection();
-            }
-        }
-        if (!document.body?.classList?.contains('lux-route-lms')) {
-            queueHeavySurfaceObservationRefresh();
-        }
-    }
-    function buildTransparencySyncSignature(activePageId, transparencyValue) {
-        const visuals = getDashboardVisuals() || {};
-        return [
-            activePageId || 'home',
-            getEffectiveRole(),
-            getCurrentFacultyCode(),
-            String(transparencyValue || ''),
-            visuals.themeMode || getThemeMode(),
-            visuals.paletteKey || resolvePaletteKey() || '',
-            JSON.stringify(visuals.customPalette || {}),
-            HOME_EDITOR_STATE.editing && HOME_EDITOR_STATE.role === getEffectiveRole() ? 'editing' : 'view'
-        ].join('|');
-    }
-    function buildVisualStateSyncSignature() {
-        const visuals = getDashboardVisuals() || {};
-        return [
-            getActivePageId() || 'home',
-            getEffectiveRole(),
-            getCurrentFacultyCode(),
-            visuals.themeMode || getThemeMode(),
-            visuals.paletteKey || resolvePaletteKey() || '',
-            JSON.stringify(visuals.customPalette || {}),
-            visuals.backgroundMode || getBackgroundMode() || '',
-            String(visuals.particleMotion ?? getParticleMotion()),
-            String(visuals.particleDensity ?? getParticleDensity()),
-            String(visuals.particleAmount ?? getParticleAmount()),
-            String(visuals.particleSharpness ?? getParticleSharpness()),
-            visuals.particleQuality || getParticleQuality() || '',
-            typeof visuals.backgroundAnimationsEnabled === 'boolean' ? String(visuals.backgroundAnimationsEnabled) : String(areBackgroundAnimationsEnabled()),
-            String(visuals.surfaceTransparency ?? localStorage.getItem('kiuLuxurySurfaceTransparency') ?? 13)
-        ].join('|');
-    }
-    function syncAll() {
-        const activePageId = getActivePageId();
-        const onAdminToolsRoute = document.body?.classList?.contains('lux-route-admin-tools');
-        const onLmsRoute = isLuxRouteWorkspace(activePageId, getActiveEntryPageId());
-        const onExamsRoute = document.body?.classList?.contains('lux-route-exams');
-        const onOrdersRoute = document.body?.classList?.contains('lux-route-orders');
-        const onLibraryRoute = document.body?.classList?.contains('lux-route-library');
-        if (onAdminToolsRoute) {
-            const now = Date.now();
-            const lastSyncAt = window.__luxAdminToolsSyncAllAt || 0;
-            if (now - lastSyncAt < 400) return;
-            window.__luxAdminToolsSyncAllAt = now;
-        }
-        if (onLmsRoute) {
-            const now = Date.now();
-            const lastSyncAt = window.__luxLmsSyncAllAt || 0;
-            if (now - lastSyncAt < 400) return;
-            window.__luxLmsSyncAllAt = now;
-        }
-        if (onExamsRoute) {
-            const now = Date.now();
-            const lastSyncAt = window.__luxExamsSyncAllAt || 0;
-            if (now - lastSyncAt < 400) return;
-            window.__luxExamsSyncAllAt = now;
-        }
-        if (onOrdersRoute) {
-            const now = Date.now();
-            const lastSyncAt = window.__luxOrdersSyncAllAt || 0;
-            if (now - lastSyncAt < 400) return;
-            window.__luxOrdersSyncAllAt = now;
-        }
-        if (onLibraryRoute) {
-            const now = Date.now();
-            const lastSyncAt = window.__luxLibrarySyncAllAt || 0;
-            if (now - lastSyncAt < 400) return;
-            window.__luxLibrarySyncAllAt = now;
-        }
-        applyThemeMode(getThemeMode(), false);
-        applyResolvedPalette();
-        applyAtmosphereSettings();
-        applyLuxuryPerformanceProfile();
-        document.body.dataset.luxBackgroundMode = getBackgroundMode();
-        applyPortalPageState();
-        closePickerPanels();
-        renderNav();
-        populateFacultySwitcher();
-        populateRoleSwitcher();
-        syncLayout();
-        syncStudioUi();
-        if (!onAdminToolsRoute && !onLmsRoute && !onExamsRoute && !onOrdersRoute && !onLibraryRoute) {
-            queueLegacyVisualRefresh(document.querySelector('.page-section.active-page') || document.body);
-        }
-        if (onLmsRoute && typeof window.ensureLmsRouteVisualState === 'function') {
-            window.ensureLmsRouteVisualState();
-        }
-        if (isAdminLibraryRouteContext(activePageId, getActiveEntryPageId()) && typeof window.ensureAdminLibraryRouteVisualState === 'function') {
-            window.ensureAdminLibraryRouteVisualState();
-        }
-        /* Always re-apply transparency after atmosphere/perf so glass tokens win.
-           Signature skip previously let later syncAll stomps stick until a click. */
-        if (typeof window.queueLuxuryTransparencyRefresh === 'function') {
-            var _syncTransVal = getDashboardVisuals().surfaceTransparency
-                || localStorage.getItem('kiuLuxurySurfaceTransparency')
-                || DEFAULT_HOME_VISUALS.surfaceTransparency;
-            if (_syncTransVal != null && _syncTransVal !== '') {
-                window.__luxLastTransparencySyncSignature = buildTransparencySyncSignature(activePageId, _syncTransVal);
-                window.queueLuxuryTransparencyRefresh(parseInt(_syncTransVal, 10), { persist: false });
-            }
-        }
-    }
-    function syncVisualStateOnly() {
-        const onOrdersRoute = document.body?.classList?.contains('lux-route-orders');
-        const visualSignature = buildVisualStateSyncSignature();
-        if (window.__luxLastVisualStateSyncSignature === visualSignature) {
-            return;
-        }
-        window.__luxLastVisualStateSyncSignature = visualSignature;
-        applyThemeMode(getThemeMode(), false);
-        applyResolvedPalette();
-        applyAtmosphereSettings();
-        applyLuxuryPerformanceProfile();
-        document.body.dataset.luxBackgroundMode = getBackgroundMode();
-        syncStudioUi();
-        if (!isLuxRouteWorkspace() && !onOrdersRoute) {
-            queueLegacyVisualRefresh(document.querySelector('.page-section.active-page') || document.body);
-        }
-        if (typeof window.queueLuxuryTransparencyRefresh === 'function') {
-            const transparencyValue = getDashboardVisuals().surfaceTransparency
-                || localStorage.getItem('kiuLuxurySurfaceTransparency')
-                || DEFAULT_HOME_VISUALS.surfaceTransparency;
-            if (transparencyValue != null && transparencyValue !== '') {
-                window.queueLuxuryTransparencyRefresh(parseInt(transparencyValue, 10), { persist: false });
-            }
-        }
-        if (typeof window.__kiuApplyLmsParticleTheme === 'function') {
-            window.__kiuApplyLmsParticleTheme();
-        }
-        if (onOrdersRoute) {
-            scheduleOrdersRouteBackgroundRefresh();
-        } else if (typeof window.__kiuRefreshLuxuryBackground === 'function') {
-            window.__kiuRefreshLuxuryBackground();
-        }
-        if (isLuxRouteWorkspace() && typeof window.ensureLmsRouteVisualState === 'function') {
-            window.ensureLmsRouteVisualState();
-        }
-    }
+    /* Wave 18: luxury-index-sync-runtime.js */
+    const __luxSyncDeps = window.__kiuLuxuryIndexSyncDeps = {
+        get queuedShellSyncFrame() { return queuedShellSyncFrame; },
+        set queuedShellSyncFrame(v) { queuedShellSyncFrame = v; },
+        isIndexPortalShell: (...a) => typeof isIndexPortalShell === 'function' && isIndexPortalShell(...a),
+        isStandaloneLmsRouteActive: (...a) => typeof isStandaloneLmsRouteActive === 'function' && isStandaloneLmsRouteActive(...a),
+        getActivePageId: (...a) => getActivePageId(...a),
+        getActiveEntryPageId: (...a) => getActiveEntryPageId(...a),
+        isLuxRouteWorkspace: (...a) => isLuxRouteWorkspace(...a),
+        isAdminLibraryRouteContext: (...a) => isAdminLibraryRouteContext(...a),
+        rehydrateIndexPortalEntry: (...a) => rehydrateIndexPortalEntry(...a),
+        isLuxNavEmpty: (...a) => typeof isLuxNavEmpty === 'function' && isLuxNavEmpty(...a),
+        renderHomeShell: (...a) => renderHomeShell(...a),
+        syncTopbar: (...a) => (typeof syncTopbar === 'function' ? syncTopbar(...a) : window.syncTopbar?.(...a)),
+        renderNav: (...a) => (typeof window.renderNav === 'function' ? window.renderNav(...a) : undefined),
+        populateFacultySwitcher: (...a) => (typeof window.populateFacultySwitcher === 'function' ? window.populateFacultySwitcher(...a) : undefined),
+        populateRoleSwitcher: (...a) => (typeof window.populateRoleSwitcher === 'function' ? window.populateRoleSwitcher(...a) : undefined),
+        closePickerPanels: (...a) => closePickerPanels(...a),
+        syncStudioUi: (...a) => syncStudioUi(...a),
+        queueLegacyVisualRefresh: (...a) => queueLegacyVisualRefresh(...a),
+        scheduleOrdersRouteBackgroundRefresh: (...a) => scheduleOrdersRouteBackgroundRefresh(...a),
+        DEFAULT_HOME_VISUALS,
+        renderLuxuryAdminToolsPage: (...a) => renderLuxuryAdminToolsPage(...a),
+        schedulePublicSocialRenderBoost: (...a) => typeof schedulePublicSocialRenderBoost === 'function' && schedulePublicSocialRenderBoost(...a),
+        getEffectiveRole: (...a) => getEffectiveRole(...a),
+        USER_ROLES,
+        renderAdminExamSection: (...a) => typeof renderAdminExamSection === 'function' && renderAdminExamSection(...a),
+        queueHeavySurfaceObservationRefresh: (...a) => typeof queueHeavySurfaceObservationRefresh === 'function' && queueHeavySurfaceObservationRefresh(...a),
+        getDashboardVisuals: (...a) => getDashboardVisuals(...a),
+        getCurrentFacultyCode: (...a) => getCurrentFacultyCode(...a),
+        getThemeMode: (...a) => getThemeMode(...a),
+        resolvePaletteKey: (...a) => resolvePaletteKey(...a),
+        HOME_EDITOR_STATE,
+        getBackgroundMode: (...a) => getBackgroundMode(...a),
+        getParticleMotion: (...a) => getParticleMotion(...a),
+        getParticleDensity: (...a) => getParticleDensity(...a),
+        getParticleAmount: (...a) => getParticleAmount(...a),
+        getParticleSharpness: (...a) => getParticleSharpness(...a),
+        getParticleQuality: (...a) => getParticleQuality(...a),
+        areBackgroundAnimationsEnabled: (...a) => areBackgroundAnimationsEnabled(...a),
+        applyThemeMode: (...a) => applyThemeMode(...a),
+        applyResolvedPalette: (...a) => applyResolvedPalette(...a),
+        applyAtmosphereSettings: (...a) => applyAtmosphereSettings(...a),
+        applyLuxuryPerformanceProfile: (...a) => applyLuxuryPerformanceProfile(...a),
+        applyPortalPageState: (...a) => applyPortalPageState(...a),
+        ensureShell: (...a) => ensureShell(...a),
+        ensureHomeShell: (...a) => ensureHomeShell(...a),
+        syncLayout: (...a) => window.syncLayout?.(...a),
+        syncAll: (...a) => window.syncAll?.(...a),
+        syncVisualStateOnly: (...a) => window.syncVisualStateOnly?.(...a),
+        queueLuxuryTransparencyRefresh: (...a) => window.queueLuxuryTransparencyRefresh?.(...a),
+        getGlowStrength: (...a) => typeof getGlowStrength === 'function' ? getGlowStrength(...a) : null,
+        getBackgroundIntensity: (...a) => typeof getBackgroundIntensity === 'function' ? getBackgroundIntensity(...a) : null,
+        applyLuxuryTransparencyPreferenceState: (...a) => typeof applyLuxuryTransparencyPreferenceState === 'function' ? applyLuxuryTransparencyPreferenceState(...a) : window.applyLuxuryTransparencyPreferenceState?.(...a)
+    };
+    const __luxSyncApi = typeof window.__kiuCreateLuxuryIndexSyncApi === 'function'
+        ? window.__kiuCreateLuxuryIndexSyncApi(__luxSyncDeps) : null;
+    if (!__luxSyncApi) throw new Error('luxury-index-sync-runtime.js missing');
+    const { queueShellSync, syncLayout, buildTransparencySyncSignature, buildVisualStateSyncSignature, syncAll, syncVisualStateOnly } = __luxSyncApi;
+    // Keep deps.sync* pointing at live bindings for internal recursion.
+    Object.assign(__luxSyncDeps, { syncLayout, syncAll, syncVisualStateOnly, queueShellSync });
+
     window.getDashboardVisuals = typeof getDashboardVisuals === 'function'
         ? getDashboardVisuals
         : window.getDashboardVisuals;
@@ -2858,56 +1570,26 @@
     const __luxHomeRuntime = typeof window.__kiuCreateLuxuryHomeDashboardRuntime === 'function'
         ? window.__kiuCreateLuxuryHomeDashboardRuntime({ ensureHomeShell, escapeHtml, getActivePageId, isIndexPortalShell: () => typeof isIndexPortalShell === 'function' && isIndexPortalShell() })
         : null;
-    function homeShellHasLoadingPlaceholder(homeShell = document.getElementById('lux-home-shell')) {
-        return Boolean(__luxHomeRuntime?.homeShellHasLoadingPlaceholder?.(homeShell));
-    }
-    function homeShellHasDashboardContent(homeShell = document.getElementById('lux-home-shell')) {
-        return Boolean(__luxHomeRuntime?.homeShellHasDashboardContent?.(homeShell));
-    }
-    function renderHomeShellRecoveryPanel(homeShell, options = {}) {
-        const retryMarkup = 'data-home-dashboard-retry="1"';
-        void retryMarkup;
-        return __luxHomeRuntime?.renderHomeShellRecoveryPanel?.(homeShell, options);
-    }
-    function __luxHomeRecoveryPanelContract(homeShell) {
-        if (false) renderHomeShellRecoveryPanel(homeShell);
-    }
-    function renderHomeShell() {
-        const homeShell = ensureHomeShell();
-        if (!homeShell) return;
-        if (!__luxHomeRuntime) return;
-        return __luxHomeRuntime.renderHomeShell();
-    }
-    function isLuxuryHomeRoute() {
-        return getActivePageId() === 'home';
-    }
-    function scheduleLuxuryHomeDashboardPreload() {
-        if (typeof isIndexPortalShell === 'function' && isIndexPortalShell()) {
-            return ensureLuxuryHomeDashboardBundle({ preload: true });
-        }
-        return Promise.resolve(false);
-    }
-    window.__kiuRegisterLuxuryHomeChunk = function registerLuxuryHomeChunk(base64Source) {
-        const result = __luxHomeRuntime?.registerLuxuryHomeChunk?.(base64Source);
-        if (isLuxuryHomeRoute()) renderHomeShell();
-        return result;
+
+    /* Wave 18: luxury-index-home-shell-runtime.js */
+    const __luxHomeShellDeps = window.__kiuLuxuryIndexHomeShellDeps = {
+        get __luxHomeRuntime() { return __luxHomeRuntime; },
+        ensureHomeShell: (...a) => ensureHomeShell(...a),
+        getActivePageId: (...a) => getActivePageId(...a),
+        isIndexPortalShell: (...a) => (typeof isIndexPortalShell === 'function' ? isIndexPortalShell(...a) : false)
     };
-    function decodeLuxuryHomeChunkSource(base64Source) {
-        return window.__kiuDecodeLuxuryRouteChunkSource?.(base64Source) || '';
-    }
-    function scheduleLuxuryHomeDashboardChunkRetry() {
-        return __luxHomeRuntime?.scheduleLuxuryHomeDashboardChunkRetry?.();
-    }
-    function ensureLuxuryHomeDashboardBundle(options = {}) {
-        const preload = options.preload === true;
-        const allowWhileNotHome = options.allowWhileNotHome === true;
-        return __luxHomeRuntime?.ensureLuxuryHomeDashboardBundle?.({ ...options, preload, allowWhileNotHome }) || Promise.resolve(false);
-    }
-    window.renderHomeShell = renderHomeShell;
-    window.ensureLuxuryHomeDashboardBundle = ensureLuxuryHomeDashboardBundle;
-    window.recoverIndexPortalShell = recoverIndexPortalShell;
-    window.rehydrateIndexPortalEntry = rehydrateIndexPortalEntry;
-    window.bootstrapIndexPortalChromeSync = bootstrapIndexPortalChromeSync;
+    const __luxHomeShellApi = typeof window.__kiuCreateLuxuryIndexHomeShellApi === 'function'
+        ? window.__kiuCreateLuxuryIndexHomeShellApi(__luxHomeShellDeps) : null;
+    if (!__luxHomeShellApi) throw new Error('luxury-index-home-shell-runtime.js missing');
+    const { homeShellHasLoadingPlaceholder, homeShellHasDashboardContent, renderHomeShellRecoveryPanel, __luxHomeRecoveryPanelContract, renderHomeShell, isLuxuryHomeRoute, scheduleLuxuryHomeDashboardPreload, decodeLuxuryHomeChunkSource, scheduleLuxuryHomeDashboardChunkRetry, ensureLuxuryHomeDashboardBundle } = __luxHomeShellApi;
+
+    __kiuLuxExpose({
+        renderHomeShell,
+        ensureLuxuryHomeDashboardBundle,
+        recoverIndexPortalShell,
+        rehydrateIndexPortalEntry,
+        bootstrapIndexPortalChromeSync,
+    });
     ready(() => {
         window.renderLuxuryAdminToolsPage = (...args) => renderLuxuryAdminToolsPage(...args);
         ensureShell();
@@ -2976,6 +1658,79 @@
                         getDashboardVisuals().surfaceTransparency || localStorage.getItem('kiuLuxurySurfaceTransparency') || 13
                     );
                 }
+                // #region agent log
+                (function __kiuInstallHomeDepthProbe() {
+                    if (window.__kiuDebugHomeDepthProbe) return;
+                    window.__kiuDebugHomeDepthProbe = function (phase, extra) {
+                        try {
+                            const rootStyle = getComputedStyle(document.documentElement);
+                            const links = [...document.querySelectorAll('link[rel="stylesheet"]')]
+                                .map((l) => l.href || '')
+                                .filter((h) => /index-home-dashboard|lux-shell-chrome|lux-focus-panel/.test(h));
+                            const shell = document.getElementById('lux-home-shell');
+                            const stat = shell?.querySelector('.lux-stat.lux-soft-chrome');
+                            const hero = shell?.querySelector('.lux-summary-surface--hero.lux-soft-chrome, .lux-builder-hero.lux-soft-chrome');
+                            const widget = shell?.querySelector('article.lux-grid-widget');
+                            const toolbar = shell?.querySelector('.lux-home-toolbar');
+                            const sample = (el) => {
+                                if (!el) return null;
+                                const cs = getComputedStyle(el);
+                                return {
+                                    tag: el.tagName,
+                                    className: String(el.className || '').slice(0, 120),
+                                    boxShadow: cs.boxShadow,
+                                    backgroundImage: (cs.backgroundImage || '').slice(0, 160),
+                                    backgroundColor: cs.backgroundColor,
+                                    backdropFilter: cs.backdropFilter || cs.webkitBackdropFilter,
+                                    inlineBackdrop: el.style.getPropertyValue('backdrop-filter') || el.style.getPropertyValue('-webkit-backdrop-filter') || '',
+                                    inlineBg: (el.style.background || el.style.backgroundColor || '').slice(0, 80),
+                                    sig: el.dataset?.luxTransparencySignature || ''
+                                };
+                            };
+                            const payload = {
+                                sessionId: 'c241db',
+                                runId: 'pre-fix',
+                                hypothesisId: 'A-E',
+                                location: 'index-luxury.js:homeDepthProbe',
+                                message: 'home depth computed styles',
+                                timestamp: Date.now(),
+                                data: {
+                                    phase: phase || 'boot',
+                                    extra: extra || null,
+                                    cssHrefs: links,
+                                    swController: Boolean(navigator.serviceWorker?.controller),
+                                    bodyClasses: String(document.body?.className || '').slice(0, 220),
+                                    htmlClasses: String(document.documentElement?.className || '').slice(0, 160),
+                                    vars: {
+                                        glow: rootStyle.getPropertyValue('--lux-bg-glow-rgb').trim(),
+                                        panelShadow: rootStyle.getPropertyValue('--lux-panel-shadow').trim().slice(0, 80),
+                                        focusShadow: rootStyle.getPropertyValue('--lux-focus-shadow').trim().slice(0, 80),
+                                        softShadow: rootStyle.getPropertyValue('--lux-soft-chrome-shadow').trim().slice(0, 80),
+                                        homeFadeSoftShadow: rootStyle.getPropertyValue('--home-fade-shadow-soft').trim().slice(0, 80),
+                                        homeFadeSoft: rootStyle.getPropertyValue('--home-fade-soft').trim().slice(0, 100),
+                                        focusFill: rootStyle.getPropertyValue('--lux-focus-fill').trim().slice(0, 100)
+                                    },
+                                    stat: sample(stat),
+                                    hero: sample(hero),
+                                    widget: sample(widget),
+                                    toolbar: sample(toolbar),
+                                    hasHomeShell: Boolean(shell),
+                                    softChromeCount: shell ? shell.querySelectorAll('.lux-soft-chrome').length : 0
+                                }
+                            };
+                            fetch('http://127.0.0.1:7630/ingest/588423ce-56a4-4afa-991a-0a3d09ad35d8', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': 'c241db' },
+                                body: JSON.stringify(payload)
+                            }).catch(() => {});
+                        } catch (_e) { /* ignore */ }
+                    };
+                    window.__kiuDebugHomeDepthProbe('boot-after-transparency-schedule');
+                    requestAnimationFrame(() => {
+                        requestAnimationFrame(() => window.__kiuDebugHomeDepthProbe('raf2'));
+                    });
+                })();
+                // #endregion
                 const scheduleParticleInit = () => {
                     if (typeof window.__kiuInitLuxuryParticleBackground === 'function') {
                         window.__kiuInitLuxuryParticleBackground();
