@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Anti-Cheat Launcher</title>
+  <link rel="stylesheet" href="anti-cheat-ui.css">
+</head>
+<body class="ac-page ac-page--settings">
+  <div class="shell">
+    <section class="hero">
+      <div>
+        <div class="eyebrow">KIU Secure Assessment</div>
+        <h1>Anti-Cheat Launcher</h1>
+        <p>Choose the exam portal, protected quiz interface, or run a system check before a session starts.</p>
+        <p class="ac-portal-note">LMS and exam portal browsing use normal browser behavior. Strict lockdown starts only after a protected quiz or exam launch ticket is redeemed.</p>
+      </div>
+      <div class="hero-actions">
+        <div class="user-chip">
+          <strong id="desktopUserName">Signed in</strong>
+          <span id="desktopUserRole">Role</span>
+        </div>
+        <button class="btn btn-danger" type="button" onclick="logoutDesktop()">Logout</button>
+        <div class="status-grid">
+          <div class="status-tile">
+            <strong>Frontend</strong>
+            <span class="status-value"><span class="dot" id="frontendDot"></span><span id="frontendStatus">Checking</span></span>
+          </div>
+          <div class="status-tile">
+            <strong>Backend</strong>
+            <span class="status-value"><span class="dot" id="backendDot"></span><span id="backendStatus">Checking</span></span>
+          </div>
+          <div class="status-tile">
+            <strong>Browser</strong>
+            <span class="status-value"><span class="dot ok"></span>Secure shell</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="launch-grid">
+      <article class="launch-card">
+        <div class="launch-icon">E</div>
+        <h2>Student Exam Portal</h2>
+        <p>Use for scheduled computer exams where the student signs in with university email and student ID.</p>
+        <ul>
+          <li>Exam-only student identity</li>
+          <li>Assigned sessions and countdowns</li>
+          <li>Protected exam launch</li>
+        </ul>
+        <div class="btn-row">
+          <button class="btn btn-primary" type="button" onclick="launchStudentExamPortal()">Open Exam Portal</button>
+        </div>
+      </article>
+
+      <article class="launch-card">
+        <div class="launch-icon">Q</div>
+        <h2>Protected Quiz / LMS</h2>
+        <p>Use for LMS quizzes and classroom quiz flows that must run inside the secure browser.</p>
+        <ul>
+          <li>LMS quiz interface</li>
+          <li>Live quiz and protected quiz support</li>
+          <li>Anti-cheat browser user agent</li>
+        </ul>
+        <div class="btn-row">
+          <button class="btn btn-primary" type="button" onclick="launchProtectedQuizInterface()">Open LMS Quiz</button>
+        </div>
+      </article>
+
+      <article class="launch-card">
+        <div class="launch-icon">S</div>
+        <h2>System Check</h2>
+        <p>Confirm local services, allowed domains, launch target, and device diagnostics before students begin.</p>
+        <ul>
+          <li>Frontend/backend availability</li>
+          <li>Hardware diagnostics</li>
+          <li>Allowed domains and blocked processes</li>
+        </ul>
+        <div class="btn-row">
+          <button class="btn btn-secondary" type="button" onclick="runSystemCheck()">Retry Checks</button>
+        </div>
+      </article>
+    </section>
+
+    <div class="grid">
+      <section class="panel" data-staff-only="true">
+        <h2>Configured Launch Target</h2>
+        <div class="field">
+          <label for="launchUrl">Target URL</label>
+          <input id="launchUrl" type="text" placeholder="http://127.0.0.1:8876/exam-portal.html">
+        </div>
+        <div class="inline-actions">
+          <button class="btn btn-primary" type="button" onclick="launchConfiguredTarget()">Launch Custom URL</button>
+          <button class="btn btn-secondary" type="button" onclick="setStudentExamUrl()">Use Exam Portal</button>
+          <button class="btn btn-secondary" type="button" onclick="setProtectedQuizUrl()">Use LMS Quiz</button>
+          <button class="btn btn-secondary" type="button" onclick="openDevToolsNow()" data-staff-only="true">Open DevTools</button>
+        </div>
+        <div class="notice">Configured targets use local or campus URLs as real launch endpoints. Staff roles can change the target; student launches stay on the assigned exam or LMS pages.</div>
+
+        <div class="notice">Protected exam restrictions are configured by administration for each exam or quiz and are applied automatically after launch.</div>
+      </section>
+
+      <section class="panel">
+        <h2>System Status</h2>
+        <div class="inline-actions">
+          <button class="btn btn-secondary" type="button" onclick="runSystemCheck()">Retry Checks</button>
+          <button class="btn btn-warn" type="button" onclick="clearLaunchCache()">Clear Cache</button>
+        </div>
+        <div class="mono" id="systemCheckOutput">Checks will run automatically.</div>
+      </section>
+    </div>
+
+  </div>
+
+  <script>
+    const LOCAL_EXAM_PORTAL_URL = 'http://127.0.0.1:8876/exam-portal.html';
+    const LOCAL_LMS_QUIZ_URL = 'http://127.0.0.1:8876/lms.html';
+    const LOCAL_BACKEND_URL = 'http://127.0.0.1:48933';
+    let desktopSession = null;
+    let desktopCapabilities = {};
+
+    function applyDesktopSessionState(result) {
+      desktopSession = result?.desktopSession || null;
+      desktopCapabilities = result?.capabilities || desktopSession?.capabilities || {};
+      const account = desktopSession?.account || {};
+      document.getElementById('desktopUserName').textContent = account.name || account.email || 'Signed in';
+      document.getElementById('desktopUserRole').textContent = account.role || 'student';
+      const canUseStaffTools = desktopCapabilities.canUseStaffTools === true;
+      document.querySelectorAll('[data-staff-only="true"]').forEach(element => {
+        element.hidden = !canUseStaffTools;
+      });
+    }
+    function readSettings() {
+      const settings = {};
+      settings.launchUrl = document.getElementById('launchUrl').value.trim();
+      return settings;
+    }
+
+    function applySettingsToForm(settings) {
+      document.getElementById('launchUrl').value = settings.launchUrl || LOCAL_EXAM_PORTAL_URL;
+    }
+
+    function setStudentExamUrl() { document.getElementById('launchUrl').value = LOCAL_EXAM_PORTAL_URL; }
+    function setProtectedQuizUrl() { document.getElementById('launchUrl').value = LOCAL_LMS_QUIZ_URL; }
+
+    function launchStudentExamPortal() {
+      setStudentExamUrl();
+      launchConfiguredTarget(false);
+    }
+
+    function launchProtectedQuizInterface() {
+      setProtectedQuizUrl();
+      launchConfiguredTarget(false);
+    }
+
+    async function launchConfiguredTarget(persist = true) {
+      const result = await window.antiCheat.launchConfiguredUrl({
+        launchUrl: readSettings().launchUrl,
+        persist
+      });
+      if (!result?.ok) {
+        window.alert(result?.error || 'Unable to open the configured launch target.');
+      }
+    }
+
+    async function ping(url) {
+      try {
+        const response = await fetch(url, { cache: 'no-store' });
+        return response.ok;
+      } catch (error) {
+        return false;
+      }
+    }
+
+    function setStatus(id, ok) {
+      const text = document.getElementById(`${id}Status`);
+      const dot = document.getElementById(`${id}Dot`);
+      if (text) text.textContent = ok ? 'Online' : 'Offline';
+      if (dot) {
+        dot.classList.toggle('ok', ok);
+        dot.classList.toggle('bad', !ok);
+      }
+    }
+
+    async function runSystemCheck() {
+      const output = document.getElementById('systemCheckOutput');
+      output.textContent = 'Checking services...';
+      const [frontendOk, backendOk, diagnostics] = await Promise.all([
+        ping(LOCAL_EXAM_PORTAL_URL),
+        ping(`${LOCAL_BACKEND_URL}/api/portal/microsoft/config`),
+        window.antiCheat.getLaunchDiagnostics().catch(() => null)
+      ]);
+      setStatus('frontend', frontendOk);
+      setStatus('backend', backendOk);
+      const hardware = diagnostics?.hardwareDiagnostics || {};
+      output.textContent = [
+        `Frontend 8876: ${frontendOk ? 'online' : 'offline'}`,
+        `Backend 48933: ${backendOk ? 'online' : 'offline'}`,
+        `Configured target: ${document.getElementById('launchUrl').value || LOCAL_EXAM_PORTAL_URL}`,
+        `Backend URL: ${diagnostics?.backendUrl || LOCAL_BACKEND_URL}`,
+        `Allowed domains: ${(diagnostics?.allowedDomains || []).join(', ') || 'none'}`,
+        `Hardware: ${hardware.manufacturer || 'Unknown'} / ${hardware.model || 'Unknown'}`,
+        `VM detected: ${hardware.isVirtualMachine ? 'yes' : 'no'}${hardware.reason ? ` (${hardware.reason})` : ''}`,
+        `Blocked processes: ${(diagnostics?.blockedProcesses || []).length || 0} configured`
+      ].join('\n');
+    }
+
+    async function clearLaunchCache() {
+      if (!window.confirm('Clear cached LMS and launcher data, then reload this window?')) return;
+      const result = await window.antiCheat.clearLaunchCache();
+      if (!result?.ok) {
+        window.alert(result?.error || 'Failed to clear cache.');
+        return;
+      }
+      window.location.reload();
+    }
+
+    async function openDevToolsNow() {
+      if (desktopCapabilities.canOpenDevTools !== true) return;
+      const result = await window.antiCheat.openMainDevTools();
+      if (!result?.ok) window.alert(result?.error || 'The anti-cheat browser window is not ready yet.');
+    }
+
+    async function logoutDesktop() {
+      if (!window.confirm('Sign out of the anti-cheat desktop app?')) return;
+      const result = await window.antiCheat.logout();
+      if (!result?.ok) window.alert(result?.error || 'Logout failed.');
+    }
+
+    async function bootstrap() {
+      const sessionResult = await window.antiCheat.getCurrentDesktopSession();
+      applyDesktopSessionState(sessionResult || {});
+      const settings = await window.antiCheat.getLauncherSettings();
+      applySettingsToForm(settings || { launchUrl: LOCAL_EXAM_PORTAL_URL });
+      if (!document.getElementById('launchUrl').value) setStudentExamUrl();
+      runSystemCheck();
+    }
+
+    bootstrap();
+  </script>
+</body>
+</html>

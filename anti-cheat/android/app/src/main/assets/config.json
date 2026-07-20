@@ -1,0 +1,12 @@
+{
+  "appUrl": "http://127.0.0.1:8876",
+  "backendUrl": "http://127.0.0.1:48933",
+  "quizUrl": "http://127.0.0.1:8876/lms.html",
+  "examPortalUrl": "http://127.0.0.1:8876/exam-portal.html",
+  "reportingUrl": "",
+  "heartbeatUrl": "",
+  "allowedDomains": [
+    "127.0.0.1",
+    "localhost"
+  ]
+}

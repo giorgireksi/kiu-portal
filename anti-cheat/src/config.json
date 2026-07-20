@@ -1,0 +1,36 @@
+{
+  "quizUrl": "http://127.0.0.1:8876/exam-portal.html",
+  "backendUrl": "http://127.0.0.1:48933",
+  "appUrl": "http://127.0.0.1:8876",
+  "version": "1.0.0",
+  "updateCheckUrl": "",
+  "reportingUrl": "",
+  "heartbeatUrl": "",
+  "allowedDomains": [
+    "127.0.0.1",
+    "localhost"
+  ],
+  "secretExitKey": "End",
+  "blockedProcesses": [
+    "TeamViewer.exe",
+    "AnyDesk.exe",
+    "Discord.exe",
+    "obs64.exe",
+    "obs32.exe",
+    "Zoom.exe",
+    "Skype.exe",
+    "Cheat Engine.exe",
+    "x64dbg.exe",
+    "Wireshark.exe",
+    "SnippingTool.exe",
+    "ScreenClippingHost.exe",
+    "discord",
+    "obs",
+    "wireshark",
+    "anydesk",
+    "teamviewer",
+    "zoom",
+    "x64dbg",
+    "gdb"
+  ]
+}

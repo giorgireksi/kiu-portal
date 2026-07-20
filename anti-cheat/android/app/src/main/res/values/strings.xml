@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">KIU Anti-Cheat Browser</string>
+    <string name="login_heading">Sign in</string>
+    <string name="launcher_heading">Launcher</string>
+    <string name="staff_heading">Staff diagnostics</string>
+    <string name="blocked_heading">Protected session blocked</string>
+</resources>

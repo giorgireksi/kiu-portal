@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>University Exam Portal</title>
+    <link rel="stylesheet" href="anti-cheat-ui.css">
+</head>
+<body class="ac-page ac-page--portal">
+    <div class="ac-panel-surface ac-portal-card" id="content">
+        <h1 class="ac-portal-title">Exam Portal</h1>
+        <p id="status" class="ac-status-copy">Verifying secure environment...</p>
+        <div id="action-area" class="ac-action-area"></div>
+        <p id="warning" class="ac-warning" hidden>Security Check Failed: Please use the Anti-Cheat Browser.</p>
+        <div class="ac-footnote">
+            <strong>Server Note:</strong> Protected quiz enforcement must be handled by the backend using the redeemed protected client session, not by a hardcoded browser token.
+        </div>
+    </div>
+
+    <script>
+        const userAgent = navigator.userAgent;
+        const isAntiCheat = userAgent.includes('AntiCheatBrowser');
+        const statusEl = document.getElementById('status');
+        const actionArea = document.getElementById('action-area');
+        const warningEl = document.getElementById('warning');
+
+        const quizTarget = "lms.youruniversity.edu/lms.html";
+
+        if (isAntiCheat) {
+            statusEl.innerText = "Secure environment detected. Loading protected session...";
+            statusEl.classList.add('ac-status-copy--ok');
+            statusEl.classList.remove('ac-status-copy--error');
+            setTimeout(() => {
+                window.location.href = "https://" + quizTarget;
+            }, 2000);
+        } else {
+            statusEl.innerText = "You are using an unauthorized browser.";
+            statusEl.classList.add('ac-status-copy--error');
+            statusEl.classList.remove('ac-status-copy--ok');
+            warningEl.hidden = false;
+            actionArea.innerHTML = `
+                <p class="ac-portal-note">To access this exam, you must use the official University Anti-Cheat Browser.</p>
+                <a href="anticheat://${quizTarget}" class="ac-btn">Launch Anti-Cheat Browser</a>
+                <div class="ac-download-link">
+                    <small><a href="/download">Download Browser</a></small>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

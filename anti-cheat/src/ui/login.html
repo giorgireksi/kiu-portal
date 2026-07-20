@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Anti-Cheat Sign In</title>
+  <link rel="stylesheet" href="anti-cheat-ui.css">
+</head>
+<body class="ac-page ac-page--login">
+  <main class="ac-login-shell">
+    <section class="ac-login-card">
+      <div class="eyebrow">KIU Secure Assessment</div>
+      <h1>Sign in to Anti-Cheat</h1>
+      <p>Use your university portal account before opening exam or LMS tools in the secure desktop app.</p>
+
+      <form class="ac-login-form" id="desktop-login-form">
+        <label class="field">
+          <span>University email</span>
+          <input id="desktop-login-email" type="email" autocomplete="username" required placeholder="student@kiu.local">
+        </label>
+        <label class="field">
+          <span>Password</span>
+          <input id="desktop-login-password" type="password" autocomplete="current-password" required>
+        </label>
+        <label class="ac-login-remember">
+          <input id="desktop-login-stay-signed-in" type="checkbox" checked>
+          <span>Stay signed in on this device</span>
+        </label>
+        <div class="ac-login-error" id="desktop-login-error"></div>
+        <button class="btn btn-primary" id="desktop-login-submit" type="submit">Sign In</button>
+      </form>
+
+      <div class="notice">Protected restrictions are still controlled by the exam launch ticket. This sign-in only controls desktop launcher access.</div>
+    </section>
+  </main>
+
+  <script src="../../../assets/js/shared/input-autocomplete-guard.js?v=20260627-autocomplete-guard1"></script>
+  <script>
+    const form = document.getElementById('desktop-login-form');
+    const emailInput = document.getElementById('desktop-login-email');
+    const passwordInput = document.getElementById('desktop-login-password');
+    const staySignedInInput = document.getElementById('desktop-login-stay-signed-in');
+    const errorBox = document.getElementById('desktop-login-error');
+    const submitButton = document.getElementById('desktop-login-submit');
+
+    function setError(message) {
+      errorBox.textContent = message || '';
+      errorBox.hidden = !message;
+    }
+
+    form.addEventListener('submit', async event => {
+      event.preventDefault();
+      setError('');
+      submitButton.disabled = true;
+      submitButton.textContent = 'Signing in...';
+      try {
+        const result = await window.antiCheat.login({
+          email: emailInput.value.trim(),
+          password: passwordInput.value,
+          staySignedIn: staySignedInInput.checked
+        });
+        if (!result?.ok) {
+          setError(result?.error || 'Sign in failed.');
+          submitButton.disabled = false;
+          submitButton.textContent = 'Sign In';
+        }
+      } catch (error) {
+        setError(error?.message || 'Sign in failed.');
+        submitButton.disabled = false;
+        submitButton.textContent = 'Sign In';
+      }
+    });
+
+    async function bootstrap() {
+      setError('');
+      try {
+        const prefs = await window.antiCheat.getLoginPrefs();
+        if (prefs?.staySignedIn === false) staySignedInInput.checked = false;
+      } catch (error) {}
+      try {
+        const result = await window.antiCheat.restoreDesktopSession();
+        if (result?.ok) return;
+      } catch (error) {}
+      emailInput.focus();
+    }
+
+    bootstrap();
+  </script>
+</body>
+</html>
