@@ -236,6 +236,9 @@
         root.style.setProperty('--lux-grid-row-height', `${HOME_GRID_ROW_HEIGHT}px`);
         document.body.dataset.luxBackgroundIntensity = resolvedQuality;
         document.body.dataset.luxParticleQuality = particleQuality;
+        document.body.dataset.luxGlassBlurQuality = typeof getGlassBlurQuality === 'function'
+            ? getGlassBlurQuality()
+            : (document.body.dataset.luxGlassBlurQuality || 'high');
         document.body.dataset.luxBackgroundAnimation = backgroundAnimationsEnabled ? 'on' : 'off';
         document.body.dataset.luxStaticBackground = typeof getStaticBackgroundFill === 'function'
             ? getStaticBackgroundFill()

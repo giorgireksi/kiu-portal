@@ -98,7 +98,7 @@ function getPerformanceTier() {
 }
 
 function mapPerformanceTierToQuality(tier) {
-  if (tier === "efficient") return "low";
+  if (tier === "efficient") return "balanced";
   if (tier === "high") return "high";
   return "balanced";
 }
@@ -240,10 +240,16 @@ function applyParticleSettingsNow() {
 }
 
 function syncSettingsFromPortal() {
-  if (!engineReady) return;
   const animationsEnabled = arePortalBackgroundAnimationsEnabled();
   staticBackgroundOnly = !animationsEnabled;
-  targetMotion = animationsEnabled ? readPortalMotion() / 100 : 0;
+  if (!animationsEnabled) {
+    if (engineReady || renderer) {
+      disposeLuxuryParticleBackground();
+    }
+    return;
+  }
+  if (!engineReady) return;
+  targetMotion = readPortalMotion() / 100;
   targetDensity = readPortalDensity();
   const nextVariant = normalizeVariantKey(readPortalVariant());
   const nextQuality = resolveQuality(readPortalQualityKey());
@@ -255,12 +261,7 @@ function syncSettingsFromPortal() {
   }
   applyLmsParticleTheme();
   applyParticleSettingsNow();
-  if (staticBackgroundOnly && renderer) {
-    renderer.setAnimationLoop(null);
-    renderCurrentFrame(window.performance?.now?.() || Date.now());
-    return;
-  }
-  if (renderer && isPageVisible && animationsEnabled) {
+  if (renderer && isPageVisible) {
     renderer.setAnimationLoop(render);
   }
 }
@@ -300,7 +301,7 @@ const qualityProfiles = {
     tinyLayers: 1,
     maxDpr: 1,
     fps: 30,
-    tinyFps: 24,
+    tinyFps: 30,
     pointScale: 1.2,
     alphaBoost: 1.38,
   },
@@ -316,8 +317,8 @@ const qualityProfiles = {
     tinyLayers: 1,
     maxDpr: 2,
     supersample: 1.15,
-    fps: 45,
-    tinyFps: 28,
+    fps: 30,
+    tinyFps: 30,
     pointScale: 1.1,
     alphaBoost: 1.16,
   },
@@ -337,7 +338,7 @@ const qualityProfiles = {
     // downsamples — the cleanest possible edges, zero crawl/shimmer.
     maxDpr: 3.7,
     supersample: 1.85,
-    fps: 60,
+    fps: 30,
     tinyFps: 30,
     pointScale: 1,
     alphaBoost: 1,
@@ -564,18 +565,6 @@ function bindPortalListeners() {
   reducedMotionQuery.addEventListener("change", () => syncSettingsFromPortal());
 }
 
-function initLuxuryParticleBackground() {
-  if (engineReady) {
-    syncSettingsFromPortal();
-    return true;
-  }
-  if (!buildLuxuryParticleEngine()) return false;
-  bindPortalListeners();
-  engineReady = true;
-  window.__kiuLuxuryParticleBackgroundReady = true;
-  return true;
-}
-
 function normalizeVariantKey(mode) {
   const normalized = String(mode || "").trim().toLowerCase();
   if (normalized === "tunnel") return "orbit";
@@ -587,6 +576,10 @@ function normalizeVariantKey(mode) {
 }
 
 function refreshLuxuryParticleBackground(modeOrOpts) {
+  if (!arePortalBackgroundAnimationsEnabled()) {
+    disposeLuxuryParticleBackground();
+    return;
+  }
   if (!engineReady && !initLuxuryParticleBackground()) return;
   if (typeof modeOrOpts === "string" && modeOrOpts.trim()) {
     const validMode = normalizeVariantKey(modeOrOpts);
@@ -595,22 +588,75 @@ function refreshLuxuryParticleBackground(modeOrOpts) {
   }
   syncSettingsFromPortal();
   applyParticleSettingsNow();
-  if (!staticBackgroundOnly && renderer && isPageVisible && arePortalBackgroundAnimationsEnabled()) {
+  if (renderer && isPageVisible && arePortalBackgroundAnimationsEnabled()) {
     renderCurrentFrame(window.performance?.now?.() || Date.now());
   }
 }
 
 function disposeLuxuryParticleBackground() {
-  if (!renderer) return;
-  renderer.setAnimationLoop(null);
-  points?.geometry?.dispose();
-  cornerPoints?.geometry?.dispose();
-  ribbonMesh?.geometry?.dispose();
-  material?.dispose();
-  ribbonMaterial?.dispose();
-  renderer.dispose();
-  engineReady = false;
+  try {
+    if (renderer) renderer.setAnimationLoop(null);
+  } catch (_error) { /* ignore */ }
+
+  try {
+    if (scene) {
+      while (scene.children.length) {
+        scene.remove(scene.children[0]);
+      }
+    }
+  } catch (_error) { /* ignore */ }
+
+  try { points?.geometry?.dispose(); } catch (_error) { /* ignore */ }
+  try { cornerPoints?.geometry?.dispose(); } catch (_error) { /* ignore */ }
+  try { ribbonMesh?.geometry?.dispose(); } catch (_error) { /* ignore */ }
+  try { material?.dispose(); } catch (_error) { /* ignore */ }
+  try { ribbonMaterial?.dispose(); } catch (_error) { /* ignore */ }
+
+  try {
+    const gl = renderer?.getContext?.();
+    const lose = gl?.getExtension?.("WEBGL_lose_context");
+    lose?.loseContext?.();
+  } catch (_error) { /* ignore */ }
+
+  try { renderer?.dispose(); } catch (_error) { /* ignore */ }
+
+  if (canvas) {
+    try { canvas.style.display = "none"; } catch (_error) { /* ignore */ }
+  }
+
   renderer = null;
+  scene = null;
+  camera = null;
+  uniforms = null;
+  material = null;
+  ribbonMaterial = null;
+  points = null;
+  cornerPoints = null;
+  ribbonMesh = null;
+  clock = null;
+  themeSignature = "";
+  lastRenderTime = 0;
+  staticBackgroundOnly = true;
+  engineReady = false;
+  window.__kiuLuxuryParticleBackgroundReady = false;
+}
+
+function initLuxuryParticleBackground() {
+  if (!arePortalBackgroundAnimationsEnabled()) {
+    disposeLuxuryParticleBackground();
+    return false;
+  }
+  if (engineReady) {
+    syncSettingsFromPortal();
+    return true;
+  }
+  if (!buildLuxuryParticleEngine()) return false;
+  if (canvas) canvas.style.display = "";
+  bindPortalListeners();
+  engineReady = true;
+  staticBackgroundOnly = false;
+  window.__kiuLuxuryParticleBackgroundReady = true;
+  return true;
 }
 
 /** Lightweight WebGL probe for orchestrator / fog (no Three init). */
@@ -1391,14 +1437,26 @@ function renderCurrentFrame(time = 0) {
   if (window.__luxIsAnimating) return;
 
   const now = Number(time) || performance.now();
-  const isTiny = window.innerWidth < 480;
-  const effectiveFps = isTiny ? (activeQuality?.tinyFps || 24) : (activeQuality?.fps || 45);
-  const frameInterval = 1000 / effectiveFps;
-  if (!staticBackgroundOnly && now - lastRenderTime < frameInterval) {
-    return;
+  // Locked 30fps pacing — fixed step avoids the ~1s hitch from irregular
+  // vsync/skip interactions when lastRenderTime jumped to wall-clock `now`.
+  const TARGET_FPS = 30;
+  const frameInterval = 1000 / TARGET_FPS;
+  if (!staticBackgroundOnly) {
+    if (!lastRenderTime) {
+      lastRenderTime = now;
+    } else if (now - lastRenderTime < frameInterval) {
+      return;
+    } else {
+      lastRenderTime += frameInterval;
+      // If we fell more than 2 frames behind, resync to wall clock.
+      if (now - lastRenderTime > frameInterval * 2) {
+        lastRenderTime = now;
+      }
+    }
+  } else {
+    lastRenderTime = now;
   }
 
-  lastRenderTime = now;
   const elapsed = clock?.getElapsedTime?.() || 0;
   uniforms.uTime.value = elapsed;
   uniforms.uMotion.value = THREE.MathUtils.lerp(uniforms.uMotion.value, targetMotion, 0.055);

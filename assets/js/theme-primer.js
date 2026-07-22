@@ -589,16 +589,32 @@
             ? Math.max(0.40, Math.min(1, fillRatio * 0.92))
             : Math.max(0.01, Math.min(1, fillRatio * 0.92));
         root.style.setProperty('--lux-color-fade-alpha', colorFadeAlpha.toFixed(3));
-        var blurAmount = transInt === 0 ? 0 : Math.min(14, fillRatio * 16);
+        var glassBlurQuality = 'high';
+        try {
+            var savedGlassBlur = String(localStorage.getItem('kiuLuxuryGlassBlurQuality') || '').trim().toLowerCase();
+            if (savedGlassBlur === 'high' || savedGlassBlur === 'balanced' || savedGlassBlur === 'performance') {
+                glassBlurQuality = savedGlassBlur;
+            } else if (scopedVisuals && scopedVisuals.glassBlurQuality) {
+                var scopedBlur = String(scopedVisuals.glassBlurQuality || '').trim().toLowerCase();
+                if (scopedBlur === 'high' || scopedBlur === 'balanced' || scopedBlur === 'performance') {
+                    glassBlurQuality = scopedBlur;
+                }
+            }
+        } catch (e) {}
+        var blurMult = glassBlurQuality === 'balanced' ? 0.5 : glassBlurQuality === 'performance' ? 0.25 : 1;
+        var blurAmount = transInt === 0 ? 0 : (2 + fillRatio * 22) * blurMult;
         var saturateAmount = transInt === 0 ? 100 : 100 + (fillRatio * 45);
         var blurPx = blurAmount.toFixed(3) + 'px';
         var satPct = saturateAmount.toFixed(1) + '%';
         root.style.setProperty('--lux-transparency-blur', blurPx);
         root.style.setProperty('--lux-glass-blur', blurPx);
+        root.style.setProperty('--lux-glass-blur-quality-mult', String(blurMult));
         root.style.setProperty('--lux-transparency-saturate', satPct);
         if (document.body) {
+            document.body.dataset.luxGlassBlurQuality = glassBlurQuality;
             document.body.style.setProperty('--lux-transparency-blur', blurPx);
             document.body.style.setProperty('--lux-glass-blur', blurPx);
+            document.body.style.setProperty('--lux-glass-blur-quality-mult', String(blurMult));
             document.body.style.setProperty('--lux-transparency-saturate', satPct);
         }
 

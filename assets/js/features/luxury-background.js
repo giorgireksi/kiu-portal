@@ -26,6 +26,15 @@ function probeWebGlAvailable() {
   }
 }
 
+function areBackgroundAnimationsEnabled() {
+  if (typeof window.areBackgroundAnimationsEnabled === "function") {
+    return window.areBackgroundAnimationsEnabled();
+  }
+  const stored = String(localStorage.getItem("kiuLuxuryBackgroundAnimationsEnabled") || "").trim().toLowerCase();
+  if (stored) return !(stored === "0" || stored === "false" || stored === "off");
+  return true;
+}
+
 function applyStaticBackgroundShell() {
   try {
     document.body?.classList?.add("lux-bg-static", "lux-bg-webgl-unavailable");
@@ -34,6 +43,25 @@ function applyStaticBackgroundShell() {
     window.__kiuLuxuryParticleBackgroundUnavailable = true;
     window.__kiuLuxuryParticleBackgroundReady = false;
   } catch (error) {}
+  activeEngine = null;
+}
+
+async function disposeBackgroundEngines() {
+  try {
+    if (particleModule?.disposeLuxuryParticleBackground) {
+      particleModule.disposeLuxuryParticleBackground();
+    } else if (particleModulePromise) {
+      const particle = await loadParticleModule();
+      particle.disposeLuxuryParticleBackground();
+    } else if (typeof window.__kiuDisposeLuxuryParticleBackground === "function") {
+      window.__kiuDisposeLuxuryParticleBackground();
+    }
+  } catch (_error) { /* ignore */ }
+  try {
+    if (typeof window.__kiuDisposeLuxuryVantaFogBackground === "function") {
+      window.__kiuDisposeLuxuryVantaFogBackground();
+    }
+  } catch (_error) { /* ignore */ }
   activeEngine = null;
 }
 
@@ -65,6 +93,12 @@ async function refreshLuxuryBackground(modeOrOpts) {
   }
   if (!probeWebGlAvailable()) {
     applyStaticBackgroundShell();
+    return;
+  }
+
+  // Animations off: tear down WebGL entirely; CSS static fill / gallery media remain.
+  if (!areBackgroundAnimationsEnabled()) {
+    await disposeBackgroundEngines();
     return;
   }
 

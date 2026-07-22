@@ -48,6 +48,17 @@ describe('faculty switch and scoped visual settings', () => {
     expect(shellChrome).toContain('setDashboardVisuals({ surfaceTransparency: String(value) });');
   });
 
+  it('persists glass blur quality through atmosphere and studio chrome', () => {
+    const luxury = readSource('assets/js/features/index-luxury.js');
+    const atmosphere = readSource('assets/js/features/luxury-atmosphere-runtime.js');
+    const shellChrome = readSource('assets/js/features/luxury-shell-chrome.js');
+    expect(luxury).toContain("glassBlurQuality: 'high'");
+    expect(shellChrome).toContain('id="lux-glass-blur-quality-grid"');
+    expect(shellChrome).toContain('setGlassBlurQuality(mode.key, true)');
+    expect(atmosphere).toContain('kiuLuxuryGlassBlurQuality');
+    expect(atmosphere).toContain('setDashboardVisuals({ glassBlurQuality: nextLevel })');
+  });
+
   it('lets the resolved visual palette own the shell background colors', () => {
     const utilities = readSource('assets/js/shared/utilities.js');
     const luxury = readSource('assets/js/features/index-luxury.js');

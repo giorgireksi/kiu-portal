@@ -28,6 +28,23 @@
         const BACKGROUND_MODES = d.BACKGROUND_MODES;
         const STATIC_BACKGROUND_FILL_OPTIONS = d.STATIC_BACKGROUND_FILL_OPTIONS || [];
         const PARTICLE_QUALITY_OPTIONS = d.PARTICLE_QUALITY_OPTIONS;
+        const GLASS_BLUR_QUALITY_OPTIONS = d.GLASS_BLUR_QUALITY_OPTIONS || [
+            { key: 'high', label: 'High', copy: 'Richest frost (default).' },
+            { key: 'balanced', label: 'Balanced', copy: 'Smoother on weaker devices.' },
+            { key: 'performance', label: 'Performance', copy: 'Lightest frost for speed.' }
+        ];
+
+        let particleRefreshTimer = null;
+        function scheduleParticleBackgroundRefresh() {
+            window.clearTimeout(particleRefreshTimer);
+            particleRefreshTimer = window.setTimeout(() => {
+                particleRefreshTimer = null;
+                if (typeof window.__kiuRefreshLuxuryBackground === 'function') {
+                    window.__kiuRefreshLuxuryBackground();
+                }
+                syncStudioUi();
+            }, 120);
+        }
         const FOG_COLOR_PRESETS = d.FOG_COLOR_PRESETS;
         const DEFAULT_FOG_SETTINGS = d.DEFAULT_FOG_SETTINGS;
 
@@ -247,10 +264,7 @@
                 localStorage.setItem('kiuLuxuryParticleMotion', String(nextValue));
                 setDashboardVisuals({ particleMotion: nextValue });
             }
-            if (typeof window.__kiuRefreshLuxuryBackground === 'function') {
-                window.__kiuRefreshLuxuryBackground();
-            }
-            syncStudioUi();
+            scheduleParticleBackgroundRefresh();
         }
         function getParticleDensity() {
             const raw = getDashboardVisuals().particleDensity ?? localStorage.getItem('kiuLuxuryParticleDensity') ?? DEFAULT_HOME_VISUALS.particleDensity;
@@ -264,10 +278,7 @@
                 localStorage.setItem('kiuLuxuryParticleDensity', String(nextValue));
                 setDashboardVisuals({ particleDensity: nextValue });
             }
-            if (typeof window.__kiuRefreshLuxuryBackground === 'function') {
-                window.__kiuRefreshLuxuryBackground();
-            }
-            syncStudioUi();
+            scheduleParticleBackgroundRefresh();
         }
         function getParticleAmount() {
             const raw = getDashboardVisuals().particleAmount ?? localStorage.getItem('kiuLuxuryParticleAmount') ?? DEFAULT_HOME_VISUALS.particleAmount;
@@ -281,10 +292,7 @@
                 localStorage.setItem('kiuLuxuryParticleAmount', String(nextValue));
                 setDashboardVisuals({ particleAmount: nextValue });
             }
-            if (typeof window.__kiuRefreshLuxuryBackground === 'function') {
-                window.__kiuRefreshLuxuryBackground();
-            }
-            syncStudioUi();
+            scheduleParticleBackgroundRefresh();
         }
         function getParticleSharpness() {
             const raw = getDashboardVisuals().particleSharpness ?? localStorage.getItem('kiuLuxuryParticleSharpness') ?? DEFAULT_HOME_VISUALS.particleSharpness;
@@ -321,6 +329,32 @@
             }
             syncStudioUi();
             showToast(`Particle quality: ${PARTICLE_QUALITY_OPTIONS.find((item) => item.key === nextLevel)?.label || nextLevel}`);
+        }
+        function getGlassBlurQuality() {
+            const fallback = DEFAULT_HOME_VISUALS.glassBlurQuality || 'high';
+            const stored = String(
+                getDashboardVisuals().glassBlurQuality ?? localStorage.getItem('kiuLuxuryGlassBlurQuality') ?? fallback
+            ).trim().toLowerCase();
+            return GLASS_BLUR_QUALITY_OPTIONS.some((item) => item.key === stored) ? stored : fallback;
+        }
+        function setGlassBlurQuality(level, persist = true) {
+            const fallback = DEFAULT_HOME_VISUALS.glassBlurQuality || 'high';
+            const nextLevel = GLASS_BLUR_QUALITY_OPTIONS.some((item) => item.key === level) ? level : fallback;
+            document.body.dataset.luxGlassBlurQuality = nextLevel;
+            if (persist) {
+                localStorage.setItem('kiuLuxuryGlassBlurQuality', nextLevel);
+                setDashboardVisuals({ glassBlurQuality: nextLevel });
+            }
+            const transparencyValue = getDashboardVisuals().surfaceTransparency
+                || localStorage.getItem('kiuLuxurySurfaceTransparency')
+                || DEFAULT_HOME_VISUALS.surfaceTransparency;
+            if (typeof window.queueLuxuryTransparencyRefresh === 'function') {
+                window.queueLuxuryTransparencyRefresh(parseInt(transparencyValue, 10), { persist: false });
+            } else if (typeof updateTransparency === 'function') {
+                updateTransparency(parseInt(transparencyValue, 10));
+            }
+            syncStudioUi();
+            showToast(`Glass blur: ${GLASS_BLUR_QUALITY_OPTIONS.find((item) => item.key === nextLevel)?.label || nextLevel}`);
         }
         const DEFAULT_STUDIO_MIXER = {
             hA: 30,
@@ -745,6 +779,8 @@
             setParticleSharpness,
             getParticleQuality,
             setParticleQuality,
+            getGlassBlurQuality,
+            setGlassBlurQuality,
             DEFAULT_STUDIO_MIXER,
             clampNumber,
             sanitizeFogHexColor,

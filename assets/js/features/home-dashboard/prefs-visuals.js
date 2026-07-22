@@ -22,7 +22,8 @@
         lineColor: '',
         glowColor: '',
         hazeColor: '',
-        surfaceTransparency: '13'
+        surfaceTransparency: '13',
+        glassBlurQuality: 'high'
     };
     const HOME_WIDGET_CONTEXT_CACHE = new WeakMap();
     const HOME_WIDGET_DEFINITIONS_CACHE = new WeakMap();

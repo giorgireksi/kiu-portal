@@ -510,6 +510,26 @@ function mapLuxuryTransparencyFillRatio(value) {
     return (percentage + 1) / 101;
 }
 
+function resolveGlassBlurQualityKey() {
+    const fromBody = String(document.body?.dataset?.luxGlassBlurQuality || '').trim().toLowerCase();
+    if (fromBody === 'high' || fromBody === 'balanced' || fromBody === 'performance') return fromBody;
+    if (typeof window.getGlassBlurQuality === 'function') {
+        const fromApi = String(window.getGlassBlurQuality() || '').trim().toLowerCase();
+        if (fromApi === 'high' || fromApi === 'balanced' || fromApi === 'performance') return fromApi;
+    }
+    try {
+        const stored = String(localStorage.getItem('kiuLuxuryGlassBlurQuality') || '').trim().toLowerCase();
+        if (stored === 'high' || stored === 'balanced' || stored === 'performance') return stored;
+    } catch (_error) { /* ignore */ }
+    return 'high';
+}
+
+function resolveGlassBlurQualityMultiplier(qualityKey = resolveGlassBlurQualityKey()) {
+    if (qualityKey === 'balanced') return 0.5;
+    if (qualityKey === 'performance') return 0.25;
+    return 1;
+}
+
 function buildLuxuryTransparencyModel(value, lightMode = false) {
     if (typeof window.__kiuBuildLuxuryTransparencyModel === 'function') {
         return window.__kiuBuildLuxuryTransparencyModel(value, lightMode);
@@ -691,7 +711,10 @@ function updateTransparency(value, options = {}) {
 
 
     // Calculate effects (remapped fill ratio: slider 0% = former 1% behavior)
-    const blurAmount = fillRatio * 24;
+    // Floor keeps Glass Blur High/Balanced/Performance steps readable at low opacity.
+    const glassBlurQuality = resolveGlassBlurQualityKey();
+    const glassBlurMult = resolveGlassBlurQualityMultiplier(glassBlurQuality);
+    const blurAmount = (2 + fillRatio * 22) * glassBlurMult;
     const saturateAmount = 100 + (fillRatio * 45);
     const surfaceFillAmount = transparencyModel.panelFillAlpha;
     const registrationGlassSelectors = [
@@ -1257,12 +1280,23 @@ function updateTransparency(value, options = {}) {
 
     // KEY FIX: Use CSS custom properties to override !important rules
     // CSS variables can be set via JavaScript and will work with !important in CSS
-    document.documentElement.style.setProperty('--lux-transparency-blur', `${blurAmount}px`);
-    document.documentElement.style.setProperty('--lux-transparency-saturate', `${saturateAmount}%`);
+    const blurPx = `${blurAmount}px`;
+    const blurTargets = [document.documentElement, document.body].filter(Boolean);
+    blurTargets.forEach((target) => {
+      target.style.setProperty('--lux-transparency-blur', blurPx);
+      target.style.setProperty('--lux-glass-blur', blurPx);
+      target.style.setProperty('--lux-glass-blur-quality-mult', String(glassBlurMult));
+      target.style.setProperty('--lux-transparency-saturate', `${saturateAmount}%`);
+      target.style.setProperty('--lux-transparency-percentage', `${percentage}%`);
+    });
+    if (document.body) {
+      document.body.dataset.luxGlassBlurQuality = glassBlurQuality;
+    }
     document.documentElement.style.setProperty('--lux-transparency-percentage', `${percentage}%`);
     const rootComputedStyle = window.getComputedStyle(document.documentElement);
     const transparencySignature = [
         percentage,
+        glassBlurQuality,
         document.body.classList.contains('lux-light-mode') ? 'light' : 'dark',
         rootComputedStyle.getPropertyValue('--lux-glass-tint-rgb').trim(),
         rootComputedStyle.getPropertyValue('--lux-accent-rgb').trim(),

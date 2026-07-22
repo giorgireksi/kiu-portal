@@ -72,6 +72,7 @@
   --lux-panel-glow: 0.22;
   --lux-glass-highlight-alpha: 0.05;
   --lux-glass-blur: var(--lux-transparency-blur, 14px);
+  --lux-glass-blur-quality-mult: 1;
   --lux-panel-blur-filter: blur(var(--lux-glass-blur)) saturate(150%);
   --lux-grid-row-height: 28px;
   --lux-topbar-fill-alpha: 0.78;
@@ -194,7 +195,7 @@ html.lux-light-mode, body.lux-light-mode {
   --lux-panel-fill-alpha: 0.08;
   --lux-raised-fill-alpha: 0.045;
   --lux-glass-highlight-alpha: 0.05;
-  --lux-glass-blur: 18px;
+  --lux-glass-blur: var(--lux-transparency-blur, 18px);
   --lux-grid-row-height: 28px;
   --lux-glass-tint-rgb: 16, 23, 38;
   --lux-topbar-tint-rgb: 11, 18, 32;
@@ -281,8 +282,8 @@ body.lux-route-home {
     0 0 12px rgba(var(--lux-accent-rgb), 0.04),
     0 14px 32px rgba(0, 0, 0, 0.18),
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  /* Fill-proportional frost: low % stays sharp; mid/high quiet polish (~10px max). */
-  --home-fade-blur: blur(calc(var(--lux-transparency-alpha, 0.70) * 10px))
+  /* Frost follows Glass Blur quality via --lux-transparency-blur (engine SSOT). */
+  --home-fade-blur: blur(var(--lux-transparency-blur, calc(var(--lux-transparency-alpha, 0.70) * 24px)))
     saturate(calc(100% + var(--lux-transparency-alpha, 0.70) * 25%));
   --lux-soft-chrome-surface: var(--home-fade-soft);
   --lux-soft-chrome-border: var(--home-fade-border-soft);
@@ -311,7 +312,7 @@ html.lux-light-mode body.lux-route-home, body.lux-light-mode.lux-route-home {
     0 0 18px rgba(var(--lux-accent-rgb), 0.08),
     0 12px 28px rgba(var(--lux-shadow-ink-rgb), 0.10),
     inset 0 1px 0 rgba(255, 255, 255, 0.65);
-  --home-fade-blur: blur(calc(var(--lux-transparency-alpha, 0.70) * 10px))
+  --home-fade-blur: blur(var(--lux-transparency-blur, calc(var(--lux-transparency-alpha, 0.70) * 24px)))
     saturate(calc(100% + var(--lux-transparency-alpha, 0.70) * 25%));
   --lux-soft-chrome-surface: var(--home-fade-soft);
   --lux-soft-chrome-border: var(--home-fade-border-soft);
@@ -332,7 +333,7 @@ html.lux-fully-opaque body.lux-route-home {
       rgba(8, 12, 21, 0.96) 44%,
       rgba(6, 9, 16, 0.98) 100%
     );
-  --home-fade-blur: blur(10px) saturate(118%);
+  --home-fade-blur: blur(calc(10px * var(--lux-glass-blur-quality-mult, 1))) saturate(118%);
   --lux-soft-chrome-surface: var(--home-fade-soft);
   --lux-focus-fill: var(--home-fade-soft);
 }
@@ -350,7 +351,7 @@ html.lux-light-mode.lux-fully-opaque body.lux-route-home {
       rgba(250, 246, 240, 0.96) 48%,
       rgba(244, 238, 228, 0.98) 100%
     );
-  --home-fade-blur: blur(10px) saturate(118%);
+  --home-fade-blur: blur(calc(10px * var(--lux-glass-blur-quality-mult, 1))) saturate(118%);
   --lux-soft-chrome-surface: var(--home-fade-soft);
   --lux-focus-fill: var(--home-fade-soft);
 }
@@ -390,24 +391,19 @@ html.lux-light-mode, body.lux-light-mode {
   --lux-btn-label: #f7fbff;
 }
 body[data-lux-performance='efficient'] {
-  --lux-glass-blur: 14px;
-  --lux-transparency-blur: 12px;
+  /* Glass blur owned by updateTransparency / Glass Blur quality — do not bake fixed px. */
   --lux-transparency-saturate: 124%;
   --lux-glass-alpha: 0.052;
   --lux-utility-alpha: 0.8;
   --lux-card-glow-alpha: 0.05;
 }
 body[data-lux-performance='standard'] {
-  --lux-glass-blur: 18px;
-  --lux-transparency-blur: 16px;
   --lux-transparency-saturate: 138%;
   --lux-glass-alpha: 0.06;
   --lux-utility-alpha: 0.82;
   --lux-card-glow-alpha: 0.06;
 }
 body[data-lux-performance='high'] {
-  --lux-glass-blur: 20px;
-  --lux-transparency-blur: 18px;
   --lux-transparency-saturate: 148%;
   --lux-glass-alpha: 0.068;
   --lux-utility-alpha: 0.84;

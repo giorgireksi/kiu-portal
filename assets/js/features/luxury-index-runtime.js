@@ -332,17 +332,16 @@ return {
     ]);
 
     function getLuxuryPerformanceTier(reducedMotion = false) {
-        if (document.body?.classList?.contains('lux-route-home')) return 'high';
         if (reducedMotion) return 'efficient';
         const coarsePointer = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
         const memory = Number(navigator.deviceMemory || 0);
         const cores = Number(navigator.hardwareConcurrency || 0);
         const viewportWidth = window.innerWidth || document.documentElement.clientWidth || 0;
-        if ((memory && memory <= 4) || (cores && cores <= 4) || (coarsePointer && viewportWidth < 960)) {
+        // Only mark truly constrained devices as efficient — many laptops report
+        // 4 cores and were getting an overly heavy throttle before.
+        if ((memory && memory <= 2) || (cores && cores <= 2) || (coarsePointer && viewportWidth < 720)) {
             return 'efficient';
         }
-        // Be conservative on laptops: if deviceMemory is unavailable, do not assume
-        // the machine can afford the highest GPU/blur/background profile.
         if (memory >= 8 && cores >= 8 && !coarsePointer && viewportWidth >= 1280) {
             return 'high';
         }
@@ -355,7 +354,7 @@ return {
             return {
                 tier,
                 pixelRatioCap: 1,
-                frameInterval: reducedMotion ? 140 : 90,
+                frameInterval: reducedMotion ? 140 : 33,
                 glassBlur: 14,
                 transparencyBlur: 12,
                 transparencySaturate: '124%',
@@ -382,7 +381,7 @@ return {
         return {
             tier,
             pixelRatioCap: 1.25,
-            frameInterval: reducedMotion ? 100 : 56,
+            frameInterval: reducedMotion ? 100 : 22,
             glassBlur: 18,
             transparencyBlur: 16,
             transparencySaturate: '138%',

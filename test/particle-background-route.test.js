@@ -80,6 +80,32 @@ describe('particle background route integration', () => {
         expect(orchestrator).toContain('scheduleBackgroundSelfInit');
     });
 
+    it('disposes WebGL engines when background animations are off', () => {
+        const particle = readSource('assets/js/features/luxury-particle-background.js');
+        const orchestrator = readSource('assets/js/features/luxury-background.js');
+        const css = readSource('assets/css/lux-fouc-ht.css');
+
+        const refreshBlock = particle.slice(
+            particle.indexOf('function refreshLuxuryParticleBackground'),
+            particle.indexOf('function disposeLuxuryParticleBackground')
+        );
+        expect(refreshBlock).toContain('if (!arePortalBackgroundAnimationsEnabled())');
+        expect(refreshBlock).toContain('disposeLuxuryParticleBackground();');
+        expect(refreshBlock).not.toContain('if (staticBackgroundOnly && renderer)');
+
+        expect(particle).toContain('canvas.style.display = "none"');
+        expect(particle).toContain('window.__kiuLuxuryParticleBackgroundReady = false');
+        expect(particle).not.toContain('__kiuWebGlUnavailable = true');
+
+        expect(orchestrator).toContain('function areBackgroundAnimationsEnabled');
+        expect(orchestrator).toContain('async function disposeBackgroundEngines');
+        expect(orchestrator).toContain('if (!areBackgroundAnimationsEnabled())');
+        expect(orchestrator).toContain('await disposeBackgroundEngines()');
+
+        expect(css).toContain('body[data-lux-background-animation="off"]:not([data-lux-static-background="gallery"]) #lux-bg-canvas');
+        expect(css).toContain('body[data-lux-background-animation="off"]:not([data-lux-static-background="gallery"]) #lux-bg-fog');
+    });
+
     it('uses full-opacity particle presentation when background animation is on', () => {
         const css = readHomeDashboardCss() + '\n' + readSource('assets/css/lux-fouc-ht.css');
         expect(css).toContain('body[data-lux-background-animation="on"] #lux-bg-canvas');
@@ -353,9 +379,36 @@ describe('particle background route integration', () => {
         expect(storeBlock).not.toContain('id="lux-apply-mix"');
         expect(shellChrome).toContain('id="lux-palette-grid"');
         expect(shellChrome).toContain('id="lux-transparency-slider"');
+        expect(shellChrome).toContain('id="lux-glass-blur-quality-grid"');
         expect(shellChrome).toContain('id="lux-bg-animation-on"');
         expect(shellChrome).toContain('id="lux-reset-visuals"');
         expect(shellChrome).toContain('id="lux-apply-mix"');
+    });
+
+    it('exposes glass blur quality studio control with blur scaling', () => {
+        const luxury = readSource('assets/js/features/index-luxury.js');
+        const atmosphere = readSource('assets/js/features/luxury-atmosphere-runtime.js');
+        const shellChrome = readSource('assets/js/features/luxury-shell-chrome.js');
+        const transparency = readSource('assets/js/shared/lux-transparency.js');
+        const primer = readSource('assets/js/theme-primer.js');
+
+        expect(luxury).toContain("glassBlurQuality: 'high'");
+        expect(luxury).toContain('GLASS_BLUR_QUALITY_OPTIONS');
+        expect(atmosphere).toContain('function getGlassBlurQuality');
+        expect(atmosphere).toContain('function setGlassBlurQuality');
+        expect(atmosphere).toContain('kiuLuxuryGlassBlurQuality');
+        expect(shellChrome).toContain('Glass Blur');
+        expect(shellChrome).toContain('setGlassBlurQuality(mode.key, true)');
+        expect(shellChrome).toContain('[data-glass-blur-quality]');
+        expect(transparency).toContain('resolveGlassBlurQualityMultiplier');
+        expect(transparency).toContain("target.style.setProperty('--lux-glass-blur'");
+        expect(transparency).toContain('(2 + fillRatio * 22) * glassBlurMult');
+        expect(transparency).toContain('--lux-glass-blur-quality-mult');
+        expect(primer).toContain('kiuLuxuryGlassBlurQuality');
+        expect(primer).toContain("document.body.dataset.luxGlassBlurQuality = glassBlurQuality");
+        const tokens = readSource('assets/css/lux-tokens.css');
+        expect(tokens).toContain('--home-fade-blur: blur(var(--lux-transparency-blur');
+        expect(tokens).toContain('Glass blur owned by updateTransparency');
     });
 
     it('ships fog profile script cache versions on luxury html entry points', () => {

@@ -104,6 +104,11 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
         { key: 'balanced', label: 'Balanced', copy: 'Default quality profile.' },
         { key: 'high', label: 'High', copy: 'Maximum particle density.' }
     ];
+    const GLASS_BLUR_QUALITY_OPTIONS = [
+        { key: 'high', label: 'High', copy: 'Richest frost (default).' },
+        { key: 'balanced', label: 'Balanced', copy: 'Smoother on weaker devices.' },
+        { key: 'performance', label: 'Performance', copy: 'Lightest frost for speed.' }
+    ];
     const STATIC_BACKGROUND_FILL_OPTIONS = [
         { key: 'colored', label: 'Colored', icon: 'fas fa-palette' },
         { key: 'dark', label: 'Full Dark', icon: 'fas fa-moon' },
@@ -123,6 +128,7 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
         particleAmount: 100,
         particleSharpness: 50,
         particleQuality: 'high',
+        glassBlurQuality: 'high',
         paletteKey: 'ocean-teal',
         paletteFaculty: GLOBAL_LUXURY_PALETTE_SCOPE,
         customPalette: null,
@@ -459,6 +465,7 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
         particleMotion: 100,
         particleDensity: 100,
         particleQuality: 'high',
+        glassBlurQuality: 'high',
         backgroundIntensity: 'standard',
         glowStrength: 'balanced',
         paletteKey: 'ocean-teal',
@@ -632,6 +639,7 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
             localStorage.setItem('kiuLuxuryParticleMotion', String(forcedDefaults.particleMotion));
             localStorage.setItem('kiuLuxuryParticleDensity', String(forcedDefaults.particleDensity));
             localStorage.setItem('kiuLuxuryParticleQuality', forcedDefaults.particleQuality);
+            localStorage.setItem('kiuLuxuryGlassBlurQuality', forcedDefaults.glassBlurQuality || 'high');
             localStorage.setItem('kiuLuxurySurfaceTransparency', String(forcedDefaults.surfaceTransparency));
             localStorage.setItem('kiuLuxurySurfaceTransparencyValue', (Number(forcedDefaults.surfaceTransparency) / 100).toFixed(2));
             localStorage.setItem('kiuLuxuryPalette', forcedDefaults.paletteKey);
@@ -710,6 +718,7 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
             'kiuLuxuryParticleMotion',
             'kiuLuxuryParticleDensity',
             'kiuLuxuryParticleQuality',
+            'kiuLuxuryGlassBlurQuality',
             'kiuLuxuryBackgroundIntensity',
             'kiuLuxuryGlowStrength',
             'kiuLuxurySurfaceTransparency',
@@ -740,6 +749,7 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
             'kiuLuxuryParticleMotion',
             'kiuLuxuryParticleDensity',
             'kiuLuxuryParticleQuality',
+            'kiuLuxuryGlassBlurQuality',
             'kiuLuxuryFogSettings',
             'kiuLuxuryBackgroundIntensity',
             'kiuLuxuryGlowStrength',
@@ -835,6 +845,7 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
         BACKGROUND_MODES,
         STATIC_BACKGROUND_FILL_OPTIONS,
         PARTICLE_QUALITY_OPTIONS,
+        GLASS_BLUR_QUALITY_OPTIONS,
         FOG_COLOR_PRESETS,
         DEFAULT_FOG_SETTINGS,
         applyResolvedPalette: (...a) => applyResolvedPalette(...a),
@@ -854,7 +865,9 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
         getBackgroundGallerySelection, setBackgroundGallerySelection, clearBackgroundGallery,
         getParticleMotion, setParticleMotion, getParticleDensity, setParticleDensity,
         getParticleAmount, setParticleAmount, getParticleSharpness, setParticleSharpness,
-        getParticleQuality, setParticleQuality, DEFAULT_STUDIO_MIXER, clampNumber,
+        getParticleQuality, setParticleQuality,
+        getGlassBlurQuality, setGlassBlurQuality,
+        DEFAULT_STUDIO_MIXER, clampNumber,
         sanitizeFogHexColor, readStoredFogSettings, sanitizeFogSettings, getFogSettings,
         refreshActiveFogBackground, setFogSettings, applyFogPreset, normalizeFogProfileBank,
         defaultFogProfileMotion, buildDefaultLightFogProfiles, sanitizeFogProfile,
@@ -1270,6 +1283,7 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
         BACKGROUND_MODES,
         STATIC_BACKGROUND_FILL_OPTIONS,
         PARTICLE_QUALITY_OPTIONS,
+        GLASS_BLUR_QUALITY_OPTIONS,
         DEFAULT_STUDIO_MIXER,
         HOME_EDITOR_STATE,
         cloneDeep,
@@ -1316,6 +1330,8 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
         setParticleDensity,
         getParticleQuality,
         setParticleQuality,
+        getGlassBlurQuality,
+        setGlassBlurQuality,
         getParticleAmount,
         setParticleAmount,
         getParticleSharpness,
@@ -1578,6 +1594,7 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
         getParticleAmount: (...a) => getParticleAmount(...a),
         getParticleSharpness: (...a) => getParticleSharpness(...a),
         getParticleQuality: (...a) => getParticleQuality(...a),
+        getGlassBlurQuality: (...a) => getGlassBlurQuality(...a),
         areBackgroundAnimationsEnabled: (...a) => areBackgroundAnimationsEnabled(...a),
         getStaticBackgroundFill: (...a) => getStaticBackgroundFill(...a),
         applyThemeMode: (...a) => applyThemeMode(...a),

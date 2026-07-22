@@ -87,6 +87,12 @@ body:not(.lux-light-mode)[data-lux-background-animation="off"][data-lux-static-b
   background: var(--lux-static-colored-page-haze);
 }
 
+/* Animations off (non-gallery): drop WebGL mounts from compositor — CSS static fill remains. */
+body[data-lux-background-animation="off"]:not([data-lux-static-background="gallery"]) #lux-bg-canvas,
+body[data-lux-background-animation="off"]:not([data-lux-static-background="gallery"]) #lux-bg-fog {
+  display: none !important;
+}
+
 #lux-bg-media {
   position: fixed;
   inset: 0;

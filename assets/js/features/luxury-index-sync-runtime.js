@@ -74,6 +74,10 @@
                 getEffectiveRole(),
                 getCurrentFacultyCode(),
                 String(transparencyValue || ''),
+                visuals.glassBlurQuality
+                    || (typeof getGlassBlurQuality === 'function' ? getGlassBlurQuality() : '')
+                    || localStorage.getItem('kiuLuxuryGlassBlurQuality')
+                    || 'high',
                 visuals.themeMode || getThemeMode(),
                 visuals.paletteKey || resolvePaletteKey() || '',
                 JSON.stringify(visuals.customPalette || {}),
@@ -95,6 +99,10 @@
                 String(visuals.particleAmount ?? getParticleAmount()),
                 String(visuals.particleSharpness ?? getParticleSharpness()),
                 visuals.particleQuality || getParticleQuality() || '',
+                visuals.glassBlurQuality
+                    || (typeof getGlassBlurQuality === 'function' ? getGlassBlurQuality() : '')
+                    || localStorage.getItem('kiuLuxuryGlassBlurQuality')
+                    || 'high',
                 typeof visuals.backgroundAnimationsEnabled === 'boolean' ? String(visuals.backgroundAnimationsEnabled) : String(areBackgroundAnimationsEnabled()),
                 visuals.staticBackgroundFill || getStaticBackgroundFill() || 'colored',
                 JSON.stringify(visuals.backgroundGallerySelection || (typeof getBackgroundGallerySelection === 'function' ? getBackgroundGallerySelection() : null) || {}),

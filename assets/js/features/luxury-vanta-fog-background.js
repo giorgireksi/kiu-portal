@@ -88,6 +88,7 @@ export function initLuxuryVantaFogBackground() {
   }
 
   const el = ensureFogMount();
+  el.style.display = "";
   const options = resolveFogOptionsFromSettings();
   settingsSignature = options._signature;
   const { _signature, ...fogOpts } = options;
@@ -103,7 +104,7 @@ export function initLuxuryVantaFogBackground() {
       minHeight: 200,
       minWidth: 200,
       scale: 2,
-      scaleMobile: 4,
+      scaleMobile: 1.5,
     });
 
     engineReady = true;
@@ -131,11 +132,15 @@ export function refreshLuxuryVantaFogBackground() {
 }
 
 export function disposeLuxuryVantaFogBackground() {
-  vantaInstance?.destroy();
+  try { vantaInstance?.destroy(); } catch (_error) { /* ignore */ }
   vantaInstance = null;
   engineReady = false;
   settingsSignature = "";
   window.__kiuLuxuryVantaFogBackgroundReady = false;
+  try {
+    const el = document.getElementById("lux-bg-fog");
+    if (el) el.style.display = "none";
+  } catch (_error) { /* ignore */ }
 }
 
 window.__kiuInitLuxuryVantaFogBackground = initLuxuryVantaFogBackground;

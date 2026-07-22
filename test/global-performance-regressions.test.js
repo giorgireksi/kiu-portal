@@ -143,17 +143,21 @@ describe('global interaction performance guardrails', () => {
     expect(navigation).toContain('const PORTAL_STARTUP_MAX_ATTEMPTS = 48;');
   });
 
-  it('renders a static particle frame only when background animation is off', () => {
+  it('disposes particle WebGL when background animation is off', () => {
     const luxury = readSource('assets/js/features/index-luxury.js');
     const particle = readSource('assets/js/features/luxury-particle-background.js');
+    const orchestrator = readSource('assets/js/features/luxury-background.js');
 
     expect(luxury).toContain('window.__kiuInitLuxuryParticleBackground');
     expect(particle).toContain('staticBackgroundOnly = !animationsEnabled');
     expect(particle).not.toContain("staticBackgroundOnly = getPerformanceTier() === 'efficient'");
     expect(particle).toContain('targetMotion = animationsEnabled ? readPortalMotion() / 100 : 0');
-    expect(particle).toContain('function renderCurrentFrame(time = 0)');
-    expect(particle).toContain('if (staticBackgroundOnly && renderer)');
-    expect(particle).toContain('renderCurrentFrame(window.performance?.now?.() || Date.now());');
+    expect(particle).toContain('function disposeLuxuryParticleBackground()');
+    expect(particle).toContain('if (!arePortalBackgroundAnimationsEnabled())');
+    expect(particle).toContain('disposeLuxuryParticleBackground();');
+    expect(particle).not.toContain('if (staticBackgroundOnly && renderer)');
+    expect(orchestrator).toContain('if (!areBackgroundAnimationsEnabled())');
+    expect(orchestrator).toContain('await disposeBackgroundEngines()');
   });
 
   it('does not promote unknown-memory laptops into the high background tier by default', () => {
@@ -633,15 +637,20 @@ describe('global interaction performance guardrails', () => {
     expect(app).toContain('if (node.nodeType === Node.ELEMENT_NODE && nodeNeedsEnglishLocalization(node)) {');
   });
 
-  it('forces high performance tier on home route', () => {
+  it('uses device heuristics for performance tier on all routes including home', () => {
     const runtime = readSource('assets/js/features/luxury-index-runtime.js');
     const html = readSource('index.html');
+    const luxury = readSource('assets/js/features/index-luxury.js');
     const tierBlock = runtime.slice(
       runtime.indexOf('function getLuxuryPerformanceTier'),
       runtime.indexOf('function getLuxuryBackgroundRenderProfile')
     );
-    expect(tierBlock).toContain("if (document.body?.classList?.contains('lux-route-home')) return 'high';");
+    expect(tierBlock).not.toContain("if (document.body?.classList?.contains('lux-route-home')) return 'high';");
+    expect(tierBlock).toContain('navigator.deviceMemory');
+    expect(tierBlock).toContain('hardwareConcurrency');
+    expect(tierBlock).toContain('cores <= 2');
     expect(html).toContain('luxury-index-runtime.js?v=');
+    expect(luxury).toContain("particleQuality: 'high'");
   });
 
     it('busts portal shell SW cache (live stack, no retired luxury CSS)', () => {
@@ -654,5 +663,29 @@ describe('global interaction performance guardrails', () => {
     expect(sw).toContain('index-home-role.css');
     expect(sw).not.toContain('index-luxury.css');
     expect(sw).toContain('lux-fouc-ht.css');
+  });
+
+  it('locks particle render to steady 30fps pacing', () => {
+    const particles = readSource('assets/js/features/luxury-particle-background.js');
+    const fog = readSource('assets/js/features/luxury-vanta-fog-background.js');
+    const atmosphere = readSource('assets/js/features/luxury-atmosphere-runtime.js');
+    const shell = readSource('assets/js/features/luxury-shell-chrome.js');
+    const editorDraft = readSource('assets/js/features/home-dashboard/editor-draft.js');
+    const mobileCss = readSource('assets/css/mobile-shell-core.css');
+    const renderBlock = particles.slice(
+      particles.indexOf('function renderCurrentFrame'),
+      particles.indexOf('function render()')
+    );
+    expect(renderBlock).toContain('TARGET_FPS = 30');
+    expect(renderBlock).toContain('lastRenderTime += frameInterval');
+    expect(renderBlock).not.toContain('window.__luxIsScrolling');
+    expect(particles).toContain('fps: 30');
+    expect(fog).toContain('scaleMobile: 1.5');
+    expect(atmosphere).toContain('scheduleParticleBackgroundRefresh');
+    expect(shell).toContain('collectShellPerimeterPoints(rect, 2)');
+    expect(shell).toContain('.lux-bg-gallery-tile, #lux-bg-gallery-upload');
+    expect(shell).not.toMatch(/navigate\(pageTarget\(routePage\)\);\s*if \(typeof syncAll === 'function'\) syncAll\(\);/);
+    expect(editorDraft).toContain('function setSelectedDraftWidget(instanceId, { render = false');
+    expect(mobileCss).not.toMatch(/#mobile-bottom-nav \{[^}]*backdrop-filter/s);
   });
 });

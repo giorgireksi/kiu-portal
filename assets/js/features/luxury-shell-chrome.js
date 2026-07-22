@@ -373,7 +373,6 @@ function renderTopbarUtilityPanels(currentUser) {
             }
             closeUtilityPanels();
             if (routePage && typeof navigate === 'function') navigate(pageTarget(routePage));
-            if (typeof syncAll === 'function') syncAll();
         });
     });
 
@@ -549,9 +548,16 @@ function collectShellPerimeterPoints(rect, perSide = 6) {
 }
 
 function spawnStudioChipBurstParticles(shell, _event, root) {
+    if (spawnStudioChipBurstParticles._live) return;
+    spawnStudioChipBurstParticles._live = true;
     const rect = shell.getBoundingClientRect();
-    const points = collectShellPerimeterPoints(rect, 6);
+    const points = collectShellPerimeterPoints(rect, 2);
     const sizes = ['sm', 'md', 'lg'];
+    let remaining = points.length;
+    const finish = () => {
+        remaining -= 1;
+        if (remaining <= 0) spawnStudioChipBurstParticles._live = false;
+    };
     points.forEach((pt, i) => {
         const edgeJitter = (Math.random() - 0.5) * 8;
         const angleJitter = ((Math.random() - 0.5) * 24 * Math.PI) / 180;
@@ -566,11 +572,15 @@ function spawnStudioChipBurstParticles(shell, _event, root) {
         bit.style.setProperty('--burst-tx', `${Math.cos(baseAngle) * dist}px`);
         bit.style.setProperty('--burst-ty', `${Math.sin(baseAngle) * dist}px`);
         bit.style.setProperty('--burst-delay', `${i * 14}ms`);
-        const remove = () => bit.remove();
+        const remove = () => {
+            bit.remove();
+            finish();
+        };
         bit.addEventListener('animationend', remove, { once: true });
         window.setTimeout(remove, 900);
         root.appendChild(bit);
     });
+    if (!points.length) spawnStudioChipBurstParticles._live = false;
 }
 
 function launchBackgroundGallery(mediaType) {
@@ -602,18 +612,23 @@ window.launchBackgroundGallery = launchBackgroundGallery;
 function ensureStudioChipBurstHandler() {
     if (ensureStudioChipBurstHandler._bound || typeof document === 'undefined') return;
     ensureStudioChipBurstHandler._bound = true;
-    const chipSelector = '.lux-mode-btn, .lux-control-btn, .lux-fog-profile-bank-btn, .lux-fog-profile-action-btn, [data-particle-quality], .lux-palette-chip, .lux-apply-btn, .lux-bg-gallery-tab, .lux-bg-gallery-upload-btn, .lux-bg-gallery-tile';
+    const chipSelector = '.lux-mode-btn, .lux-control-btn, .lux-fog-profile-bank-btn, .lux-fog-profile-action-btn, [data-particle-quality], [data-glass-blur-quality], .lux-palette-chip, .lux-apply-btn, .lux-bg-gallery-tab';
     document.addEventListener('pointerdown', (event) => {
         if (event.button !== 0) return;
         const root = event.target.closest('#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop');
         if (!root) return;
+        if (event.target.closest('.lux-bg-gallery-tile, #lux-bg-gallery-upload, #lux-bg-gallery-upload-label, [data-gallery-empty-upload]')) return;
         const shell = event.target.closest('.lux-bg-mode-item, .lux-fog-profile-item');
         const target = shell && root.contains(shell)
             ? shell
             : event.target.closest(chipSelector);
         if (!target || !root.contains(target) || target.disabled) return;
         if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-        spawnStudioChipBurstParticles(target, event, root);
+        const burstTarget = target;
+        const burstRoot = root;
+        window.requestAnimationFrame(() => {
+            spawnStudioChipBurstParticles(burstTarget, event, burstRoot);
+        });
     }, true);
 }
 
@@ -707,6 +722,10 @@ function ensureStudio() {
                             <span><i class="fas fa-eye-slash"></i> Solid (100%)</span>
                         </div>
                     </div>
+                </div>
+                <div class="lux-studio-section">
+                    <div class="lux-studio-label">Glass Blur</div>
+                    <div class="lux-control-grid" id="lux-glass-blur-quality-grid"></div>
                 </div>
                 <div class="lux-studio-section lux-bg-mode-section">
                     <div class="lux-studio-label">3D Background</div>
@@ -815,6 +834,24 @@ function ensureStudio() {
             if (typeof updateTransparency === 'function') updateTransparency(parseInt(value, 10));
         });
     }
+    const glassBlurQualityGrid = document.getElementById('lux-glass-blur-quality-grid');
+    if (glassBlurQualityGrid) glassBlurQualityGrid.replaceChildren();
+    (GLASS_BLUR_QUALITY_OPTIONS || []).forEach((mode) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'lux-control-btn';
+        button.dataset.glassBlurQuality = mode.key;
+        button.setAttribute('data-lux-skip-modern-button', 'true');
+        button.innerHTML = `<strong>${escapeHtml(mode.label)}</strong><span>${escapeHtml(mode.copy)}</span>`;
+        button.addEventListener('click', () => {
+            if (typeof setGlassBlurQuality === 'function') setGlassBlurQuality(mode.key, true);
+            if (typeof syncVisualStateOnly === 'function') syncVisualStateOnly();
+            document.querySelectorAll('[data-glass-blur-quality]').forEach((node) => {
+                node.classList.toggle('is-active', node.dataset.glassBlurQuality === mode.key);
+            });
+        });
+        glassBlurQualityGrid?.appendChild(button);
+    });
     document.getElementById('lux-apply-mix')?.addEventListener('click', () => {
         const mixerState = setStudioMixerState(readStudioMixerInputs(), true);
         const mixed = mixHsl(mixerState.hA, mixerState.sA, mixerState.lA, mixerState.hB, mixerState.sB, mixerState.lB, mixerState.ratio / 100);
@@ -898,7 +935,6 @@ function ensureStudio() {
             const value = event.target.value;
             if (particleMotionValue) particleMotionValue.textContent = value;
             if (typeof setParticleMotion === 'function') setParticleMotion(value, true);
-            if (typeof syncVisualStateOnly === 'function') syncVisualStateOnly();
         });
     }
     const particleDensitySlider = document.getElementById('lux-particle-density-slider');
@@ -910,7 +946,6 @@ function ensureStudio() {
             const value = event.target.value;
             if (particleDensityValue) particleDensityValue.textContent = value;
             if (typeof setParticleDensity === 'function') setParticleDensity(value, true);
-            if (typeof syncVisualStateOnly === 'function') syncVisualStateOnly();
         });
     }
     const particleAmountSlider = document.getElementById('lux-particle-amount-slider');
@@ -922,7 +957,6 @@ function ensureStudio() {
             const value = event.target.value;
             if (particleAmountValue) particleAmountValue.textContent = value;
             if (typeof setParticleAmount === 'function') setParticleAmount(value, true);
-            if (typeof syncVisualStateOnly === 'function') syncVisualStateOnly();
         });
     }
     const particleSharpnessSlider = document.getElementById('lux-particle-sharpness-slider');
@@ -934,7 +968,6 @@ function ensureStudio() {
             const value = event.target.value;
             if (particleSharpnessValue) particleSharpnessValue.textContent = value;
             if (typeof setParticleSharpness === 'function') setParticleSharpness(value, true);
-            if (typeof syncVisualStateOnly === 'function') syncVisualStateOnly();
         });
     }
     const particleQualityGrid = document.getElementById('lux-particle-quality-grid');
@@ -1462,6 +1495,9 @@ function syncStudioUi() {
     }
     studio.querySelectorAll('[data-particle-quality]').forEach((button) => {
         button.classList.toggle('is-active', typeof getParticleQuality === 'function' && button.dataset.particleQuality === getParticleQuality());
+    });
+    studio.querySelectorAll('[data-glass-blur-quality]').forEach((button) => {
+        button.classList.toggle('is-active', typeof getGlassBlurQuality === 'function' && button.dataset.glassBlurQuality === getGlassBlurQuality());
     });
     ['lux-reset-current-layout', 'lux-reset-all-layouts', 'lux-reset-home-defaults'].forEach((id) => {
         const button = document.getElementById(id);

@@ -106,7 +106,7 @@ function ensureHomeEditorCss() {
         return visible.find((widget) => widget.instanceId === HOME_EDITOR_STATE.selectedWidgetId) || null;
     }
 
-    function setSelectedDraftWidget(instanceId, { render = true, bringToFront = false } = {}) {
+    function setSelectedDraftWidget(instanceId, { render = false, bringToFront = false } = {}) {
         const visible = sortLayoutForDisplay(HOME_EDITOR_STATE.draftLayout).filter((widget) => widget.visible !== false);
         HOME_EDITOR_STATE.selectedWidgetId = instanceId
             ? (visible.find((widget) => widget.instanceId === instanceId)?.instanceId || '')
@@ -114,7 +114,25 @@ function ensureHomeEditorCss() {
         if (bringToFront && HOME_EDITOR_STATE.selectedWidgetId) {
             bringDraftWidgetToFront(HOME_EDITOR_STATE.selectedWidgetId, { render: false });
         }
-        if (render) renderHomeShell();
+        if (render) {
+            renderHomeShell();
+            return;
+        }
+        const homeShell = document.getElementById('lux-home-shell');
+        if (!homeShell) return;
+        const selectedId = HOME_EDITOR_STATE.selectedWidgetId;
+        homeShell.querySelectorAll('[data-widget-id].is-selected').forEach((node) => {
+            node.classList.remove('is-selected');
+        });
+        homeShell.querySelectorAll('[data-widget-select].is-active').forEach((node) => {
+            node.classList.remove('is-active');
+        });
+        if (!selectedId) return;
+        const widgetEl = homeShell.querySelector(`[data-widget-id="${CSS.escape(selectedId)}"]`);
+        widgetEl?.classList.add('is-selected');
+        homeShell.querySelectorAll(`[data-widget-select="${CSS.escape(selectedId)}"]`).forEach((node) => {
+            node.classList.add('is-active');
+        });
     }
 
     function setDraftWidgetDimensions(instanceId, values, { render = true } = {}) {
