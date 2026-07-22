@@ -345,21 +345,47 @@ const qualityProfiles = {
   },
 };
 
+function ensureUsableParticleCanvas(node) {
+  if (!node?.parentNode) return node;
+  let lost = false;
+  try {
+    const gl =
+      node.getContext?.("webgl2") ||
+      node.getContext?.("webgl") ||
+      node.getContext?.("experimental-webgl");
+    lost = !gl || (typeof gl.isContextLost === "function" && gl.isContextLost());
+  } catch (_error) {
+    lost = true;
+  }
+  if (!lost) return node;
+  const next = node.cloneNode(false);
+  node.parentNode.replaceChild(next, node);
+  return next;
+}
+
 function buildLuxuryParticleEngine() {
   const initialVariantName = readPortalVariant();
   const initialQuality = resolveQuality(readPortalQualityKey());
   canvas = document.getElementById("lux-bg-canvas");
   if (!canvas) return false;
+  canvas = ensureUsableParticleCanvas(canvas) || canvas;
 
-  renderer = new THREE.WebGLRenderer({
-    canvas,
-    // Antialiasing ON: the GPU-saving `false` left particle edges jagged, so
-    // they crawled/shimmered as they moved — the "low quality flickering"
-    // seen through the glass. MSAA smooths the edges so motion is clean.
-    antialias: true,
-    alpha: false,
-    powerPreference: "high-performance",
-  });
+  try {
+    renderer = new THREE.WebGLRenderer({
+      canvas,
+      // Antialiasing ON: the GPU-saving `false` left particle edges jagged, so
+      // they crawled/shimmered as they moved — the "low quality flickering"
+      // seen through the glass. MSAA smooths the edges so motion is clean.
+      antialias: true,
+      alpha: false,
+      powerPreference: "high-performance",
+    });
+  } catch (error) {
+    console.warn("[LuxuryParticles] WebGLRenderer init failed", error);
+    window.__kiuLuxuryParticleBackgroundUnavailable = true;
+    renderer = null;
+    return false;
+  }
   renderer.setPixelRatio(getRenderPixelRatio(initialQuality));
 
   scene = new THREE.Scene();
@@ -565,6 +591,15 @@ function bindPortalListeners() {
   reducedMotionQuery.addEventListener("change", () => syncSettingsFromPortal());
 }
 
+function isFogBackgroundMode() {
+  if (typeof window.getBackgroundMode === "function" && window.getBackgroundMode() === "fog") {
+    return true;
+  }
+  const stored = String(localStorage.getItem("kiuLuxuryBackgroundMode") || "").trim().toLowerCase();
+  if (stored === "fog") return true;
+  return String(document.body?.dataset?.luxBackgroundMode || "").trim().toLowerCase() === "fog";
+}
+
 function normalizeVariantKey(mode) {
   const normalized = String(mode || "").trim().toLowerCase();
   if (normalized === "tunnel") return "orbit";
@@ -576,6 +611,8 @@ function normalizeVariantKey(mode) {
 }
 
 function refreshLuxuryParticleBackground(modeOrOpts) {
+  if (typeof modeOrOpts === "string" && String(modeOrOpts).trim().toLowerCase() === "fog") return;
+  if (isFogBackgroundMode()) return;
   if (!arePortalBackgroundAnimationsEnabled()) {
     disposeLuxuryParticleBackground();
     return;
@@ -612,12 +649,8 @@ function disposeLuxuryParticleBackground() {
   try { material?.dispose(); } catch (_error) { /* ignore */ }
   try { ribbonMaterial?.dispose(); } catch (_error) { /* ignore */ }
 
-  try {
-    const gl = renderer?.getContext?.();
-    const lose = gl?.getExtension?.("WEBGL_lose_context");
-    lose?.loseContext?.();
-  } catch (_error) { /* ignore */ }
-
+  // Do not WEBGL_lose_context on #lux-bg-canvas — shared page canvas must
+  // stay re-inittable after Studio animation/fill/mode toggles.
   try { renderer?.dispose(); } catch (_error) { /* ignore */ }
 
   if (canvas) {
@@ -1473,7 +1506,7 @@ function render() {
 }
 
 window.__kiuInitLuxuryParticleBackground = initLuxuryParticleBackground;
-window.__kiuRefreshLuxuryBackground = refreshLuxuryParticleBackground;
+window.__kiuRefreshLuxuryParticleBackground = refreshLuxuryParticleBackground;
 window.__kiuDisposeLuxuryParticleBackground = disposeLuxuryParticleBackground;
 window.__kiuProbeWebGlAvailable = probeWebGlAvailable;
 window.__kiuApplyLmsParticleTheme = applyLmsParticleTheme;
@@ -1487,6 +1520,7 @@ export {
 
 function scheduleParticleBackgroundSelfInit(attempt = 0) {
   if (engineReady) return;
+  if (isFogBackgroundMode()) return;
   const canvasEl = document.getElementById("lux-bg-canvas");
   if (canvasEl) {
     initLuxuryParticleBackground();

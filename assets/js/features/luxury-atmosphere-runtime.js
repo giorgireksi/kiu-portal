@@ -66,15 +66,18 @@
                 setDashboardVisuals({ themeMode: nextMode });
             }
             applyResolvedPalette();
-            // Re-apply transparency so inline backgrounds recalculate for the new mode
-            if (typeof updateTransparency === 'function') {
-                const saved = getDashboardVisuals().surfaceTransparency
-                    || localStorage.getItem('kiuLuxurySurfaceTransparency')
-                    || DEFAULT_HOME_VISUALS.surfaceTransparency;
-                updateTransparency(parseInt(saved));
+            if (typeof window.__kiuApplyLmsParticleTheme === 'function') {
+                window.__kiuApplyLmsParticleTheme();
             }
-            if (typeof window.__kiuRefreshLuxuryBackground === 'function') {
-                window.__kiuRefreshLuxuryBackground();
+            const backgroundMode = typeof getBackgroundMode === 'function'
+                ? getBackgroundMode()
+                : String(document.body?.dataset?.luxBackgroundMode || '').trim().toLowerCase();
+            if (backgroundMode === 'fog') {
+                if (typeof window.__kiuRefreshLuxuryVantaFogBackground === 'function') {
+                    window.__kiuRefreshLuxuryVantaFogBackground();
+                } else if (typeof window.__kiuApplyLmsFogTheme === 'function') {
+                    window.__kiuApplyLmsFogTheme();
+                }
             }
         }
         function sanitizeBackgroundMode(mode) {
@@ -355,6 +358,63 @@
             }
             syncStudioUi();
             showToast(`Glass blur: ${GLASS_BLUR_QUALITY_OPTIONS.find((item) => item.key === nextLevel)?.label || nextLevel}`);
+        }
+        function normalizeGlowStrengthPercent(value) {
+            const fallback = Number.isFinite(Number(DEFAULT_HOME_VISUALS.glowStrength))
+                ? Math.round(Number(DEFAULT_HOME_VISUALS.glowStrength))
+                : 50;
+            if (typeof value === 'string') {
+                const key = value.trim().toLowerCase();
+                if (key === 'soft') return 35;
+                if (key === 'balanced') return 50;
+                if (key === 'rich') return 70;
+            }
+            const numeric = Number(value);
+            if (!Number.isFinite(numeric)) return fallback;
+            return Math.min(100, Math.max(0, Math.round(numeric)));
+        }
+        function resolveGlowTokenConfig(percent) {
+            const pct = normalizeGlowStrengthPercent(percent);
+            const glowScale = pct / 50;
+            return {
+                percent: pct,
+                glowScale: String(glowScale),
+                buttonGlow: String(0.12 + (pct / 100) * 0.68),
+                panelGlow: String((pct / 100) * 0.40),
+                cardGlowAlpha: String((0.016 * glowScale).toFixed(4))
+            };
+        }
+        function applyGlowStrengthCssVars(percent) {
+            const glowConfig = resolveGlowTokenConfig(percent);
+            const root = document.documentElement;
+            root.style.setProperty('--lux-glow-scale', glowConfig.glowScale);
+            root.style.setProperty('--lux-button-glow', glowConfig.buttonGlow);
+            root.style.setProperty('--lux-panel-glow', glowConfig.panelGlow);
+            root.style.setProperty('--lux-card-glow-alpha', glowConfig.cardGlowAlpha);
+            document.body.dataset.luxGlowStrength = String(glowConfig.percent);
+            return glowConfig;
+        }
+        function getGlowStrength() {
+            const fallback = Number.isFinite(Number(DEFAULT_HOME_VISUALS.glowStrength))
+                ? DEFAULT_HOME_VISUALS.glowStrength
+                : 50;
+            return normalizeGlowStrengthPercent(
+                getDashboardVisuals().glowStrength ?? localStorage.getItem('kiuLuxuryGlowStrength') ?? fallback
+            );
+        }
+        function setGlowStrength(level, persist = true) {
+            const nextPercent = normalizeGlowStrengthPercent(level);
+            applyGlowStrengthCssVars(nextPercent);
+            if (persist) {
+                localStorage.setItem('kiuLuxuryGlowStrength', String(nextPercent));
+                setDashboardVisuals({ glowStrength: nextPercent });
+            }
+            if (typeof applyAtmosphereSettings === 'function') {
+                applyAtmosphereSettings();
+            } else if (typeof d.applyAtmosphereSettings === 'function') {
+                d.applyAtmosphereSettings();
+            }
+            syncStudioUi();
         }
         const DEFAULT_STUDIO_MIXER = {
             hA: 30,
@@ -781,6 +841,11 @@
             setParticleQuality,
             getGlassBlurQuality,
             setGlassBlurQuality,
+            getGlowStrength,
+            setGlowStrength,
+            normalizeGlowStrengthPercent,
+            resolveGlowTokenConfig,
+            applyGlowStrengthCssVars,
             DEFAULT_STUDIO_MIXER,
             clampNumber,
             sanitizeFogHexColor,

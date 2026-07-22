@@ -66,6 +66,34 @@ describe('background gallery feature', () => {
         expect(palette).toContain('mapGalleryHueToPaletteKey');
         expect(palette).toContain('pine-jade');
         expect(palette).toContain('ocean-teal');
+        expect(palette).not.toContain('carbon-black');
+        expect(palette).not.toContain('arctic-white');
+        expect(palette).toContain('platinum-silver');
+    });
+
+    it('exposes silver curated palette in luxury SSOT and gallery service', () => {
+        const luxury = readSource('assets/js/features/index-luxury.js');
+        const galleryService = readSource('backend/platform/domains/background-gallery-service.js');
+        const tokens = readSource('assets/css/lux-tokens.css');
+        const paletteRuntime = readSource('assets/js/features/luxury-palette-runtime.js');
+        expect(luxury).toContain("key: 'platinum-silver'");
+        expect(galleryService).toContain("'platinum-silver'");
+        expect(tokens).toContain('body.palette-platinum-silver');
+        expect(luxury).not.toContain("key: 'carbon-black'");
+        expect(luxury).not.toContain("key: 'arctic-white'");
+        expect(luxury).not.toContain("name: 'Black'");
+        expect(luxury).not.toContain("name: 'White'");
+        expect(luxury).toContain("name: 'Silver'");
+        expect(luxury).toContain("accent: '#7b8a9a'");
+        expect(luxury).toContain("lightAccent: '#4a5563'");
+        expect(tokens).toContain('#1a1e24');
+        expect(tokens).toContain('#7b8fa8');
+        expect(tokens).toContain('--lux-glass-tint-rgb: 38, 42, 48');
+        expect(tokens).toContain('--lux-glass-tint-rgb: 130, 136, 142');
+        expect(paletteRuntime).toContain('palette.lightAccent');
+        expect(paletteRuntime).toContain('useLightAccent');
+        expect(paletteRuntime).toContain('neutralGlassTintByKey');
+        expect(paletteRuntime).toContain("stored === 'carbon-black' || stored === 'arctic-white'");
     });
 
     it('loads gallery scripts on boot and exposes lazy loader', () => {
@@ -115,7 +143,7 @@ describe('background gallery feature', () => {
         expect(shellChrome).toContain('id="lux-bg-gallery-open-images"');
         expect(shellChrome).toContain('id="lux-bg-gallery-open-videos"');
         expect(shellChrome).not.toContain('id="lux-bg-gallery-curated-grid"');
-        expect(shellChrome).toContain('studioglow37');
+        expect(shellChrome).toContain('norings1');
         expect(studio).toContain('openBackgroundGalleryPopup');
         expect(studio).toContain('closeBackgroundGalleryPopup');
         expect(studio).toContain('Saved to My backgrounds');

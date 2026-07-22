@@ -789,22 +789,14 @@ function scheduleRouteContentRender(renderFn) {
         run();
         return;
     }
-    const fallbackTimer = window.setTimeout(run, 48);
-    if (typeof window.requestIdleCallback === 'function') {
-        window.requestIdleCallback(() => {
-            window.clearTimeout(fallbackTimer);
-            run();
-        }, { timeout: 120 });
-        return;
-    }
+    // Next-frame paint (double rAF): shell/layout settles, then content — no idle/48ms delay.
     if (typeof window.requestAnimationFrame === 'function') {
         window.requestAnimationFrame(() => {
-            window.clearTimeout(fallbackTimer);
-            run();
+            window.requestAnimationFrame(run);
         });
         return;
     }
-    run();
+    window.setTimeout(run, 0);
 }
 
 __kiuNavExpose({

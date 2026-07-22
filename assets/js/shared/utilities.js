@@ -1099,7 +1099,7 @@ function openStudio() {
 
 /**
  * Apply a color palette background
- * @param {string} palette - Palette name: obsidian-amber, slate-sapphire, pine-jade, burgundy-rose, sand-pearl, ink-orchid
+ * @param {string} palette - Palette name: obsidian-amber, slate-sapphire, pine-jade, burgundy-rose, sand-pearl, ink-orchid, ocean-teal, platinum-silver
  * NOTE: Background is now handled by CSS classes - inline styles removed
  */
 function applyPalette(palette) {
@@ -1116,7 +1116,7 @@ function applyPalette(palette) {
     }
 
     // Remove all existing palette classes
-    const paletteList = ['obsidian-amber', 'slate-sapphire', 'pine-jade', 'burgundy-rose', 'sand-pearl', 'ink-orchid', 'ocean-teal'];
+    const paletteList = ['obsidian-amber', 'slate-sapphire', 'pine-jade', 'burgundy-rose', 'sand-pearl', 'ink-orchid', 'ocean-teal', 'platinum-silver'];
     paletteList.forEach(p => {
         document.body.classList.remove(`palette-${p}`);
     });

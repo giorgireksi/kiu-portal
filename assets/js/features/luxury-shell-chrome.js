@@ -548,39 +548,59 @@ function collectShellPerimeterPoints(rect, perSide = 6) {
 }
 
 function spawnStudioChipBurstParticles(shell, _event, root) {
-    if (spawnStudioChipBurstParticles._live) return;
-    spawnStudioChipBurstParticles._live = true;
+    const now = performance.now();
+    const lastAt = spawnStudioChipBurstParticles._lastBurstAt || 0;
+    if (now - lastAt < 90) return;
+    spawnStudioChipBurstParticles._lastBurstAt = now;
+
+    const existing = root.querySelectorAll(':scope > .lux-chip-burst-particle');
+    if (existing.length > 80) {
+        const excess = existing.length - 60;
+        for (let i = 0; i < excess; i += 1) existing[i]?.remove();
+    }
+
     const rect = shell.getBoundingClientRect();
-    const points = collectShellPerimeterPoints(rect, 2);
+    const points = collectShellPerimeterPoints(rect, 5);
+    const { left, top, width, height } = rect;
+    const corners = [
+        { x: left, y: top, nx: -1, ny: -1 },
+        { x: left + width, y: top, nx: 1, ny: -1 },
+        { x: left + width, y: top + height, nx: 1, ny: 1 },
+        { x: left, y: top + height, nx: -1, ny: 1 }
+    ];
+    const kinds = ['dot', 'spark', 'streak'];
     const sizes = ['sm', 'md', 'lg'];
-    let remaining = points.length;
-    const finish = () => {
-        remaining -= 1;
-        if (remaining <= 0) spawnStudioChipBurstParticles._live = false;
+    const jobs = [
+        ...points.map((pt, i) => ({ pt, i, kind: kinds[i % 3], size: sizes[i % 3] })),
+        ...corners.map((pt, i) => ({ pt, i: points.length + i, kind: 'spark', size: 'lg' }))
+    ];
+    const appendBit = (bit, timeoutMs = 1000) => {
+        const remove = () => {
+            if (bit._done) return;
+            bit._done = true;
+            bit.remove();
+        };
+        bit.addEventListener('animationend', remove, { once: true });
+        window.setTimeout(remove, timeoutMs);
+        root.appendChild(bit);
     };
-    points.forEach((pt, i) => {
-        const edgeJitter = (Math.random() - 0.5) * 8;
-        const angleJitter = ((Math.random() - 0.5) * 24 * Math.PI) / 180;
+    jobs.forEach(({ pt, i, kind, size }) => {
+        const edgeJitter = (Math.random() - 0.5) * 10;
+        const angleJitter = ((Math.random() - 0.5) * 28 * Math.PI) / 180;
         const baseAngle = Math.atan2(pt.ny, pt.nx) + angleJitter;
-        const dist = 22 + Math.random() * 26;
-        const spawnX = pt.x + (pt.nx === 0 ? edgeJitter : 0);
-        const spawnY = pt.y + (pt.ny === 0 ? edgeJitter : 0);
+        const dist = 36 + Math.random() * 36;
+        const spawnX = pt.x + (pt.nx === 0 ? edgeJitter : pt.nx * 2);
+        const spawnY = pt.y + (pt.ny === 0 ? edgeJitter : pt.ny * 2);
         const bit = document.createElement('span');
-        bit.className = `lux-chip-burst-particle lux-chip-burst-particle--${sizes[i % 3]}`;
+        bit.className = `lux-chip-burst-particle lux-chip-burst-particle--${kind} lux-chip-burst-particle--${size}`;
         bit.style.left = `${spawnX}px`;
         bit.style.top = `${spawnY}px`;
         bit.style.setProperty('--burst-tx', `${Math.cos(baseAngle) * dist}px`);
         bit.style.setProperty('--burst-ty', `${Math.sin(baseAngle) * dist}px`);
-        bit.style.setProperty('--burst-delay', `${i * 14}ms`);
-        const remove = () => {
-            bit.remove();
-            finish();
-        };
-        bit.addEventListener('animationend', remove, { once: true });
-        window.setTimeout(remove, 900);
-        root.appendChild(bit);
+        bit.style.setProperty('--burst-rot', `${(baseAngle * 180) / Math.PI}deg`);
+        bit.style.setProperty('--burst-delay', `${i * 10}ms`);
+        appendBit(bit);
     });
-    if (!points.length) spawnStudioChipBurstParticles._live = false;
 }
 
 function launchBackgroundGallery(mediaType) {
@@ -636,8 +656,8 @@ function ensureStudioCss() {
     ensureStudioChipBurstHandler();
     if (typeof document === 'undefined') return;
     const sheets = [
-        { href: 'assets/css/lux-studio.css?v=20260721-studioglow37', key: 'data-kiu-studio' },
-        { href: 'assets/css/lux-studio-mobile.css?v=20260721-studioglow37', key: 'data-kiu-studio-mobile' }
+        { href: 'assets/css/lux-studio.css?v=20260722-popupblack1', key: 'data-kiu-studio' },
+        { href: 'assets/css/lux-studio-mobile.css?v=20260722-popupblack1', key: 'data-kiu-studio-mobile' }
     ];
     for (const sheet of sheets) {
         const existing = document.querySelector(`link[${sheet.key}]`);
@@ -727,6 +747,20 @@ function ensureStudio() {
                     <div class="lux-studio-label">Glass Blur</div>
                     <div class="lux-control-grid" id="lux-glass-blur-quality-grid"></div>
                 </div>
+                <div class="lux-studio-section">
+                    <div class="lux-studio-label">Panel Color Glow</div>
+                    <div class="lux-transparency-control">
+                        <div class="lux-transparency-header">
+                            <span class="lux-transparency-label"><i class="fas fa-sun"></i> Glow Density</span>
+                            <span class="lux-transparency-value" id="lux-glow-strength-value">50%</span>
+                        </div>
+                        <input type="range" class="lux-range" id="lux-glow-strength-slider" min="0" max="100" value="50">
+                        <div class="lux-transparency-meta">
+                            <span><i class="fas fa-moon"></i> None (0%)</span>
+                            <span><i class="fas fa-bolt"></i> Max (100%)</span>
+                        </div>
+                    </div>
+                </div>
                 <div class="lux-studio-section lux-bg-mode-section">
                     <div class="lux-studio-label">3D Background</div>
                     <div class="lux-bg-mode-grid" id="lux-bg-mode-grid"></div>
@@ -800,11 +834,11 @@ function ensureStudio() {
     document.getElementById('lux-studio-close')?.addEventListener('click', () => closeStudio({ restoreFocus: true }));
     document.getElementById('lux-mode-dark')?.addEventListener('click', () => {
         applyThemeMode('dark', true);
-        if (typeof syncVisualStateOnly === 'function') syncVisualStateOnly();
+        if (typeof syncStudioUi === 'function') syncStudioUi();
     });
     document.getElementById('lux-mode-light')?.addEventListener('click', () => {
         applyThemeMode('light', true);
-        if (typeof syncVisualStateOnly === 'function') syncVisualStateOnly();
+        if (typeof syncStudioUi === 'function') syncStudioUi();
     });
     document.getElementById('lux-bg-animation-on')?.addEventListener('click', () => {
         if (typeof setBackgroundAnimationsEnabled === 'function') setBackgroundAnimationsEnabled(true, true);
@@ -852,12 +886,30 @@ function ensureStudio() {
         });
         glassBlurQualityGrid?.appendChild(button);
     });
+    const glowStrengthSlider = document.getElementById('lux-glow-strength-slider');
+    const glowStrengthValue = document.getElementById('lux-glow-strength-value');
+    if (glowStrengthSlider) {
+        const savedGlow = typeof window.getGlowStrength === 'function'
+            ? window.getGlowStrength()
+            : (getDashboardVisuals().glowStrength ?? localStorage.getItem('kiuLuxuryGlowStrength') ?? 50);
+        const glowPercent = typeof window.normalizeGlowStrengthPercent === 'function'
+            ? window.normalizeGlowStrengthPercent(savedGlow)
+            : Math.min(100, Math.max(0, Math.round(Number(savedGlow) || 50)));
+        glowStrengthSlider.value = String(glowPercent);
+        if (glowStrengthValue) glowStrengthValue.textContent = `${glowPercent}%`;
+        glowStrengthSlider.addEventListener('input', (e) => {
+            const value = e.target.value;
+            if (glowStrengthValue) glowStrengthValue.textContent = `${value}%`;
+            if (typeof window.setGlowStrength === 'function') window.setGlowStrength(parseInt(value, 10), true);
+            else if (typeof window.syncVisualStateOnly === 'function') window.syncVisualStateOnly();
+        });
+    }
     document.getElementById('lux-apply-mix')?.addEventListener('click', () => {
         const mixerState = setStudioMixerState(readStudioMixerInputs(), true);
         const mixed = mixHsl(mixerState.hA, mixerState.sA, mixerState.lA, mixerState.hB, mixerState.sB, mixerState.lB, mixerState.ratio / 100);
         const mixed2 = mixHsl(mixerState.hA, mixerState.sA, mixerState.lA, mixerState.hB, mixerState.sB, mixerState.lB, Math.min((mixerState.ratio / 100) + 0.15, 1));
         applyCustomPalette(`hsl(${Math.round(mixed[0])},${Math.round(mixed[1])}%,${Math.round(mixed[2])}%)`, `hsl(${Math.round(mixed2[0])},${Math.round(mixed2[1])}%,${Math.round(mixed2[2])}%)`, true);
-        if (typeof syncVisualStateOnly === 'function') syncVisualStateOnly();
+        if (typeof syncStudioUi === 'function') syncStudioUi();
         if (typeof showToast === 'function') showToast('Custom palette applied');
     });
     STUDIO_PALETTES.forEach((palette) => {
@@ -879,7 +931,7 @@ function ensureStudio() {
                 applyCustomPalette(customColors.accent, customColors.accent2, true);
             }
             updateStudioPreview();
-            if (typeof syncVisualStateOnly === 'function') syncVisualStateOnly();
+            if (typeof syncStudioUi === 'function') syncStudioUi();
         });
         document.getElementById('lux-palette-grid')?.appendChild(chip);
     });
@@ -1499,6 +1551,13 @@ function syncStudioUi() {
     studio.querySelectorAll('[data-glass-blur-quality]').forEach((button) => {
         button.classList.toggle('is-active', typeof getGlassBlurQuality === 'function' && button.dataset.glassBlurQuality === getGlassBlurQuality());
     });
+    const glowStrengthSliderSync = document.getElementById('lux-glow-strength-slider');
+    const glowStrengthValueSync = document.getElementById('lux-glow-strength-value');
+    if (glowStrengthSliderSync && typeof window.getGlowStrength === 'function') {
+        const glowPercent = window.getGlowStrength();
+        glowStrengthSliderSync.value = String(glowPercent);
+        if (glowStrengthValueSync) glowStrengthValueSync.textContent = `${glowPercent}%`;
+    }
     ['lux-reset-current-layout', 'lux-reset-all-layouts', 'lux-reset-home-defaults'].forEach((id) => {
         const button = document.getElementById(id);
         if (button) button.hidden = !showHomeLayoutControls;

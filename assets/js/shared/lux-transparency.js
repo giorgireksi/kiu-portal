@@ -623,9 +623,7 @@ function updateTransparency(value, options = {}) {
         var _isLight = isLightTheme;
         var _panelA = transparencyModel.panelAlpha;
         var _pa = _panelA.toFixed(3);
-        var _darkBg = 'var(--lux-panel-ht-surface)';
-        var _lightBg = 'var(--lux-panel-ht-surface)';
-        var _bg = _isLight ? _lightBg : _darkBg;
+        var _bg = 'var(--lux-panel-surface)';
         var _bodySelector = _isLight ? 'body.lux-light-mode' : 'body:not(.lux-light-mode)';
         var _bodyBg = _isLight
             ? 'linear-gradient(180deg,rgba(245,240,232,' + _pa + '),rgba(240,235,226,' + _pa + '))'
@@ -637,19 +635,23 @@ function updateTransparency(value, options = {}) {
         } else if (_animationsOff && _staticFill === 'white') {
             _bodyBg = '#ffffff';
         } else if (_animationsOff && _staticFill === 'colored' && !_isLight) {
-            _bodyBg = 'var(--lux-static-colored-page-haze)';
+            _bodyBg = 'var(--lux-shell-background)';
         }
         var _sidebarBg = _isLight
             ? 'linear-gradient(180deg,rgba(248,244,237,' + _pa + '),rgba(242,237,228,' + _pa + '))'
             : 'linear-gradient(180deg,rgba(10,14,22,' + _pa + '),rgba(6,9,15,' + _pa + '))';
 
         var highTransparencyCss =
-            'html.lux-high-transparency.lux-high-transparency.lux-high-transparency{--lux-hero-glow:0!important;--lux-glow-scale:0!important;--lux-card-glow-alpha:0!important;--lux-panel-glow:0!important}' +
+            'html.lux-high-transparency.lux-high-transparency.lux-high-transparency{--lux-hero-glow:0!important}' +
             buildHighTransparencySurfaceCss(_bodySelector, _bg) +
             buildStudentsAdminHighTransparencyCss(_bodySelector, _isLight, _panelA) +
             buildHighTransparencyTextResetCss(_bodySelector) +
-            'html.lux-high-transparency.lux-high-transparency.lux-high-transparency ' + _bodySelector + '::before{background:' + _bodyBg + '!important}' +
             'html.lux-high-transparency.lux-high-transparency.lux-high-transparency ' + _bodySelector + ' .lux-sidebar{background:' + _sidebarBg + '!important}';
+        // Dark/white static fills still need a flat ::before; colored keeps CSS glow radials.
+        if (_animationsOff && (_staticFill === 'dark' || _staticFill === 'white')) {
+            highTransparencyCss +=
+                'html.lux-high-transparency.lux-high-transparency.lux-high-transparency ' + _bodySelector + '::before{background:' + _bodyBg + '!important}';
+        }
         if (typeof window.__kiuApplyHighTransparencyState === 'function') {
             window.__kiuApplyHighTransparencyState(true, highTransparencyCss);
         } else {
@@ -678,6 +680,20 @@ function updateTransparency(value, options = {}) {
     }
 
 // --- READABILITY: Tokens ---
+    const glowPercent = typeof getGlowStrength === 'function' ? getGlowStrength() : 50;
+    const glowConfig = typeof resolveGlowTokenConfig === 'function'
+        ? resolveGlowTokenConfig(glowPercent)
+        : (() => {
+            const pct = Math.min(100, Math.max(0, Math.round(Number(glowPercent) || 50)));
+            const glowScale = pct / 50;
+            return {
+                percent: pct,
+                glowScale: String(glowScale),
+                buttonGlow: String(0.12 + (pct / 100) * 0.68),
+                panelGlow: String((pct / 100) * 0.40),
+                cardGlowAlpha: String((0.016 * glowScale).toFixed(4))
+            };
+        })();
     if (typeof window.__kiuApplyTransparencyTokenState === 'function') {
         window.__kiuApplyTransparencyTokenState({
             panelAlpha: transparencyModel.panelAlpha.toFixed(3),
@@ -692,6 +708,10 @@ function updateTransparency(value, options = {}) {
             topbarFillAlpha: transparencyModel.topbarFillAlpha.toFixed(3),
             topbarRaisedAlpha: transparencyModel.topbarRaisedAlpha.toFixed(3),
             glassHighlightAlpha: transparencyModel.glassHighlightAlpha.toFixed(3)
+        }, {
+            panelGlow: glowConfig.panelGlow,
+            glowScale: glowConfig.glowScale,
+            cardGlowAlpha: glowConfig.cardGlowAlpha
         });
     } else {
         const root = document.documentElement;
@@ -707,6 +727,9 @@ function updateTransparency(value, options = {}) {
         root.style.setProperty('--lux-topbar-fill-alpha', transparencyModel.topbarFillAlpha.toFixed(3));
         root.style.setProperty('--lux-topbar-raised-alpha', transparencyModel.topbarRaisedAlpha.toFixed(3));
         root.style.setProperty('--lux-glass-highlight-alpha', transparencyModel.glassHighlightAlpha.toFixed(3));
+        root.style.setProperty('--lux-panel-glow', glowConfig.panelGlow);
+        root.style.setProperty('--lux-glow-scale', glowConfig.glowScale);
+        root.style.setProperty('--lux-card-glow-alpha', glowConfig.cardGlowAlpha);
     }
 
 
@@ -1014,10 +1037,7 @@ function updateTransparency(value, options = {}) {
             '#page-home #lux-home-shell .lux-home-grid > .lux-panel, ' +
             '#page-home #lux-home-shell .lux-home-grid > .lux-card, ' +
             '#page-home #lux-home-shell .lux-home-grid > .lux-hero, ' +
-            '#page-home #lux-home-shell .lux-grid-widget > .lux-grid-widget-body > .lux-dashboard-section, ' +
-            '#page-home #lux-home-shell .lux-grid-widget > .lux-grid-widget-body > .lux-panel, ' +
-            '#page-home #lux-home-shell .lux-grid-widget > .lux-grid-widget-body > .lux-card, ' +
-            '#page-home #lux-home-shell .lux-grid-widget > .lux-grid-widget-body > .lux-hero'
+            '#page-home #lux-home-shell .lux-grid-widget > .lux-grid-widget-body'
         ));
         if (isHomeDashboardSurface) {
             return buildHomeStyleSurfaceBackground(lightMode, amount);
@@ -1454,6 +1474,14 @@ function updateTransparency(value, options = {}) {
     const surfaceElements = getCachedTransparencySurfaceElements(allSelectors, scopedRoots);
 
     surfaceElements.forEach(el => {
+        // Early signature skip — before layout/closest walks (same paint when unchanged).
+        if (
+            !forceRefresh &&
+            fillRatio > 0 &&
+            el.dataset.luxTransparencySignature === transparencySignature
+        ) {
+            return;
+        }
         // Skip if element is hidden
         if (el.offsetParent === null && el.style.display === 'none') return;
         // Studio owns fixed 50% glass in lux-studio.css — never engine-paint.
@@ -1463,62 +1491,34 @@ function updateTransparency(value, options = {}) {
             el.classList.contains('lux-studio-panel') ||
             el.closest?.('#lux-studio-backdrop, #lux-bg-mode-params-backdrop')
         ) {
-            el.style.removeProperty('background-color');
-            el.style.removeProperty('background');
-            el.style.removeProperty('backdrop-filter');
-            el.style.removeProperty('-webkit-backdrop-filter');
-            delete el.dataset.luxTransparencySignature;
+            stripInlineGlassPaint(el, transparencySignature);
             return;
         }
         const isOrdersInboxSurface = Boolean(el.closest?.(
             '#page-orders .orders-inbox-shell, #orders-inbox-root .orders-inbox-shell, #admin-orders-root .orders-inbox-shell'
         ));
         if (isOrdersInboxSurface) {
-            el.style.removeProperty('background-color');
-            el.style.removeProperty('background');
-            el.style.removeProperty('backdrop-filter');
-            el.style.removeProperty('-webkit-backdrop-filter');
-            delete el.dataset.luxTransparencySignature;
+            stripInlineGlassPaint(el, transparencySignature);
             return;
         }
         if (isTimetableLayoutWrapper(el)) {
-            el.style.removeProperty('background-color');
-            el.style.removeProperty('background');
-            el.style.removeProperty('backdrop-filter');
-            el.style.removeProperty('-webkit-backdrop-filter');
-            delete el.dataset.luxTransparencySignature;
+            stripInlineGlassPaint(el, transparencySignature);
             return;
         }
         if (isStudyCardGradebookProgressSegment(el)) {
-            el.style.removeProperty('background-color');
-            el.style.removeProperty('background');
-            el.style.removeProperty('backdrop-filter');
-            el.style.removeProperty('-webkit-backdrop-filter');
-            delete el.dataset.luxTransparencySignature;
+            stripInlineGlassPaint(el, transparencySignature);
             return;
         }
         if (el.closest?.('#kiu-structured-form-modal')) {
-            el.style.removeProperty('background-color');
-            el.style.removeProperty('background');
-            el.style.removeProperty('backdrop-filter');
-            el.style.removeProperty('-webkit-backdrop-filter');
-            delete el.dataset.luxTransparencySignature;
+            stripInlineGlassPaint(el, transparencySignature);
             return;
         }
         if (el.closest?.('#course-selection-modal-bg')) {
-            el.style.removeProperty('background-color');
-            el.style.removeProperty('background');
-            el.style.removeProperty('backdrop-filter');
-            el.style.removeProperty('-webkit-backdrop-filter');
-            delete el.dataset.luxTransparencySignature;
+            stripInlineGlassPaint(el, transparencySignature);
             return;
         }
         if (el.closest?.('#schModalOverlay') || el.closest?.('#schPresetManagerOverlay')) {
-            el.style.removeProperty('background-color');
-            el.style.removeProperty('background');
-            el.style.removeProperty('backdrop-filter');
-            el.style.removeProperty('-webkit-backdrop-filter');
-            delete el.dataset.luxTransparencySignature;
+            stripInlineGlassPaint(el, transparencySignature);
             return;
         }
         if (
@@ -1543,11 +1543,7 @@ function updateTransparency(value, options = {}) {
                 el.classList.contains('curriculum-library-row-list')
             )
         ) {
-            el.style.removeProperty('background-color');
-            el.style.removeProperty('background');
-            el.style.removeProperty('backdrop-filter');
-            el.style.removeProperty('-webkit-backdrop-filter');
-            delete el.dataset.luxTransparencySignature;
+            stripInlineGlassPaint(el, transparencySignature);
             return;
         }
 
@@ -1653,15 +1649,32 @@ function updateTransparency(value, options = {}) {
                 return;
             }
 
-            // Smart glass effect: preserve existing backgrounds
-            const computedStyle = window.getComputedStyle(el);
-            const existingBackground = computedStyle.backgroundImage;
-
-            // Check if element has gradient or complex background from CSS
-            const hasComplexBackground = existingBackground &&
-                (existingBackground.includes('gradient') ||
-                    existingBackground.includes('radial') ||
-                    existingBackground.includes('linear'));
+            // Smart glass effect: preserve existing backgrounds.
+            // Only probe getComputedStyle when complex vs simple changes dyn-bg
+            // (registration/scheduler/LMS glass that are not already dynamic).
+            const needsComplexProbe = (
+                registrationGlassClasses.some((className) => el.classList.contains(className))
+                || (
+                    document.body.classList.contains('lux-route-admin-scheduler')
+                    && Boolean(el.closest?.('#page-admin-scheduler'))
+                    && (
+                        schedulerGlassClasses.some((className) => el.classList.contains(className))
+                        || ((el.tagName === 'SELECT' || el.tagName === 'INPUT')
+                            && el.closest?.('.sch-control-group, .sch-board-toolbar-row, .sch-search-shell, .sch-modal'))
+                    )
+                )
+                || lmsGlassClasses.some((className) => el.classList.contains(className))
+            );
+            let hasComplexBackground = false;
+            if (needsComplexProbe && !shouldApplyDynamicBackground(el)) {
+                const existingBackground = window.getComputedStyle(el).backgroundImage || '';
+                hasComplexBackground = Boolean(
+                    existingBackground
+                    && (existingBackground.includes('gradient')
+                        || existingBackground.includes('radial')
+                        || existingBackground.includes('linear'))
+                );
+            }
 
             const isSocialRouteSurface = document.body.classList.contains('lux-route-social');
             const keepSocialFadeCss = shouldKeepSocialFadeCssBackground(el);
@@ -1679,7 +1692,10 @@ function updateTransparency(value, options = {}) {
             const isWrapperFrostRoute = document.body.classList.contains('lux-route-timetable')
                 || document.body.classList.contains('lux-route-lms');
             const isWrapperInnerPanel = isWrapperFrostRoute && Boolean(el.closest?.('.lux-page-shell')) && !el.classList.contains('lux-page-shell');
-            const suppressBlur = isWrapperInnerPanel || (isSocialRouteSurface &&
+            const isHomeWidgetInnerPanel = document.body.classList.contains('lux-route-home')
+                && Boolean(el.closest?.('.lux-grid-widget-body'))
+                && !el.classList.contains('lux-grid-widget-body');
+            const suppressBlur = isWrapperInnerPanel || isHomeWidgetInnerPanel || (isSocialRouteSurface &&
                 shouldApplyDynamicBackground(el) &&
                 !isSocialPaintSurface(el) &&
                 !isSocialBlurHost(el));
@@ -1835,10 +1851,14 @@ function refreshLuxuryTransparencySurfaces(value, options = {}) {
     if (!scopedRoots.length) {
         resetTransparencySurfaceCache();
     }
-    collectTransparencySurfaceElements(['[data-lux-transparency-signature]'], scopedRoots).forEach((el) => {
-        delete el.dataset.luxTransparencySignature;
-    });
-    updateTransparency(percentage, { force: true, persist: false, roots: scopedRoots });
+    // Only force-restamp when caller asks — default path keeps signatures so early-skip works.
+    const force = options?.force === true;
+    if (force) {
+        collectTransparencySurfaceElements(['[data-lux-transparency-signature]'], scopedRoots).forEach((el) => {
+            delete el.dataset.luxTransparencySignature;
+        });
+    }
+    updateTransparency(percentage, { force, persist: false, roots: scopedRoots });
 }
 
 function queueLuxuryTransparencyRefresh(value, options = {}) {
@@ -1859,7 +1879,17 @@ function queueLuxuryTransparencyRefresh(value, options = {}) {
 }
 
 function scheduleLuxuryTransparencyBootRefresh(value) {
-    const refresh = () => queueLuxuryTransparencyRefresh(value, { persist: false });
+    // Once-per-boot: many callers share one immediate + one delayed settle pass.
+    if (window.__luxTransparencyBootRefreshScheduled) {
+        window.__luxTransparencyBootRefreshValue = value;
+        return;
+    }
+    window.__luxTransparencyBootRefreshScheduled = true;
+    window.__luxTransparencyBootRefreshValue = value;
+    const refresh = () => queueLuxuryTransparencyRefresh(
+        window.__luxTransparencyBootRefreshValue ?? value,
+        { persist: false }
+    );
     refresh();
     window.clearTimeout(window.__luxTransparencyBootRefreshTimer);
     window.__luxTransparencyBootRefreshTimer = window.setTimeout(() => {

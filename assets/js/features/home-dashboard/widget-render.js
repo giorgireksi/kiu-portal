@@ -1,7 +1,7 @@
 /* Home dashboard widget markup renderers. */
     function renderListRowsMarkup(rows) {
         return ((rows && rows.length) ? rows : [{ icon: 'fas fa-circle-info', title: 'Nothing new yet', copy: 'Open the related workspace to start activity here.' }]).map((row) => `
-            <div class="lux-list-row lux-soft-chrome">
+            <div class="lux-list-row lux-soft-chrome home-hover-chip">
                 <i class="${escapeHtml(row.icon || 'fas fa-circle')}"></i>
                 <div>
                     <strong>${escapeHtml(row.title || 'Portal update')}</strong>
@@ -73,7 +73,7 @@
         const meta = aside.meta && typeof aside.meta === 'object' ? aside.meta : { icon: 'fa-circle-dot', text: '' };
 
         return `
-                    <aside class="lms-hero-focus lux-hero-side lux-focus-panel lux-soft-chrome" aria-label="${escapeHtml(kicker)}">
+                    <aside class="lms-hero-focus lux-hero-side lux-focus-panel lux-soft-chrome home-hover-chip" aria-label="${escapeHtml(kicker)}">
                         <div class="lms-hero-focus-head">
                             <div class="lms-hero-focus-kicker">${escapeHtml(kicker)}</div>
                             <span class="lms-hero-focus-chip" aria-label="Status">${escapeHtml(chip)}</span>
@@ -100,7 +100,7 @@
                         <h1 class="page-hero-title">${escapeHtml(model.title)}</h1>
                         <p class="page-hero-copy">${escapeHtml(model.copy)}</p>
                         <div class="lux-pill-row">
-                            ${(model.pills || []).map((pill) => `<span class="lux-pill lux-soft-chrome">${escapeHtml(pill)}</span>`).join('')}
+                            ${(model.pills || []).map((pill) => `<span class="lux-pill lux-soft-chrome home-hover-chip">${escapeHtml(pill)}</span>`).join('')}
                         </div>
                         <div class="lux-hero-actions">
                             ${(model.actions || []).map(([pageId, label], index) => `
@@ -111,7 +111,7 @@
                     ${renderHeroFocusAsideMarkup(model.heroAside)}
                 </div>
                 <div class="lux-stat-row">
-                    ${(model.stats || []).map(([value, label]) => `<div class="lux-stat lux-soft-chrome"><strong>${escapeHtml(value)}</strong><span>${escapeHtml(label)}</span></div>`).join('')}
+                    ${(model.stats || []).map(([value, label]) => `<div class="lux-stat lux-soft-chrome home-hover-chip"><strong>${escapeHtml(value)}</strong><span>${escapeHtml(label)}</span></div>`).join('')}
                 </div>
             </section>
         `;

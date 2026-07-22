@@ -193,3 +193,32 @@
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
 }
+/* ── §3 light-mode popup text — full contrast (mirrors dark popup token aliasing) ── */
+:is(html.lux-light-mode, body.lux-light-mode) :is(
+  #lux-studio-backdrop,
+  #lux-bg-mode-params-backdrop,
+  #lux-bg-gallery-backdrop,
+  .lux-picker-panel,
+  .lux-utility-panel,
+  .lux-user-menu,
+  .mob-sheet-panel,
+  [data-lux-transparency-exempt="1"] :is(
+    .students-hub-modal,
+    .staff-hub-modal,
+    .modal-content,
+    .registration-structured-modal,
+    .admin-library-modal,
+    .newsx-publisher-modal,
+    .newsx-confirm-modal,
+    .newsx-sections-modal,
+    .sch-modal,
+    .pv-modal-card,
+    .social-neo-dialog-card
+  )
+) {
+  --lux-text: #000;
+  --lux-text-muted: var(--lux-text);
+  --lux-text-soft: var(--lux-text);
+  --kiu-text-main: #000;
+  --kiu-text-muted: var(--kiu-text-main);
+}

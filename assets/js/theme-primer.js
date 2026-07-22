@@ -632,9 +632,7 @@
             root.classList.add('lux-high-transparency');
             var _pa = panelAlpha.toFixed(3);
             var _isLight = savedMode === 'light';
-            var _darkBg = 'linear-gradient(180deg,rgba(14,20,33,' + _pa + '),rgba(8,12,21,' + _pa + '))';
-            var _lightBg = 'linear-gradient(180deg,rgba(252,249,244,' + _pa + '),rgba(248,244,237,' + _pa + '))';
-            var _bg = _isLight ? _lightBg : _darkBg;
+            var _bg = 'var(--lux-panel-surface)';
             var _bodyBg = _isLight
                 ? 'linear-gradient(180deg,rgba(245,240,232,' + _pa + '),rgba(240,235,226,' + _pa + '))'
                 : 'linear-gradient(180deg,rgba(12,17,26,' + _pa + '),rgba(7,10,16,' + _pa + '))';
@@ -643,7 +641,7 @@
             } else if (!backgroundAnimationsEnabled && staticBackgroundFill === 'white') {
                 _bodyBg = '#ffffff';
             } else if (!backgroundAnimationsEnabled && staticBackgroundFill === 'colored' && !_isLight) {
-                _bodyBg = 'var(--lux-static-colored-page-haze)';
+                _bodyBg = 'var(--lux-shell-background)';
             }
             var _sidebarBg = _isLight
                 ? 'linear-gradient(180deg,rgba(248,244,237,' + _pa + '),rgba(242,237,228,' + _pa + '))'
@@ -653,21 +651,17 @@
                 : 'body:not(.lux-light-mode):not(.lux-route-social)';
 
             var css = '' +
-                // Zero ALL glow variables with !important — prevents JS from re-enabling them
                 'html.lux-high-transparency.lux-high-transparency.lux-high-transparency{' +
                     '--lux-hero-glow:0!important;' +
-                    '--lux-glow-scale:0!important;' +
-                    '--lux-card-glow-alpha:0!important;' +
-                    '--lux-panel-glow:0!important;' +
                 '}' +
                 getHighTransparencySurfaceCss(_bodySelector, _bg) +
                 getHighTransparencyTextResetCss(_bodySelector) +
-                // Body pseudo-element (page background glow)
-                'html.lux-high-transparency.lux-high-transparency.lux-high-transparency ' + _bodySelector + '::before' +
-                '{background:' + _bodyBg + '!important}' +
-                // Sidebar
                 'html.lux-high-transparency.lux-high-transparency.lux-high-transparency ' + _bodySelector + ' .lux-sidebar' +
                 '{background:' + _sidebarBg + '!important}';
+            if (!backgroundAnimationsEnabled && (staticBackgroundFill === 'dark' || staticBackgroundFill === 'white')) {
+                css += 'html.lux-high-transparency.lux-high-transparency.lux-high-transparency ' + _bodySelector + '::before' +
+                    '{background:' + _bodyBg + '!important}';
+            }
 
             appendLateStyle('lux-high-trans-primer', css);
         }
@@ -700,6 +694,7 @@
         savedPalette = String(scopedVisuals.paletteKey || '').trim();
     }
     if (!savedPalette) savedPalette = DEFAULT_LUXURY_PALETTE;
+    if (savedPalette === 'carbon-black' || savedPalette === 'arctic-white') savedPalette = 'platinum-silver';
 
     // Apply to body as soon as it exists
     function applyBodyState() {
@@ -743,7 +738,7 @@
         }
 
         // Palette (only if it's a valid preset, not 'custom')
-        var validPalettes = ['obsidian-amber', 'slate-sapphire', 'pine-jade', 'burgundy-rose', 'sand-pearl', 'ink-orchid', 'ocean-teal'];
+        var validPalettes = ['obsidian-amber', 'slate-sapphire', 'pine-jade', 'burgundy-rose', 'sand-pearl', 'ink-orchid', 'ocean-teal', 'platinum-silver'];
         if (savedPalette && savedPalette !== 'custom' && validPalettes.indexOf(savedPalette) !== -1) {
             b.classList.add('palette-' + savedPalette);
         }

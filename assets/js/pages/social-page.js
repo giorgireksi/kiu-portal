@@ -1587,7 +1587,10 @@
     const __w18Deps = { bindPhotographyUploadDialogFileInput, openPhotographyUploadFilePicker, bindPhotographyUploadFileSinkChange, ensurePhotographyUploadFileSink, applyPhotographyUploadFile, renderPhotographyUploadDialogNow, renderDialogOnlyNow, workspaceDialogKeepsCenter, currentUserId, activeChats, activeChat, activeMessages, groupForChat, resolveProjectWorkspaceChat, ensureProjectWorkspaceChat, renderLinkedMessageText, hasSocialCommunityModule, ensureSocialCommunityModule, hasSocialAlertsModule, ensureSocialAlertsModule, hasSocialLostFoundModule, ensureSocialLostFoundModule, hasSocialPhotographyModule, ensureSocialPhotographyModule, hasSocialSurveysModule, ensureSocialSurveysModule, hasSocialMessagesModule, ensureSocialMessagesModule, hasSocialProfileModule, ensureSocialProfileModule, ensureSocialEventsModule, hasSocialEventsModule, ensureSocialGroupsModule, hasSocialGroupsModule, ensureSocialPagesModule, hasSocialPagesModule, createSocialLazyStub, createSocialWorkspaceStub, ensureSocialFeedModule, hasSocialFeedModule, scheduleDeferredDesktopModulePrefetch, scheduleDirectoryPrefetch, resolveSocialRenderPlan, saveLostFoundItems, socialHub, savedItems, savedPostRecords, currentSocialProfileSettings, isPostSaved, toggleSavedPost };
     const __w18PeelApi = typeof window.__kiuCreateSocialPageBootApi === 'function'
         ? window.__kiuCreateSocialPageBootApi(__w18Deps) : null;
-    if (!__w18PeelApi) throw new Error('social-page-boot-runtime.js missing');
+    if (!__w18PeelApi) {
+        console.error('[Social] social-page-boot-runtime.js missing — page shell will not boot');
+        return;
+    }
     const { withBusy, bindOverlayCaptureClick, bindOverlayCaptureChange, bindOverlayPortalEvents, bindEvents, renderOrRetry, boot } = __w18PeelApi;
 
     window.__kiuSocialCommunityHooks = window.__kiuSocialCommunityHooks || {};

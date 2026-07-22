@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'fs';
 import { join } from 'path';
+import { readCss } from './helpers/bare-shell-css.js';
 
 function readSource(relativePath) {
     return readFileSync(join(process.cwd(), relativePath), 'utf8');
@@ -8,7 +9,7 @@ function readSource(relativePath) {
 
 describe('route panel transparency parity', () => {
     const utilitiesSource = readSource('assets/js/shared/utilities.js');
-    const staffCss = readSource('assets/css/staff-command-center.css');
+    const staffCss = readCss('assets/css/staff-command-center.css');
 
     it('includes social, staff, and students-admin selectors in the paint list', () => {
         expect(utilitiesSource).toContain('...SOCIAL_NEO_TRANSPARENCY_SURFACE_SELECTORS');
@@ -65,10 +66,12 @@ describe('route panel transparency parity', () => {
 
     it('forces a deferred transparency refresh during initial and restored page loads', () => {
         const luxurySource = readSource('assets/js/features/index-luxury.js');
+        const transparencySource = readSource('assets/js/shared/lux-transparency.js');
 
-        expect(utilitiesSource).toContain('function scheduleLuxuryTransparencyBootRefresh(value)');
+        expect(transparencySource).toContain('function scheduleLuxuryTransparencyBootRefresh(value)');
         expect(utilitiesSource).toContain("window.addEventListener('pageshow', function()");
-        expect(utilitiesSource).toContain('updateTransparency(percentage, { force: true, persist: false, roots: scopedRoots })');
+        expect(transparencySource).toContain('const force = options?.force === true');
+        expect(transparencySource).toContain('updateTransparency(percentage, { force, persist: false, roots: scopedRoots })');
         expect(luxurySource).toContain('window.scheduleLuxuryTransparencyBootRefresh(');
     });
 
@@ -95,6 +98,34 @@ describe('route panel transparency parity', () => {
             /const backdropValue = \(suppressBlur \|\| keepSocialFadeCss\)\s*\?\s*'none'\s*:\s*`blur\(\$\{blurAmount\}px\) saturate\(\$\{saturateAmount\}%\)`/
         );
         expect(utilitiesSource).toContain("el.style.setProperty('backdrop-filter', backdropValue, 'important')");
+    });
+
+    it('applies single blur layer on home via lux-grid-widget-body host only', () => {
+        const transparencySource = readSource('assets/js/shared/lux-transparency.js');
+        const homeCss = readSource('assets/css/index-home-role.css');
+        expect(transparencySource).toContain('isHomeWidgetInnerPanel');
+        expect(transparencySource).toContain(
+            "'#page-home #lux-home-shell .lux-grid-widget > .lux-grid-widget-body'"
+        );
+        expect(homeCss).toContain('Single frost per widget');
+        const frostHostBlock = homeCss.match(
+            /body\.lux-unified-shell:not\(\.lux-route-students-admin\) #page-home #lux-home-shell :is\([\s\S]*?\) \{/
+        )?.[0] || '';
+        expect(frostHostBlock).toContain('.lux-grid-widget > .lux-grid-widget-body');
+        expect(frostHostBlock).not.toContain('.lux-grid-widget > .lux-grid-widget-body > .lux-panel');
+    });
+
+    it('fills transparency-pending panels with matte surface instead of transparent holes', () => {
+        const foucCss = readSource('assets/css/lux-fouc-ht.css');
+        expect(foucCss).toMatch(
+            /html\.lux-transparency-pending body:not\(\.lux-light-mode\)[\s\S]*?var\(--lux-panel-surface/
+        );
+        expect(foucCss).toMatch(
+            /html\.lux-transparency-pending body\.lux-light-mode[\s\S]*?var\(--lux-panel-surface/
+        );
+        expect(foucCss).not.toMatch(
+            /html\.lux-transparency-pending[\s\S]{0,200}background:\s*transparent/
+        );
     });
 
     it('fills social workspace nav rows with slider-scaled transparency background', () => {

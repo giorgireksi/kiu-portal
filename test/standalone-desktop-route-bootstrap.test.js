@@ -15,11 +15,14 @@ describe('standalone desktop route bootstrap', () => {
     expect(navigation).toContain('function refreshStandaloneDesktopRouteContent(pageId, options = {}) {');
     expect(navigation).toContain('function autoBootStandaloneDesktopRoute() {');
     expect(navigation).toContain('function applyStandaloneDesktopRouteVisualState(config = {}) {');
-    expect(navigation).toContain('const fallbackTimer = window.setTimeout(run, 48);');
-    expect(navigation).toContain("window.requestIdleCallback(() => {");
-    expect(navigation).toContain('window.clearTimeout(fallbackTimer);');
-    expect(navigation).toContain('window.bootStandaloneDesktopRoute = bootStandaloneDesktopRoute;');
-    expect(navigation).toContain('window.refreshStandaloneDesktopShellChrome = refreshStandaloneDesktopShellChrome;');
+    expect(navigation).toContain('function scheduleRouteContentRender(renderFn) {');
+    expect(navigation).toContain('window.requestAnimationFrame(() => {\n            window.requestAnimationFrame(run);');
+    expect(navigation).not.toContain('const fallbackTimer = window.setTimeout(run, 48);');
+    expect(navigation).not.toContain('requestIdleCallback(() => {\n            window.clearTimeout(fallbackTimer);');
+    expect(navigation).toContain('bootStandaloneDesktopRoute,');
+    expect(navigation).toContain('refreshStandaloneDesktopShellChrome,');
+    expect(navigation).toContain('__kiuNavExpose({');
+    expect(navigation).toContain('scheduleRouteContentRender,');
   });
 
   it('removes desktop page-local navigate ownership and uses the shared bootstrap', () => {
@@ -47,9 +50,9 @@ describe('standalone desktop route bootstrap', () => {
   });
 
   it('routes standalone desktop shell refreshes through the shared helper instead of syncAll by default', () => {
-    const luxury = readSource('assets/js/features/index-luxury.js');
+    const syncRuntime = readSource('assets/js/features/luxury-index-sync-runtime.js');
 
-    expect(luxury).toContain("window.refreshStandaloneDesktopRouteShellContext({ rerender: true, refreshActiveRoute: true });");
-    expect(luxury).toContain("window.refreshStandaloneDesktopShellChrome()");
+    expect(syncRuntime).toContain("window.refreshStandaloneDesktopRouteShellContext({ rerender: true, refreshActiveRoute: true });");
+    expect(syncRuntime).toContain("window.refreshStandaloneDesktopShellChrome()");
   });
 });

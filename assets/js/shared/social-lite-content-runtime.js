@@ -44,10 +44,6 @@
         function unique(...a) { return __lookup('unique')(...a); }
         function chatTitle(...a) { return __lookup('chatTitle')(...a); }
         function markChatMessagesRead(...a) { return __lookup('markChatMessagesRead')(...a); }
-        function refreshNotifications(...a) { return __lookup('refreshNotifications')(...a); }
-        function applyFollowMutationLocally(...a) { return __lookup('applyFollowMutationLocally')(...a); }
-        function persistSocialStatePatch(...a) { return __lookup('persistSocialStatePatch')(...a); }
-        function applyProjectGraphLocally(...a) { return __lookup('applyProjectGraphLocally')(...a); }
         const runtime = d.runtime || window.__kiuSocialLiteRuntime;
         void d;
 

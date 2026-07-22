@@ -596,20 +596,29 @@ body.lux-studio-open #lux-studio-backdrop { z-index: 2000 !important; }
   font-weight: 600;
 }
 :is(#lux-studio-backdrop) :is(.lux-bg-mode-btn.is-active) {
-  border-color: color-mix(in srgb, var(--lux-accent) 55%, transparent);
-  box-shadow: var(--lux-studio-btn-shadow);
+  border-color: color-mix(in srgb, var(--lux-accent) 72%, #fff 18%);
+  box-shadow:
+    var(--lux-studio-btn-shadow),
+    0 0 0 1px color-mix(in srgb, var(--lux-accent) 35%, transparent),
+    inset 0 0 0 1px color-mix(in srgb, #fff 18%, transparent);
   background: color-mix(in srgb, rgba(255, 255, 255, 0.10) 70%, var(--lux-accent) 30%);
 }
 #lux-studio-backdrop .lux-mode-btn.is-active,
 #lux-bg-mode-params-backdrop :is(.lux-mode-btn.is-active, .lux-fog-profile-bank-btn.is-active, [data-particle-quality].is-active) {
-  border-color: var(--lux-studio-chip-border-active);
+  border: 1.5px solid color-mix(in srgb, var(--lux-accent) 72%, #fff 18%);
   background: var(--lux-studio-chip-surface-active);
-  box-shadow: var(--lux-studio-chip-shadow-active);
+  box-shadow:
+    var(--lux-studio-chip-shadow-active),
+    0 0 0 1px color-mix(in srgb, var(--lux-accent) 35%, transparent),
+    inset 0 0 0 1px color-mix(in srgb, #fff 18%, transparent);
 }
 #lux-bg-mode-params-backdrop .lux-fog-profile-item.is-active {
-  border: none;
+  border: 1.5px solid color-mix(in srgb, var(--lux-accent) 72%, #fff 18%);
   background: var(--lux-studio-chip-surface-active);
-  box-shadow: var(--lux-studio-chip-shadow-active);
+  box-shadow:
+    var(--lux-studio-chip-shadow-active),
+    0 0 0 1px color-mix(in srgb, var(--lux-accent) 35%, transparent),
+    inset 0 0 0 1px color-mix(in srgb, #fff 18%, transparent);
 }
 #lux-studio-backdrop .lux-bg-mode-grid {
   display: grid;
@@ -636,9 +645,12 @@ body.lux-studio-open #lux-studio-backdrop { z-index: 2000 !important; }
   box-shadow: none;
 }
 #lux-studio-backdrop .lux-bg-mode-item:has(.lux-bg-mode-btn.is-active) {
-  border: none;
+  border: 1.5px solid color-mix(in srgb, var(--lux-accent) 72%, #fff 18%);
   background: var(--lux-studio-chip-surface-active);
-  box-shadow: var(--lux-studio-chip-shadow-active);
+  box-shadow:
+    var(--lux-studio-chip-shadow-active),
+    0 0 0 1px color-mix(in srgb, var(--lux-accent) 35%, transparent),
+    inset 0 0 0 1px color-mix(in srgb, #fff 18%, transparent);
 }
 #lux-studio-backdrop .lux-bg-mode-item .lux-bg-mode-btn.is-active {
   border: none;
@@ -1007,8 +1019,8 @@ body.lux-studio-open .lux-bg-mode-params-backdrop {
   --lux-studio-glass-bg: rgba(255, 255, 255, 0.28);
   --lux-studio-glass-border: rgba(77, 52, 31, 0.14);
   --lux-studio-glass-shadow: 0 4px 16px rgba(73, 48, 25, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.78);
-  --lux-studio-dialog-bg: rgba(250, 246, 240, 0.50);
-  --lux-studio-dialog-border: rgba(77, 52, 31, 0.14);
+  --lux-studio-dialog-bg: rgba(255, 255, 255, 0.88);
+  --lux-studio-dialog-border: rgba(77, 52, 31, 0.10);
   --lux-studio-dialog-shadow: 0 22px 50px rgba(73, 48, 25, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.55);
   --lux-studio-btn-shadow: 0 4px 12px rgba(73, 48, 25, 0.10), inset 0 1px 0 rgba(255, 255, 255, 0.78);
   --lux-studio-chip-surface:
@@ -1062,8 +1074,6 @@ body.lux-studio-open .lux-bg-mode-params-backdrop {
   --lux-studio-apply-shadow-press:
     inset 0 3px 10px rgba(73, 48, 25, 0.14),
     0 0 0 1px rgba(255, 255, 255, 0.55);
-  --lux-text-muted: rgba(32, 25, 18, 0.66);
-  --lux-text-soft: rgba(32, 25, 18, 0.36);
 }
 :is(html.lux-light-mode, body.lux-light-mode) #lux-studio-backdrop.lux-studio-backdrop,
 :is(html.lux-light-mode, body.lux-light-mode) .lux-bg-mode-params-backdrop {
@@ -1111,19 +1121,29 @@ body.lux-studio-open .lux-bg-mode-params-backdrop {
   background: rgba(255, 255, 255, 0.45);
 }
 :is(html.lux-light-mode, body.lux-light-mode) #lux-studio-backdrop :is(.lux-bg-mode-btn.is-active) {
+  border-color: color-mix(in srgb, var(--lux-accent) 72%, #fff 18%);
   background: color-mix(in srgb, rgba(255, 255, 255, 0.55) 65%, var(--lux-accent) 35%);
-  box-shadow: var(--lux-studio-btn-shadow);
+  box-shadow:
+    var(--lux-studio-btn-shadow),
+    0 0 0 1px color-mix(in srgb, var(--lux-accent) 35%, transparent),
+    inset 0 0 0 1px color-mix(in srgb, #fff 28%, transparent);
 }
 :is(html.lux-light-mode, body.lux-light-mode) #lux-studio-backdrop .lux-mode-btn.is-active,
 :is(html.lux-light-mode, body.lux-light-mode) #lux-bg-mode-params-backdrop :is(.lux-mode-btn.is-active, .lux-fog-profile-bank-btn.is-active, [data-particle-quality].is-active) {
-  border-color: var(--lux-studio-chip-border-active);
+  border: 1.5px solid color-mix(in srgb, var(--lux-accent) 72%, #fff 18%);
   background: var(--lux-studio-chip-surface-active);
-  box-shadow: var(--lux-studio-chip-shadow-active);
+  box-shadow:
+    var(--lux-studio-chip-shadow-active),
+    0 0 0 1px color-mix(in srgb, var(--lux-accent) 35%, transparent),
+    inset 0 0 0 1px color-mix(in srgb, #fff 28%, transparent);
 }
 :is(html.lux-light-mode, body.lux-light-mode) #lux-bg-mode-params-backdrop .lux-fog-profile-item.is-active {
-  border: none;
+  border: 1.5px solid color-mix(in srgb, var(--lux-accent) 72%, #fff 18%);
   background: var(--lux-studio-chip-surface-active);
-  box-shadow: var(--lux-studio-chip-shadow-active);
+  box-shadow:
+    var(--lux-studio-chip-shadow-active),
+    0 0 0 1px color-mix(in srgb, var(--lux-accent) 35%, transparent),
+    inset 0 0 0 1px color-mix(in srgb, #fff 28%, transparent);
 }
 :is(html.lux-light-mode, body.lux-light-mode) #lux-studio-backdrop .lux-bg-mode-item :is(.lux-bg-mode-btn, .lux-bg-mode-settings-btn) {
   border: none;
@@ -1131,9 +1151,12 @@ body.lux-studio-open .lux-bg-mode-params-backdrop {
   box-shadow: none;
 }
 :is(html.lux-light-mode, body.lux-light-mode) #lux-studio-backdrop .lux-bg-mode-item:has(.lux-bg-mode-btn.is-active) {
-  border: none;
+  border: 1.5px solid color-mix(in srgb, var(--lux-accent) 72%, #fff 18%);
   background: var(--lux-studio-chip-surface-active);
-  box-shadow: var(--lux-studio-chip-shadow-active);
+  box-shadow:
+    var(--lux-studio-chip-shadow-active),
+    0 0 0 1px color-mix(in srgb, var(--lux-accent) 35%, transparent),
+    inset 0 0 0 1px color-mix(in srgb, #fff 28%, transparent);
 }
 :is(html.lux-light-mode, body.lux-light-mode) #lux-studio-backdrop .lux-bg-mode-item .lux-bg-mode-btn.is-active {
   border: none;
@@ -1171,7 +1194,7 @@ body.lux-studio-open .lux-bg-mode-params-backdrop {
   z-index: 2100;
   opacity: 0;
   transform: translate(-50%, -50%);
-  animation: lux-chip-particle-out 0.62s var(--lux-studio-chip-ease-out) var(--burst-delay, 0ms) forwards;
+  animation: lux-chip-particle-out 0.72s var(--lux-studio-chip-ease-out) var(--burst-delay, 0ms) forwards;
 }
 :is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) > .lux-chip-burst-particle--sm {
   --burst-size: 3px;
@@ -1182,12 +1205,26 @@ body.lux-studio-open .lux-bg-mode-params-backdrop {
 :is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) > .lux-chip-burst-particle--lg {
   --burst-size: 7px;
 }
+:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) > .lux-chip-burst-particle--spark {
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--lux-accent) 70%, #fff 30%);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--lux-accent) 55%, transparent);
+  animation-name: lux-chip-particle-spark;
+}
+:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) > .lux-chip-burst-particle--streak {
+  width: 2px;
+  height: 10px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--lux-accent) 75%, #fff 25%);
+  box-shadow: 0 0 5px color-mix(in srgb, var(--lux-accent) 45%, transparent);
+  animation-name: lux-chip-particle-streak;
+}
 @keyframes lux-chip-particle-out {
   0% {
     opacity: 0;
     transform: translate(-50%, -50%) scale(0.45);
   }
-  18% {
+  16% {
     opacity: 0.95;
     transform: translate(
         calc(-50% + var(--burst-tx, 0px) * 0.18),
@@ -1198,6 +1235,44 @@ body.lux-studio-open .lux-bg-mode-params-backdrop {
   100% {
     opacity: 0;
     transform: translate(calc(-50% + var(--burst-tx, 0px)), calc(-50% + var(--burst-ty, 0px))) scale(0.4);
+  }
+}
+@keyframes lux-chip-particle-spark {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(45deg) scale(0.35);
+  }
+  16% {
+    opacity: 1;
+    transform: translate(
+        calc(-50% + var(--burst-tx, 0px) * 0.2),
+        calc(-50% + var(--burst-ty, 0px) * 0.2)
+      )
+      rotate(45deg) scale(1.1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(calc(-50% + var(--burst-tx, 0px)), calc(-50% + var(--burst-ty, 0px)))
+      rotate(45deg) scale(0.35);
+  }
+}
+@keyframes lux-chip-particle-streak {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(var(--burst-rot, 0deg)) scaleY(0.4);
+  }
+  18% {
+    opacity: 0.95;
+    transform: translate(
+        calc(-50% + var(--burst-tx, 0px) * 0.2),
+        calc(-50% + var(--burst-ty, 0px) * 0.2)
+      )
+      rotate(var(--burst-rot, 0deg)) scaleY(1.15);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(calc(-50% + var(--burst-tx, 0px)), calc(-50% + var(--burst-ty, 0px)))
+      rotate(var(--burst-rot, 0deg)) scaleY(0.5);
   }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -1634,7 +1709,6 @@ body.lux-studio-open .lux-bg-mode-params-backdrop {
   text-transform: uppercase;
   color: var(--lux-text-muted);
   text-align: right;
-  opacity: 0.7;
 }
 #lux-bg-gallery-backdrop .lux-bg-gallery-foot {
   display: flex;

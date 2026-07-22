@@ -1414,8 +1414,7 @@
             applyOptimisticCommentReaction, applyOptimisticPostReaction,
             ensureDirectChat, ensureCallRuntime, readFileAsDataUrl, fileUrl, isImageFile, nowLabel,
             makeId: typeof makeId === 'function' ? makeId : (typeof window.makeId === 'function' ? window.makeId : undefined),
-            unique, chatTitle, markChatMessagesRead, refreshNotifications,
-            applyFollowMutationLocally, persistSocialStatePatch, applyProjectGraphLocally,
+            unique, chatTitle, markChatMessagesRead,
             runtime
         })
         : {};

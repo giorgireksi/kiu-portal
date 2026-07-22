@@ -28,31 +28,33 @@
             if (!__luxHomeRuntime) return;
             return __luxHomeRuntime.renderHomeShell();
         }
+        function scheduleRenderHomeShell() {
+            return __luxHomeRuntime?.scheduleRenderHomeShell?.()
+                || renderHomeShell();
+        }
         function isLuxuryHomeRoute() {
             return getActivePageId() === 'home';
         }
         function scheduleLuxuryHomeDashboardPreload() {
-            if (typeof isIndexPortalShell === 'function' && isIndexPortalShell()) {
-                return ensureLuxuryHomeDashboardBundle({ preload: true });
-            }
-            return Promise.resolve(false);
+            return __luxHomeRuntime?.scheduleLuxuryHomeDashboardPreload?.()
+                || (typeof isIndexPortalShell === 'function' && isIndexPortalShell()
+                    ? ensureLuxuryHomeDashboardBundle({ preload: true })
+                    : Promise.resolve(false));
         }
         window.__kiuRegisterLuxuryHomeChunk = function registerLuxuryHomeChunk(base64Source) {
-            const result = __luxHomeRuntime?.registerLuxuryHomeChunk?.(base64Source);
-            if (isLuxuryHomeRoute()) renderHomeShell();
-            return result;
+            // Runtime register already schedules a post-load render — do not double-call here.
+            return __luxHomeRuntime?.registerLuxuryHomeChunk?.(base64Source);
         };
         window.__kiuRegisterLuxuryHomeChunkUrl = function registerLuxuryHomeChunkUrl(url) {
             window.__kiuLuxuryHomeChunkUrl = String(url || '');
             window.__kiuLuxuryHomeChunkBase64 = '';
             if (__luxHomeRuntime && typeof __luxHomeRuntime.registerLuxuryHomeChunkUrl === 'function') {
-                __luxHomeRuntime.registerLuxuryHomeChunkUrl(url);
-            } else {
-                ensureLuxuryHomeDashboardBundle({ preload: true }).then((loaded) => {
-                    if (loaded && isLuxuryHomeRoute()) renderHomeShell();
-                });
+                // Runtime register already schedules a post-load render.
+                return __luxHomeRuntime.registerLuxuryHomeChunkUrl(url);
             }
-            if (isLuxuryHomeRoute()) renderHomeShell();
+            return ensureLuxuryHomeDashboardBundle({ preload: true }).then((loaded) => {
+                if (loaded && isLuxuryHomeRoute()) renderHomeShell();
+            });
         };
         function decodeLuxuryHomeChunkSource(base64Source) {
             return window.__kiuDecodeLuxuryRouteChunkSource?.(base64Source) || '';
@@ -72,6 +74,7 @@
             renderHomeShellRecoveryPanel,
             __luxHomeRecoveryPanelContract,
             renderHomeShell,
+            scheduleRenderHomeShell,
             isLuxuryHomeRoute,
             scheduleLuxuryHomeDashboardPreload,
             decodeLuxuryHomeChunkSource,

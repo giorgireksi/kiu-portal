@@ -979,6 +979,21 @@ body.lux-light-mode.kiu-shell-loading::before { background: var(--lux-shell-back
   border-color: rgba(11,132,255,0.2);
 }
 .portal-msg-group-check { color: #0a5fc4; font-size: 18px; }
+body.lux-light-mode :is(.portal-msg-modal-window, .portal-msg-group-modal, .portal-notif-modal-body) :is(
+  .portal-msg-modal-copy,
+  .portal-msg-thread-copy,
+  .portal-msg-card-sub,
+  .portal-msg-panel-meta,
+  .portal-msg-bubble-meta,
+  .portal-msg-composer-note,
+  .portal-msg-time,
+  .portal-msg-thread-badge,
+  .portal-msg-group-copy,
+  .portal-msg-empty,
+  .portal-msg-thread-empty-copy
+) {
+  color: #000;
+}
 @media (max-width: 1180px) {
   .portal-msg-shell { grid-template-columns: 1fr; }
   .portal-msg-panel, .portal-msg-thread-panel { min-height: 380px; }

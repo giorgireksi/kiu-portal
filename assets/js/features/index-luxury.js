@@ -40,8 +40,16 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
             lightParticleRgb: '76,56,30'
         },
         { key: 'ink-orchid', accent: '#7b4bab', accent2: '#a66bc4' },
-        { key: 'ocean-teal', accent: '#008080', accent2: '#26a69a' }
+        { key: 'ocean-teal', accent: '#008080', accent2: '#26a69a' },
+        {
+            key: 'platinum-silver',
+            accent: '#7b8a9a',
+            accent2: '#a8b4c0',
+            lightAccent: '#4a5563',
+            lightAccent2: '#718096'
+        }
     ];
+    const LUXURY_PALETTE_KEYS = LUXURY_PALETTES.map((palette) => palette.key);
     const FACULTY_PALETTE_MAP = {
         ECON: 'obsidian-amber',
         CS: 'slate-sapphire',
@@ -56,7 +64,8 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
         { key: 'burgundy-rose', name: 'Burgundy & Rose', hA: 350, sA: 52, lA: 45, hB: 16, sB: 72, lB: 64, mode: 'dark' },
         { key: 'sand-pearl', name: 'Sand & Pearl', hA: 32, sA: 58, lA: 63, hB: 48, sB: 82, lB: 76, mode: 'light' },
         { key: 'ink-orchid', name: 'Ink & Orchid', hA: 279, sA: 54, lA: 54, hB: 313, sB: 68, lB: 66, mode: 'dark' },
-        { key: 'ocean-teal', name: 'Ocean & Teal', hA: 180, sA: 60, lA: 32, hB: 174, sB: 55, lB: 44, mode: 'dark' }
+        { key: 'ocean-teal', name: 'Ocean & Teal', hA: 180, sA: 60, lA: 32, hB: 174, sB: 55, lB: 44, mode: 'dark' },
+        { key: 'platinum-silver', name: 'Silver', hA: 215, sA: 12, lA: 38, hB: 210, sB: 14, lB: 52, mode: 'dark' }
     ];
     function isBuiltInLuxuryPaletteKey(key) {
         return LUXURY_PALETTES.some((palette) => palette.key === key);
@@ -129,6 +138,7 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
         particleSharpness: 50,
         particleQuality: 'high',
         glassBlurQuality: 'high',
+        glowStrength: 50,
         paletteKey: 'ocean-teal',
         paletteFaculty: GLOBAL_LUXURY_PALETTE_SCOPE,
         customPalette: null,
@@ -467,7 +477,7 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
         particleQuality: 'high',
         glassBlurQuality: 'high',
         backgroundIntensity: 'standard',
-        glowStrength: 'balanced',
+        glowStrength: 50,
         paletteKey: 'ocean-teal',
         paletteFaculty: GLOBAL_LUXURY_PALETTE_SCOPE,
         customPalette: null,
@@ -733,7 +743,7 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
             'kiuLuxuryBackgroundGallerySelection',
             'kiu-palette'
         ].forEach((key) => localStorage.removeItem(key));
-        const paletteClasses = ['obsidian-amber', 'slate-sapphire', 'pine-jade', 'burgundy-rose', 'sand-pearl', 'ink-orchid', 'ocean-teal'];
+        const paletteClasses = LUXURY_PALETTE_KEYS;
         paletteClasses.forEach((palette) => document.body.classList.remove(`palette-${palette}`));
         const scopeKey = getHomeScopeKey();
         updateDashboardPreferenceEntry((entry) => {
@@ -867,6 +877,8 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
         getParticleAmount, setParticleAmount, getParticleSharpness, setParticleSharpness,
         getParticleQuality, setParticleQuality,
         getGlassBlurQuality, setGlassBlurQuality,
+        getGlowStrength, setGlowStrength,
+        normalizeGlowStrengthPercent, resolveGlowTokenConfig, applyGlowStrengthCssVars,
         DEFAULT_STUDIO_MIXER, clampNumber,
         sanitizeFogHexColor, readStoredFogSettings, sanitizeFogSettings, getFogSettings,
         refreshActiveFogBackground, setFogSettings, applyFogPreset, normalizeFogProfileBank,
@@ -1272,9 +1284,6 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
     function getBackgroundIntensity() {
         try { return getDashboardVisuals().backgroundIntensity || 'standard'; } catch(e) { return 'standard'; }
     }
-    function getGlowStrength() {
-        try { return getDashboardVisuals().glowStrength || 'balanced'; } catch(e) { return 'balanced'; }
-    }
     Object.assign(window, {
         ROLE_LABELS,
         PAGE_LABELS,
@@ -1332,6 +1341,11 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
         setParticleQuality,
         getGlassBlurQuality,
         setGlassBlurQuality,
+        getGlowStrength,
+        setGlowStrength,
+        normalizeGlowStrengthPercent,
+        resolveGlowTokenConfig,
+        applyGlowStrengthCssVars,
         getParticleAmount,
         setParticleAmount,
         getParticleSharpness,
@@ -1356,7 +1370,6 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
         readStudioMixerInputs,
         writeStudioMixerInputs,
         getBackgroundIntensity,
-        getGlowStrength,
         getShortcutDestinationOptions,
         sanitizeShortcutDefinition,
         getSavedCustomShortcuts,
@@ -1399,6 +1412,12 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
     }
     function observeLegacyVisualTree() {
         return __luxVisualRuntime?.observeLegacyVisualTree?.();
+    }
+    function pauseLuxuryVisualObservers() {
+        return __luxVisualRuntime?.pauseLuxuryVisualObservers?.();
+    }
+    function resumeLuxuryVisualObservers() {
+        return __luxVisualRuntime?.resumeLuxuryVisualObservers?.();
     }
     const observeUniversalPickers = (...args) => shellChrome().observeUniversalPickers?.(...args);
     function showToast(message) {
@@ -1540,6 +1559,10 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
             const activePage = document.querySelector('.page-section.active-page');
             window.applyAutocompleteOff(activePage || document);
         }
+        // Re-arm visual observers after SPA navigation (paused while document.hidden).
+        if (!document.hidden) {
+            resumeLuxuryVisualObservers();
+        }
     }
     function queueNavigateSync(args, result) {
         if (result?.navigationSkipped) return;
@@ -1609,6 +1632,7 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
         syncVisualStateOnly: (...a) => window.syncVisualStateOnly?.(...a),
         queueLuxuryTransparencyRefresh: (...a) => window.queueLuxuryTransparencyRefresh?.(...a),
         getGlowStrength: (...a) => typeof getGlowStrength === 'function' ? getGlowStrength(...a) : null,
+        setGlowStrength: (...a) => typeof setGlowStrength === 'function' ? setGlowStrength(...a) : null,
         getBackgroundIntensity: (...a) => typeof getBackgroundIntensity === 'function' ? getBackgroundIntensity(...a) : null,
         applyLuxuryTransparencyPreferenceState: (...a) => typeof applyLuxuryTransparencyPreferenceState === 'function' ? applyLuxuryTransparencyPreferenceState(...a) : window.applyLuxuryTransparencyPreferenceState?.(...a)
     };
@@ -1634,6 +1658,21 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
     window.applyAtmosphereSettings = typeof applyAtmosphereSettings === 'function'
         ? applyAtmosphereSettings
         : window.applyAtmosphereSettings;
+    window.getGlowStrength = typeof getGlowStrength === 'function'
+        ? getGlowStrength
+        : window.getGlowStrength;
+    window.setGlowStrength = typeof setGlowStrength === 'function'
+        ? setGlowStrength
+        : window.setGlowStrength;
+    window.normalizeGlowStrengthPercent = typeof normalizeGlowStrengthPercent === 'function'
+        ? normalizeGlowStrengthPercent
+        : window.normalizeGlowStrengthPercent;
+    window.resolveGlowTokenConfig = typeof resolveGlowTokenConfig === 'function'
+        ? resolveGlowTokenConfig
+        : window.resolveGlowTokenConfig;
+    window.applyGlowStrengthCssVars = typeof applyGlowStrengthCssVars === 'function'
+        ? applyGlowStrengthCssVars
+        : window.applyGlowStrengthCssVars;
     window.areBackgroundAnimationsEnabled = typeof areBackgroundAnimationsEnabled === 'function'
         ? areBackgroundAnimationsEnabled
         : window.areBackgroundAnimationsEnabled;
@@ -1696,14 +1735,33 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
         if (typeof isIndexPortalShell === 'function' && isIndexPortalShell()) {
             bootstrapIndexPortalChromeSync();
         }
-        applyThemeMode(getThemeMode(), false);
-        applyResolvedPalette();
-        applyAtmosphereSettings();
-        applyLuxuryPerformanceProfile();
+        // Skip duplicate visual apply when initPalette/syncAll already stamped the same signature.
+        if (typeof buildVisualStateSyncSignature === 'function') {
+            const visualSignature = buildVisualStateSyncSignature();
+            if (window.__luxLastVisualStateSyncSignature !== visualSignature) {
+                applyThemeMode(getThemeMode(), false);
+                applyResolvedPalette();
+                applyAtmosphereSettings();
+                applyLuxuryPerformanceProfile();
+                window.__luxLastVisualStateSyncSignature = visualSignature;
+            }
+        } else {
+            applyThemeMode(getThemeMode(), false);
+            applyResolvedPalette();
+            applyAtmosphereSettings();
+            applyLuxuryPerformanceProfile();
+        }
         wrapFunction('navigate', queueNavigateSync);
         wrapFunction('switchRole', queueShellSync);
         wrapFunction('switchFacultyTheme', queueShellSync);
         wrapFunction('refreshShellIdentity', queueShellSync);
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                pauseLuxuryVisualObservers();
+            } else {
+                resumeLuxuryVisualObservers();
+            }
+        });
         window.addEventListener('resize', () => {
             if (__luxHomeShellResizeTimer) window.clearTimeout(__luxHomeShellResizeTimer);
             __luxHomeShellResizeTimer = window.setTimeout(() => {
@@ -1773,6 +1831,7 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
             if (isLuxuryHomeRoute()) {
                 ensureLuxuryHomeDashboardBundle({ preload: false, allowWhileNotHome: true }).then((loaded) => {
                     if (loaded && isLuxuryHomeRoute()) {
+                        // Coalesced via scheduleRenderHomeShell inside renderHomeShell.
                         renderHomeShell();
                     }
                 });

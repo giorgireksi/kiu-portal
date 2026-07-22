@@ -2,16 +2,19 @@
  * §1 pending/HT · §2 light HT · §3 dashboard atmosphere */
 /* ── §1 pending/HT overrides ── */
 /* lux-fouc-ht.css — index FOUC/HT + dashboard atmosphere (performance glass knobs → lux-tokens.css (paint section)) */
-html.lux-transparency-pending :is( .lux-card, .lux-panel, .lux-subcard, .lux-page-shell, .lux-dashboard-section, .lux-stat, .lux-hero, .lux-grid-widget, .lux-builder-card, .page-hero ) {
-  background: transparent;
-}
-html.lux-high-transparency body:not(.lux-light-mode) :is( .lux-card, .lux-panel, .lux-subcard, .lux-hero, .lux-stat, .lux-grid-widget, .lux-builder-card, .lux-dashboard-section, .lux-page-shell, .page-hero, .lux-topbar-shell, .lux-quick-btn ), html.lux-high-transparency body:not(.lux-light-mode) :is( #lux-shell, .lux-sidebar ) {
+html.lux-transparency-pending body:not(.lux-light-mode) :is( .lux-card, .lux-panel, .lux-subcard, .lux-page-shell, .lux-dashboard-section, .lux-stat, .lux-hero, .lux-grid-widget, .lux-builder-card, .page-hero ) {
   background: var(--lux-panel-surface, linear-gradient(180deg, rgba(14, 20, 33, var(--lux-panel-alpha, 0.92)), rgba(8, 12, 21, var(--lux-panel-alpha, 0.92))));
   background-image: none;
 }
-html.lux-high-transparency body.lux-light-mode :is( .lux-card, .lux-panel, .lux-subcard, .lux-hero, .lux-stat, .lux-grid-widget, .lux-builder-card, .lux-dashboard-section, .lux-page-shell, .page-hero ) {
+html.lux-transparency-pending body.lux-light-mode :is( .lux-card, .lux-panel, .lux-subcard, .lux-page-shell, .lux-dashboard-section, .lux-stat, .lux-hero, .lux-grid-widget, .lux-builder-card, .page-hero ) {
   background: var(--lux-panel-surface, linear-gradient(180deg, rgba(252, 249, 244, var(--lux-panel-alpha, 0.92)), rgba(248, 244, 237, var(--lux-panel-alpha, 0.92))));
   background-image: none;
+}
+html.lux-high-transparency body:not(.lux-light-mode) :is( .lux-card, .lux-panel, .lux-subcard, .lux-hero, .lux-stat, .lux-grid-widget, .lux-builder-card, .lux-dashboard-section, .lux-page-shell, .page-hero, .lux-topbar-shell, .lux-quick-btn ), html.lux-high-transparency body:not(.lux-light-mode) :is( #lux-shell, .lux-sidebar ) {
+  background: var(--lux-panel-surface, linear-gradient(180deg, rgba(14, 20, 33, var(--lux-panel-alpha, 0.92)), rgba(8, 12, 21, var(--lux-panel-alpha, 0.92))));
+}
+html.lux-high-transparency body.lux-light-mode :is( .lux-card, .lux-panel, .lux-subcard, .lux-hero, .lux-stat, .lux-grid-widget, .lux-builder-card, .lux-dashboard-section, .lux-page-shell, .page-hero ) {
+  background: var(--lux-panel-surface, linear-gradient(180deg, rgba(252, 249, 244, var(--lux-panel-alpha, 0.92)), rgba(248, 244, 237, var(--lux-panel-alpha, 0.92))));
 }
 html.lux-high-transparency body:not(.lux-light-mode) { --lux-accent-surface-rgb: 14, 20, 33; }
 html.lux-high-transparency body.lux-light-mode { --lux-accent-surface-rgb: 252, 249, 244; }
@@ -80,11 +83,10 @@ body[data-lux-background-animation="off"][data-lux-static-background="white"]::b
   background: #ffffff;
 }
 body:not(.lux-light-mode)[data-lux-background-animation="off"][data-lux-static-background="colored"] {
-  --lux-glow-scale: 0;
-  background: var(--lux-static-colored-page-base) !important;
+  background: var(--lux-shell-background) !important;
 }
 body:not(.lux-light-mode)[data-lux-background-animation="off"][data-lux-static-background="colored"]::before {
-  background: var(--lux-static-colored-page-haze);
+  background: radial-gradient(circle at 16% 10%, rgba(var(--lux-bg-glow-rgb), calc(0.18 * var(--lux-glow-scale, 1))), transparent 24%), radial-gradient(circle at 84% 20%, rgba(var(--lux-bg-haze-rgb), calc(0.10 * var(--lux-glow-scale, 1))), transparent 22%), radial-gradient(circle at 62% 76%, rgba(var(--lux-bg-line-rgb), calc(0.06 * var(--lux-glow-scale, 1))), transparent 26%);
 }
 
 /* Animations off (non-gallery): drop WebGL mounts from compositor — CSS static fill remains. */
@@ -118,6 +120,7 @@ body[data-lux-background-animation="off"]:not([data-lux-static-background="galle
   display: block;
 }
 body[data-lux-static-background="gallery"] #lux-bg-canvas,
+body[data-lux-static-background="gallery"] #lux-bg-fog,
 body[data-lux-static-background="gallery"] #lux-bg-overlay {
   opacity: 0 !important;
 }
@@ -137,6 +140,21 @@ body[data-lux-static-background="gallery"]::before {
   -webkit-transform: translateZ(0);
   backface-visibility: hidden;
   contain: strict;
+}
+#lux-bg-fog {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  pointer-events: none;
+  display: none;
+}
+body[data-lux-background-mode="fog"][data-lux-background-animation="on"] #lux-bg-fog {
+  display: block;
+}
+body[data-lux-background-mode="fog"][data-lux-background-animation="on"] #lux-bg-canvas {
+  display: none !important;
 }
 #lux-bg-overlay {
   position: fixed;

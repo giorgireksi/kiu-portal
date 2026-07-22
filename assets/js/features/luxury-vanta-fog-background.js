@@ -76,7 +76,7 @@ export function initLuxuryVantaFogBackground() {
     applyLmsFogTheme();
     return true;
   }
-  if (window.__kiuWebGlUnavailable || window.__kiuLuxuryParticleBackgroundUnavailable) {
+  if (window.__kiuWebGlUnavailable) {
     return false;
   }
   if (!arePortalBackgroundAnimationsEnabled()) return false;
@@ -109,6 +109,8 @@ export function initLuxuryVantaFogBackground() {
 
     engineReady = true;
     window.__kiuLuxuryVantaFogBackgroundReady = true;
+    const particleCanvas = document.getElementById("lux-bg-canvas");
+    if (particleCanvas) particleCanvas.style.display = "none";
     return true;
   } catch (error) {
     try { vantaInstance?.destroy?.(); } catch (e) {}

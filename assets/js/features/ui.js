@@ -1,7 +1,7 @@
 
 function ensureLuxModalsCss() {
     if (typeof document === 'undefined') return;
-    const href = 'assets/css/lux-modals.css?v=20260721-studio50';
+    const href = 'assets/css/lux-modals.css?v=20260722-popupblack1';
     const existing = document.querySelector('link[data-kiu-lux-modals], link[href*="lux-modals.css"]');
     if (existing) {
         if (existing.getAttribute('href') !== href) existing.setAttribute('href', href);

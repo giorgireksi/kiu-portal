@@ -21,6 +21,8 @@
   --palette-ink-light: radial-gradient(ellipse at 24% 12%, rgba(140, 70, 190, 0.14), transparent 40%), radial-gradient(ellipse at 74% 84%, rgba(180, 110, 220, 0.10), transparent 34%), radial-gradient(circle at 46% 52%, rgba(210, 160, 240, 0.08), transparent 50%), linear-gradient(168deg, #f6f0fc 0%, #efe4f8 40%, #e6d8f2 100%);
   --palette-ocean-dark: radial-gradient(ellipse at 20% 15%, rgba(0, 140, 140, 0.24), transparent 40%), radial-gradient(ellipse at 80% 80%, rgba(40, 180, 170, 0.14), transparent 34%), radial-gradient(circle at 50% 50%, rgba(0, 90, 80, 0.10), transparent 50%), linear-gradient(168deg, #081214 0%, #0c1a1c 40%, #060e10 100%);
   --palette-ocean-light: radial-gradient(ellipse at 20% 15%, rgba(0, 160, 150, 0.14), transparent 40%), radial-gradient(ellipse at 80% 80%, rgba(60, 210, 220, 0.10), transparent 34%), radial-gradient(circle at 50% 50%, rgba(150, 235, 240, 0.08), transparent 50%), linear-gradient(168deg, #ecfafa 0%, #dff4f5 40%, #d2eef0 100%);
+  --palette-platinum-dark: radial-gradient(ellipse at 22% 10%, rgba(123, 138, 154, 0.18), transparent 40%), radial-gradient(ellipse at 76% 86%, rgba(168, 180, 192, 0.10), transparent 34%), radial-gradient(circle at 48% 50%, rgba(60, 68, 78, 0.12), transparent 52%), linear-gradient(168deg, #1a1e24 0%, #222830 40%, #2a3038 100%);
+  --palette-platinum-light: radial-gradient(ellipse at 22% 10%, rgba(90, 100, 112, 0.14), transparent 40%), radial-gradient(ellipse at 76% 86%, rgba(74, 85, 99, 0.10), transparent 34%), radial-gradient(circle at 48% 50%, rgba(113, 128, 150, 0.08), transparent 50%), linear-gradient(168deg, #7b8fa8 0%, #6b7f98 40%, #5b6f88 100%);
   --lux-border: rgba(255, 255, 255, 0.20);
   --lux-border-strong: rgba(255, 255, 255, 0.32);
   --lux-text: #fbfaf6;
@@ -101,6 +103,8 @@ body.palette-ink-orchid { background: var(--palette-ink-dark); }
 body.palette-ink-orchid.lux-light-mode { background: var(--palette-ink-light); }
 body.palette-ocean-teal { background: var(--palette-ocean-dark); }
 body.palette-ocean-teal.lux-light-mode { background: var(--palette-ocean-light); }
+body.palette-platinum-silver { background: var(--palette-platinum-dark); }
+body.palette-platinum-silver.lux-light-mode { background: var(--palette-platinum-light); }
 body.lux-light-mode:not([data-faculty]), body.lux-light-mode[data-faculty=""] {
   --lux-bg: #f4f0e8;
   --lux-shell-background: radial-gradient(ellipse at 20% 14%, rgba(200, 160, 80, 0.06), transparent 38%), radial-gradient(ellipse at 80% 80%, rgba(180, 140, 90, 0.04), transparent 30%), linear-gradient(168deg, #f8f4ec 0%, #f2ece0 40%, #eee6d6 100%);
@@ -146,16 +150,16 @@ body.palette-ink-orchid { --lux-shell-background: var(--palette-ink-dark); }
 body.palette-ink-orchid.lux-light-mode { --lux-shell-background: var(--palette-ink-light); }
 body.palette-ocean-teal { --lux-shell-background: var(--palette-ocean-dark); }
 body.palette-ocean-teal.lux-light-mode { --lux-shell-background: var(--palette-ocean-light); }
+body.palette-platinum-silver { --lux-shell-background: var(--palette-platinum-dark); }
+body.palette-platinum-silver.lux-light-mode { --lux-shell-background: var(--palette-platinum-light); }
+body.palette-platinum-silver:not(.lux-light-mode) { --lux-glass-tint-rgb: 38, 42, 48; --lux-topbar-tint-rgb: 10, 12, 14; }
+body.palette-platinum-silver.lux-light-mode { --lux-glass-tint-rgb: 130, 136, 142; --lux-topbar-tint-rgb: 120, 126, 132; }
 html.lux-high-transparency.lux-high-transparency.lux-high-transparency body:not(.lux-light-mode) {
   --lux-hero-glow: 0;
-  --lux-glow-scale: 0;
-  --lux-card-glow-alpha: 0;
   --lux-scrollbar-thumb: rgba(var(--lux-accent-rgb), calc(0.18 + var(--lux-transparency-alpha, 0.92) * 0.06));
 }
 html.lux-high-transparency.lux-high-transparency.lux-high-transparency body.lux-light-mode {
   --lux-hero-glow: 0;
-  --lux-glow-scale: 0;
-  --lux-card-glow-alpha: 0;
   --lux-scrollbar-thumb: rgba(48, 34, 22, 0.16);
 }
 :root { --lux-transparency-blur: 18px; --lux-transparency-saturate: 145%; }
@@ -181,8 +185,9 @@ html.lux-light-mode, body.lux-light-mode {
 }
 /* ── §3 shared panel / soft-chrome paint surfaces ── */
 :root {
-  --lux-panel-surface-soft: radial-gradient(circle at 12% 0%, rgba(255, 255, 255, calc(var(--lux-color-fade-alpha, .92) * 0.055)), transparent 30%), radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * 0.14)), transparent 34%), linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * 0.065)), rgba(10, 15, 24, calc(var(--lux-transparency-alpha, .92) * 0.88)) 46%, rgba(7, 10, 18, calc(var(--lux-transparency-alpha, .92) * 0.80)));
-  --lux-panel-surface: radial-gradient(circle at 6% 0%, rgba(255, 255, 255, calc(var(--lux-color-fade-alpha, .92) * 0.08)), transparent 32%), radial-gradient(circle at 74% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * 0.28)), transparent 42%), radial-gradient(circle at 100% 96%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .92) * 0.18)), transparent 40%), linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * 0.10)), rgba(10, 15, 24, calc(var(--lux-transparency-alpha, .92) * 0.89)) 44%, rgba(7, 10, 18, calc(var(--lux-transparency-alpha, .92) * 0.80)));
+  /* Accent stops use --lux-panel-glow (studio Glow Density) so they stay visible at low opacity. */
+  --lux-panel-surface-soft: radial-gradient(circle at 12% 0%, rgba(255, 255, 255, calc(var(--lux-color-fade-alpha, .92) * 0.055)), transparent 30%), radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.55)), transparent 34%), linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.28)), rgba(10, 15, 24, calc(var(--lux-transparency-alpha, .92) * 0.88)) 46%, rgba(7, 10, 18, calc(var(--lux-transparency-alpha, .92) * 0.80)));
+  --lux-panel-surface: radial-gradient(circle at 6% 0%, rgba(255, 255, 255, calc(var(--lux-color-fade-alpha, .92) * 0.08)), transparent 32%), radial-gradient(circle at 74% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 1)), transparent 42%), radial-gradient(circle at 100% 96%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-panel-glow, 0.22) * 0.65)), transparent 40%), linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.40)), rgba(10, 15, 24, calc(var(--lux-transparency-alpha, .92) * 0.89)) 44%, rgba(7, 10, 18, calc(var(--lux-transparency-alpha, .92) * 0.80)));
   --lux-panel-border-soft: rgba(var(--lux-accent-rgb), 0.12);
   --lux-panel-border: rgba(var(--lux-accent-rgb), 0.22);
   --lux-elev-2: 0 14px 32px rgba(0, 0, 0, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.06);
@@ -227,11 +232,8 @@ html.lux-light-mode, body.lux-light-mode {
   --lux-glass-alpha: 0.06;
   --lux-card-glow-alpha: 0.06;
   --lux-utility-alpha: 0.82;
-  --lux-static-colored-page-base: linear-gradient(168deg, #060910 0%, #080c12 40%, #05080e 100%);
-  --lux-static-colored-page-haze:
-    radial-gradient(circle at 16% 0%, rgba(255, 255, 255, 0.05), transparent 34%),
-    radial-gradient(circle at 80% 18%, rgba(var(--lux-accent-rgb), 0.10), transparent 38%),
-    linear-gradient(145deg, rgba(var(--lux-accent-rgb), 0.06), rgba(8, 12, 21, 0.98) 44%, rgba(6, 9, 16, 1) 100%);
+  --lux-static-colored-page-base: var(--lux-shell-background);
+  --lux-static-colored-page-haze: var(--lux-shell-background);
 }
 :root {
   --lux-home-scroll-size: 14px;
@@ -252,8 +254,8 @@ html.lux-light-mode, body.lux-light-mode {
   --lux-home-scroll-thumb-hover-solid: color-mix(in srgb, var(--lux-accent) 75%, #fff 15%);
   --lux-home-scroll-glow: 0 0 12px rgba(var(--lux-accent-rgb), 0.4), 0 2px 6px rgba(48, 34, 22, 0.2);
   --lux-home-scroll-glow-hover: 0 0 18px rgba(var(--lux-accent-rgb), 0.55), 0 3px 8px rgba(48, 34, 22, 0.22);
-  --lux-panel-surface-soft: radial-gradient(circle at 12% 0%, rgba(255, 255, 255, calc(var(--lux-color-fade-alpha, .86) * 0.62)), transparent 30%), radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * 0.14)), transparent 34%), linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * 0.045)), rgba(255, 255, 255, calc(var(--lux-transparency-alpha, .86) * 0.84)) 46%, rgba(247, 241, 232, calc(var(--lux-transparency-alpha, .86) * 0.72)));
-  --lux-panel-surface: radial-gradient(circle at 6% 0%, rgba(255, 255, 255, calc(var(--lux-color-fade-alpha, .86) * 0.88)), transparent 34%), radial-gradient(circle at 74% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * 0.24)), transparent 42%), radial-gradient(circle at 100% 96%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .86) * 0.14)), transparent 40%), linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .86) * 0.065)), rgba(255, 255, 255, calc(var(--lux-transparency-alpha, .86) * 0.84)) 44%, rgba(247, 241, 232, calc(var(--lux-transparency-alpha, .86) * 0.70)));
+  --lux-panel-surface-soft: radial-gradient(circle at 12% 0%, rgba(255, 255, 255, calc(var(--lux-color-fade-alpha, .86) * 0.62)), transparent 30%), radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.55)), transparent 34%), linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.22)), rgba(255, 255, 255, calc(var(--lux-transparency-alpha, .86) * 0.84)) 46%, rgba(247, 241, 232, calc(var(--lux-transparency-alpha, .86) * 0.72)));
+  --lux-panel-surface: radial-gradient(circle at 6% 0%, rgba(255, 255, 255, calc(var(--lux-color-fade-alpha, .86) * 0.88)), transparent 34%), radial-gradient(circle at 74% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.90)), transparent 42%), radial-gradient(circle at 100% 96%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-panel-glow, 0.22) * 0.55)), transparent 40%), linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.30)), rgba(255, 255, 255, calc(var(--lux-transparency-alpha, .86) * 0.84)) 44%, rgba(247, 241, 232, calc(var(--lux-transparency-alpha, .86) * 0.70)));
   --lux-panel-border-soft: rgba(var(--lux-accent-rgb), 0.11);
   --lux-panel-border: rgba(var(--lux-accent-rgb), 0.16);
   --lux-elev-2: 0 14px 30px rgba(107, 91, 62, 0.10), inset 0 1px 0 rgba(255, 255, 255, 0.62);
@@ -270,9 +272,9 @@ body.lux-route-home {
   --home-chip-fill: rgba(12, 18, 28, calc(0.22 + var(--lux-transparency-alpha, 0.70) * 0.35));
   --home-fade-soft:
     radial-gradient(circle at 16% 0%, rgba(255, 255, 255, calc(var(--lux-transparency-alpha, 0.70) * 0.10)), transparent 34%),
-    radial-gradient(circle at 80% 18%, rgba(var(--lux-accent-rgb), calc(0.14 + var(--lux-transparency-alpha, 0.70) * 0.04)), transparent 38%),
+    radial-gradient(circle at 80% 18%, rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.90)), transparent 38%),
     linear-gradient(145deg,
-      rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, 0.70) * 0.09)),
+      rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.45)),
       rgba(8, 12, 21, var(--lux-transparency-alpha, 0.70)) 44%,
       rgba(6, 9, 16, var(--lux-transparency-alpha, 0.70)) 100%
     );
@@ -282,6 +284,11 @@ body.lux-route-home {
     0 0 12px rgba(var(--lux-accent-rgb), 0.04),
     0 14px 32px rgba(0, 0, 0, 0.18),
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  --home-fade-shadow-hover:
+    0 8px 20px rgba(0, 0, 0, 0.14),
+    0 0 0 1px rgba(var(--lux-accent-rgb), 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  --home-chip-hover-lift: -3px;
   /* Frost follows Glass Blur quality via --lux-transparency-blur (engine SSOT). */
   --home-fade-blur: blur(var(--lux-transparency-blur, calc(var(--lux-transparency-alpha, 0.70) * 24px)))
     saturate(calc(100% + var(--lux-transparency-alpha, 0.70) * 25%));
@@ -299,10 +306,10 @@ html.lux-light-mode body.lux-route-home, body.lux-light-mode.lux-route-home {
   /* Light frost material: tinted translucent face + fill wash + soft elev (blur via --home-fade-blur). */
   --home-fade-soft:
     radial-gradient(circle at 16% 0%, rgba(255, 255, 255, calc(var(--lux-transparency-alpha, 0.70) * 0.35)), transparent 34%),
-    radial-gradient(circle at 80% 18%, rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, 0.70) * 0.26)), transparent 38%),
-    radial-gradient(circle at 100% 50%, rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, 0.70) * 0.20)), transparent 44%),
+    radial-gradient(circle at 80% 18%, rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.90)), transparent 38%),
+    radial-gradient(circle at 100% 50%, rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.70)), transparent 44%),
     linear-gradient(145deg,
-      rgba(var(--lux-accent-rgb), calc(var(--lux-transparency-alpha, 0.70) * 0.12)),
+      rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.40)),
       rgba(250, 246, 240, var(--lux-transparency-alpha, 0.70)) 48%,
       rgba(244, 238, 228, var(--lux-transparency-alpha, 0.70)) 100%
     );
@@ -312,6 +319,10 @@ html.lux-light-mode body.lux-route-home, body.lux-light-mode.lux-route-home {
     0 0 18px rgba(var(--lux-accent-rgb), 0.08),
     0 12px 28px rgba(var(--lux-shadow-ink-rgb), 0.10),
     inset 0 1px 0 rgba(255, 255, 255, 0.65);
+  --home-fade-shadow-hover:
+    0 8px 20px rgba(73, 48, 25, 0.12),
+    0 0 0 1px rgba(var(--lux-accent-rgb), 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.72);
   --home-fade-blur: blur(var(--lux-transparency-blur, calc(var(--lux-transparency-alpha, 0.70) * 24px)))
     saturate(calc(100% + var(--lux-transparency-alpha, 0.70) * 25%));
   --lux-soft-chrome-surface: var(--home-fade-soft);
@@ -327,9 +338,9 @@ html.lux-fully-opaque body.lux-route-home {
   --home-chip-fill: rgba(12, 18, 28, 0.55);
   --home-fade-soft:
     radial-gradient(circle at 16% 0%, rgba(255, 255, 255, 0.08), transparent 34%),
-    radial-gradient(circle at 80% 18%, rgba(var(--lux-accent-rgb), 0.18), transparent 38%),
+    radial-gradient(circle at 80% 18%, rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.90)), transparent 38%),
     linear-gradient(145deg,
-      rgba(var(--lux-accent-rgb), 0.10),
+      rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.45)),
       rgba(8, 12, 21, 0.96) 44%,
       rgba(6, 9, 16, 0.98) 100%
     );
@@ -344,10 +355,10 @@ html.lux-light-mode.lux-fully-opaque body.lux-route-home {
   --home-chip-fill: rgba(255, 255, 255, 0.62);
   --home-fade-soft:
     radial-gradient(circle at 16% 0%, rgba(255, 255, 255, 0.40), transparent 34%),
-    radial-gradient(circle at 80% 18%, rgba(var(--lux-accent-rgb), 0.16), transparent 38%),
-    radial-gradient(circle at 100% 50%, rgba(var(--lux-accent-rgb), 0.12), transparent 44%),
+    radial-gradient(circle at 80% 18%, rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.80)), transparent 38%),
+    radial-gradient(circle at 100% 50%, rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.60)), transparent 44%),
     linear-gradient(145deg,
-      rgba(var(--lux-accent-rgb), 0.08),
+      rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.35)),
       rgba(250, 246, 240, 0.96) 48%,
       rgba(244, 238, 228, 0.98) 100%
     );

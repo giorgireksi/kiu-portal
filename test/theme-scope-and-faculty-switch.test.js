@@ -59,6 +59,26 @@ describe('faculty switch and scoped visual settings', () => {
     expect(atmosphere).toContain('setDashboardVisuals({ glassBlurQuality: nextLevel })');
   });
 
+  it('persists panel color glow strength through atmosphere and studio chrome', () => {
+    const luxury = readSource('assets/js/features/index-luxury.js');
+    const atmosphere = readSource('assets/js/features/luxury-atmosphere-runtime.js');
+    const shellChrome = readSource('assets/js/features/luxury-shell-chrome.js');
+    const tokens = readSource('assets/css/lux-tokens.css');
+    const transparencyModel = readSource('assets/js/features/luxury-transparency-model-runtime.js');
+    expect(luxury).toContain('glowStrength: 50');
+    expect(shellChrome).toContain('Panel Color Glow');
+    expect(shellChrome).toContain('id="lux-glow-strength-slider"');
+    expect(shellChrome).toContain('window.setGlowStrength(parseInt(value, 10), true)');
+    expect(atmosphere).toContain('function getGlowStrength');
+    expect(atmosphere).toContain('function setGlowStrength');
+    expect(atmosphere).toContain('kiuLuxuryGlowStrength');
+    expect(atmosphere).toContain('setDashboardVisuals({ glowStrength: nextPercent })');
+    expect(atmosphere).toContain('glowScale = pct / 50');
+    expect(transparencyModel).toContain('resolveGlowTokenConfig');
+    expect(tokens).toContain('var(--lux-panel-glow, 0.22)');
+    expect(tokens).toContain('calc(var(--lux-panel-glow, 0.22) * 0.90)');
+  });
+
   it('lets the resolved visual palette own the shell background colors', () => {
     const utilities = readSource('assets/js/shared/utilities.js');
     const luxury = readSource('assets/js/features/index-luxury.js');

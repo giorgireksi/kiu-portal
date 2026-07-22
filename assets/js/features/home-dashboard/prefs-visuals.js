@@ -11,7 +11,7 @@
         themeMode: 'dark',
         backgroundMode: 'orbit',
         backgroundIntensity: 'standard',
-        glowStrength: 'balanced',
+        glowStrength: 50,
         paletteKey: 'ocean-teal',
         paletteFaculty: '*',
         customPalette: null,
@@ -341,6 +341,7 @@
     function resolvePaletteKey() {
         const visuals = getDashboardVisuals();
         const stored = visuals?.paletteKey || localStorage.getItem('kiuLuxuryPalette') || localStorage.getItem('kiu-palette');
+        if (stored === 'carbon-black' || stored === 'arctic-white') return 'platinum-silver';
         if (stored === 'custom' || isBuiltInLuxuryPaletteKey(stored)) return stored;
         return visuals?.paletteKey || 'ocean-teal'; // Default matches ADVANCED_DEFAULT_VISUALS
     }
@@ -367,7 +368,7 @@
         root.style.setProperty('--lux-accent-rgb', colorToRgbTriplet(accent));
 
         // === Handle background palette classes ===
-        const paletteClasses = ['obsidian-amber', 'slate-sapphire', 'pine-jade', 'burgundy-rose', 'sand-pearl', 'ink-orchid', 'ocean-teal'];
+        const paletteClasses = ['obsidian-amber', 'slate-sapphire', 'pine-jade', 'burgundy-rose', 'sand-pearl', 'ink-orchid', 'ocean-teal', 'platinum-silver'];
 
         // Remove all palette classes first
         paletteClasses.forEach(p => document.body.classList.remove(`palette-${p}`));
@@ -399,7 +400,12 @@
 
     function applyPaletteKey(key, persist) {
         const palette = getPaletteByKey(key);
-        applyPaletteValues(palette.accent, palette.accent2, persist, palette.key);
+        const lightMode = getThemeMode() === 'light';
+        const liveAccent = lightMode && palette.lightAccent ? palette.lightAccent : palette.accent;
+        const liveAccent2 = lightMode && (palette.lightAccent2 || palette.lightAccent)
+            ? (palette.lightAccent2 || palette.lightAccent)
+            : palette.accent2;
+        applyPaletteValues(liveAccent, liveAccent2, persist, palette.key);
         if (persist) {
             localStorage.removeItem('kiuLuxuryCustomPalette');
             localStorage.removeItem('kiuLuxuryCustomPaletteFaculty');
@@ -422,7 +428,7 @@
         applyPaletteValues(accent, accent2, persist, 'custom');
 
         // Remove all palette classes so background reverts to default dark
-        const paletteClasses = ['obsidian-amber', 'slate-sapphire', 'pine-jade', 'burgundy-rose', 'sand-pearl', 'ink-orchid', 'ocean-teal'];
+        const paletteClasses = ['obsidian-amber', 'slate-sapphire', 'pine-jade', 'burgundy-rose', 'sand-pearl', 'ink-orchid', 'ocean-teal', 'platinum-silver'];
         paletteClasses.forEach(p => document.body.classList.remove(`palette-${p}`));
 
         // Clear inline background style
@@ -455,12 +461,18 @@
         const palette = getPaletteByKey(visualsAreScoped ? (visuals.paletteKey || facultyPalette.paletteKey) : facultyPalette.paletteKey);
         const custom = visualsAreScoped && visuals.customPalette?.accent ? visuals.customPalette : resolveCustomPalette();
         const lightMode = getThemeMode() === 'light';
-        const accent = visualsAreScoped
-            ? (visuals.accentColor || custom?.accent || palette.accent || facultyPalette.accent)
-            : facultyPalette.accent;
-        const accent2 = visualsAreScoped
-            ? (visuals.accentColor2 || custom?.accent2 || palette.accent2 || facultyPalette.accent2)
-            : facultyPalette.accent2;
+        const hasCustomColors = Boolean(custom?.accent) || visuals.paletteKey === 'custom';
+        const useLightAccent = lightMode && Boolean(palette.lightAccent) && !hasCustomColors;
+        const accent = useLightAccent
+            ? palette.lightAccent
+            : (visualsAreScoped
+                ? (visuals.accentColor || custom?.accent || palette.accent || facultyPalette.accent)
+                : facultyPalette.accent);
+        const accent2 = useLightAccent
+            ? (palette.lightAccent2 || palette.lightAccent)
+            : (visualsAreScoped
+                ? (visuals.accentColor2 || custom?.accent2 || palette.accent2 || facultyPalette.accent2)
+                : facultyPalette.accent2);
         const accentRgb = colorToRgbTriplet(accent, facultyPalette.accentRgb);
         const accent2Rgb = colorToRgbTriplet(accent2, facultyPalette.accent2Rgb || accentRgb);
         const shellStartRgb = visualsAreScoped
@@ -499,6 +511,16 @@
         root.style.setProperty('--lux-accent-rgb', accentRgb);
         root.style.setProperty('--lux-glass-tint-rgb', colorToRgbTriplet(glassTint, lightMode ? '246,239,229' : '16,23,38'));
         root.style.setProperty('--lux-topbar-tint-rgb', colorToRgbTriplet(topbarTint, lightMode ? '239,228,213' : '11,18,32'));
+        const neutralGlassTintByKey = {
+            'platinum-silver': lightMode
+                ? { glass: '130, 136, 142', topbar: '120, 126, 132' }
+                : { glass: '38, 42, 48', topbar: '10, 12, 14' }
+        };
+        const neutralTint = neutralGlassTintByKey[palette.key];
+        if (neutralTint && !hasCustomColors) {
+            root.style.setProperty('--lux-glass-tint-rgb', neutralTint.glass);
+            root.style.setProperty('--lux-topbar-tint-rgb', neutralTint.topbar);
+        }
         root.style.setProperty('--lux-shell-start-rgb', shellStartRgb);
         root.style.setProperty('--lux-shell-end-rgb', shellEndRgb);
         root.style.setProperty('--lux-shell-glow-rgb', shellGlowRgb);
@@ -534,14 +556,21 @@
     function applyAtmosphereSettings() {
         const root = document.documentElement;
         const intensity = getBackgroundIntensity();
-        const glow = getGlowStrength();
+        const glowPercent = typeof getGlowStrength === 'function' ? getGlowStrength() : 50;
         const lightMode = getThemeMode() === 'light';
-        const glowMap = {
-            soft: { glowScale: '0.88', buttonGlow: '0.28', panelGlow: '0.14' },
-            balanced: { glowScale: '1', buttonGlow: '0.44', panelGlow: '0.2' },
-            rich: { glowScale: '1.18', buttonGlow: '0.64', panelGlow: '0.28' }
-        };
-        const glowConfig = glowMap[glow] || glowMap.balanced;
+        const glowConfig = typeof resolveGlowTokenConfig === 'function'
+            ? resolveGlowTokenConfig(glowPercent)
+            : (() => {
+                const pct = Math.min(100, Math.max(0, Math.round(Number(glowPercent) || 50)));
+                const glowScale = pct / 50;
+                return {
+                    percent: pct,
+                    glowScale: String(glowScale),
+                    buttonGlow: String(0.12 + (pct / 100) * 0.68),
+                    panelGlow: String((pct / 100) * 0.40),
+                    cardGlowAlpha: String((0.016 * glowScale).toFixed(4))
+                };
+            })();
         const panelFillMin = lightMode ? 0.016 : 0.012;
         const raisedFillMin = lightMode ? 0.008 : 0.006;
         const utilityFillMin = lightMode ? 0.024 : 0.022;
@@ -574,16 +603,14 @@
         /* PERF/FIX: Respect saved transparency instead of hardcoding 0.03 */
         var _savedTransVal = parseInt(getDashboardVisuals().surfaceTransparency || localStorage.getItem('kiuLuxurySurfaceTransparency') || '13', 10);
         var _panelA = _savedTransVal >= 95 ? (lightMode ? 0.95 : 0.92) : Math.max(0.03, _savedTransVal / 100 * 0.92);
-        // FIX: At high transparency (>=80%), suppress accent glow variables
-        var _isHighTrans2 = _savedTransVal >= 80;
-        root.style.setProperty('--lux-panel-glow', _isHighTrans2 ? '0' : glowConfig.panelGlow);
-        root.style.setProperty('--lux-glow-scale', _isHighTrans2 ? '0' : glowConfig.glowScale);
+        root.style.setProperty('--lux-panel-glow', glowConfig.panelGlow);
+        root.style.setProperty('--lux-glow-scale', glowConfig.glowScale);
         root.style.setProperty('--lux-panel-alpha', String(_panelA));
         root.style.setProperty('--lux-raised-alpha', String(0.012));
         root.style.setProperty('--lux-glass-alpha', String(0.006));
-        root.style.setProperty('--lux-card-glow-alpha', _isHighTrans2 ? '0' : String(0.016));
+        root.style.setProperty('--lux-card-glow-alpha', glowConfig.cardGlowAlpha);
         root.style.setProperty('--lux-utility-alpha', String(lightMode ? 0.02 : 0.08));
         root.style.setProperty('--lux-grid-row-height', `${HOME_GRID_ROW_HEIGHT}px`);
         document.body.dataset.luxBackgroundIntensity = intensity;
-        document.body.dataset.luxGlowStrength = glow;
+        document.body.dataset.luxGlowStrength = String(glowConfig.percent);
     }

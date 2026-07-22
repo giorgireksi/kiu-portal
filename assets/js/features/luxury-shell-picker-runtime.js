@@ -791,6 +791,20 @@ function observeUniversalPickers() {
     });
     observer.observe(document.body, { childList: true, subtree: true });
     window.__luxUniversalPickerObserver = observer;
+    window.__luxUniversalPickerObserversPaused = false;
+}
+
+function pauseLuxuryPickerObservers() {
+    window.__luxUniversalPickerObserversPaused = true;
+    if (window.__luxUniversalPickerObserver) {
+        window.__luxUniversalPickerObserver.disconnect();
+        window.__luxUniversalPickerObserver = null;
+    }
+}
+
+function resumeLuxuryPickerObservers() {
+    window.__luxUniversalPickerObserversPaused = false;
+    observeUniversalPickers();
 }
 
         const api = {
@@ -836,6 +850,8 @@ function observeUniversalPickers() {
             enhanceUniversalPicker,
             enhanceUniversalPickers,
             observeUniversalPickers,
+            pauseLuxuryPickerObservers,
+            resumeLuxuryPickerObservers,
         };
         Object.assign(window, api);
         return api;

@@ -11,7 +11,8 @@
         { key: 'burgundy-rose', hue: 350 },
         { key: 'sand-pearl', hue: 40 },
         { key: 'ink-orchid', hue: 296 },
-        { key: 'ocean-teal', hue: 177 }
+        { key: 'ocean-teal', hue: 177 },
+        { key: 'platinum-silver', hue: 215 }
     ];
 
     function circularHueDistance(a, b) {

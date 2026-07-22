@@ -2,8 +2,7 @@
  * Load before social-page.js.
  */
 (function () {
-    if (window.__KIU_SOCIAL_PAGE_BOOT_LOADED) return;
-    window.__KIU_SOCIAL_PAGE_BOOT_LOADED = true;
+    if (window.__KIU_SOCIAL_PAGE_BOOT_LOADED && typeof window.__kiuCreateSocialPageBootApi === 'function') return;
     window.__kiuCreateSocialPageBootApi = function createKiuPeelApi(deps = {}) {
         with (deps) {
 
@@ -231,5 +230,6 @@
         return api;
         }
     };
+    window.__KIU_SOCIAL_PAGE_BOOT_LOADED = true;
 })();
 

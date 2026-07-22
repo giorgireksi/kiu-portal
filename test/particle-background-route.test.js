@@ -149,14 +149,15 @@ describe('particle background route integration', () => {
     });
 
     it('refreshes resolved palette on theme toggle and faculty switch', () => {
-        const luxury = readSource('assets/js/features/index-luxury.js');
+        const atmosphere = readSource('assets/js/features/luxury-atmosphere-runtime.js');
+        const paletteRuntime = readSource('assets/js/features/luxury-palette-runtime.js');
         const utilities = readSource('assets/js/shared/utilities.js');
-        const themeBlock = luxury.slice(
-            luxury.indexOf('function applyThemeMode'),
-            luxury.indexOf('function sanitizeBackgroundMode')
+        const themeBlock = atmosphere.slice(
+            atmosphere.indexOf('function applyThemeMode'),
+            atmosphere.indexOf('function sanitizeBackgroundMode')
         );
         expect(themeBlock).toContain('applyResolvedPalette()');
-        expect(luxury).toMatch(/applyPaletteValues[\s\S]*__kiuApplyResolvedPalette/);
+        expect(paletteRuntime).toMatch(/applyPaletteValues[\s\S]*__kiuApplyResolvedPalette/);
         expect(utilities).toMatch(/applyFacultyLuxuryTheme[\s\S]*__kiuApplyResolvedPalette/);
         expect(utilities).toContain('__kiuApplyLmsParticleTheme');
     });
@@ -170,6 +171,19 @@ describe('particle background route integration', () => {
         expect(refreshBlock).toContain('setVariant(validMode)');
         expect(refreshBlock).not.toMatch(/activeVariantName\s*=\s*validMode[\s\S]*setVariant\(validMode\)/);
         expect(particle).toContain('const nextVariant = normalizeVariantKey(readPortalVariant())');
+    });
+
+    it('does not loseContext on shared lux-bg-canvas during dispose, and guards WebGLRenderer create', () => {
+        const particle = readSource('assets/js/features/luxury-particle-background.js');
+        const disposeBlock = particle.slice(
+            particle.indexOf('function disposeLuxuryParticleBackground'),
+            particle.indexOf('function initLuxuryParticleBackground')
+        );
+        expect(disposeBlock).not.toContain('loseContext');
+        expect(disposeBlock).toContain('renderer?.dispose()');
+        expect(particle).toContain('__kiuLuxuryParticleBackgroundUnavailable = true');
+        expect(particle).toMatch(/try\s*\{\s*renderer\s*=\s*new\s+THREE\.WebGLRenderer/);
+        expect(particle).toContain('ensureUsableParticleCanvas');
     });
 
     it('caps particle quality on efficient tier only when quality is auto', () => {
@@ -221,14 +235,24 @@ describe('particle background route integration', () => {
         const orchestrator = readSource('assets/js/features/luxury-background.js');
         const particle = readSource('assets/js/features/luxury-particle-background.js');
         const fog = readSource('assets/js/features/luxury-vanta-fog-background.js');
+        const foucCss = readSource('assets/css/lux-fouc-ht.css');
 
         expect(orchestrator).toContain('function isFogMode');
         expect(orchestrator).toContain('__kiuDisposeLuxuryParticleBackground');
         expect(orchestrator).toContain('__kiuDisposeLuxuryVantaFogBackground');
         expect(orchestrator).toContain('import("./luxury-vanta-fog-background.js")');
         expect(orchestrator).toContain('scheduleBackgroundSelfInit');
+        expect(orchestrator).toContain('window.__kiuRefreshLuxuryBackground');
+        expect(particle).not.toContain('window.__kiuRefreshLuxuryBackground = refreshLuxuryParticleBackground');
+        expect(particle).toContain('window.__kiuRefreshLuxuryParticleBackground = refreshLuxuryParticleBackground');
+        expect(particle).toContain('function isFogBackgroundMode');
+        expect(particle).toContain('=== "fog"');
         expect(fog).toContain('applyLmsFogTheme');
         expect(fog).toContain('window.__kiuApplyLmsFogTheme');
+        expect(fog).not.toContain('__kiuLuxuryParticleBackgroundUnavailable');
+        expect(foucCss).toContain('#lux-bg-fog');
+        expect(foucCss).toContain('body[data-lux-background-mode="fog"][data-lux-background-animation="on"] #lux-bg-fog');
+        expect(foucCss).toContain('body[data-lux-background-mode="fog"][data-lux-background-animation="on"] #lux-bg-canvas');
     });
 
     it('exposes dedicated fog settings separate from particle controls', () => {
@@ -337,15 +361,20 @@ describe('particle background route integration', () => {
         expect(shellChrome).toContain('id="lux-static-bg-white"');
         expect(shellChrome).toContain('data-static-bg-fill');
         expect(shellChrome).toContain('setStaticBackgroundFill');
-        expect(shellChrome).toContain('studioglow37');
+        expect(shellChrome).toContain('norings1');
         expect(foucCss).toContain('data-lux-static-background="dark"');
         expect(foucCss).toContain('data-lux-static-background="white"');
         expect(foucCss).toContain('not(.lux-light-mode)[data-lux-background-animation="off"][data-lux-static-background="colored"]');
-        expect(foucCss).toContain('var(--lux-static-colored-page-haze)');
+        expect(foucCss).toContain('var(--lux-shell-background)');
+        expect(foucCss).toContain('calc(0.18 * var(--lux-glow-scale, 1))');
+        expect(foucCss).not.toContain('--lux-glow-scale: 0');
         const tokensCss = readSource('assets/css/lux-tokens.css');
-        expect(tokensCss).toContain('--lux-static-colored-page-haze');
+        expect(tokensCss).toContain('--lux-static-colored-page-haze: var(--lux-shell-background)');
         const transparency = readSource('assets/js/shared/lux-transparency.js');
-        expect(transparency).toContain("var(--lux-static-colored-page-haze)");
+        expect(transparency).toContain("var(--lux-shell-background)");
+        const primer = readSource('assets/js/theme-primer.js');
+        expect(primer).toContain("staticBackgroundFill === 'colored'");
+        expect(primer).toContain("var(--lux-shell-background)");
     });
 
     it('opens per-mode settings in a dedicated parameters popup', () => {
@@ -409,6 +438,34 @@ describe('particle background route integration', () => {
         const tokens = readSource('assets/css/lux-tokens.css');
         expect(tokens).toContain('--home-fade-blur: blur(var(--lux-transparency-blur');
         expect(tokens).toContain('Glass blur owned by updateTransparency');
+    });
+
+    it('exposes panel color glow studio control scaled by --lux-glow-scale', () => {
+        const luxury = readSource('assets/js/features/index-luxury.js');
+        const atmosphere = readSource('assets/js/features/luxury-atmosphere-runtime.js');
+        const shellChrome = readSource('assets/js/features/luxury-shell-chrome.js');
+        const tokens = readSource('assets/css/lux-tokens.css');
+        const transparencyModel = readSource('assets/js/features/luxury-transparency-model-runtime.js');
+
+        expect(luxury).toContain('glowStrength: 50');
+        expect(atmosphere).toContain('function getGlowStrength');
+        expect(atmosphere).toContain('function setGlowStrength');
+        expect(atmosphere).toContain('kiuLuxuryGlowStrength');
+        expect(atmosphere).toContain('normalizeGlowStrengthPercent');
+        expect(shellChrome).toContain('Panel Color Glow');
+        expect(shellChrome).toContain('id="lux-glow-strength-slider"');
+        expect(shellChrome).toContain('window.setGlowStrength(parseInt(value, 10), true)');
+        expect(shellChrome).toContain('lux-glow-strength-value');
+        expect(transparencyModel).toContain('resolveGlowTokenConfig');
+        expect(tokens).toContain('var(--lux-panel-glow, 0.22)');
+        expect(tokens).toContain('calc(var(--lux-panel-glow, 0.22) * 0.90)');
+        const transparency = readSource('assets/js/shared/lux-transparency.js');
+        const primer = readSource('assets/js/theme-primer.js');
+        expect(transparency).not.toContain('--lux-glow-scale:0!important');
+        expect(transparency).toContain('var(--lux-panel-surface)');
+        expect(transparency).toContain('glowConfig.glowScale');
+        expect(primer).not.toContain('--lux-glow-scale:0!important');
+        expect(tokens).not.toMatch(/lux-high-transparency[\s\S]*--lux-glow-scale:\s*0/);
     });
 
     it('ships fog profile script cache versions on luxury html entry points', () => {

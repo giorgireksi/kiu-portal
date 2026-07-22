@@ -9,7 +9,8 @@ const VALID_PALETTE_KEYS = new Set([
     'burgundy-rose',
     'sand-pearl',
     'ink-orchid',
-    'ocean-teal'
+    'ocean-teal',
+    'platinum-silver'
 ]);
 
 const IMAGE_MIME_PREFIX = 'image/';

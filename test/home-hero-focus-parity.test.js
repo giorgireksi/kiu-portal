@@ -11,7 +11,7 @@ describe('home hero focus LMS parity', () => {
     it('renders exact LMS focus DOM in widget-render', () => {
         const render = readSource('assets/js/features/home-dashboard/widget-render.js');
         expect(render).toMatch(
-            /class="lms-hero-focus lux-hero-side lux-focus-panel lux-soft-chrome"/
+            /class="lms-hero-focus lux-hero-side lux-focus-panel lux-soft-chrome home-hover-chip"/
         );
         expect(render).toContain('lms-hero-focus-kicker');
         expect(render).toContain('lms-hero-focus-chip');
@@ -103,12 +103,43 @@ describe('home hero focus LMS parity', () => {
         expect(css).toContain('.lux-grid-widget > .lux-grid-widget-body > .lux-builder-hero');
         expect(css).toContain('.lux-grid-widget > .lux-grid-widget-body > .page-hero');
         expect(css).not.toContain('.lms-hero-v2');
+        expect(css).toContain('.lux-grid-widget > .lux-grid-widget-body');
         expect(css).toMatch(/backdrop-filter:\s*var\(--home-fade-blur\)\s*!important/);
-        expect(css).toContain('--home-glass-fill');
-        // Outer widget frame transparent; soft-chrome children own the surface
+        expect(css).toContain('Widget inner panels: border/shadow only — body owns fill+frost');
+        const innerSuppressBlock = css.match(
+            /\/\* Widget inner panels[\s\S]*?backdrop-filter:\s*none !important/
+        )?.[0] || '';
+        expect(innerSuppressBlock).toContain('.lux-grid-widget > .lux-grid-widget-body > .lux-panel');
+        expect(innerSuppressBlock).toContain('background-color: transparent');
+        expect(innerSuppressBlock).not.toContain('--home-glass-fill');
+        expect(css).toContain('Single frost per widget');
+        // Outer widget frame transparent; widget body owns the frost host
         expect(css).toContain('Outer widget frame stays transparent');
         expect(css).toMatch(
             /\.lux-dashboard-canvas \.lux-grid-widget[\s\S]{0,200}background:\s*transparent(?:\s*!important)?/
+        );
+    });
+
+    it('applies single blur layer on home widgets via lux-grid-widget-body host only', () => {
+        const css = readHomeDashboardCss();
+        const transparency = readSource('assets/js/shared/lux-transparency.js');
+        const frostBlock = css.match(
+            /body\.lux-unified-shell:not\(\.lux-route-students-admin\) #page-home #lux-home-shell :is\([\s\S]*?\) \{/
+        )?.[0] || '';
+        expect(frostBlock).toContain('.lux-grid-widget > .lux-grid-widget-body');
+        expect(frostBlock).not.toContain('.lux-grid-widget > .lux-grid-widget-body > .lux-panel');
+        const innerSuppressBlock = css.match(
+            /\/\* Widget inner panels[\s\S]*?backdrop-filter:\s*none !important/
+        )?.[0] || '';
+        expect(innerSuppressBlock).toContain('.lux-grid-widget > .lux-grid-widget-body > .lux-panel');
+        expect(innerSuppressBlock).toContain('background-color: transparent');
+        expect(innerSuppressBlock).not.toContain('--home-glass-fill');
+        expect(transparency).toContain('isHomeWidgetInnerPanel');
+        const routeRuntime = readSource('assets/js/shared/lux-transparency-route-runtime.js');
+        expect(routeRuntime).toContain('shouldKeepHomeWidgetInnerFadeCssBackground');
+        expect(routeRuntime).toContain('shouldKeepHomeWidgetInnerFadeCssBackground(el) ||');
+        expect(transparency).toContain(
+            "'#page-home #lux-home-shell .lux-grid-widget > .lux-grid-widget-body'"
         );
     });
 

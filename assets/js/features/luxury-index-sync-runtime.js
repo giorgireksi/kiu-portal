@@ -146,11 +146,18 @@
                 if (now - lastSyncAt < 400) return;
                 window.__luxLibrarySyncAllAt = now;
             }
-            applyThemeMode(getThemeMode(), false);
-            applyResolvedPalette();
-            applyAtmosphereSettings();
-            applyLuxuryPerformanceProfile();
-            document.body.dataset.luxBackgroundMode = getBackgroundMode();
+            // Visual-half early-out: skip theme/palette/atmosphere/perf when unchanged.
+            // Always continue nav/layout; always re-queue transparency after atmosphere/perf.
+            const visualSignature = buildVisualStateSyncSignature();
+            const visualHalfUnchanged = window.__luxLastVisualStateSyncSignature === visualSignature;
+            if (!visualHalfUnchanged) {
+                applyThemeMode(getThemeMode(), false);
+                applyResolvedPalette();
+                applyAtmosphereSettings();
+                applyLuxuryPerformanceProfile();
+                document.body.dataset.luxBackgroundMode = getBackgroundMode();
+                window.__luxLastVisualStateSyncSignature = visualSignature;
+            }
             applyPortalPageState();
             closePickerPanels();
             renderNav();
@@ -208,8 +215,17 @@
             }
             if (onOrdersRoute) {
                 scheduleOrdersRouteBackgroundRefresh();
-            } else if (typeof window.__kiuRefreshLuxuryBackground === 'function') {
-                window.__kiuRefreshLuxuryBackground();
+            } else {
+                const backgroundMode = typeof getBackgroundMode === 'function'
+                    ? getBackgroundMode()
+                    : String(document.body?.dataset?.luxBackgroundMode || '').trim().toLowerCase();
+                if (backgroundMode === 'fog') {
+                    if (typeof window.__kiuRefreshLuxuryVantaFogBackground === 'function') {
+                        window.__kiuRefreshLuxuryVantaFogBackground();
+                    } else if (typeof window.__kiuApplyLmsFogTheme === 'function') {
+                        window.__kiuApplyLmsFogTheme();
+                    }
+                }
             }
             if (isLuxRouteWorkspace() && typeof window.ensureLmsRouteVisualState === 'function') {
                 window.ensureLmsRouteVisualState();

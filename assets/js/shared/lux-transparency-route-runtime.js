@@ -300,9 +300,31 @@ function shouldKeepProfileViewFadeCssBackground(el) {
     );
 }
 
+/** Home widget inners are CSS-owned tint shells; frost host is .lux-grid-widget-body. */
+function shouldKeepHomeWidgetInnerFadeCssBackground(el) {
+    if (!document.body.classList.contains('lux-route-home')) return false;
+    const widgetBody = el?.closest?.('.lux-grid-widget-body');
+    if (!widgetBody || !widgetBody.closest?.('#page-home #lux-home-shell')) return false;
+    if (el.classList.contains('lux-grid-widget-body')) return false;
+    if (el.parentElement !== widgetBody) return false;
+    return (
+        el.classList.contains('lux-dashboard-section') ||
+        el.classList.contains('lux-panel') ||
+        el.classList.contains('lux-card') ||
+        el.classList.contains('lux-hero') ||
+        el.classList.contains('page-hero') ||
+        el.classList.contains('lux-builder-card') ||
+        el.classList.contains('lux-builder-section') ||
+        el.classList.contains('lux-builder-hero') ||
+        el.classList.contains('lux-admin-ops-panel') ||
+        el.classList.contains('lux-alert')
+    );
+}
+
 /** True when route CSS owns glass (strip inline; do not invent paint). */
 function shouldKeepRouteFadeCssBackground(el) {
     return (
+        shouldKeepHomeWidgetInnerFadeCssBackground(el) ||
         shouldKeepPersonalDataFadeCssBackground(el) ||
         shouldKeepNewsFadeCssBackground(el) ||
         shouldKeepLmsFadeCssBackground(el) ||
@@ -730,6 +752,7 @@ function buildLuxuryRoutePanelGradient(lightMode, isSmallSurface) {
             shouldKeepExamPortalFadeCssBackground,
             shouldKeepProfileViewFadeCssBackground,
             shouldKeepRouteFadeCssBackground,
+            shouldKeepHomeWidgetInnerFadeCssBackground,
             shouldKeepPersonalDataFadeCssBackground,
             shouldKeepRegistrationFadeCssBackground,
             shouldKeepNewsFadeCssBackground,

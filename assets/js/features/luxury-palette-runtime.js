@@ -184,11 +184,12 @@
         function resolvePaletteKey() {
             const visuals = getDashboardVisuals();
             const stored = visuals?.paletteKey || localStorage.getItem('kiuLuxuryPalette') || localStorage.getItem('kiu-palette');
+            if (stored === 'carbon-black' || stored === 'arctic-white') return 'platinum-silver';
             if (stored === 'custom' || isBuiltInLuxuryPaletteKey(stored)) return stored;
             return visuals?.paletteKey || DEFAULT_HOME_VISUALS.paletteKey;
         }
         function applyPaletteValues(accent, accent2, persist, key) {
-            const paletteClasses = ['obsidian-amber', 'slate-sapphire', 'pine-jade', 'burgundy-rose', 'sand-pearl', 'ink-orchid', 'ocean-teal'];
+            const paletteClasses = LUXURY_PALETTES.map((palette) => palette.key);
             paletteClasses.forEach((palette) => document.body.classList.remove(`palette-${palette}`));
             if (key && key !== 'custom' && paletteClasses.includes(key)) {
                 document.body.classList.add(`palette-${key}`);
@@ -219,6 +220,11 @@
         }
         function applyPaletteKey(key, persist) {
             const palette = getPaletteByKey(key);
+            const lightMode = getThemeMode() === 'light';
+            const liveAccent = lightMode && palette.lightAccent ? palette.lightAccent : palette.accent;
+            const liveAccent2 = lightMode && (palette.lightAccent2 || palette.lightAccent)
+                ? (palette.lightAccent2 || palette.lightAccent)
+                : palette.accent2;
             if (persist) {
                 localStorage.removeItem('kiuLuxuryCustomPalette');
                 localStorage.removeItem('kiuLuxuryCustomPaletteFaculty');
@@ -235,7 +241,7 @@
                     hazeColor: ''
                 });
             }
-            applyPaletteValues(palette.accent, palette.accent2, persist, palette.key);
+            applyPaletteValues(liveAccent, liveAccent2, persist, palette.key);
         }
         function applyCustomPalette(accent, accent2, persist) {
             if (persist) {
@@ -265,12 +271,18 @@
             const palette = getPaletteByKey(visualsAreScoped ? (visuals.paletteKey || facultyPalette.paletteKey) : facultyPalette.paletteKey);
             const custom = visualsAreScoped && visuals.customPalette?.accent ? visuals.customPalette : resolveCustomPalette();
             const lightMode = getThemeMode() === 'light';
-            const accent = visualsAreScoped
-                ? (visuals.accentColor || custom?.accent || palette.accent || facultyPalette.accent)
-                : facultyPalette.accent;
-            const accent2 = visualsAreScoped
-                ? (visuals.accentColor2 || custom?.accent2 || palette.accent2 || facultyPalette.accent2)
-                : facultyPalette.accent2;
+            const hasCustomColors = Boolean(custom?.accent) || visuals.paletteKey === 'custom';
+            const useLightAccent = lightMode && Boolean(palette.lightAccent) && !hasCustomColors;
+            const accent = useLightAccent
+                ? palette.lightAccent
+                : (visualsAreScoped
+                    ? (visuals.accentColor || custom?.accent || palette.accent || facultyPalette.accent)
+                    : facultyPalette.accent);
+            const accent2 = useLightAccent
+                ? (palette.lightAccent2 || palette.lightAccent)
+                : (visualsAreScoped
+                    ? (visuals.accentColor2 || custom?.accent2 || palette.accent2 || facultyPalette.accent2)
+                    : facultyPalette.accent2);
             const accentRgb = colorToRgbTriplet(accent, facultyPalette.accentRgb);
             const accent2Rgb = colorToRgbTriplet(accent2, facultyPalette.accent2Rgb || accentRgb);
             const shellStartRgb = visualsAreScoped
@@ -315,6 +327,16 @@
             root.style.setProperty('--lux-accent-rgb', accentRgb);
             root.style.setProperty('--lux-glass-tint-rgb', colorToRgbTriplet(glassTint, lightMode ? '246,239,229' : '16,23,38'));
             root.style.setProperty('--lux-topbar-tint-rgb', colorToRgbTriplet(topbarTint, lightMode ? '239,228,213' : '11,18,32'));
+            const neutralGlassTintByKey = {
+                'platinum-silver': lightMode
+                    ? { glass: '130, 136, 142', topbar: '120, 126, 132' }
+                    : { glass: '38, 42, 48', topbar: '10, 12, 14' }
+            };
+            const neutralTint = neutralGlassTintByKey[palette.key];
+            if (neutralTint && !hasCustomColors) {
+                root.style.setProperty('--lux-glass-tint-rgb', neutralTint.glass);
+                root.style.setProperty('--lux-topbar-tint-rgb', neutralTint.topbar);
+            }
             root.style.setProperty('--lux-shell-start-rgb', shellStartRgb);
             root.style.setProperty('--lux-shell-end-rgb', shellEndRgb);
             root.style.setProperty('--lux-shell-glow-rgb', shellGlowRgb);

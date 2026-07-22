@@ -30,6 +30,14 @@ describe('global lux-modals warmglass', () => {
         expect(css).toContain('[data-lux-modal-overlay].active:not([aria-hidden=\'true\'])');
     });
 
-    
+    it('aliases light-mode popup text tokens to full black contrast', () => {
+        const css = readSource('assets/css/lux-modals.css');
 
+        expect(css).toContain('§3 light-mode popup text');
+        expect(css).toContain('--lux-text: #000');
+        expect(css).toContain('--lux-text-muted: var(--lux-text)');
+        expect(css).toContain('--lux-text-soft: var(--lux-text)');
+        expect(css).toContain('#lux-studio-backdrop');
+        expect(css).toContain('.social-neo-dialog-card');
+    });
 });

@@ -23,11 +23,30 @@ describe('social workspace messaging regressions', () => {
         expect(runtime).toContain('refreshPortalNotifications: refreshNotifications');
         expect(runtime).toContain('persistPortalSocialStatePatch: persistSocialStatePatch');
         expect(runtime).toContain('unhidePortalMessengerChatForUser: unhideChatForUser');
+        // TDZ guard: content API must not receive refreshNotifications (and siblings)
+        // before they are assigned from the content factory return.
+        const contentApiCall = runtime.slice(
+            runtime.indexOf('window.__kiuCreateSocialLiteContentApi({'),
+            runtime.indexOf('const {', runtime.indexOf('window.__kiuCreateSocialLiteContentApi({'))
+        );
+        expect(contentApiCall).not.toMatch(/\brefreshNotifications\b/);
+        expect(contentApiCall).not.toMatch(/\bapplyFollowMutationLocally\b/);
+        expect(contentApiCall).not.toMatch(/\bpersistSocialStatePatch\b/);
+        expect(contentApiCall).not.toMatch(/\bapplyProjectGraphLocally\b/);
+        expect(page).not.toContain("throw new Error('social-page-boot-runtime.js missing')");
+        expect(page).toContain('[Social] social-page-boot-runtime.js missing');
         expect(runtime).not.toMatch(/async function sendMessage\(chatId, body, file\)/);
-        expect(runtime).toContain("portalRequest('/api/messenger/message'");
+        expect(readSource('assets/js/shared/social-lite-content-runtime.js'))
+            .toContain("portalRequest('/api/messenger/message'");
+        expect(readSource('assets/js/shared/social-lite-content-runtime.js'))
+            .not.toMatch(/function refreshNotifications\(\.\.\.a\) \{ return __lookup\('refreshNotifications'\)/);
+        expect(readSource('assets/js/pages/social-page-boot-runtime.js').indexOf('__kiuCreateSocialPageBootApi'))
+            .toBeLessThan(readSource('assets/js/pages/social-page-boot-runtime.js').indexOf('__KIU_SOCIAL_PAGE_BOOT_LOADED = true'));
 
-        expect(page).toContain('markPortalChatMessagesRead(nextChatId)');
-        expect(page).toContain('refreshPortalNotifications(true)');
+        expect(readSource('assets/js/pages/social-page-interactions-runtime.js'))
+            .toContain('markPortalChatMessagesRead(nextChatId)');
+        expect(readSource('assets/js/pages/social-shell-nav.js'))
+            .toContain('refreshPortalNotifications(true)');
         expect(page).toContain('persistPortalSocialStatePatch({ lostFoundItems: normalizedItems }');
         expect(readSource('assets/js/pages/social-alerts-model.js')).toContain('notification?.routeData?.chatId');
     });

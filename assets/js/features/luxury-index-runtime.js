@@ -655,6 +655,43 @@ return {
             attributes: false /* PERF: stop watching style/class — caused feedback loops */
         });
         window.__luxLegacyVisualObserver = observer;
+        window.__luxLegacyVisualObserversPaused = false;
+    }
+
+    function pauseLuxuryVisualObservers() {
+        window.__luxLegacyVisualObserversPaused = true;
+        if (__luxHeavySurfaceRefreshTimer) {
+            window.clearTimeout(__luxHeavySurfaceRefreshTimer);
+            __luxHeavySurfaceRefreshTimer = null;
+        }
+        if (__luxHeavySurfaceObserver) {
+            __luxHeavySurfaceObserver.disconnect();
+            __luxHeavySurfaceObserver = null;
+        }
+        if (window.__luxLegacyVisualObserver) {
+            window.__luxLegacyVisualObserver.disconnect();
+            window.__luxLegacyVisualObserver = null;
+        }
+        if (typeof window.pauseLuxuryPickerObservers === 'function') {
+            window.pauseLuxuryPickerObservers();
+        }
+    }
+
+    function resumeLuxuryVisualObservers() {
+        const wasPaused = window.__luxLegacyVisualObserversPaused
+            || !window.__luxLegacyVisualObserver;
+        window.__luxLegacyVisualObserversPaused = false;
+        if (typeof window.resumeLuxuryPickerObservers === 'function') {
+            window.resumeLuxuryPickerObservers();
+        }
+        observeLegacyVisualTree();
+        if (!wasPaused) return;
+        queueHeavySurfaceObservationRefresh();
+        const activeRoot = document.querySelector('.page-section.active-page') || document.body;
+        queueLegacyVisualRefresh(activeRoot);
+        if (typeof window.enhanceUniversalPickers === 'function') {
+            window.enhanceUniversalPickers(activeRoot);
+        }
     }
 
         return {
@@ -664,7 +701,9 @@ return {
             getLuxuryBackgroundRenderProfile,
             applyLuxuryPerformanceProfile,
             queueLegacyVisualRefresh,
-            observeLegacyVisualTree
+            observeLegacyVisualTree,
+            pauseLuxuryVisualObservers,
+            resumeLuxuryVisualObservers
         };
     }
 
@@ -748,6 +787,7 @@ return {
 
     function renderHomeShellRecoveryPanel(homeShell, { title, copy, showRetry = true } = {}) {
         clearHomeShellLoadTimeout();
+        if (homeShell?.dataset) delete homeShell.dataset.homeRenderSignature;
         const safeTitle = escapeHtml(title || 'Dashboard could not load');
         const safeCopy = escapeHtml(copy || 'The home dashboard bundle did not finish loading. Try again or refresh the page.');
         homeShell.innerHTML = `
@@ -788,20 +828,45 @@ return {
         }, HOME_DASHBOARD_LOAD_TIMEOUT_MS);
     }
 
-    function renderHomeShell() {
+    let __luxHomeShellRenderFrame = null;
+
+    function buildHomeShellRenderSignature() {
+        const role = String(typeof window.getEffectiveRole === 'function' ? window.getEffectiveRole() : '');
+        const faculty = String(typeof window.getCurrentFacultyCode === 'function' ? window.getCurrentFacultyCode() : '');
+        const editor = window.HOME_EDITOR_STATE || {};
+        const editing = editor.editing ? '1' : '0';
+        const draftLen = Array.isArray(editor.draftLayout) ? editor.draftLayout.length : 0;
+        const selected = String(editor.selectedWidgetId || '');
+        const viewport = (window.innerWidth || 0) >= 900 ? 'desktop' : 'stacked';
+        const scope = typeof window.getHomeScopeKey === 'function'
+            ? String(window.getHomeScopeKey(role, faculty) || '')
+            : `${role}|${faculty}`;
+        let layoutStamp = '';
+        try {
+            layoutStamp = String(
+                localStorage.getItem(`kiuLuxuryHomeLayout:${scope}`)
+                || localStorage.getItem(`kiuHomeLayout:${scope}`)
+                || ''
+            ).length;
+        } catch (_error) { /* ignore */ }
+        return [role, faculty, editing, draftLen, selected, viewport, scope, layoutStamp].join('|');
+    }
+
+    function renderHomeShellNow() {
         const homeShell = ensureHomeShell();
         if (!homeShell) return;
         const loadGeneration = ++__luxHomeShellLoadGeneration;
         if (isLuxuryHomeRoute() && window.__kiuLuxuryHomeDashboardLoaded !== true) {
             if (!homeShell.textContent.trim() || homeShell.querySelector('[data-home-recovery-shell="1"]')) {
                 renderHomeShellLoadingPlaceholder(homeShell);
+                delete homeShell.dataset.homeRenderSignature;
             }
             scheduleHomeShellLoadTimeout(loadGeneration);
             ensureLuxuryHomeDashboardBundle({ preload: false, allowWhileNotHome: true }).then((loaded) => {
                 if (loadGeneration !== __luxHomeShellLoadGeneration) return;
                 if (!isLuxuryHomeRoute()) return;
                 if (loaded) {
-                    renderHomeShell();
+                    scheduleRenderHomeShell();
                     return;
                 }
                 renderHomeShellRecoveryPanel(homeShell, {
@@ -813,7 +878,16 @@ return {
         }
         clearHomeShellLoadTimeout();
         try {
+            const signature = buildHomeShellRenderSignature();
+            if (
+                homeShell.dataset.homeRenderSignature === signature
+                && homeShellHasDashboardContent(homeShell)
+                && !homeShellHasLoadingPlaceholder(homeShell)
+            ) {
+                return;
+            }
             renderDynamicHomeShell(homeShell);
+            homeShell.dataset.homeRenderSignature = signature;
             if (typeof window.mountNewsHomeStrip === 'function') {
                 window.mountNewsHomeStrip(homeShell);
             }
@@ -836,11 +910,28 @@ return {
             }
         } catch (error) {
             console.error('Home dashboard render failed.', error);
+            delete homeShell.dataset.homeRenderSignature;
             renderHomeShellRecoveryPanel(homeShell, {
                 title: 'Dashboard render failed',
                 copy: 'Something went wrong while building the home dashboard. Retry or refresh the page.'
             });
         }
+    }
+
+    function scheduleRenderHomeShell() {
+        if (typeof window.requestAnimationFrame !== 'function') {
+            renderHomeShellNow();
+            return;
+        }
+        if (__luxHomeShellRenderFrame) return;
+        __luxHomeShellRenderFrame = window.requestAnimationFrame(() => {
+            __luxHomeShellRenderFrame = null;
+            renderHomeShellNow();
+        });
+    }
+
+    function renderHomeShell() {
+        scheduleRenderHomeShell();
     }
 
     function isLuxuryHomeRoute() {
@@ -850,8 +941,9 @@ return {
     function scheduleLuxuryHomeDashboardPreload() {
         if (typeof isIndexPortalShell !== 'function' || !isIndexPortalShell()) return;
         const run = () => ensureLuxuryHomeDashboardBundle({ preload: true });
-        if (typeof window.requestIdleCallback === 'function') {
-            window.requestIdleCallback(run, { timeout: 1200 });
+        // Fetch ASAP on next frame — idle timeout 1200ms delayed home fill.
+        if (typeof window.requestAnimationFrame === 'function') {
+            window.requestAnimationFrame(run);
             return;
         }
         window.setTimeout(run, 0);
@@ -964,6 +1056,7 @@ return {
             homeShellHasDashboardContent,
             renderHomeShellRecoveryPanel,
             renderHomeShell,
+            scheduleRenderHomeShell,
             isLuxuryHomeRoute,
             scheduleLuxuryHomeDashboardPreload,
             scheduleLuxuryHomeDashboardChunkRetry,

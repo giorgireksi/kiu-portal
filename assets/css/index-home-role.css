@@ -148,7 +148,8 @@ html[data-lux-transparency="0"] #page-home #lux-home-shell :is(.lux-primary-btn,
 }
 /* --- soft-chrome-surfaces --- */
 /* Frosted soft-chrome: backdrop blur tracks opacity. Nested chips stay matte.
- * Flicker mitigation: no widget hover translate (see index-home-widgets.css). */
+ * Single frost per widget: body blurs once; inner panels tint only.
+ * Flicker mitigation: lift frost host directly (widget-body), not transparent outer frame. */
 body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell :is(
   .lux-soft-chrome,
   .lux-focus-panel,
@@ -156,6 +157,18 @@ body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell
   .lux-home-grid > .lux-panel,
   .lux-home-grid > .lux-card,
   .lux-home-grid > .lux-hero,
+  .lux-grid-widget > .lux-grid-widget-body
+) {
+  background-color: var(--home-glass-fill, rgba(8, 12, 21, var(--lux-transparency-alpha, 0.70)));
+  background-image: var(--lux-focus-fill, var(--lux-soft-chrome-surface, var(--lux-panel-surface)));
+  border-color: var(--lux-focus-border, var(--lux-soft-chrome-border, var(--lux-panel-border)));
+  box-shadow: var(--lux-focus-shadow, var(--lux-soft-chrome-shadow, var(--lux-panel-shadow)));
+  backdrop-filter: var(--home-fade-blur) !important;
+  -webkit-backdrop-filter: var(--home-fade-blur) !important;
+  background-clip: padding-box;
+}
+/* Widget inner panels: border/shadow only — body owns fill+frost */
+body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell :is(
   .lux-grid-widget > .lux-grid-widget-body > .lux-dashboard-section,
   .lux-grid-widget > .lux-grid-widget-body > .lux-panel,
   .lux-grid-widget > .lux-grid-widget-body > .lux-card,
@@ -167,12 +180,12 @@ body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell
   .lux-grid-widget > .lux-grid-widget-body > .lux-admin-ops-panel,
   .lux-grid-widget > .lux-grid-widget-body > .lux-alert
 ) {
-  background-color: var(--home-glass-fill, rgba(8, 12, 21, var(--lux-transparency-alpha, 0.70)));
-  background-image: var(--lux-focus-fill, var(--lux-soft-chrome-surface, var(--lux-panel-surface)));
+  background-color: transparent;
+  background-image: none;
   border-color: var(--lux-focus-border, var(--lux-soft-chrome-border, var(--lux-panel-border)));
   box-shadow: var(--lux-focus-shadow, var(--lux-soft-chrome-shadow, var(--lux-panel-shadow)));
-  backdrop-filter: var(--home-fade-blur) !important;
-  -webkit-backdrop-filter: var(--home-fade-blur) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   background-clip: padding-box;
 }
 /* Title row only — no soft-chrome slab under the topbar */
@@ -195,6 +208,81 @@ body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
 }
+/* --- dashboard-hover-lift --- */
+body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell .lux-home-grid > :is(
+  .lux-panel,
+  .lux-card,
+  .lux-hero,
+  .lux-hero-side,
+  .lux-soft-chrome,
+  .lux-focus-panel
+) {
+  transition:
+    transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.1s cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+@media (hover: hover) and (pointer: fine) {
+  body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell .lux-home-grid > :is(
+    .lux-panel,
+    .lux-card,
+    .lux-hero,
+    .lux-hero-side,
+    .lux-soft-chrome,
+    .lux-focus-panel
+  ):hover {
+    transform: translate3d(0, -3px, 0);
+    border-color: color-mix(in srgb, var(--lux-focus-border, var(--lux-soft-chrome-border)) 70%, rgba(var(--lux-accent-rgb), 0.34));
+    box-shadow: var(--home-fade-shadow-hover, var(--lux-focus-shadow));
+  }
+}
+body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell
+  .lux-dashboard-canvas:not(.is-editing) .lux-grid-widget:not(.is-live-moving):not(.is-ghost-source) > .lux-grid-widget-body .lux-soft-chrome.home-hover-chip {
+  transition:
+    transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.1s cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+@media (hover: hover) and (pointer: fine) {
+  body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell
+    .lux-dashboard-canvas:not(.is-editing) .lux-grid-widget:not(.is-live-moving):not(.is-ghost-source) > .lux-grid-widget-body .lux-soft-chrome.home-hover-chip:hover:not(:has(
+      :is(button, a, .lux-quick-btn, .lux-admin-op-btn):hover
+    )) {
+    transform: translate3d(0, var(--home-chip-hover-lift, -3px), 0);
+    border-color: color-mix(in srgb, var(--lux-focus-border, var(--lux-soft-chrome-border)) 70%, rgba(var(--lux-accent-rgb), 0.34));
+    box-shadow: var(--home-fade-shadow-hover, var(--lux-focus-shadow));
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell .lux-home-grid > :is(
+    .lux-panel,
+    .lux-card,
+    .lux-hero,
+    .lux-hero-side,
+    .lux-soft-chrome,
+    .lux-focus-panel
+  ) {
+    transition: box-shadow 0.15s ease, border-color 0.15s ease;
+  }
+  body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell .lux-home-grid > :is(
+    .lux-panel,
+    .lux-card,
+    .lux-hero,
+    .lux-hero-side,
+    .lux-soft-chrome,
+    .lux-focus-panel
+  ):hover {
+    transform: none;
+  }
+  body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell
+    .lux-grid-widget > .lux-grid-widget-body .lux-soft-chrome.home-hover-chip {
+    transition: box-shadow 0.15s ease, border-color 0.15s ease;
+  }
+  body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell
+    .lux-soft-chrome.home-hover-chip:hover {
+    transform: none;
+  }
+}
 /* 1–5%: near-clear — keep fill, kill frost fog */
 :is(
   html[data-lux-transparency="1"],
@@ -209,16 +297,7 @@ body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell
   .lux-home-grid > .lux-panel,
   .lux-home-grid > .lux-card,
   .lux-home-grid > .lux-hero,
-  .lux-grid-widget > .lux-grid-widget-body > .lux-dashboard-section,
-  .lux-grid-widget > .lux-grid-widget-body > .lux-panel,
-  .lux-grid-widget > .lux-grid-widget-body > .lux-card,
-  .lux-grid-widget > .lux-grid-widget-body > .lux-hero,
-  .lux-grid-widget > .lux-grid-widget-body > .page-hero,
-  .lux-grid-widget > .lux-grid-widget-body > .lux-builder-card,
-  .lux-grid-widget > .lux-grid-widget-body > .lux-builder-section,
-  .lux-grid-widget > .lux-grid-widget-body > .lux-builder-hero,
-  .lux-grid-widget > .lux-grid-widget-body > .lux-admin-ops-panel,
-  .lux-grid-widget > .lux-grid-widget-body > .lux-alert
+  .lux-grid-widget > .lux-grid-widget-body
 ) {
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
@@ -231,6 +310,7 @@ html[data-lux-transparency="0"] body.lux-unified-shell:not(.lux-route-students-a
   .lux-home-grid > .lux-panel,
   .lux-home-grid > .lux-card,
   .lux-home-grid > .lux-hero,
+  .lux-grid-widget > .lux-grid-widget-body,
   .lux-grid-widget > .lux-grid-widget-body > .lux-dashboard-section,
   .lux-grid-widget > .lux-grid-widget-body > .lux-panel,
   .lux-grid-widget > .lux-grid-widget-body > .lux-card,
@@ -246,6 +326,14 @@ html[data-lux-transparency="0"] body.lux-unified-shell:not(.lux-route-students-a
   background-image: none;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
+  box-shadow: none;
+}
+html[data-lux-transparency="0"] body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell :is(
+  .lux-grid-widget:hover > .lux-grid-widget-body,
+  .lux-home-grid > :is(.lux-panel, .lux-card, .lux-hero, .lux-hero-side, .lux-soft-chrome, .lux-focus-panel):hover,
+  .lux-soft-chrome.home-hover-chip:hover
+) {
+  transform: none;
   box-shadow: none;
 }
 /* Outer widget frame stays transparent */

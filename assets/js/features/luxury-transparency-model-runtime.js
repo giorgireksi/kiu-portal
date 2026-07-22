@@ -177,7 +177,20 @@
             ? (getLuxuryPerformanceTier(false) === 'high' ? 'high' : getLuxuryPerformanceTier(false) === 'efficient' ? 'low' : 'balanced')
             : particleQuality;
         const lightMode = getThemeMode() === 'light';
-        const glowConfig = { glowScale: '1', buttonGlow: '0.44', panelGlow: '0.2' };
+        const glowPercent = typeof getGlowStrength === 'function' ? getGlowStrength() : 50;
+        const glowConfig = typeof resolveGlowTokenConfig === 'function'
+            ? resolveGlowTokenConfig(glowPercent)
+            : (() => {
+                const pct = Math.min(100, Math.max(0, Math.round(Number(glowPercent) || 50)));
+                const glowScale = pct / 50;
+                return {
+                    percent: pct,
+                    glowScale: String(glowScale),
+                    buttonGlow: String(0.12 + (pct / 100) * 0.68),
+                    panelGlow: String((pct / 100) * 0.40),
+                    cardGlowAlpha: String((0.016 * glowScale).toFixed(4))
+                };
+            })();
         const panelFillMin = lightMode ? 0.016 : 0.012;
         const raisedFillMin = lightMode ? 0.008 : 0.006;
         const utilityFillMin = lightMode ? 0.024 : 0.022;
@@ -208,7 +221,6 @@
             ? window.buildLuxuryTransparencyModel(_savedTransVal, lightMode)
             : null;
         var _panelA = _transparencyModel ? _transparencyModel.panelAlpha : (_savedTransVal >= 95 ? (lightMode ? 0.95 : 0.92) : Math.max(0.03, _savedTransVal / 100 * 0.92));
-        var _isHighTrans2 = _transparencyModel ? _transparencyModel.highTransparency : _savedTransVal >= 80;
         const transparencyTokenState = _transparencyModel
             ? {
                 ..._transparencyModel,
@@ -229,9 +241,9 @@
                 glassHighlightAlpha: lightMode ? 0.02 : 0.012
             };
         applyLuxuryTransparencyTokenState(transparencyTokenState, {
-            panelGlow: _isHighTrans2 ? '0' : glowConfig.panelGlow,
-            glowScale: _isHighTrans2 ? '0' : glowConfig.glowScale,
-            cardGlowAlpha: _isHighTrans2 ? '0' : String(0.016)
+            panelGlow: glowConfig.panelGlow,
+            glowScale: glowConfig.glowScale,
+            cardGlowAlpha: glowConfig.cardGlowAlpha
         });
         root.style.setProperty('--lux-grid-row-height', `${HOME_GRID_ROW_HEIGHT}px`);
         document.body.dataset.luxBackgroundIntensity = resolvedQuality;
@@ -239,6 +251,7 @@
         document.body.dataset.luxGlassBlurQuality = typeof getGlassBlurQuality === 'function'
             ? getGlassBlurQuality()
             : (document.body.dataset.luxGlassBlurQuality || 'high');
+        document.body.dataset.luxGlowStrength = String(glowConfig.percent);
         document.body.dataset.luxBackgroundAnimation = backgroundAnimationsEnabled ? 'on' : 'off';
         document.body.dataset.luxStaticBackground = typeof getStaticBackgroundFill === 'function'
             ? getStaticBackgroundFill()

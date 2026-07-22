@@ -77,21 +77,22 @@ describe('global interaction performance guardrails', () => {
   });
 
   it('skips repeated transparency work when surfaces already have the current signature', () => {
-    const utilities = readSource('assets/js/shared/utilities.js');
+    const transparency = readSource('assets/js/shared/lux-transparency.js');
 
-    expect(utilities).toContain('const transparencySignature = [');
-    expect(utilities).toContain('el.dataset.luxTransparencySignature === transparencySignature');
-    expect(utilities).toContain('el.dataset.luxTransparencySignature = transparencySignature;');
+    expect(transparency).toContain('const transparencySignature = [');
+    expect(transparency).toContain('el.dataset.luxTransparencySignature === transparencySignature');
+    expect(transparency).toContain('Early signature skip');
+    expect(transparency).toContain('el.dataset.luxTransparencySignature = transparencySignature;');
   });
 
   it('scopes transparency surface refreshes to active shell roots instead of querying the whole document', () => {
-    const utilities = readSource('assets/js/shared/utilities.js');
+    const transparency = readSource('assets/js/shared/lux-transparency.js');
 
-        expect(utilities).toContain('const INDEX_TRANSPARENCY_GLOBAL_ROOT_SELECTORS = [');
-        expect(utilities).toContain('function collectTransparencySurfaceElements(selectorList, rootsOverride)');
-        expect(utilities).toContain("const activePage = document.querySelector('.page-section.active-page');");
-        expect(utilities).toContain('const surfaceElements = getCachedTransparencySurfaceElements(allSelectors, scopedRoots);');
-        expect(utilities).not.toContain("const surfaceElements = document.querySelectorAll(allSelectors.join(', '));");
+        expect(transparency).toContain('const INDEX_TRANSPARENCY_GLOBAL_ROOT_SELECTORS = [');
+        expect(transparency).toContain('function collectTransparencySurfaceElements(selectorList, rootsOverride)');
+        expect(transparency).toContain("const activePage = document.querySelector('.page-section.active-page');");
+        expect(transparency).toContain('const surfaceElements = getCachedTransparencySurfaceElements(allSelectors, scopedRoots);');
+        expect(transparency).not.toContain("const surfaceElements = document.querySelectorAll(allSelectors.join(', '));");
     });
 
   it('keeps saveState from scanning every node on the page', () => {
@@ -135,9 +136,11 @@ describe('global interaction performance guardrails', () => {
 
     expect(navigation).toContain('function tryMarkPortalShellInteractive() {');
     expect(navigation).toContain('function schedulePortalShellReadyReveal() {');
-    expect(navigation).toContain('window.schedulePortalShellReadyReveal = schedulePortalShellReadyReveal;');
+    expect(navigation).toContain('schedulePortalShellReadyReveal,');
     expect(navigation).toContain('function scheduleRouteContentRender(renderFn) {');
-    expect(navigation).toContain('window.scheduleRouteContentRender = scheduleRouteContentRender;');
+    expect(navigation).toContain('scheduleRouteContentRender,');
+    expect(navigation).toContain('window.requestAnimationFrame(() => {\n            window.requestAnimationFrame(run);');
+    expect(navigation).not.toContain('const fallbackTimer = window.setTimeout(run, 48);');
     expect(navigation).not.toContain("body.classList.remove('kiu-shell-loading', 'lux-home-page');");
     expect(navigation).toMatch(/finally \{[\s\S]*?schedulePortalShellReadyReveal\(\);[\s\S]*?\}/);
     expect(navigation).toContain('const PORTAL_STARTUP_MAX_ATTEMPTS = 48;');
@@ -201,13 +204,17 @@ describe('global interaction performance guardrails', () => {
 
   it('keeps only the live home shell renderer in index-luxury', () => {
     const luxury = readSource('assets/js/features/index-luxury.js');
+    const homeShellRuntime = readSource('assets/js/features/luxury-index-home-shell-runtime.js');
+    const homeRuntime = readSource('assets/js/features/luxury-index-runtime.js');
     const homeLuxury = readRegisteredHomeChunk();
     const count = (source, pattern) => (source.match(pattern) || []).length;
 
-    expect(count(luxury, /function renderHomeShell\(/g)).toBe(1);
+    expect(count(homeShellRuntime, /function renderHomeShell\(/g)).toBe(1);
+    expect(count(homeRuntime, /function scheduleRenderHomeShell\(/g)).toBe(1);
+    expect(count(homeRuntime, /function renderHomeShellNow\(/g)).toBe(1);
     expect(count(luxury, /renderDynamicHomeShell\s*=\s*function\s*\(/g)).toBe(0);
     expect(count(homeLuxury, /renderDynamicHomeShell\s*=\s*function\s*\(/g)).toBe(1);
-    expect(luxury).toContain('ensureLuxuryHomeDashboardBundle().then((loaded) => {');
+    expect(luxury).toContain('ensureLuxuryHomeDashboardBundle');
     expect(luxury).not.toContain('renderDynamicHomeShell(homeShell);\r\n        return;');
     expect(homeLuxury).not.toContain('function renderDynamicHomeShell(homeShell) {');
   });
@@ -280,6 +287,59 @@ describe('global interaction performance guardrails', () => {
     expect(indexHtml).not.toContain('id="admin-generate-submit-btn"');
     expect(indexHtml).not.toContain('id="modal-programs"');
     expect(ui).toContain('function ensureProgramsModal()');
+  });
+
+  it('applies theme and palette colors without remounting the WebGL background', () => {
+    const shellChrome = readSource('assets/js/features/luxury-shell-chrome.js');
+    const atmosphere = readSource('assets/js/features/luxury-atmosphere-runtime.js');
+    const syncRuntime = readSource('assets/js/features/luxury-index-sync-runtime.js');
+
+    const darkClick = shellChrome.slice(
+      shellChrome.indexOf("getElementById('lux-mode-dark')"),
+      shellChrome.indexOf("getElementById('lux-mode-light')")
+    );
+    expect(darkClick).toContain('applyThemeMode');
+    expect(darkClick).toContain('syncStudioUi');
+    expect(darkClick).not.toContain('syncVisualStateOnly');
+
+    const lightClick = shellChrome.slice(
+      shellChrome.indexOf("getElementById('lux-mode-light')"),
+      shellChrome.indexOf("getElementById('lux-bg-animation-on')")
+    );
+    expect(lightClick).toContain('applyThemeMode');
+    expect(lightClick).toContain('syncStudioUi');
+    expect(lightClick).not.toContain('syncVisualStateOnly');
+
+    const paletteClick = shellChrome.slice(
+      shellChrome.indexOf('STUDIO_PALETTES.forEach'),
+      shellChrome.indexOf('BACKGROUND_MODES.forEach')
+    );
+    expect(paletteClick).toContain('applyPaletteKey');
+    expect(paletteClick).toContain('syncStudioUi');
+    expect(paletteClick).not.toContain('syncVisualStateOnly');
+
+    const applyMix = shellChrome.slice(
+      shellChrome.indexOf("getElementById('lux-apply-mix')"),
+      shellChrome.indexOf('STUDIO_PALETTES.forEach')
+    );
+    expect(applyMix).toContain('applyCustomPalette');
+    expect(applyMix).toContain('syncStudioUi');
+    expect(applyMix).not.toContain('syncVisualStateOnly');
+
+    const themeBlock = atmosphere.slice(
+      atmosphere.indexOf('function applyThemeMode'),
+      atmosphere.indexOf('function sanitizeBackgroundMode')
+    );
+    expect(themeBlock).not.toContain('__kiuRefreshLuxuryBackground');
+    expect(themeBlock).not.toContain('updateTransparency');
+    expect(themeBlock).toContain('__kiuApplyLmsParticleTheme');
+
+    const syncVisualBlock = syncRuntime.slice(
+      syncRuntime.indexOf('function syncVisualStateOnly'),
+      syncRuntime.indexOf('const api = {')
+    );
+    expect(syncVisualBlock).not.toContain('__kiuRefreshLuxuryBackground');
+    expect(syncVisualBlock).toContain('__kiuApplyLmsParticleTheme');
   });
 
   it('refreshes the canvas background when luxury theme controls change', () => {
@@ -452,15 +512,33 @@ describe('global interaction performance guardrails', () => {
   });
 
   it('always re-applies transparency after syncAll atmosphere/perf (no signature skip)', () => {
-    const luxury = readSource('assets/js/features/index-luxury.js');
+    const syncRuntime = readSource('assets/js/features/luxury-index-sync-runtime.js');
 
-    expect(luxury).toContain('function buildTransparencySyncSignature(activePageId, transparencyValue) {');
-    expect(luxury).toContain('JSON.stringify(visuals.customPalette || {})');
-    expect(luxury).toContain("HOME_EDITOR_STATE.editing && HOME_EDITOR_STATE.role === getEffectiveRole() ? 'editing' : 'view'");
+    expect(syncRuntime).toContain('function buildTransparencySyncSignature(activePageId, transparencyValue) {');
+    expect(syncRuntime).toContain('JSON.stringify(visuals.customPalette || {})');
+    expect(syncRuntime).toContain("HOME_EDITOR_STATE.editing && HOME_EDITOR_STATE.role === getEffectiveRole() ? 'editing' : 'view'");
     // Signature is recorded for diagnostics, but refresh must always run so glass tokens win.
-    expect(luxury).toContain('window.__luxLastTransparencySyncSignature = buildTransparencySyncSignature(activePageId, _syncTransVal);');
-    expect(luxury).toContain("window.queueLuxuryTransparencyRefresh(parseInt(_syncTransVal, 10), { persist: false });");
-    expect(luxury).not.toContain('window.__luxLastTransparencySyncSignature !== _syncTransparencySignature');
+    expect(syncRuntime).toContain('window.__luxLastTransparencySyncSignature = buildTransparencySyncSignature(activePageId, _syncTransVal);');
+    expect(syncRuntime).toContain("window.queueLuxuryTransparencyRefresh(parseInt(_syncTransVal, 10), { persist: false });");
+    expect(syncRuntime).not.toContain('window.__luxLastTransparencySyncSignature !== _syncTransparencySignature');
+  });
+
+  it('coalesces boot transparency and pauses inactive visual observers', () => {
+    const transparency = readSource('assets/js/shared/lux-transparency.js');
+    const visualRuntime = readSource('assets/js/features/luxury-index-runtime.js');
+    const luxury = readSource('assets/js/features/index-luxury.js');
+    const syncRuntime = readSource('assets/js/features/luxury-index-sync-runtime.js');
+
+    expect(transparency).toContain('__luxTransparencyBootRefreshScheduled');
+    expect(transparency).toContain('function scheduleLuxuryTransparencyBootRefresh');
+    expect(transparency).toContain('Early signature skip');
+    expect(transparency).toContain('const force = options?.force === true');
+    expect(visualRuntime).toContain('function pauseLuxuryVisualObservers()');
+    expect(visualRuntime).toContain('function resumeLuxuryVisualObservers()');
+    expect(visualRuntime).toContain('function scheduleRenderHomeShell()');
+    expect(visualRuntime).toContain('homeRenderSignature');
+    expect(luxury).toContain("document.addEventListener('visibilitychange'");
+    expect(syncRuntime).toContain('visualHalfUnchanged');
   });
 
   it('adds keyboard close and focus return hooks for professor-home topbar overlays', () => {
@@ -682,7 +760,17 @@ describe('global interaction performance guardrails', () => {
     expect(particles).toContain('fps: 30');
     expect(fog).toContain('scaleMobile: 1.5');
     expect(atmosphere).toContain('scheduleParticleBackgroundRefresh');
-    expect(shell).toContain('collectShellPerimeterPoints(rect, 2)');
+    expect(shell).toContain('collectShellPerimeterPoints(rect, 5)');
+    expect(shell).toContain("kinds = ['dot', 'spark', 'streak']");
+    expect(shell).not.toContain('lux-chip-burst-particle--ring');
+    expect(shell).toContain('_lastBurstAt');
+    expect(shell).toContain('now - lastAt < 90');
+    expect(shell).not.toContain('spawnStudioChipBurstParticles._live');
+    expect(shell).toContain('if (bit._done) return');
+    const studioCss = readSource('assets/css/lux-studio.css');
+    expect(studioCss).toContain('lux-chip-burst-particle--spark');
+    expect(studioCss).toContain('lux-chip-burst-particle--streak');
+    expect(studioCss).not.toContain('lux-chip-burst-particle--ring');
     expect(shell).toContain('.lux-bg-gallery-tile, #lux-bg-gallery-upload');
     expect(shell).not.toMatch(/navigate\(pageTarget\(routePage\)\);\s*if \(typeof syncAll === 'function'\) syncAll\(\);/);
     expect(editorDraft).toContain('function setSelectedDraftWidget(instanceId, { render = false');
