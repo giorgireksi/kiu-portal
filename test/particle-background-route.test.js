@@ -292,6 +292,34 @@ describe('particle background route integration', () => {
             luxury.indexOf('function resetHomeToDefaults')
         );
         expect(resetBlock).not.toContain('fogProfiles');
+        expect(resetBlock).toContain('kiuLuxuryStaticBackgroundFill');
+    });
+
+    it('exposes static background fill options when animation is off', () => {
+        const luxury = readSource('assets/js/features/index-luxury.js');
+        const atmosphere = readSource('assets/js/features/luxury-atmosphere-runtime.js');
+        const shellChrome = readSource('assets/js/features/luxury-shell-chrome.js');
+        const foucCss = readSource('assets/css/lux-fouc-ht.css');
+
+        expect(luxury).toContain('STATIC_BACKGROUND_FILL_OPTIONS');
+        expect(luxury).toContain("staticBackgroundFill: 'colored'");
+        expect(atmosphere).toContain('function getStaticBackgroundFill');
+        expect(atmosphere).toContain('function setStaticBackgroundFill');
+        expect(shellChrome).toContain('id="lux-static-bg-section"');
+        expect(shellChrome).toContain('id="lux-static-bg-colored"');
+        expect(shellChrome).toContain('id="lux-static-bg-dark"');
+        expect(shellChrome).toContain('id="lux-static-bg-white"');
+        expect(shellChrome).toContain('data-static-bg-fill');
+        expect(shellChrome).toContain('setStaticBackgroundFill');
+        expect(shellChrome).toContain('studioglow37');
+        expect(foucCss).toContain('data-lux-static-background="dark"');
+        expect(foucCss).toContain('data-lux-static-background="white"');
+        expect(foucCss).toContain('not(.lux-light-mode)[data-lux-background-animation="off"][data-lux-static-background="colored"]');
+        expect(foucCss).toContain('var(--lux-static-colored-page-haze)');
+        const tokensCss = readSource('assets/css/lux-tokens.css');
+        expect(tokensCss).toContain('--lux-static-colored-page-haze');
+        const transparency = readSource('assets/js/shared/lux-transparency.js');
+        expect(transparency).toContain("var(--lux-static-colored-page-haze)");
     });
 
     it('opens per-mode settings in a dedicated parameters popup', () => {
@@ -476,4 +504,21 @@ describe('particle background route integration', () => {
         expect(background).toContain('import("./luxury-particle-background.js")');
         expect(background).not.toContain('luxury-particle-background.js?v=');
     });
+    it('supports gallery static background fill and media mount', () => {
+        const luxury = readSource('assets/js/features/index-luxury.js');
+        const atmosphere = readSource('assets/js/features/luxury-atmosphere-runtime.js');
+        const runtime = readSource('assets/js/features/luxury-background-gallery-runtime.js');
+        const shellChrome = readSource('assets/js/features/luxury-shell-chrome.js');
+        const foucCss = readSource('assets/css/lux-fouc-ht.css');
+
+        expect(luxury).toContain("key: 'gallery'");
+        expect(atmosphere).toContain('getBackgroundGallerySelection');
+        expect(atmosphere).toContain('clearBackgroundGallery');
+        expect(runtime).toContain('lux-bg-media');
+        expect(shellChrome).toContain('lux-bg-gallery-open-images');
+        expect(shellChrome).toContain('lux-bg-gallery-open-videos');
+        expect(foucCss).toContain('data-lux-static-background="gallery"');
+        expect(foucCss).toContain('100dvh');
+    });
+
 });

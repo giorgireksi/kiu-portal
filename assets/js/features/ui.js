@@ -1,17 +1,20 @@
 
 function ensureLuxModalsCss() {
     if (typeof document === 'undefined') return;
-    if (document.querySelector('link[data-kiu-lux-modals]')) return;
-    const has = Array.from(document.querySelectorAll('link[rel="stylesheet"]')).some((l) =>
-        String(l.getAttribute('href') || '').includes('lux-modals.css')
-    );
-    if (has) return;
+    const href = 'assets/css/lux-modals.css?v=20260721-studio50';
+    const existing = document.querySelector('link[data-kiu-lux-modals], link[href*="lux-modals.css"]');
+    if (existing) {
+        if (existing.getAttribute('href') !== href) existing.setAttribute('href', href);
+        existing.setAttribute('data-kiu-lux-modals', '1');
+        return;
+    }
     const link = document.createElement('link');
     link.rel = 'stylesheet';
-    link.href = 'assets/css/lux-modals.css?v=20260720-densify6500';
+    link.href = href;
     link.setAttribute('data-kiu-lux-modals', '1');
     document.head.appendChild(link);
 }
+window.ensureLuxModalsCss = ensureLuxModalsCss;
 ﻿/* Shared UI interactions extracted from the legacy core.js bundle. Active routes now load split files directly. */
 
 // Profile menu open is owned by shell/navigation; keep outside-click close below.

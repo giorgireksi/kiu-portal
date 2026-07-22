@@ -65,6 +65,17 @@ function createEmptyStudentServiceState() {
     };
 }
 
+function createEmptyBackgroundGalleryCatalog() {
+    return { images: [], videos: [] };
+}
+
+function createEmptyBackgroundGalleryState() {
+    return {
+        catalog: createEmptyBackgroundGalleryCatalog(),
+        version: 1
+    };
+}
+
 function createEmptyPlatformState(storageDriver = 'postgres') {
     return {
         meta: {
@@ -112,6 +123,7 @@ function createEmptyPlatformState(storageDriver = 'postgres') {
         social: createEmptySocialState(),
         news: createEmptyNewsState(),
         studentService: createEmptyStudentServiceState(),
+        backgroundGallery: createEmptyBackgroundGalleryState(),
         importJobs: {},
         portal: {
             state: {},
@@ -131,5 +143,7 @@ module.exports = {
     createEmptySocialState,
     createEmptyNewsState,
     createDefaultNewsSectionCatalog,
-    createEmptyStudentServiceState
+    createEmptyStudentServiceState,
+    createEmptyBackgroundGalleryCatalog,
+    createEmptyBackgroundGalleryState
 };

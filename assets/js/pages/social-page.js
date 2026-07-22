@@ -1455,6 +1455,141 @@
 
 
 
+    async function saveLostFoundItems(nextItems, reason = 'lost-found-save') {
+        const runtime = state();
+        if (!runtime.social || typeof runtime.social !== 'object') runtime.social = {};
+        const normalizedItems = (Array.isArray(nextItems) ? nextItems.map((item) => normalizeLostFoundItem(item)) : [])
+            .filter((item) => !isLostFoundItemExpired(item));
+        runtime.social.lostFoundItems = normalizedItems;
+        if (typeof persistPortalSocialStatePatch === 'function') {
+            const persisted = await persistPortalSocialStatePatch({ lostFoundItems: normalizedItems }, reason);
+            if (Array.isArray(persisted?.lostFoundItems)) {
+                runtime.social.lostFoundItems = persisted.lostFoundItems.map((item) => normalizeLostFoundItem(item));
+            }
+        }
+        return runtime.social.lostFoundItems;
+    }
+    const resetLostFoundDraft = window.resetLostFoundDraft || (window.KiuSocialChromeModel || {}).resetLostFoundDraft;
+    const clearEventDraft = window.clearEventDraft || (window.KiuSocialChromeModel || {}).clearEventDraft;
+    const prefillEventEditDraft = window.prefillEventEditDraft || (window.KiuSocialChromeModel || {}).prefillEventEditDraft;
+    const eventCanManage = window.eventCanManage || (window.KiuSocialChromeModel || {}).eventCanManage;
+    const renderContextTabs = window.renderContextTabs || (window.KiuSocialChromeModel || {}).renderContextTabs;
+    const connectionStatusFor = window.connectionStatusFor || (window.KiuSocialProfileModel || {}).connectionStatusFor;
+    const profileAccount = window.profileAccount || (window.KiuSocialProfileModel || {}).profileAccount;
+    const profilePosts = window.profilePosts || (window.KiuSocialProfileModel || {}).profilePosts;
+    const profileFriends = window.profileFriends || (window.KiuSocialProfileModel || {}).profileFriends;
+    const profileFriendCount = window.profileFriendCount || (window.KiuSocialProfileModel || {}).profileFriendCount;
+    const profilePostCount = window.profilePostCount || (window.KiuSocialProfileModel || {}).profilePostCount;
+    const profileBio = window.profileBio || (window.KiuSocialProfileModel || {}).profileBio;
+    const profileCover = window.profileCover || (window.KiuSocialProfileModel || {}).profileCover;
+    const profileEditable = window.profileEditable || (window.KiuSocialProfileModel || {}).profileEditable;
+    const profileFollowingItems = window.profileFollowingItems || (window.KiuSocialProfileModel || {}).profileFollowingItems;
+    const profileFollowingCount = window.profileFollowingCount || (window.KiuSocialProfileModel || {}).profileFollowingCount;
+    const mutualConnectionCount = window.mutualConnectionCount || (window.KiuSocialProfileModel || {}).mutualConnectionCount;
+    const pageParticipantIds = window.pageParticipantIds || (window.KiuSocialProfileModel || {}).pageParticipantIds;
+    const groupParticipantIds = window.groupParticipantIds || (window.KiuSocialProfileModel || {}).groupParticipantIds;
+    const sharedGroupsWithUser = window.sharedGroupsWithUser || (window.KiuSocialProfileModel || {}).sharedGroupsWithUser;
+    const sharedPagesWithUser = window.sharedPagesWithUser || (window.KiuSocialProfileModel || {}).sharedPagesWithUser;
+    const personLatestPost = window.personLatestPost || (window.KiuSocialProfileModel || {}).personLatestPost;
+    const personActivityLabel = window.personActivityLabel || (window.KiuSocialProfileModel || {}).personActivityLabel;
+    const personProfileCompleteness = window.personProfileCompleteness || (window.KiuSocialProfileModel || {}).personProfileCompleteness;
+    const isStaffAccount = window.isStaffAccount || (window.KiuSocialProfileModel || {}).isStaffAccount;
+    const canPublishOfficialSurveys = window.canPublishOfficialSurveys || (window.KiuSocialProfileModel || {}).canPublishOfficialSurveys;
+    const personRoleBadges = window.personRoleBadges || (window.KiuSocialProfileModel || {}).personRoleBadges;
+    const personSuggestionScore = window.personSuggestionScore || (window.KiuSocialProfileModel || {}).personSuggestionScore;
+    const personSuggestionReason = window.personSuggestionReason || (window.KiuSocialProfileModel || {}).personSuggestionReason;
+    const inviteEligibleGroups = window.inviteEligibleGroups || (window.KiuSocialProfileModel || {}).inviteEligibleGroups;
+    const audienceBadge = window.audienceBadge || (window.KiuSocialProfileModel || {}).audienceBadge;
+
+    /**
+     * Returns a human-readable context line explaining why a post appears in the feed.
+     * Priority: group name → page name → connection status → same faculty → audience badge.
+     * @param {Object} post  - The post object (scopeType, scopeName, etc.).
+     * @param {Object} author - The resolved author account.
+     * @returns {string} A short explanation like "Active in Study Group" or "Same faculty as you".
+     */
+    const feedReason = window.feedReason || (window.KiuSocialProfileModel || {}).feedReason;
+
+    /**
+     * Returns (and lazily initialises) the global social hub state bucket
+     * at `window.KIU_STATE.socialHub`. Used for client-side saved-posts storage.
+     * @returns {{ savedPosts: Array<Object> }}
+     */
+    function socialHub() {
+        if (hasSocialFeedModule() && typeof window.socialHub === 'function' && window.socialHub !== socialHub) {
+            return window.socialHub();
+        }
+        ensureSocialFeedModule().catch(() => null);
+        if (!window.KIU_STATE) window.KIU_STATE = {};
+        if (!window.KIU_STATE.socialHub) window.KIU_STATE.socialHub = {};
+        if (!Array.isArray(window.KIU_STATE.socialHub.savedPosts)) window.KIU_STATE.socialHub.savedPosts = [];
+        return window.KIU_STATE.socialHub;
+    }
+    function savedItems() {
+        if (hasSocialFeedModule() && typeof window.savedItems === 'function' && window.savedItems !== savedItems) {
+            return window.savedItems();
+        }
+        return (Array.isArray(socialHub().savedPosts) ? socialHub().savedPosts : []).filter((item) => text(item?.userId) === currentUserId());
+    }
+    function savedPostRecords() {
+        return Array.isArray(state().social?.savedPosts) ? state().social.savedPosts : [];
+    }
+
+    /**
+     * Reads the social profile settings for a user from runtime state.
+     * Falls back to sensible defaults (public, campus, daily, 24h).
+     * @param {string} [userId] - Defaults to the current viewer.
+     * @returns {{ visibility: string, defaultAudience: string, digestFrequency: string, eventReminderLeadHours: string }}
+     */
+    function currentSocialProfileSettings(userId = currentUserId()) {
+        const profile = state().social?.profiles?.[text(userId)] || {};
+        return {
+            visibility: text(profile.visibility || 'public') || 'public',
+            defaultAudience: text(profile.defaultAudience || 'campus') || 'campus',
+            digestFrequency: text(profile.digestFrequency || 'daily') || 'daily',
+            eventReminderLeadHours: text(profile.eventReminderLeadHours || '24') || '24'
+        };
+    }
+
+    /** Checks whether the current user has bookmarked a post. */
+    function isPostSaved(postId) {
+        if (hasSocialFeedModule() && typeof window.isPostSaved === 'function' && window.isPostSaved !== isPostSaved) {
+            return window.isPostSaved(postId);
+        }
+        ensureSocialFeedModule().catch(() => null);
+        return false;
+    }
+
+    /**
+     * Toggles the saved/bookmarked state of a post for the current user.
+     * Adds or removes the record from `socialHub().savedPosts`, shows a toast,
+     * persists state, and triggers a re-render.
+     * @param {string} postId
+     */
+    async function toggleSavedPost(postId) {
+        if (hasSocialFeedModule() && typeof window.toggleSavedPost === 'function' && window.toggleSavedPost !== toggleSavedPost) {
+            return window.toggleSavedPost(postId);
+        }
+        await ensureSocialFeedModule().catch(() => null);
+        if (typeof window.toggleSavedPost === 'function' && window.toggleSavedPost !== toggleSavedPost) {
+            return window.toggleSavedPost(postId);
+        }
+    }
+
+    /**
+     * Maps a reaction type string to its HTML entity emoji.
+     * @param {string} reactionType - One of 'like'|'love'|'laugh'|'wow'|'support'.
+     * @returns {string} HTML entity (e.g. '&#128077;' for like/thumbs-up).
+     */
+
+
+    /* Wave 18: social-page-boot-runtime.js */
+    const __w18Deps = { bindPhotographyUploadDialogFileInput, openPhotographyUploadFilePicker, bindPhotographyUploadFileSinkChange, ensurePhotographyUploadFileSink, applyPhotographyUploadFile, renderPhotographyUploadDialogNow, renderDialogOnlyNow, workspaceDialogKeepsCenter, currentUserId, activeChats, activeChat, activeMessages, groupForChat, resolveProjectWorkspaceChat, ensureProjectWorkspaceChat, renderLinkedMessageText, hasSocialCommunityModule, ensureSocialCommunityModule, hasSocialAlertsModule, ensureSocialAlertsModule, hasSocialLostFoundModule, ensureSocialLostFoundModule, hasSocialPhotographyModule, ensureSocialPhotographyModule, hasSocialSurveysModule, ensureSocialSurveysModule, hasSocialMessagesModule, ensureSocialMessagesModule, hasSocialProfileModule, ensureSocialProfileModule, ensureSocialEventsModule, hasSocialEventsModule, ensureSocialGroupsModule, hasSocialGroupsModule, ensureSocialPagesModule, hasSocialPagesModule, createSocialLazyStub, createSocialWorkspaceStub, ensureSocialFeedModule, hasSocialFeedModule, scheduleDeferredDesktopModulePrefetch, scheduleDirectoryPrefetch, resolveSocialRenderPlan, saveLostFoundItems, socialHub, savedItems, savedPostRecords, currentSocialProfileSettings, isPostSaved, toggleSavedPost };
+    const __w18PeelApi = typeof window.__kiuCreateSocialPageBootApi === 'function'
+        ? window.__kiuCreateSocialPageBootApi(__w18Deps) : null;
+    if (!__w18PeelApi) throw new Error('social-page-boot-runtime.js missing');
+    const { withBusy, bindOverlayCaptureClick, bindOverlayCaptureChange, bindOverlayPortalEvents, bindEvents, renderOrRetry, boot } = __w18PeelApi;
+
     window.__kiuSocialCommunityHooks = window.__kiuSocialCommunityHooks || {};
         Object.assign(window.__kiuSocialCommunityHooks, {
         state, relationshipBuckets, text, controlId, connectionStatusFor,
@@ -1620,138 +1755,6 @@
         setPortalSocialFlash, renderSocialPageNow
     });
 
-    async function saveLostFoundItems(nextItems, reason = 'lost-found-save') {
-        const runtime = state();
-        if (!runtime.social || typeof runtime.social !== 'object') runtime.social = {};
-        const normalizedItems = (Array.isArray(nextItems) ? nextItems.map((item) => normalizeLostFoundItem(item)) : [])
-            .filter((item) => !isLostFoundItemExpired(item));
-        runtime.social.lostFoundItems = normalizedItems;
-        if (typeof persistPortalSocialStatePatch === 'function') {
-            const persisted = await persistPortalSocialStatePatch({ lostFoundItems: normalizedItems }, reason);
-            if (Array.isArray(persisted?.lostFoundItems)) {
-                runtime.social.lostFoundItems = persisted.lostFoundItems.map((item) => normalizeLostFoundItem(item));
-            }
-        }
-        return runtime.social.lostFoundItems;
-    }
-    const resetLostFoundDraft = window.resetLostFoundDraft || (window.KiuSocialChromeModel || {}).resetLostFoundDraft;
-    const clearEventDraft = window.clearEventDraft || (window.KiuSocialChromeModel || {}).clearEventDraft;
-    const prefillEventEditDraft = window.prefillEventEditDraft || (window.KiuSocialChromeModel || {}).prefillEventEditDraft;
-    const eventCanManage = window.eventCanManage || (window.KiuSocialChromeModel || {}).eventCanManage;
-    const renderContextTabs = window.renderContextTabs || (window.KiuSocialChromeModel || {}).renderContextTabs;
-    const connectionStatusFor = window.connectionStatusFor || (window.KiuSocialProfileModel || {}).connectionStatusFor;
-    const profileAccount = window.profileAccount || (window.KiuSocialProfileModel || {}).profileAccount;
-    const profilePosts = window.profilePosts || (window.KiuSocialProfileModel || {}).profilePosts;
-    const profileFriends = window.profileFriends || (window.KiuSocialProfileModel || {}).profileFriends;
-    const profileFriendCount = window.profileFriendCount || (window.KiuSocialProfileModel || {}).profileFriendCount;
-    const profilePostCount = window.profilePostCount || (window.KiuSocialProfileModel || {}).profilePostCount;
-    const profileBio = window.profileBio || (window.KiuSocialProfileModel || {}).profileBio;
-    const profileCover = window.profileCover || (window.KiuSocialProfileModel || {}).profileCover;
-    const profileEditable = window.profileEditable || (window.KiuSocialProfileModel || {}).profileEditable;
-    const profileFollowingItems = window.profileFollowingItems || (window.KiuSocialProfileModel || {}).profileFollowingItems;
-    const profileFollowingCount = window.profileFollowingCount || (window.KiuSocialProfileModel || {}).profileFollowingCount;
-    const mutualConnectionCount = window.mutualConnectionCount || (window.KiuSocialProfileModel || {}).mutualConnectionCount;
-    const pageParticipantIds = window.pageParticipantIds || (window.KiuSocialProfileModel || {}).pageParticipantIds;
-    const groupParticipantIds = window.groupParticipantIds || (window.KiuSocialProfileModel || {}).groupParticipantIds;
-    const sharedGroupsWithUser = window.sharedGroupsWithUser || (window.KiuSocialProfileModel || {}).sharedGroupsWithUser;
-    const sharedPagesWithUser = window.sharedPagesWithUser || (window.KiuSocialProfileModel || {}).sharedPagesWithUser;
-    const personLatestPost = window.personLatestPost || (window.KiuSocialProfileModel || {}).personLatestPost;
-    const personActivityLabel = window.personActivityLabel || (window.KiuSocialProfileModel || {}).personActivityLabel;
-    const personProfileCompleteness = window.personProfileCompleteness || (window.KiuSocialProfileModel || {}).personProfileCompleteness;
-    const isStaffAccount = window.isStaffAccount || (window.KiuSocialProfileModel || {}).isStaffAccount;
-    const canPublishOfficialSurveys = window.canPublishOfficialSurveys || (window.KiuSocialProfileModel || {}).canPublishOfficialSurveys;
-    const personRoleBadges = window.personRoleBadges || (window.KiuSocialProfileModel || {}).personRoleBadges;
-    const personSuggestionScore = window.personSuggestionScore || (window.KiuSocialProfileModel || {}).personSuggestionScore;
-    const personSuggestionReason = window.personSuggestionReason || (window.KiuSocialProfileModel || {}).personSuggestionReason;
-    const inviteEligibleGroups = window.inviteEligibleGroups || (window.KiuSocialProfileModel || {}).inviteEligibleGroups;
-    const audienceBadge = window.audienceBadge || (window.KiuSocialProfileModel || {}).audienceBadge;
-
-    /**
-     * Returns a human-readable context line explaining why a post appears in the feed.
-     * Priority: group name → page name → connection status → same faculty → audience badge.
-     * @param {Object} post  - The post object (scopeType, scopeName, etc.).
-     * @param {Object} author - The resolved author account.
-     * @returns {string} A short explanation like "Active in Study Group" or "Same faculty as you".
-     */
-    const feedReason = window.feedReason || (window.KiuSocialProfileModel || {}).feedReason;
-
-    /**
-     * Returns (and lazily initialises) the global social hub state bucket
-     * at `window.KIU_STATE.socialHub`. Used for client-side saved-posts storage.
-     * @returns {{ savedPosts: Array<Object> }}
-     */
-    function socialHub() {
-        if (hasSocialFeedModule() && typeof window.socialHub === 'function' && window.socialHub !== socialHub) {
-            return window.socialHub();
-        }
-        ensureSocialFeedModule().catch(() => null);
-        if (!window.KIU_STATE) window.KIU_STATE = {};
-        if (!window.KIU_STATE.socialHub) window.KIU_STATE.socialHub = {};
-        if (!Array.isArray(window.KIU_STATE.socialHub.savedPosts)) window.KIU_STATE.socialHub.savedPosts = [];
-        return window.KIU_STATE.socialHub;
-    }
-    function savedItems() {
-        if (hasSocialFeedModule() && typeof window.savedItems === 'function' && window.savedItems !== savedItems) {
-            return window.savedItems();
-        }
-        return (Array.isArray(socialHub().savedPosts) ? socialHub().savedPosts : []).filter((item) => text(item?.userId) === currentUserId());
-    }
-    function savedPostRecords() {
-        return Array.isArray(state().social?.savedPosts) ? state().social.savedPosts : [];
-    }
-
-    /**
-     * Reads the social profile settings for a user from runtime state.
-     * Falls back to sensible defaults (public, campus, daily, 24h).
-     * @param {string} [userId] - Defaults to the current viewer.
-     * @returns {{ visibility: string, defaultAudience: string, digestFrequency: string, eventReminderLeadHours: string }}
-     */
-    function currentSocialProfileSettings(userId = currentUserId()) {
-        const profile = state().social?.profiles?.[text(userId)] || {};
-        return {
-            visibility: text(profile.visibility || 'public') || 'public',
-            defaultAudience: text(profile.defaultAudience || 'campus') || 'campus',
-            digestFrequency: text(profile.digestFrequency || 'daily') || 'daily',
-            eventReminderLeadHours: text(profile.eventReminderLeadHours || '24') || '24'
-        };
-    }
-
-    /** Checks whether the current user has bookmarked a post. */
-    function isPostSaved(postId) {
-        if (hasSocialFeedModule() && typeof window.isPostSaved === 'function' && window.isPostSaved !== isPostSaved) {
-            return window.isPostSaved(postId);
-        }
-        ensureSocialFeedModule().catch(() => null);
-        return false;
-    }
-
-    /**
-     * Toggles the saved/bookmarked state of a post for the current user.
-     * Adds or removes the record from `socialHub().savedPosts`, shows a toast,
-     * persists state, and triggers a re-render.
-     * @param {string} postId
-     */
-    async function toggleSavedPost(postId) {
-        if (hasSocialFeedModule() && typeof window.toggleSavedPost === 'function' && window.toggleSavedPost !== toggleSavedPost) {
-            return window.toggleSavedPost(postId);
-        }
-        await ensureSocialFeedModule().catch(() => null);
-        if (typeof window.toggleSavedPost === 'function' && window.toggleSavedPost !== toggleSavedPost) {
-            return window.toggleSavedPost(postId);
-        }
-    }
-
-    /**
-     * Maps a reaction type string to its HTML entity emoji.
-     * @param {string} reactionType - One of 'like'|'love'|'laugh'|'wow'|'support'.
-     * @returns {string} HTML entity (e.g. '&#128077;' for like/thumbs-up).
-     */
-    /* Wave 18: social-page-boot-runtime.js */
-    const __w18Deps = { bindPhotographyUploadDialogFileInput, openPhotographyUploadFilePicker, bindPhotographyUploadFileSinkChange, ensurePhotographyUploadFileSink, applyPhotographyUploadFile, renderPhotographyUploadDialogNow, renderDialogOnlyNow, workspaceDialogKeepsCenter, currentUserId, activeChats, activeChat, activeMessages, groupForChat, resolveProjectWorkspaceChat, ensureProjectWorkspaceChat, renderLinkedMessageText, hasSocialCommunityModule, ensureSocialCommunityModule, hasSocialAlertsModule, ensureSocialAlertsModule, hasSocialLostFoundModule, ensureSocialLostFoundModule, hasSocialPhotographyModule, ensureSocialPhotographyModule, hasSocialSurveysModule, ensureSocialSurveysModule, hasSocialMessagesModule, ensureSocialMessagesModule, hasSocialProfileModule, ensureSocialProfileModule, ensureSocialEventsModule, hasSocialEventsModule, ensureSocialGroupsModule, hasSocialGroupsModule, ensureSocialPagesModule, hasSocialPagesModule, createSocialLazyStub, createSocialWorkspaceStub, ensureSocialFeedModule, hasSocialFeedModule, scheduleDeferredDesktopModulePrefetch, scheduleDirectoryPrefetch, resolveSocialRenderPlan, saveLostFoundItems, socialHub, savedItems, savedPostRecords, currentSocialProfileSettings, isPostSaved, toggleSavedPost };
-    const __w18PeelApi = typeof window.__kiuCreateSocialPageBootApi === 'function'
-        ? window.__kiuCreateSocialPageBootApi(__w18Deps) : null;
-    if (!__w18PeelApi) throw new Error('social-page-boot-runtime.js missing');
-    const { withBusy, bindOverlayCaptureClick, bindOverlayCaptureChange, bindOverlayPortalEvents, bindEvents, renderOrRetry, boot } = __w18PeelApi;
 
 
 

@@ -67,10 +67,14 @@ function isStoredFileOwnedByActor(fileRecord = null, actorUserId = '') {
     return true;
 }
 
-function createFileFromUpload(payload = {}) {
+async function createFileFromUpload(payload = {}) {
     const parsed = parseDataUrl(payload.dataUrl);
     if (!parsed) return null;
-    if (parsed.buffer.length > this.maxFileUploadBytes) return null;
+    const isBackgroundGallery = String(payload.scope || '').trim() === 'background-gallery';
+    const maxBytes = isBackgroundGallery
+        ? this.maxBackgroundGalleryUploadBytes
+        : this.maxFileUploadBytes;
+    if (parsed.buffer.length > maxBytes) return null;
     const id = normalizeStoredFileId(payload.id || makeId('file'));
     const ext = (() => {
         const name = String(payload.name || 'download.bin').trim();
@@ -99,7 +103,7 @@ function createFileFromUpload(payload = {}) {
         updatedAt: nowIso()
     };
     this.state.files[id] = record;
-    this.save();
+    await this.save();
     return clone(record);
 }
 
@@ -110,6 +114,103 @@ function extensionForStoredFile(fileRecord = {}) {
     const recorded = String(fileRecord?.path || '').trim();
     const pathMatch = recorded.match(/(\.[A-Za-z0-9]+)$/);
     return pathMatch ? pathMatch[1] : '';
+}
+
+function mimeTypeFromExtension(ext = '') {
+    const normalized = String(ext || '').trim().toLowerCase();
+    const map = {
+        '.png': 'image/png',
+        '.jpg': 'image/jpeg',
+        '.jpeg': 'image/jpeg',
+        '.gif': 'image/gif',
+        '.webp': 'image/webp',
+        '.mp4': 'video/mp4',
+        '.webm': 'video/webm',
+        '.mov': 'video/quicktime'
+    };
+    return map[normalized] || '';
+}
+
+function isBackgroundGalleryDiskCandidate(entry = '') {
+    const normalized = String(entry || '').trim();
+    if (!normalized.startsWith('file_')) return false;
+    const ext = extensionForStoredFile({ name: normalized });
+    const mimeType = mimeTypeFromExtension(ext);
+    return mimeType.startsWith('image/') || mimeType.startsWith('video/');
+}
+
+function fileIdFromUploadDiskEntry(entry = '') {
+    const normalized = String(entry || '').trim();
+    const dotIndex = normalized.indexOf('.');
+    return dotIndex > 0 ? normalized.slice(0, dotIndex) : normalized;
+}
+
+function listUnindexedBackgroundGalleryDiskFileIds() {
+    const uploadsDir = this.uploadsDir ? path.resolve(this.uploadsDir) : '';
+    if (!uploadsDir || !fs.existsSync(uploadsDir)) return [];
+    const registry = this.state?.files && typeof this.state.files === 'object' ? this.state.files : {};
+    try {
+        return fs.readdirSync(uploadsDir)
+            .filter((entry) => isBackgroundGalleryDiskCandidate(entry))
+            .map((entry) => fileIdFromUploadDiskEntry(entry))
+            .filter((fileId, index, list) => fileId && !registry[fileId] && list.indexOf(fileId) === index);
+    } catch (error) {
+        return [];
+    }
+}
+
+async function adoptUploadFileFromDisk(fileId = '', options = {}) {
+    const id = normalizeStoredFileId(fileId);
+    if (!id) return null;
+    const existing = getFile.call(this, id);
+    if (existing) return existing;
+
+    const uploadsDir = this.uploadsDir ? path.resolve(this.uploadsDir) : '';
+    if (!uploadsDir || !fs.existsSync(uploadsDir)) return null;
+
+    let diskPath = '';
+    let diskName = '';
+    try {
+        const entries = fs.readdirSync(uploadsDir);
+        const hit = entries.find((entry) => entry === id || entry.startsWith(`${id}.`));
+        if (!hit) return null;
+        const candidate = path.resolve(uploadsDir, hit);
+        if (!candidate.startsWith(`${uploadsDir}${path.sep}`) || !fs.existsSync(candidate)) return null;
+        diskPath = candidate;
+        diskName = hit;
+    } catch (error) {
+        return null;
+    }
+
+    const ext = extensionForStoredFile({ path: diskPath, name: diskName });
+    const mimeType = sanitizeStoredFileMimeType(mimeTypeFromExtension(ext) || 'application/octet-stream');
+    const ownerUserId = String(options.ownerUserId || '').trim();
+    const scope = String(options.scope || 'file').trim();
+    let size = 0;
+    try {
+        size = fs.statSync(diskPath).size;
+    } catch (error) {
+        return null;
+    }
+    const record = {
+        id,
+        name: diskName,
+        type: mimeType,
+        size,
+        path: diskPath,
+        ownerUserId,
+        uploadedAt: nowIso(),
+        uploadedBy: ownerUserId,
+        scope,
+        createdAt: nowIso(),
+        updatedAt: nowIso()
+    };
+    if (!this.state.files || typeof this.state.files !== 'object') {
+        this.state.files = {};
+    }
+    this.state.files[id] = record;
+    await this.save();
+    return clone(record);
 }
 
 /**
@@ -199,6 +300,26 @@ function objectContainsStoredFileReference(value, fileId, visited = new WeakSet(
     return Object.values(value).some(entry => objectContainsStoredFileReference(entry, normalizedFileId, visited));
 }
 
+function galleryBucketContainsFileId(bucket, fileId) {
+    if (!bucket || typeof bucket !== 'object') return false;
+    const normalizedFileId = String(fileId || '').trim();
+    if (!normalizedFileId) return false;
+    return ['images', 'videos'].some((key) =>
+        asArray(bucket[key]).some((item) => String(item?.fileId || '').trim() === normalizedFileId)
+    );
+}
+
+function stateContainsBackgroundGalleryCatalogFile(state, fileId) {
+    return galleryBucketContainsFileId(state?.backgroundGallery?.catalog, fileId);
+}
+
+function actorOwnsBackgroundGalleryFileReference(state, fileId, actorUserId) {
+    const normalizedActorUserId = String(actorUserId || '').trim();
+    if (!normalizedActorUserId) return false;
+    const bucket = state?.backgroundGallery?.userItemsByUser?.[normalizedActorUserId];
+    return galleryBucketContainsFileId(bucket, fileId);
+}
+
 function canActorAccessStoredFile(fileId, actorUserId = '', actorRole = '') {
     const normalizedFileId = String(fileId || '').trim();
     const normalizedActorUserId = String(actorUserId || '').trim();
@@ -260,6 +381,12 @@ function canActorAccessStoredFile(fileId, actorUserId = '', actorRole = '') {
     if (accessibleLmsCourseIds.some(courseId => objectContainsStoredFileReference(this.getLmsCourse(courseId), normalizedFileId))) {
         return true;
     }
+    if (stateContainsBackgroundGalleryCatalogFile(this.state, normalizedFileId)) {
+        return true;
+    }
+    if (actorOwnsBackgroundGalleryFileReference(this.state, normalizedFileId, normalizedActorUserId)) {
+        return true;
+    }
     const whiteboardWorkspaces = this.state.portal?.whiteboardWorkspaces || {};
     return Object.entries(whiteboardWorkspaces).some(([resourceKey, workspace]) => {
         if (!objectContainsStoredFileReference(workspace, normalizedFileId)) return false;
@@ -311,11 +438,13 @@ function normalizeMessageAttachment(file, senderId) {
 }
 
 module.exports = {
+    adoptUploadFileFromDisk,
     canActorAccessStoredFile,
     createFileFromUpload,
     getFile,
     healAllStoredFilePaths,
     healStoredFileRecord,
+    listUnindexedBackgroundGalleryDiskFileIds,
     normalizeMessageAttachment,
     objectContainsStoredFileReference,
     resolveStoredFileDiskPath

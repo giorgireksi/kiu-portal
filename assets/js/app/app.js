@@ -772,11 +772,13 @@ function __kiuAppExpose(map){Object.keys(map).forEach((k)=>{__kiuAppApi[k]=map[k
 
     const SOCIAL_RUNTIME_SCRIPT_GROUPS = [
         ['assets/js/shared/social-lite-project-runtime.js?v=20260719-socproj1'],
-        ['assets/js/shared/social-runtime-lite.js?v=20260713-post-compose1'],
+        ['assets/js/shared/social-lite-content-runtime.js?v=20260720-soccontent1'],
+        ['assets/js/shared/social-lite-invite-runtime.js?v=20260720-w18'],
+        ['assets/js/shared/social-runtime-lite.js?v=20260720-soccontent1'],
         [
             'assets/js/pages/social-mobile.js?v=20260624-event-edit2',
             'assets/js/pages/social-ui-kernel.js?v=20260718-portlazy1',
-            'assets/js/pages/social-page.js?v=20260719-overlay1'
+            'assets/js/pages/social-page.js?v=20260721-tdz1'
         ]
     ];
     let socialRuntimeLoadPromise = null;

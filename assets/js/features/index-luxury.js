@@ -104,12 +104,20 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
         { key: 'balanced', label: 'Balanced', copy: 'Default quality profile.' },
         { key: 'high', label: 'High', copy: 'Maximum particle density.' }
     ];
+    const STATIC_BACKGROUND_FILL_OPTIONS = [
+        { key: 'colored', label: 'Colored', icon: 'fas fa-palette' },
+        { key: 'dark', label: 'Full Dark', icon: 'fas fa-moon' },
+        { key: 'white', label: 'White', icon: 'fas fa-sun' },
+        { key: 'gallery', label: 'Gallery', icon: 'fas fa-images' }
+    ];
     const FORCED_LUXURY_VISUAL_DEFAULTS_VERSION = '20260605-oceanteal-defaults1';
     const GLOBAL_LUXURY_PALETTE_SCOPE = '*';
     const DEFAULT_HOME_VISUALS = {
         themeMode: 'dark',
         backgroundMode: 'orbit',
         backgroundAnimationsEnabled: true,
+        staticBackgroundFill: 'colored',
+        backgroundGallerySelection: null,
         particleMotion: 100,
         particleDensity: 100,
         particleAmount: 100,
@@ -133,6 +141,45 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
         inspectorDragState: null,
         scopeKey: ''
     };
+
+    function ensureBackgroundGalleryScripts() {
+        if (window.__KIU_BACKGROUND_GALLERY_SCRIPTS_PROMISE) {
+            return window.__KIU_BACKGROUND_GALLERY_SCRIPTS_PROMISE;
+        }
+        const files = [
+            'assets/js/features/luxury-background-gallery-palette.js?v=20260722-bgg21',
+            'assets/js/features/luxury-background-gallery-optimizer.js?v=20260722-bgg21',
+            'assets/js/features/luxury-background-gallery-runtime.js?v=20260722-bgg21',
+            'assets/js/features/luxury-background-gallery-studio.js?v=20260722-bgg21'
+        ];
+        const loadOne = (src) => new Promise((resolve, reject) => {
+            if (document.querySelector(`script[data-kiu-bg-gallery="${src}"]`)) {
+                resolve();
+                return;
+            }
+            const script = document.createElement('script');
+            script.defer = true;
+            script.src = src;
+            script.dataset.kiuBgGallery = src;
+            script.onload = () => resolve();
+            script.onerror = () => reject(new Error(`failed to load ${src}`));
+            document.head.appendChild(script);
+        });
+        window.__KIU_BACKGROUND_GALLERY_SCRIPTS_REQUESTED = true;
+        window.__KIU_BACKGROUND_GALLERY_SCRIPTS_PROMISE = files
+            .reduce((chain, src) => chain.then(() => loadOne(src)), Promise.resolve())
+            .then(() => {
+                if (typeof window.bindBackgroundGalleryStudioControls === 'function') {
+                    window.bindBackgroundGalleryStudioControls();
+                }
+                if (typeof window.__kiuSyncBackgroundGalleryMedia === 'function') {
+                    window.__kiuSyncBackgroundGalleryMedia(window.__kiuBackgroundGalleryCaches || {});
+                }
+            });
+        return window.__KIU_BACKGROUND_GALLERY_SCRIPTS_PROMISE;
+    }
+    window.__kiuEnsureBackgroundGalleryScripts = ensureBackgroundGalleryScripts;
+
     function ready(fn) {
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', fn, { once: true });
@@ -407,6 +454,8 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
         themeMode: 'dark',
         backgroundMode: 'orbit',
         backgroundAnimationsEnabled: true,
+        staticBackgroundFill: 'colored',
+        backgroundGallerySelection: null,
         particleMotion: 100,
         particleDensity: 100,
         particleQuality: 'high',
@@ -671,6 +720,8 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
             'kiuLuxuryCustomPaletteFaculty',
             'kiuLuxuryMixerState',
             'kiuLuxuryFogSettings',
+            'kiuLuxuryStaticBackgroundFill',
+            'kiuLuxuryBackgroundGallerySelection',
             'kiu-palette'
         ].forEach((key) => localStorage.removeItem(key));
         const paletteClasses = ['obsidian-amber', 'slate-sapphire', 'pine-jade', 'burgundy-rose', 'sand-pearl', 'ink-orchid', 'ocean-teal'];
@@ -698,7 +749,8 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
             'kiuLuxuryPaletteFaculty',
             'kiuLuxuryCustomPalette',
             'kiuLuxuryCustomPaletteFaculty',
-            'kiuLuxuryMixerState'
+            'kiuLuxuryMixerState',
+            'kiuLuxuryStaticBackgroundFill'
         ].forEach((key) => localStorage.removeItem(key));
         updateDashboardPreferenceEntry((entry) => {
             entry.visuals = buildAdvancedDefaultVisuals();
@@ -781,6 +833,7 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
         getHomeScopeKey: (...a) => getHomeScopeKey(...a),
         DEFAULT_HOME_VISUALS,
         BACKGROUND_MODES,
+        STATIC_BACKGROUND_FILL_OPTIONS,
         PARTICLE_QUALITY_OPTIONS,
         FOG_COLOR_PRESETS,
         DEFAULT_FOG_SETTINGS,
@@ -797,6 +850,8 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
     const {
         getThemeMode, applyThemeMode, sanitizeBackgroundMode, areBackgroundAnimationsEnabled,
         getBackgroundMode, setBackgroundAnimationsEnabled, setBackgroundMode,
+        getStaticBackgroundFill, setStaticBackgroundFill,
+        getBackgroundGallerySelection, setBackgroundGallerySelection, clearBackgroundGallery,
         getParticleMotion, setParticleMotion, getParticleDensity, setParticleDensity,
         getParticleAmount, setParticleAmount, getParticleSharpness, setParticleSharpness,
         getParticleQuality, setParticleQuality, DEFAULT_STUDIO_MIXER, clampNumber,
@@ -1001,6 +1056,12 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
         else if (onLibraryRoute) scheduleLibraryRouteBackgroundRefresh();
         else if (createdCanvas && typeof window.__kiuRefreshLuxuryBackground === 'function') {
             window.__kiuRefreshLuxuryBackground();
+        }
+        if (typeof window.__kiuEnsureBackgroundGalleryMount === 'function') {
+            window.__kiuEnsureBackgroundGalleryMount();
+        }
+        if (typeof window.__kiuSyncBackgroundGalleryMedia === 'function') {
+            window.__kiuSyncBackgroundGalleryMedia(window.__kiuBackgroundGalleryCaches || {});
         }
         if (!document.getElementById('lux-shell')) {
             const shell = document.createElement('aside');
@@ -1207,6 +1268,7 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
         NAV_BY_ROLE,
         STUDIO_PALETTES,
         BACKGROUND_MODES,
+        STATIC_BACKGROUND_FILL_OPTIONS,
         PARTICLE_QUALITY_OPTIONS,
         DEFAULT_STUDIO_MIXER,
         HOME_EDITOR_STATE,
@@ -1243,6 +1305,11 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
         areBackgroundAnimationsEnabled,
         setBackgroundAnimationsEnabled,
         setBackgroundMode,
+        getStaticBackgroundFill,
+        setStaticBackgroundFill,
+        getBackgroundGallerySelection,
+        setBackgroundGallerySelection,
+        clearBackgroundGallery,
         getParticleMotion,
         setParticleMotion,
         getParticleDensity,
@@ -1336,6 +1403,7 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
         }, 1600);
     }
     __luxAtmosphereBridge._showToast = showToast;
+    window.showToast = showToast;
     function wrapFunction(name, callback) {
         const original = window[name];
         if (typeof original !== 'function' || original.__luxWrapped) return;
@@ -1511,6 +1579,7 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
         getParticleSharpness: (...a) => getParticleSharpness(...a),
         getParticleQuality: (...a) => getParticleQuality(...a),
         areBackgroundAnimationsEnabled: (...a) => areBackgroundAnimationsEnabled(...a),
+        getStaticBackgroundFill: (...a) => getStaticBackgroundFill(...a),
         applyThemeMode: (...a) => applyThemeMode(...a),
         applyResolvedPalette: (...a) => applyResolvedPalette(...a),
         applyAtmosphereSettings: (...a) => applyAtmosphereSettings(...a),
@@ -1592,6 +1661,17 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
     });
     ready(() => {
         window.renderLuxuryAdminToolsPage = (...args) => renderLuxuryAdminToolsPage(...args);
+        ensureBackgroundGalleryScripts()
+            .then(() => {
+                const token = typeof window.getPortalSessionToken === 'function'
+                    ? window.getPortalSessionToken()
+                    : '';
+                if (token && typeof window.refreshBackgroundGalleryData === 'function') {
+                    return window.refreshBackgroundGalleryData();
+                }
+                return null;
+            })
+            .catch(() => {});
         ensureShell();
         ensureHomeShell();
         bindUserMenu();

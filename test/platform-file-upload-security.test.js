@@ -26,11 +26,11 @@ afterEach(() => {
 });
 
 describe('platform file upload security', () => {
-    it('persists owner metadata, sanitizes MIME types, and writes the decoded payload', () => {
+    it('persists owner metadata, sanitizes MIME types, and writes the decoded payload', async () => {
         const uploadsDir = makeTempDir();
         const store = new PlatformStore({ uploadsDir, maxFileUploadBytes: 4096 });
 
-        const file = store.createFileFromUpload({
+        const file = await store.createFileFromUpload({
             id: 'unsafe-html-demo',
             name: 'unsafe.html',
             type: 'text/html',
@@ -47,11 +47,11 @@ describe('platform file upload security', () => {
         expect(readFileSync(file.path, 'utf8')).toBe('<h1>demo</h1>');
     });
 
-    it('rejects oversized uploads before writing them to disk', () => {
+    it('rejects oversized uploads before writing them to disk', async () => {
         const uploadsDir = makeTempDir();
         const store = new PlatformStore({ uploadsDir, maxFileUploadBytes: 8 });
 
-        const file = store.createFileFromUpload({
+        const file = await store.createFileFromUpload({
             id: 'too-large-demo',
             name: 'large.txt',
             type: 'text/plain',
@@ -63,10 +63,10 @@ describe('platform file upload security', () => {
         expect(file).toBeNull();
     });
 
-    it('rejects cross-user stored file references in the shared attachment normalizer', () => {
+    it('rejects cross-user stored file references in the shared attachment normalizer', async () => {
         const uploadsDir = makeTempDir();
         const store = new PlatformStore({ uploadsDir, maxFileUploadBytes: 4096 });
-        const ownedFile = store.createFileFromUpload({
+        const ownedFile = await store.createFileFromUpload({
             id: 'owned-file',
             name: 'owned.txt',
             type: 'text/plain',
@@ -82,10 +82,10 @@ describe('platform file upload security', () => {
         expect(reusedByOtherUser).toBeNull();
     });
 
-    it('blocks unrelated users from direct file access while allowing chat members to reach shared attachments', () => {
+    it('blocks unrelated users from direct file access while allowing chat members to reach shared attachments', async () => {
         const uploadsDir = makeTempDir();
         const store = new PlatformStore({ uploadsDir, maxFileUploadBytes: 4096 });
-        const sharedFile = store.createFileFromUpload({
+        const sharedFile = await store.createFileFromUpload({
             id: 'chat-file',
             name: 'chat.txt',
             type: 'text/plain',
@@ -114,10 +114,10 @@ describe('platform file upload security', () => {
         expect(store.canActorAccessStoredFile(sharedFile.id, 'student-3', 'student')).toBe(false);
     });
 
-    it('allows enrolled LMS participants to reach stored LMS attachments without reopening global file access', () => {
+    it('allows enrolled LMS participants to reach stored LMS attachments without reopening global file access', async () => {
         const uploadsDir = makeTempDir();
         const store = new PlatformStore({ uploadsDir, maxFileUploadBytes: 4096 });
-        const lmsFile = store.createFileFromUpload({
+        const lmsFile = await store.createFileFromUpload({
             id: 'lms-file',
             name: 'assignment.txt',
             type: 'text/plain',
@@ -147,12 +147,12 @@ describe('platform file upload security', () => {
         expect(store.canActorAccessStoredFile(lmsFile.id, 'student-10', 'student')).toBe(false);
     });
 
-    it('keeps upload ownership server-derived and forces attachment downloads in source', () => {
+    it('keeps upload ownership server-derived and flushes pending writes before responding', () => {
         const routeSource = readFileSync(join(process.cwd(), 'backend/platform/routes/files-routes.js'), 'utf8');
 
         expect(routeSource).toContain('ownerUserId: actor.actorUserId');
         expect(routeSource).not.toContain('ownerUserId: request.body?.ownerUserId');
-        expect(routeSource).toContain("response.setHeader('Content-Disposition', `attachment; filename=\"${encodeURIComponent(file.name)}\"`);");
+        expect(routeSource).toContain('await store.flushPendingWrites()');
         expect(routeSource).toContain("sendError(response, 403, 'You are not allowed to access this file.');");
     });
 });

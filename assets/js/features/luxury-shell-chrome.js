@@ -534,19 +534,111 @@ function getFallbackNavGroups(role) {
 }
 
 
+function collectShellPerimeterPoints(rect, perSide = 6) {
+    const { left, top, width, height } = rect;
+    const points = [];
+    const add = (x, y, nx, ny) => points.push({ x, y, nx, ny });
+    for (let i = 0; i < perSide; i += 1) {
+        const t = (i + 0.5) / perSide;
+        add(left + width * t, top, 0, -1);
+        add(left + width, top + height * t, 1, 0);
+        add(left + width * (1 - t), top + height, 0, 1);
+        add(left, top + height * (1 - t), -1, 0);
+    }
+    return points;
+}
+
+function spawnStudioChipBurstParticles(shell, _event, root) {
+    const rect = shell.getBoundingClientRect();
+    const points = collectShellPerimeterPoints(rect, 6);
+    const sizes = ['sm', 'md', 'lg'];
+    points.forEach((pt, i) => {
+        const edgeJitter = (Math.random() - 0.5) * 8;
+        const angleJitter = ((Math.random() - 0.5) * 24 * Math.PI) / 180;
+        const baseAngle = Math.atan2(pt.ny, pt.nx) + angleJitter;
+        const dist = 22 + Math.random() * 26;
+        const spawnX = pt.x + (pt.nx === 0 ? edgeJitter : 0);
+        const spawnY = pt.y + (pt.ny === 0 ? edgeJitter : 0);
+        const bit = document.createElement('span');
+        bit.className = `lux-chip-burst-particle lux-chip-burst-particle--${sizes[i % 3]}`;
+        bit.style.left = `${spawnX}px`;
+        bit.style.top = `${spawnY}px`;
+        bit.style.setProperty('--burst-tx', `${Math.cos(baseAngle) * dist}px`);
+        bit.style.setProperty('--burst-ty', `${Math.sin(baseAngle) * dist}px`);
+        bit.style.setProperty('--burst-delay', `${i * 14}ms`);
+        const remove = () => bit.remove();
+        bit.addEventListener('animationend', remove, { once: true });
+        window.setTimeout(remove, 900);
+        root.appendChild(bit);
+    });
+}
+
+function launchBackgroundGallery(mediaType) {
+    const open = () => {
+        if (typeof bindBackgroundGalleryStudioControls === 'function') {
+            bindBackgroundGalleryStudioControls();
+        }
+        if (typeof openBackgroundGalleryPopup === 'function') {
+            openBackgroundGalleryPopup(mediaType);
+        }
+    };
+    if (typeof openBackgroundGalleryPopup === 'function') {
+        open();
+        return;
+    }
+    const loader = window.__kiuEnsureBackgroundGalleryScripts;
+    if (typeof loader === 'function') {
+        loader()
+            .then(open)
+            .catch(() => {
+                if (typeof showToast === 'function') showToast('Gallery failed to load.');
+            });
+        return;
+    }
+    if (typeof showToast === 'function') showToast('Gallery failed to load.');
+}
+window.launchBackgroundGallery = launchBackgroundGallery;
+
+function ensureStudioChipBurstHandler() {
+    if (ensureStudioChipBurstHandler._bound || typeof document === 'undefined') return;
+    ensureStudioChipBurstHandler._bound = true;
+    const chipSelector = '.lux-mode-btn, .lux-control-btn, .lux-fog-profile-bank-btn, .lux-fog-profile-action-btn, [data-particle-quality], .lux-palette-chip, .lux-apply-btn, .lux-bg-gallery-tab, .lux-bg-gallery-upload-btn, .lux-bg-gallery-tile';
+    document.addEventListener('pointerdown', (event) => {
+        if (event.button !== 0) return;
+        const root = event.target.closest('#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop');
+        if (!root) return;
+        const shell = event.target.closest('.lux-bg-mode-item, .lux-fog-profile-item');
+        const target = shell && root.contains(shell)
+            ? shell
+            : event.target.closest(chipSelector);
+        if (!target || !root.contains(target) || target.disabled) return;
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        spawnStudioChipBurstParticles(target, event, root);
+    }, true);
+}
+
 function ensureStudioCss() {
+    ensureStudioChipBurstHandler();
     if (typeof document === 'undefined') return;
     const sheets = [
-        { href: 'assets/css/lux-studio.css?v=20260720-densify6500', key: 'data-kiu-studio' },
-        { href: 'assets/css/lux-studio-mobile.css?v=20260720-densify6500', key: 'data-kiu-studio-mobile' }
+        { href: 'assets/css/lux-studio.css?v=20260721-studioglow37', key: 'data-kiu-studio' },
+        { href: 'assets/css/lux-studio-mobile.css?v=20260721-studioglow37', key: 'data-kiu-studio-mobile' }
     ];
     for (const sheet of sheets) {
-        if (document.querySelector(`link[${sheet.key}]`)) continue;
+        const existing = document.querySelector(`link[${sheet.key}]`);
+        if (existing) {
+            if (existing.getAttribute('href') !== sheet.href) existing.setAttribute('href', sheet.href);
+            continue;
+        }
         const file = sheet.href.split('?')[0].split('/').pop();
-        const has = Array.from(document.querySelectorAll('link[rel="stylesheet"]')).some((l) =>
+        const found = Array.from(document.querySelectorAll('link[rel="stylesheet"]')).find((l) =>
             String(l.getAttribute('href') || '').includes(file)
         );
-        if (has) continue;
+        if (found) {
+            found.setAttribute('href', sheet.href);
+            found.setAttribute(sheet.key, '1');
+            continue;
+        }
         const link = document.createElement('link');
         link.rel = 'stylesheet';
         link.href = sheet.href;
@@ -580,14 +672,15 @@ function ensureStudio() {
     const backdrop = document.createElement('div');
     backdrop.id = 'lux-studio-backdrop';
     backdrop.className = 'lux-studio-backdrop';
+    backdrop.setAttribute('data-lux-transparency-exempt', '1');
     backdrop.innerHTML = `
-        <div class="lux-studio-panel" role="dialog" aria-label="Luxury theme studio">
+        <div class="lux-studio-panel" role="dialog" aria-label="Luxury theme studio" data-lux-transparency-exempt="1">
             <div class="lux-studio-head">
-                <div>
-                    <div class="lux-studio-title">Color & Motion Studio</div>
+                <div class="lux-studio-heading">
+                    <div class="lux-studio-title"><i class="fas fa-palette" aria-hidden="true"></i> Color & Motion Studio</div>
                     <div class="lux-studio-sub">Tune the portal palette and choose the 3D background mood.</div>
                 </div>
-                <button class="lux-studio-close" id="lux-studio-close" type="button"><i class="fas fa-times"></i></button>
+                <button class="lux-studio-close" id="lux-studio-close" type="button" aria-label="Close studio"><i class="fas fa-times"></i></button>
             </div>
             <div class="lux-studio-body">
                 <div class="lux-studio-section">
@@ -626,6 +719,23 @@ function ensureStudio() {
                         <button class="lux-mode-btn" id="lux-bg-animation-off" type="button"><i class="fas fa-pause"></i> Off</button>
                     </div>
                 </div>
+                <div class="lux-studio-section lux-static-bg-section" id="lux-static-bg-section" hidden>
+                    <div class="lux-studio-label">Static Background</div>
+                    <div class="lux-mode-row">
+                        <button class="lux-mode-btn" id="lux-static-bg-colored" type="button" data-static-bg-fill="colored"><i class="fas fa-palette"></i> Colored</button>
+                        <button class="lux-mode-btn" id="lux-static-bg-dark" type="button" data-static-bg-fill="dark"><i class="fas fa-moon"></i> Full Dark</button>
+                        <button class="lux-mode-btn" id="lux-static-bg-white" type="button" data-static-bg-fill="white"><i class="fas fa-sun"></i> White</button>
+                    </div>
+                </div>
+
+                <div class="lux-studio-section lux-bg-gallery-section" id="lux-bg-gallery-section" hidden>
+                    <div class="lux-studio-label">Background Gallery</div>
+                    <div class="lux-mode-row">
+                        <button class="lux-mode-btn" id="lux-bg-gallery-open-images" type="button"><i class="fas fa-image"></i> Images</button>
+                        <button class="lux-mode-btn" id="lux-bg-gallery-open-videos" type="button"><i class="fas fa-video"></i> Videos</button>
+                    </div>
+                    <button class="lux-control-btn" id="lux-bg-gallery-clear" type="button"><strong>Clear gallery</strong><span>Return to colored static fill.</span></button>
+                </div>
                 <div class="lux-studio-section">
                     <div class="lux-studio-label">Default & Reset</div>
                     <div class="lux-reset-grid">
@@ -658,6 +768,14 @@ function ensureStudio() {
         writeStudioMixerInputs(getStudioMixerState());
     }
     backdrop.addEventListener('click', (event) => {
+        if (event.target.closest('#lux-bg-gallery-open-images')) {
+            launchBackgroundGallery('images');
+            return;
+        }
+        if (event.target.closest('#lux-bg-gallery-open-videos')) {
+            launchBackgroundGallery('videos');
+            return;
+        }
         if (event.target === backdrop) closeStudio();
     });
     document.getElementById('lux-studio-close')?.addEventListener('click', () => closeStudio({ restoreFocus: true }));
@@ -674,6 +792,12 @@ function ensureStudio() {
     });
     document.getElementById('lux-bg-animation-off')?.addEventListener('click', () => {
         if (typeof setBackgroundAnimationsEnabled === 'function') setBackgroundAnimationsEnabled(false, true);
+    });
+    document.querySelectorAll('[data-static-bg-fill]').forEach((button) => {
+        button.addEventListener('click', () => {
+            const fill = button.dataset.staticBgFill;
+            if (fill && typeof setStaticBackgroundFill === 'function') setStaticBackgroundFill(fill, true);
+        });
     });
     const transparencySlider = document.getElementById('lux-transparency-slider');
     const transparencyValue = document.getElementById('lux-transparency-value');
@@ -731,6 +855,7 @@ function ensureStudio() {
         button.type = 'button';
         button.className = 'lux-bg-mode-btn';
         button.dataset.bgMode = mode.key;
+        button.setAttribute('data-lux-skip-modern-button', 'true');
         button.innerHTML = `<i class="${escapeHtml(mode.icon)}"></i><strong>${escapeHtml(mode.label)}</strong><span>${escapeHtml(mode.copy)}</span>`;
         button.addEventListener('click', () => {
             setBackgroundMode(mode.key, true);
@@ -749,6 +874,12 @@ function ensureStudio() {
             event.preventDefault();
             event.stopPropagation();
             openBgModeParamsPopup(mode.key);
+        });
+
+        item.addEventListener('click', (event) => {
+            if (event.target.closest('.lux-bg-mode-settings-btn')) return;
+            if (event.target.closest('.lux-bg-mode-btn')) return;
+            button.click();
         });
 
         item.appendChild(button);
@@ -856,6 +987,10 @@ function ensureStudio() {
     if (!document.body.dataset.luxStudioEscBound) {
         document.addEventListener('keydown', (event) => {
             if (event.key !== 'Escape') return;
+            if (document.getElementById('lux-bg-gallery-backdrop')?.classList.contains('is-open')) {
+                if (typeof closeBackgroundGalleryPopup === 'function') closeBackgroundGalleryPopup();
+                return;
+            }
             if (document.getElementById('lux-bg-mode-params-backdrop')?.classList.contains('is-open')) {
                 closeBgModeParamsPopup();
                 return;
@@ -865,6 +1000,7 @@ function ensureStudio() {
         document.body.dataset.luxStudioEscBound = '1';
     }
     updateStudioPreview();
+    if (typeof bindBackgroundGalleryStudioControls === 'function') bindBackgroundGalleryStudioControls();
     syncStudioUi();
     return backdrop;
 }
@@ -1086,9 +1222,10 @@ function ensureBgModeParamsPopup() {
     const backdrop = document.createElement('div');
     backdrop.id = 'lux-bg-mode-params-backdrop';
     backdrop.className = 'lux-bg-mode-params-backdrop';
+    backdrop.setAttribute('data-lux-transparency-exempt', '1');
     backdrop.dataset.fogParamsVersion = FOG_PARAMS_TEMPLATE_VERSION;
     backdrop.innerHTML = `
-        <div class="lux-bg-mode-params-dialog" role="dialog" aria-modal="true" aria-labelledby="lux-bg-params-title">
+        <div class="lux-bg-mode-params-dialog" role="dialog" aria-modal="true" aria-labelledby="lux-bg-params-title" data-lux-transparency-exempt="1">
             <div class="lux-bg-mode-params-head">
                 <div>
                     <div class="lux-bg-mode-params-title" id="lux-bg-params-title">Background Parameters</div>
@@ -1334,7 +1471,18 @@ function syncStudioUi() {
     document.getElementById('lux-mode-light')?.classList.toggle('is-active', getThemeMode() === 'light');
     document.getElementById('lux-bg-animation-on')?.classList.toggle('is-active', typeof areBackgroundAnimationsEnabled === 'function' ? areBackgroundAnimationsEnabled() : true);
     document.getElementById('lux-bg-animation-off')?.classList.toggle('is-active', typeof areBackgroundAnimationsEnabled === 'function' ? !areBackgroundAnimationsEnabled() : false);
+    const staticBgSection = document.getElementById('lux-static-bg-section');
+    const animationsOff = typeof areBackgroundAnimationsEnabled === 'function' ? !areBackgroundAnimationsEnabled() : false;
+    if (staticBgSection) staticBgSection.hidden = !animationsOff;
+    const currentStaticFill = typeof getStaticBackgroundFill === 'function' ? getStaticBackgroundFill() : 'colored';
+    document.querySelectorAll('[data-static-bg-fill]').forEach((button) => {
+        button.classList.toggle('is-active', button.dataset.staticBgFill === currentStaticFill);
+    });
     syncFogStudioInputs();
+    if (typeof syncBackgroundGalleryStudioUi === 'function') syncBackgroundGalleryStudioUi();
+    const galleryAdminButtons = document.querySelectorAll('[data-lux-admin-only="1"]');
+    const isAdmin = typeof getEffectiveRole === 'function' && getEffectiveRole() === 'admin';
+    galleryAdminButtons.forEach((button) => { button.hidden = !isAdmin; });
 }
 
 function toggleStudio() {
@@ -1347,6 +1495,24 @@ function toggleStudio() {
     document.body.classList.toggle('lux-studio-open', open);
     paletteButton?.classList.toggle('is-active', open);
     if (open) {
+        [backdrop, ...backdrop.querySelectorAll('.lux-studio-panel, [data-lux-transparency-exempt="1"]')].forEach((el) => {
+            el.style.removeProperty('background-color');
+            el.style.removeProperty('background');
+            el.style.removeProperty('backdrop-filter');
+            el.style.removeProperty('-webkit-backdrop-filter');
+            delete el.dataset.luxTransparencySignature;
+        });
+        const ensureGallery = window.__kiuEnsureBackgroundGalleryScripts;
+        if (typeof ensureGallery === 'function') {
+            ensureGallery()
+                .then(() => {
+                    if (typeof bindBackgroundGalleryStudioControls === 'function') bindBackgroundGalleryStudioControls();
+                    if (typeof refreshBackgroundGalleryData === 'function') refreshBackgroundGalleryData();
+                })
+                .catch(() => {});
+        } else if (typeof refreshBackgroundGalleryData === 'function') {
+            refreshBackgroundGalleryData();
+        }
         syncStudioUi();
         updateStudioPreview();
         focusFirstInteractive(backdrop, '#lux-studio-close, #lux-mode-dark, #lux-mode-light');

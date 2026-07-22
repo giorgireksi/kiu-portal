@@ -237,6 +237,9 @@
         document.body.dataset.luxBackgroundIntensity = resolvedQuality;
         document.body.dataset.luxParticleQuality = particleQuality;
         document.body.dataset.luxBackgroundAnimation = backgroundAnimationsEnabled ? 'on' : 'off';
+        document.body.dataset.luxStaticBackground = typeof getStaticBackgroundFill === 'function'
+            ? getStaticBackgroundFill()
+            : (document.body.dataset.luxStaticBackground || 'colored');
     }
 
     function normalizeWidgetSpan(value, fallback = 6) {

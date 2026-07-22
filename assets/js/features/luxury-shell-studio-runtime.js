@@ -222,10 +222,10 @@
                 item.innerHTML = `
                     <button type="button" class="lux-fog-profile-drag-handle" data-fog-profile-drag-handle data-lux-skip-modern-button="true" aria-label="Reorder ${escapeHtml(profile.name)}"${isEditing ? ' disabled' : ''}><i class="fas fa-grip-vertical"></i></button>
                     <span class="lux-fog-profile-index" aria-hidden="true">${index + 1}</span>
-                    <div class="lux-fog-profile-item-main">
+                    <button type="button" class="lux-fog-profile-item-main" data-fog-profile-apply-row="${escapeHtml(profile.id)}" data-lux-skip-modern-button="true" aria-label="Apply ${escapeHtml(profile.name)}"${isEditing ? ' disabled' : ''}>
                         <div class="lux-fog-profile-item-label">${escapeHtml(profile.name)}</div>
                         <div class="lux-fog-profile-swatches">${buildFogProfileSwatchesMarkup(swatchSettings)}</div>
-                    </div>
+                    </button>
                     <div class="lux-fog-profile-item-actions">
                         <button type="button" class="lux-fog-profile-action-btn" data-fog-profile-apply="${escapeHtml(profile.id)}" data-lux-skip-modern-button="true" aria-label="Apply ${escapeHtml(profile.name)}"${isEditing ? ' disabled' : ''}><i class="fas fa-download"></i><span>Apply</span></button>
                         <button type="button" class="lux-fog-profile-action-btn lux-fog-profile-action-btn--edit" data-fog-profile-edit="${escapeHtml(profile.id)}" data-lux-skip-modern-button="true" aria-label="Edit ${escapeHtml(profile.name)}"><i class="fas fa-pen"></i></button>
@@ -587,11 +587,11 @@
                     saveFogProfileFromInput(addButton);
                     return;
                 }
-                const applyButton = event.target.closest('[data-fog-profile-apply]');
+                const applyButton = event.target.closest('[data-fog-profile-apply], [data-fog-profile-apply-row]');
                 if (applyButton) {
                     event.preventDefault();
                     if (applyButton.disabled) return;
-                    const profileId = String(applyButton.dataset.fogProfileApply || '').trim();
+                    const profileId = String(applyButton.dataset.fogProfileApply || applyButton.dataset.fogProfileApplyRow || '').trim();
                     if (!profileId || typeof window.applyFogProfile !== 'function') {
                         if (typeof window.applyFogProfile !== 'function') notifyFogProfileApiMissing();
                         flashFogProfileAction(applyButton, 'error');
@@ -604,6 +604,18 @@
                     window.applyFogProfile(profileId);
                     renderFogProfileList();
                     flashFogProfileAction(applyButton, 'success');
+                    return;
+                }
+                const profileShell = event.target.closest('.lux-fog-profile-item');
+                if (
+                    profileShell
+                    && !event.target.closest('button, a, input, select, textarea')
+                ) {
+                    const main = profileShell.querySelector('[data-fog-profile-apply-row]');
+                    if (main && !main.disabled) {
+                        event.preventDefault();
+                        main.click();
+                    }
                     return;
                 }
                 const editButton = event.target.closest('[data-fog-profile-edit]');

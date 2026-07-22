@@ -24,10 +24,12 @@ const { PostgresRecordStore } = require('./postgres-record-store');
 const { LocalRecordStore } = require('./local-record-store');
 const { addAuditEvent } = require('./domains/audit-service');
 const {
+    adoptUploadFileFromDisk,
     canActorAccessStoredFile,
     createFileFromUpload,
     getFile,
     healAllStoredFilePaths,
+    listUnindexedBackgroundGalleryDiskFileIds,
     normalizeMessageAttachment,
     objectContainsStoredFileReference
 } = require('./domains/files-service');
@@ -284,6 +286,19 @@ const {
     updateNotificationPreferences,
     upsertPushSubscription
 } = require('./domains/notifications-service');
+const {
+    ensureBackgroundGalleryState,
+    getBackgroundGalleryCatalog,
+    getBackgroundGalleryUserItems,
+    migrateBackgroundGalleryUserItemsFromPortalPrefs,
+    reconcileOrphanBackgroundGalleryUserFiles,
+    uploadBackgroundGalleryAsset,
+    addBackgroundGalleryCatalogItem,
+    removeBackgroundGalleryCatalogItem,
+    addBackgroundGalleryUserItem,
+    removeBackgroundGalleryUserItem,
+    promoteBackgroundGalleryUserItem
+} = require('./domains/background-gallery-service');
 
 const DEFAULT_MAX_ECTS = 30;
 
@@ -431,17 +446,25 @@ function pickClientOwnedPortalState(source = {}) {
     }, {});
 }
 
+function mergeUserHomeDashboardPreferences(existingEntry = {}, incomingEntry = {}) {
+    return { ...clone(existingEntry), ...clone(incomingEntry) };
+}
+
 function mergeKeyedPortalStateMap(existingMap = {}, incomingMap = {}, actorUserId = '', allowGlobalWrite = false) {
     const existing = existingMap && typeof existingMap === 'object' ? existingMap : {};
     const incoming = incomingMap && typeof incomingMap === 'object' ? incomingMap : {};
     if (allowGlobalWrite) {
-        return { ...clone(existing), ...clone(incoming) };
+        const merged = clone(existing);
+        Object.keys(incoming).forEach((userId) => {
+            merged[userId] = mergeUserHomeDashboardPreferences(existing[userId], incoming[userId]);
+        });
+        return merged;
     }
     const actorId = String(actorUserId || '').trim();
     if (!actorId) return clone(existing);
     const merged = clone(existing);
     if (incoming[actorId] !== undefined) {
-        merged[actorId] = clone(incoming[actorId]);
+        merged[actorId] = mergeUserHomeDashboardPreferences(existing[actorId], incoming[actorId]);
     }
     return merged;
 }
@@ -835,6 +858,10 @@ class PlatformStore {
         this.auditRetentionDays = Math.max(1, safeNumber(options.auditRetentionDays, 2555));
         this.portalSessionTtlMs = Math.max(60 * 1000, safeNumber(options.portalSessionTtlMs, 12 * 60 * 60 * 1000));
         this.maxFileUploadBytes = Math.max(1, safeNumber(options.maxFileUploadBytes, 25 * 1024 * 1024));
+        this.maxBackgroundGalleryUploadBytes = Math.max(
+            this.maxFileUploadBytes,
+            safeNumber(options.maxBackgroundGalleryUploadBytes, this.maxFileUploadBytes)
+        );
         this.databaseUrl = String(options.databaseUrl || '').trim();
         this.databaseTableName = String(options.databaseTableName || '').trim();
         this.allowLocalFallback = options.allowLocalFallback !== false;
@@ -972,6 +999,7 @@ class PlatformStore {
         state.audit.events = Array.isArray(state.audit.events) ? state.audit.events : [];
         state.social = state.social && typeof state.social === 'object' ? state.social : createEmptySocialState();
         state.studentService = state.studentService && typeof state.studentService === 'object' ? state.studentService : createEmptyStudentServiceState();
+        ensureBackgroundGalleryState(state);
         state.importJobs = state.importJobs && typeof state.importJobs === 'object' ? state.importJobs : {};
         state.portal = state.portal && typeof state.portal === 'object' ? state.portal : {};
         state.portal.state = state.portal.state && typeof state.portal.state === 'object'
@@ -997,6 +1025,7 @@ class PlatformStore {
         delete state.portal.legacyState;
         migrateLostFoundSocialState(state);
         ensureAdminTestingPersonaAccounts(state);
+        migrateBackgroundGalleryUserItemsFromPortalPrefs(state);
         return state;
     }
 
@@ -1006,6 +1035,7 @@ class PlatformStore {
         this.pendingSave = this.pendingSave
             .catch((error) => {
                 console.error('Platform store write failed:', error?.message || error);
+                throw error;
             })
             .then(writeTask);
         return this.pendingSave;
@@ -3657,6 +3687,14 @@ class PlatformStore {
         return createFileFromUpload.call(this, payload);
     }
 
+    adoptUploadFileFromDisk(fileId = '', options = {}) {
+        return adoptUploadFileFromDisk.call(this, fileId, options);
+    }
+
+    listUnindexedBackgroundGalleryDiskFileIds() {
+        return listUnindexedBackgroundGalleryDiskFileIds.call(this);
+    }
+
     getFile(fileId) {
         return getFile.call(this, fileId);
     }
@@ -4925,6 +4963,42 @@ class PlatformStore {
 
     getImportJob(id) {
         return clone(this.state.importJobs[String(id || '').trim()] || null);
+    }
+
+    getBackgroundGalleryCatalog() {
+        return getBackgroundGalleryCatalog.call(this);
+    }
+
+    getBackgroundGalleryUserItems(userId = '') {
+        return getBackgroundGalleryUserItems.call(this, userId);
+    }
+
+    reconcileOrphanBackgroundGalleryUserFiles(userId = '', actor = {}) {
+        return reconcileOrphanBackgroundGalleryUserFiles.call(this, userId, actor);
+    }
+
+    uploadBackgroundGalleryAsset(payload = {}, actor = {}) {
+        return uploadBackgroundGalleryAsset.call(this, payload, actor);
+    }
+
+    addBackgroundGalleryCatalogItem(payload = {}, actor = {}) {
+        return addBackgroundGalleryCatalogItem.call(this, payload, actor);
+    }
+
+    removeBackgroundGalleryCatalogItem(itemId = '', actor = {}) {
+        return removeBackgroundGalleryCatalogItem.call(this, itemId, actor);
+    }
+
+    addBackgroundGalleryUserItem(userId = '', payload = {}, actor = {}) {
+        return addBackgroundGalleryUserItem.call(this, userId, payload, actor);
+    }
+
+    removeBackgroundGalleryUserItem(userId = '', itemId = '', actor = {}) {
+        return removeBackgroundGalleryUserItem.call(this, userId, itemId, actor);
+    }
+
+    promoteBackgroundGalleryUserItem(payload = {}, actor = {}) {
+        return promoteBackgroundGalleryUserItem.call(this, payload, actor);
     }
 
     getPlatformStatus() {

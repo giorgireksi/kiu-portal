@@ -226,6 +226,11 @@ html.lux-light-mode, body.lux-light-mode {
   --lux-glass-alpha: 0.06;
   --lux-card-glow-alpha: 0.06;
   --lux-utility-alpha: 0.82;
+  --lux-static-colored-page-base: linear-gradient(168deg, #060910 0%, #080c12 40%, #05080e 100%);
+  --lux-static-colored-page-haze:
+    radial-gradient(circle at 16% 0%, rgba(255, 255, 255, 0.05), transparent 34%),
+    radial-gradient(circle at 80% 18%, rgba(var(--lux-accent-rgb), 0.10), transparent 38%),
+    linear-gradient(145deg, rgba(var(--lux-accent-rgb), 0.06), rgba(8, 12, 21, 0.98) 44%, rgba(6, 9, 16, 1) 100%);
 }
 :root {
   --lux-home-scroll-size: 14px;

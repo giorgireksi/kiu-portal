@@ -9,6 +9,7 @@ const { registerAdminIntegrationsRoutes } = require('./routes/admin-integrations
 const { registerAcademicRoutes } = require('./routes/academic-routes');
 const { registerAdminSupportRoutes } = require('./routes/admin-support-routes');
 const { registerAuthRoutes } = require('./routes/auth-routes');
+const { registerBackgroundGalleryRoutes } = require('./routes/background-gallery-routes');
 const { registerFileRoutes } = require('./routes/files-routes');
 const { registerLmsLiveQuizRoutes } = require('./routes/lms-live-quiz-routes');
 const { registerLmsWhiteboardRoutes } = require('./routes/lms-whiteboard-routes');
@@ -280,7 +281,10 @@ const inMemoryRateLimits = new Map();
 const app = express();
 app.disable('x-powered-by');
 app.set('trust proxy', Number(process.env.KIU_TRUST_PROXY_HOPS || 1));
-app.use(express.json({ limit: '100mb' }));
+// Gallery uploads arrive as data URLs, which are roughly one third larger than
+// the original file. This allows a 100 MB gallery asset without changing the
+// ordinary per-file upload cap.
+app.use(express.json({ limit: process.env.KIU_MAX_JSON_BODY_BYTES || '160mb' }));
 app.use((request, response, next) => {
     const origin = String(request.headers.origin || '').trim();
     if (origin && ALLOWED_CORS_ORIGINS.has(origin)) {
@@ -2630,6 +2634,14 @@ registerFileRoutes(app, {
     sendError
 });
 
+registerBackgroundGalleryRoutes(app, {
+    getSessionActor,
+    getStore: () => store,
+    isActualAdminSession,
+    requireSessionAccount,
+    sendError
+});
+
 registerMessengerCallsRoutes(app, {
     getActorUserId,
     getStore: () => store,
@@ -2695,6 +2707,7 @@ async function startServer() {
             mailTokenEncryptionKey: MAIL_TOKEN_ENCRYPTION_KEY,
             auditRetentionDays: process.env.KIU_AUDIT_RETENTION_DAYS || 2555,
             maxFileUploadBytes: process.env.KIU_MAX_FILE_UPLOAD_BYTES || (25 * 1024 * 1024),
+            maxBackgroundGalleryUploadBytes: process.env.KIU_MAX_BACKGROUND_GALLERY_UPLOAD_BYTES || (100 * 1024 * 1024),
             bootstrapAdmin: {
                 id: process.env.KIU_ADMIN_ID || 'admin-root',
                 name: process.env.KIU_ADMIN_NAME || 'Portal Administrator',

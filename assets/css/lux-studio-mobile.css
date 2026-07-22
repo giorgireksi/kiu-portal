@@ -1,19 +1,73 @@
 @media (max-width: 768px) {
-  .lux-studio-backdrop.is-open { z-index: 10000 !important; }
-  .lux-studio-panel {
-    width: 100vw;
-    max-width: 100%;
-    border-radius: 0;
-    border-left: none;
+  #lux-studio-backdrop.lux-studio-backdrop.is-open { z-index: 10000 !important; }
+  #lux-studio-backdrop.lux-studio-backdrop { padding: 12px; }
+  #lux-studio-backdrop .lux-studio-panel {
+    width: min(100%, calc(100vw - 24px));
+    max-height: calc(100vh - 24px);
+    border-radius: 20px;
+    padding: 14px;
   }
-  .lux-studio-head { padding: 16px 16px 14px; }
-  .lux-studio-title { font-size: 20px; }
-  .lux-studio-sub { font-size: 11px; }
-  .lux-studio-body { padding: 14px 16px 100px; gap: 14px; }
-  .lux-studio-section { padding: 14px; }
-  .lux-palette-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
-  .lux-palette-chip { min-height: 72px; }
-  .lux-range-row { grid-template-columns: 60px minmax(0, 1fr) 42px; gap: 8px; }
-  .lux-mix-preview { min-height: 64px; }
-  .lux-apply-btn { min-height: 48px; font-size: 13px; }
+  #lux-studio-backdrop .lux-studio-title { font-size: 20px; }
+  #lux-studio-backdrop .lux-studio-sub { font-size: 11px; }
+  #lux-studio-backdrop .lux-studio-body { padding: 12px 2px 8px; gap: 12px; }
+  #lux-studio-backdrop .lux-palette-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  #lux-studio-backdrop .lux-palette-chip { min-height: 72px; }
+  :is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop) .lux-range-row { grid-template-columns: 60px minmax(0, 1fr) 42px; gap: 8px; }
+  #lux-studio-backdrop .lux-mix-preview { min-height: 64px; }
+  #lux-studio-backdrop .lux-apply-btn { min-height: 48px; font-size: 13px; }
+
+  .lux-bg-mode-params-backdrop.is-open { z-index: 10010 !important; }
+  .lux-bg-mode-params-backdrop { padding: 12px; }
+  .lux-bg-mode-params-dialog {
+    width: min(100%, calc(100vw - 24px));
+    max-height: calc(100vh - 24px);
+    border-radius: 20px;
+    padding: 14px;
+  }
+  .lux-bg-mode-params-title { font-size: 18px; }
+  .lux-bg-mode-params-sub { font-size: 11px; }
+  .lux-bg-mode-params-body { padding: 12px 2px 8px; gap: 10px; }
+  #lux-bg-mode-params-backdrop .lux-fog-color-grid { grid-template-columns: 1fr; }
+  :is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop) .lux-control-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  :is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop)
+    :is(.lux-studio-section, .lux-studio-heading, .lux-bg-mode-panel-subsection, .lux-transparency-control, .lux-bg-mode-panel-copy, .lux-bg-mode-panel-hint, .lux-bg-mode-params-head > div:first-of-type, .lux-fog-color-field, .lux-fog-profile-item, .lux-fog-profile-edit-bar),
+  #lux-studio-backdrop :is(.lux-range-row, .lux-mix-preview, .lux-bg-mode-item) {
+    padding: 10px 12px;
+    border-radius: 14px;
+  }
+  #lux-studio-backdrop .lux-studio-section:not(:has(.lux-bg-mode-item, .lux-range-row, .lux-mix-preview, .lux-mode-row, .lux-reset-grid, .lux-transparency-control)) {
+    padding: 12px 14px;
+  }
+
+  .lux-bg-gallery-backdrop { padding: 12px; }
+  .lux-bg-gallery-dialog {
+    width: min(100%, calc(100vw - 24px));
+    max-height: calc(100dvh - 24px);
+    border-radius: 20px;
+    padding: 14px;
+  }
+  #lux-bg-gallery-backdrop .lux-bg-gallery-actions-primary {
+    grid-template-columns: minmax(0, 1fr) auto auto;
+  }
+  #lux-bg-gallery-backdrop .lux-bg-gallery-body {
+    padding: 0;
+  }
+  #lux-bg-gallery-backdrop .lux-bg-gallery-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+  #lux-bg-gallery-backdrop .lux-bg-gallery-delete-confirm,
+  #lux-bg-gallery-backdrop #lux-bg-gallery-delete-panel {
+    flex-direction: column;
+  }
+  #lux-bg-gallery-backdrop .lux-bg-gallery-delete-confirm-actions {
+    flex-direction: row;
+    width: 100%;
+  }
+  #lux-bg-gallery-backdrop .lux-bg-gallery-delete-cancel,
+  #lux-bg-gallery-backdrop .lux-bg-gallery-delete-confirm-btn {
+    flex: 1 1 0;
+  }
 }

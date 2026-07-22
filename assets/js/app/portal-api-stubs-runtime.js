@@ -11,6 +11,9 @@
         const asyncNoop = () => fallbackPromise;
         const asyncArray = () => Promise.resolve([]);
         const asyncNull = () => Promise.resolve(null);
+        const asyncGalleryUploadStub = () => Promise.reject(
+            new Error('Gallery upload API not loaded — hard refresh the page.')
+        );
         const portalUiNoop = () => null;
         portalUiNoop.__kiuFallback = true;
 
@@ -30,6 +33,7 @@
             recordPortalSyncRun: asyncNoop,
             recordPortalSyncConflict: asyncNoop,
             uploadPortalStoredFile: asyncNull,
+            uploadBackgroundGalleryAsset: asyncGalleryUploadStub,
             getPortalStoredFileUrl: () => '',
             getPortalRtcConfiguration: () => null,
             applyPortalSocialState: noop,

@@ -48,15 +48,30 @@ wait_for_url() {
     return 1
 }
 
+backend_manifest_matches() {
+    local expected=""
+    local remote=""
+    expected="$(node -e "console.log(require('./backend/platform/contracts/student-service-api-contract').STUDENT_SERVICE_API_MANIFEST_VERSION)")"
+    remote="$(curl --silent --max-time 2 "$BACKEND_HEALTH_URL" | node -e "let s='';process.stdin.on('data',chunk=>s+=chunk);process.stdin.on('end',()=>{try{const payload=JSON.parse(s);process.stdout.write(String(payload.studentServiceApiManifestVersion||''));}catch{}})")"
+    [[ -n "$expected" && "$expected" == "$remote" ]]
+}
+
 frontend_pid="$(read_pid_if_running "$FRONTEND_PID_FILE" || true)"
 backend_pid="$(read_pid_if_running "$BACKEND_PID_FILE" || true)"
 
 if [[ -n "$frontend_pid" && -n "$backend_pid" ]]; then
-    echo "KIU local stack is already running on port ${FRONTEND_PORT}."
-    echo "Login: http://127.0.0.1:${FRONTEND_PORT}/login.html"
-    echo "LMS:   http://127.0.0.1:${FRONTEND_PORT}/lms.html"
-    echo "Admin: http://127.0.0.1:${FRONTEND_PORT}/admin-tools.html"
-    exit 0
+    if curl --silent --fail --max-time 2 "$BACKEND_HEALTH_URL" >/dev/null 2>&1 && ! backend_manifest_matches; then
+        echo "Backend is running but API manifest is stale; restarting stack..."
+        "$ROOT/stop-local-8876.sh" || true
+        frontend_pid=""
+        backend_pid=""
+    else
+        echo "KIU local stack is already running on port ${FRONTEND_PORT}."
+        echo "Login: http://127.0.0.1:${FRONTEND_PORT}/login.html"
+        echo "LMS:   http://127.0.0.1:${FRONTEND_PORT}/lms.html"
+        echo "Admin: http://127.0.0.1:${FRONTEND_PORT}/admin-tools.html"
+        exit 0
+    fi
 fi
 
 if [[ -n "$frontend_pid" || -n "$backend_pid" ]]; then

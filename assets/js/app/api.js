@@ -688,6 +688,7 @@ const createPortalAuditEvent = window.createPortalAuditEvent;
 const getPortalRtcConfiguration = window.getPortalRtcConfiguration;
 const getPortalFileStorageMode = window.getPortalFileStorageMode;
 const uploadPortalStoredFile = window.uploadPortalStoredFile;
+const uploadBackgroundGalleryAsset = window.uploadBackgroundGalleryAsset;
 const getPortalStoredFileUrl = window.getPortalStoredFileUrl;
 const extractPersistableSocialHubState = window.extractPersistableSocialHubState;
 const applyPortalSocialState = window.applyPortalSocialState;

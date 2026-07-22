@@ -262,7 +262,6 @@ const INDEX_TRANSPARENCY_GLOBAL_ROOT_SELECTORS = [
     '#mobile-bottom-nav',
     '#mobile-action-sheet',
     '#modal-overlay',
-    '.lux-studio-backdrop',
     '.lux-picker-panel'
 ];
 
@@ -611,6 +610,15 @@ function updateTransparency(value, options = {}) {
         var _bodyBg = _isLight
             ? 'linear-gradient(180deg,rgba(245,240,232,' + _pa + '),rgba(240,235,226,' + _pa + '))'
             : 'linear-gradient(180deg,rgba(12,17,26,' + _pa + '),rgba(7,10,16,' + _pa + '))';
+        var _animationsOff = document.body && document.body.dataset.luxBackgroundAnimation === 'off';
+        var _staticFill = _animationsOff ? String(document.body.dataset.luxStaticBackground || '').trim().toLowerCase() : '';
+        if (_animationsOff && _staticFill === 'dark') {
+            _bodyBg = '#05080f';
+        } else if (_animationsOff && _staticFill === 'white') {
+            _bodyBg = '#ffffff';
+        } else if (_animationsOff && _staticFill === 'colored' && !_isLight) {
+            _bodyBg = 'var(--lux-static-colored-page-haze)';
+        }
         var _sidebarBg = _isLight
             ? 'linear-gradient(180deg,rgba(248,244,237,' + _pa + '),rgba(242,237,228,' + _pa + '))'
             : 'linear-gradient(180deg,rgba(10,14,22,' + _pa + '),rgba(6,9,15,' + _pa + '))';
@@ -1414,6 +1422,20 @@ function updateTransparency(value, options = {}) {
     surfaceElements.forEach(el => {
         // Skip if element is hidden
         if (el.offsetParent === null && el.style.display === 'none') return;
+        // Studio owns fixed 50% glass in lux-studio.css — never engine-paint.
+        if (
+            el.id === 'lux-studio-backdrop' ||
+            el.classList.contains('lux-studio-backdrop') ||
+            el.classList.contains('lux-studio-panel') ||
+            el.closest?.('#lux-studio-backdrop, #lux-bg-mode-params-backdrop')
+        ) {
+            el.style.removeProperty('background-color');
+            el.style.removeProperty('background');
+            el.style.removeProperty('backdrop-filter');
+            el.style.removeProperty('-webkit-backdrop-filter');
+            delete el.dataset.luxTransparencySignature;
+            return;
+        }
         const isOrdersInboxSurface = Boolean(el.closest?.(
             '#page-orders .orders-inbox-shell, #orders-inbox-root .orders-inbox-shell, #admin-orders-root .orders-inbox-shell'
         ));
@@ -1696,6 +1718,7 @@ function updateTransparency(value, options = {}) {
 function isLuxTransparencyExemptSubtree(node) {
     if (!node || node.nodeType !== Node.ELEMENT_NODE) return false;
     if (node.closest && node.closest('[data-lux-transparency-exempt="1"]')) return true;
+    if (node.closest && node.closest('#lux-studio-backdrop, .lux-studio-panel, #lux-bg-mode-params-backdrop')) return true;
     return false;
 }
 

@@ -516,6 +516,49 @@ function getPortalFileStorageMode() {
     return String(getCachedPortalPlatformConfig()?.fileStorageMode || '').trim().toLowerCase() || 'bridge';
 }
 
+async function uploadBackgroundGalleryAsset(file, options = {}) {
+    if (!file) {
+        throw new Error('No file selected for upload.');
+    }
+    if (typeof kiuPortalFetch !== 'function') {
+        throw new Error('Gallery API not loaded. Hard refresh the page.');
+    }
+    const target = String(options.target || 'mine').trim().toLowerCase() === 'catalog' ? 'catalog' : 'mine';
+    const sourceBlob = file.blob instanceof Blob ? file.blob : (file instanceof Blob ? file : null);
+    let dataUrl = String(file.dataUrl || '').trim();
+    if (!dataUrl && sourceBlob) {
+        try {
+            dataUrl = await new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(String(reader.result || ''));
+                reader.onerror = () => reject(reader.error || new Error('read failed'));
+                reader.readAsDataURL(sourceBlob);
+            });
+        } catch (e) {
+            throw new Error('Could not read file for upload.');
+        }
+    }
+    if (!dataUrl) {
+        throw new Error('Could not read file for upload.');
+    }
+    const mediaType = String(file.type || sourceBlob?.type || '').startsWith('video/') ? 'video' : 'image';
+    return kiuPortalFetch('/api/background-gallery/upload', {
+        method: 'POST',
+        // A 100 MB source expands when represented as a data URL and can take
+        // longer than the normal API timeout to reach disk.
+        timeoutMs: 120000,
+        body: JSON.stringify({
+            target,
+            name: file.name || 'download.bin',
+            type: file.type || sourceBlob?.type || 'application/octet-stream',
+            mediaType,
+            label: String(options.label || file.name || 'Background').replace(/\.[^.]+$/, '') || 'Background',
+            recommendedPaletteKey: options.recommendedPaletteKey || 'ocean-teal',
+            dataUrl
+        })
+    });
+}
+
 async function uploadPortalStoredFile(file, scope = 'file') {
     if (!file) return null;
     const sourceBlob = file.blob instanceof Blob ? file.blob : (file instanceof Blob ? file : null);
@@ -568,6 +611,37 @@ function getPortalStoredFileUrl(storageKey, options = {}) {
     if (inline) params.push('inline=1');
     if (params.length) base += `?${params.join('&')}`;
     return base;
+}
+
+
+async function fetchBackgroundGalleryCatalog() {
+    const payload = await kiuPortalFetch('/api/background-gallery/catalog');
+    return payload?.catalog || { images: [], videos: [] };
+}
+
+async function fetchBackgroundGalleryMine() {
+    const payload = await kiuPortalFetch('/api/background-gallery/mine');
+    return payload?.items || { images: [], videos: [] };
+}
+
+async function addBackgroundGalleryCatalogItem(body = {}) {
+    return kiuPortalFetch('/api/background-gallery/catalog', { method: 'POST', body: JSON.stringify(body) });
+}
+
+async function addBackgroundGalleryMineItem(body = {}) {
+    return kiuPortalFetch('/api/background-gallery/mine', { method: 'POST', body: JSON.stringify(body) });
+}
+
+async function deleteBackgroundGalleryCatalogItem(itemId = '') {
+    return kiuPortalFetch(`/api/background-gallery/catalog/${encodeURIComponent(itemId)}`, { method: 'DELETE' });
+}
+
+async function deleteBackgroundGalleryMineItem(itemId = '') {
+    return kiuPortalFetch(`/api/background-gallery/mine/${encodeURIComponent(itemId)}`, { method: 'DELETE' });
+}
+
+async function promoteBackgroundGalleryCatalogItem(body = {}) {
+    return kiuPortalFetch('/api/background-gallery/catalog/promote', { method: 'POST', body: JSON.stringify(body) });
 }
 
 function extractPersistableSocialHubState(source = (typeof KIU_STATE !== 'undefined' ? KIU_STATE.socialHub : null)) {
@@ -783,8 +857,16 @@ async function completeMicrosoftPortalLoginFromUrl() {
             createPortalAuditEvent,
             getPortalRtcConfiguration,
             getPortalFileStorageMode,
+            uploadBackgroundGalleryAsset,
             uploadPortalStoredFile,
             getPortalStoredFileUrl,
+            fetchBackgroundGalleryCatalog,
+            fetchBackgroundGalleryMine,
+            addBackgroundGalleryCatalogItem,
+            addBackgroundGalleryMineItem,
+            deleteBackgroundGalleryCatalogItem,
+            deleteBackgroundGalleryMineItem,
+            promoteBackgroundGalleryCatalogItem,
             extractPersistableSocialHubState,
             applyPortalSocialState,
             persistPortalSocialState,

@@ -49,7 +49,10 @@ class LocalRecordStore {
 
     queueWrite(task) {
         this.writeQueue = this.writeQueue
-            .catch(() => null)
+            .catch((error) => {
+                console.error('LocalRecordStore write failed:', error?.message || error);
+                throw error;
+            })
             .then(task);
         return this.writeQueue;
     }

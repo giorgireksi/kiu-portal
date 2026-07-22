@@ -60,11 +60,13 @@ function registerPortalSupportRoutes(app, deps = {}) {
                 return;
             }
             const nextState = request.body?.state || {};
+            const allowGlobalWrite = isActualAdminSession(sessionAccount)
+                && !(typeof isSessionImpersonating === 'function' && isSessionImpersonating(sessionAccount));
+            const actorUserId = getActorUserId(sessionAccount);
             const savedState = store.savePortalState(nextState, {
-                actorUserId: getActorUserId(sessionAccount),
+                actorUserId,
                 effectiveRole: typeof getSessionRole === 'function' ? getSessionRole(sessionAccount) : '',
-                allowGlobalWrite: isActualAdminSession(sessionAccount)
-                    && !(typeof isSessionImpersonating === 'function' && isSessionImpersonating(sessionAccount))
+                allowGlobalWrite
             });
             await store.flushPendingWrites();
             // Live-push: notify other open sessions to re-pull the shared state.

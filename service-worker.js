@@ -8,7 +8,7 @@ const SHELL_ASSETS = [
   '/exams.html',
   '/login.html',
   '/assets/css/lux-tokens.css?v=20260721-darkglow1',
-'/assets/css/lux-fouc-ht.css?v=20260719-foucslim1',
+'/assets/css/lux-fouc-ht.css?v=20260721-studiostrip1',
   '/assets/css/mobile-shell-core.css?v=20260720-densify6500',
   '/assets/css/mobile-shell.css?v=20260720-densify6500',
   '/assets/css/lux-shell.css?v=20260721-topbarhost1',

@@ -554,6 +554,22 @@
     } else if (typeof scopedVisuals.backgroundAnimationsEnabled === 'boolean') {
         backgroundAnimationsEnabled = scopedVisuals.backgroundAnimationsEnabled;
     }
+    var staticBackgroundFill = 'colored';
+    if (hasCurrentVisualDefaults) {
+        try {
+            var savedStaticBackgroundFill = String(localStorage.getItem('kiuLuxuryStaticBackgroundFill') || '').trim().toLowerCase();
+            if (savedStaticBackgroundFill) {
+                staticBackgroundFill = savedStaticBackgroundFill;
+            } else if (scopedVisuals && scopedVisuals.staticBackgroundFill) {
+                staticBackgroundFill = String(scopedVisuals.staticBackgroundFill).trim().toLowerCase();
+            }
+        } catch (e) {}
+    } else if (scopedVisuals && scopedVisuals.staticBackgroundFill) {
+        staticBackgroundFill = String(scopedVisuals.staticBackgroundFill).trim().toLowerCase();
+    }
+    if (staticBackgroundFill !== 'dark' && staticBackgroundFill !== 'white' && staticBackgroundFill !== 'gallery') {
+        staticBackgroundFill = 'colored';
+    }
     if (savedTransparency) {
         root.dataset.luxTransparency = savedTransparency;
         var transInt = parseInt(savedTransparency, 10);
@@ -606,6 +622,13 @@
             var _bodyBg = _isLight
                 ? 'linear-gradient(180deg,rgba(245,240,232,' + _pa + '),rgba(240,235,226,' + _pa + '))'
                 : 'linear-gradient(180deg,rgba(12,17,26,' + _pa + '),rgba(7,10,16,' + _pa + '))';
+            if (!backgroundAnimationsEnabled && staticBackgroundFill === 'dark') {
+                _bodyBg = '#05080f';
+            } else if (!backgroundAnimationsEnabled && staticBackgroundFill === 'white') {
+                _bodyBg = '#ffffff';
+            } else if (!backgroundAnimationsEnabled && staticBackgroundFill === 'colored' && !_isLight) {
+                _bodyBg = 'var(--lux-static-colored-page-haze)';
+            }
             var _sidebarBg = _isLight
                 ? 'linear-gradient(180deg,rgba(248,244,237,' + _pa + '),rgba(242,237,228,' + _pa + '))'
                 : 'linear-gradient(180deg,rgba(10,14,22,' + _pa + '),rgba(6,9,15,' + _pa + '))';
@@ -688,6 +711,7 @@
             b.dataset.luxThemeMode = 'light';
         }
         b.dataset.luxBackgroundAnimation = backgroundAnimationsEnabled ? 'on' : 'off';
+        b.dataset.luxStaticBackground = staticBackgroundFill;
 
         // Sidebar — unified shell on desktop starts collapsed for overlay layout
         if (typeof window !== 'undefined' && window.innerWidth >= 1181) {

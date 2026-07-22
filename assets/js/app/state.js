@@ -466,7 +466,7 @@ function buildCanonicalDomain(state) {
 
     const enrollmentsByStudent = {};
     Object.entries(state.studentSchedulesByStudent || {}).forEach(([studentId, schedule]) => {
-        enrollmentsByStudent[studentId] = (schedule || []).map(item => ({
+        enrollmentsByStudent[studentId] = normalizeStudentScheduleValue(schedule).map(item => ({
             studentId,
             sectionKey: `${item.courseId}::${item.groupId}`,
             subjectId: item.courseId,
@@ -940,6 +940,11 @@ function ensureCanonicalState() {
     }
 
     if (!KIU_STATE.studentSchedulesByStudent) KIU_STATE.studentSchedulesByStudent = {};
+    Object.entries(KIU_STATE.studentSchedulesByStudent || {}).forEach(([studentId, schedule]) => {
+        if (!Array.isArray(schedule)) {
+            KIU_STATE.studentSchedulesByStudent[studentId] = normalizeStudentScheduleValue(schedule);
+        }
+    });
     const defaultStudent = KIU_STATE.users.find(user => user.role === USER_ROLES.STUDENT);
     if (defaultStudent && Array.isArray(KIU_STATE.studentSchedule) && KIU_STATE.studentSchedule.length > 0 && !KIU_STATE.studentSchedulesByStudent[defaultStudent.id]) {
         KIU_STATE.studentSchedulesByStudent[defaultStudent.id] = JSON.parse(JSON.stringify(KIU_STATE.studentSchedule));

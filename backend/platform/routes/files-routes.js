@@ -8,13 +8,13 @@ function registerFileRoutes(app, deps = {}) {
         sendError
     } = deps;
 
-    app.post('/api/files/upload', (request, response) => {
+    app.post('/api/files/upload', async (request, response) => {
         const sessionAccount = requireSessionAccount(request, response);
         if (!sessionAccount) return;
         try {
             const actor = getSessionActor(sessionAccount);
             const store = getStore();
-            const file = store.createFileFromUpload({
+            const file = await store.createFileFromUpload({
                 ...(request.body || {}),
                 ownerUserId: actor.actorUserId
             });
@@ -22,6 +22,7 @@ function registerFileRoutes(app, deps = {}) {
                 sendError(response, 400, 'Invalid file payload.');
                 return;
             }
+            await store.flushPendingWrites();
             addRouteAuditEvent(request, sessionAccount, {
                 eventDomain: 'files',
                 eventType: 'file-uploaded',

@@ -96,6 +96,8 @@
                 String(visuals.particleSharpness ?? getParticleSharpness()),
                 visuals.particleQuality || getParticleQuality() || '',
                 typeof visuals.backgroundAnimationsEnabled === 'boolean' ? String(visuals.backgroundAnimationsEnabled) : String(areBackgroundAnimationsEnabled()),
+                visuals.staticBackgroundFill || getStaticBackgroundFill() || 'colored',
+                JSON.stringify(visuals.backgroundGallerySelection || (typeof getBackgroundGallerySelection === 'function' ? getBackgroundGallerySelection() : null) || {}),
                 String(visuals.surfaceTransparency ?? localStorage.getItem('kiuLuxurySurfaceTransparency') ?? 13)
             ].join('|');
         }

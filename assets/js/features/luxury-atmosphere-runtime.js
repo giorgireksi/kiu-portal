@@ -26,6 +26,7 @@
 
         const DEFAULT_HOME_VISUALS = d.DEFAULT_HOME_VISUALS;
         const BACKGROUND_MODES = d.BACKGROUND_MODES;
+        const STATIC_BACKGROUND_FILL_OPTIONS = d.STATIC_BACKGROUND_FILL_OPTIONS || [];
         const PARTICLE_QUALITY_OPTIONS = d.PARTICLE_QUALITY_OPTIONS;
         const FOG_COLOR_PRESETS = d.FOG_COLOR_PRESETS;
         const DEFAULT_FOG_SETTINGS = d.DEFAULT_FOG_SETTINGS;
@@ -92,6 +93,119 @@
         function getBackgroundMode() {
             return sanitizeBackgroundMode(getDashboardVisuals().backgroundMode || DEFAULT_HOME_VISUALS.backgroundMode);
         }
+        function sanitizeStaticBackgroundFill(value) {
+            const normalized = String(value || '').trim().toLowerCase();
+            return STATIC_BACKGROUND_FILL_OPTIONS.some((item) => item.key === normalized)
+                ? normalized
+                : (DEFAULT_HOME_VISUALS.staticBackgroundFill || 'colored');
+        }
+        function getStaticBackgroundFill() {
+            const scopeKey = getHomeScopeKey();
+            const entry = getDashboardPreferenceEntry();
+            const stored = String(localStorage.getItem('kiuLuxuryStaticBackgroundFill') || '').trim().toLowerCase();
+            if (stored) {
+                return sanitizeStaticBackgroundFill(stored);
+            }
+            const scopedVisuals = entry.visualsByScope?.[scopeKey];
+            if (scopedVisuals?.staticBackgroundFill) {
+                return sanitizeStaticBackgroundFill(scopedVisuals.staticBackgroundFill);
+            }
+            const visuals = getDashboardVisuals();
+            if (visuals?.staticBackgroundFill) {
+                return sanitizeStaticBackgroundFill(visuals.staticBackgroundFill);
+            }
+            return sanitizeStaticBackgroundFill(DEFAULT_HOME_VISUALS.staticBackgroundFill);
+        }
+        function applyStaticBackgroundFillDom() {
+            if (!document.body) return;
+            document.body.dataset.luxStaticBackground = getStaticBackgroundFill();
+        }
+
+        function sanitizeBackgroundGallerySelection(value) {
+            if (!value || typeof value !== 'object') return null;
+            const source = String(value.source || '').trim().toLowerCase();
+            const mediaType = String(value.mediaType || '').trim().toLowerCase();
+            const id = String(value.id || '').trim();
+            if (!id) return null;
+            if (source !== 'catalog' && source !== 'user') return null;
+            if (mediaType !== 'image' && mediaType !== 'video') return null;
+            return { source, id, mediaType };
+        }
+        function getBackgroundGallerySelection() {
+            const scopeKey = getHomeScopeKey();
+            const entry = getDashboardPreferenceEntry();
+            const scopedVisuals = entry.visualsByScope?.[scopeKey];
+            if (scopedVisuals?.backgroundGallerySelection) {
+                return sanitizeBackgroundGallerySelection(scopedVisuals.backgroundGallerySelection);
+            }
+            return sanitizeBackgroundGallerySelection(getDashboardVisuals().backgroundGallerySelection);
+        }
+        function refreshBackgroundGalleryRenderer() {
+            if (typeof window.__kiuSyncBackgroundGalleryMedia === 'function') {
+                window.__kiuSyncBackgroundGalleryMedia(window.__kiuBackgroundGalleryCaches || {});
+            } else if (typeof window.__kiuClearBackgroundGalleryMedia === 'function') {
+                window.__kiuClearBackgroundGalleryMedia();
+            }
+        }
+        function setBackgroundGallerySelection(item, persist = true) {
+            const selection = sanitizeBackgroundGallerySelection(item);
+            if (!selection) return false;
+            if (typeof setBackgroundAnimationsEnabled === 'function') {
+                setBackgroundAnimationsEnabled(false, persist);
+            }
+            if (persist) {
+                localStorage.setItem('kiuLuxuryStaticBackgroundFill', 'gallery');
+                setDashboardVisuals({
+                    backgroundGallerySelection: selection,
+                    staticBackgroundFill: 'gallery',
+                    backgroundAnimationsEnabled: false
+                });
+            }
+            applyStaticBackgroundFillDom();
+            applyAtmosphereSettings();
+            refreshBackgroundGalleryRenderer();
+            if (typeof window.__kiuRefreshLuxuryBackground === 'function') {
+                window.__kiuRefreshLuxuryBackground();
+            }
+            syncStudioUi();
+            showToast('Gallery background applied');
+            return true;
+        }
+        function clearBackgroundGallery(persist = true) {
+            if (persist) {
+                localStorage.setItem('kiuLuxuryStaticBackgroundFill', 'colored');
+                setDashboardVisuals({
+                    staticBackgroundFill: 'colored',
+                    backgroundGallerySelection: null
+                });
+            }
+            applyStaticBackgroundFillDom();
+            applyAtmosphereSettings();
+            if (typeof window.__kiuClearBackgroundGalleryMedia === 'function') {
+                window.__kiuClearBackgroundGalleryMedia();
+            }
+            if (typeof window.__kiuRefreshLuxuryBackground === 'function') {
+                window.__kiuRefreshLuxuryBackground();
+            }
+            syncStudioUi();
+            showToast('Gallery background cleared');
+        }
+        function setStaticBackgroundFill(value, persist = true) {
+            const nextValue = sanitizeStaticBackgroundFill(value);
+            applyStaticBackgroundFillDom();
+            if (persist) {
+                localStorage.setItem('kiuLuxuryStaticBackgroundFill', nextValue);
+                setDashboardVisuals({ staticBackgroundFill: nextValue });
+            }
+            applyAtmosphereSettings();
+            refreshBackgroundGalleryRenderer();
+            if (typeof window.__kiuRefreshLuxuryBackground === 'function') {
+                window.__kiuRefreshLuxuryBackground();
+            }
+            syncStudioUi();
+            const label = STATIC_BACKGROUND_FILL_OPTIONS.find((item) => item.key === nextValue)?.label || nextValue;
+            showToast(`Static background: ${label}`);
+        }
         function setBackgroundAnimationsEnabled(enabled, persist = true) {
             const nextValue = enabled !== false;
             document.body.dataset.luxBackgroundAnimation = nextValue ? 'on' : 'off';
@@ -99,10 +213,12 @@
                 localStorage.setItem('kiuLuxuryBackgroundAnimationsEnabled', nextValue ? '1' : '0');
                 setDashboardVisuals({ backgroundAnimationsEnabled: nextValue });
             }
+            applyStaticBackgroundFillDom();
             applyAtmosphereSettings();
             if (typeof window.__kiuRefreshLuxuryBackground === 'function') {
                 window.__kiuRefreshLuxuryBackground();
             }
+            refreshBackgroundGalleryRenderer();
             syncStudioUi();
             showToast(nextValue ? 'Background animations on' : 'Background animations off');
         }
@@ -612,6 +728,13 @@
             getBackgroundMode,
             setBackgroundAnimationsEnabled,
             setBackgroundMode,
+            sanitizeStaticBackgroundFill,
+            getStaticBackgroundFill,
+            setStaticBackgroundFill,
+            sanitizeBackgroundGallerySelection,
+            getBackgroundGallerySelection,
+            setBackgroundGallerySelection,
+            clearBackgroundGallery,
             getParticleMotion,
             setParticleMotion,
             getParticleDensity,
