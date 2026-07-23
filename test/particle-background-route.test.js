@@ -369,7 +369,7 @@ describe('particle background route integration', () => {
         expect(foucCss).toContain('calc(0.18 * var(--lux-glow-scale, 1))');
         expect(foucCss).not.toContain('--lux-glow-scale: 0');
         const tokensCss = readSource('assets/css/lux-tokens.css');
-        expect(tokensCss).toContain('--lux-static-colored-page-haze: var(--lux-shell-background)');
+        expect(tokensCss).not.toContain('--lux-static-colored-page-haze');
         const transparency = readSource('assets/js/shared/lux-transparency.js');
         expect(transparency).toContain("var(--lux-shell-background)");
         const primer = readSource('assets/js/theme-primer.js');

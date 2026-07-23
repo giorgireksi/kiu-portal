@@ -368,14 +368,15 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
         reconcileAdminLibraryRouteClasses(pageId, entryId);
     }
     function isSidebarCollapsed() {
-        if (document.body) {
-            return document.body.classList.contains('lux-sidebar-collapsed');
-        }
         try {
-            return localStorage.getItem('kiuLuxurySidebarCollapsed') === '1';
-        } catch (e) {
-            return false;
-        }
+            const saved = localStorage.getItem('kiuLuxurySidebarCollapsed');
+            if (saved === '1') return true;
+            if (saved === '0') return false;
+        } catch (e) { /* ignore */ }
+        // Prefer live body class only after a deliberate apply; default expanded.
+        if (document.body?.dataset?.luxSidebar === 'collapsed') return true;
+        if (document.body?.dataset?.luxSidebar === 'expanded') return false;
+        return false;
     }
     function isDesktopSidebarOverlayViewport() {
         return typeof window !== 'undefined' && window.innerWidth >= 1181;
@@ -463,7 +464,6 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
     }
     const ADVANCED_HOME_LAYOUT_VERSION = 5;
     const HOME_SCOPE_SEPARATOR = '::';
-    const HOME_DESKTOP_EDITOR_BREAKPOINT = 1120;
     const HOME_GRID_COLUMNS = 12;
     const HOME_GRID_ROW_HEIGHT = 28;
     const ADVANCED_DEFAULT_VISUALS = {
@@ -511,11 +511,8 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
             surfaceTransparency: String(ADVANCED_DEFAULT_VISUALS.surfaceTransparency)
         };
     }
-    function isDesktopHomeEditorViewport() {
-        return (window.innerWidth || 0) >= HOME_DESKTOP_EDITOR_BREAKPOINT;
-    }
     function isHomeEditorAvailable() {
-        return true;
+        return false;
     }
     function getHomeScopeKey(role = getEffectiveRole(), facultyCode = getCurrentFacultyCode()) {
         return `${String(role || 'student')}${HOME_SCOPE_SEPARATOR}${String(facultyCode || 'ECON')}`;
@@ -842,8 +839,6 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
     const getShortcutDestinationOptions = window.getShortcutDestinationOptions;
     const sanitizeShortcutDefinition = window.sanitizeShortcutDefinition;
     const getSavedCustomShortcuts = window.getSavedCustomShortcuts;
-    const resolveHomeLayout = window.resolveHomeLayout;
-    const serializeHomeLayout = window.serializeHomeLayout;
     const serializeCustomShortcuts = window.serializeCustomShortcuts;
     const __luxAtmosphereBridge = {
         getDashboardVisuals: (...a) => getDashboardVisuals(...a),
@@ -912,123 +907,10 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
     const getRoleShortcuts = (...args) => window.getRoleShortcuts(...args);
     const buildHomeModel = (...args) => window.buildHomeModel(...args);
     const buildHomeContext = (...args) => window.buildHomeContext(...args);
-    /* shortcut/layout helpers: luxury-transparency-model-runtime.js */
-    function getWorkingHomeLayout(role, model) {
-        if (HOME_EDITOR_STATE.editing && HOME_EDITOR_STATE.role === role && Array.isArray(HOME_EDITOR_STATE.draftLayout)) {
-            return HOME_EDITOR_STATE.draftLayout;
+    function openHomeEditor(_role = getEffectiveRole(), _model = buildHomeModel(_role)) {
+        if (typeof showToast === 'function') {
+            showToast('Home layout is fixed and no longer customizable.');
         }
-        return resolveHomeLayout(role, model);
-    }
-    function ensureHomeEditorDraft(role, model) {
-        HOME_EDITOR_STATE.editing = true;
-        HOME_EDITOR_STATE.role = role;
-        HOME_EDITOR_STATE.draftCustomShortcuts = getSavedCustomShortcuts(role);
-        HOME_EDITOR_STATE.draftLayout = resolveHomeLayout(role, model, null, HOME_EDITOR_STATE.draftCustomShortcuts).map((item) => ({ ...item }));
-    }
-    function openHomeEditor(role = getEffectiveRole(), model = buildHomeModel(role)) {
-        if (HOME_EDITOR_STATE.editing && HOME_EDITOR_STATE.role === role) {
-            stopHomeEditor({ refresh: true });
-            return;
-        }
-        if (typeof window.buildHomeWidgetDefinitions !== 'function') {
-            ensureLuxuryHomeDashboardBundle().then((loaded) => {
-                if (!loaded || typeof window.buildHomeWidgetDefinitions !== 'function') return;
-                openHomeEditor(role, model);
-            }).catch(() => null);
-            return;
-        }
-        const start = () => {
-            ensureHomeEditorDraft(role, model);
-            applyPortalPageState();
-            renderHomeShell();
-            if (typeof syncTopbar === 'function') syncTopbar();
-        };
-        if (typeof ensureHomeEditorCss === 'function') {
-            Promise.resolve(ensureHomeEditorCss()).then(start);
-        } else {
-            start();
-        }
-    }
-    function stopHomeEditor({ message = '', refresh = true } = {}) {
-        clearHomeEditorState();
-        if (message) showToast(message);
-        if (refresh) {
-            applyPortalPageState();
-            renderHomeShell();
-            if (typeof syncTopbar === 'function') syncTopbar();
-        }
-    }
-    function saveHomeEditor(role) {
-        updateDashboardPreferenceEntry((entry) => {
-            entry.layoutsByRole[role] = serializeHomeLayout(HOME_EDITOR_STATE.draftLayout);
-            entry.customShortcutsByRole[role] = serializeCustomShortcuts(HOME_EDITOR_STATE.draftCustomShortcuts, role);
-        }, { persist: true });
-        stopHomeEditor({ message: `${ROLE_LABELS[role] || 'Dashboard'} saved.` });
-        syncAll();
-    }
-    function resetCurrentRoleLayoutDraft(role, model) {
-        HOME_EDITOR_STATE.draftCustomShortcuts = [];
-        HOME_EDITOR_STATE.draftLayout = resolveHomeLayout(role, model, [], []).map((item) => ({ ...item }));
-        renderHomeShell();
-        showToast(`${ROLE_LABELS[role] || 'Dashboard'} reset to default layout.`);
-    }
-    function updateDraftWidget(id, mutator) {
-        if (!HOME_EDITOR_STATE.editing || !Array.isArray(HOME_EDITOR_STATE.draftLayout)) return;
-        HOME_EDITOR_STATE.draftLayout = HOME_EDITOR_STATE.draftLayout.map((widget) => {
-            if (widget.id !== id) return widget;
-            const next = { ...widget };
-            mutator(next);
-            next.span = normalizeWidgetSpan(next.span, widget.span);
-            return next;
-        });
-        renderHomeShell();
-    }
-    function moveDraftWidget(sourceId, targetId) {
-        if (!HOME_EDITOR_STATE.editing || !Array.isArray(HOME_EDITOR_STATE.draftLayout) || sourceId === targetId) return;
-        const next = HOME_EDITOR_STATE.draftLayout.slice();
-        const fromIndex = next.findIndex((widget) => widget.id === sourceId);
-        const toIndex = next.findIndex((widget) => widget.id === targetId);
-        if (fromIndex === -1 || toIndex === -1) return;
-        const [moved] = next.splice(fromIndex, 1);
-        next.splice(toIndex, 0, moved);
-        HOME_EDITOR_STATE.draftLayout = next;
-        renderHomeShell();
-    }
-    function hideDraftWidget(widget) {
-        if (!widget) return;
-        if (widget.critical && !window.confirm(`Hide "${widget.label}" from this role dashboard? You can restore it later from Add Widgets.`)) return;
-        if (widget.type === 'shortcut') {
-            HOME_EDITOR_STATE.draftCustomShortcuts = HOME_EDITOR_STATE.draftCustomShortcuts.filter((item) => item.id !== widget.id);
-            HOME_EDITOR_STATE.draftLayout = HOME_EDITOR_STATE.draftLayout.filter((item) => item.id !== widget.id);
-        } else {
-            HOME_EDITOR_STATE.draftLayout = HOME_EDITOR_STATE.draftLayout.map((item) => (
-                item.id === widget.id ? { ...item, visible: false } : item
-            ));
-        }
-        renderHomeShell();
-    }
-    function restoreDraftWidget(widgetId, role, model) {
-        const defaults = buildHomeWidgetDefinitions(role, model);
-        const found = defaults.find((item) => item.id === widgetId);
-        if (!found) return;
-        const existing = HOME_EDITOR_STATE.draftLayout.find((item) => item.id === widgetId);
-        if (existing) {
-            updateDraftWidget(widgetId, (widget) => {
-                widget.visible = true;
-                widget.span = found.span;
-            });
-            return;
-        }
-        HOME_EDITOR_STATE.draftLayout.push({ ...found, visible: true });
-        renderHomeShell();
-    }
-    function createDraftShortcut(role, values) {
-        const shortcut = sanitizeShortcutDefinition(values, role);
-        if (!shortcut) return;
-        HOME_EDITOR_STATE.draftCustomShortcuts = [...HOME_EDITOR_STATE.draftCustomShortcuts, shortcut];
-        HOME_EDITOR_STATE.draftLayout.push({ ...shortcut });
-        renderHomeShell();
-        showToast(`Added shortcut: ${shortcut.label}`);
     }
     function scheduleExamsRouteBackgroundRefresh() {
         let attempts = 0;
@@ -1201,11 +1083,8 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
             document.body.appendChild(topbar);
         }
         ensureTopbarSoftChrome();
-        if (isSidebarOverlayRoute() && isDesktopSidebarOverlayViewport()) {
-            applySidebarState(true, { persist: false });
-        } else {
-            applySidebarState();
-        }
+        // Respect saved preference on all unified-shell routes (default expanded).
+        applySidebarState(isSidebarCollapsed(), { persist: false });
     }
     function renderHomeChromeSkeleton(homeShell = document.getElementById('lux-home-shell')) {
         if (!homeShell || homeShellHasDashboardContent(homeShell)) return;
@@ -1688,6 +1567,15 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
     window.syncAfterNavigate = typeof syncAfterNavigate === 'function'
         ? syncAfterNavigate
         : window.syncAfterNavigate;
+    window.resetSavedRoleLayout = typeof resetSavedRoleLayout === 'function'
+        ? resetSavedRoleLayout
+        : window.resetSavedRoleLayout;
+    window.resetAllSavedHomeLayouts = typeof resetAllSavedHomeLayouts === 'function'
+        ? resetAllSavedHomeLayouts
+        : window.resetAllSavedHomeLayouts;
+    window.resetHomeToDefaults = typeof resetHomeToDefaults === 'function'
+        ? resetHomeToDefaults
+        : window.resetHomeToDefaults;
     /* Dashboard Builder Overrides */
     /* Route-owned home dashboard and editor bundle loader */
     const HOME_DASHBOARD_LOAD_TIMEOUT_MS = 10000;

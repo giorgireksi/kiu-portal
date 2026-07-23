@@ -28,9 +28,12 @@ describe('luxury shell chrome split', () => {
         expect(shellChrome).toContain('function bindTopbarControls() {');
         expect(shellChrome).toContain("typeof window.toggleSidebar === 'function'");
         expect(shellChrome).toContain('function resolveHomeModelForRole(role) {');
-        expect(shellChrome).toContain('openHomeEditor(getEffectiveRole(), homeModel);');
+        // Customize dashboard removed — edit control is permanently hidden.
+        expect(shellChrome).toContain("getElementById('lux-dashboard-edit-btn')");
+        expect(shellChrome).toContain('editorButton.hidden = true');
         expect(shellChrome).toContain('const mixed = mixHsl(');
         expect(luxury).toContain('openHomeEditor,');
+        expect(luxury).toContain('Home layout is fixed and no longer customizable');
         expect(luxury).toContain('mixHsl,');
         expect(luxury).toContain('hslToRgb,');
         expect(luxury).toContain('getThemeMode,');

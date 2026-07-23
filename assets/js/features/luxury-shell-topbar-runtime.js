@@ -222,20 +222,13 @@ function syncTopbar() {
     setText('lux-user-role', footerRole);
     setText('lux-chip-role', chipRole);
     const editButton = document.getElementById('lux-dashboard-edit-btn');
-    const editLabel = document.getElementById('lux-dashboard-edit-label');
     const bell = document.getElementById('lux-notification-btn');
     const bellBadge = document.getElementById('lux-notification-badge');
     const chat = document.getElementById('lux-chat-btn');
     const chatBadge = document.getElementById('lux-chat-badge');
-    if (editButton && editLabel) {
-        const isEditing = homeEditorState.editing && homeEditorState.role === effectiveRole;
-        editButton.classList.toggle('is-active', isEditing);
-        editButton.hidden = true; // customization removed — dashboard is a fixed professional layout
+    if (editButton) {
+        editButton.hidden = true;
         editButton.style.setProperty('display', 'none', 'important');
-        editLabel.textContent = isEditing ? 'Exit Edit' : 'Customize';
-        editButton.title = isHomeEditorAvailable()
-            ? (onHome ? (isEditing ? 'Exit dashboard editing' : 'Customize the home dashboard') : 'Open home and customize the dashboard')
-            : 'Dashboard editing is available on larger screens.';
     }
     if (bell) {
         bell.classList.toggle('has-dot', notifications.unread > 0);

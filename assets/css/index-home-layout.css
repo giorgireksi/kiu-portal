@@ -46,7 +46,7 @@ body.lux-route-home {
     align-items: stretch;
   }
   .lux-hero-main { min-width: 0; }
-  /* Nested chips only — panel hosts get glass blur from index-home-role.css */
+  /* Nested chips: soft-chrome surface inside merged desk; desk frosts in index-home-role.css */
   .lux-list-row.lux-soft-chrome,
   .lux-stat.lux-soft-chrome,
   .lux-pill.lux-soft-chrome,
@@ -62,7 +62,7 @@ body.lux-route-home {
   width: 100%;
   margin: 0;
 }
-#page-home.page-section :is(#lux-home-shell, .lux-home-grid, .lux-home-grid--builder, .lux-home-workbench, .lux-dashboard-canvas.is-desktop) {
+#page-home.page-section :is(#lux-home-shell, .lux-home-page, .lux-home-grid) {
   max-width: none;
   width: 100%;
 }
@@ -71,12 +71,53 @@ body.lux-route-home {
   display: grid;
   gap: 18px;
 }
-#page-home.page-section > #lux-home-shell > .lux-home-grid--builder[data-editing="true"] {
-  min-width: 100%;
-  overflow: visible;
-}
 #page-home > :not(#lux-home-shell) { display: none; }
 #page-home .lux-home-grid { display: grid; gap: 18px; }
+/* --- static home merged shell (no customize / no inter-panel gutters) --- */
+#page-home #lux-home-shell .lux-home-page {
+  display: grid;
+  gap: 16px;
+  width: 100%;
+  min-width: 0;
+}
+#page-home #lux-home-shell .lux-home-merged {
+  display: grid;
+  gap: 0;
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  border-radius: var(--lux-panel-radius, 22px);
+}
+#page-home #lux-home-shell .lux-home-band {
+  min-width: 0;
+}
+#page-home #lux-home-shell .lux-home-band + .lux-home-band {
+  border-top: 1px solid var(--lux-soft-chrome-border, var(--lux-panel-border));
+}
+#page-home #lux-home-shell .lux-home-band--full {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+#page-home #lux-home-shell .lux-home-band--split {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0;
+  align-items: stretch;
+}
+#page-home #lux-home-shell .lux-home-band--split > .lux-home-cell {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+#page-home #lux-home-shell .lux-home-band--split > .lux-home-cell + .lux-home-cell {
+  border-left: 1px solid var(--lux-soft-chrome-border, var(--lux-panel-border));
+}
+#page-home #lux-home-shell .lux-home-band--full > *,
+#page-home #lux-home-shell .lux-home-cell > * {
+  min-width: 0;
+  flex: 1 1 auto;
+  height: auto;
+}
 /* --- toolbar --- */
 #page-home .lux-home-toolbar {
   display: flex;
@@ -99,38 +140,15 @@ body.lux-route-home {
   line-height: 1.65;
   color: var(--lux-text-muted);
 }
-#page-home .lux-home-toolbar-actions {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-#page-home .lux-home-grid--builder { width: 100%; gap: 26px; }
-#page-home .lux-dashboard-canvas {
-  position: relative;
-  display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
-  grid-auto-rows: var(--lux-grid-row-height);
-  gap: 18px;
-  align-items: start;
-}
-#page-home .lux-dashboard-canvas.is-stacked { grid-template-columns: 1fr; grid-auto-rows: auto; }
-/* Desktop: CSS-grid flow (asd32 parity) — not freeform absolute. */
-#page-home .lux-dashboard-canvas.is-desktop {
-  display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
-  grid-auto-rows: auto;
-  grid-auto-flow: row dense;
-  gap: 18px;
-  align-items: start;
-  height: auto;
-}
-body.lux-dashboard-gesture-active, body.lux-dashboard-gesture-active * { user-select: none !important; -webkit-user-select: none !important; }
-.lux-home-grid--builder[data-editing="true"] .lux-dashboard-canvas.is-desktop { width: 100%; min-height: calc(100vh - 210px); }
 @media (max-width: 900px) {
   #page-home #lux-home-shell .lux-hero-stage { grid-template-columns: 1fr; }
-  #page-home .lux-home-toolbar-actions { width: 100%; }
-  #page-home .lux-home-toolbar-actions > * { flex: 1 1 auto; }
+    #page-home #lux-home-shell .lux-home-band--split {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  #page-home #lux-home-shell .lux-home-band--split > .lux-home-cell + .lux-home-cell {
+    border-left: 0;
+    border-top: 1px solid var(--lux-soft-chrome-border, var(--lux-panel-border));
+  }
 }
 #page-home #lux-home-shell {
   .lux-builder-card.lux-soft-chrome {

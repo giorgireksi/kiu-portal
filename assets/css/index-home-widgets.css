@@ -117,221 +117,20 @@
     .lux-stat-row { grid-template-columns: 1fr; }
   }
 }
-#page-home .lux-widget-grab, #page-home .lux-widget-remove {
-  border: none;
-  background: transparent;
-  color: inherit;
-  cursor: pointer;
-}
-#page-home .lux-widget-remove:hover {
-  color: var(--lux-text);
-  border-color: rgba(var(--lux-accent-rgb), 0.34);
-  background: rgba(var(--lux-accent-rgb), 0.12);
-}
-#page-home .lux-widget-remove {
-  width: 30px;
-  height: 30px;
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.04);
-}
 #page-home .lux-dashboard-section { padding: 18px; }
 .lux-quick-grid--embedded { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); }
 @media (max-width: 1200px) {
   #page-home .lux-quick-grid--embedded { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 @media (max-width: 980px) {
-  #page-home .lux-dashboard-canvas { grid-template-columns: 1fr; }
   #page-home .lux-quick-grid--embedded { grid-template-columns: 1fr; }
 }
-/* --- grid-widget --- */
-#page-home .lux-dashboard-canvas.is-desktop.is-editing .lux-grid-widget { touch-action: none; }
-/* Desktop: static grid items (asd32 parity) — spans come from JS grid-column. */
-#page-home .lux-dashboard-canvas.is-desktop .lux-grid-widget {
-  position: static;
-  display: flex;
-  flex-direction: column;
-  height: auto;
-  left: auto;
-  top: auto;
-  width: auto;
-  min-height: 0;
-  margin: 0;
-  overflow: visible;
-  will-change: auto;
-}
-#page-home .lux-dashboard-canvas.is-desktop .lux-grid-widget-body {
-  display: flex;
-  flex-direction: column;
-  flex: 1 1 auto;
-  min-height: 0;
-  height: auto;
-  overflow: visible;
-}
-#page-home .lux-grid-widget {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  min-height: 100%;
-  border-radius: 26px;
-  overflow: visible;
-}
-#page-home .lux-grid-widget > .lux-grid-widget-body {
-  transition:
-    box-shadow 0.1s cubic-bezier(0.4, 0, 0.2, 1),
-    border-color 0.1s cubic-bezier(0.4, 0, 0.2, 1);
-}
-#page-home .lux-grid-widget.is-selected { box-shadow: 0 28px 58px rgba(0, 0, 0, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 0 0 2px rgba(var(--lux-accent-rgb), 0.34), 0 0 32px rgba(var(--lux-bg-glow-rgb), 0.14); }
-#page-home .lux-grid-widget.is-overlapping { outline: 1px solid rgba(255, 177, 79, 0.36); outline-offset: 1px; }
-#page-home .lux-grid-widget-body, #page-home .lux-grid-widget-body>* { min-height: 0; }
-/* No inner panel scroll — page scrolls; panel bodies stay overflow-visible. */
-#page-home .lux-grid-widget-body {
-  flex: 1 1 auto;
-  min-width: 0;
-  min-height: 0;
-  overflow: visible;
-  border-radius: inherit;
-}
-#page-home .lux-grid-widget-body>* { height: auto; max-width: 100%; }
-#page-home #lux-home-shell {
-  .lux-grid-widget { min-height: 0; }
-  .lux-dashboard-canvas.is-editing .lux-grid-widget { overflow: visible; }
-}
-#page-home .lux-grid-widget.is-minimized .lux-grid-widget-body { min-height: 0; overflow: hidden; }
-#page-home .lux-widget-minimized-card {
-  height: 100%;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 16px 18px;
-}
-#page-home .lux-widget-minimized-icon {
-  width: 46px;
-  height: 46px;
-  border-radius: 15px;
-  display: grid;
-  place-items: center;
-  background: rgba(var(--lux-accent-rgb), 0.18);
-  color: var(--lux-text);
-  flex-shrink: 0;
-}
-#page-home .lux-widget-minimized-copy { min-width: 0; flex: 1 1 auto; }
-#page-home .lux-widget-minimized-copy strong {
-  display: block;
-  font-size: 14px;
-  line-height: 1.2;
-}
-#page-home .lux-widget-minimized-copy span {
-  display: block;
-  margin-top: 4px;
-  font-size: 11px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--lux-text-soft);
-}
-#page-home .lux-grid-widget.is-ghost-source { opacity: 0.42; }
-#page-home .lux-grid-widget.is-live-moving {
-  opacity: 0.96;
-  cursor: grabbing;
-  pointer-events: none;
-}
-#page-home .lux-widget-overlap-badge {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  width: 28px;
-  height: 28px;
-  display: grid;
-  place-items: center;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 177, 79, 0.5);
-  background: linear-gradient(180deg, rgba(255, 177, 79, 0.22), rgba(255, 177, 79, 0.12));
-  color: var(--lux-warn, var(--lux-accent));
-  font-size: 15px;
-  line-height: 1;
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.22), 0 0 18px rgba(255, 177, 79, 0.16);
-  z-index: 12;
-  pointer-events: none;
-}
-#page-home .lux-widget-size-btn, #page-home .lux-widget-move-btn {
-  width: 34px;
-  height: 34px;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(var(--lux-glass-tint-rgb), 0.22);
-  color: var(--lux-text);
-  display: grid;
-  place-items: center;
-}
-#page-home .lux-widget-size-btn--labelled {
-  width: auto;
-  min-width: 44px;
-  padding: 0 12px;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-#page-home .lux-widget-size-btn.is-active, #page-home .lux-widget-size-btn--labelled.is-active {
-  background: rgba(var(--lux-accent-rgb), 0.28);
-  border-color: rgba(var(--lux-accent-rgb), 0.5);
-  box-shadow: 0 12px 28px rgba(var(--lux-bg-glow-rgb), 0.16);
-}
-#page-home .lux-widget-resize-handle {
-  position: absolute;
-  width: 34px;
-  height: 34px;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(var(--lux-accent-rgb), 0.22);
-  color: var(--lux-text);
-  display: grid;
-  place-items: center;
-  z-index: 40;
-  pointer-events: auto;
-  touch-action: none;
-  user-select: none;
-  -webkit-user-select: none;
-  box-shadow: 0 12px 28px rgba(var(--lux-bg-glow-rgb), 0.16);
-}
-#page-home .lux-dashboard-canvas.is-editing .lux-grid-widget:hover .lux-widget-resize-handle, #page-home .lux-dashboard-canvas.is-editing .lux-grid-widget.is-selected .lux-widget-resize-handle {
-  opacity: 1;
-}
-#page-home :is(.lux-widget-resize-handle--east, .lux-widget-resize-handle--west) {
-  top: 50%;
-  transform: translateY(-50%);
-  cursor: ew-resize;
-}
-#page-home .lux-widget-resize-handle--east { right: -12px; }
-#page-home .lux-widget-resize-handle--west { left: -12px; }
-#page-home :is(.lux-widget-resize-handle--north, .lux-widget-resize-handle--south) {
-  left: 50%;
-  transform: translateX(-50%);
-  cursor: ns-resize;
-}
-#page-home .lux-widget-resize-handle--north { top: -12px; }
-#page-home .lux-widget-resize-handle--south { bottom: -12px; }
-#page-home .lux-widget-resize-handle--corner { right: -12px; bottom: -12px; cursor: nwse-resize; }
-/* --- builder --- */
+/* --- builder + soft-chrome-chips --- */
 #page-home .lux-builder-card, #page-home .lux-builder-section, #page-home .lux-builder-hero {
   min-height: 100%;
   height: auto;
 }
 #page-home #lux-home-shell {
-  /* Fill freeform slot so soft-chrome covers the full rect (no empty glass band). */
-  .lux-grid-widget-body > .lux-builder-card,
-  .lux-grid-widget-body > .lux-builder-section,
-  .lux-grid-widget-body > .lux-panel,
-  .lux-grid-widget-body > .lux-card,
-  .lux-grid-widget-body > .page-hero,
-  .lux-grid-widget-body > .lux-builder-hero {
-    flex: 1 1 auto;
-    min-height: 100%;
-    height: 100%;
-    max-height: none;
-    overflow: visible;
-  }
-  /* --- soft-chrome-chips --- */
   .lux-stat.lux-soft-chrome { border-radius: 16px; padding: 12px 14px 14px; overflow: visible; }
   .lux-quick-btn.lux-soft-chrome { border-radius: 20px; }
   .lux-list-row.lux-soft-chrome {
@@ -355,9 +154,11 @@
     border: 1px solid color-mix(in srgb, var(--lux-accent) 28%, transparent);
   }
 }
-@media (prefers-reduced-motion: reduce) {
-  #page-home .lux-grid-widget > .lux-grid-widget-body { transition: box-shadow 0.15s ease, border-color 0.15s ease; }
-  #page-home .lux-grid-widget:hover > .lux-grid-widget-body { transform: none; }
+/* Grid-widget focus stacking — home-only (removed from shared lux-shell stack). */
+body.lux-full-paint #page-home #lux-home-shell :is(.lux-grid-widget, .lux-grid-widget-body):focus-within {
+  overflow: visible;
+  contain: layout style;
+  z-index: 900;
 }
 /* --- list-alert recovery --- */
 #page-home #lux-home-shell {

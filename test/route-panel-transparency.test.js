@@ -100,19 +100,16 @@ describe('route panel transparency parity', () => {
         expect(utilitiesSource).toContain("el.style.setProperty('backdrop-filter', backdropValue, 'important')");
     });
 
-    it('applies single blur layer on home via lux-grid-widget-body host only', () => {
+    it('applies merged-shell frost on loading grid and desk host', () => {
         const transparencySource = readSource('assets/js/shared/lux-transparency.js');
         const homeCss = readSource('assets/css/index-home-role.css');
         expect(transparencySource).toContain('isHomeWidgetInnerPanel');
-        expect(transparencySource).toContain(
-            "'#page-home #lux-home-shell .lux-grid-widget > .lux-grid-widget-body'"
-        );
-        expect(homeCss).toContain('Single frost per widget');
+        expect(homeCss).toContain('Legacy grid hosts: full home-glass-fill + fade blur');
         const frostHostBlock = homeCss.match(
             /body\.lux-unified-shell:not\(\.lux-route-students-admin\) #page-home #lux-home-shell :is\([\s\S]*?\) \{/
         )?.[0] || '';
-        expect(frostHostBlock).toContain('.lux-grid-widget > .lux-grid-widget-body');
-        expect(frostHostBlock).not.toContain('.lux-grid-widget > .lux-grid-widget-body > .lux-panel');
+        expect(frostHostBlock).toContain('.lux-home-grid > .lux-card');
+        expect(homeCss).toContain('.lux-home-merged.lux-soft-chrome');
     });
 
     it('fills transparency-pending panels with matte surface instead of transparent holes', () => {

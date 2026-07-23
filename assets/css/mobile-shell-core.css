@@ -12,8 +12,11 @@ html, body { max-width: 100%; overflow-x: hidden; -webkit-text-size-adjust: 100%
     position: fixed;
     z-index: 9500 !important;
     top: 0;
+    bottom: 0;
+    left: 0;
     height: 100vh;
     height: 100dvh;
+    border-radius: 0 18px 18px 0;
   }
   body:not(.lux-sidebar-collapsed) #lux-shell { transform: translateX(0); }
   body.lux-sidebar-collapsed #lux-shell { transform: translateX(-100%); }
@@ -53,11 +56,15 @@ html, body { max-width: 100%; overflow-x: hidden; -webkit-text-size-adjust: 100%
     opacity: 1;
     pointer-events: auto !important;
     transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
-    border-radius: 0;
-    border: none;
-    border-right: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 0 18px 18px 0;
+    border: 1px solid var(--lux-shell-sidebar-border, rgba(255, 255, 255, 0.12));
+    border-left: none;
     margin: 0;
-    box-shadow: 8px 0 40px rgba(0, 0, 0, 0.4);
+    box-shadow: var(--lux-shell-sidebar-shadow, var(--lux-elev-3));
+    background-color: var(--lux-shell-sidebar-fill) !important;
+    background-image: var(--lux-shell-sidebar-image) !important;
+    backdrop-filter: var(--lux-shell-sidebar-blur, blur(20px) saturate(160%)) !important;
+    -webkit-backdrop-filter: var(--lux-shell-sidebar-blur, blur(20px) saturate(160%)) !important;
     overflow-y: auto;
   }
   body.lux-sidebar-collapsed #lux-shell {

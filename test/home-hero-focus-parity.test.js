@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 import { readHomeDashboardCss } from './helpers/bare-shell-css.js';
 
@@ -26,9 +26,8 @@ describe('home hero focus LMS parity', () => {
         expect(render).not.toContain('lux-hero-signal-list');
     });
 
-    it('dual-writes soft-chrome on dashboard panels and editor cards', () => {
+    it('dual-writes soft-chrome on dashboard panels', () => {
         const render = readSource('assets/js/features/home-dashboard/widget-render.js');
-        const editor = readSource('assets/js/features/home-dashboard/editor-ui.js');
         expect(render).toContain('lux-soft-chrome lux-summary-surface--hero');
         expect(render).toMatch(/lux-panel lux-soft-chrome lux-alert/);
         expect(render).toContain('lux-dashboard-section lux-builder-section lux-soft-chrome');
@@ -37,9 +36,6 @@ describe('home hero focus LMS parity', () => {
         expect(render).toContain('lux-quick-btn lux-soft-chrome');
         expect(render).toContain('lux-list-row lux-soft-chrome');
         expect(render).toContain('lux-pill lux-soft-chrome');
-        
-        expect(editor).toContain('lux-editor-card lux-soft-chrome');
-        expect(editor).toContain('lux-editor-card lux-editor-card--size lux-soft-chrome');
     });
 
     it('uses unified soft-chrome material selector (asd31 parity)', () => {
@@ -50,7 +46,7 @@ describe('home hero focus LMS parity', () => {
         expect(homeCss).toMatch(
             /body\.lux-unified-shell:not\(\.lux-route-students-admin\) #page-home #lux-home-shell[\s\S]*?\.lux-soft-chrome/
         );
-        expect(homeCss).toContain('var(--lux-focus-fill, var(--lux-soft-chrome-surface');
+        expect(homeCss).toContain('--home-desk-glass-surface');
         expect(homeCss).not.toContain('var(--lux-home-panel-fill');
     });
 
@@ -58,7 +54,8 @@ describe('home hero focus LMS parity', () => {
         const homeCss = readHomeDashboardCss();
         const focusCss = readSource('assets/css/lux-focus-panel.css');
         const tokens = readSource('assets/css/lux-tokens.css');
-        expect(homeCss).toContain('exact LMS focus contract');
+        expect(homeCss).toContain('.lux-home-merged :is(');
+        expect(homeCss).toContain('.lms-hero-focus');
         expect(tokens).toContain('--home-fade-blur');
         // Primary soft-chrome hosts frost via --home-fade-blur; 0% stays clear.
         expect(homeCss).toMatch(/backdrop-filter:\s*var\(--home-fade-blur\)\s*!important/);
@@ -67,8 +64,8 @@ describe('home hero focus LMS parity', () => {
         );
         expect(homeCss).toContain('.lux-hero-stage');
         expect(homeCss).not.toContain('lms-hero-v2');
-        expect(homeCss).toContain('--lux-soft-chrome-surface');
-        expect(homeCss).toContain('--lux-focus-fill');
+        expect(homeCss).toMatch(/\.lux-home-merged :is\([\s\S]*\.lms-hero-focus[\s\S]*var\(--lux-soft-chrome-surface/);
+        expect(homeCss).toMatch(/\.lux-home-merged :is\([\s\S]*\.lux-stat\.lux-soft-chrome[\s\S]*backdrop-filter:\s*none !important/);
         expect(homeCss).not.toContain('.lux-timetable-hero-focus');
         // Structure/rail/chips live in shared primitive (not triplicated on home)
         expect(focusCss).toContain('.lms-hero-focus.lux-hero-side::before');
@@ -98,64 +95,40 @@ describe('home hero focus LMS parity', () => {
         expect(transparency).toContain("el.classList.contains('lux-timetable-hero-focus')");
     });
 
-    it('shields home hero shells from luxury glass bleed via soft-chrome', () => {
+    it('shields home hero shells via merged desk and surface chips without second frost', () => {
         const css = readHomeDashboardCss();
-        expect(css).toContain('.lux-grid-widget > .lux-grid-widget-body > .lux-builder-hero');
-        expect(css).toContain('.lux-grid-widget > .lux-grid-widget-body > .page-hero');
+        expect(css).toContain('.lux-home-merged.lux-soft-chrome');
+        expect(css).toContain('--home-desk-glass-surface');
         expect(css).not.toContain('.lms-hero-v2');
-        expect(css).toContain('.lux-grid-widget > .lux-grid-widget-body');
         expect(css).toMatch(/backdrop-filter:\s*var\(--home-fade-blur\)\s*!important/);
-        expect(css).toContain('Widget inner panels: border/shadow only — body owns fill+frost');
-        const innerSuppressBlock = css.match(
-            /\/\* Widget inner panels[\s\S]*?backdrop-filter:\s*none !important/
-        )?.[0] || '';
-        expect(innerSuppressBlock).toContain('.lux-grid-widget > .lux-grid-widget-body > .lux-panel');
-        expect(innerSuppressBlock).toContain('background-color: transparent');
-        expect(innerSuppressBlock).not.toContain('--home-glass-fill');
-        expect(css).toContain('Single frost per widget');
-        // Outer widget frame transparent; widget body owns the frost host
-        expect(css).toContain('Outer widget frame stays transparent');
-        expect(css).toMatch(
-            /\.lux-dashboard-canvas \.lux-grid-widget[\s\S]{0,200}background:\s*transparent(?:\s*!important)?/
-        );
+        expect(css).toContain('.lux-home-merged :is(');
+        expect(css).toContain('.lms-hero-focus');
+        expect(css).toMatch(/\.lux-home-merged :is\([\s\S]*\.lms-hero-focus[\s\S]*var\(--lux-soft-chrome-surface/);
+        expect(css).toMatch(/\.lux-home-merged :is\([\s\S]*\.lms-hero-focus[\s\S]*backdrop-filter:\s*none !important/);
     });
 
-    it('applies single blur layer on home widgets via lux-grid-widget-body host only', () => {
+    it('applies loading frost on lux-home-grid hosts', () => {
         const css = readHomeDashboardCss();
         const transparency = readSource('assets/js/shared/lux-transparency.js');
         const frostBlock = css.match(
             /body\.lux-unified-shell:not\(\.lux-route-students-admin\) #page-home #lux-home-shell :is\([\s\S]*?\) \{/
         )?.[0] || '';
-        expect(frostBlock).toContain('.lux-grid-widget > .lux-grid-widget-body');
-        expect(frostBlock).not.toContain('.lux-grid-widget > .lux-grid-widget-body > .lux-panel');
-        const innerSuppressBlock = css.match(
-            /\/\* Widget inner panels[\s\S]*?backdrop-filter:\s*none !important/
-        )?.[0] || '';
-        expect(innerSuppressBlock).toContain('.lux-grid-widget > .lux-grid-widget-body > .lux-panel');
-        expect(innerSuppressBlock).toContain('background-color: transparent');
-        expect(innerSuppressBlock).not.toContain('--home-glass-fill');
+        expect(frostBlock).toContain('.lux-home-grid > .lux-card');
+        expect(frostBlock).not.toContain('.lux-grid-widget > .lux-grid-widget-body');
         expect(transparency).toContain('isHomeWidgetInnerPanel');
-        const routeRuntime = readSource('assets/js/shared/lux-transparency-route-runtime.js');
-        expect(routeRuntime).toContain('shouldKeepHomeWidgetInnerFadeCssBackground');
-        expect(routeRuntime).toContain('shouldKeepHomeWidgetInnerFadeCssBackground(el) ||');
-        expect(transparency).toContain(
-            "'#page-home #lux-home-shell .lux-grid-widget > .lux-grid-widget-body'"
-        );
     });
 
 
     it('matte soft-chrome on home stats, quick tiles, and list rows', () => {
         const css = readHomeDashboardCss();
         const transparency = readSource('assets/js/shared/lux-transparency.js');
-        expect(css).toContain('Inner dashboard chips');
-        expect(css).toMatch(/\.lux-stat[\s\S]{0,80}\.lux-soft-chrome|\.lux-soft-chrome[\s\S]{0,40}\.lux-stat|:is\(\.lux-stat/);
+        expect(css).toContain('.lux-home-merged :is(');
+        expect(css).toMatch(/\.lux-stat\.lux-soft-chrome|\.lux-home-merged :is\([\s\S]*\.lux-stat\.lux-soft-chrome/);
         expect(css).toContain('.lux-quick-btn');
         expect(css).toContain('.lux-list-row');
         expect(css).toContain('.lux-pill');
-        // Nested chips keep soft-chrome fill; blur only disabled (no stacked frost)
-        expect(css).toMatch(
-            /\.lux-stat\.lux-soft-chrome[\s\S]{0,280}backdrop-filter:\s*none !important/
-        );
+        expect(css).toMatch(/\.lux-home-merged :is\([\s\S]*\.lux-list-row\.lux-soft-chrome[\s\S]*var\(--lux-soft-chrome-surface/);
+        expect(css).toMatch(/\.lux-home-merged :is\([\s\S]*\.lux-list-row\.lux-soft-chrome[\s\S]*--home-chip-surface-fill/);
         expect(transparency).toContain('Soft-chrome / focus-panel / liquid glass CTAs');
         expect(transparency).toContain("el.classList.contains('lux-soft-chrome')");
     });
@@ -163,7 +136,7 @@ describe('home hero focus LMS parity', () => {
 
     it('dashboard action buttons share primary framed capsule look', () => {
         const css = readHomeDashboardCss();
-        expect(css).toContain('polished framed capsule');
+        expect(css).toContain('var(--lux-btn-well)');
         expect(css).toContain('var(--lux-btn-well)');
         expect(css).toContain('var(--lux-btn-frame-metal)');
         expect(css).toMatch(/#page-home #lux-home-shell[\s\S]*?:is\(\.lux-primary-btn, \.lux-secondary-btn, \.lux-ghost-btn/);
@@ -175,7 +148,6 @@ describe('home hero focus LMS parity', () => {
         const css = readHomeDashboardCss();
         const render = readSource('assets/js/features/home-dashboard/widget-render.js');
         expect(render).toContain('lux-panel lux-soft-chrome lux-alert');
-        expect(css).toContain('Dashboard alert — soft-chrome parity');
         expect(css).toMatch(/#page-home #lux-home-shell[\s\S]*?\.lux-alert(?:\.lux-soft-chrome|\s*\{)/);
         expect(css).toContain('var(--lux-soft-chrome-surface');
         // tone on icon, not full green gradient wash
@@ -187,20 +159,16 @@ describe('home hero focus LMS parity', () => {
 
     it('dashboard list cards polish layout', () => {
         const css = readHomeDashboardCss();
-        expect(css).toContain('Dashboard list cards — soft-chrome layout polish');
         expect(css).toMatch(/#page-home #lux-home-shell[\s\S]*?\.lux-list\s*\{/);
         expect(css).toMatch(/#page-home #lux-home-shell[\s\S]*?\.lux-builder-card-foot\s*\{/);
     });
 
-    it('dashboard widget bodies do not scroll', () => {
+    it('dashboard builder cards use overflow-visible layout', () => {
         const widgets = readSource('assets/css/index-home-widgets.css');
         const layout = readSource('assets/css/index-home-layout.css');
-        expect(widgets).toMatch(
-            /\.lux-dashboard-canvas\.is-desktop\s+\.lux-grid-widget-body\s*\{[^}]*overflow:\s*visible/
-        );
-        expect(widgets).not.toMatch(
-            /#page-home\s+\.lux-grid-widget-body\s*\{[^}]*overflow-y:\s*auto/
-        );
+        expect(widgets).toContain('.lux-builder-card');
+        expect(widgets).not.toMatch(/\.lux-grid-widget\s*>\s*\.lux-grid-widget-body/);
+        expect(widgets).toMatch(/\.lux-builder-card \.lux-list \{ flex: 0 1 auto; min-height: 0; overflow: visible; \}/);
         expect(layout).not.toContain('Dashboard orbital gem scrollbar');
     });
 
@@ -221,18 +189,10 @@ describe('home hero focus LMS parity', () => {
         expect(html).toContain('lux-focus-panel.css');
     });
 
-    it('keeps editor ghost/move affordances without glass layer promotion', () => {
-        // View paint + lazy editor sheet (editor CSS loads when customize starts)
-        const css =
-            readHomeDashboardCss() +
-            readSource('assets/css/index-home-editor.css');
-        expect(css).toMatch(
-            /\.lux-grid-widget\.is-ghost-source[\s\S]{0,80}opacity:\s*0\.42/
-        );
-        expect(css).toContain('.lux-dashboard-canvas.is-editing .lux-grid-widget.is-live-moving');
-        // Soft-chrome hosts use token blur; no nested mega-glass promotion
-        expect(css).toContain('no nested mega-glass');
+    it('does not ship lazy editor CSS with the static home entry', () => {
+        const css = readHomeDashboardCss();
         expect(css).toContain('var(--lux-soft-chrome-surface');
         expect(css).toMatch(/backdrop-filter:\s*var\(--home-fade-blur\)\s*!important/);
+        expect(existsSync(join(process.cwd(), 'assets/css/index-home-editor.css'))).toBe(false);
     });
 });

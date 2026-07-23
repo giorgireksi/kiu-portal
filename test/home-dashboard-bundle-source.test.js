@@ -11,7 +11,6 @@ const HOME_DASHBOARD_PARTS = [
     'widget-layout.js',
     'editor-draft.js',
     'widget-render.js',
-    'editor-ui.js',
     'shell.js'
 ];
 

@@ -3,7 +3,6 @@
     const HOME_SCOPE_SEPARATOR = '::';
     const HOME_GRID_COLUMNS = 12;
     const HOME_GRID_ROW_HEIGHT = 28;
-    const HOME_DESKTOP_EDITOR_BREAKPOINT = 1120;
     const HOME_WINDOW_SNAP = 12;
     const HOME_WINDOW_MIN_WIDTH = 220;
     const HOME_WINDOW_MIN_HEIGHT = 150;
@@ -34,11 +33,6 @@
             customPalette: null
         };
     }
-
-    function isDesktopHomeEditorViewport() {
-        return (window.innerWidth || 0) >= HOME_DESKTOP_EDITOR_BREAKPOINT;
-    }
-
 
     function getHomeScopeKey(role = getEffectiveRole(), facultyCode = getCurrentFacultyCode()) {
         return `${String(role || 'student')}${HOME_SCOPE_SEPARATOR}${String(facultyCode || 'ECON')}`;
@@ -542,17 +536,6 @@
         }
     }
 
-    function cyclePalette() {
-        const currentKey = resolvePaletteKey() === 'custom'
-            ? 'obsidian-amber'
-            : resolvePaletteKey();
-        const currentIndex = Math.max(0, LUXURY_PALETTES.findIndex((palette) => palette.key === currentKey));
-        const next = LUXURY_PALETTES[(currentIndex + 1) % LUXURY_PALETTES.length];
-        applyPaletteKey(next.key, true);
-        syncAll();
-        showToast(`Accent palette: ${STUDIO_PALETTES.find(s => s.key === next.key)?.name || next.key}`);
-    }
-
     function applyAtmosphereSettings() {
         const root = document.documentElement;
         const intensity = getBackgroundIntensity();
@@ -671,488 +654,20 @@
         ensureStudentServiceStores: typeof ensureStudentServiceStores === "function" ? ensureStudentServiceStores : window.ensureStudentServiceStores,
         })
         : {};
-    const {
-        sanitizeGridInteger,
-        normalizeWidgetWidth,
-        normalizeWidgetHeight,
-        normalizeWidgetX,
-        normalizeWidgetY,
-        clampNumber,
-        getDesktopCanvasMetrics,
-        toDesktopPixelWidth,
-        toDesktopPixelHeight,
-        toGridWidthFromPixels,
-        toGridHeightFromPixels,
-        getWidgetMinDesktopWidth,
-        getWidgetMaxDesktopWidth,
-        getWidgetMinDesktopHeight,
-        getWidgetMaxDesktopHeight,
-        normalizeDesktopRect,
-        gridRectToDesktopRect,
-        getWidgetDesktopRect,
-        desktopRectToGridRect,
-        getHighestWidgetZIndex,
-        normalizeLayoutZIndices,
-        sortLayoutForCanvas,
-        computeDesktopCanvasHeight,
-        desktopRectsOverlap,
-        getWidgetOverlapIds,
-        findNextDesktopRect,
-        buildPairListRows,
-        cloneLayoutWidgets,
-        widgetsOverlap,
-        createWidgetInstance,
-        createShortcutWidgetInstance,
-        createPinnedWidgetInstance,
-        normalizeStoredLayoutWidget,
-        findNextAvailableSlot,
-        stabilizeLayout,
-        stepWidgetSize,
-        buildHomeWidgetContextUncached,
-        buildHomeWidgetContext,
-        withGeometry,
-        buildSystemWidgetDefinitionsUncached,
-        sanitizeWidgetRowText,
-        sanitizeWidgetDefinitionText,
-        buildSystemWidgetDefinitions,
-        buildHomeWidgetDefinitions,
-        buildPinnedRecordOptions,
-        resolveHomeLayout,
-        serializeHomeLayout,
-        resolveSavedHomeLayout,
-        deserializeScopedWidgets,
-        getScopeLayoutSource,
-        getWidgetPresentationMetrics,
-        resolvePresentationWidgetWidth,
-        resolvePresentationWidgetHeight,
-        buildPresentationLayout,
-    } = __homeLayoutApi;
 
-/* Home dashboard editor draft/save helpers. */
-
-function ensureHomeEditorCss() {
-    if (typeof document === 'undefined') return Promise.resolve();
-    const existing = document.querySelector('link[data-kiu-home-editor-css]');
-    if (existing) {
-        if (existing.sheet || existing.dataset.kiuReady === '1') return Promise.resolve();
-        return new Promise((resolve) => {
-            existing.addEventListener('load', () => resolve(), { once: true });
-            existing.addEventListener('error', () => resolve(), { once: true });
-        });
-    }
-    return new Promise((resolve) => {
-        const link = document.createElement('link');
-        link.rel = 'stylesheet';
-        link.href = 'assets/css/index-home-editor.css?v=20260720-dedupe2';
-        link.setAttribute('data-kiu-home-editor-css', '1');
-        link.addEventListener('load', () => {
-            link.dataset.kiuReady = '1';
-            resolve();
-        }, { once: true });
-        link.addEventListener('error', () => resolve(), { once: true });
-        document.head.appendChild(link);
-    });
-}
-
-
-    getWorkingHomeLayout = function (role, model) {
-        if (HOME_EDITOR_STATE.editing && HOME_EDITOR_STATE.role === role && Array.isArray(HOME_EDITOR_STATE.draftLayout)) {
-            return HOME_EDITOR_STATE.draftLayout;
-        }
-        return resolveSavedHomeLayout(role, model);
-    };
-
-    ensureHomeEditorDraft = function (role, model) {
-        HOME_EDITOR_STATE.editing = true;
-        HOME_EDITOR_STATE.role = role;
-        HOME_EDITOR_STATE.scopeKey = getHomeScopeKey(role, getCurrentFacultyCode());
-        HOME_EDITOR_STATE.availablePins = buildPinnedRecordOptions(role, model);
-        // Load the editable workspace layout here so the inspector preserves the real
-        // widget positions and sizes the user just arranged.
-        HOME_EDITOR_STATE.draftLayout = normalizeLayoutZIndices(cloneLayoutWidgets(resolveHomeLayout(role, model)));
-        HOME_EDITOR_STATE.inspectorState = getSavedInspectorState(HOME_EDITOR_STATE.scopeKey);
-        HOME_EDITOR_STATE.inspectorDragState = null;
-        HOME_EDITOR_STATE.selectedWidgetId = '';
-    };
-
+/* Home dashboard editor stub — customize mode removed; keep stopHomeEditor for defensive shell calls. */
     stopHomeEditor = function ({ message = '', refresh = true } = {}) {
-        clearHomeEditorState();
-        if (message) showToast(message);
-        if (refresh) {
-            renderHomeShell();
-            if (typeof syncTopbar === 'function') syncTopbar();
+        if (typeof HOME_EDITOR_STATE === 'object' && HOME_EDITOR_STATE) {
+            HOME_EDITOR_STATE.editing = false;
+            HOME_EDITOR_STATE.role = '';
+            HOME_EDITOR_STATE.draftLayout = null;
+            HOME_EDITOR_STATE.draftCustomShortcuts = [];
+            HOME_EDITOR_STATE.dragState = null;
+            HOME_EDITOR_STATE.selectedWidgetId = '';
         }
+        if (message && typeof showToast === 'function') showToast(message);
+        if (refresh && typeof renderHomeShell === 'function') renderHomeShell();
     };
-
-    saveHomeEditor = function (role) {
-        const scopeKey = getHomeScopeKey(role, getCurrentFacultyCode());
-        const inspectorState = sanitizeInspectorState(HOME_EDITOR_STATE.inspectorState || getSavedInspectorState(scopeKey));
-        const workspaceWidgets = serializeHomeLayout(HOME_EDITOR_STATE.draftLayout);
-        const presentationWidgets = serializeHomeLayout(HOME_EDITOR_STATE.draftLayout);
-        updateDashboardPreferenceEntry((entry) => {
-            entry.layoutsByScope[scopeKey] = {
-                version: ADVANCED_HOME_LAYOUT_VERSION,
-                workspaceWidgets,
-                presentationWidgets
-            };
-            entry.editorUiByScope = entry.editorUiByScope || {};
-            entry.editorUiByScope[scopeKey] = inspectorState;
-            delete entry.layoutsByRole[role];
-            delete entry.customShortcutsByRole[role];
-        }, { persist: true });
-        stopHomeEditor({ message: `${ROLE_LABELS[role] || 'Dashboard'} saved for ${getFacultyName(getCurrentFacultyCode())}.`, refresh: false });
-        syncAll();
-    };
-
-    resetCurrentRoleLayoutDraft = function (role, model) {
-        HOME_EDITOR_STATE.availablePins = buildPinnedRecordOptions(role, model);
-        HOME_EDITOR_STATE.draftLayout = cloneLayoutWidgets(resolveHomeLayout(role, model, []));
-        HOME_EDITOR_STATE.inspectorState = getSavedInspectorState(getHomeScopeKey(role, getCurrentFacultyCode()));
-        HOME_EDITOR_STATE.selectedWidgetId = '';
-        renderHomeShell();
-        showToast(`${ROLE_LABELS[role] || 'Dashboard'} reset to KIU defaults for this faculty.`);
-    };
-
-    updateDraftWidget = function (instanceId, mutator, { stabilize = true, priority = instanceId, render = true } = {}) {
-        if (!HOME_EDITOR_STATE.editing || !Array.isArray(HOME_EDITOR_STATE.draftLayout)) return;
-        HOME_EDITOR_STATE.draftLayout = HOME_EDITOR_STATE.draftLayout.map((widget) => {
-            if (widget.instanceId !== instanceId) return widget;
-            const next = { ...widget };
-            mutator(next);
-            next.w = normalizeWidgetWidth(next.w, widget.w, next.minW || widget.minW || 2, next.maxW || widget.maxW || HOME_GRID_COLUMNS);
-            next.h = normalizeWidgetHeight(next.h, widget.h, next.minH || widget.minH || 3, next.maxH || widget.maxH || 12);
-            next.x = normalizeWidgetX(next.x, next.w, widget.x);
-            next.y = normalizeWidgetY(next.y, widget.y);
-            return next;
-        });
-        if (stabilize) HOME_EDITOR_STATE.draftLayout = stabilizeLayout(HOME_EDITOR_STATE.draftLayout, priority);
-        if (render) renderHomeShell();
-    };
-
-    function getSelectedDraftWidget(layout = HOME_EDITOR_STATE.draftLayout) {
-        const visible = sortLayoutForDisplay(layout).filter((widget) => widget.visible !== false);
-        if (!visible.length) return null;
-        if (!HOME_EDITOR_STATE.selectedWidgetId) return null;
-        return visible.find((widget) => widget.instanceId === HOME_EDITOR_STATE.selectedWidgetId) || null;
-    }
-
-    function setSelectedDraftWidget(instanceId, { render = false, bringToFront = false } = {}) {
-        const visible = sortLayoutForDisplay(HOME_EDITOR_STATE.draftLayout).filter((widget) => widget.visible !== false);
-        HOME_EDITOR_STATE.selectedWidgetId = instanceId
-            ? (visible.find((widget) => widget.instanceId === instanceId)?.instanceId || '')
-            : '';
-        if (bringToFront && HOME_EDITOR_STATE.selectedWidgetId) {
-            bringDraftWidgetToFront(HOME_EDITOR_STATE.selectedWidgetId, { render: false });
-        }
-        if (render) {
-            renderHomeShell();
-            return;
-        }
-        const homeShell = document.getElementById('lux-home-shell');
-        if (!homeShell) return;
-        const selectedId = HOME_EDITOR_STATE.selectedWidgetId;
-        homeShell.querySelectorAll('[data-widget-id].is-selected').forEach((node) => {
-            node.classList.remove('is-selected');
-        });
-        homeShell.querySelectorAll('[data-widget-select].is-active').forEach((node) => {
-            node.classList.remove('is-active');
-        });
-        if (!selectedId) return;
-        const widgetEl = homeShell.querySelector(`[data-widget-id="${CSS.escape(selectedId)}"]`);
-        widgetEl?.classList.add('is-selected');
-        homeShell.querySelectorAll(`[data-widget-select="${CSS.escape(selectedId)}"]`).forEach((node) => {
-            node.classList.add('is-active');
-        });
-    }
-
-    function setDraftWidgetDimensions(instanceId, values, { render = true } = {}) {
-        const widget = HOME_EDITOR_STATE.draftLayout?.find((item) => item.instanceId === instanceId);
-        if (!widget) return;
-        setSelectedDraftWidget(instanceId, { render: false });
-        const metrics = getDesktopCanvasMetrics(getHomeViewportWidthForDesktop());
-        const desktopEditor = isDesktopHomeEditorViewport();
-        const nextRect = desktopEditor
-            ? normalizeDesktopRect(widget, {
-                left: values?.left ?? values?.x ?? (widget.desktopRect?.left ?? gridRectToDesktopRect(widget, metrics.width).left),
-                top: values?.top ?? values?.y ?? (widget.desktopRect?.top ?? gridRectToDesktopRect(widget, metrics.width).top),
-                width: values?.width != null
-                    ? values.width
-                    : toDesktopPixelWidth(values?.w ?? widget.w, metrics),
-                height: values?.height != null
-                    ? values.height
-                    : toDesktopPixelHeight(values?.h ?? widget.h, metrics)
-            }, metrics.width)
-            : normalizeWidgetRect(widget, {
-                x: values?.x ?? widget.x,
-                y: values?.y ?? widget.y,
-                w: values?.w ?? (values?.width != null ? toGridWidthFromPixels(values.width, widget, metrics) : widget.w),
-                h: values?.h ?? (values?.height != null ? toGridHeightFromPixels(values.height, widget, metrics) : widget.h)
-            });
-        updateDraftWidget(instanceId, (next) => {
-            if (desktopEditor) {
-                const gridRect = desktopRectToGridRect(next, nextRect, metrics.width);
-                next.x = gridRect.x;
-                next.y = gridRect.y;
-                next.w = gridRect.w;
-                next.h = gridRect.h;
-                next.desktopRect = { ...nextRect };
-                next.restoreDesktopRect = { ...nextRect };
-                next.desktopRectViewportWidth = metrics.width;
-                next.restoreDesktopRectViewportWidth = metrics.width;
-            } else {
-                next.x = nextRect.x;
-                next.y = nextRect.y;
-                next.w = nextRect.w;
-                next.h = nextRect.h;
-                next.desktopRect = null;
-                next.restoreDesktopRect = null;
-            }
-            if (!next.minimized) {
-                next.restoreRect = { ...(next.restoreRect || {}), x: next.x, y: next.y, w: next.w, h: next.h };
-            }
-        }, { render, stabilize: true, priority: instanceId });
-    }
-
-    function setDraftWidgetDimension(instanceId, axis, value, { render = true } = {}) {
-        const widget = HOME_EDITOR_STATE.draftLayout?.find((item) => item.instanceId === instanceId);
-        if (!widget) return;
-        setDraftWidgetDimensions(instanceId, axis === 'h' ? { h: value } : { w: value }, { render });
-    }
-
-    function applyDesktopRectToDraftWidget(next, rect, viewportWidth = 0) {
-        const desktopRect = normalizeDesktopRect(next, rect, viewportWidth);
-        const gridRect = desktopRectToGridRect(next, desktopRect, viewportWidth);
-        next.desktopRect = desktopRect;
-        next.x = gridRect.x;
-        next.y = gridRect.y;
-        next.w = gridRect.w;
-        next.h = gridRect.h;
-        next.desktopRectViewportWidth = viewportWidth || getHomeViewportWidthForDesktop();
-        next.restoreDesktopRectViewportWidth = next.desktopRectViewportWidth;
-    }
-
-    function bringDraftWidgetToFront(instanceId, { render = true } = {}) {
-        const widget = HOME_EDITOR_STATE.draftLayout?.find((item) => item.instanceId === instanceId);
-        if (!widget) return;
-        updateDraftWidget(instanceId, (next) => {
-            next.zIndex = getHighestWidgetZIndex(HOME_EDITOR_STATE.draftLayout) + 1;
-        }, { stabilize: false, render });
-    }
-
-    moveDraftWidget = function (sourceId, targetId) {
-        if (!HOME_EDITOR_STATE.editing || !Array.isArray(HOME_EDITOR_STATE.draftLayout) || sourceId === targetId) return;
-        const source = HOME_EDITOR_STATE.draftLayout.find((widget) => widget.instanceId === sourceId);
-        const target = HOME_EDITOR_STATE.draftLayout.find((widget) => widget.instanceId === targetId);
-        if (!source || !target) return;
-        const nextSourceY = target.y;
-        const nextTargetY = source.y;
-        HOME_EDITOR_STATE.draftLayout = HOME_EDITOR_STATE.draftLayout.map((widget) => {
-            if (widget.instanceId === sourceId) return { ...widget, y: nextSourceY };
-            if (widget.instanceId === targetId) return { ...widget, y: nextTargetY };
-            return widget;
-        });
-        HOME_EDITOR_STATE.draftLayout = stabilizeLayout(HOME_EDITOR_STATE.draftLayout, sourceId);
-        renderHomeShell();
-    };
-
-    function nudgeDraftWidget(instanceId, direction) {
-        const visible = (HOME_EDITOR_STATE.draftLayout || []).filter((widget) => widget.visible !== false).slice().sort((a, b) => a.y - b.y || a.x - b.x);
-        const index = visible.findIndex((widget) => widget.instanceId === instanceId);
-        if (index === -1) return;
-        const swapIndex = index + direction;
-        if (swapIndex < 0 || swapIndex >= visible.length) return;
-        moveDraftWidget(visible[index].instanceId, visible[swapIndex].instanceId);
-    }
-
-    function setDraftWidgetSize(instanceId, axis, direction) {
-        const widget = HOME_EDITOR_STATE.draftLayout?.find((item) => item.instanceId === instanceId);
-        if (!widget) return;
-        setSelectedDraftWidget(instanceId, { render: false });
-        if (isDesktopHomeEditorViewport()) {
-            const viewportWidth = getHomeViewportWidthForDesktop();
-            const rect = getWidgetDesktopRect(widget, viewportWidth);
-            const metrics = getDesktopCanvasMetrics(viewportWidth);
-            const widthStep = Math.max(HOME_WINDOW_SNAP * 2, Math.round(metrics.cellWidth + metrics.gapX));
-            const heightStep = Math.max(HOME_WINDOW_SNAP * 2, Math.round(metrics.rowHeight + metrics.gapY));
-            setDraftWidgetDimensions(instanceId, axis === 'w'
-                ? { width: rect.width + (direction > 0 ? widthStep : -widthStep) }
-                : { height: rect.height + (direction > 0 ? heightStep : -heightStep) });
-            return;
-        }
-        const nextRect = resolveNearestOpenRect(HOME_EDITOR_STATE.draftLayout, instanceId, {
-            x: widget.x,
-            y: widget.y,
-            w: axis === 'w' ? stepWidgetSize(widget, 'w', direction) : widget.w,
-            h: axis === 'h' ? stepWidgetSize(widget, 'h', direction) : widget.h
-        });
-        updateDraftWidget(instanceId, (next) => {
-            next.x = nextRect.x;
-            next.y = nextRect.y;
-            next.w = nextRect.w;
-            next.h = nextRect.h;
-            next.desktopRect = null;
-            next.restoreDesktopRect = null;
-            if (!next.minimized) {
-                next.restoreRect = { ...(next.restoreRect || {}), x: nextRect.x, y: nextRect.y, w: nextRect.w, h: nextRect.h };
-            }
-        }, { priority: instanceId });
-    }
-
-    function toggleDraftWidgetMinimize(instanceId) {
-        const widget = HOME_EDITOR_STATE.draftLayout?.find((item) => item.instanceId === instanceId);
-        if (!widget) return;
-        setSelectedDraftWidget(instanceId, { render: false });
-        updateDraftWidget(instanceId, (next) => {
-            if (next.minimized) {
-                next.minimized = false;
-                if (next.restoreDesktopRect) {
-                    applyDesktopRectToDraftWidget(next, next.restoreDesktopRect, getHomeViewportWidthForDesktop());
-                }
-                if (next.restoreRect) {
-                    next.x = normalizeWidgetX(next.restoreRect.x, next.restoreRect.w || next.w, next.x);
-                    next.y = normalizeWidgetY(next.restoreRect.y, next.y);
-                    next.w = normalizeWidgetWidth(next.restoreRect.w, next.w, next.minW || 2, next.maxW || HOME_GRID_COLUMNS);
-                    next.h = normalizeWidgetHeight(next.restoreRect.h, next.h, next.minH || 3, next.maxH || 12);
-                }
-            } else {
-                next.restoreRect = { x: next.x, y: next.y, w: next.w, h: next.h };
-                next.restoreDesktopRect = next.desktopRect ? { ...next.desktopRect } : getWidgetDesktopRect(next, getHomeViewportWidthForDesktop());
-                next.minimized = true;
-                next.w = normalizeWidgetWidth(Math.min(3, next.w), Math.min(3, next.w), 2, next.maxW || HOME_GRID_COLUMNS);
-                next.h = 2;
-                if (isDesktopHomeEditorViewport()) {
-                    applyDesktopRectToDraftWidget(next, {
-                        left: next.restoreDesktopRect?.left ?? 0,
-                        top: next.restoreDesktopRect?.top ?? 0,
-                        width: Math.min(280, next.restoreDesktopRect?.width || 280),
-                        height: 112
-                    }, getHomeViewportWidthForDesktop());
-                }
-            }
-        });
-    }
-
-    function normalizeWidgetRect(widget, values = {}) {
-        const width = normalizeWidgetWidth(values.w ?? widget.w, widget.w, widget.minW || 2, widget.maxW || HOME_GRID_COLUMNS);
-        const height = normalizeWidgetHeight(values.h ?? widget.h, widget.h, widget.minH || 3, widget.maxH || 12);
-        return {
-            x: normalizeWidgetX(values.x ?? widget.x, width, widget.x),
-            y: normalizeWidgetY(values.y ?? widget.y, widget.y),
-            w: width,
-            h: height
-        };
-    }
-
-    function resolveNearestOpenRect(layout, widgetId, proposed) {
-        const widget = (layout || []).find((item) => item.instanceId === widgetId);
-        if (!widget) return proposed;
-        const candidate = normalizeWidgetRect(widget, proposed);
-        const others = (layout || []).filter((item) => item.visible !== false && item.instanceId !== widgetId);
-        if (!others.some((other) => widgetsOverlap({ ...candidate, instanceId: widgetId, visible: true }, other))) return candidate;
-        let best = null;
-        let bestScore = Number.POSITIVE_INFINITY;
-        const maxRow = Math.max(
-            candidate.y + 28,
-            widget.y + widget.h + 18,
-            ...others.map((other) => other.y + other.h + 10),
-            24
-        );
-        for (let row = 1; row <= maxRow; row += 1) {
-            for (let col = 1; col <= (HOME_GRID_COLUMNS - candidate.w + 1); col += 1) {
-                const test = { instanceId: widgetId, visible: true, x: col, y: row, w: candidate.w, h: candidate.h };
-                if (others.some((other) => widgetsOverlap(test, other))) continue;
-                const score = Math.abs(col - candidate.x) * 3 + Math.abs(row - candidate.y) + (row > candidate.y ? 0.2 : 0);
-                if (!best || score < bestScore) {
-                    best = { x: col, y: row, w: candidate.w, h: candidate.h };
-                    bestScore = score;
-                }
-            }
-        }
-        if (best) return best;
-        return {
-            x: 1,
-            y: Math.max(1, ...others.map((other) => other.y + other.h + 1)),
-            w: candidate.w,
-            h: candidate.h
-        };
-    }
-
-    function setInspectorState(values, { persist = true, render = true } = {}) {
-        const scopeKey = HOME_EDITOR_STATE.scopeKey || getHomeScopeKey();
-        const nextState = sanitizeInspectorState({
-            ...(HOME_EDITOR_STATE.inspectorState || getSavedInspectorState(scopeKey)),
-            ...(values || {})
-        });
-        HOME_EDITOR_STATE.inspectorState = nextState;
-        if (persist) setSavedInspectorState(nextState, scopeKey, true);
-        if (render) renderHomeShell();
-        return nextState;
-    }
-
-    hideDraftWidget = function (widget) {
-        if (!widget || !HOME_EDITOR_STATE.editing) return;
-        if (widget.softLock && !window.confirm(`Hide "${widget.label}" from this dashboard? You can restore it later from the widget library.`)) return;
-        if (widget.sourceType === 'system') {
-            HOME_EDITOR_STATE.draftLayout = HOME_EDITOR_STATE.draftLayout.map((item) => (
-                item.instanceId === widget.instanceId ? { ...item, visible: false } : item
-            ));
-        } else {
-            HOME_EDITOR_STATE.draftLayout = HOME_EDITOR_STATE.draftLayout.filter((item) => item.instanceId !== widget.instanceId);
-        }
-        HOME_EDITOR_STATE.draftLayout = stabilizeLayout(HOME_EDITOR_STATE.draftLayout);
-        if (HOME_EDITOR_STATE.selectedWidgetId === widget.instanceId) {
-            HOME_EDITOR_STATE.selectedWidgetId = sortLayoutForDisplay(HOME_EDITOR_STATE.draftLayout).find((item) => item.visible !== false)?.instanceId || '';
-        }
-        renderHomeShell();
-    };
-
-    restoreDraftWidget = function (widgetId, role, model) {
-        const definition = buildSystemWidgetDefinitions(role, model).find((item) => item.widgetId === widgetId);
-        if (!definition) return;
-        const existing = HOME_EDITOR_STATE.draftLayout.find((item) => item.widgetId === widgetId && item.sourceType === 'system');
-        if (existing) {
-            updateDraftWidget(existing.instanceId, (next) => {
-                const resolved = resolveNearestOpenRect(HOME_EDITOR_STATE.draftLayout, existing.instanceId, definition);
-                next.visible = true;
-                next.minimized = false;
-                next.x = resolved.x;
-                next.y = resolved.y;
-                next.w = resolved.w;
-                next.h = resolved.h;
-                next.zIndex = getHighestWidgetZIndex(HOME_EDITOR_STATE.draftLayout) + 1;
-            });
-            setSelectedDraftWidget(existing.instanceId, { render: false });
-            return;
-        }
-        const widget = createWidgetInstance(definition, { visible: true });
-        const slot = resolveNearestOpenRect(HOME_EDITOR_STATE.draftLayout, widget.instanceId, widget);
-        HOME_EDITOR_STATE.draftLayout.push({ ...widget, ...slot, minimized: false, zIndex: getHighestWidgetZIndex(HOME_EDITOR_STATE.draftLayout) + 1 });
-        HOME_EDITOR_STATE.draftLayout = stabilizeLayout(HOME_EDITOR_STATE.draftLayout, definition.widgetId);
-        HOME_EDITOR_STATE.selectedWidgetId = widget.instanceId;
-        renderHomeShell();
-    };
-
-    createDraftShortcut = function (role, values) {
-        const widget = createShortcutWidgetInstance(values, role);
-        if (!widget) return;
-        const slot = findNextAvailableSlot(HOME_EDITOR_STATE.draftLayout, widget.w, widget.h);
-        HOME_EDITOR_STATE.draftLayout.push({ ...widget, ...slot, zIndex: getHighestWidgetZIndex(HOME_EDITOR_STATE.draftLayout) + 1 });
-        HOME_EDITOR_STATE.draftLayout = stabilizeLayout(HOME_EDITOR_STATE.draftLayout, widget.instanceId);
-        HOME_EDITOR_STATE.selectedWidgetId = widget.instanceId;
-        renderHomeShell();
-        showToast(`Added shortcut: ${widget.label}`);
-    };
-
-    function createDraftPinnedWidget(spec) {
-        const widget = createPinnedWidgetInstance(spec);
-        if (!widget) return;
-        const slot = findNextAvailableSlot(HOME_EDITOR_STATE.draftLayout, widget.w, widget.h);
-        HOME_EDITOR_STATE.draftLayout.push({ ...widget, ...slot, zIndex: getHighestWidgetZIndex(HOME_EDITOR_STATE.draftLayout) + 1 });
-        HOME_EDITOR_STATE.draftLayout = stabilizeLayout(HOME_EDITOR_STATE.draftLayout, widget.instanceId);
-        HOME_EDITOR_STATE.selectedWidgetId = widget.instanceId;
-        renderHomeShell();
-        showToast(`Pinned: ${widget.label}`);
-    }
 
 /* Home dashboard widget markup renderers. */
     function renderListRowsMarkup(rows) {
@@ -1169,7 +684,7 @@ function ensureHomeEditorCss() {
 
     function renderQuickTilesMarkup(tiles) {
         return ((tiles && tiles.length) ? tiles : []).map((tile) => `
-            <button class="lux-quick-btn lux-soft-chrome" type="button" data-nav-target="${escapeHtml(tile.pageId)}">
+            <button class="lux-quick-btn lux-soft-chrome home-hover-chip" type="button" data-nav-target="${escapeHtml(tile.pageId)}">
                 <div class="lux-quick-top">
                     <div class="icon"><i class="${escapeHtml(tile.icon)}"></i></div>
                     <div class="lux-quick-meta-badge">${escapeHtml(tile.meta || 'Workspace')}</div>
@@ -1232,14 +747,14 @@ function ensureHomeEditorCss() {
                     <aside class="lms-hero-focus lux-hero-side lux-focus-panel lux-soft-chrome home-hover-chip" aria-label="${escapeHtml(kicker)}">
                         <div class="lms-hero-focus-head">
                             <div class="lms-hero-focus-kicker">${escapeHtml(kicker)}</div>
-                            <span class="lms-hero-focus-chip" aria-label="Status">${escapeHtml(chip)}</span>
+                            <span class="lux-pill lux-soft-chrome home-hover-chip lms-hero-focus-chip" aria-label="Status">${escapeHtml(chip)}</span>
                         </div>
                         <div class="lms-hero-focus-body">
                             <div class="lms-hero-focus-title">${escapeHtml(headline)}</div>
                             <p class="lms-hero-focus-copy">${escapeHtml(copy)}</p>
                         </div>
                         <div class="lms-hero-focus-meta">
-                            <span><i class="fas ${escapeHtml(meta.icon || 'fa-circle-dot')}"></i> ${escapeHtml(meta.text || '')}</span>
+                            <span class="lux-pill lux-soft-chrome home-hover-chip"><i class="fas ${escapeHtml(meta.icon || 'fa-circle-dot')}"></i> ${escapeHtml(meta.text || '')}</span>
                         </div>
                     </aside>`;
     }
@@ -1304,24 +819,6 @@ function ensureHomeEditorCss() {
             `;
         }
         if (widget.renderType === 'admin-ops') return renderAdminOpsMarkup(widget.adminOperations);
-        if (widget.renderType === 'shortcut' || widget.renderType === 'pinned') {
-            return `
-                <section class="lux-panel lux-card lux-builder-card lux-soft-chrome">
-                    <div class="lux-shortcut-head">
-                        <div class="lux-shortcut-icon"><i class="${escapeHtml(widget.icon)}"></i></div>
-                        <div class="lux-card-meta">${escapeHtml(widget.meta || (widget.renderType === 'pinned' ? 'Pinned' : 'Shortcut'))}</div>
-                    </div>
-                    <div class="lux-shortcut-body">
-                        <strong>${escapeHtml(widget.title || widget.label)}</strong>
-                        <p>${escapeHtml(widget.copy || '')}</p>
-                    </div>
-                    <div class="lux-shortcut-foot">
-                        <span class="lux-shortcut-status">${escapeHtml(widget.status || 'Open')}</span>
-                        <button class="lux-secondary-btn" type="button" data-nav-target="${escapeHtml(widget.pageId)}">${escapeHtml(widget.renderType === 'pinned' ? 'Open record' : 'Open shortcut')}</button>
-                    </div>
-                </section>
-            `;
-        }
         return `
             <section class="lux-panel lux-card lux-builder-card lux-soft-chrome">
                 <div class="lux-card-head">
@@ -1337,474 +834,8 @@ function ensureHomeEditorCss() {
         `;
     }
 
-    function sortLayoutForDisplay(layout) {
-        return (layout || []).filter((widget) => widget.visible !== false).slice().sort((a, b) => a.y - b.y || a.x - b.x || String(a.label).localeCompare(String(b.label)));
-    }
-
-    function renderWidgetEditorToolbar(widget, desktopEditor, isSelected = false) {
-        const sizeCopy = widget.minimized ? `Minimized / ${widget.w} Ã— ${widget.h}` : `${widget.w} Ã— ${widget.h}`;
-        if (!HOME_EDITOR_STATE.editing) return '';
-        if (desktopEditor) return '';
-        return `
-            <div class="lux-widget-toolbar lux-widget-toolbar--builder" data-widget-drag-zone="${escapeHtml(widget.instanceId)}" title="${desktopEditor ? 'Drag this widget to a new position' : 'Desktop drag available on larger screens'}">
-                <div class="lux-widget-toolbar-copy">
-                    <button class="lux-widget-grab" type="button" data-widget-drag-handle="${escapeHtml(widget.instanceId)}" title="${desktopEditor ? 'Drag to move widget' : 'Desktop drag available on larger screens'}">
-                        <i class="fas fa-grip-lines"></i>
-                    </button>
-                    <div>
-                        <strong>${escapeHtml(widget.label)}</strong>
-                        <span>${escapeHtml(sizeCopy)}</span>
-                    </div>
-                </div>
-                <div class="lux-widget-toolbar-actions">
-                    <button class="lux-widget-size-btn lux-widget-size-btn--labelled${isSelected ? ' is-active' : ''}" type="button" data-widget-select="${escapeHtml(widget.instanceId)}" title="Open size controls for this widget">Size</button>
-                    ${desktopEditor ? '' : `
-                        <button class="lux-widget-move-btn" type="button" data-widget-move="${escapeHtml(widget.instanceId)}" data-move-direction="-1" title="Move earlier"><i class="fas fa-arrow-up"></i></button>
-                        <button class="lux-widget-move-btn" type="button" data-widget-move="${escapeHtml(widget.instanceId)}" data-move-direction="1" title="Move later"><i class="fas fa-arrow-down"></i></button>
-                    `}
-                    <button class="lux-widget-size-btn" type="button" data-widget-minimize="${escapeHtml(widget.instanceId)}" title="${widget.minimized ? 'Restore widget' : 'Minimize widget'}"><i class="fas ${widget.minimized ? 'fa-window-restore' : 'fa-window-minimize'}"></i></button>
-                    <button class="lux-widget-size-btn lux-widget-size-btn--labelled" type="button" data-widget-size="${escapeHtml(widget.instanceId)}" data-size-axis="w" data-size-direction="-1" title="Make narrower">W-</button>
-                    <button class="lux-widget-size-btn lux-widget-size-btn--labelled" type="button" data-widget-size="${escapeHtml(widget.instanceId)}" data-size-axis="w" data-size-direction="1" title="Make wider">W+</button>
-                    <button class="lux-widget-size-btn lux-widget-size-btn--labelled" type="button" data-widget-size="${escapeHtml(widget.instanceId)}" data-size-axis="h" data-size-direction="-1" title="Make shorter">H-</button>
-                    <button class="lux-widget-size-btn lux-widget-size-btn--labelled" type="button" data-widget-size="${escapeHtml(widget.instanceId)}" data-size-axis="h" data-size-direction="1" title="Make taller">H+</button>
-                    <button class="lux-widget-remove" type="button" data-widget-hide="${escapeHtml(widget.instanceId)}" title="${widget.sourceType === 'system' ? 'Hide section' : 'Remove widget'}"><i class="fas fa-xmark"></i></button>
-                </div>
-            </div>
-        `;
-    }
-
-    // Fixed professional layout (asd32): full-width bands + uniform 3-per-row spans.
-    function professionalColumnSpan(widget) {
-        if (Number.isFinite(Number(widget.span))) return Math.max(1, Math.min(12, Number(widget.span)));
-        switch (widget.renderType) {
-            case 'hero':
-            case 'alert':
-            case 'admin-ops':
-            case 'quick':
-                return 12;
-            default:
-                return 4;
-        }
-    }
-
-    function renderWidgetShellMarkup(widget, role, renderMode, desktopEditor, viewportWidth = 0, overlapIds = null) {
-        const isOverlapping = overlapIds instanceof Set && overlapIds.has(widget.instanceId);
-        const desktopRect = getWidgetDesktopRect(widget, viewportWidth);
-        const content = widget.minimized
-            ? `
-                <section class="lux-panel lux-widget-minimized-card lux-soft-chrome">
-                    <div class="lux-widget-minimized-icon"><i class="${escapeHtml(widget.icon || 'fas fa-window-maximize')}"></i></div>
-                    <div class="lux-widget-minimized-copy">
-                        <strong>${escapeHtml(widget.label)}</strong>
-                        <span>${escapeHtml(widget.meta || 'Dashboard panel')}</span>
-                    </div>
-                    <button class="lux-secondary-btn" type="button" data-widget-minimize="${escapeHtml(widget.instanceId)}">Restore</button>
-                </section>
-            `
-            : renderWidgetContent(widget, role);
-        if (!content) return '';
-        const style = viewportWidth > 0
-            ? `grid-column: span ${professionalColumnSpan(widget)}; z-index:${Number(widget.zIndex) || 1};`
-            : renderMode === 'presentation'
-                ? `grid-column:${widget.x} / span ${widget.w}; grid-row:${widget.y} / span ${widget.h}; z-index:${Number(widget.zIndex) || 1};`
-                : 'grid-column:1 / -1;';
-        const dragZoneAttr = HOME_EDITOR_STATE.editing && desktopEditor
-            ? ` data-widget-drag-zone="${escapeHtml(widget.instanceId)}" title="Drag this widget to move it"`
-            : '';
-        return `
-            <article class="lux-grid-widget${widget.minimized ? ' is-minimized' : ''}${HOME_EDITOR_STATE.selectedWidgetId === widget.instanceId ? ' is-selected' : ''}${HOME_EDITOR_STATE.dragState?.widgetId === widget.instanceId ? ' is-ghost-source' : ''}${isOverlapping ? ' is-overlapping' : ''}" data-widget-id="${escapeHtml(widget.instanceId)}" data-widget-type="${escapeHtml(widget.renderType)}" data-widget-selectable="${escapeHtml(widget.instanceId)}"${dragZoneAttr} style="${style}">
-                ${HOME_EDITOR_STATE.editing && isOverlapping ? '<div class="lux-widget-overlap-badge" title="This widget overlaps another widget" aria-label="Overlapping widget">&#9888;&#65039;</div>' : ''}
-                ${renderWidgetEditorToolbar(widget, desktopEditor, HOME_EDITOR_STATE.selectedWidgetId === widget.instanceId)}
-                <div class="lux-grid-widget-body">${content}</div>
-                ${desktopEditor && !widget.minimized ? `
-                    <button class="lux-widget-resize-handle lux-widget-resize-handle--north" type="button" data-widget-resize="${escapeHtml(widget.instanceId)}" data-widget-resize-mode="resize-north" title="Drag to resize from top"><i class="fas fa-up-down"></i></button>
-                    <button class="lux-widget-resize-handle lux-widget-resize-handle--west" type="button" data-widget-resize="${escapeHtml(widget.instanceId)}" data-widget-resize-mode="resize-west" title="Drag to resize from left"><i class="fas fa-left-right"></i></button>
-                    <button class="lux-widget-resize-handle lux-widget-resize-handle--east" type="button" data-widget-resize="${escapeHtml(widget.instanceId)}" data-widget-resize-mode="resize-east" title="Drag to resize width"><i class="fas fa-left-right"></i></button>
-                    <button class="lux-widget-resize-handle lux-widget-resize-handle--south" type="button" data-widget-resize="${escapeHtml(widget.instanceId)}" data-widget-resize-mode="resize-south" title="Drag to resize height"><i class="fas fa-up-down"></i></button>
-                    <button class="lux-widget-resize-handle lux-widget-resize-handle--corner" type="button" data-widget-resize="${escapeHtml(widget.instanceId)}" data-widget-resize-mode="resize-corner" title="Drag to resize"><i class="fas fa-up-right-and-down-left-from-center"></i></button>
-                ` : ''}
-            </article>
-        `;
-    }
-
-/* Home dashboard editor panel and desktop gestures. */
-    function renderEditorPanel(role, model, layout, systemDefinitions, desktopEditor) {
-        const selectedWidget = getSelectedDraftWidget(layout);
-        const selectedWidgetDesktopRect = selectedWidget && desktopEditor ? getWidgetDesktopRect(selectedWidget, getHomeViewportWidthForDesktop()) : null;
-        const hiddenDefinitions = systemDefinitions.filter((definition) => {
-            const existing = layout.find((widget) => widget.widgetId === definition.widgetId && widget.sourceType === 'system');
-            return !existing || existing.visible === false;
-        });
-        const pinOptions = buildPinnedRecordOptions(role, model);
-        HOME_EDITOR_STATE.availablePins = pinOptions;
-        const shortcutDestinations = getShortcutDestinationOptions(role);
-        const shortcutIconOptions = [['fas fa-book-reader', 'Book'], ['fas fa-calendar-week', 'Calendar'], ['fas fa-headset', 'Support'], ['fas fa-file-signature', 'Document'], ['fas fa-comments', 'Chat'], ['fas fa-book-open', 'Orders'], ['fas fa-layer-group', 'Systems'], ['fas fa-link', 'Link']];
-        const mobileVisible = sortLayoutForDisplay(layout);
-        const libraryHtml = hiddenDefinitions.length
-            ? hiddenDefinitions.map((definition) => `<button class="lux-editor-library-item" type="button" data-restore-widget="${escapeHtml(definition.widgetId)}"><strong>${escapeHtml(definition.label)}</strong><span>${escapeHtml(definition.copy || definition.title || 'Restore widget')}</span></button>`).join('')
-            : '<div class="lux-editor-empty">All system widgets are already visible for this role.</div>';
-        const pinHtml = pinOptions.length
-            ? pinOptions.map((item, index) => `<button class="lux-editor-library-item" type="button" data-pin-widget="${escapeHtml(String(index))}"><strong>${escapeHtml(item.title)}</strong><span>${escapeHtml(item.copy)}</span></button>`).join('')
-            : '<div class="lux-editor-empty">No pin-ready records are available in this view yet.</div>';
-        const destinationOptions = shortcutDestinations.map((item) => `<option value="${escapeHtml(item.pageId)}">${escapeHtml(item.label)}</option>`).join('');
-        const iconOptions = shortcutIconOptions.map(([value, label]) => `<option value="${escapeHtml(value)}">${escapeHtml(label)}</option>`).join('');
-        const widthOptions = selectedWidget
-            ? [...new Set([selectedWidget.minW || 2, 2, 3, 4, 5, 6, 8, 10, 12, selectedWidget.maxW || HOME_GRID_COLUMNS])]
-                .filter((value) => value >= (selectedWidget.minW || 2) && value <= (selectedWidget.maxW || HOME_GRID_COLUMNS))
-                .sort((a, b) => a - b)
-            : [];
-        const heightOptions = selectedWidget
-            ? [...new Set([selectedWidget.minH || 3, 2, 3, 4, 5, 6, 8, 10, 12, selectedWidget.maxH || 12])]
-                .filter((value) => value >= (selectedWidget.minH || 3) && value <= (selectedWidget.maxH || 12))
-                .sort((a, b) => a - b)
-            : [];
-        const selectedWidgetHtml = selectedWidget
-            ? `
-                <section class="lux-panel lux-editor-card lux-editor-card--size lux-soft-chrome">
-                    <div class="lux-card-head">
-                        <div><div class="lux-card-title">Selected panel size</div><div class="lux-builder-copy">Make this widget smaller or larger without leaving the workspace.</div></div>
-                        <div class="lux-card-meta">${escapeHtml(selectedWidgetDesktopRect ? `${Math.round(selectedWidgetDesktopRect.width)}Ã—${Math.round(selectedWidgetDesktopRect.height)} px` : `${selectedWidget.w}Ã—${selectedWidget.h}`)}</div>
-                    </div>
-                    <div class="lux-editor-size-card-head">
-                        <div>
-                            <strong>${escapeHtml(selectedWidget.label)}</strong>
-                            <span>${escapeHtml(selectedWidget.title || selectedWidget.label)}</span>
-                        </div>
-                        <div class="lux-editor-size-badge">${escapeHtml(selectedWidget.minimized ? 'Minimized' : 'Live on canvas')}</div>
-                    </div>
-                    <div class="lux-editor-size-actions">
-                        <button class="lux-widget-size-btn lux-widget-size-btn--labelled" type="button" data-widget-size="${escapeHtml(selectedWidget.instanceId)}" data-size-axis="w" data-size-direction="-1">Narrower</button>
-                        <button class="lux-widget-size-btn lux-widget-size-btn--labelled" type="button" data-widget-size="${escapeHtml(selectedWidget.instanceId)}" data-size-axis="w" data-size-direction="1">Wider</button>
-                        <button class="lux-widget-size-btn lux-widget-size-btn--labelled" type="button" data-widget-size="${escapeHtml(selectedWidget.instanceId)}" data-size-axis="h" data-size-direction="-1">Shorter</button>
-                        <button class="lux-widget-size-btn lux-widget-size-btn--labelled" type="button" data-widget-size="${escapeHtml(selectedWidget.instanceId)}" data-size-axis="h" data-size-direction="1">Taller</button>
-                    </div>
-                    <div class="lux-editor-size-axis">
-                        <div class="lux-editor-size-axis-head"><span>Width</span><strong>${escapeHtml(selectedWidgetDesktopRect ? `${Math.round(selectedWidgetDesktopRect.width)} px` : `${selectedWidget.w} columns`)}</strong></div>
-                        <div class="lux-editor-size-choice-row">
-                            ${widthOptions.map((value) => `<button class="lux-editor-size-choice${selectedWidget.w === value ? ' is-active' : ''}" type="button" data-widget-dimension="${escapeHtml(selectedWidget.instanceId)}" data-dimension-axis="w" data-dimension-value="${escapeHtml(String(value))}">${escapeHtml(String(value))}</button>`).join('')}
-                        </div>
-                    </div>
-                    <div class="lux-editor-size-axis">
-                        <div class="lux-editor-size-axis-head"><span>Height</span><strong>${escapeHtml(selectedWidgetDesktopRect ? `${Math.round(selectedWidgetDesktopRect.height)} px` : `${selectedWidget.h} rows`)}</strong></div>
-                        <div class="lux-editor-size-choice-row">
-                            ${heightOptions.map((value) => `<button class="lux-editor-size-choice${selectedWidget.h === value ? ' is-active' : ''}" type="button" data-widget-dimension="${escapeHtml(selectedWidget.instanceId)}" data-dimension-axis="h" data-dimension-value="${escapeHtml(String(value))}">${escapeHtml(String(value))}</button>`).join('')}
-                        </div>
-                    </div>
-                    <div class="lux-editor-size-note">Current range: width ${escapeHtml(String(selectedWidget.minW || 2))}-${escapeHtml(String(selectedWidget.maxW || HOME_GRID_COLUMNS))}, height ${escapeHtml(String(selectedWidget.minH || 3))}-${escapeHtml(String(selectedWidget.maxH || 12))}.</div>
-                </section>
-            `
-            : `
-                <section class="lux-panel lux-editor-card lux-editor-card--size lux-soft-chrome">
-                    <div class="lux-card-head">
-                        <div><div class="lux-card-title">Selected panel size</div><div class="lux-builder-copy">Pick any widget from the canvas to adjust its size here.</div></div>
-                        <div class="lux-card-meta">No selection</div>
-                    </div>
-                    <div class="lux-editor-empty">Select a widget on the canvas to resize it from this panel.</div>
-                </section>
-            `;
-        const mobileEditorHtml = desktopEditor ? '' : `
-            <section class="lux-panel lux-editor-card lux-soft-chrome">
-                <div class="lux-card-head">
-                    <div><div class="lux-card-title">Touch editor</div><div class="lux-builder-copy">Move widgets up or down and tune their size from this list preview.</div></div>
-                    <div class="lux-card-meta">Mobile / tablet</div>
-                </div>
-                <div class="lux-editor-mobile-list">
-                    ${mobileVisible.map((widget) => `
-                        <div class="lux-editor-mobile-item">
-                            <div class="lux-editor-mobile-copy">
-                                <strong>${escapeHtml(widget.label)}</strong>
-                                <span>${escapeHtml(String(widget.w) + 'x' + String(widget.h))}</span>
-                            </div>
-                            <div class="lux-editor-mobile-actions">
-                                <button type="button" data-widget-move="${escapeHtml(widget.instanceId)}" data-move-direction="-1"><i class="fas fa-arrow-up"></i></button>
-                                <button type="button" data-widget-move="${escapeHtml(widget.instanceId)}" data-move-direction="1"><i class="fas fa-arrow-down"></i></button>
-                                <button type="button" data-widget-size="${escapeHtml(widget.instanceId)}" data-size-axis="w" data-size-direction="-1"><i class="fas fa-left-right"></i></button>
-                                <button type="button" data-widget-size="${escapeHtml(widget.instanceId)}" data-size-axis="w" data-size-direction="1"><i class="fas fa-arrows-left-right"></i></button>
-                                <button type="button" data-widget-size="${escapeHtml(widget.instanceId)}" data-size-axis="h" data-size-direction="-1"><i class="fas fa-up-down"></i></button>
-                                <button type="button" data-widget-size="${escapeHtml(widget.instanceId)}" data-size-axis="h" data-size-direction="1"><i class="fas fa-arrows-up-down"></i></button>
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>
-            </section>
-        `;
-        const inspectorState = HOME_EDITOR_STATE.inspectorState || getDefaultInspectorState();
-        const minimizedWidgets = sortLayoutForDisplay(layout).filter((widget) => widget.minimized);
-        const minimizedHtml = minimizedWidgets.length
-            ? minimizedWidgets.map((widget) => `<button class="lux-editor-library-item lux-editor-library-item--restore" type="button" data-widget-minimize="${escapeHtml(widget.instanceId)}"><strong>${escapeHtml(widget.label)}</strong><span>Restore this minimized panel to the canvas.</span></button>`).join('')
-            : '<div class="lux-editor-empty">No minimized widgets are waiting in this layout.</div>';
-        if (desktopEditor && inspectorState.collapsed) {
-            return `
-                <button class="lux-home-editor-chip" type="button" data-inspector-toggle="open" style="left:${Math.round(inspectorState.x)}px; top:${Math.round(inspectorState.y)}px;">
-                    <i class="fas fa-sliders"></i>
-                    <span>Dashboard tools</span>
-                </button>
-            `;
-        }
-        return `
-            <aside class="lux-home-editor-panel--builder${desktopEditor ? ' is-floating' : ''}" data-inspector-panel="1" style="${desktopEditor ? `left:${Math.round(inspectorState.x)}px; top:${Math.round(inspectorState.y)}px; width:${Math.round(inspectorState.width)}px;` : ''}">
-                ${desktopEditor ? `
-                    <div class="lux-home-editor-header" data-inspector-drag-handle="1">
-                        <div class="lux-home-editor-header-copy">
-                            <strong>Dashboard tools</strong>
-                            <span>Floating workspace inspector</span>
-                        </div>
-                        <div class="lux-home-editor-header-actions">
-                            <button class="lux-widget-size-btn" type="button" data-inspector-toggle="collapse" title="Collapse inspector"><i class="fas fa-minus"></i></button>
-                        </div>
-                    </div>
-                ` : ''}
-                <div class="lux-home-editor-body">
-                ${selectedWidgetHtml}
-                <section class="lux-panel lux-editor-card lux-soft-chrome">
-                    <div class="lux-card-head">
-                        <div><div class="lux-card-title">Widget library</div><div class="lux-builder-copy">Restore hidden system panels or add optional sections for this role and faculty.</div></div>
-                        <div class="lux-card-meta">${escapeHtml(getFacultyName(getCurrentFacultyCode()))}</div>
-                    </div>
-                    <div class="lux-editor-library-grid">${libraryHtml}</div>
-                </section>
-                <section class="lux-panel lux-editor-card lux-soft-chrome">
-                    <div class="lux-card-head">
-                        <div><div class="lux-card-title">Pin records</div><div class="lux-builder-copy">Add small dashboard cards for live records already available in this portal.</div></div>
-                        <div class="lux-card-meta">Pinned</div>
-                    </div>
-                    <div class="lux-editor-library-grid">${pinHtml}</div>
-                </section>
-                <section class="lux-panel lux-editor-card lux-soft-chrome">
-                    <div class="lux-card-head">
-                        <div><div class="lux-card-title">Minimized panels</div><div class="lux-builder-copy">Restore panels you tucked away without losing their saved place in this role and faculty layout.</div></div>
-                        <div class="lux-card-meta">Canvas</div>
-                    </div>
-                    <div class="lux-editor-library-grid">${minimizedHtml}</div>
-                </section>
-                <section class="lux-panel lux-editor-card lux-soft-chrome">
-                    <div class="lux-card-head">
-                        <div><div class="lux-card-title">New shortcut tile</div><div class="lux-builder-copy">Create your own internal portal shortcut without touching the underlying logic.</div></div>
-                        <div class="lux-card-meta">Internal pages</div>
-                    </div>
-                    <label class="lux-editor-field"><span>Label</span><input id="lux-shortcut-label" type="text" placeholder="For example: Open staff board"></label>
-                    <label class="lux-editor-field"><span>Destination</span><select id="lux-shortcut-page">${destinationOptions}</select></label>
-                    <label class="lux-editor-field"><span>Description</span><input id="lux-shortcut-copy" type="text" placeholder="A short note about what this shortcut opens"></label>
-                    <div class="lux-editor-field-grid">
-                        <label class="lux-editor-field"><span>Icon</span><select id="lux-shortcut-icon">${iconOptions}</select></label>
-                    </div>
-                    <button class="lux-primary-btn" id="lux-add-shortcut-btn" type="button">Add shortcut tile</button>
-                </section>
-                ${mobileEditorHtml}
-                <section class="lux-panel lux-editor-card lux-soft-chrome">
-                    <div class="lux-card-head">
-                        <div><div class="lux-card-title">Reset & defaults</div><div class="lux-builder-copy">Return the active dashboard or the full home experience to the KIU defaults whenever you want.</div></div>
-                        <div class="lux-card-meta">Safe reset</div>
-                    </div>
-                    <div class="lux-editor-reset-grid">
-                        <button class="lux-ghost-btn" type="button" data-home-reset="current-role">Reset current role layout</button>
-                        <button class="lux-ghost-btn" type="button" data-home-reset="all-layouts">Reset all role layouts</button>
-                        <button class="lux-ghost-btn" type="button" data-home-reset="home-defaults">Reset home to KIU defaults</button>
-                    </div>
-                </section>
-                </div>
-            </aside>
-        `;
-    }
-
-    function ensureCanvasGuide(canvas) {
-        if (!canvas) return null;
-        let guide = canvas.querySelector('.lux-widget-guide');
-        if (!guide) {
-            guide = document.createElement('div');
-            guide.className = 'lux-widget-guide';
-            guide.innerHTML = `
-                <span class="lux-widget-guide-origin"></span>
-                <span class="lux-widget-guide-dot"></span>
-                <span class="lux-widget-guide-label"></span>
-            `;
-            canvas.appendChild(guide);
-        }
-        return guide;
-    }
-
-    function updateCanvasGuide(canvas, preview) {
-        const guide = ensureCanvasGuide(canvas);
-        if (!guide || !preview) return;
-        const guideLabel = guide.querySelector('.lux-widget-guide-label');
-        guide.classList.add('is-visible');
-        if (preview.left != null) {
-            guide.style.left = `${Math.round(preview.left)}px`;
-            guide.style.top = `${Math.round(preview.top)}px`;
-            guide.style.width = `${Math.round(preview.width)}px`;
-            guide.style.height = `${Math.round(preview.height)}px`;
-            if (guideLabel) guideLabel.textContent = `${Math.round(preview.width)} x ${Math.round(preview.height)} px`;
-            return;
-        }
-        const metrics = getDesktopCanvasMetrics(Math.round(canvas.getBoundingClientRect().width || getHomeViewportWidthForDesktop()));
-        const left = Math.max(0, (Math.max(1, Number(preview.x) || 1) - 1) * (metrics.cellWidth + metrics.gapX));
-        const top = Math.max(0, (Math.max(1, Number(preview.y) || 1) - 1) * (metrics.rowHeight + metrics.gapY));
-        const width = toDesktopPixelWidth(preview.w || 4, metrics);
-        const height = toDesktopPixelHeight(preview.h || 4, metrics);
-        guide.style.left = `${Math.round(left)}px`;
-        guide.style.top = `${Math.round(top)}px`;
-        guide.style.width = `${Math.round(width)}px`;
-        guide.style.height = `${Math.round(height)}px`;
-        if (guideLabel) guideLabel.textContent = `${preview.w} x ${preview.h}  â€¢  ${preview.x},${preview.y}`;
-    }
-
-    function clearCanvasGuide(canvas) {
-        const guide = canvas?.querySelector('.lux-widget-guide');
-        if (guide) {
-            guide.classList.remove('is-visible');
-            const guideLabel = guide.querySelector('.lux-widget-guide-label');
-            if (guideLabel) guideLabel.textContent = '';
-        }
-    }
-
-    function beginDesktopWidgetGesture(event, widgetId, mode, homeShell) {
-        if (!HOME_EDITOR_STATE.editing || !isDesktopHomeEditorViewport()) return;
-        const canvas = homeShell.querySelector('.lux-dashboard-canvas');
-        const widget = HOME_EDITOR_STATE.draftLayout?.find((item) => item.instanceId === widgetId);
-        if (!canvas || !widget) return;
-        HOME_EDITOR_STATE.selectedWidgetId = widgetId;
-        bringDraftWidgetToFront(widgetId, { render: false });
-        event.preventDefault();
-        event.stopPropagation();
-        const rect = canvas.getBoundingClientRect();
-        const viewportWidth = Math.round(rect.width);
-        const originRect = getWidgetDesktopRect(widget, viewportWidth);
-        const widgetElement = homeShell.querySelector(`[data-widget-id="${CSS.escape(widgetId)}"]`);
-        const minWidth = getWidgetMinDesktopWidth(widget, getDesktopCanvasMetrics(viewportWidth));
-        const maxWidth = getWidgetMaxDesktopWidth(widget, getDesktopCanvasMetrics(viewportWidth));
-        const minHeight = getWidgetMinDesktopHeight(widget, getDesktopCanvasMetrics(viewportWidth));
-        const maxHeight = getWidgetMaxDesktopHeight(widget, getDesktopCanvasMetrics(viewportWidth));
-        const rightEdge = originRect.left + originRect.width;
-        const bottomEdge = originRect.top + originRect.height;
-        const originalCanvasHeight = Number.parseFloat(canvas.style.height) || canvas.getBoundingClientRect().height || 0;
-        const activePointerTarget = event.currentTarget;
-        try {
-            activePointerTarget?.setPointerCapture?.(event.pointerId);
-        } catch (captureError) {
-            // Pointer capture is best-effort; window-level listeners below keep the gesture working.
-        }
-
-        const applyLiveRect = (nextRect) => {
-            if (!widgetElement) return;
-            if (mode === 'move') {
-                widgetElement.style.left = `${originRect.left}px`;
-                widgetElement.style.top = `${originRect.top}px`;
-                widgetElement.style.width = `${originRect.width}px`;
-                widgetElement.style.height = `${originRect.height}px`;
-                widgetElement.style.transform = `translate3d(${nextRect.left - originRect.left}px, ${nextRect.top - originRect.top}px, 0)`;
-            } else {
-                widgetElement.style.transform = 'translate3d(0, 0, 0)';
-                widgetElement.style.left = `${nextRect.left}px`;
-                widgetElement.style.top = `${nextRect.top}px`;
-                widgetElement.style.width = `${nextRect.width}px`;
-                widgetElement.style.height = `${nextRect.height}px`;
-            }
-            widgetElement.style.zIndex = String(getHighestWidgetZIndex(HOME_EDITOR_STATE.draftLayout) + 1);
-            canvas.style.height = `${Math.max(originalCanvasHeight, Math.ceil(nextRect.top + nextRect.height + 72))}px`;
-        };
-
-        const buildLiveRect = (dx, dy) => {
-            let nextRect = { ...originRect };
-            if (mode === 'move') {
-                nextRect.left = originRect.left + dx;
-                nextRect.top = originRect.top + dy;
-            } else {
-                if (mode === 'resize-east' || mode === 'resize-corner') {
-                    nextRect.width = originRect.width + dx;
-                }
-                if (mode === 'resize-south' || mode === 'resize-corner') {
-                    nextRect.height = originRect.height + dy;
-                }
-                if (mode === 'resize-west') {
-                    nextRect.width = clampNumber(originRect.width - dx, minWidth, maxWidth);
-                    nextRect.left = rightEdge - nextRect.width;
-                }
-                if (mode === 'resize-north') {
-                    nextRect.height = clampNumber(originRect.height - dy, minHeight, maxHeight);
-                    nextRect.top = bottomEdge - nextRect.height;
-                }
-            }
-            return normalizeDesktopRect(widget, nextRect, viewportWidth);
-        };
-
-        HOME_EDITOR_STATE.dragState = {
-            mode,
-            widgetId,
-            startX: event.clientX,
-            startY: event.clientY,
-            viewportWidth,
-            originRect: { ...originRect },
-            preview: { ...originRect }
-        };
-        updateCanvasGuide(canvas, HOME_EDITOR_STATE.dragState.preview);
-        widgetElement?.classList.add('is-live-moving');
-        document.body.classList.add('lux-dashboard-gesture-active');
-
-        const handleMove = (moveEvent) => {
-            if (!HOME_EDITOR_STATE.dragState) return;
-            const dx = moveEvent.clientX - HOME_EDITOR_STATE.dragState.startX;
-            const dy = moveEvent.clientY - HOME_EDITOR_STATE.dragState.startY;
-            HOME_EDITOR_STATE.dragState.preview = buildLiveRect(dx, dy);
-            if (HOME_EDITOR_STATE.dragState.frame) return;
-            HOME_EDITOR_STATE.dragState.frame = window.requestAnimationFrame(() => {
-                const state = HOME_EDITOR_STATE.dragState;
-                if (!state) return;
-                state.frame = 0;
-                applyLiveRect(state.preview);
-                updateCanvasGuide(canvas, state.preview);
-            });
-        };
-
-        const finishGesture = () => {
-            const state = HOME_EDITOR_STATE.dragState;
-            if (!state) return;
-            if (state.frame) {
-                window.cancelAnimationFrame(state.frame);
-                state.frame = 0;
-            }
-            const preview = state.preview;
-            applyLiveRect(preview);
-            const desktopEditor = isDesktopHomeEditorViewport();
-            window.removeEventListener('pointermove', handleMove);
-            window.removeEventListener('pointerup', finishGesture);
-            window.removeEventListener('pointercancel', finishGesture);
-            try {
-                activePointerTarget?.releasePointerCapture?.(event.pointerId);
-            } catch (captureError) {
-                // Matching the best-effort capture above.
-            }
-            widgetElement?.classList.remove('is-live-moving');
-            document.body.classList.remove('lux-dashboard-gesture-active');
-            clearCanvasGuide(canvas);
-            HOME_EDITOR_STATE.dragState = null;
-            updateDraftWidget(widgetId, (next) => {
-                if (desktopEditor) {
-                    const gridRect = desktopRectToGridRect(next, preview, viewportWidth);
-                    next.x = gridRect.x;
-                    next.y = gridRect.y;
-                    next.w = gridRect.w;
-                    next.h = gridRect.h;
-                    next.desktopRect = { ...preview };
-                    next.restoreDesktopRect = { ...next.desktopRect };
-                    next.desktopRectViewportWidth = viewportWidth;
-                    next.restoreDesktopRectViewportWidth = viewportWidth;
-                } else {
-                    next.desktopRect = null;
-                    next.restoreDesktopRect = null;
-                }
-                if (!next.minimized) {
-                    next.restoreRect = { ...(next.restoreRect || {}), x: next.x, y: next.y, w: next.w, h: next.h };
-                }
-            }, { stabilize: true, priority: widgetId });
-        };
-
-        window.addEventListener('pointermove', handleMove);
-        window.addEventListener('pointerup', finishGesture);
-        window.addEventListener('pointercancel', finishGesture);
-    }
-
-/* Home dashboard shell bind and renderDynamicHomeShell. */
-    function bindHomeShellActions(homeShell, role, model) {
+/* Home dashboard shell bind and renderDynamicHomeShell — static merged page (no customize/editor). */
+    function bindHomeShellActions(homeShell) {
         homeShell.querySelectorAll('[data-nav-target]').forEach((button) => button.addEventListener('click', () => {
             if (typeof navigate === 'function') navigate(pageTarget(button.dataset.navTarget));
         }));
@@ -1815,146 +846,72 @@ function ensureHomeEditorCss() {
             queueAdminToolsFocus(button.dataset.adminFocus);
             if (typeof navigate === 'function') navigate('admin-tools');
         }));
-        if (!HOME_EDITOR_STATE.editing) return;
-        homeShell.querySelectorAll('[data-widget-select]').forEach((button) => button.addEventListener('click', () => {
-            setSelectedDraftWidget(button.dataset.widgetSelect, { bringToFront: true });
-        }));
-        homeShell.querySelectorAll('[data-widget-selectable]').forEach((panel) => panel.addEventListener('click', (event) => {
-            if (event.target.closest('button, a, input, select, textarea, label, [data-widget-drag-zone], [data-widget-drag-handle], [data-widget-resize]')) return;
-            setSelectedDraftWidget(panel.dataset.widgetSelectable, { bringToFront: true });
-        }));
-        homeShell.querySelectorAll('[data-widget-hide]').forEach((button) => button.addEventListener('click', () => {
-            const widget = HOME_EDITOR_STATE.draftLayout?.find((item) => item.instanceId === button.dataset.widgetHide);
-            hideDraftWidget(widget);
-        }));
-        homeShell.querySelectorAll('[data-widget-size]').forEach((button) => button.addEventListener('click', () => {
-            setDraftWidgetSize(button.dataset.widgetSize, button.dataset.sizeAxis, Number(button.dataset.sizeDirection || 0));
-        }));
-        homeShell.querySelectorAll('[data-widget-dimension]').forEach((button) => button.addEventListener('click', () => {
-            setDraftWidgetDimension(button.dataset.widgetDimension, button.dataset.dimensionAxis, Number(button.dataset.dimensionValue || 0));
-        }));
-        homeShell.querySelectorAll('[data-widget-minimize]').forEach((button) => button.addEventListener('click', () => {
-            toggleDraftWidgetMinimize(button.dataset.widgetMinimize);
-        }));
-        homeShell.querySelectorAll('[data-widget-move]').forEach((button) => button.addEventListener('click', () => {
-            nudgeDraftWidget(button.dataset.widgetMove, Number(button.dataset.moveDirection || 0));
-        }));
-        homeShell.querySelectorAll('[data-restore-widget]').forEach((button) => button.addEventListener('click', () => restoreDraftWidget(button.dataset.restoreWidget, role, model)));
-        homeShell.querySelector('[data-inspector-toggle="open"]')?.addEventListener('click', () => setInspectorState({ collapsed: false }));
-        homeShell.querySelector('[data-inspector-toggle="collapse"]')?.addEventListener('click', () => setInspectorState({ collapsed: true }));
-        homeShell.querySelectorAll('[data-pin-widget]').forEach((button) => button.addEventListener('click', () => {
-            const index = Number(button.dataset.pinWidget);
-            const item = HOME_EDITOR_STATE.availablePins?.[index];
-            if (item) createDraftPinnedWidget(item);
-        }));
-        homeShell.querySelectorAll('[data-home-reset]').forEach((button) => button.addEventListener('click', () => {
-            const action = button.dataset.homeReset;
-            if (action === 'current-role') return resetCurrentRoleLayoutDraft(role, model);
-            if (action === 'all-layouts') return window.confirm('Reset every saved dashboard layout for this user?') && resetAllSavedHomeLayouts();
-            if (action === 'home-defaults' && window.confirm('Reset all layouts and visual settings for the home page?')) resetHomeToDefaults();
-        }));
-        homeShell.querySelector('#lux-add-shortcut-btn')?.addEventListener('click', () => createDraftShortcut(role, { id: `shortcut-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, pageId: homeShell.querySelector('#lux-shortcut-page')?.value, label: homeShell.querySelector('#lux-shortcut-label')?.value, copy: homeShell.querySelector('#lux-shortcut-copy')?.value, icon: homeShell.querySelector('#lux-shortcut-icon')?.value, tone: 'default' }));
-        if (isDesktopHomeEditorViewport()) {
-            homeShell.querySelectorAll('[data-widget-drag-handle]').forEach((button) => button.addEventListener('pointerdown', (event) => beginDesktopWidgetGesture(event, button.dataset.widgetDragHandle, 'move', homeShell)));
-            homeShell.querySelectorAll('[data-widget-drag-zone]').forEach((zone) => zone.addEventListener('pointerdown', (event) => {
-                if (event.target.closest('button, a, input, select, textarea, [data-widget-hide], [data-widget-size], [data-widget-move]')) return;
-                setSelectedDraftWidget(zone.dataset.widgetDragZone, { render: false });
-                beginDesktopWidgetGesture(event, zone.dataset.widgetDragZone, 'move', homeShell);
-            }));
-            homeShell.querySelectorAll('[data-widget-resize]').forEach((button) => button.addEventListener('pointerdown', (event) => beginDesktopWidgetGesture(event, button.dataset.widgetResize, button.dataset.widgetResizeMode || 'resize-corner', homeShell)));
-            homeShell.querySelector('[data-inspector-drag-handle="1"]')?.addEventListener('pointerdown', (event) => {
-                const panel = homeShell.querySelector('[data-inspector-panel="1"]');
-                if (!panel) return;
-                event.preventDefault();
-                const start = HOME_EDITOR_STATE.inspectorState || getSavedInspectorState(HOME_EDITOR_STATE.scopeKey);
-                const originX = event.clientX;
-                const originY = event.clientY;
-                const moveInspector = (moveEvent) => {
-                    const next = sanitizeInspectorState({
-                        ...start,
-                        x: start.x + (moveEvent.clientX - originX),
-                        y: start.y + (moveEvent.clientY - originY)
-                    });
-                    HOME_EDITOR_STATE.inspectorState = next;
-                    panel.style.left = `${Math.round(next.x)}px`;
-                    panel.style.top = `${Math.round(next.y)}px`;
-                };
-                const stopInspector = () => {
-                    window.removeEventListener('pointermove', moveInspector);
-                    window.removeEventListener('pointerup', stopInspector);
-                    setInspectorState(HOME_EDITOR_STATE.inspectorState, { persist: true, render: false });
-                };
-                window.addEventListener('pointermove', moveInspector);
-                window.addEventListener('pointerup', stopInspector);
-            });
-        }
     }
 
-    function getHomeViewportWidthForDesktop() {
-        const windowWidth = window.innerWidth || document.documentElement.clientWidth || 1440;
-        const page = document.getElementById('page-home') || document.getElementById('app-content');
-        if (page) {
-            const rect = page.getBoundingClientRect();
-            const availableRightEdge = Math.max(rect.width, windowWidth - Math.max(0, rect.left));
-            return Math.max(980, Math.round(availableRightEdge));
-        }
-        return Math.max(980, Math.round(windowWidth));
+    function buildStaticHomeSectionsHtml(widgets, role) {
+        const fullWidth = new Set(['alert', 'hero', 'admin-ops', 'quick']);
+        let html = '';
+        let halfBuffer = [];
+        const flushHalf = () => {
+            if (!halfBuffer.length) return;
+            const cells = halfBuffer.map((content) => `<div class="lux-home-cell">${content}</div>`).join('');
+            html += `<section class="lux-home-band lux-home-band--split">${cells}</section>`;
+            halfBuffer = [];
+        };
+        (widgets || []).forEach((widget) => {
+            const content = typeof renderWidgetContent === 'function' ? renderWidgetContent(widget, role) : '';
+            if (!content) return;
+            if (fullWidth.has(widget.renderType)) {
+                flushHalf();
+                html += `<section class="lux-home-band lux-home-band--full" data-band="${escapeHtml(widget.renderType || 'section')}">${content}</section>`;
+                return;
+            }
+            halfBuffer.push(content);
+            if (halfBuffer.length >= 2) flushHalf();
+        });
+        flushHalf();
+        return html;
+    }
+
+    function getStaticHomeWidgets(role, model) {
+        const definitions = typeof buildSystemWidgetDefinitions === 'function'
+            ? buildSystemWidgetDefinitions(role, model)
+            : [];
+        return (definitions || []).filter((widget) => {
+            if (!widget) return false;
+            if (widget.visible === false) return false;
+            if (widget.defaultVisible === false) return false;
+            // Skip user-only editor types in static home
+            if (widget.sourceType === 'custom' || widget.sourceType === 'pinned') return false;
+            if (widget.renderType === 'shortcut' || widget.renderType === 'pinned') return false;
+            return true;
+        });
     }
 
     renderDynamicHomeShell = function (homeShell) {
         const role = getEffectiveRole();
-        if (HOME_EDITOR_STATE.editing && HOME_EDITOR_STATE.role && HOME_EDITOR_STATE.role !== role) stopHomeEditor({ refresh: false });
         const model = buildHomeModel(role);
-        const systemDefinitions = buildSystemWidgetDefinitions(role, model);
-        const editing = HOME_EDITOR_STATE.editing && HOME_EDITOR_STATE.role === role;
-        const desktopViewport = (window.innerWidth || 0) >= 980;
-        const desktopEditor = editing && isDesktopHomeEditorViewport();
-        const renderMode = desktopViewport ? 'workspace' : 'stacked';
-        const viewportWidth = desktopViewport ? getHomeViewportWidthForDesktop() : 0;
-        const layout = getWorkingHomeLayout(role, model);
-        const visibleWidgets = desktopViewport
-            ? sortLayoutForCanvas(layout, viewportWidth)
-            : sortLayoutForDisplay(layout);
-        const overlapIds = editing
-            ? getWidgetOverlapIds(layout, viewportWidth, desktopEditor)
-            : new Set();
-        const desktopWidthStyle = desktopViewport
-            ? ` style="width:${viewportWidth}px !important; max-width:none !important; min-width:${viewportWidth}px !important;"`
-            : '';
-        const desktopCanvasStyle = desktopWidthStyle;
+        const widgets = getStaticHomeWidgets(role, model);
+        const title = model.title || 'Workspace overview';
+        const copy = model.copy || 'Your faculty workspace at a glance.';
+        const kicker = model.kicker || 'Home';
+        const mergedContent = buildStaticHomeSectionsHtml(widgets, role);
 
-        const toolbarHtml = editing
-            ? '<button class="lux-ghost-btn" type="button" data-home-editor="cancel">Cancel</button><button class="lux-primary-btn" type="button" data-home-editor="save">Save layout</button>'
-            : '<button class="lux-secondary-btn" type="button" data-home-editor="open">Customize dashboard</button>';
-        const editorHtml = editing ? renderEditorPanel(role, model, layout, systemDefinitions, desktopEditor) : '';
         homeShell.innerHTML = `
-            <div class="lux-home-grid lux-home-grid--builder is-${escapeHtml(model.variant || role)}" data-role="${escapeHtml(model.variant || role)}" data-editing="${editing ? 'true' : 'false'}"${desktopWidthStyle}>
-                <div class="lux-home-toolbar lux-home-toolbar--builder">
-                    <div><div class="lux-kicker">Home Dashboard</div><strong>${editing ? 'Editing layout for this role and faculty' : 'Personal workspace layout'}</strong><p>${editing ? 'Drag and resize sections on desktop, use reorder controls on smaller screens, and save a separate dashboard for this role and faculty.' : 'This homepage can be customized per role and faculty without changing the underlying portal logic.'}</p></div>
-                    <div class="lux-home-toolbar-actions">${toolbarHtml}</div>
+            <div class="lux-home-page is-${escapeHtml(model.variant || role)}" data-role="${escapeHtml(model.variant || role)}">
+                <div class="lux-home-toolbar">
+                    <div>
+                        <div class="lux-kicker">${escapeHtml(kicker)}</div>
+                        <strong>${escapeHtml(title)}</strong>
+                        ${copy ? `<p>${escapeHtml(copy)}</p>` : ''}
+                    </div>
                 </div>
-                <div class="lux-home-workbench"${desktopWidthStyle}>
-                    <div class="lux-dashboard-canvas${renderMode === 'stacked' ? ' is-stacked' : ' is-desktop'}${editing ? ' is-editing' : ''}" data-dashboard-canvas="1"${desktopCanvasStyle}>${visibleWidgets.map((widget) => renderWidgetShellMarkup(widget, role, renderMode, desktopEditor, viewportWidth, overlapIds)).join('')}</div>
-                    ${editorHtml}
+                <div class="lux-home-merged lux-soft-chrome">
+                    ${mergedContent}
                 </div>
             </div>
         `;
-
-        homeShell.querySelector('[data-home-editor="open"]')?.addEventListener('click', () => {
-            const start = () => {
-                ensureHomeEditorDraft(role, model);
-                renderHomeShell();
-                syncTopbar();
-            };
-            if (typeof ensureHomeEditorCss === 'function') {
-                Promise.resolve(ensureHomeEditorCss()).then(start);
-            } else {
-                start();
-            }
-        });
-        homeShell.querySelector('[data-home-editor="cancel"]')?.addEventListener('click', () => stopHomeEditor({ message: 'Dashboard editor closed.' }));
-        homeShell.querySelector('[data-home-editor="save"]')?.addEventListener('click', () => saveHomeEditor(role));
-        bindHomeShellActions(homeShell, role, model);
+        bindHomeShellActions(homeShell);
     };
 
     const __legacySyncTopbar = syncTopbar;
@@ -1963,9 +920,8 @@ function ensureHomeEditorCss() {
         applySidebarState();
         const editButton = document.getElementById('lux-dashboard-edit-btn');
         if (editButton) {
-            editButton.title = getActivePageId() === 'home'
-                ? (HOME_EDITOR_STATE.editing ? 'Close dashboard editor' : 'Customize this dashboard')
-                : 'Open the home page and customize the dashboard';
+            editButton.hidden = true;
+            editButton.style.setProperty('display', 'none', 'important');
         }
     };
 

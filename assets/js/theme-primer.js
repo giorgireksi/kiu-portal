@@ -407,7 +407,7 @@
             '.filter-shell',
             '.lux-timetable-hero-focus',
             '.lux-focus-panel',
-            '.lux-soft-chrome',
+            '.lux-soft-chrome:not(.lux-home-merged)',
             '.lms-hero-focus',
             '.social-comment-card',
             '.social-notif-item',

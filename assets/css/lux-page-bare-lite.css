@@ -1,4 +1,4 @@
-/* Bare portal layout helpers (paint lives in shared dashboard-paint sheets).
+/* Bare portal layout helpers (shared shell paint lives in lux-tokens / lux-shell).
  * No shared-shell-chrome / shared-surface / shared-actions selectors — those live in lux-shell.css.
  */
 body.lux-page-bare main, body.lux-page-bare .lux-page-shell, body.lux-page-bare #page-content, body.lux-page-bare .content-area {

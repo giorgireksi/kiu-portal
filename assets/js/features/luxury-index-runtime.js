@@ -754,7 +754,7 @@ return {
     function homeShellHasDashboardContent(homeShell = document.getElementById('lux-home-shell')) {
         if (!homeShell) return false;
         return Boolean(
-            homeShell.querySelector('[data-dashboard-canvas="1"], .lux-grid-widget, .lux-dashboard-section, .lux-widget-stack, .lux-home-grid--builder')
+            homeShell.querySelector('[data-dashboard-canvas="1"], .lux-home-page, .lux-home-merged, .lux-home-band, .lux-grid-widget, .lux-dashboard-section, .lux-widget-stack, .lux-home-grid--builder')
         );
     }
 

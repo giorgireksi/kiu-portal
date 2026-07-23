@@ -3,7 +3,6 @@
     const HOME_SCOPE_SEPARATOR = '::';
     const HOME_GRID_COLUMNS = 12;
     const HOME_GRID_ROW_HEIGHT = 28;
-    const HOME_DESKTOP_EDITOR_BREAKPOINT = 1120;
     const HOME_WINDOW_SNAP = 12;
     const HOME_WINDOW_MIN_WIDTH = 220;
     const HOME_WINDOW_MIN_HEIGHT = 150;
@@ -34,11 +33,6 @@
             customPalette: null
         };
     }
-
-    function isDesktopHomeEditorViewport() {
-        return (window.innerWidth || 0) >= HOME_DESKTOP_EDITOR_BREAKPOINT;
-    }
-
 
     function getHomeScopeKey(role = getEffectiveRole(), facultyCode = getCurrentFacultyCode()) {
         return `${String(role || 'student')}${HOME_SCOPE_SEPARATOR}${String(facultyCode || 'ECON')}`;
@@ -540,17 +534,6 @@
         if (typeof window.queueLuxuryTransparencyRefresh === 'function') {
             window.queueLuxuryTransparencyRefresh(getDashboardVisuals().surfaceTransparency || localStorage.getItem('kiuLuxurySurfaceTransparency'));
         }
-    }
-
-    function cyclePalette() {
-        const currentKey = resolvePaletteKey() === 'custom'
-            ? 'obsidian-amber'
-            : resolvePaletteKey();
-        const currentIndex = Math.max(0, LUXURY_PALETTES.findIndex((palette) => palette.key === currentKey));
-        const next = LUXURY_PALETTES[(currentIndex + 1) % LUXURY_PALETTES.length];
-        applyPaletteKey(next.key, true);
-        syncAll();
-        showToast(`Accent palette: ${STUDIO_PALETTES.find(s => s.key === next.key)?.name || next.key}`);
     }
 
     function applyAtmosphereSettings() {

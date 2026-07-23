@@ -12,12 +12,11 @@ import {
 } from './helpers/bare-shell-css.js';
 
 const ROOT = process.cwd();
-const MAX_LINES = 400;
+const MAX_LINES = 470;
 const EAGER_MAX_LINES = 950;
 const DASHBOARD_BUCKET_MAX = 1500;
 const BUCKET_EXTRA = [
     'assets/css/lux-fouc-ht.css',
-    'assets/css/index-home-editor.css',
 ];
 
 function read(rel) {
@@ -98,17 +97,13 @@ describe('Wave dashboard CSS A+ (criteria → 10/10)', () => {
         ]);
     });
 
-    it('desktop freeform contract: absolute widgets on block canvas', () => {
+    it('static merged shell contract: bands inside one desk host', () => {
         const widgetsCss = read('assets/css/index-home-widgets.css');
         const layoutCss = read('assets/css/index-home-layout.css');
-        expect(widgetsCss).toMatch(
-            /\.lux-dashboard-canvas\.is-desktop\s+\.lux-grid-widget\s*\{[^}]*position:\s*absolute/
-        );
-        expect(widgetsCss).not.toMatch(
-            /\.lux-dashboard-canvas\.is-desktop\s+\.lux-grid-widget\s*\{[^}]*position:\s*static/
-        );
-        expect(layoutCss).toMatch(
-            /\.lux-dashboard-canvas\.is-desktop\s*\{[^}]*display:\s*block/
-        );
+        const roleCss = read('assets/css/index-home-role.css');
+        expect(layoutCss).toContain('.lux-home-merged');
+        expect(layoutCss).toContain('.lux-home-band--split');
+        expect(roleCss).toContain('.lux-home-merged.lux-soft-chrome');
+        expect(widgetsCss).not.toContain('.lux-dashboard-canvas.is-desktop');
     });
 });

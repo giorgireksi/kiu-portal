@@ -18,6 +18,7 @@ export const RETIRED_ROUTE_CSS = [
     'admin-scheduler-route.css',
     'admin-tools-luxury.css',
     'profile-view-route.css',
+    'index-home-editor.css',
     'personal-data-route.css',
     'library-route.css',
     'exam-studio.css',

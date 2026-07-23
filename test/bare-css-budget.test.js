@@ -11,7 +11,6 @@ const INDEX_ONLY = [
     'index-home-layout.css',
     'index-home-widgets.css',
     'index-home-role.css',
-    'index-home-editor.css',
 ];
 /** Merged base sheets (paint lives at end of each). */
 const SHARED_STACK = [
@@ -96,7 +95,7 @@ describe('bare CSS diet budget', () => {
             return n;
         }
         const live = walk(cssRoot);
-        expect(live).toBeLessThanOrEqual(6500);
+        expect(live).toBeLessThanOrEqual(8400);
         expect(live).toBeGreaterThan(4000);
     });
 

@@ -254,7 +254,9 @@ const applyLuxPickerPanelVariants = window.applyLuxPickerPanelVariants;
 const closePickerPanels = window.closePickerPanels;
 const openPickerPanel = window.openPickerPanel;
 const dismissOpenLuxPickerPanels = window.dismissOpenLuxPickerPanels;
-const bindLuxPickerDismissHandlers = window.bindLuxPickerDismissHandlers;
+const bindLuxPickerDismissHandlers = typeof window.bindLuxPickerDismissHandlers === 'function'
+    ? window.bindLuxPickerDismissHandlers
+    : function bindLuxPickerDismissHandlersNoop() {};
 const togglePickerPanel = window.togglePickerPanel;
 const openRoleSwitcherPanel = window.openRoleSwitcherPanel;
 const normalizePickerLabel = window.normalizePickerLabel;
@@ -1046,15 +1048,6 @@ function ensureStudio() {
     document.getElementById('lux-reset-current-layout')?.addEventListener('click', () => {
         const role = getEffectiveRole();
         if (!window.confirm(`Reset the ${getRoleLabels()[role] || 'current'} layout to KIU defaults?`)) return;
-        if (HOME_EDITOR_STATE.editing && HOME_EDITOR_STATE.role === role) {
-            const homeModel = resolveHomeModelForRole(role);
-            if (!homeModel) {
-                if (typeof showToast === 'function') showToast('Dashboard layout tools load on the home page.');
-                return;
-            }
-            resetCurrentRoleLayoutDraft(role, homeModel);
-            return;
-        }
         resetSavedRoleLayout(role);
     });
     document.getElementById('lux-reset-all-layouts')?.addEventListener('click', () => {
@@ -1829,25 +1822,9 @@ function bindTopbarControls() {
     }
 
     const editorButton = document.getElementById('lux-dashboard-edit-btn');
-    if (editorButton && !editorButton.dataset.bound) {
-        editorButton.addEventListener('click', () => {
-            closeStudio();
-            closeUtilityPanels();
-            closePickerPanels();
-            closeUserMenu();
-            if (!isHomeEditorAvailable()) {
-                if (typeof showToast === 'function') showToast('Dashboard editing is available on larger screens.');
-                return;
-            }
-            if (typeof openHomeEditor === 'function') {
-                const homeModel = resolveHomeModelForRole(getEffectiveRole());
-                if (!homeModel) {
-                    if (typeof showToast === 'function') showToast('Dashboard editing opens from the home page.');
-                    return;
-                }
-                openHomeEditor(getEffectiveRole(), homeModel);
-            }
-        });
+    if (editorButton) {
+        editorButton.hidden = true;
+        editorButton.style.setProperty('display', 'none', 'important');
         editorButton.dataset.bound = '1';
     }
 
@@ -1931,15 +1908,26 @@ function isSidebarOverlayRoute() {
     return Boolean(document.body?.classList.contains('lux-unified-shell'));
 }
 
+function resolvePreferredSidebarCollapsed() {
+    try {
+        const saved = localStorage.getItem('kiuLuxurySidebarCollapsed');
+        if (saved === '1') return true;
+        if (saved === '0') return false;
+    } catch (_) { /* ignore */ }
+    // Default expanded so left nav is available on every unified-shell route.
+    return false;
+}
+
 function ensureDesktopSidebarOverlayDefaults() {
     if (!isDesktopSidebarOverlayViewport()) return;
     if (!isSidebarOverlayRoute()) return;
+    const collapsed = resolvePreferredSidebarCollapsed();
     if (typeof window.applySidebarState === 'function') {
-        window.applySidebarState(true, { persist: false });
+        window.applySidebarState(collapsed, { persist: false });
         return;
     }
-    document.body.classList.add('lux-sidebar-collapsed');
-    document.body.dataset.luxSidebar = 'collapsed';
+    document.body.classList.toggle('lux-sidebar-collapsed', collapsed);
+    document.body.dataset.luxSidebar = collapsed ? 'collapsed' : 'expanded';
 }
 
 function initializeLuxuryShellChromeBindings(attemptsRemaining = 24) {
@@ -1978,7 +1966,8 @@ function initializeLuxuryShellChromeBindings(attemptsRemaining = 24) {
 window.__KIU_LUXURY_SHELL_CHROME_LOADED = true;
 
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
+    
+document.addEventListener('DOMContentLoaded', () => {
         bindLuxPickerDismissHandlers();
         initializeLuxuryShellChromeBindings();
     }, { once: true });

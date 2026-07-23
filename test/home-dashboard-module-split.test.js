@@ -33,44 +33,43 @@ describe('home dashboard module split', () => {
         expect(plain).not.toContain('function getStudentScoreRows');
     });
 
-    it('owns geometry and widget definitions in widget-layout', () => {
-        const layout = readSource('assets/js/features/home-dashboard/widget-layout.js');
+    it('owns geometry and widget definitions in widget-layout runtime peel', () => {
+        const layoutRuntime = readSource('assets/js/features/home-dashboard-widget-layout-runtime.js');
+        const layoutStub = readSource('assets/js/features/home-dashboard/widget-layout.js');
         const render = readSource('assets/js/features/home-dashboard/widget-render.js');
-        const editorUi = readSource('assets/js/features/home-dashboard/editor-ui.js');
 
-        expect(layout).toContain('function getDesktopCanvasMetrics');
-        expect(layout).toContain('function buildSystemWidgetDefinitions');
-        expect(layout).toContain('function buildHomeWidgetDefinitions');
-        expect(layout).toContain('function buildPresentationLayout');
+        expect(layoutRuntime).toContain('function getDesktopCanvasMetrics');
+        expect(layoutRuntime).toContain('function buildSystemWidgetDefinitions');
+        expect(layoutRuntime).toContain('function buildHomeWidgetDefinitions');
+        expect(layoutRuntime).toContain('function buildPresentationLayout');
+        expect(layoutStub).toContain('__kiuCreateHomeDashboardWidgetLayoutApi');
         expect(render).not.toContain('function buildHomeWidgetDefinitions');
-        expect(editorUi).not.toContain('function buildSystemWidgetDefinitionsUncached');
     });
 
-    it('owns markup renderers in widget-render', () => {
+    it('owns static markup renderers in widget-render', () => {
         const render = readSource('assets/js/features/home-dashboard/widget-render.js');
         const layout = readSource('assets/js/features/home-dashboard/widget-layout.js');
         const shell = readSource('assets/js/features/home-dashboard/shell.js');
 
         expect(render).toContain('function renderHeroWidgetMarkup');
         expect(render).toContain('function renderWidgetContent');
-        expect(render).toContain('function renderWidgetShellMarkup');
+        expect(render).not.toContain('function renderWidgetShellMarkup');
         expect(layout).not.toContain('function renderHeroWidgetMarkup');
-        expect(shell).not.toContain('function renderWidgetShellMarkup');
+        expect(shell).not.toContain('function renderWidgetContent');
     });
 
-    it('owns editor draft, panel, and gestures outside the shell bind module', () => {
+    it('keeps editor stub and static shell outside the gesture runtime', () => {
         const draft = readSource('assets/js/features/home-dashboard/editor-draft.js');
-        const editorUi = readSource('assets/js/features/home-dashboard/editor-ui.js');
+        const gesture = readSource('assets/js/features/home-dashboard-gesture-runtime.js');
         const shell = readSource('assets/js/features/home-dashboard/shell.js');
 
-        expect(draft).toContain('saveHomeEditor = function');
-        expect(draft).toContain('ensureHomeEditorDraft = function');
-        expect(editorUi).toContain('function renderEditorPanel');
-        expect(editorUi).toContain('function beginDesktopWidgetGesture');
-        expect(shell).not.toContain('function renderEditorPanel');
-        expect(shell).not.toContain('function beginDesktopWidgetGesture');
+        expect(draft).toContain('stopHomeEditor = function');
+        expect(draft).not.toContain('ensureHomeEditorCss');
+        expect(gesture).toContain('function getHomeViewportWidthForDesktop');
+        expect(gesture).not.toContain('renderDynamicHomeShell');
         expect(shell).toContain('function bindHomeShellActions');
         expect(shell).toContain('renderDynamicHomeShell = function');
-        expect(shell).toContain('startBackground = function');
+        expect(shell).toContain('lux-home-merged');
+        expect(existsSync(join(process.cwd(), 'assets/js/features/home-dashboard/editor-ui.js'))).toBe(false);
     });
 });

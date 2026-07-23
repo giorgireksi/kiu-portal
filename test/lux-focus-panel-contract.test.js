@@ -100,6 +100,6 @@ describe('lux-focus-panel portal contract', () => {
         expect(softEngine).toContain('lux-focus-panel');
         expect(softEngine).toContain('lux-soft-chrome');
         expect(primer).toContain("'.lux-focus-panel'");
-        expect(primer).toContain("'.lux-soft-chrome'");
+        expect(primer).toContain("'.lux-soft-chrome:not(.lux-home-merged)'");
     });
 });

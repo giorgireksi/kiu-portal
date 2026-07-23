@@ -7,19 +7,19 @@ const SHELL_ASSETS = [
   '/news.html',
   '/exams.html',
   '/login.html',
-  '/assets/css/lux-tokens.css?v=20260722-hoverlift6',
-'/assets/css/lux-fouc-ht.css?v=20260722-fogfix1',
+  '/assets/css/lux-tokens.css?v=20260723-deadcode1',
+'/assets/css/lux-fouc-ht.css?v=20260723-shellfix1',
   '/assets/css/mobile-shell-core.css?v=20260720-densify6500',
   '/assets/css/mobile-shell.css?v=20260720-densify6500',
-  '/assets/css/lux-shell.css?v=20260721-topbarhost1',
-'/assets/css/index-home-layout.css?v=20260720-gridfix1',
-'/assets/css/index-home-widgets.css?v=20260722-hoverlift5',
-'/assets/css/index-home-role.css?v=20260722-hoverlift6',
-  '/assets/js/theme-primer.js?v=20260609-bootguard1',
-  '/assets/js/features/navigation.js?v=20260609-bootguard1',
+  '/assets/css/lux-shell.css?v=20260723-deskglass102',
+'/assets/css/index-home-layout.css?v=20260723-deadcode1',
+'/assets/css/index-home-widgets.css?v=20260723-deadcode1',
+'/assets/css/index-home-role.css?v=20260723-deadcode1',
+  '/assets/js/theme-primer.js?v=20260722-glowdens1',
+  '/assets/js/features/navigation.js?v=20260625-ssvc-workspace-nav2',
   '/assets/js/features/luxury-index-runtime.js?v=20260714-homeglass2',
-  '/assets/js/features/index-luxury.js?v=20260714-homeglass2',
-  '/assets/js/features/luxury-background.js?v=20260716-glassmax1'
+  '/assets/js/features/index-luxury.js?v=20260722-glowdens1',
+  '/assets/js/features/luxury-background.js?v=20260717-lazythree1'
 ];
 
 async function deleteLegacyPortalCaches() {

@@ -12,7 +12,6 @@ const HOME_DASHBOARD_PARTS = [
   'widget-layout.js',
   'editor-draft.js',
   'widget-render.js',
-  'editor-ui.js',
   'shell.js'
 ];
 
@@ -28,7 +27,7 @@ const bundleSource = buildHomeDashboardSource();
 // Plain source for fetch+install (no base64 wire tax / atob cost).
 fs.writeFileSync(plainPath, bundleSource);
 
-const PLAIN_URL = 'assets/js/features/index-home-dashboard.plain.js?v=20260719-homewd1';
+const PLAIN_URL = 'assets/js/features/index-home-dashboard.plain.js?v=20260723-deadcode2';
 const out = `(function registerLuxuryHomeDashboardChunk() {
     if (typeof window.__kiuRegisterLuxuryHomeChunkUrl === 'function') {
         window.__kiuRegisterLuxuryHomeChunkUrl('${PLAIN_URL}');

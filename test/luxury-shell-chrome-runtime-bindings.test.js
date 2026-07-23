@@ -143,20 +143,15 @@ describe('luxury shell chrome runtime bindings', () => {
     expect(() => dom.window.syncTopbar()).not.toThrow();
   });
 
-  it('does not open the home editor when buildHomeModel is unavailable on trimmed routes', () => {
-    const dom = bootShellChromeRuntime();
-    const doc = dom.window.document;
-    const openHomeEditor = vi.fn();
-    const showToast = vi.fn();
+  it('keeps the home customize control permanently hidden in source (static home)', () => {
+    const shellChrome = readSource('assets/js/features/luxury-shell-chrome.js');
+    const luxury = readSource('assets/js/features/index-luxury.js');
+    const shell = readSource('assets/js/features/home-dashboard/shell.js');
 
-    dom.window.isHomeEditorAvailable = () => true;
-    dom.window.buildHomeModel = undefined;
-    dom.window.openHomeEditor = openHomeEditor;
-    dom.window.showToast = showToast;
-
-    doc.getElementById('lux-dashboard-edit-btn')?.dispatchEvent(new dom.window.MouseEvent('click', { bubbles: true }));
-
-    expect(openHomeEditor).not.toHaveBeenCalled();
-    expect(showToast).toHaveBeenCalledWith('Dashboard editing opens from the home page.');
+    expect(shellChrome).toContain("getElementById('lux-dashboard-edit-btn')");
+    expect(shellChrome).toContain('editorButton.hidden = true');
+    expect(luxury).toContain('Home layout is fixed and no longer customizable');
+    expect(shell).toContain('lux-home-merged');
+    expect(shell).not.toContain('Customize dashboard');
   });
 });

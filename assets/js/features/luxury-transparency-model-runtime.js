@@ -324,43 +324,6 @@
         if (!Array.isArray(items)) return [];
         return items.map((item) => sanitizeShortcutDefinition(item, role)).filter(Boolean);
     }
-    function resolveHomeLayout(role, model, overrideLayout = null, overrideShortcuts = null) {
-        const resolved = [];
-        const shortcuts = Array.isArray(overrideShortcuts)
-            ? overrideShortcuts.map((item) => sanitizeShortcutDefinition(item, role)).filter(Boolean)
-            : getSavedCustomShortcuts(role);
-        const baseWidgets = buildHomeWidgetDefinitions(role, model, shortcuts);
-        const widgetMap = new Map(baseWidgets.map((widget) => [widget.id, widget]));
-        const savedLayout = Array.isArray(overrideLayout)
-            ? overrideLayout
-            : getDashboardPreferenceEntry().layoutsByRole?.[role];
-        (Array.isArray(savedLayout) ? savedLayout : []).forEach((item) => {
-            const base = widgetMap.get(item?.id);
-            if (!base) return;
-            resolved.push({
-                ...base,
-                span: normalizeWidgetSpan(item.span, base.span),
-                visible: item.visible !== false
-            });
-            widgetMap.delete(item.id);
-        });
-        sortWidgetsForRole(Array.from(widgetMap.values()), role).forEach((widget) => {
-            resolved.push({
-                ...widget,
-                span: normalizeWidgetSpan(widget.span, widget.span),
-                visible: widget.visible !== false
-            });
-        });
-        const allowedShortcutIds = new Set(shortcuts.map((item) => item.id));
-        return resolved.filter((widget) => widget.type !== 'shortcut' || allowedShortcutIds.has(widget.id));
-    }
-    function serializeHomeLayout(layout) {
-        return (layout || []).map((widget) => ({
-            id: widget.id,
-            span: normalizeWidgetSpan(widget.span, 6),
-            visible: widget.visible !== false
-        }));
-    }
     function serializeCustomShortcuts(shortcuts, role = getEffectiveRole()) {
         return (shortcuts || [])
             .map((item) => sanitizeShortcutDefinition(item, role))
@@ -395,8 +358,6 @@
             getShortcutDestinationOptions,
             sanitizeShortcutDefinition,
             getSavedCustomShortcuts,
-            resolveHomeLayout,
-            serializeHomeLayout,
             serializeCustomShortcuts,
         };
         Object.assign(window, api);

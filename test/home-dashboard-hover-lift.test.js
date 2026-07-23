@@ -17,9 +17,9 @@ describe('home dashboard shell hover lift', () => {
         expect(tokens).toMatch(/body\.lux-light-mode\.lux-route-home[\s\S]*--home-fade-shadow-hover:/);
     });
 
-    it('does not lift widget frost host on hover in view mode', () => {
+    it('does not lift removed grid-widget frost hosts on hover', () => {
         const widgets = readSource('assets/css/index-home-widgets.css');
-        expect(widgets).toContain('.lux-dashboard-canvas.is-editing');
+        expect(widgets).not.toContain('.lux-dashboard-canvas.is-editing');
         expect(widgets).not.toMatch(
             /\.lux-grid-widget[\s\S]*:hover > \.lux-grid-widget-body[\s\S]*transform:\s*translate3d\(0,\s*-3px,\s*0\)/
         );
@@ -32,7 +32,10 @@ describe('home dashboard shell hover lift', () => {
         expect(render).toMatch(/lux-list-row lux-soft-chrome home-hover-chip/);
         expect(render).toMatch(/lux-stat lux-soft-chrome home-hover-chip/);
         expect(render).toMatch(/lux-pill lux-soft-chrome home-hover-chip/);
+        expect(render).toMatch(/lux-quick-btn lux-soft-chrome home-hover-chip/);
         expect(render).toMatch(/lux-hero-side lux-focus-panel lux-soft-chrome home-hover-chip/);
+        expect(render).toMatch(/lux-pill lux-soft-chrome home-hover-chip lms-hero-focus-chip/);
+        expect(render).toMatch(/lms-hero-focus-meta[\s\S]*lux-pill lux-soft-chrome home-hover-chip/);
         expect(render).not.toMatch(/lux-hero-intro home-hover-chip/);
         expect(render).not.toMatch(/lux-alert-icon home-hover-chip/);
         expect(render).not.toMatch(/lux-alert-copy home-hover-chip/);
@@ -47,18 +50,44 @@ describe('home dashboard shell hover lift', () => {
     });
 
     it('disables hover lift under reduced motion and at 0% transparency', () => {
-        const widgets = readSource('assets/css/index-home-widgets.css');
         const role = readSource('assets/css/index-home-role.css');
-        expect(widgets).toMatch(/prefers-reduced-motion: reduce\)[\s\S]*\.lux-grid-widget:hover > \.lux-grid-widget-body[\s\S]*transform:\s*none/);
-        expect(role).toMatch(/html\[data-lux-transparency="0"\][\s\S]*\.lux-grid-widget:hover > \.lux-grid-widget-body[\s\S]*transform:\s*none/);
+        expect(role).toMatch(/prefers-reduced-motion: reduce\)[\s\S]*\.lux-soft-chrome\.home-hover-chip[\s\S]*transform:\s*none/);
+        expect(role).toMatch(/html\[data-lux-transparency="0"\][\s\S]*\.lux-soft-chrome\.home-hover-chip:hover[\s\S]*transform:\s*none/);
     });
 
-    it('lifts direct grid shells and keeps single-frost architecture', () => {
+    it('merges home sections into one frost shell without customize chrome', () => {
         const role = readSource('assets/css/index-home-role.css');
+        const layout = readSource('assets/css/index-home-layout.css');
+        const shell = readSource('assets/js/features/home-dashboard/shell.js');
         expect(role).toContain('dashboard-hover-lift');
-        expect(role).toMatch(/\.lux-home-grid > :is\([\s\S]*\.lux-panel[\s\S]*\):hover[\s\S]*translate3d\(0,\s*-3px,\s*0\)/);
-        expect(role).toContain('Widget inner panels: border/shadow only — body owns fill+frost');
-        expect(role).toMatch(/\.lux-grid-widget > \.lux-grid-widget-body[\s\S]*backdrop-filter:\s*var\(--home-fade-blur\)/);
-        expect(role).toMatch(/\.lux-grid-widget > \.lux-grid-widget-body > \.lux-panel[\s\S]*backdrop-filter:\s*none !important/);
+        expect(role).toMatch(/\.lux-home-merged\.lux-soft-chrome/);
+        expect(role).toMatch(/\.lux-home-merged\.lux-soft-chrome[\s\S]{0,600}background-image:\s*var\(--home-desk-glass-surface\)/);
+        expect(role).toMatch(/\.lux-home-merged\.lux-soft-chrome[\s\S]{0,600}var\(--home-desk-glass-fill/);
+        expect(role).toMatch(/\.lux-home-merged :is\([\s\S]*\.lms-hero-focus[\s\S]*var\(--lux-soft-chrome-surface/);
+        expect(role).toMatch(/\.lux-home-merged :is\([\s\S]*\.lms-hero-focus[\s\S]*--home-chip-surface-fill/);
+        expect(role).toMatch(/\.lux-home-merged :is\([\s\S]*\.lux-stat\.lux-soft-chrome[\s\S]*backdrop-filter:\s*none !important/);
+        expect(role).toMatch(/\.lux-home-merged[\s\S]*backdrop-filter:\s*none !important/);
+        expect(layout).toContain('.lux-home-merged');
+        expect(layout).toContain('.lux-home-band--split');
+        expect(layout).toMatch(/\.lux-home-merged[\s\S]*gap:\s*0/);
+        expect(shell).toContain('lux-home-merged');
+        expect(shell).toContain('lux-home-band');
+        expect(shell).not.toContain('Customize dashboard');
+        expect(shell).not.toContain('lux-grid-widget');
+    });
+
+    it('excludes merged desk from high-transparency primer soft-chrome wash', () => {
+        const tokens = readSource('assets/css/lux-tokens.css');
+        const primer = readSource('assets/js/theme-primer.js');
+        expect(tokens).toContain('--home-chip-glass-fill');
+        expect(tokens).toContain('--home-desk-glass-surface');
+        expect(tokens).toMatch(/html\.lux-fully-opaque body\.lux-route-home[\s\S]*--home-desk-glass-fill:\s*rgba\(8,\s*12,\s*21,\s*1\)/);
+        expect(tokens).toMatch(/html\.lux-fully-opaque body\.lux-route-home[\s\S]*--home-desk-glass-surface:[\s\S]*ellipse 42% 28% at 82% 14%/);
+        expect(tokens).toMatch(/html\.lux-fully-opaque body\.lux-route-home[\s\S]*--home-desk-glass-surface:[\s\S]*\* 0\.45\)/);
+        expect(tokens).toContain('--home-desk-glass-blur: blur(calc(8px * var(--lux-glass-blur-quality-mult, 1)));');
+        expect(tokens).not.toMatch(/--home-desk-glass-blur:[^;]*saturate/);
+        expect(tokens).toMatch(/html\.lux-fully-opaque body\.lux-route-home[\s\S]*--home-chip-glass-fill:\s*var\(--home-glass-fill\)/);
+        expect(primer).toContain("'.lux-soft-chrome:not(.lux-home-merged)'");
+        expect(primer).not.toMatch(/getHighTransparencySurfaceSelectors[\s\S]*'\.lux-soft-chrome',/);
     });
 });

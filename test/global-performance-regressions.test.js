@@ -199,7 +199,7 @@ describe('global interaction performance guardrails', () => {
     expect(count(homeLuxury, /function applyPaletteKey\(/g)).toBe(1);
     expect(count(homeLuxury, /function applyCustomPalette\(/g)).toBe(1);
     expect(count(homeLuxury, /function applyResolvedPalette\(/g)).toBe(1);
-    expect(count(homeLuxury, /function cyclePalette\(/g)).toBe(1);
+    expect(count(homeLuxury, /function cyclePalette\(/g)).toBe(0);
   });
 
   it('keeps only the live home shell renderer in index-luxury', () => {
@@ -230,18 +230,18 @@ describe('global interaction performance guardrails', () => {
     expect(homeCss).toMatch(/\.lux-quick-btn\.lux-soft-chrome/);
   });
 
-  it('ships the home dashboard builder CSS only on the home entry', () => {
+  it('ships the static merged home dashboard CSS on the home entry', () => {
     const indexHtml = readSource('index.html');
     expect(existsSync(join(process.cwd(), 'assets/css/index-luxury.css'))).toBe(false);
     const homeCss = readHomeDashboardCss();
-    const editorCss = readSource('assets/css/index-home-editor.css');
 
-        expect(indexHtml).toContain('assets/css/index-home-layout.css');
-        expect(indexHtml).toContain('assets/css/index-home-widgets.css');
-        expect(indexHtml).toContain('assets/css/index-home-role.css');
-    expect(homeCss).toContain('.lux-home-grid--builder {');
-    expect(editorCss).toContain('.lux-home-editor-panel--builder {');
-    expect(homeCss).toContain('#page-home.page-section>#lux-home-shell>.lux-home-grid--builder');
+    expect(indexHtml).toContain('assets/css/index-home-layout.css');
+    expect(indexHtml).toContain('assets/css/index-home-widgets.css');
+    expect(indexHtml).toContain('assets/css/index-home-role.css');
+    expect(homeCss).toContain('.lux-home-merged');
+    expect(homeCss).toContain('.lux-home-band--split');
+    expect(indexHtml).not.toContain('index-home-editor.css');
+    expect(existsSync(join(process.cwd(), 'assets/css/index-home-editor.css'))).toBe(false);
   });
 
   it('re-applies transparency when shared modals become visible', () => {
@@ -773,7 +773,7 @@ describe('global interaction performance guardrails', () => {
     expect(studioCss).not.toContain('lux-chip-burst-particle--ring');
     expect(shell).toContain('.lux-bg-gallery-tile, #lux-bg-gallery-upload');
     expect(shell).not.toMatch(/navigate\(pageTarget\(routePage\)\);\s*if \(typeof syncAll === 'function'\) syncAll\(\);/);
-    expect(editorDraft).toContain('function setSelectedDraftWidget(instanceId, { render = false');
+    expect(editorDraft).toContain('stopHomeEditor = function');
     expect(mobileCss).not.toMatch(/#mobile-bottom-nav \{[^}]*backdrop-filter/s);
   });
 });

@@ -10,7 +10,8 @@ html.lux-transparency-pending body.lux-light-mode :is( .lux-card, .lux-panel, .l
   background: var(--lux-panel-surface, linear-gradient(180deg, rgba(252, 249, 244, var(--lux-panel-alpha, 0.92)), rgba(248, 244, 237, var(--lux-panel-alpha, 0.92))));
   background-image: none;
 }
-html.lux-high-transparency body:not(.lux-light-mode) :is( .lux-card, .lux-panel, .lux-subcard, .lux-hero, .lux-stat, .lux-grid-widget, .lux-builder-card, .lux-dashboard-section, .lux-page-shell, .page-hero, .lux-topbar-shell, .lux-quick-btn ), html.lux-high-transparency body:not(.lux-light-mode) :is( #lux-shell, .lux-sidebar ) {
+/* NOTE: #lux-shell intentionally excluded — sidebar paint is isolated in lux-shell.css */
+html.lux-high-transparency body:not(.lux-light-mode) :is( .lux-card, .lux-panel, .lux-subcard, .lux-hero, .lux-stat, .lux-grid-widget, .lux-builder-card, .lux-dashboard-section, .lux-page-shell, .page-hero, .lux-topbar-shell, .lux-quick-btn ) {
   background: var(--lux-panel-surface, linear-gradient(180deg, rgba(14, 20, 33, var(--lux-panel-alpha, 0.92)), rgba(8, 12, 21, var(--lux-panel-alpha, 0.92))));
 }
 html.lux-high-transparency body.lux-light-mode :is( .lux-card, .lux-panel, .lux-subcard, .lux-hero, .lux-stat, .lux-grid-widget, .lux-builder-card, .lux-dashboard-section, .lux-page-shell, .page-hero ) {
@@ -235,7 +236,7 @@ body.lux-light-mode .lux-pill, body.lux-light-mode .lux-stat, body.lux-light-mod
 }
 .lux-utility-panel.is-open { display: block; }
 .lux-hero { min-height: 240px; padding: 26px; }
-body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-staff):not(.lux-route-profile-view) :is(.page-hero, .lux-panel, .lux-alert, .lux-widget-toolbar) {
+body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-staff):not(.lux-route-profile-view) :is(.page-hero, .lux-panel, .lux-alert) {
   background: linear-gradient(180deg, rgba(var(--lux-glass-tint-rgb), calc(var(--lux-panel-fill-alpha) + var(--lux-glass-highlight-alpha))), rgba(var(--lux-glass-tint-rgb), var(--lux-panel-fill-alpha)));
   border: 1px solid var(--lux-border);
   box-shadow: 0 22px 54px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 0 0 1px rgba(var(--lux-bg-glow-rgb), 0.03);
