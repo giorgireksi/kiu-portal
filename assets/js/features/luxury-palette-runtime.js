@@ -364,6 +364,22 @@
             root.style.setProperty('--kiu-shell-gradient', lightMode
                 ? `radial-gradient(circle at 16% 10%, rgba(${accentRgb}, 0.12), transparent 30%), radial-gradient(circle at 84% 82%, rgba(${accent2Rgb}, 0.10), transparent 28%), linear-gradient(180deg, #fffaf3 0%, #f4ede2 100%)`
                 : `radial-gradient(circle at 12% 8%, rgba(${accentRgb}, 0.18), transparent 32%), radial-gradient(circle at 84% 80%, rgba(${accent2Rgb}, 0.12), transparent 30%), radial-gradient(circle at 50% -12%, rgba(${shellGlowRgb}, 0.10), transparent 42%), linear-gradient(180deg, rgba(${shellStartRgb}, 0.42), rgba(${shellEndRgb}, 0.78) 48%, rgba(4,7,13,0.98) 100%)`);
+            const resolvedPaletteKey = hasCustomColors
+                ? 'custom'
+                : (visualsAreScoped ? (visuals.paletteKey || palette.key) : palette.key);
+            if (document.body) {
+                LUXURY_PALETTES.forEach((entry) => {
+                    document.body.classList.remove(`palette-${entry.key}`);
+                });
+                if (!hasCustomColors && resolvedPaletteKey && resolvedPaletteKey !== 'custom') {
+                    document.body.classList.add(`palette-${resolvedPaletteKey}`);
+                }
+            }
+            if (hasCustomColors) {
+                root.style.setProperty('--lux-shell-background', root.style.getPropertyValue('--kiu-shell-gradient'));
+            } else {
+                root.style.removeProperty('--lux-shell-background');
+            }
             document.body.dataset.luxFaculty = facultyPalette.facultyCode;
             if (typeof window.queueLuxuryTransparencyRefresh === 'function') {
                 window.queueLuxuryTransparencyRefresh(getDashboardVisuals().surfaceTransparency || localStorage.getItem('kiuLuxurySurfaceTransparency'));

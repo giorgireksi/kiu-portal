@@ -67,14 +67,14 @@ async function disposeBackgroundEngines() {
 
 async function loadFogModule() {
   if (!fogModulePromise) {
-    fogModulePromise = import("./luxury-vanta-fog-background.js");
+    fogModulePromise = import("./luxury-vanta-fog-background.js?v=20260723-adaptive1");
   }
   return fogModulePromise;
 }
 
 async function loadParticleModule() {
   if (!particleModulePromise) {
-    particleModulePromise = import("./luxury-particle-background.js").then((mod) => {
+    particleModulePromise = import("./luxury-particle-background.js?v=20260723-gpuperf4q").then((mod) => {
       particleModule = mod;
       return mod;
     });

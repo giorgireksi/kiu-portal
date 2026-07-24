@@ -149,7 +149,7 @@
             const pinnedCount = Array.isArray(group.pinnedPostIds) ? group.pinnedPostIds.length : 0;
             const description = text(group.description || '') || 'No description yet.';
             return `
-                <article class="social-neo-card social-neo-group-card">
+                <article class="lux-soft-chrome lux-panel social-neo-card social-neo-group-card">
                     <div class="social-neo-group-card-header">
                         <div class="social-neo-group-card-icon social-neo-group-card-avatar">${groupAvatar(group)}</div>
                         <div class="social-neo-group-card-title">

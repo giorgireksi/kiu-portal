@@ -184,13 +184,15 @@ function shouldKeepSchedulerFadeCssBackground(el) {
         el.classList.contains('sch-stat-card') ||
         el.classList.contains('palette-card') ||
         el.classList.contains('sch-grid-tag') ||
+        el.classList.contains('sch-legend-pill') ||
+        el.classList.contains('sch-action-btn') ||
         el.classList.contains('sch-empty-state') ||
         el.classList.contains('sch-grid-empty') ||
         el.classList.contains('sch-week-arrow') ||
         el.classList.contains('lux-strip-card') ||
         el.classList.contains('lux-control') ||
         ((el.tagName === 'SELECT' || el.tagName === 'INPUT') &&
-            Boolean(el.closest?.('.sch-control-group, .sch-search-shell, .sch-modal')))
+            Boolean(el.closest?.('.sch-control-group, .sch-search-shell, .sch-modal, .sch-board-toolbar-row')))
     );
 }
 
@@ -301,8 +303,19 @@ function shouldKeepProfileViewFadeCssBackground(el) {
 }
 
 /** True when route CSS owns glass (strip inline; do not invent paint). */
+function shouldKeepHomeFadeCssBackground(el) {
+    if (!document.body.classList.contains('lux-route-home') || !el?.classList) return false;
+    const isHomeLegacyGridInner = Boolean(el.parentElement?.classList?.contains('lux-home-grid'))
+        && (el.classList.contains('lux-panel') || el.classList.contains('lux-card') || el.classList.contains('lux-hero'));
+    const isHomeWidgetInner = Boolean(el.closest?.('.lux-grid-widget-body'))
+        && !el.classList.contains('lux-grid-widget-body');
+    return isHomeLegacyGridInner || isHomeWidgetInner;
+}
+
+/** True when route CSS owns glass (strip inline; do not invent paint). */
 function shouldKeepRouteFadeCssBackground(el) {
     return (
+        shouldKeepHomeFadeCssBackground(el) ||
         shouldKeepPersonalDataFadeCssBackground(el) ||
         shouldKeepNewsFadeCssBackground(el) ||
         shouldKeepLmsFadeCssBackground(el) ||
@@ -730,6 +743,7 @@ function buildLuxuryRoutePanelGradient(lightMode, isSmallSurface) {
             shouldKeepExamPortalFadeCssBackground,
             shouldKeepProfileViewFadeCssBackground,
             shouldKeepRouteFadeCssBackground,
+            shouldKeepHomeFadeCssBackground,
             shouldKeepPersonalDataFadeCssBackground,
             shouldKeepRegistrationFadeCssBackground,
             shouldKeepNewsFadeCssBackground,

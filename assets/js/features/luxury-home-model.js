@@ -668,6 +668,27 @@ function buildHomeModel(role) {
     };
 }
 
+function buildHomeDataFingerprint(role = (typeof getEffectiveRole === 'function' ? getEffectiveRole() : 'student')) {
+    const user = getCurrentUserSafe();
+    const facultyCode = getCurrentFacultyCode();
+    const notifications = getNotificationSnapshot(user);
+    const orders = getOrdersSnapshot(user);
+    const newsSnapshot = getNewsHomeSnapshotSafe();
+    const scheduleCount = role === 'student'
+        ? getStudentScheduleRows(user).length
+        : getFacultyScheduleRows().length;
+    return [
+        role,
+        facultyCode,
+        notifications.unread,
+        orders.unread,
+        orders.orders.length,
+        newsSnapshot.unread,
+        scheduleCount,
+        Boolean(KIU_STATE.registrationOpen) ? '1' : '0'
+    ].join('|');
+}
+
 function buildHomeContext(role = getEffectiveRole(), facultyCode = getCurrentFacultyCode()) {
     return buildHomeWidgetContext(role, buildHomeModel(role));
 }
@@ -692,6 +713,7 @@ Object.assign(window, {
     getRoleActions,
     getRoleShortcuts,
     buildHomeModel,
+    buildHomeDataFingerprint,
     buildHomeContext,
     clampPercent
 });

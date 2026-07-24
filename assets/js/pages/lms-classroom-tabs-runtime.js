@@ -380,7 +380,7 @@ function renderLmsBulkGroupTools(subjectId, subjectTitle, groups = []) {
         })
         : '';
     host.innerHTML = `
-        <section class="lms-route-panel lms-route-panel-compact lms-bulk-panel is-collapsed" id="lms-bulk-panel">
+        <section class="lux-soft-chrome lux-panel lms-route-panel lms-route-panel-compact lms-bulk-panel is-collapsed" id="lms-bulk-panel">
             <div class="lms-bulk-head">
                 <div class="lms-bulk-head-main">
                     <span class="lms-bulk-icon"><i class="fas fa-layer-group"></i></span>
@@ -403,7 +403,7 @@ function renderLmsBulkGroupTools(subjectId, subjectTitle, groups = []) {
             </div>
             <div class="lms-bulk-body">
                 <div class="lms-bulk-action-grid">
-                    <div class="lms-route-card lms-route-panel-compact lms-bulk-card">
+                    <div class="lux-soft-chrome lux-panel lms-route-card lms-route-panel-compact lms-bulk-card">
                         <div>
                             <div class="lms-bulk-title"><i class="fas fa-message"></i> Announcement</div>
                             <div class="lms-bulk-copy lms-route-copy-mt-5">Post one message to selected Interaction threads.</div>
@@ -414,7 +414,7 @@ function renderLmsBulkGroupTools(subjectId, subjectTitle, groups = []) {
                             <button type="button" class="lux-primary-btn" data-lms-bulk-requires-selection="true" data-lms-click="sendLmsBulkGroupMessage()"><i class="fas fa-paper-plane"></i> Send</button>
                         </div>
                     </div>
-                    <div class="lms-route-card lms-route-panel-compact lms-bulk-card">
+                    <div class="lux-soft-chrome lux-panel lms-route-card lms-route-panel-compact lms-bulk-card">
                         <div class="lms-bulk-head lms-bulk-head--plain">
                             <div>
                                 <div class="lms-bulk-title"><i class="fas fa-folder-open"></i> Material</div>
@@ -449,7 +449,7 @@ function renderLmsBulkGroupTools(subjectId, subjectTitle, groups = []) {
                             <button type="button" class="lux-primary-btn" data-lms-bulk-requires-selection="true" data-lms-click="createLmsBulkMaterialUpload()"><i class="fas fa-cloud-upload-alt"></i> Upload</button>
                         </div>
                     </div>
-                    <div class="lms-route-card lms-route-panel-compact lms-bulk-card lms-bulk-card--grading-scheme">
+                    <div class="lux-soft-chrome lux-panel lms-route-card lms-route-panel-compact lms-bulk-card lms-bulk-card--grading-scheme">
                         <div>
                             <div class="lms-bulk-title"><i class="fas fa-table-list"></i> Grading scheme</div>
                             <div class="lms-bulk-copy lms-route-copy-mt-5">Set max points per assessment type for this subject. Applies to all ${groups.length} group${groups.length !== 1 ? 's' : ''} automatically.</div>
@@ -890,7 +890,7 @@ function renderLmsSessionMarkerCards(courseKey = currentCourseId) {
                 const schedule = getLmsSessionScheduleForWeek(courseKey, marker.weekStart) || marker;
                 const status = marker.weekStart === currentWeek ? 'current' : (marker.weekStart > currentWeek ? 'upcoming' : 'past');
                 return `
-                    <article class="lms-route-card lms-route-panel-compact lms-session-marker-card is-${escapeHtml(status)} marker-${lmsSessionMarkerClassToken(marker.type)}">
+                    <article class="lux-soft-chrome lux-panel lms-route-card lms-route-panel-compact lms-session-marker-card is-${escapeHtml(status)} marker-${lmsSessionMarkerClassToken(marker.type)}">
                         <div class="lms-session-marker-icon"><i class="fas ${escapeHtml(typeMeta.icon)}"></i></div>
                         <div class="lms-session-marker-main">
                             <div class="lms-session-marker-kicker">
@@ -952,7 +952,7 @@ function renderLmsSessionsSection(courseId = currentCourseId) {
                 { label: 'Upcoming', value: upcomingCount }
             ])}
             ${canManage ? `
-                <section class="lms-route-panel lms-route-panel-compact lms-session-marker-composer" id="lms-session-marker-composer">
+                <section class="lux-soft-chrome lux-panel lms-route-panel lms-route-panel-compact lms-session-marker-composer" id="lms-session-marker-composer">
                     <div class="lms-session-marker-toolbar">
                         <div class="lms-session-marker-toolbar-main">
                             <span class="lms-bulk-icon"><i class="fas fa-wand-magic-sparkles"></i></span>
@@ -1020,7 +1020,7 @@ function renderLmsSessionsSection(courseId = currentCourseId) {
                     </div>
                 </section>
             ` : ''}
-            <section class="lms-route-panel lms-session-marker-board">
+            <section class="lux-soft-chrome lux-panel lms-route-panel lms-session-marker-board">
                 <div class="lms-route-card-head">
                     <div>
                         <div class="lms-route-card-title">Marked Sessions</div>
@@ -1291,7 +1291,7 @@ function renderLmsMembersSection(courseId) {
 
     contentArea.innerHTML = `
         <div class="lms-route-stack lms-member-stack">
-            <div class="lms-route-panel lms-member-overview-panel">
+            <div class="lux-soft-chrome lux-panel lms-route-panel lms-member-overview-panel">
                 <div class="lms-route-card-head lms-member-overview-head">
                     <div class="lms-route-inline lms-route-inline-gap-12 lms-route-inline-center">
                         <i class="fas fa-users lms-route-icon-accent"></i>

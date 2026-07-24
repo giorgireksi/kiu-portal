@@ -21,7 +21,7 @@ describe('particle background route integration', () => {
         expect(particle).toContain('export {');
         expect(particle).toContain('disposeLuxuryParticleBackground');
         expect(particle).toContain('probeWebGlAvailable');
-        expect(orchestrator).toContain('import("./luxury-particle-background.js")');
+        expect(orchestrator).toContain('import("./luxury-particle-background.js');
     });
 
     it('migrates legacy background mode names to particle variants', () => {
@@ -240,7 +240,7 @@ describe('particle background route integration', () => {
         expect(orchestrator).toContain('function isFogMode');
         expect(orchestrator).toContain('__kiuDisposeLuxuryParticleBackground');
         expect(orchestrator).toContain('__kiuDisposeLuxuryVantaFogBackground');
-        expect(orchestrator).toContain('import("./luxury-vanta-fog-background.js")');
+        expect(orchestrator).toContain('import("./luxury-vanta-fog-background.js?v=20260723-adaptive1")');
         expect(orchestrator).toContain('scheduleBackgroundSelfInit');
         expect(orchestrator).toContain('window.__kiuRefreshLuxuryBackground');
         expect(particle).not.toContain('window.__kiuRefreshLuxuryBackground = refreshLuxuryParticleBackground');
@@ -248,6 +248,8 @@ describe('particle background route integration', () => {
         expect(particle).toContain('function isFogBackgroundMode');
         expect(particle).toContain('=== "fog"');
         expect(fog).toContain('applyLmsFogTheme');
+        expect(fog).toContain('function getFogRenderScale');
+        expect(fog).toContain('scale: nextRenderScale');
         expect(fog).toContain('window.__kiuApplyLmsFogTheme');
         expect(fog).not.toContain('__kiuLuxuryParticleBackgroundUnavailable');
         expect(foucCss).toContain('#lux-bg-fog');
@@ -421,7 +423,7 @@ describe('particle background route integration', () => {
         const transparency = readSource('assets/js/shared/lux-transparency.js');
         const primer = readSource('assets/js/theme-primer.js');
 
-        expect(luxury).toContain("glassBlurQuality: 'high'");
+        expect(luxury).toContain("glassBlurQuality: 'auto'");
         expect(luxury).toContain('GLASS_BLUR_QUALITY_OPTIONS');
         expect(atmosphere).toContain('function getGlassBlurQuality');
         expect(atmosphere).toContain('function setGlassBlurQuality');
@@ -454,8 +456,11 @@ describe('particle background route integration', () => {
         expect(atmosphere).toContain('normalizeGlowStrengthPercent');
         expect(shellChrome).toContain('Panel Color Glow');
         expect(shellChrome).toContain('id="lux-glow-strength-slider"');
-        expect(shellChrome).toContain('window.setGlowStrength(parseInt(value, 10), true)');
+        expect(shellChrome).toContain("window.setGlowStrength(parseInt(value, 10), false, { live: true })");
+        expect(shellChrome).toContain("glowStrengthSlider.addEventListener('change'");
+        expect(shellChrome).toContain('window.setGlowStrength(value, true)');
         expect(shellChrome).toContain('lux-glow-strength-value');
+        expect(atmosphere).toContain('if (options?.live) return nextPercent;');
         expect(transparencyModel).toContain('resolveGlowTokenConfig');
         expect(tokens).toContain('var(--lux-panel-glow, 0.22)');
         expect(tokens).toContain('calc(var(--lux-panel-glow, 0.22) * 0.90)');
@@ -566,7 +571,7 @@ describe('particle background route integration', () => {
         expect(mergeBlock).not.toContain('Array.from(mergedById.values())');
     });
 
-    it('forces high particle quality and wires DPR/frame caps on home', () => {
+    it('uses adaptive particle quality and wires DPR/frame caps on home', () => {
         const particle = readSource('assets/js/features/luxury-particle-background.js');
         const runtime = readSource('assets/js/features/luxury-index-runtime.js');
         const luxury = readSource('assets/js/features/index-luxury.js');
@@ -580,13 +585,23 @@ describe('particle background route integration', () => {
         expect(runtime).toContain('--lux-canvas-frame-interval');
         expect(runtime).toContain('pixelRatioCap: isTimetable ? 3 : (isHome ? 2.5 : 1.5)');
         expect(runtime).toContain('frameInterval: isHome ? 16 : (reducedMotion ? 80 : 42)');
-        expect(luxury).toMatch(/particleQuality:\s*'high'/);
+        expect(luxury).toMatch(/particleQuality:\s*'auto'/);
         const dprBlock = particle.slice(
             particle.indexOf('function getRenderPixelRatio'),
             particle.indexOf('function setQuality')
         );
-        expect(dprBlock).toContain('Math.min(dpr * supersample, quality.maxDpr)');
+        expect(dprBlock).toContain('Math.min(dpr * supersample, quality.maxDpr, readCanvasPixelRatioCap())');
+        expect(dprBlock).toContain('readCanvasPixelRatioCap()');
         expect(particle).toMatch(/high:\s*\{[\s\S]*?maxDpr:\s*3\.7/);
+        expect(particle).toMatch(/balanced:\s*\{[\s\S]*?maxDpr:\s*1\.5/);
+        expect(particle).not.toMatch(/balanced:\s*\{[\s\S]*?supersample:\s*1\.15/);
+        expect(particle).toContain('readCanvasFrameInterval()');
+        expect(particle).toContain('startParticleRenderLoop');
+        expect(particle).not.toMatch(/setAnimationLoop\(render\)/);
+        expect(particle).toMatch(/engineReady = true;[\s\S]*syncSettingsFromPortal\(\)/);
+        expect(particle).toContain('antialias: !(initialQuality.supersample > 1)');
+        expect(particle).toContain('syncRibbonMeshInScene');
+        expect(particle).toContain('scene.remove(ribbonMesh)');
     });
 
     it('keeps canvas filter none when background animation is on', () => {
@@ -607,12 +622,12 @@ describe('particle background route integration', () => {
     it('cache-busts particle and luxury background assets', () => {
         const html = readSource('index.html');
         const background = readSource('assets/js/features/luxury-background.js');
-        expect(html).toContain('luxury-background.js?v=20260717-lazythree1');
+        expect(html).toContain('luxury-background.js?v=20260723-gpuperf4q');
         expect(html).toContain('index-luxury.js?v=');
         expect(html).toContain('luxury-index-runtime.js?v=');
         expect(html).not.toContain('index-luxury.css');
-        expect(background).toContain('import("./luxury-particle-background.js")');
-        expect(background).not.toContain('luxury-particle-background.js?v=');
+        expect(background).toContain('import("./luxury-particle-background.js?v=20260723-gpuperf4q")');
+        expect(background).toContain('import("./luxury-vanta-fog-background.js?v=20260723-adaptive1")');
     });
     it('supports gallery static background fill and media mount', () => {
         const luxury = readSource('assets/js/features/index-luxury.js');

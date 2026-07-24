@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
-import { LUX_DROPLIST_CACHE_BUST } from './fixtures/lux-droplist-contract.js';
+import { LUX_DROPLIST_CACHE_BUST, LUX_DROPLIST_CSS_CACHE_BUST } from './fixtures/lux-droplist-contract.js';
 
 function readSource(relativePath) {
     const full = join(process.cwd(), relativePath);
@@ -17,23 +17,56 @@ describe('lux picker scroll regressions', () => {
         expect(controls).toContain('--lux-picker-option-height');
         expect(controls).toContain('--lux-picker-panel-max-height');
         expect(controls).toContain('max-height: var(--lux-picker-panel-max-height)');
+        expect(controls).toContain('--lux-droplist-visible-options: 5');
+        expect(controls).toMatch(/--lux-droplist-panel-max-height:\s*calc\([\s\S]*?shell-pad\)\s*\*\s*2/);
+        // Glass shell clips; options scroll in scrollport (blur ≠ scroll node).
+        expect(controls).toContain('.lux-picker-panel-scrollport');
+        expect(controls).toMatch(/\.lux-picker-panel\s*\{[\s\S]*?overflow:\s*hidden/);
         expect(controls).toContain('overflow-y: auto');
         expect(controls).toContain('overscroll-behavior: contain');
-        expect(controls).toContain('.lux-picker-panel::-webkit-scrollbar-thumb');
+        expect(controls).toContain('contain: layout paint');
+        expect(controls).toContain('.lux-picker-panel-scrollport::-webkit-scrollbar-thumb');
+        expect(controls).toContain('var(--lux-scrollbar-thumb-hover');
+        expect(controls).toContain('scrollbar-color: var(--lux-scrollbar-thumb');
+    });
+
+    it('caps droplist panel at 5 options then scrolls the scrollport', () => {
+        const droplist = readSource('assets/css/lux-droplist.css');
+        expect(droplist).toContain('--lux-droplist-visible-options: 5');
+        expect(droplist).toMatch(
+            /\.lux-picker-panel\.lux-universal-picker-panel\.lux-droplist-panel\s*\{[\s\S]*?max-height:\s*var\(--lux-droplist-panel-max-height\)/
+        );
+        expect(droplist).toMatch(
+            /\.lux-picker-panel\.lux-universal-picker-panel\.lux-droplist-panel :is\([\s\S]*?\.lux-picker-panel-scrollport[\s\S]*?overflow-y:\s*auto/
+        );
+    });
+
+    it('themes droplist scrollport thumb with accent tokens (not panel hardcoded bars)', () => {
+        const droplist = readSource('assets/css/lux-droplist.css');
+        expect(droplist).toMatch(
+            /\.lux-picker-panel\.lux-universal-picker-panel\.lux-droplist-panel :is\([\s\S]*?\.lux-picker-panel-scrollport[\s\S]*?::-webkit-scrollbar-thumb/
+        );
+        expect(droplist).toContain('var(--lux-scrollbar-thumb)');
+        expect(droplist).toContain('var(--lux-scrollbar-thumb-hover)');
+        expect(droplist).toContain('scrollbar-width: thin');
+        expect(droplist).not.toMatch(
+            /\.lux-picker-panel\.lux-universal-picker-panel\.lux-droplist-panel::-webkit-scrollbar-thumb\s*\{[\s\S]*?rgba\(255,\s*255,\s*255,\s*0\.14\)/
+        );
     });
 
     it('tags enhanced and shell picker panels with scroll class', () => {
-        const shellChrome = readSource('assets/js/features/luxury-shell-chrome.js');
+        const shellChrome = readSource('assets/js/features/luxury-shell-picker-runtime.js');
 
-        expect(shellChrome).toContain('lux-picker-panel lux-picker-panel-scroll');
+        expect(shellChrome).toContain('lux-picker-panel lux-universal-picker-panel lux-picker-panel-scroll lux-droplist-panel');
         expect(shellChrome).toContain('lux-picker-panel lux-universal-picker-panel lux-picker-panel-scroll');
         expect(shellChrome).toContain('function isPickerScrollExempt(panel, scrollTarget)');
         expect(shellChrome).toContain('function isLuxPickerInteractionTarget(target, panel)');
         expect(shellChrome).toContain('function collectPickerScrollTargets(button)');
         expect(shellChrome).toContain('function bindLuxPickerDismissHandlers()');
         expect(shellChrome).toContain('function dismissOpenLuxPickerPanels()');
-        expect(shellChrome).toContain("window.addEventListener('resize', dismissOpenLuxPickerPanels");
-        expect(shellChrome).toContain("window.addEventListener('orientationchange', dismissOpenLuxPickerPanels");
+        expect(shellChrome).toContain("window.addEventListener('resize', onViewportChange");
+        expect(shellChrome).toContain("window.addEventListener('orientationchange', onViewportChange");
+        expect(shellChrome).toContain('dismissOpenLuxPickerPanels()');
         expect(shellChrome).toContain('[data-lux-picker-scroll-exempt]');
         expect(shellChrome).not.toContain('PICKER_SCROLL_EXEMPT_SELECTORS');
         expect(shellChrome).toContain('if (isPickerScrollExempt(panel, event.target)) return;');
@@ -50,13 +83,13 @@ describe('lux picker scroll regressions', () => {
         const registration = readSource('registration.html');
         const scheduler = readSource('admin-scheduler.html');
 
-        expect(index).toContain(`assets/css/lux-controls.css?v=${LUX_DROPLIST_CACHE_BUST}`);
+        expect(index).toContain(`assets/css/lux-controls.css?v=${LUX_DROPLIST_CSS_CACHE_BUST}`);
         expect(index).toContain(`assets/js/features/luxury-shell-chrome.js?v=${LUX_DROPLIST_CACHE_BUST}`);
-        expect(registration).toContain(`assets/css/lux-controls.css?v=${LUX_DROPLIST_CACHE_BUST}`);
+        expect(registration).toContain(`assets/css/lux-controls.css?v=${LUX_DROPLIST_CSS_CACHE_BUST}`);
         expect(registration).toContain(`assets/js/features/luxury-shell-chrome.js?v=${LUX_DROPLIST_CACHE_BUST}`);
-        expect(scheduler).toContain(`assets/css/lux-controls.css?v=${LUX_DROPLIST_CACHE_BUST}`);
+        expect(scheduler).toContain(`assets/css/lux-controls.css?v=${LUX_DROPLIST_CSS_CACHE_BUST}`);
         expect(scheduler).toContain(`assets/js/features/luxury-shell-chrome.js?v=${LUX_DROPLIST_CACHE_BUST}`);
-        expect(scheduler).toContain(`assets/css/admin-scheduler-route.css?v=${LUX_DROPLIST_CACHE_BUST}`);
+        expect(scheduler).toContain(`assets/js/features/luxury-shell-picker-runtime.js?v=${LUX_DROPLIST_CACHE_BUST}`);
     });
 
     it('routes library catalog filters through the universal picker contract', () => {

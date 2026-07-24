@@ -90,7 +90,7 @@
 
         if (!account) {
             return `
-                <div class="social-neo-card">
+                <div class="lux-soft-chrome lux-panel social-neo-card">
                     <div class="social-neo-empty">Profile not found.</div>
                 </div>
             `;

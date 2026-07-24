@@ -15,6 +15,9 @@ describe('luxury-palette-runtime peel', () => {
         expect(lux).not.toMatch(/^\s*function hexToRgbTriplet\b/m);
         expect(lux).not.toMatch(/^\s*function getPaletteByKey\b/m);
         expect(pal).toContain('function applyResolvedPalette');
+        expect(pal).toContain('classList.remove(`palette-${entry.key}`)');
+        expect(pal).toContain("classList.add(`palette-${resolvedPaletteKey}`)");
+        expect(pal).toContain("root.style.setProperty('--lux-shell-background'");
         expect(pal).toContain('function hexToRgbTriplet');
         expect(pal).toContain('function getPaletteByKey');
         expect(pal).toContain('__KIU_LUXURY_PALETTE_LOADED');

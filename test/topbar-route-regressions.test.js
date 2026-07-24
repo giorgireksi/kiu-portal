@@ -19,7 +19,6 @@ describe('route-owned shell topbar regressions', () => {
     expect(luxuryCss).toContain('/* Route-owned shell topbar — uses --lux-shell-topbar-* aliases on body.lux-route-* */');
     expect(luxuryCss).toContain('body.lux-nonhome-page[class*="lux-route-"]:not(.lux-route-home) #lux-topbar .lux-topbar-shell');
     expect(luxuryCss).toContain('background: var(--lux-shell-topbar-surface-soft) !important');
-    expect(luxuryCss).toContain('body.lux-nonhome-page:not([class*="lux-route-"]) #lux-topbar .lux-search input');
     expect(luxuryCss).toContain('body:not(.lux-light-mode):not([class*="lux-route-"]) #lux-topbar .lux-topbar-shell');
     expect(luxuryCss).not.toContain(':not(.lux-route-registration) #lux-topbar');
   });

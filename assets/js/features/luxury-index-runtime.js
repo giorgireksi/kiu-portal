@@ -225,30 +225,84 @@ return {
         '.student-service-ops-ticket',
         '.ex2-card',
         '.ex2-question-card',
-        '.ex2-review-card'
+        '.ex2-review-card',
+        '.lux-page-shell',
+        '.newsx-feed',
+        '#lux-home-shell .lux-home-merged.lux-soft-chrome',
+        '#lux-home-shell .lux-home-grid',
+        '#page-admin-scheduler .sch-grid-shell',
+        '#page-staff .staff-hub-command-panel',
+        '#page-chancellery .chancellery-queue-panel',
+        '#lms-content-area .lms-quiz-builder .lms-quiz-studio-main-card'
     ].join(', ');
 
     let __luxHeavySurfaceObserver = null;
     let __luxHeavySurfaceRefreshTimer = null;
 
-    function getSocialCenterScrollRoot() {
-        if (!document.body.classList.contains('social-neo-scroll-lock')) return null;
-        return document.getElementById('social-neo-center-region')
-            || document.querySelector('.social-neo-center');
+    function getHeavySurfaceScrollRoot() {
+        if (document.body.classList.contains('social-neo-scroll-lock')) {
+            return document.getElementById('social-neo-center-region')
+                || document.querySelector('.social-neo-center');
+        }
+        const appContent = document.getElementById('app-content');
+        if (appContent && appContent.scrollHeight > appContent.clientHeight + 1) {
+            return appContent;
+        }
+        return null;
     }
+
+    let __luxHeavySurfaceObserverSignature = '';
 
     function refreshHeavySurfaceObservation() {
         if (!('IntersectionObserver' in window) || !document.body) return;
-        const scrollRoot = getSocialCenterScrollRoot();
+        const scrollRoot = getHeavySurfaceScrollRoot();
+        const observerSignature = `${scrollRoot?.id || scrollRoot?.className || 'null'}|${LUX_HEAVY_SCROLL_SURFACE_SELECTOR}`;
+        if (__luxHeavySurfaceObserver && __luxHeavySurfaceObserverSignature === observerSignature) {
+            document.querySelectorAll(LUX_HEAVY_SCROLL_SURFACE_SELECTOR).forEach((node) => {
+                if (!node || node.dataset.luxObservedSurface === '1') return;
+                if (node.closest('#lux-home-shell .lux-home-merged') && !node.classList.contains('lux-home-merged')) return;
+                if (node.closest('#lux-home-shell .lux-home-grid') && !node.classList.contains('lux-home-grid')) return;
+                if (node.closest('#library-schema-overlay')) return;
+                if (scrollRoot && !scrollRoot.contains(node)) return;
+                node.dataset.luxObservedSurface = '1';
+                node.dataset.luxOffscreen = '0';
+                __luxHeavySurfaceObserver.observe(node);
+            });
+            return;
+        }
+        __luxHeavySurfaceObserverSignature = observerSignature;
         if (__luxHeavySurfaceObserver) {
             __luxHeavySurfaceObserver.disconnect();
             __luxHeavySurfaceObserver = null;
         }
         __luxHeavySurfaceObserver = new IntersectionObserver((entries) => {
+            // Batch IO callbacks into one rAF so fast scroll does not N× queue refreshes.
+            if (!window.__luxHeavySurfaceIoPending) {
+                window.__luxHeavySurfaceIoPending = [];
+            }
             entries.forEach((entry) => {
                 if (!entry?.target?.dataset) return;
                 entry.target.dataset.luxOffscreen = entry.isIntersecting ? '0' : '1';
+                window.__luxHeavySurfaceIoPending.push(entry.target);
             });
+            if (window.__luxHeavySurfaceIoRaf) return;
+            const flushIo = () => {
+                window.__luxHeavySurfaceIoRaf = 0;
+                const pending = window.__luxHeavySurfaceIoPending || [];
+                window.__luxHeavySurfaceIoPending = [];
+                if (typeof window.syncLuxuryOffscreenBackdrop !== 'function') return;
+                const seen = new Set();
+                pending.forEach((el) => {
+                    if (!el || seen.has(el)) return;
+                    seen.add(el);
+                    window.syncLuxuryOffscreenBackdrop(el);
+                });
+            };
+            if (typeof window.requestAnimationFrame === 'function') {
+                window.__luxHeavySurfaceIoRaf = window.requestAnimationFrame(flushIo);
+            } else {
+                flushIo();
+            }
         }, {
             root: scrollRoot,
             rootMargin: '300px 0px 300px 0px',
@@ -256,7 +310,8 @@ return {
         });
         document.querySelectorAll(LUX_HEAVY_SCROLL_SURFACE_SELECTOR).forEach((node) => {
             if (!node) return;
-            if (node.closest('#lux-home-shell .lux-dashboard-canvas')) return;
+            if (node.closest('#lux-home-shell .lux-home-merged') && !node.classList.contains('lux-home-merged')) return;
+            if (node.closest('#lux-home-shell .lux-home-grid') && !node.classList.contains('lux-home-grid')) return;
             if (node.closest('#library-schema-overlay')) return;
             if (scrollRoot && !scrollRoot.contains(node)) return;
             if (node.closest('.social-neo[data-panel="messages"]')) {
@@ -282,7 +337,6 @@ return {
         }, 120);
     }
     const LUX_LEGACY_VISUAL_SELECTOR = [
-        '[style]',
         '.content-box',
         '.surface-card',
         '.page-card',
@@ -299,12 +353,7 @@ return {
         '.tab',
         '.reg-tab',
         '.pv-tab',
-        '.nav-item',
-        'input',
-        'select',
-        'textarea',
-        'button',
-        'a'
+        '.nav-item'
     ].join(',');
 
     const LUX_LEGACY_VISUAL_VALUE_PATTERN = /(var\(--kiu|#fff|#ffffff|#f8f9fa|#f8fafc|#f1f5f9|#eef2ff|#eff6ff|#e2e8f0|#cbd5e1|#94a3b8|#64748b|#475569|#334155|#1e3a8a|#2563eb|#3b82f6|#10b981|#168b66|#dc2626|white|black|rgba?\([^)]*(255|248|245|37|59|92|220|38|130|139)[^)]*\))/i;
@@ -602,6 +651,13 @@ return {
 
     function queueLegacyVisualRefresh(root = document.body) {
         if (!root || shouldSkipLegacyVisualRefresh(root)) return;
+        if (
+            typeof window.shouldDeferLuxLegacyVisualRefresh === 'function'
+            && window.shouldDeferLuxLegacyVisualRefresh()
+        ) {
+            window.__luxDeferredLegacyVisualRoot = root;
+            return;
+        }
         queueUniqueLegacyVisualRoot(root);
         if (queuedLegacyVisualFrame) return;
         const run = () => {
@@ -618,6 +674,16 @@ return {
             return;
         }
         queuedLegacyVisualFrame = window.requestAnimationFrame(run);
+    }
+
+    if (typeof window.onLuxGovernorStateChange === 'function' && !window.__luxLegacyVisualGovernorFlushBound) {
+        window.__luxLegacyVisualGovernorFlushBound = true;
+        window.onLuxGovernorStateChange((busy) => {
+            if (busy || !window.__luxDeferredLegacyVisualRoot) return;
+            const root = window.__luxDeferredLegacyVisualRoot;
+            window.__luxDeferredLegacyVisualRoot = null;
+            queueLegacyVisualRefresh(root);
+        });
     }
 
     function observeLegacyVisualTree() {
@@ -713,6 +779,9 @@ return {
         const getActivePageId = typeof deps.getActivePageId === 'function' ? deps.getActivePageId : () => 'home';
         const isIndexPortalShell = typeof deps.isIndexPortalShell === 'function' ? deps.isIndexPortalShell : () => false;
         const executeHomeChunk = typeof deps.executeHomeChunk === 'function' ? deps.executeHomeChunk : null;
+        const queueHeavySurfaceObservationRefresh = typeof deps.queueHeavySurfaceObservationRefresh === 'function'
+            ? deps.queueHeavySurfaceObservationRefresh
+            : () => {};
     /* Dashboard Builder Overrides */
     /* Route-owned home dashboard and editor bundle loader */
     const HOME_DASHBOARD_LOAD_TIMEOUT_MS = 10000;
@@ -841,14 +910,9 @@ return {
         const scope = typeof window.getHomeScopeKey === 'function'
             ? String(window.getHomeScopeKey(role, faculty) || '')
             : `${role}|${faculty}`;
-        let layoutStamp = '';
-        try {
-            layoutStamp = String(
-                localStorage.getItem(`kiuLuxuryHomeLayout:${scope}`)
-                || localStorage.getItem(`kiuHomeLayout:${scope}`)
-                || ''
-            ).length;
-        } catch (_error) { /* ignore */ }
+        const layoutStamp = typeof window.buildHomeDataFingerprint === 'function'
+            ? String(window.buildHomeDataFingerprint(role) || '')
+            : '';
         return [role, faculty, editing, draftLen, selected, viewport, scope, layoutStamp].join('|');
     }
 
@@ -901,13 +965,9 @@ return {
                 }
             };
             repaintHomeSurfaces();
-            if (typeof window.requestAnimationFrame === 'function') {
-                window.requestAnimationFrame(() => {
-                    window.requestAnimationFrame(repaintHomeSurfaces);
-                });
-            } else {
-                window.setTimeout(repaintHomeSurfaces, 32);
-            }
+            const idleRunner = window.requestIdleCallback || ((cb) => window.setTimeout(cb, 120));
+            idleRunner(repaintHomeSurfaces);
+            queueHeavySurfaceObservationRefresh();
         } catch (error) {
             console.error('Home dashboard render failed.', error);
             delete homeShell.dataset.homeRenderSignature;

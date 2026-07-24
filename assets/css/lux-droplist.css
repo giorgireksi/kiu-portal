@@ -2,35 +2,87 @@
  * §1 tokens · §2 surface · §3 item/check */
 /* ── §1 tokens ── */
 :root {
-  --lux-droplist-anim-duration: 200ms;
-  --lux-droplist-anim-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --lux-droplist-anim-duration: 300ms;
+  --lux-droplist-anim-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --lux-droplist-anim-ease-out: cubic-bezier(0.4, 0, 1, 1);
+  --lux-droplist-anim-close-duration: 180ms;
   --lux-droplist-check-shadow: 0 4px 10px rgba(var(--lux-accent-rgb), 0.24);
   --lux-droplist-fade-blur: blur(var(--lux-glass-blur, 20px)) saturate(var(--lux-transparency-saturate, 145%));
-  --lux-droplist-fade-border: rgba(var(--lux-accent-rgb), 0.22);
-  --lux-droplist-fade-shadow: 0 24px 58px rgba(0, 0, 0, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 0 0 1px rgba(var(--lux-accent-rgb), 0.06);
+  --lux-droplist-frame-border: color-mix(
+    in srgb,
+    rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.90)) 48%,
+    rgba(var(--lux-accent-rgb), 0.22)
+  );
+  --lux-droplist-frame-ring: 0 0 0 1px rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.50));
+  --lux-droplist-frame-glow: 0 0 18px rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.32));
+  --lux-droplist-fade-shadow:
+    var(--lux-droplist-frame-ring),
+    var(--lux-droplist-frame-glow),
+    0 24px 58px rgba(0, 0, 0, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
   --lux-droplist-fade-surface: radial-gradient(circle at 8% 0%, rgba(255, 255, 255, calc(var(--lux-color-fade-alpha, .92) * 0.075)), transparent 32%), radial-gradient(circle at 72% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * 0.28)), transparent 38%), radial-gradient(circle at 100% 94%, rgba(var(--lux-home-secondary-rgb), calc(var(--lux-color-fade-alpha, .92) * 0.18)), transparent 38%), linear-gradient(135deg, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, .92) * 0.10)), color-mix(in srgb, var(--lux-surface) 89%, transparent) 44%, color-mix(in srgb, var(--lux-surface) 80%, transparent));
-  --lux-droplist-glass-blur: blur(26px) saturate(155%);
-  --lux-droplist-glass-border: rgba(77, 52, 31, 0.12);
+  --lux-droplist-glass-blur: blur(18px) saturate(155%);
+  --lux-droplist-glass-border: color-mix(
+    in srgb,
+    rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.42)) 38%,
+    rgba(77, 52, 31, 0.18)
+  );
+  --lux-droplist-glass-frame-ring: 0 0 0 1px rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.22));
+  --lux-droplist-glass-frame-glow: 0 0 14px rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.14));
   --lux-droplist-glass-inset: rgba(255, 255, 255, 0.62);
-  --lux-droplist-glass-shadow: 0 24px 56px rgba(73, 48, 25, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.62), 0 0 0 1px rgba(var(--lux-accent-rgb), 0.06);
+  --lux-droplist-glass-shadow:
+    var(--lux-droplist-glass-frame-ring),
+    var(--lux-droplist-glass-frame-glow),
+    0 24px 56px rgba(73, 48, 25, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.62);
   --lux-droplist-glass-sheen-opacity: 0.10;
   --lux-droplist-glass-surface: radial-gradient(circle at 8% 0%, rgba(255, 255, 255, 0.62), transparent 32%), radial-gradient(circle at 78% 0%, rgba(var(--lux-accent-rgb), 0.10), transparent 38%), linear-gradient(135deg, rgba(255, 255, 255, 0.58), rgba(247, 241, 232, 0.44));
   --lux-droplist-hover-duration: 120ms;
   --lux-droplist-hover-ease: ease-out;
-  --lux-droplist-option-active-shadow: 0 0 0 3px rgba(var(--lux-accent-rgb), 0.09), inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  --lux-droplist-option-active-shadow-light: 0 0 0 3px rgba(var(--lux-accent-rgb), 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.64);
+  --lux-droplist-option-border-width: 2px;
+  --lux-droplist-option-border-idle: var(--lux-soft-chrome-border);
+  --lux-droplist-option-border-hover: color-mix(
+    in srgb,
+    var(--lux-soft-chrome-border) 55%,
+    rgba(var(--lux-accent-rgb), 0.48)
+  );
+  --lux-droplist-option-border-active: color-mix(
+    in srgb,
+    var(--lux-soft-chrome-border) 35%,
+    rgba(var(--lux-accent-rgb), 0.62)
+  );
+  /* Soft-chrome elev (same language as .lux-focus-panel / .lux-soft-chrome) */
+  --lux-droplist-option-edge-idle: var(--lux-soft-chrome-shadow);
+  --lux-droplist-option-edge-hover:
+    0 0 0 1px rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.36)),
+    var(--lux-soft-chrome-shadow);
+  --lux-droplist-option-edge-active:
+    0 0 0 1px rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.50)),
+    var(--lux-droplist-frame-glow),
+    var(--lux-soft-chrome-shadow);
+  /* Paint-only soft-chrome color fade (no per-row backdrop-filter) */
+  --lux-droplist-option-glass-idle: var(--lux-soft-chrome-surface);
+  --lux-droplist-option-glass-hover:
+    radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.42)), transparent 42%),
+    var(--lux-soft-chrome-surface);
+  --lux-droplist-option-glass-active:
+    radial-gradient(circle at top right, rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.72)), transparent 52%),
+    radial-gradient(circle at 12% 0%, rgba(255, 255, 255, calc(var(--lux-color-fade-alpha, .92) * 0.08)), transparent 36%),
+    var(--lux-soft-chrome-surface);
   --lux-droplist-option-height: 44px;
   --lux-droplist-option-radius: 999px;
-  --lux-droplist-panel-gap: 8px;
-  --lux-droplist-panel-max-height: calc( var(--lux-droplist-option-height) * var(--lux-droplist-visible-options) + var(--lux-droplist-panel-gap) * (var(--lux-droplist-visible-options) - 1) + var(--lux-droplist-panel-pad) );
-  --lux-droplist-panel-pad: 20px;
+  --lux-droplist-panel-max-height: calc(
+    var(--lux-droplist-option-height) * var(--lux-droplist-visible-options)
+    + var(--lux-droplist-shell-gap) * (var(--lux-droplist-visible-options) - 1)
+    + (var(--lux-droplist-shell-pad) * 2)
+  );
   --lux-droplist-rim-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.10);
-  --lux-droplist-scale-closed: 0.97;
+  --lux-droplist-scale-closed: 0.88;
   --lux-droplist-shell-gap: 6px;
   --lux-droplist-shell-pad: 12px;
   --lux-droplist-shell-radius: 28px;
-  --lux-droplist-slide-offset: 8px;
-  --lux-droplist-visible-options: 4;
+  --lux-droplist-slide-offset: 14px;
+  --lux-droplist-visible-options: 5;
 }
 .lux-picker-panel.lux-universal-picker-panel.lux-droplist-panel {
   isolation: isolate;
@@ -39,9 +91,9 @@
   gap: var(--lux-droplist-shell-gap);
   border-radius: var(--lux-droplist-shell-radius);
   max-height: var(--lux-droplist-panel-max-height);
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  border: 1px solid var(--lux-droplist-fade-border);
+  /* Frost on shell; list scrolls in .lux-picker-panel-scrollport / .lux-picker-options. */
+  overflow: hidden;
+  border: 1px solid var(--lux-droplist-frame-border);
   background: var(--lux-droplist-fade-surface);
   box-shadow: var(--lux-droplist-fade-shadow);
   backdrop-filter: var(--lux-droplist-fade-blur);
@@ -49,7 +101,22 @@
   --lux-picker-slide-offset: var(--lux-droplist-slide-offset);
   --lux-picker-scale-closed: var(--lux-droplist-scale-closed);
   transform-origin: top center;
-  transition: opacity var(--lux-droplist-anim-duration) var(--lux-droplist-anim-ease), transform var(--lux-droplist-anim-duration) var(--lux-droplist-anim-ease);
+  /* Soft bloom: springy open; close uses quicker ease via .is-closing */
+  transition:
+    opacity calc(var(--lux-droplist-anim-duration) * 0.72) var(--lux-droplist-anim-ease),
+    transform var(--lux-droplist-anim-duration) var(--lux-droplist-anim-ease),
+    filter var(--lux-droplist-anim-duration) var(--lux-droplist-anim-ease);
+  filter: blur(0);
+}
+.lux-picker-panel.lux-universal-picker-panel.lux-droplist-panel :is(
+  .lux-picker-panel-scrollport,
+  .lux-picker-options
+) {
+  gap: var(--lux-droplist-shell-gap);
+  min-height: 0;
+  max-height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 .lux-droplist-panel::before, .lux-picker-panel.lux-universal-picker-panel.lux-droplist-panel::before {
   content: '';
@@ -86,6 +153,7 @@
 }
 .lux-picker-panel.lux-universal-picker-panel.lux-droplist-panel:not(.is-open):not(.is-closing) {
   opacity: 0;
+  filter: blur(7px);
   transform: var(--lux-picker-anchor-transform, translateY(0)) translateY(var(--lux-picker-slide-offset)) scale(var(--lux-picker-scale-closed));
 }
 .lux-picker-panel.lux-universal-picker-panel.lux-droplist-panel.is-open-above {
@@ -94,18 +162,24 @@
 }
 .lux-picker-panel.lux-universal-picker-panel.lux-droplist-panel.is-open {
   opacity: 1;
+  filter: blur(0);
   transform: var(--lux-picker-anchor-transform, translateY(0)) translateY(0) scale(1);
   pointer-events: auto;
 }
 .lux-picker-panel.lux-universal-picker-panel.lux-droplist-panel.is-closing:not(.is-open) {
   opacity: 0;
+  filter: blur(5px);
   transform: var(--lux-picker-anchor-transform, translateY(0)) translateY(var(--lux-picker-slide-offset)) scale(var(--lux-picker-scale-closed));
   pointer-events: none;
+  transition:
+    opacity var(--lux-droplist-anim-close-duration, 180ms) var(--lux-droplist-anim-ease-out, ease-in),
+    transform var(--lux-droplist-anim-close-duration, 180ms) var(--lux-droplist-anim-ease-out, ease-in),
+    filter var(--lux-droplist-anim-close-duration, 180ms) var(--lux-droplist-anim-ease-out, ease-in);
 }
 .lux-picker-panel.lux-universal-picker-panel.lux-droplist-panel:is(.is-open, .is-closing) {
   display: grid;
   position: fixed;
-  will-change: opacity, transform;
+  will-change: opacity, transform, filter;
 }
 .lux-droplist-panel .lux-picker-option {
   position: relative;
@@ -113,24 +187,44 @@
   min-height: var(--lux-droplist-option-height);
   padding: 10px 16px;
   border-radius: var(--lux-droplist-option-radius);
-  border: 1px solid transparent;
-  background: rgba(255, 255, 255, 0.04);
+  border: var(--lux-droplist-option-border-width) solid var(--lux-droplist-option-border-idle);
+  background: var(--lux-droplist-option-glass-idle);
+  box-shadow: var(--lux-droplist-option-edge-idle);
   text-align: left;
-  transition: background var(--lux-droplist-hover-duration) var(--lux-droplist-hover-ease), border-color var(--lux-droplist-hover-duration) var(--lux-droplist-hover-ease);
+  transition:
+    border-color var(--lux-droplist-hover-duration) var(--lux-droplist-hover-ease),
+    box-shadow var(--lux-droplist-hover-duration) var(--lux-droplist-hover-ease),
+    background var(--lux-droplist-hover-duration) var(--lux-droplist-hover-ease);
 }
+.lux-droplist-panel .lux-picker-option::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+  background: rgba(var(--lux-accent-rgb), 0.06);
+  opacity: 0;
+  transition: opacity var(--lux-droplist-hover-duration) var(--lux-droplist-hover-ease);
+}
+.lux-droplist-panel .lux-picker-option > * { position: relative; z-index: 1; }
 .lux-droplist-panel .lux-picker-option strong { font-size: 14px; font-weight: 600; line-height: 1.25; }
 .lux-droplist-panel .lux-picker-option:hover, .lux-droplist-panel .lux-picker-option:focus-visible {
   animation: none;
   transform: none;
-  border-color: rgba(var(--lux-accent-rgb), 0.26);
-  background: rgba(var(--lux-accent-rgb), 0.08);
+  border-color: var(--lux-droplist-option-border-hover);
+  background: var(--lux-droplist-option-glass-hover);
+  box-shadow: var(--lux-droplist-option-edge-hover);
+}
+.lux-droplist-panel .lux-picker-option:hover::before, .lux-droplist-panel .lux-picker-option:focus-visible::before {
+  opacity: 1;
 }
 .lux-droplist-panel .lux-picker-option.is-active {
   transform: none;
   padding-right: 48px;
-  border-color: rgba(var(--lux-accent-rgb), 0.36);
-  background: radial-gradient(circle at top right, rgba(var(--lux-accent-rgb), 0.14), transparent 58%), rgba(var(--lux-accent-rgb), 0.11);
-  box-shadow: var(--lux-droplist-option-active-shadow);
+  border-color: var(--lux-droplist-option-border-active);
+  background: var(--lux-droplist-option-glass-active);
+  box-shadow: var(--lux-droplist-option-edge-active);
 }
 .lux-droplist-panel .lux-picker-option.is-active::after {
   content: '\f00c';
@@ -151,25 +245,65 @@
   background: linear-gradient(135deg, rgba(var(--lux-accent-rgb), 0.94), rgba(var(--lux-home-secondary-rgb), 0.82));
   box-shadow: var(--lux-droplist-check-shadow);
 }
-:is(html.lux-light-mode, body.lux-light-mode) .lux-droplist-panel .lux-picker-option { background: rgba(255, 255, 255, 0.22); }
-:is(html.lux-light-mode, body.lux-light-mode) .lux-droplist-panel .lux-picker-option:hover {
-  background: rgba(255, 255, 255, 0.36);
-  border-color: rgba(var(--lux-accent-rgb), 0.28);
-}
-:is(html.lux-light-mode, body.lux-light-mode) .lux-droplist-panel .lux-picker-option.is-active {
-  background: radial-gradient(circle at top right, rgba(var(--lux-accent-rgb), 0.11), transparent 58%), rgba(255, 255, 255, 0.46);
-  box-shadow: var(--lux-droplist-option-active-shadow-light);
-}
-.lux-picker-panel.lux-universal-picker-panel.lux-droplist-panel::-webkit-scrollbar { width: 8px; }
-.lux-picker-panel.lux-universal-picker-panel.lux-droplist-panel::-webkit-scrollbar-thumb {
+:is(html.lux-light-mode, body.lux-light-mode) .lux-droplist-panel .lux-picker-option:hover::before {
   background: rgba(255, 255, 255, 0.14);
+  opacity: 1;
+}
+/* Themed scroll thumb on the option scrollport (not the frost shell) */
+.lux-picker-panel.lux-universal-picker-panel.lux-droplist-panel :is(
+  .lux-picker-panel-scrollport,
+  .lux-picker-options
+) {
+  scrollbar-width: thin;
+  scrollbar-color: var(--lux-scrollbar-thumb) var(--lux-scrollbar-track, transparent);
+}
+.lux-picker-panel.lux-universal-picker-panel.lux-droplist-panel :is(
+  .lux-picker-panel-scrollport,
+  .lux-picker-options
+)::-webkit-scrollbar {
+  width: var(--lux-scrollbar-size, 7px);
+  height: var(--lux-scrollbar-size, 7px);
+}
+.lux-picker-panel.lux-universal-picker-panel.lux-droplist-panel :is(
+  .lux-picker-panel-scrollport,
+  .lux-picker-options
+)::-webkit-scrollbar-track {
+  background:
+    radial-gradient(circle at 50% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.18)), transparent 70%),
+    var(--lux-scrollbar-track, transparent);
   border-radius: 999px;
 }
-:is(html.lux-light-mode, body.lux-light-mode) .lux-picker-panel.lux-universal-picker-panel.lux-droplist-panel::-webkit-scrollbar-thumb {
-  background: rgba(48, 34, 22, 0.18);
+.lux-picker-panel.lux-universal-picker-panel.lux-droplist-panel :is(
+  .lux-picker-panel-scrollport,
+  .lux-picker-options
+)::-webkit-scrollbar-thumb {
+  background:
+    linear-gradient(180deg,
+      rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.72)),
+      var(--lux-scrollbar-thumb)
+    );
+  border-radius: 999px;
+  border: 1px solid rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.28));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  background-clip: padding-box;
+}
+.lux-picker-panel.lux-universal-picker-panel.lux-droplist-panel :is(
+  .lux-picker-panel-scrollport,
+  .lux-picker-options
+)::-webkit-scrollbar-thumb:hover,
+.lux-picker-panel.lux-universal-picker-panel.lux-droplist-panel :is(
+  .lux-picker-panel-scrollport,
+  .lux-picker-options
+)::-webkit-scrollbar-thumb:active {
+  background: var(--lux-scrollbar-thumb-hover);
+  border-color: rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.48));
 }
 @media (prefers-reduced-motion: reduce) {
   .lux-picker-panel.lux-universal-picker-panel.lux-droplist-panel, .lux-droplist-panel .lux-picker-option { transition: none; }
+  .lux-picker-panel.lux-universal-picker-panel.lux-droplist-panel:not(.is-open):not(.is-closing),
+  .lux-picker-panel.lux-universal-picker-panel.lux-droplist-panel.is-closing:not(.is-open) {
+    filter: none;
+  }
 }
 body.lux-light-mode .lux-picker-panel, html.lux-light-mode body .lux-picker-panel {
   border-color: rgba(68, 49, 30, 0.12);

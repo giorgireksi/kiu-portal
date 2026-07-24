@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kiu-portal-shell-v20260721-nodebug1';
+const CACHE_NAME = 'kiu-portal-shell-v20260723-gpuperf4q';
 const CACHE_PREFIX = 'kiu-portal-shell-';
 const SHELL_ASSETS = [
   '/',
@@ -8,18 +8,20 @@ const SHELL_ASSETS = [
   '/exams.html',
   '/login.html',
   '/assets/css/lux-tokens.css?v=20260723-deadcode1',
-'/assets/css/lux-fouc-ht.css?v=20260723-shellfix1',
+'/assets/css/lux-fouc-ht.css?v=20260723-utility-bloom1',
+  '/assets/css/lux-controls.css?v=20260723-droplist-scrolltheme1',
   '/assets/css/mobile-shell-core.css?v=20260720-densify6500',
   '/assets/css/mobile-shell.css?v=20260720-densify6500',
-  '/assets/css/lux-shell.css?v=20260723-deskglass102',
+  '/assets/css/lux-shell.css?v=20260724-topbarpin1',
 '/assets/css/index-home-layout.css?v=20260723-deadcode1',
 '/assets/css/index-home-widgets.css?v=20260723-deadcode1',
-'/assets/css/index-home-role.css?v=20260723-deadcode1',
-  '/assets/js/theme-primer.js?v=20260722-glowdens1',
+'/assets/css/index-home-role.css?v=20260723-gpuperf4i',
+  '/assets/js/theme-primer.js?v=20260723-palette-persist1',
   '/assets/js/features/navigation.js?v=20260625-ssvc-workspace-nav2',
-  '/assets/js/features/luxury-index-runtime.js?v=20260714-homeglass2',
-  '/assets/js/features/index-luxury.js?v=20260722-glowdens1',
-  '/assets/js/features/luxury-background.js?v=20260717-lazythree1'
+  '/assets/js/features/luxury-index-runtime.js?v=20260723-gpuperf2b',
+  '/assets/js/features/luxury-shell-motion-runtime.js?v=20260723-gpuperf4q',
+  '/assets/js/features/index-luxury.js?v=20260723-perftier1',
+  '/assets/js/features/luxury-background.js?v=20260723-gpuperf4q'
 ];
 
 async function deleteLegacyPortalCaches() {

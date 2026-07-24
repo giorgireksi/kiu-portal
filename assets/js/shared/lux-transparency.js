@@ -321,11 +321,11 @@ function collectTransparencySurfaceElements(selectorList, rootsOverride) {
             }
             root.querySelectorAll(selector).forEach((el) => elements.add(el));
         });
-        return Array.from(elements);
+        return finalizeTransparencySurfaceElements(Array.from(elements));
     }
 
     if (!document.querySelector('.page-section')) {
-        return Array.from(document.querySelectorAll(selector));
+        return finalizeTransparencySurfaceElements(Array.from(document.querySelectorAll(selector)));
     }
 
     const roots = new Set();
@@ -350,7 +350,7 @@ function collectTransparencySurfaceElements(selectorList, rootsOverride) {
     });
 
     if (!roots.size) {
-        return Array.from(document.querySelectorAll(selector));
+        return finalizeTransparencySurfaceElements(Array.from(document.querySelectorAll(selector)));
     }
 
     const elements = new Set();
@@ -362,7 +362,51 @@ function collectTransparencySurfaceElements(selectorList, rootsOverride) {
         root.querySelectorAll(selector).forEach((el) => elements.add(el));
     });
 
-    return Array.from(elements);
+    return finalizeTransparencySurfaceElements(Array.from(elements));
+}
+
+function filterCssOwnedTransparencySurfaces(elements) {
+    if (!Array.isArray(elements) || !elements.length) return elements;
+    const keepHomeFade = typeof window.shouldKeepHomeFadeCssBackground === 'function'
+        ? window.shouldKeepHomeFadeCssBackground
+        : null;
+    return elements.filter((el) => {
+        if (!el) return false;
+        if (typeof shouldKeepRouteFadeCssBackground === 'function' && shouldKeepRouteFadeCssBackground(el)) {
+            return false;
+        }
+        if (keepHomeFade && keepHomeFade(el)) return false;
+        if (window.__luxCssNativeGlass !== false && el.classList?.contains('lux-modern-surface')) {
+            return false;
+        }
+        return true;
+    });
+}
+
+function finalizeTransparencySurfaceElements(elements) {
+    return filterCssOwnedTransparencySurfaces(elements);
+}
+
+function filterCssOwnedTransparencySurfaces(elements) {
+    if (!Array.isArray(elements) || !elements.length) return elements;
+    const keepHomeFade = typeof window.shouldKeepHomeFadeCssBackground === 'function'
+        ? window.shouldKeepHomeFadeCssBackground
+        : null;
+    return elements.filter((el) => {
+        if (!el) return false;
+        if (typeof shouldKeepRouteFadeCssBackground === 'function' && shouldKeepRouteFadeCssBackground(el)) {
+            return false;
+        }
+        if (keepHomeFade && keepHomeFade(el)) return false;
+        if (window.__luxCssNativeGlass !== false && el.classList?.contains('lux-modern-surface')) {
+            return false;
+        }
+        return true;
+    });
+}
+
+function finalizeTransparencySurfaceElements(elements) {
+    return filterCssOwnedTransparencySurfaces(elements);
 }
 
 function getCachedTransparencySurfaceElements(selectorList, rootsOverride) {
@@ -512,19 +556,25 @@ function mapLuxuryTransparencyFillRatio(value) {
 
 function resolveGlassBlurQualityKey() {
     const fromBody = String(document.body?.dataset?.luxGlassBlurQuality || '').trim().toLowerCase();
-    if (fromBody === 'high' || fromBody === 'balanced' || fromBody === 'performance') return fromBody;
+    if (fromBody === 'auto' || fromBody === 'high' || fromBody === 'balanced' || fromBody === 'performance') return fromBody;
     if (typeof window.getGlassBlurQuality === 'function') {
         const fromApi = String(window.getGlassBlurQuality() || '').trim().toLowerCase();
-        if (fromApi === 'high' || fromApi === 'balanced' || fromApi === 'performance') return fromApi;
+        if (fromApi === 'auto' || fromApi === 'high' || fromApi === 'balanced' || fromApi === 'performance') return fromApi;
     }
     try {
         const stored = String(localStorage.getItem('kiuLuxuryGlassBlurQuality') || '').trim().toLowerCase();
-        if (stored === 'high' || stored === 'balanced' || stored === 'performance') return stored;
+        if (stored === 'auto' || stored === 'high' || stored === 'balanced' || stored === 'performance') return stored;
     } catch (_error) { /* ignore */ }
-    return 'high';
+    return 'auto';
 }
 
 function resolveGlassBlurQualityMultiplier(qualityKey = resolveGlassBlurQualityKey()) {
+    if (qualityKey === 'auto') {
+        const tier = window.getLuxuryBackgroundRenderProfile?.().tier || 'standard';
+        if (tier === 'efficient') return 0.25;
+        if (tier === 'high') return 1;
+        return 0.5;
+    }
     if (qualityKey === 'balanced') return 0.5;
     if (qualityKey === 'performance') return 0.25;
     return 1;
@@ -575,10 +625,54 @@ function buildLuxuryTransparencyModel(value, lightMode = false) {
     };
 }
 
+function applyLiveTransparencyTokens(transparencyModel, fillRatio, percentage) {
+    const glowPercent = typeof window.getGlowStrength === 'function'
+        ? window.getGlowStrength()
+        : (typeof getGlowStrength === 'function' ? getGlowStrength() : 50);
+    const glowConfig = typeof window.resolveGlowTokenConfig === 'function'
+        ? window.resolveGlowTokenConfig(glowPercent)
+        : (typeof resolveGlowTokenConfig === 'function' ? resolveGlowTokenConfig(glowPercent) : null);
+    if (typeof window.__kiuApplyTransparencyTokenState === 'function') {
+        window.__kiuApplyTransparencyTokenState({
+            panelAlpha: transparencyModel.panelAlpha.toFixed(3),
+            fillRatio: transparencyModel.fillRatio.toFixed(3),
+            colorFadeRatio: transparencyModel.colorFadeRatio.toFixed(3),
+            raisedAlpha: transparencyModel.raisedAlpha.toFixed(3),
+            glassAlpha: transparencyModel.glassAlpha.toFixed(3),
+            panelFillAlpha: transparencyModel.panelFillAlpha.toFixed(3),
+            raisedFillAlpha: transparencyModel.raisedFillAlpha.toFixed(3),
+            utilityFillAlpha: transparencyModel.utilityFillAlpha.toFixed(3),
+            utilityAlpha: transparencyModel.utilityAlpha.toFixed(3),
+            topbarFillAlpha: transparencyModel.topbarFillAlpha.toFixed(3),
+            topbarRaisedAlpha: transparencyModel.topbarRaisedAlpha.toFixed(3),
+            glassHighlightAlpha: transparencyModel.glassHighlightAlpha.toFixed(3)
+        }, glowConfig ? {
+            panelGlow: glowConfig.panelGlow,
+            glowScale: glowConfig.glowScale,
+            cardGlowAlpha: glowConfig.cardGlowAlpha
+        } : {});
+    }
+    const glassBlurQuality = resolveGlassBlurQualityKey();
+    const glassBlurMult = resolveGlassBlurQualityMultiplier(glassBlurQuality);
+    const blurAmount = (2 + fillRatio * 22) * glassBlurMult;
+    const saturateAmount = 100 + (fillRatio * 45);
+    const blurPx = `${blurAmount}px`;
+    [document.documentElement, document.body].filter(Boolean).forEach((target) => {
+        target.style.setProperty('--lux-transparency-blur', blurPx);
+        target.style.setProperty('--lux-glass-blur', blurPx);
+        target.style.setProperty('--lux-glass-blur-quality-mult', String(glassBlurMult));
+        target.style.setProperty('--lux-transparency-saturate', `${saturateAmount}%`);
+        target.style.setProperty('--lux-transparency-percentage', `${percentage}%`);
+    });
+}
+
 function updateTransparency(value, options = {}) {
     const scopedRoots = normalizeTransparencyRoots(options?.roots);
     const percentage = clampLuxuryTransparencyPercentage(value);
     const forceRefresh = options?.force === true;
+    const live = options?.live === true;
+    // Live drag never persists — commit happens on slider `change`.
+    const shouldPersist = !live && options?.persist !== false;
 
     // Update display
     const display = document.getElementById('transparency-display') || document.getElementById('lux-transparency-value');
@@ -586,35 +680,49 @@ function updateTransparency(value, options = {}) {
         display.textContent = `${percentage}%`;
     }
 
-    // Update slider if exists
-    const slider = document.getElementById('transparency-slider') || document.getElementById('lux-transparency-slider');
-    if (slider) {
-        slider.value = percentage;
+    // Avoid writing the slider during live input (it already owns the value).
+    if (!live) {
+        const slider = document.getElementById('transparency-slider') || document.getElementById('lux-transparency-slider');
+        if (slider) {
+            slider.value = percentage;
+        }
     }
 
     const isLightTheme = document.documentElement.dataset.luxThemeMode === 'light';
     const fillRatio = mapLuxuryTransparencyFillRatio(percentage);
     const transparencyModel = buildLuxuryTransparencyModel(percentage, isLightTheme);
 
-    if (options?.persist !== false && typeof window.setDashboardVisuals === 'function') {
+    if (shouldPersist && typeof window.setDashboardVisuals === 'function') {
         try {
             window.setDashboardVisuals({ surfaceTransparency: String(percentage) });
         } catch (error) {}
     }
 
-
-    if (typeof window.__kiuApplyTransparencyPreferenceState === 'function') {
-        window.__kiuApplyTransparencyPreferenceState(percentage, transparencyModel.transparencyRatio);
-    } else {
-        // Store in localStorage
-        localStorage.setItem('kiuLuxurySurfaceTransparency', percentage.toString());
-        localStorage.setItem('kiuLuxurySurfaceTransparencyValue', transparencyModel.transparencyRatio.toFixed(2));
-
-        // Sync CSS data attribute for CSS-only high-opacity overrides
+    if (shouldPersist) {
+        if (typeof window.__kiuApplyTransparencyPreferenceState === 'function') {
+            window.__kiuApplyTransparencyPreferenceState(percentage, transparencyModel.transparencyRatio);
+        } else {
+            localStorage.setItem('kiuLuxurySurfaceTransparency', percentage.toString());
+            localStorage.setItem('kiuLuxurySurfaceTransparencyValue', transparencyModel.transparencyRatio.toFixed(2));
+            document.documentElement.dataset.luxTransparency = percentage.toString();
+        }
+    } else if (!live) {
         document.documentElement.dataset.luxTransparency = percentage.toString();
     }
 
     document.documentElement.classList.toggle('lux-fully-opaque', percentage >= 99);
+
+    // Live drag: root CSS tokens (+ primer if high-transparency threshold flips). No surface walk.
+    if (live) {
+        window.__currentTransparency = percentage;
+        const wasHigh = document.documentElement.classList.contains('lux-high-transparency');
+        if (transparencyModel.highTransparency !== wasHigh) {
+            // Rare threshold cross — apply primer below, then return before the surface walk.
+        } else {
+            applyLiveTransparencyTokens(transparencyModel, fillRatio, percentage);
+            return;
+        }
+    }
 
     // CSS-ONLY FIX: Toggle lux-high-transparency class and injected primer CSS.
     // At >= 80%, CSS rules suppress accent radial gradients on ALL surfaces.
@@ -637,16 +745,12 @@ function updateTransparency(value, options = {}) {
         } else if (_animationsOff && _staticFill === 'colored' && !_isLight) {
             _bodyBg = 'var(--lux-shell-background)';
         }
-        var _sidebarBg = _isLight
-            ? 'linear-gradient(180deg,rgba(248,244,237,' + _pa + '),rgba(242,237,228,' + _pa + '))'
-            : 'linear-gradient(180deg,rgba(10,14,22,' + _pa + '),rgba(6,9,15,' + _pa + '))';
 
         var highTransparencyCss =
             'html.lux-high-transparency.lux-high-transparency.lux-high-transparency{--lux-hero-glow:0!important}' +
             buildHighTransparencySurfaceCss(_bodySelector, _bg) +
             buildStudentsAdminHighTransparencyCss(_bodySelector, _isLight, _panelA) +
-            buildHighTransparencyTextResetCss(_bodySelector) +
-            'html.lux-high-transparency.lux-high-transparency.lux-high-transparency ' + _bodySelector + ' .lux-sidebar{background:' + _sidebarBg + '!important}';
+            buildHighTransparencyTextResetCss(_bodySelector);
         // Dark/white static fills still need a flat ::before; colored keeps CSS glow radials.
         if (_animationsOff && (_staticFill === 'dark' || _staticFill === 'white')) {
             highTransparencyCss +=
@@ -677,6 +781,12 @@ function updateTransparency(value, options = {}) {
                 primerStyle.media = 'all';
             }
         }
+    }
+
+    // After a live threshold flip, tokens are enough — commit path still restamps surfaces.
+    if (live) {
+        applyLiveTransparencyTokens(transparencyModel, fillRatio, percentage);
+        return;
     }
 
 // --- READABILITY: Tokens ---
@@ -730,6 +840,12 @@ function updateTransparency(value, options = {}) {
         root.style.setProperty('--lux-panel-glow', glowConfig.panelGlow);
         root.style.setProperty('--lux-glow-scale', glowConfig.glowScale);
         root.style.setProperty('--lux-card-glow-alpha', glowConfig.cardGlowAlpha);
+    }
+
+    if (options?.tokensOnly === true) {
+        applyLiveTransparencyTokens(transparencyModel, fillRatio, percentage);
+        window.__currentTransparency = percentage;
+        return;
     }
 
 
@@ -1313,15 +1429,31 @@ function updateTransparency(value, options = {}) {
       document.body.dataset.luxGlassBlurQuality = glassBlurQuality;
     }
     document.documentElement.style.setProperty('--lux-transparency-percentage', `${percentage}%`);
-    const rootComputedStyle = window.getComputedStyle(document.documentElement);
+    const docStyle = document.documentElement.style;
     const transparencySignature = [
         percentage,
         glassBlurQuality,
         document.body.classList.contains('lux-light-mode') ? 'light' : 'dark',
-        rootComputedStyle.getPropertyValue('--lux-glass-tint-rgb').trim(),
-        rootComputedStyle.getPropertyValue('--lux-accent-rgb').trim(),
-        rootComputedStyle.getPropertyValue('--lux-topbar-tint-rgb').trim()
+        docStyle.getPropertyValue('--lux-glass-tint-rgb').trim()
+            || document.documentElement.dataset.luxGlassTintRgb
+            || '',
+        docStyle.getPropertyValue('--lux-accent-rgb').trim()
+            || document.documentElement.dataset.luxAccentRgb
+            || '',
+        docStyle.getPropertyValue('--lux-topbar-tint-rgb').trim()
+            || document.documentElement.dataset.luxTopbarTintRgb
+            || ''
     ].join('|');
+
+    if (
+        !forceRefresh
+        && !scopedRoots.length
+        && window.__luxLastAppliedTransparencySignature === transparencySignature
+    ) {
+        window.__currentTransparency = percentage;
+        return;
+    }
+    window.__luxLastAppliedTransparencySignature = transparencySignature;
 
     // COMPREHENSIVE: Get ALL elements that could be widgets/panels/cards
     // Use multiple selector strategies to catch everything
@@ -1482,8 +1614,8 @@ function updateTransparency(value, options = {}) {
         ) {
             return;
         }
-        // Skip if element is hidden
-        if (el.offsetParent === null && el.style.display === 'none') return;
+        // Skip if element is hidden (no layout-forcing offsetParent probe)
+        if (!el.isConnected || el.hidden || el.getAttribute('aria-hidden') === 'true' || el.style.display === 'none') return;
         // Studio owns fixed 50% glass in lux-studio.css — never engine-paint.
         if (
             el.id === 'lux-studio-backdrop' ||
@@ -1597,8 +1729,8 @@ function updateTransparency(value, options = {}) {
                 el.dataset.luxTransparencySignature = transparencySignature;
                 return;
             }
-            // Bare pages: never invent glass; strip any inline paint
-            if (document.body?.classList?.contains('lux-page-bare')) {
+            // Shell sidebar: CSS owns glass material + transparency tokens
+            if (el.id === 'lux-shell') {
                 stripInlineGlassPaint(el, transparencySignature);
                 return;
             }
@@ -1613,10 +1745,8 @@ function updateTransparency(value, options = {}) {
                         el.classList.contains('lux-picker-btn') ||
                         el.classList.contains('lux-icon-btn') ||
                         el.classList.contains('lux-user-chip') ||
-                        el.classList.contains('lux-search') ||
                         el.classList.contains('lux-sidebar-toggle-btn') ||
-                        el.classList.contains('lux-topbar-editor-btn') ||
-                        (el.tagName === 'INPUT' && Boolean(el.closest?.('.lux-search')))
+                        el.classList.contains('lux-topbar-editor-btn')
                     )
                 )
             );
@@ -1652,7 +1782,7 @@ function updateTransparency(value, options = {}) {
             // Smart glass effect: preserve existing backgrounds.
             // Only probe getComputedStyle when complex vs simple changes dyn-bg
             // (registration/scheduler/LMS glass that are not already dynamic).
-            const needsComplexProbe = (
+            const needsComplexProbe = !shouldKeepRouteFadeCssBackground(el) && (
                 registrationGlassClasses.some((className) => el.classList.contains(className))
                 || (
                     document.body.classList.contains('lux-route-admin-scheduler')
@@ -1667,13 +1797,7 @@ function updateTransparency(value, options = {}) {
             );
             let hasComplexBackground = false;
             if (needsComplexProbe && !shouldApplyDynamicBackground(el)) {
-                const existingBackground = window.getComputedStyle(el).backgroundImage || '';
-                hasComplexBackground = Boolean(
-                    existingBackground
-                    && (existingBackground.includes('gradient')
-                        || existingBackground.includes('radial')
-                        || existingBackground.includes('linear'))
-                );
+                hasComplexBackground = true;
             }
 
             const isSocialRouteSurface = document.body.classList.contains('lux-route-social');
@@ -1689,13 +1813,17 @@ function updateTransparency(value, options = {}) {
             // looks heavier/different. Suppressing it makes them match
             // registration: one clean frost, panels just tint the pre-blurred
             // backdrop. Scoped to these routes so other pages are untouched.
-            const isWrapperFrostRoute = document.body.classList.contains('lux-route-timetable')
-                || document.body.classList.contains('lux-route-lms');
-            const isWrapperInnerPanel = isWrapperFrostRoute && Boolean(el.closest?.('.lux-page-shell')) && !el.classList.contains('lux-page-shell');
+            const isWrapperInnerPanel = document.body.classList.contains('lux-page-bare')
+                && Boolean(el.closest?.('.lux-page-shell'))
+                && !el.classList.contains('lux-page-shell');
+            const isHomeLegacyGridInnerPanel = document.body.classList.contains('lux-route-home')
+                && Boolean(el.parentElement?.classList?.contains('lux-home-grid'))
+                && (el.classList.contains('lux-panel') || el.classList.contains('lux-card') || el.classList.contains('lux-hero'));
             const isHomeWidgetInnerPanel = document.body.classList.contains('lux-route-home')
                 && Boolean(el.closest?.('.lux-grid-widget-body'))
                 && !el.classList.contains('lux-grid-widget-body');
-            const suppressBlur = isWrapperInnerPanel || isHomeWidgetInnerPanel || (isSocialRouteSurface &&
+            const isOffscreenObserved = el.dataset.luxObservedSurface === '1' && el.dataset.luxOffscreen === '1';
+            const suppressBlur = isWrapperInnerPanel || isHomeLegacyGridInnerPanel || isHomeWidgetInnerPanel || isOffscreenObserved || (isSocialRouteSurface &&
                 shouldApplyDynamicBackground(el) &&
                 !isSocialPaintSurface(el) &&
                 !isSocialBlurHost(el));
@@ -1798,7 +1926,11 @@ function setupTransparencyObserver() {
 
         // Re-apply transparency if new elements were added, but debounce the full pass.
         if (needsUpdate && transparency > 0) {
-            resetTransparencySurfaceCache();
+            const rootSig = buildTransparencyRootSignature();
+            if (rootSig !== window.__luxTransparencyObserverRootSignature) {
+                resetTransparencySurfaceCache();
+                window.__luxTransparencyObserverRootSignature = rootSig;
+            }
             window.clearTimeout(window.__transparencyRefreshTimer);
             var _debounceMs = window.__luxIsAnimating ? 420 : 220;
             window.__transparencyRefreshTimer = window.setTimeout(() => {
@@ -1858,11 +1990,47 @@ function refreshLuxuryTransparencySurfaces(value, options = {}) {
             delete el.dataset.luxTransparencySignature;
         });
     }
-    updateTransparency(percentage, { force, persist: false, roots: scopedRoots });
+    updateTransparency(percentage, {
+        force,
+        persist: false,
+        roots: scopedRoots,
+        tokensOnly: options?.tokensOnly === true
+    });
+}
+
+function flushDeferredLuxTransparencyRefresh() {
+    const pending = window.__luxDeferredTransparencyRefresh;
+    if (!pending) return;
+    window.__luxDeferredTransparencyRefresh = null;
+    queueLuxuryTransparencyRefresh(pending.value, pending.options);
 }
 
 function queueLuxuryTransparencyRefresh(value, options = {}) {
-    const run = () => refreshLuxuryTransparencySurfaces(value, options);
+    if (window.__kiuSuppressLuxTransparencyRefresh) return;
+    if (
+        typeof window.shouldDeferLuxTransparency === 'function'
+        && window.shouldDeferLuxTransparency()
+        && options?.force !== true
+        && options?.tokensOnly !== true
+    ) {
+        window.__luxDeferredTransparencyRefresh = { value, options };
+        return;
+    }
+    // Mid-scroll restamps fight compositor; force:true (palette commit) still runs.
+    if (window.__luxIsScrolling && options?.force !== true) {
+        window.__luxPendingScrollTransparencyValue = value;
+        window.__luxPendingScrollTransparencyFlush = true;
+        return;
+    }
+    const run = () => {
+        if (window.__kiuSuppressLuxTransparencyRefresh) return;
+        if (window.__luxIsScrolling && options?.force !== true) {
+            window.__luxPendingScrollTransparencyValue = value;
+            window.__luxPendingScrollTransparencyFlush = true;
+            return;
+        }
+        refreshLuxuryTransparencySurfaces(value, options);
+    };
     if (typeof window.__kiuQueueLuxuryRefreshOperation === 'function') {
         window.__kiuQueueLuxuryRefreshOperation(run);
         return;
@@ -1876,6 +2044,20 @@ function queueLuxuryTransparencyRefresh(value, options = {}) {
             run();
         }
     }, 0);
+}
+
+/** Flush deferred mid-scroll transparency once scrolling stops (called from scroll idle). */
+function flushLuxuryTransparencyAfterScroll() {
+    if (window.__luxIsScrolling) return;
+    if (!window.__luxPendingScrollTransparencyFlush) return;
+    window.__luxPendingScrollTransparencyFlush = false;
+    const pendingRoots = window.__luxPendingScrollTransparencyRoots;
+    window.__luxPendingScrollTransparencyRoots = null;
+    const value = window.__luxPendingScrollTransparencyValue ?? window.__currentTransparency ?? 13;
+    const options = pendingRoots?.length
+        ? { roots: pendingRoots, force: false, persist: false }
+        : { force: false, persist: false };
+    queueLuxuryTransparencyRefresh(value, options);
 }
 
 function scheduleLuxuryTransparencyBootRefresh(value) {
@@ -1898,9 +2080,40 @@ function scheduleLuxuryTransparencyBootRefresh(value) {
     }, 240);
 }
 
+function syncLuxuryOffscreenBackdrop(el) {
+    if (!el?.dataset || el.dataset.luxObservedSurface !== '1') return;
+    if (el.dataset.luxOffscreen === '1') {
+        // CSS [data-lux-offscreen="1"] already kills blur; keep inline none for stamped surfaces.
+        el.style.setProperty('backdrop-filter', 'none', 'important');
+        el.style.setProperty('-webkit-backdrop-filter', 'none', 'important');
+        return;
+    }
+    // Mid-scroll: only flip offscreen flag (caller); defer restamp until scroll idle.
+    if (window.__luxIsScrolling) {
+        window.__luxPendingScrollTransparencyFlush = true;
+        if (!window.__luxPendingScrollTransparencyRoots) {
+            window.__luxPendingScrollTransparencyRoots = [];
+        }
+        if (!window.__luxPendingScrollTransparencyRoots.includes(el)) {
+            window.__luxPendingScrollTransparencyRoots.push(el);
+        }
+        return;
+    }
+    delete el.dataset.luxTransparencySignature;
+    queueLuxuryTransparencyRefresh(window.__currentTransparency ?? 13, { roots: [el], force: false });
+}
+
+if (typeof window.onLuxGovernorStateChange === 'function') {
+    window.onLuxGovernorStateChange((busy) => {
+        if (!busy) flushDeferredLuxTransparencyRefresh();
+    });
+}
+
 window.updateTransparency = updateTransparency;
 window.refreshLuxuryTransparencySurfaces = refreshLuxuryTransparencySurfaces;
 window.queueLuxuryTransparencyRefresh = queueLuxuryTransparencyRefresh;
+window.flushLuxuryTransparencyAfterScroll = flushLuxuryTransparencyAfterScroll;
+window.syncLuxuryOffscreenBackdrop = syncLuxuryOffscreenBackdrop;
 window.scheduleLuxuryTransparencyBootRefresh = scheduleLuxuryTransparencyBootRefresh;
 window.buildLuxuryTransparencyModel = buildLuxuryTransparencyModel;
 window.mapLuxuryTransparencyFillRatio = mapLuxuryTransparencyFillRatio;

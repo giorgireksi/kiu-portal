@@ -2,9 +2,9 @@
 export const LUX_DROPLIST_CONTRACT = {
     shellRadius: '28px',
     optionHeight: '44px',
-    animDuration: '200ms',
-    slideOffset: '8px',
-    scaleClosed: '0.97',
+    animDuration: '300ms',
+    slideOffset: '14px',
+    scaleClosed: '0.88',
 };
 
 export const LUX_DROPLIST_TOKEN_NAMES = {
@@ -15,4 +15,5 @@ export const LUX_DROPLIST_TOKEN_NAMES = {
     scaleClosed: '--lux-droplist-scale-closed',
 };
 
-export const LUX_DROPLIST_CACHE_BUST = '20260713-accentborder2';
+export const LUX_DROPLIST_CACHE_BUST = '20260723-utility-bloom1';
+export const LUX_DROPLIST_CSS_CACHE_BUST = '20260723-droplist-scrolltheme1';

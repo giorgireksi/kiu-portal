@@ -12,7 +12,8 @@
     var PORTAL_CACHE_RESET_KEY = 'KIU_PORTAL_CACHE_RESET_VERSION';
     var PORTAL_CACHE_RESET_VERSION = '20260609-bootguard1';
     var LUXURY_VISUAL_DEFAULTS_VERSION_KEY = 'KIU_LUXURY_VISUAL_DEFAULTS_VERSION';
-    var LUXURY_VISUAL_DEFAULTS_VERSION = '20260605-oceanteal-defaults1';
+    // Keep in sync with FORCED_LUXURY_VISUAL_DEFAULTS_VERSION in index-luxury.js.
+    var LUXURY_VISUAL_DEFAULTS_VERSION = '20260723-adaptive-render-defaults1';
     var DEFAULT_LUXURY_THEME_MODE = 'dark';
     var DEFAULT_LUXURY_SURFACE_TRANSPARENCY = '13';
     var DEFAULT_LUXURY_PALETTE = 'ocean-teal';
@@ -495,8 +496,8 @@
 
     function shouldSkipFlatSurfaceOverrides() {
         if (!document.body) return false;
-        // Bare pages want flat surfaces (hard-clean); do not treat as glass hosts.
-        if (document.body.classList.contains('lux-page-bare')) return false;
+        // Full-paint portals (incl. bare) use shared glass — skip flat wash.
+        if (document.body.classList.contains('lux-full-paint')) return true;
         return document.body.classList.contains('lux-route-timetable')
             || document.body.classList.contains('lux-route-registration')
             || document.body.classList.contains('lux-route-lms')
@@ -555,17 +556,17 @@
         backgroundAnimationsEnabled = scopedVisuals.backgroundAnimationsEnabled;
     }
     var staticBackgroundFill = 'colored';
-    if (hasCurrentVisualDefaults) {
-        try {
-            var savedStaticBackgroundFill = String(localStorage.getItem('kiuLuxuryStaticBackgroundFill') || '').trim().toLowerCase();
-            if (savedStaticBackgroundFill) {
-                staticBackgroundFill = savedStaticBackgroundFill;
-            } else if (scopedVisuals && scopedVisuals.staticBackgroundFill) {
-                staticBackgroundFill = String(scopedVisuals.staticBackgroundFill).trim().toLowerCase();
-            }
-        } catch (e) {}
-    } else if (scopedVisuals && scopedVisuals.staticBackgroundFill) {
-        staticBackgroundFill = String(scopedVisuals.staticBackgroundFill).trim().toLowerCase();
+    try {
+        var savedStaticBackgroundFill = String(localStorage.getItem('kiuLuxuryStaticBackgroundFill') || '').trim().toLowerCase();
+        if (savedStaticBackgroundFill) {
+            staticBackgroundFill = savedStaticBackgroundFill;
+        } else if (scopedVisuals && scopedVisuals.staticBackgroundFill) {
+            staticBackgroundFill = String(scopedVisuals.staticBackgroundFill).trim().toLowerCase();
+        }
+    } catch (e) {
+        if (scopedVisuals && scopedVisuals.staticBackgroundFill) {
+            staticBackgroundFill = String(scopedVisuals.staticBackgroundFill).trim().toLowerCase();
+        }
     }
     if (staticBackgroundFill !== 'dark' && staticBackgroundFill !== 'white' && staticBackgroundFill !== 'gallery') {
         staticBackgroundFill = 'colored';
@@ -589,19 +590,30 @@
             ? Math.max(0.40, Math.min(1, fillRatio * 0.92))
             : Math.max(0.01, Math.min(1, fillRatio * 0.92));
         root.style.setProperty('--lux-color-fade-alpha', colorFadeAlpha.toFixed(3));
-        var glassBlurQuality = 'high';
+        var glassBlurQuality = 'auto';
         try {
             var savedGlassBlur = String(localStorage.getItem('kiuLuxuryGlassBlurQuality') || '').trim().toLowerCase();
-            if (savedGlassBlur === 'high' || savedGlassBlur === 'balanced' || savedGlassBlur === 'performance') {
+            if (savedGlassBlur === 'auto' || savedGlassBlur === 'high' || savedGlassBlur === 'balanced' || savedGlassBlur === 'performance') {
                 glassBlurQuality = savedGlassBlur;
             } else if (scopedVisuals && scopedVisuals.glassBlurQuality) {
                 var scopedBlur = String(scopedVisuals.glassBlurQuality || '').trim().toLowerCase();
-                if (scopedBlur === 'high' || scopedBlur === 'balanced' || scopedBlur === 'performance') {
+                if (scopedBlur === 'auto' || scopedBlur === 'high' || scopedBlur === 'balanced' || scopedBlur === 'performance') {
                     glassBlurQuality = scopedBlur;
                 }
             }
         } catch (e) {}
-        var blurMult = glassBlurQuality === 'balanced' ? 0.5 : glassBlurQuality === 'performance' ? 0.25 : 1;
+        var adaptiveTier = 'standard';
+        if (glassBlurQuality === 'auto') {
+            var adaptiveMemory = Number(navigator.deviceMemory || 0);
+            var adaptiveCores = Number(navigator.hardwareConcurrency || 0);
+            var adaptiveCoarsePointer = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+            var adaptiveViewport = window.innerWidth || root.clientWidth || 0;
+            if ((adaptiveMemory && adaptiveMemory <= 2) || (adaptiveCores && adaptiveCores <= 2) || (adaptiveCoarsePointer && adaptiveViewport < 720)) adaptiveTier = 'efficient';
+            else if (adaptiveMemory >= 8 && adaptiveCores >= 8 && !adaptiveCoarsePointer && adaptiveViewport >= 1280) adaptiveTier = 'high';
+        }
+        var blurMult = glassBlurQuality === 'auto'
+            ? (adaptiveTier === 'efficient' ? 0.25 : adaptiveTier === 'high' ? 1 : 0.5)
+            : glassBlurQuality === 'balanced' ? 0.5 : glassBlurQuality === 'performance' ? 0.25 : 1;
         var blurAmount = transInt === 0 ? 0 : (2 + fillRatio * 22) * blurMult;
         var saturateAmount = transInt === 0 ? 100 : 100 + (fillRatio * 45);
         var blurPx = blurAmount.toFixed(3) + 'px';
@@ -643,9 +655,6 @@
             } else if (!backgroundAnimationsEnabled && staticBackgroundFill === 'colored' && !_isLight) {
                 _bodyBg = 'var(--lux-shell-background)';
             }
-            var _sidebarBg = _isLight
-                ? 'linear-gradient(180deg,rgba(248,244,237,' + _pa + '),rgba(242,237,228,' + _pa + '))'
-                : 'linear-gradient(180deg,rgba(10,14,22,' + _pa + '),rgba(6,9,15,' + _pa + '))';
             var _bodySelector = _isLight
                 ? 'body.lux-light-mode:not(.lux-route-social)'
                 : 'body:not(.lux-light-mode):not(.lux-route-social)';
@@ -655,9 +664,7 @@
                     '--lux-hero-glow:0!important;' +
                 '}' +
                 getHighTransparencySurfaceCss(_bodySelector, _bg) +
-                getHighTransparencyTextResetCss(_bodySelector) +
-                'html.lux-high-transparency.lux-high-transparency.lux-high-transparency ' + _bodySelector + ' .lux-sidebar' +
-                '{background:' + _sidebarBg + '!important}';
+                getHighTransparencyTextResetCss(_bodySelector);
             if (!backgroundAnimationsEnabled && (staticBackgroundFill === 'dark' || staticBackgroundFill === 'white')) {
                 css += 'html.lux-high-transparency.lux-high-transparency.lux-high-transparency ' + _bodySelector + '::before' +
                     '{background:' + _bodyBg + '!important}';
@@ -685,11 +692,11 @@
         root.classList.add('lux-sidebar-collapsed');
     }
 
-    // 3. Palette — read saved palette key
+    // 3. Palette — always prefer localStorage (survives version bumps); fall back to scoped prefs.
     var savedPalette = '';
-    if (hasCurrentVisualDefaults) {
-        try { savedPalette = localStorage.getItem('kiuLuxuryPalette') || localStorage.getItem('kiu-palette') || ''; } catch (e) {}
-    }
+    try {
+        savedPalette = localStorage.getItem('kiuLuxuryPalette') || localStorage.getItem('kiu-palette') || '';
+    } catch (e) {}
     if (!savedPalette) {
         savedPalette = String(scopedVisuals.paletteKey || '').trim();
     }

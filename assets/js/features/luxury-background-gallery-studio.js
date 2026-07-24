@@ -652,8 +652,8 @@
         if (title) title.textContent = normalized === 'videos' ? 'Video Backgrounds' : 'Image Backgrounds';
         if (sub) {
             sub.textContent = normalized === 'videos'
-                ? 'Select up to 20 videos, 100 MB each. Fullscreen cover on all devices.'
-                : 'Images auto-optimized for your screen. Fullscreen cover on all devices.';
+                ? 'Select up to 20 videos, 100 MB each. Scaled to fill the screen on all devices (full image, may stretch).'
+                : 'Images auto-optimized for your screen. Scaled to fill the screen on all devices (full image, may stretch).';
         }
         if (fileInput) {
             fileInput.accept = normalized === 'videos' ? 'video/mp4,video/webm' : 'image/*';

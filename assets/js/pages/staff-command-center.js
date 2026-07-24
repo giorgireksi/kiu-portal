@@ -488,7 +488,7 @@
                 ${infoCard('Completion', `${completion.percent}%`)}
                 ${infoCard('Internal notes', record.notes || 'No admin notes.', true)}
             </div>
-            <section class="staff-hub-info-card is-full lux-data-card">
+            <section class="lux-panel staff-hub-info-card is-full lux-data-card">
                 <span>Admin actions</span>
                 <div class="staff-hub-inline-actions staff-hub-inline-actions--spaced">
                     <button class="lux-secondary-btn" type="button" data-staff-action="invite" data-staff-id="${escapeHtml(record.id)}" ${canManage ? '' : 'disabled'}><i class="fas fa-paper-plane"></i> Send invitation</button>
@@ -534,7 +534,7 @@
                     ${tabs.map(([key, label]) => `<button class="staff-hub-tab lux-tab-btn staff-hub-profile-tab${activeTab === key ? ' is-active' : ''}" type="button" aria-pressed="${activeTab === key ? 'true' : 'false'}" data-staff-action="tab" data-staff-tab="${escapeHtml(key)}">${escapeHtml(label)}</button>`).join('')}
                 </div>` : '';
         return `
-            <section class="staff-hub-profile">
+            <section class="lux-soft-chrome lux-panel staff-hub-profile">
                 <div class="staff-hub-toolbar">
                     <button class="lux-secondary-btn" type="button" data-staff-action="back"><i class="fas fa-arrow-left"></i> Back to staff directory</button>
                     <div class="staff-hub-toolbar-actions">
@@ -643,14 +643,14 @@
         `;
 
         return `
-            <div class="staff-hub-shell">
+            <div class="lux-soft-chrome lux-panel staff-hub-shell">
 
 
-                <section class="staff-hub-controls staff-admin-controls staff-hub-controls--adaptive">
+                <section class="lux-soft-chrome staff-hub-controls staff-admin-controls staff-hub-controls--adaptive">
                     ${directoryControlsMarkup}
                 </section>
 
-                <section class="staff-hub-directory-panel">
+                <section class="lux-soft-chrome lux-panel staff-hub-directory-panel">
                     <div class="staff-hub-directory-head">
                         <div>
                             <div class="staff-hub-overline">Staff directory</div>

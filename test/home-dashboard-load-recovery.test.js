@@ -49,6 +49,15 @@ describe('home dashboard load recovery', () => {
         expect(homeRuntime).toContain('renderHomeShellRecoveryPanel(homeShell');
     });
 
+    it('uses stable home data fingerprint in shell render signature', () => {
+        const homeRuntime = readSource('assets/js/features/luxury-index-runtime.js');
+        const homeModel = readSource('assets/js/features/luxury-home-model.js');
+
+        expect(homeModel).toContain('function buildHomeDataFingerprint(');
+        expect(homeRuntime).toContain('window.buildHomeDataFingerprint');
+        expect(homeRuntime).not.toContain('localStorage.getItem(`kiuLuxuryHomeLayout:${scope}`)');
+    });
+
     it('coalesces navigate sync to the latest page id', () => {
         const luxury = readSource('assets/js/features/index-luxury.js');
 

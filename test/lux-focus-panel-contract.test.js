@@ -20,8 +20,7 @@ describe('lux-focus-panel portal contract', () => {
         expect(tokens).toContain('--lux-soft-chrome-border');
         expect(tokens).toContain('--lux-soft-chrome-shadow');
         expect(tokens).toContain('--lux-focus-fill');
-        expect(tokens).toContain('body.lux-route-home');
-        expect(tokens).toContain('body.lux-route-timetable');
+        expect(tokens).toContain('body.lux-full-paint');
     });
 
     it('owns focus structure + nested-blur lock once', () => {

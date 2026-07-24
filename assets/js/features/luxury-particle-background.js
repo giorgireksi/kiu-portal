@@ -1,4 +1,10 @@
 import * as THREE from "../../vendor/three/three.module.js";
+import {
+  getPacingMultiplier,
+  onGovernorStateChange,
+  readGovernedFrameIntervalMs,
+  shouldSkipCanvasFrame,
+} from "../shared/lux-render-governor.js";
 
 const PARTICLE_QUALITY_KEYS = ["low", "balanced", "high", "auto"];
 const DEFAULT_PARTICLE_MOTION = 100;
@@ -21,6 +27,7 @@ let targetDensity = 0.82;
 let lastRenderTime = 0;
 let isPageVisible = true;
 let resizeTimer = 0;
+let particleLoopTimer = 0;
 let activeQualityName = "balanced";
 let activeQuality = null;
 let activeVariantName = "peak";
@@ -28,6 +35,17 @@ let usingSmallGeometry = false;
 let staticBackgroundOnly = false;
 let engineReady = false;
 let themeSignature = "";
+/** 1 = full quality DPR; dips only when frames miss budget, then recovers. */
+let adaptivePixelScale = 1;
+let lastAppliedPixelRatio = 0;
+let healthyFrameStreak = 0;
+let sceneRenderTarget = null;
+let historyRenderTarget = null;
+let temporalScene = null;
+let temporalCamera = null;
+let temporalMaterial = null;
+let temporalMesh = null;
+let temporalSizeKey = "";
 
 const reducedMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
 const reducedMotion = reducedMotionQuery.matches;
@@ -168,10 +186,25 @@ function applyParticleAlphaBoost() {
   }
 }
 
+function buildLmsParticleThemeSignature(styles, lightMode) {
+  return [
+    styles.getPropertyValue("--lux-accent").trim(),
+    styles.getPropertyValue("--lux-accent-2").trim(),
+    styles.getPropertyValue("--lux-bg").trim(),
+    styles.getPropertyValue("--lux-bg-line-rgb").trim(),
+    styles.getPropertyValue("--lux-bg-particle-rgb").trim(),
+    styles.getPropertyValue("--lux-bg-haze-rgb").trim(),
+    lightMode ? "light" : "dark",
+  ].join("|");
+}
+
 function applyLmsParticleTheme() {
   if (!uniforms || !renderer) return;
   const root = document.documentElement;
   const styles = getComputedStyle(root);
+  const lightMode = document.body.classList.contains("lux-light-mode");
+  const nextSignature = buildLmsParticleThemeSignature(styles, lightMode);
+  if (nextSignature === themeSignature) return;
   const accent = parseCssColor(styles.getPropertyValue("--lux-accent"), "#d4a574");
   const accent2 = parseCssColor(styles.getPropertyValue("--lux-accent-2"), "#8b6914");
   const bg = parseCssColor(styles.getPropertyValue("--lux-bg"), "#0b192c");
@@ -179,7 +212,6 @@ function applyLmsParticleTheme() {
   const lineRgb = styles.getPropertyValue("--lux-bg-line-rgb").trim();
   const particleRgb = styles.getPropertyValue("--lux-bg-particle-rgb").trim();
   const hazeRgb = styles.getPropertyValue("--lux-bg-haze-rgb").trim();
-  const lightMode = document.body.classList.contains("lux-light-mode");
   let pointA;
   let pointB;
   let haze;
@@ -219,15 +251,7 @@ function applyLmsParticleTheme() {
 
   applyParticleAlphaBoost();
 
-  themeSignature = [
-    accent.getHexString(),
-    accent2.getHexString(),
-    bg.getHexString(),
-    lineRgb,
-    particleRgb,
-    hazeRgb,
-    lightMode ? "light" : "dark",
-  ].join("|");
+  themeSignature = nextSignature;
 }
 
 function applyParticleSettingsNow() {
@@ -262,7 +286,7 @@ function syncSettingsFromPortal() {
   applyLmsParticleTheme();
   applyParticleSettingsNow();
   if (renderer && isPageVisible) {
-    renderer.setAnimationLoop(render);
+    startParticleRenderLoop();
   }
 }
 const variants = {
@@ -315,8 +339,8 @@ const qualityProfiles = {
     tinyColumns: 88,
     tinyRows: 44,
     tinyLayers: 1,
-    maxDpr: 2,
-    supersample: 1.15,
+    maxDpr: 1.5,
+    supersample: 1,
     fps: 30,
     tinyFps: 30,
     pointScale: 1.1,
@@ -373,10 +397,8 @@ function buildLuxuryParticleEngine() {
   try {
     renderer = new THREE.WebGLRenderer({
       canvas,
-      // Antialiasing ON: the GPU-saving `false` left particle edges jagged, so
-      // they crawled/shimmered as they moved — the "low quality flickering"
-      // seen through the glass. MSAA smooths the edges so motion is clean.
-      antialias: true,
+      // Supersampled tiers already soften edges; MSAA on top is redundant fill-rate work.
+      antialias: !(initialQuality.supersample > 1),
       alpha: false,
       powerPreference: "high-performance",
     });
@@ -387,6 +409,9 @@ function buildLuxuryParticleEngine() {
     return false;
   }
   renderer.setPixelRatio(getRenderPixelRatio(initialQuality));
+  lastAppliedPixelRatio = renderer.getPixelRatio();
+  adaptivePixelScale = 1;
+  healthyFrameStreak = 0;
 
   scene = new THREE.Scene();
   camera = new THREE.PerspectiveCamera(42, 1, 0.1, 160);
@@ -557,10 +582,11 @@ function buildLuxuryParticleEngine() {
   cornerPoints.renderOrder = 1;
   scene.add(cornerPoints);
 
-  ribbonMesh = new THREE.Mesh(createLayeredRibbonGeometry(activeQuality), ribbonMaterial);
-  ribbonMesh.visible = activeVariantName === "layered";
+  ribbonMesh = new THREE.Mesh(
+    activeVariantName === "layered" ? createLayeredRibbonGeometry(activeQuality) : new THREE.BufferGeometry(),
+    ribbonMaterial
+  );
   ribbonMesh.renderOrder = -1;
-  scene.add(ribbonMesh);
 
   clock = new THREE.Clock();
   lastRenderTime = 0;
@@ -569,7 +595,6 @@ function buildLuxuryParticleEngine() {
   applyVariantTuning();
   applyLmsParticleTheme();
   resize();
-  syncSettingsFromPortal();
   return true;
 }
 
@@ -583,10 +608,10 @@ function bindPortalListeners() {
     isPageVisible = !document.hidden;
     if (!renderer) return;
     if (!isPageVisible || staticBackgroundOnly || !arePortalBackgroundAnimationsEnabled()) {
-      renderer.setAnimationLoop(null);
+      stopParticleRenderLoop();
       return;
     }
-    renderer.setAnimationLoop(render);
+    startParticleRenderLoop();
   });
   reducedMotionQuery.addEventListener("change", () => syncSettingsFromPortal());
 }
@@ -631,6 +656,7 @@ function refreshLuxuryParticleBackground(modeOrOpts) {
 }
 
 function disposeLuxuryParticleBackground() {
+  stopParticleRenderLoop();
   try {
     if (renderer) renderer.setAnimationLoop(null);
   } catch (_error) { /* ignore */ }
@@ -648,6 +674,7 @@ function disposeLuxuryParticleBackground() {
   try { ribbonMesh?.geometry?.dispose(); } catch (_error) { /* ignore */ }
   try { material?.dispose(); } catch (_error) { /* ignore */ }
   try { ribbonMaterial?.dispose(); } catch (_error) { /* ignore */ }
+  disposeTemporalPipeline();
 
   // Do not WEBGL_lose_context on #lux-bg-canvas — shared page canvas must
   // stay re-inittable after Studio animation/fill/mode toggles.
@@ -669,6 +696,9 @@ function disposeLuxuryParticleBackground() {
   clock = null;
   themeSignature = "";
   lastRenderTime = 0;
+  adaptivePixelScale = 1;
+  lastAppliedPixelRatio = 0;
+  healthyFrameStreak = 0;
   staticBackgroundOnly = true;
   engineReady = false;
   window.__kiuLuxuryParticleBackgroundReady = false;
@@ -689,6 +719,7 @@ function initLuxuryParticleBackground() {
   engineReady = true;
   staticBackgroundOnly = false;
   window.__kiuLuxuryParticleBackgroundReady = true;
+  syncSettingsFromPortal();
   return true;
 }
 
@@ -1324,6 +1355,36 @@ function detectQualityProfile() {
   return "high";
 }
 
+function readCanvasPixelRatioCap() {
+  try {
+    const raw = getComputedStyle(document.documentElement).getPropertyValue('--lux-canvas-pixel-ratio-cap').trim();
+    const parsed = parseFloat(raw);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : Infinity;
+  } catch (_error) {
+    return Infinity;
+  }
+}
+
+function readCanvasFrameInterval() {
+  try {
+    const raw = getComputedStyle(document.documentElement).getPropertyValue('--lux-canvas-frame-interval').trim();
+    const parsed = parseFloat(raw);
+    const interval = Number.isFinite(parsed) && parsed > 0 ? parsed : 33;
+    if (reducedMotion) return interval;
+    return Math.max(33, interval);
+  } catch (_error) {
+    return 33;
+  }
+}
+
+function readParticlePacingMultiplier() {
+  return getPacingMultiplier();
+}
+
+function readParticleFrameInterval() {
+  return readGovernedFrameIntervalMs();
+}
+
 function getRenderPixelRatio(quality) {
   const isTiny = window.innerWidth < 480;
   const dpr = window.devicePixelRatio || 1;
@@ -1334,7 +1395,161 @@ function getRenderPixelRatio(quality) {
   // there is no crawl/shimmer. maxDpr caps the total ratio to keep the GPU
   // sane. On a DPR-2 display, high renders at 3x (4320-wide buffer).
   const supersample = quality.supersample || 1;
-  return Math.min(dpr * supersample, quality.maxDpr);
+  return Math.min(dpr * supersample, quality.maxDpr, readCanvasPixelRatioCap());
+}
+
+function getEffectiveRenderPixelRatio(quality = activeQuality) {
+  if (!quality) return 1;
+  const target = getRenderPixelRatio(quality);
+  return Math.max(0.75, target * adaptivePixelScale);
+}
+
+function disposeTemporalPipeline() {
+  try { sceneRenderTarget?.dispose(); } catch (_error) { /* ignore */ }
+  try { historyRenderTarget?.dispose(); } catch (_error) { /* ignore */ }
+  try { temporalMaterial?.dispose(); } catch (_error) { /* ignore */ }
+  try { temporalMesh?.geometry?.dispose(); } catch (_error) { /* ignore */ }
+  sceneRenderTarget = null;
+  historyRenderTarget = null;
+  temporalScene = null;
+  temporalCamera = null;
+  temporalMaterial = null;
+  temporalMesh = null;
+  temporalSizeKey = "";
+}
+
+function ensureTemporalPipeline(width, height, pixelRatio) {
+  if (!renderer) return false;
+  const tw = Math.max(1, Math.floor(width * pixelRatio));
+  const th = Math.max(1, Math.floor(height * pixelRatio));
+  const key = `${tw}x${th}`;
+  if (sceneRenderTarget && historyRenderTarget && temporalSizeKey === key) return true;
+  disposeTemporalPipeline();
+  const opts = {
+    minFilter: THREE.LinearFilter,
+    magFilter: THREE.LinearFilter,
+    format: THREE.RGBAFormat,
+    depthBuffer: false,
+    stencilBuffer: false,
+  };
+  sceneRenderTarget = new THREE.WebGLRenderTarget(tw, th, opts);
+  historyRenderTarget = new THREE.WebGLRenderTarget(tw, th, opts);
+  temporalCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+  temporalMaterial = new THREE.ShaderMaterial({
+    uniforms: {
+      tCurrent: { value: sceneRenderTarget.texture },
+      tHistory: { value: historyRenderTarget.texture },
+      uHistoryWeight: { value: 0.4 },
+    },
+    depthTest: false,
+    depthWrite: false,
+    vertexShader: `
+      varying vec2 vUv;
+      void main() {
+        vUv = uv;
+        gl_Position = vec4(position.xy, 0.0, 1.0);
+      }
+    `,
+    fragmentShader: `
+      precision mediump float;
+      uniform sampler2D tCurrent;
+      uniform sampler2D tHistory;
+      uniform float uHistoryWeight;
+      varying vec2 vUv;
+      void main() {
+        vec4 current = texture2D(tCurrent, vUv);
+        vec4 history = texture2D(tHistory, vUv);
+        gl_FragColor = mix(current, history, uHistoryWeight);
+      }
+    `,
+  });
+  temporalMesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), temporalMaterial);
+  temporalScene = new THREE.Scene();
+  temporalScene.add(temporalMesh);
+  temporalSizeKey = key;
+  return true;
+}
+
+function applyEffectivePixelRatio(force = false) {
+  if (!renderer || !activeQuality) return getEffectiveRenderPixelRatio(activeQuality);
+  const next = getEffectiveRenderPixelRatio(activeQuality);
+  if (!force && Math.abs(next - lastAppliedPixelRatio) < 0.035) return lastAppliedPixelRatio || next;
+  lastAppliedPixelRatio = next;
+  renderer.setPixelRatio(next);
+  if (uniforms?.uPixelRatio) uniforms.uPixelRatio.value = next;
+  renderer.setSize(window.innerWidth, window.innerHeight, false);
+  return next;
+}
+
+function updateAdaptivePixelScale(frameMs, budgetMs) {
+  if (!(frameMs > 0) || !(budgetMs > 0)) return;
+  // Only ease quality down when clearly late; recover slowly so the resting look stays full-quality.
+  if (frameMs > budgetMs * 1.25) {
+    healthyFrameStreak = 0;
+    adaptivePixelScale = Math.max(0.72, adaptivePixelScale - 0.05);
+  } else if (frameMs < budgetMs * 0.7) {
+    healthyFrameStreak += 1;
+    if (healthyFrameStreak >= 8) {
+      adaptivePixelScale = Math.min(1, adaptivePixelScale + 0.02);
+    }
+  } else {
+    healthyFrameStreak = Math.max(0, healthyFrameStreak - 1);
+  }
+}
+
+function renderParticleSceneToScreen() {
+  const width = window.innerWidth;
+  const height = window.innerHeight;
+  const pixelRatio = lastAppliedPixelRatio || getEffectiveRenderPixelRatio(activeQuality);
+  // Temporal blend only while scaled down — restores soft edges without permanent supersample cost.
+  const useTemporal = adaptivePixelScale < 0.97 && ensureTemporalPipeline(width, height, pixelRatio);
+  if (!useTemporal) {
+    renderer.setRenderTarget(null);
+    renderer.render(scene, camera);
+    return;
+  }
+  temporalMaterial.uniforms.tCurrent.value = sceneRenderTarget.texture;
+  temporalMaterial.uniforms.tHistory.value = historyRenderTarget.texture;
+  temporalMaterial.uniforms.uHistoryWeight.value = 0.4;
+  renderer.setRenderTarget(sceneRenderTarget);
+  renderer.render(scene, camera);
+  renderer.setRenderTarget(null);
+  renderer.render(temporalScene, temporalCamera);
+  // Ping-pong: this frame's scene becomes next history (no feedback into the same target).
+  const swap = historyRenderTarget;
+  historyRenderTarget = sceneRenderTarget;
+  sceneRenderTarget = swap;
+}
+
+function stopParticleRenderLoop() {
+  if (particleLoopTimer) {
+    clearTimeout(particleLoopTimer);
+    particleLoopTimer = 0;
+  }
+  try {
+    if (renderer) renderer.setAnimationLoop(null);
+  } catch (_error) { /* ignore */ }
+}
+
+let governorLoopUnsubscribe = null;
+
+function startParticleRenderLoop() {
+  stopParticleRenderLoop();
+  if (!renderer || !isPageVisible || staticBackgroundOnly || !arePortalBackgroundAnimationsEnabled()) return;
+  function tick() {
+    particleLoopTimer = 0;
+    if (!renderer || !isPageVisible || staticBackgroundOnly || !arePortalBackgroundAnimationsEnabled()) return;
+    renderCurrentFrame(performance.now());
+    particleLoopTimer = window.setTimeout(tick, readParticleFrameInterval());
+  }
+  if (!governorLoopUnsubscribe) {
+    governorLoopUnsubscribe = onGovernorStateChange(() => {
+      if (!particleLoopTimer || !renderer) return;
+      window.clearTimeout(particleLoopTimer);
+      particleLoopTimer = window.setTimeout(tick, readParticleFrameInterval());
+    });
+  }
+  particleLoopTimer = window.setTimeout(tick, 0);
 }
 
 function setQuality(quality, forceRebuild = false) {
@@ -1346,8 +1561,9 @@ function setQuality(quality, forceRebuild = false) {
   activeQualityName = quality.name;
   activeQuality = quality;
   usingSmallGeometry = nextSmallGeometry;
-  renderer.setPixelRatio(getRenderPixelRatio(activeQuality));
-  uniforms.uPixelRatio.value = renderer.getPixelRatio();
+  adaptivePixelScale = 1;
+  healthyFrameStreak = 0;
+  applyEffectivePixelRatio(true);
   applyVariantTuning();
 
   if (!needsRebuild) {
@@ -1363,8 +1579,13 @@ function setQuality(quality, forceRebuild = false) {
   scene.add(points);
   cornerPoints.geometry.dispose();
   cornerPoints.geometry = createCornerAccentGeometry(activeQuality, activeVariantName);
-  ribbonMesh.geometry.dispose();
-  ribbonMesh.geometry = createLayeredRibbonGeometry(activeQuality);
+  if (ribbonMesh) {
+    if (activeVariantName === "layered") {
+      ribbonMesh.geometry.dispose();
+      ribbonMesh.geometry = createLayeredRibbonGeometry(activeQuality);
+    }
+    syncRibbonMeshInScene();
+  }
   resize();
   applyLmsParticleTheme();
 }
@@ -1389,10 +1610,28 @@ function setVariant(variantName) {
   scene.add(points);
   cornerPoints.geometry.dispose();
   cornerPoints.geometry = createCornerAccentGeometry(activeQuality, activeVariantName);
-  ribbonMesh.geometry.dispose();
-  ribbonMesh.geometry = createLayeredRibbonGeometry(activeQuality);
+  if (ribbonMesh) {
+    if (activeVariantName === "layered") {
+      ribbonMesh.geometry.dispose();
+      ribbonMesh.geometry = createLayeredRibbonGeometry(activeQuality);
+    }
+    syncRibbonMeshInScene();
+  }
   resize();
   applyLmsParticleTheme();
+}
+
+function syncRibbonMeshInScene() {
+  if (!ribbonMesh || !scene) return;
+  const layered = activeVariantName === "layered";
+  if (layered) {
+    if (!ribbonMesh.parent) scene.add(ribbonMesh);
+    ribbonMesh.visible = true;
+    ribbonMesh.rotation.x = -0.12;
+    return;
+  }
+  if (ribbonMesh.parent) scene.remove(ribbonMesh);
+  ribbonMesh.visible = false;
 }
 
 function applyVariantTuning() {
@@ -1410,10 +1649,7 @@ function applyVariantTuning() {
     cornerPoints.rotation.x = points ? points.rotation.x : 0;
   }
 
-  if (ribbonMesh) {
-    ribbonMesh.visible = activeVariantName === "layered";
-    ribbonMesh.rotation.x = activeVariantName === "layered" ? -0.12 : -0.18;
-  }
+  syncRibbonMeshInScene();
 }
 
 function scheduleResize() {
@@ -1441,8 +1677,7 @@ function updateViewport(allowRebuild) {
     return;
   }
 
-  renderer.setPixelRatio(getRenderPixelRatio(activeQuality));
-  renderer.setSize(width, height, false);
+  applyEffectivePixelRatio(true);
   const isLayered = activeVariantName === "layered";
   const isOrbit = activeVariantName === "orbit";
   const isCorners = activeVariantName === "corners";
@@ -1459,21 +1694,20 @@ function updateViewport(allowRebuild) {
   cornerPoints.position.y = points.position.y;
   cornerPoints.rotation.x = points.rotation.x;
   cornerPoints.rotation.y = points.rotation.y;
-  ribbonMesh.position.y = points.position.y;
-  ribbonMesh.rotation.x = points.rotation.x;
-  uniforms.uPixelRatio.value = renderer.getPixelRatio();
+  if (ribbonMesh?.parent) {
+    ribbonMesh.position.y = points.position.y;
+    ribbonMesh.rotation.x = points.rotation.x;
+  }
 }
 
 function renderCurrentFrame(time = 0) {
   if (!renderer || !scene || !camera || !uniforms || !points) return;
   if (!isPageVisible && !staticBackgroundOnly) return;
-  if (window.__luxIsAnimating) return;
+  if (shouldSkipCanvasFrame()) return;
 
   const now = Number(time) || performance.now();
-  // Locked 30fps pacing — fixed step avoids the ~1s hitch from irregular
-  // vsync/skip interactions when lastRenderTime jumped to wall-clock `now`.
-  const TARGET_FPS = 30;
-  const frameInterval = 1000 / TARGET_FPS;
+  // Locked ~30fps pacing — stretched while studio/modals/scroll cover the field.
+  const frameInterval = readParticleFrameInterval();
   if (!staticBackgroundOnly) {
     if (!lastRenderTime) {
       lastRenderTime = now;
@@ -1490,15 +1724,23 @@ function renderCurrentFrame(time = 0) {
     lastRenderTime = now;
   }
 
+  const frameStarted = performance.now();
+  applyEffectivePixelRatio(false);
+
   const elapsed = clock?.getElapsedTime?.() || 0;
   uniforms.uTime.value = elapsed;
   uniforms.uMotion.value = THREE.MathUtils.lerp(uniforms.uMotion.value, targetMotion, 0.055);
   uniforms.uDensityFade.value = THREE.MathUtils.lerp(uniforms.uDensityFade.value, targetDensity, 0.08);
   const variant = variants[activeVariantName] || variants.peak;
   points.rotation.y = Math.sin(elapsed * 0.08) * variant.rotationSwing;
-  cornerPoints.rotation.y = points.rotation.y * 0.72;
-  ribbonMesh.rotation.y = points.rotation.y * 0.45;
-  renderer.render(scene, camera);
+  if (cornerPoints?.visible !== false) {
+    cornerPoints.rotation.y = points.rotation.y * 0.72;
+  }
+  if (ribbonMesh?.parent && ribbonMesh.visible) {
+    ribbonMesh.rotation.y = points.rotation.y * 0.45;
+  }
+  renderParticleSceneToScreen();
+  updateAdaptivePixelScale(performance.now() - frameStarted, readCanvasFrameInterval());
 }
 
 function render() {

@@ -1,9 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
-import { expectRetiredCss } from './helpers/bare-shell-css.js';
+import { expectRetiredCss, readHomeDashboardCss } from './helpers/bare-shell-css.js';
 import {
-import { readHomeDashboardCss } from './helpers/bare-shell-css.js';
     LUX_DROPLIST_CONTRACT,
     LUX_DROPLIST_TOKEN_NAMES,
 } from './fixtures/lux-droplist-contract.js';
@@ -37,7 +36,7 @@ function extractFunctionBody(source, functionName) {
 
 describe('lux droplist global unification', () => {
     it('ships applyLuxPickerPanelVariants and lux-droplist-panel in shell chrome', () => {
-        const shellChrome = readSource('assets/js/features/luxury-shell-chrome.js');
+        const shellChrome = readSource('assets/js/features/luxury-shell-picker-runtime.js');
 
         expect(shellChrome).toContain('function applyLuxPickerPanelVariants');
         expect(shellChrome).toContain('lux-droplist-panel');
@@ -67,12 +66,12 @@ describe('lux droplist global unification', () => {
     });
 
     it('uses lux-droplist-panel as primary class in enhanceUniversalPicker', () => {
-        const shellChrome = readSource('assets/js/features/luxury-shell-chrome.js');
+        const shellChrome = readSource('assets/js/features/luxury-shell-picker-runtime.js');
         const enhanceBody = extractFunctionBody(shellChrome, 'enhanceUniversalPicker');
         const variantsBody = extractFunctionBody(shellChrome, 'applyLuxPickerPanelVariants');
 
         expect(enhanceBody).toMatch(/applyLuxPickerPanelVariants\(panel,\s*(select|button)\)/);
-        expect(variantsBody).toContain("panel.classList.add('lux-droplist-panel')");
+        expect(variantsBody).toContain("panel.classList.add('lux-universal-picker-panel', 'lux-droplist-panel')");
         expect(enhanceBody).not.toContain("panel.classList.add('sch-session-picker-panel')");
     });
 
@@ -129,6 +128,30 @@ describe('lux droplist global unification', () => {
 
         expect(droplist).toContain('--lux-droplist-glass-shadow:');
         expect(droplist).toContain('--lux-droplist-glass-inset:');
+        expect(droplist).toContain('--lux-droplist-frame-border');
+        expect(droplist).toContain('--lux-droplist-option-border-width: 2px');
+        expect(droplist).toContain('--lux-droplist-option-border-active');
+        expect(droplist).toContain('--lux-droplist-option-border-idle: var(--lux-soft-chrome-border)');
+        expect(droplist).toContain('--lux-droplist-option-edge-idle: var(--lux-soft-chrome-shadow)');
+        expect(droplist).toContain('--lux-droplist-option-edge-hover');
+        expect(droplist).toContain('--lux-droplist-option-edge-active');
+        expect(droplist).toContain('--lux-droplist-option-glass-idle: var(--lux-soft-chrome-surface)');
+        expect(droplist).toContain('--lux-droplist-option-glass-hover');
+        expect(droplist).toContain('--lux-droplist-option-glass-active');
+        expect(droplist).not.toContain('--lux-droplist-option-glass-idle-light');
+        expect(droplist).toMatch(
+            /\.lux-droplist-panel \.lux-picker-option\s*\{[\s\S]*?border:\s*var\(--lux-droplist-option-border-width\) solid var\(--lux-droplist-option-border-idle\)/
+        );
+        expect(droplist).toMatch(
+            /\.lux-droplist-panel \.lux-picker-option\s*\{[\s\S]*?box-shadow:\s*var\(--lux-droplist-option-edge-idle\)/
+        );
+        expect(droplist).toMatch(
+            /\.lux-droplist-panel \.lux-picker-option\s*\{[\s\S]*?background:\s*var\(--lux-droplist-option-glass-idle\)/
+        );
+        const optionBaseRule = droplist.match(
+            /\.lux-droplist-panel \.lux-picker-option\s*\{[\s\S]*?\n\}/
+        )?.[0] || '';
+        expect(optionBaseRule).not.toMatch(/backdrop-filter/);
         expect(droplist).toContain('rgba(247, 241, 232, 0.44)');
     });
 

@@ -22,11 +22,13 @@ describe('lux scrollbar regressions', () => {
         expect(tokens).toContain('--lux-scrollbar-track');
         expect(tokens).toContain('--lux-scrollbar-size');
         expect(tokens).toContain('--lux-scrollbar-thumb: rgba(48, 34, 22, 0.18)');
+        expect(tokens).toMatch(/--lux-scrollbar-thumb-hover:\s*rgba\(var\(--lux-accent-rgb\)/);
 
         expect(shell).toContain('.lux-nav::-webkit-scrollbar');
         // Picker panels keep tokenized thumbs in controls
         expect(controls).toContain('::-webkit-scrollbar-thumb');
         expect(controls).toContain('var(--lux-scrollbar-thumb');
+        expect(controls).toContain('var(--lux-scrollbar-thumb-hover');
     });
 
     it('wires admin-tools scroll hotspots to lux-scrollbar classes in JS', () => {
@@ -39,5 +41,6 @@ describe('lux scrollbar regressions', () => {
         const tokens = readSource('assets/css/lux-tokens.css');
         expect(tokens).toContain('--lux-scrollbar-thumb: rgba(48, 34, 22, 0.18)');
         expect(tokens).toContain('--lux-scrollbar-thumb-hover');
+        expect(tokens).toMatch(/body\.lux-light-mode[\s\S]*?--lux-scrollbar-thumb-hover:\s*color-mix/);
     });
 });

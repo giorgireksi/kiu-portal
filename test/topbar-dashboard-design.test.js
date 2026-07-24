@@ -11,12 +11,52 @@ describe('topbar matches dashboard design language', () => {
     it('scopes soft-chrome shell and framed CTAs under full-paint topbar', () => {
         const controls = readSource('assets/css/lux-controls.css');
         const shell = readSource('assets/css/lux-shell.css');
-        expect(shell).toContain('Topbar → dashboard design');
         expect(shell).toContain('TOPBAR SOFT-CHROME SSOT');
         expect(shell).toContain('body.lux-full-paint.lux-unified-shell #lux-topbar .lux-topbar-shell');
+        expect(shell).toMatch(
+            /body\.lux-full-paint\.lux-unified-shell #lux-topbar \.lux-topbar-shell\s*\{[\s\S]*?backdrop-filter:\s*none/
+        );
+        expect(shell).toMatch(
+            /body\.lux-full-paint\.lux-unified-shell #lux-topbar \.lux-topbar-shell\s*\{[\s\S]*?--lux-soft-chrome-surface/
+        );
         expect(controls).toContain('var(--lux-btn-well)');
-        expect(controls).toContain('var(--lux-btn-frame-metal)');
-        expect(controls).not.toContain('#lux-topbar .lux-topbar-shell');
+        expect(controls).toContain('var(--lux-btn-border-solid');
+        expect(shell).toContain('var(--lux-btn-border-solid');
+        expect(shell).toMatch(/\.lux-sidebar-toggle-btn, \.lux-topbar-editor-btn\s*\{[\s\S]*border-radius:\s*var\(--lux-btn-pill-radius/);
+        expect(shell).toMatch(/\.lux-picker-btn\s*\{[\s\S]*border-radius:\s*var\(--lux-btn-pill-radius/);
+        expect(shell).toMatch(/\.lux-picker-btn\s*\{[\s\S]*background:\s*var\(--lux-btn-well-soft/);
+        expect(shell).toMatch(/\.lux-picker-btn::after[\s\S]*var\(--lux-btn-sheen\)/);
+        expect(shell).toMatch(/\.lux-picker-btn:hover::after[\s\S]*translateX\(130%\)/);
+        expect(shell).toMatch(/\.lux-icon-btn\s*\{[\s\S]*background:\s*var\(--lux-btn-well-soft/);
+        expect(shell).toMatch(/\.lux-icon-btn::after[\s\S]*var\(--lux-btn-sheen\)/);
+        expect(shell).toMatch(/\.lux-sidebar-toggle-btn, \.lux-topbar-editor-btn\s*\{[\s\S]*contain:\s*paint/);
+        expect(shell).toMatch(/\.lux-picker-btn, \.lux-icon-btn\s*\{[\s\S]*contain:\s*paint/);
+        expect(shell).toMatch(/\.lux-sidebar-toggle-btn::before[\s\S]*linear-gradient\(180deg, rgba\(255,\s*255,\s*255/);
+        expect(shell).not.toMatch(/\.lux-sidebar-toggle-btn::before[\s\S]{0,220}var\(--lux-btn-fade\)/);
+        expect(shell).toMatch(/\.lux-sidebar-toggle-btn::after[\s\S]*var\(--lux-btn-sheen\)/);
+        expect(shell).not.toMatch(
+            /lux-sidebar-toggle-btn::before[\s\S]{0,120}display:\s*none/
+        );
+        expect(shell).not.toMatch(
+            /#lux-topbar \.lux-picker-btn,[\s\S]*?#lux-topbar \.lux-icon-btn,[\s\S]*?--lux-soft-chrome-surface/
+        );
+        expect(shell).toMatch(/\.lux-icon-btn\s*\{[\s\S]*border-radius:\s*var\(--lux-btn-pill-radius/);
+        expect(shell).toMatch(/#lux-topbar \.lux-icon-btn[\s\S]*border-color:\s*var\(--lux-btn-border-solid/);
+        // Nested control blur strip only — topbar shell paint stays in lux-shell.css
+        expect(controls).toMatch(/#lux-topbar \.lux-topbar-shell :is\(\.lux-picker-btn/);
+        expect(controls).not.toMatch(/#lux-topbar \.lux-topbar-shell\s*\{/);
+    });
+
+    it('dark CTA wells include accent color-fade radials', () => {
+        const tokens = readSource('assets/css/lux-tokens.css');
+        expect(tokens).toContain('--lux-btn-fade:');
+        expect(tokens).toContain('--lux-btn-fade-hover:');
+        const fade = tokens.match(/:root\s*\{[\s\S]*?--lux-btn-fade:\s*([^;]+);/);
+        expect(fade?.[1] || '').toMatch(/lux-accent-rgb/);
+        expect(fade?.[1] || '').toMatch(/lux-color-fade-alpha|lux-panel-glow/);
+        expect(fade?.[1] || '').toMatch(/radial-gradient/);
+        expect(tokens).toMatch(/:root\s*\{[\s\S]*?--lux-btn-well-soft:\s*var\(--lux-btn-fade\)/);
+        expect(tokens).toMatch(/:root\s*\{[\s\S]*?--lux-btn-well:\s*var\(--lux-btn-fade\)/);
     });
 
     it('shared lux-shell loads before home-dashboard on index', () => {

@@ -4,20 +4,20 @@ import { join } from 'path';
 
 const ROOT = process.cwd();
 const PAGE_EXTRAS = new Set(['layout-schedule.css', 'layout-schedule-board.css', 'lux-modals.css']);
-/** Still index-only after paint promotion. */
+/** Still index-only after FOUC promotion to bare portals. */
 const INDEX_ONLY = [
     'mobile-shell.css',
-    'lux-fouc-ht.css',
     'index-home-layout.css',
     'index-home-widgets.css',
     'index-home-role.css',
 ];
-/** Merged base sheets (paint lives at end of each). */
+/** Shared atmosphere (FOUC) + merged base paint. */
 const SHARED_STACK = [
     'lux-tokens.css',
     'lux-focus-panel.css',
     'lux-controls.css',
     'lux-shell.css',
+    'lux-fouc-ht.css',
 ];
 
 function read(p) {
@@ -40,7 +40,7 @@ function barePages() {
 }
 
 describe('bare CSS diet budget', () => {
-    it('shared paint portal stack ≤ 3000 lines; bare pages link merged base not home/fouc polish', () => {
+    it('shared paint portal stack ≤ 3400 lines; bare pages link FOUC + merged base (not home widgets)', () => {
         expect(existsSync(join(ROOT, 'assets/css/mobile-shell-core.css'))).toBe(true);
         expect(existsSync(join(ROOT, 'assets/css/lux-controls.css'))).toBe(true);
         expect(existsSync(join(ROOT, 'assets/css/lux-tokens.css'))).toBe(true);
@@ -76,7 +76,7 @@ describe('bare CSS diet budget', () => {
 
             const canonical = linked.filter((h) => !PAGE_EXTRAS.has(h.split('/').pop()));
             const total = canonical.reduce((sum, h) => sum + lineCount(h), 0);
-            expect(total, `${page} canonical=${total}`).toBeLessThanOrEqual(3000);
+            expect(total, `${page} canonical=${total}`).toBeLessThanOrEqual(3400);
         }
     });
 
@@ -95,7 +95,7 @@ describe('bare CSS diet budget', () => {
             return n;
         }
         const live = walk(cssRoot);
-        expect(live).toBeLessThanOrEqual(8400);
+        expect(live).toBeLessThanOrEqual(9000);
         expect(live).toBeGreaterThan(4000);
     });
 

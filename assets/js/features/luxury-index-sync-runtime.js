@@ -84,6 +84,15 @@
                 HOME_EDITOR_STATE.editing && HOME_EDITOR_STATE.role === getEffectiveRole() ? 'editing' : 'view'
             ].join('|');
         }
+        function buildPaletteThemeSignature() {
+            const visuals = getDashboardVisuals() || {};
+            return [
+                getThemeMode(),
+                visuals.paletteKey || resolvePaletteKey() || '',
+                JSON.stringify(visuals.customPalette || {}),
+                document.body?.classList?.contains('lux-light-mode') ? 'light' : 'dark',
+            ].join('|');
+        }
         function buildVisualStateSyncSignature() {
             const visuals = getDashboardVisuals() || {};
             return [
@@ -162,10 +171,16 @@
             closePickerPanels();
             renderNav();
             populateFacultySwitcher();
-            populateRoleSwitcher();
             syncLayout();
             syncStudioUi();
-            if (!onAdminToolsRoute && !onLmsRoute && !onExamsRoute && !onOrdersRoute && !onLibraryRoute) {
+            if (
+                !visualHalfUnchanged
+                && !onAdminToolsRoute
+                && !onLmsRoute
+                && !onExamsRoute
+                && !onOrdersRoute
+                && !onLibraryRoute
+            ) {
                 queueLegacyVisualRefresh(document.querySelector('.page-section.active-page') || document.body);
             }
             if (onLmsRoute && typeof window.ensureLmsRouteVisualState === 'function') {
@@ -174,15 +189,21 @@
             if (isAdminLibraryRouteContext(activePageId, getActiveEntryPageId()) && typeof window.ensureAdminLibraryRouteVisualState === 'function') {
                 window.ensureAdminLibraryRouteVisualState();
             }
-            /* Always re-apply transparency after atmosphere/perf so glass tokens win.
-               Signature skip previously let later syncAll stomps stick until a click. */
+            /* Always queue transparency so root tokens stay current; skip surface walk when
+               visual + transparency signatures are unchanged (atmosphere stomp guard below). */
             if (typeof window.queueLuxuryTransparencyRefresh === 'function') {
                 var _syncTransVal = getDashboardVisuals().surfaceTransparency
                     || localStorage.getItem('kiuLuxurySurfaceTransparency')
                     || DEFAULT_HOME_VISUALS.surfaceTransparency;
                 if (_syncTransVal != null && _syncTransVal !== '') {
-                    window.__luxLastTransparencySyncSignature = buildTransparencySyncSignature(activePageId, _syncTransVal);
-                    window.queueLuxuryTransparencyRefresh(parseInt(_syncTransVal, 10), { persist: false });
+                    var _syncTransparencySignature = buildTransparencySyncSignature(activePageId, _syncTransVal);
+                    var _transparencyUnchanged = window.__luxLastTransparencySyncSignature === _syncTransparencySignature;
+                    window.__luxLastTransparencySyncSignature = _syncTransparencySignature;
+                    var _transRefreshOptions = { persist: false };
+                    if (visualHalfUnchanged && _transparencyUnchanged) {
+                        _transRefreshOptions.tokensOnly = true;
+                    }
+                    window.queueLuxuryTransparencyRefresh(parseInt(_syncTransVal, 10), _transRefreshOptions);
                 }
             }
         }
@@ -211,7 +232,11 @@
                 }
             }
             if (typeof window.__kiuApplyLmsParticleTheme === 'function') {
-                window.__kiuApplyLmsParticleTheme();
+                const paletteThemeSignature = buildPaletteThemeSignature();
+                if (window.__luxLastParticleThemePaletteSignature !== paletteThemeSignature) {
+                    window.__luxLastParticleThemePaletteSignature = paletteThemeSignature;
+                    window.__kiuApplyLmsParticleTheme();
+                }
             }
             if (onOrdersRoute) {
                 scheduleOrdersRouteBackgroundRefresh();

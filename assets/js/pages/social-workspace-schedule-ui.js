@@ -29,7 +29,7 @@
             if (!baselineAt || !baseline) {
                 if (!canManage) return '';
                 return `
-                    <section class="social-neo-card social-project-baseline-card">
+                    <section class="lux-soft-chrome lux-panel social-neo-card social-project-baseline-card">
                         <div class="social-neo-section-head">
                             <div><strong>Plan vs reality</strong><span>Freeze the current plan to measure drift later.</span></div>
                         </div>
@@ -57,7 +57,7 @@
                 ? `${formatProjectScheduleDate(scheduleStartAt, baseEnd)} → ${formatProjectScheduleDate(scheduleStartAt, liveEnd)}`
                 : `${formatProjectScheduleHours(baseEnd)} → ${formatProjectScheduleHours(liveEnd)}`;
             return `
-                <section class="social-neo-card social-project-baseline-card" data-lux-transparency-exempt="1">
+                <section class="lux-soft-chrome lux-panel social-neo-card social-project-baseline-card" data-lux-transparency-exempt="1">
                     <div class="social-neo-section-head">
                         <div><strong>Plan vs baseline</strong><span>Snapshotted ${escape(when(baselineAt))}</span></div>
                         <span class="social-neo-pill is-tone-${escape(slipTone)}">${escape(slipLabel)}</span>
@@ -87,7 +87,7 @@
                 slipTone = slipHours > 0 ? 'rose' : slipHours < 0 ? 'emerald' : 'slate';
             }
             return `
-                <section class="social-neo-card social-project-progress-hours-card" data-lux-transparency-exempt="1">
+                <section class="lux-soft-chrome lux-panel social-neo-card social-project-progress-hours-card" data-lux-transparency-exempt="1">
                     <div class="social-neo-section-head">
                         <div><strong>Work hours</strong><span>Open estimate vs time logged on done tasks.</span></div>
                     </div>

@@ -1,9 +1,69 @@
 import FOG from "../../vendor/vanta/vanta.fog.js";
 import * as THREE from "../../vendor/three/three.module.js";
+import {
+  onGovernorStateChange,
+  readGovernedFrameIntervalMs,
+  shouldSkipCanvasFrame,
+} from "../shared/lux-render-governor.js";
 
 let vantaInstance = null;
 let engineReady = false;
 let settingsSignature = "";
+let fogLoopTimer = 0;
+let fogNativeLoop = null;
+let fogRenderScale = 0;
+
+function getFogRenderScale() {
+  const quality = String(window.getParticleQuality?.() || "auto").trim().toLowerCase();
+  if (quality === "high") return 2;
+  if (quality === "balanced") return 1.25;
+  if (quality === "low") return 1;
+
+  const tier = window.getLuxuryBackgroundRenderProfile?.().tier || "standard";
+  if (tier === "high") return 2;
+  if (tier === "efficient") return 1;
+  return 1.25;
+}
+
+function readFogFrameInterval() {
+  return readGovernedFrameIntervalMs();
+}
+
+function stopFogRenderLoop() {
+  if (fogLoopTimer) {
+    clearTimeout(fogLoopTimer);
+    fogLoopTimer = 0;
+  }
+  if (vantaInstance?.req) {
+    cancelAnimationFrame(vantaInstance.req);
+    vantaInstance.req = null;
+  }
+}
+
+let fogGovernorUnsubscribe = null;
+
+function startFogRenderLoop(instance) {
+  if (!instance) return;
+  stopFogRenderLoop();
+  fogNativeLoop = instance.animationLoop.bind(instance);
+  instance.animationLoop = () => {};
+  function tick() {
+    fogLoopTimer = 0;
+    if (!vantaInstance || !engineReady) return;
+    if (!shouldSkipCanvasFrame()) {
+      fogNativeLoop();
+    }
+    fogLoopTimer = window.setTimeout(tick, readFogFrameInterval());
+  }
+  if (!fogGovernorUnsubscribe) {
+    fogGovernorUnsubscribe = onGovernorStateChange(() => {
+      if (!fogLoopTimer || !vantaInstance) return;
+      window.clearTimeout(fogLoopTimer);
+      fogLoopTimer = window.setTimeout(tick, readFogFrameInterval());
+    });
+  }
+  fogLoopTimer = window.setTimeout(tick, 0);
+}
 
 function hexToInt(hex) {
   return parseInt(String(hex).replace("#", ""), 16);
@@ -72,9 +132,15 @@ export function applyLmsFogTheme() {
 }
 
 export function initLuxuryVantaFogBackground() {
+  const nextRenderScale = getFogRenderScale();
   if (engineReady) {
-    applyLmsFogTheme();
-    return true;
+    if (nextRenderScale !== fogRenderScale) {
+      disposeLuxuryVantaFogBackground();
+    } else {
+      applyLmsFogTheme();
+      startFogRenderLoop(vantaInstance);
+      return true;
+    }
   }
   if (window.__kiuWebGlUnavailable) {
     return false;
@@ -103,14 +169,16 @@ export function initLuxuryVantaFogBackground() {
       gyroControls: false,
       minHeight: 200,
       minWidth: 200,
-      scale: 2,
-      scaleMobile: 1.5,
+      scale: nextRenderScale,
+      scaleMobile: Math.min(nextRenderScale, 1.5),
     });
 
     engineReady = true;
+    fogRenderScale = nextRenderScale;
     window.__kiuLuxuryVantaFogBackgroundReady = true;
     const particleCanvas = document.getElementById("lux-bg-canvas");
     if (particleCanvas) particleCanvas.style.display = "none";
+    startFogRenderLoop(vantaInstance);
     return true;
   } catch (error) {
     try { vantaInstance?.destroy?.(); } catch (e) {}
@@ -134,9 +202,11 @@ export function refreshLuxuryVantaFogBackground() {
 }
 
 export function disposeLuxuryVantaFogBackground() {
+  stopFogRenderLoop();
   try { vantaInstance?.destroy(); } catch (_error) { /* ignore */ }
   vantaInstance = null;
   engineReady = false;
+  fogRenderScale = 0;
   settingsSignature = "";
   window.__kiuLuxuryVantaFogBackgroundReady = false;
   try {

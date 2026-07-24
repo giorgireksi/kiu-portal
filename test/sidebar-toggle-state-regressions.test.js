@@ -16,6 +16,9 @@ describe('sidebar toggle state regressions', () => {
         expect(luxury).toMatch(
             /function toggleSidebar\(\)[\s\S]*const next = !document\.body\.classList\.contains\('lux-sidebar-collapsed'\)/
         );
+        expect(luxury).toMatch(
+            /function applySidebarState[\s\S]*beginShellChromeMotion\(320, 'sidebar-toggle'\)/
+        );
     });
 
     it('does not auto-close desktop nav on outside clicks escape or nav picks', () => {
@@ -32,5 +35,13 @@ describe('sidebar toggle state regressions', () => {
         expect(shellCss).toMatch(/\.lux-shell-head \.lux-sidebar-close-btn[\s\S]*width:\s*100%/);
         expect(shellCss).toMatch(/\.lux-shell-head \.lux-sidebar-close-btn[\s\S]*min-height:\s*50px/);
         expect(shellCss).not.toMatch(/body\.lux-unified-shell \.lux-sidebar-close-label[\s\S]*display:\s*none/);
+        expect(shellCss).toMatch(/body\.lux-full-paint[\s\S]*--lux-topbar-shift:\s*0/);
+        expect(shellCss).toMatch(/body\.lux-full-paint[\s\S]*transform:\s*translate3d\(var\(--lux-topbar-shift/);
+        expect(shellCss).toMatch(
+            /body:not\(\.lux-sidebar-collapsed\) #lux-topbar \.lux-sidebar-toggle-btn[\s\S]*visibility:\s*hidden/
+        );
+        expect(shellCss).not.toMatch(
+            /body:not\(\.lux-sidebar-collapsed\) #lux-topbar \.lux-sidebar-toggle-btn\s*\{\s*display:\s*none/
+        );
     });
 });

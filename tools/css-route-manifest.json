@@ -3,8 +3,8 @@
   "wave": "H9",
   "source": "tools/visual-route-classification.js#routeVisualClassification",
   "stacks": {
-    "shared-portal": "kiu-fonts → lux-tokens → lux-focus-panel → lux-controls → lux-shell → lux-page-bare-lite (+ mobile-shell-core)",
-    "index": "shared-portal + lux-fouc-ht + index-home-layout/widgets/role (+ mobile-shell ≤1024)",
+    "shared-portal": "kiu-fonts → lux-tokens → lux-focus-panel → lux-controls → lux-shell → lux-fouc-ht → lux-page-bare-lite (+ mobile-shell-core)",
+    "index": "shared-portal + index-home-layout/widgets/role (+ mobile-shell ≤1024)",
     "auth": "lux-tokens + lux-surfaces + lux-controls + route CSS (no focus-panel)",
     "redirect": "lux-tokens + lux-controls + redirect-route only",
     "minimal": "no dedicated portal paint sheets"

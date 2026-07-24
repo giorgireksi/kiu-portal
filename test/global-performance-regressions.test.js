@@ -60,7 +60,8 @@ describe('global interaction performance guardrails', () => {
     const luxury = readSource('assets/js/features/index-luxury.js');
     const luxuryBackground = readSource('assets/js/features/luxury-background.js');
     const navigation = readSource('assets/js/features/navigation.js');
-    const utilities = readSource('assets/js/shared/utilities.js');
+    const transparency = readSource('assets/js/shared/lux-transparency.js');
+    const routeRuntime = readSource('assets/js/shared/lux-transparency-route-runtime.js');
 
     expect(luxury).toContain('function isStandaloneLibraryRouteActive()');
     expect(luxury).toContain('isStandaloneLibraryRouteActive()');
@@ -71,8 +72,10 @@ describe('global interaction performance guardrails', () => {
     expect(luxuryBackground).toContain('lux-route-library');
     expect(luxuryBackground).toContain('requestIdleCallback');
     expect(navigation).toMatch(/entryId === 'orders' \|\| entryId === 'library'/);
-    expect(utilities).toContain("document.body.classList.contains('lux-route-library')");
-    expect(utilities).toContain('library-catalog-card');
+    expect(transparency).toContain("document.body.classList.contains('lux-route-library')");
+    expect(transparency).toContain('library-catalog-card');
+    expect(routeRuntime).toContain("document.body.classList.contains('lux-route-library')");
+    expect(routeRuntime).toContain('library-catalog-card');
     expect(navigation).toContain('lux-route-library');
   });
 
@@ -117,6 +120,7 @@ describe('global interaction performance guardrails', () => {
 
   it('uses lightweight navigate sync instead of full syncAll after navigation', () => {
     const luxury = readSource('assets/js/features/index-luxury.js');
+    const syncRuntime = readSource('assets/js/features/luxury-index-sync-runtime.js');
 
     expect(luxury).toContain('function syncAfterNavigate(pageId) {');
     expect(luxury).toContain('function queueNavigateSync(args, result) {');
@@ -126,9 +130,9 @@ describe('global interaction performance guardrails', () => {
     expect(luxury).toContain("wrapFunction('switchRole', queueShellSync);");
     expect(luxury).toMatch(/function queueNavigateSync[\s\S]*?syncAfterNavigate\(targetPageId\)/);
     expect(luxury).toContain('function isStandaloneLmsRouteActive() {');
-    expect(luxury).toContain("window.refreshStandaloneDesktopRouteShellContext({ rerender: true, refreshActiveRoute: true });");
-    expect(luxury).toContain("window.refreshStandaloneDesktopShellChrome()");
-    expect(luxury).toMatch(/function queueShellSync[\s\S]*?(refreshStandaloneDesktopRouteShellContext|refreshStandaloneDesktopShellChrome|syncAll\(\))/);
+    expect(syncRuntime).toContain("window.refreshStandaloneDesktopRouteShellContext({ rerender: true, refreshActiveRoute: true });");
+    expect(syncRuntime).toContain("window.refreshStandaloneDesktopShellChrome()");
+    expect(syncRuntime).toMatch(/function queueShellSync[\s\S]*?(refreshStandaloneDesktopRouteShellContext|refreshStandaloneDesktopShellChrome|syncAll\(\))/);
   });
 
   it('reveals standalone route shells after deferred route renders finish', () => {
@@ -172,6 +176,8 @@ describe('global interaction performance guardrails', () => {
 
   it('keeps startup-critical dashboard preference and palette helpers available before the home chunk loads', () => {
     const luxury = readSource('assets/js/features/index-luxury.js');
+    const palette = readSource('assets/js/features/luxury-palette-runtime.js');
+    const atmosphere = readSource('assets/js/features/luxury-transparency-model-runtime.js');
     const homeLuxury = readRegisteredHomeChunk();
     const count = (source, pattern) => (source.match(pattern) || []).length;
 
@@ -180,13 +186,13 @@ describe('global interaction performance guardrails', () => {
     expect(count(luxury, /function updateDashboardPreferenceEntry\(/g)).toBe(1);
     expect(count(luxury, /function getDashboardVisuals\(/g)).toBe(1);
     expect(count(luxury, /function setDashboardVisuals\(/g)).toBe(1);
-    expect(count(luxury, /function applyAtmosphereSettings\(/g)).toBe(1);
-    expect(count(luxury, /function resolvePaletteKey\(/g)).toBe(1);
-    expect(count(luxury, /function resolveCustomPalette\(/g)).toBe(1);
-    expect(count(luxury, /function applyPaletteValues\(/g)).toBe(1);
-    expect(count(luxury, /function applyPaletteKey\(/g)).toBe(1);
-    expect(count(luxury, /function applyCustomPalette\(/g)).toBe(1);
-    expect(count(luxury, /function applyResolvedPalette\(/g)).toBe(1);
+    expect(count(atmosphere, /function applyAtmosphereSettings\(/g)).toBe(1);
+    expect(count(palette, /function resolvePaletteKey\(/g)).toBe(1);
+    expect(count(palette, /function resolveCustomPalette\(/g)).toBe(1);
+    expect(count(palette, /function applyPaletteValues\(/g)).toBe(1);
+    expect(count(palette, /function applyPaletteKey\(/g)).toBe(1);
+    expect(count(palette, /function applyCustomPalette\(/g)).toBe(1);
+    expect(count(palette, /function applyResolvedPalette\(/g)).toBe(1);
     expect(count(homeLuxury, /function createDashboardPreferenceEntry\(/g)).toBe(1);
     expect(count(homeLuxury, /function getDashboardPreferenceEntry\(/g)).toBe(1);
     expect(count(homeLuxury, /function updateDashboardPreferenceEntry\(/g)).toBe(1);
@@ -396,45 +402,47 @@ describe('global interaction performance guardrails', () => {
 
   it('skips rebuilding nav and picker panels when the shell state is unchanged', () => {
     const shellChrome = readSource('assets/js/features/luxury-shell-chrome.js');
+    const topbarRuntime = readSource('assets/js/features/luxury-shell-topbar-runtime.js');
 
     expect(shellChrome).toContain("const itemSignature = groups");
     expect(shellChrome).toContain("const signature = `${role}|${activePage}|${itemSignature}`;");
     expect(shellChrome).toContain("if (navRoot.dataset.renderSignature === signature && navRoot.children.length) return;");
     expect(shellChrome).toContain("navRoot.dataset.renderSignature = signature;");
-    expect(shellChrome).toContain("const optionSignature = optionsList.map((opt) => `${opt.value}:${opt.label}`).join('|');");
-    expect(shellChrome).toContain("if (panel.dataset.renderSignature !== signature) {");
     expect(shellChrome).toContain("if (navRoot.dataset.bound !== '1') {");
-    expect(shellChrome).toContain("if (panel.dataset.bound !== '1') {");
+    expect(topbarRuntime).toContain("const optionSignature = optionsList.map((opt) => `${opt.value}:${opt.label}`).join('|');");
+    expect(topbarRuntime).toContain("if (panel.dataset.renderSignature !== signature) {");
+    expect(topbarRuntime).toContain("if (panel.dataset.bound !== '1') {");
   });
 
   it('caches widget context and system definitions per home model object', () => {
     const luxury = readRegisteredHomeChunk();
+    const widgetLayout = readSource('assets/js/features/home-dashboard-widget-layout-runtime.js');
 
     expect(luxury).toContain('const HOME_WIDGET_CONTEXT_CACHE = new WeakMap();');
     expect(luxury).toContain('const HOME_WIDGET_DEFINITIONS_CACHE = new WeakMap();');
-    expect(luxury).toContain('function buildHomeWidgetContextUncached(role, model) {');
-    expect(luxury).toContain('function buildHomeWidgetContext(role, model) {');
-    expect(luxury).toContain('const cached = HOME_WIDGET_CONTEXT_CACHE.get(model);');
-    expect(luxury).toContain('HOME_WIDGET_CONTEXT_CACHE.set(model, { role, value: context });');
-    expect(luxury).toContain('function buildSystemWidgetDefinitionsUncached(role, model) {');
-    expect(luxury).toContain('function buildSystemWidgetDefinitions(role, model) {');
-    expect(luxury).toContain('const cached = HOME_WIDGET_DEFINITIONS_CACHE.get(model);');
-    expect(luxury).toContain('HOME_WIDGET_DEFINITIONS_CACHE.set(model, { role, value: definitions });');
+    expect(widgetLayout).toContain('function buildHomeWidgetContextUncached(role, model) {');
+    expect(widgetLayout).toContain('function buildHomeWidgetContext(role, model) {');
+    expect(widgetLayout).toContain('const cached = HOME_WIDGET_CONTEXT_CACHE.get(model);');
+    expect(widgetLayout).toContain('HOME_WIDGET_CONTEXT_CACHE.set(model, { role, value: context });');
+    expect(widgetLayout).toContain('function buildSystemWidgetDefinitionsUncached(role, model) {');
+    expect(widgetLayout).toContain('function buildSystemWidgetDefinitions(role, model) {');
+    expect(widgetLayout).toContain('const cached = HOME_WIDGET_DEFINITIONS_CACHE.get(model);');
+    expect(widgetLayout).toContain('HOME_WIDGET_DEFINITIONS_CACHE.set(model, { role, value: definitions });');
   });
 
   it('sanitizes widget definition text and shared role labels before professor-home surfaces render', () => {
-    const luxury = readRegisteredHomeChunk();
+    const widgetLayout = readSource('assets/js/features/home-dashboard-widget-layout-runtime.js');
     const utilities = readSource('assets/js/shared/utilities.js');
 
-    expect(luxury).toContain('function sanitizeWidgetDefinitionText(definition) {');
-    expect(luxury).toContain("buildSystemWidgetDefinitionsUncached(role, model).map((definition) => sanitizeWidgetDefinitionText(definition))");
+    expect(widgetLayout).toContain('function sanitizeWidgetDefinitionText(definition) {');
+    expect(widgetLayout).toContain("buildSystemWidgetDefinitionsUncached(role, model).map((definition) => sanitizeWidgetDefinitionText(definition))");
     expect(utilities).toContain("userRoleEl.textContent = `${roleLabels[currentUser.role] || 'University Portal'} - ${facultyLabel}`;");
   });
 
   it('keeps the professor-home entry shell role-neutral and lets the primer resolve the requested role before reveal', () => {
     const indexHtml = readSource('index.html');
     const primer = readSource('assets/js/theme-primer.js');
-    const app = readSource('assets/js/app/app.js');
+    const localization = readSource('assets/js/app/english-localization.js');
 
     expect(indexHtml).toContain('<title>KIU - Portal</title>');
     expect(indexHtml).not.toContain('<title>KIU - Student Portal</title>');
@@ -443,8 +451,8 @@ describe('global interaction performance guardrails', () => {
     expect(primer).toContain("b.classList.remove('role-student', 'role-professor', 'role-ta', 'role-admin', 'role-student_service');");
     expect(primer).toContain("b.classList.add('role-' + requestedRole);");
     expect(primer).toContain('document.title = getShellHomeTitle(requestedRole);');
-    expect(app).toContain("const shellTitle = shellRole === USER_ROLES.PROFESSOR");
-    expect(app).not.toContain("if (document?.title !== 'KIU - Student Portal') document.title = 'KIU - Student Portal';");
+    expect(localization).toContain("const shellTitle = shellRole === USER_ROLES.PROFESSOR");
+    expect(localization).not.toContain("if (document?.title !== 'KIU - Student Portal') document.title = 'KIU - Student Portal';");
   });
 
   it('keeps mobile-only shell scaffolding out of the desktop entry html and recreates it in the mobile runtime', () => {
@@ -471,56 +479,63 @@ describe('global interaction performance guardrails', () => {
 
   it('lazy-creates hidden topbar utility panels instead of shipping empty panel containers in the shell chrome', () => {
     const luxury = readSource('assets/js/features/index-luxury.js');
-    const shellChrome = readSource('assets/js/features/luxury-shell-chrome.js');
+    const pickerRuntime = readSource('assets/js/features/luxury-shell-picker-runtime.js');
 
-    expect(shellChrome).toContain('function ensureTopbarUtilityPanel(panelId) {');
-    expect(shellChrome).toContain("const panel = ensureTopbarUtilityPanel(panelId);");
+    expect(pickerRuntime).toContain('function ensureTopbarUtilityPanel(panelId) {');
+    expect(pickerRuntime).toContain("const panel = ensureTopbarUtilityPanel(panelId);");
     expect(luxury).not.toContain('<div class="lux-utility-panel" id="lux-notification-panel"></div>');
     expect(luxury).not.toContain('<div class="lux-utility-panel" id="lux-chat-panel"></div>');
   });
 
   it('lazy-creates the hidden user menu instead of shipping its button list in the shell chrome', () => {
     const luxury = readSource('assets/js/features/index-luxury.js');
+    const pickerRuntime = readSource('assets/js/features/luxury-shell-picker-runtime.js');
     const shellChrome = readSource('assets/js/features/luxury-shell-chrome.js');
 
-    expect(shellChrome).toContain('function ensureUserMenu() {');
+    expect(pickerRuntime).toContain('function ensureUserMenu() {');
     expect(shellChrome).toContain("const menu = ensureUserMenu();");
     expect(luxury).not.toContain('<div class="lux-user-menu" id="lux-user-menu">');
   });
 
   it('lazy-creates the shell faculty and role picker panels instead of shipping empty panel containers in the topbar', () => {
     const luxury = readSource('assets/js/features/index-luxury.js');
-    const shellChrome = readSource('assets/js/features/luxury-shell-chrome.js');
+    const pickerRuntime = readSource('assets/js/features/luxury-shell-picker-runtime.js');
+    const topbarRuntime = readSource('assets/js/features/luxury-shell-topbar-runtime.js');
 
-    expect(shellChrome).toContain('function ensureShellPickerPanel(panelId) {');
-    expect(shellChrome).toContain("const rolePanel = ensureShellPickerPanel('lux-role-picker-panel');");
-    expect(shellChrome).toContain("panel = panel || ensureShellPickerPanel('lux-faculty-picker-panel');");
-    expect(shellChrome).toContain("panel = panel || ensureShellPickerPanel('lux-role-picker-panel');");
+    expect(pickerRuntime).toContain('function ensureShellPickerPanel(panelId) {');
+    expect(pickerRuntime).toContain("const rolePanel = ensureShellPickerPanel('lux-role-picker-panel');");
+    expect(topbarRuntime).toContain("panel = panel || ensureShellPickerPanel('lux-faculty-picker-panel');");
+    expect(topbarRuntime).toContain("panel = panel || ensureShellPickerPanel('lux-role-picker-panel');");
     expect(luxury).not.toContain('<div class="lux-picker-panel" id="lux-faculty-picker-panel"></div>');
     expect(luxury).not.toContain('<div class="lux-picker-panel" id="lux-role-picker-panel"></div>');
   });
 
   it('does not create shell picker panels during the initial professor-home sync', () => {
-    const shellChrome = readSource('assets/js/features/luxury-shell-chrome.js');
+    const topbarRuntime = readSource('assets/js/features/luxury-shell-topbar-runtime.js');
 
-    expect(shellChrome).toContain('function populateFacultySwitcher(options = {}) {');
-    expect(shellChrome).toContain("let panel = document.getElementById('lux-faculty-picker-panel');");
-    expect(shellChrome).toContain("if (!panel && !options.ensurePanel) return;");
-    expect(shellChrome).toContain('function populateRoleSwitcher(options = {}) {');
-    expect(shellChrome).toContain("let panel = document.getElementById('lux-role-picker-panel');");
-    expect(shellChrome).toContain("if (!panel && !options.ensurePanel) return;");
+    expect(topbarRuntime).toContain('function populateFacultySwitcher(options = {}) {');
+    expect(topbarRuntime).toContain("let panel = document.getElementById('lux-faculty-picker-panel');");
+    expect(topbarRuntime).toContain("if (!panel && !options.ensurePanel) return;");
+    expect(topbarRuntime).toContain('function populateRoleSwitcher(options = {}) {');
+    expect(topbarRuntime).toContain("let panel = document.getElementById('lux-role-picker-panel');");
+    expect(topbarRuntime).toContain("if (!panel && !options.ensurePanel) return;");
   });
 
-  it('always re-applies transparency after syncAll atmosphere/perf (no signature skip)', () => {
+  it('queues transparency on every syncAll but tokensOnly when signatures unchanged', () => {
     const syncRuntime = readSource('assets/js/features/luxury-index-sync-runtime.js');
+    const topbarRuntime = readSource('assets/js/features/luxury-shell-topbar-runtime.js');
 
     expect(syncRuntime).toContain('function buildTransparencySyncSignature(activePageId, transparencyValue) {');
     expect(syncRuntime).toContain('JSON.stringify(visuals.customPalette || {})');
     expect(syncRuntime).toContain("HOME_EDITOR_STATE.editing && HOME_EDITOR_STATE.role === getEffectiveRole() ? 'editing' : 'view'");
-    // Signature is recorded for diagnostics, but refresh must always run so glass tokens win.
-    expect(syncRuntime).toContain('window.__luxLastTransparencySyncSignature = buildTransparencySyncSignature(activePageId, _syncTransVal);');
-    expect(syncRuntime).toContain("window.queueLuxuryTransparencyRefresh(parseInt(_syncTransVal, 10), { persist: false });");
+    expect(syncRuntime).toContain('var _transparencyUnchanged = window.__luxLastTransparencySyncSignature === _syncTransparencySignature');
+    expect(syncRuntime).toContain('_transRefreshOptions.tokensOnly = true');
+    expect(syncRuntime).toContain('window.queueLuxuryTransparencyRefresh(parseInt(_syncTransVal, 10), _transRefreshOptions)');
     expect(syncRuntime).not.toContain('window.__luxLastTransparencySyncSignature !== _syncTransparencySignature');
+    expect(syncRuntime).toContain('!visualHalfUnchanged');
+    expect(syncRuntime).not.toMatch(/populateFacultySwitcher\(\);\s*populateRoleSwitcher\(\);\s*syncLayout\(\)/);
+    expect(topbarRuntime).toContain('function buildSyncTopbarSignature()');
+    expect(topbarRuntime).toContain('window.__luxLastSyncTopbarSignature === topbarSignature');
   });
 
   it('coalesces boot transparency and pauses inactive visual observers', () => {
@@ -543,8 +558,9 @@ describe('global interaction performance guardrails', () => {
 
   it('adds keyboard close and focus return hooks for professor-home topbar overlays', () => {
     const shellChrome = readSource('assets/js/features/luxury-shell-chrome.js');
+    const pickerRuntime = readSource('assets/js/features/luxury-shell-picker-runtime.js');
 
-    expect(shellChrome).toContain('function closeUserMenu(options = {}) {');
+    expect(pickerRuntime).toContain('function closeUserMenu(options = {}) {');
     expect(shellChrome).toContain("chip.setAttribute('role', 'button');");
     expect(shellChrome).toContain("chip.setAttribute('tabindex', '0');");
     expect(shellChrome).toContain("if (event.key === 'Escape') {");
@@ -632,10 +648,10 @@ describe('global interaction performance guardrails', () => {
 
     expect(indexHtml).toContain('assets/css/kiu-fonts.css?v=20260515-fonts1');
     expect(fontsCss).not.toContain('fonts.googleapis.com');
-    expect(fontsCss).toContain("@font-face {\n    font-family: 'Inter';");
-    expect(fontsCss).toContain("@font-face {\n    font-family: 'Noto Sans Georgian';");
-    expect(fontsCss).toContain("@font-face {\n    font-family: 'Playfair Display';");
-    expect(fontsCss).toContain("@font-face {\n    font-family: 'Manrope';");
+    expect(fontsCss).toContain("@font-face {\n  font-family: 'Inter';");
+    expect(fontsCss).toContain("@font-face {\n  font-family: 'Noto Sans Georgian';");
+    expect(fontsCss).toContain("@font-face {\n  font-family: 'Playfair Display';");
+    expect(fontsCss).toContain("@font-face {\n  font-family: 'Manrope';");
   });
 
   it('does not request the deleted placeholder components stylesheet anywhere in the live shell', () => {
@@ -651,24 +667,24 @@ describe('global interaction performance guardrails', () => {
   });
 
   it('gates expensive structural English overrides by page-root presence', () => {
-    const app = readSource('assets/js/app/app.js');
+    const localization = readSource('assets/js/app/english-localization.js');
 
-    expect(app).toContain('function hasPageRoot(pageId)');
-    expect(app).toContain("if (hasPageRoot('home')) applyStudentDashboardEnglishOverrides();");
-    expect(app).toContain("if (hasPageRoot('orders')) applyOrdersPageEnglishOverrides();");
-    expect(app).toContain("if (hasPageRoot('programs') || document.getElementById('modal-programs')) applyProgramsPageEnglishOverrides();");
-    expect(app).toContain("if (hasPageRoot('timetable')) applyTimetablePageEnglishOverrides();");
-    expect(app).not.toContain("if (hasPageRoot('library')) applyLibraryPageEnglishOverrides();");
-    expect(app).not.toContain('function applyLibraryPageEnglishOverrides');
+    expect(localization).toContain('function hasPageRoot(pageId)');
+    expect(localization).toContain("if (hasPageRoot('home')) applyStudentDashboardEnglishOverrides();");
+    expect(localization).toContain("if (hasPageRoot('orders')) applyOrdersPageEnglishOverrides();");
+    expect(localization).toContain("if (hasPageRoot('programs') || document.getElementById('modal-programs')) applyProgramsPageEnglishOverrides();");
+    expect(localization).toContain("if (hasPageRoot('timetable')) applyTimetablePageEnglishOverrides();");
+    expect(localization).not.toContain("if (hasPageRoot('library')) applyLibraryPageEnglishOverrides();");
+    expect(localization).not.toContain('function applyLibraryPageEnglishOverrides');
   });
 
   it('stores the mojibake replacement table in encoded form instead of raw corrupted source literals', () => {
-    const app = readSource('assets/js/app/app.js');
+    const localization = readSource('assets/js/app/english-localization.js');
 
-    expect(app).toContain('function decodeReplacementKey(base64) {');
-    expect(app).toContain('const ENGLISH_UI_REPLACEMENT_DATA = [');
-    expect(app).toContain("const ENGLISH_UI_REPLACEMENTS = ENGLISH_UI_REPLACEMENT_DATA.map(([fromBase64, to]) => [decodeReplacementKey(fromBase64), to]);");
-    expect(app).not.toContain('const ENGLISH_UI_REPLACEMENTS = [');
+    expect(localization).toContain('function decodeReplacementKey(base64) {');
+    expect(localization).toContain('const ENGLISH_UI_REPLACEMENT_DATA = [');
+    expect(localization).toContain("const ENGLISH_UI_REPLACEMENTS = ENGLISH_UI_REPLACEMENT_DATA.map(([fromBase64, to]) => [decodeReplacementKey(fromBase64), to]);");
+    expect(localization).not.toContain('const ENGLISH_UI_REPLACEMENTS = [');
   });
 
   it('does not bootstrap backend or realtime bridges from a local auth snapshot without a session token', () => {
@@ -683,8 +699,8 @@ describe('global interaction performance guardrails', () => {
   });
 
   it('keeps only one chancellery English override implementation in app bootstrap', () => {
-    const app = readSource('assets/js/app/app.js');
-    const matches = app.match(/function applyChancelleryPageEnglishOverrides\(/g) || [];
+    const localization = readSource('assets/js/app/english-localization.js');
+    const matches = localization.match(/function applyChancelleryPageEnglishOverrides\(/g) || [];
 
     expect(matches).toHaveLength(1);
   });
@@ -704,15 +720,15 @@ describe('global interaction performance guardrails', () => {
   });
 
   it('skips deep text-node localization walks when the root has no broken or Georgian text', () => {
-    const app = readSource('assets/js/app/app.js');
+    const localization = readSource('assets/js/app/english-localization.js');
 
-    expect(app).toContain('function rootHasTranslatableText(root)');
-    expect(app).toContain('function nodeNeedsEnglishLocalization(node)');
-    expect(app).toContain("if (!root.querySelector('option:not([value])')) return;");
-    expect(app).toContain("if (!root.querySelector('[placeholder],[title],[aria-label],input[type=\"button\"],input[type=\"submit\"]')) return;");
-    expect(app).toContain('if (rootHasTranslatableText(root)) {');
-    expect(app).toContain('translateTextNodes(root);');
-    expect(app).toContain('if (node.nodeType === Node.ELEMENT_NODE && nodeNeedsEnglishLocalization(node)) {');
+    expect(localization).toContain('function rootHasTranslatableText(root)');
+    expect(localization).toContain('function nodeNeedsEnglishLocalization(node)');
+    expect(localization).toContain("if (!root.querySelector('option:not([value])')) return;");
+    expect(localization).toContain("if (!root.querySelector('[placeholder],[title],[aria-label],input[type=\"button\"],input[type=\"submit\"]')) return;");
+    expect(localization).toContain('if (rootHasTranslatableText(root)) {');
+    expect(localization).toContain('translateTextNodes(root);');
+    expect(localization).toContain('if (node.nodeType === Node.ELEMENT_NODE && nodeNeedsEnglishLocalization(node)) {');
   });
 
   it('uses device heuristics for performance tier on all routes including home', () => {
@@ -728,7 +744,11 @@ describe('global interaction performance guardrails', () => {
     expect(tierBlock).toContain('hardwareConcurrency');
     expect(tierBlock).toContain('cores <= 2');
     expect(html).toContain('luxury-index-runtime.js?v=');
-    expect(luxury).toContain("particleQuality: 'high'");
+    expect(luxury).toContain("particleQuality: 'auto'");
+    expect(luxury).toContain('window.getLuxuryPerformanceTier = getLuxuryPerformanceTier');
+    const transparencyModel = readSource('assets/js/features/luxury-transparency-model-runtime.js');
+    expect(transparencyModel).toContain('window.getLuxuryPerformanceTier');
+    expect(transparencyModel).not.toMatch(/getLuxuryPerformanceTier\(false\) === 'high'/);
   });
 
     it('busts portal shell SW cache (live stack, no retired luxury CSS)', () => {
@@ -747,6 +767,9 @@ describe('global interaction performance guardrails', () => {
     const particles = readSource('assets/js/features/luxury-particle-background.js');
     const fog = readSource('assets/js/features/luxury-vanta-fog-background.js');
     const atmosphere = readSource('assets/js/features/luxury-atmosphere-runtime.js');
+    const indexRuntime = readSource('assets/js/features/luxury-index-runtime.js');
+    const foucCss = readSource('assets/css/lux-fouc-ht.css');
+    const shellCss = readSource('assets/css/lux-shell.css');
     const shell = readSource('assets/js/features/luxury-shell-chrome.js');
     const editorDraft = readSource('assets/js/features/home-dashboard/editor-draft.js');
     const mobileCss = readSource('assets/css/mobile-shell-core.css');
@@ -754,11 +777,76 @@ describe('global interaction performance guardrails', () => {
       particles.indexOf('function renderCurrentFrame'),
       particles.indexOf('function render()')
     );
-    expect(renderBlock).toContain('TARGET_FPS = 30');
+    expect(renderBlock).toContain('readParticleFrameInterval()');
     expect(renderBlock).toContain('lastRenderTime += frameInterval');
-    expect(renderBlock).not.toContain('window.__luxIsScrolling');
-    expect(particles).toContain('fps: 30');
-    expect(fog).toContain('scaleMobile: 1.5');
+    expect(renderBlock).toContain('updateAdaptivePixelScale');
+    expect(renderBlock).toContain('renderParticleSceneToScreen');
+    expect(particles).toContain('readParticlePacingMultiplier');
+    expect(particles).toContain('buildLmsParticleThemeSignature');
+    expect(particles).toContain('if (nextSignature === themeSignature) return');
+    expect(particles).toContain('lux-render-governor.js');
+    expect(particles).toContain('readGovernedFrameIntervalMs');
+    expect(fog).toContain('startFogRenderLoop');
+    expect(fog).toContain('readFogFrameInterval');
+    expect(fog).toContain('readGovernedFrameIntervalMs');
+    expect(particles).toContain('readCanvasPixelRatioCap()');
+    expect(particles).toContain('startParticleRenderLoop');
+    expect(particles).not.toMatch(/setAnimationLoop\(render\)/);
+    expect(atmosphere).not.toContain('--lux-canvas-sharpness-blur');
+    const transparency = readSource('assets/js/shared/lux-transparency.js');
+    expect(transparency).toContain('syncLuxuryOffscreenBackdrop');
+    expect(transparency).toContain('flushLuxuryTransparencyAfterScroll');
+    expect(transparency).toContain("el.dataset.luxOffscreen === '1'");
+    expect(transparency).toContain('filterCssOwnedTransparencySurfaces');
+    expect(transparency).toContain('options?.tokensOnly === true');
+    expect(transparency).toContain('shouldDeferLuxTransparency');
+    expect(transparency).toContain('document.body.classList.contains(\'lux-page-bare\')');
+    expect(transparency).toContain('isHomeLegacyGridInnerPanel');
+    const bareLite = readSource('assets/css/lux-page-bare-lite.css');
+    expect(bareLite).toContain('body.lux-page-bare .lux-page-shell');
+    expect(bareLite).not.toMatch(/backdrop-filter:\s*none/);
+    expect(bareLite).not.toMatch(/backdrop-filter:\s*var\(--lux-panel-blur-filter/);
+    expect(shellCss).toMatch(/body\.lux-page-bare \.lux-page-shell[\s\S]*backdrop-filter:\s*var\(--lux-panel-blur-filter/);
+    expect(shellCss).not.toMatch(/body\.lux-page-bare \.lux-page-shell :is\(\.page-hero, \.lux-panel, \.lux-alert\)[\s\S]*backdrop-filter:\s*none/);
+    const homeRole = readSource('assets/css/index-home-role.css');
+    expect(homeRole).toContain('#page-home #lux-home-shell .lux-home-grid');
+    expect(homeRole).toMatch(/\.lux-home-grid > \.lux-panel[\s\S]*backdrop-filter:\s*none !important/);
+    const governor = readSource('assets/js/shared/lux-render-governor.js');
+    expect(governor).toContain('getPacingMultiplier');
+    const syncRuntime = readSource('assets/js/features/luxury-index-sync-runtime.js');
+    expect(syncRuntime).toContain('buildPaletteThemeSignature');
+    expect(syncRuntime).toContain('__luxLastParticleThemePaletteSignature');
+    expect(indexRuntime).toContain('syncLuxuryOffscreenBackdrop');
+    expect(indexRuntime).toContain('__luxHeavySurfaceIoPending');
+    expect(indexRuntime).toContain('getHeavySurfaceScrollRoot');
+    expect(indexRuntime).toContain('.lux-page-shell');
+    expect(indexRuntime).toContain('requestIdleCallback');
+    expect(indexRuntime).toContain('#lux-home-shell .lux-home-grid');
+    expect(indexRuntime).toContain('#page-admin-scheduler .sch-grid-shell');
+    expect(foucCss).toMatch(/\[data-lux-offscreen="1"\][\s\S]*backdrop-filter:\s*none !important/);
+    expect(foucCss).not.toMatch(/\[data-lux-offscreen="1"\][\s\S]*box-shadow:\s*none/);
+    expect(foucCss).toMatch(/html\.lux-high-transparency[\s\S]*\.lux-home-merged\.lux-soft-chrome[\s\S]*backdrop-filter:\s*none !important/);
+    expect(shellCss).toMatch(
+        /body\.lux-full-paint\.lux-unified-shell #lux-topbar \.lux-topbar-shell\s*\{[\s\S]*?backdrop-filter:\s*none/
+    );
+    const bodyBefore = foucCss.slice(foucCss.indexOf('body::before'), foucCss.indexOf('body:not(.lux-light-mode)::before'));
+    expect(bodyBefore).not.toContain('will-change');
+    expect(shellCss).not.toMatch(/#lux-topbar\s*\{[^}]*will-change/);
+    expect(shellCss).not.toMatch(/#lux-shell, \.lux-card\s*\{[^}]*will-change/);
+    expect(shellCss).toMatch(/html\.lux-shell-chrome-motion #lux-shell\s*\{[\s\S]*?will-change:\s*transform/);
+    expect(shellCss.replace(/html\.lux-shell-chrome-motion #lux-shell\s*\{[\s\S]*?\}/g, '')).not.toMatch(
+        /#lux-shell\s*\{[^}]*will-change:\s*transform/
+    );
+    const canvasBlock = foucCss.slice(foucCss.indexOf('#lux-bg-canvas {'), foucCss.indexOf('#lux-bg-fog'));
+    expect(canvasBlock).not.toContain('will-change');
+    expect(foucCss).not.toMatch(/html\.lux-high-transparency #lux-shell[\s\S]*--lux-shell-sidebar-blur:\s*none/);
+    expect(shellCss).toMatch(/#lux-shell[\s\S]*backdrop-filter:\s*var\(--lux-shell-sidebar-blur\)/);
+    expect(particles).toContain('antialias: !(initialQuality.supersample > 1)');
+    expect(particles).toMatch(/balanced:\s*\{[\s\S]*?maxDpr:\s*1\.5/);
+    expect(particles).not.toMatch(/balanced:\s*\{[\s\S]*?supersample:\s*1\.15/);
+    expect(particles).toMatch(/balanced:\s*\{[\s\S]*?supersample:\s*1[,}]/);
+    expect(particles).toContain('syncRibbonMeshInScene');
+    expect(particles).toContain('scene.remove(ribbonMesh)');
     expect(atmosphere).toContain('scheduleParticleBackgroundRefresh');
     expect(shell).toContain('collectShellPerimeterPoints(rect, 5)');
     expect(shell).toContain("kinds = ['dot', 'spark', 'streak']");
@@ -771,6 +859,30 @@ describe('global interaction performance guardrails', () => {
     expect(studioCss).toContain('lux-chip-burst-particle--spark');
     expect(studioCss).toContain('lux-chip-burst-particle--streak');
     expect(studioCss).not.toContain('lux-chip-burst-particle--ring');
+    expect(studioCss).toMatch(/\.lux-mode-btn[\s\S]*:hover:not\(:disabled\)::after[\s\S]*opacity:\s*1/);
+    expect(studioCss).toMatch(/:hover:not\(:disabled\)[\s\S]*\[data-glass-blur-quality\]/);
+    expect(studioCss).not.toMatch(/filter:\s*brightness\(0\.93\)/);
+    const studioChipBlock = studioCss.match(
+        /\/\* Soft-chrome chip shells[\s\S]*?@media \(hover: hover\) and \(pointer: fine\)/
+    )?.[0] || '';
+    expect(studioChipBlock).not.toContain('.lux-studio-section:not(:has');
+    expect(studioCss).toMatch(/\.lux-apply-btn::after/);
+    expect(studioCss).not.toMatch(/#lux-studio-backdrop \.lux-apply-btn:active[\s\S]*filter:\s*brightness/);
+    const motionRuntime = readSource('assets/js/features/luxury-shell-motion-runtime.js');
+    expect(motionRuntime).toContain('beginShellChromeMotion');
+    expect(motionRuntime).toContain('bindShellChromeMotion');
+    expect(motionRuntime).toContain('lux-shell-chrome-motion');
+    expect(motionRuntime).toContain('__luxShellHoverBusy');
+    expect(motionRuntime).toContain('pulseShellHoverBusy');
+    expect(motionRuntime).toContain('beginLuxAnimating');
+    expect(motionRuntime).toContain('__luxIsAnimating');
+    expect(motionRuntime).toContain("addEventListener('pointerover'");
+    expect(motionRuntime).not.toContain('control-hover');
+    expect(motionRuntime).not.toContain('control-transition');
+    expect(motionRuntime).not.toMatch(/addEventListener\('mouseenter'/);
+    expect(motionRuntime).toContain('shell-transform');
+    expect(motionRuntime).toContain('nav-enter');
+    expect(motionRuntime).not.toMatch(/queueLuxuryTransparencyRefresh\([^)]*force:\s*true/);
     expect(shell).toContain('.lux-bg-gallery-tile, #lux-bg-gallery-upload');
     expect(shell).not.toMatch(/navigate\(pageTarget\(routePage\)\);\s*if \(typeof syncAll === 'function'\) syncAll\(\);/);
     expect(editorDraft).toContain('stopHomeEditor = function');

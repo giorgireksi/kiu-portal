@@ -22,11 +22,14 @@ describe('dashboard + keep routes full paint', () => {
         expect(existsSync(join(process.cwd(), 'assets/css/index-home-dashboard.css'))).toBe(false);
     });
 
-    it('timetable / lms / social share paint stack without home FOUC', () => {
+    it('timetable / lms / social share paint stack with FOUC atmosphere (no home widgets)', () => {
         for (const page of ['timetable.html', 'lms.html', 'social.html']) {
             const html = read(page);
-            expect(html).not.toMatch(/lux-fouc-ht\.css/);
+            expect(html).toMatch(/lux-fouc-ht\.css/);
             expect(html).not.toMatch(/lux-surfaces\.css/);
+            expect(html).not.toMatch(/index-home-layout\.css/);
+            expect(html).not.toMatch(/index-home-widgets\.css/);
+            expect(html).not.toMatch(/index-home-role\.css/);
             expect(html).toMatch(/lux-focus-panel\.css/);
             expect(html).toContain('lux-page-bare');
             expect(html).toMatch(/lux-shell\.css/);

@@ -273,7 +273,7 @@
         if (!root) return;
         root.innerHTML = `
             <main class="exam-blocked-shell">
-                <section class="exam-blocked-card lms-route-panel lms-route-panel-pad-16-20">
+                <section class="lux-soft-chrome exam-blocked-card lux-panel lms-route-panel lms-route-panel-pad-16-20">
                     <div class="exam-blocked-icon"><i class="fas fa-shield-halved"></i></div>
                     <div class="lms-route-eyebrow exam-kicker-danger">Secure Browser Required</div>
                     <h1 class="exam-blocked-title">Open this page in KIU Anti-Cheat Browser</h1>
@@ -541,7 +541,7 @@
         const status = deriveSessionStatus(session);
         const sessionKey = getSessionDomKey(session.id);
         return `
-            <section class="exam-session-hero lms-route-panel lms-route-panel-compact" data-session-spotlight="${sessionKey}">
+            <section class="lux-soft-chrome exam-session-hero lux-panel lms-route-panel lms-route-panel-compact" data-session-spotlight="${sessionKey}">
                 <div class="lms-route-eyebrow">Priority Session</div>
                 <div class="exam-session-hero-head">
                     <div>
@@ -566,7 +566,7 @@
         const status = deriveSessionStatus(session);
         const sessionKey = getSessionDomKey(session.id);
         return `
-            <article class="exam-card lms-route-card is-${escapeHtml(status)}" data-session-card="${sessionKey}">
+            <article class="lux-soft-chrome lux-panel exam-card lms-route-card is-${escapeHtml(status)}" data-session-card="${sessionKey}">
                 <div class="exam-card-head">
                     <div>
                         <div class="exam-card-title">${escapeHtml(session.title || session.subjectName || 'Scheduled exam')}</div>
@@ -1031,7 +1031,7 @@
     function buildProtectedQuestionCardMarkup(question, index) {
         const answerValue = runtime.protected.answers[question.id] ?? '';
         return `
-            <article class="exam-question-card lms-route-card" id="question-${escapeHtml(question.id)}" data-question-id="${escapeHtml(question.id)}">
+            <article class="lux-soft-chrome lux-panel exam-question-card lms-route-card" id="question-${escapeHtml(question.id)}" data-question-id="${escapeHtml(question.id)}">
                 <div class="exam-question-toolbar">
                     <div class="exam-question-title">Question ${index + 1} | ${escapeHtml(getQuestionTypeLabel(question.type))}</div>
                     <button type="button" class="exam-flag-btn lux-secondary-btn ${runtime.protected.flagged[question.id] ? 'is-active' : ''}" data-question-flag="${escapeHtml(question.id)}">
@@ -1055,7 +1055,7 @@
                     <div class="exam-protected-title">${escapeHtml(quiz.title || 'Exam submitted')}</div>
                     <p class="exam-protected-copy">Your submission is recorded. Objective scoring is visible immediately, while manual grading remains hidden until the reviewer finalizes it.</p>
                 </section>
-                <section class="exam-receipt-card lms-route-panel lms-route-panel-compact">
+                <section class="lux-soft-chrome exam-receipt-card lux-panel lms-route-panel lms-route-panel-compact">
                     <div class="exam-card-meta">
                         <div><strong>Objective Score</strong><span>${escapeHtml(String(scoreSummary.objectiveScore))}/${escapeHtml(String(scoreSummary.objectiveMax || scoreSummary.maxScore))}</span></div>
                         <div><strong>Final Score</strong><span>${scoreSummary.finalScore === null ? 'Pending' : `${escapeHtml(String(scoreSummary.finalScore))}/${escapeHtml(String(scoreSummary.maxScore))}`}</span></div>
@@ -1073,7 +1073,7 @@
 
     function buildProtectedReadyMarkup(session) {
         return `
-            <section class="exam-ready-panel lms-route-panel lms-route-panel-compact">
+            <section class="lux-soft-chrome exam-ready-panel lux-panel lms-route-panel lms-route-panel-compact">
                 <div class="lms-route-eyebrow">Ready Check</div>
                 <h2 class="exam-heading-reset">Start only when your invigilator confirms the live session</h2>
                 <div class="lms-route-copy">The question body stays hidden until you explicitly begin in the protected environment. Once started, leaving this secure session may auto-submit your exam.</div>
@@ -1121,7 +1121,7 @@
                         </div>
                     </section>
                     <div class="exam-protected-layout">
-                        <aside class="exam-protected-card lms-route-panel lms-route-panel-compact">
+                        <aside class="lux-soft-chrome exam-protected-card lux-panel lms-route-panel lms-route-panel-compact">
                             <h3 class="exam-heading-reset">Exam Progress</h3>
                             <div class="exam-progress-grid">
                                 <div class="exam-progress-box">
@@ -1146,7 +1146,7 @@
                                 `).join('')}
                             </div>
                         </aside>
-                        <section class="exam-protected-card lms-route-panel lms-route-panel-compact">
+                        <section class="lux-soft-chrome exam-protected-card lux-panel lms-route-panel lms-route-panel-compact">
                             <form id="protected-exam-form" class="exam-question-list">
                                 ${questions.map(buildProtectedQuestionCardMarkup).join('')}
                                 <div class="exam-action-row">
@@ -1397,7 +1397,7 @@
             if (root) {
                 root.innerHTML = `
                     <main class="exam-protected-shell">
-                        <section class="exam-receipt-card lms-route-panel lms-route-panel-compact">
+                        <section class="lux-soft-chrome exam-receipt-card lux-panel lms-route-panel lms-route-panel-compact">
                             <div class="lms-route-eyebrow">Launch Error</div>
                             <h2 class="exam-heading-reset">Protected exam session could not be loaded</h2>
                             <div class="lms-route-copy">${escapeHtml(error.message || 'The exam session is invalid or expired.')}</div>

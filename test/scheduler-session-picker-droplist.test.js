@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
     LUX_DROPLIST_CONTRACT,
+    LUX_DROPLIST_CSS_CACHE_BUST,
 } from './fixtures/lux-droplist-contract.js';
 import { expectRetiredCss, readDroplistCss, readSource } from './helpers/bare-shell-css.js';
 
@@ -12,9 +13,14 @@ describe('scheduler session picker droplist regressions', () => {
         expect(droplist).toContain('.lux-droplist-panel');
         expect(droplist).toContain(`--lux-droplist-shell-radius: ${LUX_DROPLIST_CONTRACT.shellRadius}`);
         expect(droplist).toContain(`--lux-droplist-option-height: ${LUX_DROPLIST_CONTRACT.optionHeight}`);
+        expect(droplist).toContain('--lux-droplist-frame-border');
+        expect(droplist).toContain('--lux-droplist-frame-ring');
+        expect(droplist).toContain('--lux-droplist-frame-glow');
         expect(droplist).toMatch(
-            /\.lux-picker-panel\.lux-universal-picker-panel\.lux-droplist-panel[\s\S]*?border-radius: var\(--lux-droplist-shell-radius\)/
+            /\.lux-picker-panel\.lux-universal-picker-panel\.lux-droplist-panel[\s\S]*?border:\s*1px solid var\(--lux-droplist-frame-border\)/
         );
+        const shellChrome = readSource('assets/js/features/luxury-shell-chrome.js');
+        expect(shellChrome).toContain(`lux-droplist.css?v=${LUX_DROPLIST_CSS_CACHE_BUST}`);
     });
 
     it('applies warmglass shell depth and selection check disc from lux-droplist', () => {
@@ -70,7 +76,12 @@ describe('scheduler session picker droplist regressions', () => {
             /\.lux-droplist-panel \.lux-picker-option\s*\{\s*\n\s*position: relative;[\s\S]*?\n\}/
         )?.[0] || '';
         expect(optionBaseRule).toContain('var(--lux-droplist-hover-duration)');
-        expect(optionBaseRule).not.toContain('box-shadow');
+        expect(optionBaseRule).toContain('var(--lux-droplist-option-border-width)');
+        expect(optionBaseRule).toContain('var(--lux-droplist-option-edge-idle)');
+        expect(optionBaseRule).toContain('var(--lux-droplist-option-glass-idle)');
+        expect(optionBaseRule).not.toMatch(/backdrop-filter/);
+        expect(droplist).toContain('--lux-droplist-option-glass-idle: var(--lux-soft-chrome-surface)');
+        expect(droplist).toContain('--lux-droplist-option-edge-idle: var(--lux-soft-chrome-shadow)');
         expect(droplist).toMatch(
             /\.lux-droplist-panel \.lux-picker-option:hover[\s\S]*?transform:\s*none/
         );

@@ -55,7 +55,7 @@
   --lux-elev-3: none;
   --lux-panel-shadow-soft: none;
   --lux-panel-shadow: none;
-  --lux-btn-pill-radius: 999px;
+  --lux-btn-pill-radius: 0 22px 0 22px;
   --lux-icon-btn-size: 44px;
   --lux-icon-btn-radius: 16px;
   --lux-primary-btn-min-height: 46px;
@@ -81,6 +81,7 @@
   --lux-scrollbar-size: 7px;
   --lux-scrollbar-track: transparent;
   --lux-scrollbar-thumb: rgba(var(--lux-accent-rgb), calc(0.24 + var(--lux-glass-alpha, 0.06)));
+  --lux-scrollbar-thumb-hover: rgba(var(--lux-accent-rgb), calc(0.42 + var(--lux-panel-glow, 0.22) * 0.35));
 }
 body {
   color: var(--lux-text);
@@ -123,6 +124,7 @@ body.lux-light-mode:not([data-faculty]), body.lux-light-mode[data-faculty=""] {
 body.lux-light-mode {
   --lux-glass-tint-rgb: 246, 239, 229;
   --lux-scrollbar-thumb: rgba(48, 34, 22, 0.18);
+  --lux-scrollbar-thumb-hover: color-mix(in srgb, rgba(var(--lux-accent-rgb), 0.48) 55%, rgba(48, 34, 22, 0.28));
   --lux-bg: #efebe4;
   --lux-shell-background: radial-gradient(ellipse at 20% 14%, rgba(200, 160, 80, 0.06), transparent 38%), radial-gradient(ellipse at 80% 80%, rgba(180, 140, 90, 0.04), transparent 30%), linear-gradient(168deg, #f8f4ec 0%, #f2ece0 40%, #eee6d6 100%);
   --lux-bg-soft: #f7f3ec;
@@ -211,17 +213,30 @@ html.lux-light-mode, body.lux-light-mode {
   --lux-bg-haze-rgb: 200, 130, 42;
 }
 :root {
-  --lux-btn-pill-radius: 999px;
-  --lux-btn-frame-width: 2.5px;
+  --lux-btn-pill-radius: 0 22px 0 22px;
+  --lux-btn-frame-width: 3.5px;
+  --lux-btn-border-solid: color-mix(in srgb, var(--lux-accent) 82%, #0a1520 18%);
   --lux-btn-frame-metal: linear-gradient( 145deg, color-mix(in srgb, var(--lux-accent) 42%, #fff 58%) 0%, color-mix(in srgb, var(--lux-accent) 88%, #fff 12%) 22%, var(--lux-accent) 48%, var(--lux-accent-2, var(--lux-accent)) 72%, color-mix(in srgb, var(--lux-accent) 40%, #0a1018 60%) 100% );
   --lux-btn-frame-metal-soft: linear-gradient( 145deg, color-mix(in srgb, var(--lux-accent) 35%, #fff 50%) 0%, color-mix(in srgb, var(--lux-accent) 70%, transparent) 50%, color-mix(in srgb, var(--lux-accent-2, var(--lux-accent)) 50%, #0a1018 40%) 100% );
-  --lux-btn-well: linear-gradient( 180deg, color-mix(in srgb, #121820 calc(78% + var(--lux-transparency-alpha, 0.5) * 12%), var(--lux-accent) 6%) 0%, color-mix(in srgb, #0a0e14 calc(82% + var(--lux-transparency-alpha, 0.5) * 10%), transparent) 100% );
-  --lux-btn-well-soft: linear-gradient( 180deg, color-mix(in srgb, #161c24 calc(72% + var(--lux-transparency-alpha, 0.5) * 14%), var(--lux-accent) 8%) 0%, color-mix(in srgb, #0c1016 calc(78% + var(--lux-transparency-alpha, 0.5) * 12%), transparent) 100% );
-  --lux-btn-glass-blur: blur(calc(var(--lux-transparency-blur, 16px) * 0.4)) saturate(calc(108% + var(--lux-transparency-alpha, 0.5) * 25%));
+  /* Single-layer fade densified to match prior well+::before stack (~0.66⊗2 ≈ 0.88). */
+  --lux-btn-fade: radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.88)), transparent 42%), radial-gradient(circle at 14% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, 0.92) * 0.36)), transparent 40%);
+  --lux-btn-fade-hover: radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.96)), transparent 44%), radial-gradient(circle at 14% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-color-fade-alpha, 0.92) * 0.42)), transparent 42%);
+  --lux-btn-well-base: linear-gradient( 180deg, color-mix(in srgb, #121820 calc(78% + var(--lux-transparency-alpha, 0.5) * 12%), var(--lux-accent) 6%) 0%, color-mix(in srgb, #0a0e14 calc(82% + var(--lux-transparency-alpha, 0.5) * 10%), transparent) 100% );
+  --lux-btn-well-soft-base: linear-gradient( 180deg, color-mix(in srgb, #161c24 calc(72% + var(--lux-transparency-alpha, 0.5) * 14%), var(--lux-accent) 8%) 0%, color-mix(in srgb, #0c1016 calc(78% + var(--lux-transparency-alpha, 0.5) * 12%), transparent) 100% );
+  --lux-btn-well: var(--lux-btn-fade), var(--lux-btn-well-base);
+  --lux-btn-well-soft: var(--lux-btn-fade), var(--lux-btn-well-soft-base);
+  --lux-btn-well-hover: var(--lux-btn-fade-hover), var(--lux-btn-well-base);
+  --lux-btn-well-soft-hover: var(--lux-btn-fade-hover), var(--lux-btn-well-soft-base);
   --lux-btn-frame-shadow: 0 10px 26px rgba(0, 0, 0, 0.38), 0 0 0 1px color-mix(in srgb, var(--lux-accent) 22%, transparent), 0 4px 14px rgba(var(--lux-accent-rgb), 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.2);
   --lux-btn-frame-shadow-hover: 0 14px 34px rgba(0, 0, 0, 0.42), 0 0 0 1px color-mix(in srgb, var(--lux-accent) 38%, transparent), 0 8px 22px rgba(var(--lux-accent-rgb), 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.28);
   --lux-btn-sheen: linear-gradient( 105deg, transparent 35%, rgba(255, 255, 255, 0.14) 48%, rgba(255, 255, 255, 0.28) 50%, rgba(255, 255, 255, 0.12) 52%, transparent 65% );
   --lux-btn-label: #f7fbff;
+  --lux-btn-ghost-well: var(--lux-btn-well);
+  --lux-btn-ghost-well-hover: var(--lux-btn-well-hover);
+  --lux-btn-ghost-frame: var(--lux-btn-frame-metal-soft);
+  --lux-btn-ghost-label: var(--lux-btn-label);
+  --lux-btn-ghost-shadow: var(--lux-btn-frame-shadow);
+  --lux-btn-ghost-shadow-hover: var(--lux-btn-frame-shadow-hover);
 }
 :root {
   --lux-hero-glow: 0.24;
@@ -241,7 +256,7 @@ html.lux-light-mode, body.lux-light-mode {
   --lux-elev-2: 0 14px 30px rgba(107, 91, 62, 0.10), inset 0 1px 0 rgba(255, 255, 255, 0.62);
   --lux-elev-3: 0 22px 48px rgba(107, 91, 62, 0.13), inset 0 1px 0 rgba(255, 255, 255, 0.74), 0 0 0 1px rgba(var(--lux-accent-rgb), 0.035);
 }
-body.lux-route-home {
+body.lux-full-paint {
   --home-glass-border: color-mix( in srgb, rgba(var(--lux-accent-rgb), 0.72) 58%, var(--lux-border) );
   /*
    * Glassmorph density tracks slider (fillRatio → --lux-transparency-alpha):
@@ -269,9 +284,8 @@ body.lux-route-home {
     0 0 0 1px rgba(var(--lux-accent-rgb), 0.16),
     inset 0 1px 0 rgba(255, 255, 255, 0.12);
   --home-chip-hover-lift: -3px;
-  /* Chip/picker glass — accent fade + tight blur (inner shells only) */
+  /* Chip/picker glass — accent fade fill (inner shells only) */
   --home-chip-glass-fill: color-mix(in srgb, var(--home-glass-fill) 72%, transparent);
-  --home-chip-glass-blur: blur(calc(var(--lux-transparency-blur, 14px) * 0.55)) saturate(140%);
   /* Merged-desk inners: light tint + accent surface; desk keeps sole frost blur */
   --home-chip-surface-fill: color-mix(in srgb, var(--home-chip-fill) 58%, transparent);
   /* Merged desk host — chip-like fade, tamed accent radial (no mega-wash) */
@@ -295,7 +309,7 @@ body.lux-route-home {
   --lux-focus-border: var(--home-fade-border-soft);
   --lux-focus-shadow: var(--home-fade-shadow-soft);
 }
-html.lux-light-mode body.lux-route-home, body.lux-light-mode.lux-route-home {
+html.lux-light-mode body.lux-full-paint, body.lux-light-mode.lux-full-paint {
   --home-glass-border: color-mix( in srgb, rgba(var(--lux-accent-rgb), 0.74) 68%, var(--lux-border) );
   --home-glass-fill: rgba(250, 246, 240, calc(var(--lux-transparency-alpha, 0.70) * 0.82));
   --home-chip-fill: rgba(255, 255, 255, calc(0.28 + var(--lux-transparency-alpha, 0.70) * 0.40));
@@ -340,7 +354,7 @@ html.lux-light-mode body.lux-route-home, body.lux-light-mode.lux-route-home {
   --home-desk-glass-blur: blur(calc(var(--lux-transparency-blur, 14px) * 0.55));
 }
 /* 100%: dense glassmorph (keep gradient + blur + shadow — not flat matte). */
-html.lux-fully-opaque body.lux-route-home {
+html.lux-fully-opaque body.lux-full-paint {
   --home-glass-fill: rgba(8, 12, 21, 0.96);
   --home-chip-fill: rgba(12, 18, 28, 0.55);
   --home-chip-glass-fill: var(--home-glass-fill);
@@ -366,9 +380,9 @@ html.lux-fully-opaque body.lux-route-home {
   --lux-soft-chrome-surface: var(--home-fade-soft);
   --lux-focus-fill: var(--home-fade-soft);
 }
-html.lux-fully-opaque.lux-light-mode body.lux-route-home,
-html.lux-fully-opaque body.lux-light-mode.lux-route-home,
-html.lux-light-mode.lux-fully-opaque body.lux-route-home {
+html.lux-fully-opaque.lux-light-mode body.lux-full-paint,
+html.lux-fully-opaque body.lux-light-mode.lux-full-paint,
+html.lux-light-mode.lux-fully-opaque body.lux-full-paint {
   --home-glass-fill: rgba(250, 246, 240, 0.96);
   --home-chip-fill: rgba(255, 255, 255, 0.62);
   --home-chip-glass-fill: var(--home-glass-fill);
@@ -413,9 +427,27 @@ html.lux-light-mode, body.lux-light-mode {
   --lux-focus-shadow: var(--lux-soft-chrome-shadow);
 }
 html.lux-light-mode, body.lux-light-mode {
-  --lux-btn-well: linear-gradient( 180deg, color-mix(in srgb, #1a222c 88%, var(--lux-accent) 8%) 0%, color-mix(in srgb, #10161e 92%, transparent) 100% );
-  --lux-btn-well-soft: linear-gradient( 180deg, color-mix(in srgb, #f8f4ee 92%, var(--lux-accent) 4%) 0%, color-mix(in srgb, var(--lux-soft-chrome-surface, #efe6da) 94%, transparent) 100% );
-  --lux-btn-label: #f7fbff;
+  --lux-btn-border-solid: color-mix(in srgb, var(--lux-accent) 78%, #1a2a36 22%);
+  --lux-btn-frame-metal: linear-gradient( 145deg, color-mix(in srgb, var(--lux-accent) 48%, #fff 52%) 0%, color-mix(in srgb, var(--lux-accent) 88%, #fff 12%) 22%, var(--lux-accent) 48%, var(--lux-accent-2, var(--lux-accent)) 72%, color-mix(in srgb, var(--lux-accent) 48%, #c4b5a0 52%) 100% );
+  --lux-btn-frame-metal-soft: linear-gradient( 145deg, color-mix(in srgb, var(--lux-accent) 38%, #fff 62%) 0%, color-mix(in srgb, var(--lux-accent) 68%, #e8dfd2 32%) 50%, color-mix(in srgb, var(--lux-accent) 36%, #cfc0ae 64%) 100% );
+  --lux-btn-fade: radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.88)), transparent 42%), radial-gradient(circle at 14% 0%, rgba(var(--lux-accent-rgb), 0.30), transparent 40%);
+  --lux-btn-fade-hover: radial-gradient(circle at 84% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.96)), transparent 44%), radial-gradient(circle at 14% 0%, rgba(var(--lux-accent-rgb), 0.36), transparent 42%);
+  --lux-btn-well-base: linear-gradient(180deg, color-mix(in srgb, #fbf7f1 94%, var(--lux-accent) 6%) 0%, #efe6da 100%);
+  --lux-btn-well-soft-base: linear-gradient(180deg, #f8f3eb 0%, #ebe2d4 100%);
+  --lux-btn-well: var(--lux-btn-fade), var(--lux-btn-well-base);
+  --lux-btn-well-soft: var(--lux-btn-fade), var(--lux-btn-well-soft-base);
+  --lux-btn-well-hover: var(--lux-btn-fade-hover), var(--lux-btn-well-base);
+  --lux-btn-well-soft-hover: var(--lux-btn-fade-hover), var(--lux-btn-well-soft-base);
+  --lux-btn-label: var(--lux-text, #1d2633);
+  --lux-btn-frame-shadow: 0 8px 20px rgba(107, 91, 62, 0.14), 0 0 0 1px color-mix(in srgb, var(--lux-accent) 40%, transparent), inset 0 1px 0 rgba(255, 255, 255, 0.72);
+  --lux-btn-frame-shadow-hover: 0 12px 28px rgba(107, 91, 62, 0.18), 0 0 0 1px color-mix(in srgb, var(--lux-accent) 55%, transparent), inset 0 1px 0 rgba(255, 255, 255, 0.82);
+  --lux-btn-sheen: linear-gradient( 105deg, transparent 32%, rgba(255, 255, 255, 0.55) 46%, rgba(255, 255, 255, 0.92) 50%, rgba(var(--lux-accent-rgb), 0.22) 54%, transparent 68% );
+  --lux-btn-ghost-well: var(--lux-btn-fade), linear-gradient(180deg, #f5efe6 0%, #e8dfd0 100%);
+  --lux-btn-ghost-well-hover: var(--lux-btn-fade-hover), linear-gradient(180deg, #f5efe6 0%, #e8dfd0 100%);
+  --lux-btn-ghost-frame: var(--lux-btn-frame-metal-soft);
+  --lux-btn-ghost-label: var(--lux-text, #1d2633);
+  --lux-btn-ghost-shadow: var(--lux-btn-frame-shadow);
+  --lux-btn-ghost-shadow-hover: var(--lux-btn-frame-shadow-hover);
 }
 body[data-lux-performance='efficient'] {
   /* Glass blur owned by updateTransparency / Glass Blur quality — do not bake fixed px. */

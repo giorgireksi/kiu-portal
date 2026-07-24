@@ -30,14 +30,14 @@ describe('luxury animation interaction safety', () => {
         expect(toggleBlock).not.toContain('lux-is-animating');
     });
 
-    it('slides the platform sidebar with transform-only desktop motion', () => {
+    it('slides the platform sidebar with transform-only desktop bloom motion', () => {
         const css = readShellStackCss();
-        const collapsedBlock = css.match(/body\.lux-sidebar-collapsed #lux-shell\s*\{[^}]+\}/)?.[0] || '';
-
-        expect(css).toMatch(/--lux-shell-slide-duration:\s*0\.38s/);
+        expect(css).toMatch(/--lux-shell-slide-duration:\s*0\.3s/);
+        expect(css).toMatch(/--lux-shell-scale-closed:\s*0\.92/);
         expect(css).toMatch(/#lux-shell\s*\{[^}]*transition:[\s\S]*transform var\(--lux-shell-slide-duration\)/);
-        expect(collapsedBlock).toContain('transform: translate3d(calc(-100% - 20px), 0, 0)');
-        expect(collapsedBlock).not.toContain('opacity: 0');
+        expect(css).toMatch(
+            /lux-sidebar-collapsed[\s\S]*#lux-shell[\s\S]*transform:\s*translate3d\(calc\(-100%[\s\S]*scale\(var\(--lux-shell-scale-closed\)\)/
+        );
     });
 
     it('cascades shell inner chrome on desktop overlay without pausing interaction', () => {
@@ -56,7 +56,10 @@ describe('luxury animation interaction safety', () => {
         expect(css).toMatch(
             /@media \(min-width: 1181px\)[\s\S]*body\.lux-unified-shell\.lux-sidebar-collapsed #lux-shell \.lux-nav-item[\s\S]*animation:\s*none/
         );
-        expect(css).toMatch(/\.lux-nav-item \{[^}]*transition:\s*color 0\.18s ease, background 0\.18s ease, box-shadow 0\.18s ease;/);
+        expect(css).toMatch(/\.lux-nav-item \{[^}]*transition:\s*none;/);
+        expect(css).toMatch(/\.lux-nav-item::before[\s\S]*opacity:\s*0/);
+        expect(css).toMatch(/\.lux-nav-item:hover:not\(\.is-active\)::before[\s\S]*opacity:\s*1/);
+        expect(css).not.toMatch(/\.lux-nav-item \{[^}]*transition:[^;]*background/);
         expect(css).not.toMatch(/\.lux-nav-item \{[^}]*transition:\s*all /);
         expect(css).toContain('.lux-nav-item:hover:not(.is-active)');
     });

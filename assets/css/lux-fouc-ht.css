@@ -17,8 +17,6 @@ html.lux-high-transparency body:not(.lux-light-mode) :is( .lux-card, .lux-panel,
 html.lux-high-transparency body.lux-light-mode :is( .lux-card, .lux-panel, .lux-subcard, .lux-hero, .lux-stat, .lux-grid-widget, .lux-builder-card, .lux-dashboard-section, .lux-page-shell, .page-hero ) {
   background: var(--lux-panel-surface, linear-gradient(180deg, rgba(252, 249, 244, var(--lux-panel-alpha, 0.92)), rgba(248, 244, 237, var(--lux-panel-alpha, 0.92))));
 }
-html.lux-high-transparency body:not(.lux-light-mode) { --lux-accent-surface-rgb: 14, 20, 33; }
-html.lux-high-transparency body.lux-light-mode { --lux-accent-surface-rgb: 252, 249, 244; }
 html {
   overflow-y: scroll;
   overflow-x: hidden;
@@ -34,14 +32,43 @@ html, body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grays
   overflow: hidden;
   background-image: linear-gradient(180deg, rgba(255, 255, 255, calc(var(--lux-raised-alpha) + 0.01)), rgba(255, 255, 255, var(--lux-glass-alpha))), radial-gradient(circle at top right, rgba(var(--lux-accent-rgb), calc(0.08 + var(--lux-card-glow-alpha))), transparent 34%);
 }
+.lux-summary-surface::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.06), transparent 36%), radial-gradient(circle at 18% 18%, rgba(var(--lux-accent-rgb), 0.07), transparent 38%);
+  opacity: 0.72;
+}
+.lux-summary-surface > * { position: relative; z-index: 1; }
+.lux-summary-surface--hero { box-shadow: var(--lux-elev-3, 0 24px 56px rgba(0, 0, 0, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.12)); }
+.lux-summary-surface--panel { box-shadow: var(--lux-elev-2, 0 18px 40px rgba(0, 0, 0, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.08)); }
 body.lux-light-mode .lux-summary-surface, /* ── §2 light HT ── */
 html.lux-light-mode body .lux-summary-surface {
   background-image: linear-gradient(180deg, rgba(255, 255, 255, calc(var(--lux-raised-alpha) + 0.02)), rgba(255, 255, 255, calc(var(--lux-glass-alpha) + 0.02))), radial-gradient(circle at top right, rgba(var(--lux-accent-rgb), calc(0.09 + var(--lux-card-glow-alpha))), transparent 34%);
 }
 [data-lux-observed-surface="1"][data-lux-offscreen="1"] {
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-  box-shadow: none;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+html.lux-high-transparency :is(
+  #page-home #lux-home-shell .lux-home-merged.lux-soft-chrome
+) {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+html.lux-shell-chrome-motion #lux-shell :is(
+  .lux-nav-item,
+  .lux-picker-btn,
+  .lux-icon-btn,
+  .lux-user-chip,
+  .lux-sidebar-toggle-btn,
+  .lux-sidebar-close-btn,
+  .lux-topbar-editor-btn
+) {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
@@ -62,7 +89,6 @@ body::before {
   pointer-events: none;
   z-index: 0;
   background: radial-gradient(circle at 18% 8%, rgba(var(--lux-accent-rgb), calc(0.16 * var(--lux-glow-scale))), transparent 24%), radial-gradient(circle at 84% 22%, rgba(var(--lux-accent-rgb), 0.1), transparent 22%), radial-gradient(circle at 58% 72%, rgba(var(--lux-accent-rgb), 0.08), transparent 26%), linear-gradient(180deg, rgba(255, 255, 255, var(--lux-page-haze-top)), rgba(255, 255, 255, 0) 44%), linear-gradient(180deg, rgba(5, 8, 16, 0), rgba(5, 8, 16, var(--lux-page-haze-bottom)));
-  will-change: transform;
   transform: translateZ(0);
   -webkit-transform: translateZ(0);
   backface-visibility: hidden;
@@ -106,6 +132,7 @@ body[data-lux-background-animation="off"]:not([data-lux-static-background="galle
   z-index: 1;
   pointer-events: none;
   overflow: hidden;
+  background: #000;
   padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
   box-sizing: border-box;
 }
@@ -116,7 +143,7 @@ body[data-lux-background-animation="off"]:not([data-lux-static-background="galle
   height: 100%;
   min-width: 100%;
   min-height: 100%;
-  object-fit: cover;
+  object-fit: fill;
   object-position: center center;
   display: block;
 }
@@ -136,7 +163,6 @@ body[data-lux-static-background="gallery"]::before {
   z-index: 1;
   pointer-events: none;
   opacity: var(--lux-canvas-opacity);
-  will-change: transform;
   transform: translateZ(0);
   -webkit-transform: translateZ(0);
   backface-visibility: hidden;
@@ -164,7 +190,6 @@ body[data-lux-background-mode="fog"][data-lux-background-animation="on"] #lux-bg
   z-index: 2;
   opacity: var(--lux-overlay-opacity);
   background: radial-gradient(circle at 50% 14%, rgba(var(--lux-accent-rgb), var(--lux-hero-glow)), transparent 28%), linear-gradient(180deg, rgba(5, 8, 16, 0.01), rgba(5, 8, 16, 0.18));
-  will-change: transform;
   transform: translateZ(0);
   -webkit-transform: translateZ(0);
   backface-visibility: hidden;
@@ -193,9 +218,40 @@ body.lux-light-mode[data-lux-background-mode='peak'] #lux-bg-overlay, body.lux-l
   background: rgba(12, 16, 28, 0.96);
   box-shadow: var(--lux-shadow);
   display: none;
+  transform-origin: top right;
+  opacity: 0;
+  pointer-events: none;
+  filter: blur(7px);
+  transform: translateY(var(--lux-droplist-slide-offset, 14px)) scale(var(--lux-droplist-scale-closed, 0.88));
+  transition:
+    opacity calc(var(--lux-droplist-anim-duration, 300ms) * 0.72) var(--lux-droplist-anim-ease, cubic-bezier(0.16, 1, 0.3, 1)),
+    transform var(--lux-droplist-anim-duration, 300ms) var(--lux-droplist-anim-ease, cubic-bezier(0.16, 1, 0.3, 1)),
+    filter var(--lux-droplist-anim-duration, 300ms) var(--lux-droplist-anim-ease, cubic-bezier(0.16, 1, 0.3, 1));
 }
-.lux-user-menu.is-open { display: block; }
+.lux-user-menu.is-open {
+  opacity: 1;
+  filter: blur(0);
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+.lux-user-menu.is-closing:not(.is-open) {
+  opacity: 0;
+  filter: blur(5px);
+  transform: translateY(var(--lux-droplist-slide-offset, 14px)) scale(var(--lux-droplist-scale-closed, 0.88));
+  pointer-events: none;
+  transition:
+    opacity var(--lux-droplist-anim-close-duration, 180ms) var(--lux-droplist-anim-ease-out, ease-in),
+    transform var(--lux-droplist-anim-close-duration, 180ms) var(--lux-droplist-anim-ease-out, ease-in),
+    filter var(--lux-droplist-anim-close-duration, 180ms) var(--lux-droplist-anim-ease-out, ease-in);
+}
+.lux-user-menu:is(.is-open, .is-closing) {
+  display: block;
+  will-change: opacity, transform, filter;
+}
 .lux-user-menu button {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
   width: 100%;
   text-align: left;
   padding: 10px 12px;
@@ -205,7 +261,23 @@ body.lux-light-mode[data-lux-background-mode='peak'] #lux-bg-overlay, body.lux-l
   border-radius: 10px;
   cursor: pointer;
 }
-.lux-user-menu button:hover { background: rgba(255, 255, 255, 0.05); color: var(--lux-text); }
+.lux-user-menu button::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0;
+  background: rgba(255, 255, 255, 0.05);
+  transition: opacity 0.18s ease;
+}
+.lux-user-menu button > * { position: relative; z-index: 1; }
+.lux-user-menu button:hover { color: var(--lux-text); }
+.lux-user-menu button:hover::before { opacity: 1; }
+body.lux-light-mode .lux-user-menu button::before {
+  background: rgba(26, 36, 51, 0.05);
+}
 #app-content {
   contain: layout style;
   margin-left: var(--lux-sidebar-width);
@@ -231,10 +303,53 @@ body.lux-light-mode .lux-pill, body.lux-light-mode .lux-stat, body.lux-light-mod
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: linear-gradient(180deg, rgba(15, 20, 33, var(--lux-utility-alpha)), rgba(8, 12, 20, calc(var(--lux-utility-alpha) + 0.02))), radial-gradient(circle at top right, rgba(var(--lux-accent-rgb), 0.12), transparent 28%);
   box-shadow: 0 28px 70px rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(28px);
+  backdrop-filter: blur(18px) saturate(150%);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
   display: none;
+  transform-origin: top right;
+  opacity: 0;
+  pointer-events: none;
+  filter: blur(7px);
+  transform: translateY(var(--lux-droplist-slide-offset, 14px)) scale(var(--lux-droplist-scale-closed, 0.88));
+  transition:
+    opacity calc(var(--lux-droplist-anim-duration, 300ms) * 0.72) var(--lux-droplist-anim-ease, cubic-bezier(0.16, 1, 0.3, 1)),
+    transform var(--lux-droplist-anim-duration, 300ms) var(--lux-droplist-anim-ease, cubic-bezier(0.16, 1, 0.3, 1)),
+    filter var(--lux-droplist-anim-duration, 300ms) var(--lux-droplist-anim-ease, cubic-bezier(0.16, 1, 0.3, 1));
 }
-.lux-utility-panel.is-open { display: block; }
+.lux-utility-panel.is-open {
+  opacity: 1;
+  filter: blur(0);
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+.lux-utility-panel.is-closing:not(.is-open) {
+  opacity: 0;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  filter: blur(5px);
+  transform: translateY(var(--lux-droplist-slide-offset, 14px)) scale(var(--lux-droplist-scale-closed, 0.88));
+  pointer-events: none;
+  transition:
+    opacity var(--lux-droplist-anim-close-duration, 180ms) var(--lux-droplist-anim-ease-out, ease-in),
+    transform var(--lux-droplist-anim-close-duration, 180ms) var(--lux-droplist-anim-ease-out, ease-in),
+    filter var(--lux-droplist-anim-close-duration, 180ms) var(--lux-droplist-anim-ease-out, ease-in);
+}
+.lux-utility-panel:is(.is-open, .is-closing) {
+  display: block;
+  will-change: opacity, transform, filter;
+}
+@media (prefers-reduced-motion: reduce) {
+  .lux-utility-panel,
+  .lux-user-menu {
+    transition: none;
+  }
+  .lux-utility-panel:not(.is-open),
+  .lux-utility-panel.is-closing:not(.is-open),
+  .lux-user-menu:not(.is-open),
+  .lux-user-menu.is-closing:not(.is-open) {
+    filter: none;
+  }
+}
 .lux-hero { min-height: 240px; padding: 26px; }
 body.lux-unified-shell:not(.lux-route-students-admin):not(.lux-route-staff):not(.lux-route-profile-view) :is(.page-hero, .lux-panel, .lux-alert) {
   background: linear-gradient(180deg, rgba(var(--lux-glass-tint-rgb), calc(var(--lux-panel-fill-alpha) + var(--lux-glass-highlight-alpha))), rgba(var(--lux-glass-tint-rgb), var(--lux-panel-fill-alpha)));
@@ -270,7 +385,6 @@ body.lux-light-mode .lux-mode-btn, body.lux-light-mode .lux-bg-mode-btn, body.lu
 }
 @media (max-width:620px) {
   .lux-topbar-actions { width: 100%; flex-wrap: wrap; }
-  .lux-search { width: 100%; }
   .lux-topbar select { flex: 1; min-width: 140px; }
 }
 @media (max-width:980px) {

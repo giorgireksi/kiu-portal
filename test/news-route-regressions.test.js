@@ -29,7 +29,10 @@ describe('news bare shell', () => {
         expect(html).toContain('lux-controls.css');
         expect(html).toContain('lux-shell.css');
         const bare = readSource('assets/css/lux-page-bare-lite.css');
-        expect(bare).toContain('--lux-surface');
         expect(bare).toContain('body.lux-page-bare');
+        expect(bare).not.toContain('backdrop-filter: none');
+        const shell = readSource('assets/css/lux-shell.css');
+        expect(shell).toContain('--lux-panel-surface-soft');
+        expect(shell).toContain('body.lux-page-bare .lux-page-shell');
     });
 });

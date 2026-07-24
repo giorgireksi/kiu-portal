@@ -33,13 +33,13 @@ describe('global hover flicker prevention', () => {
 
     it('elevates lux-panel with open dropdown via :has(.is-open) at z-index 900', () => {
         const css = dashboardStackCss();
-        expect(css).toMatch(/\.lux-panel:has\(\.is-open\)[\s\S]*z-index:\s*900/);
+        expect(css).toMatch(/:has\(\.is-open\)[\s\S]*z-index:\s*900/);
     });
 
     it('strips nested control blur in dashboard paint blur-strip', () => {
         const css = readSource('assets/css/lux-shell.css');
         const blurStripBlock = css.match(
-            /body\.lux-full-paint \.lux-nav-item[\s\S]*?backdrop-filter:\s*none/
+            /\.lux-nav-item, \.lux-quick-btn[\s\S]*?backdrop-filter:\s*none/
         )?.[0] || '';
 
         expect(blurStripBlock).toContain('.lux-quick-btn');
@@ -53,15 +53,9 @@ describe('global hover flicker prevention', () => {
         expect(css).not.toMatch(/\.lux-panel:focus-within[\s\S]*?z-index:\s*500/);
     });
 
-    it('routes fade CSS through shouldKeepRouteFadeCssBackground aggregator', () => {
-        const utilities = readSource('assets/js/shared/utilities.js');
-        const keepFn = extractFunctionBody(utilities, 'shouldKeepRouteFadeCssBackground');
-
-        expect(keepFn).toContain('shouldKeepSocialFadeCssBackground');
-        expect(keepFn).toContain('shouldKeepAdminLibraryFadeCssBackground');
-        expect(utilities).toMatch(
-            /keepAdminLibraryFadeCss = shouldKeepAdminLibraryFadeCssBackground\(el\)/
-        );
+    it('routes fade CSS through lux-transparency route runtime', () => {
+        const routeRuntime = readSource('assets/js/shared/lux-transparency-route-runtime.js');
+        expect(routeRuntime).toContain('shouldKeepRouteFadeCssBackground');
     });
 
     it('softens hover transforms inside glass parents (reduced-motion)', () => {
@@ -73,22 +67,60 @@ describe('global hover flicker prevention', () => {
 
     it('calms social route hovers via bare-shell era (no social-rebuild CSS)', () => {
         expectRetiredCss('social-rebuild.css');
-        const utilities = readSource('assets/js/shared/utilities.js');
-        expect(utilities).toContain('function shouldKeepSocialFadeCssBackground(el)');
+        const routeRuntime = readSource('assets/js/shared/lux-transparency-route-runtime.js');
+        expect(routeRuntime).toContain('shouldKeepSocialFadeCssBackground');
     });
 
     it('calms lms route hovers inside glass parents', () => {
-        expect(css).toMatch(
-            /body\.lux-route-lms :is\([\s\S]*?\.lux-primary-btn[\s\S]*?\.lux-secondary-btn[\s\S]*?\.lms-clean-subject-card[\s\S]*?\.lux-lms-subject-card\):hover[\s\S]*transform:\s*none !important/
-        );
-        expect(css).toMatch(
-            /body\.lux-route-lms :is\([\s\S]*\):hover[\s\S]*filter:\s*none !important/
-        );
+        const routeRuntime = readSource('assets/js/shared/lux-transparency-route-runtime.js');
+        expect(routeRuntime).toContain("document.body.classList.contains('lux-route-lms')");
+        expect(routeRuntime).toContain('lms-clean-subject-card');
     });
 
     it('strips nested topbar control blur on dashboard paint', () => {
-        const css = readSource('assets/css/lux-shell.css');
-        expect(css).toMatch(/body\.lux-full-paint \.lux-nav-item[\s\S]*backdrop-filter:\s*none/);
-        expect(css).toMatch(/body\.lux-full-paint #lux-topbar[\s\S]*z-index:\s*1000 !important/);
+        const shellCss = readSource('assets/css/lux-shell.css');
+        const controlsCss = readSource('assets/css/lux-controls.css');
+        const foucCss = readSource('assets/css/lux-fouc-ht.css');
+        expect(shellCss).toMatch(/\.lux-nav-item[\s\S]*backdrop-filter:\s*none/);
+        expect(shellCss).toMatch(/\.lux-nav-item::before/);
+        expect(shellCss).toMatch(/\.lux-user-chip[\s\S]*backdrop-filter:\s*none/);
+        expect(shellCss).not.toMatch(/\.lux-nav-item:hover:not\(\.is-active\)\s*\{[^}]*box-shadow/);
+        expect(shellCss).toMatch(/\.lux-picker-btn, \.lux-icon-btn[\s\S]*transition:\s*transform 0\.18s ease;/);
+        expect(shellCss).not.toMatch(/\.lux-picker-btn, \.lux-icon-btn[\s\S]*border-color 0\.18s/);
+        expect(controlsCss).toMatch(/\.lux-icon-btn\s*\{[^}]*transition:\s*transform \.18s ease;/);
+        expect(controlsCss).not.toMatch(/\.lux-icon-btn\s*\{[^}]*box-shadow \.18s/);
+        expect(controlsCss).toMatch(
+            /\.lux-primary-btn, \.lux-secondary-btn, \.lux-ghost-btn\s*\{[\s\S]*?transition:\s*transform 0\.38s/
+        );
+        expect(controlsCss).not.toMatch(
+            /\.lux-primary-btn, \.lux-secondary-btn, \.lux-ghost-btn\s*\{[\s\S]*?transition:[^;]*box-shadow/
+        );
+        expect(controlsCss).not.toMatch(/\.lux-control\s*\{[^}]*transition:\s*all/);
+        expect(controlsCss).toMatch(/\.lux-icon-btn:hover::after/);
+        expect(controlsCss).toMatch(
+            /\.lux-primary-btn, \.lux-secondary-btn, \.lux-ghost-btn\s*\{[\s\S]*?backdrop-filter:\s*none/
+        );
+        expect(foucCss).toMatch(/html\.lux-shell-chrome-motion #lux-shell :is\([\s\S]*\.lux-nav-item[\s\S]*backdrop-filter:\s*none !important/);
+        expect(foucCss).not.toMatch(/html\.lux-shell-chrome-motion #lux-shell\s*\{[\s\S]*backdrop-filter:\s*none !important/);
+        expect(shellCss).toMatch(/#lux-shell[\s\S]*backdrop-filter:\s*var\(--lux-shell-sidebar-blur\)/);
+        expect(shellCss).toMatch(
+            /body\.lux-full-paint\.lux-unified-shell #lux-topbar \.lux-topbar-shell\s*\{[\s\S]*?backdrop-filter:\s*none/
+        );
+        expect(shellCss).toMatch(
+            /body\.lux-full-paint\.lux-unified-shell #lux-topbar \.lux-topbar-shell\s*\{[\s\S]*?--lux-soft-chrome-surface/
+        );
+        expect(foucCss).toMatch(/\.lux-user-menu button::before/);
+        expect(shellCss).toMatch(/#lux-topbar[\s\S]*z-index:\s*1000 !important/);
+        expect(shellCss).not.toMatch(/#lux-shell, \.lux-card\s*\{[^}]*will-change/);
+        expect(shellCss).toMatch(/html\.lux-shell-chrome-motion #lux-shell\s*\{[\s\S]*?will-change:\s*transform/);
+        expect(shellCss.replace(/html\.lux-shell-chrome-motion #lux-shell\s*\{[\s\S]*?\}/g, '')).not.toMatch(
+            /#lux-shell\s*\{[^}]*will-change:\s*transform/
+        );
+        expect(controlsCss).toMatch(
+            /#lux-topbar \.lux-topbar-shell :is\(\.lux-picker-btn, \.lux-icon-btn\)[\s\S]*backdrop-filter:\s*none/
+        );
+        expect(controlsCss).toMatch(
+            /#page-home #lux-home-shell \.lux-home-merged :is\([\s\S]*backdrop-filter:\s*none/
+        );
     });
 });

@@ -481,7 +481,7 @@ function renderLmsEmbeddedStaffGradeHero(weights, criterionMeta, assessmentNumbe
         ? `<button type="button" class="is-disabled" disabled title="Select a subject filter to configure weights"><i class="fas fa-table-list"></i> Grading scheme</button>`
         : `<button type="button" data-gradebook-click="open-subject-weights"><i class="fas fa-table-list"></i> Grading scheme</button>`;
     return `
-        <div class="gb-lms-staff-hero lms-route-panel lms-route-panel-pad-16-20">
+        <div class="lux-soft-chrome gb-lms-staff-hero lux-panel lms-route-panel lms-route-panel-pad-16-20">
             <div class="gb-lms-staff-hero-main">
                 <div>
                     <div class="gb-modern-kicker">${escapeHtml(kicker)}</div>
@@ -504,7 +504,7 @@ function renderLmsEmbeddedStaffGradeHero(weights, criterionMeta, assessmentNumbe
                 <div class="lux-strip-card surface-card"><span>High / low</span><strong>${analytics.highest} / ${analytics.lowest}</strong></div>
             </div>
             ${selectedQuizDisplay ? `
-                <div class="lms-route-panel lms-route-panel-compact gb-staff-linked-quiz gb-lms-staff-linked-quiz">
+                <div class="lux-soft-chrome lux-panel lms-route-panel lms-route-panel-compact gb-staff-linked-quiz gb-lms-staff-linked-quiz">
                     <div>
                         <div class="gb-modern-kicker">Linked LMS assessment</div>
                         <strong>${escapeHtml(selectedQuizDisplay.title)}</strong>
@@ -533,7 +533,7 @@ function renderLmsEmbeddedStaffAssessmentBar(criterionMeta, assessmentNumber, pe
     if (isFacultyStandaloneGradebookContext()) return '';
     const schemeCopy = 'Choose the assessment being reviewed. Use <strong>Grading scheme</strong> to set max points for all groups in this subject.';
     return `
-        <div class="lms-route-panel lms-route-panel-compact gb-lms-staff-assessment-bar">
+        <div class="lux-soft-chrome lux-panel lms-route-panel lms-route-panel-compact gb-lms-staff-assessment-bar">
             <div class="gb-staff-control-grid">
                 <label>Assessment criterion
                     <select id="gradebook-criterion-select" data-gradebook-assessment-target="criterion">
@@ -715,7 +715,7 @@ function renderLmsEmbeddedStaffRosterList(students, weights, criterionMeta, asse
     if (isFacultyRoster) {
         const rosterContent = renderFacultyRosterListItems(students, weights, criterionMeta, assessmentNumber, selectedStudentId);
         return `
-        <aside class="gb-lms-staff-roster gb-lms-staff-roster--faculty lms-route-card lms-route-panel-compact">
+        <aside class="lux-soft-chrome lux-panel gb-lms-staff-roster gb-lms-staff-roster--faculty lms-route-card lms-route-panel-compact">
             <div class="gb-lms-staff-roster-head">
                 <div>
                     <div class="gb-modern-kicker">Roster</div>
@@ -777,7 +777,7 @@ function renderLmsEmbeddedStaffRosterList(students, weights, criterionMeta, asse
         ? `${filtered.length} of ${roster.length} students`
         : `${roster.length} students`;
     return `
-        <aside class="gb-lms-staff-roster lms-route-card lms-route-panel-compact">
+        <aside class="lux-soft-chrome lux-panel gb-lms-staff-roster lms-route-card lms-route-panel-compact">
             <div class="gb-lms-staff-roster-head">
                 <div>
                     <div class="gb-modern-kicker">Roster</div>
@@ -818,7 +818,7 @@ function renderLmsEmbeddedStaffGradingBreakdown(summary, criterionMeta) {
     }).join('');
     if (isFaculty) {
         return `
-        <details class="lms-route-card lms-route-panel-compact gb-lms-staff-breakdown gb-lms-staff-breakdown--faculty" open>
+        <details class="lux-soft-chrome lux-panel lms-route-card lms-route-panel-compact gb-lms-staff-breakdown gb-lms-staff-breakdown--faculty" open>
             <summary>
                 <div class="gb-lms-staff-breakdown-head">
                     <div>
@@ -885,7 +885,7 @@ function renderLmsEmbeddedStaffGradingFocus(record, weights, criterionMeta, asse
     if (isFaculty) {
         return `
         <div class="gb-lms-staff-focus">
-            <div class="gb-lms-staff-student-hero lms-route-card lms-route-panel-compact">
+            <div class="lux-soft-chrome lux-panel gb-lms-staff-student-hero lms-route-card lms-route-panel-compact">
                 <div class="gb-lms-staff-student-hero-top">
                     <div class="gb-lms-staff-focus-identity">
                         <strong>${escapeHtml(studentName || studentId)}</strong>
@@ -934,7 +934,7 @@ function renderLmsEmbeddedStaffGradingFocus(record, weights, criterionMeta, asse
                 <p class="gb-lms-staff-add-hint gb-lms-staff-active-footer">${hintCopy}</p>
             </div>
             <div class="gb-lms-staff-insight-panels">
-                <details class="lms-route-card lms-route-panel-compact gb-lms-staff-score-history"${scoreHistoryOpen ? ' open' : ''}>
+                <details class="lux-soft-chrome lux-panel lms-route-card lms-route-panel-compact gb-lms-staff-score-history"${scoreHistoryOpen ? ' open' : ''}>
                     <summary>
                         <div class="gb-lms-staff-score-history-head">
                             <div>
@@ -976,7 +976,7 @@ function renderLmsEmbeddedStaffGradingFocus(record, weights, criterionMeta, asse
                     ${pendingReview ? '<span class="gb-status-badge lux-status-pill is-pending">Active pending</span>' : ''}
                 </div>
             </div>
-            <div class="gb-lms-staff-detail-actions lms-route-panel lms-route-panel-compact">
+            <div class="lux-soft-chrome gb-lms-staff-detail-actions lux-panel lms-route-panel lms-route-panel-compact">
                 <button type="button" class="gb-modern-action is-primary" data-gradebook-click="open-history" data-gradebook-student-id="${escapeHtml(studentId)}" data-gradebook-student-name="${escapeHtml(studentName)}" data-gradebook-criterion="${escapeHtml(String(criterionMeta.key))}">
                     <i class="fas fa-list-check"></i> Full grader
                 </button>
@@ -987,7 +987,7 @@ function renderLmsEmbeddedStaffGradingFocus(record, weights, criterionMeta, asse
                     <i class="fas fa-user-graduate"></i> Portal preview
                 </button>
             </div>
-            <div class="lms-route-card lms-route-panel-compact gb-lms-staff-active-card">
+            <div class="lux-soft-chrome lux-panel lms-route-card lms-route-panel-compact gb-lms-staff-active-card">
                 <div class="gb-lms-staff-active-head">
                     <div>
                         <div class="gb-modern-kicker">Active assessment</div>
@@ -1008,10 +1008,10 @@ function renderLmsEmbeddedStaffGradingFocus(record, weights, criterionMeta, asse
                     scoreEditAttr,
                     entryNote: entry?.note || ''
                 })}
-                ${linkedQuizSource ? `<div class="gb-lms-staff-detail-actions lms-route-panel lms-route-panel-compact"><button type="button" class="gb-modern-action" data-gradebook-click="open-linked-quiz" data-gradebook-student-id="${escapeHtml(studentId)}" data-gradebook-criterion="${escapeHtml(String(criterionMeta.key))}" data-gradebook-number="${escapeHtml(String(assessmentNumber))}"><i class="fas fa-file-alt"></i> ${pendingReview ? 'Evaluate quiz' : 'Open paper'}</button></div>` : ''}
+                ${linkedQuizSource ? `<div class="lux-soft-chrome gb-lms-staff-detail-actions lux-panel lms-route-panel lms-route-panel-compact"><button type="button" class="gb-modern-action" data-gradebook-click="open-linked-quiz" data-gradebook-student-id="${escapeHtml(studentId)}" data-gradebook-criterion="${escapeHtml(String(criterionMeta.key))}" data-gradebook-number="${escapeHtml(String(assessmentNumber))}"><i class="fas fa-file-alt"></i> ${pendingReview ? 'Evaluate quiz' : 'Open paper'}</button></div>` : ''}
                 <p class="gb-lms-staff-add-hint">${hintCopy}</p>
             </div>
-            <details class="lms-route-card lms-route-panel-compact gb-lms-staff-score-history"${scoreHistoryOpen ? ' open' : ''}>
+            <details class="lux-soft-chrome lux-panel lms-route-card lms-route-panel-compact gb-lms-staff-score-history"${scoreHistoryOpen ? ' open' : ''}>
                 <summary>
                     <div class="gb-lms-staff-score-history-head">
                         <div>
@@ -1149,7 +1149,7 @@ function renderGradebookStaffOverview(weights, criterionMeta, assessmentNumber, 
     const canFinalize = getEffectiveUserRole() === USER_ROLES.PROFESSOR || getEffectiveUserRole() === USER_ROLES.ADMIN;
     return `
         <div class="gb-staff-workspace">
-            <div class="lms-route-panel lms-route-panel-pad-16-20 gb-staff-hero">
+            <div class="lux-soft-chrome lux-panel lms-route-panel lms-route-panel-pad-16-20 gb-staff-hero">
                 <div>
                     <div class="gb-modern-kicker">TA / Professor Gradebook</div>
                     <h2>${escapeHtml(criterionMeta.label)} ${escapeHtml(String(assessmentNumber))}</h2>
@@ -1170,7 +1170,7 @@ function renderGradebookStaffOverview(weights, criterionMeta, assessmentNumber, 
                 <div class="lux-strip-card surface-card"><span>High / Low</span><strong>${analytics.highest} / ${analytics.lowest}</strong></div>
             </div>
             ${selectedQuizDisplay ? `
-                <div class="lms-route-panel lms-route-panel-compact gb-staff-linked-quiz">
+                <div class="lux-soft-chrome lux-panel lms-route-panel lms-route-panel-compact gb-staff-linked-quiz">
                     <div>
                         <div class="gb-modern-kicker">Linked LMS Assessment</div>
                         <strong>${escapeHtml(selectedQuizDisplay.title)}</strong>
@@ -1352,7 +1352,7 @@ function initGradebook() {
     if (controlsRoot) {
         controlsRoot.innerHTML = `
             ${renderGradebookStaffOverview(currentScheme, currentCriterionMeta, assessmentNumber, selectedQuizDisplay)}
-            <div class="lms-route-panel lms-route-panel-compact gb-staff-control-card">
+            <div class="lux-soft-chrome lux-panel lms-route-panel lms-route-panel-compact gb-staff-control-card">
                 <div class="gb-staff-control-grid">
                     <label>Assessment criterion
                         <select id="gradebook-criterion-select" data-gradebook-assessment-target="criterion">
@@ -1473,7 +1473,7 @@ function initGradebook() {
                             compact: true,
                             readOnlyHistory: isStaffModernGradebookContext()
                         })}
-                        ${currentEntryDisplay?.linked ? `<div class="lms-route-card lms-route-panel-compact gb-roster-linked-summary ${quizStatusClass}"><div class="gb-roster-linked-title">${escapeHtml(currentEntryDisplay.title)}</div>${currentEntryDisplay.subtitle ? `<div class="gb-roster-linked-subtitle">${escapeHtml(currentEntryDisplay.subtitle)}</div>` : ''}${pendingReview ? `<div class="gb-roster-linked-note is-pending"><i class="fas fa-triangle-exclamation"></i> Manual answer still waiting</div>` : ''}</div>` : ''}
+                        ${currentEntryDisplay?.linked ? `<div class="lux-soft-chrome lux-panel lms-route-card lms-route-panel-compact gb-roster-linked-summary ${quizStatusClass}"><div class="gb-roster-linked-title">${escapeHtml(currentEntryDisplay.title)}</div>${currentEntryDisplay.subtitle ? `<div class="gb-roster-linked-subtitle">${escapeHtml(currentEntryDisplay.subtitle)}</div>` : ''}${pendingReview ? `<div class="gb-roster-linked-note is-pending"><i class="fas fa-triangle-exclamation"></i> Manual answer still waiting</div>` : ''}</div>` : ''}
                     </div>
                 </td>
             </tr>

@@ -20,7 +20,7 @@ const FOG_COLOR_FIELDS = [
 ];
 
 const PARTICLE_BG_MODES = new Set(['peak', 'layered', 'orbit', 'corners']);
-const FOG_PARAMS_TEMPLATE_VERSION = '6';
+const FOG_PARAMS_TEMPLATE_VERSION = '7';
 let activeBgParamsMode = null;
 let activeFogProfileBank = 'dark';
 
@@ -225,7 +225,10 @@ function restoreTeleportedNode(node) {
         node.style.position = '';
         node.style.top = '';
         node.style.left = '';
+        node.style.right = '';
+        node.style.bottom = '';
         node.style.width = '';
+        node.style.maxHeight = '';
         node.style.zIndex = '';
         node.style.transform = '';
         node.classList.remove('is-open-above', 'ex2-picker-panel');
@@ -239,51 +242,15 @@ const closeUtilityPanels = window.closeUtilityPanels;
 const ensureTopbarUtilityPanel = window.ensureTopbarUtilityPanel;
 const ensureUserMenu = window.ensureUserMenu;
 const closeUserMenu = window.closeUserMenu;
-const ensureShellPickerPanel = window.ensureShellPickerPanel;
+const openUserMenuAnimated = window.openUserMenuAnimated;
 const toggleUtilityPanel = window.toggleUtilityPanel;
-const isPickerScrollExempt = window.isPickerScrollExempt;
-const isLuxPickerInteractionTarget = window.isLuxPickerInteractionTarget;
-const collectPickerScrollTargets = window.collectPickerScrollTargets;
-const clearLuxPickerPanelListeners = window.clearLuxPickerPanelListeners;
-const forcePickerReflow = window.forcePickerReflow;
-const deactivatePickerTrigger = window.deactivatePickerTrigger;
-const finalizePickerPanelClose = window.finalizePickerPanelClose;
-const animatePickerPanelClose = window.animatePickerPanelClose;
-const closePickerPanel = window.closePickerPanel;
-const applyLuxPickerPanelVariants = window.applyLuxPickerPanelVariants;
 const closePickerPanels = window.closePickerPanels;
-const openPickerPanel = window.openPickerPanel;
-const dismissOpenLuxPickerPanels = window.dismissOpenLuxPickerPanels;
-const bindLuxPickerDismissHandlers = typeof window.bindLuxPickerDismissHandlers === 'function'
-    ? window.bindLuxPickerDismissHandlers
-    : function bindLuxPickerDismissHandlersNoop() {};
+const bindLuxPickerDismissHandlers = window.bindLuxPickerDismissHandlers;
 const togglePickerPanel = window.togglePickerPanel;
-const openRoleSwitcherPanel = window.openRoleSwitcherPanel;
-const normalizePickerLabel = window.normalizePickerLabel;
-const getCleanPickerLabelText = window.getCleanPickerLabelText;
-const isExternalPickerLabelNode = window.isExternalPickerLabelNode;
-const resolveExternalPickerLabel = window.resolveExternalPickerLabel;
-const wirePickerButtonAriaLabel = window.wirePickerButtonAriaLabel;
-const inferPickerCaption = window.inferPickerCaption;
-const normalizePickerSearchQuery = window.normalizePickerSearchQuery;
-const isLuxPickerSearchEnabled = window.isLuxPickerSearchEnabled;
-const getLuxPickerOptionSearchHaystack = window.getLuxPickerOptionSearchHaystack;
-const filterLuxPickerPanelOptions = window.filterLuxPickerPanelOptions;
-const resetLuxPickerPanelSearch = window.resetLuxPickerPanelSearch;
-const wireLuxPickerPanelSearch = window.wireLuxPickerPanelSearch;
-const renderLuxPickerOptionButton = window.renderLuxPickerOptionButton;
-const bindLuxPickerOptionButtons = window.bindLuxPickerOptionButtons;
-const buildUniversalPickerPanel = window.buildUniversalPickerPanel;
-const syncUniversalPicker = window.syncUniversalPicker;
-const shouldEnhanceSelect = window.shouldEnhanceSelect;
-const enhanceUniversalPicker = window.enhanceUniversalPicker;
-const enhanceUniversalPickers = window.enhanceUniversalPickers;
-const observeUniversalPickers = window.observeUniversalPickers;
 
-window.enhanceUniversalPickers = enhanceUniversalPickers;
-window.enhanceUniversalPicker = enhanceUniversalPicker;
-window.syncUniversalPicker = syncUniversalPicker;
-window.observeUniversalPickers = observeUniversalPickers;
+function callBindLuxPickerDismissHandlers() {
+    if (typeof bindLuxPickerDismissHandlers === 'function') bindLuxPickerDismissHandlers();
+}
 
 function renderTopbarUtilityPanels(currentUser) {
     const notificationPanel = ensureTopbarUtilityPanel('lux-notification-panel');
@@ -658,7 +625,7 @@ function ensureStudioCss() {
     ensureStudioChipBurstHandler();
     if (typeof document === 'undefined') return;
     const sheets = [
-        { href: 'assets/css/lux-studio.css?v=20260722-popupblack1', key: 'data-kiu-studio' },
+        { href: 'assets/css/lux-studio.css?v=20260723-gpuperf4l', key: 'data-kiu-studio' },
         { href: 'assets/css/lux-studio-mobile.css?v=20260722-popupblack1', key: 'data-kiu-studio-mobile' }
     ];
     for (const sheet of sheets) {
@@ -693,10 +660,38 @@ function ensureLuxDroplistCss() {
     if (has) return;
     const link = document.createElement('link');
     link.rel = 'stylesheet';
-    link.href = 'assets/css/lux-droplist.css?v=20260720-densify6500';
+    link.href = 'assets/css/lux-droplist.css?v=20260723-droplist-scrolltheme1';
     link.setAttribute('data-kiu-lux-droplist', '1');
     document.head.appendChild(link);
 }
+
+/** Idle warmup: CSS (+ closed studio DOM) so first open skips network/parse/build. */
+function warmLuxuryPopupSurfaces() {
+    if (typeof document === 'undefined' || window.__kiuLuxuryPopupSurfacesWarmed) return;
+    window.__kiuLuxuryPopupSurfacesWarmed = true;
+    try {
+        ensureLuxDroplistCss();
+        ensureStudioCss();
+        if (document.getElementById('lux-palette-btn')) {
+            ensureStudio();
+        }
+    } catch (_) { /* ignore */ }
+}
+
+function scheduleLuxuryPopupSurfaceWarmup() {
+    if (typeof window === 'undefined' || window.__kiuLuxuryPopupWarmupScheduled) return;
+    window.__kiuLuxuryPopupWarmupScheduled = true;
+    const run = () => warmLuxuryPopupSurfaces();
+    if (typeof window.requestIdleCallback === 'function') {
+        window.requestIdleCallback(run, { timeout: 1800 });
+    } else {
+        window.setTimeout(run, 600);
+    }
+}
+
+window.ensureLuxDroplistCss = ensureLuxDroplistCss;
+window.warmLuxuryPopupSurfaces = warmLuxuryPopupSurfaces;
+window.scheduleLuxuryPopupSurfaceWarmup = scheduleLuxuryPopupSurfaceWarmup;
 
 function ensureStudio() {
     ensureStudioCss();
@@ -863,11 +858,45 @@ function ensureStudio() {
             if (transparencyValue) transparencyValue.textContent = `${savedTransparency}%`;
             if (typeof updateTransparency === 'function') updateTransparency(parseInt(savedTransparency, 10));
         }
+        let pendingTransparencyLive = null;
+        let transparencyLiveRaf = 0;
+        const flushTransparencyLive = () => {
+            transparencyLiveRaf = 0;
+            const value = pendingTransparencyLive;
+            pendingTransparencyLive = null;
+            if (value == null) return;
+            if (typeof updateTransparency === 'function') {
+                updateTransparency(parseInt(value, 10), { persist: false, live: true });
+            }
+        };
+        const markStudioSliderDrag = (active) => {
+            window.__luxStudioSliderDragging = active === true;
+        };
+        transparencySlider.addEventListener('pointerdown', () => markStudioSliderDrag(true));
+        transparencySlider.addEventListener('pointerup', () => markStudioSliderDrag(false));
+        transparencySlider.addEventListener('pointercancel', () => markStudioSliderDrag(false));
         transparencySlider.addEventListener('input', (e) => {
             const value = e.target.value;
             if (transparencyValue) transparencyValue.textContent = `${value}%`;
+            markStudioSliderDrag(true);
+            pendingTransparencyLive = value;
+            if (!transparencyLiveRaf) {
+                transparencyLiveRaf = requestAnimationFrame(flushTransparencyLive);
+            }
+        });
+        transparencySlider.addEventListener('change', (e) => {
+            const value = e.target.value;
+            markStudioSliderDrag(false);
+            if (transparencyLiveRaf) {
+                cancelAnimationFrame(transparencyLiveRaf);
+                transparencyLiveRaf = 0;
+            }
+            pendingTransparencyLive = null;
+            if (transparencyValue) transparencyValue.textContent = `${value}%`;
             setDashboardVisuals({ surfaceTransparency: String(value) });
-            if (typeof updateTransparency === 'function') updateTransparency(parseInt(value, 10));
+            if (typeof updateTransparency === 'function') {
+                updateTransparency(parseInt(value, 10), { persist: true });
+            }
         });
     }
     const glassBlurQualityGrid = document.getElementById('lux-glass-blur-quality-grid');
@@ -899,10 +928,44 @@ function ensureStudio() {
             : Math.min(100, Math.max(0, Math.round(Number(savedGlow) || 50)));
         glowStrengthSlider.value = String(glowPercent);
         if (glowStrengthValue) glowStrengthValue.textContent = `${glowPercent}%`;
+        let pendingGlowLive = null;
+        let glowLiveRaf = 0;
+        const flushGlowLive = () => {
+            glowLiveRaf = 0;
+            const value = pendingGlowLive;
+            pendingGlowLive = null;
+            if (value == null) return;
+            if (typeof window.setGlowStrength === 'function') {
+                window.setGlowStrength(parseInt(value, 10), false, { live: true });
+            } else if (typeof window.applyGlowStrengthCssVars === 'function') {
+                window.applyGlowStrengthCssVars(parseInt(value, 10));
+            }
+        };
+        const markGlowSliderDrag = (active) => {
+            window.__luxStudioSliderDragging = active === true;
+        };
+        glowStrengthSlider.addEventListener('pointerdown', () => markGlowSliderDrag(true));
+        glowStrengthSlider.addEventListener('pointerup', () => markGlowSliderDrag(false));
+        glowStrengthSlider.addEventListener('pointercancel', () => markGlowSliderDrag(false));
         glowStrengthSlider.addEventListener('input', (e) => {
             const value = e.target.value;
             if (glowStrengthValue) glowStrengthValue.textContent = `${value}%`;
-            if (typeof window.setGlowStrength === 'function') window.setGlowStrength(parseInt(value, 10), true);
+            markGlowSliderDrag(true);
+            pendingGlowLive = value;
+            if (!glowLiveRaf) {
+                glowLiveRaf = requestAnimationFrame(flushGlowLive);
+            }
+        });
+        glowStrengthSlider.addEventListener('change', (e) => {
+            const value = parseInt(e.target.value, 10);
+            markGlowSliderDrag(false);
+            // Flush any pending live frame so the last drag tick is not dropped.
+            if (glowLiveRaf) {
+                cancelAnimationFrame(glowLiveRaf);
+                glowLiveRaf = 0;
+            }
+            pendingGlowLive = null;
+            if (typeof window.setGlowStrength === 'function') window.setGlowStrength(value, true);
             else if (typeof window.syncVisualStateOnly === 'function') window.syncVisualStateOnly();
         });
     }
@@ -1024,23 +1087,28 @@ function ensureStudio() {
             if (typeof setParticleSharpness === 'function') setParticleSharpness(value, true);
         });
     }
-    const particleQualityGrid = document.getElementById('lux-particle-quality-grid');
-    if (particleQualityGrid) particleQualityGrid.replaceChildren();
-    (PARTICLE_QUALITY_OPTIONS || []).forEach((mode) => {
-        const button = document.createElement('button');
-        button.type = 'button';
-        button.className = 'lux-control-btn';
-        button.dataset.particleQuality = mode.key;
-        button.setAttribute('data-lux-skip-modern-button', 'true');
-        button.innerHTML = `<strong>${escapeHtml(mode.label)}</strong><span>${escapeHtml(mode.copy)}</span>`;
-        button.addEventListener('click', () => {
-            if (typeof setParticleQuality === 'function') setParticleQuality(mode.key, true);
-            if (typeof syncVisualStateOnly === 'function') syncVisualStateOnly();
-            document.querySelectorAll('[data-particle-quality]').forEach((node) => {
-                node.classList.toggle('is-active', node.dataset.particleQuality === mode.key);
+    const backgroundQualityGrids = [
+        document.getElementById('lux-particle-quality-grid'),
+        document.getElementById('lux-fog-quality-grid')
+    ].filter(Boolean);
+    backgroundQualityGrids.forEach((grid) => {
+        grid.replaceChildren();
+        (PARTICLE_QUALITY_OPTIONS || []).forEach((mode) => {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'lux-control-btn';
+            button.dataset.particleQuality = mode.key;
+            button.setAttribute('data-lux-skip-modern-button', 'true');
+            button.innerHTML = `<strong>${escapeHtml(mode.label)}</strong><span>${escapeHtml(mode.copy)}</span>`;
+            button.addEventListener('click', () => {
+                if (typeof setParticleQuality === 'function') setParticleQuality(mode.key, true);
+                if (typeof syncVisualStateOnly === 'function') syncVisualStateOnly();
+                document.querySelectorAll('[data-particle-quality]').forEach((node) => {
+                    node.classList.toggle('is-active', node.dataset.particleQuality === mode.key);
+                });
             });
+            grid.appendChild(button);
         });
-        particleQualityGrid?.appendChild(button);
     });
     document.getElementById('lux-reset-visuals')?.addEventListener('click', () => {
         if (window.confirm('Reset visual settings for this portal profile?')) resetVisualSettings();
@@ -1348,7 +1416,7 @@ function ensureBgModeParamsPopup() {
                         <input type="range" class="lux-range" id="lux-particle-sharpness-slider" min="0" max="100" value="50">
                     </div>
                     <div class="lux-bg-mode-panel-subsection">
-                        <div class="lux-studio-label lux-studio-label--compact">Particle Quality</div>
+                        <div class="lux-studio-label lux-studio-label--compact">Background Quality</div>
                         <div class="lux-control-grid" id="lux-particle-quality-grid"></div>
                     </div>
                 </section>
@@ -1403,6 +1471,10 @@ function ensureBgModeParamsPopup() {
                         </div>
                         <input type="range" class="lux-range" id="lux-fog-zoom-slider" min="0.2" max="4" step="0.05" value="1">
                     </div>
+                    <div class="lux-bg-mode-panel-subsection">
+                        <div class="lux-studio-label lux-studio-label--compact">Background Quality</div>
+                        <div class="lux-control-grid" id="lux-fog-quality-grid"></div>
+                    </div>
                 </section>
             </div>
         </div>
@@ -1451,6 +1523,9 @@ function openBgModeParamsPopup(modeKey) {
             button.classList.toggle('is-active', typeof getParticleQuality === 'function' && button.dataset.particleQuality === getParticleQuality());
         });
     }
+    document.querySelectorAll('[data-particle-quality]').forEach((button) => {
+        button.classList.toggle('is-active', typeof getParticleQuality === 'function' && button.dataset.particleQuality === getParticleQuality());
+    });
     focusFirstInteractive(backdrop, '#lux-bg-params-close');
 }
 
@@ -1590,20 +1665,30 @@ function toggleStudio() {
             el.style.removeProperty('-webkit-backdrop-filter');
             delete el.dataset.luxTransparencySignature;
         });
-        const ensureGallery = window.__kiuEnsureBackgroundGalleryScripts;
-        if (typeof ensureGallery === 'function') {
-            ensureGallery()
-                .then(() => {
-                    if (typeof bindBackgroundGalleryStudioControls === 'function') bindBackgroundGalleryStudioControls();
-                    if (typeof refreshBackgroundGalleryData === 'function') refreshBackgroundGalleryData();
-                })
-                .catch(() => {});
-        } else if (typeof refreshBackgroundGalleryData === 'function') {
-            refreshBackgroundGalleryData();
-        }
+        // Correct chip/slider state on first paint; defer focus + gallery off the open frame.
         syncStudioUi();
         updateStudioPreview();
-        focusFirstInteractive(backdrop, '#lux-studio-close, #lux-mode-dark, #lux-mode-light');
+        const finishOpen = () => {
+            if (!backdrop.classList.contains('is-open')) return;
+            focusFirstInteractive(backdrop, '#lux-studio-close, #lux-mode-dark, #lux-mode-light');
+            const ensureGallery = window.__kiuEnsureBackgroundGalleryScripts;
+            if (typeof ensureGallery === 'function') {
+                ensureGallery()
+                    .then(() => {
+                        if (!backdrop.classList.contains('is-open')) return;
+                        if (typeof bindBackgroundGalleryStudioControls === 'function') bindBackgroundGalleryStudioControls();
+                        if (typeof refreshBackgroundGalleryData === 'function') refreshBackgroundGalleryData();
+                    })
+                    .catch(() => {});
+            } else if (typeof refreshBackgroundGalleryData === 'function') {
+                refreshBackgroundGalleryData();
+            }
+        };
+        if (typeof window.requestAnimationFrame === 'function') {
+            window.requestAnimationFrame(finishOpen);
+        } else {
+            finishOpen();
+        }
     } else {
         restoreFocusById('lux-palette-btn');
     }
@@ -1715,7 +1800,7 @@ function bindUserMenu() {
             menu.addEventListener('click', (menuEvent) => menuEvent.stopPropagation());
             menu.dataset.bound = '1';
         }
-        const shouldOpen = !menu.classList.contains('is-open');
+        const shouldOpen = !menu.classList.contains('is-open') && !menu.classList.contains('is-closing');
         if (shouldOpen) {
             const wrapper = menu.parentElement;
             if (wrapper && wrapper.tagName !== 'BODY') {
@@ -1729,11 +1814,15 @@ function bindUserMenu() {
             menu.style.top = `${rect.bottom + window.scrollY + 8}px`;
             menu.style.left = `${rect.right + window.scrollX - 180}px`;
             menu.style.zIndex = '999999';
-            menu.classList.add('is-open');
-            menu.dataset.triggerId = 'lux-user-chip';
-            menu.setAttribute('aria-hidden', 'false');
-            chip.setAttribute('aria-expanded', 'true');
-            window.setTimeout(() => focusFirstInteractive(menu, '[data-nav-target], [data-action]'), 0);
+            if (typeof openUserMenuAnimated === 'function') {
+                openUserMenuAnimated(menu, chip);
+            } else {
+                menu.classList.add('is-open');
+                menu.dataset.triggerId = 'lux-user-chip';
+                menu.setAttribute('aria-hidden', 'false');
+                chip.setAttribute('aria-expanded', 'true');
+                window.setTimeout(() => focusFirstInteractive(menu, '[data-nav-target], [data-action]'), 0);
+            }
             const scrollHandler = () => {
                 closeUserMenu();
                 window.removeEventListener('scroll', scrollHandler, true);
@@ -1883,21 +1972,6 @@ function bindTopbarControls() {
         });
         document.body.dataset.luxTopbarEscapeBound = '1';
     }
-
-    const input = document.getElementById('lux-search-input');
-    if (!input || input.dataset.bound) return;
-    input.addEventListener('keydown', (event) => {
-        if (event.key !== 'Enter') return;
-        const query = input.value.trim().toLowerCase();
-        if (!query) return;
-        const pages = Object.entries(getPageLabels());
-        const match = pages.find(([pageId, label]) => label.toLowerCase().includes(query) || pageId.includes(query));
-        if (match && typeof navigate === 'function') {
-            navigate(pageTarget(match[0]));
-            input.value = '';
-        }
-    });
-    input.dataset.bound = '1';
 }
 
 function isDesktopSidebarOverlayViewport() {
@@ -1932,16 +2006,17 @@ function ensureDesktopSidebarOverlayDefaults() {
 
 function initializeLuxuryShellChromeBindings(attemptsRemaining = 24) {
     if (typeof document === 'undefined') return;
-    const hasShellChrome = Boolean(document.getElementById('lux-topbar') || document.getElementById('lux-user-chip'));
+    document.getElementById('lux-user-chip')?.remove();
+    document.getElementById('lux-user-menu')?.remove();
+    const hasShellChrome = Boolean(document.getElementById('lux-topbar'));
     if (hasShellChrome) {
         if (typeof pinStudentServiceWorkspaceRole === 'function') {
             pinStudentServiceWorkspaceRole({ refreshChrome: false });
         } else if (typeof applyPortalViewRoleFromLocation === 'function') {
             applyPortalViewRoleFromLocation({ refreshChrome: false });
         }
-        bindUserMenu();
         bindTopbarControls();
-        bindLuxPickerDismissHandlers();
+        callBindLuxPickerDismissHandlers();
         if (document.getElementById('lux-shell')) {
             renderNav();
         }
@@ -1956,6 +2031,7 @@ function initializeLuxuryShellChromeBindings(attemptsRemaining = 24) {
             window.ensureChromeBottomResizeListener();
         }
         ensureDesktopSidebarOverlayDefaults();
+        scheduleLuxuryPopupSurfaceWarmup();
         return;
     }
     if (attemptsRemaining <= 0) return;
@@ -1968,10 +2044,10 @@ window.__KIU_LUXURY_SHELL_CHROME_LOADED = true;
 if (document.readyState === 'loading') {
     
 document.addEventListener('DOMContentLoaded', () => {
-        bindLuxPickerDismissHandlers();
+        callBindLuxPickerDismissHandlers();
         initializeLuxuryShellChromeBindings();
     }, { once: true });
 } else {
-    bindLuxPickerDismissHandlers();
+    callBindLuxPickerDismissHandlers();
     initializeLuxuryShellChromeBindings();
 }

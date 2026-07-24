@@ -18,66 +18,6 @@
 body.lux-light-mode .lux-summary-surface, html.lux-light-mode body .lux-summary-surface {
   background-image: linear-gradient(180deg, rgba(255, 255, 255, calc(var(--lux-raised-alpha) + 0.02)), rgba(255, 255, 255, calc(var(--lux-glass-alpha) + 0.02))), radial-gradient(circle at top right, rgba(var(--lux-accent-rgb), calc(0.09 + var(--lux-card-glow-alpha))), transparent 34%);
 }
-.lux-status-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 34px;
-  padding: 0 13px;
-  border-radius: 999px;
-  border: 1px solid rgba(149, 169, 209, 0.16);
-  background: rgba(16, 21, 35, 0.78);
-  color: rgba(227, 235, 255, 0.9);
-  font-size: 12px;
-  font-weight: 700;
-}
-.lux-status-pill.lux-status-pill--dot { position: relative; padding-left: 24px; }
-.lux-status-pill.lux-status-pill--dot::before {
-  content: '';
-  position: absolute;
-  left: 10px;
-  top: 50%;
-  width: 7px;
-  height: 7px;
-  border-radius: 999px;
-  transform: translateY(-50%);
-  background: currentColor;
-}
-.lux-status-pill.is-success {
-  background: rgba(16, 185, 129, 0.14);
-  color: #34d399;
-  border-color: rgba(16, 185, 129, 0.28);
-  box-shadow: none;
-}
-.lux-status-pill.is-muted {
-  background: var(--lux-status-muted-bg, rgba(255, 255, 255, 0.06));
-  color: var(--lux-status-muted-color, var(--lux-text-muted));
-  border-color: var(--lux-status-muted-border, rgba(149, 169, 209, 0.16));
-  box-shadow: none;
-}
-.lux-status-pill.is-info {
-  background: var(--lux-status-info-bg, rgba(var(--lux-accent-rgb), 0.14));
-  color: var(--lux-status-info-color, var(--lux-text));
-  border-color: var(--lux-status-info-border, rgba(var(--lux-accent-rgb), 0.24));
-  box-shadow: none;
-}
-.lux-status-pill.lux-status-pill--soft {
-  background: var(--lux-pill-bg, rgba(255, 255, 255, 0.08));
-  color: var(--lux-pill-color, var(--lux-text));
-  border-color: var(--lux-pill-border, rgba(149, 169, 209, 0.16));
-  box-shadow: none;
-}
-.lux-status-pill.lux-status-pill--compact {
-  min-height: auto;
-  padding: 2px 8px;
-  border-radius: 10px;
-  font-size: 11px;
-  gap: 6px;
-}
-body.lux-light-mode .lux-status-pill.is-success, html.lux-light-mode body .lux-status-pill.is-success {
-  color: #047857;
-  background: rgba(16, 185, 129, 0.11);
-}
 .lux-select-card {
   appearance: none;
   cursor: pointer;

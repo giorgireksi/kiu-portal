@@ -1,12 +1,13 @@
 /* Color & Motion Studio — self-contained fixed 50% glassmorph (ignores portal opacity slider). */
 :is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) {
-  --lux-studio-glass-bg: rgba(255, 255, 255, 0.08);
   --lux-studio-glass-border: rgba(255, 255, 255, 0.14);
-  --lux-studio-glass-shadow: 0 8px 24px rgba(0, 0, 0, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.12);
   --lux-studio-dialog-bg: rgba(8, 12, 21, 0.50);
   --lux-studio-dialog-border: rgba(255, 255, 255, 0.14);
   --lux-studio-dialog-shadow: 0 24px 60px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.10);
   --lux-studio-btn-shadow: 0 4px 12px rgba(0, 0, 0, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.10);
+  --lux-studio-chip-radius: 16px;
+  --lux-studio-btn-radius: 14px;
+  --lux-studio-section-radius: 18px;
   --lux-studio-chip-surface:
     radial-gradient(circle at 88% 8%, rgba(var(--lux-accent-rgb), 0.14), transparent 40%),
     radial-gradient(circle at 10% 92%, rgba(255, 255, 255, 0.06), transparent 36%),
@@ -26,7 +27,6 @@
       rgba(var(--lux-accent-rgb), 0.10),
       rgba(255, 255, 255, 0.10) 52%,
       rgba(255, 255, 255, 0.08) 100%);
-  --lux-studio-chip-border-active: color-mix(in srgb, var(--lux-accent) 45%, transparent);
   --lux-studio-chip-border-press: color-mix(in srgb, var(--lux-accent) 72%, transparent);
   --lux-studio-chip-shadow-active:
     0 0 0 1px rgba(var(--lux-accent-rgb), 0.14),
@@ -34,7 +34,6 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.12);
   --lux-studio-chip-ease: cubic-bezier(0.22, 1, 0.36, 1);
   --lux-studio-chip-ease-out: cubic-bezier(0.4, 0, 0.2, 1);
-  --lux-studio-chip-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
   --lux-studio-chip-surface-hover:
     radial-gradient(circle at 88% 8%, rgba(var(--lux-accent-rgb), 0.18), transparent 42%),
     radial-gradient(circle at 10% 92%, rgba(255, 255, 255, 0.08), transparent 38%),
@@ -74,8 +73,9 @@
   pointer-events: none;
   transition: opacity 0.2s ease;
   background: rgba(0, 0, 0, 0.45);
-  backdrop-filter: blur(10px) saturate(120%);
-  -webkit-backdrop-filter: blur(10px) saturate(120%);
+  /* Panel carries frost; backdrop is dim-only (no stacked live blur). */
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 #lux-studio-backdrop.lux-studio-backdrop.is-open {
   opacity: 1;
@@ -170,42 +170,80 @@ body.lux-studio-open #lux-studio-backdrop { z-index: 2000 !important; }
   gap: 20px;
 }
 
-/* Soft-chrome chip shells (studio + params inner cards) */
+/* Soft-chrome chip shells — interactive targets only (not section/layout containers). */
 :is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) :is(
-  .lux-fog-color-field,
-  .lux-fog-profile-item,
-  .lux-fog-profile-edit-bar,
-  .lux-bg-mode-panel-copy,
-  .lux-bg-mode-panel-hint,
-  .lux-bg-mode-panel-subsection,
-  .lux-bg-mode-params-head > div:first-of-type,
-  .lux-transparency-control,
-  .lux-bg-mode-item,
-  .lux-range-row,
-  .lux-mix-preview,
   .lux-mode-btn,
   .lux-control-btn,
   .lux-fog-profile-bank-btn,
   .lux-fog-profile-action-btn,
+  .lux-bg-mode-item,
+  .lux-fog-profile-item,
   .lux-bg-gallery-tile,
-  .lux-bg-gallery-actions,
   .lux-bg-gallery-tab,
   .lux-bg-gallery-upload-btn,
   .lux-bg-gallery-icon-btn,
-  [data-particle-quality]
-),
-#lux-studio-backdrop .lux-studio-section:not(:has(.lux-bg-mode-item, .lux-range-row, .lux-mix-preview, .lux-mode-row, .lux-reset-grid, .lux-transparency-control)) {
+  [data-particle-quality],
+  [data-glass-blur-quality]
+) {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
   border: 1px solid var(--lux-studio-chip-border);
   background: var(--lux-studio-chip-surface);
   box-shadow: var(--lux-studio-chip-shadow);
+  border-radius: var(--lux-studio-chip-radius);
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   box-sizing: border-box;
   transition:
     transform 0.28s var(--lux-studio-chip-ease),
-    border-color 0.1s var(--lux-studio-chip-ease-out),
-    box-shadow 0.1s var(--lux-studio-chip-ease-out),
-    filter 0.1s var(--lux-studio-chip-ease-out);
+    opacity 0.18s var(--lux-studio-chip-ease-out);
+}
+:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) :is(
+  .lux-mode-btn,
+  .lux-control-btn,
+  .lux-fog-profile-bank-btn,
+  .lux-fog-profile-action-btn,
+  .lux-bg-mode-item,
+  .lux-fog-profile-item,
+  .lux-bg-gallery-tile,
+  .lux-bg-gallery-tab,
+  .lux-bg-gallery-upload-btn,
+  .lux-bg-gallery-icon-btn,
+  [data-particle-quality],
+  [data-glass-blur-quality]
+)::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0;
+  box-sizing: border-box;
+  background: var(--lux-studio-chip-surface-hover);
+  border: 1px solid var(--lux-studio-chip-border-hover);
+  box-shadow: var(--lux-studio-chip-shadow-hover);
+  transition: opacity 0.18s var(--lux-studio-chip-ease-out);
+}
+:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) :is(
+  .lux-mode-btn,
+  .lux-control-btn,
+  .lux-fog-profile-bank-btn,
+  .lux-fog-profile-action-btn,
+  .lux-bg-gallery-tile,
+  .lux-bg-gallery-tab,
+  .lux-bg-gallery-upload-btn,
+  .lux-bg-gallery-icon-btn,
+  [data-particle-quality],
+  [data-glass-blur-quality]
+) > * {
+  position: relative;
+  z-index: 1;
+}
+:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop) :is(.lux-bg-mode-item, .lux-fog-profile-item) > * {
+  position: relative;
+  z-index: 1;
 }
 @media (hover: hover) and (pointer: fine) {
   :is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) :is(
@@ -213,14 +251,15 @@ body.lux-studio-open #lux-studio-backdrop { z-index: 2000 !important; }
     .lux-control-btn,
     .lux-fog-profile-bank-btn,
     .lux-fog-profile-action-btn,
-    [data-particle-quality],
     .lux-bg-mode-item,
     .lux-fog-profile-item,
     .lux-bg-gallery-tile,
     .lux-bg-gallery-tab,
-    .lux-bg-gallery-upload-btn
+    .lux-bg-gallery-upload-btn,
+    .lux-bg-gallery-icon-btn,
+    [data-particle-quality],
+    [data-glass-blur-quality]
   ):hover:not(:disabled),
-  #lux-studio-backdrop .lux-studio-section:not(:has(.lux-bg-mode-item, .lux-range-row, .lux-mix-preview, .lux-mode-row, .lux-reset-grid, .lux-transparency-control)):hover,
   #lux-studio-backdrop .lux-bg-mode-item:has(
     .lux-bg-mode-btn:hover:not(:disabled),
     .lux-bg-mode-settings-btn:hover
@@ -231,25 +270,31 @@ body.lux-studio-open #lux-studio-backdrop { z-index: 2000 !important; }
     .lux-fog-profile-bank-btn:hover:not(:disabled)
   ) {
     transform: translate3d(0, -3px, 0);
-    background: var(--lux-studio-chip-surface-hover);
-    border-color: var(--lux-studio-chip-border-hover);
-    box-shadow: var(--lux-studio-chip-shadow-hover);
   }
   :is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) :is(
-    .lux-fog-color-field,
-    .lux-fog-profile-edit-bar,
-    .lux-bg-mode-panel-copy,
-    .lux-bg-mode-panel-hint,
-    .lux-bg-mode-panel-subsection,
-    .lux-bg-mode-params-head > div:first-of-type,
-    .lux-transparency-control,
-    .lux-range-row,
-    .lux-mix-preview
-  ):hover {
-    transform: translate3d(0, -1px, 0);
-    background: var(--lux-studio-chip-surface-hover);
-    border-color: var(--lux-studio-chip-border-hover);
-    box-shadow: var(--lux-studio-chip-shadow-hover);
+    .lux-mode-btn,
+    .lux-control-btn,
+    .lux-fog-profile-bank-btn,
+    .lux-fog-profile-action-btn,
+    .lux-bg-mode-item,
+    .lux-fog-profile-item,
+    .lux-bg-gallery-tile,
+    .lux-bg-gallery-tab,
+    .lux-bg-gallery-upload-btn,
+    .lux-bg-gallery-icon-btn,
+    [data-particle-quality],
+    [data-glass-blur-quality]
+  ):hover:not(:disabled)::after,
+  #lux-studio-backdrop .lux-bg-mode-item:has(
+    .lux-bg-mode-btn:hover:not(:disabled),
+    .lux-bg-mode-settings-btn:hover
+  )::after,
+  #lux-bg-mode-params-backdrop .lux-fog-profile-item:has(
+    .lux-fog-profile-item-main:hover:not(:disabled),
+    .lux-fog-profile-action-btn:hover:not(:disabled),
+    .lux-fog-profile-bank-btn:hover:not(:disabled)
+  )::after {
+    opacity: 1;
   }
 }
 :is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) :is(
@@ -258,18 +303,34 @@ body.lux-studio-open #lux-studio-backdrop { z-index: 2000 !important; }
   .lux-fog-profile-bank-btn,
   .lux-fog-profile-action-btn,
   [data-particle-quality],
+  [data-glass-blur-quality],
   .lux-mode-btn.is-active,
   .lux-control-btn.is-active,
   .lux-fog-profile-bank-btn.is-active,
-  [data-particle-quality].is-active
+  [data-particle-quality].is-active,
+  [data-glass-blur-quality].is-active
 ):active:not(:disabled) {
   transform: translate3d(0, 0, 0);
-  border-color: var(--lux-studio-chip-border-press);
-  box-shadow: var(--lux-studio-chip-shadow-press);
-  background: var(--lux-studio-chip-surface-active);
-  filter: brightness(0.93);
   transition-duration: 0.06s;
   transition-timing-function: var(--lux-studio-chip-ease-out);
+}
+:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) :is(
+  .lux-mode-btn,
+  .lux-control-btn,
+  .lux-fog-profile-bank-btn,
+  .lux-fog-profile-action-btn,
+  [data-particle-quality],
+  [data-glass-blur-quality],
+  .lux-mode-btn.is-active,
+  .lux-control-btn.is-active,
+  .lux-fog-profile-bank-btn.is-active,
+  [data-particle-quality].is-active,
+  [data-glass-blur-quality].is-active
+):active:not(:disabled)::after {
+  opacity: 0.7;
+  background: var(--lux-studio-chip-surface-active);
+  border-color: var(--lux-studio-chip-border-press);
+  box-shadow: var(--lux-studio-chip-shadow-press);
 }
 #lux-studio-backdrop .lux-bg-mode-item:has(
   .lux-bg-mode-btn:active,
@@ -280,12 +341,21 @@ body.lux-studio-open #lux-studio-backdrop { z-index: 2000 !important; }
   .lux-bg-mode-settings-btn:active
 ) {
   transform: translate3d(0, 0, 0);
-  border-color: var(--lux-studio-chip-border-press);
-  box-shadow: var(--lux-studio-chip-shadow-press);
-  background: var(--lux-studio-chip-surface-active);
-  filter: brightness(0.93);
   transition-duration: 0.06s;
   transition-timing-function: var(--lux-studio-chip-ease-out);
+}
+#lux-studio-backdrop .lux-bg-mode-item:has(
+  .lux-bg-mode-btn:active,
+  .lux-bg-mode-settings-btn:active
+)::after,
+#lux-studio-backdrop .lux-bg-mode-item:has(.lux-bg-mode-btn.is-active):has(
+  .lux-bg-mode-btn:active,
+  .lux-bg-mode-settings-btn:active
+)::after {
+  opacity: 0.7;
+  background: var(--lux-studio-chip-surface-active);
+  border-color: var(--lux-studio-chip-border-press);
+  box-shadow: var(--lux-studio-chip-shadow-press);
 }
 #lux-bg-mode-params-backdrop .lux-fog-profile-item:has(
   .lux-fog-profile-item-main:active:not(:disabled),
@@ -298,12 +368,23 @@ body.lux-studio-open #lux-studio-backdrop { z-index: 2000 !important; }
   .lux-fog-profile-bank-btn:active:not(:disabled)
 ) {
   transform: translate3d(0, 0, 0);
-  border-color: var(--lux-studio-chip-border-press);
-  box-shadow: var(--lux-studio-chip-shadow-press);
-  background: var(--lux-studio-chip-surface-active);
-  filter: brightness(0.93);
   transition-duration: 0.06s;
   transition-timing-function: var(--lux-studio-chip-ease-out);
+}
+#lux-bg-mode-params-backdrop .lux-fog-profile-item:has(
+  .lux-fog-profile-item-main:active:not(:disabled),
+  .lux-fog-profile-action-btn:active:not(:disabled),
+  .lux-fog-profile-bank-btn:active:not(:disabled)
+)::after,
+#lux-bg-mode-params-backdrop .lux-fog-profile-item.is-active:has(
+  .lux-fog-profile-item-main:active:not(:disabled),
+  .lux-fog-profile-action-btn:active:not(:disabled),
+  .lux-fog-profile-bank-btn:active:not(:disabled)
+)::after {
+  opacity: 0.7;
+  background: var(--lux-studio-chip-surface-active);
+  border-color: var(--lux-studio-chip-border-press);
+  box-shadow: var(--lux-studio-chip-shadow-press);
 }
 @media (hover: hover) and (pointer: fine) {
   :is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) :is(
@@ -311,7 +392,14 @@ body.lux-studio-open #lux-studio-backdrop { z-index: 2000 !important; }
     .lux-control-btn,
     .lux-fog-profile-bank-btn,
     .lux-fog-profile-action-btn,
-    [data-particle-quality]
+    .lux-bg-mode-item,
+    .lux-fog-profile-item,
+    .lux-bg-gallery-tile,
+    .lux-bg-gallery-tab,
+    .lux-bg-gallery-upload-btn,
+    .lux-bg-gallery-icon-btn,
+    [data-particle-quality],
+    [data-glass-blur-quality]
   ):hover:active:not(:disabled) {
     transform: translate3d(0, -3px, 0);
   }
@@ -334,54 +422,49 @@ body.lux-studio-open #lux-studio-backdrop { z-index: 2000 !important; }
   .lux-control-btn,
   .lux-fog-profile-bank-btn,
   .lux-fog-profile-action-btn,
-  [data-particle-quality],
   .lux-bg-mode-item,
-  .lux-fog-profile-item
-):focus-visible:not(:disabled),
-#lux-studio-backdrop .lux-studio-section:not(:has(.lux-bg-mode-item, .lux-range-row, .lux-mix-preview, .lux-mode-row, .lux-reset-grid, .lux-transparency-control)):focus-visible {
+  .lux-fog-profile-item,
+  .lux-bg-gallery-tile,
+  .lux-bg-gallery-tab,
+  .lux-bg-gallery-upload-btn,
+  .lux-bg-gallery-icon-btn,
+  [data-particle-quality],
+  [data-glass-blur-quality]
+):focus-visible:not(:disabled) {
   transform: translate3d(0, -3px, 0);
-  background: var(--lux-studio-chip-surface-hover);
-  border-color: var(--lux-studio-chip-border-hover);
-  box-shadow: var(--lux-studio-chip-shadow-hover);
   outline: none;
 }
 :is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) :is(
-  .lux-fog-color-field,
-  .lux-fog-profile-edit-bar,
-  .lux-bg-mode-panel-copy,
-  .lux-bg-mode-panel-hint,
-  .lux-bg-mode-panel-subsection,
-  .lux-bg-mode-params-head > div:first-of-type,
-  .lux-transparency-control,
-  .lux-range-row,
-  .lux-mix-preview
-):focus-visible {
-  transform: translate3d(0, -1px, 0);
-  background: var(--lux-studio-chip-surface-hover);
-  border-color: var(--lux-studio-chip-border-hover);
-  box-shadow: var(--lux-studio-chip-shadow-hover);
-  outline: none;
+  .lux-mode-btn,
+  .lux-control-btn,
+  .lux-fog-profile-bank-btn,
+  .lux-fog-profile-action-btn,
+  .lux-bg-mode-item,
+  .lux-fog-profile-item,
+  .lux-bg-gallery-tile,
+  .lux-bg-gallery-tab,
+  .lux-bg-gallery-upload-btn,
+  .lux-bg-gallery-icon-btn,
+  [data-particle-quality],
+  [data-glass-blur-quality]
+):focus-visible:not(:disabled)::after {
+  opacity: 1;
 }
 @media (prefers-reduced-motion: reduce) {
   :is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) :is(
-    .lux-fog-color-field,
-    .lux-fog-profile-item,
-    .lux-fog-profile-edit-bar,
-    .lux-bg-mode-panel-copy,
-    .lux-bg-mode-panel-hint,
-    .lux-bg-mode-panel-subsection,
-    .lux-bg-mode-params-head > div:first-of-type,
-    .lux-transparency-control,
-    .lux-bg-mode-item,
-    .lux-range-row,
-    .lux-mix-preview,
     .lux-mode-btn,
     .lux-control-btn,
     .lux-fog-profile-bank-btn,
     .lux-fog-profile-action-btn,
-    [data-particle-quality]
-  ),
-  #lux-studio-backdrop .lux-studio-section:not(:has(.lux-bg-mode-item, .lux-range-row, .lux-mix-preview, .lux-mode-row, .lux-reset-grid, .lux-transparency-control)) {
+    .lux-bg-mode-item,
+    .lux-fog-profile-item,
+    .lux-bg-gallery-tile,
+    .lux-bg-gallery-tab,
+    .lux-bg-gallery-upload-btn,
+    .lux-bg-gallery-icon-btn,
+    [data-particle-quality],
+    [data-glass-blur-quality]
+  ) {
     transition:
       border-color 0.15s ease,
       box-shadow 0.15s ease;
@@ -392,22 +475,15 @@ body.lux-studio-open #lux-studio-backdrop { z-index: 2000 !important; }
       .lux-control-btn,
       .lux-fog-profile-bank-btn,
       .lux-fog-profile-action-btn,
-      [data-particle-quality],
       .lux-bg-mode-item,
-      .lux-fog-profile-item
+      .lux-fog-profile-item,
+      .lux-bg-gallery-tile,
+      .lux-bg-gallery-tab,
+      .lux-bg-gallery-upload-btn,
+      .lux-bg-gallery-icon-btn,
+      [data-particle-quality],
+      [data-glass-blur-quality]
     ):hover:not(:disabled),
-    #lux-studio-backdrop .lux-studio-section:not(:has(.lux-bg-mode-item, .lux-range-row, .lux-mix-preview, .lux-mode-row, .lux-reset-grid, .lux-transparency-control)):hover,
-    :is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) :is(
-      .lux-fog-color-field,
-      .lux-fog-profile-edit-bar,
-      .lux-bg-mode-panel-copy,
-      .lux-bg-mode-panel-hint,
-      .lux-bg-mode-panel-subsection,
-      .lux-bg-mode-params-head > div:first-of-type,
-      .lux-transparency-control,
-      .lux-range-row,
-      .lux-mix-preview
-    ):hover,
     #lux-studio-backdrop .lux-bg-mode-item:has(
       .lux-bg-mode-btn:hover:not(:disabled),
       .lux-bg-mode-settings-btn:hover
@@ -425,7 +501,12 @@ body.lux-studio-open #lux-studio-backdrop { z-index: 2000 !important; }
     .lux-control-btn,
     .lux-fog-profile-bank-btn,
     .lux-fog-profile-action-btn,
-    [data-particle-quality]
+    .lux-bg-gallery-tile,
+    .lux-bg-gallery-tab,
+    .lux-bg-gallery-upload-btn,
+    .lux-bg-gallery-icon-btn,
+    [data-particle-quality],
+    [data-glass-blur-quality]
   ):active:not(:disabled),
   #lux-studio-backdrop .lux-palette-chip:active,
   #lux-studio-backdrop .lux-apply-btn:active,
@@ -445,48 +526,52 @@ body.lux-studio-open #lux-studio-backdrop { z-index: 2000 !important; }
     .lux-control-btn,
     .lux-fog-profile-bank-btn,
     .lux-fog-profile-action-btn,
-    [data-particle-quality],
     .lux-bg-mode-item,
-    .lux-fog-profile-item
-  ):focus-visible:not(:disabled),
-  #lux-studio-backdrop .lux-studio-section:not(:has(.lux-bg-mode-item, .lux-range-row, .lux-mix-preview, .lux-mode-row, .lux-reset-grid, .lux-transparency-control)):focus-visible,
-  :is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) :is(
-    .lux-fog-color-field,
-    .lux-fog-profile-edit-bar,
-    .lux-bg-mode-panel-copy,
-    .lux-bg-mode-panel-hint,
-    .lux-bg-mode-panel-subsection,
-    .lux-bg-mode-params-head > div:first-of-type,
-    .lux-transparency-control,
-    .lux-range-row,
-    .lux-mix-preview
-  ):focus-visible {
+    .lux-fog-profile-item,
+    .lux-bg-gallery-tile,
+    .lux-bg-gallery-tab,
+    .lux-bg-gallery-upload-btn,
+    .lux-bg-gallery-icon-btn,
+    [data-particle-quality],
+    [data-glass-blur-quality]
+  ):focus-visible:not(:disabled) {
     transform: none;
   }
 }
+/* Static studio cards — glass frame without interactive chip overflow/hover */
 :is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) :is(
   .lux-fog-color-field,
-  .lux-fog-profile-item,
   .lux-fog-profile-edit-bar,
   .lux-bg-mode-panel-copy,
   .lux-bg-mode-panel-hint,
   .lux-bg-mode-panel-subsection,
   .lux-bg-mode-params-head > div:first-of-type,
   .lux-transparency-control,
-  .lux-bg-mode-item,
   .lux-range-row,
   .lux-mix-preview
 ) {
   padding: 12px 14px;
-  border-radius: 16px;
+  border-radius: var(--lux-studio-chip-radius);
+  border: 1px solid var(--lux-studio-chip-border);
+  background: var(--lux-studio-chip-surface);
+  box-shadow: var(--lux-studio-chip-shadow);
+  box-sizing: border-box;
+  overflow: visible;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 #lux-studio-backdrop .lux-studio-section:not(:has(.lux-bg-mode-item, .lux-range-row, .lux-mix-preview, .lux-mode-row, .lux-reset-grid, .lux-transparency-control)) {
   padding: 14px 16px;
-  border-radius: 18px;
+  border-radius: var(--lux-studio-section-radius);
+  border: 1px solid var(--lux-studio-chip-border);
+  background: var(--lux-studio-chip-surface);
+  box-shadow: var(--lux-studio-chip-shadow);
+  box-sizing: border-box;
+  overflow: visible;
 }
 #lux-studio-backdrop .lux-studio-section {
   padding: 14px 16px;
-  border-radius: 18px;
+  border-radius: var(--lux-studio-section-radius);
   overflow: visible;
 }
 #lux-studio-backdrop .lux-studio-section:has(
@@ -571,18 +656,18 @@ body.lux-studio-open #lux-studio-backdrop { z-index: 2000 !important; }
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
 }
-:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) :is(.lux-mode-btn, .lux-control-btn, .lux-bg-mode-btn, .lux-bg-mode-settings-btn, .lux-fog-profile-bank-btn, .lux-fog-profile-action-btn, [data-particle-quality]) {
-  border-radius: 14px;
+:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) :is(.lux-mode-btn, .lux-control-btn, .lux-bg-mode-btn, .lux-bg-mode-settings-btn, .lux-fog-profile-bank-btn, .lux-fog-profile-action-btn, [data-particle-quality], [data-glass-blur-quality]) {
+  border-radius: var(--lux-studio-btn-radius);
   color: var(--lux-text);
   cursor: pointer;
   box-sizing: border-box;
 }
 :is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) .lux-mode-row .lux-mode-btn,
-:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) .lux-control-grid :is(.lux-control-btn, [data-particle-quality]) {
+:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) .lux-control-grid :is(.lux-control-btn, [data-particle-quality], [data-glass-blur-quality]) {
   width: 100%;
 }
 :is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) :is(.lux-apply-btn) {
-  border-radius: 14px;
+  border-radius: var(--lux-studio-btn-radius);
   color: var(--lux-text);
   cursor: pointer;
 }
@@ -632,7 +717,7 @@ body.lux-studio-open #lux-studio-backdrop { z-index: 2000 !important; }
   align-items: stretch;
   padding: 0;
   overflow: hidden;
-  border: none;
+  border-radius: var(--lux-studio-chip-radius);
   cursor: pointer;
 }
 :is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) .lux-fog-profile-item {
@@ -690,6 +775,9 @@ body.lux-studio-open #lux-studio-backdrop { z-index: 2000 !important; }
 :is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) .lux-control-btn strong { font-size: 13px; }
 :is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) .lux-control-btn span { font-size: 11px; color: var(--lux-text-muted); }
 #lux-studio-backdrop .lux-apply-btn {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
   width: 100%;
   min-height: 46px;
   margin-top: 8px;
@@ -697,27 +785,46 @@ body.lux-studio-open #lux-studio-backdrop { z-index: 2000 !important; }
   background: linear-gradient(145deg, var(--lux-accent), color-mix(in srgb, var(--lux-accent) 72%, #fff 28%));
   border-color: transparent;
   color: #fff;
-  transition:
-    transform 0.28s var(--lux-studio-chip-ease),
-    box-shadow 0.1s var(--lux-studio-chip-ease-out),
-    filter 0.1s var(--lux-studio-chip-ease-out);
+  transition: transform 0.28s var(--lux-studio-chip-ease);
 }
+#lux-studio-backdrop .lux-apply-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0;
+  background: linear-gradient(145deg, color-mix(in srgb, var(--lux-accent) 88%, #000 12%), color-mix(in srgb, var(--lux-accent) 62%, #fff 18%));
+  box-shadow: var(--lux-studio-apply-shadow-hover, none);
+  transition: opacity 0.18s var(--lux-studio-chip-ease-out);
+}
+#lux-studio-backdrop .lux-apply-btn > * { position: relative; z-index: 1; }
 @media (hover: hover) and (pointer: fine) {
   #lux-studio-backdrop .lux-apply-btn:hover {
     transform: translate3d(0, -3px, 0);
     box-shadow: var(--lux-studio-apply-shadow-hover);
   }
+  #lux-studio-backdrop .lux-apply-btn:hover::after {
+    opacity: 1;
+  }
   #lux-studio-backdrop .lux-apply-btn:hover:active {
     transform: translate3d(0, -3px, 0);
-    filter: brightness(0.94);
+  }
+  #lux-studio-backdrop .lux-apply-btn:hover:active::after {
+    opacity: 0.7;
+    box-shadow: var(--lux-studio-apply-shadow-press);
   }
 }
 #lux-studio-backdrop .lux-apply-btn:active {
   transform: translate3d(0, 0, 0);
   box-shadow: var(--lux-studio-apply-shadow-press);
-  filter: brightness(0.94);
   transition-duration: 0.06s;
   transition-timing-function: var(--lux-studio-chip-ease-out);
+}
+#lux-studio-backdrop .lux-apply-btn:active::after {
+  opacity: 0.7;
+  box-shadow: var(--lux-studio-apply-shadow-press);
 }
 :is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) .lux-range-row {
   display: grid;
@@ -779,8 +886,11 @@ body.lux-studio-open #lux-studio-backdrop { z-index: 2000 !important; }
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
 }
-:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) [data-particle-quality] {
+:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) .lux-control-grid :is(.lux-control-btn, [data-particle-quality], [data-glass-blur-quality]) {
   min-height: 40px;
+}
+:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) [data-particle-quality],
+:is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) [data-glass-blur-quality] {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -802,8 +912,9 @@ body.lux-studio-open #lux-studio-backdrop { z-index: 2000 !important; }
   pointer-events: none;
   transition: opacity 0.2s ease;
   background: rgba(0, 0, 0, 0.45);
-  backdrop-filter: blur(10px) saturate(120%);
-  -webkit-backdrop-filter: blur(10px) saturate(120%);
+  /* Dialog carries frost; backdrop is dim-only. */
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 .lux-bg-mode-params-backdrop.is-open {
   opacity: 1;
@@ -1016,9 +1127,7 @@ body.lux-studio-open .lux-bg-mode-params-backdrop {
 
 /* Light mode — still fixed 50% glass */
 :is(html.lux-light-mode, body.lux-light-mode) :is(#lux-studio-backdrop, #lux-bg-mode-params-backdrop, #lux-bg-gallery-backdrop) {
-  --lux-studio-glass-bg: rgba(255, 255, 255, 0.28);
   --lux-studio-glass-border: rgba(77, 52, 31, 0.14);
-  --lux-studio-glass-shadow: 0 4px 16px rgba(73, 48, 25, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.78);
   --lux-studio-dialog-bg: rgba(255, 255, 255, 0.88);
   --lux-studio-dialog-border: rgba(77, 52, 31, 0.10);
   --lux-studio-dialog-shadow: 0 22px 50px rgba(73, 48, 25, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.55);
@@ -1042,7 +1151,6 @@ body.lux-studio-open .lux-bg-mode-params-backdrop {
       rgba(var(--lux-accent-rgb), 0.12),
       rgba(255, 255, 255, 0.36) 52%,
       rgba(255, 255, 255, 0.32) 100%);
-  --lux-studio-chip-border-active: color-mix(in srgb, var(--lux-accent) 45%, transparent);
   --lux-studio-chip-border-press: color-mix(in srgb, var(--lux-accent) 72%, transparent);
   --lux-studio-chip-shadow-active:
     0 0 0 1px rgba(var(--lux-accent-rgb), 0.18),
@@ -1050,7 +1158,6 @@ body.lux-studio-open .lux-bg-mode-params-backdrop {
     inset 0 1px 0 rgba(255, 255, 255, 0.72);
   --lux-studio-chip-ease: cubic-bezier(0.22, 1, 0.36, 1);
   --lux-studio-chip-ease-out: cubic-bezier(0.4, 0, 0.2, 1);
-  --lux-studio-chip-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
   --lux-studio-chip-surface-hover:
     radial-gradient(circle at 88% 8%, rgba(var(--lux-accent-rgb), 0.22), transparent 42%),
     radial-gradient(circle at 10% 92%, rgba(255, 255, 255, 0.28), transparent 38%),
@@ -1078,8 +1185,8 @@ body.lux-studio-open .lux-bg-mode-params-backdrop {
 :is(html.lux-light-mode, body.lux-light-mode) #lux-studio-backdrop.lux-studio-backdrop,
 :is(html.lux-light-mode, body.lux-light-mode) .lux-bg-mode-params-backdrop {
   background: rgba(73, 48, 25, 0.28);
-  backdrop-filter: blur(8px) saturate(120%);
-  -webkit-backdrop-filter: blur(8px) saturate(120%);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 :is(html.lux-light-mode, body.lux-light-mode) #lux-studio-backdrop .lux-studio-panel,
 :is(html.lux-light-mode, body.lux-light-mode) .lux-bg-mode-params-dialog {
@@ -1330,23 +1437,20 @@ body.lux-studio-open .lux-bg-mode-params-backdrop {
   width: 44px;
   min-height: 44px;
   border-radius: 14px;
-  border: 1px solid var(--lux-studio-chip-border);
-  background: var(--lux-studio-chip-surface);
   color: var(--lux-text-muted);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   transition:
-    transform 0.16s var(--lux-studio-chip-ease-out),
-    background 0.16s var(--lux-studio-chip-ease-out),
-    border-color 0.16s var(--lux-studio-chip-ease-out),
-    color 0.16s var(--lux-studio-chip-ease-out);
+    transform 0.28s var(--lux-studio-chip-ease),
+    color 0.18s var(--lux-studio-chip-ease-out);
 }
-#lux-bg-gallery-backdrop .lux-bg-gallery-icon-btn:hover {
-  color: var(--lux-text);
-  border-color: var(--lux-studio-chip-border-hover);
-  background: var(--lux-studio-chip-surface-hover);
+@media (hover: hover) and (pointer: fine) {
+  #lux-bg-gallery-backdrop .lux-bg-gallery-icon-btn:hover {
+    color: var(--lux-text);
+    transform: translate3d(0, -3px, 0);
+  }
 }
 #lux-bg-gallery-backdrop .lux-bg-gallery-actions-hint {
   margin: 0;
@@ -1752,8 +1856,9 @@ body.lux-studio-open .lux-bg-mode-params-backdrop {
   pointer-events: none;
   transition: opacity 0.2s ease;
   background: rgba(0, 0, 0, 0.45);
-  backdrop-filter: blur(10px) saturate(120%);
-  -webkit-backdrop-filter: blur(10px) saturate(120%);
+  /* Dialog carries frost; backdrop is dim-only. */
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 .lux-bg-gallery-backdrop.is-open {
   opacity: 1;

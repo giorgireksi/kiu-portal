@@ -812,7 +812,7 @@ function buildLmsCallSessionCard(session, resourceKey, parsed) {
     `;
     const launchControls = session.status === 'active' ? `
         <div class="lms-call-stage-grid">
-            <div class="lms-route-card lms-route-panel-compact lms-call-stage">
+            <div class="lux-soft-chrome lux-panel lms-route-card lms-route-panel-compact lms-call-stage">
                 <div class="lms-call-stage-header">
                     <div>
                         <strong>${escapeHtml(session.title)}</strong>
@@ -854,7 +854,7 @@ function buildLmsCallSessionCard(session, resourceKey, parsed) {
                 </div>
             </div>
             <aside class="lms-call-side-stack">
-                <div class="lms-route-card lms-route-panel-compact lms-call-side-card">
+                <div class="lux-soft-chrome lux-panel lms-route-card lms-route-panel-compact lms-call-side-card">
                     <strong>Lesson tools</strong>
                     <div class="lms-call-chip-row">
                         <span class="lms-call-chip">${session.roomSettings.recording ? 'Recording on' : 'Recording off'}</span>
@@ -864,7 +864,7 @@ function buildLmsCallSessionCard(session, resourceKey, parsed) {
                     </div>
                     <div class="lms-call-controls">${canManage ? teacherControls : userControls}</div>
                 </div>
-                <div class="lms-route-card lms-route-panel-compact lms-call-side-card">
+                <div class="lux-soft-chrome lux-panel lms-route-card lms-route-panel-compact lms-call-side-card">
                     <strong>Live collaboration</strong>
                     <div class="lms-call-chip-row">
                         <span><b>${questionCount}</b> open questions</span>
@@ -873,12 +873,12 @@ function buildLmsCallSessionCard(session, resourceKey, parsed) {
                         <span><b>${attendanceMinutes}</b> min</span>
                     </div>
                 </div>
-                <div class="lms-route-card lms-route-panel-compact lms-call-side-card">
+                <div class="lux-soft-chrome lux-panel lms-route-card lms-route-panel-compact lms-call-side-card">
                     <strong>Reactions</strong>
                     <div class="lms-call-chip-row">${(session.reactions || []).slice(-8).map(item => `<span class="lms-call-chip">${escapeHtml(item.reaction || '👍')}</span>`).join('') || '<span class="lms-call-chip">No reactions yet</span>'}</div>
                     <div class="lms-call-feed">${reactionFeed}</div>
                 </div>
-                <div class="lms-route-card lms-route-panel-compact lms-call-side-card">
+                <div class="lux-soft-chrome lux-panel lms-route-card lms-route-panel-compact lms-call-side-card">
                     <strong>Transcript and catch-up</strong>
                     <div class="lms-call-feed">
                         ${(session.transcript || []).slice(-3).map(item => `<span class="lms-call-feed-item">${escapeHtml(item.speaker || 'Speaker')}: ${escapeHtml(item.text || '')}</span>`).join('')}
@@ -890,22 +890,22 @@ function buildLmsCallSessionCard(session, resourceKey, parsed) {
     ` : '';
     const modePanel = `
         <div class="lms-call-mode-panel">
-            <div class="lms-route-card lms-route-panel-compact">
+            <div class="lux-soft-chrome lux-panel lms-route-card lms-route-panel-compact">
                 <strong>Lecture layout</strong>
                 <span>Teacher tile, shared content, transcript, notes, and questions are ready for a standard class meeting.</span>
             </div>
-            <div class="lms-route-card lms-route-panel-compact">
+            <div class="lux-soft-chrome lux-panel lms-route-card lms-route-panel-compact">
                 <strong>Seminar layout</strong>
                 <span>Gallery, speaker queue, group notes, and participation view match a discussion-style meeting.</span>
             </div>
-            <div class="lms-route-card lms-route-panel-compact">
+            <div class="lux-soft-chrome lux-panel lms-route-card lms-route-panel-compact">
                 <strong>Whiteboard/code layout</strong>
                 <span>Shared board or code content stays central with teacher video and student answer space beside it.</span>
             </div>
         </div>
     `;
     const postClassSummary = session.status === 'ended' ? `
-        <div class="lms-route-card lms-route-panel-compact lms-call-post">
+        <div class="lux-soft-chrome lux-panel lms-route-card lms-route-panel-compact lms-call-post">
             <div>
                 <strong>Meeting recap</strong>
                 <span>${escapeHtml(session.studyPackage?.summary || 'Class ended. Recording, transcript, and attendance exports are ready.')}</span>
@@ -920,7 +920,7 @@ function buildLmsCallSessionCard(session, resourceKey, parsed) {
     ` : '';
 
     return `
-        <article class="lms-route-panel lms-route-panel-compact lms-call-classroom is-${escapeHtml(session.status)}">
+        <article class="lux-soft-chrome lux-panel lms-route-panel lms-route-panel-compact lms-call-classroom is-${escapeHtml(session.status)}">
             <div class="lms-route-card-head">
                 <div>
                     <div class="lms-call-card-kicker">
@@ -948,7 +948,7 @@ function buildLmsCallSessionCard(session, resourceKey, parsed) {
             ${modePanel}
             ${postClassSummary}
             <div class="lms-call-collab-grid">
-                <div class="lms-route-card lms-route-panel-compact lms-call-collab-panel">
+                <div class="lux-soft-chrome lux-panel lms-route-card lms-route-panel-compact lms-call-collab-panel">
                     <div class="lms-route-field-label">Chat</div>
                     <div class="lms-call-feed">${chatFeed}</div>
                     ${session.status === 'active' ? `
@@ -958,7 +958,7 @@ function buildLmsCallSessionCard(session, resourceKey, parsed) {
                         </div>
                     ` : ''}
                 </div>
-                <div class="lms-route-card lms-route-panel-compact lms-call-collab-panel">
+                <div class="lux-soft-chrome lux-panel lms-route-card lms-route-panel-compact lms-call-collab-panel">
                     <div class="lms-route-field-label">Questions</div>
                     <div class="lms-call-question-list">${questionList}</div>
                     ${session.status === 'active' ? `
@@ -969,22 +969,22 @@ function buildLmsCallSessionCard(session, resourceKey, parsed) {
                         </div>
                     ` : ''}
                 </div>
-                <div class="lms-route-card lms-route-panel-compact lms-call-collab-panel">
+                <div class="lux-soft-chrome lux-panel lms-route-card lms-route-panel-compact lms-call-collab-panel">
                     <div class="lms-route-field-label">Private notes</div>
                     <textarea id="lms-call-notes-${token}" class="lms-route-textarea" placeholder="Private notes for this class">${escapeHtml(userState.privateNotes || '')}</textarea>
                     <button type="button" class="lux-secondary-btn" data-lms-click="saveLmsClassPrivateNotes(${lmsInlineArg(session.id)})"><i class="fas fa-save"></i> Save notes</button>
                 </div>
-                <div class="lms-route-card lms-route-panel-compact lms-call-collab-panel">
+                <div class="lux-soft-chrome lux-panel lms-route-card lms-route-panel-compact lms-call-collab-panel">
                     <div class="lms-route-field-label">Transcript</div>
                     <div class="lms-call-feed">
                         ${(session.transcript || []).slice(-5).map(item => `<span class="lms-call-feed-item">${escapeHtml(item.speaker || 'Speaker')}: ${escapeHtml(item.text || '')}</span>`).join('')}
                     </div>
                 </div>
-                <div class="lms-route-card lms-route-panel-compact lms-call-collab-panel">
+                <div class="lux-soft-chrome lux-panel lms-route-card lms-route-panel-compact lms-call-collab-panel">
                     <div class="lms-route-field-label">Live activities</div>
                     <div class="lms-call-activity-list">${activityCards}</div>
                 </div>
-                <div class="lms-route-card lms-route-panel-compact lms-call-collab-panel">
+                <div class="lux-soft-chrome lux-panel lms-route-card lms-route-panel-compact lms-call-collab-panel">
                     <div class="lms-route-field-label">Class materials</div>
                     <div class="lms-call-material-list">${(session.materials || []).map(material => `
                         <button type="button" class="lms-call-material" data-lms-click="downloadLmsClassMaterial(${lmsInlineArg(session.id)}, ${lmsInlineArg(material.id || material.title || 'material')})">
@@ -994,7 +994,7 @@ function buildLmsCallSessionCard(session, resourceKey, parsed) {
                         </button>
                     `).join('')}</div>
                 </div>
-                <div class="lms-route-card lms-route-panel-compact lms-call-collab-panel">
+                <div class="lux-soft-chrome lux-panel lms-route-card lms-route-panel-compact lms-call-collab-panel">
                     <div class="lms-route-field-label">Breakout rooms</div>
                     <div class="lms-call-breakout-list">${breakoutRoomsMarkup}</div>
                     ${canManage ? `
@@ -1005,7 +1005,7 @@ function buildLmsCallSessionCard(session, resourceKey, parsed) {
                     ` : ''}
                 </div>
             </div>
-            <div class="lms-route-card lms-route-panel-compact lms-call-roster">
+            <div class="lux-soft-chrome lux-panel lms-route-card lms-route-panel-compact lms-call-roster">
                 <div class="lms-route-field-label">Participants</div>
                 <div class="lms-call-person-list">${participantMarkup}</div>
             </div>
@@ -1040,7 +1040,7 @@ function renderLmsCallsSection(courseId) {
     const scheduledCount = sessions.filter(session => session.status === 'scheduled').length;
     const endedCount = sessions.filter(session => session.status === 'ended').length;
     const creationPanel = canManage ? `
-        <div class="lms-route-panel lms-route-panel-compact">
+        <div class="lux-soft-chrome lux-panel lms-route-panel lms-route-panel-compact">
             <div class="lms-route-card-head lms-route-card-head-mb-16">
                 <div>
                     <div class="lms-route-card-title"><i class="fas ${escapeHtml(sectionMeta.icon)}"></i> Create ${escapeHtml(sectionMeta.label)} Lesson</div>
@@ -1090,7 +1090,7 @@ function renderLmsCallsSection(courseId) {
 
     contentArea.innerHTML = `
         <div class="lms-route-stack lms-calls-page">
-            <div class="lms-route-panel lms-route-panel-pad-16-20">
+            <div class="lux-soft-chrome lux-panel lms-route-panel lms-route-panel-pad-16-20">
                 <div class="lms-route-card-head">
                     <div class="lms-route-inline lms-route-inline-center lms-route-inline-gap-12">
                         <i class="fas fa-video lms-route-lead-icon"></i>
@@ -1107,7 +1107,7 @@ function renderLmsCallsSection(courseId) {
                 </div>
             </div>
             ${creationPanel}
-            <div class="lms-route-panel">
+            <div class="lux-soft-chrome lux-panel lms-route-panel">
                 <div class="lms-route-card-head lms-route-card-head-mb-16">
                     <div>
                         <div class="lms-route-card-title"><i class="fas fa-list-check"></i> Lesson Sessions</div>

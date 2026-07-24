@@ -29,7 +29,8 @@
         const STATIC_BACKGROUND_FILL_OPTIONS = d.STATIC_BACKGROUND_FILL_OPTIONS || [];
         const PARTICLE_QUALITY_OPTIONS = d.PARTICLE_QUALITY_OPTIONS;
         const GLASS_BLUR_QUALITY_OPTIONS = d.GLASS_BLUR_QUALITY_OPTIONS || [
-            { key: 'high', label: 'High', copy: 'Richest frost (default).' },
+            { key: 'auto', label: 'Adaptive', copy: 'Matches frost quality to this device.' },
+            { key: 'high', label: 'High', copy: 'Richest frost.' },
             { key: 'balanced', label: 'Balanced', copy: 'Smoother on weaker devices.' },
             { key: 'performance', label: 'Performance', copy: 'Lightest frost for speed.' }
         ];
@@ -309,9 +310,7 @@
                 localStorage.setItem('kiuLuxuryParticleSharpness', String(nextValue));
                 setDashboardVisuals({ particleSharpness: nextValue });
             }
-            // Map 0-100 to blur 1.0px-0px (higher sharpness = less blur)
-            const blurPx = ((100 - nextValue) / 100 * 1.0).toFixed(2);
-            document.documentElement.style.setProperty('--lux-canvas-sharpness-blur', blurPx + 'px');
+            // ponytail: sharpness slider kept for studio UX; CSS blur var was never consumed.
             syncStudioUi();
         }
         function getParticleQuality() {
@@ -334,14 +333,14 @@
             showToast(`Particle quality: ${PARTICLE_QUALITY_OPTIONS.find((item) => item.key === nextLevel)?.label || nextLevel}`);
         }
         function getGlassBlurQuality() {
-            const fallback = DEFAULT_HOME_VISUALS.glassBlurQuality || 'high';
+            const fallback = DEFAULT_HOME_VISUALS.glassBlurQuality || 'auto';
             const stored = String(
                 getDashboardVisuals().glassBlurQuality ?? localStorage.getItem('kiuLuxuryGlassBlurQuality') ?? fallback
             ).trim().toLowerCase();
             return GLASS_BLUR_QUALITY_OPTIONS.some((item) => item.key === stored) ? stored : fallback;
         }
         function setGlassBlurQuality(level, persist = true) {
-            const fallback = DEFAULT_HOME_VISUALS.glassBlurQuality || 'high';
+            const fallback = DEFAULT_HOME_VISUALS.glassBlurQuality || 'auto';
             const nextLevel = GLASS_BLUR_QUALITY_OPTIONS.some((item) => item.key === level) ? level : fallback;
             document.body.dataset.luxGlassBlurQuality = nextLevel;
             if (persist) {
@@ -384,17 +383,24 @@
                 cardGlowAlpha: String((0.016 * glowScale).toFixed(4))
             };
         }
-        function applyGlowStrengthCssVars(percent) {
+        function applyGlowStrengthCssVars(percent, options = {}) {
             const glowConfig = resolveGlowTokenConfig(percent);
             const root = document.documentElement;
             root.style.setProperty('--lux-glow-scale', glowConfig.glowScale);
             root.style.setProperty('--lux-button-glow', glowConfig.buttonGlow);
             root.style.setProperty('--lux-panel-glow', glowConfig.panelGlow);
             root.style.setProperty('--lux-card-glow-alpha', glowConfig.cardGlowAlpha);
-            document.body.dataset.luxGlowStrength = String(glowConfig.percent);
+            // Keep dataset in sync on live too — cheap, and forces visible layer invalidation
+            // while the studio overlay (backdrop-filter) is open.
+            if (document.body) {
+                document.body.dataset.luxGlowStrength = String(glowConfig.percent);
+            }
             return glowConfig;
         }
         function getGlowStrength() {
+            if (window.__luxLiveGlowStrength != null) {
+                return normalizeGlowStrengthPercent(window.__luxLiveGlowStrength);
+            }
             const fallback = Number.isFinite(Number(DEFAULT_HOME_VISUALS.glowStrength))
                 ? DEFAULT_HOME_VISUALS.glowStrength
                 : 50;
@@ -402,9 +408,19 @@
                 getDashboardVisuals().glowStrength ?? localStorage.getItem('kiuLuxuryGlowStrength') ?? fallback
             );
         }
-        function setGlowStrength(level, persist = true) {
+        function setGlowStrength(level, persist = true, options = {}) {
             const nextPercent = normalizeGlowStrengthPercent(level);
             applyGlowStrengthCssVars(nextPercent);
+            // Drag path: live preview via CSS vars + in-memory strength. Persist/atmosphere on `change`.
+            if (options?.live) {
+                window.__luxLiveGlowStrength = nextPercent;
+                // Memory-only so getGlowStrength()/atmosphere readers match the slider mid-drag.
+                try {
+                    setDashboardVisuals({ glowStrength: nextPercent }, false);
+                } catch (_error) { /* ignore */ }
+                return nextPercent;
+            }
+            window.__luxLiveGlowStrength = null;
             if (persist) {
                 localStorage.setItem('kiuLuxuryGlowStrength', String(nextPercent));
                 setDashboardVisuals({ glowStrength: nextPercent });
@@ -414,7 +430,7 @@
             } else if (typeof d.applyAtmosphereSettings === 'function') {
                 d.applyAtmosphereSettings();
             }
-            syncStudioUi();
+            return nextPercent;
         }
         const DEFAULT_STUDIO_MIXER = {
             hA: 30,

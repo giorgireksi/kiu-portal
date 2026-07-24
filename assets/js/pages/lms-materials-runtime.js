@@ -2,7 +2,7 @@
 
 function buildLmsMaterialsCreateBoxHtml(resourceKey, fileLabelId) {
     return `
-        <div class="lms-route-panel lms-route-panel-compact">
+        <div class="lux-soft-chrome lux-panel lms-route-panel lms-route-panel-compact">
             <div class="lms-route-card-head lms-route-card-head-mb-16">
                 <div>
                     <div class="lms-route-card-title">Upload Material</div>
@@ -36,7 +36,7 @@ function buildLmsMaterialsCreateBoxHtml(resourceKey, fileLabelId) {
 
 function buildLmsMaterialsWeekBannerHtml(resourceKey, activeCount, pinnedCount, archivedCount, canManage) {
     return `
-        <div class="lms-route-panel lms-route-panel-pad-16-20">
+        <div class="lux-soft-chrome lux-panel lms-route-panel lms-route-panel-pad-16-20">
             <div class="lms-route-card-head">
                 <div class="lms-route-inline lms-route-inline-center lms-route-inline-gap-12">
                     <i class="fas fa-folder-open lms-route-lead-icon"></i>
@@ -55,7 +55,7 @@ function buildLmsMaterialsWeekBannerHtml(resourceKey, activeCount, pinnedCount, 
 
 function buildLmsMaterialsCardHtml(resourceKey, item, canManage) {
     return `
-                        <div class="lms-route-card lms-route-panel-compact lms-material-card">
+                        <div class="lux-soft-chrome lux-panel lms-route-card lms-route-panel-compact lms-material-card">
                             <div class="lms-route-card-head lms-material-card-head">
                                 <div>
                                     <div class="lms-route-card-title">${escapeHtml(item.title || 'Untitled material')}</div>
@@ -102,7 +102,7 @@ function buildLmsMaterialsListMarkup(resourceKey, activeItems, archivedItems, ca
     }).join('') : renderLmsRouteEmptyState('No Materials Yet', 'This LMS group does not have any published materials yet.', 'fa-folder-open');
 
     const archivedPanel = canManage && archivedItems.length ? `
-        <div class="lms-route-panel lms-route-panel-compact">
+        <div class="lux-soft-chrome lux-panel lms-route-panel lms-route-panel-compact">
             <div class="lms-route-card-head lms-route-card-head-mb-16">
                 <div>
                     <div class="lms-route-card-title"><i class="fas fa-box-archive"></i> Archived materials</div>
@@ -111,7 +111,7 @@ function buildLmsMaterialsListMarkup(resourceKey, activeItems, archivedItems, ca
             </div>
                 <div class="lms-route-stack lms-route-copy-mt-12 lms-route-stack-gap-10">
                     ${archivedItems.map(item => `
-                    <div class="lms-route-card lms-route-panel-compact lms-route-inline lms-route-inline-between lms-route-inline-gap-12 lms-route-inline-center lms-material-archive-item">
+                    <div class="lux-soft-chrome lux-panel lms-route-card lms-route-panel-compact lms-route-inline lms-route-inline-between lms-route-inline-gap-12 lms-route-inline-center lms-material-archive-item">
                         <div>
                             <div class="lms-route-card-title lms-route-card-title-14">${escapeHtml(item.title || item.file?.name || 'Archived material')}</div>
                             <div class="lms-route-meta lms-route-meta-11 lms-route-copy-mt-4">${joinLmsMeta([item.weekLabel || 'General', item.file?.name || 'Attachment'])}</div>

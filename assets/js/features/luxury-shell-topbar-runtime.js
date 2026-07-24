@@ -41,11 +41,11 @@ function populateFacultySwitcher(options = {}) {
     const optionSignature = optionsList.map((opt) => `${opt.value}:${opt.label}`).join('|');
     const signature = `${currentValue}|${optionSignature}`;
     if (panel.dataset.renderSignature !== signature) {
-        panel.innerHTML = optionsList.map((opt) => `
+        panel.innerHTML = `<div class="lux-picker-panel-scrollport">${optionsList.map((opt) => `
             <button class="lux-picker-option${opt.value === currentValue ? ' is-active' : ''}" type="button" data-faculty-option="${escapeHtml(opt.value)}">
                 <strong>${escapeHtml(opt.label)}</strong>
             </button>
-        `).join('');
+        `).join('')}</div>`;
         panel.dataset.renderSignature = signature;
     }
     if (panel.dataset.bound !== '1') {
@@ -101,7 +101,7 @@ function populateRoleSwitcher(options = {}) {
         : '';
     const signature = `${activeRole}|${personaSignature}`;
     if (panel.dataset.renderSignature !== signature) {
-        panel.innerHTML = roles.map((roleKey) => {
+        panel.innerHTML = `<div class="lux-picker-panel-scrollport">${roles.map((roleKey) => {
             const missingPersona = authenticatedAdmin && roleKey !== 'admin' && !roleSwitcherHasPersona(roleKey, preferredFaculty);
             const personaHint = missingPersona
                 ? ` No account — create in Staff (${staffUrl}).`
@@ -113,7 +113,7 @@ function populateRoleSwitcher(options = {}) {
                 <strong>${escapeHtml(label)}</strong>
             </button>
         `;
-        }).join('');
+        }).join('')}</div>`;
         panel.dataset.renderSignature = signature;
     }
     if (panel.dataset.bound !== '1') {
@@ -136,13 +136,48 @@ function syncViewAsBanner() {
 const CHROME_GAP_FALLBACK_PX = 26;
 let chromeBottomResizeBound = false;
 let chromeBottomResizeObserver = null;
+let chromeGapPxCache = null;
+let chromeGapPxCacheUntil = 0;
 
 function readChromeGapPx() {
+    const now = performance.now();
+    if (chromeGapPxCache != null && now < chromeGapPxCacheUntil) return chromeGapPxCache;
     const root = document.documentElement;
     if (!root) return CHROME_GAP_FALLBACK_PX;
     const raw = getComputedStyle(root).getPropertyValue('--lux-chrome-gap').trim();
     const parsed = parseFloat(raw);
-    return Number.isFinite(parsed) ? parsed : CHROME_GAP_FALLBACK_PX;
+    chromeGapPxCache = Number.isFinite(parsed) ? parsed : CHROME_GAP_FALLBACK_PX;
+    chromeGapPxCacheUntil = now + 2000;
+    return chromeGapPxCache;
+}
+
+function invalidateChromeGapPxCache() {
+    chromeGapPxCache = null;
+    chromeGapPxCacheUntil = 0;
+}
+
+function buildSyncTopbarSignature() {
+    const currentUser = typeof getCurrentUserSafe === 'function' ? getCurrentUserSafe() : null;
+    const notifications = typeof getNotificationSnapshot === 'function' ? getNotificationSnapshot(currentUser) : { unread: 0 };
+    const messenger = typeof getMessengerSnapshot === 'function' ? getMessengerSnapshot(currentUser) : { unread: 0 };
+    const activePageId = typeof getActivePageId === 'function' ? getActivePageId() : 'home';
+    const shellRole = typeof getShellRole === 'function' ? getShellRole(activePageId) : 'student';
+    const effectiveRole = typeof getEffectiveRole === 'function' ? getEffectiveRole() : 'student';
+    const currentFacultyCode = typeof getCurrentFacultyCode === 'function' ? getCurrentFacultyCode() : '';
+    const resolvedUserName = typeof getUserName === 'function' ? getUserName() : 'Portal User';
+    const currentPageLabel = typeof pageLabel === 'function' ? pageLabel(activePageId) : 'Dashboard';
+    const utilityPanelsOpen = Boolean(document.querySelector('#lux-notification-panel.is-open, #lux-chat-panel.is-open'));
+    return [
+        activePageId,
+        shellRole,
+        effectiveRole,
+        currentFacultyCode,
+        resolvedUserName,
+        currentPageLabel,
+        notifications.unread,
+        messenger.unread,
+        utilityPanelsOpen ? '1' : '0'
+    ].join('|');
 }
 
 function syncChromeBottom() {
@@ -175,7 +210,10 @@ function ensureChromeBottomResizeListener() {
         });
     };
 
-    window.addEventListener('resize', schedule, { passive: true });
+    window.addEventListener('resize', () => {
+        invalidateChromeGapPxCache();
+        schedule();
+    }, { passive: true });
 
     if (typeof ResizeObserver === 'function') {
         const topbar = document.getElementById('lux-topbar');
@@ -187,6 +225,13 @@ function ensureChromeBottomResizeListener() {
 }
 
 function syncTopbar() {
+    const topbarSignature = buildSyncTopbarSignature();
+    if (window.__luxLastSyncTopbarSignature === topbarSignature) {
+        syncChromeBottom();
+        ensureChromeBottomResizeListener();
+        return;
+    }
+    window.__luxLastSyncTopbarSignature = topbarSignature;
     syncViewAsBanner();
     const currentUser = typeof getCurrentUserSafe === 'function' ? getCurrentUserSafe() : null;
     const notifications = typeof getNotificationSnapshot === 'function' ? getNotificationSnapshot(currentUser) : { unread: 0 };

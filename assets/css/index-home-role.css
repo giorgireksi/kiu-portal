@@ -87,7 +87,7 @@
 }
 /* --- buttons --- */
 #page-home #lux-home-shell {
-  :is(.lux-primary-btn, .lux-secondary-btn, .lux-ghost-btn, .lux-admin-op-btn) {
+  :is(.lux-primary-btn, .lux-secondary-btn, .lux-admin-op-btn) {
     position: relative;
     display: inline-flex;
     align-items: center;
@@ -95,10 +95,10 @@
     gap: 8px;
     min-height: var(--lux-primary-btn-min-height, 46px);
     padding: 0 26px;
-    border-radius: var(--lux-btn-pill-radius, 999px);
+    border-radius: var(--lux-btn-pill-radius, 0 22px 0 22px);
     border-style: solid;
-    border-color: transparent;
-    border-width: var(--lux-btn-frame-width, 2.5px);
+    border-color: var(--lux-btn-border-solid, var(--lux-accent));
+    border-width: var(--lux-btn-frame-width, 3.5px);
     font-weight: 700;
     font-size: 13px;
     letter-spacing: 0.03em;
@@ -108,13 +108,15 @@
     cursor: pointer;
     overflow: hidden;
     isolation: isolate;
-    background: var(--lux-btn-well), var(--lux-btn-frame-metal);
-    background-origin: border-box;
-    background-clip: padding-box, border-box;
+    background: var(--lux-btn-well);
+    background-origin: padding-box;
+    background-clip: padding-box;
     box-shadow: var(--lux-btn-frame-shadow);
-    -webkit-backdrop-filter: var(--lux-btn-glass-blur, none);
-    backdrop-filter: var(--lux-btn-glass-blur, none);
-    transition: transform 0.38s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.38s cubic-bezier(0.22, 1, 0.36, 1), filter 0.38s ease;
+    /* no live blur while lifting — well/frame paint owns the glass look */
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    /* compositor-only lift; shadow snaps (sheen ::after animates) */
+    transition: transform 0.38s cubic-bezier(0.22, 1, 0.36, 1);
     &::before {
       content: '';
       position: absolute;
@@ -146,16 +148,97 @@
     > * { position: relative; z-index: 3; }
     &:is(:hover, :focus-visible) {
       transform: translateY(-2px);
-      filter: brightness(1.05);
       color: var(--lux-btn-label);
       box-shadow: var(--lux-btn-frame-shadow-hover);
-      background: var(--lux-btn-well), var(--lux-btn-frame-metal);
-      background-origin: border-box;
-      background-clip: padding-box, border-box;
+      border-color: var(--lux-btn-border-solid, var(--lux-accent));
+      background: var(--lux-btn-well-hover, var(--lux-btn-well));
+      background-origin: padding-box;
+      background-clip: padding-box;
+    }
+    &:is(:hover, :focus-visible)::before {
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.08) 28%, transparent 48%);
     }
     &:active {
       transform: translateY(0) scale(0.985);
-      filter: brightness(0.97);
+    }
+  }
+  .lux-secondary-btn {
+    background: var(--lux-btn-well-soft);
+    &:is(:hover, :focus-visible) {
+      background: var(--lux-btn-well-soft-hover, var(--lux-btn-well-soft));
+    }
+  }
+  .lux-ghost-btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: var(--lux-primary-btn-min-height, 46px);
+    padding: 0 26px;
+    border-radius: var(--lux-btn-pill-radius, 0 22px 0 22px);
+    border-style: solid;
+    border-color: var(--lux-btn-border-solid, var(--lux-accent));
+    border-width: var(--lux-btn-frame-width, 3.5px);
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 0.03em;
+    line-height: 1.2;
+    color: var(--lux-btn-ghost-label, var(--lux-btn-label));
+    text-shadow: none;
+    cursor: pointer;
+    overflow: hidden;
+    isolation: isolate;
+    background: var(--lux-btn-ghost-well, var(--lux-btn-well));
+    background-origin: padding-box;
+    background-clip: padding-box;
+    box-shadow: var(--lux-btn-ghost-shadow, var(--lux-btn-frame-shadow));
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    transition: transform 0.38s cubic-bezier(0.22, 1, 0.36, 1);
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      pointer-events: none;
+      z-index: 1;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.04) 28%, transparent 48%);
+      opacity: 1;
+      mix-blend-mode: normal;
+    }
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      pointer-events: none;
+      z-index: 2;
+      background: var(--lux-btn-sheen);
+      transform: translateX(-130%) skewX(-14deg);
+      opacity: 0;
+      transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.2s ease;
+      display: block;
+    }
+    &:is(:hover, :focus-visible)::after {
+      transform: translateX(130%) skewX(-14deg);
+      opacity: 1;
+    }
+    > * { position: relative; z-index: 3; }
+    &:is(:hover, :focus-visible) {
+      transform: translateY(-2px);
+      color: var(--lux-btn-ghost-label, var(--lux-btn-label));
+      box-shadow: var(--lux-btn-ghost-shadow-hover, var(--lux-btn-frame-shadow-hover));
+      border-color: var(--lux-btn-border-solid, var(--lux-accent));
+      background: var(--lux-btn-ghost-well-hover, var(--lux-btn-well-hover, var(--lux-btn-ghost-well, var(--lux-btn-well))));
+      background-origin: padding-box;
+      background-clip: padding-box;
+    }
+    &:is(:hover, :focus-visible)::before {
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.08) 28%, transparent 48%);
+    }
+    &:active {
+      transform: translateY(0) scale(0.985);
     }
   }
   .lux-home-toolbar :is(.lux-primary-btn, .lux-secondary-btn, .lux-ghost-btn) {
@@ -164,13 +247,26 @@
   }
   .lux-alert .lux-primary-btn { flex: 0 0 auto; margin-left: auto; }
 }
+:is(html.lux-light-mode, body.lux-light-mode) #page-home #lux-home-shell :is(.lux-primary-btn, .lux-secondary-btn, .lux-ghost-btn, .lux-admin-op-btn) {
+  text-shadow: none;
+}
+:is(html.lux-light-mode, body.lux-light-mode) #page-home #lux-home-shell :is(.lux-primary-btn, .lux-secondary-btn, .lux-ghost-btn, .lux-admin-op-btn)::before {
+  background:
+    radial-gradient(circle at 18% 0%, rgba(var(--lux-accent-rgb), 0.14), transparent 46%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.55) 0%, rgba(255, 255, 255, 0.18) 30%, transparent 52%);
+}
+:is(html.lux-light-mode, body.lux-light-mode) #page-home #lux-home-shell :is(.lux-primary-btn, .lux-secondary-btn, .lux-ghost-btn, .lux-admin-op-btn):is(:hover, :focus-visible)::before {
+  background:
+    radial-gradient(circle at 18% 0%, rgba(var(--lux-accent-rgb), 0.20), transparent 48%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.72) 0%, rgba(255, 255, 255, 0.28) 30%, transparent 52%);
+}
 html[data-lux-transparency="0"] #page-home #lux-home-shell :is(.lux-primary-btn, .lux-secondary-btn, .lux-ghost-btn, .lux-admin-op-btn) {
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
 }
 @media (prefers-reduced-motion: reduce) {
   #page-home #lux-home-shell :is(.lux-primary-btn, .lux-secondary-btn, .lux-ghost-btn, .lux-admin-op-btn) {
-    transition: box-shadow .15s ease, filter .15s ease;
+    transition: none;
     &::after { display: none; }
     &:is(:hover, :focus-visible, :active) { transform: none; filter: none; }
   }
@@ -182,7 +278,25 @@ html[data-lux-transparency="0"] #page-home #lux-home-shell :is(.lux-primary-btn,
   }
 }
 /* --- soft-chrome-surfaces --- */
-/* Legacy grid hosts: full home-glass-fill + fade blur */
+/* Legacy grid host: single desk frost; direct children tint only */
+body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell .lux-home-grid {
+  background-color: var(--home-desk-glass-fill, color-mix(in srgb, var(--home-glass-fill, rgba(8, 12, 21, 0.55)) 72%, transparent)) !important;
+  background-image: var(--home-desk-glass-surface) !important;
+  border: 1px solid color-mix(
+    in srgb,
+    rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.90)) 48%,
+    var(--lux-soft-chrome-border, var(--home-fade-border-soft, var(--lux-panel-border)))
+  ) !important;
+  border-radius: var(--lux-panel-radius, 22px) !important;
+  box-shadow:
+    0 0 0 1px rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.50)),
+    0 0 18px rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.32)),
+    var(--lux-soft-chrome-shadow, var(--lux-elev-2)) !important;
+  backdrop-filter: var(--home-desk-glass-blur, blur(calc(var(--lux-transparency-blur, 14px) * 0.55))) !important;
+  -webkit-backdrop-filter: var(--home-desk-glass-blur, blur(calc(var(--lux-transparency-blur, 14px) * 0.55))) !important;
+  background-clip: padding-box;
+}
+/* Legacy grid children: accent surface on host — no second frost blur */
 body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell :is(
   .lux-home-grid > .lux-panel,
   .lux-home-grid > .lux-card,
@@ -200,8 +314,8 @@ body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell
     0 0 18px rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.32)),
     0 0 40px rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.16)),
     var(--lux-soft-chrome-shadow, var(--home-fade-shadow-soft, var(--lux-elev-2)));
-  backdrop-filter: var(--home-fade-blur) !important;
-  -webkit-backdrop-filter: var(--home-fade-blur) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   background-clip: padding-box;
 }
 /* Merged shell: demote band section roots only (no own border — part of desk).
@@ -254,7 +368,8 @@ body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell
   .lux-pill.lux-soft-chrome,
   .lux-quick-btn.lux-soft-chrome,
   .lux-admin-op-card.lux-soft-chrome,
-  .home-hover-chip.lux-soft-chrome
+  .home-hover-chip.lux-soft-chrome,
+  .lux-alert.lux-soft-chrome
 ) {
   background-color: var(--home-chip-surface-fill, color-mix(in srgb, var(--home-chip-fill, transparent) 58%, transparent)) !important;
   background-image: var(--lux-soft-chrome-surface, var(--home-fade-soft, var(--lux-panel-surface-soft))) !important;
@@ -334,19 +449,41 @@ body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell
 /* --- dashboard-hover-lift --- */
 body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell
   .lux-soft-chrome.home-hover-chip {
-  transition:
-    transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 0.1s cubic-bezier(0.4, 0, 0.2, 1),
-    border-color 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  isolation: isolate;
+  /* Keep the hover glow's repaint inside the small chip, rather than
+   * invalidating the merged dashboard blur surface behind it. */
+  contain: paint;
+  overflow: hidden;
+  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell
+  .lux-soft-chrome.home-hover-chip::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(circle at 50% 0%, rgba(var(--lux-accent-rgb), calc(var(--lux-panel-glow, 0.22) * 0.55)), transparent 72%);
+  box-shadow: var(--home-fade-shadow-hover, var(--lux-focus-shadow));
+  opacity: 0;
+  transition: opacity 0.18s ease;
+}
+body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell
+  .lux-soft-chrome.home-hover-chip > * {
+  position: relative;
+  z-index: 1;
 }
 @media (hover: hover) and (pointer: fine) {
   body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell
-    .lux-soft-chrome.home-hover-chip:hover:not(:has(
-      :is(button, a, .lux-quick-btn, .lux-admin-op-btn):hover
-    )) {
+    .lux-soft-chrome.home-hover-chip:hover {
     transform: translate3d(0, var(--home-chip-hover-lift, -3px), 0);
     border-color: color-mix(in srgb, var(--lux-focus-border, var(--lux-soft-chrome-border)) 70%, rgba(var(--lux-accent-rgb), 0.34));
-    box-shadow: var(--home-fade-shadow-hover, var(--lux-focus-shadow));
+  }
+  body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell
+    .lux-soft-chrome.home-hover-chip:hover::after {
+    opacity: 1;
   }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -354,7 +491,11 @@ body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell
     .lux-home-grid > :is(.lux-panel, .lux-card, .lux-hero, .lux-hero-side, .lux-soft-chrome, .lux-focus-panel),
     .lux-soft-chrome.home-hover-chip
   ) {
-    transition: box-shadow 0.15s ease, border-color 0.15s ease;
+    transition: border-color 0.15s ease;
+  }
+  body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell
+    .lux-soft-chrome.home-hover-chip::after {
+    display: none;
   }
   body.lux-unified-shell:not(.lux-route-students-admin) #page-home #lux-home-shell :is(
     .lux-home-grid > :is(.lux-panel, .lux-card, .lux-hero, .lux-hero-side, .lux-soft-chrome, .lux-focus-panel),

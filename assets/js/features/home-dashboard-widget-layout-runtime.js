@@ -735,6 +735,17 @@
     }
 
     function buildHomeWidgetContext(role, model) {
+        const fingerprint = typeof window.buildHomeDataFingerprint === 'function'
+            ? `${role}|${window.buildHomeDataFingerprint(role)}`
+            : '';
+        if (fingerprint) {
+            const fpCache = window.HOME_WIDGET_FINGERPRINT_CACHE
+                || (window.HOME_WIDGET_FINGERPRINT_CACHE = new Map());
+            if (fpCache.has(fingerprint)) return fpCache.get(fingerprint);
+            const context = buildHomeWidgetContextUncached(role, model);
+            fpCache.set(fingerprint, context);
+            return context;
+        }
         if (model && typeof model === 'object') {
             const cached = HOME_WIDGET_CONTEXT_CACHE.get(model);
             if (cached && cached.role === role) return cached.value;
@@ -918,6 +929,17 @@
     }
 
     function buildSystemWidgetDefinitions(role, model) {
+        const fingerprint = typeof window.buildHomeDataFingerprint === 'function'
+            ? `${role}|${window.buildHomeDataFingerprint(role)}`
+            : '';
+        if (fingerprint) {
+            const fpCache = window.HOME_WIDGET_DEFINITIONS_FINGERPRINT_CACHE
+                || (window.HOME_WIDGET_DEFINITIONS_FINGERPRINT_CACHE = new Map());
+            if (fpCache.has(fingerprint)) return fpCache.get(fingerprint);
+            const definitions = buildSystemWidgetDefinitionsUncached(role, model).map((definition) => sanitizeWidgetDefinitionText(definition));
+            fpCache.set(fingerprint, definitions);
+            return definitions;
+        }
         if (model && typeof model === 'object') {
             const cached = HOME_WIDGET_DEFINITIONS_CACHE.get(model);
             if (cached && cached.role === role) return cached.value;

@@ -20,11 +20,27 @@
   width: 90%;
   max-width: 600px;
   max-height: 90vh;
-  overflow-y: auto;
+  /* Glass frame; body scrolls so blur is not recomposited every wheel tick. */
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
   position: relative;
   animation: modalSlideIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  will-change: transform, opacity;
+}
+.modal-content > .modal-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  contain: layout paint;
+}
+/* Nested panel roots (newsx/admin) without .modal-body still need a scrollport. */
+.modal-content:not(:has(> .modal-body)) {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
 }
 @keyframes modalSlideIn {
   from { transform: translateY(40px) scale(0.95); opacity: 0; }
@@ -62,8 +78,9 @@
   [data-lux-modal-overlay]:not([aria-hidden='true']).is-open,
   body:not(.lux-route-social) [data-lux-transparency-exempt="1"] :is( .social-neo-dialog-backdrop ) {
   background: var(--lux-warmglass-overlay-dark);
-  backdrop-filter: blur(12px) saturate(120%);
-  -webkit-backdrop-filter: blur(12px) saturate(120%);
+  /* Modal panel carries frost; overlay is dim-only (no stacked live blur). */
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 :is(html.lux-light-mode,
 /* ── §2 light-mode warmglass ── */
@@ -79,13 +96,12 @@
   :is(html.lux-light-mode body:not(.lux-route-social),
   body.lux-light-mode:not(.lux-route-social)) [data-lux-transparency-exempt="1"] :is( .social-neo-dialog-backdrop ) {
   background: var(--lux-warmglass-overlay-light);
-  backdrop-filter: blur(10px) saturate(120%);
-  -webkit-backdrop-filter: blur(10px) saturate(120%);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 [data-lux-transparency-exempt="1"] :is( .students-hub-modal,
   .staff-hub-modal,
   .modal-content.lux-panel,
-  .registration-structured-modal,
   .admin-library-modal,
   .newsx-publisher-modal,
   .newsx-confirm-modal,
@@ -104,7 +120,6 @@
   body.lux-light-mode) [data-lux-transparency-exempt="1"] :is( .students-hub-modal,
   .staff-hub-modal,
   .modal-content.lux-panel,
-  .registration-structured-modal,
   .admin-library-modal,
   .newsx-publisher-modal,
   .newsx-confirm-modal,
@@ -140,7 +155,6 @@
   select.lux-modern-field,
   textarea.lux-modern-field,
   .students-hub-control,
-  .staff-hub-control,
   .lux-picker-btn,
   .lux-picker-panel ),
   body:not(.lux-route-social) [data-lux-transparency-exempt="1"] :is( .social-neo-input,
@@ -169,12 +183,12 @@
   border-bottom: 1px solid var(--lux-modal-glass-border);
   color: var(--lux-text);
 }
-[data-lux-transparency-exempt="1"] :is( .students-hub-modal-foot, .staff-hub-modal-foot, .registration-structured-modal-foot ) {
+[data-lux-transparency-exempt="1"] :is( .students-hub-modal-foot, .staff-hub-modal-foot ) {
   border-top: 1px solid var(--lux-modal-glass-border);
   background: var(--lux-panel-modal-foot-tint);
   color: var(--lux-text-muted);
 }
-:is(html.lux-light-mode, body.lux-light-mode) [data-lux-transparency-exempt="1"] :is( .students-hub-modal-foot, .staff-hub-modal-foot, .registration-structured-modal-foot ) {
+:is(html.lux-light-mode, body.lux-light-mode) [data-lux-transparency-exempt="1"] :is( .students-hub-modal-foot, .staff-hub-modal-foot ) {
   background: var(--lux-panel-modal-foot-tint-light);
 }
 [data-lux-transparency-exempt="1"] .lux-secondary-btn {
@@ -206,7 +220,6 @@
     .students-hub-modal,
     .staff-hub-modal,
     .modal-content,
-    .registration-structured-modal,
     .admin-library-modal,
     .newsx-publisher-modal,
     .newsx-confirm-modal,

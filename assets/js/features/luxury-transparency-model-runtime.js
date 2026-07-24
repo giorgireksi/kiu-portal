@@ -173,8 +173,11 @@
     function applyAtmosphereSettings() {
         const root = document.documentElement;
         const particleQuality = getParticleQuality();
+        const perfTier = (typeof window.getLuxuryPerformanceTier === 'function'
+            ? window.getLuxuryPerformanceTier(false)
+            : 'standard');
         const resolvedQuality = particleQuality === 'auto'
-            ? (getLuxuryPerformanceTier(false) === 'high' ? 'high' : getLuxuryPerformanceTier(false) === 'efficient' ? 'low' : 'balanced')
+            ? (perfTier === 'high' ? 'high' : perfTier === 'efficient' ? 'low' : 'balanced')
             : particleQuality;
         const lightMode = getThemeMode() === 'light';
         const glowPercent = typeof getGlowStrength === 'function' ? getGlowStrength() : 50;
@@ -197,12 +200,6 @@
         const topbarFillMin = lightMode ? 0.34 : 0.78;
         const topbarRaisedMin = lightMode ? 0.05 : 0.16;
         const backgroundAnimationsEnabled = areBackgroundAnimationsEnabled();
-        // Initialize canvas sharpness for timetable glass quality
-        if (typeof getParticleSharpness === 'function') {
-            const sharpness = getParticleSharpness();
-            const blurPx = ((100 - sharpness) / 100 * 1.0).toFixed(2);
-            root.style.setProperty('--lux-canvas-sharpness-blur', blurPx + 'px');
-        }
         root.style.setProperty('--lux-canvas-opacity', backgroundAnimationsEnabled ? '1' : '0');
         root.style.setProperty('--lux-overlay-opacity', '0');
         root.style.setProperty('--lux-page-haze-top', backgroundAnimationsEnabled ? '0' : '0');

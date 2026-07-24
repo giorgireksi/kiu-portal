@@ -218,7 +218,7 @@ function renderLmsAttendanceSection(courseId = currentCourseId) {
                     ])}
                 </div>
             </section>
-            <section class="lms-route-panel lms-attendance-panel">
+            <section class="lux-soft-chrome lux-panel lms-route-panel lms-attendance-panel">
                 <div class="lms-route-card-head lms-route-card-head-mb-16">
                     <div>
                         <div class="lms-route-card-title">${escapeHtml(today)}</div>
@@ -426,7 +426,7 @@ function computeLmsMemberRisk(student, ctx) {
 
 function renderLmsDeepToolkitCard(title, value, copy = '', icon = 'fa-circle-info', tone = 'info') {
     return `
-        <div class="lms-route-card lms-route-panel-compact lms-deep-card is-${escapeHtml(tone)}">
+        <div class="lux-soft-chrome lux-panel lms-route-card lms-route-panel-compact lms-deep-card is-${escapeHtml(tone)}">
             <div class="lms-deep-card-icon"><i class="fas ${escapeHtml(icon)}"></i></div>
             <div>
                 <strong>${escapeHtml(String(value))}</strong>
@@ -503,7 +503,7 @@ function renderLmsDeepSectionToolkit(ctx) {
                 ${renderLmsDeepToolkitCard('Attendance roster', ctx.students.length, 'Available for staff-controlled class tracking.', 'fa-user-check', 'success')}
                 ${renderLmsDeepToolkitCard('Linked quizzes', ctx.quizzes.length, 'Quizzes can be connected to session milestones.', 'fa-pen-to-square', 'pending')}
             </div>
-            <div class="lms-route-card lms-route-panel-compact lms-deep-panel">${renderLmsDeepToolkitList(sessionItems, 'No session markers yet')}</div>
+            <div class="lux-soft-chrome lux-panel lms-route-card lms-route-panel-compact lms-deep-panel">${renderLmsDeepToolkitList(sessionItems, 'No session markers yet')}</div>
         `,
         calls: `
             <div class="lms-deep-grid">
@@ -511,7 +511,7 @@ function renderLmsDeepSectionToolkit(ctx) {
                 ${renderLmsDeepToolkitCard('Live now', ctx.classCalls.some(call => call.status === 'active') ? 'Active' : 'None', 'Students see join/waiting state clearly.', 'fa-signal', 'success')}
                 ${renderLmsDeepToolkitCard('Recordings', ctx.classCalls.filter(call => call.recordingUrl).length, 'Recording links appear after class.', 'fa-record-vinyl', 'pending')}
             </div>
-            <div class="lms-route-card lms-route-panel-compact lms-deep-panel">${renderLmsDeepToolkitList(callItems, 'No calls scheduled yet')}</div>
+            <div class="lux-soft-chrome lux-panel lms-route-card lms-route-panel-compact lms-deep-panel">${renderLmsDeepToolkitList(callItems, 'No calls scheduled yet')}</div>
         `,
         members: `
             <div class="lms-deep-grid">
@@ -519,7 +519,7 @@ function renderLmsDeepSectionToolkit(ctx) {
                 ${renderLmsDeepToolkitCard('High risk', memberItems.filter(item => item.tone === 'danger').length, 'Missing work, attendance, and quiz signals.', 'fa-triangle-exclamation', memberItems.some(item => item.tone === 'danger') ? 'danger' : 'success')}
                 ${renderLmsDeepToolkitCard('Watch list', memberItems.filter(item => item.tone === 'pending').length, 'Students needing early attention.', 'fa-filter', 'pending')}
             </div>
-            <div class="lms-route-card lms-route-panel-compact lms-deep-panel">${renderLmsDeepToolkitList(memberItems, 'No enrolled members found')}</div>
+            <div class="lux-soft-chrome lux-panel lms-route-card lms-route-panel-compact lms-deep-panel">${renderLmsDeepToolkitList(memberItems, 'No enrolled members found')}</div>
         `,
         materials: `
             <div class="lms-deep-grid">
@@ -527,7 +527,7 @@ function renderLmsDeepSectionToolkit(ctx) {
                 ${renderLmsDeepToolkitCard('Weeks', new Set(ctx.materials.map(item => item.weekLabel).filter(Boolean)).size, 'Materials are organized by teaching week.', 'fa-calendar-week', 'success')}
                 ${renderLmsDeepToolkitCard('Pinned resources', ctx.materials.filter(item => item.pinned).length, 'Important material can stay visible.', 'fa-thumbtack', 'pending')}
             </div>
-            <div class="lms-route-card lms-route-panel-compact lms-deep-panel">${renderLmsDeepToolkitList(materialItems, 'No materials uploaded yet')}</div>
+            <div class="lux-soft-chrome lux-panel lms-route-card lms-route-panel-compact lms-deep-panel">${renderLmsDeepToolkitList(materialItems, 'No materials uploaded yet')}</div>
         `,
         concepts: `
             <div class="lms-deep-grid">
@@ -535,13 +535,13 @@ function renderLmsDeepSectionToolkit(ctx) {
                 ${renderLmsDeepToolkitCard('Reviewed', ctx.concepts.filter(item => item.reviewed || item.approved).length, 'Staff-approved explanations.', 'fa-circle-check', 'success')}
                 ${renderLmsDeepToolkitCard('Peer scoring', '5-10', 'Students can rate helpful concepts.', 'fa-star', 'pending')}
             </div>
-            <div class="lms-route-card lms-route-panel-compact lms-deep-panel">${renderLmsDeepToolkitList(conceptItems, 'No concepts shared yet')}</div>
+            <div class="lux-soft-chrome lux-panel lms-route-card lms-route-panel-compact lms-deep-panel">${renderLmsDeepToolkitList(conceptItems, 'No concepts shared yet')}</div>
         `
     };
     const panel = tabPanels[ctx.tab];
     if (!panel) return '';
     return `
-        <section class="lms-route-panel lms-route-panel-compact lms-deep-toolkit" data-lms-deep-toolkit="${escapeHtml(ctx.tab)}">
+        <section class="lux-soft-chrome lux-panel lms-route-panel lms-route-panel-compact lms-deep-toolkit" data-lms-deep-toolkit="${escapeHtml(ctx.tab)}">
             <div class="lms-deep-head">
                 <div>
                     <div class="lms-pro-kicker">Operational Workspace</div>

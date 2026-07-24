@@ -57,7 +57,7 @@ function renderLmsConceptsLibrary(courseId) {
     let html = `
         <div class="lms-route-stack">
 
-            <div class="lms-route-panel">
+            <div class="lux-soft-chrome lux-panel lms-route-panel">
                 <div class="lms-route-card-head">
                     <div class="lms-concepts-head-main">
                         <i class="fas fa-lightbulb lms-concepts-head-icon"></i>
@@ -72,7 +72,7 @@ function renderLmsConceptsLibrary(courseId) {
                 </div>
             </div>
             <div class="lms-route-card-grid">
-                <div class="lms-route-panel">
+                <div class="lux-soft-chrome lux-panel lms-route-panel">
                     <div class="lms-route-card-title">Concept Leaderboard</div>
                     <div class="lms-route-copy lms-route-copy-mt-6">Peer scoring stays between 5 and 10 so the clearest concepts rise to the top.</div>
                     <div class="lms-concept-leader-list">
@@ -92,20 +92,20 @@ function renderLmsConceptsLibrary(courseId) {
                         `).join('') : renderLmsRouteEmptyState('No Ratings Yet', 'No concepts have been rated in this group yet.', 'fa-ranking-star')}
                     </div>
                 </div>
-                <div class="lms-route-panel">
+                <div class="lux-soft-chrome lux-panel lms-route-panel">
                     <div class="lms-route-card-title">How Concepts Work</div>
                     <div class="lms-route-copy lms-route-copy-mt-6">This tab uses the same transparent route surfaces as the rest of LMS instead of the old white boxes.</div>
                     <div class="lms-route-card-grid lms-route-stack-mt-16">
-                        <div class="lms-route-card lms-route-panel-compact lms-concept-guidance-card"><div class="lms-route-kv-label">Week-linked or general</div><div class="lms-route-copy lms-route-copy-mt-6">Attach concepts to a week or leave them under the general section.</div></div>
-                        <div class="lms-route-card lms-route-panel-compact lms-concept-guidance-card"><div class="lms-route-kv-label">Anonymous mode</div><div class="lms-route-copy lms-route-copy-mt-6">Students can hide their name from classmates while staff still sees the correct author.</div></div>
-                        <div class="lms-route-card lms-route-panel-compact lms-concept-guidance-card"><div class="lms-route-kv-label">Peer scoring</div><div class="lms-route-copy lms-route-copy-mt-6">Members rate concepts from 5 to 10 to surface the strongest explanations.</div></div>
+                        <div class="lux-soft-chrome lux-panel lms-route-card lms-route-panel-compact lms-concept-guidance-card"><div class="lms-route-kv-label">Week-linked or general</div><div class="lms-route-copy lms-route-copy-mt-6">Attach concepts to a week or leave them under the general section.</div></div>
+                        <div class="lux-soft-chrome lux-panel lms-route-card lms-route-panel-compact lms-concept-guidance-card"><div class="lms-route-kv-label">Anonymous mode</div><div class="lms-route-copy lms-route-copy-mt-6">Students can hide their name from classmates while staff still sees the correct author.</div></div>
+                        <div class="lux-soft-chrome lux-panel lms-route-card lms-route-panel-compact lms-concept-guidance-card"><div class="lms-route-kv-label">Peer scoring</div><div class="lms-route-copy lms-route-copy-mt-6">Members rate concepts from 5 to 10 to surface the strongest explanations.</div></div>
                     </div>
                 </div>
             </div>
     `;
     if (canUpload) {
         html += `
-            <div class="lms-route-panel">
+            <div class="lux-soft-chrome lux-panel lms-route-panel">
                 <div class="lms-route-card-head lms-route-card-head-mb-16">
                     <div>
                         <div class="lms-route-card-title"><i class="fas fa-lightbulb"></i> Share a Concept</div>
@@ -156,7 +156,7 @@ function renderLmsConceptsLibrary(courseId) {
                     const canRate = currentUserId && String(concept.authorId || '') !== currentUserId;
                     const reviewLabel = concept.reviewStatus === 'approved' ? 'Reviewed' : concept.reviewStatus === 'revision' ? 'Needs correction' : 'Pending review';
                     return `
-                        <div class="lms-route-card lms-route-panel-compact lms-concept-card">
+                        <div class="lux-soft-chrome lux-panel lms-route-card lms-route-panel-compact lms-concept-card">
                             <div class="lms-route-card-head lms-concept-card-head">
                                 <div>
                                     <div class="lms-route-card-title">${escapeHtml(concept.title || 'Untitled concept')}</div>

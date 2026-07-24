@@ -46,7 +46,12 @@ describe('home dashboard shell hover lift', () => {
         expect(render).not.toMatch(/lux-widget-minimized-copy home-hover-chip/);
         expect(render).not.toMatch(/lux-admin-op-head home-hover-chip/);
         expect(role).not.toMatch(/\.home-hover-shell:hover[\s\S]*translate3d\(0,\s*-3px,\s*0\)/);
-        expect(role).toMatch(/\.lux-soft-chrome\.home-hover-chip:hover:not\(:has\([\s\S]*\.lux-quick-btn[\s\S]*var\(--home-chip-hover-lift/);
+        expect(role).toMatch(/\.lux-soft-chrome\.home-hover-chip:hover[\s\S]*var\(--home-chip-hover-lift/);
+        expect(role).not.toMatch(/home-hover-chip:hover:not\(:has\(/);
+        expect(role).toMatch(/\.lux-soft-chrome\.home-hover-chip[\s\S]*contain:\s*paint/);
+        expect(role).toMatch(/\.lux-soft-chrome\.home-hover-chip::after/);
+        expect(role).not.toMatch(/home-hover-chip[\s\S]*filter:\s*brightness/);
+        expect(role).toMatch(/prefers-reduced-motion: reduce\)[\s\S]*\.lux-soft-chrome\.home-hover-chip::after[\s\S]*display:\s*none/);
     });
 
     it('disables hover lift under reduced motion and at 0% transparency', () => {
@@ -63,9 +68,13 @@ describe('home dashboard shell hover lift', () => {
         expect(role).toMatch(/\.lux-home-merged\.lux-soft-chrome/);
         expect(role).toMatch(/\.lux-home-merged\.lux-soft-chrome[\s\S]{0,600}background-image:\s*var\(--home-desk-glass-surface\)/);
         expect(role).toMatch(/\.lux-home-merged\.lux-soft-chrome[\s\S]{0,600}var\(--home-desk-glass-fill/);
+        expect(role).toMatch(
+            /\.lux-home-merged\.lux-soft-chrome[\s\S]{0,800}backdrop-filter:\s*var\(--home-desk-glass-blur/
+        );
         expect(role).toMatch(/\.lux-home-merged :is\([\s\S]*\.lms-hero-focus[\s\S]*var\(--lux-soft-chrome-surface/);
         expect(role).toMatch(/\.lux-home-merged :is\([\s\S]*\.lms-hero-focus[\s\S]*--home-chip-surface-fill/);
         expect(role).toMatch(/\.lux-home-merged :is\([\s\S]*\.lux-stat\.lux-soft-chrome[\s\S]*backdrop-filter:\s*none !important/);
+        expect(role).toMatch(/\.lux-home-merged :is\([\s\S]*\.lux-alert\.lux-soft-chrome/);
         expect(role).toMatch(/\.lux-home-merged[\s\S]*backdrop-filter:\s*none !important/);
         expect(layout).toContain('.lux-home-merged');
         expect(layout).toContain('.lux-home-band--split');

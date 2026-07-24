@@ -52,7 +52,7 @@ describe('faculty switch and scoped visual settings', () => {
     const luxury = readSource('assets/js/features/index-luxury.js');
     const atmosphere = readSource('assets/js/features/luxury-atmosphere-runtime.js');
     const shellChrome = readSource('assets/js/features/luxury-shell-chrome.js');
-    expect(luxury).toContain("glassBlurQuality: 'high'");
+    expect(luxury).toContain("glassBlurQuality: 'auto'");
     expect(shellChrome).toContain('id="lux-glass-blur-quality-grid"');
     expect(shellChrome).toContain('setGlassBlurQuality(mode.key, true)');
     expect(atmosphere).toContain('kiuLuxuryGlassBlurQuality');
@@ -68,11 +68,14 @@ describe('faculty switch and scoped visual settings', () => {
     expect(luxury).toContain('glowStrength: 50');
     expect(shellChrome).toContain('Panel Color Glow');
     expect(shellChrome).toContain('id="lux-glow-strength-slider"');
-    expect(shellChrome).toContain('window.setGlowStrength(parseInt(value, 10), true)');
+    expect(shellChrome).toContain("window.setGlowStrength(parseInt(value, 10), false, { live: true })");
+    expect(shellChrome).toContain("glowStrengthSlider.addEventListener('change'");
+    expect(shellChrome).toContain('window.setGlowStrength(value, true)');
     expect(atmosphere).toContain('function getGlowStrength');
     expect(atmosphere).toContain('function setGlowStrength');
     expect(atmosphere).toContain('kiuLuxuryGlowStrength');
     expect(atmosphere).toContain('setDashboardVisuals({ glowStrength: nextPercent })');
+    expect(atmosphere).toContain('if (options?.live) return nextPercent;');
     expect(atmosphere).toContain('glowScale = pct / 50');
     expect(transparencyModel).toContain('resolveGlowTokenConfig');
     expect(tokens).toContain('var(--lux-panel-glow, 0.22)');

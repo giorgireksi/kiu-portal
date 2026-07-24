@@ -47,7 +47,7 @@
                         <div class="social-project-deadline-bar"><div class="social-project-deadline-fill ${budgetOverCap ? 'is-overdue' : ''}" style="width:${Math.min(100, budgetUtilization)}%"></div></div>
                     </div>
                     ${activeProject.isManager ? `
-                        <form class="social-neo-card social-project-rich-panel social-neo-stack" data-form="project-budget-settings" data-project-id="${escape(text(activeProject.id))}">
+                        <form class="lux-soft-chrome lux-panel social-neo-card social-project-rich-panel social-neo-stack" data-form="project-budget-settings" data-project-id="${escape(text(activeProject.id))}">
                             <div class="social-neo-section-head">
                                 <div><strong>Budget settings</strong><span>Choose the currency and optional spend cap for this workspace.</span></div>
                             </div>
@@ -63,7 +63,7 @@
                             <div class="social-neo-inline social-neo-inline-end"><button class="social-neo-btn social-neo-btn-primary" type="submit"><i class="fas fa-check"></i> Save budget settings</button></div>
                         </form>
                     ` : ''}
-                    <section class="social-neo-card social-project-rich-panel">
+                    <section class="lux-soft-chrome lux-panel social-neo-card social-project-rich-panel">
                         <div class="social-neo-section-head">
                             <div><strong>Budget categories</strong><span>Plan allocation across materials, travel, software, and more.</span></div>
                             <span class="social-neo-pill">${escape(String(budgetCategories.length))} categories</span>
@@ -102,7 +102,7 @@
                             }).join('') : `<div class="social-neo-empty">No budget categories yet. Add one to start planning spend.</div>`}
                         </div>
                     </section>
-                    <section class="social-neo-card social-project-rich-panel">
+                    <section class="lux-soft-chrome lux-panel social-neo-card social-project-rich-panel">
                         <div class="social-neo-section-head">
                             <div><strong>Expense log</strong><span>Track real spend and submit it for approval.</span></div>
                             <span class="social-neo-pill">${escape(String(budgetExpenses.length))} entries</span>

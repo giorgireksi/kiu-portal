@@ -10,24 +10,101 @@
         void d;
         /* Non-strict factory body: free vars resolve to window globals at call time. */
 
-function closeUtilityPanels(options = {}) {
-    const openPanels = Array.from(document.querySelectorAll('.lux-utility-panel.is-open'));
-    const restoreTargetId = options.restoreFocus ? (openPanels[0]?.dataset.triggerId || '') : '';
-    openPanels.forEach((panel) => {
-        panel.classList.remove('is-open');
-        panel.setAttribute('aria-hidden', 'true');
-        restoreTeleportedNode(panel);
-    });
+function finalizeTopbarPopoverClose(panel) {
+    if (!panel) return;
+    panel.classList.remove('is-closing', 'is-open');
+    panel.style.removeProperty('will-change');
+    panel.setAttribute('aria-hidden', 'true');
+    restoreTeleportedNode(panel);
+}
+
+function deactivateUtilityTriggers() {
     ['lux-notification-btn', 'lux-chat-btn'].forEach((buttonId) => {
         const button = document.getElementById(buttonId);
         if (!button) return;
         button.classList.remove('is-active');
         button.setAttribute('aria-expanded', 'false');
     });
-    if (restoreTargetId) {
-        restoreFocusById(restoreTargetId);
-        deferRestoreFocusById(restoreTargetId);
+}
+
+function animateTopbarPopoverClose(panel, options = {}) {
+    if (!panel) return Promise.resolve();
+    if (panel.classList.contains('is-closing') && !panel.classList.contains('is-open')) {
+        finalizeTopbarPopoverClose(panel);
+        return Promise.resolve();
     }
+    if (!panel.classList.contains('is-open')) {
+        finalizeTopbarPopoverClose(panel);
+        return Promise.resolve();
+    }
+    return new Promise((resolve) => {
+        let settled = false;
+        const finish = () => {
+            if (settled) return;
+            settled = true;
+            panel.removeEventListener('transitionend', onEnd);
+            finalizeTopbarPopoverClose(panel);
+            endPickerChromeBusy();
+            resolve();
+        };
+        const onEnd = (event) => {
+            if (event.target !== panel || event.propertyName !== 'opacity') return;
+            finish();
+        };
+        beginPickerChromeBusy();
+        if (typeof options.onDeactivate === 'function') options.onDeactivate(panel);
+        panel.classList.remove('is-open');
+        panel.classList.add('is-closing');
+        forcePickerReflow(panel);
+        panel.addEventListener('transitionend', onEnd);
+        window.setTimeout(finish, LUX_PICKER_CLOSE_FALLBACK_MS);
+    });
+}
+
+function revealTopbarPopover(panel, afterReveal) {
+    if (!panel) return;
+    beginPickerChromeBusy();
+    window.__kiuSuppressLuxTransparencyRefresh = true;
+    panel.classList.remove('is-open');
+    panel.classList.add('is-closing');
+    forcePickerReflow(panel);
+    const reveal = () => {
+        panel.classList.remove('is-closing');
+        panel.classList.add('is-open');
+        forcePickerReflow(panel);
+        if (typeof afterReveal === 'function') afterReveal();
+        releasePickerTransparencySuppress(panel);
+    };
+    if (typeof window.requestAnimationFrame === 'function') {
+        window.requestAnimationFrame(reveal);
+    } else {
+        reveal();
+    }
+}
+
+function closeUtilityPanels(options = {}) {
+    const openPanels = Array.from(document.querySelectorAll('.lux-utility-panel.is-open, .lux-utility-panel.is-closing'));
+    const restoreTargetId = options.restoreFocus
+        ? (openPanels.find((panel) => panel.classList.contains('is-open'))?.dataset.triggerId
+            || openPanels[0]?.dataset.triggerId
+            || '')
+        : '';
+    const finishTriggers = () => {
+        deactivateUtilityTriggers();
+        if (restoreTargetId) {
+            restoreFocusById(restoreTargetId);
+            deferRestoreFocusById(restoreTargetId);
+        }
+    };
+    if (!openPanels.length) {
+        finishTriggers();
+        return Promise.resolve();
+    }
+    return Promise.all(openPanels.map((panel) => animateTopbarPopoverClose(panel, {
+        onDeactivate: () => deactivateUtilityTriggers()
+    }))).then(() => {
+        finishTriggers();
+    });
 }
 
 function ensureTopbarUtilityPanel(panelId) {
@@ -74,27 +151,43 @@ function closeUserMenu(options = {}) {
     const menu = document.getElementById('lux-user-menu');
     const chip = document.getElementById('lux-user-chip');
     const restoreTargetId = menu?.dataset.triggerId || chip?.id || '';
-    if (menu) {
-        menu.classList.remove('is-open');
-        menu.setAttribute('aria-hidden', 'true');
-        restoreTeleportedNode(menu);
+    const finishChip = () => {
+        if (chip) chip.setAttribute('aria-expanded', 'false');
+        if (options.restoreFocus) {
+            restoreFocusById(restoreTargetId);
+            deferRestoreFocusById(restoreTargetId);
+        }
+    };
+    if (!menu) {
+        finishChip();
+        return Promise.resolve();
     }
-    if (chip) chip.setAttribute('aria-expanded', 'false');
-    if (options.restoreFocus) {
-        restoreFocusById(restoreTargetId);
-        deferRestoreFocusById(restoreTargetId);
+    if (!menu.classList.contains('is-open') && !menu.classList.contains('is-closing')) {
+        finalizeTopbarPopoverClose(menu);
+        finishChip();
+        return Promise.resolve();
     }
+    return animateTopbarPopoverClose(menu, {
+        onDeactivate: () => {
+            if (chip) chip.setAttribute('aria-expanded', 'false');
+        }
+    }).then(() => {
+        finishChip();
+    });
 }
 
 function ensureShellPickerPanel(panelId) {
     const existing = document.getElementById(panelId);
-    if (existing) return existing;
+    if (existing) {
+        existing.classList.add('lux-universal-picker-panel', 'lux-droplist-panel');
+        return existing;
+    }
     const buttonId = panelId === 'lux-role-picker-panel' ? 'lux-role-picker-btn' : 'lux-faculty-picker-btn';
     const button = document.getElementById(buttonId);
     const wrapper = button?.closest('.lux-picker-wrap');
     if (!wrapper) return null;
     const panel = document.createElement('div');
-    panel.className = 'lux-picker-panel lux-picker-panel-scroll lux-droplist-panel';
+    panel.className = 'lux-picker-panel lux-universal-picker-panel lux-picker-panel-scroll lux-droplist-panel';
     panel.id = panelId;
     panel.dataset.triggerId = buttonId;
     panel.setAttribute('role', 'listbox');
@@ -108,34 +201,49 @@ function ensureShellPickerPanel(panelId) {
 function toggleUtilityPanel(panelId, buttonId) {
     const button = document.getElementById(buttonId);
     const panel = ensureTopbarUtilityPanel(panelId);
-    if (!panel || !button) return;
-    const shouldOpen = !panel.classList.contains('is-open');
-    closeUtilityPanels();
-    if (shouldOpen) {
+    if (!panel || !button) return Promise.resolve();
+    const shouldOpen = !panel.classList.contains('is-open') && !panel.classList.contains('is-closing');
+    const runOpen = () => {
+        // One sync render before bloom; async bridges refresh only if still open.
+        renderTopbarUtilityPanels(typeof getCurrentUserSafe === 'function' ? getCurrentUserSafe() : null);
+        panel.dataset.triggerId = buttonId;
+        panel.setAttribute('aria-hidden', 'false');
+        button.classList.add('is-active');
+        button.setAttribute('aria-expanded', 'true');
+        revealTopbarPopover(panel, () => {
+            focusFirstInteractive(panel, '[data-utility-action], .lux-utility-item, button');
+        });
         if (typeof bootstrapKiuRealtimeBridge === 'function') {
             bootstrapKiuRealtimeBridge(true).then(() => {
                 if (!panel.classList.contains('is-open')) return;
                 renderTopbarUtilityPanels(typeof getCurrentUserSafe === 'function' ? getCurrentUserSafe() : null);
-                focusFirstInteractive(panel, '[data-utility-action], .lux-utility-item, button');
                 if (typeof syncTopbar === 'function') syncTopbar();
             }).catch(() => null);
         }
-        renderTopbarUtilityPanels(typeof getCurrentUserSafe === 'function' ? getCurrentUserSafe() : null);
-        panel.classList.add('is-open');
-        panel.setAttribute('aria-hidden', 'false');
-        panel.dataset.triggerId = buttonId;
-        button.classList.add('is-active');
-        button.setAttribute('aria-expanded', 'true');
-        focusFirstInteractive(panel, '[data-utility-action], .lux-utility-item, button');
         if (typeof ensurePortalSocialRuntimeLoaded === 'function') {
             ensurePortalSocialRuntimeLoaded().then(() => {
-                if (panel.classList.contains('is-open')) {
-                    renderTopbarUtilityPanels(typeof getCurrentUserSafe === 'function' ? getCurrentUserSafe() : null);
-                    focusFirstInteractive(panel, '[data-utility-action], .lux-utility-item, button');
-                }
+                if (!panel.classList.contains('is-open')) return;
+                renderTopbarUtilityPanels(typeof getCurrentUserSafe === 'function' ? getCurrentUserSafe() : null);
             });
         }
+    };
+    if (!shouldOpen) return closeUtilityPanels();
+    const hasOpenUtility = Boolean(document.querySelector('.lux-utility-panel.is-open, .lux-utility-panel.is-closing'));
+    if (!hasOpenUtility) {
+        runOpen();
+        return Promise.resolve();
     }
+    return closeUtilityPanels().then(runOpen);
+}
+
+function openUserMenuAnimated(menu, chip) {
+    if (!menu || !chip) return;
+    menu.dataset.triggerId = 'lux-user-chip';
+    menu.setAttribute('aria-hidden', 'false');
+    chip.setAttribute('aria-expanded', 'true');
+    revealTopbarPopover(menu, () => {
+        focusFirstInteractive(menu, '[data-nav-target], [data-action]');
+    });
 }
 
 function isPickerScrollExempt(panel, scrollTarget) {
@@ -153,7 +261,17 @@ function isLuxPickerInteractionTarget(target, panel) {
     return false;
 }
 
+const pickerScrollTargetCache = new Map();
+
+function clearPickerScrollTargetCache() {
+    pickerScrollTargetCache.clear();
+}
+
 function collectPickerScrollTargets(button) {
+    const cacheKey = button?.id || button?.dataset?.pickerTrigger || '';
+    if (cacheKey && pickerScrollTargetCache.has(cacheKey)) {
+        return pickerScrollTargetCache.get(cacheKey);
+    }
     const targets = new Set();
     if (typeof window !== 'undefined') targets.add(window);
     if (typeof document !== 'undefined' && document.documentElement) targets.add(document.documentElement);
@@ -167,7 +285,9 @@ function collectPickerScrollTargets(button) {
         }
         node = node.parentElement;
     }
-    return [...targets];
+    const result = [...targets];
+    if (cacheKey) pickerScrollTargetCache.set(cacheKey, result);
+    return result;
 }
 
 function clearLuxPickerPanelListeners(panel) {
@@ -190,7 +310,49 @@ function clearLuxPickerPanelListeners(panel) {
     }
 }
 
-const LUX_PICKER_CLOSE_FALLBACK_MS = 220;
+const LUX_PICKER_CLOSE_FALLBACK_MS = 320;
+
+function beginPickerChromeBusy() {
+    if (typeof window.beginLuxAnimating === 'function') window.beginLuxAnimating();
+    else {
+        window.__luxPickerAnimatingCount = (window.__luxPickerAnimatingCount || 0) + 1;
+        window.__luxIsAnimating = true;
+    }
+}
+
+function endPickerChromeBusy() {
+    if (typeof window.endLuxAnimating === 'function') window.endLuxAnimating();
+    else {
+        window.__luxPickerAnimatingCount = Math.max(0, (window.__luxPickerAnimatingCount || 0) - 1);
+        window.__luxIsAnimating = (window.__luxPickerAnimatingCount || 0) > 0;
+    }
+}
+
+/** Hold transparency suppress through bloom fade; clear on opacity transitionend or fallback. */
+function releasePickerTransparencySuppress(panel) {
+    const clear = () => {
+        window.__kiuSuppressLuxTransparencyRefresh = false;
+        endPickerChromeBusy();
+    };
+    if (!panel) {
+        window.setTimeout(clear, LUX_PICKER_CLOSE_FALLBACK_MS);
+        return;
+    }
+    let settled = false;
+    const finish = () => {
+        if (settled) return;
+        settled = true;
+        panel.removeEventListener('transitionend', onEnd);
+        clear();
+    };
+    const onEnd = (event) => {
+        if (event.target !== panel) return;
+        if (event.propertyName !== 'opacity' && event.propertyName !== 'transform') return;
+        finish();
+    };
+    panel.addEventListener('transitionend', onEnd);
+    window.setTimeout(finish, LUX_PICKER_CLOSE_FALLBACK_MS);
+}
 
 function forcePickerReflow(panel) {
     if (!panel) return;
@@ -214,6 +376,10 @@ function finalizePickerPanelClose(panel) {
     panel.classList.remove('is-closing', 'is-open', 'is-open-above', 'ex2-picker-panel');
     panel.style.removeProperty('--lux-picker-anchor-transform');
     panel.style.removeProperty('transform');
+    panel.style.removeProperty('will-change');
+    panel.style.removeProperty('max-height');
+    panel.style.removeProperty('right');
+    panel.style.removeProperty('bottom');
     panel.setAttribute('aria-hidden', 'true');
     restoreTeleportedNode(panel);
 }
@@ -262,7 +428,7 @@ function closePickerPanel(panel, options = {}) {
 
 function applyLuxPickerPanelVariants(panel, button) {
     if (!panel) return;
-    panel.classList.add('lux-droplist-panel');
+    panel.classList.add('lux-universal-picker-panel', 'lux-droplist-panel');
     if (button?.closest?.('#admin-exams-root')) {
         panel.classList.add('ex2-picker-panel');
     }
@@ -275,6 +441,7 @@ function applyLuxPickerPanelVariants(panel, button) {
 
 function closePickerPanels(options = {}) {
     window.__kiuSuppressLuxTransparencyRefresh = true;
+    beginPickerChromeBusy();
     const openPanels = Array.from(document.querySelectorAll('.lux-picker-panel.is-open'));
     const restoreTargetId = options.restoreFocus ? (openPanels[0]?.dataset.triggerId || '') : '';
     const closePromise = openPanels.length
@@ -286,18 +453,202 @@ function closePickerPanels(options = {}) {
             button.setAttribute('aria-expanded', 'false');
         });
         if (restoreTargetId) deferRestoreFocusById(restoreTargetId);
-        window.requestAnimationFrame(() => {
+        // Hold suppress through close bloom; clear after fallback (panels already finalized).
+        window.setTimeout(() => {
             window.__kiuSuppressLuxTransparencyRefresh = false;
-        });
+            endPickerChromeBusy();
+        }, LUX_PICKER_CLOSE_FALLBACK_MS);
     });
 }
 
+function resolveLuxFloatingPanelPlacement({
+    rect,
+    viewportWidth,
+    viewportHeight,
+    preferredWidth = 320,
+    minWidth = 200,
+    measuredHeight = 0,
+    estimatedHeight = 320,
+    gap = 8,
+    margin = 16,
+    scrollX = 0,
+    scrollY = 0
+} = {}) {
+    const safeViewportWidth = Math.max(0, Number(viewportWidth) || 0);
+    const safeViewportHeight = Math.max(0, Number(viewportHeight) || 0);
+    const safeMargin = Math.max(0, Number(margin) || 0);
+    const safeGap = Math.max(0, Number(gap) || 0);
+    const preferred = Math.max(0, Number(preferredWidth) || 320);
+    const floorWidth = Math.min(
+        preferred,
+        Math.max(0, Number(minWidth) || 0),
+        Math.max(0, safeViewportWidth - safeMargin * 2)
+    );
+    // Tiny screens: never exceed viewport. Otherwise keep preferred until an edge forces flip/shrink.
+    const viewportCap = Math.max(0, safeViewportWidth - safeMargin * 2);
+    let panelWidth = Math.min(preferred, viewportCap);
+    let left = rect.left;
+
+    if (rect.left + panelWidth <= safeViewportWidth - safeMargin) {
+        // Happy path: full width, left-aligned to trigger.
+        left = rect.left;
+    } else if (rect.right - panelWidth >= safeMargin) {
+        // Flip leftward into free space: right-align to trigger, keep full width.
+        left = rect.right - panelWidth;
+    } else {
+        // Neither full alignment fits — shrink on the roomier side.
+        const spaceRight = safeViewportWidth - safeMargin - rect.left;
+        const spaceLeft = rect.right - safeMargin;
+        if (spaceRight >= spaceLeft) {
+            panelWidth = Math.max(floorWidth, Math.min(panelWidth, Math.max(0, spaceRight)));
+            left = rect.left;
+        } else {
+            panelWidth = Math.max(floorWidth, Math.min(panelWidth, Math.max(0, spaceLeft)));
+            panelWidth = Math.min(panelWidth, viewportCap);
+            left = rect.right - panelWidth;
+        }
+    }
+
+    // Extreme left overflow (rare): shrink while right-aligning to the trigger.
+    if (left < safeMargin) {
+        const widthFromRight = Math.max(0, rect.right - safeMargin);
+        panelWidth = Math.max(floorWidth, Math.min(panelWidth, widthFromRight, viewportCap));
+        left = rect.right - panelWidth;
+    }
+
+    const maxLeft = Math.max(safeMargin, safeViewportWidth - panelWidth - safeMargin);
+    left = Math.min(Math.max(left, safeMargin), maxLeft) + scrollX;
+
+    const spaceBelow = safeViewportHeight - rect.bottom - safeGap;
+    const spaceAbove = rect.top - safeGap;
+    const neededHeight = measuredHeight > 0
+        ? measuredHeight
+        : Math.max(0, Number(estimatedHeight) || 0);
+    const openAbove = spaceBelow < neededHeight && spaceAbove > spaceBelow;
+    const available = Math.max(0, openAbove ? spaceAbove : spaceBelow);
+    const maxHeight = available;
+    const top = openAbove
+        ? rect.top + scrollY - safeGap
+        : rect.bottom + scrollY + safeGap;
+
+    return {
+        openAbove,
+        top,
+        left,
+        width: panelWidth,
+        maxHeight
+    };
+}
+
+function placeLuxFloatingPanel({
+    trigger,
+    panel,
+    gap = 8,
+    margin = 16,
+    preferredWidth = 320,
+    minWidth = 200,
+    estimatedHeight = 320,
+    fastPlace = false,
+    rect: rectOverride = null
+} = {}) {
+    if (!trigger || !panel) return null;
+    const rect = rectOverride || trigger.getBoundingClientRect();
+    const viewportWidth = Math.max(
+        0,
+        Number(document.documentElement?.clientWidth) || Number(window.innerWidth) || 0
+    );
+    const viewportHeight = Math.max(
+        0,
+        Number(document.documentElement?.clientHeight) || Number(window.innerHeight) || 0
+    );
+    // Glow/frame paint extends past the layout box — keep clear of the page border.
+    const paintPad = Math.max(margin, 28);
+    // Fixed + viewport coords: escape body/html overflow-x clipping of absolute paint.
+    panel.classList.remove('is-closing', 'is-open');
+    panel.style.removeProperty('transform');
+    panel.style.position = 'fixed';
+    panel.style.right = 'auto';
+    panel.style.bottom = 'auto';
+    panel.style.width = `${Math.min(preferredWidth, Math.max(0, viewportWidth - paintPad * 2))}px`;
+    // Fast open: skip scrollHeight measure on the click frame (polish later).
+    const measuredHeight = fastPlace
+        ? 0
+        : Math.max(panel.offsetHeight || 0, panel.scrollHeight || 0);
+    const placement = resolveLuxFloatingPanelPlacement({
+        rect,
+        viewportWidth,
+        viewportHeight,
+        preferredWidth,
+        minWidth,
+        measuredHeight,
+        estimatedHeight,
+        gap,
+        margin,
+        scrollX: 0,
+        scrollY: 0
+    });
+    if (placement.openAbove) {
+        panel.classList.add('is-open-above');
+        panel.style.setProperty('--lux-picker-anchor-transform', 'translateY(-100%)');
+    } else {
+        panel.classList.remove('is-open-above');
+        panel.style.setProperty('--lux-picker-anchor-transform', 'translateY(0)');
+    }
+    panel.style.top = `${placement.top}px`;
+    panel.style.left = `${placement.left}px`;
+    panel.style.width = `${placement.width}px`;
+    panel.style.maxHeight = `${Math.max(0, placement.maxHeight)}px`;
+
+    if (!fastPlace) {
+        polishLuxFloatingPanelClamp(panel, placement, {
+            viewportWidth,
+            paintPad,
+            minWidth
+        });
+    }
+
+    panel.style.zIndex = '999999';
+    return placement;
+}
+
+/** Post-open adaptive shrink from painted box vs page border (deferred off click frame). */
+function polishLuxFloatingPanelClamp(panel, placement, {
+    viewportWidth = 0,
+    paintPad = 28,
+    minWidth = 200
+} = {}) {
+    if (!panel || !placement) return placement;
+    let box = panel.getBoundingClientRect();
+    if (box.width > 0 || box.height > 0) {
+        const maxRight = viewportWidth - paintPad;
+        if (box.right > maxRight) {
+            const nextWidth = Math.max(minWidth, placement.width - (box.right - maxRight));
+            panel.style.width = `${nextWidth}px`;
+            placement.width = nextWidth;
+            box = panel.getBoundingClientRect();
+        }
+        if (box.left < paintPad) {
+            panel.style.left = `${paintPad}px`;
+            placement.left = paintPad;
+            box = panel.getBoundingClientRect();
+            if (box.right > maxRight) {
+                const nextWidth = Math.max(minWidth, placement.width - (box.right - maxRight));
+                panel.style.width = `${nextWidth}px`;
+                placement.width = nextWidth;
+            }
+        }
+    }
+    return placement;
+}
+
 function openPickerPanel(panel, button, buttonId) {
-    ensureLuxDroplistCss();
+    if (typeof ensureLuxDroplistCss === 'function') ensureLuxDroplistCss();
     const triggerButton = button || (buttonId ? document.getElementById(buttonId) : null);
     if (!panel || !triggerButton) return;
     window.__kiuSuppressLuxTransparencyRefresh = true;
+    beginPickerChromeBusy();
     applyLuxPickerPanelVariants(panel, triggerButton);
+    const triggerRect = triggerButton.getBoundingClientRect();
     const wrapper = panel.parentElement;
     if (wrapper && wrapper.tagName !== 'BODY') {
         if (!wrapper.id) wrapper.id = `lux-wrap-${Math.random().toString(36).substr(2, 9)}`;
@@ -305,50 +656,76 @@ function openPickerPanel(panel, button, buttonId) {
         panel.dataset.teleported = 'true';
         document.body.appendChild(panel);
     }
-    const rect = triggerButton.getBoundingClientRect();
-    const panelWidth = Math.min(320, window.innerWidth - 32);
     const inExamsRoot = Boolean(triggerButton.closest('#admin-exams-root'));
-    const fixedLayer = triggerButton.closest('.gb-modal-overlay, .sch-modal-overlay, #schModalOverlay, #schPresetManagerOverlay');
-    const offsetX = fixedLayer ? 0 : window.scrollX;
-    const offsetY = fixedLayer ? 0 : window.scrollY;
-    const gap = 8;
     const estimatedHeight = inExamsRoot
         ? Math.min(280, window.innerHeight * 0.5)
         : Math.min(320, window.innerHeight * 0.6);
-    const spaceBelow = window.innerHeight - rect.bottom - gap;
-    const spaceAbove = rect.top - gap;
-    const openAbove = spaceBelow < estimatedHeight && spaceAbove > spaceBelow;
-    panel.classList.remove('is-closing', 'is-open');
-    panel.style.removeProperty('transform');
-    panel.style.position = fixedLayer ? 'fixed' : 'absolute';
-    if (openAbove) {
-        panel.classList.add('is-open-above');
-        panel.style.top = `${rect.top + offsetY - gap}px`;
-        panel.style.setProperty('--lux-picker-anchor-transform', 'translateY(-100%)');
-    } else {
-        panel.classList.remove('is-open-above');
-        panel.style.top = `${rect.bottom + offsetY + gap}px`;
-        panel.style.setProperty('--lux-picker-anchor-transform', 'translateY(0)');
-    }
-    if (rect.left + panelWidth <= window.innerWidth - 16) {
-        panel.style.left = `${rect.left + offsetX}px`;
-    } else if (rect.right - panelWidth > 0) {
-        panel.style.left = `${rect.right + offsetX - panelWidth}px`;
-    } else {
-        panel.style.left = '16px';
-    }
-    panel.style.width = `${panelWidth}px`;
-    panel.style.zIndex = '999999';
+    const margin = 16;
+    const preferredWidth = 320;
+    const minWidth = 200;
+    const placement = placeLuxFloatingPanel({
+        trigger: triggerButton,
+        panel,
+        gap: 8,
+        margin,
+        preferredWidth,
+        minWidth,
+        estimatedHeight,
+        fastPlace: true,
+        rect: triggerRect
+    });
+    // Prep compositor + reveal on the click turn — first paint is open.
+    panel.style.willChange = 'opacity, transform';
     panel.dataset.triggerId = buttonId;
     panel.setAttribute('aria-hidden', 'false');
     triggerButton.classList.add('is-active');
     triggerButton.setAttribute('aria-expanded', 'true');
-    forcePickerReflow(panel);
-    const revealPanel = () => {
-        applyLuxPickerPanelVariants(panel, triggerButton);
-        panel.classList.add('is-open');
-        forcePickerReflow(panel);
-        resetLuxPickerPanelSearch(panel);
+    resetLuxPickerPanelSearch(panel);
+    panel.classList.add('is-open');
+
+    const polishAndFinishChrome = () => {
+        if (!panel.classList.contains('is-open')) {
+            releasePickerTransparencySuppress(panel);
+            return;
+        }
+        const viewportWidth = Math.max(
+            0,
+            Number(document.documentElement?.clientWidth) || Number(window.innerWidth) || 0
+        );
+        const viewportHeight = Math.max(
+            0,
+            Number(document.documentElement?.clientHeight) || Number(window.innerHeight) || 0
+        );
+        const paintPad = Math.max(margin, 28);
+        // Height truth + adaptive clamp after first open paint.
+        const measuredHeight = Math.max(panel.offsetHeight || 0, panel.scrollHeight || 0);
+        const refined = resolveLuxFloatingPanelPlacement({
+            rect: triggerRect,
+            viewportWidth,
+            viewportHeight,
+            preferredWidth,
+            minWidth,
+            measuredHeight,
+            estimatedHeight,
+            gap: 8,
+            margin,
+            scrollX: 0,
+            scrollY: 0
+        });
+        if (refined.openAbove) {
+            panel.classList.add('is-open-above');
+            panel.style.setProperty('--lux-picker-anchor-transform', 'translateY(-100%)');
+        } else {
+            panel.classList.remove('is-open-above');
+            panel.style.setProperty('--lux-picker-anchor-transform', 'translateY(0)');
+        }
+        panel.style.top = `${refined.top}px`;
+        panel.style.left = `${refined.left}px`;
+        panel.style.width = `${refined.width}px`;
+        panel.style.maxHeight = `${Math.max(0, refined.maxHeight)}px`;
+        polishLuxFloatingPanelClamp(panel, refined, { viewportWidth, paintPad, minWidth });
+        if (placement) Object.assign(placement, refined);
+
         const searchInput = panel.querySelector('.lux-picker-search-input');
         if (searchInput) {
             searchInput.focus();
@@ -378,11 +755,13 @@ function openPickerPanel(panel, button, buttonId) {
         };
         panel._luxPickerWheelHandler = wheelHandler;
         panel.addEventListener('wheel', wheelHandler, { passive: true });
-        window.requestAnimationFrame(() => {
-            window.__kiuSuppressLuxTransparencyRefresh = false;
-        });
+        releasePickerTransparencySuppress(panel);
     };
-    requestAnimationFrame(revealPanel);
+    if (typeof window.requestAnimationFrame === 'function') {
+        window.requestAnimationFrame(polishAndFinishChrome);
+    } else {
+        polishAndFinishChrome();
+    }
 }
 
 function dismissOpenLuxPickerPanels() {
@@ -402,8 +781,12 @@ function bindLuxPickerDismissHandlers() {
         closePickerPanels({ immediate: true });
     }, true);
     if (typeof window !== 'undefined') {
-        window.addEventListener('resize', dismissOpenLuxPickerPanels, { passive: true });
-        window.addEventListener('orientationchange', dismissOpenLuxPickerPanels, { passive: true });
+        const onViewportChange = () => {
+            clearPickerScrollTargetCache();
+            dismissOpenLuxPickerPanels();
+        };
+        window.addEventListener('resize', onViewportChange, { passive: true });
+        window.addEventListener('orientationchange', onViewportChange, { passive: true });
     }
 }
 
@@ -651,12 +1034,12 @@ function buildUniversalPickerPanel(select, panel, button) {
             <div class="lux-picker-search-wrap">
                 <input type="search" class="lux-picker-search-input" placeholder="${escapeHtml(placeholder)}" autocomplete="off" spellcheck="false" aria-label="Search ${escapeHtml(caption)}">
             </div>
-            <div class="lux-picker-options">${optionsMarkup}</div>
+            <div class="lux-picker-options lux-picker-panel-scrollport">${optionsMarkup}</div>
             <div class="lux-picker-empty" hidden>No matches</div>
         `;
     } else {
         panel.classList.remove('lux-picker-panel--searchable');
-        panel.innerHTML = optionsMarkup;
+        panel.innerHTML = `<div class="lux-picker-panel-scrollport">${optionsMarkup}</div>`;
     }
     bindLuxPickerOptionButtons(select, panel, button);
 }
@@ -812,10 +1195,15 @@ function resumeLuxuryPickerObservers() {
             ensureTopbarUtilityPanel,
             ensureUserMenu,
             closeUserMenu,
+            openUserMenuAnimated,
             ensureShellPickerPanel,
             toggleUtilityPanel,
+            revealTopbarPopover,
+            animateTopbarPopoverClose,
+            finalizeTopbarPopoverClose,
             isPickerScrollExempt,
             isLuxPickerInteractionTarget,
+            clearPickerScrollTargetCache,
             collectPickerScrollTargets,
             clearLuxPickerPanelListeners,
             forcePickerReflow,
@@ -825,6 +1213,9 @@ function resumeLuxuryPickerObservers() {
             closePickerPanel,
             applyLuxPickerPanelVariants,
             closePickerPanels,
+            resolveLuxFloatingPanelPlacement,
+            placeLuxFloatingPanel,
+            polishLuxFloatingPanelClamp,
             openPickerPanel,
             dismissOpenLuxPickerPanels,
             bindLuxPickerDismissHandlers,

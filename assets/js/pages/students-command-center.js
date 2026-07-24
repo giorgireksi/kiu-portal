@@ -476,7 +476,7 @@
                 ${infoCard('Completion', `${completion.percent}%`)}
                 ${infoCard('Internal notes', record.notes || 'No admin notes.', true)}
             </div>
-            <section class="students-hub-info-card is-full lux-data-card">
+            <section class="lux-panel students-hub-info-card is-full lux-data-card">
                 <span>Admin actions</span>
                 <div class="students-hub-inline-actions students-hub-inline-actions--spaced">
                     <button class="lux-secondary-btn" type="button" data-student-action="invite" data-staff-id="${escapeHtml(record.id)}" ${canManage ? '' : 'disabled'}><i class="fas fa-paper-plane"></i> Send invitation</button>
@@ -542,7 +542,7 @@
                     ${tabs.map(([key, label]) => `<button class="students-hub-tab lux-tab-btn students-hub-profile-tab${activeTab === key ? ' is-active' : ''}" type="button" aria-pressed="${activeTab === key ? 'true' : 'false'}" data-student-action="tab" data-staff-tab="${escapeHtml(key)}">${escapeHtml(label)}</button>`).join('')}
                 </div>` : '';
         return `
-            <section class="students-hub-profile">
+            <section class="lux-soft-chrome lux-panel students-hub-profile">
                 <div class="students-hub-toolbar">
                     <button class="lux-secondary-btn" type="button" data-student-action="back"><i class="fas fa-arrow-left"></i> Back to student directory</button>
                     <div class="students-hub-toolbar-actions">
@@ -651,13 +651,13 @@
         `;
 
         return `
-            <div class="students-hub-shell">
+            <div class="lux-soft-chrome lux-panel students-hub-shell">
 
-                <section class="students-hub-controls students-admin-controls students-hub-controls--adaptive">
+                <section class="lux-soft-chrome students-hub-controls students-admin-controls students-hub-controls--adaptive">
                     ${directoryControlsMarkup}
                 </section>
 
-                <section class="students-hub-directory-panel">
+                <section class="lux-soft-chrome lux-panel students-hub-directory-panel">
                     <div class="students-hub-directory-head">
                         <div>
                             <div class="students-hub-overline">Student directory</div>

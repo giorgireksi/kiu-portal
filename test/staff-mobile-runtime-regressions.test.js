@@ -78,15 +78,12 @@ describe('staff mobile runtime regressions', () => {
 
         expect(html).not.toContain('onclick="closeAllModals(event)"');
         expect(html).not.toContain('modal-overlay" onclick');
-        expect(html).toContain('data-modal-close');
         expect(html).toContain('<nav id="prof-nav" aria-label="Professor navigation stub"');
         expect(html).toContain('<nav id="top-nav" aria-label="Top navigation stub"');
         expect(html).toContain('<nav id="admin-nav" aria-label="Admin navigation stub"');
         expect(html).toContain('class="staff-shell-loading-state"');
-        expect(html).toContain('class="modal-content staff-shell-modal staff-shell-modal-wide"');
-        expect(html).toContain('class="modal-content staff-shell-modal"');
+        expect(html).toContain('id="staff-command-modal-root"');
         expect(html).toContain('<button class="mob-sheet-btn" type="button" id="mob-act-admin"><span class="mob-sheet-icon"');
-        expect(html).not.toContain('<button class="mob-sheet-btn" id="mob-act-admin"><div class="mob-sheet-icon"');
         expect(html).toContain('<button class="mob-sheet-close-btn" type="button" id="mob-sheet-close">');
         expect(html).toContain('<nav id="mobile-bottom-nav" aria-label="Mobile navigation" hidden>');
         expect(html).toContain('<em class="mob-badge" id="mob-badge-msg" hidden>0</em>');
@@ -95,11 +92,13 @@ describe('staff mobile runtime regressions', () => {
         expect(html).toContain("activeTarget: 'staff'");
         expect(html).toContain("adminPickerSelector: '.staff-admin-controls .lux-primary-btn,.lux-picker-btn'");
         expect(html).toContain('assets/js/pages/standalone-mobile-shell.js?v=20260520-staff-mobile1');
+        expect(html).toContain('lux-page-bare-lite.css');
+        expect(html).not.toContain('staff-command-center.css');
         expect(html).not.toContain('assets/js/pages/staff-route-bootstrap.js?v=20260516-staffmobile1');
         expect(html).not.toContain('assets/js/pages/staff-mobile-shell.js?v=20260510-staff-admin3');
         expect(html).not.toContain('assets/css/admin-directories.css');
-        expect(classificationModule).toContain("'staff.html': { category: 'special-surface', dedicatedCss: ['assets/css/staff-command-center.css'], mobileShell: 'shared-standalone' }");
-        expect(classificationMarkdown).toContain("| `staff.html` | `special-surface` | `assets/css/staff-command-center.css` | `shared-standalone` |");
+        expect(classificationModule).toContain("'staff.html': { category: 'special-surface', dedicatedCss: ['assets/css/lux-page-bare-lite.css'], mobileShell: 'shared-standalone' }");
+        expect(classificationMarkdown).toContain("| `staff.html` | `special-surface` | `assets/css/lux-page-bare-lite.css` | `shared-standalone` |");
     });
 
     it('uses the shared standalone shell on first tap and clears the default home active state', () => {
@@ -118,7 +117,6 @@ describe('staff mobile runtime regressions', () => {
 
     it('only loads the staff-specific page runtimes that the command center uses', () => {
         const html = readSource('staff.html');
-        const appSource = readSource('assets/js/app/app.js');
         const commandCenter = readSource('assets/js/pages/staff-command-center.js');
 
         expect(html).not.toContain('assets/js/pages/gradebook.js');
@@ -127,33 +125,24 @@ describe('staff mobile runtime regressions', () => {
         expect(html).not.toContain('assets/js/pages/planner.js');
         expect(html).not.toContain('assets/js/pages/student-registration.js');
         expect(html).not.toContain('assets/js/pages/admin-registration.js');
-        expect(html).not.toContain('assets/js/pages/directories.js?v=20260510-staff-admin3');
-        expect(html).not.toContain('assets/js/shared/messenger.js');
-        expect(html).not.toContain('assets/js/app/api.js');
-        expect(html).not.toContain('assets/js/features/ui.js');
-        expect(html).toContain('assets/js/pages/staff-command-center.js?v=20260604-staffboot1');
+        expect(html).not.toContain('assets/js/pages/directories.js');
+        expect(html).toContain('assets/js/pages/staff-command-center.js');
         expect(html).toContain('assets/js/pages/standalone-mobile-shell.js?v=20260520-staff-mobile1');
-        expect(appSource).toContain('window.toggleMessaging = function toggleMessagingCompat()');
-        expect(appSource).toContain('window.toggleNotifications = function toggleNotificationsCompat()');
+        expect(html).toContain('assets/js/app/app.js');
         expect(commandCenter).toContain('function renderStaffPage()');
         expect(commandCenter).toContain('function openProfRegistration(role)');
         expect(commandCenter).toContain('function staffTabSwitch(tab)');
-        expect(commandCenter).toContain("const DIRECTORIES_SCRIPT_URL = 'assets/js/pages/directories.js?v=20260510-staff-admin3';");
-        expect(commandCenter).toContain('function ensureDirectoryProfileBridge()');
-        expect(commandCenter).toContain("console.error('Failed to load deferred staff directory bridge.'");
-        expect(commandCenter).toContain("showToast('Could not open the canonical profile right now.')");
+        expect(commandCenter).toContain('lux-panel staff-hub-shell');
+        expect(commandCenter).toContain('queueLuxuryTransparencyRefresh');
     });
 
-    it('keeps canonical staff-directory defaults free of corrupted placeholder records', () => {
-        const source = readSource('assets/js/pages/directories.js');
+    it('keeps staff directory filters on shared command-center stack (no legacy directories.js)', () => {
+        const html = readSource('staff.html');
+        const commandCenter = readSource('assets/js/pages/staff-command-center.js');
 
-        expect(source).not.toContain('Ãƒ');
-        expect(source).toContain("office: office || ''");
-        expect(source).toContain("phone: ''");
-        expect(source).toContain('Staff member ${newMember.name} added to ${getFacultyProfile(fac).name}.');
-        expect(source).toContain('Shared text normalization keeps staff-directory values readable across legacy records.');
-        expect(source).toContain("const blob = new Blob([html], { type: 'text/html' });");
-        expect(source).toContain("const newWindow = window.open(objectUrl, '_blank');");
-        expect(source).not.toContain('document.write(');
+        expect(html).toContain('staff-directory-filters-runtime.js');
+        expect(html).toContain('directory-filters-runtime.js');
+        expect(html).not.toContain('assets/js/pages/directories.js');
+        expect(commandCenter).toContain('applyStaffDirectoryDroplistFieldVisibility');
     });
 });

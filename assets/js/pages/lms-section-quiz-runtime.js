@@ -337,7 +337,7 @@ function ensureLmsGradebookShell() {
     wrapper.innerHTML = `
         <div id="gradebook-roster-selection" class="lms-route-stack"></div>
         <div id="gradebook-spreadsheet-view" class="lms-route-stack" hidden>
-            <div class="lms-route-panel lms-route-table-shell">
+            <div class="lux-soft-chrome lux-panel lms-route-panel lms-route-table-shell">
                 <div class="lms-route-card-head lms-route-card-head-mb-18">
                     <div>
                         <div class="lms-route-eyebrow lms-route-inline lms-route-inline-gap-8"><i class="fas fa-chart-line"></i> Grades</div>
@@ -348,7 +348,7 @@ function ensureLmsGradebookShell() {
                         <i class="fas fa-arrow-left"></i> Back
                     </button>
                 </div>
-                <div id="gradebook-assessment-controls" class="lms-route-panel lms-route-panel-compact lms-route-stack-mb-16"></div>
+                <div id="gradebook-assessment-controls" class="lux-soft-chrome lux-panel lms-route-panel lms-route-panel-compact lms-route-stack-mb-16"></div>
                 <div id="gradebook-staff-lms-workspace" class="gb-lms-staff-workspace lms-route-stack lms-route-stack-mb-16" hidden></div>
                 <div id="gradebook-student-view" class="lms-route-stack lms-route-stack-mb-16" hidden></div>
                 <div class="lms-route-table-wrap">

@@ -162,6 +162,18 @@ describe('background gallery feature', () => {
         expect(countOccurrences(foucCss, '#lux-bg-media {')).toBe(1);
     });
 
+    it('shows gallery backgrounds with object-fit fill across the viewport', () => {
+        const studio = readSource('assets/js/features/luxury-background-gallery-studio.js');
+        const foucCss = readSource('assets/css/lux-fouc-ht.css');
+        expect(foucCss).toContain('object-fit: fill');
+        expect(foucCss).toContain('background: #000');
+        expect(foucCss).not.toMatch(/#lux-bg-media img[\s\S]*?object-fit:\s*cover/);
+        expect(foucCss).not.toMatch(/#lux-bg-media img[\s\S]*?object-fit:\s*contain/);
+        expect(studio).toContain('Scaled to fill the screen on all devices');
+        expect(studio).not.toContain('Fullscreen cover on all devices');
+        expect(studio).not.toContain('letterboxed if needed');
+    });
+
     it('includes client-side image optimizer with WebP/JPEG fallback', () => {
         const optimizer = readSource('assets/js/features/luxury-background-gallery-optimizer.js');
         expect(optimizer).toContain('optimizeGalleryImageFile');

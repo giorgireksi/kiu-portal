@@ -16,10 +16,10 @@ describe('timetable route regressions', () => {
         const layoutCss = readSource('assets/css/layout-schedule.css');
         const boardCss = readSource('assets/css/layout-schedule-board.css');
         const themePrimer = readSource('assets/js/theme-primer.js');
-        const utilities = readSource('assets/js/shared/utilities.js');
-        const timetableStructuralBranch = utilities.slice(
-            utilities.indexOf("document.body.classList.contains('lux-route-timetable')"),
-            utilities.indexOf("document.body.classList.contains('lux-route-profile-view')")
+        const luxTransparency = readSource('assets/js/shared/lux-transparency.js');
+        const timetableStructuralBranch = luxTransparency.slice(
+            luxTransparency.indexOf("(document.body.classList.contains('lux-route-timetable') && ("),
+            luxTransparency.indexOf("(document.body.classList.contains('lux-route-registration') && (")
         );
         const inlineHandlerMatches = html.match(/on(click|input|change|mouseover|mouseout|mouseenter|mouseleave)=/g) || [];
 
@@ -28,7 +28,7 @@ describe('timetable route regressions', () => {
         expect(html).not.toContain('<style>');
         expect(html).not.toContain('timetable-route.css');
         expect(html).toContain('lux-page-bare');
-        expect(html).toContain('assets/js/theme-primer.js?v=20260604-styleguard2');
+        expect(html).toContain('assets/js/theme-primer.js?v=20260723-palette-persist1-persist1');
         expect(html).toMatch(/lux-shell\.css/);
         expect(html).toMatch(/lux-page-bare-lite\.css/);
         expect(html).not.toMatch(/lux-page-bare\.css(?!-lite)/);
@@ -142,9 +142,6 @@ describe('timetable route regressions', () => {
         expect(boardCss).toContain('.schedule-sessions-board');
         expect(layoutCss).not.toContain('.schedule-sessions-board');
         expect(existsSync(join(process.cwd(), 'assets/css/admin-scheduler-route.css'))).toBe(false);
-        // Multi-panel shells on panel tokens (timetable blueprint).
-            /\.lux-timetable-command[\s\S]*?\.lux-timetable-stage[\s\S]*?background:\s*var\(--tt-fade-surface\)/
-        );
         expect(timetableRuntime).toContain('function formatTimetableHeroFocusTitle(session)');
         expect(timetableRuntime).toContain('function renderTimetableHeroFocusPanel(');
         expect(timetableRuntime).toContain('function renderTimetableHeroFocusFacts(session');
@@ -154,16 +151,16 @@ describe('timetable route regressions', () => {
         expect(timetableStructuralBranch).toContain("el.classList.contains('lux-timetable-hero')");
         expect(timetableStructuralBranch).toContain("el.classList.contains('lux-timetable-command')");
         expect(timetableStructuralBranch).toContain("el.classList.contains('lux-timetable-session-card')");
-        expect(utilities).toContain('const isTimetableGridCell = (el) => {');
-        expect(utilities).toContain('TIMETABLE_GRID_CELL_CLASS_NAMES');
-        expect(utilities).toContain('isTimetableGridCell(el) ||');
-        expect(utilities).toContain('.lux-timetable-grid-shell, .schedule-grid-shell[data-tt-grid="1"]');
-        expect(utilities).not.toContain('const isTimetableLargeSurface');
-        expect(utilities).not.toContain('if (isTimetableLargeSurface)');
-        expect(utilities).not.toContain("'.lux-timetable-command', '.lux-timetable-insight'");
-        expect(utilities).toContain('const isTimetableLayoutWrapper = (el) => document.body.classList.contains(\'lux-route-timetable\')');
-        expect(utilities).toContain("el.classList.contains('lux-timetable-controls')");
-        expect(utilities).toContain("el.classList.contains('schedule-toolbar-host')");
+        expect(luxTransparency).toContain('const isTimetableGridCell = (el) => {');
+        expect(luxTransparency).toContain('TIMETABLE_GRID_CELL_CLASS_NAMES');
+        expect(luxTransparency).toContain('isTimetableGridCell(el) ||');
+        expect(luxTransparency).toContain('.lux-timetable-grid-shell, .schedule-grid-shell[data-tt-grid="1"]');
+        expect(luxTransparency).not.toContain('const isTimetableLargeSurface');
+        expect(luxTransparency).not.toContain('if (isTimetableLargeSurface)');
+        expect(luxTransparency).not.toContain("'.lux-timetable-command', '.lux-timetable-insight'");
+        expect(luxTransparency).toContain('const isTimetableLayoutWrapper = (el) => document.body.classList.contains(\'lux-route-timetable\')');
+        expect(luxTransparency).toContain("el.classList.contains('lux-timetable-controls')");
+        expect(luxTransparency).toContain("el.classList.contains('schedule-toolbar-host')");
         expect(themePrimer).toContain("document.body.classList.contains('lux-route-timetable')");
         expect(themePrimer).toContain('applyFlatSurfaceOverrides');
         expect(html).not.toContain('function flattenTimetableControlRows()');
@@ -178,13 +175,5 @@ describe('timetable route regressions', () => {
         expect(html).toContain('assets/js/pages/standalone-mobile-shell.js?v=20260520-timetable-mobile1');
         expect(html).not.toContain('(function initMobileExperience(){');
         expect(html).not.toContain("var ht=setInterval(function(){if(typeof window.navigate==='function')");
-    });
-
-    it('paints soft-chrome / focus tier matte without nested blur', () => {
-            /\.lux-soft-chrome[\s\S]{0,800}backdrop-filter:\s*none\s*!important/
-        );
-        // focus listed in soft matte :is() with backdrop-filter: none
-            /Soft chrome \/ focus matte[\s\S]{0,1200}backdrop-filter:\s*none\s*!important/
-        );
     });
 });

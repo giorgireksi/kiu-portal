@@ -1530,7 +1530,7 @@ enforceSingleRuntimeEntrypoint();
 
 (function registerPortalServiceWorker() {
     const PORTAL_CACHE_RESET_KEY = 'KIU_PORTAL_CACHE_RESET_VERSION';
-    const PORTAL_CACHE_RESET_VERSION = '20260716-glassmax2';
+    const PORTAL_CACHE_RESET_VERSION = '20260723-adaptive1';
 
     async function clearPortalSiteCaches(force = false) {
         try {

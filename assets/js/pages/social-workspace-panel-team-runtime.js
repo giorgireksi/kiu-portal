@@ -39,7 +39,7 @@
                 ? (nextOwner ? `If you leave now, ownership transfers to ${displayName(nextOwner)}.` : 'If you leave now and nobody remains, this workspace becomes ownerless but stays intact.')
                 : 'Leave the team without deleting chat, tasks, or activity history.';
             return `
-            <section class="social-neo-card social-project-team-shell social-project-team-layout">
+            <section class="lux-soft-chrome lux-panel social-neo-card social-project-team-shell social-project-team-layout">
                 <header class="social-project-team-toolbar">
                     <div class="social-project-team-toolbar-stats">
                         <span class="social-neo-pill"><strong>${escape(String(activeProject?.memberCount || 0))}</strong> members</span>
@@ -97,7 +97,7 @@
                             ${scrollList('social-project-scroll-list--invite', `
                             <div class="social-neo-stack social-neo-stack-mt-14">
                                 ${filteredInviteCandidates.length ? filteredInviteCandidates.map((account) => `
-                                    <article class="social-neo-card social-project-invite-row">
+                                    <article class="lux-soft-chrome lux-panel social-neo-card social-project-invite-row">
                                         <div class="social-neo-person">
                                             ${avatar(account)}
                                             <div>

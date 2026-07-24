@@ -1,19 +1,5 @@
 /* READABILITY: messenger/notif/call + faculty cards. Not in HTML — messenger.js ensureLayoutPortalCss().
- * Jump by § markers (shell-loading, faculty-schedule, msg-*, notif-dock, call-overlay, responsive). */
-/* ── § shell-loading ── */
-html.kiu-shell-loading, body.kiu-shell-loading { background: var(--lux-shell-background, var(--lux-bg, #070910)); }
-body.kiu-shell-loading::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  backface-visibility: hidden;
-  background: var(--lux-shell-background, var(--lux-bg, #070910));
-  z-index: 99999;
-  opacity: 1;
-  transition: opacity 0.3s ease;
-  pointer-events: none;
-}
-body.lux-light-mode.kiu-shell-loading::before { background: var(--lux-shell-background, #f5f0e8); }
+ * Jump by § markers (faculty-schedule, msg-*, notif-dock, call-overlay, responsive). Shell-loading overlay lives in theme-primer.js. */
 /* ── § faculty-schedule ── */
 .faculty-schedule-card {
   display: flex;
@@ -39,14 +25,14 @@ body.lux-light-mode.kiu-shell-loading::before { background: var(--lux-shell-back
   display: inline-flex;
   align-items: center;
   border-radius: 999px;
-  background: #e0f2fe;
-  color: #075985;
+  background: rgba(var(--lux-accent-rgb), 0.16);
+  color: var(--lux-accent, var(--lux-text));
   padding: 5px 10px;
   font-size: 11px;
   font-weight: 800;
 }
 .faculty-schedule-card--compact .faculty-schedule-card__badge { padding: 4px 8px; font-size: 10px; }
-.faculty-schedule-card__subtitle { margin-bottom: 10px; font-size: 12px; color: #64748b; }
+.faculty-schedule-card__subtitle { margin-bottom: 10px; font-size: 12px; color: var(--lux-text-muted); }
 .faculty-schedule-card--compact .faculty-schedule-card__subtitle { font-size: 11px; }
 .faculty-schedule-card__meta {
   display: flex;
@@ -79,7 +65,7 @@ body.lux-light-mode.kiu-shell-loading::before { background: var(--lux-shell-back
   border-radius: 14px;
   border: 1px solid rgba(var(--lux-accent-rgb), 0.28);
   background: color-mix(in srgb, var(--lux-soft-chrome-surface, var(--lux-panel-surface-soft, rgba(15, 23, 42, 0.92))) 88%, var(--lux-accent) 12%);
-  color: var(--lux-text, #f8fafc);
+  color: var(--lux-text, var(--lux-panel-surface-soft, var(--lux-panel-surface)));
   font-size: 13px;
 }
 .portal-msg-request-actions { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -96,7 +82,7 @@ body.lux-light-mode.kiu-shell-loading::before { background: var(--lux-shell-back
   font-size: 12px;
   color: var(--lux-text-muted, rgba(248, 250, 252, 0.7));
 }
-.portal-msg-bubble-reply strong { color: var(--lux-text, #f8fafc); }
+.portal-msg-bubble-reply strong { color: var(--lux-text, var(--lux-panel-surface-soft, var(--lux-panel-surface))); }
 /* ── § msg-page-chrome ── */
 .portal-msg-page-shell { display: flex; flex-direction: column; gap: 18px; }
 .portal-msg-page-top, .portal-msg-modal-head, .portal-msg-dock-head {
@@ -105,10 +91,10 @@ body.lux-light-mode.kiu-shell-loading::before { background: var(--lux-shell-back
   justify-content: space-between;
   gap: 14px;
 }
-.portal-msg-page-title, .portal-msg-modal-title { font-size: 24px; font-weight: 900; color: #102038; }
+.portal-msg-page-title, .portal-msg-modal-title { font-size: 24px; font-weight: 900; color: var(--lux-text); }
 .portal-msg-page-copy, .portal-msg-modal-copy, .portal-msg-dock-copy, .portal-msg-thread-copy, .portal-msg-card-sub, .portal-msg-panel-meta, .portal-msg-bubble-meta, .portal-msg-composer-note, .portal-msg-time, .portal-msg-thread-badge {
   font-size: 12px;
-  color: #6b7d93;
+  color: var(--lux-text-muted);
 }
 .portal-msg-page-pills, .portal-msg-filter-row, .portal-msg-actions, .portal-msg-dock-head-actions, .portal-msg-modal-actions, .portal-msg-compact-tabs {
   display: flex;
@@ -124,14 +110,14 @@ body.lux-light-mode.kiu-shell-loading::before { background: var(--lux-shell-back
   border-radius: 999px;
   border: 1px solid rgba(16, 32, 56, 0.1);
   background: rgba(248, 250, 252, 0.88);
-  color: #23364f;
+  color: var(--lux-text);
   font-size: 12px;
   font-weight: 800;
 }
 .portal-msg-pill.is-role {
   background: linear-gradient(135deg, rgba(11, 132, 255, 0.12), rgba(10, 95, 196, 0.08));
   border-color: rgba(11, 132, 255, 0.16);
-  color: #0a5fc4;
+  color: rgb(var(--lux-accent-rgb));
 }
 .portal-msg-shell {
   display: grid;
@@ -169,7 +155,7 @@ body.lux-light-mode.kiu-shell-loading::before { background: var(--lux-shell-back
   gap: 10px;
   flex-wrap: wrap;
 }
-.portal-msg-panel-title, .portal-msg-dock-title, .portal-msg-thread-title { font-size: 16px; font-weight: 900; color: #102038; }
+.portal-msg-panel-title, .portal-msg-dock-title, .portal-msg-thread-title { font-size: 16px; font-weight: 900; color: var(--lux-text); }
 .portal-msg-search, .portal-msg-textarea {
   width: 100%;
   border: 1px solid rgba(16, 32, 56, 0.12);
@@ -177,7 +163,7 @@ body.lux-light-mode.kiu-shell-loading::before { background: var(--lux-shell-back
   padding: 12px 14px;
   outline: none;
   background: rgba(255,255,255,0.95);
-  color: #102038;
+  color: var(--lux-text);
   transition: border-color 0.18s ease, box-shadow 0.18s ease;
 }
 .portal-msg-search:focus, .portal-msg-textarea:focus {
@@ -190,7 +176,7 @@ body.lux-light-mode.kiu-shell-loading::before { background: var(--lux-shell-back
 .portal-msg-chip {
   border: 1px solid rgba(16, 32, 56, 0.1);
   background: rgba(248,250,252,0.96);
-  color: #23364f;
+  color: var(--lux-text);
   border-radius: 999px;
   padding: 8px 12px;
   font-size: 11px;
@@ -203,9 +189,9 @@ body.lux-light-mode.kiu-shell-loading::before { background: var(--lux-shell-back
   box-shadow: 0 10px 22px rgba(15, 23, 42, 0.12);
 }
 .portal-msg-chip.is-active {
-  background: linear-gradient(135deg, #0b84ff, #0a5fc4);
+  background: linear-gradient(135deg, rgb(var(--lux-accent-rgb)), rgb(var(--lux-accent-rgb)));
   border-color: rgba(10, 95, 196, 0.22);
-  color: #ffffff;
+  color: var(--lux-text);
 }
 .portal-msg-list {
   display: flex;
@@ -238,7 +224,7 @@ body.lux-light-mode.kiu-shell-loading::before { background: var(--lux-shell-back
 .portal-msg-card-title {
   font-size: 13px;
   font-weight: 900;
-  color: #102038;
+  color: var(--lux-text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -252,7 +238,7 @@ body.lux-light-mode.kiu-shell-loading::before { background: var(--lux-shell-back
 .portal-msg-card-badges, .portal-msg-thread-labels { flex-wrap: wrap; margin-top: 6px; }
 .portal-msg-thread-labels { margin-top: 8px; }
 .portal-msg-chat-side, .portal-msg-thread-actions { flex-direction: column; align-items: flex-end; justify-content: center; }
-.portal-msg-card-meta { font-size: 11px; color: #5f7188; margin-top: 4px; }
+.portal-msg-card-meta { font-size: 11px; color: var(--lux-text-muted); margin-top: 4px; }
 .portal-msg-avatar-chip {
   width: 42px;
   height: 42px;
@@ -261,7 +247,7 @@ body.lux-light-mode.kiu-shell-loading::before { background: var(--lux-shell-back
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #0f2747, #0b84ff);
+  background: linear-gradient(135deg, rgb(var(--lux-accent-rgb)), rgb(var(--lux-accent-rgb)));
   color: #fff;
   font-weight: 900;
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.2);
@@ -278,7 +264,7 @@ body.lux-light-mode.kiu-shell-loading::before { background: var(--lux-shell-back
   padding: 7px 10px;
   border-radius: 999px;
   border: 1px solid rgba(16, 32, 56, 0.08);
-  background: #f8fafc;
+  background: var(--lux-panel-surface-soft, var(--lux-panel-surface));
 }
 .portal-msg-mini-badge {
   display: inline-flex;
@@ -288,14 +274,14 @@ body.lux-light-mode.kiu-shell-loading::before { background: var(--lux-shell-back
   border-radius: 999px;
   background: rgba(15, 39, 71, 0.06);
   border: 1px solid rgba(15, 39, 71, 0.08);
-  color: #44607f;
+  color: var(--lux-text-muted);
   font-size: 10px;
   font-weight: 800;
 }
 .portal-msg-mini-badge.is-favorite {
   background: rgba(11, 132, 255, 0.08);
   border-color: rgba(11, 132, 255, 0.16);
-  color: #0a5fc4;
+  color: rgb(var(--lux-accent-rgb));
 }
 .portal-msg-favorite-btn {
   position: relative;
@@ -304,7 +290,7 @@ body.lux-light-mode.kiu-shell-loading::before { background: var(--lux-shell-back
   border-radius: 999px;
   border: 1px solid rgba(16, 32, 56, 0.12);
   background: rgba(255,255,255,0.96);
-  color: #8aa0bb;
+  color: var(--lux-text-muted);
   cursor: pointer;
   overflow: hidden;
   display: inline-flex;
@@ -314,7 +300,7 @@ body.lux-light-mode.kiu-shell-loading::before { background: var(--lux-shell-back
 }
 .portal-msg-favorite-btn:hover { transform: translateY(-1px) scale(1.03); box-shadow: 0 12px 24px rgba(15, 23, 42, 0.12); }
 .portal-msg-favorite-btn.is-active {
-  color: #0a5fc4;
+  color: rgb(var(--lux-accent-rgb));
   border-color: rgba(11, 132, 255, 0.24);
   background: linear-gradient(135deg, rgba(11,132,255,0.14), rgba(255,255,255,0.96));
 }
@@ -325,7 +311,7 @@ body.lux-light-mode.kiu-shell-loading::before { background: var(--lux-shell-back
   border-radius: 999px;
   border: 1px solid rgba(220, 38, 38, 0.18);
   background: rgba(255, 245, 245, 0.96);
-  color: #dc2626;
+  color: var(--lux-danger, #dc2626);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -340,7 +326,7 @@ body.lux-light-mode.kiu-shell-loading::before { background: var(--lux-shell-back
 .portal-msg-remove-btn.is-danger {
   border-color: rgba(185, 28, 28, 0.22);
   background: linear-gradient(135deg, rgba(254, 226, 226, 0.98), rgba(255, 239, 239, 0.98));
-  color: #b91c1c;
+  color: var(--lux-danger, #b91c1c);
   box-shadow: 0 10px 24px rgba(185, 28, 28, 0.12);
 }
 .portal-msg-remove-btn.is-danger:hover {
@@ -389,10 +375,10 @@ body.lux-light-mode.kiu-shell-loading::before { background: var(--lux-shell-back
   max-width: 82%;
   padding: 12px 14px;
   border-radius: 18px;
-  background: #f8fafc;
+  background: var(--lux-panel-surface-soft, var(--lux-panel-surface));
   border: 1px solid rgba(16, 32, 56, 0.08);
-  color: #102038;
-  &.is-mine { background: linear-gradient(135deg, #0b84ff, #0a5fc4); color: #ffffff; border-color: transparent; }
+  color: var(--lux-text);
+  &.is-mine { background: linear-gradient(135deg, rgb(var(--lux-accent-rgb)), rgb(var(--lux-accent-rgb))); color: var(--lux-text); border-color: transparent; }
 }
 .portal-msg-bubble-text { white-space: pre-wrap; font-size: 13px; line-height: 1.55; }
 .portal-msg-bubble-file { margin-top: 10px; font-size: 12px; font-weight: 700; }
@@ -417,7 +403,7 @@ body.lux-light-mode.kiu-shell-loading::before { background: var(--lux-shell-back
   border-radius: 999px;
   border: 1px solid rgba(220, 38, 38, 0.14);
   background: rgba(255, 245, 245, 0.92);
-  color: #dc2626;
+  color: var(--lux-danger, #dc2626);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -440,11 +426,11 @@ body.lux-light-mode.kiu-shell-loading::before { background: var(--lux-shell-back
   gap: 12px;
   flex-wrap: wrap;
 }
-.portal-msg-attachment-label { font-size: 12px; color: #0a5fc4; font-weight: 800; }
-.portal-msg-empty, .portal-msg-thread-empty-wrap { color: #6b7d93; text-align: center; padding: 24px 14px; }
+.portal-msg-attachment-label { font-size: 12px; color: rgb(var(--lux-accent-rgb)); font-weight: 800; }
+.portal-msg-empty, .portal-msg-thread-empty-wrap { color: var(--lux-text-muted); text-align: center; padding: 24px 14px; }
 .portal-msg-thread-empty-wrap { margin: auto; }
-.portal-msg-thread-empty-title { font-size: 20px; font-weight: 900; color: #102038; }
-.portal-msg-thread-empty-copy { margin-top: 8px; font-size: 13px; color: #6b7d93; }
+.portal-msg-thread-empty-title { font-size: 20px; font-weight: 900; color: var(--lux-text); }
+.portal-msg-thread-empty-copy { margin-top: 8px; font-size: 13px; color: var(--lux-text-muted); }
 .portal-msg-inline-btn { padding: 9px 12px; font-size: 12px; }
 /* ── § msg-fab ── */
 .portal-msg-fab-stack {
@@ -505,8 +491,8 @@ body.lux-light-mode.kiu-shell-loading::before { background: var(--lux-shell-back
   border: none;
   border-radius: 999px;
   padding: 12px 14px 12px 12px;
-  background: linear-gradient(135deg, #0f2747, #0b84ff);
-  color: #ffffff;
+  background: linear-gradient(135deg, rgb(var(--lux-accent-rgb)), rgb(var(--lux-accent-rgb)));
+  color: var(--lux-text);
   display: inline-flex;
   align-items: center;
   gap: 10px;
@@ -518,8 +504,8 @@ body.lux-light-mode.kiu-shell-loading::before { background: var(--lux-shell-back
   height: 24px;
   padding: 0 7px;
   border-radius: 999px;
-  background: #ffffff;
-  color: #0f2747;
+  background: var(--lux-text);
+  color: rgb(var(--lux-accent-rgb));
   font-size: 11px;
   font-weight: 900;
   display: inline-flex;
@@ -532,15 +518,15 @@ body.lux-light-mode.kiu-shell-loading::before { background: var(--lux-shell-back
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.2);
   background: rgba(255, 255, 255, 0.14);
-  color: #ffffff;
+  color: var(--lux-text);
   cursor: pointer;
 }
 .portal-msg-fab {
   border: none;
   border-radius: 999px;
   padding: 12px 14px 12px 12px;
-  background: linear-gradient(135deg, #0f2747, #0b84ff);
-  color: #ffffff;
+  background: linear-gradient(135deg, rgb(var(--lux-accent-rgb)), rgb(var(--lux-accent-rgb)));
+  color: var(--lux-text);
   display: inline-flex;
   align-items: center;
   gap: 10px;
@@ -563,8 +549,8 @@ body.lux-light-mode.kiu-shell-loading::before { background: var(--lux-shell-back
   height: 24px;
   padding: 0 7px;
   border-radius: 999px;
-  background: #ffffff;
-  color: #0f2747;
+  background: var(--lux-text);
+  color: rgb(var(--lux-accent-rgb));
   font-size: 11px;
   font-weight: 900;
   display: inline-flex;
@@ -587,8 +573,8 @@ body.lux-light-mode.kiu-shell-loading::before { background: var(--lux-shell-back
   overflow: hidden;
 }
 .portal-msg-dock.is-open { display: flex; }
-.portal-msg-dock-head { padding: 16px 18px; background: linear-gradient(135deg, #102038, #0b84ff); color: #ffffff; }
-.portal-msg-dock-title { color: #ffffff; }
+.portal-msg-dock-head { padding: 16px 18px; background: linear-gradient(135deg, var(--lux-text), rgb(var(--lux-accent-rgb))); color: var(--lux-text); }
+.portal-msg-dock-title { color: var(--lux-text); }
 .portal-msg-dock-copy { color: rgba(255,255,255,0.78); margin-top: 4px; }
 .portal-msg-dock-body {
   flex: 1;
@@ -605,7 +591,7 @@ body.lux-light-mode.kiu-shell-loading::before { background: var(--lux-shell-back
   border-radius: 12px;
   border: 1px solid rgba(255,255,255,0.2);
   background: rgba(255,255,255,0.14);
-  color: #ffffff;
+  color: var(--lux-text);
   cursor: pointer;
 }
 /* ── § msg-modal ── */
@@ -671,14 +657,14 @@ body.lux-light-mode.kiu-shell-loading::before { background: var(--lux-shell-back
   gap: 14px;
   flex-wrap: wrap;
   padding: 18px 24px;
-  background: linear-gradient(135deg, #102038, #0b84ff);
-  color: #ffffff;
+  background: linear-gradient(135deg, var(--lux-text), rgb(var(--lux-accent-rgb)));
+  color: var(--lux-text);
 }
 .portal-notif-modal-title {
   font-family: 'Playfair Display', Georgia, serif;
   font-size: 24px;
   font-weight: 900;
-  color: #ffffff;
+  color: var(--lux-text);
 }
 .portal-notif-modal-copy {
   margin-top: 4px;
@@ -730,7 +716,7 @@ body.lux-light-mode.kiu-shell-loading::before { background: var(--lux-shell-back
   justify-content: space-between;
   gap: 12px;
   padding: 18px 24px;
-  background: linear-gradient(135deg, #0b1526, #133257 58%, #0b84ff);
+  background: linear-gradient(135deg, #0b1526, #133257 58%, rgb(var(--lux-accent-rgb)));
   color: #fff;
 }
 .portal-call-title { font-size: 24px; font-weight: 900; }
@@ -782,7 +768,7 @@ body.lux-light-mode.kiu-shell-loading::before { background: var(--lux-shell-back
   width: 120px;
   height: 120px;
   border-radius: 32px;
-  background: linear-gradient(135deg, #0f2747, #0b84ff);
+  background: linear-gradient(135deg, rgb(var(--lux-accent-rgb)), rgb(var(--lux-accent-rgb)));
   color: #fff;
   display: flex;
   align-items: center;
@@ -797,13 +783,13 @@ body.lux-light-mode.kiu-shell-loading::before { background: var(--lux-shell-back
   z-index: 2;
   font-size: 22px;
   font-weight: 900;
-  color: #102038;
+  color: var(--lux-text);
 }
 .portal-call-remote-role, .portal-call-remote-note, .portal-call-helper, .portal-call-local-status {
   position: relative;
   z-index: 2;
   font-size: 13px;
-  color: #64748b;
+  color: var(--lux-text-muted);
   margin-top: 8px;
 }
 .portal-call-local-card {
@@ -842,7 +828,7 @@ body.lux-light-mode.kiu-shell-loading::before { background: var(--lux-shell-back
 .portal-call-card-title {
   font-size: 15px;
   font-weight: 900;
-  color: #102038;
+  color: var(--lux-text);
   margin-bottom: 12px;
 }
 .portal-call-controls, .portal-call-actions { display: flex; gap: 10px; flex-wrap: wrap; }
@@ -854,12 +840,12 @@ body.lux-light-mode.kiu-shell-loading::before { background: var(--lux-shell-back
   cursor: pointer;
   border: 1px solid rgba(16,32,56,0.12);
   background: rgba(248,250,252,0.94);
-  color: #23364f;
+  color: var(--lux-text);
 }
 .portal-call-control.is-active {
   background: linear-gradient(135deg, rgba(11,132,255,0.12), rgba(11,132,255,0.04));
   border-color: rgba(11,132,255,0.22);
-  color: #0a5fc4;
+  color: rgb(var(--lux-accent-rgb));
 }
 .portal-call-hangup { background: rgba(220, 38, 38, 0.92); border-color: rgba(220, 38, 38, 0.24); color: #fff; }
 .portal-call-setting {
@@ -868,7 +854,7 @@ body.lux-light-mode.kiu-shell-loading::before { background: var(--lux-shell-back
   gap: 8px;
   margin-bottom: 12px;
 }
-.portal-call-setting label { font-size: 12px; font-weight: 800; color: #23364f; }
+.portal-call-setting label { font-size: 12px; font-weight: 800; color: var(--lux-text); }
 .portal-call-shortcut-row, .portal-call-status-grid {
   display: flex;
   gap: 10px;
@@ -893,7 +879,7 @@ body.lux-light-mode.kiu-shell-loading::before { background: var(--lux-shell-back
 .portal-msg-modal-head {
   padding: 18px 24px;
   border-bottom: 1px solid rgba(16, 32, 56, 0.08);
-  background: linear-gradient(135deg, #ffffff, #f7fbff);
+  background: linear-gradient(135deg, var(--lux-text), #f7fbff);
 }
 .portal-msg-modal-body {
   flex: 1;
@@ -935,8 +921,8 @@ body.lux-light-mode.kiu-shell-loading::before { background: var(--lux-shell-back
   border-bottom: 1px solid rgba(16, 32, 56, 0.08);
 }
 .portal-msg-group-foot { border-top: 1px solid rgba(16, 32, 56, 0.08); border-bottom: none; align-items: center; }
-.portal-msg-group-title { font-size: 22px; font-weight: 900; color: #102038; }
-.portal-msg-group-copy { font-size: 13px; color: #64748b; margin-top: 6px; }
+.portal-msg-group-title { font-size: 22px; font-weight: 900; color: var(--lux-text); }
+.portal-msg-group-copy { font-size: 13px; color: var(--lux-text-muted); margin-top: 6px; }
 .portal-msg-group-body {
   padding: 18px 22px 20px;
   display: flex;
@@ -978,7 +964,7 @@ body.lux-light-mode.kiu-shell-loading::before { background: var(--lux-shell-back
   background: linear-gradient(135deg, rgba(11,132,255,0.1), rgba(11,132,255,0.04));
   border-color: rgba(11,132,255,0.2);
 }
-.portal-msg-group-check { color: #0a5fc4; font-size: 18px; }
+.portal-msg-group-check { color: rgb(var(--lux-accent-rgb)); font-size: 18px; }
 body.lux-light-mode :is(.portal-msg-modal-window, .portal-msg-group-modal, .portal-notif-modal-body) :is(
   .portal-msg-modal-copy,
   .portal-msg-thread-copy,

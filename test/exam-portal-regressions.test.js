@@ -20,7 +20,10 @@ describe('exam portal regressions.test', () => {
         expect(html).not.toMatch(/href=["'][^"']*lux-surfaces\.css/);
         expect(existsSync(join(process.cwd(), 'assets/css', 'exam-portal-route.css'))).toBe(false);
         const bare = readSource('assets/css/lux-page-bare-lite.css');
-        expect(bare).toContain('backdrop-filter: none');
         expect(bare).toContain('body.lux-page-bare');
+        expect(bare).not.toContain('backdrop-filter: none');
+        const shell = readSource('assets/css/lux-shell.css');
+        expect(shell).toContain('body.lux-page-bare .lux-page-shell');
+        expect(shell).not.toContain('body.lux-page-bare .lux-page-shell :is(.page-hero, .lux-panel, .lux-alert)');
     });
 });

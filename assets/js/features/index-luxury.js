@@ -108,13 +108,14 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
         zoom: 1.0
     };
     const PARTICLE_QUALITY_OPTIONS = [
-        { key: 'auto', label: 'Auto', copy: 'Match device performance tier.' },
+        { key: 'auto', label: 'Adaptive', copy: 'Matches this device while preserving the visual feel.' },
         { key: 'low', label: 'Low', copy: 'Lightweight particle count.' },
         { key: 'balanced', label: 'Balanced', copy: 'Default quality profile.' },
         { key: 'high', label: 'High', copy: 'Maximum particle density.' }
     ];
     const GLASS_BLUR_QUALITY_OPTIONS = [
-        { key: 'high', label: 'High', copy: 'Richest frost (default).' },
+        { key: 'auto', label: 'Adaptive', copy: 'Matches frost quality to this device.' },
+        { key: 'high', label: 'High', copy: 'Richest frost.' },
         { key: 'balanced', label: 'Balanced', copy: 'Smoother on weaker devices.' },
         { key: 'performance', label: 'Performance', copy: 'Lightest frost for speed.' }
     ];
@@ -124,7 +125,7 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
         { key: 'white', label: 'White', icon: 'fas fa-sun' },
         { key: 'gallery', label: 'Gallery', icon: 'fas fa-images' }
     ];
-    const FORCED_LUXURY_VISUAL_DEFAULTS_VERSION = '20260605-oceanteal-defaults1';
+    const FORCED_LUXURY_VISUAL_DEFAULTS_VERSION = '20260723-adaptive-render-defaults1';
     const GLOBAL_LUXURY_PALETTE_SCOPE = '*';
     const DEFAULT_HOME_VISUALS = {
         themeMode: 'dark',
@@ -136,8 +137,8 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
         particleDensity: 100,
         particleAmount: 100,
         particleSharpness: 50,
-        particleQuality: 'high',
-        glassBlurQuality: 'high',
+        particleQuality: 'auto',
+        glassBlurQuality: 'auto',
         glowStrength: 50,
         paletteKey: 'ocean-teal',
         paletteFaculty: GLOBAL_LUXURY_PALETTE_SCOPE,
@@ -385,6 +386,11 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
         return Boolean(document.body?.classList.contains('lux-unified-shell'));
     }
     function applySidebarState(collapsed = isSidebarCollapsed(), options = {}) {
+        const wasCollapsed = document.body?.classList?.contains('lux-sidebar-collapsed');
+        const nextCollapsed = Boolean(collapsed);
+        if (wasCollapsed !== nextCollapsed && typeof window.beginShellChromeMotion === 'function') {
+            window.beginShellChromeMotion(320, 'sidebar-toggle');
+        }
         const persist = options.persist !== false;
         if (persist) {
             localStorage.setItem('kiuLuxurySidebarCollapsed', collapsed ? '1' : '0');
@@ -474,8 +480,8 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
         backgroundGallerySelection: null,
         particleMotion: 100,
         particleDensity: 100,
-        particleQuality: 'high',
-        glassBlurQuality: 'high',
+        particleQuality: 'auto',
+        glassBlurQuality: 'auto',
         backgroundIntensity: 'standard',
         glowStrength: 50,
         paletteKey: 'ocean-teal',
@@ -646,7 +652,7 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
             localStorage.setItem('kiuLuxuryParticleMotion', String(forcedDefaults.particleMotion));
             localStorage.setItem('kiuLuxuryParticleDensity', String(forcedDefaults.particleDensity));
             localStorage.setItem('kiuLuxuryParticleQuality', forcedDefaults.particleQuality);
-            localStorage.setItem('kiuLuxuryGlassBlurQuality', forcedDefaults.glassBlurQuality || 'high');
+            localStorage.setItem('kiuLuxuryGlassBlurQuality', forcedDefaults.glassBlurQuality || 'auto');
             localStorage.setItem('kiuLuxurySurfaceTransparency', String(forcedDefaults.surfaceTransparency));
             localStorage.setItem('kiuLuxurySurfaceTransparencyValue', (Number(forcedDefaults.surfaceTransparency) / 100).toFixed(2));
             localStorage.setItem('kiuLuxuryPalette', forcedDefaults.paletteKey);
@@ -994,7 +1000,6 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
 
     function ensureTopbarSoftChrome(topbar = document.getElementById('lux-topbar')) {
         if (!topbar) return;
-        if (document.body?.classList?.contains('lux-page-bare')) return;
         const shell = topbar.querySelector('.lux-topbar-shell');
         if (shell) {
             shell.classList.add('lux-soft-chrome', 'lux-panel');
@@ -1003,19 +1008,16 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
             shell.style.removeProperty('backdrop-filter');
             shell.style.removeProperty('-webkit-backdrop-filter');
         }
-        topbar.querySelectorAll('.lux-search, .lux-picker-btn, .lux-icon-btn, .lux-user-chip').forEach((el) => {
+        topbar.querySelectorAll('.lux-picker-btn, .lux-icon-btn').forEach((el) => {
             el.classList.add('lux-soft-chrome');
             el.style.removeProperty('background');
             el.style.removeProperty('background-color');
             el.style.removeProperty('backdrop-filter');
             el.style.removeProperty('-webkit-backdrop-filter');
         });
-        topbar.querySelectorAll('.lux-search input').forEach((el) => {
-            el.style.removeProperty('background');
-            el.style.removeProperty('background-color');
-            el.style.removeProperty('backdrop-filter');
-            el.style.removeProperty('-webkit-backdrop-filter');
-        });
+        // User chip retired from topbar — strip any leftover markup from older shells.
+        topbar.querySelector('#lux-user-chip')?.remove();
+        document.getElementById('lux-user-menu')?.remove();
     }
 
         if (!document.getElementById('lux-topbar')) {
@@ -1029,10 +1031,6 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
                             <span class="lux-sidebar-toggle-label">Hide nav</span>
                         </button>
                         <div class="lux-breadcrumb">KIU <i class="fas fa-chevron-right"></i> <strong id="lux-breadcrumb-page">Dashboard</strong></div>
-                        <div class="lux-search lux-soft-chrome">
-                            <i class="fas fa-search"></i>
-                            <input id="lux-search-input" type="text" placeholder="Search modules, staff, documents, requests...">
-                        </div>
                     </div>
                     <div class="lux-topbar-spacer"></div>
                     <div class="lux-topbar-actions">
@@ -1069,14 +1067,6 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
                                 <span class="lux-icon-badge" id="lux-chat-badge">0</span>
                             </button>
                         </div>
-                        <button class="lux-user-chip lux-soft-chrome" id="lux-user-chip" type="button">
-                            <span class="lux-avatar" id="lux-chip-avatar">KI</span>
-                            <span class="lux-user-chip-copy">
-                                <span id="lux-chip-name">Portal</span>
-                                <small id="lux-chip-role">Dashboard</small>
-                            </span>
-                            <i class="fas fa-chevron-down lux-user-chip-chevron" aria-hidden="true"></i>
-                        </button>
                     </div>
                 </div>
             `;
@@ -1085,6 +1075,9 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
         ensureTopbarSoftChrome();
         // Respect saved preference on all unified-shell routes (default expanded).
         applySidebarState(isSidebarCollapsed(), { persist: false });
+        if (typeof window.bindShellChromeMotion === 'function') {
+            window.bindShellChromeMotion();
+        }
     }
     function renderHomeChromeSkeleton(homeShell = document.getElementById('lux-home-shell')) {
         if (!homeShell || homeShellHasDashboardContent(homeShell)) return;
@@ -1111,7 +1104,6 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
         }
         if (typeof renderNav === 'function') renderNav();
         if (typeof populateFacultySwitcher === 'function') populateFacultySwitcher();
-        if (typeof populateRoleSwitcher === 'function') populateRoleSwitcher();
         syncTopbar();
         const activePageId = getActivePageId();
         if ((activePageId === 'home' || !activePageId) && window.__kiuLuxuryHomeDashboardLoaded !== true) {
@@ -1280,6 +1272,7 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
     function getLuxuryPerformanceTier(reducedMotion = false) {
         return __luxVisualRuntime?.getLuxuryPerformanceTier?.(reducedMotion) || 'standard';
     }
+    window.getLuxuryPerformanceTier = getLuxuryPerformanceTier;
     function getLuxuryBackgroundRenderProfile(reducedMotion = false) {
         return __luxVisualRuntime?.getLuxuryBackgroundRenderProfile?.(reducedMotion) || { tier: 'standard', pixelRatioCap: 1, frameInterval: 90, glassBlur: 18, transparencyBlur: 16, transparencySaturate: '138%', glassAlpha: '0.06', utilityAlpha: '0.82', cardGlowAlpha: '0.06' };
     }
@@ -1396,7 +1389,6 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
         }
         if (typeof renderNav === 'function') renderNav();
         if (typeof populateFacultySwitcher === 'function') populateFacultySwitcher();
-        if (typeof populateRoleSwitcher === 'function') populateRoleSwitcher();
         syncTopbar();
         if (!chromeOnly) {
             syncLayoutForPage(pageId);
@@ -1581,7 +1573,13 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
     const HOME_DASHBOARD_LOAD_TIMEOUT_MS = 10000;
     let __luxHomeShellResizeTimer = null;
     const __luxHomeRuntime = typeof window.__kiuCreateLuxuryHomeDashboardRuntime === 'function'
-        ? window.__kiuCreateLuxuryHomeDashboardRuntime({ ensureHomeShell, escapeHtml, getActivePageId, isIndexPortalShell: () => typeof isIndexPortalShell === 'function' && isIndexPortalShell() })
+        ? window.__kiuCreateLuxuryHomeDashboardRuntime({
+            ensureHomeShell,
+            escapeHtml,
+            getActivePageId,
+            isIndexPortalShell: () => typeof isIndexPortalShell === 'function' && isIndexPortalShell(),
+            queueHeavySurfaceObservationRefresh: () => __luxVisualRuntime?.queueHeavySurfaceObservationRefresh?.()
+        })
         : null;
 
     /* Wave 18: luxury-index-home-shell-runtime.js */
@@ -1747,10 +1745,20 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
 (function() {
     let scrollTimeout = null;
     const markScrolling = () => {
+        const wasScrolling = window.__luxIsScrolling === true;
         window.__luxIsScrolling = true;
+        if (!wasScrolling && typeof window.notifyLuxGovernorStateChange === 'function') {
+            window.notifyLuxGovernorStateChange();
+        }
         if (scrollTimeout) clearTimeout(scrollTimeout);
         scrollTimeout = setTimeout(() => {
             window.__luxIsScrolling = false;
+            if (typeof window.notifyLuxGovernorStateChange === 'function') {
+                window.notifyLuxGovernorStateChange();
+            }
+            if (typeof window.flushLuxuryTransparencyAfterScroll === 'function') {
+                window.flushLuxuryTransparencyAfterScroll();
+            }
         }, 150);
     };
     document.addEventListener('scroll', markScrolling, { capture: true, passive: true });

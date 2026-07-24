@@ -25,22 +25,22 @@ function renderLmsQuizReviewPanel(resourceKey, quiz) {
     const sessionStats = examSession ? getLmsExamSessionMonitorStats(examSession, resourceKey, quiz) : null;
     const reviewSummaryCards = `
         <div class="lms-quiz-review-summary-grid">
-            <div class="lms-route-card lms-route-panel-compact lms-quiz-review-summary-card">
+            <div class="lux-soft-chrome lux-panel lms-route-card lms-route-panel-compact lms-quiz-review-summary-card">
                 <div class="lms-route-kv-label">Pending review</div>
                 <div class="lms-route-card-title lms-route-card-title-16 lms-route-copy-mt-6">${escapeHtml(String(quizStats.pendingReviewCount || 0))}</div>
                 <div class="lms-route-meta lms-route-meta-12 lms-route-copy-mt-6">Submitted or auto-submitted quiz papers waiting for TA or professor action.</div>
             </div>
-            <div class="lms-route-card lms-route-panel-compact lms-quiz-review-summary-card">
+            <div class="lux-soft-chrome lux-panel lms-route-card lms-route-panel-compact lms-quiz-review-summary-card">
                 <div class="lms-route-kv-label">Graded</div>
                 <div class="lms-route-card-title lms-route-card-title-16 lms-route-copy-mt-6">${escapeHtml(String(quizStats.gradedCount || 0))}</div>
                 <div class="lms-route-meta lms-route-meta-12 lms-route-copy-mt-6">Reviews already saved back into the LMS grade flow for this quiz.</div>
             </div>
-            <div class="lms-route-card lms-route-panel-compact lms-quiz-review-summary-card">
+            <div class="lux-soft-chrome lux-panel lms-route-card lms-route-panel-compact lms-quiz-review-summary-card">
                 <div class="lms-route-kv-label">Live alerts</div>
                 <div class="lms-route-card-title lms-route-card-title-16 lms-route-copy-mt-6">${escapeHtml(String(quizStats.alertCount || 0))}</div>
                 <div class="lms-route-meta lms-route-meta-12 lms-route-copy-mt-6">${quizStats.alertCount ? `${escapeHtml(String(quizStats.alertedStudents || 0))} student${Number(quizStats.alertedStudents || 0) === 1 ? '' : 's'} affected` : 'No monitoring warnings are currently open for this quiz.'}</div>
             </div>
-            <div class="lms-route-card lms-route-panel-compact lms-quiz-review-summary-card">
+            <div class="lux-soft-chrome lux-panel lms-route-card lms-route-panel-compact lms-quiz-review-summary-card">
                 <div class="lms-route-kv-label">${examSession ? 'Exam session' : 'Roster size'}</div>
                 <div class="lms-route-card-title lms-route-card-title-16 lms-route-copy-mt-6">${escapeHtml(String(examSession ? examSession.status : students.length))}</div>
                 <div class="lms-route-meta lms-route-meta-12 lms-route-copy-mt-6">${examSession ? `${sessionStats.allowedCount} approved  -  ${sessionStats.presentCount} present  -  ${sessionStats.blockedCount} blocked` : `${students.length} enrolled student${students.length === 1 ? '' : 's'} visible in this review board.`}</div>

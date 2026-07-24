@@ -173,7 +173,7 @@ function renderStudentGradebookWorkspace(record, weights, options = null) {
     const summary = getGradebookModernSummary(safeRecord, weights, { rosterId: currentRosterId });
     return `
         <div class="gb-modern-workspace">
-            <div class="lms-route-panel lms-route-panel-pad-16-20 gb-modern-hero">
+            <div class="lux-soft-chrome lux-panel lms-route-panel lms-route-panel-pad-16-20 gb-modern-hero">
                 <div class="gb-modern-hero-main">
                     <div>
                         <div class="gb-modern-kicker">Grades</div>

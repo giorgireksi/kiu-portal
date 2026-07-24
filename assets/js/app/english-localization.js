@@ -1121,6 +1121,13 @@ function queueEnglishLocalization() {
     const target = arguments.length ? arguments[0] : (document.body || document.documentElement);
     if (!window.__kiuEnglishLocalizationQueue) window.__kiuEnglishLocalizationQueue = new Set();
     if (target) window.__kiuEnglishLocalizationQueue.add(target);
+    if (
+        typeof window.shouldDeferLuxTransparency === 'function'
+        && window.shouldDeferLuxTransparency()
+    ) {
+        window.__kiuEnglishLocalizationDeferred = true;
+        return;
+    }
     if (window.__kiuEnglishLocalizationQueued) return;
     window.__kiuEnglishLocalizationQueued = true;
     const schedule = window.requestAnimationFrame || ((cb) => setTimeout(cb, 16));
@@ -1177,6 +1184,13 @@ function installEnglishLocalization() {
         });
         observer.observe(observerRoot, { childList: true, subtree: true });
         window.__kiuEnglishLocalizationObserver = observer;
+        if (typeof window.onLuxGovernorStateChange === 'function') {
+            window.onLuxGovernorStateChange((busy) => {
+                if (busy || !window.__kiuEnglishLocalizationDeferred) return;
+                window.__kiuEnglishLocalizationDeferred = false;
+                queueEnglishLocalization(observerRoot);
+            });
+        }
     };
 
     if (document.readyState === 'loading') {
