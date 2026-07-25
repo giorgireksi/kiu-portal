@@ -23,12 +23,9 @@
   flex-wrap: wrap;
 }
 .schedule-week-arrow {
-  width: 40px;
-  height: 40px;
-  border-radius: 999px;
-  border: 1px solid var(--lux-panel-border-soft, var(--lux-border));
-  background: var(--lux-panel-surface-soft, var(--lux-panel-surface));
-  color: var(--lux-text);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
 }
 .schedule-week-label {
@@ -45,17 +42,10 @@
   align-items: center;
   gap: 6px;
   padding: 8px 12px;
-  border-radius: 999px;
-  border: 1px solid var(--lux-panel-border-soft, var(--lux-border));
-  background: var(--lux-panel-surface-soft, var(--lux-panel-surface));
-  color: var(--lux-text);
   font-size: 12px;
   font-weight: 700;
 }
-.schedule-chip-soft {
-  background: rgba(var(--lux-accent-rgb), 0.14);
-  color: var(--lux-accent, var(--lux-text));
-}
+.schedule-chip-soft { color: var(--lux-accent, var(--lux-text)); }
 .schedule-sessions-board { display: flex; flex-direction: column; gap: 18px; }
 .schedule-day-section {
   border: 1px solid var(--lux-panel-border-soft, var(--lux-border));

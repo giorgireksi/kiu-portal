@@ -373,6 +373,19 @@ input[type="search"].lux-control::-webkit-search-cancel-button {
   transform: translateX(130%) skewX(-14deg);
   opacity: 1;
 }
+/* Schedule toolbar chips (timetable + admin-scheduler shared markup). */
+.schedule-chip,
+.lux-status-pill.lux-timetable-chip {
+  border-radius: 999px;
+  border: 1px solid var(--lux-panel-border-soft, var(--lux-border));
+  background: var(--lux-panel-surface-soft, var(--lux-panel-surface));
+  color: var(--lux-text);
+}
+.schedule-chip-soft,
+.lux-status-pill.lux-timetable-chip.schedule-chip-soft {
+  background: rgba(var(--lux-accent-rgb), 0.14);
+  color: var(--lux-accent, var(--lux-text));
+}
 /* polished clean well + metal frame */
 .lux-primary-btn, .lux-secondary-btn, .lux-ghost-btn {
   position: relative;

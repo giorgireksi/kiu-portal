@@ -15,6 +15,7 @@ describe('admin scheduler route regressions.test', () => {
         expect(html).toContain('lux-layout-primitives.css');
         expect(html).toContain('layout-schedule-board.css');
         expect(html).toContain('lux-modals.css');
+        expect(html).toContain('lux-droplist.css');
         expect(html).toContain('lux-controls.css');
         expect(html).toContain('lux-glass-dialog.js');
         expect(html).not.toMatch(/href=["'][^"']*index-luxury\.css/);
@@ -22,24 +23,29 @@ describe('admin scheduler route regressions.test', () => {
         expect(existsSync(join(process.cwd(), 'assets/css', 'admin-scheduler-route.css'))).toBe(false);
         expect(html).toMatch(/class="[^"]*lux-page-bare/);
         expect(html).toContain('data-lux-layout-only="1"');
-        expect(html).toMatch(/sch-main[\s\S]*data-lux-glass-root="1"/);
-        expect(html).toMatch(/sch-sidebar[\s\S]*data-lux-glass-root="1"/);
+        expect(html).toMatch(/sch-grid-shell[\s\S]*data-lux-glass-root="1"/);
+        expect(html).toMatch(/sch-rail-hero[\s\S]*data-lux-glass-root="1"/);
+        expect(html).toMatch(/sch-filter-section[\s\S]*data-lux-glass-root="1"/);
+        expect(html).toMatch(/sch-palette-section[\s\S]*data-lux-glass-root="1"/);
+        expect(html).not.toMatch(/class="[^"]*sch-sidebar[^"]*"[^>]*data-lux-glass-root="1"/);
     });
 
     it('uses shared lux field chrome on filters and palette search', () => {
         const html = readSource('admin-scheduler.html');
-        expect(html).toContain('class="lux-picker-label"');
         expect(html).toContain('class="lux-control"');
-        expect(html).toContain('class="lux-program-field sch-rail-field"');
+        expect(html).toContain('class="sch-control-group"');
         expect(html).toContain('data-admin-scheduler-filter="faculty"');
         expect(html).toContain('data-admin-scheduler-search="palette"');
     });
 
-    it('uses lux-glass-dialog modals instead of sch-modal-overlay shells', () => {
+    it('uses sch-modal-overlay shells for scheduler modals', () => {
         const html = readSource('admin-scheduler.html');
-        expect(html).toContain('lux-glass-dialog-overlay');
-        expect(html).toContain('lux-glass-dialog-card');
-        expect(html).not.toContain('sch-modal-overlay');
+        expect(html).toContain('sch-modal-overlay');
+        expect(html).toContain('class="sch-modal"');
+        expect(html).toContain('sch-modal-mode-chip');
+        expect(html).toContain('sch-modal-close-muted');
+        expect(html).not.toContain('lux-glass-dialog-card');
+        expect(html).not.toContain('lux-glass-dialog-overlay');
     });
 
     it('bare-lite owns scheduler layout without sch fade literals or empty-state repaint', () => {
@@ -48,50 +54,49 @@ describe('admin scheduler route regressions.test', () => {
         expect(bare).toContain('.scheduler-wrap');
         expect(bare).not.toMatch(/--sch-fade-/);
         expect(bare).toContain('.lux-page-shell[data-lux-layout-only="1"]');
-        expect(bare).toContain('#page-admin-scheduler .sch-sidebar.lux-panel');
+        expect(bare).toContain('#page-admin-scheduler .sch-sidebar');
         expect(bare).not.toContain('.sch-empty-state');
         expect(bare).not.toContain('.palette-card.selected');
     });
 
-    it('uses shared timetable/admin-tools panel vocabulary', () => {
+    it('uses shared scheduler grid and sidebar structure', () => {
         const html = readSource('admin-scheduler.html');
         const js = readSource('assets/js/pages/admin-scheduler.js');
-        expect(html).toContain('class="lux-panel lux-soft-chrome sch-sidebar"');
-        expect(html).toContain('class="lux-card lux-timetable-stage sch-main"');
-        expect(html).toContain('class="lux-stat-row sch-rail-signal-grid"');
-        expect(html).toContain('class="lux-field-grid sch-control-grid"');
-        expect(html).toContain('class="lux-list sch-palette-list"');
-        expect(html).toContain('class="lux-stat lux-soft-chrome home-hover-chip sch-stat-card"');
-        expect(html).toContain('class="sch-rail-section sch-filter-section"');
-        const filterSection = html.match(/<section class="sch-rail-section sch-filter-section">[\s\S]*?<\/section>/)?.[0] || '';
-        expect(filterSection).not.toMatch(/<section class="[^"]*lux-card/);
-        expect(html).toContain('class="sch-rail-control-band lux-soft-chrome"');
-        expect(html).toContain('class="sch-rail-search-wrap"');
-        expect(html).toContain('class="schedule-overview-row lux-timetable-overview-row"');
-        expect(html).not.toContain('lux-card lux-timetable-overview-row');
-        expect(html).toContain('class="schedule-week-nav lux-timetable-week-nav lux-card"');
-        expect(html).toContain('class="sch-grid-wrap lux-timetable-canvas"');
-        expect(html).not.toContain('sch-grid-shell');
-        expect(html).not.toContain('sch-grid-tag');
+        expect(html).toContain('class="sch-sidebar"');
+        expect(html).toContain('class="sch-rail-hero lux-hero"');
+        expect(html).toContain('class="sch-stat-card lux-strip-card lux-soft-chrome"');
+        expect(html).toContain('class="sch-main"');
+        expect(html).toContain('class="sch-grid-wrap"');
+        expect(html).toContain('class="sch-grid-shell"');
+        expect(html).toContain('class="sch-grid-topline"');
+        expect(html).toContain('class="sch-grid-tag"');
+        expect(html).toContain('class="sch-week-nav"');
+        expect(html).toContain('class="sch-grid-week-label"');
+        expect(html).toContain('class="sch-grid-empty lux-soft-chrome"');
         expect(html).not.toContain('lux-summary-surface');
+        expect(html).not.toContain('lux-timetable-stage');
         expect(html).toContain('defer src="assets/js/pages/admin-scheduler.js');
         expect(html).toContain('defer src="assets/js/features/index-luxury.js');
-        expect(js).toContain("card.className = `lux-list-row lux-soft-chrome${isActive ? ' is-active' : ''}`");
-        expect(js).toContain("state.className = 'lux-empty-state'");
-        expect(js).toContain("banner.className = 'lux-alert is-support lux-soft-chrome'");
-        expect(js).toContain("card.className = 'sch-event lux-timetable-event'");
-        expect(js).toContain("dayLanes.className = 'sch-day-lanes lux-timetable-day-lanes'");
+        expect(js).toContain("card.className = `palette-card lux-strip-card lux-soft-chrome${isActive ? ' selected' : ''}`");
+        expect(js).toContain("state.className = 'sch-empty-state lux-soft-chrome'");
+        expect(js).toContain("banner.className = 'sch-info-banner lux-soft-chrome'");
+        expect(js).toContain("card.className = 'sch-event'");
+        expect(js).toContain("dayLanes.className = 'sch-day-lanes'");
+        expect(js).toContain("title.className = 'sch-day-col-label'");
+        expect(js).toContain("label.className = 'sch-time-slot-copy'");
     });
 
     it('session modal uses flat field shells without double lux-picker-field wrappers', () => {
         const html = readSource('admin-scheduler.html');
         const pickerJs = readSource('assets/js/features/luxury-shell-picker-runtime.js');
         const modalTemplate = html.match(/<template id="sch-modal-template">[\s\S]*?<\/template>/)?.[0] || '';
-        expect(modalTemplate).toContain('class="lux-glass-dialog-field sch-input-group"');
-        expect(modalTemplate).not.toMatch(/sch-input-group[\s\S]*lux-picker-field/);
-        expect(modalTemplate).not.toContain('sch-modal-mode-chip');
-        expect(html).toContain('class="lux-secondary-btn schedule-current-week-btn lux-timetable-current-week-btn"');
-        expect(pickerJs).toContain(".sch-rail-field, .lux-program-field, .sch-input-group");
+        expect(modalTemplate).toContain('class="sch-input-group"');
+        expect(modalTemplate).not.toContain('lux-glass-dialog-field');
+        expect(modalTemplate).toContain('sch-modal-mode-chip');
+        expect(modalTemplate).toContain('sch-input-label-spacer');
+        expect(html).toContain('class="lux-primary-btn sch-week-current-btn"');
+        expect(pickerJs).toContain('.sch-control-group');
+        expect(pickerJs).toContain('.sch-input-group');
     });
 
     it('scheduler performance and button contracts stay aligned with shared stack', () => {
@@ -103,7 +108,7 @@ describe('admin scheduler route regressions.test', () => {
         expect(modalsCss).toContain('.sch-preset-manage-add-row *');
         expect(js).toContain('runWithLuxuryObserversPaused');
         expect(js).toContain('paletteSearchOnly: true');
-        expect(js).toContain('lux-ghost-btn lux-icon-btn sch-preset-manage-delete-btn');
+        expect(js).toContain('sch-preset-manage-delete-btn');
         expect(luxuryJs).toContain('isStandaloneSchedulerRouteActive');
     });
 });

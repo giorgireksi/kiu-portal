@@ -38,6 +38,10 @@
   overflow: visible;
 }
 
+.lux-strip-grid--adaptive {
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
 .lux-stat {
   display: flex;
   flex-direction: column;
@@ -113,6 +117,11 @@
 }
 
 .lux-list-row.lux-soft-chrome:last-child { margin-bottom: 0; }
+
+.lux-list-row.is-active {
+  outline: 2px solid rgba(var(--lux-accent-rgb), 0.45);
+  outline-offset: 1px;
+}
 
 .lux-list-row.lux-soft-chrome i {
   display: grid;

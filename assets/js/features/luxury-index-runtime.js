@@ -230,7 +230,7 @@ return {
         '.newsx-feed',
         '#lux-home-shell .lux-home-merged.lux-soft-chrome',
         '#lux-home-shell .lux-home-grid',
-        '#page-admin-scheduler .sch-main.lux-timetable-stage',
+        '#page-admin-scheduler .sch-grid-shell',
         '#page-staff .staff-hub-command-panel',
         '#page-chancellery .chancellery-queue-panel',
         '#lms-content-area .lms-quiz-builder .lms-quiz-studio-main-card'

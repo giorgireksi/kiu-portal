@@ -13,12 +13,12 @@
   border-radius: 22px 22px 0 0;
   overflow: hidden;
 }
-body:not(.lux-route-timetable) .sch-header-row {
+body:not(.lux-route-timetable):not(.lux-route-admin-scheduler) .sch-header-row {
   background: rgba(var(--lux-glass-tint-rgb, 248, 250, 252), 0.08);
   border-bottom: 2px solid var(--lux-border, rgba(226, 232, 240, 0.6));
 }
 .sch-time-col, .sch-time-labels { width: 60px; flex-shrink: 0; }
-body:not(.lux-route-timetable) .sch-time-col, body:not(.lux-route-timetable) .sch-time-labels {
+body:not(.lux-route-timetable):not(.lux-route-admin-scheduler) .sch-time-col, body:not(.lux-route-timetable):not(.lux-route-admin-scheduler) .sch-time-labels {
   background: var(--lux-panel-surface-soft, var(--lux-panel-surface));
   border-right: 1px solid var(--lux-border);
 }
@@ -30,10 +30,10 @@ body:not(.lux-route-timetable) .sch-time-col, body:not(.lux-route-timetable) .sc
   font-weight: 700;
   padding: 18px 6px;
 }
-body:not(.lux-route-timetable) .sch-day-col { border-right: 1px solid var(--lux-border); color: var(--lux-text); }
+body:not(.lux-route-timetable):not(.lux-route-admin-scheduler) .sch-day-col { border-right: 1px solid var(--lux-border); color: var(--lux-text); }
 .sch-body { display: flex; position: relative; min-width: 780px; }
 .sch-time-slot { height: 100px; position: relative; }
-body:not(.lux-route-timetable) .sch-time-slot { border-bottom: 1px solid var(--lux-border); }
+body:not(.lux-route-timetable):not(.lux-route-admin-scheduler) .sch-time-slot { border-bottom: 1px solid var(--lux-border); }
 .sch-time-slot span {
   position: absolute;
   right: 6px;
@@ -42,12 +42,12 @@ body:not(.lux-route-timetable) .sch-time-slot { border-bottom: 1px solid var(--l
   font-weight: 600;
   padding: 0 2px;
 }
-body:not(.lux-route-timetable) .sch-time-slot span { color: var(--lux-text-muted); background: var(--lux-panel-surface-soft, var(--lux-panel-surface)); }
+body:not(.lux-route-timetable):not(.lux-route-admin-scheduler) .sch-time-slot span { color: var(--lux-text-muted); background: var(--lux-panel-surface-soft, var(--lux-panel-surface)); }
 .sch-day-lanes { flex: 1; display: flex; min-width: 0; }
 .sch-lane { flex: 1; min-width: 0; position: relative; }
-body:not(.lux-route-timetable) .sch-lane { border-right: 1px solid var(--lux-border); }
+body:not(.lux-route-timetable):not(.lux-route-admin-scheduler) .sch-lane { border-right: 1px solid var(--lux-border); }
 .sch-slot-bg { height: 100px; transition: background 0.1s; }
-body:not(.lux-route-timetable) .sch-slot-bg { border-bottom: 1px solid var(--lux-border); background: var(--lux-panel-surface-soft, transparent); }
+body:not(.lux-route-timetable):not(.lux-route-admin-scheduler) .sch-slot-bg { border-bottom: 1px solid var(--lux-border); background: var(--lux-panel-surface-soft, transparent); }
 .sch-event {
   position: absolute;
   left: 3px;

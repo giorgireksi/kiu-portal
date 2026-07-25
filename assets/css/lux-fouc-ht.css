@@ -442,6 +442,337 @@ body.lux-route-home #page-home #lux-home-shell :is(
   box-shadow: var(--lux-soft-chrome-chip-shadow-halo);
 }
 
+body.lux-route-admin-scheduler #page-admin-scheduler .sch-header-row {
+  background: var(--sch-grid-chrome-bg, var(--lux-panel-surface-soft, var(--lux-panel-surface)));
+  border-bottom: 2px solid var(--sch-grid-border, var(--lux-border));
+}
+body.lux-route-admin-scheduler #page-admin-scheduler .sch-day-col.is-today {
+  background:
+    radial-gradient(circle at top center, color-mix(in srgb, rgba(var(--lux-accent-rgb), 1) 16%, transparent), transparent 40%),
+    var(--sch-grid-chrome-bg, var(--lux-panel-surface-soft, var(--lux-panel-surface)));
+  box-shadow: inset 0 -3px 0 color-mix(in srgb, rgba(var(--lux-accent-rgb), 1) 42%, transparent);
+}
+body.lux-route-admin-scheduler #page-admin-scheduler :is(.sch-time-col, .sch-time-labels) {
+  background: var(--sch-grid-chrome-bg, var(--lux-panel-surface-soft, var(--lux-panel-surface)));
+  border-right: 1px solid var(--sch-grid-chrome-border, var(--lux-border));
+}
+body.lux-route-admin-scheduler #page-admin-scheduler .sch-day-col {
+  border-right: 1px solid var(--sch-grid-chrome-border, var(--lux-border));
+  color: var(--lux-text);
+}
+body.lux-route-admin-scheduler #page-admin-scheduler .sch-time-slot {
+  border-bottom: 0;
+  border-top-color: var(--sch-grid-border, var(--lux-border));
+}
+body.lux-route-admin-scheduler #page-admin-scheduler .sch-lane {
+  border-right: 0;
+}
+body.lux-route-admin-scheduler #page-admin-scheduler .sch-slot-bg {
+  border-bottom: 0;
+  background: var(--sch-grid-lane-bg, var(--lux-panel-surface-soft, transparent));
+}
+body.lux-route-admin-scheduler #page-admin-scheduler .sch-slot-bg:hover {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, rgba(var(--lux-accent-rgb), 1) 6%, transparent), transparent),
+    var(--sch-grid-lane-bg, var(--lux-panel-surface-soft, transparent));
+}
+body.lux-route-admin-scheduler #page-admin-scheduler .sch-event {
+  --sch-event-rgb: var(--lux-accent-rgb);
+  position: absolute;
+  inset: var(--sch-event-top) 12px auto 12px;
+  min-height: 42px;
+  height: var(--sch-event-height);
+  padding: 14px 16px 16px;
+  border-radius: 18px;
+  border: 1px solid color-mix(in srgb, rgba(var(--sch-event-rgb), 1) 28%, transparent);
+  background-color: var(--lux-panel-fill);
+  background-image: var(--lux-panel-surface);
+  box-shadow: var(--lux-elev-2);
+  color: var(--lux-text);
+  cursor: pointer;
+  overflow: hidden;
+  backdrop-filter: var(--lux-panel-blur-filter, blur(var(--lux-glass-blur, 14px)) saturate(150%));
+  -webkit-backdrop-filter: var(--lux-panel-blur-filter, blur(var(--lux-glass-blur, 14px)) saturate(150%));
+}
+body.lux-route-admin-scheduler #page-admin-scheduler .sch-event:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--lux-elev-3);
+  border-color: color-mix(in srgb, rgba(var(--sch-event-rgb), 1) 44%, transparent);
+}
+body.lux-route-admin-scheduler #page-admin-scheduler .sch-event[data-sch-event-tone='econ'] { --sch-event-rgb: 194, 178, 128; }
+body.lux-route-admin-scheduler #page-admin-scheduler .sch-event[data-sch-event-tone='cs'] { --sch-event-rgb: 96, 165, 250; }
+body.lux-route-admin-scheduler #page-admin-scheduler .sch-event[data-sch-event-tone='law'] { --sch-event-rgb: 74, 222, 128; }
+body.lux-route-admin-scheduler #page-admin-scheduler .sch-event[data-sch-event-tone='med'] { --sch-event-rgb: 52, 211, 153; }
+body.lux-route-admin-scheduler #page-admin-scheduler .sch-event[data-sch-event-tone='arts'] { --sch-event-rgb: 249, 115, 22; }
+body.lux-route-admin-scheduler #page-admin-scheduler .sch-event.is-draft {
+  border-style: dashed;
+}
+body.lux-route-admin-scheduler #page-admin-scheduler .ev-title {
+  padding-right: 72px;
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+body.lux-route-admin-scheduler #page-admin-scheduler .ev-meta {
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--lux-text-muted);
+  margin-top: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+body.lux-route-admin-scheduler #page-admin-scheduler .ev-draft {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: rgba(248, 113, 113, 0.16);
+  color: #fecaca;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+body.lux-light-mode.lux-route-admin-scheduler #page-admin-scheduler .ev-draft {
+  color: #991b1b;
+}
+
+body.lux-route-admin-scheduler #page-admin-scheduler :is(.sch-rail-note, .sch-empty-state, .sch-info-banner, .sch-empty-week-notice, .sch-grid-empty) {
+  border: 1px solid color-mix(in srgb, rgba(var(--lux-accent-rgb), 1) 14%, transparent);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, rgba(var(--lux-accent-rgb), 1) 8%, transparent),
+    color-mix(in srgb, rgba(var(--lux-accent-rgb), 1) 3%, transparent)
+  );
+}
+body.lux-light-mode.lux-route-admin-scheduler #page-admin-scheduler :is(.sch-rail-note, .sch-empty-state, .sch-info-banner, .sch-empty-week-notice, .sch-grid-empty) {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, rgba(var(--lux-accent-rgb), 1) 10%, transparent),
+    color-mix(in srgb, #ffffff 58%, transparent)
+  );
+}
+
+body.lux-route-admin-scheduler #page-admin-scheduler .palette-card:is(:hover, :focus-visible) {
+  border-color: color-mix(in srgb, rgba(var(--lux-accent-rgb), 1) 24%, transparent);
+  box-shadow: var(--lux-soft-chrome-chip-shadow), var(--lux-elev-2);
+}
+body.lux-route-admin-scheduler #page-admin-scheduler .palette-card.selected {
+  border-color: color-mix(in srgb, rgba(var(--lux-accent-rgb), 1) 34%, transparent) !important;
+  box-shadow:
+    var(--lux-soft-chrome-chip-shadow),
+    0 0 0 1px color-mix(in srgb, rgba(var(--lux-accent-rgb), 1) 12%, transparent),
+    0 18px 32px color-mix(in srgb, rgba(var(--lux-accent-rgb), 1) 14%, transparent) !important;
+}
+body.lux-route-admin-scheduler #page-admin-scheduler .palette-card:focus-visible {
+  outline: none;
+  box-shadow:
+    var(--lux-soft-chrome-chip-shadow),
+    0 0 0 3px color-mix(in srgb, rgba(var(--lux-accent-rgb), 1) 24%, transparent) !important;
+}
+
+body.lux-route-admin-scheduler .sch-modal[data-lux-glass-root="1"] {
+  border: 1px solid var(--lux-panel-border, var(--lux-border));
+  background-color: var(--lux-panel-fill);
+  background-image: var(--lux-panel-surface);
+  box-shadow: var(--lux-elev-3);
+  color: var(--lux-text);
+  backdrop-filter: var(--lux-panel-blur-filter, blur(var(--lux-glass-blur, 14px)) saturate(150%));
+  -webkit-backdrop-filter: var(--lux-panel-blur-filter, blur(var(--lux-glass-blur, 14px)) saturate(150%));
+}
+body.lux-route-admin-scheduler .sch-modal-head-accent {
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, rgba(var(--lux-accent-rgb), 1) 88%, #1a1208),
+    color-mix(in srgb, rgba(var(--lux-home-secondary-rgb, var(--lux-accent-rgb)), 1) 72%, #120d08)
+  );
+  color: #fff8ef;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: var(--lux-panel-radius, 22px) var(--lux-panel-radius, 22px) 0 0;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+body.lux-route-admin-scheduler :is(#schModalOverlay, #schPresetManagerOverlay, #profQuizModalOverlay) .sch-modal-head-accent :is(
+  .sch-modal-title,
+  .sch-modal-subtitle,
+  .sch-modal-week,
+  .quiz-modal-title,
+  .quiz-modal-subtitle
+) {
+  color: #fff8ef;
+}
+body.lux-route-admin-scheduler :is(#schModalOverlay, #schPresetManagerOverlay, #profQuizModalOverlay) .sch-modal-head-accent :is(
+  .sch-modal-subtitle,
+  .sch-modal-week,
+  .quiz-modal-subtitle
+) {
+  color: rgba(255, 248, 239, 0.82);
+}
+body.lux-route-admin-scheduler :is(#schModalOverlay, #schPresetManagerOverlay, #profQuizModalOverlay) .sch-modal-head-accent .sch-modal-mode-chip {
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff8ef;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+}
+body.lux-route-admin-scheduler :is(#schModalOverlay, #schPresetManagerOverlay, #profQuizModalOverlay) .sch-modal-head-accent :is(
+  .sch-modal-close-muted,
+  .quiz-modal-close
+) {
+  color: rgba(255, 248, 239, 0.78);
+}
+body.lux-route-admin-scheduler :is(#schModalOverlay, #schPresetManagerOverlay, #profQuizModalOverlay) .sch-modal-head-accent :is(
+  .sch-modal-close-muted,
+  .quiz-modal-close
+):hover {
+  color: #fff8ef;
+}
+body.lux-route-admin-scheduler .sch-modal-mode-chip {
+  background: rgba(var(--lux-accent-rgb), 0.14);
+  color: var(--lux-accent-2);
+  border: 1px solid rgba(var(--lux-accent-rgb), 0.22);
+}
+body.lux-route-admin-scheduler .sch-modal-subtitle,
+body.lux-route-admin-scheduler .sch-modal-week,
+body.lux-route-admin-scheduler .quiz-modal-subtitle {
+  color: var(--lux-text-muted);
+}
+body.lux-route-admin-scheduler .quiz-modal-close,
+body.lux-route-admin-scheduler .sch-modal-close-muted {
+  color: var(--lux-text-soft);
+}
+body.lux-route-admin-scheduler .quiz-modal-close:hover,
+body.lux-route-admin-scheduler .sch-modal-close-muted:hover {
+  color: var(--lux-text);
+}
+body.lux-route-admin-scheduler .sch-modal-foot {
+  background: color-mix(in srgb, var(--lux-panel-fill, transparent) 82%, transparent);
+}
+body.lux-route-admin-scheduler #schModalOverlay .sch-modal :is(input, select),
+body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-modal :is(input, select) {
+  background: var(--lux-panel-control, var(--lux-soft-chrome-control)) !important;
+  border: 1px solid color-mix(in srgb, var(--lux-border) 78%, transparent) !important;
+  box-shadow: var(--lux-elev-1) !important;
+  color: var(--lux-text) !important;
+}
+body.lux-route-admin-scheduler #schModalOverlay .sch-preset-manage-link {
+  color: var(--lux-accent-2);
+}
+body.lux-route-admin-scheduler #schModalOverlay .sch-preset-manage-link:hover {
+  color: var(--lux-text);
+}
+body.lux-route-admin-scheduler #schModalOverlay .sch-create-btn.lux-primary-btn:not(.lux-modern-button) {
+  min-width: 240px;
+  padding: 14px 18px !important;
+  border-radius: 18px !important;
+  background: linear-gradient(135deg, rgba(var(--lux-accent-rgb), 0.92), rgba(var(--lux-home-secondary-rgb, var(--lux-accent-rgb)), 0.84)) !important;
+  border: 1px solid rgba(var(--lux-accent-rgb), 0.32) !important;
+  color: #fff8ef !important;
+  box-shadow: 0 14px 28px rgba(var(--lux-accent-rgb), 0.2) !important;
+}
+body.lux-route-admin-scheduler .sch-conflict-alert[data-conflict-state='danger'] {
+  background: rgba(239, 68, 68, 0.10);
+  border-color: rgba(239, 68, 68, 0.24);
+  color: #fecaca;
+}
+body.lux-route-admin-scheduler .sch-conflict-alert[data-conflict-state='success'] {
+  background: rgba(74, 222, 128, 0.10);
+  border-color: rgba(74, 222, 128, 0.24);
+  color: #bbf7d0;
+}
+body.lux-light-mode.lux-route-admin-scheduler .sch-conflict-alert[data-conflict-state='danger'] {
+  color: #991b1b;
+}
+body.lux-light-mode.lux-route-admin-scheduler .sch-conflict-alert[data-conflict-state='success'] {
+  color: #166534;
+}
+body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-preset-manage-item {
+  border: 1px solid color-mix(in srgb, var(--lux-border) 72%, transparent);
+  background: color-mix(in srgb, var(--lux-panel-control, transparent) 72%, transparent);
+  box-shadow: var(--lux-elev-1);
+  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-preset-manage-item:hover {
+  border-color: color-mix(in srgb, rgba(var(--lux-accent-rgb), 1) 24%, var(--lux-border));
+  box-shadow: var(--lux-elev-2);
+  transform: translateY(-1px);
+}
+body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-preset-manage-badge--saved {
+  background: rgba(var(--lux-accent-rgb), 0.14);
+  color: var(--lux-accent-2);
+  border: 1px solid rgba(var(--lux-accent-rgb), 0.22);
+}
+body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-preset-manage-badge--default {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--lux-text-muted);
+  border: 1px solid color-mix(in srgb, var(--lux-border) 72%, transparent);
+}
+body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-preset-manage-badge--schedule {
+  background: rgba(56, 189, 248, 0.12);
+  color: #7dd3fc;
+  border: 1px solid rgba(56, 189, 248, 0.24);
+}
+body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-preset-manage-delete-btn {
+  border: 1px solid color-mix(in srgb, var(--lux-border) 72%, transparent);
+  background: var(--lux-panel-control, transparent);
+  color: #f87171;
+  box-shadow: var(--lux-elev-1);
+}
+body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-preset-manage-delete-btn:hover {
+  border-color: rgba(239, 68, 68, 0.28);
+  background: rgba(239, 68, 68, 0.10);
+}
+body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-combo-save-input,
+body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-preset-manage-search {
+  border: 1px solid color-mix(in srgb, var(--lux-border) 78%, transparent);
+  background: var(--lux-panel-control, transparent);
+  color: var(--lux-text);
+  box-shadow: var(--lux-elev-1);
+}
+body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-combo-save-input:focus,
+body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-preset-manage-search:focus {
+  border-color: rgba(var(--lux-accent-rgb), 0.42);
+  box-shadow: 0 0 0 4px rgba(var(--lux-accent-rgb), 0.10), var(--lux-elev-1);
+}
+body.lux-route-admin-scheduler #schModalOverlay .lux-picker-field > .lux-picker-label,
+body.lux-route-admin-scheduler #schModalOverlay .lux-picker-btn .lux-picker-caption,
+body.lux-route-admin-scheduler #schPresetManagerOverlay .lux-picker-field > .lux-picker-label,
+body.lux-route-admin-scheduler #schPresetManagerOverlay .lux-picker-btn .lux-picker-caption {
+  display: none;
+}
+body.lux-route-admin-scheduler :is(#schModalOverlay, #schPresetManagerOverlay) .lux-picker-btn i {
+  transition: transform var(--lux-droplist-anim-duration, 180ms) var(--lux-droplist-anim-ease, ease);
+}
+body.lux-route-admin-scheduler :is(#schModalOverlay, #schPresetManagerOverlay) .lux-picker-btn.is-active i {
+  transform: rotate(180deg);
+}
+
+/* Bare portal: nested soft-chrome inside one glass host (matte chips, no second blur). */
+body.lux-unified-shell.lux-page-bare [data-lux-glass-root="1"] :is(
+  .lux-stat.lux-soft-chrome,
+  .home-hover-chip.lux-soft-chrome,
+  .lux-list-row.lux-soft-chrome,
+  .sch-stat-card.lux-soft-chrome,
+  .palette-card.lux-soft-chrome,
+  .sch-empty-state.lux-soft-chrome,
+  .sch-info-banner.lux-soft-chrome,
+  .sch-empty-week-notice.lux-soft-chrome,
+  .sch-grid-empty.lux-soft-chrome,
+  .sch-rail-control-band.lux-soft-chrome
+):not(.lux-panel):not([data-lux-glass-root="1"]) {
+  background-color: var(--home-chip-surface-fill, color-mix(in srgb, var(--home-chip-fill, transparent) 58%, transparent));
+  background-image: var(--lux-soft-chrome-surface);
+  border: 1px solid var(--lux-soft-chrome-border-accent);
+  border-radius: 16px;
+  box-shadow: var(--lux-soft-chrome-chip-shadow);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background-clip: padding-box;
+}
+
 /* Global soft-chrome inner surface paint — accent fill, glow border, elevation
  * Applies to inner chips/shells inside panels (not outer glass hosts).
  * Admin-tools: .lux-section-card is layout-only under the outer glass host (no second paint). */

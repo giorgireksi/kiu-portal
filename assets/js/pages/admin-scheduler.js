@@ -419,7 +419,7 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
 
         visibleNames.forEach((name) => {
             const item = document.createElement('div');
-            item.className = 'sch-preset-manage-item lux-soft-chrome';
+            item.className = 'sch-preset-manage-item';
             item.setAttribute('role', 'listitem');
             const lowerName = name.toLowerCase();
             const badges = [];
@@ -428,7 +428,7 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
             if (harvestedKeys.has(lowerName)) badges.push('<span class="sch-preset-manage-badge sch-preset-manage-badge--schedule">In schedule</span>');
             const actionButtons = [];
             if (storedKeys.has(lowerName) || visibleDefaultKeys.has(lowerName)) {
-                actionButtons.push(`<button type="button" class="lux-ghost-btn lux-icon-btn sch-preset-manage-delete-btn" data-scheduler-preset-remove="${escapeSchedulerPresetHtml(name)}" aria-label="Remove ${escapeSchedulerPresetHtml(name)}"><i class="fas fa-trash-alt"></i></button>`);
+                actionButtons.push(`<button type="button" class="sch-preset-manage-delete-btn" data-scheduler-preset-remove="${escapeSchedulerPresetHtml(name)}" aria-label="Remove ${escapeSchedulerPresetHtml(name)}"><i class="fas fa-trash-alt"></i></button>`);
             }
             const actionsMarkup = actionButtons.length
                 ? `<div class="sch-preset-manage-item-actions">${actionButtons.join('')}</div>`
@@ -565,8 +565,12 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
 
     function ensureSchedulerPresetManager() {
         const overlay = ensureMountedTemplate(SCHEDULER_PRESET_MANAGER_TEMPLATE_ID, SCHEDULER_PRESET_MANAGER_ID);
-        if (!overlay) return;
+        if (!overlay) return null;
         bindSchedulerPresetManagerListeners(overlay);
+        if (document.body.classList.contains('lux-route-admin-scheduler')) {
+            overlay.dataset.luxSchPresetModal = '1';
+            overlay.querySelector('.sch-modal')?.setAttribute('data-lux-glass-root', '1');
+        }
         return overlay;
     }
 
@@ -637,9 +641,9 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
         if (currentButton) {
             const isCurrentWeek = weekStart === getCurrentWeekStartISO();
             currentButton.className = isCurrentWeek
-                ? 'lux-primary-btn is-active schedule-current-week-btn lux-timetable-current-week-btn'
-                : 'lux-secondary-btn schedule-current-week-btn lux-timetable-current-week-btn';
-            currentButton.textContent = isCurrentWeek ? 'Current Week' : 'Jump to current';
+                ? 'lux-primary-btn sch-week-current-btn is-current-week'
+                : 'lux-secondary-btn sch-week-current-btn';
+            currentButton.textContent = isCurrentWeek ? 'Current week' : 'Jump to current';
         }
     }
 
@@ -723,7 +727,7 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
             if (isVisible) visibleCount += 1;
         });
 
-        const emptyState = list.querySelector('.lux-empty-state');
+        const emptyState = list.querySelector('.sch-empty-state, .lux-empty-state');
         if (emptyState) emptyState.hidden = visibleCount > 0;
         updateSchedulerRailChrome();
         return true;
@@ -763,7 +767,7 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
         if (!list) return;
         const normalizedId = String(selectedId || '').trim();
         list.querySelectorAll('[data-scheduler-subject-id]').forEach((card) => {
-            card.classList.toggle('is-active', String(card.dataset.schedulerSubjectId || '').trim() === normalizedId);
+            card.classList.toggle('selected', String(card.dataset.schedulerSubjectId || '').trim() === normalizedId);
         });
     }
 
@@ -784,8 +788,10 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
         const modeInput = el('sch-edit-mode');
         const modal = el('schModalOverlay');
         const title = el('sch-modal-title');
+        const chip = el('sch-modal-mode-chip');
         if (modeInput) modeInput.value = isEdit ? 'edit' : 'create';
         if (modal) modal.dataset.schModalMode = isEdit ? 'edit' : 'create';
+        if (chip) chip.textContent = isEdit ? 'Edit' : 'Create';
         if (title) {
             title.innerHTML = isEdit
                 ? '<i class="fas fa-pen-to-square" aria-hidden="true"></i> Edit Class Session'
@@ -1082,6 +1088,7 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
             modal.setAttribute('data-lux-transparency-exempt', '1');
             if (document.body.classList.contains('lux-route-admin-scheduler')) {
                 modal.dataset.luxSchModal = '1';
+                modal.querySelector('.sch-modal')?.setAttribute('data-lux-glass-root', '1');
             }
         }
         return modal;
@@ -1258,7 +1265,7 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
 
     function buildSchedulerEmptyState(message) {
         const state = document.createElement('div');
-        state.className = 'lux-empty-state';
+        state.className = 'sch-empty-state lux-soft-chrome';
         state.textContent = message;
         return state;
     }
@@ -1268,7 +1275,7 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
         const tone = getSchedulerFacultyTone(facultyCode);
         const card = document.createElement('button');
         card.type = 'button';
-        card.className = `lux-list-row lux-soft-chrome${isActive ? ' is-active' : ''}`;
+        card.className = `palette-card lux-strip-card lux-soft-chrome${isActive ? ' selected' : ''}`;
         card.dataset.schedulerSubjectId = subject.id;
         card.dataset.schedulerSearchHaystack = [
             subject.id,
@@ -1280,13 +1287,16 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
         card.dataset.schPaletteTone = toneToken;
         card.style.setProperty('--sch-event-rgb', tone.rgb);
 
-        const id = document.createElement('strong');
+        const id = document.createElement('div');
+        id.className = 'pc-id';
         id.textContent = subject.id;
 
-        const name = document.createElement('span');
+        const name = document.createElement('div');
+        name.className = 'pc-name';
         name.textContent = subject.name;
 
-        const meta = document.createElement('em');
+        const meta = document.createElement('div');
+        meta.className = 'pc-meta';
         meta.textContent = `ECTS: ${subject.ects || '?'} · Sem ${subject.semester || '?'} · ${facultyCode}`;
 
         card.append(id, name, meta);
@@ -1295,14 +1305,14 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
 
     function buildSchedulerDayHeader(entry, isToday) {
         const dayCol = document.createElement('div');
-        dayCol.className = `sch-day-col lux-timetable-day-col${isToday ? ' today is-today' : ''}`;
+        dayCol.className = `sch-day-col${isToday ? ' is-today' : ''}`;
 
-        const title = document.createElement('span');
-        title.className = 'sch-day-name';
+        const title = document.createElement('div');
+        title.className = 'sch-day-col-label';
         title.textContent = entry.en;
 
         const meta = document.createElement('div');
-        meta.className = 'sch-day-meta';
+        meta.className = 'sch-day-col-meta';
         meta.textContent = entry.shortDate;
         dayCol.append(title, meta);
         return dayCol;
@@ -1310,8 +1320,9 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
 
     function buildSchedulerTimeSlot(slot) {
         const timeSlot = document.createElement('div');
-        timeSlot.className = 'sch-time-slot lux-timetable-time-slot';
+        timeSlot.className = 'sch-time-slot';
         const label = document.createElement('span');
+        label.className = 'sch-time-slot-copy';
         label.textContent = slot;
         timeSlot.appendChild(label);
         return timeSlot;
@@ -1319,7 +1330,7 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
 
     function buildSchedulerSlotBackground(entry, slot, semester, weekStart) {
         const slotNode = document.createElement('div');
-        slotNode.className = 'sch-slot-bg lux-timetable-slot-bg';
+        slotNode.className = 'sch-slot-bg';
         slotNode.dataset.schedulerSlotDay = entry.en;
         slotNode.dataset.schedulerSlotTime = slot;
         slotNode.dataset.schedulerSlotSemester = String(semester);
@@ -1329,7 +1340,7 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
 
     function buildSchedulerEventMeta(iconClass, content) {
         const meta = document.createElement('div');
-        meta.className = 'ev-meta lux-timetable-event-meta';
+        meta.className = 'ev-meta';
 
         const icon = document.createElement('i');
         icon.className = iconClass;
@@ -1379,7 +1390,7 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
         const isDraft = session.prof === 'TBD' || session.room === 'TBD';
 
         const card = document.createElement('div');
-        card.className = 'sch-event lux-timetable-event';
+        card.className = 'sch-event';
         card.style.setProperty('--sch-event-top', `${topPx}px`);
         card.style.setProperty('--sch-event-height', `${heightPx}px`);
         card.style.setProperty('--sch-event-rgb', tone.rgb);
@@ -1393,15 +1404,18 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
 
         if (isDraft || session.isWeekOverride) {
             const badge = document.createElement('div');
-            badge.className = session.isWeekOverride
-                ? 'ev-draft sch-week-badge lux-timetable-week-badge is-week-override'
-                : 'ev-draft sch-week-badge lux-timetable-week-badge';
-            badge.textContent = isDraft ? 'DRAFT' : 'WEEK';
+            badge.className = 'ev-draft';
+            if (isDraft) {
+                badge.textContent = 'DRAFT';
+            } else {
+                badge.classList.add('is-week-override');
+                badge.textContent = 'WEEK';
+            }
             card.appendChild(badge);
         }
 
         const title = document.createElement('div');
-        title.className = 'ev-title lux-timetable-event-title';
+        title.className = 'ev-title';
         title.textContent = session.courseId;
 
         const titleMeta = document.createElement('span');
@@ -1443,14 +1457,14 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
 
     function buildSchedulerInfoBanner(message) {
         const banner = document.createElement('div');
-        banner.className = 'lux-alert is-support lux-soft-chrome';
+        banner.className = 'sch-info-banner lux-soft-chrome';
         banner.textContent = message;
         return banner;
     }
 
     function buildSchedulerEmptyWeekNotice(weekStart) {
         const empty = document.createElement('div');
-        empty.className = 'schedule-empty-state lux-empty-state';
+        empty.className = 'sch-empty-week-notice lux-soft-chrome';
         empty.textContent = `No sessions scheduled for ${formatWeekRangeLabel(weekStart)}.`;
         return empty;
     }
@@ -1463,7 +1477,6 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
         messageBox.dataset.conflictState = state;
         textNode.textContent = text;
         iconNode.className = iconClass;
-        messageBox.hidden = false;
         messageBox.classList.add('show');
     }
 
@@ -1471,7 +1484,6 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
         const messageBox = el('sch-conflict-msg');
         if (!messageBox) return;
         messageBox.dataset.conflictState = 'hidden';
-        messageBox.hidden = true;
         messageBox.classList.remove('show');
     }
 
@@ -1548,13 +1560,13 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
         syncSchedulerWeekChrome();
 
         const root = document.createElement('div');
-        root.className = 'sch-grid-root schedule-grid-shell lux-timetable-grid-shell';
+        root.className = 'sch-grid-root';
         root.dataset.schedulerWeekState = isCurrentWeek ? 'current' : 'selected';
 
         const headerRow = document.createElement('div');
         headerRow.className = 'sch-header-row';
         const timezoneCol = document.createElement('div');
-        timezoneCol.className = 'sch-time-col lux-timetable-time-col sch-time-col--header';
+        timezoneCol.className = 'sch-time-col sch-time-col--header';
         const timezoneCopy = document.createElement('div');
         timezoneCopy.className = 'sch-time-col-copy';
         timezoneCopy.textContent = 'GMT+4';
@@ -1570,16 +1582,16 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
         const body = document.createElement('div');
         body.className = 'sch-body';
         const timeLabels = document.createElement('div');
-        timeLabels.className = 'sch-time-labels lux-timetable-time-col';
+        timeLabels.className = 'sch-time-labels';
         SLOT_TIMES.forEach((slot) => {
             timeLabels.appendChild(buildSchedulerTimeSlot(slot));
         });
 
         const dayLanes = document.createElement('div');
-        dayLanes.className = 'sch-day-lanes lux-timetable-day-lanes';
+        dayLanes.className = 'sch-day-lanes';
         weekEntries.forEach((entry) => {
             const lane = document.createElement('div');
-            lane.className = 'sch-lane lux-timetable-lane';
+            lane.className = 'sch-lane';
             SLOT_TIMES.forEach((slot) => {
                 lane.appendChild(buildSchedulerSlotBackground(entry, slot, semester, weekStart));
             });

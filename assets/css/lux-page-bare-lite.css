@@ -112,8 +112,7 @@ body.lux-page-bare .lux-page-shell[data-lux-layout-only="1"] {
   margin: 0 0 14px;
   padding: 12px 14px;
 }
-#lux-admin-tools-shell .lux-admin-curriculum-control-band .lux-program-field,
-#page-admin-scheduler .sch-rail-control-band .lux-program-field {
+#lux-admin-tools-shell .lux-admin-curriculum-control-band .lux-program-field {
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -121,9 +120,7 @@ body.lux-page-bare .lux-page-shell[data-lux-layout-only="1"] {
   min-width: 180px;
 }
 #lux-admin-tools-shell .lux-admin-curriculum-control-band .lux-program-field > span,
-#lux-admin-tools-shell .lux-admin-curriculum-control-band .lux-program-field > .lux-picker-label,
-#page-admin-scheduler .sch-rail-control-band .lux-program-field > span,
-#page-admin-scheduler .sch-rail-control-band .lux-program-field > .lux-picker-label {
+#lux-admin-tools-shell .lux-admin-curriculum-control-band .lux-program-field > .lux-picker-label {
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.04em;
@@ -865,35 +862,82 @@ body.lux-light-mode #lux-admin-tools-shell .lux-admin-curriculum-search-wrap > i
 }
 
 /* ── Admin scheduler: layout only (paint → lux-fouc-ht / lux-controls / layout-schedule-board) ── */
+#page-admin-scheduler {
+  --sch-shell-gap: 18px;
+  --sch-sidebar-width: 368px;
+  --sch-panel-radius: 28px;
+  --sch-card-radius: 20px;
+  --sch-pill-radius: 999px;
+  --sch-slot-height: 96px;
+  --sch-grid-border: var(--lux-border, rgba(255, 255, 255, 0.08));
+  --sch-grid-muted-border: var(--lux-panel-border-soft, rgba(255, 255, 255, 0.05));
+  --sch-grid-chrome-bg: var(--lux-panel-surface-soft, rgba(255, 255, 255, 0.04));
+  --sch-grid-chrome-border: color-mix(in srgb, rgba(var(--lux-accent-rgb), 1) 12%, transparent);
+  --sch-grid-lane-bg: var(--lux-panel-surface-soft, rgba(255, 255, 255, 0.02));
+  --sch-grid-time-pill-bg: var(--lux-panel-surface-soft, rgba(255, 255, 255, 0.06));
+  --sch-grid-time-pill-border: color-mix(in srgb, rgba(var(--lux-accent-rgb), 1) 14%, transparent);
+}
 #page-admin-scheduler .scheduler-wrap {
   display: grid;
-  grid-template-columns: minmax(300px, 360px) minmax(0, 1fr);
-  gap: 16px;
-  align-items: stretch;
-  min-height: 0;
+  grid-template-columns: minmax(320px, var(--sch-sidebar-width)) minmax(0, 1fr);
+  gap: var(--sch-shell-gap);
+  align-items: start;
+  min-height: calc(100vh - var(--lux-topbar-height, 64px) - 40px);
 }
-#page-admin-scheduler .sch-sidebar.lux-panel {
-  display: grid;
-  gap: 14px;
-  align-content: start;
+#page-admin-scheduler .sch-sidebar,
+#page-admin-scheduler .sch-main {
   min-width: 0;
-  max-height: calc(100vh - 96px);
+  contain: layout style paint;
+}
+#page-admin-scheduler .sch-sidebar {
+  position: sticky;
+  top: calc(var(--lux-topbar-height, 64px) + 18px);
+  display: grid;
+  gap: 16px;
+  align-content: start;
+  max-height: calc(100vh - var(--lux-topbar-height, 64px) - 36px);
   overflow: auto;
-  padding: 16px;
+  padding: 0;
   margin: 0;
 }
-#page-admin-scheduler .sch-rail-signal-grid.lux-stat-row {
+#page-admin-scheduler .sch-rail-hero.lux-hero {
+  padding: 24px;
+  border-radius: var(--sch-panel-radius);
+}
+#page-admin-scheduler .sch-rail-signal-grid.lux-strip-grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
+  gap: 10px;
   margin-top: 0;
 }
-#page-admin-scheduler .sch-stat-card.lux-soft-chrome {
-  box-shadow: var(--lux-soft-chrome-surface-shadow, none);
+#page-admin-scheduler .sch-stat-card {
+  min-height: 144px;
+  padding: 16px 16px 14px;
+  border-radius: var(--sch-card-radius);
 }
-#page-admin-scheduler .sch-stat-card em {
-  font-size: 11px;
-  line-height: 1.35;
-  font-style: normal;
+#page-admin-scheduler .sch-stat-label,
+#page-admin-scheduler .sch-palette-count-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--lux-text-soft, var(--lux-text-muted));
+}
+#page-admin-scheduler .sch-stat-card strong {
+  display: block;
+  margin-top: 10px;
+  font-family: 'DM Mono', monospace;
+  font-size: 30px;
+  line-height: 1;
+  color: var(--lux-text);
+}
+#page-admin-scheduler .sch-stat-card > span:last-child {
+  display: block;
+  margin-top: 10px;
+  font-size: 12px;
+  line-height: 1.5;
   font-weight: 600;
   letter-spacing: 0;
   text-transform: none;
@@ -902,64 +946,41 @@ body.lux-light-mode #lux-admin-tools-shell .lux-admin-curriculum-search-wrap > i
 #page-admin-scheduler .sch-rail-section {
   display: grid;
   gap: 12px;
-  padding-top: 4px;
-  border-top: 1px solid var(--lux-panel-border-soft, rgba(255, 255, 255, 0.08));
+  padding: 18px;
+  border-radius: calc(var(--sch-panel-radius) - 2px);
+  content-visibility: auto;
+  contain: layout style paint;
+  contain-intrinsic-size: auto 320px;
 }
-#page-admin-scheduler .sch-rail-section:first-of-type {
-  border-top: 0;
-  padding-top: 0;
+#page-admin-scheduler .sch-rail-section-title {
+  margin-bottom: 0;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--lux-text-soft, var(--lux-text-muted));
 }
-#page-admin-scheduler .sch-rail-control-band {
+#page-admin-scheduler .sch-control-grid {
   display: grid;
-  gap: 10px;
-  padding: 12px 14px;
-  border-radius: 16px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
 }
-#page-admin-scheduler .sch-rail-field {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+#page-admin-scheduler .sch-control-group {
+  display: grid;
+  gap: 8px;
   min-width: 0;
 }
-#page-admin-scheduler .sch-rail-control-band .lux-universal-picker-field {
+#page-admin-scheduler .sch-control-group > span {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--lux-text-soft, var(--lux-text-muted));
+}
+#page-admin-scheduler .sch-control-group .lux-universal-picker-field {
   width: 100%;
   display: block;
   min-width: 0;
-}
-#page-admin-scheduler .sch-rail-field > .lux-picker-label {
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--lux-text-muted);
-}
-#page-admin-scheduler .sch-rail-search-wrap {
-  position: relative;
-  display: grid;
-  gap: 6px;
-}
-#page-admin-scheduler .sch-rail-search-wrap > .lux-picker-label {
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--lux-text-muted);
-}
-#page-admin-scheduler .sch-rail-search-wrap > i {
-  position: absolute;
-  left: 14px;
-  bottom: calc(var(--lux-field-min-height, 44px) / 2);
-  transform: translateY(50%);
-  color: var(--lux-text-muted);
-  pointer-events: none;
-  z-index: 1;
-}
-#page-admin-scheduler .sch-rail-search-wrap .lux-control {
-  padding-left: 40px;
-}
-#page-admin-scheduler .sch-control-grid .sch-rail-field .lux-universal-picker-field,
-#page-admin-scheduler .sch-control-grid .lux-program-field .lux-universal-picker-field {
-  width: 100%;
 }
 #page-admin-scheduler .sch-control-grid .lux-control,
 #page-admin-scheduler .sch-control-grid .lux-picker-btn--compact :is(.lux-picker-value, strong) {
@@ -968,18 +989,104 @@ body.lux-light-mode #lux-admin-tools-shell .lux-admin-curriculum-search-wrap > i
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-#page-admin-scheduler .sch-control-grid.lux-field-grid {
-  grid-template-columns: 1fr;
+#page-admin-scheduler .sch-rail-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--lux-text-muted);
+}
+#page-admin-scheduler .sch-rail-note i {
+  margin-top: 1px;
+  color: var(--lux-accent-2, var(--lux-accent));
+  flex: 0 0 auto;
+}
+#page-admin-scheduler .sch-search-shell {
+  position: relative;
+}
+#page-admin-scheduler .sch-search-shell > i {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--lux-text-soft, var(--lux-text-muted));
+  pointer-events: none;
+  z-index: 1;
+}
+#page-admin-scheduler .sch-search-shell .lux-control,
+#page-admin-scheduler .sch-search-shell .sch-preset-manage-search {
+  padding-left: 40px;
+}
+#page-admin-scheduler .sch-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 #page-admin-scheduler .sch-palette-meta {
   display: flex;
   justify-content: space-between;
-  gap: 8px;
+  gap: 12px;
+  margin: 14px 0 12px;
+  font-size: 12px;
+  color: var(--lux-text-muted);
+}
+#page-admin-scheduler .sch-palette-meta strong {
+  color: var(--lux-text);
 }
 #page-admin-scheduler .sch-palette-list {
-  max-height: min(42vh, 420px);
+  display: grid;
+  gap: 10px;
+  max-height: 620px;
   overflow: auto;
   padding-right: 2px;
+}
+#page-admin-scheduler .palette-card {
+  position: relative;
+  display: grid;
+  gap: 8px;
+  padding: 15px 16px 15px 18px;
+  min-height: 0;
+  width: 100%;
+  text-align: left;
+  border-radius: var(--sch-card-radius);
+  cursor: pointer;
+  transform: none;
+  outline: none;
+}
+#page-admin-scheduler .palette-card::before {
+  content: '';
+  position: absolute;
+  inset: 14px auto 14px 0;
+  width: 4px;
+  border-radius: 999px;
+  background: currentColor;
+  opacity: 0.88;
+}
+#page-admin-scheduler .palette-card .pc-id {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--lux-accent);
+}
+#page-admin-scheduler .palette-card .pc-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--lux-text);
+}
+#page-admin-scheduler .palette-card .pc-meta {
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--lux-text-muted);
 }
 #page-admin-scheduler .sch-preset-search-field {
   position: relative;
@@ -996,30 +1103,218 @@ body.lux-light-mode #lux-admin-tools-shell .lux-admin-curriculum-search-wrap > i
 #page-admin-scheduler .sch-preset-search-field .lux-control {
   padding-left: 40px;
 }
-#page-admin-scheduler .sch-palette-list .lux-list-row.is-active {
-  outline: 2px solid rgba(var(--lux-accent-rgb), 0.45);
-  outline-offset: 1px;
-}
-#page-admin-scheduler .sch-main.lux-timetable-stage {
-  min-width: 0;
-  min-height: calc(100vh - 96px);
+#page-admin-scheduler .sch-main {
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
-  gap: 14px;
+  gap: 8px;
+  align-content: start;
+  min-width: 0;
 }
-#page-admin-scheduler .lux-timetable-stage-head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  justify-content: space-between;
+#page-admin-scheduler .sch-grid-wrap {
+  display: grid;
   gap: 12px;
+  padding: 0;
+  flex: none;
+  overflow: visible;
 }
-#page-admin-scheduler .sch-grid-wrap.lux-timetable-canvas {
-  min-height: 0;
-  overflow: auto;
+#page-admin-scheduler .sch-grid-shell {
+  padding: 18px;
+  overflow: hidden;
+  min-height: calc(100vh - var(--lux-topbar-height, 64px) - 56px);
 }
-#page-admin-scheduler #scheduler-grid[aria-busy="true"]:empty::before {
-  content: 'Loading schedule…';
+#page-admin-scheduler .sch-grid-topline {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding-bottom: 14px;
+}
+#page-admin-scheduler .sch-grid-topline-start,
+#page-admin-scheduler .sch-grid-topline-end {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+#page-admin-scheduler .sch-grid-topline-end {
+  margin-left: auto;
+  justify-content: flex-end;
+}
+#page-admin-scheduler .sch-grid-week-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--lux-text);
+  white-space: nowrap;
+}
+#page-admin-scheduler .sch-grid-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 11px;
+  border-radius: var(--sch-pill-radius);
+  border: 1px solid var(--sch-grid-border);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--lux-text-muted);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+#page-admin-scheduler .sch-grid-tag-soft {
+  color: var(--lux-text);
+}
+#page-admin-scheduler .sch-week-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+#page-admin-scheduler .sch-week-arrow {
+  width: 46px;
+  min-width: 46px;
+  height: 46px;
+  padding: 0;
+  justify-content: center;
+}
+#page-admin-scheduler .sch-week-current-btn {
+  min-height: 46px;
+  padding: 0 18px;
+  justify-content: center;
+}
+#page-admin-scheduler #scheduler-grid {
+  overflow-x: auto;
+  padding-bottom: 6px;
+}
+#page-admin-scheduler .sch-grid-root {
+  min-width: 1420px;
+  contain: layout style paint;
+}
+#page-admin-scheduler .sch-header-row {
+  display: grid;
+  grid-template-columns: 92px repeat(7, minmax(180px, 1fr));
+  border: 1px solid var(--sch-grid-border);
+  border-bottom: 0;
+  border-radius: 24px 24px 0 0;
+  overflow: hidden;
+  position: static;
+  top: auto;
+}
+#page-admin-scheduler .sch-time-col,
+#page-admin-scheduler .sch-day-col {
+  min-height: 74px;
+  padding: 14px 14px 12px;
+  border-right: 1px solid var(--sch-grid-chrome-border);
+  background: var(--sch-grid-chrome-bg);
+}
+#page-admin-scheduler .sch-time-col {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--lux-text-soft, var(--lux-text-muted));
+  width: auto;
+  flex-shrink: unset;
+}
+#page-admin-scheduler .sch-time-col-copy {
+  font-family: 'DM Mono', monospace;
+}
+#page-admin-scheduler .sch-day-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  text-align: center;
+  flex: unset;
+  width: auto;
+}
+#page-admin-scheduler .sch-day-col-label {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--lux-text);
+}
+#page-admin-scheduler .sch-day-col-meta {
+  font-size: 11px;
+  color: var(--lux-text-muted);
+}
+#page-admin-scheduler .sch-body {
+  display: grid;
+  grid-template-columns: 92px minmax(0, 1fr);
+  border: 1px solid var(--sch-grid-border);
+  border-top: 0;
+  border-radius: 0 0 24px 24px;
+  overflow: hidden;
+  min-width: 0;
+  position: relative;
+}
+#page-admin-scheduler .sch-time-labels {
+  display: grid;
+  grid-auto-rows: var(--sch-slot-height);
+  background: var(--sch-grid-chrome-bg);
+  border-right: 1px solid var(--sch-grid-chrome-border);
+  width: auto;
+  flex-shrink: unset;
+}
+#page-admin-scheduler .sch-time-slot {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 12px;
+  border-top: 1px solid var(--sch-grid-border);
+  height: auto;
+  position: static;
+}
+#page-admin-scheduler .sch-time-slot:first-child {
+  border-top: 0;
+}
+#page-admin-scheduler .sch-time-slot-copy {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--lux-text-soft, var(--lux-text-muted));
+  background: var(--sch-grid-time-pill-bg);
+  border: 1px solid var(--sch-grid-time-pill-border);
+  border-radius: 999px;
+  padding: 4px 10px;
+  min-width: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: static;
+  right: auto;
+  top: auto;
+  font-weight: 600;
+}
+#page-admin-scheduler .sch-day-lanes {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(180px, 1fr));
+  flex: unset;
+  min-width: 0;
+}
+#page-admin-scheduler .sch-lane {
+  position: relative;
+  min-height: calc(var(--sch-slot-height) * 11);
+  display: grid;
+  grid-template-rows: repeat(11, var(--sch-slot-height));
+  border-left: 1px solid var(--sch-grid-chrome-border);
+  background: var(--sch-grid-lane-bg);
+  contain: layout style paint;
+  flex: unset;
+}
+#page-admin-scheduler .sch-slot-bg {
+  border-top: 1px solid var(--sch-grid-muted-border);
+  background: var(--sch-grid-lane-bg);
+  height: auto;
+  transition: background 0.18s ease, box-shadow 0.18s ease;
+}
+#page-admin-scheduler .sch-info-banner,
+#page-admin-scheduler .sch-empty-week-notice,
+#page-admin-scheduler .sch-grid-empty {
+  margin-top: 14px;
 }
 #page-admin-scheduler .sch-form-section {
   display: grid;
@@ -1055,44 +1350,264 @@ body.lux-light-mode #lux-admin-tools-shell .lux-admin-curriculum-search-wrap > i
 #page-admin-scheduler .sch-input-row-capacity {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
+#page-admin-scheduler .sch-input-row-single {
+  grid-template-columns: minmax(0, 1fr);
+}
+#page-admin-scheduler .sch-input-group {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+#page-admin-scheduler .sch-input-group > label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--lux-text-muted);
+}
+#page-admin-scheduler .sch-input-label-spacer {
+  display: inline-block;
+  min-width: 108px;
+  min-height: 1px;
+  visibility: hidden;
+  pointer-events: none;
+}
+body.lux-route-admin-scheduler .sch-modal-overlay {
+  z-index: 2400;
+}
+body.lux-route-admin-scheduler #schPresetManagerOverlay.sch-modal-overlay {
+  z-index: 2500;
+}
+body.lux-route-admin-scheduler .sch-modal {
+  width: min(760px, 100%);
+  max-height: min(90vh, 1100px);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--lux-panel-radius, 22px);
+}
+body.lux-route-admin-scheduler .sch-modal-wide {
+  width: min(920px, 100%);
+}
+body.lux-route-admin-scheduler .sch-modal-narrow {
+  width: min(520px, 100%);
+}
+body.lux-route-admin-scheduler .sch-modal-head,
+body.lux-route-admin-scheduler .sch-modal-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 24px;
+  flex: 0 0 auto;
+}
+body.lux-route-admin-scheduler .sch-modal-head {
+  border-bottom: 1px solid var(--sch-grid-border, var(--lux-border));
+}
+body.lux-route-admin-scheduler .sch-modal-title,
+body.lux-route-admin-scheduler .quiz-modal-title {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 28px;
+  line-height: 1.08;
+}
+body.lux-route-admin-scheduler .sch-modal-subtitle,
+body.lux-route-admin-scheduler .quiz-modal-subtitle,
+body.lux-route-admin-scheduler .sch-modal-week {
+  margin-top: 6px;
+  font-size: 12px;
+  line-height: 1.5;
+}
+body.lux-route-admin-scheduler .sch-modal-mode-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  margin-bottom: 10px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+body.lux-route-admin-scheduler .quiz-modal-close,
+body.lux-route-admin-scheduler .sch-modal-close-muted {
+  font-size: 18px;
+  cursor: pointer;
+  flex: 0 0 auto;
+}
+body.lux-route-admin-scheduler .sch-modal-body {
+  overflow: auto;
+  padding: 20px 24px 24px;
+  display: grid;
+  gap: 18px;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+body.lux-route-admin-scheduler #schModalOverlay.is-open .sch-modal-body,
+body.lux-route-admin-scheduler #schPresetManagerOverlay.is-open .sch-modal-body {
+  overscroll-behavior: contain;
+}
+body.lux-route-admin-scheduler .sch-modal-body-pad {
+  padding-top: 24px;
+}
+body.lux-route-admin-scheduler .sch-modal-foot {
+  border-top: 1px solid var(--sch-grid-border, var(--lux-border));
+}
+body.lux-route-admin-scheduler .sch-modal-foot-between {
+  justify-content: space-between;
+}
+body.lux-route-admin-scheduler #schModalOverlay .sch-form-section,
+body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-form-section,
+body.lux-route-admin-scheduler #profQuizModalOverlay .sch-form-section {
+  gap: 12px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+body.lux-route-admin-scheduler #schModalOverlay .sch-form-section + .sch-form-section {
+  padding-top: 14px;
+  border-top: 1px solid color-mix(in srgb, var(--lux-border) 72%, transparent);
+}
+body.lux-route-admin-scheduler #schModalOverlay .sch-input-row-subject,
+body.lux-route-admin-scheduler #schModalOverlay .sch-input-row-two,
+body.lux-route-admin-scheduler #schModalOverlay .sch-input-row-three,
+body.lux-route-admin-scheduler #schModalOverlay .sch-input-row-capacity,
+body.lux-route-admin-scheduler #schModalOverlay .sch-input-row-single {
+  align-items: end;
+}
+body.lux-route-admin-scheduler #schModalOverlay .sch-input-label-row {
+  min-height: 20px;
+  margin-bottom: 8px;
+}
+body.lux-route-admin-scheduler #schModalOverlay .sch-input-label-row label {
+  margin-bottom: 0;
+}
+body.lux-route-admin-scheduler #schModalOverlay .sch-preset-manage-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  white-space: nowrap;
+}
+body.lux-route-admin-scheduler #schModalOverlay .lux-picker-field {
+  display: block;
+  position: relative;
+  overflow: visible;
+  width: 100%;
+  min-width: 0;
+}
+body.lux-route-admin-scheduler #schModalOverlay .lux-picker-btn {
+  width: 100%;
+  min-width: 0;
+  min-height: 48px;
+}
+body.lux-route-admin-scheduler #schModalOverlay .sch-modal :is(
+  input[type="time"],
+  input[type="number"],
+  .sch-input-readonly
+) {
+  width: 100%;
+  min-width: 0;
+  min-height: 48px;
+  border-radius: 16px;
+}
+body.lux-route-admin-scheduler #schModalOverlay input[type="time"] {
+  appearance: auto;
+  -webkit-appearance: auto;
+  line-height: 1.2;
+  padding: 12px 14px;
+}
+body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-preset-manage-list-shell {
+  max-height: min(52vh, 480px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-preset-manage-item-main {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: 6px;
+}
+body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-preset-manage-item-label {
+  font-size: 13px;
+  font-weight: 700;
+  word-break: break-word;
+}
+body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-preset-manage-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-preset-manage-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-preset-manage-helper {
+  margin: 0 0 12px;
+  font-size: 12px;
+  line-height: 1.5;
+}
+body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-preset-manage-item-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-preset-manage-delete-btn {
+  width: 38px;
+  min-width: 38px;
+  height: 38px;
+  padding: 0;
+  border-radius: 14px;
+  cursor: pointer;
+}
+body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-preset-manage-add-btn {
+  min-height: 44px;
+  white-space: nowrap;
+}
+body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-combo-save-input,
+body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-preset-manage-search {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  outline: none;
+}
+body.lux-route-admin-scheduler .sch-conflict-alert {
+  display: none;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  border: 1px solid transparent;
+  font-size: 13px;
+  line-height: 1.5;
+}
+body.lux-route-admin-scheduler .sch-conflict-alert.show {
+  display: flex;
+}
 #page-admin-scheduler .sch-input-label-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
 }
-#page-admin-scheduler .sch-preset-manage-link.lux-ghost-btn {
-  min-height: 0;
-  padding: 4px 8px;
-  font-size: 11px;
-  font-weight: 700;
-  border-radius: 8px;
-  white-space: nowrap;
-}
-#page-admin-scheduler .sch-preset-manage-delete-btn.lux-ghost-btn {
-  min-height: 0;
-  min-width: 0;
-  padding: 6px 8px;
-  font-size: 12px;
-  border-radius: 8px;
-  color: var(--lux-danger, #f87171);
-}
-#page-admin-scheduler .sch-preset-manage-delete-btn.lux-ghost-btn:hover {
-  color: #fff;
-  background: rgba(248, 113, 113, 0.18);
-}
-#page-admin-scheduler .sch-conflict-alert.show {
-  display: flex;
-  gap: 8px;
-  align-items: flex-start;
-}
-#page-admin-scheduler .sch-preset-manage-list {
+body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-preset-manage-list {
   display: grid;
   gap: 8px;
-  max-height: 240px;
-  overflow: auto;
 }
-#page-admin-scheduler .sch-preset-manage-item {
+body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-preset-manage-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1100,11 +1615,19 @@ body.lux-light-mode #lux-admin-tools-shell .lux-admin-curriculum-search-wrap > i
   padding: 10px 12px;
   border-radius: 12px;
 }
-#page-admin-scheduler .sch-preset-manage-add-row {
+body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-preset-manage-add-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 8px;
   align-items: end;
+}
+body.lux-route-admin-scheduler #schPresetManagerOverlay .sch-search-shell .sch-preset-manage-search {
+  padding-left: 40px;
+}
+#page-admin-scheduler .sch-preset-manage-link {
+  padding: 4px 8px;
+  font-size: 11px;
+  white-space: nowrap;
 }
 #page-admin-scheduler .quiz-questions-head {
   display: grid;
@@ -1145,7 +1668,7 @@ body.lux-light-mode #lux-admin-tools-shell .lux-admin-curriculum-search-wrap > i
   }
 }
 @media (max-width: 720px) {
-  #page-admin-scheduler .sch-rail-signal-grid.lux-stat-row,
+  #page-admin-scheduler .sch-rail-signal-grid.lux-strip-grid,
   #page-admin-scheduler .sch-control-grid,
   #page-admin-scheduler .sch-input-row-two,
   #page-admin-scheduler .sch-input-row-three,
