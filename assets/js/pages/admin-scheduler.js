@@ -39,7 +39,7 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
     let schedulerRefreshHandle = 0;
     let schedulerRevealShellQueued = false;
 // --- READABILITY: Grid ---
-    let schedulerRefreshQueued = { palette: false, grid: false };
+    let schedulerRefreshQueued = { palette: false, grid: false, paletteSearchOnly: false };
     function el(id) {
         return document.getElementById(id);
     }
@@ -53,9 +53,30 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
         node.dataset[marker] = '1';
         node.addEventListener(eventName, handler);
     }
+    function runWithLuxuryObserversPaused(callback) {
+        if (typeof window.pauseLuxuryVisualObservers === 'function') {
+            window.pauseLuxuryVisualObservers();
+        }
+        try {
+            callback();
+        } finally {
+            const resume = () => {
+                if (typeof window.resumeLuxuryVisualObservers === 'function') {
+                    window.resumeLuxuryVisualObservers();
+                }
+            };
+            if (typeof window.requestAnimationFrame === 'function') {
+                window.requestAnimationFrame(resume);
+            } else {
+                resume();
+            }
+        }
+    }
     function queueSchedulerRefresh(options = {}) {
         schedulerRefreshQueued.palette = schedulerRefreshQueued.palette || options.palette === true;
         schedulerRefreshQueued.grid = schedulerRefreshQueued.grid || options.grid === true;
+        schedulerRefreshQueued.paletteSearchOnly = schedulerRefreshQueued.paletteSearchOnly
+            || (options.paletteSearchOnly === true && options.palette !== false);
         schedulerRevealShellQueued = schedulerRevealShellQueued || options.revealShell === true;
         if (schedulerRefreshHandle) return;
         const schedule = typeof window.requestAnimationFrame === 'function'
@@ -65,10 +86,11 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
             schedulerRefreshHandle = 0;
             const runPalette = schedulerRefreshQueued.palette;
             const runGrid = schedulerRefreshQueued.grid;
+            const paletteSearchOnly = schedulerRefreshQueued.paletteSearchOnly;
             const revealShell = schedulerRevealShellQueued;
-            schedulerRefreshQueued = { palette: false, grid: false };
+            schedulerRefreshQueued = { palette: false, grid: false, paletteSearchOnly: false };
             schedulerRevealShellQueued = false;
-            if (runPalette) renderPalette();
+            if (runPalette) renderPalette({ searchOnly: paletteSearchOnly });
             if (runGrid) renderGrid();
             if (revealShell) {
                 if (typeof schedulePortalShellReadyReveal === 'function') {
@@ -87,6 +109,45 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
         if (!(template instanceof HTMLTemplateElement)) return null;
         document.body.appendChild(template.content.cloneNode(true));
         return el(nodeId);
+    }
+
+    function openSchedulerPortalModal(overlay, options = {}) {
+        if (!overlay) return;
+        if (typeof window.openLuxPortalModal === 'function') {
+            window.openLuxPortalModal(overlay, { scrollLock: true, ...options });
+        } else if (typeof window.openLuxGlassDialogOverlay === 'function') {
+            overlay.hidden = false;
+            overlay.setAttribute('aria-hidden', 'false');
+            window.openLuxGlassDialogOverlay(overlay);
+        } else {
+            overlay.hidden = false;
+            overlay.setAttribute('aria-hidden', 'false');
+            overlay.classList.add('is-open');
+        }
+        if (typeof window.queueLuxuryTransparencyRefresh === 'function') {
+            window.queueLuxuryTransparencyRefresh(undefined, { roots: [overlay] });
+        }
+    }
+
+    function closeSchedulerPortalModal(overlay, options = {}) {
+        if (!overlay) return;
+        if (typeof window.closeLuxPortalModal === 'function') {
+            window.closeLuxPortalModal(overlay, { remove: false, scrollLock: true, ...options });
+            return;
+        }
+        if (typeof window.closeLuxGlassDialogOverlay === 'function') {
+            window.closeLuxGlassDialogOverlay(overlay, {
+                remove: false,
+                onDone: () => {
+                    overlay.hidden = true;
+                    overlay.setAttribute('aria-hidden', 'true');
+                }
+            });
+            return;
+        }
+        overlay.classList.remove('is-open', 'open');
+        overlay.hidden = true;
+        overlay.setAttribute('aria-hidden', 'true');
     }
 
     function rebuildSchedulerSelect(select, options, fallbackValue) {
@@ -358,7 +419,7 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
 
         visibleNames.forEach((name) => {
             const item = document.createElement('div');
-            item.className = 'sch-preset-manage-item';
+            item.className = 'sch-preset-manage-item lux-soft-chrome';
             item.setAttribute('role', 'listitem');
             const lowerName = name.toLowerCase();
             const badges = [];
@@ -367,7 +428,7 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
             if (harvestedKeys.has(lowerName)) badges.push('<span class="sch-preset-manage-badge sch-preset-manage-badge--schedule">In schedule</span>');
             const actionButtons = [];
             if (storedKeys.has(lowerName) || visibleDefaultKeys.has(lowerName)) {
-                actionButtons.push(`<button type="button" class="sch-preset-manage-delete-btn" data-scheduler-preset-remove="${escapeSchedulerPresetHtml(name)}" aria-label="Remove ${escapeSchedulerPresetHtml(name)}"><i class="fas fa-trash-alt"></i></button>`);
+                actionButtons.push(`<button type="button" class="lux-ghost-btn lux-icon-btn sch-preset-manage-delete-btn" data-scheduler-preset-remove="${escapeSchedulerPresetHtml(name)}" aria-label="Remove ${escapeSchedulerPresetHtml(name)}"><i class="fas fa-trash-alt"></i></button>`);
             }
             const actionsMarkup = actionButtons.length
                 ? `<div class="sch-preset-manage-item-actions">${actionButtons.join('')}</div>`
@@ -447,8 +508,7 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
     function closeSchedulerPresetManager() {
         const overlay = el(SCHEDULER_PRESET_MANAGER_ID);
         if (!overlay) return;
-        overlay.classList.remove('open');
-        overlay.hidden = true;
+        closeSchedulerPortalModal(overlay, { scrollLock: false });
         const searchField = el('sch-preset-search');
         const draftField = el('sch-preset-manage-draft');
         if (searchField) searchField.value = '';
@@ -505,13 +565,8 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
 
     function ensureSchedulerPresetManager() {
         const overlay = ensureMountedTemplate(SCHEDULER_PRESET_MANAGER_TEMPLATE_ID, SCHEDULER_PRESET_MANAGER_ID);
-        if (!overlay) return null;
-        overlay.hidden = false;
+        if (!overlay) return;
         bindSchedulerPresetManagerListeners(overlay);
-        if (document.body.classList.contains('lux-route-admin-scheduler')) {
-            overlay.dataset.luxSchPresetModal = '1';
-            overlay.querySelector('.sch-modal')?.setAttribute('data-lux-glass-root', '1');
-        }
         return overlay;
     }
 
@@ -531,11 +586,7 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
         if (typeof window.enhanceUniversalPickers === 'function') {
             window.enhanceUniversalPickers(overlay);
         }
-        overlay.classList.add('open');
-        if (typeof window.queueLuxuryTransparencyRefresh === 'function') {
-            window.queueLuxuryTransparencyRefresh(undefined, { roots: [overlay] });
-        }
-        window.setTimeout(() => searchField?.focus(), 0);
+        openSchedulerPortalModal(overlay, { focusSelector: '#sch-preset-search' });
     }
 
     function normalizeSchedulerSelectOptions() {
@@ -586,9 +637,9 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
         if (currentButton) {
             const isCurrentWeek = weekStart === getCurrentWeekStartISO();
             currentButton.className = isCurrentWeek
-                ? 'lux-primary-btn sch-week-current-btn is-current-week'
-                : 'lux-secondary-btn sch-week-current-btn';
-            currentButton.textContent = isCurrentWeek ? 'Current week' : 'Jump to current';
+                ? 'lux-primary-btn is-active schedule-current-week-btn lux-timetable-current-week-btn'
+                : 'lux-secondary-btn schedule-current-week-btn lux-timetable-current-week-btn';
+            currentButton.textContent = isCurrentWeek ? 'Current Week' : 'Jump to current';
         }
     }
 
@@ -657,10 +708,37 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
         }
     }
 
-    function renderPalette() {
+    function filterPaletteListBySearch() {
+        const list = el('palette-list');
+        if (!list) return false;
+        const query = String(el('palette-search')?.value || '').trim().toLowerCase();
+        const cards = list.querySelectorAll('[data-scheduler-subject-id]');
+        if (!cards.length) return false;
+
+        let visibleCount = 0;
+        cards.forEach((card) => {
+            const haystack = String(card.dataset.schedulerSearchHaystack || '').toLowerCase();
+            const isVisible = !query || haystack.includes(query);
+            card.hidden = !isVisible;
+            if (isVisible) visibleCount += 1;
+        });
+
+        const emptyState = list.querySelector('.lux-empty-state');
+        if (emptyState) emptyState.hidden = visibleCount > 0;
+        updateSchedulerRailChrome();
+        return true;
+    }
+
+    function renderPalette(options = {}) {
         const list = el('palette-list');
         if (!list) return;
-        const subjects = getSchedulerPaletteSubjects();
+
+        if (options.searchOnly && filterPaletteListBySearch()) {
+            return;
+        }
+
+        runWithLuxuryObserversPaused(() => {
+        const subjects = getSchedulerPaletteSubjects({ ignoreSearch: true });
         const semesterValue = el('admin-tt-semester')?.value || '?';
 
         if (!subjects.length) {
@@ -676,14 +754,16 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
             fragment.appendChild(buildSchedulerPaletteCard(subject, facultyCode, isActive));
         });
         list.replaceChildren(fragment);
+        filterPaletteListBySearch();
         updateSchedulerRailChrome();
+        });
     }
     function syncPaletteSelectionState(selectedId = selectedPaletteSubject?.id || '') {
         const list = el('palette-list');
         if (!list) return;
         const normalizedId = String(selectedId || '').trim();
         list.querySelectorAll('[data-scheduler-subject-id]').forEach((card) => {
-            card.classList.toggle('selected', String(card.dataset.schedulerSubjectId || '').trim() === normalizedId);
+            card.classList.toggle('is-active', String(card.dataset.schedulerSubjectId || '').trim() === normalizedId);
         });
     }
 
@@ -704,14 +784,12 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
         const modeInput = el('sch-edit-mode');
         const modal = el('schModalOverlay');
         const title = el('sch-modal-title');
-        const chip = el('sch-modal-mode-chip');
         if (modeInput) modeInput.value = isEdit ? 'edit' : 'create';
         if (modal) modal.dataset.schModalMode = isEdit ? 'edit' : 'create';
-        if (chip) chip.textContent = isEdit ? 'Edit' : 'Create';
         if (title) {
             title.innerHTML = isEdit
-                ? '<i class="fas fa-pen-to-square"></i> Edit Class Session'
-                : '<i class="fas fa-calendar-plus"></i> New Class Session';
+                ? '<i class="fas fa-pen-to-square" aria-hidden="true"></i> Edit Class Session'
+                : '<i class="fas fa-calendar-plus" aria-hidden="true"></i> New Class Session';
         }
         if (!isEdit) {
             ['sch-edit-course', 'sch-edit-group', 'sch-edit-weekstart'].forEach((id) => {
@@ -775,7 +853,7 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
 
     function buildProfessorQuizQuestionCard(question, index) {
         const card = document.createElement('div');
-        card.className = 'quiz-question-card';
+        card.className = 'quiz-question-card lux-soft-chrome';
 
         const header = document.createElement('div');
         header.className = 'quiz-question-card-head';
@@ -787,7 +865,7 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
         const removeButton = document.createElement('button');
         removeButton.type = 'button';
         removeButton.dataset.profQuizQuestionRemove = String(index);
-        removeButton.className = 'quiz-question-remove-btn';
+        removeButton.className = 'lux-ghost-btn quiz-question-remove-btn';
         removeButton.setAttribute('aria-label', `Remove question ${index + 1}`);
 
         const removeIcon = document.createElement('i');
@@ -808,7 +886,7 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
         questionInput.placeholder = 'Question text...';
         questionInput.value = question.text || '';
         questionInput.dataset.profQuizQuestionText = String(index);
-        questionInput.className = 'quiz-question-input';
+        questionInput.className = 'lux-control quiz-question-input';
 
         const pointsRow = document.createElement('div');
         pointsRow.className = 'quiz-question-points-row';
@@ -825,7 +903,7 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
         pointsInput.value = String(question.points ?? 10);
         pointsInput.dataset.profQuizQuestionPoints = String(index);
         pointsInput.min = '0';
-        pointsInput.className = 'quiz-question-points-input';
+        pointsInput.className = 'lux-control quiz-question-points-input';
 
         pointsRow.append(pointsLabel, pointsInput);
         card.append(header, questionLabel, questionInput, pointsRow);
@@ -864,7 +942,7 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
 
     function closeProfQuizModal() {
         const modal = el(SCHEDULER_QUIZ_MODAL_ID);
-        if (modal) modal.classList.remove('open');
+        if (modal) closeSchedulerPortalModal(modal);
     }
 
     function saveProfQuiz() {
@@ -959,7 +1037,7 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
         if (el('pq-date')) el('pq-date').value = new Date().toISOString().split('T')[0];
         profQuizQuestions = [{ id: 'q1', text: '', points: 10 }];
         renderProfQuizQuestions();
-        modal.classList.add('open');
+        openSchedulerPortalModal(modal, { focusSelector: '#pq-title' });
     }
 
     function bindSchedulerCreateModalListeners(modal) {
@@ -1004,7 +1082,6 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
             modal.setAttribute('data-lux-transparency-exempt', '1');
             if (document.body.classList.contains('lux-route-admin-scheduler')) {
                 modal.dataset.luxSchModal = '1';
-                modal.querySelector('.sch-modal')?.setAttribute('data-lux-glass-root', '1');
             }
         }
         return modal;
@@ -1053,16 +1130,13 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
         syncSchedulerSessionTypeDefault();
 
         const conflictBox = el('sch-conflict-msg');
-        if (conflictBox) conflictBox.classList.remove('show');
+        if (conflictBox) clearSchedulerConflictState();
 
         schCalcEnd();
         if (typeof window.enhanceUniversalPickers === 'function') {
             window.enhanceUniversalPickers(modal);
         }
-        modal.classList.add('open');
-        if (typeof window.queueLuxuryTransparencyRefresh === 'function') {
-            window.queueLuxuryTransparencyRefresh(undefined, { roots: [modal] });
-        }
+        openSchedulerPortalModal(modal, { focusSelector: '#sch-subject' });
     }
 
     function openSchEditModal(courseId, groupId, weekStart = getSchedulerWeekStart()) {
@@ -1134,7 +1208,7 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
             window.closePickerPanels();
         }
         const modal = el('schModalOverlay');
-        if (modal) modal.classList.remove('open');
+        if (modal) closeSchedulerPortalModal(modal);
         setSchModalMode('create');
         const button = el('sch-create-btn');
         if (button) button.classList.remove('is-success-state');
@@ -1184,7 +1258,7 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
 
     function buildSchedulerEmptyState(message) {
         const state = document.createElement('div');
-        state.className = 'sch-empty-state lux-summary-surface lux-summary-surface--panel';
+        state.className = 'lux-empty-state';
         state.textContent = message;
         return state;
     }
@@ -1194,21 +1268,25 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
         const tone = getSchedulerFacultyTone(facultyCode);
         const card = document.createElement('button');
         card.type = 'button';
-        card.className = `palette-card lux-strip-card surface-card lux-summary-surface lux-summary-surface--panel${isActive ? ' selected' : ''}`;
+        card.className = `lux-list-row lux-soft-chrome${isActive ? ' is-active' : ''}`;
         card.dataset.schedulerSubjectId = subject.id;
+        card.dataset.schedulerSearchHaystack = [
+            subject.id,
+            subject.name,
+            subject.ects,
+            subject.semester,
+            facultyCode,
+        ].filter(Boolean).join(' ').toLowerCase();
         card.dataset.schPaletteTone = toneToken;
         card.style.setProperty('--sch-event-rgb', tone.rgb);
 
-        const id = document.createElement('div');
-        id.className = 'pc-id';
+        const id = document.createElement('strong');
         id.textContent = subject.id;
 
-        const name = document.createElement('div');
-        name.className = 'pc-name';
+        const name = document.createElement('span');
         name.textContent = subject.name;
 
-        const meta = document.createElement('div');
-        meta.className = 'pc-meta';
+        const meta = document.createElement('em');
         meta.textContent = `ECTS: ${subject.ects || '?'} · Sem ${subject.semester || '?'} · ${facultyCode}`;
 
         card.append(id, name, meta);
@@ -1217,14 +1295,14 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
 
     function buildSchedulerDayHeader(entry, isToday) {
         const dayCol = document.createElement('div');
-        dayCol.className = `sch-day-col${isToday ? ' is-today' : ''}`;
+        dayCol.className = `sch-day-col lux-timetable-day-col${isToday ? ' today is-today' : ''}`;
 
-        const title = document.createElement('div');
-        title.className = 'sch-day-col-label';
+        const title = document.createElement('span');
+        title.className = 'sch-day-name';
         title.textContent = entry.en;
 
         const meta = document.createElement('div');
-        meta.className = 'sch-day-col-meta';
+        meta.className = 'sch-day-meta';
         meta.textContent = entry.shortDate;
         dayCol.append(title, meta);
         return dayCol;
@@ -1232,9 +1310,8 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
 
     function buildSchedulerTimeSlot(slot) {
         const timeSlot = document.createElement('div');
-        timeSlot.className = 'sch-time-slot';
+        timeSlot.className = 'sch-time-slot lux-timetable-time-slot';
         const label = document.createElement('span');
-        label.className = 'sch-time-slot-copy';
         label.textContent = slot;
         timeSlot.appendChild(label);
         return timeSlot;
@@ -1242,7 +1319,7 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
 
     function buildSchedulerSlotBackground(entry, slot, semester, weekStart) {
         const slotNode = document.createElement('div');
-        slotNode.className = 'sch-slot-bg';
+        slotNode.className = 'sch-slot-bg lux-timetable-slot-bg';
         slotNode.dataset.schedulerSlotDay = entry.en;
         slotNode.dataset.schedulerSlotTime = slot;
         slotNode.dataset.schedulerSlotSemester = String(semester);
@@ -1252,7 +1329,7 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
 
     function buildSchedulerEventMeta(iconClass, content) {
         const meta = document.createElement('div');
-        meta.className = 'ev-meta';
+        meta.className = 'ev-meta lux-timetable-event-meta';
 
         const icon = document.createElement('i');
         icon.className = iconClass;
@@ -1302,7 +1379,7 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
         const isDraft = session.prof === 'TBD' || session.room === 'TBD';
 
         const card = document.createElement('div');
-        card.className = 'sch-event';
+        card.className = 'sch-event lux-timetable-event';
         card.style.setProperty('--sch-event-top', `${topPx}px`);
         card.style.setProperty('--sch-event-height', `${heightPx}px`);
         card.style.setProperty('--sch-event-rgb', tone.rgb);
@@ -1316,18 +1393,15 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
 
         if (isDraft || session.isWeekOverride) {
             const badge = document.createElement('div');
-            badge.className = 'ev-draft';
-            if (isDraft) {
-                badge.textContent = 'DRAFT';
-            } else {
-                badge.classList.add('is-week-override');
-                badge.textContent = 'WEEK';
-            }
+            badge.className = session.isWeekOverride
+                ? 'ev-draft sch-week-badge lux-timetable-week-badge is-week-override'
+                : 'ev-draft sch-week-badge lux-timetable-week-badge';
+            badge.textContent = isDraft ? 'DRAFT' : 'WEEK';
             card.appendChild(badge);
         }
 
         const title = document.createElement('div');
-        title.className = 'ev-title';
+        title.className = 'ev-title lux-timetable-event-title';
         title.textContent = session.courseId;
 
         const titleMeta = document.createElement('span');
@@ -1369,14 +1443,14 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
 
     function buildSchedulerInfoBanner(message) {
         const banner = document.createElement('div');
-        banner.className = 'sch-info-banner lux-summary-surface lux-summary-surface--panel';
+        banner.className = 'lux-alert is-support lux-soft-chrome';
         banner.textContent = message;
         return banner;
     }
 
     function buildSchedulerEmptyWeekNotice(weekStart) {
         const empty = document.createElement('div');
-        empty.className = 'sch-empty-week-notice lux-summary-surface lux-summary-surface--panel';
+        empty.className = 'schedule-empty-state lux-empty-state';
         empty.textContent = `No sessions scheduled for ${formatWeekRangeLabel(weekStart)}.`;
         return empty;
     }
@@ -1389,6 +1463,7 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
         messageBox.dataset.conflictState = state;
         textNode.textContent = text;
         iconNode.className = iconClass;
+        messageBox.hidden = false;
         messageBox.classList.add('show');
     }
 
@@ -1396,6 +1471,7 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
         const messageBox = el('sch-conflict-msg');
         if (!messageBox) return;
         messageBox.dataset.conflictState = 'hidden';
+        messageBox.hidden = true;
         messageBox.classList.remove('show');
     }
 
@@ -1460,6 +1536,7 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
         const container = el('scheduler-grid');
         if (!container) return;
 
+        runWithLuxuryObserversPaused(() => {
         const weekStart = getSchedulerWeekStart();
         const weekEntries = getWeekDateEntries(weekStart);
         const semester = parseInt(el('admin-tt-semester')?.value || '3', 10);
@@ -1471,13 +1548,13 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
         syncSchedulerWeekChrome();
 
         const root = document.createElement('div');
-        root.className = 'sch-grid-root';
+        root.className = 'sch-grid-root schedule-grid-shell lux-timetable-grid-shell';
         root.dataset.schedulerWeekState = isCurrentWeek ? 'current' : 'selected';
 
         const headerRow = document.createElement('div');
         headerRow.className = 'sch-header-row';
         const timezoneCol = document.createElement('div');
-        timezoneCol.className = 'sch-time-col sch-time-col--header';
+        timezoneCol.className = 'sch-time-col lux-timetable-time-col sch-time-col--header';
         const timezoneCopy = document.createElement('div');
         timezoneCopy.className = 'sch-time-col-copy';
         timezoneCopy.textContent = 'GMT+4';
@@ -1493,16 +1570,16 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
         const body = document.createElement('div');
         body.className = 'sch-body';
         const timeLabels = document.createElement('div');
-        timeLabels.className = 'sch-time-labels';
+        timeLabels.className = 'sch-time-labels lux-timetable-time-col';
         SLOT_TIMES.forEach((slot) => {
             timeLabels.appendChild(buildSchedulerTimeSlot(slot));
         });
 
         const dayLanes = document.createElement('div');
-        dayLanes.className = 'sch-day-lanes';
+        dayLanes.className = 'sch-day-lanes lux-timetable-day-lanes';
         weekEntries.forEach((entry) => {
             const lane = document.createElement('div');
-            lane.className = 'sch-lane';
+            lane.className = 'sch-lane lux-timetable-lane';
             SLOT_TIMES.forEach((slot) => {
                 lane.appendChild(buildSchedulerSlotBackground(entry, slot, semester, weekStart));
             });
@@ -1529,7 +1606,9 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
         }
 
         container.replaceChildren(fragment);
+        container.setAttribute('aria-busy', 'false');
         updateSchedulerRailChrome();
+        });
     }
     function schShowStats(courseId, groupId) {
         const session = resolveScheduledGroupForWeek(courseId, groupId, getSchedulerWeekStart());
@@ -1548,7 +1627,7 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
         if (!confirm(message)) return;
         deleteScheduledSession(courseId, groupId, getSchedulerWeekStart(), visibleSession.isWeekOverride ? 'week-only' : 'visible');
         saveState();
-        renderGrid();
+        queueSchedulerRefresh({ grid: true });
     }
 
     /* H2b: admin-scheduler-faculty-runtime.js */
@@ -1581,9 +1660,14 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
 
     /* Wave 18: admin-scheduler-session-runtime.js */
     const __schedSessionDeps = window.__kiuAdminSchedulerSessionDeps = {
-        el, getSchedulerWeekStart, normalizeSchedulerDayLabel, normalizeTimeString,
-        convertTimeToMinutes, minutesToTimeString, findScheduleConflict, upsertScheduledSession,
-        deleteScheduledSession, closeSchModal, renderGrid, normalizeSchedulerSelectOptions,
+        el, getSchedulerWeekStart, normalizeSchedulerDayLabel,
+        normalizeTimeString: window.normalizeTimeString,
+        convertTimeToMinutes: window.convertTimeToMinutes,
+        minutesToTimeString: window.minutesToTimeString,
+        findScheduleConflict,
+        upsertScheduledSession: window.upsertScheduledSession,
+        deleteScheduledSession: window.deleteScheduledSession,
+        closeSchModal, renderGrid, normalizeSchedulerSelectOptions,
         populateProfList, queueSchedulerRefresh,
         get selectedPaletteSubject() { return selectedPaletteSubject; },
         set selectedPaletteSubject(v) { selectedPaletteSubject = v; },
@@ -1657,7 +1741,7 @@ function __kiuSchedExpose(map){Object.keys(map).forEach((k)=>{__kiuSchedApi[k]=m
             if (schedulerPaletteSearchHandle) window.clearTimeout(schedulerPaletteSearchHandle);
             schedulerPaletteSearchHandle = window.setTimeout(() => {
                 schedulerPaletteSearchHandle = 0;
-                queueSchedulerRefresh({ palette: true });
+                queueSchedulerRefresh({ palette: true, paletteSearchOnly: true });
             }, SCHEDULER_PALETTE_SEARCH_DEBOUNCE_MS);
         });
         bindNodeOnce(el('palette-list'), 'click', 'schedulerPaletteClickBound', (event) => {

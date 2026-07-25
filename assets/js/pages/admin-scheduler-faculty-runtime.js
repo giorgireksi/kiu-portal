@@ -64,10 +64,12 @@
             });
         }
 
-        function getSchedulerPaletteSubjects() {
+        function getSchedulerPaletteSubjects(options = {}) {
             const facultyFilter = el('admin-tt-faculty')?.value || 'all';
             const semesterFilter = parseInt(el('admin-tt-semester')?.value || '0', 10);
-            const query = String(el('palette-search')?.value || '').trim().toLowerCase();
+            const query = options.ignoreSearch
+                ? ''
+                : String(el('palette-search')?.value || '').trim().toLowerCase();
             const currentFaculty = localStorage.getItem('currentFaculty') || 'ECON';
             const normalizedFaculty = facultyFilter === 'all'
                 ? 'all'

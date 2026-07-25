@@ -922,8 +922,13 @@ function resolveExternalPickerLabel(select) {
         const labelNode = parent.querySelector('label');
         if (isExternalPickerLabelNode(labelNode)) return labelNode;
     }
-    const fieldShell = select.closest('.sch-input-group, .sch-control-group');
+    const fieldShell = select.closest('.sch-input-group, .sch-control-group, .sch-rail-field, .lux-program-field, .lux-picker-field');
     if (fieldShell) {
+        const captionLabel = fieldShell.querySelector(':scope > .lux-picker-label');
+        if (captionLabel) {
+            if (!captionLabel.id && select.id) captionLabel.id = `${select.id}-field-label`;
+            return captionLabel;
+        }
         if (fieldShell.matches('label')) return fieldShell;
         const nestedLabel = fieldShell.querySelector('.sch-input-label-row label, :scope > label');
         if (isExternalPickerLabelNode(nestedLabel)) return nestedLabel;
@@ -1101,7 +1106,10 @@ function enhanceUniversalPicker(select) {
     const parent = select.parentElement;
     if (!parent) return;
     const wrapper = document.createElement('div');
-    wrapper.className = 'lux-picker-field lux-universal-picker-field';
+    const railFieldShell = select.closest('.sch-rail-field, .lux-program-field, .sch-input-group');
+    wrapper.className = railFieldShell
+        ? 'lux-universal-picker-field'
+        : 'lux-picker-field lux-universal-picker-field';
     const panelId = select.id ? `${select.id}-lux-panel` : `lux-picker-panel-${Math.random().toString(36).slice(2, 10)}`;
     const buttonId = select.id ? `${select.id}-lux-btn` : `lux-picker-btn-${Math.random().toString(36).slice(2, 10)}`;
     const externalLabel = resolveExternalPickerLabel(select);

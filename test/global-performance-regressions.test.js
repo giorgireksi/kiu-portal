@@ -827,7 +827,7 @@ describe('global interaction performance guardrails', () => {
     expect(indexRuntime).toContain('.lux-page-shell');
     expect(indexRuntime).toContain('requestIdleCallback');
     expect(indexRuntime).toContain('#lux-home-shell .lux-home-grid');
-    expect(indexRuntime).toContain('#page-admin-scheduler .sch-grid-shell');
+    expect(indexRuntime).toContain('#page-admin-scheduler .sch-main.lux-timetable-stage');
     expect(foucCss).toMatch(/\[data-lux-offscreen="1"\]\s*\{\s*backdrop-filter:\s*none !important/);
     expect(foucCss).not.toMatch(/\[data-lux-offscreen="1"\]\s*\{[^}]*box-shadow:\s*none/);
     expect(foucCss).toMatch(/html\.lux-high-transparency[\s\S]*\.lux-home-merged\.lux-soft-chrome[\s\S]*backdrop-filter:\s*none !important/);

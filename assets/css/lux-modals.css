@@ -138,7 +138,6 @@
   .newsx-publisher-modal,
   .newsx-confirm-modal,
   .newsx-sections-modal,
-  .sch-modal,
   .pv-modal-card,
   .lms-quiz-board-modal ),
   [data-lux-transparency-exempt="1"] :is( .lux-glass-dialog-card ) {
@@ -157,7 +156,6 @@
   .newsx-publisher-modal,
   .newsx-confirm-modal,
   .newsx-sections-modal,
-  .sch-modal,
   .pv-modal-card,
   .lms-quiz-board-modal ),
   :is(html.lux-light-mode,
@@ -235,7 +233,7 @@
 :is(html.lux-light-mode, body.lux-light-mode) [data-lux-transparency-exempt="1"] :is( .students-hub-modal-foot, .staff-hub-modal-foot ) {
   background: var(--lux-panel-modal-foot-tint-light);
 }
-[data-lux-transparency-exempt="1"] .lux-secondary-btn:not(:is(.lux-glass-dialog-actions *, .lux-glass-dialog-form-actions *)) {
+[data-lux-transparency-exempt="1"] .lux-secondary-btn:not(:is(.lux-glass-dialog-actions *, .lux-glass-dialog-form-actions *, .quiz-questions-head-row *, .sch-preset-manage-add-row *)) {
   background: transparent;
   border: 1px solid var(--lux-modal-glass-border);
   box-shadow: none;
@@ -243,7 +241,7 @@
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
 }
-[data-lux-transparency-exempt="1"] .lux-primary-btn:not(:is(.lux-glass-dialog-actions *, .lux-glass-dialog-form-actions *)) {
+[data-lux-transparency-exempt="1"] .lux-primary-btn:not(:is(.lux-glass-dialog-actions *, .lux-glass-dialog-form-actions *, .quiz-questions-head-row *, .sch-preset-manage-add-row *)) {
   background: var(--lux-panel-cta-accent);
   border: 1px solid rgba(var(--lux-accent-rgb), 0.5);
   color: #fff;
@@ -269,7 +267,6 @@
     .newsx-publisher-modal,
     .newsx-confirm-modal,
     .newsx-sections-modal,
-    .sch-modal,
     .pv-modal-card,
     .lux-glass-dialog-card
   )

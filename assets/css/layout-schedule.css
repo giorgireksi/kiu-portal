@@ -58,13 +58,13 @@ body:not(.lux-route-timetable) .sch-slot-bg { border-bottom: 1px solid var(--lux
   border-left: 4px solid;
   z-index: 10;
 }
-body:not(.lux-route-timetable) .sch-event {
+body:not(.lux-route-timetable):not(.lux-route-admin-scheduler) .sch-event {
   border: 1px solid var(--lux-panel-border-soft, var(--lux-border));
   box-shadow: var(--lux-elev-2);
   backdrop-filter: var(--lux-panel-blur-filter, blur(var(--lux-glass-blur)) saturate(150%));
   -webkit-backdrop-filter: var(--lux-panel-blur-filter, blur(var(--lux-glass-blur)) saturate(150%));
 }
-body:not(.lux-route-timetable) .sch-event:hover { transform: translateY(-1px); box-shadow: var(--lux-elev-3); }
+body:not(.lux-route-timetable):not(.lux-route-admin-scheduler) .sch-event:hover { transform: translateY(-1px); box-shadow: var(--lux-elev-3); }
 .ev-title {
   font-size: 10px;
   font-weight: 800;

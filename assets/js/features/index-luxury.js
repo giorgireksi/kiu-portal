@@ -1293,6 +1293,10 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
     function resumeLuxuryVisualObservers() {
         return __luxVisualRuntime?.resumeLuxuryVisualObservers?.();
     }
+    Object.assign(window, {
+        pauseLuxuryVisualObservers,
+        resumeLuxuryVisualObservers,
+    });
     const observeUniversalPickers = (...args) => shellChrome().observeUniversalPickers?.(...args);
     function showToast(message) {
         let toast = document.getElementById('lux-toast');
@@ -1339,6 +1343,12 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
     }
     function isStandaloneOrdersRouteActive() {
         return !isIndexPortalShell() && getActiveEntryPageId() === 'orders';
+    }
+    function isStandaloneSchedulerRouteActive() {
+        return !isIndexPortalShell() && (
+            getActiveEntryPageId() === 'admin-scheduler'
+            || document.body?.classList?.contains('lux-route-admin-scheduler')
+        );
     }
     function syncLayoutForPage(pageId) {
         const activePageId = String(pageId || getActivePageId() || 'home').trim().toLowerCase() || 'home';
@@ -1701,9 +1711,10 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
                 const onStandaloneAdminOrders = isStandaloneAdminOrdersRouteActive();
                 const onStandaloneLibrary = isStandaloneLibraryRouteActive();
                 const onStandaloneOrders = isStandaloneOrdersRouteActive();
+                const onStandaloneScheduler = isStandaloneSchedulerRouteActive();
                 enhanceUniversalPickers(document.querySelector('.page-section.active-page') || document);
                 observeUniversalPickers();
-                if (!onStandaloneLms && !onStandaloneAdminOrders && !onStandaloneLibrary && !onStandaloneOrders) {
+                if (!onStandaloneLms && !onStandaloneAdminOrders && !onStandaloneLibrary && !onStandaloneOrders && !onStandaloneScheduler) {
                     observeLegacyVisualTree();
                     queueLegacyVisualRefresh(document.querySelector('.page-section.active-page') || document.body);
                     queueHeavySurfaceObservationRefresh();
@@ -1718,7 +1729,7 @@ function __kiuLuxExpose(map){Object.keys(map).forEach((k)=>{__kiuLuxApi[k]=map[k
                         window.__kiuInitLuxuryParticleBackground();
                     }
                 };
-                if (!onStandaloneAdminOrders) {
+                if (!onStandaloneAdminOrders && !onStandaloneScheduler) {
                     if (onStandaloneLibrary || onStandaloneOrders) {
                         const schedule = window.requestIdleCallback || ((cb) => window.setTimeout(cb, 120));
                         schedule(scheduleParticleInit);

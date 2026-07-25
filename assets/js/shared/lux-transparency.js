@@ -172,7 +172,7 @@ function isRouteOwnedSurface(el) {
         if (hasOwnedClassPrefix(el, ['sch-', 'palette-'])
             || el.matches?.('.lux-strip-card')
             || ((el.tagName === 'SELECT' || el.tagName === 'INPUT')
-                && el.closest?.('.sch-control-group, .sch-board-toolbar-row, .sch-search-shell, .sch-modal'))) {
+                && el.closest?.('.sch-control-group, .lux-picker-field, .sch-board-toolbar-row, .sch-search-shell, .lux-glass-dialog-card'))) {
             return true;
         }
     }
@@ -585,7 +585,7 @@ const HIGH_TRANSPARENCY_SURFACE_SELECTORS = [
     '.lux-utility-panel', '.lux-person-card', '.lux-stack', '#page-admin-scheduler .sch-rail-hero',
     
     '#page-admin-scheduler .sch-rail-section', '#page-admin-scheduler .sch-grid-shell',
-    '#page-admin-scheduler .sch-modal', '#page-admin-scheduler .palette-card', '#page-admin-scheduler .sch-stat-card',
+    '#page-admin-scheduler .lux-glass-dialog-card', '#page-admin-scheduler .palette-card', '#page-admin-scheduler .sch-stat-card',
     '#page-admin-scheduler .sch-grid-tag', '#page-admin-scheduler .sch-legend-pill',
     '#page-admin-scheduler .sch-empty-state', '#page-admin-scheduler .sch-grid-empty', '.lux-lms-group-card',
     '.lms-route-panel', '.lms-route-hero', '.portal-msg-page-top', '.portal-msg-panel', '.portal-msg-group-modal',

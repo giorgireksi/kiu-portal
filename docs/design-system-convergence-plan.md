@@ -151,7 +151,7 @@ kiu-fonts → lux-tokens → lux-focus-panel → lux-fouc-ht → lux-controls
 | 3 | **study-card** / **personal-data** | Medium size; student shell |
 | 4 | **programs** | Similar student academic shell |
 | 5 | **news** / **library** / **orders** | Smaller route CSS |
-| 6 | **admin-scheduler** | Shared sch-* with timetable lessons |
+| 6 | **admin-scheduler** | Shared sch-* grid with timetable; bare-lite layout + lux-glass-dialog modals (in progress) |
 | 7 | **admin-tools** (shell only, not entire Rank A) | Large but high value |
 | 8 | **staff** / **students-admin** | Admin family |
 | 9 | **LMS shell** (not whiteboard/quiz domains) | High traffic |

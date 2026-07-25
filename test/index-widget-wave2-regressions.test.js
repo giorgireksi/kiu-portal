@@ -130,8 +130,8 @@ describe('index widget wave 2 regressions', () => {
     const schedulerHtml = readSource('admin-scheduler.html');
     const schedulerJs = readSource('assets/js/pages/admin-scheduler.js');
 
-    expect(schedulerHtml).toContain('class="sch-action-grid lux-quick-grid lux-quick-grid--adaptive"');
-    expect(schedulerHtml).toContain('class="lux-quick-btn sch-action-btn"');
-    expect(schedulerJs).toContain("card.className = `palette-card lux-strip-card surface-card lux-summary-surface lux-summary-surface--panel${isActive ? ' selected' : ''}`;");
+    expect(schedulerHtml).toContain('class="lux-stat-row sch-rail-signal-grid"');
+    expect(schedulerHtml).toContain('class="lux-stat lux-soft-chrome home-hover-chip sch-stat-card"');
+    expect(schedulerJs).toContain("card.className = `lux-list-row lux-soft-chrome${isActive ? ' is-active' : ''}`;");
   });
 });

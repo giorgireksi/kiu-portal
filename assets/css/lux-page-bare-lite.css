@@ -112,14 +112,18 @@ body.lux-page-bare .lux-page-shell[data-lux-layout-only="1"] {
   margin: 0 0 14px;
   padding: 12px 14px;
 }
-#lux-admin-tools-shell .lux-admin-curriculum-control-band .lux-program-field {
+#lux-admin-tools-shell .lux-admin-curriculum-control-band .lux-program-field,
+#page-admin-scheduler .sch-rail-control-band .lux-program-field {
   display: flex;
   flex-direction: column;
   gap: 6px;
   flex: 1 1 200px;
   min-width: 180px;
 }
-#lux-admin-tools-shell .lux-admin-curriculum-control-band .lux-program-field > span {
+#lux-admin-tools-shell .lux-admin-curriculum-control-band .lux-program-field > span,
+#lux-admin-tools-shell .lux-admin-curriculum-control-band .lux-program-field > .lux-picker-label,
+#page-admin-scheduler .sch-rail-control-band .lux-program-field > span,
+#page-admin-scheduler .sch-rail-control-band .lux-program-field > .lux-picker-label {
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.04em;
@@ -856,6 +860,297 @@ body.lux-light-mode #lux-admin-tools-shell .lux-admin-curriculum-search-wrap > i
   #lux-admin-tools-shell .lux-program-grid,
   #lux-admin-tools-shell .admin-reg-program-layout,
   #lux-admin-tools-shell .admin-reg-program-layout--wide {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Admin scheduler: layout only (paint → lux-fouc-ht / lux-controls / layout-schedule-board) ── */
+#page-admin-scheduler .scheduler-wrap {
+  display: grid;
+  grid-template-columns: minmax(300px, 360px) minmax(0, 1fr);
+  gap: 16px;
+  align-items: stretch;
+  min-height: 0;
+}
+#page-admin-scheduler .sch-sidebar.lux-panel {
+  display: grid;
+  gap: 14px;
+  align-content: start;
+  min-width: 0;
+  max-height: calc(100vh - 96px);
+  overflow: auto;
+  padding: 16px;
+  margin: 0;
+}
+#page-admin-scheduler .sch-rail-signal-grid.lux-stat-row {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 0;
+}
+#page-admin-scheduler .sch-stat-card.lux-soft-chrome {
+  box-shadow: var(--lux-soft-chrome-surface-shadow, none);
+}
+#page-admin-scheduler .sch-stat-card em {
+  font-size: 11px;
+  line-height: 1.35;
+  font-style: normal;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--lux-text-muted);
+}
+#page-admin-scheduler .sch-rail-section {
+  display: grid;
+  gap: 12px;
+  padding-top: 4px;
+  border-top: 1px solid var(--lux-panel-border-soft, rgba(255, 255, 255, 0.08));
+}
+#page-admin-scheduler .sch-rail-section:first-of-type {
+  border-top: 0;
+  padding-top: 0;
+}
+#page-admin-scheduler .sch-rail-control-band {
+  display: grid;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 16px;
+}
+#page-admin-scheduler .sch-rail-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+#page-admin-scheduler .sch-rail-control-band .lux-universal-picker-field {
+  width: 100%;
+  display: block;
+  min-width: 0;
+}
+#page-admin-scheduler .sch-rail-field > .lux-picker-label {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--lux-text-muted);
+}
+#page-admin-scheduler .sch-rail-search-wrap {
+  position: relative;
+  display: grid;
+  gap: 6px;
+}
+#page-admin-scheduler .sch-rail-search-wrap > .lux-picker-label {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--lux-text-muted);
+}
+#page-admin-scheduler .sch-rail-search-wrap > i {
+  position: absolute;
+  left: 14px;
+  bottom: calc(var(--lux-field-min-height, 44px) / 2);
+  transform: translateY(50%);
+  color: var(--lux-text-muted);
+  pointer-events: none;
+  z-index: 1;
+}
+#page-admin-scheduler .sch-rail-search-wrap .lux-control {
+  padding-left: 40px;
+}
+#page-admin-scheduler .sch-control-grid .sch-rail-field .lux-universal-picker-field,
+#page-admin-scheduler .sch-control-grid .lux-program-field .lux-universal-picker-field {
+  width: 100%;
+}
+#page-admin-scheduler .sch-control-grid .lux-control,
+#page-admin-scheduler .sch-control-grid .lux-picker-btn--compact :is(.lux-picker-value, strong) {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+#page-admin-scheduler .sch-control-grid.lux-field-grid {
+  grid-template-columns: 1fr;
+}
+#page-admin-scheduler .sch-palette-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+#page-admin-scheduler .sch-palette-list {
+  max-height: min(42vh, 420px);
+  overflow: auto;
+  padding-right: 2px;
+}
+#page-admin-scheduler .sch-preset-search-field {
+  position: relative;
+}
+#page-admin-scheduler .sch-preset-search-field > i {
+  position: absolute;
+  left: 14px;
+  bottom: calc(var(--lux-field-min-height, 44px) / 2);
+  transform: translateY(50%);
+  color: var(--lux-text-muted);
+  pointer-events: none;
+  z-index: 1;
+}
+#page-admin-scheduler .sch-preset-search-field .lux-control {
+  padding-left: 40px;
+}
+#page-admin-scheduler .sch-palette-list .lux-list-row.is-active {
+  outline: 2px solid rgba(var(--lux-accent-rgb), 0.45);
+  outline-offset: 1px;
+}
+#page-admin-scheduler .sch-main.lux-timetable-stage {
+  min-width: 0;
+  min-height: calc(100vh - 96px);
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 14px;
+}
+#page-admin-scheduler .lux-timetable-stage-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+}
+#page-admin-scheduler .sch-grid-wrap.lux-timetable-canvas {
+  min-height: 0;
+  overflow: auto;
+}
+#page-admin-scheduler #scheduler-grid[aria-busy="true"]:empty::before {
+  content: 'Loading schedule…';
+}
+#page-admin-scheduler .sch-form-section {
+  display: grid;
+  gap: 12px;
+}
+#page-admin-scheduler .sch-form-section-head {
+  display: grid;
+  gap: 4px;
+}
+#page-admin-scheduler .sch-form-section-title {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--lux-text-muted);
+}
+#page-admin-scheduler .sch-form-section-copy {
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--lux-text-muted);
+}
+#page-admin-scheduler .sch-input-row {
+  display: grid;
+  gap: 10px;
+}
+#page-admin-scheduler .sch-input-row-two {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+#page-admin-scheduler .sch-input-row-three {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+#page-admin-scheduler .sch-input-row-subject,
+#page-admin-scheduler .sch-input-row-capacity {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+#page-admin-scheduler .sch-input-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+#page-admin-scheduler .sch-preset-manage-link.lux-ghost-btn {
+  min-height: 0;
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 8px;
+  white-space: nowrap;
+}
+#page-admin-scheduler .sch-preset-manage-delete-btn.lux-ghost-btn {
+  min-height: 0;
+  min-width: 0;
+  padding: 6px 8px;
+  font-size: 12px;
+  border-radius: 8px;
+  color: var(--lux-danger, #f87171);
+}
+#page-admin-scheduler .sch-preset-manage-delete-btn.lux-ghost-btn:hover {
+  color: #fff;
+  background: rgba(248, 113, 113, 0.18);
+}
+#page-admin-scheduler .sch-conflict-alert.show {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+#page-admin-scheduler .sch-preset-manage-list {
+  display: grid;
+  gap: 8px;
+  max-height: 240px;
+  overflow: auto;
+}
+#page-admin-scheduler .sch-preset-manage-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+}
+#page-admin-scheduler .sch-preset-manage-add-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: end;
+}
+#page-admin-scheduler .quiz-questions-head {
+  display: grid;
+  gap: 10px;
+}
+#page-admin-scheduler .quiz-questions-head-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+#page-admin-scheduler .quiz-questions-list {
+  display: grid;
+  gap: 10px;
+  max-height: 280px;
+  overflow: auto;
+}
+#page-admin-scheduler .quiz-question-card {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 12px;
+}
+#page-admin-scheduler .quiz-question-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+@media (max-width: 1100px) {
+  #page-admin-scheduler .scheduler-wrap {
+    grid-template-columns: 1fr;
+  }
+  #page-admin-scheduler .sch-sidebar,
+  #page-admin-scheduler .sch-main {
+    max-height: none;
+    min-height: 0;
+  }
+}
+@media (max-width: 720px) {
+  #page-admin-scheduler .sch-rail-signal-grid.lux-stat-row,
+  #page-admin-scheduler .sch-control-grid,
+  #page-admin-scheduler .sch-input-row-two,
+  #page-admin-scheduler .sch-input-row-three,
+  #page-admin-scheduler .sch-input-row-subject,
+  #page-admin-scheduler .sch-input-row-capacity {
     grid-template-columns: 1fr;
   }
 }
